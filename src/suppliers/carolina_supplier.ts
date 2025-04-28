@@ -113,10 +113,12 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
         .filter(s => s.innerText.includes('pdpData'))?.[0]?.innerText
 
       if (!pdpDataElem) {
-        throw new Error('Unable to find or parse pdpData')
+        console.warn('Unable to find or parse pdpData')
+        return
       }
 
-      const pdpDataTxt = pdpDataElem.replace('\n\t\t\twindow.pdpData = ', '').replace(/(?<=});(\n|\t|.)*$/mgi, '')
+      // https://regex101.com/r/3OhYbo/1
+      const pdpDataTxt = pdpDataElem.replace(/(?:^.*window.pdpData = (?={)|(?<=});(?:\n|\t|.)*$)/mgi, '')
       const json_data = JSON.parse(pdpDataTxt)
 
       const variants: Variant[] = json_data.skus.map((s: Sku) => ({
