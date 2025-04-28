@@ -33,3 +33,22 @@ export interface SearchProps {
   query: string;
   setQuery: (value: string) => void;
 }
+
+export interface Product {
+  supplier: string;
+  title: string;
+  url: string;
+  manufacturer?: string;
+  cas?: string;
+  formula?: string;
+  price: number;
+  quantity: number;
+  sku?: number;
+  grade?: string;
+  conc?: string;
+  seoname?: string;
+  status?: string;
+  statusTxt?: string;
+  shippingInformation?: string;
+  variants?: Variant[];
+}

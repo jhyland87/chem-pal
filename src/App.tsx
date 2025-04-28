@@ -1,13 +1,13 @@
 import './App.css'
-import Search from './components/Search'
-import ResultsTable from './components/ResultsTable'
+// import Search from './components/Search'
+// import ResultsTable from './components/ResultsTable'
+import ProductTable from './components/ProductTable'
 
 function App() {
   return (
     <>
-      <h3>Chem Crawler</h3>
-      <Search />
-      <ResultsTable />
+      <h2>Chem Crawler</h2>
+      <ProductTable />
     </>
   )
 }

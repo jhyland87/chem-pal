@@ -1,8 +1,8 @@
 import _ from 'lodash';
-import { Sku, Variant } from "../interfaces"
-//import createData from '../components/ResultsTable'
+import { Sku, Variant, Product } from "../interfaces"
 
-export default class CarolinaSupplier<T> implements Iterable<T> {
+
+export default class CarolinaSupplier<T extends Product> implements Iterable<T> {
   private _query: string
   //private _limit: number = 20
   private _products: Array<T> = []
@@ -28,9 +28,6 @@ export default class CarolinaSupplier<T> implements Iterable<T> {
 
   constructor(query: string) {
     this._query = query;
-    //this.limit = limit;
-
-    this.init()
   }
 
   private async httpGet(url: string): Promise<Response> {
@@ -51,10 +48,11 @@ export default class CarolinaSupplier<T> implements Iterable<T> {
     return jsonResponse
   }
 
-  private async init(): Promise<void> {
+  public async init(): Promise<any> {
     try {
       await this.queryProducts();
       await this.parseProducts();
+      return this._products;
     }
     catch (err) {
       console.debug('ERROR in init:', err)
@@ -76,14 +74,6 @@ export default class CarolinaSupplier<T> implements Iterable<T> {
   private async parseProducts(): Promise<any> {
     return Promise
       .all(this._queryResults.map((r: { name: string; href: string }) => this._getProductData(r.href)))
-      .then(this._insertProducts)
-  }
-
-  private async _insertProducts(results: Array<T>) {
-    for (const result of results) {
-      console.log('result:', result)
-      //createData(result.name, result.price, result.quantity, result.supplier, result.manufacturer)
-    }
   }
 
   private async _getProductData(productUrl: string) {
@@ -140,7 +130,7 @@ export default class CarolinaSupplier<T> implements Iterable<T> {
 
       const defaultVariant = variants.filter(v => v.sku == json_data.selectedSku.skuId)?.[0] || {}
 
-      return {
+      const product = {
         title, url,
         manufacturer: "test",
         cas: description['casNo'],
@@ -149,13 +139,21 @@ export default class CarolinaSupplier<T> implements Iterable<T> {
         variants
       }
 
+      this._products.push(product as T)
+
     } catch (error: any) {
       console.error(error.message);
     }
   }
 
+  results() {
+    return this._products
+  }
+
+  // WHY WON'T THIS WORK
   *[Symbol.iterator](): Iterator<T> {
     for (const item of this._products) {
+      console.log('Printing item:', item)
       yield item;
     }
   }
