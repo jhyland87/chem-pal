@@ -4,12 +4,14 @@ import { Sku, Variant, Product } from "../interfaces"
 
 export default class CarolinaSupplier<T extends Product> implements Iterable<T> {
   private _query: string
+  private _limit: number
   //private _limit: number = 20
   private _products: Array<T> = []
   private _queryResults: any
   private _baseURL: string = 'https://www.carolina.com';
   private _headers: { [key: string]: string } = {
-    "accept": "application/json, text/javascript, */*; q=0.01",
+    //"accept": "application/json, text/javascript, */*; q=0.01",
+    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
     "accept-language": "en-US,en;q=0.6",
     "cache-control": "no-cache",
     "pragma": "no-cache",
@@ -26,13 +28,17 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
     "x-requested-with": "XMLHttpRequest"
   }
 
-  constructor(query: string) {
+  constructor(query: string, limit: number = 5) {
     this._query = query;
+    this._limit = limit;
   }
 
   private async httpGet(url: string): Promise<Response> {
     return await fetch(url, {
-      "headers": this._headers,
+      "headers": {
+        ...this._headers,
+        "accept": 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8'
+      },
       "referrer": this._baseURL,
       "referrerPolicy": "strict-origin-when-cross-origin",
       "body": null,
@@ -42,11 +48,11 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
     });
   }
 
-  private async jsonGet(url: string): Promise<Response> {
-    const response = await this.httpGet(url)
-    const jsonResponse = await response.json()
-    return jsonResponse
-  }
+  // private async jsonGet(url: string): Promise<Response> {
+  //   const response = await this.httpGet(url)
+  //   const jsonResponse = await response.json()
+  //   return jsonResponse
+  // }
 
   public async init(): Promise<any> {
     try {
@@ -59,21 +65,96 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
     }
   }
 
-  private async queryProducts(): Promise<void> {
-    const params = new URLSearchParams({
-      Dy: '1',
-      Nty: '1',
-      Ntt: this._query,
-      _: new Date().toISOString()
-    });
-
-    this._queryResults = await this.jsonGet(`${this._baseURL}/includes/gadgets/type-ahead-new.jsp?${params.toString()}`)
-    this._queryResults = this._queryResults.productTypeaheadSuggestions.records.map((r: { label: string; link: string }) => ({ name: r.label, href: r.link.replaceAll('&#039;', '') }))
+  private _makeQueryUrl(query: string): string {
+    const searchParams: Record<string, any> = {
+      /*
+      790004999   Chemicals category ID
+      836054137   ACS grade
+      471891351   Lab grade
+      3929848101  Reagent grade
+      */
+      'N': 790004999,
+      'Nf': 'product.cbsLowPrice|GT 0.0||product.startDate|LTEQ 1.7457984E12||product.startDate|LTEQ 1.7457984E12',
+      'Nr': 'AND(product.siteId:100001,OR(product.type:Product),OR(product.catalogId:cbsCatalog))',
+      // Number of products to display
+      'Nrpp': 120,
+      // Query string
+      'Ntt': query,
+      'noRedirect': true,
+      // No idea
+      'nore': 'y',
+      // Query string
+      'question': query,
+      'searchExecByFormSubmit': true,
+      // Products tab
+      'tab': 'p'
+    }
+    const url = new URL('/browse/product-search-results', this._baseURL);
+    const params = new URLSearchParams(searchParams);
+    url.search = params.toString()
+    return url.toString()
   }
+
+  private async queryProducts(): Promise<void> {
+    const queryURL = this._makeQueryUrl(this._query)
+    console.debug({ queryURL })
+    const response = await this.httpGet(queryURL)
+
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.status}`);
+    }
+
+    const resultHTML = await response.text();
+
+    console.log('resultHTML:', resultHTML)
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(resultHTML, 'text/html');
+
+    if (!doc) {
+      throw new Error('Failed to load product HTML into DOMParser')
+    }
+
+    const productElements: NodeListOf<HTMLElement> = doc.querySelectorAll('div.tab-content > .tab-pane > .category-grid > div')
+
+    console.log({ productElements })
+
+    const elementList = []
+
+    const _trimSpaceLike = (txt: string) => txt?.replaceAll(/(^(\\n|\\t|\s)*|(\\n|\\t|\s)*$)/gm, '')
+
+    for (const elem of productElements) {
+      elementList.push({
+        title: _trimSpaceLike((elem.querySelector('h3.c-product-title') as HTMLElement)?.innerText),
+        href: _trimSpaceLike((elem.querySelector('a.c-product-link') as HTMLAnchorElement)?.href?.replace('chrome-extension://fkohmljcbmaeoimogkgaijccidjcdgeh', '')),
+        prices: _trimSpaceLike((elem.querySelector('p.c-product-price') as HTMLElement)?.innerText),
+        count: _trimSpaceLike((elem.querySelector('p.c-product-total') as HTMLElement)?.innerText)
+      })
+    }
+
+    console.log({ elementList })
+
+    this._queryResults = elementList.slice(0, this._limit)
+  }
+
+  // private async queryProducts_(): Promise<void> {
+  //   const params = new URLSearchParams({
+  //     Dy: '1',
+  //     Nty: '1',
+  //     Ntt: this._query,
+  //     _: new Date().toISOString()
+  //   });
+
+  //   this._queryResults = await this.jsonGet(`${this._baseURL}/includes/gadgets/type-ahead-new.jsp?${params.toString()}`)
+  //   this._queryResults = this._queryResults.productTypeaheadSuggestions.records.map((r: { label: string; link: string }) => ({ name: r.label, href: r.link.replaceAll('&#039;', '') }))
+  // }
 
   private async parseProducts(): Promise<any> {
     return Promise
-      .all(this._queryResults.map((r: { name: string; href: string }) => this._getProductData(r.href)))
+      .all(this._queryResults.map((r: { href: string }) => this._getProductData(r.href.replace('chrome-extension://fkohmljcbmaeoimogkgaijccidjcdgeh', ''))))
+      .then(results => {
+        console.debug('parseProducts:', { results, queryResults: this._queryResults })
+      })
   }
 
   private async _getProductData(productUrl: string) {
@@ -85,7 +166,7 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
       }
 
       const data = await response.text();
-
+      console.log({ data })
       const parser = new DOMParser();
       const doc = parser.parseFromString(data, 'text/html');
       if (!doc) {
@@ -104,6 +185,12 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
             .map(([k, v]) => ([_.camelCase(k?.trim()), v?.trim()]))
         )
       }
+
+      // await (async () => {
+      //   console.log("Before delay");
+      //   await new Promise(resolve => setTimeout(resolve, 120));
+      //   console.log("After delay");
+      // })()
 
       //const sku = parseInt((doc.getElementById('pdp-skuId') as HTMLMetaElement).innerText)
       const title = (doc.querySelector('meta[property="og:title"]') as HTMLMetaElement).content
