@@ -4,6 +4,7 @@ import { Sku, Variant, Product } from "../interfaces"
 
 export default class CarolinaSupplier<T extends Product> implements Iterable<T> {
   private _query: string
+  private _limit: number
   //private _limit: number = 20
   private _products: Array<T> = []
   private _queryResults: any
@@ -27,8 +28,9 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
     "x-requested-with": "XMLHttpRequest"
   }
 
-  constructor(query: string) {
+  constructor(query: string, limit: number = 5) {
     this._query = query;
+    this._limit = limit;
   }
 
   private async httpGet(url: string): Promise<Response> {
@@ -124,7 +126,7 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
     for (const elem of productElements) {
       elementList.push({
         title: _trimSpaceLike((elem.querySelector('h3.c-product-title') as HTMLElement)?.innerText),
-        href: _trimSpaceLike((elem.querySelector('a.c-product-link') as HTMLAnchorElement)?.href),
+        href: _trimSpaceLike((elem.querySelector('a.c-product-link') as HTMLAnchorElement)?.href?.replace('chrome-extension://fkohmljcbmaeoimogkgaijccidjcdgeh', '')),
         prices: _trimSpaceLike((elem.querySelector('p.c-product-price') as HTMLElement)?.innerText),
         count: _trimSpaceLike((elem.querySelector('p.c-product-total') as HTMLElement)?.innerText)
       })
@@ -132,7 +134,7 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
 
     console.log({ elementList })
 
-    this._queryResults = elementList
+    this._queryResults = elementList.slice(0, this._limit)
   }
 
   // private async queryProducts_(): Promise<void> {
@@ -149,7 +151,7 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
 
   private async parseProducts(): Promise<any> {
     return Promise
-      .all(this._queryResults.map((r: { href: string }) => this._getProductData(r.href)))
+      .all(this._queryResults.map((r: { href: string }) => this._getProductData(r.href.replace('chrome-extension://fkohmljcbmaeoimogkgaijccidjcdgeh', ''))))
       .then(results => {
         console.debug('parseProducts:', { results, queryResults: this._queryResults })
       })
@@ -165,7 +167,6 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
 
       const data = await response.text();
       console.log({ data })
-      debugger
       const parser = new DOMParser();
       const doc = parser.parseFromString(data, 'text/html');
       if (!doc) {
@@ -184,6 +185,12 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
             .map(([k, v]) => ([_.camelCase(k?.trim()), v?.trim()]))
         )
       }
+
+      // await (async () => {
+      //   console.log("Before delay");
+      //   await new Promise(resolve => setTimeout(resolve, 120));
+      //   console.log("After delay");
+      // })()
 
       //const sku = parseInt((doc.getElementById('pdp-skuId') as HTMLMetaElement).innerText)
       const title = (doc.querySelector('meta[property="og:title"]') as HTMLMetaElement).content
