@@ -28,3 +28,8 @@ export interface Variant {
   statusTxt: string;
   shippingInformation: string;
 }
+
+export interface SearchProps {
+  query: string;
+  setQuery: (value: string) => void;
+}
