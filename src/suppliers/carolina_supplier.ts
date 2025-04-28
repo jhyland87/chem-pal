@@ -109,11 +109,14 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
       const title = (doc.querySelector('meta[property="og:title"]') as HTMLMetaElement).content
       const url = (doc.querySelector('meta[property="og:url"]') as HTMLMetaElement).content
 
-      const pdpDataTxt = Array.from(doc.getElementsByTagName("script"))
-        .filter(s => s.innerText.includes('pdpData'))[0].innerText
-        .replace('\n\t\t\twindow.pdpData = ', '')
-        .replace(/(?<=});(\n|\t|.)*$/mgi, '')
+      const pdpDataElem = Array.from(doc.getElementsByTagName("script"))
+        .filter(s => s.innerText.includes('pdpData'))?.[0]?.innerText
 
+      if (!pdpDataElem) {
+        throw new Error('Unable to find or parse pdpData')
+      }
+
+      const pdpDataTxt = pdpDataElem.replace('\n\t\t\twindow.pdpData = ', '').replace(/(?<=});(\n|\t|.)*$/mgi, '')
       const json_data = JSON.parse(pdpDataTxt)
 
       const variants: Variant[] = json_data.skus.map((s: Sku) => ({

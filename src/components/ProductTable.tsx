@@ -35,6 +35,7 @@ const ProductTable: React.FC = () => {
 
     if (!productQueryResults) return;
 
+    setProducts([])
     for (let result of productQueryResults) {
       const newProduct: Product = {
         supplier: 'Carolina',
