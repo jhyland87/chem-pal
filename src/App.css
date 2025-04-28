@@ -3,6 +3,9 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  vertical-align: top;
+  max-height:400px;
+  min-height:250px;
 }
 
 .logo {

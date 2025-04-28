@@ -10,7 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^7.0.2",
+    "@mui/material": "^7.0.2",
+    "@mui/styled-engine": "^7.0.2",
+    "@table-library/react-table-library": "^4.1.15",
+    "axios": "^1.9.0",
     "classnames": "^2.5.1",
+    "lodash": "^4.17.21",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-form-hook": "^0.0.1",
@@ -20,6 +28,7 @@
   "devDependencies": {
     "@eslint/js": "^9.22.0",
     "@types/chrome": "^0.0.317",
+    "@types/lodash": "^4.17.16",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
