@@ -3,6 +3,7 @@ import { Sku, Variant, Product } from "../interfaces"
 
 
 export default class CarolinaSupplier<T extends Product> implements Iterable<T> {
+  supplierName: string = 'Carolina'
   private _query: string
   private _limit: number
   //private _limit: number = 20
@@ -47,12 +48,6 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
       "credentials": "include"
     });
   }
-
-  // private async jsonGet(url: string): Promise<Response> {
-  //   const response = await this.httpGet(url)
-  //   const jsonResponse = await response.json()
-  //   return jsonResponse
-  // }
 
   public async init(): Promise<any> {
     try {
@@ -106,8 +101,6 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
 
     const resultHTML = await response.text();
 
-    console.log('resultHTML:', resultHTML)
-
     const parser = new DOMParser();
     const doc = parser.parseFromString(resultHTML, 'text/html');
 
@@ -116,8 +109,6 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
     }
 
     const productElements: NodeListOf<HTMLElement> = doc.querySelectorAll('div.tab-content > .tab-pane > .category-grid > div')
-
-    console.log({ productElements })
 
     const elementList = []
 
@@ -132,33 +123,16 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
       })
     }
 
-    console.log({ elementList })
-
     this._queryResults = elementList.slice(0, this._limit)
   }
-
-  // private async queryProducts_(): Promise<void> {
-  //   const params = new URLSearchParams({
-  //     Dy: '1',
-  //     Nty: '1',
-  //     Ntt: this._query,
-  //     _: new Date().toISOString()
-  //   });
-
-  //   this._queryResults = await this.jsonGet(`${this._baseURL}/includes/gadgets/type-ahead-new.jsp?${params.toString()}`)
-  //   this._queryResults = this._queryResults.productTypeaheadSuggestions.records.map((r: { label: string; link: string }) => ({ name: r.label, href: r.link.replaceAll('&#039;', '') }))
-  // }
 
   private async parseProducts(): Promise<any> {
     return Promise
       .all(this._queryResults.map((r: { href: string }) => this._getProductData(r.href.replace('chrome-extension://fkohmljcbmaeoimogkgaijccidjcdgeh', ''))))
-      .then(results => {
-        console.debug('parseProducts:', { results, queryResults: this._queryResults })
-      })
+    //.then(results => console.debug('[parseProducts]:', { results, queryResults: this._queryResults }))
   }
 
   private async _getProductData(productUrl: string) {
-
     try {
       const response = await this.httpGet(`https://www.carolina.com${productUrl}`)
       if (!response.ok) {
@@ -166,7 +140,7 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
       }
 
       const data = await response.text();
-      console.log({ data })
+      console.log('[_getProductData]:', { data })
       const parser = new DOMParser();
       const doc = parser.parseFromString(data, 'text/html');
       if (!doc) {
@@ -185,12 +159,6 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
             .map(([k, v]) => ([_.camelCase(k?.trim()), v?.trim()]))
         )
       }
-
-      // await (async () => {
-      //   console.log("Before delay");
-      //   await new Promise(resolve => setTimeout(resolve, 120));
-      //   console.log("After delay");
-      // })()
 
       //const sku = parseInt((doc.getElementById('pdp-skuId') as HTMLMetaElement).innerText)
       const title = (doc.querySelector('meta[property="og:title"]') as HTMLMetaElement).content
@@ -223,6 +191,7 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
       const defaultVariant = variants.filter(v => v.sku == json_data.selectedSku.skuId)?.[0] || {}
 
       const product = {
+        supplier: this.supplierName,
         title, url,
         manufacturer: "test",
         cas: description['casNo'],
