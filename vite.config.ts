@@ -31,6 +31,9 @@ export default defineConfig({
             if (id.includes('@mui') || id.includes('@material-ui')) {
               return 'vendor_mui';
             }
+            if (id.includes('react')) {
+              return 'react';
+            }
 
             return 'vendor'; // all other package goes here
           }
