@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
-
+import { analyzer } from 'vite-bundle-analyzer'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -13,6 +13,9 @@ export default defineConfig({
           dest: '.'
         }
       ]
+    }),
+    analyzer({
+      openAnalyzer: false
     })
   ],
   build: {
