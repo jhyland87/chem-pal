@@ -1,0 +1,17 @@
+.search-input-container {
+  height: 50px;
+  width:100%;
+}
+
+.search-progress-bar {
+  top: 15px;
+  width: 100%
+}
+
+#main-container {
+  width: 500px;
+}
+
+.fullwidth {
+  width: 100%;
+}
