@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     react(),
     viteStaticCopy({
-      targets:[
+      targets: [
         {
           src: 'public/manifest.json',
           dest: '.'
@@ -16,10 +16,16 @@ export default defineConfig({
     })
   ],
   build: {
+    chunkSizeWarningLimit: 1500,
     outDir: 'build',
     rollupOptions: {
       input: {
         main: './index.html'
+      },
+      output: {
+        manualChunks: {
+          lodash: ['lodash']
+        }
       }
     }
   }
