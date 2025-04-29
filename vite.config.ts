@@ -23,8 +23,17 @@ export default defineConfig({
         main: './index.html'
       },
       output: {
-        manualChunks: {
-          lodash: ['lodash']
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes("lodash")) {
+              return 'lodash'
+            }
+            if (id.includes('@mui') || id.includes('@material-ui')) {
+              return 'vendor_mui';
+            }
+
+            return 'vendor'; // all other package goes here
+          }
         }
       }
     }
