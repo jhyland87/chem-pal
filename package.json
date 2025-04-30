@@ -3,11 +3,17 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "npm": ">=10.0.0",
+    "node": ">=23.0.0"
+  },
   "scripts": {
     "dev": "vite",
+    "install-dev": "npm install --include=dev",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "jest"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -27,8 +33,13 @@
     "vite-plugin-static-copy": "^2.3.1"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.26.9",
+    "@babel/preset-react": "^7.26.3",
     "@eslint/js": "^9.22.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
     "@types/chrome": "^0.0.317",
+    "@types/jest": "^29.5.14",
     "@types/lodash": "^4.17.16",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
@@ -37,9 +48,12 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
+    "jest": "^29.7.0",
+    "jest-fixed-jsdom": "^0.0.9",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.26.1",
-    "vite": "^6.3.3",
-    "vite-bundle-analyzer": "^0.20.1"
+    "vite": "^6.3.1",
+    "vite-bundle-analyzer": "^0.20.1",
+    "vite-plugin-static-copy": "^2.3.1"
   }
 }
