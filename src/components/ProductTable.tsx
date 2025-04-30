@@ -10,8 +10,6 @@ import { Product } from '../interfaces'
 import CarolinaSupplier from '../suppliers/carolina_supplier';
 
 
-
-
 // Submits the search query and retrieves the results
 async function submitQuery(query: string): Promise<any> {
   const supplier = new CarolinaSupplier(query, 8)
@@ -56,28 +54,35 @@ const columns: GridColDef[] = [
 ];
 
 
-// Pagination for table
-const paginationModel = { page: 0, pageSize: 5 };
-
 const ProductTable: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [statusLabel, setStatusLabel] = useState('');
+  const [paginationModel, setPaginationModel] = React.useState({
+    pageSize: 5,
+    page: 0,
+  });
 
   // On component load, populate the products from storage if there is any.
+  // If there are products to list, then also update the pagination if it
+  // is saved
   useEffect(() => {
-    chrome.storage.local.get(['products'])
+    chrome.storage.local.get(['products', 'paginationModel'])
       .then(data => {
         const storedProducts = data.products || [];
+        const storedPaginationModel = data.paginationModel
 
-        if (storedProducts) {
-          console.log('Restoring Products:', storedProducts)
-          setProducts(Array.isArray(storedProducts) ? storedProducts : []);
-          setStatusLabel('')
-        }
-        else {
+        if (!storedProducts) {
           setStatusLabel('Type a product name and hit enter')
+          return
+        }
+
+        setProducts(Array.isArray(storedProducts) ? storedProducts : []);
+        setStatusLabel('')
+
+        if (storedPaginationModel) {
+          setPaginationModel(storedPaginationModel)
         }
       })
   }, []);
@@ -93,7 +98,12 @@ const ProductTable: React.FC = () => {
           setStatusLabel('Type a product name and hit enter')
         }
       })
-  }, [products]); // <-- this is the dependency
+
+    chrome.storage.local.set({ paginationModel })
+
+
+    console.log('Updating values:', { products, paginationModel })
+  }, [products, paginationModel]); // <-- this is the dependency
 
 
 
@@ -190,7 +200,8 @@ const ProductTable: React.FC = () => {
             ? (<DataGrid
               rows={products}
               columns={columns}
-              initialState={{ pagination: { paginationModel } }}
+              paginationModel={paginationModel}
+              onPaginationModelChange={setPaginationModel}
               pageSizeOptions={[5, 10]}
               sx={{ border: 0 }} />)
             : statusLabel}
