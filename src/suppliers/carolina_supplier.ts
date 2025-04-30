@@ -117,7 +117,7 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
     for (const elem of productElements) {
       elementList.push({
         title: _trimSpaceLike((elem.querySelector('h3.c-product-title') as HTMLElement)?.innerText),
-        href: _trimSpaceLike((elem.querySelector('a.c-product-link') as HTMLAnchorElement)?.href?.replace('chrome-extension://fkohmljcbmaeoimogkgaijccidjcdgeh', '')),
+        href: _trimSpaceLike((elem.querySelector('a.c-product-link') as HTMLAnchorElement)?.href?.replace(/chrome-extension:\/\/[a-z]+/, '')),
         prices: _trimSpaceLike((elem.querySelector('p.c-product-price') as HTMLElement)?.innerText),
         count: _trimSpaceLike((elem.querySelector('p.c-product-total') as HTMLElement)?.innerText)
       })
@@ -128,7 +128,7 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
 
   private async parseProducts(): Promise<any> {
     return Promise
-      .all(this._queryResults.map((r: { href: string }) => this._getProductData(r.href.replace('chrome-extension://fkohmljcbmaeoimogkgaijccidjcdgeh', ''))))
+      .all(this._queryResults.map((r: { href: string }) => this._getProductData(r.href.replace(/chrome-extension:\/\/[a-z]+/, ''))))
     //.then(results => console.debug('[parseProducts]:', { results, queryResults: this._queryResults }))
   }
 
