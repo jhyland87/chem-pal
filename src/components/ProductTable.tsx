@@ -9,6 +9,9 @@ import LinearProgress from '@mui/material/LinearProgress';
 import { Product } from '../interfaces'
 import CarolinaSupplier from '../suppliers/carolina_supplier';
 
+
+
+
 // Submits the search query and retrieves the results
 async function submitQuery(query: string): Promise<any> {
   const supplier = new CarolinaSupplier(query, 8)
@@ -52,6 +55,7 @@ const columns: GridColDef[] = [
   },
 ];
 
+
 // Pagination for table
 const paginationModel = { page: 0, pageSize: 5 };
 
@@ -61,11 +65,37 @@ const ProductTable: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [statusLabel, setStatusLabel] = useState('');
 
-  // On component load...
+  // On component load, populate the products from storage if there is any.
   useEffect(() => {
-    // .. Show this status label
-    setStatusLabel("Type a product name and hit enter")
+    chrome.storage.local.get(['products'])
+      .then(data => {
+        const storedProducts = data.products || [];
+
+        if (storedProducts) {
+          console.log('Restoring Products:', storedProducts)
+          setProducts(Array.isArray(storedProducts) ? storedProducts : []);
+          setStatusLabel('')
+        }
+        else {
+          setStatusLabel('Type a product name and hit enter')
+        }
+      })
   }, []);
+
+  // Update the table whenever the products update
+  useEffect(() => { // Use effect will execute a callback action whenever a dependency changes
+    chrome.storage.local.set({ products }) // <-- This i the effect/action
+      .then(() => {
+        if (products.length > 0) {
+          setStatusLabel('')
+        }
+        else {
+          setStatusLabel('Type a product name and hit enter')
+        }
+      })
+  }, [products]); // <-- this is the dependency
+
+
 
   // When the user hits [enter] to submit a search
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -117,15 +147,21 @@ const ProductTable: React.FC = () => {
         // as the ID value
         id: prevProducts.length, ...newProduct
       }]);
-
       // Hide the loading progress bar
       setIsLoading(false)
     }
   };
 
+  const handleClearResults = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    // Stop the form from propagating
+    event.preventDefault();
+    setProducts([])
+  };
+
   return (
     <>
       <div id="main-container">
+        [<Link onClick={handleClearResults} href="#">Clear</Link>]
         <Paper sx={{ height: 400, width: '100%' }}>
           <Box
             className="search-input-container fullwidth"

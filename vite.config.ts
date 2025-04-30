@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
-import { analyzer } from 'vite-bundle-analyzer'
+//import { analyzer } from 'vite-bundle-analyzer'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -14,9 +14,9 @@ export default defineConfig({
         }
       ]
     }),
-    analyzer({
-      openAnalyzer: false
-    })
+    // analyzer({
+    //   openAnalyzer: false
+    // })
   ],
   build: {
     chunkSizeWarningLimit: 1500,
@@ -25,23 +25,23 @@ export default defineConfig({
       input: {
         main: './index.html'
       },
-      output: {
-        manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            if (id.includes("lodash")) {
-              return 'lodash'
-            }
-            if (id.includes('@mui') || id.includes('@material-ui')) {
-              return 'vendor_mui';
-            }
-            if (id.includes('react')) {
-              return 'react';
-            }
+      // output: {
+      //   manualChunks: (id) => {
+      //     if (id.includes('node_modules')) {
+      //       if (id.includes("lodash")) {
+      //         return 'lodash'
+      //       }
+      //       if (id.includes('@mui') || id.includes('@material-ui')) {
+      //         return 'vendor_mui';
+      //       }
+      //       if (id.includes('react')) {
+      //         return 'react';
+      //       }
 
-            return 'vendor'; // all other package goes here
-          }
-        }
-      }
+      //       return 'vendor'; // all other package goes here
+      //     }
+      //   }
+      // }
     }
   }
 })
