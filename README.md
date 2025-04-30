@@ -11,7 +11,7 @@ npm run build
 Then import the build folder as an unpacked chrome extension.
 
 ## Development
-- Make sure youre on node v23 and npm v10 or higher.
+- Make sure youre on node v22.15.0 and npm v10.9.2 or higher (use nvm if needed)
 ```bash
 # Install dev dependencies
 npm run install-dev
