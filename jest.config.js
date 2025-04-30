@@ -2,7 +2,9 @@
 export default {
   //roots: ['./'],
   //  preset: 'babel-jest',
-  testEnvironment: "jsdom", // jest-fixed-jsdom
+  // jest-fixed-jsdom
+  //jsdom
+  testEnvironment: "jest-fixed-jsdom", // jest-fixed-jsdom
   transform: {
     //'^.+\\.(ts|tsx)?$': 'ts-jest'
     '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
