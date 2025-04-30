@@ -53,13 +53,12 @@ const columns: GridColDef[] = [
   },
 ];
 
-
 const ProductTable: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [statusLabel, setStatusLabel] = useState('');
-  const [paginationModel, setPaginationModel] = React.useState({
+  const [paginationModel, setPaginationModel] = useState({
     pageSize: 5,
     page: 0,
   });
@@ -89,7 +88,7 @@ const ProductTable: React.FC = () => {
 
   // Update the table whenever the products update
   useEffect(() => { // Use effect will execute a callback action whenever a dependency changes
-    chrome.storage.local.set({ products }) // <-- This i the effect/action
+    chrome.storage.local.set({ products }) // <-- This is the effect/action
       .then(() => {
         if (products.length > 0) {
           setStatusLabel('')
@@ -100,12 +99,7 @@ const ProductTable: React.FC = () => {
       })
 
     chrome.storage.local.set({ paginationModel })
-
-
-    console.log('Updating values:', { products, paginationModel })
   }, [products, paginationModel]); // <-- this is the dependency
-
-
 
   // When the user hits [enter] to submit a search
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -127,6 +121,12 @@ const ProductTable: React.FC = () => {
 
     // Clear the products table
     setProducts([])
+
+    // Reset the pagination back to page 0
+    setPaginationModel({
+      pageSize: 5,
+      page: 0,
+    })
 
     // Did the query return any results?...
     if (!productQueryResults || !Array.isArray(productQueryResults) || productQueryResults.length === 0) {
