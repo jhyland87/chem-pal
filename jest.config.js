@@ -1,8 +1,10 @@
 // jest.config.js
 export default {
+  //roots: ['./'],
   //  preset: 'babel-jest',
-  testEnvironment: "jsdom",
+  testEnvironment: "jsdom", // jest-fixed-jsdom
   transform: {
+    //'^.+\\.(ts|tsx)?$': 'ts-jest'
     '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
   },
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
@@ -13,4 +15,3 @@ export default {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.(ts|tsx)$',
 }
-
