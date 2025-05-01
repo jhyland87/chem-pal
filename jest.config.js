@@ -6,8 +6,10 @@ export default {
   //jsdom
   testEnvironment: "jest-fixed-jsdom", // jest-fixed-jsdom
   transform: {
-    //'^.+\\.(ts|tsx)?$': 'ts-jest'
-    '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
+    '^.+\\.(ts|tsx)?$': ['ts-jest', {
+      "tsconfig": "tsconfig.node.json"
+    }],
+    //'^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
   },
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
   moduleNameMapper: {

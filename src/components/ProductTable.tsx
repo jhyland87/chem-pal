@@ -115,7 +115,7 @@ const ProductTable: React.FC = () => {
 
     // Create the query instance
     // Note: This does not actually run the HTTP calls or queries...
-    const productQueryResults = new CarolinaSupplier<Product>(query, 5);
+    const productQueryResults = new CarolinaSupplier<Product>(query, 10);
 
     // Clear the products table
     setProducts([])
