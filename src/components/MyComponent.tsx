@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 
 
-function MyComponent({ initialCount = 0 }) {
+function MyComponent({ initialCount = 0 }: { initialCount?: number }) {
   const [count, setCount] = useState(initialCount);
 
 

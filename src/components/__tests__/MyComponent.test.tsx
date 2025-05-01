@@ -1,5 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom'
+import { chrome } from 'jest-chrome'
 import { render, screen, fireEvent } from '@testing-library/react';
 import MyComponent from '../MyComponent';
 
