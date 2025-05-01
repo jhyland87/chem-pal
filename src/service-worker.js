@@ -2,13 +2,14 @@ const CACHE_VERSION = 1;
 const CURRENT_CACHES = {
   query: `query-cache-v${CACHE_VERSION}`,
 };
-caches.open(CURRENT_CACHES.query).then(cache => {
-  cache.keys().then((keys) => {
-    keys.forEach((request, index, array) => {
-      console.log({ index, request, array })
-    });
-  });
-})
+// caches.open(CURRENT_CACHES.query).then(cache => {
+//   cache.keys().then((keys) => {
+//     keys.forEach((request, index, array) => {
+//       console.log({ index, request, array })
+//     });
+//   });
+// })
+
 self.addEventListener("activate", (event) => {
   // Delete all caches that aren't named in CURRENT_CACHES.
   // While there is only one cache in this example, the same logic
