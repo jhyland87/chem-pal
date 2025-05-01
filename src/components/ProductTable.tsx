@@ -85,11 +85,16 @@ const ProductTable: React.FC = () => {
   useEffect(() => { // Use effect will execute a callback action whenever a dependency changes
     chrome.storage.local.set({ products }) // <-- This is the effect/action
       .then(() => {
-        if (products.length > 0) {
-          setStatusLabel('')
+        if (!products.length) {
+          if (isLoading) {
+            setStatusLabel(`Searching for ${query}...`)
+          }
+          else {
+            setStatusLabel('Type a product name and hit enter')
+          }
         }
         else {
-          setStatusLabel('Type a product name and hit enter')
+          setStatusLabel('')
         }
       })
 
@@ -116,9 +121,6 @@ const ProductTable: React.FC = () => {
     // Submit query to supplier module
     //const productQueryResults = await submitQuery(query)
 
-    // Clear the query input
-    setQuery('');
-
     // Clear the products table
     setProducts([])
 
@@ -127,14 +129,6 @@ const ProductTable: React.FC = () => {
       pageSize: 5,
       page: 0,
     })
-
-    // // Did the query return any results?...
-    // if (!productQueryResults || !Array.isArray(productQueryResults) || productQueryResults.length === 0) {
-    //   // If not, show that message and hide the progress bar
-    //   setIsLoading(false)
-    //   setStatusLabel(`No search results found for ${query}`)
-    //   return
-    // };
 
     // Use the async generator to iterate over the products
     for await (const result of productQueryResults) {
@@ -159,32 +153,11 @@ const ProductTable: React.FC = () => {
         id: prevProducts.length, ...newProduct
       }]);
     }
+    // Clear the query input
+    setQuery('');
 
+    // Hide the loading thingy
     setIsLoading(false)
-    // // Iterate over the results..
-    // for (let result of productQueryResults) {
-
-    //   // Data for new row (must align with columns structure)
-    //   const newProduct: Product = {
-    //     supplier: result.supplier,
-    //     title: result.title,
-    //     price: result.price,
-    //     quantity: result.quantity,
-    //     url: result.url
-    //   };
-
-    //   // Hide the status label thing
-    //   setStatusLabel('')
-
-    //   // Add each product to the table.
-    //   setProducts((prevProducts) => [...prevProducts, {
-    //     // Each row needs a unique ID, so use the row count at each insertion
-    //     // as the ID value
-    //     id: prevProducts.length, ...newProduct
-    //   }]);
-    //   // Hide the loading progress bar
-    //   setIsLoading(false)
-    // }
   };
 
   const handleClearResults = (event: React.MouseEvent<HTMLAnchorElement>) => {
