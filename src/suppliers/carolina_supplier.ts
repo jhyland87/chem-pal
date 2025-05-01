@@ -41,20 +41,27 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
    * results.
    */
   async *[Symbol.asyncIterator](): AsyncGenerator<T, void, unknown> {
-    const productPromises = this._queryResults.map((r: { href: string }) =>
-      this._getProductData(r.href.replace(/chrome-extension:\/\/[a-z]+/, '')))
+    try {
+      await this.queryProducts();
 
-    for (const resultPromise of productPromises) {
-      try {
-        const result = await resultPromise;
-        if (result) {
-          yield result as T;
+      const productPromises = this._queryResults.map((r: { href: string }) =>
+        this._getProductData(r.href.replace(/chrome-extension:\/\/[a-z]+/, '')))
+
+      for (const resultPromise of productPromises) {
+        try {
+          const result = await resultPromise;
+          if (result) {
+            yield result as T;
+          }
+        }
+        catch (err) {
+          console.error(`Error found when yielding a product:`, err)
+          continue
         }
       }
-      catch (err) {
-        console.error(`Error found when yielding a product:`, err)
-        continue
-      }
+    }
+    catch (err) {
+      console.debug('ERROR in generator fn:', err)
     }
   }
 
@@ -71,17 +78,6 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
       "mode": "cors",
       "credentials": "include"
     });
-  }
-
-  public async init(): Promise<any> {
-    try {
-      await this.queryProducts();
-      // await this.parseProducts();
-      // return this._products;
-    }
-    catch (err) {
-      console.debug('ERROR in init:', err)
-    }
   }
 
   private _makeQueryUrl(query: string): string {

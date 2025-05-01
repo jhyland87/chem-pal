@@ -113,13 +113,9 @@ const ProductTable: React.FC = () => {
     // Set the status label to "Searching..."
     setStatusLabel("Searching...")
 
+    // Create the query instance
+    // Note: This does not actually run the HTTP calls or queries...
     const productQueryResults = new CarolinaSupplier<Product>(query, 5);
-
-    // Initialize the supplier to fetch and prepare query results
-    await productQueryResults.init();
-
-    // Submit query to supplier module
-    //const productQueryResults = await submitQuery(query)
 
     // Clear the products table
     setProducts([])
@@ -131,6 +127,7 @@ const ProductTable: React.FC = () => {
     })
 
     // Use the async generator to iterate over the products
+    // This is where the queries get run, when the iteration starts.
     for await (const result of productQueryResults) {
       console.log('Product:', result);
 
