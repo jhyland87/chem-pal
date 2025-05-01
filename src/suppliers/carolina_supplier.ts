@@ -36,6 +36,17 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
     this._limit = limit;
   }
 
+
+  // async writeFile(text:string) {
+
+  //   const blob = new Blob([text], { type: "text/plain" });
+  //   const handle = await window.showSaveFilePicker();
+  //   const writable = await handle.createWritable();
+  //   await writable.write(blob);
+  //   await writable.close();
+  // }
+
+
   /**
    * The function asynchronously iterates over query results, retrieves product data, and yields valid
    * results.

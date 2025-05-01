@@ -11,6 +11,10 @@ export default defineConfig({
         {
           src: 'public/manifest.json',
           dest: '.'
+        },
+        {
+          src: 'src/service-worker.js',
+          dest: '.'
         }
       ]
     }),
