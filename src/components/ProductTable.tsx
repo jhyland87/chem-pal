@@ -10,11 +10,6 @@ import { Product } from '../interfaces'
 import CarolinaSupplier from '../suppliers/carolina_supplier';
 
 
-// Submits the search query and retrieves the results
-async function submitQuery(query: string): Promise<any> {
-  const supplier = new CarolinaSupplier(query, 8)
-  return await supplier.init()
-}
 
 // When the user clicks on a link in the table
 const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -113,8 +108,13 @@ const ProductTable: React.FC = () => {
     // Set the status label to "Searching..."
     setStatusLabel("Searching...")
 
+    const productQueryResults = new CarolinaSupplier<Product>(query, 5);
+
+    // Initialize the supplier to fetch and prepare query results
+    await productQueryResults.init();
+
     // Submit query to supplier module
-    const productQueryResults = await submitQuery(query)
+    //const productQueryResults = await submitQuery(query)
 
     // Clear the query input
     setQuery('');
@@ -128,24 +128,25 @@ const ProductTable: React.FC = () => {
       page: 0,
     })
 
-    // Did the query return any results?...
-    if (!productQueryResults || !Array.isArray(productQueryResults) || productQueryResults.length === 0) {
-      // If not, show that message and hide the progress bar
-      setIsLoading(false)
-      setStatusLabel(`No search results found for ${query}`)
-      return
-    };
+    // // Did the query return any results?...
+    // if (!productQueryResults || !Array.isArray(productQueryResults) || productQueryResults.length === 0) {
+    //   // If not, show that message and hide the progress bar
+    //   setIsLoading(false)
+    //   setStatusLabel(`No search results found for ${query}`)
+    //   return
+    // };
 
-    // Iterate over the results..
-    for (let result of productQueryResults) {
+    // Use the async generator to iterate over the products
+    for await (const result of productQueryResults) {
+      console.log('Product:', result);
 
       // Data for new row (must align with columns structure)
       const newProduct: Product = {
-        supplier: result.supplier,
-        title: result.title,
-        price: result.price,
-        quantity: result.quantity,
-        url: result.url
+        supplier: result?.supplier,
+        title: result?.title,
+        price: result?.price,
+        quantity: result?.quantity,
+        url: result?.url
       };
 
       // Hide the status label thing
@@ -157,9 +158,33 @@ const ProductTable: React.FC = () => {
         // as the ID value
         id: prevProducts.length, ...newProduct
       }]);
-      // Hide the loading progress bar
-      setIsLoading(false)
     }
+
+    setIsLoading(false)
+    // // Iterate over the results..
+    // for (let result of productQueryResults) {
+
+    //   // Data for new row (must align with columns structure)
+    //   const newProduct: Product = {
+    //     supplier: result.supplier,
+    //     title: result.title,
+    //     price: result.price,
+    //     quantity: result.quantity,
+    //     url: result.url
+    //   };
+
+    //   // Hide the status label thing
+    //   setStatusLabel('')
+
+    //   // Add each product to the table.
+    //   setProducts((prevProducts) => [...prevProducts, {
+    //     // Each row needs a unique ID, so use the row count at each insertion
+    //     // as the ID value
+    //     id: prevProducts.length, ...newProduct
+    //   }]);
+    //   // Hide the loading progress bar
+    //   setIsLoading(false)
+    // }
   };
 
   const handleClearResults = (event: React.MouseEvent<HTMLAnchorElement>) => {

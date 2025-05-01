@@ -1,8 +1,10 @@
+
+
 import _ from 'lodash';
 import { Sku, Variant, Product } from "../interfaces"
 
 
-export default class CarolinaSupplier<T extends Product> implements Iterable<T> {
+export default class CarolinaSupplier<T extends Product> implements AsyncIterable<T> {
   supplierName: string = 'Carolina'
   private _query: string
   private _limit: number
@@ -34,6 +36,28 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
     this._limit = limit;
   }
 
+  /**
+   * The function asynchronously iterates over query results, retrieves product data, and yields valid
+   * results.
+   */
+  async *[Symbol.asyncIterator](): AsyncGenerator<T, void, unknown> {
+    const productPromises = this._queryResults.map((r: { href: string }) =>
+      this._getProductData(r.href.replace(/chrome-extension:\/\/[a-z]+/, '')))
+
+    for (const resultPromise of productPromises) {
+      try {
+        const result = await resultPromise;
+        if (result) {
+          yield result as T;
+        }
+      }
+      catch (err) {
+        console.error(`Error found when yielding a product:`, err)
+        continue
+      }
+    }
+  }
+
   private async httpGet(url: string): Promise<Response> {
     return await fetch(url, {
       "headers": {
@@ -52,8 +76,8 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
   public async init(): Promise<any> {
     try {
       await this.queryProducts();
-      await this.parseProducts();
-      return this._products;
+      // await this.parseProducts();
+      // return this._products;
     }
     catch (err) {
       console.debug('ERROR in init:', err)
@@ -110,7 +134,7 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
 
     const productElements: NodeListOf<HTMLElement> = doc.querySelectorAll('div.tab-content > .tab-pane > .category-grid > div')
 
-    const elementList = []
+    const elementList: { title: string; href: string; prices: string; count: string }[] = []
 
     const _trimSpaceLike = (txt: string) => txt?.replaceAll(/(^(\\n|\\t|\s)*|(\\n|\\t|\s)*$)/gm, '')
 
@@ -132,7 +156,7 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
     //.then(results => console.debug('[parseProducts]:', { results, queryResults: this._queryResults }))
   }
 
-  private async _getProductData(productUrl: string) {
+  private async _getProductData(productUrl: string): Promise<T | undefined> {
     try {
       const response = await this.httpGet(`https://www.carolina.com${productUrl}`)
       if (!response.ok) {
@@ -200,7 +224,8 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
         variants
       }
 
-      this._products.push(product as T)
+      this._products.push(product as T);
+      return product as T;
 
     } catch (error: any) {
       console.error(error.message);
@@ -210,12 +235,5 @@ export default class CarolinaSupplier<T extends Product> implements Iterable<T> 
   results() {
     return this._products
   }
-
-  // WHY WON'T THIS WORK
-  *[Symbol.iterator](): Iterator<T> {
-    for (const item of this._products) {
-      console.log('Printing item:', item)
-      yield item;
-    }
-  }
 }
+
