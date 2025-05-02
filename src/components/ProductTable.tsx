@@ -12,7 +12,6 @@ import LinearProgress from '@mui/material/LinearProgress';
 import { Product } from '../interfaces'
 import CarolinaSupplier from '../suppliers/carolina_supplier';
 
-
 // When the user clicks on a link in the table
 const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
   // Stop the form from propagating
@@ -214,44 +213,42 @@ const ProductTable: React.FC = () => {
 
   return (
     <>
-      <div id="main-container">
-        [<Link onClick={handleClearResults} href="#">Clear Results</Link>|<Link onClick={handleClearCache} href="#">Clear Cache</Link>]
-        <Paper sx={{ height: 400, width: '100%' }}>
-          <Box
-            className="search-input-container fullwidth"
-            onSubmit={handleQuerySubmit}
-            component="form"
-            sx={{ '& > :not(style)': { m: 0 } }}
-            noValidate
-            autoComplete="off" >
-            {isLoading
-              ? (<LinearProgress className="search-progress-bar" />)
-              : (<FilledInput
-                fullWidth
-                id="search-input"
-                className="fullwidth"
-                size="small"
-                inputProps={{ 'aria-label': 'description' }}
-                value={query}
-                placeholder="Search..."
-                onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                  setQuery(event.target.value);
-                }} />
-              )
-            }
-          </Box>
-          {LoadingBackdrop({ open: isLoading })}
-          {products && products.length > 0
-            ? (<DataGrid
-              rows={products}
-              columns={columns}
-              paginationModel={paginationModel}
-              onPaginationModelChange={setPaginationModel}
-              pageSizeOptions={[5, 10]}
-              sx={{ border: 0 }} />)
-            : statusLabel}
-        </Paper>
-      </div>
+      <Paper sx={{ minHeight: '369px', width: '100%', padding: '0px' }}>
+        <Box
+          className="search-input-container fullwidth"
+          onSubmit={handleQuerySubmit}
+          component="form"
+          sx={{ '& > :not(style)': { m: 0 } }}
+          noValidate
+          autoComplete="off" >
+          {isLoading
+            ? (<LinearProgress className="search-progress-bar" />)
+            : (<FilledInput
+              fullWidth
+              id="search-input"
+              className="fullwidth"
+              size="small"
+              inputProps={{ 'aria-label': 'description' }}
+              value={query}
+              placeholder="Search..."
+              onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                setQuery(event.target.value);
+              }} />
+            )
+          }
+        </Box>
+        {LoadingBackdrop({ open: isLoading })}
+        {products && products.length > 0
+          ? (<DataGrid
+            rows={products}
+            columns={columns}
+            paginationModel={paginationModel}
+            onPaginationModelChange={setPaginationModel}
+            pageSizeOptions={[5, 10]}
+            sx={{ border: 0 }} />)
+          : statusLabel}
+      </Paper>
+
     </>
   );
 };
