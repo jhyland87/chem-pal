@@ -5,47 +5,68 @@ import { Sku, Variant, Product } from "../interfaces"
 
 
 export default class CarolinaSupplier<T extends Product> implements AsyncIterable<T> {
-  supplierName: string = 'Carolina'
-  private _query: string
-  private _limit: number
-  //private _limit: number = 20
-  private _products: Array<T> = []
-  private _queryResults: any
-  private _baseURL: string = 'https://www.carolina.com';
-  private _headers: { [key: string]: string } = {
+  // Name of supplier (for display purposes)
+  public readonly supplierName: string = 'Carolina'
+
+  // String to query for (Product name, CAS, etc)
+  protected _query: string
+
+  // The products after all http calls are made and responses have been parsed/filtered.
+  protected _products: Array<T> = []
+
+  // If the products first require a query of a search page that gets iterated over,
+  // those results are stored here
+  protected _query_results: any
+
+  // Base URL for HTTP(s) requests
+  protected _baseURL: string = 'https://www.carolina.com';
+
+  // The AbortController interface represents a controller object that allows you to
+  // abort one or more Web requests as and when desired.
+  static controller: AbortController
+
+  protected _is_aborted: boolean = false;
+
+  // How many results to return for this query (This is not a limit on how many requests
+  // can be made to a supplier for any given query).
+  protected _limit: number
+
+  // This is a limit to how many queries can be sent to the supplier for any given query.
+  protected _http_request_hard_limit: number = 50
+
+  // Used to keep track of how many requests have been made to the supplier.
+  protected _http_requst_count: number = 0;
+
+  // If using async requests, this will determine how many of them to batch together (using
+  // something like Promise.all()). This is to avoid overloading the users bandwidth and
+  // to not flood the supplier with 100+ requests all at once.
+  protected _http_request_batch_size: number = 10;
+
+  // HTTP headers used as a basis for all queries.
+  protected _headers: { [key: string]: string } = {
     //"accept": "application/json, text/javascript, */*; q=0.01",
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-    "accept-language": "en-US,en;q=0.6",
-    "cache-control": "no-cache",
-    "pragma": "no-cache",
-    "sec-ch-ua": "\"Brave\";v=\"135\", \"Not-A.Brand\";v=\"8\", \"Chromium\";v=\"135\"",
-    "sec-ch-ua-arch": "\"arm\"",
-    "sec-ch-ua-full-version-list": "\"Brave\";v=\"135.0.0.0\", \"Not-A.Brand\";v=\"8.0.0.0\", \"Chromium\";v=\"135.0.0.0\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-model": "\"\"",
-    "sec-ch-ua-platform": "\"macOS\"",
-    "sec-fetch-dest": "empty",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin",
-    "sec-gpc": "1",
-    "x-requested-with": "XMLHttpRequest"
+    'accept-language': 'en-US,en;q=0.6',
+    'cache-control': 'no-cache',
+    'pragma': 'no-cache',
+    'sec-ch-ua': '"Brave";v="135\', "Not-A.Brand";v="8\', "Chromium";v="135"',
+    'sec-ch-ua-arch': '"arm"',
+    'sec-ch-ua-full-version-list': '"Brave";v="135.0.0.0\', "Not-A.Brand";v="8.0.0.0\', "Chromium";v="135.0.0.0"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-model': '""',
+    'sec-ch-ua-platform': '"macOS"',
+    'sec-fetch-dest': 'empty',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-site': 'same-origin',
+    'sec-gpc': '1',
+    'x-requested-with': 'XMLHttpRequest'
   }
 
   constructor(query: string, limit: number = 5) {
     this._query = query;
     this._limit = limit;
+    CarolinaSupplier.controller = new AbortController()
   }
-
-
-  // async writeFile(text:string) {
-
-  //   const blob = new Blob([text], { type: "text/plain" });
-  //   const handle = await window.showSaveFilePicker();
-  //   const writable = await handle.createWritable();
-  //   await writable.write(blob);
-  //   await writable.close();
-  // }
-
 
   /**
    * The function asynchronously iterates over query results, retrieves product data, and yields valid
@@ -55,7 +76,7 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
     try {
       await this.queryProducts();
 
-      const productPromises = this._queryResults.map((r: { href: string }) =>
+      const productPromises = this._query_results.map((r: { href: string }) =>
         this._getProductData(r.href.replace(/chrome-extension:\/\/[a-z]+/, '')))
 
       for (const resultPromise of productPromises) {
@@ -65,30 +86,54 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
             yield result as T;
           }
         }
-        catch (err) {
+        catch (err) { // Here to catch errors in individual yields
           console.error(`Error found when yielding a product:`, err)
           continue
         }
       }
     }
-    catch (err) {
-      console.debug('ERROR in generator fn:', err)
+    catch (err) { // Here to catch when the overall search fails
+      if (CarolinaSupplier.controller.signal.aborted === true) {
+        console.debug('Search was aborted')
+        return
+      }
+      console.error('ERROR in generator fn:', err)
     }
   }
 
-  private async httpGet(url: string): Promise<Response> {
-    return await fetch(url, {
-      "headers": {
-        ...this._headers,
-        "accept": 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8'
-      },
-      "referrer": this._baseURL,
-      "referrerPolicy": "strict-origin-when-cross-origin",
-      "body": null,
-      "method": "GET",
-      "mode": "cors",
-      "credentials": "include"
-    });
+  /**
+   * Method to abort any active feetch requests
+   */
+  static abort() {
+    CarolinaSupplier.controller.abort();
+  }
+
+  private async httpGet(url: string): Promise<Response | undefined> {
+    try {
+      console.log('httpget - this._controller.signal:', CarolinaSupplier.controller.signal)
+      return await fetch(url, {
+        signal: CarolinaSupplier.controller.signal,
+        headers: {
+          ...this._headers,
+          accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8'
+        },
+        referrer: this._baseURL,
+        referrerPolicy: 'strict-origin-when-cross-origin',
+        body: null,
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'include'
+      });
+    }
+    catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('Request was aborted', { error, signal: CarolinaSupplier.controller.signal });
+        CarolinaSupplier.controller.abort();
+      } else {
+        console.log('Error received during fetch:', { error, signal: CarolinaSupplier.controller.signal });
+      }
+      return undefined;
+    }
   }
 
   private _makeQueryUrl(query: string): string {
@@ -126,8 +171,8 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
     console.debug({ queryURL })
     const response = await this.httpGet(queryURL)
 
-    if (!response.ok) {
-      throw new Error(`Response status: ${response.status}`);
+    if (!response?.ok) {
+      throw new Error(`Response status: ${response?.status}`);
     }
 
     const resultHTML = await response.text();
@@ -154,20 +199,20 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
       })
     }
 
-    this._queryResults = elementList.slice(0, this._limit)
+    this._query_results = elementList.slice(0, this._limit)
   }
 
   private async parseProducts(): Promise<any> {
     return Promise
-      .all(this._queryResults.map((r: { href: string }) => this._getProductData(r.href.replace(/chrome-extension:\/\/[a-z]+/, ''))))
-    //.then(results => console.debug('[parseProducts]:', { results, queryResults: this._queryResults }))
+      .all(this._query_results.map((r: { href: string }) => this._getProductData(r.href.replace(/chrome-extension:\/\/[a-z]+/, ''))))
+    //.then(results => console.debug('[parseProducts]:', { results, queryResults: this._query_results }))
   }
 
   private async _getProductData(productUrl: string): Promise<T | undefined> {
     try {
       const response = await this.httpGet(`https://www.carolina.com${productUrl}`)
-      if (!response.ok) {
-        throw new Error(`Response status: ${response.status}`);
+      if (!response?.ok) {
+        throw new Error(`Response status: ${response?.status}`);
       }
 
       const data = await response.text();
@@ -237,10 +282,6 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
     } catch (error: any) {
       console.error(error.message);
     }
-  }
-
-  results() {
-    return this._products
   }
 }
 

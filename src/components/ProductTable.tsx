@@ -1,14 +1,16 @@
 import './ProductTable.css'
+import CancelIcon from '@mui/icons-material/Cancel';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
 import Link from '@mui/material/Link';
+import Backdrop from '@mui/material/Backdrop';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import FilledInput from '@mui/material/FilledInput';
 import React, { ChangeEvent, useState, useEffect } from 'react';
 import LinearProgress from '@mui/material/LinearProgress';
 import { Product } from '../interfaces'
 import CarolinaSupplier from '../suppliers/carolina_supplier';
-
 
 
 // When the user clicks on a link in the table
@@ -18,7 +20,7 @@ const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
   // Get the target
   const target = event.target as HTMLAnchorElement;
   // Open a new tab to that targets href
-  chrome.tabs.create({ url: target.href });
+  chrome.tabs.create({ url: target.href, active: false });
 };
 
 // Callback to display the link of the product in the table
@@ -57,6 +59,8 @@ const ProductTable: React.FC = () => {
     pageSize: 5,
     page: 0,
   });
+
+  //const fetchController = new AbortController();
 
   // On component load, populate the products from storage if there is any.
   // If there are products to list, then also update the pagination if it
@@ -102,7 +106,7 @@ const ProductTable: React.FC = () => {
   }, [products, paginationModel]); // <-- this is the dependency
 
   // When the user hits [enter] to submit a search
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleQuerySubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     // Stop form from propagating
     e.preventDefault();
     if (!query.trim()) return;
@@ -163,14 +167,59 @@ const ProductTable: React.FC = () => {
     setProducts([])
   };
 
+  const handleClearCache = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    // Stop the form from propagating
+    event.preventDefault();
+
+    const CACHE_VERSION = 1;
+    const CURRENT_CACHES = {
+      query: `query-cache-v${CACHE_VERSION}`,
+    };
+    const expectedCacheNamesSet = new Set(Object.values(CURRENT_CACHES));
+    //event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          console.log("Deleting cache:", cacheName);
+          return caches.delete(cacheName);
+        })
+      )
+    })
+    //);
+  };
+
+  const handleStopSearch = () => {
+    // Stop the form from propagating
+    //event.preventDefault();
+    console.log('triggering abort..')
+    setIsLoading(false)
+    CarolinaSupplier.abort()
+    if (products.length === 0) {
+      setStatusLabel('Search aborted')
+    }
+    else {
+      setStatusLabel('')
+    }
+  };
+
+  function LoadingBackdrop({ open }: { open: boolean }) {
+    return (
+      <Backdrop open={open} style={{ zIndex: 1 }}>
+        <Stack style={{ textAlign: 'center' }}>
+          <CancelIcon onClick={handleStopSearch} sx={{ fontSize: 40 }} style={{ cursor: 'pointer' }} />
+        </Stack>
+      </Backdrop>
+    );
+  }
+
   return (
     <>
       <div id="main-container">
-        [<Link onClick={handleClearResults} href="#">Clear</Link>]
+        [<Link onClick={handleClearResults} href="#">Clear Results</Link>|<Link onClick={handleClearCache} href="#">Clear Cache</Link>]
         <Paper sx={{ height: 400, width: '100%' }}>
           <Box
             className="search-input-container fullwidth"
-            onSubmit={handleSubmit}
+            onSubmit={handleQuerySubmit}
             component="form"
             sx={{ '& > :not(style)': { m: 0 } }}
             noValidate
@@ -191,6 +240,7 @@ const ProductTable: React.FC = () => {
               )
             }
           </Box>
+          {LoadingBackdrop({ open: isLoading })}
           {products && products.length > 0
             ? (<DataGrid
               rows={products}
