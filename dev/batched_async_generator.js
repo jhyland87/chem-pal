@@ -10,7 +10,7 @@ let range1 = {
       );
     }
 
-    for (const result of await Promise.all(promises)) {
+    for (const result of await Promise.allSettled(promises)) {
       yield result; // Yield each resolved value
     }
   }

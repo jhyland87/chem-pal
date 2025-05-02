@@ -5,7 +5,6 @@ import { Sku, Variant, Product } from "../interfaces"
 
 
 export default class CarolinaSupplier<T extends Product> implements AsyncIterable<T> {
-
   // Name of supplier (for display purposes)
   public readonly supplierName: string = 'Carolina'
 
@@ -24,7 +23,9 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
 
   // The AbortController interface represents a controller object that allows you to
   // abort one or more Web requests as and when desired.
-  protected _controller: AbortController
+  static controller: AbortController
+
+  protected _is_aborted: boolean = false;
 
   // How many results to return for this query (This is not a limit on how many requests
   // can be made to a supplier for any given query).
@@ -61,10 +62,10 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
     'x-requested-with': 'XMLHttpRequest'
   }
 
-  constructor(query: string, limit: number = 5, controller: AbortController | null = null) {
+  constructor(query: string, limit: number = 5) {
     this._query = query;
     this._limit = limit;
-    this._controller = controller || new AbortController();
+    CarolinaSupplier.controller = new AbortController()
   }
 
   /**
@@ -85,29 +86,33 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
             yield result as T;
           }
         }
-        catch (err) {
+        catch (err) { // Here to catch errors in individual yields
           console.error(`Error found when yielding a product:`, err)
           continue
         }
       }
     }
-    catch (err) {
-      console.debug('ERROR in generator fn:', err)
+    catch (err) { // Here to catch when the overall search fails
+      if (CarolinaSupplier.controller.signal.aborted === true) {
+        console.debug('Search was aborted')
+        return
+      }
+      console.error('ERROR in generator fn:', err)
     }
   }
 
   /**
    * Method to abort any active feetch requests
    */
-  abort() {
-    this._controller.abort();
+  static abort() {
+    CarolinaSupplier.controller.abort();
   }
 
   private async httpGet(url: string): Promise<Response | undefined> {
     try {
-      console.log('httpget - this._controller.signal:', this._controller.signal)
+      console.log('httpget - this._controller.signal:', CarolinaSupplier.controller.signal)
       return await fetch(url, {
-        signal: this._controller.signal,
+        signal: CarolinaSupplier.controller.signal,
         headers: {
           ...this._headers,
           accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8'
@@ -122,9 +127,10 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
     }
     catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        console.log('Request was aborted', { error, signal: this._controller.signal });
+        console.log('Request was aborted', { error, signal: CarolinaSupplier.controller.signal });
+        CarolinaSupplier.controller.abort();
       } else {
-        console.log('Error received during fetch:', { error, signal: this._controller.signal });
+        console.log('Error received during fetch:', { error, signal: CarolinaSupplier.controller.signal });
       }
       return undefined;
     }

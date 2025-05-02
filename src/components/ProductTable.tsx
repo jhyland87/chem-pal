@@ -1,18 +1,16 @@
 import './ProductTable.css'
+import CancelIcon from '@mui/icons-material/Cancel';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
 import Link from '@mui/material/Link';
-import Fade from '@mui/material/Fade';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Typography from '@mui/material/Typography';
+import Backdrop from '@mui/material/Backdrop';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import FilledInput from '@mui/material/FilledInput';
 import React, { ChangeEvent, useState, useEffect } from 'react';
 import LinearProgress from '@mui/material/LinearProgress';
 import { Product } from '../interfaces'
 import CarolinaSupplier from '../suppliers/carolina_supplier';
-
 
 
 // When the user clicks on a link in the table
@@ -22,7 +20,7 @@ const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
   // Get the target
   const target = event.target as HTMLAnchorElement;
   // Open a new tab to that targets href
-  chrome.tabs.create({ url: target.href });
+  chrome.tabs.create({ url: target.href, active: false });
 };
 
 // Callback to display the link of the product in the table
@@ -62,7 +60,7 @@ const ProductTable: React.FC = () => {
     page: 0,
   });
 
-  const fetchController = new AbortController();
+  //const fetchController = new AbortController();
 
   // On component load, populate the products from storage if there is any.
   // If there are products to list, then also update the pagination if it
@@ -121,7 +119,7 @@ const ProductTable: React.FC = () => {
 
     // Create the query instance
     // Note: This does not actually run the HTTP calls or queries...
-    const productQueryResults = new CarolinaSupplier<Product>(query, 10, fetchController);
+    const productQueryResults = new CarolinaSupplier<Product>(query, 10);
 
     // Clear the products table
     setProducts([])
@@ -194,11 +192,25 @@ const ProductTable: React.FC = () => {
     // Stop the form from propagating
     //event.preventDefault();
     console.log('triggering abort..')
-    console.log('A fetchController.signal:', fetchController.signal)
-    fetchController.abort()
     setIsLoading(false)
-    console.log('B fetchController.signal:', fetchController.signal)
+    CarolinaSupplier.abort()
+    if (products.length === 0) {
+      setStatusLabel('Search aborted')
+    }
+    else {
+      setStatusLabel('')
+    }
   };
+
+  function LoadingBackdrop({ open }: { open: boolean }) {
+    return (
+      <Backdrop open={open} style={{ zIndex: 1 }}>
+        <Stack style={{ textAlign: 'center' }}>
+          <CancelIcon onClick={handleStopSearch} sx={{ fontSize: 40 }} style={{ cursor: 'pointer' }} />
+        </Stack>
+      </Backdrop>
+    );
+  }
 
   return (
     <>
@@ -228,7 +240,7 @@ const ProductTable: React.FC = () => {
               )
             }
           </Box>
-          {isLoading && (<Button onClick={handleStopSearch} sx={{ m: 2 }}>Stop Search</Button>)}
+          {LoadingBackdrop({ open: isLoading })}
           {products && products.length > 0
             ? (<DataGrid
               rows={products}
