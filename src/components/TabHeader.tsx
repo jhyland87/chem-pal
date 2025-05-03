@@ -23,9 +23,9 @@ export default function TabHeader({ page, setPage }: { page: number; setPage: (p
       variant="fullWidth"
       aria-label="full width tabs example"
     >
-      <Tab label="Item One" {...a11yProps(0)} />
-      <Tab label="Item Two" {...a11yProps(1)} />
-      <Tab label="Item Three" {...a11yProps(2)} />
+      <Tab label="Search Results" {...a11yProps(0)} />
+      <Tab label="Suppliers" {...a11yProps(1)} />
+      <Tab label="Settings" {...a11yProps(2)} />
     </Tabs>
   );
 }

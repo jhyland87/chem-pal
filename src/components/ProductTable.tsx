@@ -9,6 +9,7 @@ import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import FilledInput from '@mui/material/FilledInput';
 import React, { ChangeEvent, useState, useEffect } from 'react';
 import LinearProgress from '@mui/material/LinearProgress';
+import { TableVirtuoso, TableComponents } from 'react-virtuoso';
 import { Product } from '../interfaces'
 import CarolinaSupplier from '../suppliers/carolina_supplier';
 

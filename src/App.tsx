@@ -1,13 +1,10 @@
 import './App.css'
-// import Search from './components/Search'
-// import ResultsTable from './components/ResultsTable'
 import ProductTable from './components/ProductTable'
 import TabHeader from './components/TabHeader'
-import React, { ReactNode, useState, SyntheticEvent } from 'react';
+import { ReactNode, useState } from 'react';
 import { ThemeProvider, createTheme, useTheme } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
+import Options from './components/Options'
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -72,10 +69,10 @@ function App() {
             <ProductTable />
           </TabPanel>
           <TabPanel value={page} index={1} dir={theme.direction}>
-            Item Two
+            Selecting what suppliers to include in search...
           </TabPanel>
           <TabPanel value={page} index={2} dir={theme.direction}>
-            Item Three
+            Some settings..
           </TabPanel>
         </AppBar>
       </Box>
