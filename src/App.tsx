@@ -1,13 +1,14 @@
 import './App.css'
 import ProductTable from './components/ProductTable'
 import TabHeader from './components/TabHeader'
-import { ReactNode, useState } from 'react';
+import { useState } from 'react';
 import { ThemeProvider, createTheme, useTheme } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Options from './components/Options'
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
+import { TabPanelProps } from './types';
 
 const darkTheme = createTheme({
   palette: {
@@ -28,13 +29,7 @@ const darkTheme = createTheme({
     dark: false,
   },
 });
-interface TabPanelProps {
-  children?: ReactNode;
-  dir?: string;
-  index: number;
-  value: number;
-  style?: object
-}
+
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;

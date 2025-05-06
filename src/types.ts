@@ -1,3 +1,6 @@
+
+import { ReactNode } from 'react';
+
 export interface Item {
   id: number;
   name: string;
@@ -70,3 +73,12 @@ export interface ChromeStorageItems {
 }
 
 export type Headers = { [key: string]: string };
+
+
+export interface TabPanelProps {
+  children?: ReactNode;
+  dir?: string;
+  index: number;
+  value: number;
+  style?: object
+}
