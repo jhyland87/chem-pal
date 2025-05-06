@@ -10,7 +10,7 @@ import FilledInput from '@mui/material/FilledInput';
 import React, { ChangeEvent, useState, useEffect } from 'react';
 import LinearProgress from '@mui/material/LinearProgress';
 import { TableVirtuoso, TableComponents } from 'react-virtuoso';
-import { Product } from '../interfaces'
+import { Product } from '../types'
 import CarolinaSupplier from '../suppliers/carolina_supplier';
 
 // When the user clicks on a link in the table
