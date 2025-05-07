@@ -8,7 +8,7 @@ import Checkbox from '@mui/material/Checkbox';
 import Avatar from '@mui/material/Avatar';
 import SupplierFactory from '../supplier_factory';
 
-export default function SupplierSelection() {
+export default function SupplierSelector() {
   const [checked, setChecked] = useState<string[]>(SupplierFactory.supplierList());
 
   const handleToggle = (supplierName: string) => () => {

@@ -9,7 +9,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { TabPanelProps } from './types';
-import SupplierSelection from './components/SupplierSelection';
+import SupplierSelector from './components/SupplierSelector';
 
 const darkTheme = createTheme({
   palette: {
@@ -65,7 +65,7 @@ function App() {
             <ProductTable />
           </TabPanel>
           <TabPanel value={page} index={1} dir={theme.direction}>
-            <SupplierSelection />
+            <SupplierSelector />
           </TabPanel>
           <TabPanel value={page} index={2} dir={theme.direction}>
             Some settings..
