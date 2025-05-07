@@ -9,15 +9,20 @@ import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import FilledInput from '@mui/material/FilledInput';
 import React, { ChangeEvent, useState, useEffect } from 'react';
 import LinearProgress from '@mui/material/LinearProgress';
-import { TableVirtuoso, TableComponents } from 'react-virtuoso';
+//import { TableVirtuoso, TableComponents } from 'react-virtuoso';
 import Options from './Options';
 import { Product } from '../types'
-//import SupplierCarolina from '../suppliers/supplier_carolina';
-//import SupplierFtfScientific from '../suppliers/supplier_ftfscientific';
-import SupplierBioFuranChem from '../suppliers/supplier_biofuranchem';
 import SupplierFactory from '../supplier_factory';
+import storageMock from '../chrome_storage_mock'
+
+if (!chrome.storage) {
+  window.chrome = {
+    storage: storageMock as any,
+  } as any;
+}
 
 let fetchController: AbortController;
+
 
 // When the user clicks on a link in the table
 const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
