@@ -15,6 +15,8 @@ import { Product } from '../types'
 //import SupplierCarolina from '../suppliers/supplier_carolina';
 //import SupplierFtfScientific from '../suppliers/supplier_ftfscientific';
 import SupplierBioFuranChem from '../suppliers/supplier_biofuranchem';
+import SupplierFactory from '../supplier_factory';
+
 let fetchController: AbortController;
 
 // When the user clicks on a link in the table
@@ -123,9 +125,10 @@ const ProductTable: React.FC = () => {
 
     fetchController = new AbortController();
 
+    console.log('SupplierFactory.supplierList():', SupplierFactory.supplierList())
     // Create the query instance
     // Note: This does not actually run the HTTP calls or queries...
-    const productQueryResults = new SupplierBioFuranChem<Product>(query, 10, fetchController);
+    const productQueryResults = new SupplierFactory(query, fetchController)
 
     // Clear the products table
     setProducts([])
