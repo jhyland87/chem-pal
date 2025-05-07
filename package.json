@@ -26,6 +26,7 @@
     "axios": "^1.9.0",
     "chance": "^1.1.12",
     "classnames": "^2.5.1",
+    "list-react-files": "^0.2.0",
     "lodash": "^4.17.21",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

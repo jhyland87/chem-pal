@@ -67,7 +67,7 @@ self.addEventListener("fetch", (event) => {
               event.request.url,
               response,
             );
-            if (event.request.url.match("^(http|https)://")) {
+            if (event.request.url.match("^(http|https)://") && ['HEAD', 'POST'].includes(event.request.method) === false) {
               cache.put(event.request, response.clone());
             }
 

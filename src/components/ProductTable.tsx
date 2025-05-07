@@ -12,8 +12,9 @@ import LinearProgress from '@mui/material/LinearProgress';
 import { TableVirtuoso, TableComponents } from 'react-virtuoso';
 import Options from './Options';
 import { Product } from '../types'
-import SupplierCarolina from '../suppliers/supplier_carolina';
-
+//import SupplierCarolina from '../suppliers/supplier_carolina';
+//import SupplierFtfScientific from '../suppliers/supplier_ftfscientific';
+import SupplierBioFuranChem from '../suppliers/supplier_biofuranchem';
 let fetchController: AbortController;
 
 // When the user clicks on a link in the table
@@ -124,7 +125,7 @@ const ProductTable: React.FC = () => {
 
     // Create the query instance
     // Note: This does not actually run the HTTP calls or queries...
-    const productQueryResults = new SupplierCarolina<Product>(query, 10, fetchController);
+    const productQueryResults = new SupplierBioFuranChem<Product>(query, 10, fetchController);
 
     // Clear the products table
     setProducts([])
