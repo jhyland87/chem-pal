@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useState } from 'react';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -7,8 +7,9 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import Checkbox from '@mui/material/Checkbox';
 import Avatar from '@mui/material/Avatar';
 import SupplierFactory from '../supplier_factory';
+
 export default function SupplierSelection() {
-  const [checked, setChecked] = React.useState<string[]>(SupplierFactory.supplierList());
+  const [checked, setChecked] = useState<string[]>(SupplierFactory.supplierList());
 
   const handleToggle = (supplierName: string) => () => {
     const currentIndex = checked.indexOf(supplierName);
