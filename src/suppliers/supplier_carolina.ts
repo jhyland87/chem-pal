@@ -43,11 +43,11 @@ abstract class SupplierBase<T extends Product> implements AsyncIterable<T> {
 
   // If the products first require a query of a search page that gets iterated over,
   // those results are stored here
-  protected _query_results: Array<any> = []
+  public _query_results: Array<any> = []
 
   // The AbortController interface represents a controller object that allows you to
   // abort one or more Web requests as and when desired.
-  static controller: AbortController
+  //static controller: AbortController
   protected _controller: AbortController
 
   protected _is_aborted: boolean = false;
@@ -70,28 +70,24 @@ abstract class SupplierBase<T extends Product> implements AsyncIterable<T> {
   // HTTP headers used as a basis for all queries.
   protected _headers: Headers = {};
 
-  constructor(query: string, limit: number = 5) {
+  constructor(query: string, limit: number = 5, controller: AbortController) {
     this._query = query;
     this._limit = limit;
-    SupplierCarolina.controller = new AbortController()
-    this._controller = SupplierCarolina.controller
+    //SupplierCarolina.controller = new AbortController()
+    if (controller) {
+      this._controller = controller;
+    } else {
+      console.log('MADE A NEW ABORT CONTROLLER')
+      this._controller = new AbortController()
+    }
   }
 
+  abstract [Symbol.asyncIterator](): AsyncGenerator<T, void, unknown>;
 }
 
-export default class SupplierCarolina<T extends Product> extends SupplierBase implements AsyncIterable<T> {
+export default class SupplierCarolina<T extends Product> extends SupplierBase<T> implements AsyncIterable<T> {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = 'Carolina'
-
-  // String to query for (Product name, CAS, etc)
-  //protected _query: string
-
-  // The products after all http calls are made and responses have been parsed/filtered.
-  protected _products: Array<T> = []
-
-  // If the products first require a query of a search page that gets iterated over,
-  // those results are stored here
-  protected _query_results: Array<any> = []
 
   // Base URL for HTTP(s) requests
   protected _baseURL: string = 'https://www.carolina.com';
@@ -99,13 +95,6 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase im
   // The AbortController interface represents a controller object that allows you to
   // abort one or more Web requests as and when desired.
   static controller: AbortController
-  //protected _controller: AbortController
-
-  protected _is_aborted: boolean = false;
-
-  // How many results to return for this query (This is not a limit on how many requests
-  // can be made to a supplier for any given query).
-  //protected _limit: number
 
   // This is a limit to how many queries can be sent to the supplier for any given query.
   protected _http_request_hard_limit: number = 50
@@ -138,20 +127,20 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase im
     'x-requested-with': 'XMLHttpRequest'
   }
 
-  // constructor(query: string, limit: number = 5) {
-  //   this._query = query;
-  //   this._limit = limit;
-  //   SupplierCarolina.controller = new AbortController()
-  //   this._controller = SupplierCarolina.controller
-  // }
+  constructor(query: string, limit: number = 5, controller: AbortController) {
+    super(query, limit, controller);
+  }
 
   /**
    * The function asynchronously iterates over query results, retrieves product data, and yields valid
    * results.
    */
   async *[Symbol.asyncIterator](): AsyncGenerator<T, void, unknown> {
+    console.log('querying products...')
     try {
+      debugger
       await this.queryProducts();
+      console.log('this._query_results:', this._query_results)
 
       const productPromises = this._query_results.map((r: { href: string }) =>
         this._getProductData(r.href.replace(/chrome-extension:\/\/[a-z]+/, '')))
@@ -170,7 +159,7 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase im
       }
     }
     catch (err) { // Here to catch when the overall search fails
-      if (SupplierCarolina.controller.signal.aborted === true) {
+      if (this._controller.signal.aborted === true) {
         console.debug('Search was aborted')
         return
       }
@@ -178,18 +167,11 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase im
     }
   }
 
-  /**
-   * Method to abort any active feetch requests
-   */
-  static abort() {
-    SupplierCarolina.controller.abort();
-  }
-
   private async httpGet(url: string): Promise<Response | undefined> {
     try {
-      console.log('httpget - this._controller.signal:', SupplierCarolina.controller.signal)
+      console.log('httpget - this._controller.signal:', this._controller.signal)
       return await fetch(url, {
-        signal: SupplierCarolina.controller.signal,
+        signal: this._controller.signal,
         headers: {
           ...this._headers,
           accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8'
@@ -204,10 +186,10 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase im
     }
     catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        console.log('Request was aborted', { error, signal: SupplierCarolina.controller.signal });
-        SupplierCarolina.controller.abort();
+        console.log('Request was aborted', { error, signal: this._controller.signal });
+        this._controller.abort();
       } else {
-        console.log('Error received during fetch:', { error, signal: SupplierCarolina.controller.signal });
+        console.log('Error received during fetch:', { error, signal: this._controller.signal });
       }
       return undefined;
     }
@@ -244,6 +226,7 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase im
   }
 
   private async queryProducts(): Promise<void> {
+    debugger
     const queryURL = this._makeQueryUrl(this._query)
     console.debug({ queryURL })
     const response = await this.httpGet(queryURL)
@@ -253,6 +236,7 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase im
     }
 
     const resultHTML = await response.text();
+    console.log('resultHTML:', resultHTML)
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(resultHTML, 'text/html');
@@ -261,7 +245,9 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase im
       throw new Error('Failed to load product HTML into DOMParser')
     }
 
-    const productElements: NodeListOf<HTMLElement> = doc.querySelectorAll('div.tab-content > .tab-pane > .category-grid > div')
+    debugger
+    const productElements: NodeListOf<HTMLElement> = doc.querySelectorAll('div.c-feature-product')
+    console.log('productElements:', productElements)
 
     const elementList: { title: string; href: string; prices: string; count: string }[] = []
 
@@ -277,6 +263,7 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase im
     }
 
     this._query_results = elementList.slice(0, this._limit)
+    console.log('[queryProducts] this._query_results:', this._query_results)
   }
 
   private async parseProducts(): Promise<any> {

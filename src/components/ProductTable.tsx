@@ -10,8 +10,11 @@ import FilledInput from '@mui/material/FilledInput';
 import React, { ChangeEvent, useState, useEffect } from 'react';
 import LinearProgress from '@mui/material/LinearProgress';
 import { TableVirtuoso, TableComponents } from 'react-virtuoso';
+import Options from './Options';
 import { Product } from '../types'
-import SupplierCarolina from '../suppliers/carolina_supplier';
+import SupplierCarolina from '../suppliers/supplier_carolina';
+
+let fetchController: AbortController;
 
 // When the user clicks on a link in the table
 const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -117,9 +120,11 @@ const ProductTable: React.FC = () => {
     // Set the status label to "Searching..."
     setStatusLabel("Searching...")
 
+    fetchController = new AbortController();
+
     // Create the query instance
     // Note: This does not actually run the HTTP calls or queries...
-    const productQueryResults = new SupplierCarolina<Product>(query, 10);
+    const productQueryResults = new SupplierCarolina<Product>(query, 10, fetchController);
 
     // Clear the products table
     setProducts([])
@@ -161,39 +166,14 @@ const ProductTable: React.FC = () => {
     setIsLoading(false)
   };
 
-  const handleClearResults = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    // Stop the form from propagating
-    event.preventDefault();
-    setProducts([])
-  };
 
-  const handleClearCache = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    // Stop the form from propagating
-    event.preventDefault();
-
-    const CACHE_VERSION = 1;
-    const CURRENT_CACHES = {
-      query: `query-cache-v${CACHE_VERSION}`,
-    };
-    const expectedCacheNamesSet = new Set(Object.values(CURRENT_CACHES));
-    //event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          console.log("Deleting cache:", cacheName);
-          return caches.delete(cacheName);
-        })
-      )
-    })
-    //);
-  };
 
   const handleStopSearch = () => {
     // Stop the form from propagating
     //event.preventDefault();
     console.log('triggering abort..')
     setIsLoading(false)
-    SupplierCarolina.abort()
+    fetchController.abort()
     if (products.length === 0) {
       setStatusLabel('Search aborted')
     }
@@ -246,10 +226,20 @@ const ProductTable: React.FC = () => {
             paginationModel={paginationModel}
             onPaginationModelChange={setPaginationModel}
             pageSizeOptions={[5, 10]}
-            sx={{ border: 0 }} />)
+            sx={{
+              border: 0,
+              '& .MuiDataGrid-footerContainer': {
+                justifyContent: 'center'
+              },
+              '& .MuiTablePagination-root': {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }
+            }} />)
           : statusLabel}
       </Paper>
-
+      <Options setProducts={setProducts} />
     </>
   );
 };
