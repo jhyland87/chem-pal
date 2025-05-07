@@ -1,35 +1,44 @@
-
-
 import _ from 'lodash';
-import { Sku, Variant, Product } from "../interfaces"
+import { Sku, Variant, Product, Supplier, HeaderObject } from "../types"
+import SupplierBase from './supplier_base'
+
+/**
+ * Product search for Carolina.com will query the following URL (with `lithium` as the search query):
+ *
+ *  https://www.carolina.com/browse/product-search-results? \
+ *    product.productTypes=chemicals \
+ *    &facetFields=product.productTypes
+ *    &defaultFilter=product.cbsLowPrice|GT%200.0||product.startDate|LTEQ%201.7457984E12||product.startDate|LTEQ%201.7457984E12 \
+ *    &Nr=AND(product.siteId:100001,OR(product.type:Product),OR(product.catalogId:cbsCatalog)) \
+ *    &viewSize=120 \
+ *    &q=lithium \
+ *    &noRedirect=true \
+ *    &nore=y \
+ *    &searchExecByFormSubmit=true \
+ *    &tab=p \
+ *    &question=lithium
+ *
+ * The query params are:
+ * - product.productTypes: The product type to search for.
+ * - facetFields: The fields to facet on.
+ * - defaultFilter: The default filter to apply to the search.
+ * - Nr: ???
+ * - viewSize: The number of results to return per page.
+ * - q: The search query.
+ * - noRedirect: Whether to redirect to the search results page.
+ * - nore: Whether to return the results in a non-redirecting format.
+ * - searchExecByFormSubmit: Whether to execute the search by form submission.
+ * - tab: The tab to display the results in.
+ * - question: The search query.
+ */
 
 
-export default class CarolinaSupplier<T extends Product> implements AsyncIterable<T> {
+export default class SupplierCarolina<T extends Product> extends SupplierBase<T> implements AsyncIterable<T> {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = 'Carolina'
 
-  // String to query for (Product name, CAS, etc)
-  protected _query: string
-
-  // The products after all http calls are made and responses have been parsed/filtered.
-  protected _products: Array<T> = []
-
-  // If the products first require a query of a search page that gets iterated over,
-  // those results are stored here
-  protected _query_results: any
-
   // Base URL for HTTP(s) requests
   protected _baseURL: string = 'https://www.carolina.com';
-
-  // The AbortController interface represents a controller object that allows you to
-  // abort one or more Web requests as and when desired.
-  static controller: AbortController
-
-  protected _is_aborted: boolean = false;
-
-  // How many results to return for this query (This is not a limit on how many requests
-  // can be made to a supplier for any given query).
-  protected _limit: number
 
   // This is a limit to how many queries can be sent to the supplier for any given query.
   protected _http_request_hard_limit: number = 50
@@ -43,7 +52,7 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
   protected _http_request_batch_size: number = 10;
 
   // HTTP headers used as a basis for all queries.
-  protected _headers: { [key: string]: string } = {
+  protected _headers: HeaderObject = {
     //"accept": "application/json, text/javascript, */*; q=0.01",
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
     'accept-language': 'en-US,en;q=0.6',
@@ -62,81 +71,11 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
     'x-requested-with': 'XMLHttpRequest'
   }
 
-  constructor(query: string, limit: number = 5) {
-    this._query = query;
-    this._limit = limit;
-    CarolinaSupplier.controller = new AbortController()
-  }
+  //constructor(query: string, limit: number = 5, controller: AbortController) {
+  //  super(query, limit, controller);
+  //}
 
-  /**
-   * The function asynchronously iterates over query results, retrieves product data, and yields valid
-   * results.
-   */
-  async *[Symbol.asyncIterator](): AsyncGenerator<T, void, unknown> {
-    try {
-      await this.queryProducts();
-
-      const productPromises = this._query_results.map((r: { href: string }) =>
-        this._getProductData(r.href.replace(/chrome-extension:\/\/[a-z]+/, '')))
-
-      for (const resultPromise of productPromises) {
-        try {
-          const result = await resultPromise;
-          if (result) {
-            yield result as T;
-          }
-        }
-        catch (err) { // Here to catch errors in individual yields
-          console.error(`Error found when yielding a product:`, err)
-          continue
-        }
-      }
-    }
-    catch (err) { // Here to catch when the overall search fails
-      if (CarolinaSupplier.controller.signal.aborted === true) {
-        console.debug('Search was aborted')
-        return
-      }
-      console.error('ERROR in generator fn:', err)
-    }
-  }
-
-  /**
-   * Method to abort any active feetch requests
-   */
-  static abort() {
-    CarolinaSupplier.controller.abort();
-  }
-
-  private async httpGet(url: string): Promise<Response | undefined> {
-    try {
-      console.log('httpget - this._controller.signal:', CarolinaSupplier.controller.signal)
-      return await fetch(url, {
-        signal: CarolinaSupplier.controller.signal,
-        headers: {
-          ...this._headers,
-          accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8'
-        },
-        referrer: this._baseURL,
-        referrerPolicy: 'strict-origin-when-cross-origin',
-        body: null,
-        method: 'GET',
-        mode: 'cors',
-        credentials: 'include'
-      });
-    }
-    catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        console.log('Request was aborted', { error, signal: CarolinaSupplier.controller.signal });
-        CarolinaSupplier.controller.abort();
-      } else {
-        console.log('Error received during fetch:', { error, signal: CarolinaSupplier.controller.signal });
-      }
-      return undefined;
-    }
-  }
-
-  private _makeQueryUrl(query: string): string {
+  protected _makeQueryUrl(query: string): string {
     const searchParams: Record<string, any> = {
       /*
       790004999   Chemicals category ID
@@ -166,7 +105,7 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
     return url.toString()
   }
 
-  private async queryProducts(): Promise<void> {
+  protected async queryProducts(): Promise<void> {
     const queryURL = this._makeQueryUrl(this._query)
     console.debug({ queryURL })
     const response = await this.httpGet(queryURL)
@@ -176,6 +115,7 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
     }
 
     const resultHTML = await response.text();
+    console.log('resultHTML:', resultHTML)
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(resultHTML, 'text/html');
@@ -184,7 +124,8 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
       throw new Error('Failed to load product HTML into DOMParser')
     }
 
-    const productElements: NodeListOf<HTMLElement> = doc.querySelectorAll('div.tab-content > .tab-pane > .category-grid > div')
+    const productElements: NodeListOf<HTMLElement> = doc.querySelectorAll('div.c-feature-product')
+    console.log('productElements:', productElements)
 
     const elementList: { title: string; href: string; prices: string; count: string }[] = []
 
@@ -200,23 +141,23 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
     }
 
     this._query_results = elementList.slice(0, this._limit)
+    console.log('[queryProducts] this._query_results:', this._query_results)
   }
 
-  private async parseProducts(): Promise<any> {
+  protected async parseProducts(): Promise<any> {
     return Promise
-      .all(this._query_results.map((r: { href: string }) => this._getProductData(r.href.replace(/chrome-extension:\/\/[a-z]+/, ''))))
+      .all(this._query_results.map((r) => this._getProductData(r)))
     //.then(results => console.debug('[parseProducts]:', { results, queryResults: this._query_results }))
   }
 
-  private async _getProductData(productUrl: string): Promise<T | undefined> {
+  protected async _getProductData(productIndexObject: { href: string; title: string; prices: string; count: string }): Promise<T | void> {
     try {
-      const response = await this.httpGet(`https://www.carolina.com${productUrl}`)
+      const response = await this.httpGet(`https://www.carolina.com${productIndexObject.href}`)
       if (!response?.ok) {
         throw new Error(`Response status: ${response?.status}`);
       }
 
       const data = await response.text();
-      console.log('[_getProductData]:', { data })
       const parser = new DOMParser();
       const doc = parser.parseFromString(data, 'text/html');
       if (!doc) {

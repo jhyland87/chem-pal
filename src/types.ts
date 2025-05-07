@@ -1,3 +1,6 @@
+
+import { ReactNode } from 'react';
+
 export interface Item {
   id: number;
   name: string;
@@ -34,6 +37,18 @@ export interface SearchProps {
   setQuery: (value: string) => void;
 }
 
+export interface Supplier {
+  supplierName: string;
+  _query: string;
+  _products: Array<Product>;
+  _query_results: Array<any>;
+  _baseURL: string;
+  _controller: AbortController;
+  _is_aborted: boolean;
+  _limit: number;
+  _http_request_hard_limit: number;
+}
+
 export interface Product {
   supplier: string;
   title: string;
@@ -51,4 +66,18 @@ export interface Product {
   statusTxt?: string;
   shippingInformation?: string;
   variants?: Variant[];
+}
+
+export interface ChromeStorageItems {
+  [key: string]: any;
+}
+
+export type HeaderObject = { [key: string]: string };
+
+export interface TabPanelProps {
+  children?: ReactNode;
+  dir?: string;
+  index: number;
+  value: number;
+  style?: object
 }
