@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "install-dev": "npm install --include=dev",
+    "setup": "npm install --include=dev --legacy-peer-deps",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",

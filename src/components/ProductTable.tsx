@@ -11,7 +11,7 @@ import React, { ChangeEvent, useState, useEffect } from 'react';
 import LinearProgress from '@mui/material/LinearProgress';
 import { TableVirtuoso, TableComponents } from 'react-virtuoso';
 import { Product } from '../types'
-import CarolinaSupplier from '../suppliers/carolina_supplier';
+import SupplierCarolina from '../suppliers/carolina_supplier';
 
 // When the user clicks on a link in the table
 const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -119,7 +119,7 @@ const ProductTable: React.FC = () => {
 
     // Create the query instance
     // Note: This does not actually run the HTTP calls or queries...
-    const productQueryResults = new CarolinaSupplier<Product>(query, 10);
+    const productQueryResults = new SupplierCarolina<Product>(query, 10);
 
     // Clear the products table
     setProducts([])
@@ -193,7 +193,7 @@ const ProductTable: React.FC = () => {
     //event.preventDefault();
     console.log('triggering abort..')
     setIsLoading(false)
-    CarolinaSupplier.abort()
+    SupplierCarolina.abort()
     if (products.length === 0) {
       setStatusLabel('Search aborted')
     }

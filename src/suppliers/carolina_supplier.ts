@@ -31,36 +31,84 @@ import { Sku, Variant, Product, Supplier, Headers } from "../types"
  * - tab: The tab to display the results in.
  * - question: The search query.
  */
-export default class CarolinaSupplier<T extends Product> implements AsyncIterable<T>, Supplier {
-  // Name of supplier (for display purposes)
+
+abstract class SupplierBase<T extends Product> implements AsyncIterable<T> {
   public readonly supplierName: string = 'Carolina'
 
   // String to query for (Product name, CAS, etc)
-  public _query: string
+  protected _query: string
 
   // The products after all http calls are made and responses have been parsed/filtered.
-  public _products: Array<T> = []
+  protected _products: Array<T> = []
 
   // If the products first require a query of a search page that gets iterated over,
   // those results are stored here
-  public _query_results: Array<any> = []
-
-  // Base URL for HTTP(s) requests
-  public _baseURL: string = 'https://www.carolina.com';
+  protected _query_results: Array<any> = []
 
   // The AbortController interface represents a controller object that allows you to
   // abort one or more Web requests as and when desired.
   static controller: AbortController
-  public _controller: AbortController
+  protected _controller: AbortController
 
-  public _is_aborted: boolean = false;
+  protected _is_aborted: boolean = false;
 
   // How many results to return for this query (This is not a limit on how many requests
   // can be made to a supplier for any given query).
-  public _limit: number
+  protected _limit: number
 
   // This is a limit to how many queries can be sent to the supplier for any given query.
-  public _http_request_hard_limit: number = 50
+  protected _http_request_hard_limit: number = 50
+
+  // Used to keep track of how many requests have been made to the supplier.
+  protected _http_requst_count: number = 0;
+
+  // If using async requests, this will determine how many of them to batch together (using
+  // something like Promise.all()). This is to avoid overloading the users bandwidth and
+  // to not flood the supplier with 100+ requests all at once.
+  protected _http_request_batch_size: number = 10;
+
+  // HTTP headers used as a basis for all queries.
+  protected _headers: Headers = {};
+
+  constructor(query: string, limit: number = 5) {
+    this._query = query;
+    this._limit = limit;
+    SupplierCarolina.controller = new AbortController()
+    this._controller = SupplierCarolina.controller
+  }
+
+}
+
+export default class SupplierCarolina<T extends Product> extends SupplierBase implements AsyncIterable<T> {
+  // Name of supplier (for display purposes)
+  public readonly supplierName: string = 'Carolina'
+
+  // String to query for (Product name, CAS, etc)
+  //protected _query: string
+
+  // The products after all http calls are made and responses have been parsed/filtered.
+  protected _products: Array<T> = []
+
+  // If the products first require a query of a search page that gets iterated over,
+  // those results are stored here
+  protected _query_results: Array<any> = []
+
+  // Base URL for HTTP(s) requests
+  protected _baseURL: string = 'https://www.carolina.com';
+
+  // The AbortController interface represents a controller object that allows you to
+  // abort one or more Web requests as and when desired.
+  static controller: AbortController
+  //protected _controller: AbortController
+
+  protected _is_aborted: boolean = false;
+
+  // How many results to return for this query (This is not a limit on how many requests
+  // can be made to a supplier for any given query).
+  //protected _limit: number
+
+  // This is a limit to how many queries can be sent to the supplier for any given query.
+  protected _http_request_hard_limit: number = 50
 
   // Used to keep track of how many requests have been made to the supplier.
   protected _http_requst_count: number = 0;
@@ -90,12 +138,12 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
     'x-requested-with': 'XMLHttpRequest'
   }
 
-  constructor(query: string, limit: number = 5) {
-    this._query = query;
-    this._limit = limit;
-    CarolinaSupplier.controller = new AbortController()
-    this._controller = CarolinaSupplier.controller
-  }
+  // constructor(query: string, limit: number = 5) {
+  //   this._query = query;
+  //   this._limit = limit;
+  //   SupplierCarolina.controller = new AbortController()
+  //   this._controller = SupplierCarolina.controller
+  // }
 
   /**
    * The function asynchronously iterates over query results, retrieves product data, and yields valid
@@ -122,7 +170,7 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
       }
     }
     catch (err) { // Here to catch when the overall search fails
-      if (CarolinaSupplier.controller.signal.aborted === true) {
+      if (SupplierCarolina.controller.signal.aborted === true) {
         console.debug('Search was aborted')
         return
       }
@@ -134,14 +182,14 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
    * Method to abort any active feetch requests
    */
   static abort() {
-    CarolinaSupplier.controller.abort();
+    SupplierCarolina.controller.abort();
   }
 
   private async httpGet(url: string): Promise<Response | undefined> {
     try {
-      console.log('httpget - this._controller.signal:', CarolinaSupplier.controller.signal)
+      console.log('httpget - this._controller.signal:', SupplierCarolina.controller.signal)
       return await fetch(url, {
-        signal: CarolinaSupplier.controller.signal,
+        signal: SupplierCarolina.controller.signal,
         headers: {
           ...this._headers,
           accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8'
@@ -156,10 +204,10 @@ export default class CarolinaSupplier<T extends Product> implements AsyncIterabl
     }
     catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        console.log('Request was aborted', { error, signal: CarolinaSupplier.controller.signal });
-        CarolinaSupplier.controller.abort();
+        console.log('Request was aborted', { error, signal: SupplierCarolina.controller.signal });
+        SupplierCarolina.controller.abort();
       } else {
-        console.log('Error received during fetch:', { error, signal: CarolinaSupplier.controller.signal });
+        console.log('Error received during fetch:', { error, signal: SupplierCarolina.controller.signal });
       }
       return undefined;
     }
