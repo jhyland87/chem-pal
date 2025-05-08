@@ -21,7 +21,7 @@ node --version # Should output v22.15.0
 ```bash
 git clone https://github.com/jhyland87/chem-crawler.git
 cd chem-crawler
-npm install
+npm install --legacy-peer-deps
 npm run build
 ```
 
