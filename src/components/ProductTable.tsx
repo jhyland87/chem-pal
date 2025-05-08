@@ -7,7 +7,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import React, { ChangeEvent, useState, useEffect } from 'react';
 //import { TableVirtuoso, TableComponents } from 'react-virtuoso';
-import Options from './Options';
+import OptionsMenu from './OptionsMenu';
 import { Product } from '../types'
 import SupplierFactory from '../supplier_factory';
 import LoadingBackdrop from './LoadingBackdrop';
@@ -223,7 +223,7 @@ const ProductTable: React.FC = () => {
             }} />)
           : statusLabel}
       </Paper>
-      <Options setProducts={setProducts} />
+      <OptionsMenu setProducts={setProducts} />
     </>
   );
 };
