@@ -4,42 +4,46 @@ import * as suppliers from './suppliers'
 import SupplierBase from './suppliers/supplier_base'
 
 export default class SupplierFactory<T extends IProduct> implements AsyncIterable<T> {
-  public static supplier_list: Array<string> = Object.keys(suppliers)
-
+  // Term being queried
   private _query: string
 
+  // Abort controller for fetch control
   private _controller: AbortController
 
+  // List of supplier class names to include in query results
   private _suppliers: Array<string>
 
+  /**
+   * Factory class for querying all suppliers.
+   * 
+   * @param query {string} - Value to query for
+   * @param controller {AbortController} - Fetch controller (can be used to terminate the query)
+   * @param suppliers {Array} - Array of suppliers to query (empty is the same as querying all)
+   */
   constructor(query: string, controller: AbortController, suppliers: Array<string> = []) {
     this._query = query
     this._controller = controller
     this._suppliers = suppliers
   }
 
-  public static supplierList() {
+  /**
+   * Get the names of the supplier modules
+   * 
+   * @returns {array} - List of supplier class names
+   */
+  public static supplierList() : Array<string> {
     return Object.keys(suppliers)
   }
 
+  /**
+   * Async iterator yielding results
+   * @returns AsyncGenerator<T, void, unknown>
+   */
   async *[Symbol.asyncIterator](): AsyncGenerator<T, void, unknown> {
     try {
-      async function* combineAsyncIterators(asyncIterators: (SupplierBase<IProduct>)[]) {
-        for (const iterator of asyncIterators) {
-          for await (const value of iterator) {
-            yield value;
-          }
-        }
-      }
+      const supplierIterator = this._getConsolidatedGenerator()
 
-      // Only iterate over the suppliers that are selected (or all if none are selected)
-      const masterIterator = combineAsyncIterators(
-        Object.entries(suppliers)
-          .filter(([supplierClassName, _]) => this._suppliers.length == 0 || this._suppliers.includes(supplierClassName))
-          .map(([_, supplierClass]) => new supplierClass(this._query, 10, this._controller))
-      )
-
-      for await (const value of masterIterator) {
+      for await (const value of supplierIterator) {
         yield value as T;
       }
     }
@@ -50,6 +54,29 @@ export default class SupplierFactory<T extends IProduct> implements AsyncIterabl
       }
       console.error('ERROR in generator fn:', err)
     }
+  }
+
+  /**
+   * Creates a master async generator that only includes the suppliers selected to query.
+   * @returns AsyncGenerator<IProduct, void, unknown>
+   */
+  private _getConsolidatedGenerator(): AsyncGenerator<IProduct, void, unknown> {
+    async function* combineAsyncIterators(asyncIterators: (SupplierBase<IProduct>)[]): AsyncGenerator<IProduct, void, unknown> {
+      for (const iterator of asyncIterators) {
+        for await (const value of iterator) {
+          yield value;
+        }
+      }
+    }
+
+    // Only iterate over the suppliers that are selected (or all if none are selected)
+    return  combineAsyncIterators(
+      Object.entries(suppliers).reduce((result: SupplierBase<IProduct>[], [supplierClassName, supplierClass]) => {
+        if ( this._suppliers.length == 0 || this._suppliers.includes(supplierClassName) ) 
+          result.push(new supplierClass(this._query, 10, this._controller))
+        return result
+      }, [] as SupplierBase<IProduct>[])
+    )
   }
 }
 
