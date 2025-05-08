@@ -8,7 +8,7 @@ import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import React, { ChangeEvent, useState, useEffect } from 'react';
 //import { TableVirtuoso, TableComponents } from 'react-virtuoso';
 import Options from './Options';
-import { IProduct } from '../types'
+import { Product } from '../types'
 import SupplierFactory from '../supplier_factory';
 import LoadingBackdrop from './LoadingBackdrop';
 import { useSettings } from '../context';
@@ -60,7 +60,7 @@ const columns: GridColDef[] = [
 
 const ProductTable: React.FC = () => {
   const settingsContext = useSettings();
-  const [products, setProducts] = useState<IProduct[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [statusLabel, setStatusLabel] = useState('');
@@ -137,7 +137,7 @@ const ProductTable: React.FC = () => {
     for await (const result of productQueryResults) {
       resultCount++
       // Data for new row (must align with columns structure)
-      const newProduct: IProduct = {
+      const newProduct: Product = {
         supplier: result?.supplier,
         title: result?.title,
         price: result?.price,

@@ -1,9 +1,9 @@
 
-import { IProduct } from './types'
+import { Product } from './types'
 import * as suppliers from './suppliers'
 import SupplierBase from './suppliers/supplier_base'
 
-export default class SupplierFactory<T extends IProduct> implements AsyncIterable<T> {
+export default class SupplierFactory<T extends Product> implements AsyncIterable<T> {
   // Term being queried
   private _query: string
 
@@ -58,10 +58,10 @@ export default class SupplierFactory<T extends IProduct> implements AsyncIterabl
 
   /**
    * Creates a master async generator that only includes the suppliers selected to query.
-   * @returns AsyncGenerator<IProduct, void, unknown>
+   * @returns AsyncGenerator<Product, void, unknown>
    */
-  private _getConsolidatedGenerator(): AsyncGenerator<IProduct, void, unknown> {
-    async function* combineAsyncIterators(asyncIterators: (SupplierBase<IProduct>)[]): AsyncGenerator<IProduct, void, unknown> {
+  private _getConsolidatedGenerator(): AsyncGenerator<Product, void, unknown> {
+    async function* combineAsyncIterators(asyncIterators: (SupplierBase<Product>)[]): AsyncGenerator<Product, void, unknown> {
       for (const iterator of asyncIterators) {
         for await (const value of iterator) {
           yield value;
@@ -71,11 +71,11 @@ export default class SupplierFactory<T extends IProduct> implements AsyncIterabl
 
     // Only iterate over the suppliers that are selected (or all if none are selected)
     return  combineAsyncIterators(
-      Object.entries(suppliers).reduce((result: SupplierBase<IProduct>[], [supplierClassName, supplierClass]) => {
+      Object.entries(suppliers).reduce((result: SupplierBase<Product>[], [supplierClassName, supplierClass]) => {
         if ( this._suppliers.length == 0 || this._suppliers.includes(supplierClassName) ) 
           result.push(new supplierClass(this._query, 10, this._controller))
         return result
-      }, [] as SupplierBase<IProduct>[])
+      }, [] as SupplierBase<Product>[])
     )
   }
 }

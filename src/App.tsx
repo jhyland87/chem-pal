@@ -4,11 +4,11 @@ import TabHeader from './components/TabHeader'
 import { useState, useEffect } from 'react';
 import { ThemeProvider, createTheme, useTheme } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
-import Settings from './components/Settings'
+import SettingsForm from './components/SettingsForm'
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
-import { ITabPanelProps, ISettings } from './types';
+import { TabPanelProps, Settings } from './types';
 import SupplierSelector from './components/SupplierSelector';
 import SupplierFactory from './supplier_factory';
 
@@ -36,7 +36,7 @@ const darkTheme = createTheme({
 });
 
 
-function TabPanel(props: ITabPanelProps) {
+function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
 
   return (
@@ -61,7 +61,7 @@ function App() {
   const [page, setPage] = useState(0);
 
   // Default settings
-  const [settings, setSettings] = useState<ISettings>({
+  const [settings, setSettings] = useState<Settings>({
     caching: true,
     autocomplete: true,
     currency: 'usd',
@@ -106,7 +106,7 @@ function App() {
               <SupplierSelector />
             </TabPanel>
             <TabPanel value={page} index={2} dir={theme.direction}>
-              <Settings />
+              <SettingsForm />
             </TabPanel>
           </AppBar>
         </Box>

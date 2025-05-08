@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { ISku, IVariant, IProduct, ISupplier, IHeaderObject } from "../types"
+import { Sku, Variant, Product, Supplier, IHeaderObject } from "../types"
 import SupplierBase from './supplier_base'
 
 /**
@@ -33,7 +33,7 @@ import SupplierBase from './supplier_base'
  */
 
 
-export default class SupplierCarolina<T extends IProduct> extends SupplierBase<T> implements AsyncIterable<T> {
+export default class SupplierCarolina<T extends Product> extends SupplierBase<T> implements AsyncIterable<T> {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = 'Carolina'
 
@@ -193,7 +193,7 @@ export default class SupplierCarolina<T extends IProduct> extends SupplierBase<T
       const pdpDataTxt = pdpDataElem.replace(/(?:^.*window.pdpData = (?={)|(?<=});(?:\n|\t|.)*$)/mgi, '')
       const json_data = JSON.parse(pdpDataTxt)
 
-      const variants: IVariant[] = json_data.skus.map((s: ISku) => ({
+      const variants: Variant[] = json_data.skus.map((s: Sku) => ({
         price: s.priceInfo.regularPrice[0],
         quantity: s.variantsMap.volume,
         sku: parseInt(s.skuId),
