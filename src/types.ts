@@ -1,16 +1,31 @@
 
 import { ReactNode } from 'react';
 
-export interface Item {
+export interface ISettings {
+  caching: boolean;
+  autocomplete: boolean;
+  currency: string;
+  location: string;
+  shipsToMyLocation: boolean;
+  foo: string;
+  jason: boolean;
+  antoine: boolean;
+  popupSize: string;
+  autoResize: boolean;
+  someSetting: boolean;
+  suppliers: Array<string>;
+}
+
+export interface IItem {
   id: number;
   name: string;
   deadline: Date;
   type: string;
   isComplete: boolean;
-  nodes?: Item[];
+  nodes?: IItem[];
 }
 
-export interface Sku {
+export interface ISku {
   priceInfo: { regularPrice: number[] };
   variantsMap: { volume: number; 'chemical-grade': string; concentration: string };
   skuId: string;
@@ -20,7 +35,7 @@ export interface Sku {
   specifications: { shippingInformation: string };
 }
 
-export interface Variant {
+export interface IVariant {
   price: number;
   quantity: number;
   sku: number;
@@ -32,15 +47,15 @@ export interface Variant {
   shippingInformation: string;
 }
 
-export interface SearchProps {
+export interface ISearchProps {
   query: string;
   setQuery: (value: string) => void;
 }
 
-export interface Supplier {
+export interface ISupplier {
   supplierName: string;
   _query: string;
-  _products: Array<Product>;
+  _products: Array<IProduct>;
   _query_results: Array<any>;
   _baseURL: string;
   _controller: AbortController;
@@ -49,7 +64,7 @@ export interface Supplier {
   _http_request_hard_limit: number;
 }
 
-export interface Product {
+export interface IProduct {
   supplier: string;
   title: string;
   url: string;
@@ -65,19 +80,24 @@ export interface Product {
   status?: string;
   statusTxt?: string;
   shippingInformation?: string;
-  variants?: Variant[];
+  variants?: IVariant[];
 }
 
-export interface ChromeStorageItems {
+export interface IChromeStorageItems {
   [key: string]: any;
 }
 
-export type HeaderObject = { [key: string]: string };
+export type IHeaderObject = { [key: string]: string };
 
-export interface TabPanelProps {
+export interface ITabPanelProps {
   children?: ReactNode;
   dir?: string;
   index: number;
   value: number;
   style?: object
+}
+
+export interface ISettingsContext {
+  settings: ISettings;
+  setSettings: (settings: ISettings) => void;
 }

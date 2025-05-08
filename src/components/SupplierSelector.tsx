@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -7,13 +7,16 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import Checkbox from '@mui/material/Checkbox';
 import Avatar from '@mui/material/Avatar';
 import SupplierFactory from '../supplier_factory';
+import { useSettings } from '../context';
 
 export default function SupplierSelector() {
-  const [checked, setChecked] = useState<string[]>(SupplierFactory.supplierList());
+  const settingsContext = useSettings();
+
 
   const handleToggle = (supplierName: string) => () => {
-    const currentIndex = checked.indexOf(supplierName);
-    const newChecked = [...checked];
+    const selectedSuppliers = settingsContext.settings.suppliers
+    const currentIndex = selectedSuppliers.indexOf(supplierName);
+    const newChecked = [...selectedSuppliers];
 
     if (currentIndex === -1) {
       newChecked.push(supplierName);
@@ -21,7 +24,10 @@ export default function SupplierSelector() {
       newChecked.splice(currentIndex, 1);
     }
 
-    setChecked(newChecked);
+    settingsContext.setSettings({
+      ...settingsContext.settings,
+      suppliers: newChecked
+    });
   };
 
   return (
@@ -33,9 +39,10 @@ export default function SupplierSelector() {
             key={supplierName}
             secondaryAction={
               <Checkbox
+                value={supplierName}
                 edge="end"
                 onChange={handleToggle(supplierName)}
-                checked={checked.includes(supplierName)}
+                checked={settingsContext.settings.suppliers.includes(supplierName)}
                 inputProps={{ 'aria-labelledby': labelId }}
               />
             }
@@ -48,7 +55,7 @@ export default function SupplierSelector() {
                   src={`/static/images/avatar/${supplierName}.png`}
                 />
               </ListItemAvatar>
-              <ListItemText id={labelId} primary={supplierName} />
+              <ListItemText id={labelId} primary={supplierName.replace(/^Supplier/, '')} />
             </ListItemButton>
           </ListItem>
         );

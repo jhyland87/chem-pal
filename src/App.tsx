@@ -4,12 +4,16 @@ import TabHeader from './components/TabHeader'
 import { useState } from 'react';
 import { ThemeProvider, createTheme, useTheme } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
-import Options from './components/Options'
+import Settings from './components/Settings'
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
-import { TabPanelProps } from './types';
+import { ITabPanelProps, ISettings } from './types';
 import SupplierSelector from './components/SupplierSelector';
+import SupplierFactory from './supplier_factory';
+
+import { SettingsContext } from './context';
+
 
 const darkTheme = createTheme({
   palette: {
@@ -32,7 +36,7 @@ const darkTheme = createTheme({
 });
 
 
-function TabPanel(props: TabPanelProps) {
+function TabPanel(props: ITabPanelProps) {
   const { children, value, index, ...other } = props;
 
   return (
@@ -55,24 +59,43 @@ function TabPanel(props: TabPanelProps) {
 function App() {
   const theme = useTheme();
   const [page, setPage] = useState(0);
+
+  const [settings, setSettings] = useState<ISettings>({
+    caching: true,
+    autocomplete: true,
+    currency: 'usd',
+    location: '',
+    shipsToMyLocation: false,
+    foo: 'bar',
+    jason: false,
+    antoine: true,
+    popupSize: 'small',
+    autoResize: true,
+    someSetting: false,
+    suppliers: SupplierFactory.supplierList()
+  });
+
+
   return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <Box sx={{ bgcolor: 'background.default', width: 500 }}>
-        <AppBar position="static">
-          <TabHeader page={page} setPage={setPage} />
-          <TabPanel value={page} index={0} dir={theme.direction}>
-            <ProductTable />
-          </TabPanel>
-          <TabPanel value={page} index={1} dir={theme.direction}>
-            <SupplierSelector />
-          </TabPanel>
-          <TabPanel value={page} index={2} dir={theme.direction}>
-            Some settings..
-          </TabPanel>
-        </AppBar>
-      </Box>
-    </ThemeProvider>
+    <SettingsContext.Provider value={{ settings, setSettings }}>
+      <ThemeProvider theme={darkTheme}>
+        <CssBaseline />
+        <Box sx={{ bgcolor: 'background.default', width: 500 }}>
+          <AppBar position="static">
+            <TabHeader page={page} setPage={setPage} />
+            <TabPanel value={page} index={0} dir={theme.direction}>
+              <ProductTable />
+            </TabPanel>
+            <TabPanel value={page} index={1} dir={theme.direction}>
+              <SupplierSelector />
+            </TabPanel>
+            <TabPanel value={page} index={2} dir={theme.direction}>
+              <Settings />
+            </TabPanel>
+          </AppBar>
+        </Box>
+      </ThemeProvider>
+    </SettingsContext.Provider>
   )
 }
 

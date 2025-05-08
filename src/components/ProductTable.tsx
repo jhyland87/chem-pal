@@ -8,12 +8,11 @@ import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import React, { ChangeEvent, useState, useEffect } from 'react';
 //import { TableVirtuoso, TableComponents } from 'react-virtuoso';
 import Options from './Options';
-import { Product } from '../types'
+import { IProduct } from '../types'
 import SupplierFactory from '../supplier_factory';
 import LoadingBackdrop from './LoadingBackdrop';
-//import _ from '../lodash'
+import { useSettings } from '../context';
 import storageMock from '../chrome_storage_mock'
-
 if (!chrome.storage) {
   window.chrome = {
     storage: storageMock as any,
@@ -60,7 +59,8 @@ const columns: GridColDef[] = [
 ];
 
 const ProductTable: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
+  const settingsContext = useSettings();
+  const [products, setProducts] = useState<IProduct[]>([]);
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [statusLabel, setStatusLabel] = useState('');
@@ -121,7 +121,7 @@ const ProductTable: React.FC = () => {
     fetchController = new AbortController();
     // Create the query instance
     // Note: This does not actually run the HTTP calls or queries...
-    const productQueryResults = new SupplierFactory(query, fetchController)
+    const productQueryResults = new SupplierFactory(query, fetchController, settingsContext.settings.suppliers)
     // Clear the products table
     setProducts([])
     // Reset the pagination back to page 0
@@ -137,7 +137,7 @@ const ProductTable: React.FC = () => {
     for await (const result of productQueryResults) {
       resultCount++
       // Data for new row (must align with columns structure)
-      const newProduct: Product = {
+      const newProduct: IProduct = {
         supplier: result?.supplier,
         title: result?.title,
         price: result?.price,
