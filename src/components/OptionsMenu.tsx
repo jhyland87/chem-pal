@@ -9,7 +9,7 @@ import AutoDeleteIcon from '@mui/icons-material/AutoDelete';
 import ContrastIcon from '@mui/icons-material/Contrast';
 
 
-export default function Options(props: any) {
+export default function OptionsMenu(props: any) {
   const handleClearResults = (event: React.MouseEvent<HTMLAnchorElement>) => {
     console.log('clearing results')
     // Stop the form from propagating
