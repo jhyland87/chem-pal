@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { Product, IHeaderObject } from '../types'
+import { Product, HeaderObject } from '../types'
 import { preconnect } from 'react-dom';
 
 /**
@@ -43,7 +43,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   protected _http_request_batch_size: number = 10;
 
   // HTTP headers used as a basis for all queries.
-  protected _headers: IHeaderObject = {};
+  protected _headers: HeaderObject = {};
 
   /**
    * Constructor for the SupplierBase class.
@@ -84,7 +84,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * @param url - The URL to get the headers for.
    * @returns The headers for the HTTP GET request.
    */
-  protected async httpGetHeaders(url: string): Promise<IHeaderObject | void> {
+  protected async httpGetHeaders(url: string): Promise<HeaderObject | void> {
     try {
       console.debug('httpGetHeaders| this._controller.signal:', this._controller.signal)
       const httpResponse = await fetch(url, {
@@ -120,7 +120,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * @param headers - The headers for the POST request.
    * @returns The response from the POST request.
    */
-  protected async httpPost(url: string, body: Object, headers: IHeaderObject = {}): Promise<Response | void> {
+  protected async httpPost(url: string, body: Object, headers: HeaderObject = {}): Promise<Response | void> {
     try {
       return await fetch(url, {
         signal: this._controller.signal,
@@ -146,7 +146,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * @param headers - The headers for the GET request.
    * @returns The response from the GET request.
    */
-  protected async httpGet(url: string, headers: IHeaderObject = {}): Promise<Response | void> {
+  protected async httpGet(url: string, headers: HeaderObject = {}): Promise<Response | void> {
     try {
       console.debug('httpget| this._controller.signal:', this._controller.signal)
       return await fetch(url, {

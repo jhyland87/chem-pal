@@ -87,7 +87,7 @@ export interface ChromeStorageItems {
   [key: string]: any;
 }
 
-export type IHeaderObject = { [key: string]: string };
+export type HeaderObject = { [key: string]: string };
 
 export interface TabPanelProps {
   children?: ReactNode;

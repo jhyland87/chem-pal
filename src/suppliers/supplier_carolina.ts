@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { Sku, Variant, Product, Supplier, IHeaderObject } from "../types"
+import { Sku, Variant, Product, HeaderObject } from "../types"
 import SupplierBase from './supplier_base'
 
 /**
@@ -52,7 +52,7 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
   protected _http_request_batch_size: number = 10;
 
   // HTTP headers used as a basis for all queries.
-  protected _headers: IHeaderObject = {
+  protected _headers: HeaderObject = {
     //"accept": "application/json, text/javascript, */*; q=0.01",
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
     'accept-language': 'en-US,en;q=0.6',
