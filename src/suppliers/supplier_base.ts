@@ -1,12 +1,12 @@
 import _ from 'lodash';
-import { Product, HeaderObject } from '../types'
+import { IProduct, IHeaderObject } from '../types'
 import { preconnect } from 'react-dom';
 
 /**
  * The base class for all suppliers.
  * @template T - The type of product to return.
  */
-export default abstract class SupplierBase<T extends Product> implements AsyncIterable<T> {
+export default abstract class SupplierBase<T extends IProduct> implements AsyncIterable<T> {
   // The name of the supplier (used for display name, lists, etc)
   public abstract readonly supplierName: string
 
@@ -17,7 +17,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   protected _query: string
 
   // The products after all http calls are made and responses have been parsed/filtered.
-  protected _products: Array<Product> = []
+  protected _products: Array<IProduct> = []
 
   // If the products first require a query of a search page that gets iterated over,
   // those results are stored here
@@ -43,7 +43,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   protected _http_request_batch_size: number = 10;
 
   // HTTP headers used as a basis for all queries.
-  protected _headers: HeaderObject = {};
+  protected _headers: IHeaderObject = {};
 
   /**
    * Constructor for the SupplierBase class.
@@ -84,7 +84,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * @param url - The URL to get the headers for.
    * @returns The headers for the HTTP GET request.
    */
-  protected async httpGetHeaders(url: string): Promise<HeaderObject | void> {
+  protected async httpGetHeaders(url: string): Promise<IHeaderObject | void> {
     try {
       console.debug('httpGetHeaders| this._controller.signal:', this._controller.signal)
       const httpResponse = await fetch(url, {
@@ -120,7 +120,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * @param headers - The headers for the POST request.
    * @returns The response from the POST request.
    */
-  protected async httpPost(url: string, body: Object, headers: HeaderObject = {}): Promise<Response | void> {
+  protected async httpPost(url: string, body: Object, headers: IHeaderObject = {}): Promise<Response | void> {
     try {
       return await fetch(url, {
         signal: this._controller.signal,
@@ -146,7 +146,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * @param headers - The headers for the GET request.
    * @returns The response from the GET request.
    */
-  protected async httpGet(url: string, headers: HeaderObject = {}): Promise<Response | void> {
+  protected async httpGet(url: string, headers: IHeaderObject = {}): Promise<Response | void> {
     try {
       console.debug('httpget| this._controller.signal:', this._controller.signal)
       return await fetch(url, {
@@ -238,5 +238,5 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * Parse the products from the supplier.
    * @returns A promise that resolves when the products have been parsed.
    */
-  protected abstract _getProductData(productIndexObject: Object): Promise<Product | void>
+  protected abstract _getProductData(productIndexObject: Object): Promise<IProduct | void>
 }

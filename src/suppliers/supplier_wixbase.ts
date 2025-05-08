@@ -1,7 +1,7 @@
-import { Product } from '../types'
+import { IProduct } from '../types'
 import SupplierBase from './supplier_base'
 
-export default abstract class SupplierWixBase<T extends Product> extends SupplierBase<T> implements AsyncIterable<T> {
+export default abstract class SupplierWixBase<T extends IProduct> extends SupplierBase<T> implements AsyncIterable<T> {
   public readonly disabled: boolean = true
 
   protected _accessToken: string = ''
@@ -92,7 +92,7 @@ export default abstract class SupplierWixBase<T extends Product> extends Supplie
     this._products = res
   }
 
-  protected async _getProductData(product: any): Promise<Product | void> {
+  protected async _getProductData(product: any): Promise<IProduct | void> {
     return Promise.resolve({
       supplier: this.supplierName,
       title: product.title,
@@ -101,6 +101,6 @@ export default abstract class SupplierWixBase<T extends Product> extends Supplie
       price: product.discountedPriceNumeric,
       currency: product.currency,
       quantity: product.textOptionsFacets?.find((f: any) => ['Weight', 'Size'].includes(f.name))?.value,
-    } as Product)
+    } as IProduct)
   }
 }

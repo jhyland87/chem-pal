@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { Sku, Variant, Product, Supplier, HeaderObject } from "../types"
+import { ISku, IVariant, IProduct, ISupplier, IHeaderObject } from "../types"
 import SupplierBase from './supplier_base'
 
 /**
@@ -33,7 +33,7 @@ import SupplierBase from './supplier_base'
  */
 
 
-export default class SupplierCarolina<T extends Product> extends SupplierBase<T> implements AsyncIterable<T> {
+export default class SupplierCarolina<T extends IProduct> extends SupplierBase<T> implements AsyncIterable<T> {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = 'Carolina'
 
@@ -52,7 +52,7 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
   protected _http_request_batch_size: number = 10;
 
   // HTTP headers used as a basis for all queries.
-  protected _headers: HeaderObject = {
+  protected _headers: IHeaderObject = {
     //"accept": "application/json, text/javascript, */*; q=0.01",
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
     'accept-language': 'en-US,en;q=0.6',
@@ -193,7 +193,7 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
       const pdpDataTxt = pdpDataElem.replace(/(?:^.*window.pdpData = (?={)|(?<=});(?:\n|\t|.)*$)/mgi, '')
       const json_data = JSON.parse(pdpDataTxt)
 
-      const variants: Variant[] = json_data.skus.map((s: Sku) => ({
+      const variants: IVariant[] = json_data.skus.map((s: ISku) => ({
         price: s.priceInfo.regularPrice[0],
         quantity: s.variantsMap.volume,
         sku: parseInt(s.skuId),

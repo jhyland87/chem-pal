@@ -9,6 +9,15 @@
   min-height:300px;
 }
 
+/*
+.MuiListItem-root > .MuiFormHelperText-root {
+  display: none;
+}
+.MuiListItem-root:hover > .MuiFormHelperText-root {
+  display: block;
+}
+  */
+
 .logo {
   height: 6em;
   padding: 1.5em;
