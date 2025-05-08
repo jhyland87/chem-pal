@@ -1,7 +1,7 @@
 // Import necessary modules
 import "@testing-library/jest-dom";
 import util from "util";
-import { IChromeStorageItems } from "./src/types";
+import { ChromeStorageItems } from "./src/types";
 
 // Extend the global type to include chrome
 declare global {
@@ -24,8 +24,8 @@ Object.assign(global, require("jest-chrome"));
 // Promisify chrome.storage.local.set and chrome.storage.local.get
 global.chrome.storage.local.set = util.promisify(
   global.chrome.storage.local.set
-) as (items: Partial<IChromeStorageItems>) => Promise<void>;
+) as (items: Partial<ChromeStorageItems>) => Promise<void>;
 
 global.chrome.storage.local.get = util.promisify(
   global.chrome.storage.local.get
-) as (items: Partial<IChromeStorageItems>) => Promise<void>;
+) as (items: Partial<ChromeStorageItems>) => Promise<void>;

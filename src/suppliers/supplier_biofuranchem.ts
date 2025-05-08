@@ -1,8 +1,8 @@
-import { IProduct } from '../types'
+import { Product } from '../types'
 import SupplierWixBase from './supplier_wixbase'
 
 
-export default class SupplierBioFuranChem<T extends IProduct> extends SupplierWixBase<T> implements AsyncIterable<T> {
+export default class SupplierBioFuranChem<T extends Product> extends SupplierWixBase<T> implements AsyncIterable<T> {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = 'BioFuran Chem'
 

@@ -1,12 +1,12 @@
 import _ from 'lodash';
-import { IProduct, IHeaderObject } from '../types'
+import { Product, IHeaderObject } from '../types'
 import { preconnect } from 'react-dom';
 
 /**
  * The base class for all suppliers.
  * @template T - The type of product to return.
  */
-export default abstract class SupplierBase<T extends IProduct> implements AsyncIterable<T> {
+export default abstract class SupplierBase<T extends Product> implements AsyncIterable<T> {
   // The name of the supplier (used for display name, lists, etc)
   public abstract readonly supplierName: string
 
@@ -17,7 +17,7 @@ export default abstract class SupplierBase<T extends IProduct> implements AsyncI
   protected _query: string
 
   // The products after all http calls are made and responses have been parsed/filtered.
-  protected _products: Array<IProduct> = []
+  protected _products: Array<Product> = []
 
   // If the products first require a query of a search page that gets iterated over,
   // those results are stored here
@@ -238,5 +238,5 @@ export default abstract class SupplierBase<T extends IProduct> implements AsyncI
    * Parse the products from the supplier.
    * @returns A promise that resolves when the products have been parsed.
    */
-  protected abstract _getProductData(productIndexObject: Object): Promise<IProduct | void>
+  protected abstract _getProductData(productIndexObject: Object): Promise<Product | void>
 }

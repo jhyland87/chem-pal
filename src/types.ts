@@ -1,7 +1,7 @@
 
 import { ReactNode } from 'react';
 
-export interface ISettings {
+export interface Settings {
   caching: boolean;
   autocomplete: boolean;
   currency: string;
@@ -16,16 +16,16 @@ export interface ISettings {
   suppliers: Array<string>;
 }
 
-export interface IItem {
+export interface Item {
   id: number;
   name: string;
   deadline: Date;
   type: string;
   isComplete: boolean;
-  nodes?: IItem[];
+  nodes?: Item[];
 }
 
-export interface ISku {
+export interface Sku {
   priceInfo: { regularPrice: number[] };
   variantsMap: { volume: number; 'chemical-grade': string; concentration: string };
   skuId: string;
@@ -35,7 +35,7 @@ export interface ISku {
   specifications: { shippingInformation: string };
 }
 
-export interface IVariant {
+export interface Variant {
   price: number;
   quantity: number;
   sku: number;
@@ -47,15 +47,15 @@ export interface IVariant {
   shippingInformation: string;
 }
 
-export interface ISearchProps {
+export interface SearchProps {
   query: string;
   setQuery: (value: string) => void;
 }
 
-export interface ISupplier {
+export interface Supplier {
   supplierName: string;
   _query: string;
-  _products: Array<IProduct>;
+  _products: Array<Product>;
   _query_results: Array<any>;
   _baseURL: string;
   _controller: AbortController;
@@ -64,7 +64,7 @@ export interface ISupplier {
   _http_request_hard_limit: number;
 }
 
-export interface IProduct {
+export interface Product {
   supplier: string;
   title: string;
   url: string;
@@ -80,16 +80,16 @@ export interface IProduct {
   status?: string;
   statusTxt?: string;
   shippingInformation?: string;
-  variants?: IVariant[];
+  variants?: Variant[];
 }
 
-export interface IChromeStorageItems {
+export interface ChromeStorageItems {
   [key: string]: any;
 }
 
 export type IHeaderObject = { [key: string]: string };
 
-export interface ITabPanelProps {
+export interface TabPanelProps {
   children?: ReactNode;
   dir?: string;
   index: number;
@@ -97,7 +97,7 @@ export interface ITabPanelProps {
   style?: object
 }
 
-export interface ISettingsContext {
-  settings: ISettings;
-  setSettings: (settings: ISettings) => void;
+export interface SettingsContextObj {
+  settings: Settings;
+  setSettings: (settings: Settings) => void;
 }

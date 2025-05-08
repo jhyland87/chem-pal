@@ -48,7 +48,7 @@ const displayHelperOnHover = {
 };
 
 
-export default function Settings() {
+export default function SettingsForm() {
   const settingsContext = useSettings();
 
   const handleSwitchChange = (event: ChangeEvent<HTMLInputElement>) => {
