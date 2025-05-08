@@ -1,5 +1,5 @@
 
-import { IProduct, ISupplier } from './types'
+import { IProduct } from './types'
 import * as suppliers from './suppliers'
 import SupplierBase from './suppliers/supplier_base'
 
