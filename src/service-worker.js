@@ -22,7 +22,7 @@ self.addEventListener("activate", (event) => {
           if (!expectedCacheNamesSet.has(cacheName)) {
             // If this cache name isn't present in the set of
             // "expected" cache names, then delete it.
-            console.log("Deleting out of date cache:", cacheName);
+            console.debug("Deleting out of date cache:", cacheName);
             return caches.delete(cacheName);
           }
         }),
@@ -32,7 +32,7 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  console.log("Handling fetch event for", event.request.url);
+  console.debug("Handling fetch event for", event.request.url);
 
   event.respondWith(
     caches.open(CURRENT_CACHES.query).then((cache) => {
@@ -43,14 +43,14 @@ self.addEventListener("fetch", (event) => {
             // If there is an entry in the cache for event.request,
             // then response will be defined and we can just return it.
             // Note that in this example, only font resources are cached.
-            console.log(" Found response in cache:", response);
+            console.debug(" Found response in cache:", response);
 
             return response;
           }
 
           // Otherwise, if there is no entry in the cache for event.request,
           // response will be undefined, and we need to fetch() the resource.
-          console.log(
+          console.debug(
             " No response for %s found in cache. About to fetch " +
             "from network…",
             event.request.url,
@@ -62,7 +62,7 @@ self.addEventListener("fetch", (event) => {
           // so we need to make a copy.
           // (see https://developer.mozilla.org/en-US/docs/Web/API/Request/clone)
           return fetch(event.request.clone()).then((response) => {
-            console.log(
+            console.debug(
               "  Response for %s from network is: %O",
               event.request.url,
               response,

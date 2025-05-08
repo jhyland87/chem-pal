@@ -1,12 +1,16 @@
 import _ from 'lodash';
 import { Product, HeaderObject } from '../types'
+import { preconnect } from 'react-dom';
 
-
+/**
+ * The base class for all suppliers.
+ * @template T - The type of product to return.
+ */
 export default abstract class SupplierBase<T extends Product> implements AsyncIterable<T> {
-  public readonly disabled: boolean = true
-
+  // The name of the supplier (used for display name, lists, etc)
   public abstract readonly supplierName: string
 
+  // The base URL for the supplier.
   protected abstract _baseURL: string
 
   // String to query for (Product name, CAS, etc)
@@ -21,10 +25,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
 
   // The AbortController interface represents a controller object that allows you to
   // abort one or more Web requests as and when desired.
-  //static controller: AbortController
   protected _controller: AbortController
-
-  protected _is_aborted: boolean = false;
 
   // How many results to return for this query (This is not a limit on how many requests
   // can be made to a supplier for any given query).
@@ -44,6 +45,12 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   // HTTP headers used as a basis for all queries.
   protected _headers: HeaderObject = {};
 
+  /**
+   * Constructor for the SupplierBase class.
+   * @param query - The query to search for.
+   * @param limit - The limit of results to return.
+   * @param controller - The AbortController to use for the query.
+   */
   constructor(query: string, limit: number = 5, controller: AbortController) {
     this._query = query;
     this._limit = limit;
@@ -54,13 +61,29 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
       console.debug('Made a new AbortController')
       this._controller = new AbortController()
     }
+
+    this._preconnect();
+  }
+
+  /**
+   * Preconnect to the base URL. Apparently this is a way to speed up the loading of the page(s).
+   * @returns A promise that resolves when the preconnect is complete.
+   */
+  private _preconnect(): void {
+    preconnect(this._baseURL);
   }
 
   /**
    * This is a placeholder for any setup that needs to be done before the query is made.
+   * @returns A promise that resolves when the setup is complete.
    */
   protected async _setup(): Promise<void> { }
 
+  /**
+   * Get the headers for the HTTP GET request.
+   * @param url - The URL to get the headers for.
+   * @returns The headers for the HTTP GET request.
+   */
   protected async httpGetHeaders(url: string): Promise<HeaderObject | void> {
     try {
       console.debug('httpGetHeaders| this._controller.signal:', this._controller.signal)
@@ -90,6 +113,13 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
     }
   }
 
+  /**
+   * Send a POST request to the given URL with the given body and headers.
+   * @param url - The URL to send the POST request to.
+   * @param body - The body of the POST request.
+   * @param headers - The headers for the POST request.
+   * @returns The response from the POST request.
+   */
   protected async httpPost(url: string, body: Object, headers: HeaderObject = {}): Promise<Response | void> {
     try {
       return await fetch(url, {
@@ -110,6 +140,12 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
     }
   }
 
+  /**
+   * Send a GET request to the given URL with the given headers.
+   * @param url - The URL to send the GET request to.
+   * @param headers - The headers for the GET request.
+   * @returns The response from the GET request.
+   */
   protected async httpGet(url: string, headers: HeaderObject = {}): Promise<Response | void> {
     try {
       console.debug('httpget| this._controller.signal:', this._controller.signal)
@@ -138,6 +174,11 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
     }
   }
 
+  /**
+   * Send a GET request to the given URL and return the response as a JSON object.
+   * @param url - The URL to send the GET request to.
+   * @returns The response from the GET request as a JSON object.
+   */
   protected async httpGetJson(url: string): Promise<Response | void> {
     try {
       const response = await this.httpGet(url)
@@ -150,6 +191,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   /**
    * The function asynchronously iterates over query results, retrieves product data, and yields valid
    * results.
+   * @returns An async generator that yields valid results.
    */
   async *[Symbol.asyncIterator](): AsyncGenerator<T, void, unknown> {
     try {
@@ -186,11 +228,15 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
     }
   }
 
+  /**
+   * Query the products from the supplier.
+   * @returns A promise that resolves when the products have been queried.
+   */
   protected abstract queryProducts(): Promise<void>
 
-  protected abstract parseProducts(): Promise<void>
-
-  //protected abstract parseProduct(product: any): Promise<T>
-
+  /**
+   * Parse the products from the supplier.
+   * @returns A promise that resolves when the products have been parsed.
+   */
   protected abstract _getProductData(productIndexObject: Object): Promise<Product | void>
 }

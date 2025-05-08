@@ -9,11 +9,7 @@ import AutoDeleteIcon from '@mui/icons-material/AutoDelete';
 import ContrastIcon from '@mui/icons-material/Contrast';
 
 
-
-
 export default function Options(props: any) {
-  console.log('props', props)
-
   const handleClearResults = (event: React.MouseEvent<HTMLAnchorElement>) => {
     console.log('clearing results')
     // Stop the form from propagating
@@ -34,7 +30,7 @@ export default function Options(props: any) {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          console.log("Deleting cache:", cacheName);
+          console.debug("Deleting cache:", cacheName);
           return caches.delete(cacheName);
         })
       )
@@ -43,13 +39,13 @@ export default function Options(props: any) {
   };
 
   const handleSaveResults = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    console.log('saving results')
+    console.debug('saving results')
     // Stop the form from propagating
     event.preventDefault();
   };
 
   const handleToggleTheme = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    console.log('toggling theme')
+    console.debug('toggling theme')
     // Stop the form from propagating
     event.preventDefault();
   };
