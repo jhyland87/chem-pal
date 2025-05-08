@@ -1,18 +1,17 @@
 import './ProductTable.css'
-import CancelIcon from '@mui/icons-material/Cancel';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
 import Link from '@mui/material/Link';
-import Backdrop from '@mui/material/Backdrop';
-import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import FilledInput from '@mui/material/FilledInput';
-import React, { ChangeEvent, useState, useEffect } from 'react';
 import LinearProgress from '@mui/material/LinearProgress';
+import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import React, { ChangeEvent, useState, useEffect } from 'react';
 //import { TableVirtuoso, TableComponents } from 'react-virtuoso';
 import Options from './Options';
 import { Product } from '../types'
 import SupplierFactory from '../supplier_factory';
+import LoadingBackdrop from './LoadingBackdrop';
+//import _ from '../lodash'
 import storageMock from '../chrome_storage_mock'
 
 if (!chrome.storage) {
@@ -22,7 +21,6 @@ if (!chrome.storage) {
 }
 
 let fetchController: AbortController;
-
 
 // When the user clicks on a link in the table
 const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -90,9 +88,8 @@ const ProductTable: React.FC = () => {
         setProducts(Array.isArray(storedProducts) ? storedProducts : []);
         setStatusLabel('')
 
-        if (storedPaginationModel) {
+        if (storedPaginationModel)
           setPaginationModel(storedPaginationModel)
-        }
       })
   }, []);
 
@@ -101,16 +98,11 @@ const ProductTable: React.FC = () => {
     chrome.storage.local.set({ products }) // <-- This is the effect/action
       .then(() => {
         if (!products.length) {
-          if (isLoading) {
-            setStatusLabel(`Searching for ${query}...`)
-          }
-          else {
-            setStatusLabel('Type a product name and hit enter')
-          }
+          setStatusLabel(isLoading ? `Searching for ${query}...` : 'Type a product name and hit enter')
+          return
         }
-        else {
-          setStatusLabel('')
-        }
+
+        setStatusLabel('')
       })
 
     chrome.storage.local.set({ paginationModel })
@@ -121,34 +113,29 @@ const ProductTable: React.FC = () => {
     // Stop form from propagating
     e.preventDefault();
     if (!query.trim()) return;
-
     // Show the progress bar
     setIsLoading(true)
-
     // Set the status label to "Searching..."
     setStatusLabel("Searching...")
-
+    // Abort controller specific to this query
     fetchController = new AbortController();
-
-    console.log('SupplierFactory.supplierList():', SupplierFactory.supplierList())
     // Create the query instance
     // Note: This does not actually run the HTTP calls or queries...
     const productQueryResults = new SupplierFactory(query, fetchController)
-
     // Clear the products table
     setProducts([])
-
     // Reset the pagination back to page 0
     setPaginationModel({
       pageSize: 5,
       page: 0,
     })
 
+    const startSearchTime = performance.now();
+    let resultCount = 0;
     // Use the async generator to iterate over the products
     // This is where the queries get run, when the iteration starts.
     for await (const result of productQueryResults) {
-      console.log('Product:', result);
-
+      resultCount++
       // Data for new row (must align with columns structure)
       const newProduct: Product = {
         supplier: result?.supplier,
@@ -157,10 +144,8 @@ const ProductTable: React.FC = () => {
         quantity: result?.quantity,
         url: result?.url
       };
-
       // Hide the status label thing
       setStatusLabel('')
-
       // Add each product to the table.
       setProducts((prevProducts) => [...prevProducts, {
         // Each row needs a unique ID, so use the row count at each insertion
@@ -168,38 +153,28 @@ const ProductTable: React.FC = () => {
         id: prevProducts.length, ...newProduct
       }]);
     }
+    const endSearchTime = performance.now();
+    const searchTime = endSearchTime - startSearchTime;
+
     // Clear the query input
     setQuery('');
-
     // Hide the loading thingy
     setIsLoading(false)
+
+    console.debug(`Found ${resultCount} products in ${searchTime} milliseconds`);
   };
-
-
 
   const handleStopSearch = () => {
     // Stop the form from propagating
     //event.preventDefault();
     console.log('triggering abort..')
-    setIsLoading(false)
-    fetchController.abort()
-    if (products.length === 0) {
-      setStatusLabel('Search aborted')
-    }
-    else {
-      setStatusLabel('')
-    }
-  };
 
-  function LoadingBackdrop({ open }: { open: boolean }) {
-    return (
-      <Backdrop open={open} style={{ zIndex: 1 }}>
-        <Stack style={{ textAlign: 'center' }}>
-          <CancelIcon onClick={handleStopSearch} sx={{ fontSize: 40 }} style={{ cursor: 'pointer' }} />
-        </Stack>
-      </Backdrop>
-    );
-  }
+    setIsLoading(false)
+
+    fetchController.abort()
+
+    setStatusLabel(products.length === 0 ? 'Search aborted' : '')
+  };
 
   return (
     <>
@@ -227,7 +202,7 @@ const ProductTable: React.FC = () => {
             )
           }
         </Box>
-        {LoadingBackdrop({ open: isLoading })}
+        <LoadingBackdrop open={isLoading} onClick={handleStopSearch} />
         {products && products.length > 0
           ? (<DataGrid
             rows={products}
