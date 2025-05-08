@@ -1,7 +1,7 @@
 import './App.css'
 import ProductTable from './components/ProductTable'
 import TabHeader from './components/TabHeader'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ThemeProvider, createTheme, useTheme } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Settings from './components/Settings'
@@ -60,6 +60,7 @@ function App() {
   const theme = useTheme();
   const [page, setPage] = useState(0);
 
+  // Default settings
   const [settings, setSettings] = useState<ISettings>({
     caching: true,
     autocomplete: true,
@@ -75,6 +76,21 @@ function App() {
     suppliers: SupplierFactory.supplierList()
   });
 
+  // Load the settings from storage.local on the initial component load
+  useEffect(() => {
+    chrome.storage.local.get(['settings'])
+      .then(data => {
+        console.log('Retrieved storage.local.settings:', data)
+        if (!data.settings) return;
+        setSettings({ ...data.settings });
+      })
+  }, [])
+
+  // Save the settings to storage.local when the settings change
+  useEffect(() => {
+    console.log('Updating storage.local.settings to:', settings)
+    chrome.storage.local.set({ settings })
+  }, [settings])
 
   return (
     <SettingsContext.Provider value={{ settings, setSettings }}>
