@@ -97,7 +97,7 @@ export interface TabPanelProps {
   style?: object
 }
 
-export interface SettingsContextObj {
+export interface SettingsContextProps {
   settings: Settings;
   setSettings: (settings: Settings) => void;
 }
