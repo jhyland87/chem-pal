@@ -35,9 +35,9 @@ export default class SupplierFactory<T extends IProduct> implements AsyncIterabl
       // Only iterate over the suppliers that are selected (or all if none are selected)
       const masterIterator = combineAsyncIterators(
         Object.entries(suppliers)
-          .filter(([key, _]) => this._suppliers.length == 0 || this._suppliers.includes(key))
-          .map(([_, value]) => value)
-          .map(s => new s(this._query, 10, this._controller))
+          .filter(([supplierClassName, _]) => this._suppliers.length == 0 || this._suppliers.includes(supplierClassName))
+          .map(([_, supplierClass]) => supplierClass)
+          .map(supplierClass => new supplierClass(this._query, 10, this._controller))
       )
 
       for await (const value of masterIterator) {
