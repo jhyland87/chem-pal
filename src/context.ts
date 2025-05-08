@@ -1,8 +1,8 @@
 import { createContext, useContext } from 'react';
-import { Settings, SettingsContextObj } from './types';
+import { Settings, SettingsContextProps } from './types';
 import SupplierFactory from './supplier_factory';
 
-export const SettingsContext = createContext<SettingsContextObj | undefined>(undefined);
+export const SettingsContext = createContext<SettingsContextProps | undefined>(undefined);
 
 export function useSettings() {
   const context = useContext(SettingsContext)
