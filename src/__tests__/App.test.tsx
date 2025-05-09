@@ -18,7 +18,7 @@ describe('wtf', () => {
 
   test('renders with initial count', () => {
     render(<App />);
-    const headerElement = screen.getByText('Chem Crawler');
+    const headerElement = screen.getByText('Search Results');
     expect(headerElement).toBeInTheDocument();
   });
 
