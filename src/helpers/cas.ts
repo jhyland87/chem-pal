@@ -50,7 +50,11 @@ export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_check
 export function isCas(cas: string): boolean {
   const regex = RegExp(`^${CAS_REGEX.source}$`)
   const match = cas.match(regex);
-  if (!match || !match.groups?.seg_a || !match.groups?.seg_b || !match.groups?.seg_checksum) return false;
+  if (!match 
+    || !match.groups?.seg_a 
+    || !match.groups?.seg_b 
+    || !match.groups?.seg_checksum) 
+      return false;
 
   const segA = match.groups.seg_a;
   const segB = match.groups.seg_b;
