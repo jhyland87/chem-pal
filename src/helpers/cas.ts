@@ -5,7 +5,7 @@
  * {@link https://www.cas.org/training/documentation/chemical-substances/checkdig CAS Standardized format}
  * @type {RegExp}
  */
-export const CAS_REGEX: RegExp = /(?<seg_a>[0-9]{2,7})-(?<seg_b>[0-9]{2})-(?<seg_checksum>[0-9])/
+export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_checksum>\d)/
 
 /**
  * Check if a string is a valid CAS number
@@ -19,7 +19,7 @@ export const CAS_REGEX: RegExp = /(?<seg_a>[0-9]{2,7})-(?<seg_b>[0-9]{2})-(?<seg
  * The third segment is one integer, and that is the checksum of the first two segments.
  *
  * {@link https://regex101.com/r/xPF1Yp/2 Regex test}
- *   `(?P<seg_a>[0-9]{2,7})-(?P<seg_b>[0-9]{2})-(?P<checksum>[0-9])
+ *   `(?P<seg_a>\d{2,7})-(?P<seg_b>\d{2})-(?P<checksum>\d)
  *
  * The checksum is calculated by taking the first two segments and iterating over each
  * individual intiger in reverse order, multiplying each by its position, then taking
@@ -39,13 +39,13 @@ export const CAS_REGEX: RegExp = /(?<seg_a>[0-9]{2,7})-(?<seg_b>[0-9]{2})-(?<seg
  * @param {string} cas - The CAS number to check.
  * @returns {boolean} - True if the CAS number is valid, false otherwise.
  * @example
- *     isCas("1234-56-6") // true
- *     isCas("50-00-0") // true
- *     isCas("1234-56-999") // false
- *     isCas("1234-56") // false
- *     isCas("1234-56-0") // false
- *     isCas("0000-00-0") // false
- *     isCas("00-10-0") // false
+ *     isCas('1234-56-6') // true
+ *     isCas('50-00-0') // true
+ *     isCas('1234-56-999') // false
+ *     isCas('1234-56') // false
+ *     isCas('1234-56-0') // false
+ *     isCas('0000-00-0') // false
+ *     isCas('00-10-0') // false
  */
 export function isCas(cas: string): boolean {
   const regex = RegExp(`^${CAS_REGEX.source}$`)
@@ -72,10 +72,10 @@ export function isCas(cas: string): boolean {
  * @param {string} data - The string to search for a CAS number in.
  * @returns {string|undefined} - The CAS number if found, undefined otherwise.
  * @example
- *     findCas("Example of a valid cas: 1234-56-6..") // "1234-56-6"
- *     findCas("and 50-00-0 is another valid cas #") // "50-00-0"
- *     findCas("Example of an invalid cas: 1232-56-6..") // undefined
- *     findCas("and 50-00-1 is another valid cas #") // undefined
+ *     findCas('Example of a valid cas: 1234-56-6..') // '1234-56-6'
+ *     findCas('and 50-00-0 is another valid cas #') // '50-00-0'
+ *     findCas('Example of an invalid cas: 1232-56-6..') // undefined
+ *     findCas('and 50-00-1 is another valid cas #') // undefined
  */
 export function findCas(data: string): string | undefined {
   const regex = RegExp(CAS_REGEX.source, 'g')

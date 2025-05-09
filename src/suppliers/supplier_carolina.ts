@@ -1,6 +1,6 @@
 import _ from '../lodash';
 import { parseQuantity } from '../helpers/quantity';
-import { Sku, Variant, Product, HeaderObject, QuantityObject } from "../types"
+import { Sku, Variant, Product, HeaderObject, QuantityObject } from '../types'
 import SupplierBase from './supplier_base'
 
 /**
@@ -61,7 +61,7 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
 
   // HTTP headers used as a basis for all queries.
   protected _headers: HeaderObject = {
-    //"accept": "application/json, text/javascript, */*; q=0.01",
+    //'accept': 'application/json, text/javascript, */*; q=0.01',
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
     'accept-language': 'en-US,en;q=0.6',
     'cache-control': 'no-cache',

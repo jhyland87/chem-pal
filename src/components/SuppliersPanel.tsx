@@ -5,7 +5,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import Checkbox from '@mui/material/Checkbox';
 import Avatar from '@mui/material/Avatar';
-import SupplierFactory from '../supplier_factory';
+import SupplierFactory from '../suppliers/supplier_factory';
 import { useSettings } from '../context';
 
 export default function SuppliersPanel() {
@@ -38,7 +38,7 @@ export default function SuppliersPanel() {
             secondaryAction={
               <Checkbox
                 value={supplierName}
-                edge="end"
+                edge='end'
                 onChange={handleToggle(supplierName)}
                 checked={settingsContext.settings.suppliers.includes(supplierName)}
                 inputProps={{ 'aria-labelledby': labelId }}

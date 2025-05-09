@@ -92,108 +92,108 @@ export default function SettingsPanel() {
 
     <FormGroup >
       <List sx={{ width: '100%', bgcolor: 'background.paper' }}
-        component="nav"
-        aria-labelledby="nested-list-subheader"
+        component='nav'
+        aria-labelledby='nested-list-subheader'
         subheader={
-          <ListSubheader component="label" id="nested-list-subheader">
+          <ListSubheader component='label' id='nested-list-subheader'>
             Behavior
           </ListSubheader>
         }>
         <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Cache Search Results" />
+          <ListItemText primary='Cache Search Results' />
           <FormHelperText>Improves performance</FormHelperText>
           <FormControlLabel
             control={
               <Switch
                 checked={settingsContext.settings.caching}
                 onChange={handleSwitchChange}
-                name="caching"
+                name='caching'
               />
             }
-            labelPlacement="start"
-            label=""
+            labelPlacement='start'
+            label=''
           />
         </ListItem>
         <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="AutoComplete" />
+          <ListItemText primary='AutoComplete' />
           <FormHelperText>Autocomplete search input</FormHelperText>
           <FormControlLabel
             control={
               <Switch
                 checked={settingsContext.settings.autocomplete}
                 onChange={handleSwitchChange}
-                name="autocomplete"
+                name='autocomplete'
               />
             }
-            labelPlacement="start"
-            label=""
+            labelPlacement='start'
+            label=''
           />
         </ListItem>
         <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Currency" />
+          <ListItemText primary='Currency' />
           <FormHelperText>Convert all currency to this</FormHelperText>
           <FormControlLabel
             control={
               <Select
                 value={settingsContext.settings.currency}
                 onChange={handleInputChange}
-                name="currency"
-                label="currency"
-                size="small"
+                name='currency'
+                label='currency'
+                size='small'
                 sx={{ ...inputStyle }}
               >
-                <MenuItem value="usd">USD ($)</MenuItem>
-                <MenuItem value="eur">EUR (€)</MenuItem>
-                <MenuItem value="gbp">GBP (£)</MenuItem>
-                <MenuItem value="aud">AUD ($)</MenuItem>
-                <MenuItem value="rub">RUB (₽)</MenuItem>
-                <MenuItem value="cad">CAD ($)</MenuItem>
-                <MenuItem value="inr">INR (₹)</MenuItem>
-                <MenuItem value="rub">RUB (₽)</MenuItem>
-                <MenuItem value="cny">CNY (¥)</MenuItem>
-                <MenuItem value="brl">BRL (R$)</MenuItem>
-                <MenuItem value="mxn">MXN (MX$)</MenuItem>
-                <MenuItem value="zar">ZAR (R)</MenuItem>
-                <MenuItem value="jpy">JPY (¥)</MenuItem>
+                <MenuItem value='usd'>USD ($)</MenuItem>
+                <MenuItem value='eur'>EUR (€)</MenuItem>
+                <MenuItem value='gbp'>GBP (£)</MenuItem>
+                <MenuItem value='aud'>AUD ($)</MenuItem>
+                <MenuItem value='rub'>RUB (₽)</MenuItem>
+                <MenuItem value='cad'>CAD ($)</MenuItem>
+                <MenuItem value='inr'>INR (₹)</MenuItem>
+                <MenuItem value='rub'>RUB (₽)</MenuItem>
+                <MenuItem value='cny'>CNY (¥)</MenuItem>
+                <MenuItem value='brl'>BRL (R$)</MenuItem>
+                <MenuItem value='mxn'>MXN (MX$)</MenuItem>
+                <MenuItem value='zar'>ZAR (R)</MenuItem>
+                <MenuItem value='jpy'>JPY (¥)</MenuItem>
               </Select>
             }
-            labelPlacement="start"
-            label=""
+            labelPlacement='start'
+            label=''
           />
         </ListItem>
         <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Location" />
+          <ListItemText primary='Location' />
           <FormHelperText>Your country</FormHelperText>
           <FormControlLabel
             control={
               <Select
                 value={settingsContext.settings.location}
                 onChange={handleInputChange}
-                name="location"
-                label="location"
-                size="small"
+                name='location'
+                label='location'
+                size='small'
                 sx={{ ...inputStyle }}
               >
-                <MenuItem value=""><i>None</i></MenuItem>
-                <MenuItem value="usa">USA</MenuItem>
-                <MenuItem value="canada">Canada</MenuItem>
-                <MenuItem value="uk">UK</MenuItem>
-                <MenuItem value="australia">Australia</MenuItem>
-                <MenuItem value="newzealand">New Zealand</MenuItem>
-                <MenuItem value="japan">Japan</MenuItem>
-                <MenuItem value="china">China</MenuItem>
-                <MenuItem value="india">India</MenuItem>
-                <MenuItem value="russia">Russia</MenuItem>
-                <MenuItem value="germany">Germany</MenuItem>
-                <MenuItem value="europe">Europe</MenuItem>
+                <MenuItem value=''><i>None</i></MenuItem>
+                <MenuItem value='usa'>USA</MenuItem>
+                <MenuItem value='canada'>Canada</MenuItem>
+                <MenuItem value='uk'>UK</MenuItem>
+                <MenuItem value='australia'>Australia</MenuItem>
+                <MenuItem value='newzealand'>New Zealand</MenuItem>
+                <MenuItem value='japan'>Japan</MenuItem>
+                <MenuItem value='china'>China</MenuItem>
+                <MenuItem value='india'>India</MenuItem>
+                <MenuItem value='russia'>Russia</MenuItem>
+                <MenuItem value='germany'>Germany</MenuItem>
+                <MenuItem value='europe'>Europe</MenuItem>
               </Select>
             }
-            labelPlacement="start"
-            label=""
+            labelPlacement='start'
+            label=''
           />
         </ListItem>
         <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Ships to Location" />
+          <ListItemText primary='Ships to Location' />
           <FormHelperText>Only show products that ship to your location</FormHelperText>
           <FormControlLabel
             control={
@@ -201,92 +201,92 @@ export default function SettingsPanel() {
                 checked={!!settingsContext.settings.location && settingsContext.settings.shipsToMyLocation}
                 disabled={settingsContext.settings.location === ''}
                 onChange={handleSwitchChange}
-                name="shipsToMyLocation"
+                name='shipsToMyLocation'
               />
             }
-            labelPlacement="start"
-            label=""
+            labelPlacement='start'
+            label=''
           />
         </ListItem>
         <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Foo" />
+          <ListItemText primary='Foo' />
           <FormHelperText>Just an input example</FormHelperText>
           <FormControlLabel
             control={
               <TextField
                 value={settingsContext.settings.foo}
-                name="foo"
+                name='foo'
                 onChange={handleInputChange}
                 //hiddenLabel
-                variant="filled"
-                size="small"
+                variant='filled'
+                size='small'
                 sx={{ ...inputStyle }}
               />
             }
-            labelPlacement="start"
-            label=""
+            labelPlacement='start'
+            label=''
           />
         </ListItem>
-        <Divider variant="middle" component="li" />
+        <Divider variant='middle' component='li' />
       </List>
       <List sx={{ width: '100%', bgcolor: 'background.paper' }}
-        component="nav"
-        aria-labelledby="nested-list-subheader"
+        component='nav'
+        aria-labelledby='nested-list-subheader'
         subheader={
-          <ListSubheader component="label" id="nested-list-subheader">
+          <ListSubheader component='label' id='nested-list-subheader'>
             Display
           </ListSubheader>
         }>
         <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Popup Size" />
+          <ListItemText primary='Popup Size' />
           <FormHelperText>Popup size</FormHelperText>
           <FormControlLabel
             control={
-              <ButtonGroup variant="contained" aria-label="Basic button group" onClick={handleButtonClick}>
-                <Button name="popupSize" value="small" size="small" variant={settingsContext.settings.popupSize === 'small' ? 'contained' : 'text'}>Small</Button>
-                <Button name="popupSize" value="medium" size="small" variant={settingsContext.settings.popupSize === 'medium' ? 'contained' : 'text'}>Medium</Button>
-                <Button name="popupSize" value="large" size="small" variant={settingsContext.settings.popupSize === 'large' ? 'contained' : 'text'}>Large</Button>
+              <ButtonGroup variant='contained' aria-label='Basic button group' onClick={handleButtonClick}>
+                <Button name='popupSize' value='small' size='small' variant={settingsContext.settings.popupSize === 'small' ? 'contained' : 'text'}>Small</Button>
+                <Button name='popupSize' value='medium' size='small' variant={settingsContext.settings.popupSize === 'medium' ? 'contained' : 'text'}>Medium</Button>
+                <Button name='popupSize' value='large' size='small' variant={settingsContext.settings.popupSize === 'large' ? 'contained' : 'text'}>Large</Button>
               </ButtonGroup>
 
             }
-            labelPlacement="start"
-            label=""
+            labelPlacement='start'
+            label=''
           />
         </ListItem>
         <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Auto-Resize" />
+          <ListItemText primary='Auto-Resize' />
           <FormHelperText>More results = larger window</FormHelperText>
           <FormControlLabel
             control={
               <Switch
                 checked={settingsContext.settings.autoResize}
                 onChange={handleSwitchChange}
-                name="autoResize"
+                name='autoResize'
               />
             }
-            labelPlacement="start"
-            label=""
+            labelPlacement='start'
+            label=''
           />
         </ListItem>
         <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Some Setting" />
-          <FormHelperText id="some-setting-helper-text">Disabled by default</FormHelperText>
+          <ListItemText primary='Some Setting' />
+          <FormHelperText id='some-setting-helper-text'>Disabled by default</FormHelperText>
           <FormControlLabel
             control={
               <Switch
                 checked={settingsContext.settings.someSetting}
                 onChange={handleSwitchChange}
-                name="someSetting"
+                name='someSetting'
               />
             }
-            labelPlacement="start"
-            label=""
+            labelPlacement='start'
+            label=''
           />
         </ListItem>
-        <Divider component="li" />
+        <Divider component='li' />
         <ListItem>
-          <Stack spacing={2} direction="row" sx={{ display: 'block', marginLeft: 'auto', marginRight: 'auto' }}>
-            <Button variant="outlined">Restore Defaults</Button>
+          <Stack spacing={2} direction='row' sx={{ display: 'block', marginLeft: 'auto', marginRight: 'auto' }}>
+            <Button variant='outlined'>Restore Defaults</Button>
           </Stack>
         </ListItem>
       </List>

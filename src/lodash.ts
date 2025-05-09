@@ -22,7 +22,7 @@ declare module 'lodash' {
  */
 function md5(inputString: string) {
   const hc = '0123456789abcdef';
-  function rh(n: number) { let j, s = ""; for (j = 0; j <= 3; j++) s += hc.charAt((n >> (j * 8 + 4)) & 0x0F) + hc.charAt((n >> (j * 8)) & 0x0F); return s; }
+  function rh(n: number) { let j, s = ''; for (j = 0; j <= 3; j++) s += hc.charAt((n >> (j * 8 + 4)) & 0x0F) + hc.charAt((n >> (j * 8)) & 0x0F); return s; }
   function ad(x: number, y: number) { let l = (x & 0xFFFF) + (y & 0xFFFF); let m = (x >> 16) + (y >> 16) + (l >> 16); return (m << 16) | (l & 0xFFFF); }
   function rl(n: number, c: number) { return (n << c) | (n >>> (32 - c)); }
   function cm(q: number, a: number, b: number, x: number, s: number, t: number) { return ad(rl(ad(ad(a, q), ad(x, t)), s), b); }

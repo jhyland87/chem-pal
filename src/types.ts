@@ -25,20 +25,36 @@ export enum UOM_LONG {
 // These are the UOM values that will be displayed to the user.
 // Changing the values here will change the UOM values in the
 // search results.
+// export enum UOM {
+//   kg = 'kg',
+//   lb = 'lb',
+//   ml = 'ml',
+//   g = 'g',
+//   L = 'L',
+//   qt = 'qt',
+//   gal = 'gal',
+//   mm = 'mm',
+//   cm = 'cm',
+//   m = 'm',
+//   oz = 'oz',
+//   mg = 'mg',
+//   km = 'km',
+// }
+
 export enum UOM {
-  kg = 'kg',
-  lb = 'lb',
-  ml = 'ml',
-  g = 'g',
+  KG = 'kg',
+  LB = 'lb',
+  ML = 'ml',
+  G = 'g',
   L = 'L',
-  qt = 'qt',
-  gal = 'gal',
-  mm = 'mm',
-  cm = 'cm',
-  m = 'm',
-  oz = 'oz',
-  mg = 'mg',
-  km = 'km',
+  QT = 'qt',
+  GAL = 'gal',
+  MM = 'mm',
+  CM = 'cm',
+  M = 'm',
+  OZ = 'oz',
+  MG = 'mg',
+  KM = 'km',
 }
 
 export interface Settings {
@@ -127,8 +143,9 @@ export interface TabPanelProps {
   children?: ReactNode;
   dir?: string;
   index: number;
-  value: number;
-  style?: object
+  value: number|string;
+  style?: object;
+  name: string;
 }
 
 export interface SettingsContextProps {

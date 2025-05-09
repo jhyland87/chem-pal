@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Collapse, Typography } from "@mui/material";
-import { Virtuoso } from "react-virtuoso";
+import { Collapse, Typography } from '@mui/material';
+import { Virtuoso } from 'react-virtuoso';
 
 interface TableData {
   name: string;
@@ -31,7 +31,7 @@ const TableTest: React.FC = () => {
         setData(data => [...data, ...result.data]);
         setCurrentPage(page => page + 1);
       })
-      .catch(error => console.log("error", error));
+      .catch(error => console.log('error', error));
       */
   };
 
@@ -42,11 +42,11 @@ const TableTest: React.FC = () => {
       endReached={fetchData}
       itemContent={(index, data) => {
         console.log('itemContent', index, data)
-        let bgColor = "";
+        let bgColor = '';
         if (index % 2 === 0) {
-          bgColor = "yellow";
+          bgColor = 'yellow';
         } else {
-          bgColor = "blue";
+          bgColor = 'blue';
         }
 
         return (
