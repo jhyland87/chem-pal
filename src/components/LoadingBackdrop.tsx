@@ -1,4 +1,4 @@
-import './ProductTable.css'
+import './SearchPanel.css'
 import CancelIcon from '@mui/icons-material/Cancel';
 import Stack from '@mui/material/Stack';
 import Backdrop from '@mui/material/Backdrop';

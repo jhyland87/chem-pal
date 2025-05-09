@@ -18,6 +18,7 @@ import { useSettings } from '../context';
 
 const inputStyle = {
   width: 120,
+  size: 'small'
 }
 
 const style = {
@@ -48,7 +49,7 @@ const displayHelperOnHover = {
 };
 
 
-export default function SettingsForm() {
+export default function SettingsPanel() {
   const settingsContext = useSettings();
 
   const handleSwitchChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -89,7 +90,7 @@ export default function SettingsForm() {
 
   return (
 
-    <FormGroup>
+    <FormGroup >
       <List sx={{ width: '100%', bgcolor: 'background.paper' }}
         component="nav"
         aria-labelledby="nested-list-subheader"
@@ -138,6 +139,7 @@ export default function SettingsForm() {
                 onChange={handleInputChange}
                 name="currency"
                 label="currency"
+                size="small"
                 sx={{ ...inputStyle }}
               >
                 <MenuItem value="usd">USD ($)</MenuItem>
@@ -169,6 +171,7 @@ export default function SettingsForm() {
                 onChange={handleInputChange}
                 name="location"
                 label="location"
+                size="small"
                 sx={{ ...inputStyle }}
               >
                 <MenuItem value=""><i>None</i></MenuItem>

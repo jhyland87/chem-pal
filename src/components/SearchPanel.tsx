@@ -1,4 +1,4 @@
-import './ProductTable.css'
+import './SearchPanel.css'
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Link from '@mui/material/Link';
@@ -6,7 +6,6 @@ import FilledInput from '@mui/material/FilledInput';
 import LinearProgress from '@mui/material/LinearProgress';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import React, { ChangeEvent, useState, useEffect } from 'react';
-//import { TableVirtuoso, TableComponents } from 'react-virtuoso';
 import OptionsMenu from './OptionsMenu';
 import { Product } from '../types'
 import SupplierFactory from '../supplier_factory';
@@ -58,7 +57,7 @@ const columns: GridColDef[] = [
   },
 ];
 
-const ProductTable: React.FC = () => {
+const SearchPanel: React.FC = () => {
   const settingsContext = useSettings();
   const [products, setProducts] = useState<Product[]>([]);
   const [query, setQuery] = useState('');
@@ -69,7 +68,6 @@ const ProductTable: React.FC = () => {
     page: 0,
   });
 
-  //const fetchController = new AbortController();
 
   // On component load, populate the products from storage if there is any.
   // If there are products to list, then also update the pagination if it
@@ -167,7 +165,7 @@ const ProductTable: React.FC = () => {
   const handleStopSearch = () => {
     // Stop the form from propagating
     //event.preventDefault();
-    console.log('triggering abort..')
+    console.debug('triggering abort..')
 
     setIsLoading(false)
 
@@ -228,4 +226,4 @@ const ProductTable: React.FC = () => {
   );
 };
 
-export default ProductTable;
+export default SearchPanel;
