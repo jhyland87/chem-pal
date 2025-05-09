@@ -59,7 +59,7 @@ export function parseQuantity(quantity: string): QuantityMatch {
  *  standardizeUom('kilograms') // 'kilogram'
  *  standardizeUom('lb') // 'pound'
  */
-export function standardizeUom(uomx: string): string {
+export function standardizeUom(uomx: string): string | void {
   const uomMap = Object.entries(uomAliases).reduce((acc, [uomx, aliases]) => {
     aliases.forEach(alias => {
       acc[alias] = uomx
@@ -69,9 +69,5 @@ export function standardizeUom(uomx: string): string {
 
   if (uomx.toLowerCase() in uomMap)
     return uomMap[uomx.toLowerCase()]
-  else
-    console.log(`uom '${uomx.toLowerCase()}' not found in uomMap:`, uomMap)
-
-  return uomx
 }
 
