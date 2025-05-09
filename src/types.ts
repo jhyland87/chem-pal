@@ -1,7 +1,10 @@
 
 import { ReactNode } from 'react';
 
-export type QuantityMatch = { quantity: number, uom: string }
+export type QuantityMatch = { quantity: number, uom: string };
+export type HeaderObject = { [key: string]: string };
+export type ChromeStorageItems = { [key: string]: any };
+
 
 export interface Settings {
   caching: boolean;
@@ -84,11 +87,6 @@ export interface Product {
   variants?: Variant[];
 }
 
-export interface ChromeStorageItems {
-  [key: string]: any;
-}
-
-export type HeaderObject = { [key: string]: string };
 
 export interface TabPanelProps {
   children?: ReactNode;
