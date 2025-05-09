@@ -18,9 +18,9 @@ describe('isCas', () => {
     '00-10-0': false
   }
 
-  for (const [cas, expected] of Object.entries(testData)) {
-    it(`should return ${expected} for CAS number: ${cas}`, () =>
-      expect(isCas(cas)).toBe(expected)
+  for (const [input, output] of Object.entries(testData)) {
+    it(`should return ${output} for CAS number: ${input}`, () =>
+      expect(isCas(input)).toBe(output)
     )
   }
 })
@@ -34,9 +34,9 @@ describe('findCas', () => {
     'and 50-00-1 is another valid cas #': undefined
   }
 
-  for (const [content, result] of Object.entries(testData)) {
-    it(`should return ${result} for content: ${content}`, () =>
-      expect(findCas(content)).toBe(result)
+  for (const [input, output] of Object.entries(testData)) {
+    it(`should return ${output} for content: ${input}`, () =>
+      expect(findCas(input)).toBe(output)
     )
   }
 })
