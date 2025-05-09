@@ -22,7 +22,9 @@ export enum UOM_LONG {
   km = 'kilometer',
 }
 
-
+// These are the UOM values that will be displayed to the user.
+// Changing the values here will change the UOM values in the
+// search results.
 export enum UOM {
   kg = 'kg',
   lb = 'lb',
