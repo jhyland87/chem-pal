@@ -1,4 +1,5 @@
 import _ from '../lodash';
+import { parseQuantity } from '../helpers/quantity';
 import { Sku, Variant, Product, HeaderObject, QuantityMatch } from "../types"
 import SupplierBase from './supplier_base'
 
@@ -197,7 +198,7 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
 
       //console.debug('productData:', productData)
 
-      const quantityMatch: QuantityMatch = _.parseQuantity(productData.displayName)
+      const quantityMatch: QuantityMatch = parseQuantity(productData.displayName)
 
       //console.debug('quantityMatch:', quantityMatch)
 

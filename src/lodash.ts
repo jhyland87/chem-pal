@@ -1,5 +1,4 @@
 import _ from 'lodash'
-import { QuantityMatch } from './types'
 
 /**
  * Declare the custom method types
@@ -10,7 +9,6 @@ declare module 'lodash' {
     md5sum(input: any): string;
     sha256(message: string): Promise<string>;
     sha256sum(input: any): Promise<string>;
-    parseQuantity(quantity: string): QuantityMatch;
     serialize(data: string): string;
     deserialize(data: string): string;
     coalesce(data?: any[]): any;
@@ -128,33 +126,7 @@ async function sha256sum(input: any) {
   return await sha256(input)
 }
 
-/**
- * Parses a quantity string into a QuantityMatch object.
- * @see https://regex101.com/r/lDLuVX/5
- * @param quantity - The quantity string to parse.
- * @returns A QuantityMatch object.
- */
-function parseQuantity(quantity: string): QuantityMatch {
-  const quantityMatch = quantity.match(/(?<quantity>[0-9][0-9\.\,]*)\s?(?<uom>(?:milli|kilo|centi)(?:gram|meter|liter|metre)s?|z|ounces?|grams?|gallon|gal|kg|g|lbs?|pounds?|l|qt|m?[glm])/)
 
-  if (!quantityMatch)
-    throw new Error('Failed to parse quantity')
-
-  const groups = quantityMatch.groups
-
-  if (!groups)
-    throw new Error('Failed to parse quantity: no groups found')
-
-  const parsedQuantity = parseFloat(groups.quantity.replace(/,/g, ''))
-
-  if (isNaN(parsedQuantity))
-    throw new Error('Failed to parse quantity: invalid number')
-
-  return {
-    quantity: parsedQuantity,
-    uom: groups.uom
-  }
-}
 
 /**
  * Serializes a string to a base64 encoded string.
@@ -190,7 +162,6 @@ _.mixin({
   md5sum,
   sha256,
   sha256sum,
-  parseQuantity,
   serialize,
   deserialize,
   coalesce
