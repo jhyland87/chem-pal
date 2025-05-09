@@ -48,7 +48,7 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
   protected _baseURL: string = 'https://www.carolina.com';
 
   // This is a limit to how many queries can be sent to the supplier for any given query.
-  protected _http_request_hard_limit: number = 50
+  protected _httpRequestHardLimit: number = 50
 
   // Used to keep track of how many requests have been made to the supplier.
   protected _http_requst_count: number = 0;
@@ -147,13 +147,13 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
       })
     }
 
-    this._query_results = elementList.slice(0, this._limit)
-    //console.log('[queryProducts] this._query_results:', this._query_results)
+    this._queryResults = elementList.slice(0, this._limit)
+    //console.log('[queryProducts] this._queryResults:', this._queryResults)
   }
 
   protected async parseProducts(): Promise<any> {
-    return Promise.all(this._query_results.map((result) => this._getProductData(result)))
-    //.then(results => console.debug('[parseProducts]:', { results, queryResults: this._query_results }))
+    return Promise.all(this._queryResults.map((result) => this._getProductData(result)))
+    //.then(results => console.debug('[parseProducts]:', { results, queryResults: this._queryResults }))
   }
 
   protected async _getProductData(productIndexObject: { href: string; title: string; prices: string; count: string }): Promise<Product | void> {
