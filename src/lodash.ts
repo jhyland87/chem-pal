@@ -1,7 +1,9 @@
 import _ from 'lodash'
 import { QuantityMatch } from './types'
 
-// Declare the custom method type
+/**
+ * Declare the custom method types
+ */
 declare module 'lodash' {
   interface LoDashStatic {
     md5(inputString: string): string;
@@ -15,7 +17,11 @@ declare module 'lodash' {
   }
 }
 
-// MD5 hash function
+/**
+ * MD5 hash function
+ * @param inputString - The input string to hash.
+ * @returns The MD5 hash of the input string.
+ */
 function md5(inputString: string) {
   const hc = '0123456789abcdef';
   function rh(n: number) { let j, s = ""; for (j = 0; j <= 3; j++) s += hc.charAt((n >> (j * 8 + 4)) & 0x0F) + hc.charAt((n >> (j * 8)) & 0x0F); return s; }
@@ -61,7 +67,11 @@ function md5(inputString: string) {
   return rh(a) + rh(b) + rh(c) + rh(d);
 }
 
-// MD5 hash function
+/**
+ * MD5 hash function
+ * @param input - The input to hash.
+ * @returns The MD5 hash of the input.
+ */
 function md5sum(input: any): string {
   if (input === null || input === undefined)
     return md5('')
@@ -78,7 +88,11 @@ function md5sum(input: any): string {
   return md5(input)
 }
 
-// SHA256 hash function
+/**
+ * SHA256 hash function
+ * @param message - The message to hash.
+ * @returns The SHA256 hash of the message.
+ */
 async function sha256(message: string) {
   // encode as UTF-8
   const msgBuffer = new TextEncoder().encode(message);
@@ -90,11 +104,14 @@ async function sha256(message: string) {
   const hashArray = Array.from(new Uint8Array(hashBuffer));
 
   // convert bytes to hex string
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return hashHex;
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// SHA256 hash function
+/**
+ * SHA256 hash function
+ * @param input - The input to hash.
+ * @returns The SHA256 hash of the input.
+ */
 async function sha256sum(input: any) {
   if (input === null || input === undefined)
     return await sha256('')
@@ -119,18 +136,19 @@ async function sha256sum(input: any) {
  */
 function parseQuantity(quantity: string): QuantityMatch {
   const quantityMatch = quantity.match(/(?<quantity>[0-9][0-9\.\,]*)\s?(?<uom>(?:milli|kilo|centi)(?:gram|meter|liter|metre)s?|z|ounces?|grams?|gallon|gal|kg|g|lbs?|pounds?|l|qt|m?[glm])/)
-  if (!quantityMatch) {
+
+  if (!quantityMatch)
     throw new Error('Failed to parse quantity')
-  }
+
   const groups = quantityMatch.groups
-  if (!groups) {
+
+  if (!groups)
     throw new Error('Failed to parse quantity: no groups found')
-  }
 
   const parsedQuantity = parseFloat(groups.quantity.replace(/,/g, ''))
-  if (isNaN(parsedQuantity)) {
+
+  if (isNaN(parsedQuantity))
     throw new Error('Failed to parse quantity: invalid number')
-  }
 
   return {
     quantity: parsedQuantity,
