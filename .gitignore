@@ -24,3 +24,5 @@ dev
 *.njsproj
 *.sln
 *.sw?
+
+coverage
