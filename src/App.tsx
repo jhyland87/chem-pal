@@ -4,7 +4,7 @@ import SettingsPanel from './components/SettingsPanel'
 import SuppliersPanel from './components/SuppliersPanel';
 import TabHeader from './components/TabHeader'
 import { useState, useEffect } from 'react';
-import { ThemeProvider, createTheme, useTheme } from '@mui/material/styles';
+import { ThemeProvider, useTheme } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
@@ -95,6 +95,3 @@ function App() {
 }
 
 export default App
-
-
-

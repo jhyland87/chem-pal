@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import { QuantityMatch } from './types'
 
 // Declare the custom method type
 declare module 'lodash' {
@@ -7,6 +8,7 @@ declare module 'lodash' {
     md5sum(input: any): string;
     sha256(message: string): Promise<string>;
     sha256sum(input: any): Promise<string>;
+    parseQuantity(quantity: string): QuantityMatch;
   }
 }
 
@@ -106,8 +108,29 @@ async function sha256sum(input: any) {
   return await sha256(input)
 }
 
+function parseQuantity(quantity: string): QuantityMatch {
+  const quantityMatch = quantity.match(/(?<quantity>[0-9][0-9\.\,]*)\s?(?<uom>(?:milli|kilo|centi)(?:gram|meter|liter|metre)s?|z|ounces?|grams?|gallon|gal|kg|g|lbs?|pounds?|l|qt|m?[glm])/)
+  if (!quantityMatch) {
+    throw new Error('Failed to parse quantity')
+  }
+  const groups = quantityMatch.groups
+  if (!groups) {
+    throw new Error('Failed to parse quantity: no groups found')
+  }
+
+  const parsedQuantity = parseFloat(groups.quantity.replace(/,/g, ''))
+  if (isNaN(parsedQuantity)) {
+    throw new Error('Failed to parse quantity: invalid number')
+  }
+
+  return {
+    quantity: parsedQuantity,
+    uom: groups.uom
+  }
+}
+
 _.mixin({
-  md5, md5sum, sha256, sha256sum
+  md5, md5sum, sha256, sha256sum, parseQuantity
 })
 
 export default _

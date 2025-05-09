@@ -1,8 +1,15 @@
-import _ from 'lodash';
-import { Sku, Variant, Product, HeaderObject } from "../types"
+import _ from '../lodash';
+import { Sku, Variant, Product, HeaderObject, QuantityMatch } from "../types"
 import SupplierBase from './supplier_base'
 
 /**
+ * Carolina.com uses Oracle ATG Commerce as their ecommerce platform.
+ *
+ * The ATG Commerce platform uses a custom script to fetch product data.
+ * This script is located in the `script[nonce]` element of the product page.
+ *
+ * The script is a JSON object that contains the product data.
+ *
  * Product search for Carolina.com will query the following URL (with `lithium` as the search query):
  *
  *  https://www.carolina.com/browse/product-search-results? \
@@ -150,7 +157,7 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
     //.then(results => console.debug('[parseProducts]:', { results, queryResults: this._query_results }))
   }
 
-  protected async _getProductData(productIndexObject: { href: string; title: string; prices: string; count: string }): Promise<T | void> {
+  protected async _getProductData(productIndexObject: { href: string; title: string; prices: string; count: string }): Promise<Product | void> {
     try {
       const response = await this.httpGet(`https://www.carolina.com${productIndexObject.href}`)
       if (!response?.ok) {
@@ -164,6 +171,55 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
         throw new Error('Failed to load product HTML into DOMParser')
       }
 
+      let productScriptNonce = doc.querySelector('script[nonce]');
+      if (!productScriptNonce) {
+        throw new Error('Failed to find product script nonce')
+      }
+
+      const productScriptNonceText = productScriptNonce.textContent;
+      if (!productScriptNonceText) {
+        throw new Error('Failed to find product script nonce text')
+      }
+
+      const productScriptNonceTextMatch = productScriptNonceText.match('(?<== )(.*)(?=;\\n)');
+
+      if (!productScriptNonceTextMatch) {
+        throw new Error('Failed to find product script nonce text')
+      }
+
+      const productAtgJson = JSON.parse(productScriptNonceTextMatch[0])
+      console.lodebugg('productAtgJson:', productAtgJson)
+
+      const productData: any = _.result(productAtgJson, 'fetch.response.contents.MainContent[0].atgResponse.response.response');
+
+      if (!productData) {
+        throw new Error('Failed to find product data')
+      }
+
+      console.debug('productData:', productData)
+
+      const quantityMatch: QuantityMatch = _.parseQuantity(productData.displayName)
+
+      console.debug('quantityMatch:', quantityMatch)
+
+      const priceA = _.result(productData, 'familyVariyantProductDetails.productVariantsResult.masterProductBean.skus[0].priceInfo.regularPrice[0]')
+      const priceB = _.result(productData, 'dataLayer.productPrice[0]')
+
+      const product = {
+        supplier: this.supplierName,
+        title: productData.displayName,
+        url: this._baseURL + productData.canonicalUrl,
+        price: priceA || priceB,
+        ...quantityMatch
+      }
+
+      console.debug('[getProductData] product:', product)
+
+      return product as Product;
+
+      //JSON.parse(document.querySelector('script[nonce]').innerText.match('(?<== )(.*)(?=;\\n)')[0]).fetch.response.contents.MainContent[0].atgResponse.response.response
+
+      /*
       let description: { casNo?: string; formula?: string } = {}
       const descMeta = doc.querySelector('meta[name=description]')
 
@@ -219,6 +275,7 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
 
       this._products.push(product as T);
       return product as T;
+      */
 
     } catch (error: any) {
       console.error(error.message);
