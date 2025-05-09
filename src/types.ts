@@ -1,6 +1,8 @@
 
 import { ReactNode } from 'react';
 
+export type QuantityMatch = { quantity: number, uom: string }
+
 export interface Settings {
   caching: boolean;
   autocomplete: boolean;
