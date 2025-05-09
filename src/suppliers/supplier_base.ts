@@ -21,7 +21,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
 
   // If the products first require a query of a search page that gets iterated over,
   // those results are stored here
-  protected _query_results: Array<any> = []
+  protected _queryResults: Array<any> = []
 
   // The AbortController interface represents a controller object that allows you to
   // abort one or more Web requests as and when desired.
@@ -32,7 +32,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   protected _limit: number
 
   // This is a limit to how many queries can be sent to the supplier for any given query.
-  protected _http_request_hard_limit: number = 50
+  protected _httpRequestHardLimit: number = 50
 
   // Used to keep track of how many requests have been made to the supplier.
   protected _http_requst_count: number = 0;
@@ -199,7 +199,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
       await this.queryProducts();
 
       // Get the product data for each query result
-      const productPromises = this._query_results.map((r: Object) => {
+      const productPromises = this._queryResults.map((r: Object) => {
         // @todo: This is a hack to remove chrome-extension:// from the href if it exists. Why
         //        is it required? Should be able to use a URL without needing to remove this.
         //r.href = r.href.replace(/chrome-extension:\/\/[a-z]+/, '')

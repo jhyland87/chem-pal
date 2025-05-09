@@ -74,11 +74,11 @@ export default abstract class SupplierWixBase<T extends Product> extends Supplie
       return
     }
 
-    this._query_results = resultDocuments
+    this._queryResults = resultDocuments
   }
 
   protected async parseProducts(): Promise<void> {
-    const res = this._query_results.map((r: any) => {
+    const res = this._queryResults.map((r: any) => {
       // supplier, title, url, price, quantity,
       return {
         supplier: this.supplierName,

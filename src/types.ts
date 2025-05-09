@@ -58,12 +58,11 @@ export interface Supplier {
   supplierName: string;
   _query: string;
   _products: Array<Product>;
-  _query_results: Array<any>;
+  _queryResults: Array<any>;
   _baseURL: string;
   _controller: AbortController;
-  _is_aborted: boolean;
   _limit: number;
-  _http_request_hard_limit: number;
+  _httpRequestHardLimit: number;
 }
 
 export interface Product {
