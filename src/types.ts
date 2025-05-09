@@ -1,7 +1,7 @@
 
 import { ReactNode } from 'react';
 
-export type QuantityMatch = { quantity: number, uom: string };
+export type QuantityObject = { quantity: number, uom: string };
 export type HeaderObject = { [key: string]: string };
 export type ChromeStorageItems = { [key: string]: any };
 

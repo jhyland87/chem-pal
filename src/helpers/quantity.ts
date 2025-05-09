@@ -1,6 +1,6 @@
 
 
-import { QuantityMatch, UOM } from '../types'
+import { QuantityObject, UOM } from '../types'
 
 /**
  * Since a single UOM can be represented in multiple ways, we need to keep track of all the
@@ -23,12 +23,12 @@ export const uomAliases: Record<UOM, string[]> = {
 }
 
 /**
- * Parses a quantity string into a QuantityMatch object.
+ * Parses a quantity string into a QuantityObject object.
  * @see https://regex101.com/r/lDLuVX/7
  * @param value - The quantity string to parse.
- * @returns A QuantityMatch object.
+ * @returns A QuantityObject object.
  */
-export function parseQuantity(value: string): QuantityMatch | void {
+export function parseQuantity(value: string): QuantityObject | void {
   const quantityMatch = value.match(/(?<quantity>[0-9][0-9\.\,]*)\s?(?<uom>(?:milli|kilo|centi)?(?:gram|meter|liter|litre|metre)s?|oz|ounces?|grams?|gallons?|quarts?|gal|cm|k[mg]?|g|lbs?|pounds?|l|qts?|m?[glm])/i)
   if (!quantityMatch || !quantityMatch.groups || !quantityMatch.groups.quantity || !quantityMatch.groups.uom)
     throw new Error('Failed to parse quantity')
