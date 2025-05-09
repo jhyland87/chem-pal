@@ -114,7 +114,7 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
 
   protected async queryProducts(): Promise<void> {
     const queryURL = this._makeQueryUrl(this._query)
-    console.debug({ queryURL })
+    //console.debug({ queryURL })
     const response = await this.httpGet(queryURL)
 
     if (!response?.ok) {
@@ -122,7 +122,7 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
     }
 
     const resultHTML = await response.text();
-    console.log('resultHTML:', resultHTML)
+    //console.log('resultHTML:', resultHTML)
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(resultHTML, 'text/html');
@@ -132,7 +132,7 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
     }
 
     const productElements: NodeListOf<HTMLElement> = doc.querySelectorAll('div.c-feature-product')
-    console.log('productElements:', productElements)
+    //console.log('productElements:', productElements)
 
     const elementList: { title: string; href: string; prices: string; count: string }[] = []
 
@@ -148,12 +148,11 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
     }
 
     this._query_results = elementList.slice(0, this._limit)
-    console.log('[queryProducts] this._query_results:', this._query_results)
+    //console.log('[queryProducts] this._query_results:', this._query_results)
   }
 
   protected async parseProducts(): Promise<any> {
-    return Promise
-      .all(this._query_results.map((r) => this._getProductData(r)))
+    return Promise.all(this._query_results.map((result) => this._getProductData(result)))
     //.then(results => console.debug('[parseProducts]:', { results, queryResults: this._query_results }))
   }
 
@@ -188,7 +187,7 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
       }
 
       const productAtgJson = JSON.parse(productScriptNonceTextMatch[0])
-      console.lodebugg('productAtgJson:', productAtgJson)
+      //console.debug('productAtgJson:', productAtgJson)
 
       const productData: any = _.result(productAtgJson, 'fetch.response.contents.MainContent[0].atgResponse.response.response');
 
@@ -196,20 +195,30 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
         throw new Error('Failed to find product data')
       }
 
-      console.debug('productData:', productData)
+      //console.debug('productData:', productData)
 
       const quantityMatch: QuantityMatch = _.parseQuantity(productData.displayName)
 
-      console.debug('quantityMatch:', quantityMatch)
+      //console.debug('quantityMatch:', quantityMatch)
 
-      const priceA = _.result(productData, 'familyVariyantProductDetails.productVariantsResult.masterProductBean.skus[0].priceInfo.regularPrice[0]')
-      const priceB = _.result(productData, 'dataLayer.productPrice[0]')
+      // The price can be stored at different locations in the productData object. Select them all then
+      // choose the first non-undefined, non-null value.
+      const price = _(productData)
+        .at([
+          'dataLayer.productPrice[0]',
+          'familyVariyantProductDetails.productVariantsResult.masterProductBean.skus[0].priceInfo.regularPrice[0]'
+        ])
+        .compact()
+        .result('[0]')
+
+      //console.debug('price:', price)
+
 
       const product = {
         supplier: this.supplierName,
         title: productData.displayName,
         url: this._baseURL + productData.canonicalUrl,
-        price: priceA || priceB,
+        price: price,
         ...quantityMatch
       }
 

@@ -11,6 +11,7 @@ declare module 'lodash' {
     parseQuantity(quantity: string): QuantityMatch;
     serialize(data: string): string;
     deserialize(data: string): string;
+    coalesce(data?: any[]): any;
   }
 }
 
@@ -155,6 +156,17 @@ function deserialize(data: string): string {
   return decodeURIComponent(atob(data))
 }
 
+/**
+ * Similar to mysql's COALESCE function, this returns the first non-undefined,
+ * non-null value in the array.
+ * @param data - The array of values to coalesce.
+ * @returns The first non-undefined, non-null value in the array.
+ */
+function coalesce(data: any[]): any {
+  return data.find(item => item !== undefined && item !== null)
+}
+
+
 _.mixin({
   md5,
   md5sum,
@@ -162,7 +174,8 @@ _.mixin({
   sha256sum,
   parseQuantity,
   serialize,
-  deserialize
+  deserialize,
+  coalesce
 })
 
 export default _
