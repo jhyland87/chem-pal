@@ -25,11 +25,11 @@ export const uomAliases: Record<UOM, string[]> = {
 /**
  * Parses a quantity string into a QuantityMatch object.
  * @see https://regex101.com/r/lDLuVX/7
- * @param quantity - The quantity string to parse.
+ * @param value - The quantity string to parse.
  * @returns A QuantityMatch object.
  */
-export function parseQuantity(quantity: string): QuantityMatch {
-  const quantityMatch = quantity.match(/(?<quantity>[0-9][0-9\.\,]*)\s?(?<uom>(?:milli|kilo|centi)?(?:gram|meter|liter|litre|metre)s?|oz|ounces?|grams?|gallons?|quarts?|gal|cm|k[mg]?|g|lbs?|pounds?|l|qts?|m?[glm])/i)
+export function parseQuantity(value: string): QuantityMatch | void {
+  const quantityMatch = value.match(/(?<quantity>[0-9][0-9\.\,]*)\s?(?<uom>(?:milli|kilo|centi)?(?:gram|meter|liter|litre|metre)s?|oz|ounces?|grams?|gallons?|quarts?|gal|cm|k[mg]?|g|lbs?|pounds?|l|qts?|m?[glm])/i)
   if (!quantityMatch || !quantityMatch.groups || !quantityMatch.groups.quantity || !quantityMatch.groups.uom)
     throw new Error('Failed to parse quantity')
 
@@ -42,10 +42,11 @@ export function parseQuantity(quantity: string): QuantityMatch {
   if (parsedQuantity.match(/^([0-9]+\.[0-9]+,[0-9]{1,2}|[0-9]{1,3},[0-9]{1,2}|[0-9]{1,3},[0-9]{1,2})$/))
     parsedQuantity = parsedQuantity.replaceAll('.', 'xx').replaceAll(',', '.').replaceAll('xx', ',')
 
-  return {
-    quantity: parseFloat(parsedQuantity.replace(/,/g, '')),
-    uom: standardizeUom(quantityMatch.groups.uom)
-  }
+  const uom = standardizeUom(quantityMatch.groups.uom)
+  const quantity = parseFloat(parsedQuantity.replace(/,/g, ''))
+
+  if (uom && quantity)
+    return { quantity, uom }
 }
 
 
