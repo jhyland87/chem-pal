@@ -50,13 +50,11 @@ export const CAS_REGEX: RegExp = /(?<seg_a>[0-9]{2,7})-(?<seg_b>[0-9]{2})-(?<seg
 export function isCas(cas: string): boolean {
   const regex = RegExp(`^${CAS_REGEX.source}$`)
   const match = cas.match(regex);
-  if (!match) return false;
+  if (!match || !match.groups?.seg_a || !match.groups?.seg_b || !match.groups?.seg_checksum) return false;
 
-  const segA = match.groups?.seg_a;
-  const segB = match.groups?.seg_b;
-  const segChecksum = match.groups?.seg_checksum;
-
-  if (!segA || !segB || !segChecksum) return false;
+  const segA = match.groups.seg_a;
+  const segB = match.groups.seg_b;
+  const segChecksum = match.groups.seg_checksum;
 
   if (parseInt(segA) === 0 && parseInt(segB) === 0) return false;
 
@@ -82,6 +80,5 @@ export function isCas(cas: string): boolean {
 export function findCas(data: string): string | undefined {
   const regex = RegExp(CAS_REGEX.source, 'g')
   const match = data.match(regex);
-  if (!match) return;
-  if (isCas(match[0])) return match[0];
+  if (match && isCas(match[0])) return match[0];
 }
