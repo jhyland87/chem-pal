@@ -2,9 +2,10 @@ import { SyntheticEvent } from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 
-function a11yProps(index: number) {
+function tabProps(index: number, name:string) {
   return {
     id: `full-width-tab-${index}`,
+    panel: name,
     'aria-controls': `full-width-tabpanel-${index}`,
   };
 }
@@ -18,14 +19,14 @@ export default function TabHeader({ page, setPage }: { page: number; setPage: (p
     <Tabs
       value={page}
       onChange={handleChange}
-      indicatorColor="secondary"
-      textColor="inherit"
-      variant="fullWidth"
-      aria-label="full width tabs example"
+      indicatorColor='secondary'
+      textColor='inherit'
+      variant='fullWidth'
+      aria-label='full width tabs example'
     >
-      <Tab label="Search Results" {...a11yProps(0)} />
-      <Tab label="Suppliers" {...a11yProps(1)} />
-      <Tab label="Settings" {...a11yProps(2)} />
+      <Tab label='Search Results' {...tabProps(0, 'search-panel')} />
+      <Tab label='Suppliers' {...tabProps(1, 'suppliers-panel')} />
+      <Tab label='Settings' {...tabProps(2, 'settings-panel')} />
     </Tabs>
   );
 }

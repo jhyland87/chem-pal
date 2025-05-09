@@ -1,7 +1,7 @@
 // Import necessary modules
-import "@testing-library/jest-dom";
-import util from "util";
-import { ChromeStorageItems } from "./src/types";
+import '@testing-library/jest-dom';
+import util from 'util';
+import { ChromeStorageItems } from './src/types';
 
 // Extend the global type to include chrome
 declare global {
@@ -16,7 +16,7 @@ declare global {
 }
 
 // Assign jest-chrome to the global object
-Object.assign(global, require("jest-chrome"));
+Object.assign(global, require('jest-chrome'));
 
 // Define an interface for the Chrome storage items
 

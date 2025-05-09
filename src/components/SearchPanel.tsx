@@ -8,7 +8,7 @@ import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import React, { ChangeEvent, useState, useEffect } from 'react';
 import OptionsMenu from './OptionsMenu';
 import { Product } from '../types'
-import SupplierFactory from '../supplier_factory';
+import SupplierFactory from '../suppliers/supplier_factory';
 import LoadingBackdrop from './LoadingBackdrop';
 import { useSettings } from '../context';
 import storageMock from '../chrome_storage_mock'
@@ -36,26 +36,27 @@ const showLink = (params: GridRenderCellParams<any, any, any>) => {
 };
 
 // Columns of the table
-const columns: GridColDef[] = [
-  {
-    field: 'title', headerName: 'Product', width: 225,
-    renderCell: showLink,
-  },
-  { field: 'supplier', headerName: 'Supplier', width: 125 },
-  {
-    field: 'price',
-    headerName: 'USD',
-    type: 'number',
-    width: 75,
-  },
-  {
-    field: 'quantity',
-    headerName: 'Qty',
-    type: 'number',
-    description: 'THe quantity for each item',
-    width: 75
-  },
-];
+const columns: GridColDef[] = [{
+  field: 'title', 
+  headerName: 'Product', 
+  width: 225,
+  renderCell: showLink,
+}, { 
+  field: 'supplier', 
+  headerName: 'Supplier', 
+  width: 125 
+}, {
+  field: 'price',
+  headerName: 'USD',
+  type: 'number',
+  width: 75,
+}, {
+  field: 'quantity',
+  headerName: 'Qty',
+  type: 'number',
+  description: 'THe quantity for each item',
+  width: 75
+}];
 
 const SearchPanel: React.FC = () => {
   const settingsContext = useSettings();
@@ -113,8 +114,8 @@ const SearchPanel: React.FC = () => {
     if (!query.trim()) return;
     // Show the progress bar
     setIsLoading(true)
-    // Set the status label to "Searching..."
-    setStatusLabel("Searching...")
+    // Set the status label to 'Searching...'
+    setStatusLabel('Searching...')
     // Abort controller specific to this query
     fetchController = new AbortController();
     // Create the query instance
@@ -178,22 +179,22 @@ const SearchPanel: React.FC = () => {
     <>
       <Paper sx={{ minHeight: '369px', width: '100%', padding: '0px' }}>
         <Box
-          className="search-input-container fullwidth"
+          className='search-input-container fullwidth'
           onSubmit={handleQuerySubmit}
-          component="form"
+          component='form'
           sx={{ '& > :not(style)': { m: 0 } }}
           noValidate
-          autoComplete="off" >
+          autoComplete='off' >
           {isLoading
-            ? (<LinearProgress className="search-progress-bar" />)
+            ? (<LinearProgress className='search-progress-bar' />)
             : (<FilledInput
               fullWidth
-              id="search-input"
-              className="fullwidth"
-              size="small"
+              id='search-input'
+              className='fullwidth'
+              size='small'
               inputProps={{ 'aria-label': 'description' }}
               value={query}
-              placeholder="Search..."
+              placeholder='Search...'
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
                 setQuery(event.target.value);
               }} />

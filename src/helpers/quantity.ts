@@ -7,39 +7,40 @@ import { QuantityObject, UOM } from '../types'
  * possible aliases for each UOM.
  */
 export const uomAliases: Record<UOM, string[]> = {
-  [UOM.kg]: ['kilogram', 'kilograms', 'kg', 'kgs'],
-  [UOM.lb]: ['pound', 'pounds', 'lb', 'lbs'],
-  [UOM.ml]: ['ml', 'mls', 'millilitre', 'milliliter', 'milliliters', 'millilitres'],
-  [UOM.g]: ['grams', 'g'],
+  [UOM.KG]: ['kilogram', 'kilograms', 'kg', 'kgs'],
+  [UOM.LB]: ['pound', 'pounds', 'lb', 'lbs'],
+  [UOM.ML]: ['ml', 'mls', 'millilitre', 'milliliter', 'milliliters', 'millilitres'],
+  [UOM.G]: ['grams', 'g'],
   [UOM.L]: ['liters', 'litres', 'l'],
-  [UOM.qt]: ['quarts', 'qts', 'qt'],
-  [UOM.gal]: ['gallon', 'gallons', 'gal'],
-  [UOM.mm]: ['millimeter', 'millimeters', 'millimetre', 'millimetres', 'mm'],
-  [UOM.cm]: ['centimeter', 'centimeters', 'centimetre', 'centimetres', 'cm'],
-  [UOM.m]: ['meters', 'metre', 'metres', 'm', 'meter'],
-  [UOM.oz]: ['ounce', 'ounces', 'oz'],
-  [UOM.mg]: ['milligram', 'milligrams', 'mg', 'mgs'],
-  [UOM.km]: ['kilometer', 'kilometre', 'kilometers', 'kilometres', 'km'],
+  [UOM.QT]: ['quarts', 'qts', 'qt'],
+  [UOM.GAL]: ['gallon', 'gallons', 'gal'],
+  [UOM.MM]: ['millimeter', 'millimeters', 'millimetre', 'millimetres', 'mm'],
+  [UOM.CM]: ['centimeter', 'centimeters', 'centimetre', 'centimetres', 'cm'],
+  [UOM.M]: ['meters', 'metre', 'metres', 'm', 'meter'],
+  [UOM.OZ]: ['ounce', 'ounces', 'oz'],
+  [UOM.MG]: ['milligram', 'milligrams', 'mg', 'mgs'],
+  [UOM.KM]: ['kilometer', 'kilometre', 'kilometers', 'kilometres', 'km'],
 }
 
 /**
  * Parses a quantity string into a QuantityObject object.
- * @see https://regex101.com/r/lDLuVX/7
+ * @see https://regex101.com/r/lDLuVX/10
  * @param value - The quantity string to parse.
  * @returns A QuantityObject object.
  */
 export function parseQuantity(value: string): QuantityObject | void {
-  const quantityMatch = value.match(/(?<quantity>[0-9][0-9\.\,]*)\s?(?<uom>(?:milli|kilo|centi)?(?:gram|meter|liter|litre|metre)s?|oz|ounces?|grams?|gallons?|quarts?|gal|cm|k[mg]?|g|lbs?|pounds?|l|qts?|m?[glm])/i)
+  const quantityMatch = value.match(/(?<quantity>\d[\d\.\,]*)\s?(?<uom>(?:milli|kilo|centi)?(?:ounce|g(?:allon|ram|al)|pound|quart|qt|lb|(?:met|lit)[re]{2})s?|oz|k[mg]?|g|l|[cm]?[glm])/i)
+
   if (!quantityMatch || !quantityMatch.groups || !quantityMatch.groups.quantity || !quantityMatch.groups.uom)
     throw new Error('Failed to parse quantity')
 
   let parsedQuantity: string | number = quantityMatch.groups.quantity
 
-  // https://regex101.com/r/Q5w26N/1
+  // https://regex101.com/r/Q5w26N/2
   // If the quantity is the weird foreign style where the commas and decimals are swapped,
   // (eg: 1.234,56 instead of 1,234.56), then we need to swap the commas and decimals for
   // easier parsing and handling.
-  if (parsedQuantity.match(/^([0-9]+\.[0-9]+,[0-9]{1,2}|[0-9]{1,3},[0-9]{1,2}|[0-9]{1,3},[0-9]{1,2})$/))
+  if (parsedQuantity.match(/^(\d+\.\d+,\d{1,2}|\d{1,3},\d{1,2}|\d{1,3},\d{1,2})$/))
     parsedQuantity = parsedQuantity.replaceAll('.', 'xx').replaceAll(',', '.').replaceAll('xx', ',')
 
   const uom = standardizeUom(quantityMatch.groups.uom)

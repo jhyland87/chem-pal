@@ -1,7 +1,7 @@
 
-import { Product } from './types'
-import * as suppliers from './suppliers'
-import SupplierBase from './suppliers/supplier_base'
+import { Product } from '../types'
+import * as suppliers from '../suppliers'
+import SupplierBase from '../suppliers/supplier_base'
 
 export default class SupplierFactory<T extends Product> implements AsyncIterable<T> {
   // Term being queried

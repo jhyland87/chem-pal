@@ -10,7 +10,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { TabPanelProps, Settings } from './types';
-import SupplierFactory from './supplier_factory';
+import SupplierFactory from './suppliers/supplier_factory';
 import { SettingsContext } from './context';
 import { darkTheme } from './themes';
 
@@ -20,7 +20,7 @@ function TabPanel(props: TabPanelProps) {
 
   return (
     <div
-      role="tabpanel"
+      role='tabpanel'
       hidden={value !== index}
       id={`full-width-tabpanel-${index}`}
       aria-labelledby={`full-width-tab-${index}`}
@@ -59,7 +59,7 @@ function App() {
   useEffect(() => {
     chrome.storage.local.get(['settings', 'panel'])
       .then(data => {
-        console.debug('Retrieved storage.local.settings:', data)
+        //console.debug('Retrieved storage.local.settings:', data)
         if (data.settings) setSettings({ ...data.settings });;
         if (data.panel) setPanel(data.panel);
       })
@@ -67,7 +67,7 @@ function App() {
 
   // Save the settings to storage.local when the settings change
   useEffect(() => {
-    console.debug('Updating storage.local.settings to:', settings)
+    //console.debug('Updating storage.local.settings to:', settings)
     chrome.storage.local.set({ settings, panel })
   }, [settings, panel])
 
@@ -76,15 +76,15 @@ function App() {
       <ThemeProvider theme={darkTheme}>
         <CssBaseline />
         <Box sx={{ bgcolor: 'background.default', width: 500 }}>
-          <AppBar position="static">
+          <AppBar position='static'>
             <TabHeader page={panel} setPage={setPanel} />
-            <TabPanel value={panel} index={0} dir={theme.direction}>
+            <TabPanel value={panel} name='search-panel' index={0} dir={theme.direction}>
               <SearchPanel />
             </TabPanel>
-            <TabPanel value={panel} index={1} dir={theme.direction}>
+            <TabPanel value={panel} name='suppliers-panel' index={1} dir={theme.direction}>
               <SuppliersPanel />
             </TabPanel>
-            <TabPanel value={panel} index={2} dir={theme.direction}>
+            <TabPanel value={panel} name='settings-panel' index={2} dir={theme.direction}>
               <SettingsPanel />
             </TabPanel>
           </AppBar>

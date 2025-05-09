@@ -32,7 +32,7 @@ export default defineConfig({
       // output: {
       //   manualChunks: (id) => {
       //     if (id.includes('node_modules')) {
-      //       if (id.includes("lodash")) {
+      //       if (id.includes('lodash')) {
       //         return 'lodash'
       //       }
       //       if (id.includes('@mui') || id.includes('@material-ui')) {

@@ -29,7 +29,7 @@ export default function OptionsMenu(props: any) {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          console.debug("Deleting cache:", cacheName);
+          console.debug('Deleting cache:', cacheName);
           return caches.delete(cacheName);
         })
       )
@@ -58,8 +58,8 @@ export default function OptionsMenu(props: any) {
 
   return (
     <SpeedDial
-      FabProps={{ size: "small" }}
-      ariaLabel="SpeedDial basic example"
+      FabProps={{ size: 'small' }}
+      ariaLabel='SpeedDial basic example'
       sx={{ position: 'absolute', bottom: 16, right: 16 }}
       icon={<SpeedDialIcon />}
     >
