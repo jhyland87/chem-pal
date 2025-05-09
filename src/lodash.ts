@@ -9,6 +9,8 @@ declare module 'lodash' {
     sha256(message: string): Promise<string>;
     sha256sum(input: any): Promise<string>;
     parseQuantity(quantity: string): QuantityMatch;
+    serialize(data: string): string;
+    deserialize(data: string): string;
   }
 }
 
@@ -108,6 +110,12 @@ async function sha256sum(input: any) {
   return await sha256(input)
 }
 
+/**
+ * Parses a quantity string into a QuantityMatch object.
+ * @see https://regex101.com/r/lDLuVX/5
+ * @param quantity - The quantity string to parse.
+ * @returns A QuantityMatch object.
+ */
 function parseQuantity(quantity: string): QuantityMatch {
   const quantityMatch = quantity.match(/(?<quantity>[0-9][0-9\.\,]*)\s?(?<uom>(?:milli|kilo|centi)(?:gram|meter|liter|metre)s?|z|ounces?|grams?|gallon|gal|kg|g|lbs?|pounds?|l|qt|m?[glm])/)
   if (!quantityMatch) {
@@ -129,8 +137,32 @@ function parseQuantity(quantity: string): QuantityMatch {
   }
 }
 
+/**
+ * Serializes a string to a base64 encoded string.
+ * @param data - The string to serialize.
+ * @returns A base64 encoded string.
+ */
+function serialize(data: string): string {
+  return btoa(encodeURIComponent(data))
+}
+
+/**
+ * Deserializes a base64 encoded string to a string.
+ * @param data - The base64 encoded string to deserialize.
+ * @returns A string.
+ */
+function deserialize(data: string): string {
+  return decodeURIComponent(atob(data))
+}
+
 _.mixin({
-  md5, md5sum, sha256, sha256sum, parseQuantity
+  md5,
+  md5sum,
+  sha256,
+  sha256sum,
+  parseQuantity,
+  serialize,
+  deserialize
 })
 
 export default _
