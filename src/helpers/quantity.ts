@@ -22,7 +22,6 @@ export const uomAliases: Record<UOM, string[]> = {
   [UOM.km]: ['kilometer', 'kilometre', 'kilometers', 'kilometres', 'km'],
 }
 
-
 /**
  * Parses a quantity string into a QuantityMatch object.
  * @see https://regex101.com/r/lDLuVX/7
