@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -9,9 +8,8 @@ import Avatar from '@mui/material/Avatar';
 import SupplierFactory from '../supplier_factory';
 import { useSettings } from '../context';
 
-export default function SupplierSelector() {
+export default function SuppliersPanel() {
   const settingsContext = useSettings();
-
 
   const handleToggle = (supplierName: string) => () => {
     const selectedSuppliers = settingsContext.settings.suppliers

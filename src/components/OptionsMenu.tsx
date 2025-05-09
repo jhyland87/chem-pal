@@ -1,5 +1,4 @@
 import * as React from 'react';
-//import Box from '@mui/material/Box';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
@@ -11,7 +10,7 @@ import ContrastIcon from '@mui/icons-material/Contrast';
 
 export default function OptionsMenu(props: any) {
   const handleClearResults = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    console.log('clearing results')
+    console.debug('clearing results')
     // Stop the form from propagating
     event.preventDefault();
     props.setProducts([])
