@@ -198,8 +198,11 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
 
       //console.debug('productData:', productData)
 
-      const quantityMatch: QuantityObject = parseQuantity(productData.displayName)
+      const quantityMatch: QuantityObject | void = parseQuantity(productData.displayName)
 
+      if (!quantityMatch) {
+        return
+      }
       //console.debug('quantityMatch:', quantityMatch)
 
       // The price can be stored at different locations in the productData object. Select them all then
