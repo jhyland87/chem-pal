@@ -6,6 +6,39 @@ export type HeaderObject = { [key: string]: string };
 export type ChromeStorageItems = { [key: string]: any };
 
 
+export enum UOM_LONG {
+  kg = 'kilogram',
+  lb = 'pound',
+  ml = 'milliliter',
+  g = 'gram',
+  L = 'liter',
+  qt = 'quart',
+  gal = 'gallon',
+  mm = 'millimeter',
+  cm = 'centimeter',
+  m = 'meter',
+  oz = 'ounce',
+  mg = 'milligram',
+  km = 'kilometer',
+}
+
+
+export enum UOM {
+  kg = 'kg',
+  lb = 'lb',
+  ml = 'ml',
+  g = 'g',
+  L = 'L',
+  qt = 'qt',
+  gal = 'gal',
+  mm = 'mm',
+  cm = 'cm',
+  m = 'm',
+  oz = 'oz',
+  mg = 'mg',
+  km = 'km',
+}
+
 export interface Settings {
   caching: boolean;
   autocomplete: boolean;
