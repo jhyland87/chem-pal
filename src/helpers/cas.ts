@@ -1,6 +1,4 @@
 
-import { CasNumber } from '../types';
-
 /**
  * The regex for a valid CAS number.
  * {@link https://regex101.com/r/xPF1Yp/2 Regex test}
@@ -8,17 +6,6 @@ import { CasNumber } from '../types';
  * @type {RegExp}
  */
 export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_checksum>\d)/
-
-
-
-/**
- * Type guard to check if a string is a valid CAS number
- * @param value - The string to check
- * @returns True if the string is a valid CAS number
- */
-export function isCasNumber(value: string): value is CasNumber {
-  return isCas(value);
-}
 
 /**
  * Check if a string is a valid CAS number
@@ -41,10 +28,14 @@ export function isCasNumber(value: string): value is CasNumber {
  * For example, 1234-56-6 is valid because the result of the below equation matches the checksum, (which is 6)
  *     (6*1 + 5*2 + 4*3 + 3*4 + 2*5 + 1*6) % 10 == 6
  *
+ * 151-21-3
+ *
+ *
  * This can be simplified in the below aggregation:
  *     cas_chars = [1, 2, 3, 4, 5, 6]
  *     sum([(idx+1)*int(n) for idx, n in enumerate(cas_chars[::-1])]) % 10
  *
+ * 1*1 + 2*2 + 1*3 + 5*4 + 1*5 = 36 % 10 = 6
  * {@link https://www.cas.org/training/documentation/chemical-substances/checkdig CAS Standardized format}
  * {@link https://www.allcheminfo.com/chemistry/cas-number-lookup.html CAS lookup}
  *
