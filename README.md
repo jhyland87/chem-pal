@@ -1,5 +1,7 @@
-Just a simple React/Typescript plugin for Chrome - A simple proof of concept.
+Just a simple React/Typescript plugin for Chrome - Proof of concept
 
+Example output:
+![chem-crawler example](./assets/images/chem-crawler-demo.gif)
 
 ## Node version
 
@@ -21,7 +23,7 @@ node --version # Should output v22.15.0
 ```bash
 git clone https://github.com/jhyland87/chem-crawler.git
 cd chem-crawler
-npm install --legacy-peer-deps
+npm run setup
 npm run build
 ```
 
@@ -31,7 +33,7 @@ Then import the build folder as an unpacked chrome extension.
 
 ```bash
 # Install dev dependencies
-npm run install-dev
+npm run setup
 
 # Run unit tests
 npm run test

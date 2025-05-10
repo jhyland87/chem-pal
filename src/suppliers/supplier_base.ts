@@ -45,6 +45,14 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   // HTTP headers used as a basis for all queries.
   protected _headers: HeaderObject = {};
 
+  // Default values for products. These will get overridden if they're found in the product data.
+  protected _productDefaults = {
+    uom: 'ea',
+    quantity: 1,
+    currencyCode: 'USD',
+    currencySymbol: '$'
+  }
+
   /**
    * Constructor for the SupplierBase class.
    * @param query - The query to search for.

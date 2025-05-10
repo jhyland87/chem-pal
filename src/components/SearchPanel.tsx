@@ -49,15 +49,15 @@ const columns: GridColDef[] = [
     width: 125
   },
   {
-    field: 'price',
-    headerName: 'USD',
-    type: 'number',
+    field: 'displayPrice',
+    headerName: 'Price',
+    type: 'string',
     width: 75,
   },
   {
-    field: 'quantity',
+    field: 'displayQuantity',
     headerName: 'Qty',
-    type: 'number',
+    type: 'string',
     description: 'THe quantity for each item',
     width: 75
   }
@@ -144,13 +144,18 @@ const SearchPanel: React.FC = () => {
       const newProduct: Product = {
         supplier: result?.supplier,
         title: result?.title,
+        displayPrice: result?.displayPrice,
         price: result?.price,
+        currencyCode: result?.currencyCode,
+        currencySymbol: result?.currencySymbol,
         quantity: result?.quantity,
+        displayQuantity: result?.displayQuantity,
         url: result?.url
       };
       // Hide the status label thing
       setStatusLabel('')
       // Add each product to the table.
+      console.debug('newProduct:', newProduct)
       setProducts((prevProducts) => [...prevProducts, {
         // Each row needs a unique ID, so use the row count at each insertion
         // as the ID value

@@ -24,7 +24,7 @@ export default function SearchInput() {
           </IconButton>
           <InputBase
             sx={{ ml: 1, flex: 1 }}
-            placeholder="Search..."
+            placeholder="Search..!!."
             inputProps={{ 'aria-label': 'Search for chemicals' }}
           />
           <IconButton type="button" sx={{ p: '10px' }} aria-label="search">

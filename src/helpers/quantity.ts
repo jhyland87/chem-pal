@@ -31,8 +31,9 @@ export const uomAliases: Record<UOM, string[]> = {
 export function parseQuantity(value: string): QuantityObject | void {
   const quantityMatch = value.match(/(?<quantity>\d[\d\.\,]*)\s?(?<uom>(?:milli|kilo|centi)?(?:ounce|g(?:allon|ram|al)|pound|quart|qt|lb|(?:met|lit)[re]{2})s?|oz|k[mg]?|g|l|[cm]?[glm])/i)
 
-  if (!quantityMatch || !quantityMatch.groups || !quantityMatch.groups.quantity || !quantityMatch.groups.uom)
+  if (!quantityMatch || !quantityMatch.groups || !quantityMatch.groups.quantity || !quantityMatch.groups.uom) {
     throw new Error('Failed to parse quantity')
+  }
 
   let parsedQuantity: string | number = quantityMatch.groups.quantity
 
@@ -60,6 +61,7 @@ export function parseQuantity(value: string): QuantityObject | void {
  *  standardizeUom('kg') // 'kilogram'
  *  standardizeUom('kilograms') // 'kilogram'
  *  standardizeUom('lb') // 'pound'
+ *  standardizeUom('Grams') // 'gram'
  */
 export function standardizeUom(uomx: string): string | void {
   const uomMap = Object.entries(uomAliases).reduce((acc, [uomx, aliases]) => {
