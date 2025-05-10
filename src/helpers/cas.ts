@@ -1,4 +1,6 @@
 
+import { CasNumber } from '../types';
+
 /**
  * The regex for a valid CAS number.
  * {@link https://regex101.com/r/xPF1Yp/2 Regex test}
@@ -6,6 +8,17 @@
  * @type {RegExp}
  */
 export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_checksum>\d)/
+
+
+
+/**
+ * Type guard to check if a string is a valid CAS number
+ * @param value - The string to check
+ * @returns True if the string is a valid CAS number
+ */
+export function isCasNumber(value: string): value is CasNumber {
+  return isCas(value);
+}
 
 /**
  * Check if a string is a valid CAS number
@@ -50,11 +63,11 @@ export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_check
 export function isCas(cas: string): boolean {
   const regex = RegExp(`^${CAS_REGEX.source}$`)
   const match = cas.match(regex);
-  if (!match 
-    || !match.groups?.seg_a 
-    || !match.groups?.seg_b 
-    || !match.groups?.seg_checksum) 
-      return false;
+  if (!match
+    || !match.groups?.seg_a
+    || !match.groups?.seg_b
+    || !match.groups?.seg_checksum)
+    return false;
 
   const segA = match.groups.seg_a;
   const segB = match.groups.seg_b;

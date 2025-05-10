@@ -11,7 +11,7 @@ import { Product } from '../types'
 import SupplierFactory from '../suppliers/supplier_factory';
 import LoadingBackdrop from './LoadingBackdrop';
 import { useSettings } from '../context';
-import storageMock from '../chrome_storage_mock'
+import storageMock from '../mocks/chrome_storage_mock'
 if (!chrome.storage) {
   window.chrome = {
     storage: storageMock as any,
@@ -36,27 +36,32 @@ const showLink = (params: GridRenderCellParams<any, any, any>) => {
 };
 
 // Columns of the table
-const columns: GridColDef[] = [{
-  field: 'title', 
-  headerName: 'Product', 
-  width: 225,
-  renderCell: showLink,
-}, { 
-  field: 'supplier', 
-  headerName: 'Supplier', 
-  width: 125 
-}, {
-  field: 'price',
-  headerName: 'USD',
-  type: 'number',
-  width: 75,
-}, {
-  field: 'quantity',
-  headerName: 'Qty',
-  type: 'number',
-  description: 'THe quantity for each item',
-  width: 75
-}];
+const columns: GridColDef[] = [
+  {
+    field: 'title',
+    headerName: 'Product',
+    width: 225,
+    renderCell: showLink,
+  },
+  {
+    field: 'supplier',
+    headerName: 'Supplier',
+    width: 125
+  },
+  {
+    field: 'price',
+    headerName: 'USD',
+    type: 'number',
+    width: 75,
+  },
+  {
+    field: 'quantity',
+    headerName: 'Qty',
+    type: 'number',
+    description: 'THe quantity for each item',
+    width: 75
+  }
+];
 
 const SearchPanel: React.FC = () => {
   const settingsContext = useSettings();
