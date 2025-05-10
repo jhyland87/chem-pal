@@ -1,16 +1,16 @@
 import './App.css'
+import { useState, useEffect } from 'react';
+import { ThemeProvider, useTheme } from '@mui/material/styles';
 import SearchPanel from './components/SearchPanel'
 import SettingsPanel from './components/SettingsPanel'
 import SuppliersPanel from './components/SuppliersPanel';
 import TabHeader from './components/TabHeader'
-import { useState, useEffect } from 'react';
-import { ThemeProvider, useTheme } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
-import { TabPanelProps, Settings } from './types';
 import SupplierFactory from './suppliers/supplier_factory';
+import { TabPanelProps, Settings } from './types';
 import { SettingsContext } from './context';
 import { darkTheme } from './themes';
 
