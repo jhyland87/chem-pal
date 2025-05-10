@@ -1,7 +1,17 @@
 import _ from '../lodash';
 import { parseQuantity } from '../helpers/quantity';
+import { parsePrice } from '../helpers/currency';
 import { Sku, Variant, Product, HeaderObject, QuantityObject } from '../types'
 import SupplierBase from './supplier_base'
+
+type _productIndexObject = {
+  url: string;
+  title: string;
+  prices: string;
+  count: string
+};
+
+
 
 /**
  * Carolina.com uses Oracle ATG Commerce as their ecommerce platform.
@@ -91,21 +101,21 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
       471891351   Lab grade
       3929848101  Reagent grade
       */
-      'N': 790004999,
-      'Nf': 'product.cbsLowPrice|GT 0.0||product.startDate|LTEQ 1.7457984E12||product.startDate|LTEQ 1.7457984E12',
-      'Nr': 'AND(product.siteId:100001,OR(product.type:Product),OR(product.catalogId:cbsCatalog))',
+      N: 790004999,
+      Nf: 'product.cbsLowPrice|GT 0.0||product.startDate|LTEQ 1.7457984E12||product.startDate|LTEQ 1.7457984E12',
+      Nr: 'AND(product.siteId:100001,OR(product.type:Product),OR(product.catalogId:cbsCatalog))',
       // Number of products to display
-      'Nrpp': 120,
+      Nrpp: 120,
       // Query string
-      'Ntt': query,
-      'noRedirect': true,
+      Ntt: query,
+      noRedirect: true,
       // No idea
-      'nore': 'y',
+      nore: 'y',
       // Query string
-      'question': query,
-      'searchExecByFormSubmit': true,
+      question: query,
+      searchExecByFormSubmit: true,
       // Products tab
-      'tab': 'p'
+      tab: 'p'
     }
     const url = new URL('/browse/product-search-results', this._baseURL);
     const params = new URLSearchParams(searchParams);
@@ -135,14 +145,14 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
     const productElements: NodeListOf<HTMLElement> = doc.querySelectorAll('div.c-feature-product')
     //console.log('productElements:', productElements)
 
-    const elementList: { title: string; href: string; prices: string; count: string }[] = []
+    const elementList: _productIndexObject[] = []
 
     const _trimSpaceLike = (txt: string) => txt?.replaceAll(/(^(\\n|\\t|\s)*|(\\n|\\t|\s)*$)/gm, '')
 
     for (const elem of productElements) {
       elementList.push({
         title: _trimSpaceLike((elem.querySelector('h3.c-product-title') as HTMLElement)?.innerText),
-        href: _trimSpaceLike((elem.querySelector('a.c-product-link') as HTMLAnchorElement)?.href?.replace(/chrome-extension:\/\/[a-z]+/, '')),
+        url: _trimSpaceLike((elem.querySelector('a.c-product-link') as HTMLAnchorElement)?.href?.replace(/chrome-extension:\/\/[a-z]+/, '')),
         prices: _trimSpaceLike((elem.querySelector('p.c-product-price') as HTMLElement)?.innerText),
         count: _trimSpaceLike((elem.querySelector('p.c-product-total') as HTMLElement)?.innerText)
       })
@@ -157,9 +167,9 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
     //.then(results => console.debug('[parseProducts]:', { results, queryResults: this._queryResults }))
   }
 
-  protected async _getProductData(productIndexObject: { href: string; title: string; prices: string; count: string }): Promise<Product | void> {
+  protected async _getProductData(productIndexObject: _productIndexObject): Promise<Product | void> {
     try {
-      const response = await this.httpGet(`https://www.carolina.com${productIndexObject.href}`)
+      const response = await this.httpGet(`https://www.carolina.com${productIndexObject.url}`)
       if (!response?.ok) {
         throw new Error(`Response status: ${response?.status}`);
       }
@@ -200,9 +210,8 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
 
       const quantityMatch: QuantityObject | void = parseQuantity(productData.displayName)
 
-      if (!quantityMatch) {
+      if (!quantityMatch)
         return
-      }
       //console.debug('quantityMatch:', quantityMatch)
 
       // The price can be stored at different locations in the productData object. Select them all then
@@ -215,18 +224,27 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
         .compact()
         .result('[0]')
 
-      //console.debug('price:', price)
-
+      const priceObj = parsePrice(price as string) || {
+        price,
+        currencyCode: this._productDefaults.currencyCode,
+        currencySymbol: this._productDefaults.currencySymbol
+      }
 
       const product = {
+        ...this._productDefaults,
+        ...priceObj,
         supplier: this.supplierName,
         title: productData.displayName,
         url: this._baseURL + productData.canonicalUrl,
-        price: price,
+        displayPrice: `${priceObj.currencySymbol}${priceObj.price}`,
+        displayQuantity: `${quantityMatch.quantity} ${quantityMatch.uom}`,
+        //price: priceObj.price,
+        //currencyCode: priceObj.currencyCode,
+        //currencySymbol: priceObj.currencySymbol,
         ...quantityMatch
       }
 
-      console.debug('[getProductData] product:', product)
+      //console.debug('[getProductData] product:', product)
 
       return product as Product;
 
@@ -290,7 +308,8 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
       return product as T;
       */
 
-    } catch (error: any) {
+    }
+    catch (error: any) {
       console.error(error.message);
     }
   }

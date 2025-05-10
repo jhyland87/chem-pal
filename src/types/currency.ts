@@ -14,9 +14,9 @@ export type ExchangeRateResponse = {
 };
 
 export type ParsedPrice = {
-  currency: CurrencyCode;
-  symbol: CurrencySymbol;
-  amount: number;
+  currencyCode: CurrencyCode;
+  currencySymbol: CurrencySymbol;
+  price: number;
 }
 
 export type CurrencyCode = keyof typeof CurrencySymbolMap;

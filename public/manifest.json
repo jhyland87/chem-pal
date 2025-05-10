@@ -10,8 +10,6 @@
     "scripting",
     "activeTab",
     "storage",
-    // "fileSystem",
-    // "write",
     "*://*.*/*"
   ],
   "host_permissions": [

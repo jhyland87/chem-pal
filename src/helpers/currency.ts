@@ -30,18 +30,18 @@ export function getCurrencySymbol(price: string): string | undefined {
  * @param {string} price - The price string to parse.
  * @returns {ParsedPrice | void} - The parsed price or undefined if the price is invalid.
  * @example
- * parsePrice('$1000') // { currency: 'USD', amount: 1000, symbol: '$' }
- * parsePrice('1000€') // { currency: 'EUR', amount: 1000, symbol: '€' }
- * parsePrice('1000£') // { currency: 'GBP', amount: 1000, symbol: '£' }
- * parsePrice('1000¥') // { currency: 'JPY', amount: 1000, symbol: '¥' }
+ * parsePrice('$1000') // { currencyCode: 'USD', price: 1000, currencySymbol: '$' }
+ * parsePrice('1000€') // { currencyCode: 'EUR', price: 1000, currencySymbol: '€' }
+ * parsePrice('1000£') // { currencyCode: 'GBP', price: 1000, currencySymbol: '£' }
+ * parsePrice('1000¥') // { currencyCode: 'JPY', price: 1000, currencySymbol: '¥' }
  * parsePrice('1000') // undefined
  */
 export function parsePrice(price: string): ParsedPrice | void {
-  const symbol = getCurrencySymbol(price) as CurrencySymbol
-  if (!symbol) return;
+  const currencySymbol = getCurrencySymbol(price) as CurrencySymbol
+  if (!currencySymbol) return;
 
-  const currencyCode = getCurrencyCodeFromSymbol(symbol)
-  let bareAmount = price.replace(symbol, '').trim()
+  const currencyCode = getCurrencyCodeFromSymbol(currencySymbol)
+  let bareAmount = price.replace(currencySymbol, '').trim()
 
   // https://regex101.com/r/Q5w26N/2
   // If the prices (like quantities) could be the weird foreign style where the commas and
@@ -54,10 +54,9 @@ export function parsePrice(price: string): ParsedPrice | void {
   bareAmount = bareAmount.replace(/,/g, '')
 
   return {
-    currency: currencyCode,
-    amount: parseFloat(bareAmount),
-    symbol
-  } as ParsedPrice
+    currencyCode, currencySymbol,
+    price: parseFloat(bareAmount),
+  }
 }
 
 /**
@@ -94,7 +93,7 @@ export async function getCurrencyRate(from: CurrencyCode, to: CurrencyCode): Pro
  * getCurrencyCodeFromSymbol('₹') // 'INR'
  */
 export function getCurrencyCodeFromSymbol(symbol: CurrencySymbol): CurrencyCode {
-  return CurrencyCodeMap[symbol] as CurrencyCode
+  return CurrencyCodeMap[symbol]
 }
 
 /**

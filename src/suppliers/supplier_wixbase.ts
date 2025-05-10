@@ -1,5 +1,7 @@
 import { Product } from '../types'
 import SupplierBase from './supplier_base'
+import { parsePrice } from '../helpers/currency'
+import { parseQuantity } from '../helpers/quantity'
 
 export default abstract class SupplierWixBase<T extends Product> extends SupplierBase<T> implements AsyncIterable<T> {
   public readonly disabled: boolean = true
@@ -77,30 +79,70 @@ export default abstract class SupplierWixBase<T extends Product> extends Supplie
     this._queryResults = resultDocuments
   }
 
+  /*
   protected async parseProducts(): Promise<void> {
     const res = this._queryResults.map((r: any) => {
       // supplier, title, url, price, quantity,
+      const priceObj = parsePrice(r.price) || {
+        price: r.price,
+        currencyCode: this._productDefaults.currencyCode,
+        currencySymbol: this._productDefaults.currencySymbol
+      }
+
+      const quantityObj = parseQuantity(r.textOptionsFacets.find((f: any) => [
+        'Weight', 'Size', 'Quantity', 'Volume'
+      ].includes(f.name))?.value)
+
+
+
+      console.debug('quantityObj:', quantityObj)
+
       return {
+        ...this._productDefaults,
+        ...priceObj,
+        ...quantityObj,
         supplier: this.supplierName,
         title: r.name,
-        href: `${this._baseURL}/${r.url}`,
+        //href: `${this._baseURL}/${r.url}`,
         url: `${this._baseURL}/${r.url}`,
-        price: r.price,
-        quantity: r.textOptionsFacets.find((f: any) => ['Weight', 'Size'].includes(f.name))?.value,
-      }
+        displayPrice: `${priceObj.currencySymbol}${priceObj.price}`,
+        //displayQuantity: `${quantityObj.quantity} ${quantityObj.uom}`,
+        //price: priceObj.price,
+        //currencyCode: priceObj.currencyCode,
+        //currencySymbol: priceObj.currencySymbol,
+        //quantity: r.textOptionsFacets.find((f: any) => ['Weight', 'Size'].includes(f.name))?.value,
+      } as Product
     })
     this._products = res
   }
+  */
 
   protected async _getProductData(product: any): Promise<Product | void> {
+    const priceObj = parsePrice(product.discountedPrice) || {
+      price: product.price,
+      currencyCode: this._productDefaults.currencyCode,
+      currencySymbol: this._productDefaults.currencySymbol
+    }
+
+    const quantityObj = parseQuantity(product.textOptionsFacets?.find((f: any) => [
+      'Weight', 'Size', 'Quantity', 'Volume'
+    ].includes(f.name))?.value)
+
+    if (!quantityObj)
+      return
+
     return Promise.resolve({
+      ...this._productDefaults,
+      ...priceObj,
+      ...quantityObj,
       supplier: this.supplierName,
       title: product.title,
-      href: `${this._baseURL}/${product.url}`,
       url: `${this._baseURL}/${product.url}`,
-      price: product.discountedPriceNumeric,
-      currency: product.currency,
-      quantity: product.textOptionsFacets?.find((f: any) => ['Weight', 'Size'].includes(f.name))?.value,
+      displayPrice: `${priceObj.currencySymbol}${priceObj.price}`,
+      displayQuantity: `${quantityObj.quantity} ${quantityObj.uom}`,
+      //price: priceObj.price,
+      //currencyCode: priceObj.currencyCode,
+      //currencySymbol: priceObj.currencySymbol,
     } as Product)
   }
 }
