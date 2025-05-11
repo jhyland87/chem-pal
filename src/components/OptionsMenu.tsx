@@ -1,23 +1,23 @@
-import * as React from 'react';
-import SpeedDial from '@mui/material/SpeedDial';
-import SpeedDialIcon from '@mui/material/SpeedDialIcon';
-import SpeedDialAction from '@mui/material/SpeedDialAction';
-import SaveIcon from '@mui/icons-material/Save';
-import ClearIcon from '@mui/icons-material/Clear';
-import AutoDeleteIcon from '@mui/icons-material/AutoDelete';
-import ContrastIcon from '@mui/icons-material/Contrast';
+import { MouseEvent, } from 'react';
+import { SpeedDial, SpeedDialIcon, SpeedDialAction } from '@mui/material';
+import {
+  Save as SaveIcon,
+  Clear as ClearIcon,
+  AutoDelete as AutoDeleteIcon,
+  Contrast as ContrastIcon
+} from '@mui/icons-material';
 import { useSettings } from '../context';
 
 export default function OptionsMenu(props: any) {
   const settingsContext = useSettings();
 
-  const handleClearResults = (event: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleClearResults = (event: MouseEvent<HTMLAnchorElement>) => {
     console.debug('clearing results')
     event.preventDefault();
     props.setProducts([])
   };
 
-  const handleClearCache = (event: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleClearCache = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
 
     const CACHE_VERSION = 1;
@@ -37,12 +37,12 @@ export default function OptionsMenu(props: any) {
     //);
   };
 
-  const handleSaveResults = (event: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleSaveResults = (event: MouseEvent<HTMLAnchorElement>) => {
     console.debug('saving results')
     event.preventDefault();
   };
 
-  const handleToggleTheme = (event: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleToggleTheme = (event: MouseEvent<HTMLAnchorElement>) => {
     console.debug('toggling theme')
     event.preventDefault();
 
@@ -70,8 +70,8 @@ export default function OptionsMenu(props: any) {
     >
       {actions.map((action) => (
         <SpeedDialAction
-          onClick={(e: React.MouseEvent<HTMLDivElement>) => {
-            action.onClick(e as unknown as React.MouseEvent<HTMLAnchorElement>);
+          onClick={(e: MouseEvent<HTMLDivElement>) => {
+            action.onClick(e as unknown as MouseEvent<HTMLAnchorElement>);
           }}
           key={action.name}
           icon={action.icon}

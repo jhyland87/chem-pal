@@ -76,7 +76,7 @@ export function standardizeUom(uomx: string): string | void {
 }
 
 export function convertToBaseUom(quantity: number, uom: UOM): number {
-  switch(uom) {
+  switch (uom) {
     // Convert km/kg to m/g
     case UOM.KM:
     case UOM.KG:
@@ -87,6 +87,6 @@ export function convertToBaseUom(quantity: number, uom: UOM): number {
     case UOM.LB:
       return quantity * 453.592
       break;
-
   }
+  return quantity
 }
