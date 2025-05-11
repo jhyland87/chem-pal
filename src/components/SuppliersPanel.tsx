@@ -29,7 +29,7 @@ export default function SuppliersPanel() {
   };
 
   return (
-    <List dense sx={{ width: '100%', bgcolor: 'background.paper' }}>
+    <List dense sx={{ width: '100%', bgcolor: 'background.paper', color: 'text.primary' }}>
       {SupplierFactory.supplierList().map((supplierName) => {
         const labelId = `checkbox-list-secondary-label-${supplierName}`;
         return (

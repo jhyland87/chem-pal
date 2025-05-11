@@ -50,7 +50,6 @@ type _productIndexObject = {
  * - question: The search query.
  */
 
-
 export default class SupplierCarolina<T extends Product> extends SupplierBase<T> implements AsyncIterable<T> {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = 'Carolina'
