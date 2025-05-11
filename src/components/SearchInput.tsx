@@ -15,23 +15,23 @@ export default function SearchInput() {
     <>
       <div
         className='search-input-container fullwidth'
-        style={{ padding: '70px 30px 70px 30px' }}>
+        style={{ padding: 'none' }}>
         <Paper
-          component="form"
-          sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: '100%' }}>
-          <IconButton sx={{ p: '10px' }} aria-label="menu">
+          component='form'
+          sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+          <IconButton aria-label='menu'>
             <MenuIcon />
           </IconButton>
           <InputBase
             sx={{ ml: 1, flex: 1 }}
-            placeholder="Search..!!."
+            placeholder='Search...'
             inputProps={{ 'aria-label': 'Search for chemicals' }}
           />
-          <IconButton type="button" sx={{ p: '10px' }} aria-label="search">
+          <IconButton type='button' aria-label='search'>
             <ScienceIcon />
           </IconButton>
-          <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
-          <IconButton color="primary" sx={{ p: '10px' }} aria-label="directions">
+          <Divider orientation='vertical' />
+          <IconButton color='primary' aria-label='directions'>
             <SearchIcon />
           </IconButton>
         </Paper>

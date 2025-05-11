@@ -1,3 +1,4 @@
+import { CAS } from '../types/cas';
 
 /**
  * The regex for a valid CAS number.
@@ -85,8 +86,8 @@ export function isCas(cas: string): boolean {
  *     findCas('Example of an invalid cas: 1232-56-6..') // undefined
  *     findCas('and 50-00-1 is another valid cas #') // undefined
  */
-export function findCas(data: string): string | undefined {
+export function findCas(data: string): CAS<string> | undefined {
   const regex = RegExp(CAS_REGEX.source, 'g')
   const match = data.match(regex);
-  if (match && isCas(match[0])) return match[0];
+  if (match && isCas(match[0])) return match[0] as CAS<string>;
 }

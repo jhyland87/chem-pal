@@ -12,8 +12,15 @@ import CssBaseline from '@mui/material/CssBaseline';
 import SupplierFactory from './suppliers/supplier_factory';
 import { TabPanelProps, Settings } from './types';
 import { SettingsContext } from './context';
-import { darkTheme } from './themes';
-
+import { blueTheme, lightTheme, testTheme } from './themes';
+import VirtTable from './components/VirtTable';
+import ExpandableVirtTable from './components/ExpandableVirtTable';
+import storageMock from './mocks/chrome_storage_mock'
+if (!chrome.storage) {
+  window.chrome = {
+    storage: storageMock as any,
+  } as any;
+}
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -73,13 +80,13 @@ function App() {
 
   return (
     <SettingsContext.Provider value={{ settings, setSettings }}>
-      <ThemeProvider theme={darkTheme}>
+      <ThemeProvider theme={testTheme}>
         <CssBaseline />
-        <Box sx={{ bgcolor: 'background.default', width: 500 }}>
-          <AppBar position='static'>
+        <Box sx={{ bgcolor: 'background.default', width: '100%' }}>
+          <AppBar position='static' sx={{ borderRadius: 1 }}>
             <TabHeader page={panel} setPage={setPanel} />
-            <TabPanel value={panel} name='search-panel' index={0} dir={theme.direction}>
-              <SearchPanel />
+            <TabPanel value={panel} name='search-panel' index={0} dir={theme.direction} >
+              <ExpandableVirtTable />
             </TabPanel>
             <TabPanel value={panel} name='suppliers-panel' index={1} dir={theme.direction}>
               <SuppliersPanel />

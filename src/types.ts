@@ -1,6 +1,7 @@
 
 import { ReactNode } from 'react';
 import { CurrencyCode, CurrencySymbol } from './types/currency';
+import { CAS } from './types/cas';
 export * from './types/quantity'
 export * from './types/cas'
 export * from './types/currency'
@@ -77,7 +78,7 @@ export interface Product {
   title: string;
   url: string;
   manufacturer?: string;
-  cas?: string;
+  cas?: CAS<string>;
   formula?: string;
   displayPrice: string;
   price: number;

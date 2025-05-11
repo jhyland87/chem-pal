@@ -11,12 +11,7 @@ import { Product } from '../types'
 import SupplierFactory from '../suppliers/supplier_factory';
 import LoadingBackdrop from './LoadingBackdrop';
 import { useSettings } from '../context';
-import storageMock from '../mocks/chrome_storage_mock'
-if (!chrome.storage) {
-  window.chrome = {
-    storage: storageMock as any,
-  } as any;
-}
+
 
 let fetchController: AbortController;
 
