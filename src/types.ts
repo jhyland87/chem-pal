@@ -24,6 +24,9 @@ export interface Settings {
   autoResize: boolean;
   someSetting: boolean;
   suppliers: Array<string>;
+  theme: string;
+  showAllColumns: boolean;
+  showColumns: Array<string>;
 }
 
 export interface Item {

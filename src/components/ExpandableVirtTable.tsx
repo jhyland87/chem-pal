@@ -1,7 +1,6 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import IconButton from '@mui/material/IconButton';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -12,42 +11,130 @@ import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import Paper from '@mui/material/Paper';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+
+import FilterListIcon from '@mui/icons-material/FilterList';
+import Check from '@mui/icons-material/Check';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ChecklistIcon from '@mui/icons-material/Checklist';
+import LibraryAddCheckIcon from '@mui/icons-material/LibraryAddCheck';
+import RemoveDoneIcon from '@mui/icons-material/RemoveDone';
+import DoneAllIcon from '@mui/icons-material/DoneAll';
+import DoneIcon from '@mui/icons-material/Done';
+import ClearIcon from '@mui/icons-material/Clear';
+import CloseIcon from '@mui/icons-material/Close';
+
 import { visuallyHidden } from '@mui/utils';
 import OptionsMenu from './OptionsMenu';
-import { Product } from '../types'
-import { Toolbar, Tooltip } from '@mui/material';
-import { alpha } from '@mui/material/styles';
+import { Divider, ListItemIcon, ListItemText, MenuList, Toolbar, Tooltip } from '@mui/material';
 import SearchInput from './SearchInput';
+import { Product } from '../types'
+//import { alpha } from '@mui/material/styles';
+import { useSettings } from '../context';
 
 interface Data {
   id: number;
-  calories: number;
-  carbs: number;
-  fat: number;
   name: string;
-  protein: number;
+  supplier: string;
+  price: number;
+  quantity: number;
+  usd: number;
 }
+
+type Order = 'asc' | 'desc';
+
+interface HeadCell {
+  align?: 'left' | 'right';
+  disablePadding: boolean;
+  id: keyof Data;
+  label: string;
+  numeric: boolean;
+}
+
+const options = [
+  'None',
+  'Atria',
+  'Callisto',
+  'Dione',
+  'Ganymede',
+  'Hangouts Call',
+  'Luna',
+  'Oberon',
+  'Phobos',
+  'Pyxis',
+  'Sedna',
+  'Titania',
+  'Triton',
+  'Umbriel',
+];
+
+const headCells: readonly HeadCell[] = [
+  {
+    id: 'name',
+    numeric: false,
+    disablePadding: true,
+    label: 'Name',
+    align: 'left',
+  },
+  {
+    id: 'supplier',
+    numeric: false,
+    disablePadding: false,
+    label: 'Supplier',
+    align: 'left',
+  },
+  {
+    id: 'price',
+    numeric: true,
+    disablePadding: false,
+    label: 'Price',
+  },
+  {
+    id: 'usd',
+    numeric: true,
+    disablePadding: false,
+    label: 'USD',
+  },
+  {
+    id: 'quantity',
+    numeric: true,
+    disablePadding: false,
+    label: 'Quantity',
+  },
+];
+const ITEM_HEIGHT = 48;
 
 function createData(
   id: number,
   name: string,
-  calories: number,
-  fat: number,
-  carbs: number,
-  protein: number,
+  supplier: string,
   price: number,
+  currencyCode: string,
+  currencySymbol: string,
+  usd: number,
+  quantity: number,
+  unit: string,
 ) {
   return {
     id,
     name,
-    calories,
-    fat,
-    carbs,
-    protein,
+    supplier,
     price,
-    history: [
+    currencyCode,
+    currencySymbol,
+    usd,
+    quantity,
+    unit,
+    variants: [
       {
         date: '2020-01-05',
         customerId: '11091700',
@@ -64,8 +151,10 @@ function createData(
 
 function Row(props: { row: ReturnType<typeof createData> }) {
   const { row } = props;
+  console.log('row', row);
   const [open, setOpen] = React.useState(false);
-
+  const getHeader = (name: string) => headCells.find(hc => hc.id == name);
+  const getAlign = (name: string) => getHeader(name)?.align ? getHeader(name)?.align : getHeader(name)?.numeric ? 'right' : 'left';
   return (
     <React.Fragment>
       <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
@@ -83,10 +172,10 @@ function Row(props: { row: ReturnType<typeof createData> }) {
         <TableCell component='th' scope='row'>
           {row.name}
         </TableCell>
-        <TableCell align='right' >{row.calories}</TableCell>
-        <TableCell align='right' >{row.fat}</TableCell>
-        <TableCell align='right' >{row.carbs}</TableCell>
-        <TableCell align='right' >{row.protein}</TableCell>
+        <TableCell align={getAlign(row.name)}>{row.supplier}</TableCell>
+        <TableCell align={getAlign(row.name)}>{row.currencySymbol}{row.price}</TableCell>
+        <TableCell align={getAlign(row.name)}>${row.usd}</TableCell>
+        <TableCell align={getAlign(row.name)}>{row.quantity} {row.unit}</TableCell>
       </TableRow>
       <TableRow>
         <TableCell style={{ padding: '0' }} colSpan={6}>
@@ -105,15 +194,15 @@ function Row(props: { row: ReturnType<typeof createData> }) {
                   </TableRow>
                 </TableHead>
                 <TableBody sx={{ bgcolor: 'primary.light', color: 'primary.contrastText' }}>
-                  {row.history.map((historyRow) => (
-                    <TableRow key={historyRow.date} sx={{ bgcolor: 'primary.light', color: 'primary.contrastText' }}>
+                  {row.variants.map((variantRow) => (
+                    <TableRow key={variantRow.date} sx={{ bgcolor: 'primary.light', color: 'primary.contrastText' }}>
                       <TableCell component='th' scope='row' sx={{ bgcolor: 'primary.light', color: 'primary.contrastText' }}>
-                        {historyRow.date}
+                        {variantRow.date}
                       </TableCell>
-                      <TableCell sx={{ bgcolor: 'primary.light', color: 'primary.contrastText' }}>{historyRow.customerId}</TableCell>
-                      <TableCell align='right' sx={{ bgcolor: 'primary.light', color: 'primary.contrastText' }}>{historyRow.amount}</TableCell>
+                      <TableCell sx={{ bgcolor: 'primary.light', color: 'primary.contrastText' }}>{variantRow.customerId}</TableCell>
+                      <TableCell align='right' sx={{ bgcolor: 'primary.light', color: 'primary.contrastText' }}>{variantRow.amount}</TableCell>
                       <TableCell align='right' sx={{ bgcolor: 'primary.light', color: 'primary.contrastText' }}>
-                        {Math.round(historyRow.amount * row.price * 100) / 100}
+                        {Math.round(variantRow.amount * row.price * 100) / 100}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -126,16 +215,24 @@ function Row(props: { row: ReturnType<typeof createData> }) {
     </React.Fragment>
   );
 }
+function randPrice(): number {
+  return parseFloat(Number(Math.random() * 100).toFixed(2))
+}
+
+function randNum(): number {
+  return parseInt(Number(Math.random() * 1000 / 20).toFixed(1))
+}
+
 const rows = [
-  createData(1, 'Frozen yoghurt', 159, 6.0, 24, 4.0, 3.99),
-  createData(2, 'Ice cream sandwich', 237, 9.0, 37, 4.3, 4.99),
-  createData(3, 'Eclair', 262, 16.0, 24, 6.0, 3.79),
-  createData(4, 'Cupcake', 305, 3.7, 67, 4.3, 2.5),
-  createData(5, 'Gingerbread', 356, 16.0, 49, 3.9, 1.5),
-  createData(6, 'AAAAA', 123, 43.0, 19, 3.5, 1.5),
-  createData(7, 'BBB', 305, 47.0, 49, 2.5, 2.5),
-  createData(8, 'CCC', 262, 23.0, 29, 4.5, 3.5),
+  createData(1, 'Sodium Borohydride', 'Carolina', randPrice(), 'USD', '$', randPrice(), randNum(), 'kg'),
+  createData(1, 'Sodium triacetoxyborohydride', 'Carolina', randPrice(), 'USD', '$', randPrice(), randNum(), 'kg'),
+  createData(1, 'Sodium Metal', 'Carolina', randPrice(), 'USD', '$', randPrice(), randNum(), 'kg'),
+  createData(1, 'Sodium Hydroxide', 'Carolina', randPrice(), 'USD', '$', randPrice(), randNum(), 'kg'),
+  createData(2, 'Sodium Carbonate', 'Carolina', randPrice(), 'USD', '$', randPrice(), randNum(), 'kg'),
+  createData(3, 'Sodium bicarbonate', 'Carolina', randPrice(), 'USD', '$', randPrice(), randNum(), 'kg'),
+  createData(4, 'Sodium Cyanide', 'Carolina', randPrice(), 'USD', '$', randPrice(), randNum(), 'kg'),
 ];
+
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
     return -1;
@@ -145,8 +242,6 @@ function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   }
   return 0;
 }
-
-type Order = 'asc' | 'desc';
 
 function getComparator<Key extends keyof any>(
   order: Order,
@@ -160,47 +255,79 @@ function getComparator<Key extends keyof any>(
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
-interface HeadCell {
-  disablePadding: boolean;
-  id: keyof Data;
-  label: string;
-  numeric: boolean;
-}
-
-const headCells: readonly HeadCell[] = [
-  {
-    id: 'name',
-    numeric: false,
-    disablePadding: true,
-    label: 'Dessert (100g serving)',
-  },
-  {
-    id: 'calories',
-    numeric: true,
-    disablePadding: false,
-    label: 'Calories',
-  },
-  {
-    id: 'fat',
-    numeric: true,
-    disablePadding: false,
-    label: 'Fat (g)',
-  },
-  {
-    id: 'carbs',
-    numeric: true,
-    disablePadding: false,
-    label: 'Carbs (g)',
-  },
-  {
-    id: 'protein',
-    numeric: true,
-    disablePadding: false,
-    label: 'Protein (g)',
-  },
-];
 
 function EnhancedTableToolbar() {
+  const settingsContext = useSettings();
+
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    console.debug('[handleClick] event.target', event.target);
+    console.debug('[handleClick] settingsContext', settingsContext.settings);
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleToggleColumn = (label: string, isChecked: boolean) => {
+    console.debug('[handleToggleColumn] Toggling column', { label, isChecked });
+
+    console.debug('[handleToggleColumn] BEFORE settingsContext.settings.showColumns', settingsContext.settings.showColumns);
+    const newShowColumns = settingsContext.settings.showColumns.includes(label)
+      ? settingsContext.settings.showColumns.filter(column => column !== label)
+      : [...settingsContext.settings.showColumns, label];
+
+    settingsContext.setSettings({
+      ...settingsContext.settings,
+      showColumns: newShowColumns
+    });
+
+    console.debug('[handleToggleColumn] AFTER settingsContext.settings.showColumns', settingsContext.settings.showColumns);
+  }
+  const columnVisibilityCheckbox = (column: HeadCell) => {
+    return (
+      <MenuItem sx={{ margin: 0, padding: 0 }} key={column.id} dense>
+        <Checkbox
+          disabled={settingsContext.settings.showAllColumns}
+          checked={settingsContext.settings.showAllColumns === true
+            || settingsContext.settings.showColumns
+            && settingsContext.settings.showColumns.includes(column.id)}
+          onChange={(event) => handleToggleColumn(column.id, event.target.checked)}
+          aria-label={`${column.label} column visibility`}
+          icon={<CheckBoxOutlineBlankIcon fontSize='small' />}
+          checkedIcon={<CheckBoxIcon fontSize='small' />}
+        />
+        {column.label}
+      </MenuItem>
+    )
+    /*return (
+      <FormControlLabel
+        control={<Checkbox defaultChecked />}
+        label={label}
+        sx={{ margin: 0, padding: 0 }} />
+    )
+    return (
+      <MenuItem sx={{ margin: 0 }} dense>
+        <ListItemIcon >
+          {isChecked && <Check fontSize='small' />}
+        </ListItemIcon>
+        {label}
+      </MenuItem>
+    )*/
+  }
+
+  const handleToggleAllColumns = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const isChecked = typeof settingsContext.settings.showAllColumns === 'boolean'
+      ? settingsContext.settings.showAllColumns
+      : event.target.checked
+
+    settingsContext.setSettings({
+      ...settingsContext.settings,
+      showAllColumns: !isChecked
+    });
+  };
+
   return (
     <Toolbar
       sx={[
@@ -208,8 +335,7 @@ function EnhancedTableToolbar() {
           pl: { sm: 2 },
           pr: { xs: 1, sm: 1 },
         }
-      ]}
-    >
+      ]}>
       <Typography
         sx={{ flex: '1 1 100%' }}
         //variant='h6'
@@ -219,16 +345,71 @@ function EnhancedTableToolbar() {
         <SearchInput />
       </Typography>
       <Tooltip title='Filter list'>
-        <IconButton>
-          <FilterListIcon />
+        <IconButton
+          size='small'
+          aria-label='more'
+          id='filter-button'
+          aria-controls={open ? 'long-menu' : undefined}
+          aria-expanded={open ? 'true' : undefined}
+          aria-haspopup="true"
+          onClick={handleClick}>
+          <ChecklistIcon fontSize='small' />
         </IconButton>
       </Tooltip>
+      <Menu
+        id='long-menu'
+        sx={{
+          '& .MuiPaper-root': {
+            maxHeight: ITEM_HEIGHT * 4.5,
+            width: '20ch',
+          },
+        }}
+        aria-labelledby='long-button'
+        //</Toolbar>MenuListProps={{'aria-labelledby': 'long-button', }}
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        variant='selectedMenu'
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        slotProps={{
+          paper: {
+            style: {
+              maxHeight: ITEM_HEIGHT * 4.5,
+              width: '20ch',
+            },
+          },
+        }}>
+        <MenuList dense>
+          <FormGroup>
+            {headCells.map((headCell) => (
+              columnVisibilityCheckbox(headCell)
+            ))}
+          </FormGroup>
+          <Divider />
+          <MenuItem sx={{ margin: 0, padding: 0 }} dense>
+            <Checkbox
+              onChange={handleToggleAllColumns}
+              aria-label='Checkbox demo'
+              icon={<CloseIcon fontSize='small' />}
+              checkedIcon={<DoneIcon fontSize='small' />}
+            />
+            {settingsContext.settings.showAllColumns ? 'Hide all' : 'Show all'}
+          </MenuItem>
+        </MenuList>
+      </Menu>
     </Toolbar>
   );
 }
 
 function EnhancedTableHead(props: any) {
-  const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props;
+  const { order, orderBy, numSelected, rowCount, onRequestSort } = props;
   const createSortHandler =
     (property: keyof Data) => (event: React.MouseEvent<unknown>) => {
       onRequestSort(event, property);
@@ -240,18 +421,18 @@ function EnhancedTableHead(props: any) {
         <TableCell />
         {headCells.map((headCell) => (
           <TableCell
-
             key={headCell.id}
-            align={headCell.numeric ? 'right' : 'left'}
+            align={headCell.align ? headCell.align : headCell.numeric ? 'right' : 'left'}
             padding={headCell.disablePadding ? 'none' : 'normal'}
             sortDirection={orderBy === headCell.id ? order : false}
           >
+            {headCell.label}
             <TableSortLabel
+              hideSortIcon={false}
+              IconComponent={KeyboardArrowDownIcon}
               active={orderBy === headCell.id}
               direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={createSortHandler(headCell.id)}
-            >
-              {headCell.label}
+              onClick={createSortHandler(headCell.id)}>
               {orderBy === headCell.id ? (
                 <Box component='span' sx={visuallyHidden}>
                   {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
@@ -266,15 +447,14 @@ function EnhancedTableHead(props: any) {
   );
 }
 
-
 export default function CollapsibleTable() {
   const [order, setOrder] = React.useState<Order>('asc');
-  const [orderBy, setOrderBy] = React.useState<keyof Data>('calories');
-  const [selected, setSelected] = React.useState<readonly number[]>([]);
+  const [orderBy, setOrderBy] = React.useState<keyof Data>('price');
   const [page, setPage] = React.useState(0);
-  const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(100);
   const [products, setProducts] = React.useState<Product[]>([]);
+
+
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
     property: keyof Data,
@@ -282,34 +462,6 @@ export default function CollapsibleTable() {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
-  };
-
-  const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      const newSelected = rows.map((n) => n.id);
-      setSelected(newSelected);
-      return;
-    }
-    setSelected([]);
-  };
-
-  const handleClick = (event: React.MouseEvent<unknown>, id: number) => {
-    const selectedIndex = selected.indexOf(id);
-    let newSelected: readonly number[] = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, id);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1),
-      );
-    }
-    setSelected(newSelected);
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -321,9 +473,6 @@ export default function CollapsibleTable() {
     setPage(0);
   };
 
-  const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDense(event.target.checked);
-  };
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
@@ -346,7 +495,6 @@ export default function CollapsibleTable() {
             <EnhancedTableHead
               order={order}
               orderBy={orderBy}
-              onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
               rowCount={rows.length}
             />
