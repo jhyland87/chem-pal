@@ -41,7 +41,8 @@ export default function SuppliersPanel() {
                 edge='end'
                 onChange={handleToggle(supplierName)}
                 checked={settingsContext.settings.suppliers.includes(supplierName)}
-                inputProps={{ 'aria-labelledby': labelId }}
+                aria-labelledby={labelId}
+                size='small'
               />
             }
             disablePadding

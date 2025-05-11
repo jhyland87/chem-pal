@@ -6,18 +6,18 @@ import SaveIcon from '@mui/icons-material/Save';
 import ClearIcon from '@mui/icons-material/Clear';
 import AutoDeleteIcon from '@mui/icons-material/AutoDelete';
 import ContrastIcon from '@mui/icons-material/Contrast';
-
+import { useSettings } from '../context';
 
 export default function OptionsMenu(props: any) {
+  const settingsContext = useSettings();
+
   const handleClearResults = (event: React.MouseEvent<HTMLAnchorElement>) => {
     console.debug('clearing results')
-    // Stop the form from propagating
     event.preventDefault();
     props.setProducts([])
   };
 
   const handleClearCache = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    // Stop the form from propagating
     event.preventDefault();
 
     const CACHE_VERSION = 1;
@@ -39,14 +39,19 @@ export default function OptionsMenu(props: any) {
 
   const handleSaveResults = (event: React.MouseEvent<HTMLAnchorElement>) => {
     console.debug('saving results')
-    // Stop the form from propagating
     event.preventDefault();
   };
 
   const handleToggleTheme = (event: React.MouseEvent<HTMLAnchorElement>) => {
     console.debug('toggling theme')
-    // Stop the form from propagating
     event.preventDefault();
+
+    settingsContext.setSettings({
+      ...settingsContext.settings,
+      theme: settingsContext.settings.theme === 'light' ? 'dark' : 'light'
+    });
+
+    console.debug('settingsContext.settings.theme', settingsContext.settings.theme)
   };
 
   const actions = [

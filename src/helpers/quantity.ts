@@ -75,3 +75,18 @@ export function standardizeUom(uomx: string): string | void {
     return uomMap[uomx.toLowerCase()]
 }
 
+export function convertToBaseUom(quantity: number, uom: UOM): number {
+  switch(uom) {
+    // Convert km/kg to m/g
+    case UOM.KM:
+    case UOM.KG:
+      return quantity * 1000
+      break;
+
+    // Convert pounds to grams
+    case UOM.LB:
+      return quantity * 453.592
+      break;
+
+  }
+}

@@ -2,7 +2,7 @@ import { createTheme } from '@mui/material/styles';
 
 
 
-export const testTheme = createTheme({
+export const lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
@@ -47,7 +47,52 @@ export const testTheme = createTheme({
   }
 })
 
-export const lightTheme = createTheme({
+export const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#386181',
+    },
+    secondary: {
+      main: '#6f8ea0',
+    },
+  },
+  shape: {
+    borderRadius: 4,
+  },
+  spacing: 8,
+  components: {
+    MuiList: {
+      defaultProps: {
+        dense: true
+      },
+    },
+    MuiTableCell: {
+      defaultProps: {
+        //padding: "checkbox",
+        size: "small"
+      },
+      styleOverrides: {
+        root: {
+          padding: "6px 16px"
+        }
+      }
+    },
+    MuiTable: {
+      defaultProps: {
+        size: "small",
+        // padding: "checkbox"
+      },
+      styleOverrides: {
+        root: {
+          //padding: "1px"
+        }
+      }
+    }
+  }
+})
+
+export const lightThemeOld = createTheme({
   palette: {
     mode: 'light',
     primary: {
