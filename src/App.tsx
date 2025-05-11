@@ -15,6 +15,7 @@ import { SettingsContext } from './context';
 import { lightTheme, darkTheme } from './themes';
 import ExpandableVirtTable from './components/ExpandableVirtTable';
 import storageMock from './mocks/chrome_storage_mock'
+import TanStackTable from './components/TanStackTable';
 
 if (!chrome.storage) {
   console.debug('!!! chrome.storage not found, using mock !!!')
@@ -92,7 +93,7 @@ function App() {
           <AppBar position='static' sx={{ borderRadius: 1 }}>
             <TabHeader page={panel} setPage={setPanel} />
             <TabPanel value={panel} name='search-panel' index={0} dir={theme.direction}>
-              <ExpandableVirtTable />
+              <TanStackTable />
             </TabPanel>
             <TabPanel value={panel} name='suppliers-panel' index={1} dir={theme.direction}>
               <SuppliersPanel />

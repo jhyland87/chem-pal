@@ -1,7 +1,9 @@
 
-import { ReactNode } from 'react';
+import { Dispatch, ReactNode, SetStateAction } from 'react';
 import { CurrencyCode, CurrencySymbol } from './types/currency';
 import { CAS } from './types/cas';
+import { ColumnFiltersState, Row } from '@tanstack/react-table';
+import { ColumnDef } from '@tanstack/react-table';
 export * from './types/quantity'
 export * from './types/cas'
 export * from './types/currency'
@@ -116,3 +118,16 @@ export interface SettingsContextProps {
 }
 
 
+
+
+export type ProductTableProps<TData> = {
+  data: TData[]
+  columns: ColumnDef<TData>[]
+  renderVariants: (props: { row: Row<TData> }) => React.ReactElement
+  getRowCanExpand: (row: Row<TData>) => boolean
+  rerender: () => void
+  refreshData: () => void
+  //columnFilters: ColumnFiltersState
+  //setColumnFilters: (columnFilters: OnChangeFn<ColumnFiltersState>) => void
+  columnFilterFns: [ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>]
+}
