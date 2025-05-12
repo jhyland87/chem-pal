@@ -116,20 +116,15 @@ td,
   }
 }
 
-
-.speed-dial-menu {
+/* The below CSS is used to show/hide the speed dial menu based on
+ * if the 'open' class is added (done in the JS)
+ */
+.speed-dial-menu.open {
   position: fixed;
   bottom: 0;
-  right: 100%; /* changed it */
-  /*
-  height: 100%;
-  width: 40%;
-  z-index: 200;
-  box-shadow: 1px 0px 7px rgba(0, 0, 0, 0.5);
-  */
-  transform: translateX(0); /* changed it */
+  transform: translate(0px);
   transition: transform 0.3s ease-out;
 }
-.speed-dial-menu.open {
-  transform: translateX(100%); /* changed it */
+.speed-dial-menu {
+  transform: translate(40px);
 }

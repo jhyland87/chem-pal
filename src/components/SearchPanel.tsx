@@ -65,7 +65,7 @@ import SearchTableHeader from './SearchTableHeader'
 import SearchResultVariants from './SearchResultVariants';
 import { useSettings } from '../context';
 import SupplierFactory from '../suppliers/supplier_factory';
-import OptionsMenu from './OptionsMenu';
+import SpeedDialMenu from './SpeedDialMenu';
 //import LoadingBackdrop from './LoadingBackdrop';
 
 let fetchController: AbortController;

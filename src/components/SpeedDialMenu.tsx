@@ -8,9 +8,9 @@ import {
 } from '@mui/icons-material';
 import { useSettings } from '../context';
 
-type OptionsMenuProps = { cursorPosition: string | null, setSearchResults: (results: any[]) => void }
+type SpeedDialMenuProps = { setSearchResults: (results: any[]) => void, speedDialVisibility: boolean }
 
-export default function OptionsMenu({ cursorPosition, setSearchResults }: OptionsMenuProps) {
+export default function SpeedDialMenu({ setSearchResults, speedDialVisibility }: SpeedDialMenuProps) {
   const settingsContext = useSettings();
 
   const handleClearResults = (event: MouseEvent<HTMLAnchorElement>) => {
@@ -63,16 +63,19 @@ export default function OptionsMenu({ cursorPosition, setSearchResults }: Option
     { icon: <ContrastIcon />, name: 'Toggle Theme', onClick: handleToggleTheme },
   ];
 
+
   return (
     <SpeedDial
-      className={cursorPosition === 'bottom-right' ? 'speed-dial-menu' : 'speed-dial-menu open'}
+      id='speed-dial-menu'
+      className={speedDialVisibility ? 'speed-dial-menu open' : 'speed-dial-menu'}
       FabProps={{ size: 'small' }}
-      ariaLabel='SpeedDial basic example'
-      sx={{ position: 'absolute', bottom: 16, right: 16 }}
+      ariaLabel='SpeedDial Menu'
+      sx={{ position: 'absolute', bottom: 6, right: 0 }}
       icon={<SpeedDialIcon />}
     >
       {actions.map((action) => (
         <SpeedDialAction
+          id={action.name}
           onClick={(e: MouseEvent<HTMLDivElement>) => {
             action.onClick(e as unknown as MouseEvent<HTMLAnchorElement>);
           }}
