@@ -293,8 +293,8 @@ function Table({
     getFilteredRowModel: getFilteredRowModel(), //client side filtering
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    debugTable: true,
-    debugHeaders: true,
+    debugTable: false,
+    debugHeaders: false,
     debugColumns: false,
   })
 
@@ -391,7 +391,6 @@ function Table({
           */}
         </div>
       </Paper>
-      <OptionsMenu setSearchResults={setSearchResults} />
     </>
   )
 }
