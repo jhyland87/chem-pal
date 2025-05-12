@@ -8,6 +8,11 @@ import {
 } from 'react'
 
 import {
+  ArrowDropDown as ArrowDropDownIcon,
+  ArrowRight as ArrowRightIcon,
+} from '@mui/icons-material';
+
+import {
   Box,
   IconButton,
   Divider,
@@ -29,8 +34,6 @@ import {
   Checklist as ChecklistIcon,
   Done as DoneIcon,
   Close as CloseIcon,
-  ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon,
 } from '@mui/icons-material';
 
 import {
@@ -54,13 +57,15 @@ import {
   ProductRow
 } from '../types';
 
+import { isEmpty } from 'lodash';
+
 import SearchInput from './SearchInput';
 import SearchTablePagination from './SearchTablePagination';
 import SearchTableHeader from './SearchTableHeader'
 import SearchResultVariants from './SearchResultVariants';
 import { useSettings } from '../context';
-
 import SupplierFactory from '../suppliers/supplier_factory';
+import SpeedDialMenu from './SpeedDialMenu';
 import LoadingBackdrop from './LoadingBackdrop';
 
 let fetchController: AbortController;
@@ -185,6 +190,7 @@ function EnhancedTableToolbar({ table, searchInput, setSearchInput }: EnhancedTa
                       sx={{ margin: 0, padding: '0 1px 0 20px' }}
                       checked={column.getIsVisible()}
                       onChange={column.getToggleVisibilityHandler()}
+                      disabled={!column.getCanHide()}
                     />}
                     label={column.id}
                   />
@@ -222,20 +228,68 @@ function Table({
   const settingsContext = useSettings();
   const [searchInput, setSearchInput] = useState<string>('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [showSearchResults, setShowSearchResults] = useState<Product[]>([]);
+  const [statusLabel, setStatusLabel] = useState<string | boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!isEmpty(settingsContext.settings.hideColumns)) {
+      table.getAllLeafColumns().map((column: Column<any>) => {
+        if (settingsContext.settings.hideColumns.includes(column.id))
+          column.toggleVisibility(false)
+      })
+    }
+    chrome.storage.local.get(['searchResults', 'paginationModel'])
+      .then(data => {
+        const storedSearchResults = data.searchResults || [];
+
+        if (!storedSearchResults) {
+          setStatusLabel('Type a product name and hit enter')
+          return
+        }
+
+        setSearchResults(Array.isArray(storedSearchResults) ? storedSearchResults : []);
+        setStatusLabel('')
+      })
+  }, []);
+
+  useEffect(() => {
+    console.log('Search result timestamp was updated', settingsContext.settings.searchResultUpdateTs)
+
+    chrome.storage.local.get(['searchResults'])
+      .then(data => {
+        console.log('New search results', data.searchResults)
+        setShowSearchResults(data.searchResults)
+      })
+  }, [settingsContext.settings.searchResultUpdateTs])
+
+  const handleStopSearch = () => {
+    // Stop the form from propagating
+    //event.preventDefault();
+    console.debug('triggering abort..')
+    setIsLoading(false)
+    fetchController.abort()
+    setStatusLabel(searchResults.length === 0 ? 'Search aborted' : '')
+  };
 
   async function executeSearch(query: string) {
     if (!query.trim()) {
       return
     }
+    setIsLoading(true)
+
     setSearchResults([])
+    setStatusLabel('Searching...')
 
     // Abort controller specific to this query
     fetchController = new AbortController();
     // Create the query instance
     // Note: This does not actually run the HTTP calls or queries...
     const productQueryResults = new SupplierFactory(query, fetchController, settingsContext.settings.suppliers)
+
     // Clear the products table
     setSearchResults([])
+
 
     const startSearchTime = performance.now();
     let resultCount = 0;
@@ -249,6 +303,9 @@ function Table({
       // Add each product to the table.
       console.debug('newProduct:', result)
 
+      // Hide the status label thing
+      setStatusLabel(false)
+
       setSearchResults((prevProducts) => [...prevProducts, {
         // Each row needs a unique ID, so use the row count at each insertion
         // as the ID value
@@ -257,6 +314,9 @@ function Table({
     }
     const endSearchTime = performance.now();
     const searchTime = endSearchTime - startSearchTime;
+
+
+    setIsLoading(false)
 
     console.debug(`Found ${resultCount} products in ${searchTime} milliseconds`);
 
@@ -267,8 +327,30 @@ function Table({
     executeSearch(searchInput).then(console.log).catch(console.error);
   }, [searchInput]);
 
+  useEffect(() => {
+    // Not sure i'm happy with how I'm handling the search result update sequence.
+    // May need to refactor later.
+    chrome.storage.local.set({ searchResults }) // <-- This is the effect/action
+      .then(() => {
+        if (!searchResults.length) {
+          setStatusLabel(isLoading ? `Searching for ${searchInput}...` : 'Type a product name and hit enter')
+          return
+        }
+
+        settingsContext.setSettings({
+          ...settingsContext.settings,
+          searchResultUpdateTs: new Date().toISOString()
+        })
+      })
+
+  }, [searchResults]); // <-- this is the dependency
+
+  useEffect(() => {
+    console.debug('searchResults UPDATED:', searchResults)
+  }, [searchResults])
+
   const table = useReactTable({
-    data: searchResults,
+    data: showSearchResults,
     enableColumnResizing: true,
     defaultColumn: {
       minSize: 60,
@@ -287,8 +369,8 @@ function Table({
     getFilteredRowModel: getFilteredRowModel(), //client side filtering
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    debugTable: true,
-    debugHeaders: true,
+    debugTable: false,
+    debugHeaders: false,
     debugColumns: false,
   })
 
@@ -305,6 +387,7 @@ function Table({
 
   return (
     <>
+      <LoadingBackdrop open={isLoading} onClick={handleStopSearch} />
       <Paper sx={{ minHeight: '369px', width: '100%', padding: '0px' }}>
         <Box
           className='search-input-container fullwidth'
@@ -328,7 +411,12 @@ function Table({
                       {/*foo*/}
                       {row.getVisibleCells().map(cell => {
                         return (
-                          <td key={cell.id}>
+                          <td
+                            key={cell.id}
+                            // @todo: Find a more sensible solution to this. Should be able to add custom properties
+                            // to the meta object.
+                            style={(cell.column.columnDef.meta as { style?: React.CSSProperties })?.style}
+                          >
                             {flexRender(
                               cell.column.columnDef.cell,
                               cell.getContext()
@@ -352,6 +440,13 @@ function Table({
           </table>
           <div className="h-2" />
           <SearchTablePagination table={table} />
+          {/*JSON.stringify(
+            {
+              columnSizing: table.getState().columnSizing,
+            },
+            null,
+            2
+          )*/}
           {/*
           <pre>
             {JSON.stringify(
@@ -384,13 +479,20 @@ function columns(): ColumnDef<Product, any>[] {
             }}
           >
             {row.getIsExpanded()
-              ? <ExpandMoreIcon fontSize='small' />
-              : <ExpandLessIcon fontSize='small' />}
+              ? <ArrowDropDownIcon fontSize='small' />
+              : <ArrowRightIcon fontSize='small' />}
           </IconButton>
         ) : (
           '🔵'
         )
       },
+      enableHiding: false,
+      enableSorting: false,
+      enableColumnFilter: false,
+      enableResizing: false,
+      size: 20,
+      minSize: 20,
+      maxSize: 20,
     },
     {
       accessorKey: 'title',
@@ -398,10 +500,14 @@ function columns(): ColumnDef<Product, any>[] {
       cell: ({ row }: ProductRow) => {
         return row.original.title
       },
+      enableHiding: false,
+      minSize: 100,
       meta: {
         filterVariant: 'text',
+        style: {
+          textAlign: 'left',
+        },
       },
-      maxSize: 200,
     },
     {
       id: 'supplier',
@@ -409,9 +515,9 @@ function columns(): ColumnDef<Product, any>[] {
       accessorKey: 'supplier',
       cell: info => info.getValue(),
       meta: {
-        filterVariant: 'text',
+        filterVariant: 'select',
       },
-      maxSize: 150
+      minSize: 90
     },
     {
       accessorKey: 'description',
@@ -419,12 +525,15 @@ function columns(): ColumnDef<Product, any>[] {
       meta: {
         filterVariant: 'text',
       },
-      maxSize: 200
+      minSize: 215
     },
     {
       id: 'price',
       header: 'Price',
       accessorKey: 'price',
+      cell: ({ row }: ProductRow) => {
+        return row.original.displayPrice
+      },
       meta: {
         filterVariant: 'text',
       },
@@ -436,6 +545,9 @@ function columns(): ColumnDef<Product, any>[] {
       accessorKey: 'quantity',
       meta: {
         filterVariant: 'range',
+      },
+      cell: ({ row }: ProductRow) => {
+        return row.original.displayQuantity
       },
       maxSize: 50,
     },
@@ -455,11 +567,14 @@ export default function SearchPanel() {
   const columnFilterFns = useState<ColumnFiltersState>([])
 
   return (
-    <Table
-      columnFilterFns={columnFilterFns}
-      columns={columns()}
-      getRowCanExpand={() => true}
-      renderVariants={SearchResultVariants}
-    />
+    <>
+
+      <Table
+        columnFilterFns={columnFilterFns}
+        columns={columns()}
+        getRowCanExpand={() => true}
+        renderVariants={SearchResultVariants}
+      />
+    </>
   )
 }

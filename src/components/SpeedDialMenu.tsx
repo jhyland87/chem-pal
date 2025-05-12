@@ -1,4 +1,4 @@
-import { MouseEvent, } from 'react';
+import { MouseEvent, useEffect, useState } from 'react';
 import { SpeedDial, SpeedDialIcon, SpeedDialAction } from '@mui/material';
 import {
   Save as SaveIcon,
@@ -7,14 +7,32 @@ import {
   Contrast as ContrastIcon
 } from '@mui/icons-material';
 import { useSettings } from '../context';
+import Tooltip from '@mui/material/Tooltip';
+import _ from '../lodash';
+import HelpTooltip from './HelpTooltip';
+type SpeedDialMenuProps = { speedDialVisibility: boolean }
 
-export default function OptionsMenu(props: any) {
+export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProps) {
   const settingsContext = useSettings();
+
+  const [showHelp, setShowHelp] = useState(false);
+
+  useEffect(() => {
+    console.log('settingsContext.settings.showHelp', settingsContext.settings.showHelp)
+    if (settingsContext.settings.showHelp === false) return;
+
+    _.delayAction(500, () => setShowHelp(true))
+    _.delayAction(2000, () => setShowHelp(false))
+  }, [settingsContext.settings.showHelp])
 
   const handleClearResults = (event: MouseEvent<HTMLAnchorElement>) => {
     console.debug('clearing results')
     event.preventDefault();
-    props.setProducts([])
+    chrome.storage.local.set({ searchResults: [] })
+    settingsContext.setSettings({
+      ...settingsContext.settings,
+      searchResultUpdateTs: new Date().toISOString()
+    })
   };
 
   const handleClearCache = (event: MouseEvent<HTMLAnchorElement>) => {
@@ -55,7 +73,7 @@ export default function OptionsMenu(props: any) {
   };
 
   const actions = [
-    { icon: <ClearIcon />, name: 'Clear Resultsss', onClick: handleClearResults },
+    { icon: <ClearIcon />, name: 'Clear Results', onClick: handleClearResults },
     { icon: <AutoDeleteIcon />, name: 'Clear Cache', onClick: handleClearCache },
     { icon: <SaveIcon />, name: 'Save Results', onClick: handleSaveResults },
     { icon: <ContrastIcon />, name: 'Toggle Theme', onClick: handleToggleTheme },
@@ -63,21 +81,31 @@ export default function OptionsMenu(props: any) {
 
   return (
     <SpeedDial
+      id='speed-dial-menu'
+      className={speedDialVisibility ? 'speed-dial-menu open' : 'speed-dial-menu'}
       FabProps={{ size: 'small' }}
-      ariaLabel='SpeedDial basic example'
-      sx={{ position: 'absolute', bottom: 16, right: 16 }}
-      icon={<SpeedDialIcon />}
+      ariaLabel='SpeedDial Menu'
+      sx={{ position: 'fixed', bottom: 6, right: 0 }}
+      icon={
+        <HelpTooltip text="Bring your cursor to the bottom right corner of the screen to open the menu">
+          <SpeedDialIcon />
+        </HelpTooltip>
+      }
     >
-      {actions.map((action) => (
-        <SpeedDialAction
-          onClick={(e: MouseEvent<HTMLDivElement>) => {
-            action.onClick(e as unknown as MouseEvent<HTMLAnchorElement>);
-          }}
-          key={action.name}
-          icon={action.icon}
-          tooltipTitle={action.name}
-        />
-      ))}
-    </SpeedDial>
+      {
+        actions.map((action) => (
+          <SpeedDialAction
+            id={action.name}
+            onClick={(e: MouseEvent<HTMLDivElement>) => {
+              action.onClick(e as unknown as MouseEvent<HTMLAnchorElement>);
+            }}
+            key={action.name}
+            icon={action.icon}
+            title={action.name}
+          />
+        ))
+      }
+    </ SpeedDial>
+
   );
 }
