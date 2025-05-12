@@ -2,8 +2,7 @@
 import { Dispatch, ReactNode, SetStateAction } from 'react';
 import { CurrencyCode, CurrencySymbol } from './types/currency';
 import { CAS } from './types/cas';
-import { ColumnFiltersState, Row } from '@tanstack/react-table';
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, ColumnFiltersState, Row, RowData } from '@tanstack/react-table';
 export * from './types/quantity'
 export * from './types/cas'
 export * from './types/currency'
@@ -80,6 +79,7 @@ export interface Supplier {
 
 export interface Product {
   supplier: string;
+  description?: string;
   title: string;
   url: string;
   manufacturer?: string;
@@ -119,15 +119,47 @@ export interface SettingsContextProps {
 
 
 
-
-export type ProductTableProps<TData> = {
+export type TableProps<TData extends RowData> = {
   data: TData[]
   columns: ColumnDef<TData>[]
-  renderVariants: (props: { row: Row<TData> }) => React.ReactElement
+  renderSubComponent: (props: { row: Row<TData> }) => React.ReactElement
   getRowCanExpand: (row: Row<TData>) => boolean
   rerender: () => void
   refreshData: () => void
   //columnFilters: ColumnFiltersState
   //setColumnFilters: (columnFilters: OnChangeFn<ColumnFiltersState>) => void
   columnFilterFns: [ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>]
+}
+
+export type ProductTableProps<TData extends RowData> = {
+  columns: ColumnDef<TData, any>[]
+  renderVariants: (props: { row: Row<TData> }) => React.ReactElement
+  getRowCanExpand: (row: Row<TData>) => boolean
+  //columnFilters: ColumnFiltersState
+  //setColumnFilters: (columnFilters: OnChangeFn<ColumnFiltersState>) => void
+  columnFilterFns: [ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>]
+}
+
+export type ProductTableHeader<TData extends RowData> = {
+  id: string;
+  colSpan: number;
+  isPlaceholder: boolean;
+  column: ColumnDef<TData, any>
+  getCanFilter: () => boolean;
+  getCanSort: () => boolean;
+  getToggleSortingHandler: () => void;
+  getIsSorted: () => string;
+  getContext: () => any;
+  getSize: () => number;
+  columnDef: Partial<ColumnDef<TData>>;
+}
+
+export type EnhancedTableToolbarProps = {
+  table: any;
+  searchInput: string;
+  setSearchInput: Dispatch<SetStateAction<string>>;
+}
+
+export type ProductRow = {
+  row: Row<Product>
 }

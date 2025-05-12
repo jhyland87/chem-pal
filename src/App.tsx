@@ -13,7 +13,6 @@ import SupplierFactory from './suppliers/supplier_factory';
 import { TabPanelProps, Settings } from './types';
 import { SettingsContext } from './context';
 import { lightTheme, darkTheme } from './themes';
-import ExpandableVirtTable from './components/ExpandableVirtTable';
 import storageMock from './mocks/chrome_storage_mock'
 import TanStackTable from './components/TanStackTable';
 
