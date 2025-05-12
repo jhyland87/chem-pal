@@ -1,4 +1,4 @@
-import { MouseEvent, } from 'react';
+import { MouseEvent } from 'react';
 import { SpeedDial, SpeedDialIcon, SpeedDialAction } from '@mui/material';
 import {
   Save as SaveIcon,
@@ -8,13 +8,15 @@ import {
 } from '@mui/icons-material';
 import { useSettings } from '../context';
 
-export default function OptionsMenu(props: any) {
+type OptionsMenuProps = { cursorPosition: string | null, setSearchResults: (results: any[]) => void }
+
+export default function OptionsMenu({ cursorPosition, setSearchResults }: OptionsMenuProps) {
   const settingsContext = useSettings();
 
   const handleClearResults = (event: MouseEvent<HTMLAnchorElement>) => {
     console.debug('clearing results')
     event.preventDefault();
-    props.setSearchResults([])
+    setSearchResults([])
   };
 
   const handleClearCache = (event: MouseEvent<HTMLAnchorElement>) => {
@@ -63,6 +65,7 @@ export default function OptionsMenu(props: any) {
 
   return (
     <SpeedDial
+      className={cursorPosition === 'bottom-right' ? 'speed-dial-menu' : 'speed-dial-menu open'}
       FabProps={{ size: 'small' }}
       ariaLabel='SpeedDial basic example'
       sx={{ position: 'absolute', bottom: 16, right: 16 }}

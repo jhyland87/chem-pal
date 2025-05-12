@@ -14,7 +14,7 @@ import { TabPanelProps, Settings } from './types';
 import { SettingsContext } from './context';
 import { lightTheme, darkTheme } from './themes';
 import storageMock from './mocks/chrome_storage_mock'
-
+import OptionsMenu from './components/OptionsMenu';
 if (!chrome.storage) {
   console.debug('!!! chrome.storage not found, using mock !!!')
   window.chrome = {
@@ -46,6 +46,41 @@ function App() {
   const theme = useTheme();
   const [panel, setPanel] = useState(0);
   const [currentTheme, setCurrentTheme] = useState(lightTheme);
+
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [corner, setCorner] = useState<string | null>(null);
+  const cornerThreshold = 55;
+
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      setMousePosition({ x: event.clientX, y: event.clientY });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
+
+  useEffect(() => {
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+
+    if (mousePosition.x <= cornerThreshold && mousePosition.y <= cornerThreshold) {
+      setCorner('top-left');
+    } else if (mousePosition.x >= windowWidth - cornerThreshold && mousePosition.y <= cornerThreshold) {
+      setCorner('top-right');
+    } else if (mousePosition.x <= cornerThreshold && mousePosition.y >= windowHeight - cornerThreshold) {
+      setCorner('bottom-left');
+    } else if (mousePosition.x >= windowWidth - cornerThreshold && mousePosition.y >= windowHeight - cornerThreshold) {
+      setCorner('bottom-right');
+    } else {
+      setCorner(null);
+    }
+  }, [mousePosition]);
+
+
   // Default settings
   const [settings, setSettings] = useState<Settings>({
     caching: true,
@@ -101,6 +136,7 @@ function App() {
               <SettingsPanel />
             </TabPanel>
           </AppBar>
+          <OptionsMenu setSearchResults={console.log} cursorPosition={corner} />
         </Box>
       </ThemeProvider>
     </SettingsContext.Provider>
