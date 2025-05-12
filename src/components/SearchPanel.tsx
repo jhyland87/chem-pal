@@ -62,8 +62,8 @@ import SearchTablePagination from './SearchTablePagination';
 import SearchTableHeader from './SearchTableHeader'
 import SearchResultVariants from './SearchResultVariants';
 import { useSettings } from '../context';
-
 import SupplierFactory from '../suppliers/supplier_factory';
+import OptionsMenu from './OptionsMenu';
 //import LoadingBackdrop from './LoadingBackdrop';
 
 let fetchController: AbortController;
@@ -389,6 +389,7 @@ function Table({
           */}
         </div>
       </Paper>
+      <OptionsMenu setSearchResults={setSearchResults} />
     </>
   )
 }
