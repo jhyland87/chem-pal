@@ -4,6 +4,7 @@ import {
   useState,
   ChangeEvent,
   ReactElement,
+  CSSProperties,
   useEffect
 } from 'react'
 
@@ -26,6 +27,7 @@ import {
   Checkbox,
   Menu,
   MenuItem,
+  Link,
 } from '@mui/material';
 
 import {
@@ -415,7 +417,7 @@ function Table({
                             key={cell.id}
                             // @todo: Find a more sensible solution to this. Should be able to add custom properties
                             // to the meta object.
-                            style={(cell.column.columnDef.meta as { style?: React.CSSProperties })?.style}
+                            style={(cell.column.columnDef.meta as { style?: CSSProperties })?.style}
                           >
                             {flexRender(
                               cell.column.columnDef.cell,
@@ -462,6 +464,16 @@ function Table({
   )
 }
 
+// When the user clicks on a link in the table
+const handleResultClick = (event: MouseEvent<HTMLAnchorElement>) => {
+  // Stop the form from propagating
+  event.preventDefault();
+  // Get the target
+  const target = event.target as HTMLAnchorElement;
+  // Open a new tab to that targets href
+  chrome.tabs.create({ url: target.href, active: false });
+};
+
 function columns(): ColumnDef<Product, any>[] {
   return [
     {
@@ -498,7 +510,7 @@ function columns(): ColumnDef<Product, any>[] {
       accessorKey: 'title',
       header: () => <span>Title</span>,
       cell: ({ row }: ProductRow) => {
-        return row.original.title
+        return (<Link onClick={handleResultClick} href={row.original.url}>{row.original.title}</Link>)
       },
       enableHiding: false,
       minSize: 100,
