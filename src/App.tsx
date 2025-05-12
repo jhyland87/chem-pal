@@ -14,7 +14,6 @@ import { TabPanelProps, Settings } from './types';
 import { SettingsContext } from './context';
 import { lightTheme, darkTheme } from './themes';
 import storageMock from './mocks/chrome_storage_mock'
-import TanStackTable from './components/TanStackTable';
 
 if (!chrome.storage) {
   console.debug('!!! chrome.storage not found, using mock !!!')
@@ -62,6 +61,7 @@ function App() {
     someSetting: false,
     suppliers: SupplierFactory.supplierList(),
     theme: 'light',
+    showColumnFilters: true,
     showAllColumns: false,
     showColumns: []
   });
@@ -92,7 +92,7 @@ function App() {
           <AppBar position='static' sx={{ borderRadius: 1 }}>
             <TabHeader page={panel} setPage={setPanel} />
             <TabPanel value={panel} name='search-panel' index={0} dir={theme.direction}>
-              <TanStackTable />
+              <SearchPanel />
             </TabPanel>
             <TabPanel value={panel} name='suppliers-panel' index={1} dir={theme.direction}>
               <SuppliersPanel />

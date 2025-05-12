@@ -28,6 +28,7 @@ export interface Settings {
   theme: string;
   showAllColumns: boolean;
   showColumns: Array<string>;
+  showColumnFilters: boolean;
 }
 
 export interface Item {
