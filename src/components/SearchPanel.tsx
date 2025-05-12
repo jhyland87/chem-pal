@@ -8,6 +8,11 @@ import {
 } from 'react'
 
 import {
+  ArrowDropDown as ArrowDropDownIcon,
+  ArrowRight as ArrowRightIcon,
+} from '@mui/icons-material';
+
+import {
   Box,
   IconButton,
   Divider,
@@ -29,8 +34,6 @@ import {
   Checklist as ChecklistIcon,
   Done as DoneIcon,
   Close as CloseIcon,
-  ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon,
 } from '@mui/icons-material';
 
 import {
@@ -61,7 +64,7 @@ import SearchResultVariants from './SearchResultVariants';
 import { useSettings } from '../context';
 
 import SupplierFactory from '../suppliers/supplier_factory';
-import LoadingBackdrop from './LoadingBackdrop';
+//import LoadingBackdrop from './LoadingBackdrop';
 
 let fetchController: AbortController;
 
@@ -407,8 +410,8 @@ function columns(): ColumnDef<Product, any>[] {
             }}
           >
             {row.getIsExpanded()
-              ? <ExpandMoreIcon fontSize='small' />
-              : <ExpandLessIcon fontSize='small' />}
+              ? <ArrowDropDownIcon fontSize='small' />
+              : <ArrowRightIcon fontSize='small' />}
           </IconButton>
         ) : (
           '🔵'
