@@ -57,6 +57,8 @@ import {
   ProductRow
 } from '../types';
 
+import { isEmpty } from 'lodash';
+
 import SearchInput from './SearchInput';
 import SearchTablePagination from './SearchTablePagination';
 import SearchTableHeader from './SearchTableHeader'
@@ -299,7 +301,7 @@ function Table({
   // Stuff to do when the component mounts
   useEffect(() => {
     // Hide the columns that are in the hideColumns array if there are any
-    if (settingsContext.settings.hideColumns.length === 0) return;
+    if (isEmpty(settingsContext.settings.hideColumns)) return;
     table.getAllLeafColumns().map((column: Column<any>) => {
       if (settingsContext.settings.hideColumns.includes(column.id))
         column.toggleVisibility(false)
