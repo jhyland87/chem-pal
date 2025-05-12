@@ -63,7 +63,7 @@ function App() {
     theme: 'light',
     showColumnFilters: true,
     showAllColumns: false,
-    showColumns: []
+    hideColumns: ['description', 'uom'],
   });
 
   // Load the settings from storage.local on the initial component load

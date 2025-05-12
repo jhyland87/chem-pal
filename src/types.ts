@@ -27,7 +27,7 @@ export interface Settings {
   suppliers: Array<string>;
   theme: string;
   showAllColumns: boolean;
-  showColumns: Array<string>;
+  hideColumns: Array<string>;
   showColumnFilters: boolean;
 }
 
