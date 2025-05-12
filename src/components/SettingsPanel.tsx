@@ -89,9 +89,8 @@ export default function SettingsPanel() {
   }
 
   return (
-
     <FormGroup >
-      <List sx={{ width: '100%', bgcolor: 'background.paper' }}
+      <List sx={{ width: '100%', bgcolor: 'background.paper', color: 'text.primary' }}
         component='nav'
         aria-labelledby='nested-list-subheader'
         subheader={
@@ -229,7 +228,7 @@ export default function SettingsPanel() {
         </ListItem>
         <Divider variant='middle' component='li' />
       </List>
-      <List sx={{ width: '100%', bgcolor: 'background.paper' }}
+      <List sx={{ width: '100%', bgcolor: 'background.paper', color: 'text.primary' }}
         component='nav'
         aria-labelledby='nested-list-subheader'
         subheader={

@@ -1,37 +1,54 @@
 //import * as React from 'react';
-import Paper from '@mui/material/Paper';
-import InputBase from '@mui/material/InputBase';
-//import MoreVertIcon from '@material-ui/icons/MoreVert';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
-import SearchIcon from '@mui/icons-material/Search';
-//import DirectionsIcon from '@mui/icons-material/Directions';
-import ScienceIcon from '@mui/icons-material/Science';
-//import Box from '@mui/material/Box';
+import { Paper, InputBase, Divider, IconButton } from '@mui/material';
 
-export default function SearchInput() {
+import {
+  Menu as MenuIcon,
+  Search as SearchIcon,
+  Science as ScienceIcon
+} from '@mui/icons-material';
+import { useState } from 'react';
+
+type SearchInputStates = {
+  searchInput: string,
+  setSearchInput: (value: string) => void
+}
+
+export default function SearchInput({ searchInput, setSearchInput }: SearchInputStates) {
+  const [searchInputValue, setSearchInputValue] = useState<string>(searchInput);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSearchInput(searchInputValue);
+  }
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInputValue(e.target.value);
+  }
+
   return (
     <>
       <div
         className='search-input-container fullwidth'
-        style={{ padding: '70px 30px 70px 30px' }}>
+        style={{ padding: 'none' }}>
         <Paper
-          component="form"
-          sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: '100%' }}>
-          <IconButton sx={{ p: '10px' }} aria-label="menu">
+          component='form'
+          onSubmit={handleSubmit}
+          sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+          <IconButton aria-label='menu'>
             <MenuIcon />
           </IconButton>
           <InputBase
             sx={{ ml: 1, flex: 1 }}
-            placeholder="Search..!!."
+            value={searchInputValue}
+            onChange={handleSearchInputChange}
+            placeholder='Search...'
             inputProps={{ 'aria-label': 'Search for chemicals' }}
           />
-          <IconButton type="button" sx={{ p: '10px' }} aria-label="search">
+          <IconButton type='button' aria-label='search'>
             <ScienceIcon />
           </IconButton>
-          <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
-          <IconButton color="primary" sx={{ p: '10px' }} aria-label="directions">
+          <Divider orientation='vertical' />
+          <IconButton color='primary' aria-label='directions'>
             <SearchIcon />
           </IconButton>
         </Paper>

@@ -13,6 +13,7 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -28,7 +29,7 @@ body {
   display: flex;
   vertical-align: top;
   justify-content: center;
-  min-width: 500px;
+  min-width:800px;
   min-height:300px;
 }
 
@@ -67,4 +68,13 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+
+.full-width-input {
+  width: 100%;
+}
+
+.half-width-input {
+  width: 45%;
 }

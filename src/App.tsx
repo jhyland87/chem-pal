@@ -1,6 +1,6 @@
 import './App.css'
 import { useState, useEffect } from 'react';
-import { ThemeProvider, useTheme } from '@mui/material/styles';
+import { ThemeProvider, useTheme, createTheme } from '@mui/material/styles';
 import SearchPanel from './components/SearchPanel'
 import SettingsPanel from './components/SettingsPanel'
 import SuppliersPanel from './components/SuppliersPanel';
@@ -12,8 +12,15 @@ import CssBaseline from '@mui/material/CssBaseline';
 import SupplierFactory from './suppliers/supplier_factory';
 import { TabPanelProps, Settings } from './types';
 import { SettingsContext } from './context';
-import { darkTheme } from './themes';
+import { lightTheme, darkTheme } from './themes';
+import storageMock from './mocks/chrome_storage_mock'
 
+if (!chrome.storage) {
+  console.debug('!!! chrome.storage not found, using mock !!!')
+  window.chrome = {
+    storage: storageMock as any,
+  } as any;
+}
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -38,7 +45,7 @@ function TabPanel(props: TabPanelProps) {
 function App() {
   const theme = useTheme();
   const [panel, setPanel] = useState(0);
-
+  const [currentTheme, setCurrentTheme] = useState(lightTheme);
   // Default settings
   const [settings, setSettings] = useState<Settings>({
     caching: true,
@@ -52,7 +59,11 @@ function App() {
     popupSize: 'small',
     autoResize: true,
     someSetting: false,
-    suppliers: SupplierFactory.supplierList()
+    suppliers: SupplierFactory.supplierList(),
+    theme: 'light',
+    showColumnFilters: true,
+    showAllColumns: false,
+    showColumns: []
   });
 
   // Load the settings from storage.local on the initial component load
@@ -69,14 +80,16 @@ function App() {
   useEffect(() => {
     //console.debug('Updating storage.local.settings to:', settings)
     chrome.storage.local.set({ settings, panel })
+    console.debug('settings updated:', settings)
+    setCurrentTheme(settings.theme === 'light' ? lightTheme : darkTheme)
   }, [settings, panel])
 
   return (
     <SettingsContext.Provider value={{ settings, setSettings }}>
-      <ThemeProvider theme={darkTheme}>
+      <ThemeProvider theme={currentTheme}>
         <CssBaseline />
-        <Box sx={{ bgcolor: 'background.default', width: 500 }}>
-          <AppBar position='static'>
+        <Box sx={{ bgcolor: 'background.default', width: '100%' }}>
+          <AppBar position='static' sx={{ borderRadius: 1 }}>
             <TabHeader page={panel} setPage={setPanel} />
             <TabPanel value={panel} name='search-panel' index={0} dir={theme.direction}>
               <SearchPanel />

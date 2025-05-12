@@ -8,10 +8,9 @@ import App from '../App';
 
 let myMockedFunction: jest.Mock;
 describe('App', () => {
-  beforeEach(() => {
-    //myMockedFunction = jest.fn(() => Promise.resolve(false));
-    render(<App />);
-  });
+  beforeEach(() =>
+    render(<App />)
+  );
 
   describe('Settings tab', () => {
     it('should be visible', () => {
