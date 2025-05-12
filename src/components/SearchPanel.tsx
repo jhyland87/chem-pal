@@ -185,6 +185,7 @@ function EnhancedTableToolbar({ table, searchInput, setSearchInput }: EnhancedTa
                       sx={{ margin: 0, padding: '0 1px 0 20px' }}
                       checked={column.getIsVisible()}
                       onChange={column.getToggleVisibilityHandler()}
+                      disabled={!column.getCanHide()}
                     />}
                     label={column.id}
                   />
@@ -291,6 +292,16 @@ function Table({
     debugHeaders: true,
     debugColumns: false,
   })
+
+  // Stuff to do when the component mounts
+  useEffect(() => {
+    // Hide the columns that are in the hideColumns array if there are any
+    if (settingsContext.settings.hideColumns.length === 0) return;
+    table.getAllLeafColumns().map((column: Column<any>) => {
+      if (settingsContext.settings.hideColumns.includes(column.id))
+        column.toggleVisibility(false)
+    })
+  }, [])
 
   function columnSizeVars() {
     const headers = table.getFlatHeaders()
@@ -413,7 +424,7 @@ function columns(): ColumnDef<Product, any>[] {
         return row.original.title
       },
       enableHiding: false,
-      maxSize: 200,
+      minSize: 100,
       meta: {
         filterVariant: 'text',
       },
@@ -424,9 +435,9 @@ function columns(): ColumnDef<Product, any>[] {
       accessorKey: 'supplier',
       cell: info => info.getValue(),
       meta: {
-        filterVariant: 'text',
+        filterVariant: 'select',
       },
-      maxSize: 150
+      minSize: 90
     },
     {
       accessorKey: 'description',
@@ -434,12 +445,15 @@ function columns(): ColumnDef<Product, any>[] {
       meta: {
         filterVariant: 'text',
       },
-      maxSize: 200
+      minSize: 215
     },
     {
       id: 'price',
       header: 'Price',
       accessorKey: 'price',
+      cell: ({ row }: ProductRow) => {
+        return row.original.displayPrice
+      },
       meta: {
         filterVariant: 'text',
       },
@@ -451,6 +465,9 @@ function columns(): ColumnDef<Product, any>[] {
       accessorKey: 'quantity',
       meta: {
         filterVariant: 'range',
+      },
+      cell: ({ row }: ProductRow) => {
+        return row.original.displayQuantity
       },
       maxSize: 50,
     },
