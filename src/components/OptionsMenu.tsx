@@ -14,7 +14,7 @@ export default function OptionsMenu(props: any) {
   const handleClearResults = (event: MouseEvent<HTMLAnchorElement>) => {
     console.debug('clearing results')
     event.preventDefault();
-    props.setProducts([])
+    props.setSearchResults([])
   };
 
   const handleClearCache = (event: MouseEvent<HTMLAnchorElement>) => {
