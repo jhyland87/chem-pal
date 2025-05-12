@@ -282,6 +282,21 @@ export default function SettingsPanel() {
             label=''
           />
         </ListItem>
+        <ListItem sx={displayHelperOnHover}>
+          <ListItemText primary='Show Helpful Tips' />
+          <FormHelperText id='some-setting-helper-text'>Show help in tooltips</FormHelperText>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={settingsContext.settings.showHelp}
+                onChange={handleSwitchChange}
+                name='showHelp'
+              />
+            }
+            labelPlacement='start'
+            label=''
+          />
+        </ListItem>
         <Divider component='li' />
         <ListItem>
           <Stack spacing={2} direction='row' sx={{ display: 'block', marginLeft: 'auto', marginRight: 'auto' }}>

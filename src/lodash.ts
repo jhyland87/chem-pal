@@ -12,6 +12,8 @@ declare module 'lodash' {
     serialize(data: string): string;
     deserialize(data: string): string;
     coalesce(data?: any[]): any;
+    sleep(ms: number): Promise<void>;
+    delayAction(ms: number, action: () => void): Promise<void>;
   }
 }
 
@@ -156,6 +158,14 @@ function coalesce(data: any[]): any {
   return data.find(item => item !== undefined && item !== null)
 }
 
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function delayAction(ms: number, action: () => void) {
+  await sleep(ms);
+  action();
+}
 
 _.mixin({
   md5,
@@ -164,7 +174,9 @@ _.mixin({
   sha256sum,
   serialize,
   deserialize,
-  coalesce
+  coalesce,
+  sleep,
+  delayAction
 })
 
 export default _

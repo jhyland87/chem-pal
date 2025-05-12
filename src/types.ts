@@ -1,5 +1,5 @@
 
-import { Dispatch, ReactNode, SetStateAction } from 'react';
+import { Dispatch, ReactNode, SetStateAction, ReactElement } from 'react';
 import { CurrencyCode, CurrencySymbol } from './types/currency';
 import { CAS } from './types/cas';
 import { ColumnDef, ColumnFiltersState, Row, RowData } from '@tanstack/react-table';
@@ -7,12 +7,12 @@ export * from './types/quantity'
 export * from './types/cas'
 export * from './types/currency'
 
-
 export type HeaderObject = { [key: string]: string };
 export type ChromeStorageItems = { [key: string]: any };
 
-
 export interface Settings {
+  searchResultUpdateTs?: string;
+  showHelp: boolean;
   caching: boolean;
   autocomplete: boolean;
   currency: string;
@@ -163,4 +163,11 @@ export type EnhancedTableToolbarProps = {
 
 export type ProductRow = {
   row: Row<Product>
+}
+
+export type HelpTooltipProps = {
+  text: string;
+  children: ReactElement<unknown, any>;
+  delay?: number;
+  duration?: number;
 }

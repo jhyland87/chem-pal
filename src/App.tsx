@@ -15,6 +15,9 @@ import { SettingsContext } from './context';
 import { lightTheme, darkTheme } from './themes';
 import storageMock from './mocks/chrome_storage_mock'
 import SpeedDialMenu from './components/SpeedDialMenu';
+import ErrorBoundary from './components/ErrorBoundary';
+
+
 if (!chrome.storage) {
   console.debug('!!! chrome.storage not found, using mock - may result in unexpected behavior !!!')
   window.chrome = {
@@ -83,6 +86,7 @@ function App() {
 
   // Default settings
   const [settings, setSettings] = useState<Settings>({
+    showHelp: false,
     caching: true,
     autocomplete: true,
     currency: 'usd',
@@ -120,26 +124,28 @@ function App() {
   }, [settings, panel])
 
   return (
-    <SettingsContext.Provider value={{ settings, setSettings }}>
-      <ThemeProvider theme={currentTheme}>
-        <CssBaseline />
-        <Box sx={{ bgcolor: 'background.default', width: '100%' }}>
-          <AppBar position='static' sx={{ borderRadius: 1 }}>
-            <TabHeader page={panel} setPage={setPanel} />
-            <TabPanel value={panel} name='search-panel' index={0} dir={theme.direction}>
-              <SearchPanel />
-            </TabPanel>
-            <TabPanel value={panel} name='suppliers-panel' index={1} dir={theme.direction}>
-              <SuppliersPanel />
-            </TabPanel>
-            <TabPanel value={panel} name='settings-panel' index={2} dir={theme.direction}>
-              <SettingsPanel />
-            </TabPanel>
-          </AppBar>
-          <SpeedDialMenu setSearchResults={console.log} speedDialVisibility={speedDialVisibility} />
-        </Box>
-      </ThemeProvider>
-    </SettingsContext.Provider>
+    <ErrorBoundary fallback={<p>Something went wrong</p>}>
+      <SettingsContext.Provider value={{ settings, setSettings }}>
+        <ThemeProvider theme={currentTheme}>
+          <CssBaseline />
+          <Box sx={{ bgcolor: 'background.default', width: '100%' }}>
+            <AppBar position='static' sx={{ borderRadius: 1 }}>
+              <TabHeader page={panel} setPage={setPanel} />
+              <TabPanel value={panel} name='search-panel' index={0} dir={theme.direction}>
+                <SearchPanel />
+              </TabPanel>
+              <TabPanel value={panel} name='suppliers-panel' index={1} dir={theme.direction}>
+                <SuppliersPanel />
+              </TabPanel>
+              <TabPanel value={panel} name='settings-panel' index={2} dir={theme.direction}>
+                <SettingsPanel />
+              </TabPanel>
+            </AppBar>
+            <SpeedDialMenu speedDialVisibility={speedDialVisibility} />
+          </Box>
+        </ThemeProvider>
+      </SettingsContext.Provider>
+    </ErrorBoundary>
   )
 }
 

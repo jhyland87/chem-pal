@@ -66,7 +66,7 @@ import SearchResultVariants from './SearchResultVariants';
 import { useSettings } from '../context';
 import SupplierFactory from '../suppliers/supplier_factory';
 import SpeedDialMenu from './SpeedDialMenu';
-//import LoadingBackdrop from './LoadingBackdrop';
+import LoadingBackdrop from './LoadingBackdrop';
 
 let fetchController: AbortController;
 
@@ -228,20 +228,68 @@ function Table({
   const settingsContext = useSettings();
   const [searchInput, setSearchInput] = useState<string>('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [showSearchResults, setShowSearchResults] = useState<Product[]>([]);
+  const [statusLabel, setStatusLabel] = useState<string | boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!isEmpty(settingsContext.settings.hideColumns)) {
+      table.getAllLeafColumns().map((column: Column<any>) => {
+        if (settingsContext.settings.hideColumns.includes(column.id))
+          column.toggleVisibility(false)
+      })
+    }
+    chrome.storage.local.get(['searchResults', 'paginationModel'])
+      .then(data => {
+        const storedSearchResults = data.searchResults || [];
+
+        if (!storedSearchResults) {
+          setStatusLabel('Type a product name and hit enter')
+          return
+        }
+
+        setSearchResults(Array.isArray(storedSearchResults) ? storedSearchResults : []);
+        setStatusLabel('')
+      })
+  }, []);
+
+  useEffect(() => {
+    console.log('Search result timestamp was updated', settingsContext.settings.searchResultUpdateTs)
+
+    chrome.storage.local.get(['searchResults'])
+      .then(data => {
+        console.log('New search results', data.searchResults)
+        setShowSearchResults(data.searchResults)
+      })
+  }, [settingsContext.settings.searchResultUpdateTs])
+
+  const handleStopSearch = () => {
+    // Stop the form from propagating
+    //event.preventDefault();
+    console.debug('triggering abort..')
+    setIsLoading(false)
+    fetchController.abort()
+    setStatusLabel(searchResults.length === 0 ? 'Search aborted' : '')
+  };
 
   async function executeSearch(query: string) {
     if (!query.trim()) {
       return
     }
+    setIsLoading(true)
+
     setSearchResults([])
+    setStatusLabel('Searching...')
 
     // Abort controller specific to this query
     fetchController = new AbortController();
     // Create the query instance
     // Note: This does not actually run the HTTP calls or queries...
     const productQueryResults = new SupplierFactory(query, fetchController, settingsContext.settings.suppliers)
+
     // Clear the products table
     setSearchResults([])
+
 
     const startSearchTime = performance.now();
     let resultCount = 0;
@@ -255,6 +303,9 @@ function Table({
       // Add each product to the table.
       console.debug('newProduct:', result)
 
+      // Hide the status label thing
+      setStatusLabel(false)
+
       setSearchResults((prevProducts) => [...prevProducts, {
         // Each row needs a unique ID, so use the row count at each insertion
         // as the ID value
@@ -263,6 +314,9 @@ function Table({
     }
     const endSearchTime = performance.now();
     const searchTime = endSearchTime - startSearchTime;
+
+
+    setIsLoading(false)
 
     console.debug(`Found ${resultCount} products in ${searchTime} milliseconds`);
 
@@ -273,8 +327,30 @@ function Table({
     executeSearch(searchInput).then(console.log).catch(console.error);
   }, [searchInput]);
 
+  useEffect(() => {
+    // Not sure i'm happy with how I'm handling the search result update sequence.
+    // May need to refactor later.
+    chrome.storage.local.set({ searchResults }) // <-- This is the effect/action
+      .then(() => {
+        if (!searchResults.length) {
+          setStatusLabel(isLoading ? `Searching for ${searchInput}...` : 'Type a product name and hit enter')
+          return
+        }
+
+        settingsContext.setSettings({
+          ...settingsContext.settings,
+          searchResultUpdateTs: new Date().toISOString()
+        })
+      })
+
+  }, [searchResults]); // <-- this is the dependency
+
+  useEffect(() => {
+    console.debug('searchResults UPDATED:', searchResults)
+  }, [searchResults])
+
   const table = useReactTable({
-    data: searchResults,
+    data: showSearchResults,
     enableColumnResizing: true,
     defaultColumn: {
       minSize: 60,
@@ -298,16 +374,6 @@ function Table({
     debugColumns: false,
   })
 
-  // Stuff to do when the component mounts
-  useEffect(() => {
-    // Hide the columns that are in the hideColumns array if there are any
-    if (isEmpty(settingsContext.settings.hideColumns)) return;
-    table.getAllLeafColumns().map((column: Column<any>) => {
-      if (settingsContext.settings.hideColumns.includes(column.id))
-        column.toggleVisibility(false)
-    })
-  }, [])
-
   function columnSizeVars() {
     const headers = table.getFlatHeaders()
     const colSizes: { [key: string]: number } = {}
@@ -321,6 +387,7 @@ function Table({
 
   return (
     <>
+      <LoadingBackdrop open={isLoading} onClick={handleStopSearch} />
       <Paper sx={{ minHeight: '369px', width: '100%', padding: '0px' }}>
         <Box
           className='search-input-container fullwidth'
@@ -500,11 +567,14 @@ export default function SearchPanel() {
   const columnFilterFns = useState<ColumnFiltersState>([])
 
   return (
-    <Table
-      columnFilterFns={columnFilterFns}
-      columns={columns()}
-      getRowCanExpand={() => true}
-      renderVariants={SearchResultVariants}
-    />
+    <>
+
+      <Table
+        columnFilterFns={columnFilterFns}
+        columns={columns()}
+        getRowCanExpand={() => true}
+        renderVariants={SearchResultVariants}
+      />
+    </>
   )
 }
