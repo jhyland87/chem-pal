@@ -4,7 +4,11 @@ import {
   useState,
   ChangeEvent,
   ReactElement,
-  useReducer
+  useReducer,
+  useEffect,
+  Dispatch,
+  SetStateAction,
+  useMemo
 } from 'react'
 
 import {
@@ -62,27 +66,38 @@ import {
   getSortedRowModel,
   useReactTable,
   OnChangeFn,
-  Row
+  Row,
+  filterFns
 } from '@tanstack/react-table'
+
+import {
+  ProductTableProps,
+  Product,
+  EnhancedTableToolbarProps,
+  ProductRow
+} from '../types';
 
 import SearchInput from './SearchInput';
 import DebouncedInput from './Debounce';
 import SearchTablePagination from './SearchTablePagination';
 import SearchTableHeader from './SearchTableHeader'
 import SearchResultVariants from './SearchResultVariants';
-import { ProductTableProps } from '../types';
-import { makeData, Person } from '../makeData'
 import { useSettings } from '../context';
 
 import SupplierFactory from '../suppliers/supplier_factory';
 import LoadingBackdrop from './LoadingBackdrop';
 
+let fetchController: AbortController;
+
 const ITEM_HEIGHT = 48;
 
-function EnhancedTableToolbar({ table }: { table: any }) {
+
+function EnhancedTableToolbar({ table, searchInput, setSearchInput }: EnhancedTableToolbarProps) {
   const settingsContext = useSettings();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  //const [searchInput, setSearchInput] = useState<string>('');
+  //const [searchResults, setSearchResults] = useState<Product[]>([]);
   const open = Boolean(anchorEl);
   const handleClick = (event: MouseEvent<HTMLElement>) => {
     console.debug('[handleClick] event.target', event.target);
@@ -92,7 +107,6 @@ function EnhancedTableToolbar({ table }: { table: any }) {
   const handleClose = () => {
     setAnchorEl(null);
   };
-
 
   const handleToggleAllColumns = (event: ChangeEvent<HTMLInputElement>) => {
     const isChecked = typeof settingsContext.settings.showAllColumns === 'boolean'
@@ -119,7 +133,7 @@ function EnhancedTableToolbar({ table }: { table: any }) {
         id='tableTitle'
         component='div'
       >
-        <SearchInput />
+        <SearchInput searchInput={searchInput} setSearchInput={setSearchInput} />
       </Typography>
       <Tooltip title='Filter list'>
         <IconButton
@@ -189,7 +203,7 @@ function EnhancedTableToolbar({ table }: { table: any }) {
                     {column.id}
                   </label>
                   */}
-                </div>
+                </div >
               )
             })}
             {/*
@@ -212,31 +226,88 @@ function EnhancedTableToolbar({ table }: { table: any }) {
                 label={settingsContext.settings.showAllColumns ? 'Hide all' : 'Show all'}
               />
             </MenuItem>
-          </FormGroup>
-        </MenuList>
-      </Menu>
-    </Toolbar>
+          </FormGroup >
+        </MenuList >
+      </Menu >
+    </Toolbar >
   );
 }
 
 function Table({
-  data,
   columns,
   renderVariants,
   getRowCanExpand,
-  rerender,
-  refreshData,
   columnFilterFns
-}: ProductTableProps<Person>): ReactElement {
+}: ProductTableProps<Product>): ReactElement {
+  const settingsContext = useSettings();
+  //const [data, setData] = useState<Product[]>([]);
+  //const refreshData = () => setData(_old => makeData(50_000)) //stress test
+  const [searchInput, setSearchInput] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+
+  async function executeSearch(query: string) {
+    //return Promise.resolve([])
+    if (!query.trim()) {
+      //setSearchResults(searchResults)
+      return
+    }
+    console.debug('[executeSearch] query', query);
+    setSearchResults([])
+
+    //return Promise.resolve([])
+    // Abort controller specific to this query
+    fetchController = new AbortController();
+    // Create the query instance
+    // Note: This does not actually run the HTTP calls or queries...
+    const productQueryResults = new SupplierFactory(query, fetchController, settingsContext.settings.suppliers)
+    // Clear the products table
+    setSearchResults([])
+
+    const startSearchTime = performance.now();
+    let resultCount = 0;
+    // Use the async generator to iterate over the products
+    // This is where the queries get run, when the iteration starts.
+    for await (const result of productQueryResults) {
+      resultCount++
+      // Data for new row (must align with columns structure)
+
+      // Hide the status label thing
+      // Add each product to the table.
+      console.debug('newProduct:', result)
+
+      setSearchResults((prevProducts) => [...prevProducts, {
+        // Each row needs a unique ID, so use the row count at each insertion
+        // as the ID value
+        id: prevProducts.length, ...result as Product
+      }]);
+    }
+    const endSearchTime = performance.now();
+    const searchTime = endSearchTime - startSearchTime;
+
+    console.debug(`Found ${resultCount} products in ${searchTime} milliseconds`);
+
+    return searchResults
+  }
+
+  useEffect(() => {
+    executeSearch(searchInput).then(console.log).catch(console.error);
+  }, [searchInput]);
+
   const table = useReactTable({
-    data,
-    columns,
+    data: searchResults,
+    enableColumnResizing: true,
+    defaultColumn: {
+      minSize: 60,
+      maxSize: 800,
+    },
+    columnResizeMode: 'onChange',
+    columns: columns as ColumnDef<Product, any>[],
     filterFns: {},
     state: {
       columnFilters: columnFilterFns[0],
     },
     onColumnFiltersChange: columnFilterFns[1],
-    getRowCanExpand,
+    getRowCanExpand: (row: Row<Product>) => getRowCanExpand(row),
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     getFilteredRowModel: getFilteredRowModel(), //client side filtering
@@ -247,8 +318,31 @@ function Table({
     debugColumns: false,
   })
 
-  console.debug('Table filters', table.getState().columnFilters);
+  // Need to un-memoize this since memo is obsolete in React 19
+  /*
+  const columnSizeVars = useMemo(() => {
+    const headers = table.getFlatHeaders()
+    const colSizes: { [key: string]: number } = {}
+    for (let i = 0; i < headers.length; i++) {
+      const header = headers[i]!
+      colSizes[`--header-${header.id}-size`] = header.getSize()
+      colSizes[`--col-${header.column.id}-size`] = header.column.getSize()
+    }
+    return colSizes
+  }, [table.getState().columnSizingInfo, table.getState().columnSizing])
+  */
 
+  function columnSizeVars() {
+    const headers = table.getFlatHeaders()
+    const colSizes: { [key: string]: number } = {}
+    for (let i = 0; i < headers.length; i++) {
+      const header = headers[i]!
+      colSizes[`--header-${header.id}-size`] = header.getSize()
+      colSizes[`--col-${header.column.id}-size`] = header.column.getSize()
+    }
+    console.log('[columnSizeVars] colSizes', colSizes)
+    return colSizes
+  }
 
   return (
     <>
@@ -261,9 +355,11 @@ function Table({
           noValidate
           autoComplete='off' />
         <div className="p-2">
-          <EnhancedTableToolbar table={table} />
+          <EnhancedTableToolbar table={table} searchInput={searchInput} setSearchInput={setSearchInput} />
           <div className="h-4" />
-          <table>
+          <table style={{
+            ...columnSizeVars()
+          }}>
             <SearchTableHeader table={table} />
             <tbody>
               {table.getRowModel().rows.map(row => {
@@ -286,7 +382,7 @@ function Table({
                       <tr>
                         {/* 2nd row is a custom 1 cell row */}
                         <td colSpan={row.getVisibleCells().length}>
-                          {renderVariants({ row })}
+                          {renderVariants({ row: row as Row<Product> })}
                         </td>
                       </tr>
                     )}
@@ -312,14 +408,12 @@ function Table({
   )
 }
 
-
-
-function columns(): ColumnDef<Person, any>[] {
+function columns(): ColumnDef<Product, any>[] {
   return [
     {
       id: 'expander',
       header: () => null,
-      cell: ({ row }) => {
+      cell: ({ row }: ProductRow) => {
         return row.getCanExpand() ? (
           <IconButton
             size='small'
@@ -340,124 +434,82 @@ function columns(): ColumnDef<Person, any>[] {
       },
     },
     {
-      accessorKey: 'firstName',
-      cell: info => info.getValue(),
+      accessorKey: 'title',
+      header: () => <span>Title</span>,
+      cell: ({ row }: ProductRow) => {
+        //console.log('[cell] row', row);
+        return row.original.title
+      },
+      meta: {
+        filterVariant: 'text',
+      },
+      maxSize: 200,
     },
     {
-      accessorFn: row => row.lastName,
-      id: 'lastName',
+      id: 'supplier',
+      header: () => <span>Supplier</span>,
+      accessorKey: 'supplier',
+      //accessorFn: row => row.supplier,
       cell: info => info.getValue(),
-      header: () => <span>Last Name</span>,
+      meta: {
+        filterVariant: 'text',
+      },
+      maxSize: 150
     },
     {
-      accessorFn: row => `${row.firstName} ${row.lastName}`,
-      id: 'fullName',
-      header: 'Full Name',
-      cell: info => info.getValue(),
+      accessorKey: 'description',
+      header: 'Description',
+      meta: {
+        filterVariant: 'text',
+      },
+      maxSize: 200
     },
     {
-      accessorKey: 'age',
-      header: () => 'Age',
+      id: 'price',
+      header: 'Price',
+      accessorKey: 'price',
+      //accessorFn: row => `${row.currencySymbol} ${row.price}`,
+      //cell: info => info.getValue(),
+      meta: {
+        filterVariant: 'text',
+      },
+      maxSize: 80,
+    },
+    {
+      id: 'quantity',
+      header: 'Qty',
+      accessorKey: 'quantity',
+      //header: () => 'Qty',
       meta: {
         filterVariant: 'range',
       },
+      maxSize: 50,
     },
     {
-      accessorKey: 'visits',
-      header: () => <span>Visits</span>,
-      meta: {
-        filterVariant: 'range',
-      },
-    },
-    {
-      accessorKey: 'status',
-      header: 'Status',
+      id: 'uom',
+      header: 'uom',
+      accessorKey: 'uom',
+      //header: () => <span>Visits</span>,
       meta: {
         filterVariant: 'select',
       },
-    },
-    {
-      accessorKey: 'progress',
-      header: 'Profile Progress',
-      meta: {
-        filterVariant: 'range',
-      },
-    },
+      maxSize: 50,
+    }
   ]
 }
 
 export default function TanStackTable() {
-  const rerender = useReducer(() => ({}), {})[1]
-
   //const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const columnFilterFns = useState<ColumnFiltersState>([])
 
-
-  const [data, setData] = useState<Person[]>(() => makeData(5_000))
-  const refreshData = () => setData(_old => makeData(50_000)) //stress test
-
   return (
     <Table
-      rerender={rerender}
       columnFilterFns={columnFilterFns}
-      refreshData={refreshData}
-      data={data}
+      //refreshData={refreshData}
+      //data={data}
       columns={columns()}
       getRowCanExpand={() => true}
       renderVariants={SearchResultVariants}
     />
   )
 }
-
-function Filter({ column }: { column: Column<any, unknown> }) {
-  const columnFilterValue = column.getFilterValue()
-  const { filterVariant } = column.columnDef.meta ?? {}
-
-  return filterVariant === 'range' ? (
-    <div>
-      <div className="flex space-x-2">
-        {/* See faceted column filters example for min max values functionality */}
-        <DebouncedInput
-          type="number"
-          value={(columnFilterValue as [number, number])?.[0] ?? ''}
-          onChange={value =>
-            column.setFilterValue((old: [number, number]) => [value, old?.[1]])
-          }
-          placeholder={`Min`}
-          className="w-24 border shadow rounded"
-        />
-        <DebouncedInput
-          type="number"
-          value={(columnFilterValue as [number, number])?.[1] ?? ''}
-          onChange={value =>
-            column.setFilterValue((old: [number, number]) => [old?.[0], value])
-          }
-          placeholder={`Max`}
-          className="w-24 border shadow rounded"
-        />
-      </div>
-      <div className="h-1" />
-    </div>
-  ) : filterVariant === 'select' ? (
-    <select
-      onChange={e => column.setFilterValue(e.target.value)}
-      value={columnFilterValue?.toString()}
-    >
-      {/* See faceted column filters example for dynamic select options */}
-      <option value="">All</option>
-      <option value="complicated">complicated</option>
-      <option value="relationship">relationship</option>
-      <option value="single">single</option>
-    </select>
-  ) : (
-    <DebouncedInput
-      className="w-36 border shadow rounded"
-      onChange={value => column.setFilterValue(value)}
-      placeholder={`Search...`}
-      type="text"
-      value={(columnFilterValue ?? '') as string}
-    />
-    // See faceted column filters example for datalist search suggestions
-  )
-}
-

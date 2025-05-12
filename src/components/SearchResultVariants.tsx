@@ -1,12 +1,9 @@
 import { Row } from '@tanstack/react-table'
 
-import { Person } from '../makeData'
+import { Product, ProductRow } from '../types'
 
-type SearchResultVariantsProps = {
-  row: Row<Person>
-}
 
-export default function SearchResultVariants({ row }: SearchResultVariantsProps) {
+export default function SearchResultVariants({ row }: ProductRow) {
   return (
     <pre style={{ fontSize: '10px' }}>
       <code>{JSON.stringify(row.original, null, 2)}</code>

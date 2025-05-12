@@ -18,32 +18,33 @@ import {
   useReactTable,
   Row,
   OnChangeFn,
-  CellContext
+  CellContext,
+  Header,
+  ColumnFiltersColumnDef,
+  ColumnFiltersInstance,
+  ColumnFiltersColumn,
+  CoreColumn,
+  ColumnFiltersOptions
 } from '@tanstack/react-table'
 import DebouncedInput from './Debounce'
-import { makeData, Person } from '../makeData'
 import { SearchTableProps } from '../types/SearchTableProps'
+import { ProductTableHeader } from '../types';
+import { CSSProperties, useMemo } from 'react';
+import { Product } from '../types'
 
-
-type Header = {
-  id: string;
-  colSpan: number;
-  isPlaceholder: boolean;
-  column: any;
-  getCanFilter: () => boolean;
-  getCanSort: () => boolean;
-  getToggleSortingHandler: () => void;
-  getIsSorted: () => string;
-  getContext: () => any;
-  columnDef: {
-    header: any;
-  };
-}
-
-
-function Filter({ column }: { column: Column<any, unknown> }) {
+function Filter({ column }: { column: Column<Product> }) {
   const columnFilterValue = column.getFilterValue()
-  const { filterVariant } = column.columnDef.meta ?? {}
+
+  const { filterVariant = 'text' } = column.columnDef.meta as { filterVariant?: 'range' | 'select' | 'text' }
+
+  const baseInputStyle: CSSProperties = {
+    //width: '100%',
+    //backgroundColor: 'inherit',
+    //borderColor: 'inherit',
+    //borderCollapse: 'collapse',
+    //borderWidth: 'inherit',
+    colorScheme: 'light'
+  }
 
   return filterVariant === 'range' ? (
     <div>
@@ -51,42 +52,55 @@ function Filter({ column }: { column: Column<any, unknown> }) {
         {/* See faceted column filters example for min max values functionality */}
         <DebouncedInput
           type="number"
+          color='secondary.light'
           value={(columnFilterValue as [number, number])?.[0] ?? ''}
           onChange={value =>
             column.setFilterValue((old: [number, number]) => [value, old?.[1]])
           }
           placeholder={`Min`}
-          className="w-24 border shadow rounded"
+          className="w-24 border shadow rounded half-width-input"
+          style={{
+            ...baseInputStyle,
+          }}
         />
         <DebouncedInput
           type="number"
+          color='secondary.light'
           value={(columnFilterValue as [number, number])?.[1] ?? ''}
           onChange={value =>
             column.setFilterValue((old: [number, number]) => [old?.[0], value])
           }
           placeholder={`Max`}
-          className="w-24 border shadow rounded"
+          className="w-24 border shadow rounded half-width-input"
+          style={{
+            ...baseInputStyle,
+          }}
         />
       </div>
       <div className="h-1" />
     </div>
   ) : filterVariant === 'select' ? (
     <select
+      className="full-width-input"
+      color='secondary.light'
       onChange={e => column.setFilterValue(e.target.value)}
       value={columnFilterValue?.toString()}
+      style={baseInputStyle}
     >
       {/* See faceted column filters example for dynamic select options */}
       <option value="">All</option>
-      <option value="complicated">complicated</option>
-      <option value="relationship">relationship</option>
-      <option value="single">single</option>
+      {(column.columnDef.meta as { uniqueValues?: string[] })?.uniqueValues?.map((value: string) => (
+        <option key={value} value={value}>{value}</option>
+      ))}
     </select>
   ) : (
     <DebouncedInput
-      className="w-36 border shadow rounded"
+      className="w-36 border shadow rounded full-width-input"
+      color='secondary.light'
       onChange={value => column.setFilterValue(value)}
       placeholder={`Search...`}
       type="text"
+      style={baseInputStyle}
       value={(columnFilterValue ?? '') as string}
     />
     // See faceted column filters example for datalist search suggestions
@@ -94,22 +108,49 @@ function Filter({ column }: { column: Column<any, unknown> }) {
 }
 
 export default function SearchTableHeader({ table }: { table: any }) {
+
+  // Get the columns that have filterable values (range, select)
+  const filterableColumns = table.options.columns.reduce((accu: any, col: any) => {
+    if (['range', 'select'].includes(col?.meta?.filterVariant as string)) accu[col.id] = [];
+    return accu
+  }, {})
+
+  // Get the unique values for the filterable columns. This will be used to populate
+  // the filter dropdowns.
+  for (const row of table.options.data) {
+    for (const col of Object.keys(filterableColumns)) {
+      if (row[col] && filterableColumns[col].indexOf(row[col]) === -1)
+        filterableColumns[col].push(row[col])
+    }
+  }
+
+
+
   return (
     <thead>
       {table.getHeaderGroups().map((headerGroup: { id: string; headers: any[] }) => (
         <tr key={headerGroup.id}>
-          {headerGroup.headers.map((header: Header) => {
+          {headerGroup.headers.map((header: Header<Product, any>) => {
+
+            // If the column has filterable values, populate the unique values for the column
+            if (filterableColumns[header.id] !== undefined && filterableColumns[header.id].length > 0) {
+              // @todo: Should be able to insert uniqueValues property into the column type structure somewhere...
+              header.column.columnDef.meta = {
+                ...header.column.columnDef.meta,
+                uniqueValues: filterableColumns[header.id]
+              }
+            }
+
             return (
-              <th key={header.id} colSpan={header.colSpan}>
+              <th key={header.id} colSpan={header.colSpan} style={{
+                '--header-size': `${header.getSize()}px`,
+                '--col-size': `${header.column.getSize()}px`,
+              } as React.CSSProperties}>
                 {header.isPlaceholder ? null : (
                   <>
                     <div
-                      {...{
-                        className: header.column.getCanSort()
-                          ? 'cursor-pointer select-none'
-                          : '',
-                        onClick: header.column.getToggleSortingHandler(),
-                      }}
+                      className={`${header.column.getCanSort() ? 'cursor-pointer select-none' : ''}`}
+                      onClick={header.column.getToggleSortingHandler()}
                     >
                       {flexRender(
                         header.column.columnDef.header,
