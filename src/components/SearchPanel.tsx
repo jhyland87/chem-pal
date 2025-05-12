@@ -339,7 +339,12 @@ function Table({
                       {/*foo*/}
                       {row.getVisibleCells().map(cell => {
                         return (
-                          <td key={cell.id}>
+                          <td
+                            key={cell.id}
+                            // @todo: Find a more sensible solution to this. Should be able to add custom properties
+                            // to the meta object.
+                            style={(cell.column.columnDef.meta as { style?: React.CSSProperties })?.style}
+                          >
                             {flexRender(
                               cell.column.columnDef.cell,
                               cell.getContext()
@@ -427,6 +432,9 @@ function columns(): ColumnDef<Product, any>[] {
       minSize: 100,
       meta: {
         filterVariant: 'text',
+        style: {
+          textAlign: 'left',
+        },
       },
     },
     {
