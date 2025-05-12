@@ -117,19 +117,30 @@ export default function SearchTableHeader({ table }: { table: any }) {
 
             return (
               <th key={header.id} colSpan={header.colSpan} style={{
+                width: `calc(var(--header-${header?.id}-size) * 1px)`,
                 '--header-size': `${header.getSize()}px`,
                 '--col-size': `${header.column.getSize()}px`,
               } as CSSProperties}>
+
                 {header.isPlaceholder ? null : (
                   <>
+                    <div
+                      style={{ cursor: 'col-resize' }}
+                      onDoubleClick={header.column.resetSize}
+                      onMouseDown={header.getResizeHandler()}
+                      onTouchStart={header.getResizeHandler()}
+                      className={`resizer ${header.column.getIsResizing() ? 'isResizing' : ''}`}
+                    />
                     <div
                       className={`${header.column.getCanSort() ? 'cursor-pointer select-none' : ''}`}
                       onClick={header.column.getToggleSortingHandler()}
                     >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                       {{
                         asc: <ArrowDropUpIcon fontSize='small' style={{
                           fontSize: '1rem',
@@ -140,7 +151,9 @@ export default function SearchTableHeader({ table }: { table: any }) {
                           position: 'absolute',
                         }} />,
                       }[header.column.getIsSorted() as string] ?? null}
+
                     </div>
+
                     {settingsContext.settings.showColumnFilters && header.column.getCanFilter() ? (
                       <div>
                         <Filter column={header.column} />

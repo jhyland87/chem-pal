@@ -352,6 +352,13 @@ function Table({
           </table>
           <div className="h-2" />
           <SearchTablePagination table={table} />
+          {/*JSON.stringify(
+            {
+              columnSizing: table.getState().columnSizing,
+            },
+            null,
+            2
+          )*/}
           {/*
           <pre>
             {JSON.stringify(
@@ -391,6 +398,13 @@ function columns(): ColumnDef<Product, any>[] {
           '🔵'
         )
       },
+      enableHiding: false,
+      enableSorting: false,
+      enableColumnFilter: false,
+      enableResizing: false,
+      size: 20,
+      minSize: 20,
+      maxSize: 20,
     },
     {
       accessorKey: 'title',
@@ -398,10 +412,11 @@ function columns(): ColumnDef<Product, any>[] {
       cell: ({ row }: ProductRow) => {
         return row.original.title
       },
+      enableHiding: false,
+      maxSize: 200,
       meta: {
         filterVariant: 'text',
       },
-      maxSize: 200,
     },
     {
       id: 'supplier',
