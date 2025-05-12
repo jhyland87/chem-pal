@@ -1,36 +1,17 @@
 import {
   ArrowDropUp as ArrowDropUpIcon,
   ArrowDropDown as ArrowDropDownIcon,
-  ArrowDropDown,
 } from '@mui/icons-material';
 
 import {
   Column,
-  ColumnDef,
-  ColumnFiltersState,
-  RowData,
   flexRender,
-  getExpandedRowModel,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-  Row,
-  OnChangeFn,
-  CellContext,
   Header,
-  ColumnFiltersColumnDef,
-  ColumnFiltersInstance,
-  ColumnFiltersColumn,
-  CoreColumn,
-  ColumnFiltersOptions
 } from '@tanstack/react-table'
 import DebouncedInput from './Debounce'
-import { SearchTableProps } from '../types/SearchTableProps'
-import { ProductTableHeader } from '../types';
-import { CSSProperties, useMemo } from 'react';
+import { CSSProperties } from 'react';
 import { Product } from '../types'
+import { useSettings } from '../context';
 
 function Filter({ column }: { column: Column<Product> }) {
   const columnFilterValue = column.getFilterValue()
@@ -38,11 +19,6 @@ function Filter({ column }: { column: Column<Product> }) {
   const { filterVariant = 'text' } = column.columnDef.meta as { filterVariant?: 'range' | 'select' | 'text' }
 
   const baseInputStyle: CSSProperties = {
-    //width: '100%',
-    //backgroundColor: 'inherit',
-    //borderColor: 'inherit',
-    //borderCollapse: 'collapse',
-    //borderWidth: 'inherit',
     colorScheme: 'light'
   }
 
@@ -108,7 +84,7 @@ function Filter({ column }: { column: Column<Product> }) {
 }
 
 export default function SearchTableHeader({ table }: { table: any }) {
-
+  const settingsContext = useSettings();
   // Get the columns that have filterable values (range, select)
   const filterableColumns = table.options.columns.reduce((accu: any, col: any) => {
     if (['range', 'select'].includes(col?.meta?.filterVariant as string)) accu[col.id] = [];
@@ -123,8 +99,6 @@ export default function SearchTableHeader({ table }: { table: any }) {
         filterableColumns[col].push(row[col])
     }
   }
-
-
 
   return (
     <thead>
@@ -145,7 +119,7 @@ export default function SearchTableHeader({ table }: { table: any }) {
               <th key={header.id} colSpan={header.colSpan} style={{
                 '--header-size': `${header.getSize()}px`,
                 '--col-size': `${header.column.getSize()}px`,
-              } as React.CSSProperties}>
+              } as CSSProperties}>
                 {header.isPlaceholder ? null : (
                   <>
                     <div
@@ -161,13 +135,13 @@ export default function SearchTableHeader({ table }: { table: any }) {
                           fontSize: '1rem',
                           position: 'absolute',
                         }} />,
-                        desc: <ArrowDropDown fontSize='small' style={{
+                        desc: <ArrowDropDownIcon fontSize='small' style={{
                           fontSize: '1rem',
                           position: 'absolute',
                         }} />,
                       }[header.column.getIsSorted() as string] ?? null}
                     </div>
-                    {header.column.getCanFilter() ? (
+                    {settingsContext.settings.showColumnFilters && header.column.getCanFilter() ? (
                       <div>
                         <Filter column={header.column} />
                       </div>

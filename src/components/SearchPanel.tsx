@@ -1,138 +1,241 @@
-import './SearchPanel.css'
-import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
-import Link from '@mui/material/Link';
-import FilledInput from '@mui/material/FilledInput';
-import LinearProgress from '@mui/material/LinearProgress';
-import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import React, { ChangeEvent, useState, useEffect } from 'react';
-import OptionsMenu from './OptionsMenu';
-import { Product } from '../types'
+import {
+  Fragment,
+  MouseEvent,
+  useState,
+  ChangeEvent,
+  ReactElement,
+  useEffect
+} from 'react'
+
+import {
+  Box,
+  IconButton,
+  Divider,
+  MenuList,
+  Toolbar,
+  Tooltip,
+  Typography,
+  Paper,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
+  Menu,
+  MenuItem,
+} from '@mui/material';
+
+import {
+  Search as SearchIcon,
+  SearchOff as SearchOffIcon,
+  Checklist as ChecklistIcon,
+  Done as DoneIcon,
+  Close as CloseIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
+} from '@mui/icons-material';
+
+import {
+  Column,
+  ColumnDef,
+  ColumnFiltersState,
+  flexRender,
+  getExpandedRowModel,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+  Row,
+} from '@tanstack/react-table'
+
+import {
+  ProductTableProps,
+  Product,
+  EnhancedTableToolbarProps,
+  ProductRow
+} from '../types';
+
+import SearchInput from './SearchInput';
+import SearchTablePagination from './SearchTablePagination';
+import SearchTableHeader from './SearchTableHeader'
+import SearchResultVariants from './SearchResultVariants';
+import { useSettings } from '../context';
+
 import SupplierFactory from '../suppliers/supplier_factory';
 import LoadingBackdrop from './LoadingBackdrop';
-import { useSettings } from '../context';
-import storageMock from '../mocks/chrome_storage_mock'
-if (!chrome.storage) {
-  window.chrome = {
-    storage: storageMock as any,
-  } as any;
-}
 
 let fetchController: AbortController;
 
-// When the user clicks on a link in the table
-const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
-  // Stop the form from propagating
-  event.preventDefault();
-  // Get the target
-  const target = event.target as HTMLAnchorElement;
-  // Open a new tab to that targets href
-  chrome.tabs.create({ url: target.href, active: false });
-};
+const ITEM_HEIGHT = 48;
 
-// Callback to display the link of the product in the table
-const showLink = (params: GridRenderCellParams<any, any, any>) => {
-  return (<Link onClick={handleClick} href={params.row.url}>{params.row.title}</Link>);
-};
 
-// Columns of the table
-const columns: GridColDef[] = [
-  {
-    field: 'title',
-    headerName: 'Product',
-    width: 225,
-    renderCell: showLink,
-  },
-  {
-    field: 'supplier',
-    headerName: 'Supplier',
-    width: 125
-  },
-  {
-    field: 'displayPrice',
-    headerName: 'Price',
-    type: 'string',
-    width: 75,
-  },
-  {
-    field: 'displayQuantity',
-    headerName: 'Qty',
-    type: 'string',
-    description: 'THe quantity for each item',
-    width: 75
-  }
-];
-
-const SearchPanel: React.FC = () => {
+function EnhancedTableToolbar({ table, searchInput, setSearchInput }: EnhancedTableToolbarProps) {
   const settingsContext = useSettings();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [query, setQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [statusLabel, setStatusLabel] = useState('');
-  const [paginationModel, setPaginationModel] = useState({
-    pageSize: 5,
-    page: 0,
-  });
 
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event: MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
-  // On component load, populate the products from storage if there is any.
-  // If there are products to list, then also update the pagination if it
-  // is saved
-  useEffect(() => {
-    chrome.storage.local.get(['products', 'paginationModel'])
-      .then(data => {
-        const storedProducts = data.products || [];
-        const storedPaginationModel = data.paginationModel
+  const handleToggleAllColumns = (event: ChangeEvent<HTMLInputElement>) => {
+    const isChecked = typeof settingsContext.settings.showAllColumns === 'boolean'
+      ? settingsContext.settings.showAllColumns
+      : event.target.checked
 
-        if (!storedProducts) {
-          setStatusLabel('Type a product name and hit enter')
-          return
+    settingsContext.setSettings({
+      ...settingsContext.settings,
+      showAllColumns: !isChecked
+    });
+  };
+
+  const handleToggleColumnFilterVisibility = (event: ChangeEvent<HTMLInputElement>) => {
+    const isChecked = typeof settingsContext.settings.showColumnFilters === 'boolean'
+      ? settingsContext.settings.showColumnFilters
+      : event.target.checked
+
+    settingsContext.setSettings({
+      ...settingsContext.settings,
+      showColumnFilters: !isChecked
+    });
+  };
+
+  return (
+    <Toolbar
+      sx={[
+        {
+          pl: { sm: 2 },
+          pr: { xs: 1, sm: 1 },
         }
+      ]}>
+      <Typography
+        sx={{ flex: '1 1 100%' }}
+        //variant='h6'
+        id='tableTitle'
+        component='div'
+      >
+        <SearchInput searchInput={searchInput} setSearchInput={setSearchInput} />
+      </Typography>
+      <Tooltip title='Filter list'>
+        <IconButton
+          size='small'
+          aria-label='more'
+          id='filter-button'
+          aria-controls={open ? 'long-menu' : undefined}
+          aria-expanded={open ? 'true' : undefined}
+          aria-haspopup='true'
+          onClick={handleClick}>
+          <ChecklistIcon fontSize='small' />
+        </IconButton>
+      </Tooltip>
+      <Menu
+        id='long-menu'
+        sx={{
+          '& .MuiPaper-root': {
+            maxHeight: ITEM_HEIGHT * 4.5,
+            width: '20ch',
+          },
+        }}
+        aria-labelledby='long-button'
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        variant='selectedMenu'
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        slotProps={{
+          paper: {
+            style: {
+              maxHeight: ITEM_HEIGHT * 4.5,
+              width: '20ch',
+            },
+          },
+        }}>
+        <MenuList dense sx={{ paddingTop: '2px' }}>
+          <FormGroup>
+            <MenuItem dense>
+              <FormControlLabel
+                sx={{ width: '100%', marginLeft: '0px', marginRight: '0px' }}
+                control={<Checkbox
+                  size='small'
+                  onChange={handleToggleColumnFilterVisibility}
+                  aria-label='Show column filters'
+                  sx={{ margin: 0, padding: 0 }}
+                  icon={<SearchIcon fontSize='small' />}
+                  checkedIcon={<SearchOffIcon fontSize='small' />}
+                />}
+                label={settingsContext.settings.showAllColumns ? 'Hide Filters' : 'Show Filters'}
+              />
+            </MenuItem>
+            <Divider sx={{ marginTop: '4px', marginBottom: '4px' }} />
+            {table.getAllLeafColumns().map((column: Column<any>) => {
+              return (
+                <div key={column.id} className="px-1" style={{ width: '100%' }}>
+                  <FormControlLabel
+                    sx={{ width: '100%', marginLeft: '0px', marginRight: '0px' }}
+                    control={<Checkbox
+                      sx={{ margin: 0, padding: '0 1px 0 20px' }}
+                      checked={column.getIsVisible()}
+                      onChange={column.getToggleVisibilityHandler()}
+                    />}
+                    label={column.id}
+                  />
+                </div >
+              )
+            })}
+            <Divider sx={{ marginTop: '4px', marginBottom: '4px' }} />
+            <MenuItem dense>
+              <FormControlLabel
+                sx={{ width: '100%', marginLeft: '0px', marginRight: '0px' }}
+                control={<Checkbox
+                  size='small'
+                  onChange={handleToggleAllColumns}
+                  aria-label='Toggle All Columns'
+                  sx={{ margin: 0, padding: 0 }}
+                  icon={<CloseIcon fontSize='small' />}
+                  checkedIcon={<DoneIcon fontSize='small' />}
+                />}
+                label={settingsContext.settings.showAllColumns ? 'Hide all' : 'Show all'}
+              />
+            </MenuItem>
+          </FormGroup >
+        </MenuList >
+      </Menu >
+    </Toolbar >
+  );
+}
 
-        setProducts(Array.isArray(storedProducts) ? storedProducts : []);
-        setStatusLabel('')
+function Table({
+  columns,
+  renderVariants,
+  getRowCanExpand,
+  columnFilterFns
+}: ProductTableProps<Product>): ReactElement {
+  const settingsContext = useSettings();
+  const [searchInput, setSearchInput] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
 
-        if (storedPaginationModel)
-          setPaginationModel(storedPaginationModel)
-      })
-  }, []);
+  async function executeSearch(query: string) {
+    if (!query.trim()) {
+      return
+    }
+    setSearchResults([])
 
-  // Update the table whenever the products update
-  useEffect(() => { // Use effect will execute a callback action whenever a dependency changes
-    chrome.storage.local.set({ products }) // <-- This is the effect/action
-      .then(() => {
-        if (!products.length) {
-          setStatusLabel(isLoading ? `Searching for ${query}...` : 'Type a product name and hit enter')
-          return
-        }
-
-        setStatusLabel('')
-      })
-
-    chrome.storage.local.set({ paginationModel })
-  }, [products, paginationModel]); // <-- this is the dependency
-
-  // When the user hits [enter] to submit a search
-  const handleQuerySubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    // Stop form from propagating
-    e.preventDefault();
-    if (!query.trim()) return;
-    // Show the progress bar
-    setIsLoading(true)
-    // Set the status label to 'Searching...'
-    setStatusLabel('Searching...')
     // Abort controller specific to this query
     fetchController = new AbortController();
     // Create the query instance
     // Note: This does not actually run the HTTP calls or queries...
     const productQueryResults = new SupplierFactory(query, fetchController, settingsContext.settings.suppliers)
     // Clear the products table
-    setProducts([])
-    // Reset the pagination back to page 0
-    setPaginationModel({
-      pageSize: 5,
-      page: 0,
-    })
+    setSearchResults([])
 
     const startSearchTime = performance.now();
     let resultCount = 0;
@@ -141,100 +244,222 @@ const SearchPanel: React.FC = () => {
     for await (const result of productQueryResults) {
       resultCount++
       // Data for new row (must align with columns structure)
-      const newProduct: Product = {
-        supplier: result?.supplier,
-        title: result?.title,
-        displayPrice: result?.displayPrice,
-        price: result?.price,
-        currencyCode: result?.currencyCode,
-        currencySymbol: result?.currencySymbol,
-        quantity: result?.quantity,
-        displayQuantity: result?.displayQuantity,
-        url: result?.url
-      };
+
       // Hide the status label thing
-      setStatusLabel('')
       // Add each product to the table.
-      console.debug('newProduct:', newProduct)
-      setProducts((prevProducts) => [...prevProducts, {
+      console.debug('newProduct:', result)
+
+      setSearchResults((prevProducts) => [...prevProducts, {
         // Each row needs a unique ID, so use the row count at each insertion
         // as the ID value
-        id: prevProducts.length, ...newProduct
+        id: prevProducts.length, ...result as Product
       }]);
     }
     const endSearchTime = performance.now();
     const searchTime = endSearchTime - startSearchTime;
 
-    // Clear the query input
-    setQuery('');
-    // Hide the loading thingy
-    setIsLoading(false)
-
     console.debug(`Found ${resultCount} products in ${searchTime} milliseconds`);
-  };
 
-  const handleStopSearch = () => {
-    // Stop the form from propagating
-    //event.preventDefault();
-    console.debug('triggering abort..')
+    return searchResults
+  }
 
-    setIsLoading(false)
+  useEffect(() => {
+    executeSearch(searchInput).then(console.log).catch(console.error);
+  }, [searchInput]);
 
-    fetchController.abort()
+  const table = useReactTable({
+    data: searchResults,
+    enableColumnResizing: true,
+    defaultColumn: {
+      minSize: 60,
+      maxSize: 800,
+    },
+    columnResizeMode: 'onChange',
+    columns: columns as ColumnDef<Product, any>[],
+    filterFns: {},
+    state: {
+      columnFilters: columnFilterFns[0],
+    },
+    onColumnFiltersChange: columnFilterFns[1],
+    getRowCanExpand: (row: Row<Product>) => getRowCanExpand(row),
+    getCoreRowModel: getCoreRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(), //client side filtering
+    getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    debugTable: true,
+    debugHeaders: true,
+    debugColumns: false,
+  })
 
-    setStatusLabel(products.length === 0 ? 'Search aborted' : '')
-  };
+  function columnSizeVars() {
+    const headers = table.getFlatHeaders()
+    const colSizes: { [key: string]: number } = {}
+    for (let i = 0; i < headers.length; i++) {
+      const header = headers[i]!
+      colSizes[`--header-${header.id}-size`] = header.getSize()
+      colSizes[`--col-${header.column.id}-size`] = header.column.getSize()
+    }
+    return colSizes
+  }
 
   return (
     <>
       <Paper sx={{ minHeight: '369px', width: '100%', padding: '0px' }}>
         <Box
           className='search-input-container fullwidth'
-          onSubmit={handleQuerySubmit}
           component='form'
           sx={{ '& > :not(style)': { m: 0 } }}
           noValidate
-          autoComplete='off' >
-          {isLoading
-            ? (<LinearProgress className='search-progress-bar' />)
-            : (<FilledInput
-              fullWidth
-              id='search-input'
-              className='fullwidth'
-              size='small'
-              inputProps={{ 'aria-label': 'description' }}
-              value={query}
-              placeholder='Search...'
-              onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                setQuery(event.target.value);
-              }} />
-            )
-          }
-        </Box>
-        <LoadingBackdrop open={isLoading} onClick={handleStopSearch} />
-        {products && products.length > 0
-          ? (<DataGrid
-            rows={products}
-            columns={columns}
-            paginationModel={paginationModel}
-            onPaginationModelChange={setPaginationModel}
-            pageSizeOptions={[5, 10]}
-            sx={{
-              border: 0,
-              '& .MuiDataGrid-footerContainer': {
-                justifyContent: 'center'
-              },
-              '& .MuiTablePagination-root': {
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }
-            }} />)
-          : statusLabel}
+          autoComplete='off' />
+        <div className="p-2">
+          <EnhancedTableToolbar table={table} searchInput={searchInput} setSearchInput={setSearchInput} />
+          <div className="h-4" />
+          <table style={{
+            ...columnSizeVars(),
+            width: '100%'
+          }}>
+            <SearchTableHeader table={table} />
+            <tbody>
+              {table.getRowModel().rows.map(row => {
+                return (
+                  <Fragment key={row.id}>
+                    <tr>
+                      {/*foo*/}
+                      {row.getVisibleCells().map(cell => {
+                        return (
+                          <td key={cell.id}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </td>
+                        )
+                      })}
+                    </tr>
+                    {row.getIsExpanded() && (
+                      <tr>
+                        {/* 2nd row is a custom 1 cell row */}
+                        <td colSpan={row.getVisibleCells().length}>
+                          {renderVariants({ row: row as Row<Product> })}
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                )
+              })}
+            </tbody>
+          </table>
+          <div className="h-2" />
+          <SearchTablePagination table={table} />
+          {/*
+          <pre>
+            {JSON.stringify(
+              { columnFilters: table.getState().columnFilters },
+              null,
+              2
+            )}
+          </pre>
+          */}
+        </div>
       </Paper>
-      <OptionsMenu setProducts={setProducts} />
     </>
-  );
-};
+  )
+}
 
-export default SearchPanel;
+function columns(): ColumnDef<Product, any>[] {
+  return [
+    {
+      id: 'expander',
+      header: () => null,
+      cell: ({ row }: ProductRow) => {
+        return row.getCanExpand() ? (
+          <IconButton
+            size='small'
+            onClick={row.getToggleExpandedHandler()}
+            style={{
+              borderRadius: '10%',
+              padding: '2px',
+              cursor: 'pointer'
+            }}
+          >
+            {row.getIsExpanded()
+              ? <ExpandMoreIcon fontSize='small' />
+              : <ExpandLessIcon fontSize='small' />}
+          </IconButton>
+        ) : (
+          '🔵'
+        )
+      },
+    },
+    {
+      accessorKey: 'title',
+      header: () => <span>Title</span>,
+      cell: ({ row }: ProductRow) => {
+        return row.original.title
+      },
+      meta: {
+        filterVariant: 'text',
+      },
+      maxSize: 200,
+    },
+    {
+      id: 'supplier',
+      header: () => <span>Supplier</span>,
+      accessorKey: 'supplier',
+      cell: info => info.getValue(),
+      meta: {
+        filterVariant: 'text',
+      },
+      maxSize: 150
+    },
+    {
+      accessorKey: 'description',
+      header: 'Description',
+      meta: {
+        filterVariant: 'text',
+      },
+      maxSize: 200
+    },
+    {
+      id: 'price',
+      header: 'Price',
+      accessorKey: 'price',
+      meta: {
+        filterVariant: 'text',
+      },
+      maxSize: 80,
+    },
+    {
+      id: 'quantity',
+      header: 'Qty',
+      accessorKey: 'quantity',
+      meta: {
+        filterVariant: 'range',
+      },
+      maxSize: 50,
+    },
+    {
+      id: 'uom',
+      header: 'Unit',
+      accessorKey: 'uom',
+      meta: {
+        filterVariant: 'select',
+      },
+      maxSize: 50,
+    }
+  ]
+}
+
+export default function SearchPanel() {
+  const columnFilterFns = useState<ColumnFiltersState>([])
+
+  return (
+    <Table
+      columnFilterFns={columnFilterFns}
+      columns={columns()}
+      getRowCanExpand={() => true}
+      renderVariants={SearchResultVariants}
+    />
+  )
+}
