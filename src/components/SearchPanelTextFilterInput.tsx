@@ -7,7 +7,7 @@ export default function SearchPanelTextFilterInput({ column, ...props }: FilterI
   console.log("[SearchPanelRangeFilterInput] props:", props);
   return (
     <div>
-      <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }} size="small">
+      <FormControl variant="standard" sx={{ m: 0, minWidth: 120 }} size="small">
         <TextField
           id="standard-basic"
           size="small"
@@ -19,8 +19,16 @@ export default function SearchPanelTextFilterInput({ column, ...props }: FilterI
           variant="standard"
           //onChange={props.onChange}
           sx={{
+            paddingTop: "0px",
+            paddingBottom: "0px",
+            paddingLeft: "0px",
+            paddingRight: "0px",
+            marginTop: "0px",
+            marginBottom: "0px",
+            marginLeft: "0px",
+            marginRight: "0px",
             width: "100%",
-            height: "20px",
+            height: "auto",
           }}
           {...props}
         />

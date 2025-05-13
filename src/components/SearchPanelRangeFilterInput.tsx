@@ -1,10 +1,36 @@
 import Box from "@mui/material/Box";
-import Slider from "@mui/material/Slider";
+
 import { useState } from "react";
+
+import Slider, { SliderValueLabelProps } from "@mui/material/Slider";
+import Tooltip from "@mui/material/Tooltip";
 import { FilterInputProps } from "../types";
 
 function valuetext(value: number) {
   return `${value}°C`;
+}
+
+const ITEM_HEIGHT = 48;
+
+function ValueLabelComponent(props: SliderValueLabelProps) {
+  const { children, value } = props;
+
+  return (
+    <Tooltip
+      enterTouchDelay={0}
+      placement="top"
+      title={value}
+      style={{
+        paddingTop: "0px",
+        paddingBottom: "0px",
+        paddingLeft: "0px",
+        paddingRight: "0px",
+        margin: 0,
+      }}
+    >
+      {children}
+    </Tooltip>
+  );
 }
 
 export default function SearchPanelRangeFilterInput({
@@ -17,18 +43,46 @@ export default function SearchPanelRangeFilterInput({
   console.log("[SearchPanelRangeFilterInput] props:", props);
   const [value, setValue] = useState<number[]>([20, 37]);
 
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event: MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
   const handleChange = (event: Event, newValue: number[]) => {
     setValue(newValue);
   };
 
   return (
     <div>
-      <Box sx={{ width: 300 }}>
+      <Box
+        sx={{
+          //width: 300,
+          paddingTop: "0px",
+          paddingBottom: "0px",
+          paddingLeft: "2px",
+          paddingRight: "2px",
+        }}
+      >
         <Slider
+          valueLabelDisplay="auto"
+          style={{
+            paddingTop: "0px",
+            paddingBottom: "0px",
+            paddingLeft: "0px",
+            paddingRight: "0px",
+          }}
+          slots={{
+            valueLabel: ValueLabelComponent,
+          }}
+          aria-label="custom thumb label Small"
+          size="small"
           getAriaLabel={() => "Temperature range"}
           value={value}
           onChange={handleChange}
-          valueLabelDisplay="auto"
           getAriaValueText={valuetext}
         />
       </Box>
