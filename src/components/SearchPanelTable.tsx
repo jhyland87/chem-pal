@@ -18,6 +18,7 @@ import { useSettings } from "../context";
 import SupplierFactory from "../suppliers/supplier_factory";
 import { Product, ProductTableProps } from "../types";
 import LoadingBackdrop from "./LoadingBackdrop";
+import SearchPanelTableColumns from "./SearchPanelTableColumns";
 import SearchPanelToolbar from "./SearchPanelToolbar";
 import SearchTableHeader from "./SearchTableHeader";
 import SearchTablePagination from "./SearchTablePagination";
@@ -25,7 +26,6 @@ import SearchTablePagination from "./SearchTablePagination";
 let fetchController: AbortController;
 
 export default function SearchPanelTable({
-  columns,
   renderVariants,
   getRowCanExpand,
   columnFilterFns,
@@ -36,6 +36,9 @@ export default function SearchPanelTable({
   const [showSearchResults, setShowSearchResults] = useState<Product[]>([]);
   const [, setStatusLabel] = useState<string | boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  console.log("SearchPanelTable columns:", SearchPanelTableColumns());
+  console.log("SearchPanelTable columnFilterFns:", columnFilterFns);
 
   useEffect(() => {
     if (!isEmpty(settingsContext.settings.hideColumns)) {
@@ -171,7 +174,7 @@ export default function SearchPanelTable({
       maxSize: 800,
     },
     columnResizeMode: "onChange",
-    columns: columns as ColumnDef<Product, unknown>[],
+    columns: SearchPanelTableColumns() as ColumnDef<Product, unknown>[],
     filterFns: {},
     state: {
       columnFilters: columnFilterFns[0],

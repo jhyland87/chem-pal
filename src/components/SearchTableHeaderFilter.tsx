@@ -1,24 +1,15 @@
 import MenuItem from "@mui/material/MenuItem";
 import { Column } from "@tanstack/react-table";
-import { ChangeEvent, CSSProperties } from "react";
-
-import { Product } from "../types";
+import { ChangeEvent } from "react";
+import { ColumnMeta, Product } from "../types";
 import SearchPanelRangeFilterInput from "./SearchPanelRangeFilterInput";
 import SearchPanelSelectFilterInput from "./SearchPanelSelectFilterInput";
 import SearchPanelTextFilterInput from "./SearchPanelTextFilterInput";
 // Define the column meta type
-type ColumnMeta = {
-  filterVariant?: "range" | "select" | "text";
-  uniqueValues?: string[];
-  rangeValues?: number[];
-};
 
 export default function SearchTableHeaderFilter({ column }: { column: Column<Product, unknown> }) {
   const columnFilterValue = column.getFilterValue();
   const { filterVariant = "text" } = (column.columnDef.meta || {}) as ColumnMeta;
-  const baseInputStyle: CSSProperties = {
-    colorScheme: "light",
-  };
 
   return filterVariant === "range" ? (
     <SearchPanelRangeFilterInput column={column} rangeValues={[]} />

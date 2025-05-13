@@ -3,14 +3,8 @@ import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import { ColumnDef, flexRender, Header, HeaderGroup, Table } from "@tanstack/react-table";
 import { CSSProperties } from "react";
 import { useSettings } from "../context";
-import { Product } from "../types";
+import { ColumnMeta, Product } from "../types";
 import SearchTableHeaderFilter from "./SearchTableHeaderFilter";
-// Define the column meta type
-type ColumnMeta = {
-  filterVariant?: "range" | "select" | "text";
-  uniqueValues?: string[];
-  rangeValues?: number[];
-};
 
 export default function SearchTableHeader({ table }: { table: Table<Product> }) {
   const settingsContext = useSettings();

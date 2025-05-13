@@ -1,6 +1,11 @@
-import MenuItem from "@mui/material/MenuItem";
-import Select from "@mui/material/Select";
+import Box from "@mui/material/Box";
+import Slider from "@mui/material/Slider";
+import { useState } from "react";
 import { FilterInputProps } from "../types";
+
+function valuetext(value: number) {
+  return `${value}°C`;
+}
 
 export default function SearchPanelRangeFilterInput({
   rangeValues = [],
@@ -10,8 +15,29 @@ export default function SearchPanelRangeFilterInput({
   console.log("[SearchPanelRangeFilterInput] rangeValues:", rangeValues);
   console.log("[SearchPanelRangeFilterInput] column:", column);
   console.log("[SearchPanelRangeFilterInput] props:", props);
+  const [value, setValue] = useState<number[]>([20, 37]);
+
+  const handleChange = (event: Event, newValue: number[]) => {
+    setValue(newValue);
+  };
+
   return (
     <div>
+      <Box sx={{ width: 300 }}>
+        <Slider
+          getAriaLabel={() => "Temperature range"}
+          value={value}
+          onChange={handleChange}
+          valueLabelDisplay="auto"
+          getAriaValueText={valuetext}
+        />
+      </Box>
+    </div>
+  );
+}
+
+/**
+
       <Select
         labelId="demo-simple-select-standard-label"
         id="demo-simple-select-standard"
@@ -35,9 +61,8 @@ export default function SearchPanelRangeFilterInput({
           test
         </option>
       </Select>
-    </div>
-  );
-}
+
+ */
 
 /*
 

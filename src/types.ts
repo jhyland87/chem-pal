@@ -137,7 +137,7 @@ export type TableProps<TData extends RowData> = {
 };
 
 export type ProductTableProps<TData extends RowData> = {
-  columns: ColumnDef<TData, unknown>[];
+  columns?: ColumnDef<TData, unknown>[];
   renderVariants: (props: { row: Row<TData> }) => React.ReactElement;
   getRowCanExpand: (row: Row<TData>) => boolean;
   //columnFilters: ColumnFiltersState
@@ -205,4 +205,10 @@ export type FilterInputProps = {
     | any;
   value?: string;
   props?: Record<string, unknown>;
+};
+
+export type ColumnMeta = {
+  filterVariant?: "range" | "select" | "text";
+  uniqueValues?: string[];
+  rangeValues?: number[];
 };
