@@ -20,7 +20,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
 
   // If the products first require a query of a search page that gets iterated over,
   // those results are stored here
-  protected _queryResults: Array<any> = [];
+  protected _queryResults: Array<unknown> = [];
 
   // The AbortController interface represents a controller object that allows you to
   // abort one or more Web requests as and when desired.
@@ -128,7 +128,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    */
   protected async httpPost(
     url: string,
-    body: Object,
+    body: object,
     headers: HeaderObject = {},
   ): Promise<Response | void> {
     try {
@@ -208,11 +208,11 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
       await this.queryProducts();
 
       // Get the product data for each query result
-      const productPromises = this._queryResults.map((r: Object) => {
+      const productPromises = this._queryResults.map((r: unknown) => {
         // @todo: This is a hack to remove chrome-extension:// from the href if it exists. Why
         //        is it required? Should be able to use a URL without needing to remove this.
         //r.href = r.href.replace(/chrome-extension:\/\/[a-z]+/, '')
-        return this._getProductData(r);
+        return this._getProductData(r as object);
       });
 
       for (const resultPromise of productPromises) {
@@ -247,5 +247,5 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * Parse the products from the supplier.
    * @returns A promise that resolves when the products have been parsed.
    */
-  protected abstract _getProductData(productIndexObject: Object): Promise<Product | void>;
+  protected abstract _getProductData(productIndexObject: object): Promise<Product | void>;
 }

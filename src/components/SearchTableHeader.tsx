@@ -3,19 +3,23 @@ import {
   ArrowDropUp as ArrowDropUpIcon,
 } from "@mui/icons-material";
 
-import { Column, flexRender, Header } from "@tanstack/react-table";
+import { Column, flexRender, Header, HeaderGroup, Table } from "@tanstack/react-table";
 import { CSSProperties } from "react";
 import { useSettings } from "../context";
 
 import { Product } from "../types";
 import DebouncedInput from "./Debounce";
 
-function Filter({ column }: { column: Column<Product> }) {
+// Define the column meta type
+type ColumnMeta = {
+  filterVariant?: "range" | "select" | "text";
+  uniqueValues?: string[];
+};
+
+function Filter({ column }: { column: Column<Product, unknown> }) {
   const columnFilterValue = column.getFilterValue();
 
-  const { filterVariant = "text" } = column.columnDef.meta as {
-    filterVariant?: "range" | "select" | "text";
-  };
+  const { filterVariant = "text" } = (column.columnDef.meta || {}) as ColumnMeta;
 
   const baseInputStyle: CSSProperties = {
     colorScheme: "light",
@@ -82,11 +86,16 @@ function Filter({ column }: { column: Column<Product> }) {
   );
 }
 
-export default function SearchTableHeader({ table }: { table: any }) {
+export default function SearchTableHeader({ table }: { table: Table<Product> }) {
   const settingsContext = useSettings();
   // Get the columns that have filterable values (range, select)
-  const filterableColumns = table.options.columns.reduce((accu: any, col: any) => {
-    if (["range", "select"].includes(col?.meta?.filterVariant as string)) accu[col.id] = [];
+  const filterableColumns = table.options.columns.reduce<Record<string, string[]>>((accu, col) => {
+    const meta = col.meta as ColumnMeta | undefined;
+    if (meta?.filterVariant && ["range", "select"].includes(meta.filterVariant)) {
+      if (col.id) {
+        accu[col.id] = [];
+      }
+    }
     return accu;
   }, {});
 
@@ -94,24 +103,26 @@ export default function SearchTableHeader({ table }: { table: any }) {
   // the filter dropdowns.
   for (const row of table.options.data) {
     for (const col of Object.keys(filterableColumns)) {
-      if (row[col] && filterableColumns[col].indexOf(row[col]) === -1)
-        filterableColumns[col].push(row[col]);
+      const value = row[col as keyof Product];
+      if (value && typeof value === "string" && filterableColumns[col].indexOf(value) === -1) {
+        filterableColumns[col].push(value);
+      }
     }
   }
 
   return (
     <thead>
-      {table.getHeaderGroups().map((headerGroup: { id: string; headers: any[] }) => (
+      {table.getHeaderGroups().map((headerGroup: HeaderGroup<Product>) => (
         <tr key={headerGroup.id}>
-          {headerGroup.headers.map((header: Header<Product, any>) => {
+          {headerGroup.headers.map((header: Header<Product, unknown>) => {
             // If the column has filterable values, populate the unique values for the column
             if (
               filterableColumns[header.id] !== undefined &&
               filterableColumns[header.id].length > 0
             ) {
-              // @todo: Should be able to insert uniqueValues property into the column type structure somewhere...
+              const meta = header.column.columnDef.meta as ColumnMeta;
               header.column.columnDef.meta = {
-                ...header.column.columnDef.meta,
+                ...meta,
                 uniqueValues: filterableColumns[header.id],
               };
             }

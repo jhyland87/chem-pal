@@ -1,4 +1,4 @@
-import { ColumnDef, ColumnFiltersState, Row, RowData } from "@tanstack/react-table";
+import { ColumnDef, ColumnFiltersState, Row, RowData, Table } from "@tanstack/react-table";
 import { Dispatch, ReactElement, ReactNode, SetStateAction } from "react";
 import { CAS } from "./types/cas";
 import { CurrencyCode, CurrencySymbol } from "./types/currency";
@@ -7,7 +7,7 @@ export * from "./types/currency";
 export * from "./types/quantity";
 
 export type HeaderObject = { [key: string]: string };
-export type ChromeStorageItems = { [key: string]: any };
+export type ChromeStorageItems = { [key: string]: string | number | boolean | null | undefined };
 
 export interface Settings {
   searchResultUpdateTs?: string;
@@ -70,7 +70,7 @@ export interface Supplier {
   supplierName: string;
   _query: string;
   _products: Array<Product>;
-  _queryResults: Array<any>;
+  _queryResults: Array<Record<string, unknown>>;
   _baseURL: string;
   _controller: AbortController;
   _limit: number;
@@ -129,7 +129,7 @@ export type TableProps<TData extends RowData> = {
 };
 
 export type ProductTableProps<TData extends RowData> = {
-  columns: ColumnDef<TData, any>[];
+  columns: ColumnDef<TData, unknown>[];
   renderVariants: (props: { row: Row<TData> }) => React.ReactElement;
   getRowCanExpand: (row: Row<TData>) => boolean;
   //columnFilters: ColumnFiltersState
@@ -141,18 +141,18 @@ export type ProductTableHeader<TData extends RowData> = {
   id: string;
   colSpan: number;
   isPlaceholder: boolean;
-  column: ColumnDef<TData, any>;
+  column: ColumnDef<TData, unknown>;
   getCanFilter: () => boolean;
   getCanSort: () => boolean;
   getToggleSortingHandler: () => void;
   getIsSorted: () => string;
-  getContext: () => any;
+  getContext: () => Record<string, unknown>;
   getSize: () => number;
   columnDef: Partial<ColumnDef<TData>>;
 };
 
 export type SearchPanelToolbarProps = {
-  table: any;
+  table: Table<Product>;
   searchInput: string;
   setSearchInput: Dispatch<SetStateAction<string>>;
 };
@@ -163,7 +163,7 @@ export type ProductRow = {
 
 export type HelpTooltipProps = {
   text: string;
-  children: ReactElement<unknown, any>;
+  children: ReactElement<{ className?: string }>;
   delay?: number;
   duration?: number;
 };

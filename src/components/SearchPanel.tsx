@@ -21,7 +21,7 @@ const handleResultClick = (event: MouseEvent<HTMLAnchorElement>) => {
   chrome.tabs.create({ url: target.href, active: false });
 };
 
-function columns(): ColumnDef<Product, any>[] {
+function columns(): ColumnDef<Product, unknown>[] {
   return [
     {
       id: "expander",

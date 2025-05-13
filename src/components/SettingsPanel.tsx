@@ -21,15 +21,6 @@ const inputStyle = {
   size: "small",
 };
 
-const style = {
-  py: 0,
-  width: "100%",
-  borderRadius: 2,
-  border: "1px solid",
-  borderColor: "divider",
-  backgroundColor: "background.paper",
-};
-
 // Show the setting helper text only when that listitem is hovered over.
 // Just trying to be fancy with the hover effect
 const displayHelperOnHover = {

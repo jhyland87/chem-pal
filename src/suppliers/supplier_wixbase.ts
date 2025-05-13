@@ -3,6 +3,19 @@ import { parseQuantity } from "../helpers/quantity";
 import { Product } from "../types";
 import SupplierBase from "./supplier_base";
 
+interface TextOptionFacet {
+  name: string;
+  value: string;
+}
+
+interface WixProduct {
+  discountedPrice?: string;
+  price: string;
+  title: string;
+  url: string;
+  textOptionsFacets?: TextOptionFacet[];
+}
+
 export default abstract class SupplierWixBase<T extends Product>
   extends SupplierBase<T>
   implements AsyncIterable<T>
@@ -121,18 +134,26 @@ export default abstract class SupplierWixBase<T extends Product>
   }
   */
 
-  protected async _getProductData(product: any): Promise<Product | void> {
-    const priceObj = parsePrice(product.discountedPrice) || {
+  protected async _getProductData(product: WixProduct): Promise<Product | void> {
+    if (!product.price) {
+      return;
+    }
+
+    const priceObj = (product.discountedPrice ? parsePrice(product.discountedPrice) : null) || {
       price: product.price,
       currencyCode: this._productDefaults.currencyCode,
       currencySymbol: this._productDefaults.currencySymbol,
     };
 
-    const quantityObj = parseQuantity(
-      product.textOptionsFacets?.find((f: any) =>
-        ["Weight", "Size", "Quantity", "Volume"].includes(f.name),
-      )?.value,
+    const quantityFacet = product.textOptionsFacets?.find((f: TextOptionFacet) =>
+      ["Weight", "Size", "Quantity", "Volume"].includes(f.name),
     );
+
+    if (!quantityFacet?.value) {
+      return;
+    }
+
+    const quantityObj = parseQuantity(quantityFacet.value);
 
     if (!quantityObj) return;
 
@@ -145,9 +166,6 @@ export default abstract class SupplierWixBase<T extends Product>
       url: `${this._baseURL}/${product.url}`,
       displayPrice: `${priceObj.currencySymbol}${priceObj.price}`,
       displayQuantity: `${quantityObj.quantity} ${quantityObj.uom}`,
-      //price: priceObj.price,
-      //currencyCode: priceObj.currencyCode,
-      //currencySymbol: priceObj.currencySymbol,
     } as Product);
   }
 }

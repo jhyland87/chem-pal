@@ -78,7 +78,9 @@ export async function getCurrencyRate(from: CurrencyCode, to: CurrencyCode): Pro
     const result = (await response.json()) as ExchangeRateResponse;
     return result.data.mid;
   } catch (error) {
-    throw new Error(`Failed to get currency rate for ${from} to ${to}`);
+    throw new Error(
+      `Failed to get currency rate for ${from} to ${to} - ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 

@@ -28,7 +28,7 @@ export const uomAliases: Record<UOM, string[]> = {
  */
 export function parseQuantity(value: string): QuantityObject | void {
   const quantityMatch = value.match(
-    /(?<quantity>\d[\d\.\,]*)\s?(?<uom>(?:milli|kilo|centi)?(?:ounce|g(?:allon|ram|al)|pound|quart|qt|lb|(?:met|lit)[re]{2})s?|oz|k[mg]?|g|l|[cm]?[glm])/i,
+    /(?<quantity>\d[\d.,]*)\s?(?<uom>(?:milli|kilo|centi)?(?:ounce|g(?:allon|ram|al)|pound|quart|qt|lb|(?:met|lit)[re]{2})s?|oz|k[mg]?|g|l|[cm]?[glm])/i,
   );
 
   if (

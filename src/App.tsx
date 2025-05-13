@@ -20,8 +20,8 @@ import { Settings, TabPanelProps } from "./types";
 if (!chrome.storage) {
   console.debug("!!! chrome.storage not found, using mock - may result in unexpected behavior !!!");
   window.chrome = {
-    storage: storageMock as any,
-  } as any;
+    storage: storageMock as unknown as typeof chrome.storage,
+  } as unknown as typeof chrome;
 }
 
 function TabPanel(props: TabPanelProps) {

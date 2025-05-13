@@ -1,8 +1,13 @@
+// Define types for storage items
+type StorageValue = string | number | boolean | object | null;
+type StorageItems = { [key: string]: StorageValue };
+type StorageKeys = string | string[] | { [key: string]: StorageValue };
+
 export default {
   local: {
-    get: (keys: any) =>
-      new Promise((resolve) => {
-        const result: { [key: string]: any } = {};
+    get: (keys: StorageKeys) =>
+      new Promise<StorageItems>((resolve) => {
+        const result: StorageItems = {};
         if (Array.isArray(keys)) {
           keys.forEach((key) => {
             result[key] = localStorage.getItem(key)
@@ -22,15 +27,15 @@ export default {
         }
         resolve(result);
       }),
-    set: (items: any) =>
-      new Promise(() => {
+    set: (items: StorageItems) =>
+      new Promise<void>(() => {
         for (const key in items) {
           localStorage.setItem(key, JSON.stringify(items[key]));
         }
       }),
 
-    remove: (keys: any) =>
-      new Promise(() => {
+    remove: (keys: string | string[]) =>
+      new Promise<void>(() => {
         if (Array.isArray(keys)) {
           keys.forEach((key) => localStorage.removeItem(key));
         } else {

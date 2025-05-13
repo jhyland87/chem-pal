@@ -22,8 +22,6 @@ import {
   SearchOff as SearchOffIcon,
 } from "@mui/icons-material";
 
-import { Column } from "@tanstack/react-table";
-
 import { useSettings } from "../context";
 import { SearchPanelToolbarProps } from "../types";
 import SearchInput from "./SearchInput";
@@ -149,7 +147,7 @@ export default function SearchPanelToolbar({
               />
             </MenuItem>
             <Divider sx={{ marginTop: "4px", marginBottom: "4px" }} />
-            {table.getAllLeafColumns().map((column: Column<any>) => {
+            {table.getAllLeafColumns().map((column) => {
               return (
                 <div key={column.id} className="px-1" style={{ width: "100%" }}>
                   <FormControlLabel

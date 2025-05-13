@@ -11,6 +11,39 @@ type _productIndexObject = {
   count: string;
 };
 
+// Add type definitions at the top of the file after imports
+type SearchParams = {
+  N: string;
+  Nf: string;
+  Nr: string;
+  Nrpp: string;
+  Ntt: string;
+  noRedirect: string;
+  nore: string;
+  question: string;
+  searchExecByFormSubmit: string;
+  tab: string;
+};
+
+type ProductData = {
+  displayName: string;
+  canonicalUrl: string;
+  dataLayer?: {
+    productPrice?: string[];
+  };
+  familyVariyantProductDetails?: {
+    productVariantsResult?: {
+      masterProductBean?: {
+        skus?: Array<{
+          priceInfo?: {
+            regularPrice?: string[];
+          };
+        }>;
+      };
+    };
+  };
+};
+
 /**
  * Carolina.com uses Oracle ATG Commerce as their ecommerce platform.
  *
@@ -58,6 +91,9 @@ export default class SupplierCarolina<T extends Product>
   // Base URL for HTTP(s) requests
   protected _baseURL: string = "https://www.carolina.com";
 
+  // Override the type of _queryResults to use our specific type
+  protected _queryResults: Array<_productIndexObject> = [];
+
   // This is a limit to how many queries can be sent to the supplier for any given query.
   protected _httpRequestHardLimit: number = 50;
 
@@ -96,27 +132,22 @@ export default class SupplierCarolina<T extends Product>
   //}
 
   protected _makeQueryUrl(query: string): string {
-    const searchParams: Record<string, any> = {
+    const searchParams: SearchParams = {
       /*
       790004999   Chemicals category ID
       836054137   ACS grade
       471891351   Lab grade
       3929848101  Reagent grade
       */
-      N: 790004999,
+      N: "790004999",
       Nf: "product.cbsLowPrice|GT 0.0||product.startDate|LTEQ 1.7457984E12||product.startDate|LTEQ 1.7457984E12",
       Nr: "AND(product.siteId:100001,OR(product.type:Product),OR(product.catalogId:cbsCatalog))",
-      // Number of products to display
-      Nrpp: 120,
-      // Query string
+      Nrpp: "120",
       Ntt: query,
-      noRedirect: true,
-      // No idea
+      noRedirect: "true",
       nore: "y",
-      // Query string
       question: query,
-      searchExecByFormSubmit: true,
-      // Products tab
+      searchExecByFormSubmit: "true",
       tab: "p",
     };
     const url = new URL("/browse/product-search-results", this._baseURL);
@@ -170,9 +201,8 @@ export default class SupplierCarolina<T extends Product>
     //console.log('[queryProducts] this._queryResults:', this._queryResults)
   }
 
-  protected async parseProducts(): Promise<any> {
+  protected async parseProducts(): Promise<(Product | void)[]> {
     return Promise.all(this._queryResults.map((result) => this._getProductData(result)));
-    //.then(results => console.debug('[parseProducts]:', { results, queryResults: this._queryResults }))
   }
 
   protected async _getProductData(
@@ -191,7 +221,7 @@ export default class SupplierCarolina<T extends Product>
         throw new Error("Failed to load product HTML into DOMParser");
       }
 
-      let productScriptNonce = doc.querySelector("script[nonce]");
+      const productScriptNonce = doc.querySelector("script[nonce]");
       if (!productScriptNonce) {
         throw new Error("Failed to find product script nonce");
       }
@@ -210,7 +240,7 @@ export default class SupplierCarolina<T extends Product>
       const productAtgJson = JSON.parse(productScriptNonceTextMatch[0]);
       //console.debug('productAtgJson:', productAtgJson)
 
-      const productData: any = _.result(
+      const productData: ProductData = _.result(
         productAtgJson,
         "fetch.response.contents.MainContent[0].atgResponse.response.response",
       );
@@ -228,13 +258,17 @@ export default class SupplierCarolina<T extends Product>
 
       // The price can be stored at different locations in the productData object. Select them all then
       // choose the first non-undefined, non-null value.
-      const price = _(productData)
-        .at([
-          "dataLayer.productPrice[0]",
-          "familyVariyantProductDetails.productVariantsResult.masterProductBean.skus[0].priceInfo.regularPrice[0]",
-        ])
-        .compact()
-        .result("[0]");
+      const price = (() => {
+        const dataLayerPrice = productData.dataLayer?.productPrice?.[0];
+        if (dataLayerPrice) return dataLayerPrice;
+
+        const variantPrice =
+          productData.familyVariyantProductDetails?.productVariantsResult?.masterProductBean
+            ?.skus?.[0]?.priceInfo?.regularPrice?.[0];
+        if (variantPrice) return variantPrice;
+
+        return undefined;
+      })();
 
       const priceObj = parsePrice(price as string) || {
         price,
@@ -319,8 +353,12 @@ export default class SupplierCarolina<T extends Product>
       this._products.push(product as T);
       return product as T;
       */
-    } catch (error: any) {
-      console.error(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error(error.message);
+      } else {
+        console.error("An unknown error occurred");
+      }
     }
   }
 }

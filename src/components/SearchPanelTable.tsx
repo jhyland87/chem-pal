@@ -38,12 +38,12 @@ export default function SearchPanelTable({
   const [searchInput, setSearchInput] = useState<string>("");
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [showSearchResults, setShowSearchResults] = useState<Product[]>([]);
-  const [statusLabel, setStatusLabel] = useState<string | boolean>(false);
+  const [, setStatusLabel] = useState<string | boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (!isEmpty(settingsContext.settings.hideColumns)) {
-      table.getAllLeafColumns().map((column: Column<any>) => {
+      table.getAllLeafColumns().map((column: Column<Product>) => {
         if (settingsContext.settings.hideColumns.includes(column.id))
           column.toggleVisibility(false);
       });
@@ -175,7 +175,7 @@ export default function SearchPanelTable({
       maxSize: 800,
     },
     columnResizeMode: "onChange",
-    columns: columns as ColumnDef<Product, any>[],
+    columns: columns as ColumnDef<Product, unknown>[],
     filterFns: {},
     state: {
       columnFilters: columnFilterFns[0],

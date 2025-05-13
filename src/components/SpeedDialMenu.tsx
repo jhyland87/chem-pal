@@ -14,7 +14,7 @@ type SpeedDialMenuProps = { speedDialVisibility: boolean };
 export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProps) {
   const settingsContext = useSettings();
 
-  const [showHelp, setShowHelp] = useState(false);
+  const [, setShowHelp] = useState(false);
 
   useEffect(() => {
     console.log("settingsContext.settings.showHelp", settingsContext.settings.showHelp);

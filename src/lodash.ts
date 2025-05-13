@@ -6,12 +6,12 @@ import _ from "lodash";
 declare module "lodash" {
   interface LoDashStatic {
     md5(inputString: string): string;
-    md5sum(input: any): string;
+    md5sum(input: unknown): string;
     sha256(message: string): Promise<string>;
-    sha256sum(input: any): Promise<string>;
+    sha256sum(input: unknown): Promise<string>;
     serialize(data: string): string;
     deserialize(data: string): string;
-    coalesce(data?: any[]): any;
+    coalesce(data?: unknown[]): unknown;
     sleep(ms: number): Promise<void>;
     delayAction(ms: number, action: () => void): Promise<void>;
   }
@@ -32,8 +32,8 @@ function md5(inputString: string) {
     return s;
   }
   function ad(x: number, y: number) {
-    let l = (x & 0xffff) + (y & 0xffff);
-    let m = (x >> 16) + (y >> 16) + (l >> 16);
+    const l = (x & 0xffff) + (y & 0xffff);
+    const m = (x >> 16) + (y >> 16) + (l >> 16);
     return (m << 16) | (l & 0xffff);
   }
   function rl(n: number, c: number) {
@@ -56,8 +56,8 @@ function md5(inputString: string) {
   }
   function sb(x: string) {
     let i;
-    let nblk = ((x.length + 8) >> 6) + 1;
-    let blks = new Array(nblk * 16);
+    const nblk = ((x.length + 8) >> 6) + 1;
+    const blks = new Array(nblk * 16);
     for (i = 0; i < nblk * 16; i++) blks[i] = 0;
     for (i = 0; i < x.length; i++) blks[i >> 2] |= x.charCodeAt(i) << ((i % 4) * 8);
     blks[i >> 2] |= 0x80 << ((i % 4) * 8);
@@ -155,7 +155,7 @@ function md5(inputString: string) {
  * @param input - The input to hash.
  * @returns The MD5 hash of the input.
  */
-function md5sum(input: any): string {
+function md5sum(input: unknown): string {
   if (input === null || input === undefined) return md5("");
 
   if (typeof input === "object" && input !== null) return md5(JSON.stringify(input));
@@ -191,7 +191,7 @@ async function sha256(message: string) {
  * @param input - The input to hash.
  * @returns The SHA256 hash of the input.
  */
-async function sha256sum(input: any) {
+async function sha256sum(input: unknown) {
   if (input === null || input === undefined) return await sha256("");
 
   if (typeof input === "object" && input !== null) return await sha256(JSON.stringify(input));
@@ -227,7 +227,7 @@ function deserialize(data: string): string {
  * @param data - The array of values to coalesce.
  * @returns The first non-undefined, non-null value in the array.
  */
-function coalesce(data: any[]): any {
+function coalesce(data: unknown[]): unknown {
   return data.find((item) => item !== undefined && item !== null);
 }
 
