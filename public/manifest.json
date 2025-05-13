@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Chem Crawler",
-  "version": "0.0.2",
+  "version": "0.0.11",
   "description": "A simple React app as a Chrome extension",
   "action": {
     "default_popup": "index.html"
@@ -9,7 +9,9 @@
   "permissions": [
     "scripting",
     "activeTab",
-    "storage"
+    "storage",
+    "runtime",
+    "nativeMessaging"
   ],
   "host_permissions": [
     "<all_urls>"

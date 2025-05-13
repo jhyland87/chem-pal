@@ -212,3 +212,8 @@ export type ColumnMeta = {
   uniqueValues?: string[];
   rangeValues?: number[];
 };
+
+export interface Props<T> {
+  data: T[];
+  renderItem: (item: T) => React.ReactNode;
+}

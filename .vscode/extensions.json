@@ -9,7 +9,8 @@
     "hbenl.vscode-test-explorer",
     "lukegeneva.vscode-open-coverage-report",
     "orta.vscode-jest",
-    "ms-vscode.test-adapter-converter"
+    "ms-vscode.test-adapter-converter",
+    "smarschollek.vscode-react-scripts-test-adapter"
   ],
   "unwantedRecommendations": []
 }
