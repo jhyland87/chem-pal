@@ -167,3 +167,15 @@ export type HelpTooltipProps = {
   delay?: number;
   duration?: number;
 };
+
+export interface TextOptionFacet {
+  name: string;
+  value: string;
+}
+export interface WixProduct {
+  discountedPrice?: string;
+  price: string;
+  title: string;
+  url: string;
+  textOptionsFacets?: TextOptionFacet[];
+}

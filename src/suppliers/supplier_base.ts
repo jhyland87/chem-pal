@@ -203,6 +203,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * @returns An async generator that yields valid results.
    */
   async *[Symbol.asyncIterator](): AsyncGenerator<T, void, unknown> {
+    debugger;
     try {
       await this._setup();
       await this.queryProducts();

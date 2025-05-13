@@ -1,20 +1,7 @@
 import { parsePrice } from "../helpers/currency";
 import { parseQuantity } from "../helpers/quantity";
-import { Product } from "../types";
+import { Product, TextOptionFacet, WixProduct } from "../types";
 import SupplierBase from "./supplier_base";
-
-interface TextOptionFacet {
-  name: string;
-  value: string;
-}
-
-interface WixProduct {
-  discountedPrice?: string;
-  price: string;
-  title: string;
-  url: string;
-  textOptionsFacets?: TextOptionFacet[];
-}
 
 export default abstract class SupplierWixBase<T extends Product>
   extends SupplierBase<T>
@@ -95,52 +82,44 @@ export default abstract class SupplierWixBase<T extends Product>
 
     this._queryResults = resultDocuments;
   }
-
   /*
   protected async parseProducts(): Promise<void> {
-    const res = this._queryResults.map((r: any) => {
+    const res = this._queryResults.map((value: unknown) => {
       // supplier, title, url, price, quantity,
-      const priceObj = parsePrice(r.price) || {
-        price: r.price,
+      const typedValue = value as WixProduct;
+      const priceObj = parsePrice(typedValue.price.toString()) || {
+        price: typedValue.price,
         currencyCode: this._productDefaults.currencyCode,
-        currencySymbol: this._productDefaults.currencySymbol
-      }
+        currencySymbol: this._productDefaults.currencySymbol,
+      };
+      const quantityFacet = typedValue.textOptionsFacets?.find((f: TextOptionFacet) =>
+        ["Weight", "Size", "Quantity", "Volume"].includes(f.name),
+      );
 
-      const quantityObj = parseQuantity(r.textOptionsFacets.find((f: any) => [
-        'Weight', 'Size', 'Quantity', 'Volume'
-      ].includes(f.name))?.value)
+      const quantityObj = parseQuantity(quantityFacet?.value || "");
 
-
-
-      console.debug('quantityObj:', quantityObj)
+      console.debug("quantityObj:", quantityObj);
 
       return {
         ...this._productDefaults,
         ...priceObj,
         ...quantityObj,
         supplier: this.supplierName,
-        title: r.name,
-        //href: `${this._baseURL}/${r.url}`,
-        url: `${this._baseURL}/${r.url}`,
+        title: typedValue.title,
+        url: `${this._baseURL}/${typedValue.url}`,
         displayPrice: `${priceObj.currencySymbol}${priceObj.price}`,
-        //displayQuantity: `${quantityObj.quantity} ${quantityObj.uom}`,
-        //price: priceObj.price,
-        //currencyCode: priceObj.currencyCode,
-        //currencySymbol: priceObj.currencySymbol,
-        //quantity: r.textOptionsFacets.find((f: any) => ['Weight', 'Size'].includes(f.name))?.value,
-      } as Product
-    })
-    this._products = res
+      } as Product;
+    });
+    this._products = res;
   }
   */
-
   protected async _getProductData(product: WixProduct): Promise<Product | void> {
-    if (!product.price) {
+    if (!product.discountedPrice) {
       return;
     }
 
     const priceObj = (product.discountedPrice ? parsePrice(product.discountedPrice) : null) || {
-      price: product.price,
+      price: product.discountedPrice,
       currencyCode: this._productDefaults.currencyCode,
       currencySymbol: this._productDefaults.currencySymbol,
     };
