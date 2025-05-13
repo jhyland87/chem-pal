@@ -1,12 +1,9 @@
-import { MouseEvent, useState } from "react";
-
-import {
-  ArrowDropDown as ArrowDropDownIcon,
-  ArrowRight as ArrowRightIcon,
-} from "@mui/icons-material";
-
-import { IconButton, Link } from "@mui/material";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import ArrowRightIcon from "@mui/icons-material/ArrowRight";
+import IconButton from "@mui/material/IconButton";
+import Link from "@mui/material/Link";
 import { ColumnDef, ColumnFiltersState } from "@tanstack/react-table";
+import { MouseEvent, useState } from "react";
 import { Product, ProductRow } from "../types";
 import SearchPanelTable from "./SearchPanelTable";
 import SearchResultVariants from "./SearchResultVariants";

@@ -1,7 +1,5 @@
-import { CSSProperties, Fragment, ReactElement, useEffect, useState } from "react";
-
-import { Box, Paper } from "@mui/material";
-
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
 import {
   Column,
   ColumnDef,
@@ -14,13 +12,11 @@ import {
   Row,
   useReactTable,
 } from "@tanstack/react-table";
-
-import { Product, ProductTableProps } from "../types";
-
 import { isEmpty } from "lodash";
-
+import { CSSProperties, Fragment, ReactElement, useEffect, useState } from "react";
 import { useSettings } from "../context";
 import SupplierFactory from "../suppliers/supplier_factory";
+import { Product, ProductTableProps } from "../types";
 import LoadingBackdrop from "./LoadingBackdrop";
 import SearchPanelToolbar from "./SearchPanelToolbar";
 import SearchTableHeader from "./SearchTableHeader";

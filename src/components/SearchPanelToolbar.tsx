@@ -1,27 +1,20 @@
+import ChecklistIcon from "@mui/icons-material/Checklist";
+import CloseIcon from "@mui/icons-material/Close";
+import DoneIcon from "@mui/icons-material/Done";
+import SearchIcon from "@mui/icons-material/Search";
+import SearchOffIcon from "@mui/icons-material/SearchOff";
+import Checkbox from "@mui/material/Checkbox";
+import Divider from "@mui/material/Divider";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import FormGroup from "@mui/material/FormGroup";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import MenuList from "@mui/material/MenuList";
+import Toolbar from "@mui/material/Toolbar";
+import Tooltip from "@mui/material/Tooltip";
+import Typography from "@mui/material/Typography";
 import { ChangeEvent, MouseEvent, useState } from "react";
-
-import {
-  Checkbox,
-  Divider,
-  FormControlLabel,
-  FormGroup,
-  IconButton,
-  Menu,
-  MenuItem,
-  MenuList,
-  Toolbar,
-  Tooltip,
-  Typography,
-} from "@mui/material";
-
-import {
-  Checklist as ChecklistIcon,
-  Close as CloseIcon,
-  Done as DoneIcon,
-  Search as SearchIcon,
-  SearchOff as SearchOffIcon,
-} from "@mui/icons-material";
-
 import { useSettings } from "../context";
 import { SearchPanelToolbarProps } from "../types";
 import SearchInput from "./SearchInput";

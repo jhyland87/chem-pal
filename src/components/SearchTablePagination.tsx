@@ -1,9 +1,8 @@
-import IconButton from "@mui/material/IconButton";
-
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import KeyboardDoubleArrowLeftIcon from "@mui/icons-material/KeyboardDoubleArrowLeft";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
+import IconButton from "@mui/material/IconButton";
 import { Table } from "@tanstack/react-table";
 import { Product } from "../types";
 

@@ -1,14 +1,15 @@
-import {
-  AutoDelete as AutoDeleteIcon,
-  Clear as ClearIcon,
-  Contrast as ContrastIcon,
-  Save as SaveIcon,
-} from "@mui/icons-material";
-import { SpeedDial, SpeedDialAction, SpeedDialIcon } from "@mui/material";
+import AutoDeleteIcon from "@mui/icons-material/AutoDelete";
+import ClearIcon from "@mui/icons-material/Clear";
+import ContrastIcon from "@mui/icons-material/Contrast";
+import SaveIcon from "@mui/icons-material/Save";
+import SpeedDial from "@mui/material/SpeedDial";
+import SpeedDialAction from "@mui/material/SpeedDialAction";
+import SpeedDialIcon from "@mui/material/SpeedDialIcon";
 import { MouseEvent, useEffect, useState } from "react";
 import { useSettings } from "../context";
 import _ from "../lodash";
 import HelpTooltip from "./HelpTooltip";
+
 type SpeedDialMenuProps = { speedDialVisibility: boolean };
 
 export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProps) {

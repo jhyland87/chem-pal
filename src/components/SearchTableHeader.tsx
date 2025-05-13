@@ -1,12 +1,8 @@
-import {
-  ArrowDropDown as ArrowDropDownIcon,
-  ArrowDropUp as ArrowDropUpIcon,
-} from "@mui/icons-material";
-
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import { Column, flexRender, Header, HeaderGroup, Table } from "@tanstack/react-table";
 import { CSSProperties } from "react";
 import { useSettings } from "../context";
-
 import { Product } from "../types";
 import DebouncedInput from "./Debounce";
 

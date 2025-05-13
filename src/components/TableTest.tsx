@@ -1,5 +1,6 @@
-import { Collapse, Typography } from "@mui/material";
-import React, { useState } from "react";
+import Collapse from "@mui/material/Collapse";
+import Typography from "@mui/material/Typography";
+import { FC, useState } from "react";
 import { Virtuoso } from "react-virtuoso";
 
 interface TableData {
@@ -7,7 +8,7 @@ interface TableData {
   news: string;
 }
 
-const TableTest: React.FC = () => {
+const TableTest: FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [data, setData] = useState<TableData[]>([]);
   const [currentOpenIndex, setcurrentOpenIndex] = useState<number | null>(null);
