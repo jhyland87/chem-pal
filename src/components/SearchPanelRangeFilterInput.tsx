@@ -42,15 +42,17 @@ export default function SearchPanelRangeFilterInput({
   console.log("[SearchPanelRangeFilterInput] column:", column);
   console.log("[SearchPanelRangeFilterInput] props:", props);
   const [value, setValue] = useState<number[]>([20, 37]);
-
+  /*
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
   const open = Boolean(anchorEl);
-  const handleClick = (event: MouseEvent<HTMLElement>) => {
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
     setAnchorEl(null);
   };
+  */
 
   const handleChange = (event: Event, newValue: number[]) => {
     setValue(newValue);
