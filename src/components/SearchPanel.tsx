@@ -1,22 +1,12 @@
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import IconButton from "@mui/material/IconButton";
-import Link from "@mui/material/Link";
 import { ColumnDef, ColumnFiltersState } from "@tanstack/react-table";
-import { MouseEvent, useState } from "react";
+import { useState } from "react";
 import { Product, ProductRow } from "../types";
 import SearchPanelTable from "./SearchPanelTable";
 import SearchResultVariants from "./SearchResultVariants";
-
-// When the user clicks on a link in the table
-const handleResultClick = (event: MouseEvent<HTMLAnchorElement>) => {
-  // Stop the form from propagating
-  event.preventDefault();
-  // Get the target
-  const target = event.target as HTMLAnchorElement;
-  // Open a new tab to that targets href
-  chrome.tabs.create({ url: target.href, active: false });
-};
+import { default as Link } from "./TabLink";
 
 function columns(): ColumnDef<Product, unknown>[] {
   return [
@@ -56,11 +46,7 @@ function columns(): ColumnDef<Product, unknown>[] {
       accessorKey: "title",
       header: () => <span>Title</span>,
       cell: ({ row }: ProductRow) => {
-        return (
-          <Link onClick={handleResultClick} href={row.original.url}>
-            {row.original.title}
-          </Link>
-        );
+        return <Link href={row.original.url}>{row.original.title}</Link>;
       },
       enableHiding: false,
       minSize: 100,

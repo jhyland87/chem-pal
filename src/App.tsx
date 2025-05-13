@@ -2,48 +2,28 @@ import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider, useTheme } from "@mui/material/styles";
-import Typography from "@mui/material/Typography";
 import { useEffect, useState } from "react";
 import "./App.css";
 import ErrorBoundary from "./components/ErrorBoundary";
+import FavoritesPanel from "./components/FavoritesPanel";
+import HistoryPanel from "./components/HistoryPanel";
 import SearchPanel from "./components/SearchPanel";
 import SettingsPanel from "./components/SettingsPanel";
 import SpeedDialMenu from "./components/SpeedDialMenu";
 import SuppliersPanel from "./components/SuppliersPanel";
 import TabHeader from "./components/TabHeader";
+import TabPanel from "./components/TabPanel";
 import { SettingsContext } from "./context";
 import storageMock from "./mocks/chrome_storage_mock";
 import SupplierFactory from "./suppliers/supplier_factory";
 import { darkTheme, lightTheme } from "./themes";
-import { Settings, TabPanelProps } from "./types";
+import { Settings } from "./types";
 
 if (!chrome.storage) {
   console.debug("!!! chrome.storage not found, using mock - may result in unexpected behavior !!!");
   window.chrome = {
     storage: storageMock as unknown as typeof chrome.storage,
   } as unknown as typeof chrome;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`full-width-tabpanel-${index}`}
-      aria-labelledby={`full-width-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: 1 }}>
-          <Typography component={"span"} variant={"body2"}>
-            {children}
-          </Typography>
-        </Box>
-      )}
-    </div>
-  );
 }
 
 function App() {
@@ -136,7 +116,13 @@ function App() {
               <TabPanel value={panel} name="suppliers-panel" index={1} dir={theme.direction}>
                 <SuppliersPanel />
               </TabPanel>
-              <TabPanel value={panel} name="settings-panel" index={2} dir={theme.direction}>
+              <TabPanel value={panel} name="favorites-panel" index={2} dir={theme.direction}>
+                <FavoritesPanel />
+              </TabPanel>
+              <TabPanel value={panel} name="history-panel" index={3} dir={theme.direction}>
+                <HistoryPanel />
+              </TabPanel>
+              <TabPanel value={panel} name="settings-panel" index={4} dir={theme.direction}>
                 <SettingsPanel />
               </TabPanel>
             </AppBar>

@@ -5,9 +5,13 @@ export const lightTheme = createTheme({
     mode: "light",
     primary: {
       main: "#386181",
+      light: "#6495b6",
+      dark: "#284b63",
     },
     secondary: {
       main: "#6f8ea0",
+      light: "#9fb8c5",
+      dark: "#4f636e",
     },
     background: {
       default: "#f3f3f3",
@@ -17,9 +21,21 @@ export const lightTheme = createTheme({
   shape: {
     borderRadius: 4,
   },
-
   spacing: 8,
   components: {
+    MuiLink: {
+      styleOverrides: {
+        root: {
+          color: "primary.dark",
+          underline: "none",
+          textDecoration: "none",
+          ":hover": {
+            textDecoration: "none",
+            color: "#6495b6",
+          },
+        },
+      },
+    },
     MuiList: {
       defaultProps: {
         dense: true,
