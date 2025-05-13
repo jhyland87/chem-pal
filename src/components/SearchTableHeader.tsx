@@ -1,109 +1,72 @@
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
-import { Column, flexRender, Header, HeaderGroup, Table } from "@tanstack/react-table";
+import { ColumnDef, flexRender, Header, HeaderGroup, Table } from "@tanstack/react-table";
 import { CSSProperties } from "react";
 import { useSettings } from "../context";
 import { Product } from "../types";
-import DebouncedInput from "./Debounce";
-
+import SearchTableHeaderFilter from "./SearchTableHeaderFilter";
 // Define the column meta type
 type ColumnMeta = {
   filterVariant?: "range" | "select" | "text";
   uniqueValues?: string[];
+  rangeValues?: number[];
 };
-
-function Filter({ column }: { column: Column<Product, unknown> }) {
-  const columnFilterValue = column.getFilterValue();
-
-  const { filterVariant = "text" } = (column.columnDef.meta || {}) as ColumnMeta;
-
-  const baseInputStyle: CSSProperties = {
-    colorScheme: "light",
-  };
-
-  return filterVariant === "range" ? (
-    <div>
-      <div className="flex space-x-2">
-        {/* See faceted column filters example for min max values functionality */}
-        <DebouncedInput
-          type="number"
-          color="secondary.light"
-          value={(columnFilterValue as [number, number])?.[0] ?? ""}
-          onChange={(value) => column.setFilterValue((old: [number, number]) => [value, old?.[1]])}
-          placeholder={`Min`}
-          className="w-24 border shadow rounded half-width-input"
-          style={{
-            ...baseInputStyle,
-          }}
-        />
-        <DebouncedInput
-          type="number"
-          color="secondary.light"
-          value={(columnFilterValue as [number, number])?.[1] ?? ""}
-          onChange={(value) => column.setFilterValue((old: [number, number]) => [old?.[0], value])}
-          placeholder={`Max`}
-          className="w-24 border shadow rounded half-width-input"
-          style={{
-            ...baseInputStyle,
-          }}
-        />
-      </div>
-      <div className="h-1" />
-    </div>
-  ) : filterVariant === "select" ? (
-    <select
-      className="full-width-input"
-      color="secondary.light"
-      onChange={(e) => column.setFilterValue(e.target.value)}
-      value={columnFilterValue?.toString()}
-      style={baseInputStyle}
-    >
-      {/* See faceted column filters example for dynamic select options */}
-      <option value="">All</option>
-      {(column.columnDef.meta as { uniqueValues?: string[] })?.uniqueValues?.map(
-        (value: string) => (
-          <option key={value} value={value}>
-            {value}
-          </option>
-        ),
-      )}
-    </select>
-  ) : (
-    <DebouncedInput
-      className="w-36 border shadow rounded full-width-input"
-      color="secondary.light"
-      onChange={(value) => column.setFilterValue(value)}
-      placeholder={`Search...`}
-      type="text"
-      style={baseInputStyle}
-      value={(columnFilterValue ?? "") as string}
-    />
-    // See faceted column filters example for datalist search suggestions
-  );
-}
 
 export default function SearchTableHeader({ table }: { table: Table<Product> }) {
   const settingsContext = useSettings();
-  // Get the columns that have filterable values (range, select)
-  const filterableColumns = table.options.columns.reduce<Record<string, string[]>>((accu, col) => {
-    const meta = col.meta as ColumnMeta | undefined;
-    if (meta?.filterVariant && ["range", "select"].includes(meta.filterVariant)) {
-      if (col.id) {
-        accu[col.id] = [];
-      }
-    }
-    return accu;
-  }, {});
 
-  // Get the unique values for the filterable columns. This will be used to populate
-  // the filter dropdowns.
-  for (const row of table.options.data) {
-    for (const col of Object.keys(filterableColumns)) {
-      const value = row[col as keyof Product];
-      if (value && typeof value === "string" && filterableColumns[col].indexOf(value) === -1) {
-        filterableColumns[col].push(value);
-      }
+  // Get the type of columns filterVariant, and create an object for storing the
+  // necessary filter data to show in the table column filters
+  const filterableColumns = table.options.columns.reduce<Record<string, ColumnMeta>>(
+    (accu, column: ColumnDef<Product, unknown>) => {
+      const meta = column.meta as ColumnMeta | undefined;
+      if (meta?.filterVariant === undefined || !column.id) return accu;
+
+      accu[column.id] = {
+        filterVariant: meta.filterVariant,
+        rangeValues: [],
+        uniqueValues: [],
+      };
+      return accu;
+    },
+    {},
+  );
+
+  console.log("filterableColumns:", filterableColumns);
+
+  // Now parse teh results to get the filterable values.
+  // @todo: This runs every time there's a row updated or added. It would be better to save
+  // this data as the rows are outputted from the factory method, then set the column filter
+  // values once its finished.
+  for (const [colName, { filterVariant }] of Object.entries(filterableColumns)) {
+    const col = table.options.columns.find((col) => col.id === colName);
+    if (col === undefined) continue;
+
+    if (filterVariant === "range") {
+      const rangeValues = table.options.data.reduce(
+        (accu, row: Product) => {
+          const value = row[colName as keyof Product] as number;
+          if (value < accu[0]) {
+            accu[0] = value;
+          } else if (value > accu[1]) {
+            accu[1] = value;
+          }
+          return accu;
+        },
+        [0, 0],
+      );
+      filterableColumns[colName].rangeValues = rangeValues;
+      continue;
     }
+
+    const uniqueValues = table.options.data.reduce<string[]>((accu, row: Product) => {
+      const value = row[colName as keyof Product] as string;
+      if (value !== undefined && accu.indexOf(value) === -1) {
+        accu.push(value);
+      }
+      return accu;
+    }, []);
+    filterableColumns[colName].uniqueValues = uniqueValues;
   }
 
   return (
@@ -112,14 +75,11 @@ export default function SearchTableHeader({ table }: { table: Table<Product> }) 
         <tr key={headerGroup.id}>
           {headerGroup.headers.map((header: Header<Product, unknown>) => {
             // If the column has filterable values, populate the unique values for the column
-            if (
-              filterableColumns[header.id] !== undefined &&
-              filterableColumns[header.id].length > 0
-            ) {
+            if (filterableColumns[header.id] !== undefined) {
               const meta = header.column.columnDef.meta as ColumnMeta;
               header.column.columnDef.meta = {
                 ...meta,
-                uniqueValues: filterableColumns[header.id],
+                ...filterableColumns[header.id],
               };
             }
 
@@ -175,7 +135,7 @@ export default function SearchTableHeader({ table }: { table: Table<Product> }) 
 
                     {settingsContext.settings.showColumnFilters && header.column.getCanFilter() ? (
                       <div>
-                        <Filter column={header.column} />
+                        <SearchTableHeaderFilter column={header.column} />
                       </div>
                     ) : null}
                   </>

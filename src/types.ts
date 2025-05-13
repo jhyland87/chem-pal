@@ -1,5 +1,13 @@
-import { ColumnDef, ColumnFiltersState, Row, RowData, Table } from "@tanstack/react-table";
-import { Dispatch, ReactElement, ReactNode, SetStateAction } from "react";
+import { Column, ColumnDef, ColumnFiltersState, Row, RowData, Table } from "@tanstack/react-table";
+import {
+  ChangeEvent,
+  ChangeEventHandler,
+  Dispatch,
+  EventHandler,
+  ReactElement,
+  ReactNode,
+  SetStateAction,
+} from "react";
 import { CAS } from "./types/cas";
 import { CurrencyCode, CurrencySymbol } from "./types/currency";
 export * from "./types/cas";
@@ -179,3 +187,22 @@ export interface WixProduct {
   url: string;
   textOptionsFacets?: TextOptionFacet[];
 }
+
+export type FilterInputProps = {
+  column?: Column<Product, unknown>;
+  children?: ReactNode;
+  rangeValues?: string[] | number[];
+  label?: string;
+  onChange?:
+    | ChangeEventHandler<HTMLSelectElement>
+    | ChangeEvent<HTMLInputElement>
+    | ChangeEvent<HTMLSelectElement>
+    | ChangeEventHandler<HTMLInputElement>
+    | EventHandler<ChangeEvent<HTMLInputElement>>
+    | EventHandler<ChangeEvent<HTMLSelectElement>>
+    | ((value: string) => void)
+    | unknown
+    | any;
+  value?: string;
+  props?: Record<string, unknown>;
+};

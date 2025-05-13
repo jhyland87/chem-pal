@@ -6,7 +6,7 @@ import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 
 import Typography from "@mui/material/Typography";
-import { styled } from "@mui/material/styles";
+import { styled, Theme } from "@mui/material/styles";
 import { default as Link } from "./TabLink";
 
 const style = {
@@ -21,16 +21,16 @@ const style = {
   p: 4,
 };
 
-const Item = styled(Paper)(({ theme }) => ({
+const Item = styled(Paper)(({ theme }: { theme: Theme }) => ({
   backgroundColor: "#fff",
   ...theme.typography.body2,
   padding: theme.spacing(1),
   textAlign: "center",
-  color: (theme.vars ?? theme).palette.text.secondary,
+  color: theme.palette.text.secondary,
   flexGrow: 1,
-  ...theme.applyStyles("dark", {
+  "&.dark": {
     backgroundColor: "#1A2027",
-  }),
+  },
 }));
 
 export default function AmoutModal({

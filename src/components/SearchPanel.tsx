@@ -83,7 +83,7 @@ function columns(): ColumnDef<Product, unknown>[] {
         return row.original.displayPrice;
       },
       meta: {
-        filterVariant: "text",
+        filterVariant: "range",
       },
       maxSize: 80,
     },
