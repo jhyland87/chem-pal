@@ -9,10 +9,15 @@ export const lightTheme = createTheme({
     secondary: {
       main: "#6f8ea0",
     },
+    background: {
+      default: "#f3f3f3",
+      paper: "#ffffff",
+    },
   },
   shape: {
     borderRadius: 4,
   },
+
   spacing: 8,
   components: {
     MuiList: {

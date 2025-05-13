@@ -37,7 +37,6 @@ export function getCurrencySymbol(price: string): string | undefined {
  * parsePrice('1000') // undefined
  */
 export function parsePrice(price: string): ParsedPrice | void {
-  debugger;
   const currencySymbol = getCurrencySymbol(price) as CurrencySymbol;
   if (!currencySymbol) return;
 
