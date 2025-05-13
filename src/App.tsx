@@ -1,25 +1,24 @@
-import './App.css'
-import { useState, useEffect } from 'react';
-import { ThemeProvider, useTheme, createTheme } from '@mui/material/styles';
-import SearchPanel from './components/SearchPanel'
-import SettingsPanel from './components/SettingsPanel'
-import SuppliersPanel from './components/SuppliersPanel';
-import TabHeader from './components/TabHeader'
-import AppBar from '@mui/material/AppBar';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import CssBaseline from '@mui/material/CssBaseline';
-import SupplierFactory from './suppliers/supplier_factory';
-import { TabPanelProps, Settings } from './types';
-import { SettingsContext } from './context';
-import { lightTheme, darkTheme } from './themes';
-import storageMock from './mocks/chrome_storage_mock'
-import SpeedDialMenu from './components/SpeedDialMenu';
-import ErrorBoundary from './components/ErrorBoundary';
-
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import CssBaseline from "@mui/material/CssBaseline";
+import { ThemeProvider, useTheme } from "@mui/material/styles";
+import Typography from "@mui/material/Typography";
+import { useEffect, useState } from "react";
+import "./App.css";
+import ErrorBoundary from "./components/ErrorBoundary";
+import SearchPanel from "./components/SearchPanel";
+import SettingsPanel from "./components/SettingsPanel";
+import SpeedDialMenu from "./components/SpeedDialMenu";
+import SuppliersPanel from "./components/SuppliersPanel";
+import TabHeader from "./components/TabHeader";
+import { SettingsContext } from "./context";
+import storageMock from "./mocks/chrome_storage_mock";
+import SupplierFactory from "./suppliers/supplier_factory";
+import { darkTheme, lightTheme } from "./themes";
+import { Settings, TabPanelProps } from "./types";
 
 if (!chrome.storage) {
-  console.debug('!!! chrome.storage not found, using mock - may result in unexpected behavior !!!')
+  console.debug("!!! chrome.storage not found, using mock - may result in unexpected behavior !!!");
   window.chrome = {
     storage: storageMock as any,
   } as any;
@@ -30,7 +29,7 @@ function TabPanel(props: TabPanelProps) {
 
   return (
     <div
-      role='tabpanel'
+      role="tabpanel"
       hidden={value !== index}
       id={`full-width-tabpanel-${index}`}
       aria-labelledby={`full-width-tab-${index}`}
@@ -38,7 +37,9 @@ function TabPanel(props: TabPanelProps) {
     >
       {value === index && (
         <Box sx={{ p: 1 }}>
-          <Typography component={'span'} variant={'body2'}>{children}</Typography>
+          <Typography component={"span"} variant={"body2"}>
+            {children}
+          </Typography>
         </Box>
       )}
     </div>
@@ -70,74 +71,72 @@ function App() {
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
       setSpeedDialVisibility(
-        document.getElementById('speed-dial-menu')?.matches(':hover')
-        || (event.x >= window.innerWidth - cornerThreshold
-          && event.y >= window.innerHeight - cornerThreshold)
-      )
+        document.getElementById("speed-dial-menu")?.matches(":hover") ||
+          (event.x >= window.innerWidth - cornerThreshold &&
+            event.y >= window.innerHeight - cornerThreshold),
+      );
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener("mousemove", handleMouseMove);
     };
   }, []);
-
 
   // Default settings
   const [settings, setSettings] = useState<Settings>({
     showHelp: false,
     caching: true,
     autocomplete: true,
-    currency: 'usd',
-    location: '',
+    currency: "usd",
+    location: "",
     shipsToMyLocation: false,
-    foo: 'bar',
+    foo: "bar",
     jason: false,
     antoine: true,
-    popupSize: 'small',
+    popupSize: "small",
     autoResize: true,
     someSetting: false,
     suppliers: SupplierFactory.supplierList(),
-    theme: 'light',
+    theme: "light",
     showColumnFilters: true,
     showAllColumns: false,
-    hideColumns: ['description', 'uom'],
+    hideColumns: ["description", "uom"],
   });
 
   // Load the settings from storage.local on the initial component load
   useEffect(() => {
-    chrome.storage.local.get(['settings', 'panel'])
-      .then(data => {
-        //console.debug('Retrieved storage.local.settings:', data)
-        if (data.settings) setSettings({ ...data.settings });;
-        if (data.panel) setPanel(data.panel);
-      })
-  }, [])
+    chrome.storage.local.get(["settings", "panel"]).then((data) => {
+      //console.debug('Retrieved storage.local.settings:', data)
+      if (data.settings) setSettings({ ...data.settings });
+      if (data.panel) setPanel(data.panel);
+    });
+  }, []);
 
   // Save the settings to storage.local when the settings change
   useEffect(() => {
     //console.debug('Updating storage.local.settings to:', settings)
-    chrome.storage.local.set({ settings, panel })
-    console.debug('settings updated:', settings)
-    setCurrentTheme(settings.theme === 'light' ? lightTheme : darkTheme)
-  }, [settings, panel])
+    chrome.storage.local.set({ settings, panel });
+    console.debug("settings updated:", settings);
+    setCurrentTheme(settings.theme === "light" ? lightTheme : darkTheme);
+  }, [settings, panel]);
 
   return (
     <ErrorBoundary fallback={<p>Something went wrong</p>}>
       <SettingsContext.Provider value={{ settings, setSettings }}>
         <ThemeProvider theme={currentTheme}>
           <CssBaseline />
-          <Box sx={{ bgcolor: 'background.default', width: '100%' }}>
-            <AppBar position='static' sx={{ borderRadius: 1 }}>
+          <Box sx={{ bgcolor: "background.default", width: "100%" }}>
+            <AppBar position="static" sx={{ borderRadius: 1 }}>
               <TabHeader page={panel} setPage={setPanel} />
-              <TabPanel value={panel} name='search-panel' index={0} dir={theme.direction}>
+              <TabPanel value={panel} name="search-panel" index={0} dir={theme.direction}>
                 <SearchPanel />
               </TabPanel>
-              <TabPanel value={panel} name='suppliers-panel' index={1} dir={theme.direction}>
+              <TabPanel value={panel} name="suppliers-panel" index={1} dir={theme.direction}>
                 <SuppliersPanel />
               </TabPanel>
-              <TabPanel value={panel} name='settings-panel' index={2} dir={theme.direction}>
+              <TabPanel value={panel} name="settings-panel" index={2} dir={theme.direction}>
                 <SettingsPanel />
               </TabPanel>
             </AppBar>
@@ -146,7 +145,7 @@ function App() {
         </ThemeProvider>
       </SettingsContext.Provider>
     </ErrorBoundary>
-  )
+  );
 }
 
-export default App
+export default App;

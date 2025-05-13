@@ -1,6 +1,5 @@
-import _ from 'lodash';
-import { Product, HeaderObject } from '../types'
-import { preconnect } from 'react-dom';
+import { preconnect } from "react-dom";
+import { HeaderObject, Product } from "../types";
 
 /**
  * The base class for all suppliers.
@@ -8,31 +7,31 @@ import { preconnect } from 'react-dom';
  */
 export default abstract class SupplierBase<T extends Product> implements AsyncIterable<T> {
   // The name of the supplier (used for display name, lists, etc)
-  public abstract readonly supplierName: string
+  public abstract readonly supplierName: string;
 
   // The base URL for the supplier.
-  protected abstract _baseURL: string
+  protected abstract _baseURL: string;
 
   // String to query for (Product name, CAS, etc)
-  protected _query: string
+  protected _query: string;
 
   // The products after all http calls are made and responses have been parsed/filtered.
-  protected _products: Array<Product> = []
+  protected _products: Array<Product> = [];
 
   // If the products first require a query of a search page that gets iterated over,
   // those results are stored here
-  protected _queryResults: Array<any> = []
+  protected _queryResults: Array<any> = [];
 
   // The AbortController interface represents a controller object that allows you to
   // abort one or more Web requests as and when desired.
-  protected _controller: AbortController
+  protected _controller: AbortController;
 
   // How many results to return for this query (This is not a limit on how many requests
   // can be made to a supplier for any given query).
-  protected _limit: number
+  protected _limit: number;
 
   // This is a limit to how many queries can be sent to the supplier for any given query.
-  protected _httpRequestHardLimit: number = 50
+  protected _httpRequestHardLimit: number = 50;
 
   // Used to keep track of how many requests have been made to the supplier.
   protected _http_requst_count: number = 0;
@@ -47,11 +46,11 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
 
   // Default values for products. These will get overridden if they're found in the product data.
   protected _productDefaults = {
-    uom: 'ea',
+    uom: "ea",
     quantity: 1,
-    currencyCode: 'USD',
-    currencySymbol: '$'
-  }
+    currencyCode: "USD",
+    currencySymbol: "$",
+  };
 
   /**
    * Constructor for the SupplierBase class.
@@ -66,8 +65,8 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
     if (controller) {
       this._controller = controller;
     } else {
-      console.debug('Made a new AbortController')
-      this._controller = new AbortController()
+      console.debug("Made a new AbortController");
+      this._controller = new AbortController();
     }
 
     this._preconnect();
@@ -85,7 +84,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * This is a placeholder for any setup that needs to be done before the query is made.
    * @returns A promise that resolves when the setup is complete.
    */
-  protected async _setup(): Promise<void> { }
+  protected async _setup(): Promise<void> {}
 
   /**
    * Get the headers for the HTTP GET request.
@@ -94,7 +93,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    */
   protected async httpGetHeaders(url: string): Promise<HeaderObject | void> {
     try {
-      console.debug('httpGetHeaders| this._controller.signal:', this._controller.signal)
+      console.debug("httpGetHeaders| this._controller.signal:", this._controller.signal);
       const httpResponse = await fetch(url, {
         signal: this._controller.signal,
         headers: {
@@ -102,21 +101,20 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
           //accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8'
         },
         referrer: this._baseURL,
-        referrerPolicy: 'strict-origin-when-cross-origin',
+        referrerPolicy: "strict-origin-when-cross-origin",
         body: null,
-        method: 'HEAD',
-        mode: 'cors',
-        credentials: 'include'
+        method: "HEAD",
+        mode: "cors",
+        credentials: "include",
       });
 
-      return Object.fromEntries(httpResponse.headers.entries())
-    }
-    catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        console.debug('Request was aborted', { error, signal: this._controller.signal });
+      return Object.fromEntries(httpResponse.headers.entries());
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        console.debug("Request was aborted", { error, signal: this._controller.signal });
         this._controller.abort();
       } else {
-        console.error('Error received during fetch:', { error, signal: this._controller.signal });
+        console.error("Error received during fetch:", { error, signal: this._controller.signal });
       }
     }
   }
@@ -128,23 +126,26 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * @param headers - The headers for the POST request.
    * @returns The response from the POST request.
    */
-  protected async httpPost(url: string, body: Object, headers: HeaderObject = {}): Promise<Response | void> {
+  protected async httpPost(
+    url: string,
+    body: Object,
+    headers: HeaderObject = {},
+  ): Promise<Response | void> {
     try {
       return await fetch(url, {
         signal: this._controller.signal,
         headers: {
           ...this._headers,
-          ...headers
+          ...headers,
         },
         referrer: this._baseURL,
-        referrerPolicy: 'strict-origin-when-cross-origin',
+        referrerPolicy: "strict-origin-when-cross-origin",
         body: JSON.stringify(body),
-        method: 'POST',
-        mode: 'cors'
+        method: "POST",
+        mode: "cors",
       });
-    }
-    catch (error) {
-      console.error('Error received during fetch:', { error, signal: this._controller.signal });
+    } catch (error) {
+      console.error("Error received during fetch:", { error, signal: this._controller.signal });
     }
   }
 
@@ -156,28 +157,28 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    */
   protected async httpGet(url: string, headers: HeaderObject = {}): Promise<Response | void> {
     try {
-      console.debug('httpget| this._controller.signal:', this._controller.signal)
+      console.debug("httpget| this._controller.signal:", this._controller.signal);
       return await fetch(url, {
         signal: this._controller.signal,
         headers: {
-          accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+          accept:
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
           ...this._headers,
-          ...headers
+          ...headers,
         },
         referrer: this._baseURL,
-        referrerPolicy: 'no-referrer',
+        referrerPolicy: "no-referrer",
         body: null,
-        method: 'GET',
-        mode: 'cors',
-        credentials: 'include'
+        method: "GET",
+        mode: "cors",
+        credentials: "include",
       });
-    }
-    catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        console.debug('Request was aborted', { error, signal: this._controller.signal });
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        console.debug("Request was aborted", { error, signal: this._controller.signal });
         this._controller.abort();
       } else {
-        console.error('Error received during fetch:', { error, signal: this._controller.signal });
+        console.error("Error received during fetch:", { error, signal: this._controller.signal });
       }
     }
   }
@@ -189,10 +190,10 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    */
   protected async httpGetJson(url: string): Promise<Response | void> {
     try {
-      const response = await this.httpGet(url)
-      return response?.json()
+      const response = await this.httpGet(url);
+      return response?.json();
     } catch (error) {
-      console.error('Error received during fetch:', { error, signal: this._controller.signal });
+      console.error("Error received during fetch:", { error, signal: this._controller.signal });
     }
   }
 
@@ -211,7 +212,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
         // @todo: This is a hack to remove chrome-extension:// from the href if it exists. Why
         //        is it required? Should be able to use a URL without needing to remove this.
         //r.href = r.href.replace(/chrome-extension:\/\/[a-z]+/, '')
-        return this._getProductData(r)
+        return this._getProductData(r);
       });
 
       for (const resultPromise of productPromises) {
@@ -220,19 +221,19 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
           if (result) {
             yield result as T;
           }
-        }
-        catch (err) { // Here to catch errors in individual yields
-          console.error(`Error found when yielding a product:`, err)
-          continue
+        } catch (err) {
+          // Here to catch errors in individual yields
+          console.error(`Error found when yielding a product:`, err);
+          continue;
         }
       }
-    }
-    catch (err) { // Here to catch when the overall search fails
+    } catch (err) {
+      // Here to catch when the overall search fails
       if (this._controller.signal.aborted === true) {
-        console.debug('Search was aborted')
-        return
+        console.debug("Search was aborted");
+        return;
       }
-      console.error('ERROR in generator fn:', err)
+      console.error("ERROR in generator fn:", err);
     }
   }
 
@@ -240,11 +241,11 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * Query the products from the supplier.
    * @returns A promise that resolves when the products have been queried.
    */
-  protected abstract queryProducts(): Promise<void>
+  protected abstract queryProducts(): Promise<void>;
 
   /**
    * Parse the products from the supplier.
    * @returns A promise that resolves when the products have been parsed.
    */
-  protected abstract _getProductData(productIndexObject: Object): Promise<Product | void>
+  protected abstract _getProductData(productIndexObject: Object): Promise<Product | void>;
 }

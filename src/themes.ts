@@ -1,15 +1,13 @@
-import { createTheme } from '@mui/material/styles';
-
-
+import { createTheme } from "@mui/material/styles";
 
 export const lightTheme = createTheme({
   palette: {
-    mode: 'light',
+    mode: "light",
     primary: {
-      main: '#386181',
+      main: "#386181",
     },
     secondary: {
-      main: '#6f8ea0',
+      main: "#6f8ea0",
     },
   },
   shape: {
@@ -19,19 +17,19 @@ export const lightTheme = createTheme({
   components: {
     MuiList: {
       defaultProps: {
-        dense: true
+        dense: true,
       },
     },
     MuiTableCell: {
       defaultProps: {
         //padding: "checkbox",
-        size: "small"
+        size: "small",
       },
       styleOverrides: {
         root: {
-          padding: "6px 16px"
-        }
-      }
+          padding: "6px 16px",
+        },
+      },
     },
     MuiTable: {
       defaultProps: {
@@ -41,20 +39,20 @@ export const lightTheme = createTheme({
       styleOverrides: {
         root: {
           //padding: "1px"
-        }
-      }
-    }
-  }
-})
+        },
+      },
+    },
+  },
+});
 
 export const darkTheme = createTheme({
   palette: {
-    mode: 'dark',
+    mode: "dark",
     primary: {
-      main: '#386181',
+      main: "#386181",
     },
     secondary: {
-      main: '#6f8ea0',
+      main: "#6f8ea0",
     },
   },
   shape: {
@@ -64,19 +62,19 @@ export const darkTheme = createTheme({
   components: {
     MuiList: {
       defaultProps: {
-        dense: true
+        dense: true,
       },
     },
     MuiTableCell: {
       defaultProps: {
         //padding: "checkbox",
-        size: "small"
+        size: "small",
       },
       styleOverrides: {
         root: {
-          padding: "6px 16px"
-        }
-      }
+          padding: "6px 16px",
+        },
+      },
     },
     MuiTable: {
       defaultProps: {
@@ -86,24 +84,24 @@ export const darkTheme = createTheme({
       styleOverrides: {
         root: {
           //padding: "1px"
-        }
-      }
-    }
-  }
-})
+        },
+      },
+    },
+  },
+});
 
 export const lightThemeOld = createTheme({
   palette: {
-    mode: 'light',
+    mode: "light",
     primary: {
-      main: '#b7b7b7',
+      main: "#b7b7b7",
     },
     secondary: {
-      main: '#6f8ea0',
+      main: "#6f8ea0",
     },
     background: {
-      default: '#f3f3f3',
-      paper: '#ffffff',
+      default: "#f3f3f3",
+      paper: "#ffffff",
     },
   },
 });
@@ -111,16 +109,16 @@ export const lightThemeOld = createTheme({
 export const blueTheme = createTheme({
   palette: {
     primary: {
-      main: '#42a5f5',
+      main: "#42a5f5",
       // light: will be calculated from palette.primary.main,
       // dark: will be calculated from palette.primary.main,
       // contrastText: will be calculated to contrast with palette.primary.main
     },
     secondary: {
-      main: '#E0C2FF',
-      light: '#F5EBFF',
+      main: "#E0C2FF",
+      light: "#F5EBFF",
       // dark: will be calculated from palette.secondary.main,
-      contrastText: '#47008F',
+      contrastText: "#47008F",
     },
   },
   components: {
@@ -128,14 +126,14 @@ export const blueTheme = createTheme({
     MuiTableCell: {
       defaultProps: {
         // The default props to change
-        size: "small"
-      }
+        size: "small",
+      },
     },
     MuiTable: {
       defaultProps: {
         // The default props to change
-        size: "small"
-      }
-    }
-  }
-})
+        size: "small",
+      },
+    },
+  },
+});

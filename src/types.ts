@@ -1,11 +1,10 @@
-
-import { Dispatch, ReactNode, SetStateAction, ReactElement } from 'react';
-import { CurrencyCode, CurrencySymbol } from './types/currency';
-import { CAS } from './types/cas';
-import { ColumnDef, ColumnFiltersState, Row, RowData } from '@tanstack/react-table';
-export * from './types/quantity'
-export * from './types/cas'
-export * from './types/currency'
+import { ColumnDef, ColumnFiltersState, Row, RowData } from "@tanstack/react-table";
+import { Dispatch, ReactElement, ReactNode, SetStateAction } from "react";
+import { CAS } from "./types/cas";
+import { CurrencyCode, CurrencySymbol } from "./types/currency";
+export * from "./types/cas";
+export * from "./types/currency";
+export * from "./types/quantity";
 
 export type HeaderObject = { [key: string]: string };
 export type ChromeStorageItems = { [key: string]: any };
@@ -42,7 +41,7 @@ export interface Item {
 
 export interface Sku {
   priceInfo: { regularPrice: number[] };
-  variantsMap: { volume: number; 'chemical-grade': string; concentration: string };
+  variantsMap: { volume: number; "chemical-grade": string; concentration: string };
   skuId: string;
   seoName: string;
   inventoryStatus: string;
@@ -103,7 +102,6 @@ export interface Product {
   variants?: Variant[];
 }
 
-
 export interface TabPanelProps {
   children?: ReactNode;
   dir?: string;
@@ -118,34 +116,32 @@ export interface SettingsContextProps {
   setSettings: (settings: Settings) => void;
 }
 
-
-
 export type TableProps<TData extends RowData> = {
-  data: TData[]
-  columns: ColumnDef<TData>[]
-  renderSubComponent: (props: { row: Row<TData> }) => React.ReactElement
-  getRowCanExpand: (row: Row<TData>) => boolean
-  rerender: () => void
-  refreshData: () => void
+  data: TData[];
+  columns: ColumnDef<TData>[];
+  renderSubComponent: (props: { row: Row<TData> }) => React.ReactElement;
+  getRowCanExpand: (row: Row<TData>) => boolean;
+  rerender: () => void;
+  refreshData: () => void;
   //columnFilters: ColumnFiltersState
   //setColumnFilters: (columnFilters: OnChangeFn<ColumnFiltersState>) => void
-  columnFilterFns: [ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>]
-}
+  columnFilterFns: [ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>];
+};
 
 export type ProductTableProps<TData extends RowData> = {
-  columns: ColumnDef<TData, any>[]
-  renderVariants: (props: { row: Row<TData> }) => React.ReactElement
-  getRowCanExpand: (row: Row<TData>) => boolean
+  columns: ColumnDef<TData, any>[];
+  renderVariants: (props: { row: Row<TData> }) => React.ReactElement;
+  getRowCanExpand: (row: Row<TData>) => boolean;
   //columnFilters: ColumnFiltersState
   //setColumnFilters: (columnFilters: OnChangeFn<ColumnFiltersState>) => void
-  columnFilterFns: [ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>]
-}
+  columnFilterFns: [ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>];
+};
 
 export type ProductTableHeader<TData extends RowData> = {
   id: string;
   colSpan: number;
   isPlaceholder: boolean;
-  column: ColumnDef<TData, any>
+  column: ColumnDef<TData, any>;
   getCanFilter: () => boolean;
   getCanSort: () => boolean;
   getToggleSortingHandler: () => void;
@@ -153,21 +149,21 @@ export type ProductTableHeader<TData extends RowData> = {
   getContext: () => any;
   getSize: () => number;
   columnDef: Partial<ColumnDef<TData>>;
-}
+};
 
 export type SearchPanelToolbarProps = {
   table: any;
   searchInput: string;
   setSearchInput: Dispatch<SetStateAction<string>>;
-}
+};
 
 export type ProductRow = {
-  row: Row<Product>
-}
+  row: Row<Product>;
+};
 
 export type HelpTooltipProps = {
   text: string;
   children: ReactElement<unknown, any>;
   delay?: number;
   duration?: number;
-}
+};

@@ -1,4 +1,4 @@
-import { CAS } from '../types/cas';
+import { CAS } from "../types/cas";
 
 /**
  * The regex for a valid CAS number.
@@ -6,7 +6,7 @@ import { CAS } from '../types/cas';
  * {@link https://www.cas.org/training/documentation/chemical-substances/checkdig CAS Standardized format}
  * @type {RegExp}
  */
-export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_checksum>\d)/
+export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_checksum>\d)/;
 
 /**
  * Check if a string is a valid CAS number
@@ -53,12 +53,9 @@ export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_check
  *     isCas('00-10-0') // false
  */
 export function isCas(cas: string): boolean {
-  const regex = RegExp(`^${CAS_REGEX.source}$`)
+  const regex = RegExp(`^${CAS_REGEX.source}$`);
   const match = cas.match(regex);
-  if (!match
-    || !match.groups?.seg_a
-    || !match.groups?.seg_b
-    || !match.groups?.seg_checksum)
+  if (!match || !match.groups?.seg_a || !match.groups?.seg_b || !match.groups?.seg_checksum)
     return false;
 
   const segA = match.groups.seg_a;
@@ -70,7 +67,7 @@ export function isCas(cas: string): boolean {
   const segABCalc = Array.from(segA + segB)
     .map(Number)
     .reverse()
-    .reduce((acc, curr, idx) => acc + (idx + 1) * curr, 0)
+    .reduce((acc, curr, idx) => acc + (idx + 1) * curr, 0);
 
   return segABCalc % 10 === Number(segChecksum);
 }
@@ -87,7 +84,7 @@ export function isCas(cas: string): boolean {
  *     findCas('and 50-00-1 is another valid cas #') // undefined
  */
 export function findCas(data: string): CAS<string> | undefined {
-  const regex = RegExp(CAS_REGEX.source, 'g')
+  const regex = RegExp(CAS_REGEX.source, "g");
   const match = data.match(regex);
   if (match && isCas(match[0])) return match[0] as CAS<string>;
 }

@@ -1,12 +1,13 @@
-import { Product } from '../types'
-import SupplierWixBase from './supplier_wixbase'
+import { Product } from "../types";
+import SupplierWixBase from "./supplier_wixbase";
 
-
-export default class SupplierFtfScientific<T extends Product> extends SupplierWixBase<T> implements AsyncIterable<T> {
+export default class SupplierFtfScientific<T extends Product>
+  extends SupplierWixBase<T>
+  implements AsyncIterable<T>
+{
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = 'FTF Scientific'
+  public readonly supplierName: string = "FTF Scientific";
 
   // Base URL for HTTP(s) requests
-  protected _baseURL: string = 'https://www.ftfscientific.com';
+  protected _baseURL: string = "https://www.ftfscientific.com";
 }
-

@@ -51,8 +51,7 @@ self.addEventListener("fetch", (event) => {
           // Otherwise, if there is no entry in the cache for event.request,
           // response will be undefined, and we need to fetch() the resource.
           console.debug(
-            " No response for %s found in cache. About to fetch " +
-            "from network…",
+            " No response for %s found in cache. About to fetch " + "from network…",
             event.request.url,
           );
 
@@ -62,12 +61,11 @@ self.addEventListener("fetch", (event) => {
           // so we need to make a copy.
           // (see https://developer.mozilla.org/en-US/docs/Web/API/Request/clone)
           return fetch(event.request.clone()).then((response) => {
-            console.debug(
-              "  Response for %s from network is: %O",
-              event.request.url,
-              response,
-            );
-            if (event.request.url.match("^(http|https)://") && ['HEAD', 'POST'].includes(event.request.method) === false) {
+            console.debug("  Response for %s from network is: %O", event.request.url, response);
+            if (
+              event.request.url.match("^(http|https)://") &&
+              ["HEAD", "POST"].includes(event.request.method) === false
+            ) {
               cache.put(event.request, response.clone());
             }
 

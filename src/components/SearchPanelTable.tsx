@@ -1,92 +1,41 @@
-import {
-  Fragment,
-  MouseEvent,
-  useState,
-  ChangeEvent,
-  ReactElement,
-  CSSProperties,
-  useEffect
-} from 'react'
+import { CSSProperties, Fragment, ReactElement, useEffect, useState } from "react";
 
-import {
-  ArrowDropDown as ArrowDropDownIcon,
-  ArrowRight as ArrowRightIcon,
-} from '@mui/icons-material';
-
-import {
-  Box,
-  IconButton,
-  Divider,
-  MenuList,
-  Toolbar,
-  Tooltip,
-  Typography,
-  Paper,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
-  Menu,
-  MenuItem,
-  Link,
-} from '@mui/material';
-
-import {
-  Search as SearchIcon,
-  SearchOff as SearchOffIcon,
-  Checklist as ChecklistIcon,
-  Done as DoneIcon,
-  Close as CloseIcon,
-} from '@mui/icons-material';
+import { Box, Paper } from "@mui/material";
 
 import {
   Column,
   ColumnDef,
-  ColumnFiltersState,
   flexRender,
-  getExpandedRowModel,
   getCoreRowModel,
+  getExpandedRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable,
   Row,
-} from '@tanstack/react-table'
+  useReactTable,
+} from "@tanstack/react-table";
 
-import {
-  ProductTableProps,
-  Product,
-  SearchPanelToolbarProps,
-  ProductRow
-} from '../types';
+import { Product, ProductTableProps } from "../types";
 
+import { isEmpty } from "lodash";
 
-import { isEmpty } from 'lodash';
-
-import SearchInput from './SearchInput';
-import SearchTablePagination from './SearchTablePagination';
-import SearchTableHeader from './SearchTableHeader'
-import SearchResultVariants from './SearchResultVariants';
-import { useSettings } from '../context';
-import SupplierFactory from '../suppliers/supplier_factory';
-import SpeedDialMenu from './SpeedDialMenu';
-import LoadingBackdrop from './LoadingBackdrop';
-import SearchPanelToolbar from './SearchPanelToolbar';
+import { useSettings } from "../context";
+import SupplierFactory from "../suppliers/supplier_factory";
+import LoadingBackdrop from "./LoadingBackdrop";
+import SearchPanelToolbar from "./SearchPanelToolbar";
+import SearchTableHeader from "./SearchTableHeader";
+import SearchTablePagination from "./SearchTablePagination";
 
 let fetchController: AbortController;
-
-const ITEM_HEIGHT = 48;
-
-
-
 
 export default function SearchPanelTable({
   columns,
   renderVariants,
   getRowCanExpand,
-  columnFilterFns
+  columnFilterFns,
 }: ProductTableProps<Product>): ReactElement {
   const settingsContext = useSettings();
-  const [searchInput, setSearchInput] = useState<string>('');
+  const [searchInput, setSearchInput] = useState<string>("");
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [showSearchResults, setShowSearchResults] = useState<Product[]>([]);
   const [statusLabel, setStatusLabel] = useState<string | boolean>(false);
@@ -96,91 +45,98 @@ export default function SearchPanelTable({
     if (!isEmpty(settingsContext.settings.hideColumns)) {
       table.getAllLeafColumns().map((column: Column<any>) => {
         if (settingsContext.settings.hideColumns.includes(column.id))
-          column.toggleVisibility(false)
-      })
+          column.toggleVisibility(false);
+      });
     }
-    chrome.storage.local.get(['searchResults', 'paginationModel'])
-      .then(data => {
-        const storedSearchResults = data.searchResults || [];
+    chrome.storage.local.get(["searchResults", "paginationModel"]).then((data) => {
+      const storedSearchResults = data.searchResults || [];
 
-        if (!storedSearchResults) {
-          setStatusLabel('Type a product name and hit enter')
-          return
-        }
+      if (!storedSearchResults) {
+        setStatusLabel("Type a product name and hit enter");
+        return;
+      }
 
-        setSearchResults(Array.isArray(storedSearchResults) ? storedSearchResults : []);
-        setStatusLabel('')
-      })
+      setSearchResults(Array.isArray(storedSearchResults) ? storedSearchResults : []);
+      setStatusLabel("");
+    });
   }, []);
 
   useEffect(() => {
-    console.log('Search result timestamp was updated', settingsContext.settings.searchResultUpdateTs)
+    console.log(
+      "Search result timestamp was updated",
+      settingsContext.settings.searchResultUpdateTs,
+    );
 
-    chrome.storage.local.get(['searchResults'])
-      .then(data => {
-        console.log('New search results', data.searchResults)
-        setShowSearchResults(data.searchResults)
-      })
-  }, [settingsContext.settings.searchResultUpdateTs])
+    chrome.storage.local.get(["searchResults"]).then((data) => {
+      console.log("New search results", data.searchResults);
+      setShowSearchResults(data.searchResults);
+    });
+  }, [settingsContext.settings.searchResultUpdateTs]);
 
   const handleStopSearch = () => {
     // Stop the form from propagating
     //event.preventDefault();
-    console.debug('triggering abort..')
-    setIsLoading(false)
-    fetchController.abort()
-    setStatusLabel(searchResults.length === 0 ? 'Search aborted' : '')
+    console.debug("triggering abort..");
+    setIsLoading(false);
+    fetchController.abort();
+    setStatusLabel(searchResults.length === 0 ? "Search aborted" : "");
   };
 
   async function executeSearch(query: string) {
     if (!query.trim()) {
-      return
+      return;
     }
-    setIsLoading(true)
+    setIsLoading(true);
 
-    setSearchResults([])
-    setStatusLabel('Searching...')
+    setSearchResults([]);
+    setStatusLabel("Searching...");
 
     // Abort controller specific to this query
     fetchController = new AbortController();
     // Create the query instance
     // Note: This does not actually run the HTTP calls or queries...
-    const productQueryResults = new SupplierFactory(query, fetchController, settingsContext.settings.suppliers)
+    const productQueryResults = new SupplierFactory(
+      query,
+      fetchController,
+      settingsContext.settings.suppliers,
+    );
 
     // Clear the products table
-    setSearchResults([])
-
+    setSearchResults([]);
 
     const startSearchTime = performance.now();
     let resultCount = 0;
     // Use the async generator to iterate over the products
     // This is where the queries get run, when the iteration starts.
     for await (const result of productQueryResults) {
-      resultCount++
+      resultCount++;
       // Data for new row (must align with columns structure)
 
       // Hide the status label thing
       // Add each product to the table.
-      console.debug('newProduct:', result)
+      console.debug("newProduct:", result);
 
       // Hide the status label thing
-      setStatusLabel(false)
+      setStatusLabel(false);
 
-      setSearchResults((prevProducts) => [...prevProducts, {
-        // Each row needs a unique ID, so use the row count at each insertion
-        // as the ID value
-        id: prevProducts.length, ...result as Product
-      }]);
+      setSearchResults((prevProducts) => [
+        ...prevProducts,
+        {
+          // Each row needs a unique ID, so use the row count at each insertion
+          // as the ID value
+          id: prevProducts.length,
+          ...(result as Product),
+        },
+      ]);
     }
     const endSearchTime = performance.now();
     const searchTime = endSearchTime - startSearchTime;
 
-
-    setIsLoading(false)
+    setIsLoading(false);
 
     console.debug(`Found ${resultCount} products in ${searchTime} milliseconds`);
 
-    return searchResults
+    return searchResults;
   }
 
   useEffect(() => {
@@ -190,24 +146,26 @@ export default function SearchPanelTable({
   useEffect(() => {
     // Not sure i'm happy with how I'm handling the search result update sequence.
     // May need to refactor later.
-    chrome.storage.local.set({ searchResults }) // <-- This is the effect/action
+    chrome.storage.local
+      .set({ searchResults }) // <-- This is the effect/action
       .then(() => {
         if (!searchResults.length) {
-          setStatusLabel(isLoading ? `Searching for ${searchInput}...` : 'Type a product name and hit enter')
-          return
+          setStatusLabel(
+            isLoading ? `Searching for ${searchInput}...` : "Type a product name and hit enter",
+          );
+          return;
         }
 
         settingsContext.setSettings({
           ...settingsContext.settings,
-          searchResultUpdateTs: new Date().toISOString()
-        })
-      })
-
+          searchResultUpdateTs: new Date().toISOString(),
+        });
+      });
   }, [searchResults]); // <-- this is the dependency
 
   useEffect(() => {
-    console.debug('searchResults UPDATED:', searchResults)
-  }, [searchResults])
+    console.debug("searchResults UPDATED:", searchResults);
+  }, [searchResults]);
 
   const table = useReactTable({
     data: showSearchResults,
@@ -216,7 +174,7 @@ export default function SearchPanelTable({
       minSize: 60,
       maxSize: 800,
     },
-    columnResizeMode: 'onChange',
+    columnResizeMode: "onChange",
     columns: columns as ColumnDef<Product, any>[],
     filterFns: {},
     state: {
@@ -232,44 +190,51 @@ export default function SearchPanelTable({
     debugTable: false,
     debugHeaders: false,
     debugColumns: false,
-  })
+  });
 
   function columnSizeVars() {
-    const headers = table.getFlatHeaders()
-    const colSizes: { [key: string]: number } = {}
+    const headers = table.getFlatHeaders();
+    const colSizes: { [key: string]: number } = {};
     for (let i = 0; i < headers.length; i++) {
-      const header = headers[i]!
-      colSizes[`--header-${header.id}-size`] = header.getSize()
-      colSizes[`--col-${header.column.id}-size`] = header.column.getSize()
+      const header = headers[i]!;
+      colSizes[`--header-${header.id}-size`] = header.getSize();
+      colSizes[`--col-${header.column.id}-size`] = header.column.getSize();
     }
-    return colSizes
+    return colSizes;
   }
 
   return (
     <>
       <LoadingBackdrop open={isLoading} onClick={handleStopSearch} />
-      <Paper sx={{ minHeight: '369px', width: '100%', padding: '0px' }}>
+      <Paper sx={{ minHeight: "369px", width: "100%", padding: "0px" }}>
         <Box
-          className='search-input-container fullwidth'
-          component='form'
-          sx={{ '& > :not(style)': { m: 0 } }}
+          className="search-input-container fullwidth"
+          component="form"
+          sx={{ "& > :not(style)": { m: 0 } }}
           noValidate
-          autoComplete='off' />
+          autoComplete="off"
+        />
         <div className="p-2">
-          <SearchPanelToolbar table={table} searchInput={searchInput} setSearchInput={setSearchInput} />
+          <SearchPanelToolbar
+            table={table}
+            searchInput={searchInput}
+            setSearchInput={setSearchInput}
+          />
           <div className="h-4" />
-          <table style={{
-            ...columnSizeVars(),
-            width: '100%'
-          }}>
+          <table
+            style={{
+              ...columnSizeVars(),
+              width: "100%",
+            }}
+          >
             <SearchTableHeader table={table} />
             <tbody>
-              {table.getRowModel().rows.map(row => {
+              {table.getRowModel().rows.map((row) => {
                 return (
                   <Fragment key={row.id}>
                     <tr>
                       {/*foo*/}
-                      {row.getVisibleCells().map(cell => {
+                      {row.getVisibleCells().map((cell) => {
                         return (
                           <td
                             key={cell.id}
@@ -277,12 +242,9 @@ export default function SearchPanelTable({
                             // to the meta object.
                             style={(cell.column.columnDef.meta as { style?: CSSProperties })?.style}
                           >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </td>
-                        )
+                        );
                       })}
                     </tr>
                     {row.getIsExpanded() && (
@@ -294,7 +256,7 @@ export default function SearchPanelTable({
                       </tr>
                     )}
                   </Fragment>
-                )
+                );
               })}
             </tbody>
           </table>
@@ -319,5 +281,5 @@ export default function SearchPanelTable({
         </div>
       </Paper>
     </>
-  )
+  );
 }

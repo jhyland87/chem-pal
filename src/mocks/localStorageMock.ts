@@ -1,4 +1,3 @@
-
 export const localStorageMock: Storage = (() => {
   let store: { [key: string]: string } = {};
   return {
@@ -19,8 +18,8 @@ export const localStorageMock: Storage = (() => {
     },
     get length() {
       return Object.keys(store).length;
-    }
+    },
   };
 })();
 
-global.localStorage = localStorageMock
+global.localStorage = localStorageMock;
