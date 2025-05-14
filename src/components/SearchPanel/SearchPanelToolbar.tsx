@@ -15,17 +15,13 @@ import Toolbar from "@mui/material/Toolbar";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { ChangeEvent, MouseEvent, useState } from "react";
-import { useSettings } from "../context";
-import { SearchPanelToolbarProps } from "../types";
+import { useSettings } from "../../context";
+import { TableOptionsProps } from "../../types";
 import SearchInput from "./SearchInput";
 
 const ITEM_HEIGHT = 48;
 
-export default function SearchPanelToolbar({
-  table,
-  searchInput,
-  setSearchInput,
-}: SearchPanelToolbarProps) {
+export default function TableOptions({ table, searchInput, setSearchInput }: TableOptionsProps) {
   const settingsContext = useSettings();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);

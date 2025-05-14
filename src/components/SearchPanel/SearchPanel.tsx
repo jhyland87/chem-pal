@@ -1,18 +1,17 @@
 import { ColumnFiltersState } from "@tanstack/react-table";
 import { useState } from "react";
-import SearchPanelTable from "./SearchPanelTable";
-import SearchResultVariants from "./SearchResultVariants";
+import DetailsContainer from "./DetailsContainer";
+import ResultsTable from "./ResultsTable";
 
 export default function SearchPanel() {
   const columnFilterFns = useState<ColumnFiltersState>([]);
 
   return (
     <>
-      <SearchPanelTable
+      <ResultsTable
         columnFilterFns={columnFilterFns}
-        //columns={SearchPanelTableColumns()}
         getRowCanExpand={() => true}
-        renderVariants={SearchResultVariants}
+        renderVariants={DetailsContainer}
       />
     </>
   );

@@ -6,7 +6,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { gen, sample } from "testcheck";
-import { ProductRow } from "../types";
+import { ProductRow } from "../../types";
 
 const variantGen = gen.object({
   title: gen.alphaNumString,
@@ -19,7 +19,7 @@ console.log("variantGen:", sample(variantGen));
 
 const rows = sample(variantGen);
 
-/*export default function SearchResultVariants({ row }: ProductRow) {
+/*export default function DetailsContainer({ row }: ProductRow) {
   return (
     <pre style={{ fontSize: "10px" }}>
       <code>{JSON.stringify(row.original, null, 2)}</code>
@@ -32,7 +32,7 @@ background-color: #bebcbc;
 background-color: #e5e5e5;
 */
 
-export default function SearchResultVariants({ row }: ProductRow) {
+export default function DetailsContainer({ row }: ProductRow) {
   return (
     <TableContainer component={Paper}>
       <Table sx={{ width: "100%" }} size="small" aria-label="a dense table">

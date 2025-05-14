@@ -14,17 +14,17 @@ import {
 } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
 import { CSSProperties, Fragment, ReactElement, useEffect, useState } from "react";
-import { useSettings } from "../context";
-import SupplierFactory from "../suppliers/supplier_factory";
-import { Product, ProductTableProps } from "../types";
-import LoadingBackdrop from "./LoadingBackdrop";
-import SearchPanelTableColumns from "./SearchPanelTableColumns";
-import SearchPanelToolbar from "./SearchPanelToolbar";
+import { useSettings } from "../../context";
+import SupplierFactory from "../../suppliers/supplier_factory";
+import { Product, ProductTableProps } from "../../types";
+import LoadingBackdrop from "../LoadingBackdrop";
+import Pagination from "./Pagination";
 import SearchTableHeader from "./SearchTableHeader";
-import SearchTablePagination from "./SearchTablePagination";
+import TableColumns from "./TableColumns";
+import TableOptions from "./TableOptions";
 let fetchController: AbortController;
 
-export default function SearchPanelTable({
+export default function ResultsTable({
   renderVariants,
   getRowCanExpand,
   columnFilterFns,
@@ -36,8 +36,8 @@ export default function SearchPanelTable({
   const [, setStatusLabel] = useState<string | boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  console.log("SearchPanelTable columns:", SearchPanelTableColumns());
-  console.log("SearchPanelTable columnFilterFns:", columnFilterFns);
+  console.log("ResultsTable columns:", TableColumns());
+  console.log("ResultsTable columnFilterFns:", columnFilterFns);
 
   useEffect(() => {
     if (!isEmpty(settingsContext.settings.hideColumns)) {
@@ -173,7 +173,7 @@ export default function SearchPanelTable({
       maxSize: 800,
     },
     columnResizeMode: "onChange",
-    columns: SearchPanelTableColumns() as ColumnDef<Product, unknown>[],
+    columns: TableColumns() as ColumnDef<Product, unknown>[],
     filterFns: {},
     state: {
       columnFilters: columnFilterFns[0],
@@ -213,11 +213,7 @@ export default function SearchPanelTable({
           autoComplete="off"
         />
         <div className="p-2">
-          <SearchPanelToolbar
-            table={table}
-            searchInput={searchInput}
-            setSearchInput={setSearchInput}
-          />
+          <TableOptions table={table} searchInput={searchInput} setSearchInput={setSearchInput} />
           <div className="h-4" />
           <table
             style={{
@@ -260,7 +256,7 @@ export default function SearchPanelTable({
             </tbody>
           </table>
           <div className="h-2" />
-          <SearchTablePagination table={table} />
+          <Pagination table={table} />
           {/*JSON.stringify(
             {
               columnSizing: table.getState().columnSizing,

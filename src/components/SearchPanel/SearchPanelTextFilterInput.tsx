@@ -1,10 +1,10 @@
 import FormControl from "@mui/material/FormControl";
 import TextField from "@mui/material/TextField";
-import { FilterInputProps } from "../types";
+import { FilterInputProps } from "../../types";
 
-export default function SearchPanelTextFilterInput({ column, ...props }: FilterInputProps) {
-  console.log("[SearchPanelRangeFilterInput] column:", column);
-  console.log("[SearchPanelRangeFilterInput] props:", props);
+export default function TextFilterInput({ column, ...props }: FilterInputProps) {
+  console.log("[RangeFilterInput] column:", column);
+  console.log("[RangeFilterInput] props:", props);
   return (
     <div>
       <FormControl variant="standard" sx={{ m: 0, minWidth: 120 }} size="small">

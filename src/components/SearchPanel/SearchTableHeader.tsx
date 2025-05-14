@@ -2,9 +2,9 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import { ColumnDef, flexRender, Header, HeaderGroup, Table } from "@tanstack/react-table";
 import { CSSProperties } from "react";
-import { useSettings } from "../context";
-import { ColumnMeta, Product } from "../types";
-import SearchTableHeaderFilter from "./SearchTableHeaderFilter";
+import { useSettings } from "../../context";
+import { ColumnMeta, Product } from "../../types";
+import ColumnFilters from "./ColumnFilters";
 
 export default function SearchTableHeader({ table }: { table: Table<Product> }) {
   const settingsContext = useSettings();
@@ -129,7 +129,7 @@ export default function SearchTableHeader({ table }: { table: Table<Product> }) 
 
                     {settingsContext.settings.showColumnFilters && header.column.getCanFilter() ? (
                       <div>
-                        <SearchTableHeaderFilter column={header.column} />
+                        <ColumnFilters column={header.column} />
                       </div>
                     ) : null}
                   </>

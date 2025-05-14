@@ -1,13 +1,9 @@
 import FormControl from "@mui/material/FormControl";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
-import { FilterInputProps } from "../types";
+import { FilterInputProps } from "../../types";
 
-export default function SearchPanelSelectFilterInput({
-  column,
-  children,
-  ...props
-}: FilterInputProps) {
+export default function SelectFilterInput({ column, children, ...props }: FilterInputProps) {
   return (
     <div>
       <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }} size="small">

@@ -7,7 +7,7 @@ import "./App.css";
 import ErrorBoundary from "./components/ErrorBoundary";
 import FavoritesPanel from "./components/FavoritesPanel";
 import HistoryPanel from "./components/HistoryPanel";
-import SearchPanel from "./components/SearchPanel";
+import SearchPanel from "./components/SearchPanel/SearchPanel";
 import SettingsPanel from "./components/SettingsPanel";
 import SpeedDialMenu from "./components/SpeedDialMenu";
 import SuppliersPanel from "./components/SuppliersPanel";

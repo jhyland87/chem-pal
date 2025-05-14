@@ -4,7 +4,7 @@ import KeyboardDoubleArrowLeftIcon from "@mui/icons-material/KeyboardDoubleArrow
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
 import IconButton from "@mui/material/IconButton";
 import { Table } from "@tanstack/react-table";
-import { Product } from "../types";
+import { Product } from "../../types";
 
 const paginationButtonStyle = {
   padding: "1px 5px",
@@ -12,7 +12,7 @@ const paginationButtonStyle = {
   margin: "0px 2px",
 };
 
-export default function SearchTablePagination({ table }: { table: Table<Product> }) {
+export default function Pagination({ table }: { table: Table<Product> }) {
   return (
     <div className="flex items-center gap-2">
       {/*

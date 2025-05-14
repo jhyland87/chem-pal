@@ -3,7 +3,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Fade from "@mui/material/Fade";
 import BenzeneBlueSpinner from "./icons/BenzeneBlueSpinner";
-import "./SearchPanel.css";
+import "./SearchPanel/SearchPanel.css";
 
 export default function LoadingBackdrop(props: { open: boolean; onClick: () => void }) {
   // @todo: Try to implement a <Suspense/> component instead of a manual loading state

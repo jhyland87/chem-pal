@@ -39,14 +39,10 @@ function ValueLabelComponent(props: SliderValueLabelProps) {
   );
 }
 
-export default function SearchPanelRangeFilterInput({
-  rangeValues = [],
-  column,
-  ...props
-}: FilterInputProps) {
-  console.log("[SearchPanelRangeFilterInput] rangeValues:", rangeValues);
-  console.log("[SearchPanelRangeFilterInput] column:", column);
-  console.log("[SearchPanelRangeFilterInput] props:", props);
+export default function RangeFilterInput({ rangeValues = [], column, ...props }: FilterInputProps) {
+  console.log("[RangeFilterInput] rangeValues:", rangeValues);
+  console.log("[RangeFilterInput] column:", column);
+  console.log("[RangeFilterInput] props:", props);
   const [value, setValue] = useState<number[]>([20, 37]);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);

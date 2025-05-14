@@ -5,8 +5,8 @@ import Select from "@mui/material/Select";
 import { styled } from "@mui/material/styles";
 
 import { Column } from "@tanstack/react-table";
-import { ColumnMeta, Product } from "../types";
-import SearchPanelRangeFilterInput from "./SearchPanelRangeFilterInput";
+import { ColumnMeta, Product } from "../../types";
+import RangeFilterInput from "./RangeFilterInput";
 // Define the column meta type
 
 const BootstrapInput = styled(InputBase)(({ theme }) => ({
@@ -44,14 +44,14 @@ const BootstrapInput = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function SearchTableHeaderFilter({ column }: { column: Column<Product, unknown> }) {
+export default function ColumnFilters({ column }: { column: Column<Product, unknown> }) {
   const columnFilterValue = column.getFilterValue();
   const colDef = column.columnDef;
   const { minSize, maxSize } = colDef;
   const { filterVariant = "text" } = (colDef.meta || {}) as ColumnMeta;
 
   return filterVariant === "range" ? (
-    <SearchPanelRangeFilterInput column={column} rangeValues={[]} />
+    <RangeFilterInput column={column} rangeValues={[]} />
   ) : filterVariant === "select" ? (
     <Select
       style={{ minWidth: minSize, maxWidth: maxSize, width: "100%", lineHeight: "0.47em" }}

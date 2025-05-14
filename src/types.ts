@@ -159,7 +159,7 @@ export type ProductTableHeader<TData extends RowData> = {
   columnDef: Partial<ColumnDef<TData>>;
 };
 
-export type SearchPanelToolbarProps = {
+export type TableOptionsProps = {
   table: Table<Product>;
   searchInput: string;
   setSearchInput: Dispatch<SetStateAction<string>>;

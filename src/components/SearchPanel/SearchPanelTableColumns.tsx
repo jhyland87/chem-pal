@@ -2,10 +2,10 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import IconButton from "@mui/material/IconButton";
 import { ColumnDef } from "@tanstack/react-table";
-import { Product, ProductRow } from "../types";
-import { default as Link } from "./TabLink";
+import { Product, ProductRow } from "../../types";
+import { default as Link } from "../TabLink";
 
-export default function SearchPanelTableColumns(): ColumnDef<Product, unknown>[] {
+export default function TableColumns(): ColumnDef<Product, unknown>[] {
   return [
     {
       id: "expander",
