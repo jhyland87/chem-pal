@@ -1,7 +1,6 @@
-import SvgIcon from "@mui/material/SvgIcon";
-import { Props } from "../../types";
+import SvgIcon, { SvgIconProps } from "@mui/material/SvgIcon";
 
-export default function BenzeneIcon<T>(props: Props<T>) {
+export default function BenzeneIcon(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>
       <svg

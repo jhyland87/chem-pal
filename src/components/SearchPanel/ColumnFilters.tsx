@@ -14,7 +14,7 @@ const BootstrapInput = styled(InputBase)(({ theme }) => ({
     width: "100%",
     borderRadius: 0,
     position: "relative",
-    backgroundColor: (theme.vars ?? theme).palette.background.paper,
+    backgroundColor: theme.palette.background.paper,
     border: 0,
     borderBottom: "1px solid #ced4da",
     fontSize: 10,
@@ -78,7 +78,6 @@ export default function ColumnFilters({ column }: { column: Column<Product, unkn
       style={{ minWidth: minSize, maxWidth: maxSize, width: "100%", lineHeight: "0.47em" }}
       id="demo-customized-textbox"
       size="small"
-      variant="standard"
       placeholder="Foo"
     />
 

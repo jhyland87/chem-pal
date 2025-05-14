@@ -10,8 +10,6 @@ function valuetext(value: number) {
   return `${value}°C`;
 }
 
-const ITEM_HEIGHT = 48;
-
 function ValueLabelComponent(props: SliderValueLabelProps) {
   const { children, value } = props;
 

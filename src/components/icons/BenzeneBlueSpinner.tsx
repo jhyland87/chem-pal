@@ -1,11 +1,7 @@
+import { IconSpinnerProps } from "../../types";
 import BenzeneBlueIcon from "./BenzeneBlueIcon";
 
-interface ComponentProps {
-  size?: number;
-  [key: string]: unknown; // Optional: To allow additional props
-}
-
-export default function BenzeneBlueSpinner(props: ComponentProps) {
+export default function BenzeneBlueSpinner(props: IconSpinnerProps) {
   const style = {
     width: "200px",
     height: "200px",
@@ -17,7 +13,6 @@ export default function BenzeneBlueSpinner(props: ComponentProps) {
   }
   return (
     <BenzeneBlueIcon
-      fontSize="large"
       sx={{
         ...style,
         animation: "spin 2s linear infinite",

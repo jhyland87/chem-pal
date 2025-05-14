@@ -40,6 +40,11 @@ export const lightTheme = createTheme({
       defaultProps: {
         dense: true,
       },
+      styleOverrides: {
+        root: {
+          borderRadius: 4,
+        },
+      },
     },
     MuiTableCell: {
       defaultProps: {
@@ -48,7 +53,7 @@ export const lightTheme = createTheme({
       },
       styleOverrides: {
         root: {
-          padding: "6px 16px",
+          padding: [6, 16],
         },
       },
     },
@@ -59,7 +64,38 @@ export const lightTheme = createTheme({
       },
       styleOverrides: {
         root: {
+          //borderRadius: 0,
           //padding: "1px"
+        },
+      },
+    },
+    MuiSpeedDial: {
+      styleOverrides: {
+        root: {
+          position: "fixed",
+          bottom: 6,
+          right: 0,
+        },
+      },
+    },
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          color: "white",
+          fontSize: 12,
+          padding: [4, 8],
+          borderRadius: 4,
+          maxWidth: 200,
+          textAlign: "center",
+          fontFamily: "Arial, sans-serif",
+          fontWeight: "bold",
+          textShadow: "0 0 1pxrgba(0, 0, 0, 0.5)",
+          opacity: 0.8,
+          transition: "opacity 0.3s ease-in-out",
+          "&:hover": {
+            opacity: 1,
+          },
         },
       },
     },
@@ -93,7 +129,28 @@ export const darkTheme = createTheme({
       },
       styleOverrides: {
         root: {
-          padding: "6px 16px",
+          padding: [6, 16],
+        },
+      },
+    },
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          color: "white",
+          fontSize: 12,
+          padding: [4, 8],
+          borderRadius: 4,
+          maxWidth: 200,
+          textAlign: "center",
+          fontFamily: "Arial, sans-serif",
+          fontWeight: "bold",
+          textShadow: "1px 1px 2px rgba(0, 0, 0, 0.5)",
+          opacity: 0.8,
+          transition: "opacity 0.3s ease-in-out",
+          "&:hover": {
+            opacity: 1,
+          },
         },
       },
     },

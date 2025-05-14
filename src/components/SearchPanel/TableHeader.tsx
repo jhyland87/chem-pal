@@ -4,9 +4,8 @@ import { ColumnDef, flexRender, Header, HeaderGroup, Table } from "@tanstack/rea
 import { CSSProperties } from "react";
 import { useSettings } from "../../context";
 import { ColumnMeta, Product } from "../../types";
-import ColumnFilters from "./ColumnFilters";
 
-export default function SearchTableHeader({ table }: { table: Table<Product> }) {
+export default function TableHeader({ table }: { table: Table<Product> }) {
   const settingsContext = useSettings();
 
   // Get the type of columns filterVariant, and create an object for storing the
@@ -126,12 +125,6 @@ export default function SearchTableHeader({ table }: { table: Table<Product> }) 
                         ),
                       }[header.column.getIsSorted() as string] ?? null}
                     </div>
-
-                    {settingsContext.settings.showColumnFilters && header.column.getCanFilter() ? (
-                      <div>
-                        <ColumnFilters column={header.column} />
-                      </div>
-                    ) : null}
                   </>
                 )}
               </th>

@@ -107,3 +107,20 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
   ];
 }
+
+export function getColumnFilterConfig() {
+  const filterableColumns = TableColumns().reduce<
+    Record<string, { filterVariant: string; filterData: unknown[] }>
+  >((accu, column: ColumnDef<Product, unknown>) => {
+    const meta = column.meta as { filterVariant?: string };
+    if (meta?.filterVariant === undefined || !column.id) return accu;
+
+    accu[column.id] = {
+      filterVariant: meta.filterVariant,
+      filterData: [],
+    };
+    return accu;
+  }, {});
+
+  return filterableColumns;
+}

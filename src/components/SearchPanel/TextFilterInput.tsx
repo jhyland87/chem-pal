@@ -17,7 +17,7 @@ export default function TextFilterInput({ column, ...props }: FilterInputProps) 
           }}
           //value={props.value}
           variant="standard"
-          //onChange={props.onChange}
+          onChange={props.onChange}
           sx={{
             paddingTop: "0px",
             paddingBottom: "0px",

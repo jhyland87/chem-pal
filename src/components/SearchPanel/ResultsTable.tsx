@@ -19,8 +19,8 @@ import SupplierFactory from "../../suppliers/supplier_factory";
 import { Product, ProductTableProps } from "../../types";
 import LoadingBackdrop from "../LoadingBackdrop";
 import Pagination from "./Pagination";
-import SearchTableHeader from "./SearchTableHeader";
-import TableColumns from "./TableColumns";
+import TableColumns, { getColumnFilterConfig } from "./TableColumns";
+import TableHeader from "./TableHeader";
 import TableOptions from "./TableOptions";
 let fetchController: AbortController;
 
@@ -35,9 +35,6 @@ export default function ResultsTable({
   const [showSearchResults, setShowSearchResults] = useState<Product[]>([]);
   const [, setStatusLabel] = useState<string | boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  console.log("ResultsTable columns:", TableColumns());
-  console.log("ResultsTable columnFilterFns:", columnFilterFns);
 
   useEffect(() => {
     if (!isEmpty(settingsContext.settings.hideColumns)) {
@@ -80,6 +77,25 @@ export default function ResultsTable({
     setStatusLabel(searchResults.length === 0 ? "Search aborted" : "");
   };
 
+  /*
+  function getColumnFilterConfig() {
+    const filterableColumns = table.options.columns.reduce<
+      Record<string, { filterVariant: string; filterData: unknown[] }>
+    >((accu, column: ColumnDef<Product, unknown>) => {
+      const meta = column.meta as ColumnMeta | undefined;
+      if (meta?.filterVariant === undefined || !column.id) return accu;
+
+      accu[column.id] = {
+        filterVariant: meta.filterVariant,
+        filterData: [],
+      };
+      return accu;
+    }, {});
+
+    return filterableColumns;
+  }
+    */
+
   async function executeSearch(query: string) {
     if (!query.trim()) {
       return;
@@ -88,6 +104,10 @@ export default function ResultsTable({
 
     setSearchResults([]);
     setStatusLabel("Searching...");
+
+    // This stores what type of filter each column has. Well build this object
+    // up as we iterate over the columns.
+    const columnFilterConfig = getColumnFilterConfig();
 
     // Abort controller specific to this query
     fetchController = new AbortController();
@@ -114,6 +134,43 @@ export default function ResultsTable({
       // Add each product to the table.
       console.debug("newProduct:", result);
 
+      for (const [columnName, columnValue] of Object.entries(result)) {
+        if (columnName in columnFilterConfig === false) continue;
+
+        if (columnFilterConfig[columnName].filterVariant === "range") {
+          // For range filters, we only want the highest and lowest. So compare the columnValue
+          // with the first and second values in the filterData array (being lowest and highest
+          // values respectively), updating the values if they are lower or higher.
+          if (typeof columnValue !== "number") continue;
+
+          // Skip values that are less than the min value
+          if (
+            typeof columnFilterConfig[columnName].filterData[0] !== "number" ||
+            columnValue < columnFilterConfig[columnName].filterData[0]
+          ) {
+            columnFilterConfig[columnName].filterData[0] = columnValue;
+          } else if (
+            typeof columnFilterConfig[columnName].filterData[1] !== "number" ||
+            columnValue < columnFilterConfig[columnName].filterData[1]
+          ) {
+            columnFilterConfig[columnName].filterData[1] = columnValue;
+          }
+          // TODO: Implement range filter
+        } else if (columnFilterConfig[columnName].filterVariant === "select") {
+          // For select filters, we only want the unique values, so we verify  the columnValue
+          // is not already in the filterData array before adding it.
+          if (!columnFilterConfig[columnName].filterData.includes(columnValue)) {
+            columnFilterConfig[columnName].filterData.push(columnValue);
+          }
+        } else if (columnFilterConfig[columnName].filterVariant === "text") {
+          // Not sure what the best filter for text values are, but we can just add the unique
+          // values for now, maybe we cna use it for an autocomplete feature?..
+          if (!columnFilterConfig[columnName].filterData.includes(columnValue)) {
+            columnFilterConfig[columnName].filterData.push(columnValue);
+          }
+        }
+      }
+
       // Hide the status label thing
       setStatusLabel(false);
 
@@ -127,6 +184,10 @@ export default function ResultsTable({
         },
       ]);
     }
+
+    // Now columnFilterConfig can be used for filtering the results based off of column data.
+    //console.log("columnFilterConfig:", columnFilterConfig);
+
     const endSearchTime = performance.now();
     const searchTime = endSearchTime - startSearchTime;
 
@@ -222,7 +283,7 @@ export default function ResultsTable({
               minHeight: "275px",
             }}
           >
-            <SearchTableHeader table={table} />
+            <TableHeader table={table} />
             <tbody>
               {table.getRowModel().rows.map((row) => {
                 return (

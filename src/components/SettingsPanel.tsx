@@ -1,9 +1,11 @@
+import { FormControl } from "@mui/material";
 import Button from "@mui/material/Button";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import Divider from "@mui/material/Divider";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormGroup from "@mui/material/FormGroup";
 import FormHelperText from "@mui/material/FormHelperText";
+import InputLabel from "@mui/material/InputLabel";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
@@ -14,8 +16,8 @@ import Stack from "@mui/material/Stack";
 import Switch from "@mui/material/Switch";
 import TextField from "@mui/material/TextField";
 import { ChangeEvent, MouseEvent } from "react";
+import { currencies, locations } from "../../config.json";
 import { useSettings } from "../context";
-
 const inputStyle = {
   width: 120,
   size: "small",
@@ -27,6 +29,7 @@ const displayHelperOnHover = {
   "& > .MuiFormHelperText-root": {
     transition: "visibility 0s, opacity 0.5s linear",
     visibility: "hidden",
+    paddingRight: 3,
     opacity: 0,
   },
   "&:hover > .MuiFormHelperText-root": {
@@ -131,200 +134,146 @@ export default function SettingsPanel() {
         <ListItem sx={displayHelperOnHover}>
           <ListItemText primary="Currency" />
           <FormHelperText>Convert all currency to this</FormHelperText>
-          <FormControlLabel
-            control={
-              <Select
-                value={settingsContext.settings.currency}
-                onChange={handleInputChange}
-                name="currency"
-                label="currency"
-                size="small"
-                sx={{ ...inputStyle }}
-              >
-                <MenuItem value="usd">USD ($)</MenuItem>
-                <MenuItem value="eur">EUR (€)</MenuItem>
-                <MenuItem value="gbp">GBP (£)</MenuItem>
-                <MenuItem value="aud">AUD ($)</MenuItem>
-                <MenuItem value="rub">RUB (₽)</MenuItem>
-                <MenuItem value="cad">CAD ($)</MenuItem>
-                <MenuItem value="inr">INR (₹)</MenuItem>
-                <MenuItem value="rub">RUB (₽)</MenuItem>
-                <MenuItem value="cny">CNY (¥)</MenuItem>
-                <MenuItem value="brl">BRL (R$)</MenuItem>
-                <MenuItem value="mxn">MXN (MX$)</MenuItem>
-                <MenuItem value="zar">ZAR (R)</MenuItem>
-                <MenuItem value="jpy">JPY (¥)</MenuItem>
-              </Select>
-            }
-            labelPlacement="start"
-            label=""
-          />
+          <FormControl>
+            <InputLabel id="currency-select-label">Currency</InputLabel>
+            <Select
+              labelId="currency-select-label"
+              value={settingsContext.settings.currency}
+              onChange={handleInputChange}
+              name="currency"
+              label="currency"
+              size="small"
+              sx={{ ...inputStyle }}
+            >
+              {Object.entries(currencies).map(([currencyId, { symbol }]) => (
+                <MenuItem key={currencyId} value={currencyId}>
+                  {currencyId.toUpperCase()} ({symbol})
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </ListItem>
         <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Location" />
+          <ListItemText primary="location" />
           <FormHelperText>Your country</FormHelperText>
-          <FormControlLabel
-            control={
-              <Select
-                value={settingsContext.settings.location}
-                onChange={handleInputChange}
-                name="location"
-                label="location"
-                size="small"
-                sx={{ ...inputStyle }}
-              >
-                <MenuItem value="">
-                  <i>None</i>
+          <FormControl>
+            <InputLabel id="location-select-label">Location</InputLabel>
+            <Select
+              labelId="location-select-label"
+              value={settingsContext.settings.location}
+              onChange={handleInputChange}
+              name="location"
+              label="location"
+              size="small"
+              sx={{ ...inputStyle }}
+            >
+              <MenuItem value="">
+                <i>None</i>
+              </MenuItem>
+              {Object.entries(locations).map(([locationId, { name }]) => (
+                <MenuItem key={locationId} value={locationId}>
+                  {name}
                 </MenuItem>
-                <MenuItem value="usa">USA</MenuItem>
-                <MenuItem value="canada">Canada</MenuItem>
-                <MenuItem value="uk">UK</MenuItem>
-                <MenuItem value="australia">Australia</MenuItem>
-                <MenuItem value="newzealand">New Zealand</MenuItem>
-                <MenuItem value="japan">Japan</MenuItem>
-                <MenuItem value="china">China</MenuItem>
-                <MenuItem value="india">India</MenuItem>
-                <MenuItem value="russia">Russia</MenuItem>
-                <MenuItem value="germany">Germany</MenuItem>
-                <MenuItem value="europe">Europe</MenuItem>
-              </Select>
-            }
-            labelPlacement="start"
-            label=""
-          />
+              ))}
+            </Select>
+          </FormControl>
         </ListItem>
+
         <ListItem sx={displayHelperOnHover}>
           <ListItemText primary="Ships to Location" />
           <FormHelperText>Only show products that ship to your location</FormHelperText>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={
-                  !!settingsContext.settings.location && settingsContext.settings.shipsToMyLocation
-                }
-                disabled={settingsContext.settings.location === ""}
-                onChange={handleSwitchChange}
-                name="shipsToMyLocation"
-              />
-            }
-            labelPlacement="start"
-            label=""
-          />
+          <FormControl>
+            <Switch
+              checked={
+                !!settingsContext.settings.location && settingsContext.settings.shipsToMyLocation
+              }
+              disabled={settingsContext.settings.location === ""}
+              onChange={handleSwitchChange}
+              name="shipsToMyLocation"
+            />
+          </FormControl>
         </ListItem>
         <ListItem sx={displayHelperOnHover}>
           <ListItemText primary="Foo" />
           <FormHelperText>Just an input example</FormHelperText>
-          <FormControlLabel
-            control={
-              <TextField
-                value={settingsContext.settings.foo}
-                name="foo"
-                onChange={handleInputChange}
-                //hiddenLabel
-                variant="filled"
-                size="small"
-                sx={{ ...inputStyle }}
-              />
-            }
-            labelPlacement="start"
-            label=""
-          />
+          <FormControl>
+            <TextField
+              value={settingsContext.settings.foo}
+              label="Foo"
+              name="foo"
+              onChange={handleInputChange}
+              //hiddenLabel
+              variant="filled"
+              size="small"
+              sx={{ ...inputStyle }}
+            />
+          </FormControl>
         </ListItem>
         <Divider variant="middle" component="li" />
-      </List>
-      <List
-        sx={{ width: "100%", bgcolor: "background.paper", color: "text.primary" }}
-        component="nav"
-        aria-labelledby="nested-list-subheader"
-        subheader={
-          <ListSubheader component="label" id="nested-list-subheader">
-            Display
-          </ListSubheader>
-        }
-      >
+        <ListSubheader component="label" id="nested-list-subheader">
+          Display
+        </ListSubheader>
         <ListItem sx={displayHelperOnHover}>
           <ListItemText primary="Popup Size" />
           <FormHelperText>Popup size</FormHelperText>
-          <FormControlLabel
-            control={
-              <ButtonGroup
-                variant="contained"
-                aria-label="Basic button group"
-                onClick={handleButtonClick}
+          <FormControl>
+            <ButtonGroup
+              variant="contained"
+              aria-label="Basic button group"
+              onClick={handleButtonClick}
+            >
+              <Button
+                name="popupSize"
+                value="small"
+                size="small"
+                variant={settingsContext.settings.popupSize === "small" ? "contained" : "text"}
               >
-                <Button
-                  name="popupSize"
-                  value="small"
-                  size="small"
-                  variant={settingsContext.settings.popupSize === "small" ? "contained" : "text"}
-                >
-                  Small
-                </Button>
-                <Button
-                  name="popupSize"
-                  value="medium"
-                  size="small"
-                  variant={settingsContext.settings.popupSize === "medium" ? "contained" : "text"}
-                >
-                  Medium
-                </Button>
-                <Button
-                  name="popupSize"
-                  value="large"
-                  size="small"
-                  variant={settingsContext.settings.popupSize === "large" ? "contained" : "text"}
-                >
-                  Large
-                </Button>
-              </ButtonGroup>
-            }
-            labelPlacement="start"
-            label=""
-          />
+                Small
+              </Button>
+              <Button
+                name="popupSize"
+                value="medium"
+                size="small"
+                variant={settingsContext.settings.popupSize === "medium" ? "contained" : "text"}
+              >
+                Medium
+              </Button>
+              <Button
+                name="popupSize"
+                value="large"
+                size="small"
+                variant={settingsContext.settings.popupSize === "large" ? "contained" : "text"}
+              >
+                Large
+              </Button>
+            </ButtonGroup>
+          </FormControl>
         </ListItem>
         <ListItem sx={displayHelperOnHover}>
           <ListItemText primary="Auto-Resize" />
           <FormHelperText>More results = larger window</FormHelperText>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={settingsContext.settings.autoResize}
-                onChange={handleSwitchChange}
-                name="autoResize"
-              />
-            }
-            labelPlacement="start"
-            label=""
+          <Switch
+            checked={settingsContext.settings.autoResize}
+            onChange={handleSwitchChange}
+            name="autoResize"
           />
         </ListItem>
         <ListItem sx={displayHelperOnHover}>
           <ListItemText primary="Some Setting" />
           <FormHelperText id="some-setting-helper-text">Disabled by default</FormHelperText>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={settingsContext.settings.someSetting}
-                onChange={handleSwitchChange}
-                name="someSetting"
-              />
-            }
-            labelPlacement="start"
-            label=""
+          <Switch
+            checked={settingsContext.settings.someSetting}
+            onChange={handleSwitchChange}
+            name="someSetting"
           />
         </ListItem>
         <ListItem sx={displayHelperOnHover}>
           <ListItemText primary="Show Helpful Tips" />
           <FormHelperText id="some-setting-helper-text">Show help in tooltips</FormHelperText>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={settingsContext.settings.showHelp}
-                onChange={handleSwitchChange}
-                name="showHelp"
-              />
-            }
-            labelPlacement="start"
-            label=""
+          <Switch
+            checked={settingsContext.settings.showHelp}
+            onChange={handleSwitchChange}
+            name="showHelp"
           />
         </ListItem>
         <Divider component="li" />

@@ -30,6 +30,12 @@ export default function TabHeader({
 
   return (
     <Tabs
+      sx={{
+        "& .MuiTabs-indicator": {
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
+        },
+        borderRadius: 0,
+      }}
       value={page}
       onChange={handleChange}
       indicatorColor="secondary"

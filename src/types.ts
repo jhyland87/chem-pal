@@ -1,9 +1,10 @@
+import { SelectChangeEvent } from "@mui/material/Select";
 import { Column, ColumnDef, ColumnFiltersState, Row, RowData, Table } from "@tanstack/react-table";
 import {
   ChangeEvent,
   ChangeEventHandler,
+  CSSProperties,
   Dispatch,
-  EventHandler,
   ReactElement,
   ReactNode,
   SetStateAction,
@@ -193,16 +194,13 @@ export type FilterInputProps = {
   children?: ReactNode;
   rangeValues?: string[] | number[];
   label?: string;
-  onChange?:
-    | ChangeEventHandler<HTMLSelectElement>
-    | ChangeEvent<HTMLInputElement>
-    | ChangeEvent<HTMLSelectElement>
-    | ChangeEventHandler<HTMLInputElement>
-    | EventHandler<ChangeEvent<HTMLInputElement>>
-    | EventHandler<ChangeEvent<HTMLSelectElement>>
-    | ((value: string) => void)
-    | unknown
-    | any;
+  onChange?: (
+    event:
+      | SelectChangeEvent<string>
+      | ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+      | ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>
+      | undefined,
+  ) => void;
   value?: string;
   props?: Record<string, unknown>;
 };
@@ -211,9 +209,15 @@ export type ColumnMeta = {
   filterVariant?: "range" | "select" | "text";
   uniqueValues?: string[];
   rangeValues?: number[];
+  style?: CSSProperties;
 };
 
 export interface Props<T> {
   data: T[];
   renderItem: (item: T) => React.ReactNode;
+}
+
+export interface IconSpinnerProps {
+  size?: number;
+  [key: string]: unknown; // Optional: To allow additional props
 }

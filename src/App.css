@@ -6,7 +6,7 @@ html {
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 0;
   text-align: center;
   vertical-align: top;
   min-width: 800px;
