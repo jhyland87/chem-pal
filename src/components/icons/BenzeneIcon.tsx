@@ -1,5 +1,5 @@
 import SvgIcon from "@mui/material/SvgIcon";
-import { Props } from "../types";
+import { Props } from "../../types";
 
 export default function BenzeneIcon<T>(props: Props<T>) {
   return (

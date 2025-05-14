@@ -18,7 +18,6 @@ import storageMock from "./mocks/chrome_storage_mock";
 import SupplierFactory from "./suppliers/supplier_factory";
 import { darkTheme, lightTheme } from "./themes";
 import { Settings } from "./types";
-//import SvgIcon from '@mui/material/SvgIcon';
 
 if (!chrome.storage) {
   console.debug("!!! chrome.storage not found, using mock - may result in unexpected behavior !!!");

@@ -17,7 +17,6 @@ import { CSSProperties, Fragment, ReactElement, useEffect, useState } from "reac
 import { useSettings } from "../context";
 import SupplierFactory from "../suppliers/supplier_factory";
 import { Product, ProductTableProps } from "../types";
-import BenzeneSpinner from "./BenzeneSpinner";
 import LoadingBackdrop from "./LoadingBackdrop";
 import SearchPanelTableColumns from "./SearchPanelTableColumns";
 import SearchPanelToolbar from "./SearchPanelToolbar";
@@ -206,7 +205,6 @@ export default function SearchPanelTable({
     <>
       <LoadingBackdrop open={isLoading} onClick={handleStopSearch} />
       <Paper sx={{ minHeight: "369px", width: "100%", padding: "0px" }}>
-        <BenzeneSpinner size={100} />
         <Box
           className="search-input-container fullwidth"
           component="form"
@@ -225,6 +223,7 @@ export default function SearchPanelTable({
             style={{
               ...columnSizeVars(),
               width: "100%",
+              minHeight: "275px",
             }}
           >
             <SearchTableHeader table={table} />

@@ -46,7 +46,7 @@ export default function SearchPanelTableColumns(): ColumnDef<Product, unknown>[]
         return <Link href={row.original.url}>{row.original.title}</Link>;
       },
       enableHiding: false,
-      minSize: 100,
+      minSize: 220,
       meta: {
         filterVariant: "text",
         style: {
@@ -62,7 +62,7 @@ export default function SearchPanelTableColumns(): ColumnDef<Product, unknown>[]
       meta: {
         filterVariant: "select",
       },
-      minSize: 90,
+      minSize: 150,
     },
     {
       accessorKey: "description",

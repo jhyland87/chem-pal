@@ -1,8 +1,8 @@
 import Backdrop from "@mui/material/Backdrop";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import CircularProgress from "@mui/material/CircularProgress";
 import Fade from "@mui/material/Fade";
+import BenzeneBlueSpinner from "./icons/BenzeneBlueSpinner";
 import "./SearchPanel.css";
 
 export default function LoadingBackdrop(props: { open: boolean; onClick: () => void }) {
@@ -19,7 +19,7 @@ export default function LoadingBackdrop(props: { open: boolean; onClick: () => v
             }}
             unmountOnExit
           >
-            <CircularProgress />
+            <BenzeneBlueSpinner size={100} />
           </Fade>
         </Box>
         <Button
