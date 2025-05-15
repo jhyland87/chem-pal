@@ -17,6 +17,7 @@ import { CSSProperties, Fragment, ReactElement, useEffect, useState } from "reac
 import { useSettings } from "../../context";
 import SupplierFactory from "../../suppliers/SupplierFactory";
 import { Product, ProductTableProps } from "../../types";
+import { extendColumnWithUniqueValues } from "../../utils/tanstack";
 import LoadingBackdrop from "../LoadingBackdrop";
 import Pagination from "./Pagination";
 import TableColumns, { getColumnFilterConfig } from "./TableColumns";
@@ -250,6 +251,9 @@ export default function ResultsTable({
     debugHeaders: false,
     debugColumns: false,
   });
+
+  // Extend columns with getUniqueValues method
+  extendColumnWithUniqueValues(table);
 
   function columnSizeVars() {
     const headers = table.getFlatHeaders();

@@ -2,20 +2,45 @@ import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
 
 import Select, { SelectChangeEvent } from "@mui/material/Select";
-import { ChangeEvent, useState } from "react";
+import { ComponentType, useState } from "react";
 
-import { Chip, ListItemText, TextField, Typography } from "@mui/material";
-import Checkbox from "@mui/material/Checkbox";
+import { Checkbox, Chip, ListItemText, MenuItem, OutlinedInput, Typography } from "@mui/material";
 import FormControl from "@mui/material/FormControl";
 import Grid from "@mui/material/Grid";
 import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import OutlinedInput from "@mui/material/OutlinedInput";
 import Paper from "@mui/material/Paper";
 import { styled } from "@mui/material/styles";
 
-import Slider, { SliderValueLabelProps } from "@mui/material/Slider";
+import { SliderValueLabelProps } from "@mui/material/Slider";
 import Tooltip from "@mui/material/Tooltip";
+
+import { Table } from "@tanstack/react-table";
+import { CustomColumn, FilterVariantInputProps, Product } from "../../types";
+import { RangeColumnFilter } from "./RangeColumnFilter";
+import { SelectColumnFilter } from "./SelectColumnFilter";
+import { TextColumnFilter } from "./TextColumnFilter";
+
+const filterComponentMap: Record<string, ComponentType<FilterVariantInputProps>> = {
+  text: TextColumnFilter,
+  range: RangeColumnFilter,
+  select: SelectColumnFilter,
+};
+
+function FilterVariantComponent({
+  filterVariant = "text",
+  columnConfig,
+}: {
+  filterVariant: string | undefined;
+  columnConfig: CustomColumn<Product, unknown>;
+}) {
+  const ComponentToRender = filterComponentMap[filterVariant ?? "text"];
+
+  if (!ComponentToRender) {
+    return <div>Filter Component not found: {filterVariant}</div>;
+  }
+
+  return <ComponentToRender columnConfig={columnConfig} />;
+}
 
 function valuetext(value: number) {
   return `${value}°C`;
@@ -66,7 +91,6 @@ const MenuProps = {
 };
 
 const names = ["Product Name", "Supplier", "Description", "Price", "Quantity", "CAS", "etc"];
-const suppliers = ["Supplier 1", "Supplier 2", "Supplier 3", "Supplier 4", "Supplier 5"];
 
 const style = {
   position: "absolute",
@@ -81,21 +105,45 @@ const style = {
   boxShadow: 24,
   p: 4,
 };
-
+/*
+function getUniqueValues(table: Table<Product>) {
+  return table.options.data.reduce((accu: Record<string, (string | number)[]>, row: Product) => {
+    for (const [col, val] of Object.entries(row)) {
+      if (!Array.isArray(accu[col])) accu[col] = [];
+      if (!accu[col].includes(val)) {
+        accu[col].push(val);
+        if (typeof val === "number") {
+          accu[col]?.sort((a, b) => {
+            if (typeof a === "number" && typeof b === "number") {
+              return a - b;
+            }
+            return 0;
+          });
+        }
+      }
+    }
+    return accu;
+  }, {});
+}
+*/
 export default function FilterModal({
   filterModalOpen,
   setFilterModalOpen,
+  table,
 }: {
   filterModalOpen: boolean;
   setFilterModalOpen: (open: boolean) => void;
+  table: Table<Product>;
 }) {
   //const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setFilterModalOpen(true);
+  //const handleOpen = () => setFilterModalOpen(true);
   const handleClose = () => setFilterModalOpen(false);
 
+  console.log("table.getAllLeafColumns():", table.getAllLeafColumns());
+
   const [columnVisibility, setColumnVisibility] = useState<string[]>([]);
-  const [productNameFilter, setProductNameFilter] = useState<string>("");
-  const [suppliersFilter, setSuppliersFilter] = useState<string[]>([]);
+  //const [productNameFilter, setProductNameFilter] = useState<string>("");
+  //const [suppliersFilter, setSuppliersFilter] = useState<string[]>([]);
 
   const handleColumnVisibilityChange = (event: SelectChangeEvent<typeof columnVisibility>) => {
     const {
@@ -107,49 +155,50 @@ export default function FilterModal({
     );
   };
 
-  const handleProductNameFilterChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const {
-      target: { value },
-    } = event;
-    setProductNameFilter(value);
-  };
+  //const handleProductNameFilterChange = (event: ChangeEvent<HTMLInputElement>) => {
+  //  const {
+  //    target: { value },
+  //  } = event;
+  //  setProductNameFilter(value);
+  //};
 
-  const handleSuppliersFilterChange = (event: SelectChangeEvent<typeof suppliersFilter>) => {
-    const {
-      target: { value },
-    } = event;
-    setSuppliersFilter(
-      // On autofill we get a stringified value.
-      typeof value === "string" ? value.split(",") : value,
-    );
-  };
+  //const handleSuppliersFilterChange = (event: SelectChangeEvent<typeof suppliersFilter>) => {
+  //  const {
+  //    target: { value },
+  //  } = event;
+  //  setSuppliersFilter(
+  // On autofill we get a stringified value.
+  //    typeof value === "string" ? value.split(",") : value,
+  //  );
+  //};
 
-  const [quantityRange, setQuantityRange] = useState<number[]>([20, 37]);
-  const handleQuantityChange = (event: Event, newValue: number[]) => {
-    setQuantityRange(newValue);
-  };
-  const MAX = 100;
-  const MIN = 0;
-  const marks = [
-    {
-      value: MIN,
-      label: "",
-    },
-    {
-      value: MAX,
-      label: "",
-    },
-  ];
-  const [priceRange, setPriceRange] = useState<number[]>([20, 37]);
-  const handlePriceChange = (event: Event, newValue: number[]) => {
-    setPriceRange(newValue);
-  };
+  //const [quantityRange, setQuantityRange] = useState<number[]>([20, 37]);
+  //const handleQuantityChange = (event: Event, newValue: number[]) => {
+  //  setQuantityRange(newValue);
+  //};
+  //const MAX = 100;
+  //const MIN = 0;
+  //const marks = [
+  //  {
+  //    value: MIN,
+  //    label: "",
+  //  },
+  //  {
+  //    value: MAX,
+  //    label: "",
+  //  },
+  //];
+  //const [priceRange, setPriceRange] = useState<number[]>([20, 37]);
+  //const handlePriceChange = (event: Event, newValue: number[]) => {
+  //  setPriceRange(newValue);
+  //};
   /*
   const [rangeValue, setRangeValue] = React.useState<number[]>([MIN, MAX]);
   const handleQuantityChange = (_: Event, newValue: number[]) => {
     setRangeValue(newValue);
   };
   */
+  // Example usage of getUniqueValues
 
   return (
     <div>
@@ -206,138 +255,17 @@ export default function FilterModal({
                 </Select>
               </FormControl>
             </Grid>
-            <Grid size={6}>
-              <FormControl sx={{ m: 0, width: "100%", lineHeight: "1em", fontSize: "1em" }}>
-                <TextField
-                  label="Product Name"
-                  style={{ lineHeight: "1em" }}
-                  id="search-result-product-name-filter"
-                  size="small"
-                  value={productNameFilter}
-                  onChange={handleProductNameFilterChange}
-                />
-              </FormControl>
-            </Grid>
-
-            <Grid size={6}>
-              <FormControl sx={{ m: 0, width: "100%", lineHeight: "1em", fontSize: "1em" }}>
-                <InputLabel
-                  id="search-result-supplier-filter-label"
-                  sx={{ lineHeight: "1em", fontSize: "1em" }}
-                >
-                  Suppliers
-                </InputLabel>
-                <Select
-                  style={{ lineHeight: "1em" }}
-                  labelId="search-result-supplier-filter-label"
-                  id="search-result-supplier-filter"
-                  size="small"
-                  multiple
-                  value={suppliersFilter}
-                  onChange={handleSuppliersFilterChange}
-                  input={<OutlinedInput label="Suppliers" />}
-                  renderValue={(selected) => (
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                      {selected.map((value) => (
-                        <Chip key={value} label={value} />
-                      ))}
-                    </Box>
-                  )}
-                  MenuProps={MenuProps}
-                >
-                  {suppliers.map((name) => (
-                    <MenuItem key={name} value={name}>
-                      <Checkbox checked={suppliersFilter.includes(name)} />
-                      <ListItemText primary={name} />
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid size={6}>
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography
-                  variant="body2"
-                  onClick={() => setQuantityRange([MIN, MAX])}
-                  sx={{ cursor: "pointer", fontSize: "0.8em" }}
-                >
-                  ${MIN}
-                </Typography>
-                <Typography gutterBottom>Price Range</Typography>
-                <Typography
-                  variant="body2"
-                  onClick={() => setQuantityRange([MIN, MAX])}
-                  sx={{ cursor: "pointer", fontSize: "0.8em" }}
-                >
-                  ${MAX}
-                </Typography>
-              </Box>
-              <Slider
-                marks={marks}
-                step={10}
-                value={quantityRange}
-                valueLabelDisplay="auto"
-                min={MIN}
-                max={MAX}
-                aria-label="custom thumb label"
-                style={{
-                  paddingTop: "0px",
-                  paddingBottom: "0px",
-                  paddingLeft: "0px",
-                  paddingRight: "0px",
-                }}
-                slots={{
-                  valueLabel: ValueLabelComponent,
-                }}
-                //aria-label="custom thumb label Small"
-                size="small"
-                getAriaLabel={() => "Price range"}
-                onChange={handleQuantityChange}
-                getAriaValueText={valuetext}
-              />
-            </Grid>
-            <Grid size={6}>
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography
-                  variant="body2"
-                  onClick={() => setPriceRange([MIN, MAX])}
-                  sx={{ cursor: "pointer", fontSize: "0.8em" }}
-                >
-                  ${MIN}
-                </Typography>
-                <Typography gutterBottom>Quantity Range</Typography>
-                <Typography
-                  variant="body2"
-                  onClick={() => setPriceRange([MIN, MAX])}
-                  sx={{ cursor: "pointer", fontSize: "0.8em" }}
-                >
-                  ${MAX}
-                </Typography>
-              </Box>
-              <Slider
-                marks={marks}
-                step={10}
-                value={priceRange}
-                valueLabelDisplay="auto"
-                min={MIN}
-                max={MAX}
-                aria-label="custom thumb label"
-                style={{
-                  paddingTop: "0px",
-                  paddingBottom: "0px",
-                  paddingLeft: "0px",
-                  paddingRight: "0px",
-                }}
-                slots={{
-                  valueLabel: ValueLabelComponent,
-                }}
-                //aria-label="custom thumb label Small"
-                size="small"
-                getAriaLabel={() => "Quantity range"}
-                onChange={handlePriceChange}
-                getAriaValueText={valuetext}
-              />
-            </Grid>
+            {table.getAllColumns().map((column: CustomColumn<Product, unknown>) => {
+              if (!column.getCanFilter()) return;
+              return (
+                <Grid size={6} key={column.id}>
+                  <FilterVariantComponent
+                    filterVariant={column.columnDef?.meta?.filterVariant}
+                    columnConfig={column}
+                  />
+                </Grid>
+              );
+            })}
           </Grid>
         </Box>
       </Modal>

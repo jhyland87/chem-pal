@@ -88,6 +88,7 @@ function App() {
     showColumnFilters: true,
     showAllColumns: false,
     hideColumns: ["description", "uom"],
+    columnFilterConfig: {},
   });
 
   // Load the settings from storage.local on the initial component load

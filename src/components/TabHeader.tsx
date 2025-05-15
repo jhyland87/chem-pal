@@ -5,7 +5,6 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import StoreIcon from "@mui/icons-material/Store";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
-
 import { SyntheticEvent } from "react";
 import IconTextFader from "./IconTextFader";
 
@@ -17,16 +16,13 @@ function tabProps(index: number, name: string) {
   };
 }
 
-export default function TabHeader({
-  page,
-  setPage,
-}: {
+type TabHeaderProps = {
   page: number;
   setPage: (page: number) => void;
-}) {
-  const handleChange = (event: SyntheticEvent, newValue: number) => {
-    setPage(newValue);
-  };
+};
+
+export default function TabHeader({ page, setPage }: TabHeaderProps) {
+  const handleChange = (e: SyntheticEvent, newValue: number) => setPage(newValue);
 
   return (
     <Tabs
@@ -44,23 +40,43 @@ export default function TabHeader({
       aria-label="full width tabs example"
     >
       <Tab
-        label={<IconTextFader icon={<SearchIcon />} text="Search" />}
+        label={
+          <IconTextFader text="Search" active={page === 0}>
+            <SearchIcon />
+          </IconTextFader>
+        }
         {...tabProps(0, "search-panel")}
       />
       <Tab
-        label={<IconTextFader icon={<StoreIcon />} text="Search" />}
+        label={
+          <IconTextFader text="Suppliers" active={page === 1}>
+            <StoreIcon />
+          </IconTextFader>
+        }
         {...tabProps(1, "suppliers-panel")}
       />
       <Tab
-        label={<IconTextFader icon={<BookmarkIcon />} text="Favorites" />}
+        label={
+          <IconTextFader text="Favorites" active={page === 2}>
+            <BookmarkIcon />
+          </IconTextFader>
+        }
         {...tabProps(2, "favorites-panel")}
       />
       <Tab
-        label={<IconTextFader icon={<HistoryIcon />} text="History" />}
+        label={
+          <IconTextFader text="History" active={page === 3}>
+            <HistoryIcon />
+          </IconTextFader>
+        }
         {...tabProps(3, "history-panel")}
       />
       <Tab
-        label={<IconTextFader icon={<SettingsIcon />} text="Settings" />}
+        label={
+          <IconTextFader text="Settings" active={page === 4}>
+            <SettingsIcon />
+          </IconTextFader>
+        }
         {...tabProps(4, "settings-panel")}
       />
     </Tabs>

@@ -40,6 +40,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       maxSize: 20,
     },
     {
+      id: "title",
       accessorKey: "title",
       header: () => <span>Title</span>,
       cell: ({ row }: ProductRow) => {

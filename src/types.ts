@@ -37,6 +37,7 @@ export interface Settings {
   showAllColumns: boolean;
   hideColumns: Array<string>;
   showColumnFilters: boolean;
+  columnFilterConfig: Record<string, ColumnMeta>;
 }
 
 export interface Item {
@@ -123,6 +124,7 @@ export interface TabPanelProps {
 export interface SettingsContextProps {
   settings: Settings;
   setSettings: (settings: Settings) => void;
+  //setSetting: (key: string, value: unknown) => void;
 }
 
 export type TableProps<TData extends RowData> = {
@@ -205,19 +207,38 @@ export type FilterInputProps = {
   props?: Record<string, unknown>;
 };
 
+/*
 export type ColumnMeta = {
   filterVariant?: "range" | "select" | "text";
   uniqueValues?: string[];
   rangeValues?: number[];
   style?: CSSProperties;
 };
+*/
 
-export interface Props<T> {
+export interface ColumnMeta {
+  filterVariant?: "range" | "select" | "text";
+  uniqueValues?: string[];
+  rangeValues?: number[];
+  style?: CSSProperties;
+}
+
+export type CustomColumn<TData extends RowData, TValue = unknown> = Column<TData, TValue> & {
+  columnDef: {
+    meta?: ColumnMeta;
+  };
+};
+
+export type Props<T> = {
   data: T[];
   renderItem: (item: T) => React.ReactNode;
-}
+};
 
 export interface IconSpinnerProps {
   size?: number;
   [key: string]: unknown; // Optional: To allow additional props
 }
+
+export type FilterVariantInputProps = {
+  columnConfig: CustomColumn<Product, unknown>;
+};

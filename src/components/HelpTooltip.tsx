@@ -36,7 +36,7 @@ export default function HelpTooltip({
 
     _.delayAction(delay, () => setShowHelp(true));
     _.delayAction(duration, () => setShowHelp(false));
-  }, [settingsContext.settings.showHelp]);
+  }, [delay, duration, settingsContext.settings.showHelp]);
 
   return (
     <Tooltip
