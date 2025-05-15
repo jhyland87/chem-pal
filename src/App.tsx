@@ -14,17 +14,22 @@ import SuppliersPanel from "./components/SuppliersPanel";
 import TabHeader from "./components/TabHeader";
 import TabPanel from "./components/TabPanel";
 import { SettingsContext } from "./context";
-import storageMock from "./mocks/chrome_storage_mock";
-import SupplierFactory from "./suppliers/supplier_factory";
+import "./mocks/chromeStorageMock";
+//import { extensionId } from "../config.json";
+import SupplierFactory from "./suppliers/SupplierFactory";
 import { darkTheme, lightTheme } from "./themes";
 import { Settings } from "./types";
 
-if (!chrome.storage) {
-  console.debug("!!! chrome.storage not found, using mock - may result in unexpected behavior !!!");
-  window.chrome = {
-    storage: storageMock as unknown as typeof chrome.storage,
-  } as unknown as typeof chrome;
-}
+/*
+(function connect() {
+  chrome.runtime.sendMessage(extensionId, { test: "aaa" }, (response: any) => {
+    console.log("Products from supplier:", response);
+  });
+  chrome.runtime
+    .connect({ name: "keepAlive" })
+    .onDisconnect.addListener((data) => console.log("CONNECTED:", data));
+})();
+*/
 
 function App() {
   const theme = useTheme();

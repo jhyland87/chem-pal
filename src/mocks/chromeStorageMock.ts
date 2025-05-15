@@ -3,7 +3,7 @@ type StorageValue = string | number | boolean | object | null;
 type StorageItems = { [key: string]: StorageValue };
 type StorageKeys = string | string[] | { [key: string]: StorageValue };
 
-export default {
+const storageMock = {
   local: {
     get: (keys: StorageKeys) =>
       new Promise<StorageItems>((resolve) => {
@@ -48,3 +48,12 @@ export default {
       }),
   },
 };
+
+if (!chrome.storage) {
+  console.debug("!!! chrome.storage not found, using mock - may result in unexpected behavior !!!");
+  window.chrome = {
+    storage: storageMock as unknown as typeof chrome.storage,
+  } as unknown as typeof chrome;
+}
+
+export default chrome.storage;

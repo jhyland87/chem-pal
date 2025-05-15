@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Chem Crawler",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "A simple React app as a Chrome extension",
   "action": {
     "default_popup": "index.html"

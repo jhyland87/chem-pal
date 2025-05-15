@@ -15,7 +15,7 @@ import {
 import { isEmpty } from "lodash";
 import { CSSProperties, Fragment, ReactElement, useEffect, useState } from "react";
 import { useSettings } from "../../context";
-import SupplierFactory from "../../suppliers/supplier_factory";
+import SupplierFactory from "../../suppliers/supplier.factory";
 import { Product, ProductTableProps } from "../../types";
 import LoadingBackdrop from "../LoadingBackdrop";
 import Pagination from "./Pagination";

@@ -10,7 +10,8 @@
     "lukegeneva.vscode-open-coverage-report",
     "orta.vscode-jest",
     "ms-vscode.test-adapter-converter",
-    "smarschollek.vscode-react-scripts-test-adapter"
+    "smarschollek.vscode-react-scripts-test-adapter",
+    "henrynguyen5-vsc.vsc-nvm"
   ],
   "unwantedRecommendations": []
 }

@@ -29,26 +29,26 @@ export default defineConfig({
       input: {
         main: "./index.html",
       },
-      output: {
-        manualChunks: (id: string) => {
-          if (id.includes("node_modules")) {
-            if (id.includes("lodash")) {
-              return "lodash";
-            }
+      // output: {
+      //   manualChunks: (id: string) => {
+      //     if (id.includes("node_modules")) {
+      //       if (id.includes("lodash")) {
+      //         return "lodash";
+      //       }
 
-            if (id.includes("@mui") || id.includes("@material-ui")) {
-              return "vendor_mui";
-            }
+      //       if (id.includes("@mui") || id.includes("@material-ui")) {
+      //         return "vendor_mui";
+      //       }
 
-            if (id.includes("react")) {
-              return "react";
-            }
+      //       if (id.includes("react")) {
+      //         return "react";
+      //       }
 
-            return "vendor"; // all other package goes here
-          }
-          return "default";
-        },
-      },
+      //       return "vendor"; // all other package goes here
+      //     }
+      //     return "default";
+      //   },
+      // },
     },
   },
 });
