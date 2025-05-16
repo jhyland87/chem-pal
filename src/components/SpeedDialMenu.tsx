@@ -19,7 +19,6 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
   const [, setShowHelp] = useState(false);
 
   useEffect(() => {
-    console.log("settingsContext.settings.showHelp", settingsContext.settings.showHelp);
     if (settingsContext.settings.showHelp === false) return;
 
     _.delayAction(500, () => setShowHelp(true));
@@ -27,7 +26,6 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
   }, [settingsContext.settings.showHelp]);
 
   const handleClearResults = (event: MouseEvent<HTMLAnchorElement>) => {
-    console.debug("clearing results");
     event.preventDefault();
     chrome.storage.local.set({ searchResults: [] });
     settingsContext.setSettings({
@@ -39,43 +37,24 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
   const handleClearCache = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
 
-    const CACHE_VERSION = 1;
-    const CURRENT_CACHES = {
-      query: `query-cache-v${CACHE_VERSION}`,
-    };
-    const expectedCacheNamesSet = new Set(Object.values(CURRENT_CACHES));
     //event.waitUntil(
     caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          console.debug("Deleting cache:", cacheName);
-          return caches.delete(cacheName);
-        }),
-      );
+      return Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
     });
     //);
   };
 
-  const handleSaveResults = (event: MouseEvent<HTMLAnchorElement>) => {
-    console.debug("saving results");
-    event.preventDefault();
-  };
-
   const handleToggleTheme = (event: MouseEvent<HTMLAnchorElement>) => {
-    console.debug("toggling theme");
     event.preventDefault();
 
     settingsContext.setSettings({
       ...settingsContext.settings,
       theme: settingsContext.settings.theme === "light" ? "dark" : "light",
     });
-
-    console.debug("settingsContext.settings.theme", settingsContext.settings.theme);
   };
 
   const [aboutOpen, setAboutOpen] = useState(false);
   const handleAboutOpen = () => setAboutOpen(true);
-  const handleAboutClose = () => setAboutOpen(false);
 
   const actions = [
     { icon: <ClearIcon />, name: "Clear Results", onClick: handleClearResults },

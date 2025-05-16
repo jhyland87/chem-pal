@@ -20,17 +20,6 @@ import SupplierFactory from "./suppliers/SupplierFactory";
 import { darkTheme, lightTheme } from "./themes";
 import { Settings } from "./types";
 
-/*
-(function connect() {
-  chrome.runtime.sendMessage(extensionId, { test: "aaa" }, (response: any) => {
-    console.log("Products from supplier:", response);
-  });
-  chrome.runtime
-    .connect({ name: "keepAlive" })
-    .onDisconnect.addListener((data) => console.log("CONNECTED:", data));
-})();
-*/
-
 function App() {
   const theme = useTheme();
   const [panel, setPanel] = useState(0);
@@ -94,7 +83,6 @@ function App() {
   // Load the settings from storage.local on the initial component load
   useEffect(() => {
     chrome.storage.local.get(["settings", "panel"]).then((data) => {
-      //console.debug('Retrieved storage.local.settings:', data)
       if (data.settings) setSettings({ ...data.settings });
       if (data.panel) setPanel(data.panel);
     });
@@ -102,9 +90,7 @@ function App() {
 
   // Save the settings to storage.local when the settings change
   useEffect(() => {
-    //console.debug('Updating storage.local.settings to:', settings)
     chrome.storage.local.set({ settings, panel });
-    console.debug("settings updated:", settings);
     setCurrentTheme(settings.theme === "light" ? lightTheme : darkTheme);
   }, [settings, panel]);
 

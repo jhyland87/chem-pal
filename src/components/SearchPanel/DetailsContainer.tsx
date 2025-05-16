@@ -8,29 +8,14 @@ import TableRow from "@mui/material/TableRow";
 import { gen, sample } from "testcheck";
 import { ProductRow } from "../../types";
 
-const variantGen = gen.object({
+const detailsGen = gen.object({
   title: gen.alphaNumString,
   description: gen.alphaNumString,
   price: gen.int,
   quantity: gen.int,
 });
 
-console.log("variantGen:", sample(variantGen));
-
-const rows = sample(variantGen);
-
-/*export default function DetailsContainer({ row }: ProductRow) {
-  return (
-    <pre style={{ fontSize: "10px" }}>
-      <code>{JSON.stringify(row.original, null, 2)}</code>
-    </pre>
-  );
-}
-head:
-background-color: #bebcbc;
-
-background-color: #e5e5e5;
-*/
+const rows = sample(detailsGen);
 
 export default function DetailsContainer({ row }: ProductRow) {
   return (

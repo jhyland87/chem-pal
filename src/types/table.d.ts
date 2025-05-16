@@ -11,4 +11,12 @@ declare module "@tanstack/react-table" {
     setFilterValueThrottled: (value: TValue) => void;
     setColumnVisibility: (visible: boolean) => void;
   }
+
+  //allows us to define custom properties for our columns
+  interface ColumnMeta {
+    filterVariant?: "text" | "range" | "select";
+    uniqueValues?: string[];
+    rangeValues?: number[];
+    style?: CSSProperties;
+  }
 }

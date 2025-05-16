@@ -79,13 +79,11 @@ export default function FilterModal({
       return accu;
     }, []);
 
-  console.log("COLUMN STATUS:", columnStatus);
   const [columnVisibility, setColumnVisibility] = useState<string[]>(columnStatus);
   const handleColumnVisibilityChange = (event: SelectChangeEvent<typeof columnVisibility>) => {
     const {
       target: { value },
     } = event;
-    console.log("COL VIS CHANGE:", value);
     setColumnVisibility(
       // On autofill we get a stringified value.
       typeof value === "string" ? value.split(",") : value,
