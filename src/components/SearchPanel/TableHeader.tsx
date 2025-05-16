@@ -2,12 +2,9 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import { ColumnDef, flexRender, Header, HeaderGroup, Table } from "@tanstack/react-table";
 import { CSSProperties } from "react";
-import { useSettings } from "../../context";
 import { ColumnMeta, Product } from "../../types";
 
 export default function TableHeader({ table }: { table: Table<Product> }) {
-  const settingsContext = useSettings();
-
   // Get the type of columns filterVariant, and create an object for storing the
   // necessary filter data to show in the table column filters
   const filterableColumns = table.options.columns.reduce<Record<string, ColumnMeta>>(
@@ -24,8 +21,6 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
     },
     {},
   );
-
-  console.log("filterableColumns:", filterableColumns);
 
   // Now parse teh results to get the filterable values.
   // @todo: This runs every time there's a row updated or added. It would be better to save

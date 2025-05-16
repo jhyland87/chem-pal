@@ -162,6 +162,10 @@ export type ProductTableHeader<TData extends RowData> = {
   columnDef: Partial<ColumnDef<TData>>;
 };
 
+export type FilterVariantComponentProps = {
+  column: CustomColumn<Product, unknown>;
+};
+
 export type TableOptionsProps = {
   table: Table<Product>;
   searchInput: string;
@@ -240,5 +244,6 @@ export interface IconSpinnerProps {
 }
 
 export type FilterVariantInputProps = {
-  columnConfig: CustomColumn<Product, unknown>;
+  column: CustomColumn<Product, unknown>;
+  [key: string]: unknown; // Optional: To allow additional props
 };

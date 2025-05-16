@@ -31,7 +31,12 @@ export default function TableOptions({ table, searchInput, setSearchInput }: Tab
           <SearchInput searchInput={searchInput} setSearchInput={setSearchInput} />
         </Typography>
         <Tooltip title="Filter list">
-          <TuneIcon fontSize="small" onClick={() => setFilterModalOpen(true)} />
+          <TuneIcon
+            fontSize="small"
+            onClick={() => setFilterModalOpen(true)}
+            style={{ marginLeft: 8 }}
+            cursor="pointer"
+          />
         </Tooltip>
       </Toolbar>
       <FilterModal

@@ -7,9 +7,9 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import { FilterVariantInputProps } from "../../types";
+import { FilterVariantInputProps } from "../../../types";
 
-export function RangeColumnFilter({ columnConfig }: FilterVariantInputProps) {
+export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
   function ValueLabelComponent(props: SliderValueLabelProps) {
     const { children, value } = props;
 
@@ -31,19 +31,15 @@ export function RangeColumnFilter({ columnConfig }: FilterVariantInputProps) {
     );
   }
 
-  const columnUniqueValues = columnConfig.getUniqueValues();
-  const columnHeader = columnConfig.getHeaderText();
-
-  const [columnFilterRange, setColumnFilterRange] = useState<number[]>([
-    columnUniqueValues[0] as number,
-    columnUniqueValues[columnUniqueValues.length - 1] as number,
-  ]);
+  const [MIN, MAX] = column.getFullRange();
+  // Trigger the column filter update with a debonce or throttle
+  const [columnFilterRange, setColumnFilterRange] = useState<number[]>([MIN, MAX]);
 
   const handleColumnFilterChange = (event: Event, newValue: number[]) => {
     setColumnFilterRange(newValue);
+    column.setFilterValueDebounced(newValue);
   };
-  const MAX = 100;
-  const MIN = 0;
+  console.log("columnFilterRange", columnFilterRange);
   const marks = [
     {
       value: MIN,
@@ -63,20 +59,20 @@ export function RangeColumnFilter({ columnConfig }: FilterVariantInputProps) {
           onClick={() => setColumnFilterRange([MIN, MAX])}
           sx={{ cursor: "pointer", fontSize: "0.8em" }}
         >
-          ${MIN}
+          {MIN}
         </Typography>
-        <Typography gutterBottom>{columnHeader}</Typography>
+        <Typography gutterBottom>{column.getHeaderText()}</Typography>
         <Typography
           variant="body2"
           onClick={() => setColumnFilterRange([MIN, MAX])}
           sx={{ cursor: "pointer", fontSize: "0.8em" }}
         >
-          ${MAX}
+          {MAX}
         </Typography>
       </Box>
       <Slider
         marks={marks}
-        step={10}
+        //step={10}
         value={columnFilterRange}
         valueLabelDisplay="auto"
         min={MIN}
@@ -93,7 +89,7 @@ export function RangeColumnFilter({ columnConfig }: FilterVariantInputProps) {
         }}
         //aria-label="custom thumb label Small"
         size="small"
-        getAriaLabel={() => `${columnHeader} range`}
+        getAriaLabel={() => `${column.getHeaderText()} range`}
         onChange={handleColumnFilterChange}
         // getAriaValueText={valuetext}
       />
