@@ -1,12 +1,15 @@
-import { Component, captureOwnerStack, ReactNode } from 'react';
+import { captureOwnerStack, Component, ReactNode } from "react";
 
-class ErrorBoundary extends Component<{ children: ReactNode, fallback: ReactNode }, { hasError: boolean }> {
-  constructor(props: { children: ReactNode, fallback: ReactNode }) {
+class ErrorBoundary extends Component<
+  { children: ReactNode; fallback: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode; fallback: ReactNode }) {
     super(props);
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error: Error) {
+  static getDerivedStateFromError() {
     // Update state so the next render will show the fallback UI.
     return { hasError: true };
   }

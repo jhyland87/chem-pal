@@ -1,18 +1,18 @@
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import Checkbox from '@mui/material/Checkbox';
-import Avatar from '@mui/material/Avatar';
-import SupplierFactory from '../suppliers/supplier_factory';
-import { useSettings } from '../context';
+import Avatar from "@mui/material/Avatar";
+import Checkbox from "@mui/material/Checkbox";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemAvatar from "@mui/material/ListItemAvatar";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
+import { useSettings } from "../context";
+import SupplierFactory from "../suppliers/SupplierFactory";
 
 export default function SuppliersPanel() {
   const settingsContext = useSettings();
 
   const handleToggle = (supplierName: string) => () => {
-    const selectedSuppliers = settingsContext.settings.suppliers
+    const selectedSuppliers = settingsContext.settings.suppliers;
     const currentIndex = selectedSuppliers.indexOf(supplierName);
     const newChecked = [...selectedSuppliers];
 
@@ -24,12 +24,12 @@ export default function SuppliersPanel() {
 
     settingsContext.setSettings({
       ...settingsContext.settings,
-      suppliers: newChecked
+      suppliers: newChecked,
     });
   };
 
   return (
-    <List dense sx={{ width: '100%', bgcolor: 'background.paper', color: 'text.primary' }}>
+    <List dense sx={{ width: "100%", bgcolor: "background.paper", color: "text.primary" }}>
       {SupplierFactory.supplierList().map((supplierName) => {
         const labelId = `checkbox-list-secondary-label-${supplierName}`;
         return (
@@ -38,11 +38,11 @@ export default function SuppliersPanel() {
             secondaryAction={
               <Checkbox
                 value={supplierName}
-                edge='end'
+                edge="end"
                 onChange={handleToggle(supplierName)}
                 checked={settingsContext.settings.suppliers.includes(supplierName)}
                 aria-labelledby={labelId}
-                size='small'
+                size="small"
               />
             }
             disablePadding
@@ -54,7 +54,7 @@ export default function SuppliersPanel() {
                   src={`/static/images/avatar/${supplierName}.png`}
                 />
               </ListItemAvatar>
-              <ListItemText id={labelId} primary={supplierName.replace(/^Supplier/, '')} />
+              <ListItemText id={labelId} primary={supplierName.replace(/^Supplier/, "")} />
             </ListItemButton>
           </ListItem>
         );

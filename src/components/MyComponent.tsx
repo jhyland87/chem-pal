@@ -1,15 +1,12 @@
 // MyComponent.jsx
-import React, { useState } from 'react';
-
+import { useState } from "react";
 
 function MyComponent({ initialCount = 0 }: { initialCount?: number }) {
   const [count, setCount] = useState(initialCount);
 
-
   const increment = () => {
     setCount(count + 1);
   };
-
 
   return (
     <div>
@@ -18,6 +15,5 @@ function MyComponent({ initialCount = 0 }: { initialCount?: number }) {
     </div>
   );
 }
-
 
 export default MyComponent;

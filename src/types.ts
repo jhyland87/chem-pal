@@ -1,14 +1,22 @@
-
-import { Dispatch, ReactNode, SetStateAction, ReactElement } from 'react';
-import { CurrencyCode, CurrencySymbol } from './types/currency';
-import { CAS } from './types/cas';
-import { ColumnDef, ColumnFiltersState, Row, RowData } from '@tanstack/react-table';
-export * from './types/quantity'
-export * from './types/cas'
-export * from './types/currency'
+import { SelectChangeEvent } from "@mui/material/Select";
+import { Column, ColumnDef, ColumnFiltersState, Row, RowData, Table } from "@tanstack/react-table";
+import {
+  ChangeEvent,
+  ChangeEventHandler,
+  CSSProperties,
+  Dispatch,
+  ReactElement,
+  ReactNode,
+  SetStateAction,
+} from "react";
+import { CAS } from "./types/cas";
+import { CurrencyCode, CurrencySymbol } from "./types/currency";
+export * from "./types/cas";
+export * from "./types/currency";
+export * from "./types/quantity";
 
 export type HeaderObject = { [key: string]: string };
-export type ChromeStorageItems = { [key: string]: any };
+export type ChromeStorageItems = { [key: string]: string | number | boolean | null | undefined };
 
 export interface Settings {
   searchResultUpdateTs?: string;
@@ -29,6 +37,7 @@ export interface Settings {
   showAllColumns: boolean;
   hideColumns: Array<string>;
   showColumnFilters: boolean;
+  columnFilterConfig: Record<string, ColumnMeta>;
 }
 
 export interface Item {
@@ -42,7 +51,7 @@ export interface Item {
 
 export interface Sku {
   priceInfo: { regularPrice: number[] };
-  variantsMap: { volume: number; 'chemical-grade': string; concentration: string };
+  variantsMap: { volume: number; "chemical-grade": string; concentration: string };
   skuId: string;
   seoName: string;
   inventoryStatus: string;
@@ -71,7 +80,7 @@ export interface Supplier {
   supplierName: string;
   _query: string;
   _products: Array<Product>;
-  _queryResults: Array<any>;
+  _queryResults: Array<Record<string, unknown>>;
   _baseURL: string;
   _controller: AbortController;
   _limit: number;
@@ -103,7 +112,6 @@ export interface Product {
   variants?: Variant[];
 }
 
-
 export interface TabPanelProps {
   children?: ReactNode;
   dir?: string;
@@ -116,58 +124,126 @@ export interface TabPanelProps {
 export interface SettingsContextProps {
   settings: Settings;
   setSettings: (settings: Settings) => void;
+  //setSetting: (key: string, value: unknown) => void;
 }
-
-
 
 export type TableProps<TData extends RowData> = {
-  data: TData[]
-  columns: ColumnDef<TData>[]
-  renderSubComponent: (props: { row: Row<TData> }) => React.ReactElement
-  getRowCanExpand: (row: Row<TData>) => boolean
-  rerender: () => void
-  refreshData: () => void
+  data: TData[];
+  columns: ColumnDef<TData>[];
+  renderSubComponent: (props: { row: Row<TData> }) => React.ReactElement;
+  getRowCanExpand: (row: Row<TData>) => boolean;
+  rerender: () => void;
+  refreshData: () => void;
   //columnFilters: ColumnFiltersState
   //setColumnFilters: (columnFilters: OnChangeFn<ColumnFiltersState>) => void
-  columnFilterFns: [ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>]
-}
+  columnFilterFns: [ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>];
+};
 
 export type ProductTableProps<TData extends RowData> = {
-  columns: ColumnDef<TData, any>[]
-  renderVariants: (props: { row: Row<TData> }) => React.ReactElement
-  getRowCanExpand: (row: Row<TData>) => boolean
+  columns?: ColumnDef<TData, unknown>[];
+  renderVariants: (props: { row: Row<TData> }) => React.ReactElement;
+  getRowCanExpand: (row: Row<TData>) => boolean;
   //columnFilters: ColumnFiltersState
   //setColumnFilters: (columnFilters: OnChangeFn<ColumnFiltersState>) => void
-  columnFilterFns: [ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>]
-}
+  columnFilterFns: [ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>];
+};
 
 export type ProductTableHeader<TData extends RowData> = {
   id: string;
   colSpan: number;
   isPlaceholder: boolean;
-  column: ColumnDef<TData, any>
+  column: ColumnDef<TData, unknown>;
   getCanFilter: () => boolean;
   getCanSort: () => boolean;
   getToggleSortingHandler: () => void;
   getIsSorted: () => string;
-  getContext: () => any;
+  getContext: () => Record<string, unknown>;
   getSize: () => number;
   columnDef: Partial<ColumnDef<TData>>;
-}
+};
 
-export type EnhancedTableToolbarProps = {
-  table: any;
+export type FilterVariantComponentProps = {
+  column: CustomColumn<Product, unknown>;
+};
+
+export type TableOptionsProps = {
+  table: Table<Product>;
   searchInput: string;
   setSearchInput: Dispatch<SetStateAction<string>>;
-}
+};
 
 export type ProductRow = {
-  row: Row<Product>
-}
+  row: Row<Product>;
+};
 
 export type HelpTooltipProps = {
   text: string;
-  children: ReactElement<unknown, any>;
+  children: ReactElement<{ className?: string }>;
   delay?: number;
   duration?: number;
+};
+
+export interface TextOptionFacet {
+  name: string;
+  value: string;
 }
+export interface WixProduct {
+  discountedPrice?: string;
+  price: string;
+  title: string;
+  url: string;
+  textOptionsFacets?: TextOptionFacet[];
+}
+
+export type FilterInputProps = {
+  column?: Column<Product, unknown>;
+  children?: ReactNode;
+  rangeValues?: string[] | number[];
+  label?: string;
+  onChange?: (
+    event:
+      | SelectChangeEvent<string>
+      | ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+      | ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>
+      | undefined,
+  ) => void;
+  value?: string;
+  props?: Record<string, unknown>;
+};
+
+/*
+export type ColumnMeta = {
+  filterVariant?: "range" | "select" | "text";
+  uniqueValues?: string[];
+  rangeValues?: number[];
+  style?: CSSProperties;
+};
+*/
+
+export interface ColumnMeta {
+  filterVariant?: "range" | "select" | "text";
+  uniqueValues?: string[];
+  rangeValues?: number[];
+  style?: CSSProperties;
+}
+
+export type CustomColumn<TData extends RowData, TValue = unknown> = Column<TData, TValue> & {
+  columnDef: {
+    meta?: ColumnMeta;
+  };
+};
+
+export type Props<T> = {
+  data: T[];
+  renderItem: (item: T) => React.ReactNode;
+};
+
+export interface IconSpinnerProps {
+  size?: number;
+  [key: string]: unknown; // Optional: To allow additional props
+}
+
+export type FilterVariantInputProps = {
+  column: CustomColumn<Product, unknown>;
+  [key: string]: unknown; // Optional: To allow additional props
+};

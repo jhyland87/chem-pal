@@ -1,0 +1,17 @@
+{
+  "recommendations": [
+    "yoavbls.pretty-ts-errors",
+    "lcrystal-spider.jsdoc-generator",
+    "kuscamara.remove-unused-imports",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "connorshea.vscode-test-explorer-status-bar",
+    "hbenl.vscode-test-explorer",
+    "lukegeneva.vscode-open-coverage-report",
+    "orta.vscode-jest",
+    "ms-vscode.test-adapter-converter",
+    "smarschollek.vscode-react-scripts-test-adapter",
+    "henrynguyen5-vsc.vsc-nvm"
+  ],
+  "unwantedRecommendations": []
+}

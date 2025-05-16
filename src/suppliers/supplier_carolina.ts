@@ -1,17 +1,48 @@
-import _ from '../lodash';
-import { parseQuantity } from '../helpers/quantity';
-import { parsePrice } from '../helpers/currency';
-import { Sku, Variant, Product, HeaderObject, QuantityObject } from '../types'
-import SupplierBase from './supplier_base'
+import { parsePrice } from "../helpers/currency";
+import { parseQuantity } from "../helpers/quantity";
+import _ from "../lodash";
+import { HeaderObject, Product, QuantityObject } from "../types";
+import SupplierBase from "./supplier_base";
 
 type _productIndexObject = {
   url: string;
   title: string;
   prices: string;
-  count: string
+  count: string;
 };
 
+// Add type definitions at the top of the file after imports
+type SearchParams = {
+  N: string;
+  Nf: string;
+  Nr: string;
+  Nrpp: string;
+  Ntt: string;
+  noRedirect: string;
+  nore: string;
+  question: string;
+  searchExecByFormSubmit: string;
+  tab: string;
+};
 
+type ProductData = {
+  displayName: string;
+  canonicalUrl: string;
+  dataLayer?: {
+    productPrice?: string[];
+  };
+  familyVariyantProductDetails?: {
+    productVariantsResult?: {
+      masterProductBean?: {
+        skus?: Array<{
+          priceInfo?: {
+            regularPrice?: string[];
+          };
+        }>;
+      };
+    };
+  };
+};
 
 /**
  * Carolina.com uses Oracle ATG Commerce as their ecommerce platform.
@@ -50,15 +81,21 @@ type _productIndexObject = {
  * - question: The search query.
  */
 
-export default class SupplierCarolina<T extends Product> extends SupplierBase<T> implements AsyncIterable<T> {
+export default class SupplierCarolina<T extends Product>
+  extends SupplierBase<T>
+  implements AsyncIterable<T>
+{
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = 'Carolina'
+  public readonly supplierName: string = "Carolina";
 
   // Base URL for HTTP(s) requests
-  protected _baseURL: string = 'https://www.carolina.com';
+  protected _baseURL: string = "https://www.carolina.com";
+
+  // Override the type of _queryResults to use our specific type
+  protected _queryResults: Array<_productIndexObject> = [];
 
   // This is a limit to how many queries can be sent to the supplier for any given query.
-  protected _httpRequestHardLimit: number = 50
+  protected _httpRequestHardLimit: number = 50;
 
   // Used to keep track of how many requests have been made to the supplier.
   protected _http_requst_count: number = 0;
@@ -71,61 +108,58 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
   // HTTP headers used as a basis for all queries.
   protected _headers: HeaderObject = {
     //'accept': 'application/json, text/javascript, */*; q=0.01',
-    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-    'accept-language': 'en-US,en;q=0.6',
-    'cache-control': 'no-cache',
-    'pragma': 'no-cache',
-    'sec-ch-ua': '"Brave";v="135\', "Not-A.Brand";v="8\', "Chromium";v="135"',
-    'sec-ch-ua-arch': '"arm"',
-    'sec-ch-ua-full-version-list': '"Brave";v="135.0.0.0\', "Not-A.Brand";v="8.0.0.0\', "Chromium";v="135.0.0.0"',
-    'sec-ch-ua-mobile': '?0',
-    'sec-ch-ua-model': '""',
-    'sec-ch-ua-platform': '"macOS"',
-    'sec-fetch-dest': 'empty',
-    'sec-fetch-mode': 'cors',
-    'sec-fetch-site': 'same-origin',
-    'sec-gpc': '1',
-    'x-requested-with': 'XMLHttpRequest'
-  }
+    accept:
+      "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+    "accept-language": "en-US,en;q=0.6",
+    "cache-control": "no-cache",
+    pragma: "no-cache",
+    "sec-ch-ua": '"Brave";v="135\', "Not-A.Brand";v="8\', "Chromium";v="135"',
+    "sec-ch-ua-arch": '"arm"',
+    "sec-ch-ua-full-version-list":
+      '"Brave";v="135.0.0.0\', "Not-A.Brand";v="8.0.0.0\', "Chromium";v="135.0.0.0"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-model": '""',
+    "sec-ch-ua-platform": '"macOS"',
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin",
+    "sec-gpc": "1",
+    "x-requested-with": "XMLHttpRequest",
+  };
 
   //constructor(query: string, limit: number = 5, controller: AbortController) {
   //  super(query, limit, controller);
   //}
 
   protected _makeQueryUrl(query: string): string {
-    const searchParams: Record<string, any> = {
+    const searchParams: SearchParams = {
       /*
       790004999   Chemicals category ID
       836054137   ACS grade
       471891351   Lab grade
       3929848101  Reagent grade
       */
-      N: 790004999,
-      Nf: 'product.cbsLowPrice|GT 0.0||product.startDate|LTEQ 1.7457984E12||product.startDate|LTEQ 1.7457984E12',
-      Nr: 'AND(product.siteId:100001,OR(product.type:Product),OR(product.catalogId:cbsCatalog))',
-      // Number of products to display
-      Nrpp: 120,
-      // Query string
+      N: "790004999",
+      Nf: "product.cbsLowPrice|GT 0.0||product.startDate|LTEQ 1.7457984E12||product.startDate|LTEQ 1.7457984E12",
+      Nr: "AND(product.siteId:100001,OR(product.type:Product),OR(product.catalogId:cbsCatalog))",
+      Nrpp: "120",
       Ntt: query,
-      noRedirect: true,
-      // No idea
-      nore: 'y',
-      // Query string
+      noRedirect: "true",
+      nore: "y",
       question: query,
-      searchExecByFormSubmit: true,
-      // Products tab
-      tab: 'p'
-    }
-    const url = new URL('/browse/product-search-results', this._baseURL);
+      searchExecByFormSubmit: "true",
+      tab: "p",
+    };
+    const url = new URL("/browse/product-search-results", this._baseURL);
     const params = new URLSearchParams(searchParams);
-    url.search = params.toString()
-    return url.toString()
+    url.search = params.toString();
+    return url.toString();
   }
 
   protected async queryProducts(): Promise<void> {
-    const queryURL = this._makeQueryUrl(this._query)
+    const queryURL = this._makeQueryUrl(this._query);
     //console.debug({ queryURL })
-    const response = await this.httpGet(queryURL)
+    const response = await this.httpGet(queryURL);
 
     if (!response?.ok) {
       throw new Error(`Response status: ${response?.status}`);
@@ -135,99 +169,112 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
     //console.log('resultHTML:', resultHTML)
 
     const parser = new DOMParser();
-    const doc = parser.parseFromString(resultHTML, 'text/html');
+    const doc = parser.parseFromString(resultHTML, "text/html");
 
     if (!doc) {
-      throw new Error('Failed to load product HTML into DOMParser')
+      throw new Error("Failed to load product HTML into DOMParser");
     }
 
-    const productElements: NodeListOf<HTMLElement> = doc.querySelectorAll('div.c-feature-product')
+    const productElements: NodeListOf<HTMLElement> = doc.querySelectorAll("div.c-feature-product");
     //console.log('productElements:', productElements)
 
-    const elementList: _productIndexObject[] = []
+    const elementList: _productIndexObject[] = [];
 
-    const _trimSpaceLike = (txt: string) => txt?.replaceAll(/(^(\\n|\\t|\s)*|(\\n|\\t|\s)*$)/gm, '')
+    const _trimSpaceLike = (txt: string) =>
+      txt?.replaceAll(/(^(\\n|\\t|\s)*|(\\n|\\t|\s)*$)/gm, "");
 
     for (const elem of productElements) {
       elementList.push({
-        title: _trimSpaceLike((elem.querySelector('h3.c-product-title') as HTMLElement)?.innerText),
-        url: _trimSpaceLike((elem.querySelector('a.c-product-link') as HTMLAnchorElement)?.href?.replace(/chrome-extension:\/\/[a-z]+/, '')),
-        prices: _trimSpaceLike((elem.querySelector('p.c-product-price') as HTMLElement)?.innerText),
-        count: _trimSpaceLike((elem.querySelector('p.c-product-total') as HTMLElement)?.innerText)
-      })
+        title: _trimSpaceLike((elem.querySelector("h3.c-product-title") as HTMLElement)?.innerText),
+        url: _trimSpaceLike(
+          (elem.querySelector("a.c-product-link") as HTMLAnchorElement)?.href?.replace(
+            /chrome-extension:\/\/[a-z]+/,
+            "",
+          ),
+        ),
+        prices: _trimSpaceLike((elem.querySelector("p.c-product-price") as HTMLElement)?.innerText),
+        count: _trimSpaceLike((elem.querySelector("p.c-product-total") as HTMLElement)?.innerText),
+      });
     }
 
-    this._queryResults = elementList.slice(0, this._limit)
+    this._queryResults = elementList.slice(0, this._limit);
     //console.log('[queryProducts] this._queryResults:', this._queryResults)
   }
 
-  protected async parseProducts(): Promise<any> {
-    return Promise.all(this._queryResults.map((result) => this._getProductData(result)))
-    //.then(results => console.debug('[parseProducts]:', { results, queryResults: this._queryResults }))
+  protected async parseProducts(): Promise<(Product | void)[]> {
+    return Promise.all(this._queryResults.map((result) => this._getProductData(result)));
   }
 
-  protected async _getProductData(productIndexObject: _productIndexObject): Promise<Product | void> {
+  protected async _getProductData(
+    productIndexObject: _productIndexObject,
+  ): Promise<Product | void> {
     try {
-      const response = await this.httpGet(`https://www.carolina.com${productIndexObject.url}`)
+      const response = await this.httpGet(`https://www.carolina.com${productIndexObject.url}`);
       if (!response?.ok) {
         throw new Error(`Response status: ${response?.status}`);
       }
 
       const data = await response.text();
       const parser = new DOMParser();
-      const doc = parser.parseFromString(data, 'text/html');
+      const doc = parser.parseFromString(data, "text/html");
       if (!doc) {
-        throw new Error('Failed to load product HTML into DOMParser')
+        throw new Error("Failed to load product HTML into DOMParser");
       }
 
-      let productScriptNonce = doc.querySelector('script[nonce]');
+      const productScriptNonce = doc.querySelector("script[nonce]");
       if (!productScriptNonce) {
-        throw new Error('Failed to find product script nonce')
+        throw new Error("Failed to find product script nonce");
       }
 
       const productScriptNonceText = productScriptNonce.textContent;
       if (!productScriptNonceText) {
-        throw new Error('Failed to find product script nonce text')
+        throw new Error("Failed to find product script nonce text");
       }
 
-      const productScriptNonceTextMatch = productScriptNonceText.match('(?<== )(.*)(?=;\\n)');
+      const productScriptNonceTextMatch = productScriptNonceText.match("(?<== )(.*)(?=;\\n)");
 
       if (!productScriptNonceTextMatch) {
-        throw new Error('Failed to find product script nonce text')
+        throw new Error("Failed to find product script nonce text");
       }
 
-      const productAtgJson = JSON.parse(productScriptNonceTextMatch[0])
+      const productAtgJson = JSON.parse(productScriptNonceTextMatch[0]);
       //console.debug('productAtgJson:', productAtgJson)
 
-      const productData: any = _.result(productAtgJson, 'fetch.response.contents.MainContent[0].atgResponse.response.response');
+      const productData: ProductData = _.result(
+        productAtgJson,
+        "fetch.response.contents.MainContent[0].atgResponse.response.response",
+      );
 
       if (!productData) {
-        throw new Error('Failed to find product data')
+        throw new Error("Failed to find product data");
       }
 
       //console.debug('productData:', productData)
 
-      const quantityMatch: QuantityObject | void = parseQuantity(productData.displayName)
+      const quantityMatch: QuantityObject | void = parseQuantity(productData.displayName);
 
-      if (!quantityMatch)
-        return
+      if (!quantityMatch) return;
       //console.debug('quantityMatch:', quantityMatch)
 
       // The price can be stored at different locations in the productData object. Select them all then
       // choose the first non-undefined, non-null value.
-      const price = _(productData)
-        .at([
-          'dataLayer.productPrice[0]',
-          'familyVariyantProductDetails.productVariantsResult.masterProductBean.skus[0].priceInfo.regularPrice[0]'
-        ])
-        .compact()
-        .result('[0]')
+      const price = (() => {
+        const dataLayerPrice = productData.dataLayer?.productPrice?.[0];
+        if (dataLayerPrice) return dataLayerPrice;
+
+        const variantPrice =
+          productData.familyVariyantProductDetails?.productVariantsResult?.masterProductBean
+            ?.skus?.[0]?.priceInfo?.regularPrice?.[0];
+        if (variantPrice) return variantPrice;
+
+        return undefined;
+      })();
 
       const priceObj = parsePrice(price as string) || {
         price,
         currencyCode: this._productDefaults.currencyCode,
-        currencySymbol: this._productDefaults.currencySymbol
-      }
+        currencySymbol: this._productDefaults.currencySymbol,
+      };
 
       const product = {
         ...this._productDefaults,
@@ -240,8 +287,8 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
         //price: priceObj.price,
         //currencyCode: priceObj.currencyCode,
         //currencySymbol: priceObj.currencySymbol,
-        ...quantityMatch
-      }
+        ...quantityMatch,
+      };
 
       //console.debug('[getProductData] product:', product)
 
@@ -306,11 +353,12 @@ export default class SupplierCarolina<T extends Product> extends SupplierBase<T>
       this._products.push(product as T);
       return product as T;
       */
-
-    }
-    catch (error: any) {
-      console.error(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error(error.message);
+      } else {
+        console.error("An unknown error occurred");
+      }
     }
   }
 }
-

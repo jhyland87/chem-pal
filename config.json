@@ -1,0 +1,94 @@
+{
+  "extensionId": "lddcoaehibbaonkifojgaemjngpfpheg",
+  "locations": {
+    "us": {
+      "name": "United States",
+      "currency": "usd"
+    },
+    "ca": {
+      "name": "Canada",
+      "currency": "cad"
+    },
+    "uk": {
+      "name": "United Kingdom",
+      "currency": "gbp"
+    },
+    "au": {
+      "name": "Australia",
+      "currency": "aud"
+    },
+    "nz": {
+      "name": "New Zealand",
+      "currency": "nzd"
+    },
+    "jp": {
+      "name": "Japan",
+      "currency": "jpy"
+    },
+    "cn": {
+      "name": "China",
+      "currency": "cny"
+    },
+    "in": {
+      "name": "India",
+      "currency": "inr"
+    },
+    "ru": {
+      "name": "Russia",
+      "currency": "rub"
+    },
+    "fin": {
+      "name": "Finland",
+      "currency": "eur"
+    },
+    "de": {
+      "name": "Germany",
+      "currency": "eur"
+    },
+    "other": {
+      "name": "Other",
+      "currency": "usd"
+    }
+  },
+  "currencies": {
+    "usd": {
+      "symbol": "$"
+    },
+    "cad": {
+      "symbol": "$",
+      "aliases": [
+        "CA$"
+      ]
+    },
+    "gbp": {
+      "symbol": "£"
+    },
+    "aud": {
+      "symbol": "AU$"
+    },
+    "nzd": {
+      "symbol": "$",
+      "aliases": [
+        "NZ$"
+      ]
+    },
+    "jpy": {
+      "symbol": "¥"
+    },
+    "cny": {
+      "symbol": "¥",
+      "aliases": [
+        "CNY"
+      ]
+    },
+    "inr": {
+      "symbol": "₹"
+    },
+    "rub": {
+      "symbol": "₽"
+    },
+    "eur": {
+      "symbol": "€"
+    }
+  }
+}
