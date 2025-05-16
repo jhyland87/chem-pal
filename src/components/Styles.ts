@@ -1,8 +1,7 @@
-import { SliderProps } from "@mui/material";
-import FormControl from "@mui/material/FormControl";
+import FormControl, { FormControlProps } from "@mui/material/FormControl";
 import { styled } from "@mui/material/styles";
 
-export const StyledFormControlSelector = styled(FormControl)<SliderProps>(({ theme }) => ({
+export const StyledFormControlSelector = styled(FormControl)<FormControlProps>(({ theme }) => ({
   color: theme.palette.primary.dark,
   fontSize: 14,
   padding: 0,
