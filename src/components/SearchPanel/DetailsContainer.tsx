@@ -15,9 +15,10 @@ const detailsGen = gen.object({
   quantity: gen.int,
 });
 
-const rows = sample(detailsGen);
+const details = sample(detailsGen);
 
 export default function DetailsContainer({ row }: ProductRow) {
+  console.log("row", { row });
   return (
     <TableContainer component={Paper}>
       <Table sx={{ width: "100%" }} size="small" aria-label="a dense table">
@@ -30,14 +31,14 @@ export default function DetailsContainer({ row }: ProductRow) {
           </TableRow>
         </TableHead>
         <TableBody sx={{ bgcolor: "background.paper" }}>
-          {rows.map((row) => (
-            <TableRow key={row.title} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+          {details.map((detail) => (
+            <TableRow key={detail.title} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
               <TableCell component="th" scope="row" align="left">
-                {row.title}
+                {detail.title}
               </TableCell>
-              <TableCell align="left">{row.description}</TableCell>
-              <TableCell align="center">{row.price}</TableCell>
-              <TableCell align="center">{row.quantity}</TableCell>
+              <TableCell align="left">{detail.description}</TableCell>
+              <TableCell align="center">{detail.price}</TableCell>
+              <TableCell align="center">{detail.quantity}</TableCell>
             </TableRow>
           ))}
         </TableBody>

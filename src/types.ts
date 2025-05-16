@@ -211,15 +211,6 @@ export type FilterInputProps = {
   props?: Record<string, unknown>;
 };
 
-/*
-export type ColumnMeta = {
-  filterVariant?: "range" | "select" | "text";
-  uniqueValues?: string[];
-  rangeValues?: number[];
-  style?: CSSProperties;
-};
-*/
-
 export interface ColumnMeta {
   filterVariant?: "range" | "select" | "text";
   uniqueValues?: string[];
