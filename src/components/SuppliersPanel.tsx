@@ -8,9 +8,28 @@ import ListItemText from "@mui/material/ListItemText";
 import { useAppContext } from "../context";
 import SupplierFactory from "../suppliers/SupplierFactory";
 
+/**
+ * SuppliersPanel component that displays a list of available suppliers with toggle functionality.
+ * Each supplier is represented by an avatar and name, with a checkbox to enable/disable them.
+ * The component manages the state of selected suppliers through the application context.
+ *
+ * @component
+ *
+ * @example
+ * ```tsx
+ * <SuppliersPanel />
+ * ```
+ */
 export default function SuppliersPanel() {
   const appContext = useAppContext();
 
+  /**
+   * Handles toggling a supplier's selection state.
+   * Updates the application settings with the new list of selected suppliers.
+   *
+   * @param {string} supplierName - The name of the supplier to toggle
+   * @returns {Function} A callback function that handles the toggle action
+   */
   const handleToggle = (supplierName: string) => () => {
     const selectedSuppliers = appContext.settings.suppliers;
     const currentIndex = selectedSuppliers.indexOf(supplierName);
