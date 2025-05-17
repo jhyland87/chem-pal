@@ -8,7 +8,7 @@ import SpeedDialIcon from "@mui/material/SpeedDialIcon";
 import { MouseEvent, useEffect, useState } from "react";
 import { useSettings } from "../context";
 import _ from "../lodash";
-import AmoutModal from "./AmoutModal";
+import AboutModal from "./AboutModal";
 import HelpTooltip from "./HelpTooltip";
 
 type SpeedDialMenuProps = { speedDialVisibility: boolean };
@@ -66,7 +66,7 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
 
   return (
     <>
-      <AmoutModal aboutOpen={aboutOpen} setAboutOpen={setAboutOpen} />
+      <AboutModal aboutOpen={aboutOpen} setAboutOpen={setAboutOpen} />
       <SpeedDial
         id="speed-dial-menu"
         className={speedDialVisibility ? "speed-dial-menu open" : "speed-dial-menu"}
