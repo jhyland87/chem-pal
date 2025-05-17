@@ -3,7 +3,7 @@ import { HeaderObject, Product } from "../types";
 
 /**
  * The base class for all suppliers.
- * @template T - The type of product to return.
+ * @typeParam T - The type of product to return.
  */
 export default abstract class SupplierBase<T extends Product> implements AsyncIterable<T> {
   // The name of the supplier (used for display name, lists, etc)

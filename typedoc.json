@@ -21,5 +21,16 @@
     "private": false,
     "inherited": true,
     "external": false
-  }
+  },
+  "sourceLinkTemplate": "https://github.com/yourusername/chem-crawler/blob/main/{path}#L{line}",
+  "disableSources": false,
+  "categorizeByGroup": true,
+  "categoryOrder": [
+    "Components",
+    "Hooks",
+    "Utils",
+    "Types",
+    "Context",
+    "*"
+  ]
 }

@@ -4,7 +4,6 @@ import { CAS } from "../types/cas";
  * The regex for a valid CAS number.
  * {@link https://regex101.com/r/xPF1Yp/2 Regex test}
  * {@link https://www.cas.org/training/documentation/chemical-substances/checkdig CAS Standardized format}
- * @type {RegExp}
  */
 export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_checksum>\d)/;
 

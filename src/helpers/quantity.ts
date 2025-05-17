@@ -35,8 +35,6 @@ export const uomAliases: Record<UOM, string[]> = {
  * // { quantity: 1200, uom: 'milliliters' }
  * parseQuantity('1.2 L')
  * // { quantity: 1.2, uom: 'L' }
- *
-
  */
 export function parseQuantity(value: string): QuantityObject | void {
   const quantityPattern = new RegExp(
@@ -85,18 +83,18 @@ export function parseQuantity(value: string): QuantityObject | void {
  *  standardizeUom('lb') // 'pound'
  *  standardizeUom('Grams') // 'gram'
  */
-export function standardizeUom(uomx: string): string | void {
+export function standardizeUom(uom: string): string | void {
   const uomMap = Object.entries(uomAliases).reduce(
-    (acc, [uomx, aliases]) => {
+    (acc, [uom, aliases]) => {
       aliases.forEach((alias) => {
-        acc[alias] = uomx;
+        acc[alias] = uom;
       });
       return acc;
     },
-    { [uomx]: uomx } as Record<string, string>,
+    { [uom]: uom } as Record<string, string>,
   );
 
-  if (uomx.toLowerCase() in uomMap) return uomMap[uomx.toLowerCase()];
+  if (uom.toLowerCase() in uomMap) return uomMap[uom.toLowerCase()];
 }
 
 export function convertToBaseUom(quantity: number, uom: UOM): number {
