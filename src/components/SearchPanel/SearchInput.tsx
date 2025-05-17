@@ -6,11 +6,7 @@ import IconButton from "@mui/material/IconButton";
 import InputBase from "@mui/material/InputBase";
 import Paper from "@mui/material/Paper";
 import { useState } from "react";
-
-type SearchInputStates = {
-  searchInput: string;
-  setSearchInput: (value: string) => void;
-};
+import "./SearchInput.scss";
 
 export default function SearchInput({ searchInput, setSearchInput }: SearchInputStates) {
   const [searchInputValue, setSearchInputValue] = useState<string>(searchInput);
@@ -26,19 +22,21 @@ export default function SearchInput({ searchInput, setSearchInput }: SearchInput
 
   return (
     <>
-      <div className="search-input-container fullwidth" style={{ padding: "none" }}>
+      <div className="search-input-container fullwidth">
         <Paper
+          className="fullwidth search-query-input-form"
           component="form"
           onSubmit={handleSubmit}
-          sx={{ display: "flex", alignItems: "center", width: "100%" }}
+          //sx={{ display: "flex", alignItems: "center", width: "100%" }}
         >
           <IconButton aria-label="menu">
             <MenuIcon />
           </IconButton>
           <InputBase
-            sx={{ ml: 1, flex: 1 }}
+            //sx={{ ml: 1, flex: 1 }}
             value={searchInputValue}
             onChange={handleSearchInputChange}
+            className="search-query-input fullwidth"
             placeholder="Search..."
             inputProps={{ "aria-label": "Search for chemicals" }}
           />

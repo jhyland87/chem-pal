@@ -1,0 +1,11 @@
+.table-options-toolbar {
+  padding-left: 16px;
+  padding-right: 8px;
+  div {
+    flex: 1 1 100%;
+  }
+  .table-options-icon {
+    margin-left: 8px;
+    cursor: pointer;
+  }
+}

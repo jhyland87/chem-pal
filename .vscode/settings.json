@@ -25,17 +25,27 @@
     }
   ],
   "editor.codeActionsOnSave": {
-    "source.organizeImports": "always"
+    "source.organizeImports": "always",
+    "source.sortImports": "always",
   },
   "prettier.experimentalTernaries": true,
   "prettier.printWidth": 100,
   "javascript.preferences.organizeImports": {
-    "enabled": true,
-    "style": "alphabetical"
+    "typeOrder": "auto",
+    "enabled": "explicit",
+    //"style": "alphabetical",
+    "sortOrder": ["lowercaseLetters", "uppercaseLetters"],
+    "grouping": ["moduleSpecifier", "typeAndValue"],
+    "caseFirst": "default"
   },
+
   "typescript.preferences.organizeImports": {
+    "typeOrder": "auto",
     "enabled": true,
-    "style": "alphabetical"
+    //"style": "alphabetical",
+    "sortOrder": ["lowercaseLetters", "uppercaseLetters"],
+    "grouping": ["moduleSpecifier", "typeAndValue"],
+    "caseFirst": "default"
   },
   "[javascript]": {
     "editor.formatOnSave": true,
@@ -52,5 +62,10 @@
   "[typescriptreact]": {
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+  "[scss]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter":"esbenp.prettier-vscode"
+  },
+  "eslint.ignoreUntitled": true
 }

@@ -4,6 +4,7 @@ import IconButton from "@mui/material/IconButton";
 import { ColumnDef } from "@tanstack/react-table";
 import { Product, ProductRow } from "../../types";
 import { default as Link } from "../TabLink";
+import "./TableColumns.scss";
 
 export default function TableColumns(): ColumnDef<Product, unknown>[] {
   return [
@@ -15,11 +16,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
           <IconButton
             size="small"
             onClick={row.getToggleExpandedHandler()}
-            style={{
-              borderRadius: "10%",
-              padding: "2px",
-              cursor: "pointer",
-            }}
+            className="expand-row-details"
           >
             {row.getIsExpanded() ? (
               <ArrowDropDownIcon fontSize="small" />

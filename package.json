@@ -76,6 +76,7 @@
     "jest-transformer-svg": "^2.1.0",
     "prettier": "^3.5.3",
     "react-test-renderer": "^19.1.0",
+    "sass-embedded": "^1.89.0",
     "testcheck": "^1.0.0-rc.2",
     "ts-jest": "^29.3.2",
     "ts-node": "^10.9.2",

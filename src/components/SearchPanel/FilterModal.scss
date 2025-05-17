@@ -1,0 +1,21 @@
+@use "./SearchPanel.scss";
+
+#filter-modal-container {
+  .filter-modal-box {
+    position: absolute;
+    top: 220px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 700px;
+    width: 700px;
+    height: 350px;
+    border: 2px solid #000;
+    box-shadow: 24px;
+    padding: 32px;
+    padding-top: 18px;
+  }
+
+  .modal-modal-title {
+    text-align: center;
+  }
+}

@@ -1,0 +1,24 @@
+@use "./SearchPanel.scss";
+
+#search-results-table-container {
+  min-height: 369px;
+  width: 100%;
+  //padding: 0px;
+  table.search-results {
+    width: 100%;
+    min-height: 275px;
+    tr {
+      td,
+      tr {
+        &:first-child {
+          padding: 0;
+        }
+      }
+    }
+  }
+  .search-input-container {
+    & > :not(style) {
+      margin: 0;
+    }
+  }
+}
