@@ -1,6 +1,6 @@
 {
   "entryPoints": ["./src/**/*.ts", "./src/**/*.tsx"],
-  "plugin": ["@mxssfd/typedoc-theme"],
+  "plugin": ["@mxssfd/typedoc-theme", "typedoc-plugin-rename-defaults"],
   "theme": "default",
   "entryPointStrategy": "expand",
   "out": "docs",
@@ -9,6 +9,10 @@
   "excludePrivate": true,
   "excludeProtected": true,
   "excludeExternals": true,
+  "excludeInternal": true,
+  "excludeNotDocumented": false,
+  "excludeReferences": true,
+  "excludeTags": ["@internal", "@private", "@protected"],
   "includeVersion": true,
   "hideGenerator": true,
   "readme": "README.md",

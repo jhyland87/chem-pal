@@ -38,20 +38,19 @@ type ProductData = {
  * The script is a JSON object that contains the product data.
  *
  * Product search for Carolina.com will query the following URL (with `lithium` as the search query):
- *
- *  https://www.carolina.com/browse/product-search-results? \
- *    product.productTypes=chemicals \
- *    &facetFields=product.productTypes
- *    &defaultFilter=product.cbsLowPrice|GT%200.0||product.startDate|LTEQ%201.7457984E12||product.startDate|LTEQ%201.7457984E12 \
- *    &Nr=AND(product.siteId:100001,OR(product.type:Product),OR(product.catalogId:cbsCatalog)) \
- *    &viewSize=120 \
- *    &q=lithium \
- *    &noRedirect=true \
- *    &nore=y \
- *    &searchExecByFormSubmit=true \
- *    &tab=p \
- *    &question=lithium
- *
+ *  - {@link https://www.carolina.com/browse/product-search-results?
+ * product.productTypes=chemicals&
+ * facetFields=product.productTypes&
+ * defaultFilter=product.cbsLowPrice|GT%200.0||product.startDate|LTEQ%201.7457984E12||product.startDate|LTEQ%201.7457984E12&
+ * Nr=AND%28product.siteId%3A100001%2COR%28product.type%3AProduct%29%2COR%28product.catalogId%3AcbsCatalog%29%29&
+ * viewSize=120&
+ * q=lithium&
+ * noRedirect=true&
+ * nore=y&
+ * searchExecByFormSubmit=true&
+ * tab=p&
+ * question=lithium |test}
+
  * The query params are:
  * - product.productTypes: The product type to search for.
  * - facetFields: The fields to facet on.
