@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { FilterVariantInputProps } from "../../../types";
+import "./RangeColumnFilter.scss";
 
 export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
   function ValueLabelComponent(props: SliderValueLabelProps) {
