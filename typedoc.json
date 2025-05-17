@@ -1,0 +1,25 @@
+{
+  "entryPoints": ["./src/**/*.ts", "./src/**/*.tsx"],
+  "entryPointStrategy": "expand",
+  "out": "docs",
+  "exclude": ["**/node_modules/**", "**/__tests__/**"],
+  "name": "Chem Crawler Documentation",
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeExternals": true,
+  "includeVersion": true,
+  "hideGenerator": true,
+  "readme": "README.md",
+  "theme": "default",
+  "navigationLinks": {
+    "GitHub": "https://github.com/yourusername/chem-crawler"
+  },
+  "searchInComments": true,
+  "sort": ["source-order"],
+  "visibilityFilters": {
+    "protected": true,
+    "private": false,
+    "inherited": true,
+    "external": false
+  }
+}

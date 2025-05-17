@@ -98,7 +98,7 @@ export default class SupplierCarolina<T extends Product>
   protected _httpRequestHardLimit: number = 50;
 
   // Used to keep track of how many requests have been made to the supplier.
-  protected _http_requst_count: number = 0;
+  protected _httpRequstCount: number = 0;
 
   // If using async requests, this will determine how many of them to batch together (using
   // something like Promise.all()). This is to avoid overloading the users bandwidth and

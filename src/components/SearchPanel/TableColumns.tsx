@@ -1,13 +1,38 @@
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
+import BookmarkIcon from "@mui/icons-material/Bookmark";
 import IconButton from "@mui/material/IconButton";
 import { ColumnDef } from "@tanstack/react-table";
 import { Product, ProductRow } from "../../types";
 import { default as Link } from "../TabLink";
 import "./TableColumns.scss";
 
+const BookmarkIconButton = ({ row }: ProductRow) => {
+  return (
+    <IconButton
+      size="small"
+      onClick={() => console.log(row.original)}
+      className="boookmark-icon boookmark-button"
+    >
+      <BookmarkIcon fontSize="small" className="boookmark-button boookmark-icon" />
+    </IconButton>
+  );
+};
 export default function TableColumns(): ColumnDef<Product, unknown>[] {
   return [
+    {
+      id: "bookmark",
+      accessorKey: "bookmark",
+      header: () => null,
+      cell: ({ row }: ProductRow) => <BookmarkIconButton row={row} />,
+      enableHiding: false,
+      enableSorting: false,
+      enableColumnFilter: false,
+      enableResizing: false,
+      size: 3,
+      minSize: 10,
+      maxSize: 10,
+    },
     {
       id: "expander",
       header: () => null,
