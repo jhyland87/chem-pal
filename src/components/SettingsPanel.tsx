@@ -59,6 +59,7 @@ export default function SettingsPanel() {
     });
   };
 
+  /*
   const handleSelectChange = (event: SelectChangeEvent) => {
     console.log({ settingsContext, event, name: event.target.name, value: event.target.value });
     settingsContext.setSettings({
@@ -66,6 +67,7 @@ export default function SettingsPanel() {
       [event.target.name]: event.target.value,
     });
   };
+  */
 
   const handleInputChange = (
     event: SelectChangeEvent | ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,

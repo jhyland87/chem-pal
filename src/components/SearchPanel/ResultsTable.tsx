@@ -20,6 +20,7 @@ import { Product, ProductTableProps } from "../../types";
 import { implementCustomMethods } from "../../utils/tanstack";
 import LoadingBackdrop from "../LoadingBackdrop";
 import Pagination from "./Pagination";
+import "./ResultsTable.scss";
 import TableColumns, { getColumnFilterConfig } from "./TableColumns";
 import TableHeader from "./TableHeader";
 import TableOptions from "./TableOptions";
@@ -269,11 +270,11 @@ export default function ResultsTable({
   return (
     <>
       <LoadingBackdrop open={isLoading} onClick={handleStopSearch} />
-      <Paper sx={{ minHeight: "369px", width: "100%", padding: "0px" }}>
+      <Paper id="search-results-table-container">
         <Box
           className="search-input-container fullwidth"
           component="form"
-          sx={{ "& > :not(style)": { m: 0 } }}
+          //sx={{ "& > :not(style)": { m: 0 } }}
           noValidate
           autoComplete="off"
         />
@@ -281,10 +282,9 @@ export default function ResultsTable({
           <TableOptions table={table} searchInput={searchInput} setSearchInput={setSearchInput} />
           <div className="h-4" />
           <table
+            className="search-results"
             style={{
               ...columnSizeVars(),
-              width: "100%",
-              minHeight: "275px",
             }}
           >
             <TableHeader table={table} />
@@ -293,7 +293,6 @@ export default function ResultsTable({
                 return (
                   <Fragment key={row.id}>
                     <tr>
-                      {/*foo*/}
                       {row.getVisibleCells().map((cell) => {
                         return (
                           <td
@@ -309,7 +308,6 @@ export default function ResultsTable({
                     </tr>
                     {row.getIsExpanded() && (
                       <tr>
-                        {/* 2nd row is a custom 1 cell row */}
                         <td colSpan={row.getVisibleCells().length}>
                           {renderVariants({ row: row as Row<Product> })}
                         </td>
@@ -322,22 +320,6 @@ export default function ResultsTable({
           </table>
           <div className="h-2" />
           <Pagination table={table} />
-          {/*JSON.stringify(
-            {
-              columnSizing: table.getState().columnSizing,
-            },
-            null,
-            2
-          )*/}
-          {/*
-          <pre>
-            {JSON.stringify(
-              { columnFilters: table.getState().columnFilters },
-              null,
-              2
-            )}
-          </pre>
-          */}
         </div>
       </Paper>
     </>

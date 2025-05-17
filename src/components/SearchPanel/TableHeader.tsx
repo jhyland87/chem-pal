@@ -3,6 +3,7 @@ import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import { ColumnDef, flexRender, Header, HeaderGroup, Table } from "@tanstack/react-table";
 import { CSSProperties } from "react";
 import { ColumnMeta, Product } from "../../types";
+import "./TableHeader.scss";
 
 export default function TableHeader({ table }: { table: Table<Product> }) {
   // Get the type of columns filterVariant, and create an object for storing the
@@ -100,24 +101,8 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
                         ? null
                         : flexRender(header.column.columnDef.header, header.getContext())}
                       {{
-                        asc: (
-                          <ArrowDropUpIcon
-                            fontSize="small"
-                            style={{
-                              fontSize: "1rem",
-                              position: "absolute",
-                            }}
-                          />
-                        ),
-                        desc: (
-                          <ArrowDropDownIcon
-                            fontSize="small"
-                            style={{
-                              fontSize: "1rem",
-                              position: "absolute",
-                            }}
-                          />
-                        ),
+                        asc: <ArrowDropUpIcon className="sort-arrow" fontSize="small" />,
+                        desc: <ArrowDropDownIcon className="sort-arrow" fontSize="small" />,
                       }[header.column.getIsSorted() as string] ?? null}
                     </div>
                   </>

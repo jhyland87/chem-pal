@@ -18,13 +18,7 @@ export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
         enterTouchDelay={0}
         placement="top"
         title={value}
-        style={{
-          paddingTop: "0px",
-          paddingBottom: "0px",
-          paddingLeft: "0px",
-          paddingRight: "0px",
-          margin: 0,
-        }}
+        className="range-column-filter-tooltip no-padding"
       >
         {children}
       </Tooltip>
@@ -52,12 +46,12 @@ export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
   ];
 
   return (
-    <FormControl sx={{ m: 0, width: "100%", lineHeight: "1em", fontSize: "1em" }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+    <FormControl className="range-column-filter fullwidth">
+      <Box className="flex-row">
         <Typography
           variant="body2"
           onClick={() => setColumnFilterRange([MIN, MAX])}
-          sx={{ cursor: "pointer", fontSize: "0.8em" }}
+          className="filter-minmax"
         >
           {MIN}
         </Typography>
@@ -65,7 +59,7 @@ export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
         <Typography
           variant="body2"
           onClick={() => setColumnFilterRange([MIN, MAX])}
-          sx={{ cursor: "pointer", fontSize: "0.8em" }}
+          className="filter-minmax"
         >
           {MAX}
         </Typography>
@@ -78,12 +72,7 @@ export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
         min={MIN}
         max={MAX}
         aria-label="custom thumb label"
-        style={{
-          paddingTop: "0px",
-          paddingBottom: "0px",
-          paddingLeft: "0px",
-          paddingRight: "0px",
-        }}
+        className="no-padding"
         slots={{
           valueLabel: ValueLabelComponent,
         }}

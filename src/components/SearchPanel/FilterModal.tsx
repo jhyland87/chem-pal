@@ -1,19 +1,18 @@
-import Box from "@mui/material/Box";
-import Modal from "@mui/material/Modal";
-
-import Divider from "@mui/material/Divider";
-import { SelectChangeEvent } from "@mui/material/Select";
-import { ComponentType, useState } from "react";
-
 import { Button, Typography } from "@mui/material";
+import Box from "@mui/material/Box";
+import Divider from "@mui/material/Divider";
 import Grid from "@mui/material/Grid";
+import Modal from "@mui/material/Modal";
+import { SelectChangeEvent } from "@mui/material/Select";
 import { Table } from "@tanstack/react-table";
+import { ComponentType, useState } from "react";
 import {
   CustomColumn,
   FilterVariantComponentProps,
   FilterVariantInputProps,
   Product,
 } from "../../types";
+import "./FilterModal.scss";
 import ColumnVisibilitySelect from "./Inputs/ColumnVisibilitySelect";
 import RangeColumnFilter from "./Inputs/RangeColumnFilter";
 import SelectColumnFilter from "./Inputs/SelectColumnFilter";
@@ -84,33 +83,20 @@ export default function FilterModal({
   return (
     <div>
       <Modal
+        id="filter-modal-container"
+        className="filter-modal"
         open={filterModalOpen}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
         <Box
+          className="filter-modal-box"
           sx={{
-            position: "absolute",
-            top: 220,
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            maxWidth: 700,
-            width: 700,
-            height: 350,
             bgcolor: "background.paper",
-            border: "2px solid #000",
-            boxShadow: 24,
-            p: 4,
           }}
         >
-          <Typography
-            id="modal-modal-title"
-            gutterBottom={true}
-            variant="h6"
-            component="h2"
-            sx={{ textAlign: "center" }}
-          >
+          <Typography className="modal-modal-title" gutterBottom={true} variant="h6" component="h2">
             Search Result Filters
           </Typography>
           <Grid container spacing={2}>
@@ -133,7 +119,7 @@ export default function FilterModal({
           <Grid container spacing={2}>
             <Divider />
             <Grid size={12}>
-              <Button variant="contained" color="primary" style={{ width: "100%" }}>
+              <Button className="fullwidth" variant="contained" color="primary">
                 Clear All
               </Button>
             </Grid>
