@@ -1,18 +1,76 @@
 import _ from "lodash";
 
 /**
- * Declare the custom method types
+ * Type declarations for custom Lodash methods.
+ * Extends the Lodash interface with additional utility functions.
  */
 declare module "lodash" {
   interface LoDashStatic {
+    /**
+     * Generates an MD5 hash from a string input.
+     * @param inputString - The input string to hash
+     * @returns The MD5 hash as a hexadecimal string
+     */
     md5(inputString: string): string;
+
+    /**
+     * Generates an MD5 hash from any input type.
+     * Handles null, undefined, objects, numbers, and strings.
+     * @param input - The input to hash
+     * @returns The MD5 hash as a hexadecimal string
+     */
     md5sum(input: unknown): string;
+
+    /**
+     * Generates a SHA-256 hash from a string input.
+     * @param message - The message to hash
+     * @returns A promise that resolves to the SHA-256 hash as a hexadecimal string
+     */
     sha256(message: string): Promise<string>;
+
+    /**
+     * Generates a SHA-256 hash from any input type.
+     * Handles null, undefined, objects, numbers, and strings.
+     * @param input - The input to hash
+     * @returns A promise that resolves to the SHA-256 hash as a hexadecimal string
+     */
     sha256sum(input: unknown): Promise<string>;
+
+    /**
+     * Serializes a string to a base64 encoded string.
+     * @param data - The string to serialize
+     * @returns A base64 encoded string
+     */
     serialize(data: string): string;
+
+    /**
+     * Deserializes a base64 encoded string to a string.
+     * @param data - The base64 encoded string to deserialize
+     * @returns The decoded string
+     */
     deserialize(data: string): string;
+
+    /**
+     * Returns the first non-undefined, non-null value from an array.
+     * Similar to MySQL's COALESCE function.
+     * @param data - The array of values to coalesce
+     * @returns The first non-undefined, non-null value, or undefined if none found
+     */
     coalesce(data?: unknown[]): unknown;
+
+    /**
+     * Creates a promise that resolves after the specified number of milliseconds.
+     * @param ms - The number of milliseconds to sleep
+     * @returns A promise that resolves after the specified delay
+     */
     sleep(ms: number): Promise<void>;
+
+    /**
+     * Delays the execution of an action by the specified number of milliseconds.
+     * @param ms - The number of milliseconds to delay
+     * @param action - The action to execute after the delay
+     * @returns A promise that resolves after the action is executed
+     */
     delayAction(ms: number, action: () => void): Promise<void>;
   }
 }
@@ -231,10 +289,21 @@ function coalesce(data: unknown[]): unknown {
   return data.find((item) => item !== undefined && item !== null);
 }
 
+/**
+ * Creates a promise that resolves after the specified number of milliseconds.
+ * @param ms - The number of milliseconds to sleep
+ * @returns A promise that resolves after the specified delay
+ */
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * Delays the execution of an action by the specified number of milliseconds.
+ * @param ms - The number of milliseconds to delay
+ * @param action - The action to execute after the delay
+ * @returns A promise that resolves after the action is executed
+ */
 async function delayAction(ms: number, action: () => void) {
   await sleep(ms);
   action();

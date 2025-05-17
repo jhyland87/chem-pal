@@ -24,6 +24,10 @@
     {
       "tagName": "@todo",
       "syntaxKind": "block"
+    },
+    {
+      "tagName": "@module",
+      "syntaxKind": "block"
     }
   ],
   "supportForTags": {
@@ -32,6 +36,7 @@
     "@param": true,
     "@returns": true,
     "@throws": true,
-    "@todo": true
+    "@todo": true,
+    "@module": true
   }
 }

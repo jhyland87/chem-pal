@@ -7,8 +7,6 @@ export default abstract class SupplierWixBase<T extends Product>
   extends SupplierBase<T>
   implements AsyncIterable<T>
 {
-  public readonly disabled: boolean = true;
-
   protected _accessToken: string = "";
 
   protected async _setup(): Promise<void> {
