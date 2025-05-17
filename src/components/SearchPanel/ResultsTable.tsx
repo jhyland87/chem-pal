@@ -14,7 +14,7 @@ import {
 } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
 import { CSSProperties, Fragment, ReactElement, useEffect, useState } from "react";
-import { useSettings } from "../../context";
+import { useAppContext } from "../../context";
 import SupplierFactory from "../../suppliers/SupplierFactory";
 import { Product, ProductTableProps } from "../../types";
 import { implementCustomMethods } from "../../utils/tanstack";
@@ -31,7 +31,7 @@ export default function ResultsTable({
   getRowCanExpand,
   columnFilterFns,
 }: ProductTableProps<Product>): ReactElement {
-  const settingsContext = useSettings();
+  const appContext = useAppContext();
   const [searchInput, setSearchInput] = useState<string>("");
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [showSearchResults, setShowSearchResults] = useState<Product[]>([]);
@@ -39,10 +39,9 @@ export default function ResultsTable({
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!isEmpty(settingsContext.settings.hideColumns)) {
+    if (!isEmpty(appContext.settings.hideColumns)) {
       table.getAllLeafColumns().map((column: Column<Product>) => {
-        if (settingsContext.settings.hideColumns.includes(column.id))
-          column.toggleVisibility(false);
+        if (appContext.settings.hideColumns.includes(column.id)) column.toggleVisibility(false);
       });
     }
     chrome.storage.local.get(["searchResults", "paginationModel"]).then((data) => {
@@ -59,16 +58,13 @@ export default function ResultsTable({
   }, []);
 
   useEffect(() => {
-    console.log(
-      "Search result timestamp was updated",
-      settingsContext.settings.searchResultUpdateTs,
-    );
+    console.log("Search result timestamp was updated", appContext.settings.searchResultUpdateTs);
 
     chrome.storage.local.get(["searchResults"]).then((data) => {
       console.log("New search results", data.searchResults);
       setShowSearchResults(data.searchResults);
     });
-  }, [settingsContext.settings.searchResultUpdateTs]);
+  }, [appContext.settings.searchResultUpdateTs]);
 
   const handleStopSearch = () => {
     // Stop the form from propagating
@@ -118,7 +114,7 @@ export default function ResultsTable({
     const productQueryResults = new SupplierFactory(
       query,
       fetchController,
-      settingsContext.settings.suppliers,
+      appContext.settings.suppliers,
     );
 
     // Clear the products table
@@ -217,8 +213,8 @@ export default function ResultsTable({
           return;
         }
 
-        settingsContext.setSettings({
-          ...settingsContext.settings,
+        appContext.setSettings({
+          ...appContext.settings,
           searchResultUpdateTs: new Date().toISOString(),
         });
       });

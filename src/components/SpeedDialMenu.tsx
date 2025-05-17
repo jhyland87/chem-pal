@@ -6,7 +6,7 @@ import SpeedDial from "@mui/material/SpeedDial";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
 import SpeedDialIcon from "@mui/material/SpeedDialIcon";
 import { MouseEvent, useEffect, useState } from "react";
-import { useSettings } from "../context";
+import { useAppContext } from "../context";
 import _ from "../lodash";
 import AboutModal from "./AboutModal";
 import HelpTooltip from "./HelpTooltip";
@@ -14,22 +14,22 @@ import HelpTooltip from "./HelpTooltip";
 type SpeedDialMenuProps = { speedDialVisibility: boolean };
 
 export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProps) {
-  const settingsContext = useSettings();
+  const appContext = useAppContext();
 
   const [, setShowHelp] = useState(false);
 
   useEffect(() => {
-    if (settingsContext.settings.showHelp === false) return;
+    if (appContext.settings.showHelp === false) return;
 
     _.delayAction(500, () => setShowHelp(true));
     _.delayAction(2000, () => setShowHelp(false));
-  }, [settingsContext.settings.showHelp]);
+  }, [appContext.settings.showHelp]);
 
   const handleClearResults = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     chrome.storage.local.set({ searchResults: [] });
-    settingsContext.setSettings({
-      ...settingsContext.settings,
+    appContext.setSettings({
+      ...appContext.settings,
       searchResultUpdateTs: new Date().toISOString(),
     });
   };
@@ -47,9 +47,9 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
   const handleToggleTheme = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
 
-    settingsContext.setSettings({
-      ...settingsContext.settings,
-      theme: settingsContext.settings.theme === "light" ? "dark" : "light",
+    appContext.setSettings({
+      ...appContext.settings,
+      theme: appContext.settings.theme === "light" ? "dark" : "light",
     });
   };
 

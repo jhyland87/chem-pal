@@ -121,7 +121,7 @@ export interface TabPanelProps {
   name: string;
 }
 
-export interface SettingsContextProps {
+export interface AppContextProps {
   settings: Settings;
   setSettings: (settings: Settings) => void;
   //setSetting: (key: string, value: unknown) => void;

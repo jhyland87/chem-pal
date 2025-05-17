@@ -17,7 +17,7 @@ import Switch from "@mui/material/Switch";
 import TextField from "@mui/material/TextField";
 import { ChangeEvent, MouseEvent } from "react";
 import { currencies, locations } from "../../config.json";
-import { useSettings } from "../context";
+import { useAppContext } from "../context";
 const inputStyle = {
   width: 120,
   size: "small",
@@ -43,27 +43,27 @@ const displayHelperOnHover = {
 };
 
 export default function SettingsPanel() {
-  const settingsContext = useSettings();
+  const appContext = useAppContext();
 
   const handleSwitchChange = (event: ChangeEvent<HTMLInputElement>) => {
     console.log({
-      settingsContext,
+      appContext,
       event,
       name: event.target.name,
       checked: event.target.checked,
       value: event.target.value,
     });
-    settingsContext.setSettings({
-      ...settingsContext.settings,
+    appContext.setSettings({
+      ...appContext.settings,
       [event.target.name]: event.target.checked,
     });
   };
 
   /*
   const handleSelectChange = (event: SelectChangeEvent) => {
-    console.log({ settingsContext, event, name: event.target.name, value: event.target.value });
-    settingsContext.setSettings({
-      ...settingsContext.settings,
+    console.log({ appContext, event, name: event.target.name, value: event.target.value });
+    appContext.setSettings({
+      ...appContext.settings,
       [event.target.name]: event.target.value,
     });
   };
@@ -72,9 +72,9 @@ export default function SettingsPanel() {
   const handleInputChange = (
     event: SelectChangeEvent | ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    console.log({ settingsContext, event, name: event.target.name, value: event.target.value });
-    settingsContext.setSettings({
-      ...settingsContext.settings,
+    console.log({ appContext, event, name: event.target.name, value: event.target.value });
+    appContext.setSettings({
+      ...appContext.settings,
       [event.target.name]: event.target.value,
     });
   };
@@ -82,10 +82,10 @@ export default function SettingsPanel() {
   const handleButtonClick = (event: MouseEvent<HTMLDivElement>) => {
     const button = event.target as HTMLButtonElement;
     const size = button.textContent?.toLowerCase();
-    console.log({ settingsContext, event, name: button.name, size, target: button });
+    console.log({ appContext, event, name: button.name, size, target: button });
     if (size) {
-      settingsContext.setSettings({
-        ...settingsContext.settings,
+      appContext.setSettings({
+        ...appContext.settings,
         [button.name]: size,
       });
     }
@@ -109,7 +109,7 @@ export default function SettingsPanel() {
           <FormControlLabel
             control={
               <Switch
-                checked={settingsContext.settings.caching}
+                checked={appContext.settings.caching}
                 onChange={handleSwitchChange}
                 name="caching"
               />
@@ -124,7 +124,7 @@ export default function SettingsPanel() {
           <FormControlLabel
             control={
               <Switch
-                checked={settingsContext.settings.autocomplete}
+                checked={appContext.settings.autocomplete}
                 onChange={handleSwitchChange}
                 name="autocomplete"
               />
@@ -140,7 +140,7 @@ export default function SettingsPanel() {
             <InputLabel id="currency-select-label">Currency</InputLabel>
             <Select
               labelId="currency-select-label"
-              value={settingsContext.settings.currency}
+              value={appContext.settings.currency}
               onChange={handleInputChange}
               name="currency"
               label="currency"
@@ -162,7 +162,7 @@ export default function SettingsPanel() {
             <InputLabel id="location-select-label">Location</InputLabel>
             <Select
               labelId="location-select-label"
-              value={settingsContext.settings.location}
+              value={appContext.settings.location}
               onChange={handleInputChange}
               name="location"
               label="location"
@@ -186,10 +186,8 @@ export default function SettingsPanel() {
           <FormHelperText>Only show products that ship to your location</FormHelperText>
           <FormControl>
             <Switch
-              checked={
-                !!settingsContext.settings.location && settingsContext.settings.shipsToMyLocation
-              }
-              disabled={settingsContext.settings.location === ""}
+              checked={!!appContext.settings.location && appContext.settings.shipsToMyLocation}
+              disabled={appContext.settings.location === ""}
               onChange={handleSwitchChange}
               name="shipsToMyLocation"
             />
@@ -200,7 +198,7 @@ export default function SettingsPanel() {
           <FormHelperText>Just an input example</FormHelperText>
           <FormControl>
             <TextField
-              value={settingsContext.settings.foo}
+              value={appContext.settings.foo}
               label="Foo"
               name="foo"
               onChange={handleInputChange}
@@ -228,7 +226,7 @@ export default function SettingsPanel() {
                 name="popupSize"
                 value="small"
                 size="small"
-                variant={settingsContext.settings.popupSize === "small" ? "contained" : "text"}
+                variant={appContext.settings.popupSize === "small" ? "contained" : "text"}
               >
                 Small
               </Button>
@@ -236,7 +234,7 @@ export default function SettingsPanel() {
                 name="popupSize"
                 value="medium"
                 size="small"
-                variant={settingsContext.settings.popupSize === "medium" ? "contained" : "text"}
+                variant={appContext.settings.popupSize === "medium" ? "contained" : "text"}
               >
                 Medium
               </Button>
@@ -244,7 +242,7 @@ export default function SettingsPanel() {
                 name="popupSize"
                 value="large"
                 size="small"
-                variant={settingsContext.settings.popupSize === "large" ? "contained" : "text"}
+                variant={appContext.settings.popupSize === "large" ? "contained" : "text"}
               >
                 Large
               </Button>
@@ -255,7 +253,7 @@ export default function SettingsPanel() {
           <ListItemText primary="Auto-Resize" />
           <FormHelperText>More results = larger window</FormHelperText>
           <Switch
-            checked={settingsContext.settings.autoResize}
+            checked={appContext.settings.autoResize}
             onChange={handleSwitchChange}
             name="autoResize"
           />
@@ -264,7 +262,7 @@ export default function SettingsPanel() {
           <ListItemText primary="Some Setting" />
           <FormHelperText id="some-setting-helper-text">Disabled by default</FormHelperText>
           <Switch
-            checked={settingsContext.settings.someSetting}
+            checked={appContext.settings.someSetting}
             onChange={handleSwitchChange}
             name="someSetting"
           />
@@ -273,7 +271,7 @@ export default function SettingsPanel() {
           <ListItemText primary="Show Helpful Tips" />
           <FormHelperText id="some-setting-helper-text">Show help in tooltips</FormHelperText>
           <Switch
-            checked={settingsContext.settings.showHelp}
+            checked={appContext.settings.showHelp}
             onChange={handleSwitchChange}
             name="showHelp"
           />

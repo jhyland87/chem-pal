@@ -14,7 +14,7 @@ import SpeedDialMenu from "./components/SpeedDialMenu";
 import SuppliersPanel from "./components/SuppliersPanel";
 import TabHeader from "./components/TabHeader";
 import TabPanel from "./components/TabPanel";
-import { SettingsContext } from "./context";
+import { AppContext } from "./context";
 import "./mocks/chromeStorageMock";
 import SupplierFactory from "./suppliers/SupplierFactory";
 import { darkTheme, lightTheme } from "./themes";
@@ -96,7 +96,7 @@ function App() {
 
   return (
     <ErrorBoundary fallback={<p>Something went wrong</p>}>
-      <SettingsContext.Provider value={{ settings, setSettings }}>
+      <AppContext.Provider value={{ settings, setSettings }}>
         <ThemeProvider theme={currentTheme}>
           <CssBaseline />
           <Box sx={{ bgcolor: "background.default", width: "100%" }}>
@@ -121,7 +121,7 @@ function App() {
             <SpeedDialMenu speedDialVisibility={speedDialVisibility} />
           </Box>
         </ThemeProvider>
-      </SettingsContext.Provider>
+      </AppContext.Provider>
     </ErrorBoundary>
   );
 }

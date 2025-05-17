@@ -5,14 +5,14 @@ import ListItem from "@mui/material/ListItem";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
-import { useSettings } from "../context";
+import { useAppContext } from "../context";
 import SupplierFactory from "../suppliers/SupplierFactory";
 
 export default function SuppliersPanel() {
-  const settingsContext = useSettings();
+  const appContext = useAppContext();
 
   const handleToggle = (supplierName: string) => () => {
-    const selectedSuppliers = settingsContext.settings.suppliers;
+    const selectedSuppliers = appContext.settings.suppliers;
     const currentIndex = selectedSuppliers.indexOf(supplierName);
     const newChecked = [...selectedSuppliers];
 
@@ -22,8 +22,8 @@ export default function SuppliersPanel() {
       newChecked.splice(currentIndex, 1);
     }
 
-    settingsContext.setSettings({
-      ...settingsContext.settings,
+    appContext.setSettings({
+      ...appContext.settings,
       suppliers: newChecked,
     });
   };
@@ -40,7 +40,7 @@ export default function SuppliersPanel() {
                 value={supplierName}
                 edge="end"
                 onChange={handleToggle(supplierName)}
-                checked={settingsContext.settings.suppliers.includes(supplierName)}
+                checked={appContext.settings.suppliers.includes(supplierName)}
                 aria-labelledby={labelId}
                 size="small"
               />

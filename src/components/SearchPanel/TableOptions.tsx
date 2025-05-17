@@ -8,7 +8,7 @@ import FilterModal from "./FilterModal";
 import SearchInput from "./SearchInput";
 import "./TableOptions.scss";
 export default function TableOptions({ table, searchInput, setSearchInput }: TableOptionsProps) {
-  //const settingsContext = useSettings();
+  //const appContext = useAppContext();
 
   const [filterModalOpen, setFilterModalOpen] = useState(false);
 
