@@ -22,16 +22,14 @@ import { Settings } from "./types";
 
 /**
  * Main application component that manages the overall layout and state.
- *
- * @component
- *
- * @description
  * The App component serves as the root component of the application, providing:
  * - Theme management (light/dark mode)
  * - Tab-based navigation
  * - Global settings management
  * - Speed dial menu for quick actions
  * - Error boundary for graceful error handling
+ *
+ * @component
  *
  * @example
  * ```tsx

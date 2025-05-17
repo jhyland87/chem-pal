@@ -16,38 +16,38 @@ export * from "./types/currency";
 export * from "./types/quantity";
 
 /**
- * @typeDef {Object} HeaderObject
- * @property {string} [key] - Key-value string pairs for headers
+ * HeaderObject represents key-value string pairs for headers
+ * @param {string} [key] - Key-value string pairs for headers
  */
 export type HeaderObject = { [key: string]: string };
 
 /**
- * @typeDef {Object} ChromeStorageItems
- * @property {string|number|boolean|null|undefined} [key] - Storage items supporting various primitive types
+ * ChromeStorageItems represents storage items supporting various primitive types
+ * @param {string|number|boolean|null|undefined} [key] - Storage items supporting various primitive types
  */
 export type ChromeStorageItems = { [key: string]: string | number | boolean | null | undefined };
 
 /**
- * @typeDef {Object} Settings
- * @property {string} [searchResultUpdateTs] - Timestamp of last search result update
- * @property {boolean} showHelp - Whether to show help tooltips
- * @property {boolean} caching - Whether to enable caching
- * @property {boolean} autocomplete - Whether to enable autocomplete
- * @property {string} currency - Selected currency code
- * @property {string} location - User's location
- * @property {boolean} shipsToMyLocation - Whether to filter for items that ship to user's location
- * @property {string} foo - Temporary setting for testing
- * @property {boolean} jason - Feature flag for Jason's features
- * @property {boolean} antoine - Feature flag for Antoine's features
- * @property {string} popupSize - Size of the popup window
- * @property {boolean} autoResize - Whether to automatically resize the window
- * @property {boolean} someSetting - Generic setting flag
- * @property {string[]} suppliers - List of enabled suppliers
- * @property {string} theme - Current theme (light/dark)
- * @property {boolean} showAllColumns - Whether to show all columns
- * @property {string[]} hideColumns - List of columns to hide
- * @property {boolean} showColumnFilters - Whether to show column filters
- * @property {Record<string, ColumnMeta>} columnFilterConfig - Configuration for column filters
+ * Settings interface for application configuration
+ * @param {string} [searchResultUpdateTs] - Timestamp of last search result update
+ * @param {boolean} showHelp - Whether to show help tooltips
+ * @param {boolean} caching - Whether to enable caching
+ * @param {boolean} autocomplete - Whether to enable autocomplete
+ * @param {string} currency - Selected currency code
+ * @param {string} location - User's location
+ * @param {boolean} shipsToMyLocation - Whether to filter for items that ship to user's location
+ * @param {string} foo - Temporary setting for testing
+ * @param {boolean} jason - Feature flag for Jason's features
+ * @param {boolean} antoine - Feature flag for Antoine's features
+ * @param {string} popupSize - Size of the popup window
+ * @param {boolean} autoResize - Whether to automatically resize the window
+ * @param {boolean} someSetting - Generic setting flag
+ * @param {string[]} suppliers - List of enabled suppliers
+ * @param {string} theme - Current theme (light/dark)
+ * @param {boolean} showAllColumns - Whether to show all columns
+ * @param {string[]} hideColumns - List of columns to hide
+ * @param {boolean} showColumnFilters - Whether to show column filters
+ * @param {Record<string, ColumnMeta>} columnFilterConfig - Configuration for column filters
  */
 export interface Settings {
   searchResultUpdateTs?: string;
@@ -72,29 +72,29 @@ export interface Settings {
 }
 
 /**
- * @typeDef {Object} Product
- * @property {string} supplier - Name of the supplier
- * @property {string} [description] - Product description
- * @property {string} title - Product title
- * @property {string} url - Product URL
- * @property {string} [manufacturer] - Product manufacturer
- * @property {CAS<string>} [cas] - Chemical Abstracts Service number
- * @property {string} [formula] - Chemical formula
- * @property {string} displayPrice - Formatted price string
- * @property {number} price - Numeric price value
- * @property {CurrencyCode} [currencyCode] - Currency code (e.g., USD, EUR)
- * @property {CurrencySymbol} [currencySymbol] - Currency symbol (e.g., $, €)
- * @property {string} [uom] - Unit of measure
- * @property {number} [quantity] - Quantity value
- * @property {string} [displayQuantity] - Formatted quantity string
- * @property {number} [sku] - Stock keeping unit number
- * @property {string} [grade] - Chemical grade
- * @property {string} [conc] - Concentration
- * @property {string} [seoname] - SEO-friendly name
- * @property {string} [status] - Inventory status
- * @property {string} [statusTxt] - Status text message
- * @property {string} [shippingInformation] - Shipping information
- * @property {Variant[]} [variants] - Available variants of the product
+ * Product interface representing a chemical product
+ * @param {string} supplier - Name of the supplier
+ * @param {string} [description] - Product description
+ * @param {string} title - Product title
+ * @param {string} url - Product URL
+ * @param {string} [manufacturer] - Product manufacturer
+ * @param {CAS<string>} [cas] - Chemical Abstracts Service number
+ * @param {string} [formula] - Chemical formula
+ * @param {string} displayPrice - Formatted price string
+ * @param {number} price - Numeric price value
+ * @param {CurrencyCode} [currencyCode] - Currency code (e.g., USD, EUR)
+ * @param {CurrencySymbol} [currencySymbol] - Currency symbol (e.g., $, €)
+ * @param {string} [uom] - Unit of measure
+ * @param {number} [quantity] - Quantity value
+ * @param {string} [displayQuantity] - Formatted quantity string
+ * @param {number} [sku] - Stock keeping unit number
+ * @param {string} [grade] - Chemical grade
+ * @param {string} [conc] - Concentration
+ * @param {string} [seoname] - SEO-friendly name
+ * @param {string} [status] - Inventory status
+ * @param {string} [statusTxt] - Status text message
+ * @param {string} [shippingInformation] - Shipping information
+ * @param {Variant[]} [variants] - Available variants of the product
  */
 export interface Product {
   supplier: string;
@@ -122,11 +122,11 @@ export interface Product {
 }
 
 /**
- * @typeDef {Object} HelpTooltipProps
- * @property {string} text - The help text to display
- * @property {ReactElement<{className?: string}>} children - The element that triggers the tooltip
- * @property {number} [delay] - Delay before showing the tooltip in milliseconds
- * @property {number} [duration] - Duration to show the tooltip in milliseconds
+ * HelpTooltipProps interface for help tooltip component
+ * @param {string} text - The help text to display
+ * @param {ReactElement<{className?: string}>} children - The element that triggers the tooltip
+ * @param {number} [delay] - Delay before showing the tooltip in milliseconds
+ * @param {number} [duration] - Duration to show the tooltip in milliseconds
  */
 export type HelpTooltipProps = {
   text: string;
@@ -136,13 +136,13 @@ export type HelpTooltipProps = {
 };
 
 /**
- * @typeDef {Object} Item
- * @property {number} id - Unique identifier
- * @property {string} name - Item name
- * @property {Date} deadline - Deadline date
- * @property {string} type - Item type
- * @property {boolean} isComplete - Whether the item is complete
- * @property {Item[]} [nodes] - Nested items
+ * Item interface representing a task or item
+ * @param {number} id - Unique identifier
+ * @param {string} name - Item name
+ * @param {Date} deadline - Deadline date
+ * @param {string} type - Item type
+ * @param {boolean} isComplete - Whether the item is complete
+ * @param {Item[]} [nodes] - Nested items
  */
 export interface Item {
   id: number;
@@ -154,19 +154,19 @@ export interface Item {
 }
 
 /**
- * @typeDef {Object} Sku
- * @property {Object} priceInfo - Price information
- * @property {number[]} priceInfo.regularPrice - Regular price array
- * @property {Object} variantsMap - Variant mapping
- * @property {number} variantsMap.volume - Volume
- * @property {string} variantsMap.chemical-grade - Chemical grade
- * @property {string} variantsMap.concentration - Concentration
- * @property {string} skuId - SKU identifier
- * @property {string} seoName - SEO-friendly name
- * @property {string} inventoryStatus - Current inventory status
- * @property {string} inventoryStatusMsg - Status message
- * @property {Object} specifications - Shipping specifications
- * @property {string} specifications.shippingInformation - Shipping information
+ * Sku interface representing a stock keeping unit
+ * @param {Object} priceInfo - Price information
+ * @param {number[]} priceInfo.regularPrice - Regular price array
+ * @param {Object} variantsMap - Variant mapping
+ * @param {number} variantsMap.volume - Volume
+ * @param {string} variantsMap.chemical-grade - Chemical grade
+ * @param {string} variantsMap.concentration - Concentration
+ * @param {string} skuId - SKU identifier
+ * @param {string} seoName - SEO-friendly name
+ * @param {string} inventoryStatus - Current inventory status
+ * @param {string} inventoryStatusMsg - Status message
+ * @param {Object} specifications - Shipping specifications
+ * @param {string} specifications.shippingInformation - Shipping information
  */
 export interface Sku {
   priceInfo: { regularPrice: number[] };
@@ -179,16 +179,16 @@ export interface Sku {
 }
 
 /**
- * @typeDef {Object} Variant
- * @property {number} price - Price of the variant
- * @property {number} quantity - Available quantity
- * @property {number} sku - SKU number
- * @property {string} grade - Chemical grade
- * @property {string} conc - Concentration
- * @property {string} seoname - SEO-friendly name
- * @property {string} status - Current status
- * @property {string} statusTxt - Status text message
- * @property {string} shippingInformation - Shipping information
+ * Variant interface representing a product variant
+ * @param {number} price - Price of the variant
+ * @param {number} quantity - Available quantity
+ * @param {number} sku - SKU number
+ * @param {string} grade - Chemical grade
+ * @param {string} conc - Concentration
+ * @param {string} seoname - SEO-friendly name
+ * @param {string} status - Current status
+ * @param {string} statusTxt - Status text message
+ * @param {string} shippingInformation - Shipping information
  */
 export interface Variant {
   price: number;
@@ -203,9 +203,9 @@ export interface Variant {
 }
 
 /**
- * @typeDef {Object} SearchProps
- * @property {string} query - Current search query
- * @property {Function} setQuery - Function to update the search query
+ * SearchProps interface for search functionality
+ * @param {string} query - Current search query
+ * @param {Function} setQuery - Function to update the search query
  */
 export interface SearchProps {
   query: string;
@@ -213,15 +213,15 @@ export interface SearchProps {
 }
 
 /**
- * @typeDef {Object} Supplier
- * @property {string} supplierName - Name of the supplier
- * @property {string} _query - Current search query
- * @property {Product[]} _products - Array of products from this supplier
- * @property {Record<string, unknown>[]} _queryResults - Raw query results
- * @property {string} _baseURL - Base URL for the supplier's API
- * @property {AbortController} _controller - Controller for aborting requests
- * @property {number} _limit - Query result limit
- * @property {number} _httpRequestHardLimit - Hard limit for HTTP requests
+ * Supplier interface representing a product supplier
+ * @param {string} supplierName - Name of the supplier
+ * @param {string} _query - Current search query
+ * @param {Product[]} _products - Array of products from this supplier
+ * @param {Record<string, unknown>[]} _queryResults - Raw query results
+ * @param {string} _baseURL - Base URL for the supplier's API
+ * @param {AbortController} _controller - Controller for aborting requests
+ * @param {number} _limit - Query result limit
+ * @param {number} _httpRequestHardLimit - Hard limit for HTTP requests
  */
 export interface Supplier {
   supplierName: string;
@@ -235,13 +235,13 @@ export interface Supplier {
 }
 
 /**
- * @typeDef {Object} TabPanelProps
- * @property {ReactNode} [children] - Child elements
- * @property {string} [dir] - Text direction (ltr/rtl)
- * @property {number} index - Tab index
- * @property {number|string} value - Current value
- * @property {object} [style] - Additional styles
- * @property {string} name - Panel name
+ * TabPanelProps interface for tab panel component
+ * @param {ReactNode} [children] - Child elements
+ * @param {string} [dir] - Text direction (ltr/rtl)
+ * @param {number} index - Tab index
+ * @param {number|string} value - Current value
+ * @param {object} [style] - Additional styles
+ * @param {string} name - Panel name
  */
 export interface TabPanelProps {
   children?: ReactNode;
@@ -253,9 +253,9 @@ export interface TabPanelProps {
 }
 
 /**
- * @typeDef {Object} AppContextProps
- * @property {Settings} settings - Application settings
- * @property {Function} setSettings - Function to update settings
+ * AppContextProps interface for application context
+ * @param {Settings} settings - Application settings
+ * @param {Function} setSettings - Function to update settings
  */
 export interface AppContextProps {
   settings: Settings;
@@ -263,15 +263,15 @@ export interface AppContextProps {
 }
 
 /**
- * @typeDef {Object} TableProps
- * @template TData
- * @property {TData[]} data - Array of data to display
- * @property {ColumnDef<TData>[]} columns - Column definitions
- * @property {Function} renderSubComponent - Function to render sub-components
- * @property {Function} getRowCanExpand - Function to determine if a row can be expanded
- * @property {Function} rerender - Function to trigger re-render
- * @property {Function} refreshData - Function to refresh data
- * @property {[ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>]} columnFilterFns - Column filter state and setter
+ * TableProps interface for table component
+ * @typeParam TData - The type of data in the table
+ * @param {TData[]} data - Array of data to display
+ * @param {ColumnDef<TData>[]} columns - Column definitions
+ * @param {Function} renderSubComponent - Function to render sub-components
+ * @param {Function} getRowCanExpand - Function to determine if a row can be expanded
+ * @param {Function} rerender - Function to trigger re-render
+ * @param {Function} refreshData - Function to refresh data
+ * @param {[ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>]} columnFilterFns - Column filter state and setter
  */
 export type TableProps<TData extends RowData> = {
   data: TData[];
@@ -284,12 +284,12 @@ export type TableProps<TData extends RowData> = {
 };
 
 /**
- * @typeDef {Object} ProductTableProps
- * @template TData
- * @property {ColumnDef<TData, unknown>[]} [columns] - Column definitions
- * @property {Function} renderVariants - Function to render variants
- * @property {Function} getRowCanExpand - Function to determine if a row can be expanded
- * @property {[ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>]} columnFilterFns - Column filter state and setter
+ * ProductTableProps interface for product table component
+ * @typeParam TData - The type of data in the product table
+ * @param {ColumnDef<TData, unknown>[]} [columns] - Column definitions
+ * @param {Function} renderVariants - Function to render variants
+ * @param {Function} getRowCanExpand - Function to determine if a row can be expanded
+ * @param {[ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>]} columnFilterFns - Column filter state and setter
  */
 export type ProductTableProps<TData extends RowData> = {
   columns?: ColumnDef<TData, unknown>[];
@@ -299,19 +299,19 @@ export type ProductTableProps<TData extends RowData> = {
 };
 
 /**
- * @typeDef {Object} ProductTableHeader
- * @template TData
- * @property {string} id - Column ID
- * @property {number} colSpan - Number of columns to span
- * @property {boolean} isPlaceholder - Whether this is a placeholder
- * @property {ColumnDef<TData, unknown>} column - Column definition
- * @property {Function} getCanFilter - Function to check if column can be filtered
- * @property {Function} getCanSort - Function to check if column can be sorted
- * @property {Function} getToggleSortingHandler - Function to handle sort toggle
- * @property {Function} getIsSorted - Function to get current sort state
- * @property {Function} getContext - Function to get column context
- * @property {Function} getSize - Function to get column size
- * @property {Partial<ColumnDef<TData>>} columnDef - Column definition with partial properties
+ * ProductTableHeader interface for table header component
+ * @typeParam TData - The type of data in the table header
+ * @param {string} id - Column ID
+ * @param {number} colSpan - Number of columns to span
+ * @param {boolean} isPlaceholder - Whether this is a placeholder
+ * @param {ColumnDef<TData, unknown>} column - Column definition
+ * @param {Function} getCanFilter - Function to check if column can be filtered
+ * @param {Function} getCanSort - Function to check if column can be sorted
+ * @param {Function} getToggleSortingHandler - Function to handle sort toggle
+ * @param {Function} getIsSorted - Function to get current sort state
+ * @param {Function} getContext - Function to get column context
+ * @param {Function} getSize - Function to get column size
+ * @param {Partial<ColumnDef<TData>>} columnDef - Column definition with partial properties
  */
 export type ProductTableHeader<TData extends RowData> = {
   id: string;
@@ -328,18 +328,18 @@ export type ProductTableHeader<TData extends RowData> = {
 };
 
 /**
- * @typeDef {Object} FilterVariantComponentProps
- * @property {CustomColumn<Product, unknown>} column - Column to filter
+ * FilterVariantComponentProps interface for filter variant component
+ * @param {CustomColumn<Product, unknown>} column - Column to filter
  */
 export type FilterVariantComponentProps = {
   column: CustomColumn<Product, unknown>;
 };
 
 /**
- * @typeDef {Object} TableOptionsProps
- * @property {Table<Product>} table - Table instance
- * @property {string} searchInput - Current search input
- * @property {Dispatch<SetStateAction<string>>} setSearchInput - Function to update search input
+ * TableOptionsProps interface for table options component
+ * @param {Table<Product>} table - Table instance
+ * @param {string} searchInput - Current search input
+ * @param {Dispatch<SetStateAction<string>>} setSearchInput - Function to update search input
  */
 export type TableOptionsProps = {
   table: Table<Product>;
@@ -348,17 +348,17 @@ export type TableOptionsProps = {
 };
 
 /**
- * @typeDef {Object} ProductRow
- * @property {Row<Product>} row - Row data
+ * ProductRow interface representing a row in the product table
+ * @param {Row<Product>} row - Row data
  */
 export type ProductRow = {
   row: Row<Product>;
 };
 
 /**
- * @typeDef {Object} TextOptionFacet
- * @property {string} name - Facet name
- * @property {string} value - Facet value
+ * TextOptionFacet interface for text option facets
+ * @param {string} name - Facet name
+ * @param {string} value - Facet value
  */
 export interface TextOptionFacet {
   name: string;
@@ -366,12 +366,12 @@ export interface TextOptionFacet {
 }
 
 /**
- * @typeDef {Object} WixProduct
- * @property {string} [discountedPrice] - Discounted price if available
- * @property {string} price - Regular price
- * @property {string} title - Product title
- * @property {string} url - Product URL
- * @property {TextOptionFacet[]} [textOptionsFacets] - Text option facets
+ * WixProduct interface representing a Wix product
+ * @param {string} [discountedPrice] - Discounted price if available
+ * @param {string} price - Regular price
+ * @param {string} title - Product title
+ * @param {string} url - Product URL
+ * @param {TextOptionFacet[]} [textOptionsFacets] - Text option facets
  */
 export interface WixProduct {
   discountedPrice?: string;
@@ -382,14 +382,14 @@ export interface WixProduct {
 }
 
 /**
- * @typeDef {Object} FilterInputProps
- * @property {Column<Product, unknown>} [column] - Column to filter
- * @property {ReactNode} [children] - Child elements
- * @property {string[]|number[]} [rangeValues] - Range values for numeric filters
- * @property {string} [label] - Input label
- * @property {Function} [onChange] - Change event handler
- * @property {string} [value] - Current value
- * @property {Record<string, unknown>} [props] - Additional props
+ * FilterInputProps interface for filter input component
+ * @param {Column<Product, unknown>} [column] - Column to filter
+ * @param {ReactNode} [children] - Child elements
+ * @param {string[]|number[]} [rangeValues] - Range values for numeric filters
+ * @param {string} [label] - Input label
+ * @param {Function} [onChange] - Change event handler
+ * @param {string} [value] - Current value
+ * @param {Record<string, unknown>} [props] - Additional props
  */
 export type FilterInputProps = {
   column?: Column<Product, unknown>;
@@ -408,11 +408,11 @@ export type FilterInputProps = {
 };
 
 /**
- * @typeDef {Object} ColumnMeta
- * @property {("range"|"select"|"text")} [filterVariant] - Type of filter variant
- * @property {string[]} [uniqueValues] - Unique values for select filters
- * @property {number[]} [rangeValues] - Range values for numeric filters
- * @property {CSSProperties} [style] - Custom styles
+ * ColumnMeta interface for column metadata
+ * @param {("range"|"select"|"text")} [filterVariant] - Type of filter variant
+ * @param {string[]} [uniqueValues] - Unique values for select filters
+ * @param {number[]} [rangeValues] - Range values for numeric filters
+ * @param {CSSProperties} [style] - Custom styles
  */
 export interface ColumnMeta {
   filterVariant?: "range" | "select" | "text";
@@ -422,11 +422,11 @@ export interface ColumnMeta {
 }
 
 /**
- * @typeDef {Object} CustomColumn
- * @template TData
- * @template TValue
- * @property {Object} columnDef - Column definition
- * @property {ColumnMeta} [columnDef.meta] - Column metadata
+ * CustomColumn interface for custom column definition
+ * @typeParam TData - The type of data in the column
+ * @typeParam TValue - The type of value in the column
+ * @param {Object} columnDef - Column definition
+ * @param {ColumnMeta} [columnDef.meta] - Column metadata
  */
 export type CustomColumn<TData extends RowData, TValue = unknown> = Column<TData, TValue> & {
   columnDef: {
@@ -435,10 +435,10 @@ export type CustomColumn<TData extends RowData, TValue = unknown> = Column<TData
 };
 
 /**
- * @typeDef {Object} Props
- * @template T
- * @property {T[]} data - Array of items to render
- * @property {Function} renderItem - Function to render each item
+ * Props interface for generic component props
+ * @typeParam T - The type of items to render
+ * @param {T[]} data - Array of items to render
+ * @param {Function} renderItem - Function to render each item
  */
 export type Props<T> = {
   data: T[];
@@ -446,9 +446,9 @@ export type Props<T> = {
 };
 
 /**
- * @typeDef {Object} IconSpinnerProps
- * @property {number} [size] - Size of the spinner
- * @property {unknown} [key] - Additional props
+ * IconSpinnerProps interface for icon spinner component
+ * @param {number} [size] - Size of the spinner
+ * @param {unknown} [key] - Additional props
  */
 export interface IconSpinnerProps {
   size?: number;
@@ -456,9 +456,9 @@ export interface IconSpinnerProps {
 }
 
 /**
- * @typeDef {Object} FilterVariantInputProps
- * @property {CustomColumn<Product, unknown>} column - Column to filter
- * @property {unknown} [key] - Additional props
+ * FilterVariantInputProps interface for filter variant input component
+ * @param {CustomColumn<Product, unknown>} column - Column to filter
+ * @param {unknown} [key] - Additional props
  */
 export type FilterVariantInputProps = {
   column: CustomColumn<Product, unknown>;

@@ -20,6 +20,10 @@
     {
       "tagName": "@throws",
       "syntaxKind": "block"
+    },
+    {
+      "tagName": "@todo",
+      "syntaxKind": "block"
     }
   ],
   "supportForTags": {
@@ -27,6 +31,7 @@
     "@example": true,
     "@param": true,
     "@returns": true,
-    "@throws": true
+    "@throws": true,
+    "@todo": true
   }
 }

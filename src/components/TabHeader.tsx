@@ -8,6 +8,12 @@ import Tabs from "@mui/material/Tabs";
 import { SyntheticEvent } from "react";
 import IconTextFader from "./IconTextFader";
 
+/**
+ * Generates props for a tab component.
+ * @param {number} index - The index of the tab
+ * @param {string} name - The name of the tab panel
+ * @returns {Object} Tab props including id, panel, and aria-controls
+ */
 function tabProps(index: number, name: string) {
   return {
     id: `full-width-tab-${index}`,
@@ -16,11 +22,31 @@ function tabProps(index: number, name: string) {
   };
 }
 
+/**
+ * Props for the TabHeader component
+ * @param {number} page - Current active tab index
+ * @param {Function} setPage - Function to update the active tab
+ */
 type TabHeaderProps = {
   page: number;
   setPage: (page: number) => void;
 };
 
+/**
+ * TabHeader component that renders a navigation bar with tabs for different sections of the application.
+ * Each tab includes an icon and text that fades based on the active state.
+ *
+ * @component
+ *
+ * @param {TabHeaderProps} props - Component props
+ * @param {number} props.page - Current active tab index
+ * @param {Function} props.setPage - Function to update the active tab
+ *
+ * @example
+ * ```tsx
+ * <TabHeader page={currentPage} setPage={setCurrentPage} />
+ * ```
+ */
 export default function TabHeader({ page, setPage }: TabHeaderProps) {
   const handleChange = (e: SyntheticEvent, newValue: number) => setPage(newValue);
 

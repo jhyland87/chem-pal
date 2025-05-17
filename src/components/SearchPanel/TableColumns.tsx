@@ -7,6 +7,14 @@ import { Product, ProductRow } from "../../types";
 import { default as Link } from "../TabLink";
 import "./TableColumns.scss";
 
+/**
+ * BookmarkIconButton component that renders a bookmark icon button for each row.
+ * Currently only logs the row data when clicked.
+ *
+ * @component
+ * @param {ProductRow} props - Component props containing the row data
+ * @param {Row<Product>} props.row - The table row data
+ */
 const BookmarkIconButton = ({ row }: ProductRow) => {
   return (
     <IconButton
@@ -18,6 +26,19 @@ const BookmarkIconButton = ({ row }: ProductRow) => {
     </IconButton>
   );
 };
+
+/**
+ * Defines the column configuration for the product results table.
+ * Each column specifies its display properties, filtering capabilities,
+ * and cell rendering behavior.
+ *
+ * @returns {ColumnDef<Product, unknown>[]} Array of column definitions
+ *
+ * @example
+ * ```tsx
+ * const columns = TableColumns();
+ * ```
+ */
 export default function TableColumns(): ColumnDef<Product, unknown>[] {
   return [
     {
@@ -131,6 +152,18 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
   ];
 }
 
+/**
+ * Creates a configuration object for column filtering based on the column definitions.
+ * Each filterable column gets an entry with its filter variant and an empty array for filter data.
+ *
+ * @returns {Record<string, { filterVariant: string; filterData: unknown[] }>} Object mapping column IDs to their filter configurations
+ *
+ * @example
+ * ```tsx
+ * const filterConfig = getColumnFilterConfig();
+ * // Returns: { title: { filterVariant: "text", filterData: [] }, ... }
+ * ```
+ */
 export function getColumnFilterConfig() {
   const filterableColumns = TableColumns().reduce<
     Record<string, { filterVariant: string; filterData: unknown[] }>

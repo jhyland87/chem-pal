@@ -5,9 +5,27 @@ import { CSSProperties } from "react";
 import { ColumnMeta, Product } from "../../types";
 import "./TableHeader.scss";
 
+/**
+ * TableHeader component that renders the header row of the product results table.
+ * It handles column resizing, sorting, and filter configuration.
+ *
+ * @component
+ *
+ * @param {Object} props - Component props
+ * @param {Table<Product>} props.table - The table instance from TanStack Table
+ *
+ * @example
+ * ```tsx
+ * <TableHeader table={table} />
+ * ```
+ */
 export default function TableHeader({ table }: { table: Table<Product> }) {
-  // Get the type of columns filterVariant, and create an object for storing the
-  // necessary filter data to show in the table column filters
+  /**
+   * Creates a configuration object for filterable columns based on their metadata.
+   * Each filterable column gets an entry with its filter variant and empty arrays for range and unique values.
+   *
+   * @returns {Record<string, ColumnMeta>} Object mapping column IDs to their filter configurations
+   */
   const filterableColumns = table.options.columns.reduce<Record<string, ColumnMeta>>(
     (accu, column: ColumnDef<Product, unknown>) => {
       const meta = column.meta as ColumnMeta | undefined;
@@ -23,7 +41,7 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
     {},
   );
 
-  // Now parse teh results to get the filterable values.
+  // Now parse the results to get the filterable values.
   // @todo: This runs every time there's a row updated or added. It would be better to save
   // this data as the rows are outputted from the factory method, then set the column filter
   // values once its finished.
@@ -32,6 +50,11 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
     if (col === undefined) continue;
 
     if (filterVariant === "range") {
+      /**
+       * Calculates the range values (min and max) for numeric columns.
+       * @param {Product[]} table.options.data - The table data
+       * @returns {[number, number]} Array containing [min, max] values
+       */
       const rangeValues = table.options.data.reduce(
         (accu, row: Product) => {
           const value = row[colName as keyof Product] as number;
@@ -48,6 +71,11 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
       continue;
     }
 
+    /**
+     * Collects unique values for non-range columns.
+     * @param {Product[]} table.options.data - The table data
+     * @returns {string[]} Array of unique values
+     */
     const uniqueValues = table.options.data.reduce<string[]>((accu, row: Product) => {
       const value = row[colName as keyof Product] as string;
       if (value !== undefined && accu.indexOf(value) === -1) {

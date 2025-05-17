@@ -7,6 +7,21 @@ import { Table } from "@tanstack/react-table";
 import { Product } from "../../types";
 import "./Pagination.scss";
 
+/**
+ * Pagination component that provides navigation controls for the product results table.
+ * It includes first/last page buttons, previous/next page buttons, a page number input,
+ * and a page size selector.
+ *
+ * @component
+ *
+ * @param {Object} props - Component props
+ * @param {Table<Product>} props.table - The table instance from TanStack Table
+ *
+ * @example
+ * ```tsx
+ * <Pagination table={table} />
+ * ```
+ */
 export default function Pagination({ table }: { table: Table<Product> }) {
   return (
     <div className="flex items-center gap-2">

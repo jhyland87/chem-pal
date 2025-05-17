@@ -9,6 +9,12 @@ import { gen, sample } from "testcheck";
 import { ProductRow } from "../../types";
 import "./DetailsContainer.scss";
 
+/**
+ * Generator for creating sample product details with random values.
+ * Used for testing and development purposes.
+ *
+ * @type {Object}
+ */
 const detailsGen = gen.object({
   title: gen.alphaNumString,
   description: gen.alphaNumString,
@@ -16,8 +22,30 @@ const detailsGen = gen.object({
   quantity: gen.int,
 });
 
+/**
+ * Sample product details generated using the detailsGen generator.
+ * Used for testing and development purposes.
+ *
+ * @type {Array<Object>}
+ */
 const details = sample(detailsGen);
 
+/**
+ * DetailsContainer component that displays detailed information about a product row.
+ * Currently uses sample data for testing purposes.
+ *
+ * @component
+ *
+ * @param {ProductRow} props - Component props
+ * @param {Row<Product>} props.row - The table row data containing product information
+ *
+ * @example
+ * ```tsx
+ * <DetailsContainer row={row} />
+ * ```
+ *
+ * @todo Replace sample data with actual product details from the row data
+ */
 export default function DetailsContainer({ row }: ProductRow) {
   console.log("row", { row });
   return (

@@ -10,7 +10,32 @@ import { useState } from "react";
 import { FilterVariantInputProps } from "../../../types";
 import "./RangeColumnFilter.scss";
 
+/**
+ * RangeColumnFilter component that provides a slider-based range filter for numeric columns.
+ * It allows users to filter data based on a minimum and maximum value range.
+ *
+ * @component
+ *
+ * @param {FilterVariantInputProps} props - Component props
+ * @param {CustomColumn<Product, unknown>} props.column - The column configuration
+ *
+ * @example
+ * ```tsx
+ * <RangeColumnFilter column={column} />
+ * ```
+ */
 export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
+  /**
+   * Custom value label component for the slider that displays the current value in a tooltip.
+   *
+   * @component
+   *
+   * @param {SliderValueLabelProps} props - Props for the value label component
+   * @param {React.ReactNode} props.children - Child elements
+   * @param {number} props.value - Current slider value
+   *
+   * @returns {JSX.Element} Tooltip-wrapped value label
+   */
   function ValueLabelComponent(props: SliderValueLabelProps) {
     const { children, value } = props;
 
@@ -27,9 +52,16 @@ export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
   }
 
   const [MIN, MAX] = column.getFullRange();
-  // Trigger the column filter update with a debonce or throttle
+  // Trigger the column filter update with a debounce or throttle
   const [columnFilterRange, setColumnFilterRange] = useState<number[]>([MIN, MAX]);
 
+  /**
+   * Handles changes to the range filter slider.
+   * Updates the local state and triggers the column filter update with debouncing.
+   *
+   * @param {Event} event - The change event
+   * @param {number[]} newValue - The new range values [min, max]
+   */
   const handleColumnFilterChange = (event: Event, newValue: number[]) => {
     setColumnFilterRange(newValue);
     column.setFilterValueDebounced(newValue);

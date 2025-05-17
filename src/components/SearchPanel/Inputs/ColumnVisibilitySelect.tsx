@@ -1,9 +1,15 @@
-import { MenuItem, SelectChangeEvent, Theme, useTheme } from "@mui/material";
+import { MenuItem, OutlinedInput, Select, SelectChangeEvent, Theme, useTheme } from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";
-
-import { OutlinedInput, Select } from "@mui/material";
 import { StyledFormControlSelector } from "../../Styles";
 
+/**
+ * Returns the appropriate styles for a menu item based on whether it's selected.
+ *
+ * @param {string} name - The option value
+ * @param {string[]} personName - Array of selected values
+ * @param {Theme} theme - The Material-UI theme
+ * @returns {Object} Style object with appropriate font weight
+ */
 function getStyles(name: string, personName: string[], theme: Theme) {
   return {
     fontWeight: personName.includes(name)
@@ -12,6 +18,9 @@ function getStyles(name: string, personName: string[], theme: Theme) {
   };
 }
 
+/**
+ * Configuration for the select menu's dimensions and behavior.
+ */
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
@@ -23,6 +32,27 @@ const MenuProps = {
   },
 };
 
+/**
+ * ColumnVisibilitySelect component that provides a multi-select dropdown for controlling
+ * which columns are visible in the table. It allows users to show/hide columns by
+ * selecting them from a list.
+ *
+ * @component
+ *
+ * @param {Object} props - Component props
+ * @param {Record<string, string>} props.columnNames - Object mapping column IDs to their display names
+ * @param {string[]} props.columnVisibility - Array of currently visible column IDs
+ * @param {Function} props.handleColumnVisibilityChange - Function to handle visibility changes
+ *
+ * @example
+ * ```tsx
+ * <ColumnVisibilitySelect
+ *   columnNames={{ id: "ID", name: "Name" }}
+ *   columnVisibility={["id", "name"]}
+ *   handleColumnVisibilityChange={handleChange}
+ * />
+ * ```
+ */
 export default function ColumnVisibilitySelect({
   columnNames,
   columnVisibility,
