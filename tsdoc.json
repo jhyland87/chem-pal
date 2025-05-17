@@ -1,0 +1,37 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json",
+  "tagDefinitions": [
+    {
+      "tagName": "@component",
+      "syntaxKind": "block"
+    },
+    {
+      "tagName": "@example",
+      "syntaxKind": "block"
+    },
+    {
+      "tagName": "@param",
+      "syntaxKind": "block"
+    },
+    {
+      "tagName": "@returns",
+      "syntaxKind": "block"
+    },
+    {
+      "tagName": "@throws",
+      "syntaxKind": "block"
+    },
+    {
+      "tagName": "@todo",
+      "syntaxKind": "block"
+    }
+  ],
+  "supportForTags": {
+    "@component": true,
+    "@example": true,
+    "@param": true,
+    "@returns": true,
+    "@throws": true,
+    "@todo": true
+  }
+}

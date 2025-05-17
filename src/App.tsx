@@ -20,6 +20,26 @@ import SupplierFactory from "./suppliers/SupplierFactory";
 import { darkTheme, lightTheme } from "./themes";
 import { Settings } from "./types";
 
+/**
+ * Main application component that manages the overall layout and state.
+ * The App component serves as the root component of the application, providing:
+ * - Theme management (light/dark mode)
+ * - Tab-based navigation
+ * - Global settings management
+ * - Speed dial menu for quick actions
+ * - Error boundary for graceful error handling
+ *
+ * @component
+ *
+ * @example
+ * ```tsx
+ * // The App component is typically rendered at the root level
+ * ReactDOM.render(
+ *   <App />,
+ *   document.getElementById('root')
+ * );
+ * ```
+ */
 function App() {
   const theme = useTheme();
   const [panel, setPanel] = useState(0);

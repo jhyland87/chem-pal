@@ -5,7 +5,35 @@ import Fade from "@mui/material/Fade";
 import BenzeneBlueSpinner from "./icons/BenzeneBlueSpinner";
 import "./LoadingBackdrop.scss";
 
-export default function LoadingBackdrop(props: { open: boolean; onClick: () => void }) {
+/**
+ * Props for the LoadingBackdrop component
+ * @param {boolean} open - Whether the backdrop is visible
+ * @param {Function} onClick - Function to call when the stop button is clicked
+ */
+type LoadingBackdropProps = {
+  open: boolean;
+  onClick: () => void;
+};
+
+/**
+ * LoadingBackdrop component that displays a full-screen loading overlay with a spinner and stop button.
+ * The spinner fades in with a delay when the backdrop is opened.
+ *
+ * @component
+ *
+ * @param {LoadingBackdropProps} props - Component props
+ * @param {boolean} props.open - Whether the backdrop is visible
+ * @param {Function} props.onClick - Function to call when the stop button is clicked
+ *
+ * @example
+ * ```tsx
+ * <LoadingBackdrop open={isLoading} onClick={handleStopLoading} />
+ * ```
+ *
+ * @todo Try to implement a <Suspense/> component instead of a manual loading state
+ * @todo Add some timer that shows the Stop Search only after a second or two
+ */
+export default function LoadingBackdrop(props: LoadingBackdropProps) {
   // @todo: Try to implement a <Suspense/> component instead of a manual loading state
   // @todo: add some timer that shows the Stop Search only after a second or two.
   return (

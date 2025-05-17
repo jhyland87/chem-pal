@@ -1,0 +1,37 @@
+{
+  "entryPoints": ["./src/**/*.ts", "./src/**/*.tsx"],
+  "plugin": ["@mxssfd/typedoc-theme"],
+  "theme": "default",
+  "entryPointStrategy": "expand",
+  "out": "docs",
+  "exclude": ["**/node_modules/**", "**/__tests__/**"],
+  "name": "Chem Crawler Documentation",
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeExternals": true,
+  "includeVersion": true,
+  "hideGenerator": true,
+  "readme": "README.md",
+  "navigationLinks": {
+    "GitHub": "https://github.com/jhyland87/chem-crawler"
+  },
+  "searchInComments": true,
+  "sort": ["source-order"],
+  "visibilityFilters": {
+    "protected": true,
+    "private": false,
+    "inherited": true,
+    "external": false
+  },
+  "sourceLinkTemplate": "https://github.com/jhyland87/chem-crawler/blob/main/{path}#L{line}",
+  "disableSources": false,
+  "categorizeByGroup": true,
+  "categoryOrder": [
+    "Components",
+    "Hooks",
+    "Utils",
+    "Types",
+    "Context",
+    "*"
+  ]
+}

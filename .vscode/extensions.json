@@ -11,7 +11,8 @@
     "orta.vscode-jest",
     "ms-vscode.test-adapter-converter",
     "smarschollek.vscode-react-scripts-test-adapter",
-    "henrynguyen5-vsc.vsc-nvm"
+    "henrynguyen5-vsc.vsc-nvm",
+    "psulek-solo.typedoc-live-preview"
   ],
   "unwantedRecommendations": []
 }

@@ -1,13 +1,59 @@
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
+import BookmarkIcon from "@mui/icons-material/Bookmark";
 import IconButton from "@mui/material/IconButton";
 import { ColumnDef } from "@tanstack/react-table";
 import { Product, ProductRow } from "../../types";
 import { default as Link } from "../TabLink";
 import "./TableColumns.scss";
 
+/**
+ * BookmarkIconButton component that renders a bookmark icon button for each row.
+ * Currently only logs the row data when clicked.
+ *
+ * @component
+ * @param {ProductRow} props - Component props containing the row data
+ * @param {Row<Product>} props.row - The table row data
+ */
+const BookmarkIconButton = ({ row }: ProductRow) => {
+  return (
+    <IconButton
+      size="small"
+      onClick={() => console.log(row.original)}
+      className="boookmark-icon boookmark-button"
+    >
+      <BookmarkIcon fontSize="small" className="boookmark-button boookmark-icon" />
+    </IconButton>
+  );
+};
+
+/**
+ * Defines the column configuration for the product results table.
+ * Each column specifies its display properties, filtering capabilities,
+ * and cell rendering behavior.
+ *
+ * @returns {ColumnDef<Product, unknown>[]} Array of column definitions
+ *
+ * @example
+ * ```tsx
+ * const columns = TableColumns();
+ * ```
+ */
 export default function TableColumns(): ColumnDef<Product, unknown>[] {
   return [
+    {
+      id: "bookmark",
+      accessorKey: "bookmark",
+      header: () => null,
+      cell: ({ row }: ProductRow) => <BookmarkIconButton row={row} />,
+      enableHiding: false,
+      enableSorting: false,
+      enableColumnFilter: false,
+      enableResizing: false,
+      size: 3,
+      minSize: 10,
+      maxSize: 10,
+    },
     {
       id: "expander",
       header: () => null,
@@ -106,6 +152,18 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
   ];
 }
 
+/**
+ * Creates a configuration object for column filtering based on the column definitions.
+ * Each filterable column gets an entry with its filter variant and an empty array for filter data.
+ *
+ * @returns {Record<string, { filterVariant: string; filterData: unknown[] }>} Object mapping column IDs to their filter configurations
+ *
+ * @example
+ * ```tsx
+ * const filterConfig = getColumnFilterConfig();
+ * // Returns: { title: { filterVariant: "text", filterData: [] }, ... }
+ * ```
+ */
 export function getColumnFilterConfig() {
   const filterableColumns = TableColumns().reduce<
     Record<string, { filterVariant: string; filterData: unknown[] }>

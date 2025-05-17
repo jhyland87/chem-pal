@@ -3,3 +3,23 @@ button.expand-row-details {
   border-radius: 10% !important;
   cursor: pointer;
 }
+
+.boookmark-icon {
+  cursor: pointer;
+  &:not(.bookmark-saved) {
+    //display: none;
+    visibility: hidden;
+    &:hover {
+      //display: block;
+      visibility: visible;
+    }
+  }
+  &.bookmark-saved {
+    //display: block;
+    color: #3c3c3c;
+    &:hover {
+      //display: block;
+      color: #222222;
+    }
+  }
+}

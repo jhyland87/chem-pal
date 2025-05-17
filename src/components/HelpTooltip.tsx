@@ -4,6 +4,29 @@ import { useAppContext } from "../context";
 import _ from "../lodash";
 import { HelpTooltipProps } from "../types";
 
+/**
+ * A tooltip component that displays help text with customizable timing and styling.
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <HelpTooltip
+ *   text="Click here to save your changes"
+ *   delay={1000}
+ *   duration={3000}
+ * >
+ *   <Button>Save</Button>
+ * </HelpTooltip>
+ * ```
+ *
+ * @param props - The component props
+ * @param props.text - The help text to display in the tooltip
+ * @param props.children - The element that triggers the tooltip
+ * @param props.delay - Delay in milliseconds before showing the tooltip (default: 500)
+ * @param props.duration - Duration in milliseconds to show the tooltip (default: 2000)
+ *
+ * @returns A tooltip component that displays help text
+ */
 export default function HelpTooltip({
   text,
   children,

@@ -5,6 +5,7 @@ import { QuantityObject, UOM } from "../types";
  * possible aliases for each UOM.
  */
 export const uomAliases: Record<UOM, string[]> = {
+  [UOM.PCS]: ["piece", "pieces", "pc", "pcs"],
   [UOM.KG]: ["kilogram", "kilograms", "kg", "kgs"],
   [UOM.LB]: ["pound", "pounds", "lb", "lbs"],
   [UOM.ML]: ["ml", "mls", "millilitre", "milliliter", "milliliters", "millilitres"],
@@ -22,14 +23,27 @@ export const uomAliases: Record<UOM, string[]> = {
 
 /**
  * Parses a quantity string into a QuantityObject object.
- * @see https://regex101.com/r/lDLuVX/10
+ * @see https://regex101.com/r/Ruid54/3
  * @param value - The quantity string to parse.
  * @returns A QuantityObject object.
+ * @example
+ * parseQuantity('100g') // { quantity: 100, uom: 'g' }
+ * parseQuantity('120 grams') // { quantity: 120, uom: 'grams' }
+ *
+ * parseQuantity('43.4 ounce') // { quantity: 43.4, uom: 'ounce' }
+ * parseQuantity('1200 milliliters')
+ * // { quantity: 1200, uom: 'milliliters' }
+ * parseQuantity('1.2 L')
+ * // { quantity: 1.2, uom: 'L' }
  */
 export function parseQuantity(value: string): QuantityObject | void {
-  const quantityMatch = value.match(
-    /(?<quantity>\d[\d.,]*)\s?(?<uom>(?:milli|kilo|centi)?(?:ounce|g(?:allon|ram|al)|pound|quart|qt|lb|(?:met|lit)[re]{2})s?|oz|k[mg]?|g|l|[cm]?[glm])/i,
+  const quantityPattern = new RegExp(
+    "(?<quantity>\\d[\\d.,]*)\\s?(?<uom>(?:milli|kilo|centi)?" +
+      "(?:ounce|g(?:allon|ram|al)|pound|quart|qt|piece|pc|" +
+      "lb|(?:met|lit)[re]{2})s?|oz|k[mg]?|g|l|[cm]?[glm])",
+    "i",
   );
+  const quantityMatch = value.match(quantityPattern);
 
   if (
     !quantityMatch ||
@@ -69,18 +83,18 @@ export function parseQuantity(value: string): QuantityObject | void {
  *  standardizeUom('lb') // 'pound'
  *  standardizeUom('Grams') // 'gram'
  */
-export function standardizeUom(uomx: string): string | void {
+export function standardizeUom(uom: string): string | void {
   const uomMap = Object.entries(uomAliases).reduce(
-    (acc, [uomx, aliases]) => {
+    (acc, [uom, aliases]) => {
       aliases.forEach((alias) => {
-        acc[alias] = uomx;
+        acc[alias] = uom;
       });
       return acc;
     },
-    { [uomx]: uomx } as Record<string, string>,
+    { [uom]: uom } as Record<string, string>,
   );
 
-  if (uomx.toLowerCase() in uomMap) return uomMap[uomx.toLowerCase()];
+  if (uom.toLowerCase() in uomMap) return uomMap[uom.toLowerCase()];
 }
 
 export function convertToBaseUom(quantity: number, uom: UOM): number {

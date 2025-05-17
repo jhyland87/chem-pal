@@ -14,6 +14,24 @@ export enum UOM_LONG {
   OZ = "ounce",
   MG = "milligram",
   KM = "kilometer",
+  PCS = "piece",
+}
+
+export enum UOM {
+  KG = "kg",
+  LB = "lb",
+  ML = "ml",
+  G = "g",
+  L = "L",
+  QT = "qt",
+  GAL = "gal",
+  MM = "mm",
+  CM = "cm",
+  M = "m",
+  OZ = "oz",
+  MG = "mg",
+  KM = "km",
+  PCS = "pcs",
 }
 
 // These are the UOM values that will be displayed to the user.
@@ -34,19 +52,3 @@ export enum UOM_LONG {
 //   mg = 'mg',
 //   km = 'km',
 // }
-
-export enum UOM {
-  KG = "kg",
-  LB = "lb",
-  ML = "ml",
-  G = "g",
-  L = "L",
-  QT = "qt",
-  GAL = "gal",
-  MM = "mm",
-  CM = "cm",
-  M = "m",
-  OZ = "oz",
-  MG = "mg",
-  KM = "km",
-}

@@ -2,6 +2,27 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { TabPanelProps } from "../types";
 
+/**
+ * TabPanel component that renders content for a specific tab.
+ * The content is only visible when the tab is selected.
+ *
+ * @component
+ *
+ * @param {TabPanelProps} props - Component props
+ * @param {ReactNode} [props.children] - Child elements to render
+ * @param {string} [props.dir] - Text direction (ltr/rtl)
+ * @param {number} props.index - Tab index
+ * @param {number|string} props.value - Current value
+ * @param {object} [props.style] - Additional styles
+ * @param {string} props.name - Panel name
+ *
+ * @example
+ * ```tsx
+ * <TabPanel value={currentTab} index={0} name="first-panel">
+ *   <div>First panel content</div>
+ * </TabPanel>
+ * ```
+ */
 export default function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
 

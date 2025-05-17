@@ -3,7 +3,7 @@ import { HeaderObject, Product } from "../types";
 
 /**
  * The base class for all suppliers.
- * @template T - The type of product to return.
+ * @typeParam T - The type of product to return.
  */
 export default abstract class SupplierBase<T extends Product> implements AsyncIterable<T> {
   // The name of the supplier (used for display name, lists, etc)
@@ -34,7 +34,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   protected _httpRequestHardLimit: number = 50;
 
   // Used to keep track of how many requests have been made to the supplier.
-  protected _http_requst_count: number = 0;
+  protected _httpRequstCount: number = 0;
 
   // If using async requests, this will determine how many of them to batch together (using
   // something like Promise.all()). This is to avoid overloading the users bandwidth and
@@ -125,6 +125,15 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * @param body - The body of the POST request.
    * @param headers - The headers for the POST request.
    * @returns The response from the POST request.
+   * @example
+   * ```ts
+   * const request = await this.httpPost(
+   *    "http://example.com",
+   *    { name: "John" },
+   *    { "Content-Type": "application/json" }
+   * );
+   * const responseJSON = await request?.json();
+   * ```
    */
   protected async httpPost(
     url: string,
@@ -215,6 +224,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
         return this._getProductData(r as object);
       });
 
+      console.log("productPromises:", productPromises);
       for (const resultPromise of productPromises) {
         try {
           const result = await resultPromise;

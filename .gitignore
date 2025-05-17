@@ -23,5 +23,5 @@ dev
 *.njsproj
 *.sln
 *.sw?
-
+docs
 coverage

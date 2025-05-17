@@ -26,6 +26,27 @@ import TableHeader from "./TableHeader";
 import TableOptions from "./TableOptions";
 let fetchController: AbortController;
 
+/**
+ * ResultsTable component that displays search results in a table format with filtering,
+ * sorting, and pagination capabilities. It also handles the search execution and
+ * manages the loading state.
+ *
+ * @component
+ *
+ * @param {ProductTableProps<Product>} props - Component props
+ * @param {Function} props.renderVariants - Function to render variant details
+ * @param {Function} props.getRowCanExpand - Function to determine if a row can be expanded
+ * @param {[ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>]} props.columnFilterFns - Column filter state and setter
+ *
+ * @example
+ * ```tsx
+ * <ResultsTable
+ *   renderVariants={DetailsContainer}
+ *   getRowCanExpand={() => true}
+ *   columnFilterFns={[filters, setFilters]}
+ * />
+ * ```
+ */
 export default function ResultsTable({
   renderVariants,
   getRowCanExpand,
@@ -38,6 +59,9 @@ export default function ResultsTable({
   const [, setStatusLabel] = useState<string | boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  /**
+   * Initializes the table by loading saved search results and column visibility settings.
+   */
   useEffect(() => {
     if (!isEmpty(appContext.settings.hideColumns)) {
       table.getAllLeafColumns().map((column: Column<Product>) => {
@@ -57,6 +81,9 @@ export default function ResultsTable({
     });
   }, []);
 
+  /**
+   * Updates the displayed search results when the search result timestamp changes.
+   */
   useEffect(() => {
     console.log("Search result timestamp was updated", appContext.settings.searchResultUpdateTs);
 
@@ -66,15 +93,21 @@ export default function ResultsTable({
     });
   }, [appContext.settings.searchResultUpdateTs]);
 
+  /**
+   * Handles stopping the current search operation.
+   */
   const handleStopSearch = () => {
-    // Stop the form from propagating
-    //event.preventDefault();
     console.debug("triggering abort..");
     setIsLoading(false);
     fetchController.abort();
     setStatusLabel(searchResults.length === 0 ? "Search aborted" : "");
   };
 
+  /**
+   * Executes a search query and processes the results.
+   * @param {string} query - The search query to execute
+   * @returns {Promise<Product[]>} The search results
+   */
   async function executeSearch(query: string) {
     if (!query.trim()) {
       return;
@@ -164,9 +197,6 @@ export default function ResultsTable({
       ]);
     }
 
-    // Now columnFilterConfig can be used for filtering the results based off of column data.
-    //console.log("columnFilterConfig:", columnFilterConfig);
-
     const endSearchTime = performance.now();
     const searchTime = endSearchTime - startSearchTime;
     setIsLoading(false);
@@ -174,10 +204,16 @@ export default function ResultsTable({
     return searchResults;
   }
 
+  /**
+   * Executes the search when the search input changes.
+   */
   useEffect(() => {
     executeSearch(searchInput).then(console.log).catch(console.error);
   }, [searchInput]);
 
+  /**
+   * Updates the search results in storage and updates the timestamp when results change.
+   */
   useEffect(() => {
     // Not sure i'm happy with how I'm handling the search result update sequence.
     // May need to refactor later.
@@ -196,6 +232,9 @@ export default function ResultsTable({
     });
   }, [searchResults]); // <-- this is the dependency
 
+  /**
+   * Logs search results updates for debugging.
+   */
   useEffect(() => {
     console.debug("searchResults UPDATED:", searchResults);
   }, [searchResults]);

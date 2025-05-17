@@ -19,7 +19,9 @@ import SelectColumnFilter from "./Inputs/SelectColumnFilter";
 import TextColumnFilter from "./Inputs/TextColumnFilter";
 
 /**
- * filterComponentMap is a map of filter variants to their corresponding components.
+ * Map of filter variants to their corresponding filter components.
+ * Each variant (text, range, select) has a dedicated component for handling its specific filtering needs.
+ *
  * @type {Record<string, ComponentType<FilterVariantInputProps>>}
  */
 const filterComponentMap: Record<string, ComponentType<FilterVariantInputProps>> = {
@@ -29,9 +31,15 @@ const filterComponentMap: Record<string, ComponentType<FilterVariantInputProps>>
 };
 
 /**
- * FilterVariantComponent is a component that renders a filter variant component based on the filter variant.
- * @param column - The column configuration.
- * @returns A component that renders a filter variant component based on the filter variant.
+ * Renders the appropriate filter component based on the column's filter variant.
+ * Falls back to text filter if no variant is specified or if the variant is not found.
+ *
+ * @component
+ *
+ * @param {FilterVariantComponentProps} props - Component props
+ * @param {CustomColumn<Product, unknown>} props.column - The column configuration
+ *
+ * @returns {JSX.Element} The rendered filter component
  */
 function FilterVariantComponent({ column }: FilterVariantComponentProps) {
   const ComponentToRender = filterComponentMap[column.columnDef?.meta?.filterVariant ?? "text"];
@@ -40,6 +48,26 @@ function FilterVariantComponent({ column }: FilterVariantComponentProps) {
   return <ComponentToRender column={column} />;
 }
 
+/**
+ * Modal component that provides filtering and column visibility controls for the product results table.
+ * It includes column visibility selection and various filter types (text, range, select) based on column configuration.
+ *
+ * @component
+ *
+ * @param {Object} props - Component props
+ * @param {boolean} props.filterModalOpen - Whether the modal is open
+ * @param {Function} props.setFilterModalOpen - Function to update the modal's open state
+ * @param {Table<Product>} props.table - The table instance from TanStack Table
+ *
+ * @example
+ * ```tsx
+ * <FilterModal
+ *   filterModalOpen={isOpen}
+ *   setFilterModalOpen={setIsOpen}
+ *   table={table}
+ * />
+ * ```
+ */
 export default function FilterModal({
   filterModalOpen,
   setFilterModalOpen,
@@ -49,8 +77,15 @@ export default function FilterModal({
   setFilterModalOpen: (open: boolean) => void;
   table: Table<Product>;
 }) {
+  /**
+   * Closes the filter modal.
+   */
   const handleClose = () => setFilterModalOpen(false);
 
+  /**
+   * Gets the list of currently visible column IDs.
+   * @returns {string[]} Array of visible column IDs
+   */
   const columnStatus = table
     .getAllColumns()
     .reduce((accu: string[], column: CustomColumn<Product, unknown>) => {
@@ -59,6 +94,13 @@ export default function FilterModal({
     }, []);
 
   const [columnVisibility, setColumnVisibility] = useState<string[]>(columnStatus);
+
+  /**
+   * Handles changes to column visibility selection.
+   * Updates the visibility state and applies changes to the table columns.
+   *
+   * @param {SelectChangeEvent<typeof columnVisibility>} event - The change event from the select component
+   */
   const handleColumnVisibilityChange = (event: SelectChangeEvent<typeof columnVisibility>) => {
     const {
       target: { value },
@@ -73,6 +115,10 @@ export default function FilterModal({
     });
   };
 
+  /**
+   * Gets a map of column IDs to their header text for filterable columns.
+   * @returns {Record<string, string>} Object mapping column IDs to their header text
+   */
   const columnNames = table
     .getAllColumns()
     .reduce((accu: Record<string, string>, col: CustomColumn<Product, unknown>) => {
