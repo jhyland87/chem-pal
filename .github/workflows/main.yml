@@ -12,25 +12,31 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup App
+        uses: actions/setup-node@v4
         with:
           node-version: 'v22.15.0'
       - run: npm run setup
       # Generate your TypeDoc documentation
-      - run: npm run docs
-      # https://github.com/actions/upload-pages-artifact
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./docs  # This should be your TypeDoc "out" path.
+      - name: Generate documentation
+        run: npm run docs
+
   deploy:
-    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    needs: build
+    runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'docs'
       - name: Deploy to GitHub Pages
         id: deployment
-        # https://github.com/actions/deploy-pages
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
