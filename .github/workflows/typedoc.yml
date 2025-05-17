@@ -1,4 +1,4 @@
-name: "typedoc"
+name: "Generate TypeDoc files and publish to Github Pages"
 on:
   push:
     branches: [main]
