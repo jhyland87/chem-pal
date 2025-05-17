@@ -75,25 +75,6 @@ export default function ResultsTable({
     setStatusLabel(searchResults.length === 0 ? "Search aborted" : "");
   };
 
-  /*
-  function getColumnFilterConfig() {
-    const filterableColumns = table.options.columns.reduce<
-      Record<string, { filterVariant: string; filterData: unknown[] }>
-    >((accu, column: ColumnDef<Product, unknown>) => {
-      const meta = column.meta as ColumnMeta | undefined;
-      if (meta?.filterVariant === undefined || !column.id) return accu;
-
-      accu[column.id] = {
-        filterVariant: meta.filterVariant,
-        filterData: [],
-      };
-      return accu;
-    }, {});
-
-    return filterableColumns;
-  }
-    */
-
   async function executeSearch(query: string) {
     if (!query.trim()) {
       return;
@@ -188,11 +169,8 @@ export default function ResultsTable({
 
     const endSearchTime = performance.now();
     const searchTime = endSearchTime - startSearchTime;
-
     setIsLoading(false);
-
     console.debug(`Found ${resultCount} products in ${searchTime} milliseconds`);
-
     return searchResults;
   }
 
@@ -203,21 +181,19 @@ export default function ResultsTable({
   useEffect(() => {
     // Not sure i'm happy with how I'm handling the search result update sequence.
     // May need to refactor later.
-    chrome.storage.session
-      .set({ searchResults }) // <-- This is the effect/action
-      .then(() => {
-        if (!searchResults.length) {
-          setStatusLabel(
-            isLoading ? `Searching for ${searchInput}...` : "Type a product name and hit enter",
-          );
-          return;
-        }
+    chrome.storage.session.set({ searchResults }).then(() => {
+      if (!searchResults.length) {
+        setStatusLabel(
+          isLoading ? `Searching for ${searchInput}...` : "Type a product name and hit enter",
+        );
+        return;
+      }
 
-        appContext.setSettings({
-          ...appContext.settings,
-          searchResultUpdateTs: new Date().toISOString(),
-        });
+      appContext.setSettings({
+        ...appContext.settings,
+        searchResultUpdateTs: new Date().toISOString(),
       });
+    });
   }, [searchResults]); // <-- this is the dependency
 
   useEffect(() => {
