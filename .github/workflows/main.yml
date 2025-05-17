@@ -9,7 +9,7 @@ permissions:
   id-token: write
 
 jobs:
-  build:
+  setup:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -19,9 +19,19 @@ jobs:
         with:
           node-version: 'v22.15.0'
       - run: npm run setup
-      # Generate your TypeDoc documentation
+  build:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
       - name: Generate documentation
         run: npm run docs
+  publish:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
