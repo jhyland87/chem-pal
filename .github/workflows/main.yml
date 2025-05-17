@@ -24,7 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Generate documentation
-        run: npm run docs
+        uses: actions/checkout@v4
+      - run: npm run docs
   publish:
     needs: build
     environment:
