@@ -32,6 +32,10 @@
     {
       "tagName": "@interface",
       "syntaxKind": "block"
+    },
+    {
+      "tagName": "@type",
+      "syntaxKind": "block"
     }
   ],
   "supportForTags": {
@@ -42,6 +46,7 @@
     "@throws": true,
     "@todo": true,
     "@module": true,
-    "@interface": true
+    "@interface": true,
+    "@type": true
   }
 }

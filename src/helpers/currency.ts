@@ -7,16 +7,20 @@ import {
 } from "../types";
 
 /**
- * Get the currency symbol from a price string.
+ * Extracts the currency symbol from a price string.
+ * Uses Unicode property escapes to match currency symbols.
  *
- * @param {string} price - The price string to get the currency symbol from.
- * @returns {string | undefined} - The currency symbol or undefined if no symbol is found.
+ * @param {string} price - The price string to extract the currency symbol from
+ * @returns {string | undefined} The currency symbol if found, undefined otherwise
+ *
  * @example
- * getCurrencySymbol('$1000') // '$'
- * getCurrencySymbol('1000€') // '€'
- * getCurrencySymbol('1000£') // '£'
- * getCurrencySymbol('1000¥') // '¥'
- * getCurrencySymbol('1000₹') // '₹'
+ * ```ts
+ * getCurrencySymbol('$1000') // Returns '$'
+ * getCurrencySymbol('1000€') // Returns '€'
+ * getCurrencySymbol('1000£') // Returns '£'
+ * getCurrencySymbol('1000¥') // Returns '¥'
+ * getCurrencySymbol('1000₹') // Returns '₹'
+ * ```
  */
 export function getCurrencySymbol(price: string): string | undefined {
   const match = price.match(/\p{Sc}/u);
@@ -25,16 +29,20 @@ export function getCurrencySymbol(price: string): string | undefined {
 }
 
 /**
- * Parse a price string into a ParsedPrice object.
+ * Parses a price string into a structured object containing currency information.
+ * Handles various price formats including foreign number formats (e.g., 1.234,56).
  *
- * @param {string} price - The price string to parse.
- * @returns {ParsedPrice | void} - The parsed price or undefined if the price is invalid.
+ * @param {string} price - The price string to parse
+ * @returns {ParsedPrice | void} Object containing currency code, symbol, and numeric price, or undefined if invalid
+ *
  * @example
- * parsePrice('$1000') // { currencyCode: 'USD', price: 1000, currencySymbol: '$' }
- * parsePrice('1000€') // { currencyCode: 'EUR', price: 1000, currencySymbol: '€' }
- * parsePrice('1000£') // { currencyCode: 'GBP', price: 1000, currencySymbol: '£' }
- * parsePrice('1000¥') // { currencyCode: 'JPY', price: 1000, currencySymbol: '¥' }
- * parsePrice('1000') // undefined
+ * ```ts
+ * parsePrice('$1000') // Returns { currencyCode: 'USD', price: 1000, currencySymbol: '$' }
+ * parsePrice('1000€') // Returns { currencyCode: 'EUR', price: 1000, currencySymbol: '€' }
+ * parsePrice('1000£') // Returns { currencyCode: 'GBP', price: 1000, currencySymbol: '£' }
+ * parsePrice('1000¥') // Returns { currencyCode: 'JPY', price: 1000, currencySymbol: '¥' }
+ * parsePrice('1000') // Returns undefined
+ * ```
  */
 export function parsePrice(price: string): ParsedPrice | void {
   const currencySymbol = getCurrencySymbol(price) as CurrencySymbol;
@@ -43,10 +51,7 @@ export function parsePrice(price: string): ParsedPrice | void {
   const currencyCode = getCurrencyCodeFromSymbol(currencySymbol);
   let bareAmount = price.replace(currencySymbol, "").trim();
 
-  // https://regex101.com/r/Q5w26N/2
-  // If the prices (like quantities) could be the weird foreign style where the commas and
-  // decimals are swapped, (eg: 1.234,56 instead of 1,234.56), then we need to swap the
-  // commas and decimals for easier parsing and handling.
+  // Handle foreign number formats where commas and decimals are swapped
   if (bareAmount.match(/^(\d+\.\d+,\d{1,2}|\d{1,3},\d{1,2}|\d{1,3},\d{1,2})$/))
     bareAmount = bareAmount.replaceAll(".", "xx").replaceAll(",", ".").replaceAll("xx", ",");
 
@@ -61,14 +66,19 @@ export function parsePrice(price: string): ParsedPrice | void {
 }
 
 /**
- * Get the currency rate for a given currency pair.
+ * Fetches the current exchange rate between two currencies.
+ * Uses the Hexarate API to get real-time exchange rates.
  *
- * @param {CurrencyCode} from - The currency to convert from.
- * @param {CurrencyCode} to - The currency to convert to.
- * @returns {Promise<number>} - The currency rate.
+ * @param {CurrencyCode} from - The source currency code
+ * @param {CurrencyCode} to - The target currency code
+ * @returns {Promise<number>} The exchange rate between the currencies
+ * @throws {Error} If the API request fails
+ *
  * @example
- * getCurrencyRate('USD', 'EUR') // 0.85
- * getCurrencyRate('EUR', 'USD') // 1.1764705882352942
+ * ```ts
+ * await getCurrencyRate('USD', 'EUR') // Returns 0.85
+ * await getCurrencyRate('EUR', 'USD') // Returns 1.1764705882352942
+ * ```
  */
 export async function getCurrencyRate(from: CurrencyCode, to: CurrencyCode): Promise<number> {
   try {
@@ -85,32 +95,40 @@ export async function getCurrencyRate(from: CurrencyCode, to: CurrencyCode): Pro
 }
 
 /**
- * Get the currency code from a currency symbol.
+ * Maps a currency symbol to its corresponding currency code.
+ * Uses a predefined mapping of symbols to ISO currency codes.
  *
- * @param {CurrencySymbolMap} symbol - The currency symbol to get the currency code from.
- * @returns {CurrencyCodeMap} - The currency code.
+ * @param {CurrencySymbol} symbol - The currency symbol to look up
+ * @returns {CurrencyCode} The corresponding ISO currency code
+ *
  * @example
- * getCurrencyCodeFromSymbol('$') // 'USD'
- * getCurrencyCodeFromSymbol('€') // 'EUR'
- * getCurrencyCodeFromSymbol('£') // 'GBP'
- * getCurrencyCodeFromSymbol('¥') // 'JPY'
- * getCurrencyCodeFromSymbol('₹') // 'INR'
+ * ```ts
+ * getCurrencyCodeFromSymbol('$') // Returns 'USD'
+ * getCurrencyCodeFromSymbol('€') // Returns 'EUR'
+ * getCurrencyCodeFromSymbol('£') // Returns 'GBP'
+ * getCurrencyCodeFromSymbol('¥') // Returns 'JPY'
+ * getCurrencyCodeFromSymbol('₹') // Returns 'INR'
+ * ```
  */
 export function getCurrencyCodeFromSymbol(symbol: CurrencySymbol): CurrencyCode {
   return CurrencyCodeMap[symbol];
 }
 
 /**
- * Convert a given amount from a specified currency to USD.
+ * Converts a given amount from any supported currency to USD.
+ * Uses real-time exchange rates from the Hexarate API.
  *
- * @param {number} amount - The amount to convert.
- * @param {CurrencyCode} from - The currency to convert from.
- * @returns {Promise<string>} - The amount in USD.
+ * @param {number} amount - The amount to convert
+ * @param {CurrencyCode} from - The source currency code
+ * @returns {Promise<string>} The converted amount in USD, formatted to 2 decimal places
+ *
  * @example
- * toUSD(100, 'EUR') // '117.65'
- * toUSD(100, 'GBP') // '130.43'
- * toUSD(100, 'JPY') // '11000.00'
- * toUSD(100, 'INR') // '8500.00'
+ * ```ts
+ * await toUSD(100, 'EUR') // Returns '117.65'
+ * await toUSD(100, 'GBP') // Returns '130.43'
+ * await toUSD(100, 'JPY') // Returns '11000.00'
+ * await toUSD(100, 'INR') // Returns '8500.00'
+ * ```
  */
 export async function toUSD(amount: number, from: CurrencyCode): Promise<string> {
   const rate = await getCurrencyRate(from, "USD");

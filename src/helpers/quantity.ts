@@ -1,8 +1,10 @@
 import { QuantityObject, UOM } from "../types";
 
 /**
- * Since a single UOM can be represented in multiple ways, we need to keep track of all the
- * possible aliases for each UOM.
+ * Maps each unit of measure (UOM) to its possible string representations.
+ * This mapping helps standardize various ways of expressing the same unit.
+ *
+ * @type {Record<UOM, string[]>}
  */
 export const uomAliases: Record<UOM, string[]> = {
   [UOM.PCS]: ["piece", "pieces", "pc", "pcs"],
@@ -22,19 +24,24 @@ export const uomAliases: Record<UOM, string[]> = {
 };
 
 /**
- * Parses a quantity string into a QuantityObject object.
- * @see https://regex101.com/r/Ruid54/3
- * @param value - The quantity string to parse.
- * @returns A QuantityObject object.
- * @example
- * parseQuantity('100g') // { quantity: 100, uom: 'g' }
- * parseQuantity('120 grams') // { quantity: 120, uom: 'grams' }
+ * Parses a quantity string into a structured object containing the numeric value and unit of measure.
+ * Handles various formats including foreign number formats (e.g., 1.234,56).
+ * Uses regex pattern matching to extract quantity and unit information.
  *
- * parseQuantity('43.4 ounce') // { quantity: 43.4, uom: 'ounce' }
- * parseQuantity('1200 milliliters')
- * // { quantity: 1200, uom: 'milliliters' }
- * parseQuantity('1.2 L')
- * // { quantity: 1.2, uom: 'L' }
+ * @param {string} value - The quantity string to parse (e.g., '100g', '120 grams')
+ * @returns {QuantityObject | void} Object containing quantity and UOM, or undefined if parsing fails
+ * @throws {Error} If the quantity string cannot be parsed
+ *
+ * @example
+ * ```ts
+ * parseQuantity('100g') // Returns { quantity: 100, uom: 'g' }
+ * parseQuantity('120 grams') // Returns { quantity: 120, uom: 'grams' }
+ * parseQuantity('43.4 ounce') // Returns { quantity: 43.4, uom: 'ounce' }
+ * parseQuantity('1200 milliliters') // Returns { quantity: 1200, uom: 'milliliters' }
+ * parseQuantity('1.2 L') // Returns { quantity: 1.2, uom: 'L' }
+ * ```
+ *
+ * @see https://regex101.com/r/Ruid54/3
  */
 export function parseQuantity(value: string): QuantityObject | void {
   const quantityPattern = new RegExp(
@@ -56,10 +63,7 @@ export function parseQuantity(value: string): QuantityObject | void {
 
   let parsedQuantity: string | number = quantityMatch.groups.quantity;
 
-  // https://regex101.com/r/Q5w26N/2
-  // If the quantity is the weird foreign style where the commas and decimals are swapped,
-  // (eg: 1.234,56 instead of 1,234.56), then we need to swap the commas and decimals for
-  // easier parsing and handling.
+  // Handle foreign number formats where commas and decimals are swapped
   if (parsedQuantity.match(/^(\d+\.\d+,\d{1,2}|\d{1,3},\d{1,2}|\d{1,3},\d{1,2})$/))
     parsedQuantity = parsedQuantity
       .replaceAll(".", "xx")
@@ -73,15 +77,20 @@ export function parseQuantity(value: string): QuantityObject | void {
 }
 
 /**
- * Standardizes a UOM to its canonical form.
- * @param {string} uom - The UOM to standardize.
- * @returns The standardized UOM. The displayable UOM values are in the UOM enum
+ * Standardizes a unit of measure (UOM) to its canonical form.
+ * Uses the uomAliases mapping to convert various representations to standard forms.
+ *
+ * @param {string} uom - The unit of measure to standardize
+ * @returns {string | void} The standardized UOM, or undefined if not recognized
+ *
  * @example
- *  standardizeUom('qt') // 'quart'
- *  standardizeUom('kg') // 'kilogram'
- *  standardizeUom('kilograms') // 'kilogram'
- *  standardizeUom('lb') // 'pound'
- *  standardizeUom('Grams') // 'gram'
+ * ```ts
+ * standardizeUom('qt') // Returns 'quart'
+ * standardizeUom('kg') // Returns 'kilogram'
+ * standardizeUom('kilograms') // Returns 'kilogram'
+ * standardizeUom('lb') // Returns 'pound'
+ * standardizeUom('Grams') // Returns 'gram'
+ * ```
  */
 export function standardizeUom(uom: string): string | void {
   const uomMap = Object.entries(uomAliases).reduce(
@@ -97,18 +106,31 @@ export function standardizeUom(uom: string): string | void {
   if (uom.toLowerCase() in uomMap) return uomMap[uom.toLowerCase()];
 }
 
+/**
+ * Converts a quantity from its current unit to its base unit.
+ * Currently supports conversion of kilometers to meters and pounds to grams.
+ *
+ * @param {number} quantity - The quantity to convert
+ * @param {UOM} uom - The unit of measure of the quantity
+ * @returns {number} The converted quantity in its base unit
+ *
+ * @example
+ * ```ts
+ * convertToBaseUom(1, UOM.KM) // Returns 1000 (meters)
+ * convertToBaseUom(1, UOM.LB) // Returns 453.592 (grams)
+ * convertToBaseUom(1, UOM.G) // Returns 1 (no conversion needed)
+ * ```
+ */
 export function convertToBaseUom(quantity: number, uom: UOM): number {
   switch (uom) {
     // Convert km/kg to m/g
     case UOM.KM:
     case UOM.KG:
       return quantity * 1000;
-      break;
 
     // Convert pounds to grams
     case UOM.LB:
       return quantity * 453.592;
-      break;
   }
   return quantity;
 }
