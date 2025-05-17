@@ -278,7 +278,7 @@ export default function ResultsTable({
           noValidate
           autoComplete="off"
         />
-        <div className="p-2">
+        <div className="p-2" style={{ minHeight: "369px" }}>
           <TableOptions table={table} searchInput={searchInput} setSearchInput={setSearchInput} />
           <div className="h-4" />
           <table

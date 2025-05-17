@@ -14,9 +14,13 @@ export default function TableOptions({ table, searchInput, setSearchInput }: Tab
 
   return (
     <>
-      <Toolbar className="table-options-toolbar">
-        <Typography component="div">
-          <SearchInput searchInput={searchInput} setSearchInput={setSearchInput} />
+      <Toolbar className="table-options-toolbar fullwidth">
+        <Typography component="div" className="search-input">
+          <SearchInput
+            searchInput={searchInput}
+            //className="search-input"
+            setSearchInput={setSearchInput}
+          />
         </Typography>
         <Tooltip title="Filter list">
           <TuneIcon

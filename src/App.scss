@@ -12,6 +12,9 @@ html {
   min-width: 800px;
   max-height: 600px;
   min-height: 300px;
+  header.MuiAppBar-root {
+    border-radius: 0;
+  }
 }
 
 .logo {
