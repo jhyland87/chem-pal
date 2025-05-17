@@ -1,6 +1,6 @@
 import Tooltip from "@mui/material/Tooltip";
 import { MouseEvent, useEffect, useState } from "react";
-import { useSettings } from "../context";
+import { useAppContext } from "../context";
 import _ from "../lodash";
 import { HelpTooltipProps } from "../types";
 
@@ -10,7 +10,7 @@ export default function HelpTooltip({
   delay = 500,
   duration = 2000,
 }: HelpTooltipProps) {
-  const settingsContext = useSettings();
+  const appContext = useAppContext();
 
   const [showHelp, setShowHelp] = useState(false);
 
@@ -32,11 +32,11 @@ export default function HelpTooltip({
   };
 
   useEffect(() => {
-    if (settingsContext.settings.showHelp === false) return;
+    if (appContext.settings.showHelp === false) return;
 
     _.delayAction(delay, () => setShowHelp(true));
     _.delayAction(duration, () => setShowHelp(false));
-  }, [delay, duration, settingsContext.settings.showHelp]);
+  }, [delay, duration, appContext.settings.showHelp]);
 
   return (
     <Tooltip

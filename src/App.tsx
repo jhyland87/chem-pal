@@ -14,7 +14,7 @@ import SpeedDialMenu from "./components/SpeedDialMenu";
 import SuppliersPanel from "./components/SuppliersPanel";
 import TabHeader from "./components/TabHeader";
 import TabPanel from "./components/TabPanel";
-import { SettingsContext } from "./context";
+import { AppContext } from "./context";
 import "./mocks/chromeStorageMock";
 import SupplierFactory from "./suppliers/SupplierFactory";
 import { darkTheme, lightTheme } from "./themes";
@@ -82,7 +82,7 @@ function App() {
 
   // Load the settings from storage.local on the initial component load
   useEffect(() => {
-    chrome.storage.local.get(["settings", "panel"]).then((data) => {
+    chrome.storage.session.get(["settings", "panel"]).then((data) => {
       if (data.settings) setSettings({ ...data.settings });
       if (data.panel) setPanel(data.panel);
     });
@@ -90,13 +90,13 @@ function App() {
 
   // Save the settings to storage.local when the settings change
   useEffect(() => {
-    chrome.storage.local.set({ settings, panel });
+    chrome.storage.session.set({ settings, panel });
     setCurrentTheme(settings.theme === "light" ? lightTheme : darkTheme);
   }, [settings, panel]);
 
   return (
     <ErrorBoundary fallback={<p>Something went wrong</p>}>
-      <SettingsContext.Provider value={{ settings, setSettings }}>
+      <AppContext.Provider value={{ settings, setSettings }}>
         <ThemeProvider theme={currentTheme}>
           <CssBaseline />
           <Box sx={{ bgcolor: "background.default", width: "100%" }}>
@@ -121,7 +121,7 @@ function App() {
             <SpeedDialMenu speedDialVisibility={speedDialVisibility} />
           </Box>
         </ThemeProvider>
-      </SettingsContext.Provider>
+      </AppContext.Provider>
     </ErrorBoundary>
   );
 }

@@ -1,12 +1,12 @@
 import { createContext, useContext } from "react";
-import { SettingsContextProps } from "./types";
+import { AppContextProps } from "./types";
 
-export const SettingsContext = createContext<SettingsContextProps | undefined>(undefined);
+export const AppContext = createContext<AppContextProps | undefined>(undefined);
 
-export function useSettings() {
-  const context = useContext(SettingsContext);
+export function useAppContext() {
+  const context = useContext(AppContext);
   if (context === undefined) {
-    throw new Error("useSettings must be used within a SettingsContext");
+    throw new Error("useAppContext must be used within a AppContext");
   }
   return context;
 }

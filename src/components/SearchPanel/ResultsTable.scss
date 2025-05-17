@@ -5,6 +5,9 @@
   width: 100%;
   //padding: 0px;
   table.search-results {
+    tbody {
+      vertical-align: top;
+    }
     width: 100%;
     min-height: 275px;
     tr {

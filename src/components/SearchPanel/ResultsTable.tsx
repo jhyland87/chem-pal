@@ -14,7 +14,7 @@ import {
 } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
 import { CSSProperties, Fragment, ReactElement, useEffect, useState } from "react";
-import { useSettings } from "../../context";
+import { useAppContext } from "../../context";
 import SupplierFactory from "../../suppliers/SupplierFactory";
 import { Product, ProductTableProps } from "../../types";
 import { implementCustomMethods } from "../../utils/tanstack";
@@ -31,7 +31,7 @@ export default function ResultsTable({
   getRowCanExpand,
   columnFilterFns,
 }: ProductTableProps<Product>): ReactElement {
-  const settingsContext = useSettings();
+  const appContext = useAppContext();
   const [searchInput, setSearchInput] = useState<string>("");
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [showSearchResults, setShowSearchResults] = useState<Product[]>([]);
@@ -39,13 +39,12 @@ export default function ResultsTable({
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!isEmpty(settingsContext.settings.hideColumns)) {
+    if (!isEmpty(appContext.settings.hideColumns)) {
       table.getAllLeafColumns().map((column: Column<Product>) => {
-        if (settingsContext.settings.hideColumns.includes(column.id))
-          column.toggleVisibility(false);
+        if (appContext.settings.hideColumns.includes(column.id)) column.toggleVisibility(false);
       });
     }
-    chrome.storage.local.get(["searchResults", "paginationModel"]).then((data) => {
+    chrome.storage.session.get(["searchResults", "paginationModel"]).then((data) => {
       const storedSearchResults = data.searchResults || [];
 
       if (!storedSearchResults) {
@@ -59,16 +58,13 @@ export default function ResultsTable({
   }, []);
 
   useEffect(() => {
-    console.log(
-      "Search result timestamp was updated",
-      settingsContext.settings.searchResultUpdateTs,
-    );
+    console.log("Search result timestamp was updated", appContext.settings.searchResultUpdateTs);
 
-    chrome.storage.local.get(["searchResults"]).then((data) => {
+    chrome.storage.session.get(["searchResults"]).then((data) => {
       console.log("New search results", data.searchResults);
       setShowSearchResults(data.searchResults);
     });
-  }, [settingsContext.settings.searchResultUpdateTs]);
+  }, [appContext.settings.searchResultUpdateTs]);
 
   const handleStopSearch = () => {
     // Stop the form from propagating
@@ -78,25 +74,6 @@ export default function ResultsTable({
     fetchController.abort();
     setStatusLabel(searchResults.length === 0 ? "Search aborted" : "");
   };
-
-  /*
-  function getColumnFilterConfig() {
-    const filterableColumns = table.options.columns.reduce<
-      Record<string, { filterVariant: string; filterData: unknown[] }>
-    >((accu, column: ColumnDef<Product, unknown>) => {
-      const meta = column.meta as ColumnMeta | undefined;
-      if (meta?.filterVariant === undefined || !column.id) return accu;
-
-      accu[column.id] = {
-        filterVariant: meta.filterVariant,
-        filterData: [],
-      };
-      return accu;
-    }, {});
-
-    return filterableColumns;
-  }
-    */
 
   async function executeSearch(query: string) {
     if (!query.trim()) {
@@ -118,7 +95,7 @@ export default function ResultsTable({
     const productQueryResults = new SupplierFactory(
       query,
       fetchController,
-      settingsContext.settings.suppliers,
+      appContext.settings.suppliers,
     );
 
     // Clear the products table
@@ -192,11 +169,8 @@ export default function ResultsTable({
 
     const endSearchTime = performance.now();
     const searchTime = endSearchTime - startSearchTime;
-
     setIsLoading(false);
-
     console.debug(`Found ${resultCount} products in ${searchTime} milliseconds`);
-
     return searchResults;
   }
 
@@ -207,21 +181,19 @@ export default function ResultsTable({
   useEffect(() => {
     // Not sure i'm happy with how I'm handling the search result update sequence.
     // May need to refactor later.
-    chrome.storage.local
-      .set({ searchResults }) // <-- This is the effect/action
-      .then(() => {
-        if (!searchResults.length) {
-          setStatusLabel(
-            isLoading ? `Searching for ${searchInput}...` : "Type a product name and hit enter",
-          );
-          return;
-        }
+    chrome.storage.session.set({ searchResults }).then(() => {
+      if (!searchResults.length) {
+        setStatusLabel(
+          isLoading ? `Searching for ${searchInput}...` : "Type a product name and hit enter",
+        );
+        return;
+      }
 
-        settingsContext.setSettings({
-          ...settingsContext.settings,
-          searchResultUpdateTs: new Date().toISOString(),
-        });
+      appContext.setSettings({
+        ...appContext.settings,
+        searchResultUpdateTs: new Date().toISOString(),
       });
+    });
   }, [searchResults]); // <-- this is the dependency
 
   useEffect(() => {
@@ -278,7 +250,7 @@ export default function ResultsTable({
           noValidate
           autoComplete="off"
         />
-        <div className="p-2">
+        <div className="p-2" style={{ minHeight: "369px" }}>
           <TableOptions table={table} searchInput={searchInput} setSearchInput={setSearchInput} />
           <div className="h-4" />
           <table

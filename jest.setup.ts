@@ -1,31 +1,20 @@
 // Import necessary modules
-import '@testing-library/jest-dom';
-import util from 'util';
-import { ChromeStorageItems } from './src/types';
-
-// Extend the global type to include chrome
-declare global {
-  var chrome: {
-    storage: {
-      local: {
-        set: (items: any, callback?: () => void) => void;
-        get: (items: any, callback?: (items: any) => void) => void;
-      }
-    }
-  }
-}
+import "@testing-library/jest-dom";
+import jestChrome from "jest-chrome";
+import util from "util";
+import { Chrome, ChromeStorageItems } from "./src/types/chrome-storage";
 
 // Assign jest-chrome to the global object
-Object.assign(global, require('jest-chrome'));
+Object.assign(global, jestChrome);
 
-// Define an interface for the Chrome storage items
+// Type assertion for the global chrome object
+const globalChrome = global as unknown as { chrome: Chrome };
 
+// Promisify chrome.storage.session.set and chrome.storage.session.get
+globalChrome.chrome.storage.session.set = util.promisify(
+  globalChrome.chrome.storage.session.set,
+) as (items: ChromeStorageItems) => Promise<void>;
 
-// Promisify chrome.storage.local.set and chrome.storage.local.get
-global.chrome.storage.local.set = util.promisify(
-  global.chrome.storage.local.set
-) as (items: Partial<ChromeStorageItems>) => Promise<void>;
-
-global.chrome.storage.local.get = util.promisify(
-  global.chrome.storage.local.get
-) as (items: Partial<ChromeStorageItems>) => Promise<void>;
+globalChrome.chrome.storage.session.get = util.promisify(
+  globalChrome.chrome.storage.session.get,
+) as (items: string | string[] | ChromeStorageItems) => Promise<ChromeStorageItems>;

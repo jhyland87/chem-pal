@@ -4,6 +4,7 @@ import Divider from "@mui/material/Divider";
 import Modal from "@mui/material/Modal";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
+import "./AboutModal.scss";
 
 import Typography from "@mui/material/Typography";
 import { styled, Theme } from "@mui/material/styles";
@@ -43,6 +44,7 @@ export default function AmoutModal({
   return (
     <div>
       <Modal
+        id="about-modal"
         onClick={() => setAboutOpen(false)}
         open={aboutOpen}
         onClose={() => setAboutOpen(false)}
@@ -50,40 +52,27 @@ export default function AmoutModal({
         aria-describedby="application-description"
         aria-contributors="application-contributors"
       >
-        <Box sx={style}>
-          <Typography
-            id="application-title"
-            variant="h6"
-            component="h2"
-            sx={{ textAlign: "center" }}
-          >
+        <Box className="about-box">
+          <Typography id="application-title" variant="h6" component="h2">
             About ChemPare
             <Link href="https://github.com/jhyland87/chem-crawler/tree/main">
-              <GitHubIcon fontSize="small" style={{ marginLeft: "10px" }} />
+              <GitHubIcon fontSize="small" className="github-icon" />
             </Link>
           </Typography>
-          <Typography
-            id="application-description"
-            variant="subtitle2"
-            gutterBottom
-            sx={{ mt: 1, display: "block" }}
-          >
+          <Typography id="application-description" variant="subtitle2" gutterBottom>
             Open source project aimed at helping amateur chemistry hobbyists find the best deals on
             chemical reagents. There are plenty of similar services out there for businesses,
             universities and research institutions, but none are available for individuals and
             hobbyists. ChemPare only searches suppliers that sell to individuals and ship to
             residences.
           </Typography>
-          <Divider sx={{ my: 2, fontSize: "0.8rem", color: "secondary.light" }}>
+          <Divider sx={{ color: "secondary.light" }}>
             <Typography variant="overline" gutterBottom sx={{ display: "block" }}>
               Contributors
             </Typography>
           </Divider>
-          <Typography
-            id="application-contributors"
-            sx={{ mt: 1, fontSize: "0.8rem", textAlign: "center", color: "text.secondary" }}
-          >
-            <Stack spacing={{ xs: 1, sm: 2 }} direction="row" useFlexGap sx={{ flexWrap: "wrap" }}>
+          <Typography id="application-contributors" sx={{ color: "text.secondary" }}>
+            <Stack direction="row" useFlexGap>
               <Item>
                 <Link href="https://github.com/jhyland87">Justin Hyland</Link>
               </Item>
