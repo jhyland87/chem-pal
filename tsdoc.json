@@ -28,6 +28,14 @@
     {
       "tagName": "@module",
       "syntaxKind": "block"
+    },
+    {
+      "tagName": "@interface",
+      "syntaxKind": "block"
+    },
+    {
+      "tagName": "@type",
+      "syntaxKind": "block"
     }
   ],
   "supportForTags": {
@@ -37,6 +45,8 @@
     "@returns": true,
     "@throws": true,
     "@todo": true,
-    "@module": true
+    "@module": true,
+    "@interface": true,
+    "@type": true
   }
 }

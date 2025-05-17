@@ -11,13 +11,38 @@ import _ from "../lodash";
 import AboutModal from "./AboutModal";
 import HelpTooltip from "./HelpTooltip";
 
+/**
+ * Props for the SpeedDialMenu component.
+ *
+ * @interface
+ * @param {boolean} speedDialVisibility - Controls whether the speed dial menu is visible
+ */
 type SpeedDialMenuProps = { speedDialVisibility: boolean };
 
+/**
+ * SpeedDialMenu component that provides quick access to various application actions.
+ * Displays a floating action button that expands to show multiple action buttons when clicked.
+ * Includes actions for clearing results, clearing cache, toggling theme, and showing about information.
+ *
+ * @component
+ *
+ * @param {SpeedDialMenuProps} props - Component props
+ * @param {boolean} props.speedDialVisibility - Controls whether the speed dial menu is visible
+ *
+ * @example
+ * ```tsx
+ * <SpeedDialMenu speedDialVisibility={true} />
+ * ```
+ */
 export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProps) {
   const appContext = useAppContext();
 
   const [, setShowHelp] = useState(false);
 
+  /**
+   * Effect hook to show and hide help tooltip based on settings.
+   * Shows help tooltip after 500ms and hides it after 2000ms if showHelp is enabled.
+   */
   useEffect(() => {
     if (appContext.settings.showHelp === false) return;
 
@@ -25,6 +50,12 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
     _.delayAction(2000, () => setShowHelp(false));
   }, [appContext.settings.showHelp]);
 
+  /**
+   * Handles clearing all search results.
+   * Updates the session storage and triggers a settings update.
+   *
+   * @param {MouseEvent<HTMLAnchorElement>} event - The click event
+   */
   const handleClearResults = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     chrome.storage.session.set({ searchResults: [] });
@@ -34,16 +65,26 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
     });
   };
 
+  /**
+   * Handles clearing the browser cache.
+   * Deletes all cache entries for the application.
+   *
+   * @param {MouseEvent<HTMLAnchorElement>} event - The click event
+   */
   const handleClearCache = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
 
-    //event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
     });
-    //);
   };
 
+  /**
+   * Handles toggling between light and dark themes.
+   * Updates the application settings with the new theme.
+   *
+   * @param {MouseEvent<HTMLAnchorElement>} event - The click event
+   */
   const handleToggleTheme = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
 
@@ -54,12 +95,19 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
   };
 
   const [aboutOpen, setAboutOpen] = useState(false);
+
+  /**
+   * Handles opening the about modal.
+   */
   const handleAboutOpen = () => setAboutOpen(true);
 
+  /**
+   * Array of action configurations for the speed dial menu.
+   * Each action includes an icon, name, and click handler.
+   */
   const actions = [
     { icon: <ClearIcon />, name: "Clear Results", onClick: handleClearResults },
     { icon: <AutoDeleteIcon />, name: "Clear Cache", onClick: handleClearCache },
-    //{ icon: <SaveIcon />, name: "Save Results", onClick: handleSaveResults },
     { icon: <ContrastIcon />, name: "Toggle Theme", onClick: handleToggleTheme },
     { icon: <InfoOutlineIcon />, name: "About", onClick: handleAboutOpen },
   ];

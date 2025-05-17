@@ -4,24 +4,18 @@ import Divider from "@mui/material/Divider";
 import Modal from "@mui/material/Modal";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
-import "./AboutModal.scss";
-
 import Typography from "@mui/material/Typography";
 import { styled, Theme } from "@mui/material/styles";
+import "./AboutModal.scss";
 import { default as Link } from "./TabLink";
 
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 500,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-};
-
+/**
+ * Styled Paper component for contributor items.
+ * Provides consistent styling for contributor links with theme-aware colors and spacing.
+ *
+ * @param {Object} props - Component props
+ * @param {Theme} props.theme - Material-UI theme object
+ */
 const Item = styled(Paper)(({ theme }: { theme: Theme }) => ({
   backgroundColor: "#fff",
   ...theme.typography.body2,
@@ -34,7 +28,25 @@ const Item = styled(Paper)(({ theme }: { theme: Theme }) => ({
   },
 }));
 
-export default function AmoutModal({
+/**
+ * AboutModal component that displays information about the application.
+ * Shows the application title, description, and contributor information in a modal dialog.
+ *
+ * @component
+ *
+ * @param {Object} props - Component props
+ * @param {boolean} props.aboutOpen - Controls whether the modal is open
+ * @param {Function} props.setAboutOpen - Function to update the modal's open state
+ *
+ * @example
+ * ```tsx
+ * <AboutModal
+ *   aboutOpen={isOpen}
+ *   setAboutOpen={setIsOpen}
+ * />
+ * ```
+ */
+export default function AboutModal({
   aboutOpen,
   setAboutOpen,
 }: {
