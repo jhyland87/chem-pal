@@ -44,7 +44,7 @@ export default function ResultsTable({
         if (appContext.settings.hideColumns.includes(column.id)) column.toggleVisibility(false);
       });
     }
-    chrome.storage.local.get(["searchResults", "paginationModel"]).then((data) => {
+    chrome.storage.session.get(["searchResults", "paginationModel"]).then((data) => {
       const storedSearchResults = data.searchResults || [];
 
       if (!storedSearchResults) {
@@ -60,7 +60,7 @@ export default function ResultsTable({
   useEffect(() => {
     console.log("Search result timestamp was updated", appContext.settings.searchResultUpdateTs);
 
-    chrome.storage.local.get(["searchResults"]).then((data) => {
+    chrome.storage.session.get(["searchResults"]).then((data) => {
       console.log("New search results", data.searchResults);
       setShowSearchResults(data.searchResults);
     });
@@ -203,7 +203,7 @@ export default function ResultsTable({
   useEffect(() => {
     // Not sure i'm happy with how I'm handling the search result update sequence.
     // May need to refactor later.
-    chrome.storage.local
+    chrome.storage.session
       .set({ searchResults }) // <-- This is the effect/action
       .then(() => {
         if (!searchResults.length) {

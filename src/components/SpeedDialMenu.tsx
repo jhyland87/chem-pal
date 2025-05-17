@@ -27,7 +27,7 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
 
   const handleClearResults = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
-    chrome.storage.local.set({ searchResults: [] });
+    chrome.storage.session.set({ searchResults: [] });
     appContext.setSettings({
       ...appContext.settings,
       searchResultUpdateTs: new Date().toISOString(),
