@@ -1,5 +1,7 @@
 {
   "entryPoints": ["./src/**/*.ts", "./src/**/*.tsx"],
+  "plugin": ["@mxssfd/typedoc-theme"],
+  "theme": "default",
   "entryPointStrategy": "expand",
   "out": "docs",
   "exclude": ["**/node_modules/**", "**/__tests__/**"],
@@ -10,7 +12,6 @@
   "includeVersion": true,
   "hideGenerator": true,
   "readme": "README.md",
-  "theme": "default",
   "navigationLinks": {
     "GitHub": "https://github.com/yourusername/chem-crawler"
   },
