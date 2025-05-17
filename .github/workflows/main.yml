@@ -9,7 +9,7 @@ permissions:
   id-token: write
 
 jobs:
-  setup:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -19,20 +19,17 @@ jobs:
         with:
           node-version: 'v22.15.0'
       - run: npm run setup
-  build:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
       - name: Generate documentation
-        uses: actions/checkout@v4
-      - run: npm run docs
-  publish:
+        run: npm run docs
+  deploy:
     needs: build
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
