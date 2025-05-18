@@ -33,11 +33,10 @@ const Item = styled(Paper)(({ theme }: { theme: Theme }) => ({
  * Shows the application title, description, and contributor information in a modal dialog.
  *
  * @component
- *
+ * @category Component
  * @param {Object} props - Component props
  * @param {boolean} props.aboutOpen - Controls whether the modal is open
  * @param {Function} props.setAboutOpen - Function to update the modal's open state
- *
  * @example
  * ```tsx
  * <AboutModal

@@ -3,46 +3,7 @@ import { parseQuantity } from "../helpers/quantity";
 import _ from "../lodash";
 import { HeaderObject, Product, QuantityObject } from "../types";
 import SupplierBase from "./supplier_base";
-
-type _productIndexObject = {
-  url: string;
-  title: string;
-  prices: string;
-  count: string;
-};
-
-// Add type definitions at the top of the file after imports
-type SearchParams = {
-  N: string;
-  Nf: string;
-  Nr: string;
-  Nrpp: string;
-  Ntt: string;
-  noRedirect: string;
-  nore: string;
-  question: string;
-  searchExecByFormSubmit: string;
-  tab: string;
-};
-
-type ProductData = {
-  displayName: string;
-  canonicalUrl: string;
-  dataLayer?: {
-    productPrice?: string[];
-  };
-  familyVariyantProductDetails?: {
-    productVariantsResult?: {
-      masterProductBean?: {
-        skus?: Array<{
-          priceInfo?: {
-            regularPrice?: string[];
-          };
-        }>;
-      };
-    };
-  };
-};
+import { _productIndexObject, ProductData, SearchParams } from "./supplier_carolina.d";
 
 /**
  * Carolina.com uses Oracle ATG Commerce as their ecommerce platform.
@@ -66,6 +27,8 @@ type ProductData = {
  * - searchExecByFormSubmit: Whether to execute the search by form submission.
  * - tab: The tab to display the results in.
  * - question: The search query.
+ *
+ * @category Supplier
  */
 export default class SupplierCarolina<T extends Product>
   extends SupplierBase<T>

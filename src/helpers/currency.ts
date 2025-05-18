@@ -12,7 +12,7 @@ import {
  *
  * @param {string} price - The price string to extract the currency symbol from
  * @returns {string | undefined} The currency symbol if found, undefined otherwise
- *
+ * @category Helper
  * @example
  * ```ts
  * getCurrencySymbol('$1000') // Returns '$'
@@ -34,7 +34,7 @@ export function getCurrencySymbol(price: string): string | undefined {
  *
  * @param {string} price - The price string to parse
  * @returns {ParsedPrice | void} Object containing currency code, symbol, and numeric price, or undefined if invalid
- *
+ * @category Helper
  * @example
  * ```ts
  * parsePrice('$1000') // Returns { currencyCode: 'USD', price: 1000, currencySymbol: '$' }
@@ -74,7 +74,7 @@ export function parsePrice(price: string): ParsedPrice | void {
  * @param {CurrencyCode} to - The target currency code
  * @returns {Promise<number>} The exchange rate between the currencies
  * @throws {Error} If the API request fails
- *
+ * @category Helper
  * @example
  * ```ts
  * await getCurrencyRate('USD', 'EUR') // Returns 0.85
@@ -101,7 +101,7 @@ export async function getCurrencyRate(from: CurrencyCode, to: CurrencyCode): Pro
  *
  * @param {CurrencySymbol} symbol - The currency symbol to look up
  * @returns {CurrencyCode} The corresponding ISO currency code
- *
+ * @category Helper
  * @example
  * ```ts
  * getCurrencyCodeFromSymbol('$') // Returns 'USD'
@@ -122,7 +122,7 @@ export function getCurrencyCodeFromSymbol(symbol: CurrencySymbol): CurrencyCode 
  * @param {number} amount - The amount to convert
  * @param {CurrencyCode} from - The source currency code
  * @returns {Promise<string>} The converted amount in USD, formatted to 2 decimal places
- *
+ * @category Helper
  * @example
  * ```ts
  * await toUSD(100, 'EUR') // Returns '117.65'

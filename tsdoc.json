@@ -36,6 +36,14 @@
     {
       "tagName": "@type",
       "syntaxKind": "block"
+    },
+    {
+      "tagName": "@category",
+      "syntaxKind": "block"
+    },
+    {
+      "tagName": "@abstract",
+      "syntaxKind": "block"
     }
   ],
   "supportForTags": {
@@ -47,6 +55,8 @@
     "@todo": true,
     "@module": true,
     "@interface": true,
-    "@type": true
+    "@type": true,
+    "@category": true,
+    "@abstract": true
   }
 }

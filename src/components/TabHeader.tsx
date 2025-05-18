@@ -37,7 +37,7 @@ type TabHeaderProps = {
  * Each tab includes an icon and text that fades based on the active state.
  *
  * @component
- *
+ * @category Component
  * @param {TabHeaderProps} props - Component props
  * @param {number} props.page - Current active tab index
  * @param {Function} props.setPage - Function to update the active tab

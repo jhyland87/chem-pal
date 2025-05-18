@@ -18,7 +18,7 @@ type IconTextFaderProps = {
  * The text is shown when the component is hovered or active, and the icon is shown otherwise.
  *
  * @component
- *
+ * @category Component
  * @param {IconTextFaderProps} props - Component props
  * @param {ReactNode} props.children - Icon element to display
  * @param {string} props.text - Text to display when expanded

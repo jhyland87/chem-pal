@@ -35,6 +35,10 @@ const rows = [
 
 const paginationModel = { page: 0, pageSize: 5 };
 
+/**
+ * HistoryPanel component that displays a list of history.
+ * @category Component
+ */
 export default function HistoryPanel() {
   return (
     <Paper sx={{ height: 400, width: "100%" }}>

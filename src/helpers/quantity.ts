@@ -3,7 +3,7 @@ import { QuantityObject, UOM } from "../types";
 /**
  * Maps each unit of measure (UOM) to its possible string representations.
  * This mapping helps standardize various ways of expressing the same unit.
- *
+ * @category Helper
  * @type {Record<UOM, string[]>}
  */
 export const uomAliases: Record<UOM, string[]> = {
@@ -27,7 +27,7 @@ export const uomAliases: Record<UOM, string[]> = {
  * Parses a quantity string into a structured object containing the numeric value and unit of measure.
  * Handles various formats including foreign number formats (e.g., 1.234,56).
  * Uses regex pattern matching to extract quantity and unit information.
- *
+ * @category Helper
  * @param {string} value - The quantity string to parse (e.g., '100g', '120 grams')
  * @returns {QuantityObject | void} Object containing quantity and UOM, or undefined if parsing fails
  * @throws {Error} If the quantity string cannot be parsed
@@ -79,7 +79,7 @@ export function parseQuantity(value: string): QuantityObject | void {
 /**
  * Standardizes a unit of measure (UOM) to its canonical form.
  * Uses the uomAliases mapping to convert various representations to standard forms.
- *
+ * @category Helper
  * @param {string} uom - The unit of measure to standardize
  * @returns {string | void} The standardized UOM, or undefined if not recognized
  *
@@ -109,7 +109,7 @@ export function standardizeUom(uom: string): string | void {
 /**
  * Converts a quantity from its current unit to its base unit.
  * Currently supports conversion of kilometers to meters and pounds to grams.
- *
+ * @category Helper
  * @param {number} quantity - The quantity to convert
  * @param {UOM} uom - The unit of measure of the quantity
  * @returns {number} The converted quantity in its base unit

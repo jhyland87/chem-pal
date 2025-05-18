@@ -10,6 +10,11 @@ import {
   type WixProductSelection,
 } from "./supplier_wixbase.d";
 
+/**
+ * SupplierWixBase class that extends SupplierBase and implements AsyncIterable<T>.
+ * @abstract
+ * @category Supplier
+ */
 export default abstract class SupplierWixBase<T extends Product>
   extends SupplierBase<T>
   implements AsyncIterable<T>
