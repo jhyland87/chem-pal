@@ -2,6 +2,10 @@ import * as suppliers from "../suppliers";
 import SupplierBase from "../suppliers/supplier_base";
 import { Product } from "../types";
 
+/**
+ * Factory class for querying all suppliers.
+ * @category Supplier
+ */
 export default class SupplierFactory<T extends Product> implements AsyncIterable<T> {
   // Term being queried
   private _query: string;

@@ -14,7 +14,7 @@ import {
  *
  * The script is a JSON object that contains the product data.
  * Duh... thanks, AI.
- *
+ * @module SupplierLaboratoriumDiscounter
  * @category Supplier
  */
 export default class SupplierLaboratoriumDiscounter<T extends Product>
