@@ -12,8 +12,9 @@ import SupplierFactory from "../suppliers/SupplierFactory";
  * SuppliersPanel component that displays a list of available suppliers with toggle functionality.
  * Each supplier is represented by an avatar and name, with a checkbox to enable/disable them.
  * The component manages the state of selected suppliers through the application context.
- *
+
  * @component
+ * @category Component
  *
  * @example
  * ```tsx

@@ -1,6 +1,10 @@
 import { Product } from "../types";
 import SupplierWixBase from "./supplier_wixbase";
 
+/**
+ * SupplierBunmurraLabs class that extends SupplierWixBase and implements AsyncIterable<T>.
+ * @category Supplier
+ */
 export default class SupplierBunmurraLabs<T extends Product>
   extends SupplierWixBase<T>
   implements AsyncIterable<T>

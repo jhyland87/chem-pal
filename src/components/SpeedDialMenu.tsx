@@ -25,7 +25,7 @@ type SpeedDialMenuProps = { speedDialVisibility: boolean };
  * Includes actions for clearing results, clearing cache, toggling theme, and showing about information.
  *
  * @component
- *
+ * @category Component
  * @param {SpeedDialMenuProps} props - Component props
  * @param {boolean} props.speedDialVisibility - Controls whether the speed dial menu is visible
  *

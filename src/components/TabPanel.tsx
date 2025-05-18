@@ -7,7 +7,7 @@ import { TabPanelProps } from "../types";
  * The content is only visible when the tab is selected.
  *
  * @component
- *
+ * @category Component
  * @param {TabPanelProps} props - Component props
  * @param {ReactNode} [props.children] - Child elements to render
  * @param {string} [props.dir] - Text direction (ltr/rtl)

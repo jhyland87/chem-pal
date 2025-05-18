@@ -20,7 +20,7 @@ type LoadingBackdropProps = {
  * The spinner fades in with a delay when the backdrop is opened.
  *
  * @component
- *
+ * @category Component
  * @param {LoadingBackdropProps} props - Component props
  * @param {boolean} props.open - Whether the backdrop is visible
  * @param {Function} props.onClick - Function to call when the stop button is clicked

@@ -18,7 +18,8 @@
   "groupReferencesByType": true,
   "searchCategoryBoosts": {
     "Component": 2,
-    "Model": 1.2
+    "Helper": 1.1,
+    "Supplier": 1.1
   },
   "searchGroupBoosts": {
     "Classes": 1.5

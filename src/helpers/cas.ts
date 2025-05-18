@@ -6,7 +6,7 @@ import { CAS } from "../types/cas";
  *
 
  * @type {RegExp}
- *
+ * @category Helper
  * @example
  * ```ts
  * CAS_REGEX.test('1234-56-6') // true
@@ -33,7 +33,7 @@ export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_check
  * 2. Iterating over each digit in reverse order
  * 3. Multiplying each digit by its position
  * 4. Taking the modulo 10 of the sum
- *
+ * @category Helper
  * @param {string} cas - The CAS number to validate
  * @returns {boolean} True if the CAS number is valid, false otherwise
  *
@@ -75,7 +75,7 @@ export function isCas(cas: string): boolean {
 /**
  * Searches for a valid CAS number within a string.
  * Returns the first valid CAS number found, or undefined if none are found.
- *
+ * @category Helper
  * @param {string} data - The string to search for a CAS number
  * @returns {CAS<string> | undefined} The first valid CAS number found, or undefined
  *
