@@ -10,10 +10,14 @@
     "typedoc-plugin-include-example",
     "typedoc-plugin-dt-links",
     "typedoc-plugin-mdn-links",
+    "typedoc-plugin-missing-exports",
+    "typedoc-plugin-merge-modules"
   ],
   //"theme": "hierarchy",
   "entryPointStrategy": "expand",
   "lightHighlightTheme": "light-plus",
+  "placeInternalsInOwningModule": true,
+  "collapseInternalModule": true,
   "cleanOutputDir": true,
   "groupReferencesByType": true,
   "searchCategoryBoosts": {

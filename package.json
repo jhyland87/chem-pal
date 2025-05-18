@@ -96,6 +96,8 @@
     "typedoc-plugin-dt-links": "^2.0.2",
     "typedoc-plugin-include-example": "^2.1.2",
     "typedoc-plugin-mdn-links": "^5.0.2",
+    "typedoc-plugin-merge-modules": "^7.0.0",
+    "typedoc-plugin-missing-exports": "^4.0.0",
     "typedoc-plugin-rename-defaults": "^0.7.3",
     "typedoc-plugin-sourcefile-url": "^1.0.6",
     "typedoc-theme-hierarchy": "^6.0.0",

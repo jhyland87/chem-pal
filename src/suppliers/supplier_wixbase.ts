@@ -14,6 +14,7 @@ import {
  * SupplierWixBase class that extends SupplierBase and implements AsyncIterable<T>.
  * @abstract
  * @category Supplier
+ * @module SupplierWixBase
  */
 export default abstract class SupplierWixBase<T extends Product>
   extends SupplierBase<T>

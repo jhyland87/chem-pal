@@ -28,6 +28,7 @@ import { _productIndexObject, ProductData, SearchParams } from "./supplier_carol
  * - tab: The tab to display the results in.
  * - question: The search query.
  *
+ * @module SupplierCarolina
  * @category Supplier
  */
 export default class SupplierCarolina<T extends Product>
