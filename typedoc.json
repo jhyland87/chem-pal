@@ -17,6 +17,7 @@
   "lightHighlightTheme": "light-plus",
   "collapseInternalModule": true,
   "cleanOutputDir": true,
+  "pretty": true,
   "searchCategoryBoosts": {
     "Component": 2,
     "Helper": 1.1,
@@ -58,10 +59,12 @@
   "sourceLinkTemplate": "https://github.com/jhyland87/chem-crawler/blob/main/{path}#L{line}",
   "disableSources": false,
   "categorizeByGroup": true,
+  "defaultCategory": "Supplier",
   "categoryOrder": [
+    "Supplier",
     "Components",
-    "Hooks",
     "Utils",
+    "Hooks",
     "Types",
     "Context",
     "*"
