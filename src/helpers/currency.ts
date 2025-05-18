@@ -22,10 +22,10 @@ import {
  * getCurrencySymbol('1000₹') // Returns '₹'
  * ```
  */
-export function getCurrencySymbol(price: string): string | undefined {
+export function getCurrencySymbol(price: string): CurrencySymbol | undefined {
   const match = price.match(/\p{Sc}/u);
   if (!match) return undefined;
-  return match[0];
+  return match[0] as CurrencySymbol;
 }
 
 /**
@@ -63,7 +63,7 @@ export function parsePrice(price: string): ParsedPrice | void {
     currencyCode,
     currencySymbol,
     price: parseFloat(bareAmount),
-  };
+  } as ParsedPrice;
 }
 
 /**

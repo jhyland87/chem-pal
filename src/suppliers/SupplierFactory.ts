@@ -69,7 +69,7 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
     ): AsyncGenerator<Product, void, unknown> {
       for (const iterator of asyncIterators) {
         for await (const value of iterator) {
-          yield value;
+          yield value as Product;
         }
       }
     }

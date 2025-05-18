@@ -87,10 +87,17 @@ export type WixProduct = {
   brand: string | null;
 };
 
+export type WixQueryRequestParameters = {
+  o: string;
+  s: string;
+  q: string;
+  v: string;
+};
+
 /**
  * Response type for Wix product catalog queries
  */
-export type WixProductResponse = {
+export type WixQueryResponse = {
   data: {
     catalog: {
       category: {

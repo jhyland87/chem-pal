@@ -6,8 +6,8 @@ import SupplierBase from "./supplier_base";
 import {
   type WixProduct,
   type WixProductItem,
-  type WixProductResponse,
   type WixProductSelection,
+  type WixQueryResponse,
 } from "./supplier_wixbase.d";
 
 /**
@@ -41,7 +41,7 @@ export default abstract class SupplierWixBase<T extends Product>
   }
 
   protected async queryProducts(): Promise<void> {
-    const url = new URL("https://www.biofuranchem.com/_api/wix-ecommerce-storefront-web/api");
+    const url = new URL(`${this._baseURL}/_api/wix-ecommerce-storefront-web/api`);
 
     url.searchParams.append("o", "getFilteredProducts");
     url.searchParams.append("s", "WixStoresWebClient");
@@ -58,7 +58,7 @@ export default abstract class SupplierWixBase<T extends Product>
 
     const queryResponse = (await this.httpGetJson(url, {
       Authorization: this._accessToken,
-    })) as unknown as WixProductResponse;
+    })) as unknown as WixQueryResponse;
 
     console.debug("queryResponse:", queryResponse);
 
@@ -103,11 +103,14 @@ export default abstract class SupplierWixBase<T extends Product>
     //
     const productVariants = merge(productItems, productSelections);
 
+    const productPrice = parsePrice(product.formattedPrice);
+
     console.log("productVariants:", { productVariants });
 
     return Promise.resolve({
       ...this._productDefaults,
-      ...productVariants[1],
+      ...productVariants[Object.keys(productVariants)[0]],
+      ...productPrice,
       supplier: this.supplierName,
       title: product.name,
       url: `${this._baseURL}/product-page/${product.urlPart}`,

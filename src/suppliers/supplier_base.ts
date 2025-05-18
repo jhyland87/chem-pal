@@ -1,5 +1,7 @@
-import { preconnect } from "react-dom";
+import { getRequestHash } from "../helpers/request";
+import _ from "../lodash";
 import { HeaderObject, Product } from "../types";
+import { SerializedResponse } from "./supplier_base.d";
 
 /**
  * The base class for all suppliers.
@@ -64,7 +66,6 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   constructor(query: string, limit: number = 5, controller: AbortController) {
     this._query = query;
     this._limit = limit;
-    //SupplierCarolina.controller = new AbortController()
     if (controller) {
       this._controller = controller;
     } else {
@@ -80,7 +81,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * @returns A promise that resolves when the preconnect is complete.
    */
   private _preconnect(): void {
-    preconnect(this._baseURL);
+    //preconnect(this._baseURL);
   }
 
   /**
@@ -96,8 +97,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    */
   protected async httpGetHeaders(url: string | URL): Promise<HeaderObject | void> {
     try {
-      console.debug("httpGetHeaders| this._controller.signal:", this._controller.signal);
-      const httpResponse = await fetch(url, {
+      const requestObj = new Request(url, {
         signal: this._controller.signal,
         headers: {
           ...this._headers,
@@ -111,7 +111,13 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
         credentials: "include",
       });
 
-      return Object.fromEntries(httpResponse.headers.entries());
+      // @todo - only execute when in dev mode
+      const reqHash = getRequestHash(requestObj);
+      console.debug("httpGetHeaders| Request hash:", { requestObj, reqHash });
+
+      const httpResponse = await fetch(requestObj);
+
+      return Object.fromEntries(httpResponse.headers.entries()) as HeaderObject;
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
         console.debug("Request was aborted", { error, signal: this._controller.signal });
@@ -144,7 +150,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
     headers: HeaderObject = {},
   ): Promise<Response | void> {
     try {
-      return await fetch(url, {
+      const requestObj = new Request(url, {
         signal: this._controller.signal,
         headers: {
           ...this._headers,
@@ -156,6 +162,13 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
         method: "POST",
         mode: "cors",
       });
+
+      // @todo - only execute when in dev mode
+      const reqHash = getRequestHash(requestObj);
+      console.debug("httpPost| Request hash:", { requestObj, reqHash });
+
+      const fetchReq = await fetch(requestObj);
+      return fetchReq as Response;
     } catch (error) {
       console.error("Error received during fetch:", { error, signal: this._controller.signal });
     }
@@ -169,8 +182,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    */
   protected async httpGet(url: string | URL, headers: HeaderObject = {}): Promise<Response | void> {
     try {
-      console.debug("httpget| this._controller.signal:", this._controller.signal);
-      return await fetch(url, {
+      const requestObj = new Request(url, {
         signal: this._controller.signal,
         headers: {
           accept:
@@ -185,6 +197,28 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
         mode: "cors",
         credentials: "include",
       });
+
+      // Fetch the goods
+      const fetchReq = await fetch(requestObj);
+
+      // @todo: Override this if not in development mode
+
+      // Generate a serialized object to be saved
+      const serializedResponse: SerializedResponse = {
+        contentType: fetchReq.headers.get("Content-Type")?.toString() ?? "",
+      };
+
+      const clonedResponse = await fetchReq.clone();
+
+      if (serializedResponse.contentType.includes("json")) {
+        // Json gets stringified
+        serializedResponse.content = _.serialize(JSON.stringify(await clonedResponse.json()));
+      } else {
+        // Everything else is treated as text
+        serializedResponse.content = _.serialize(await clonedResponse.text());
+      }
+
+      return fetchReq as Response;
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
         console.debug("Request was aborted", { error, signal: this._controller.signal });
@@ -204,10 +238,10 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   protected async httpGetJson(
     url: string | URL,
     headers: HeaderObject = {},
-  ): Promise<Response | void> {
+  ): Promise<object | void> {
     try {
       const response = await this.httpGet(url, headers);
-      return response?.json();
+      return response?.json() as object;
     } catch (error) {
       console.error("Error received during fetch:", { error, signal: this._controller.signal });
     }
@@ -230,7 +264,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
         //if (r.url) r.url = (r.url as string).replace(/chrome-extension:\/\/[a-z]+/, "");
         //if (r.href) r.href = (r.href as string).replace(/chrome-extension:\/\/[a-z]+/, "");
 
-        return this._getProductData(r as object);
+        return this._getProductData(r as T) as Promise<T>;
       });
 
       console.log("productPromises:", productPromises);
@@ -238,7 +272,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
         try {
           const result = await resultPromise;
           if (result) {
-            yield this._finishProduct(result as T);
+            yield this._finishProduct(result) as T;
           }
         } catch (err) {
           // Here to catch errors in individual yields

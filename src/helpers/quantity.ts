@@ -73,7 +73,7 @@ export function parseQuantity(value: string): QuantityObject | void {
   const uom = standardizeUom(quantityMatch.groups.uom);
   const quantity = parseFloat(parsedQuantity.replace(/,/g, ""));
 
-  if (uom && quantity) return { quantity, uom };
+  if (uom && quantity) return { quantity, uom } as QuantityObject;
 }
 
 /**
@@ -81,7 +81,7 @@ export function parseQuantity(value: string): QuantityObject | void {
  * Uses the uomAliases mapping to convert various representations to standard forms.
  * @category Helper
  * @param {string} uom - The unit of measure to standardize
- * @returns {string | void} The standardized UOM, or undefined if not recognized
+ * @returns {UOM | void} The standardized UOM, or undefined if not recognized
  *
  * @example
  * ```ts
@@ -92,7 +92,7 @@ export function parseQuantity(value: string): QuantityObject | void {
  * standardizeUom('Grams') // Returns 'gram'
  * ```
  */
-export function standardizeUom(uom: string): string | void {
+export function standardizeUom(uom: string): UOM | void {
   const uomMap = Object.entries(uomAliases).reduce(
     (acc, [uom, aliases]) => {
       aliases.forEach((alias) => {
@@ -103,7 +103,7 @@ export function standardizeUom(uom: string): string | void {
     { [uom]: uom } as Record<string, string>,
   );
 
-  if (uom.toLowerCase() in uomMap) return uomMap[uom.toLowerCase()];
+  if (uom.toLowerCase() in uomMap) return uomMap[uom.toLowerCase()] as UOM;
 }
 
 /**

@@ -52,7 +52,7 @@ export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_check
  * @see https://www.cas.org/training/documentation/chemical-substances/checkdig
  * @see https://www.allcheminfo.com/chemistry/cas-number-lookup.html
  */
-export function isCas(cas: string): boolean {
+export function isCas(cas: string): cas is CAS<string> {
   const regex = RegExp(`^${CAS_REGEX.source}$`);
   const match = cas.match(regex);
   if (!match || !match.groups?.seg_a || !match.groups?.seg_b || !match.groups?.seg_checksum)
