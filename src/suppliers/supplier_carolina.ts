@@ -53,20 +53,7 @@ type ProductData = {
  * The script is a JSON object that contains the product data.
  *
  * Product search for Carolina.com will query the following URL (with `lithium` as the search query):
- *
- *  https://www.carolina.com/browse/product-search-results? \
- *    product.productTypes=chemicals \
- *    &facetFields=product.productTypes
- *    &defaultFilter=product.cbsLowPrice|GT%200.0||product.startDate|LTEQ%201.7457984E12||product.startDate|LTEQ%201.7457984E12 \
- *    &Nr=AND(product.siteId:100001,OR(product.type:Product),OR(product.catalogId:cbsCatalog)) \
- *    &viewSize=120 \
- *    &q=lithium \
- *    &noRedirect=true \
- *    &nore=y \
- *    &searchExecByFormSubmit=true \
- *    &tab=p \
- *    &question=lithium
- *
+
  * The query params are:
  * - product.productTypes: The product type to search for.
  * - facetFields: The fields to facet on.
@@ -80,7 +67,6 @@ type ProductData = {
  * - tab: The tab to display the results in.
  * - question: The search query.
  */
-
 export default class SupplierCarolina<T extends Product>
   extends SupplierBase<T>
   implements AsyncIterable<T>

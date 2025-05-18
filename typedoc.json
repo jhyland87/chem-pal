@@ -1,8 +1,32 @@
 {
   "entryPoints": ["./src/**/*.ts", "./src/**/*.tsx"],
-  "plugin": ["@mxssfd/typedoc-theme", "typedoc-plugin-rename-defaults"],
-  "theme": "default",
+  "plugin": [
+    //"@mxssfd/typedoc-theme",
+    //"typedoc-github-theme",
+    //"typedoc-theme-hierarchy",
+    "typedoc-unhoax-theme",
+    "typedoc-plugin-rename-defaults",
+    "typedoc-plugin-coverage",
+    "typedoc-plugin-include-example",
+    "typedoc-plugin-dt-links",
+    "typedoc-plugin-mdn-links",
+  ],
+  //"theme": "hierarchy",
   "entryPointStrategy": "expand",
+  "lightHighlightTheme": "light-plus",
+  "cleanOutputDir": true,
+  "groupReferencesByType": true,
+  "searchCategoryBoosts": {
+    "Component": 2,
+    "Model": 1.2
+  },
+  "searchGroupBoosts": {
+    "Classes": 1.5
+  },
+  "markdownItOptions": {
+    "html": true
+  },
+  "useTsLinkResolution": true,
   "out": "docs",
   "exclude": ["**/node_modules/**", "**/__tests__/**"],
   "name": "Chem Crawler Documentation",
@@ -11,7 +35,9 @@
   "excludeExternals": true,
   "excludeInternal": true,
   "excludeNotDocumented": false,
+  "useFirstParagraphOfCommentAsSummary": true,
   "excludeReferences": true,
+  "includeHierarchySummary": true,
   "excludeTags": ["@internal", "@private", "@protected"],
   "includeVersion": true,
   "hideGenerator": true,
@@ -23,7 +49,7 @@
   "sort": ["source-order"],
   "visibilityFilters": {
     "protected": true,
-    "private": false,
+    "private": true,
     "inherited": true,
     "external": false
   },

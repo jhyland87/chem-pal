@@ -1,4 +1,4 @@
-import { ExchangeRateResponse } from "../../types";
+import { CurrencySymbol, ExchangeRateResponse } from "../../types";
 import {
   getCurrencyCodeFromSymbol,
   getCurrencyRate,
@@ -72,7 +72,7 @@ describe("getCurrencyCodeFromSymbol", () => {
 
   for (const [symbol, code] of Object.entries(testData)) {
     it(`should return ${code} for symbol: ${symbol}`, () =>
-      expect(getCurrencyCodeFromSymbol(symbol as any)).toBe(code));
+      expect(getCurrencyCodeFromSymbol(symbol as CurrencySymbol)).toBe(code));
   }
 });
 

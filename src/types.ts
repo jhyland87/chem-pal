@@ -104,7 +104,7 @@ export interface Product {
   manufacturer?: string;
   cas?: CAS<string>;
   formula?: string;
-  displayPrice: string;
+  displayPrice?: string | number;
   price: number;
   currencyCode?: CurrencyCode;
   currencySymbol?: CurrencySymbol;
@@ -178,6 +178,7 @@ export interface Sku {
   specifications: { shippingInformation: string };
 }
 
+export interface ProductDetails {}
 /**
  * Variant interface representing a product variant
  * @param {number} price - Price of the variant
@@ -193,13 +194,14 @@ export interface Sku {
 export interface Variant {
   price: number;
   quantity: number;
-  sku: number;
-  grade: string;
-  conc: string;
-  seoname: string;
-  status: string;
-  statusTxt: string;
-  shippingInformation: string;
+  sku?: number;
+  id?: string;
+  grade?: string;
+  conc?: string;
+  seoname?: string;
+  status?: string;
+  statusTxt?: string;
+  shippingInformation?: string;
 }
 
 /**

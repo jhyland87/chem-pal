@@ -121,7 +121,8 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       header: "Price",
       accessorKey: "price",
       cell: ({ row }: ProductRow) => {
-        return row.original.displayPrice;
+        const price = Number(parseFloat(row.original.price.toString()).toFixed(2)).toLocaleString();
+        return `${row.original.currencySymbol}${price}`;
       },
       meta: {
         filterVariant: "range",
@@ -136,7 +137,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         filterVariant: "range",
       },
       cell: ({ row }: ProductRow) => {
-        return row.original.displayQuantity;
+        return `${row.original.quantity} ${row.original.uom}`;
       },
       maxSize: 50,
     },

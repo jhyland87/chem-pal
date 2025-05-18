@@ -38,8 +38,8 @@
     "grouping": ["moduleSpecifier", "typeAndValue"],
     "caseFirst": "default"
   },
-
   "typescript.preferences.organizeImports": {
+    "accentCollation": true,
     "typeOrder": "auto",
     "enabled": true,
     //"style": "alphabetical",
@@ -133,5 +133,17 @@
       "rule": "jsdoc/require-param-type",
       "severity": "warn"
     }
-  ]
+  ],
+  "typescript.preferences.preferTypeOnlyAutoImports": true,
+  "typescript.suggest.autoImports": false,
+  "typescript.preferences.autoImportSuggestions": true,
+  "typescript.preferences.autoImportSuggestionsMode": "literals",
+  "typescript.inlayHints.propertyDeclarationTypes.enabled": false,
+  "typescript.inlayHints.parameterNames.enabled": "literals",
+  "typescript.inlayHints.variableTypes.enabled": false,
+  "typescript.inlayHints.functionLikeReturnType.enabled": true,
+  "typescript.inlayHints.enumValues.enabled": true,
+  "typescript.inlayHints.typeArguments.enabled": true,
+  "typescript.inlayHints.typeParameters.enabled": true,
+
 }

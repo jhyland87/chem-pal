@@ -26,6 +26,74 @@ import TableHeader from "./TableHeader";
 import TableOptions from "./TableOptions";
 let fetchController: AbortController;
 
+const getProductsTest = async (query: string) => {
+  const response = await fetch("https://www.biofuranchem.com?scope=wix-one-app", {
+    method: "HEAD",
+    credentials: "include", // or 'same-origin'
+  });
+
+  for (const p of response.headers) {
+    console.log("HEADER:", p);
+  }
+
+  /*
+
+  const data = await fetch(
+    "https://www.biofuranchem.com/_api/wix-ecommerce-storefront-web/api?o=getFilteredProducts&s=WixStoresWebClient&q=query,getFilteredProductsWithHasDiscount($mainCollectionId:String!,$filters:ProductFilters,$sort:ProductSort,$offset:Int,$limit:Int,$withOptions:Boolean,=,false,$withPriceRange:Boolean,=,false){catalog{category(categoryId:$mainCollectionId){numOfProducts,productsWithMetaData(filters:$filters,limit:$limit,sort:$sort,offset:$offset,onlyVisible:true){totalCount,list{id,options{id,key,title,@include(if:$withOptions),optionType,@include(if:$withOptions),selections,@include(if:$withOptions){id,value,description,key,inStock,visible,linkedMediaItems{url,fullUrl,thumbnailFullUrl:fullUrl(width:50,height:50),mediaType,width,height,index,title,videoFiles{url,width,height,format,quality}}}}productItems,@include(if:$withOptions){id,optionsSelections,price,comparePrice,formattedPrice,formattedComparePrice,hasDiscount,availableForPreOrder,isTrackingInventory,inventory{status,quantity}isVisible,pricePerUnit,formattedPricePerUnit,preOrderInfo{limit,message}}customTextFields(limit:1){title}productType,ribbon,price,comparePrice,sku,isInStock,urlPart,formattedComparePrice,formattedPrice,pricePerUnit,formattedPricePerUnit,pricePerUnitData{baseQuantity,baseMeasurementUnit}itemDiscount{discountRuleName,priceAfterDiscount}digitalProductFileItems{fileType}name,media{url,fullUrl,index,width,mediaType,altText,title,height}isManageProductItems,productItemsPreOrderAvailability,isTrackingInventory,inventory{status,quantity,availableForPreOrder,preOrderInfoView{limit}}subscriptionPlans{list{id,visible}}priceRange(withSubscriptionPriceRange:true),@include(if:$withPriceRange){fromPriceFormatted}discount{mode,value}}}}}}&v=%7B%22mainCollectionId%22%3A%2200000000-000000-000000-000000000001%22%2C%22offset%22%3A0%2C%22limit%22%3A" +
+      10 +
+      "%2C%22sort%22%3Anull%2C%22filters%22%3Anull%2C%22withOptions%22%3Atrue%2C%22withPriceRange%22%3Afalse%7D",
+    {
+      headers: {
+        Referer: "https://www.biofuranchem.com/",
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+        "Content-Type": "application/json; charset=utf-8",
+      },
+    },
+  );
+
+  const productsJson = await data.json();
+  console.log("productsJson:", productsJson);
+  */
+
+  const tokens = await fetch("https://www.biofuranchem.com/_api/v1/access-tokens", {
+    method: "GET",
+    credentials: "include", // or 'same-origin'
+  });
+
+  const tokenResponse = await tokens.json();
+
+  console.log("tokenResponse:", tokenResponse);
+  console.log(
+    "Token instance:",
+    tokenResponse.apps["1380b703-ce81-ff05-f115-39571d94dfcd"].instance,
+  );
+
+  const url = new URL("https://www.biofuranchem.com/_api/wix-ecommerce-storefront-web/api");
+
+  url.searchParams.append("o", "getFilteredProducts");
+  url.searchParams.append("s", "WixStoresWebClient");
+  url.searchParams.append(
+    "q",
+    "query,getFilteredProductsWithHasDiscount($mainCollectionId:String!,$filters:ProductFilters,$sort:ProductSort,$offset:Int,$limit:Int,$withOptions:Boolean,=,false,$withPriceRange:Boolean,=,false){catalog{category(categoryId:$mainCollectionId){numOfProducts,productsWithMetaData(filters:$filters,limit:$limit,sort:$sort,offset:$offset,onlyVisible:true){totalCount,list{id,options{id,key,title,@include(if:$withOptions),optionType,@include(if:$withOptions),selections,@include(if:$withOptions){id,value,description,key,inStock}}productItems,@include(if:$withOptions){id,optionsSelections,price,formattedPrice}productType,price,sku,isInStock,urlPart,formattedPrice,name,description,brand,priceRange(withSubscriptionPriceRange:true),@include(if:$withPriceRange){fromPriceFormatted}}}}}}",
+  );
+  url.searchParams.append(
+    "v",
+    `{"mainCollectionId":"00000000-000000-000000-000000000001","offset":0,"limit":10,"sort":null,"filters":{"term":{"field":"name","op":"CONTAINS","values":["*acid*"]}},"withOptions":true,"withPriceRange":false}`,
+  );
+
+  console.log("URL:", url.toString());
+  const productReq = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: tokenResponse.apps["1380b703-ce81-ff05-f115-39571d94dfcd"].instance,
+    },
+  });
+
+  const productResponse = await productReq.json();
+
+  console.log("productResponse:", productResponse);
+};
 /**
  * ResultsTable component that displays search results in a table format with filtering,
  * sorting, and pagination capabilities. It also handles the search execution and
@@ -112,6 +180,7 @@ export default function ResultsTable({
     if (!query.trim()) {
       return;
     }
+    getProductsTest(query);
     setIsLoading(true);
 
     setSearchResults([]);

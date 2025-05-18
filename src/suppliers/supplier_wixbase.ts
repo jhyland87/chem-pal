@@ -1,7 +1,14 @@
+import merge from "lodash/merge";
 import { parsePrice } from "../helpers/currency";
 import { parseQuantity } from "../helpers/quantity";
-import { Product, TextOptionFacet, WixProduct } from "../types";
+import { Product, Variant } from "../types";
 import SupplierBase from "./supplier_base";
+import {
+  type WixProduct,
+  type WixProductItem,
+  type WixProductResponse,
+  type WixProductSelection,
+} from "./supplier_wixbase.d";
 
 export default abstract class SupplierWixBase<T extends Product>
   extends SupplierBase<T>
@@ -28,121 +35,77 @@ export default abstract class SupplierWixBase<T extends Product>
   }
 
   protected async queryProducts(): Promise<void> {
-    const commonConfig = {
-      brand: "wix",
-      host: "VIEWER",
-      // Needed since the Aspect in the server expects BSI according to it's proto: https://github.com/wix-private/fed-infra/blob/master/fed-infra-protos/src/main/proto/common-config.proto#L26
-      BSI: "1f8e4289-4ddb-4c92-8fa7-816a4d62713a|4",
-      siteRevision: "318",
-      renderingFlow: "NONE",
-      language: "en",
-      locale: "en-us",
-    };
+    const url = new URL("https://www.biofuranchem.com/_api/wix-ecommerce-storefront-web/api");
 
-    const body = {
-      query: this._query,
-      limit: this._limit,
-      includeSeoHidden: false,
-      language: "en",
-      properties: [],
-    };
-
-    const productQuery = await this.httpPost(
-      `${this._baseURL}/_api/search-services-sitesearch/v1/suggest/federated`,
-      body,
-      {
-        accept: "application/json, text/plain, */*",
-        authorization: this._accessToken,
-        comonconfig: encodeURIComponent(JSON.stringify(commonConfig)),
-        //'commonconfig': '%7B%22brand%22%3A%22wix%22%2C%22host%22%3A%22VIEWER%22%2C%22BSI%22%3A%221f8e4289-4ddb-4c92-8fa7-816a4d62713a%7C4%22%2C%22siteRevision%22%3A%22318%22%2C%22renderingFlow%22%3A%22NONE%22%2C%22language%22%3A%22en%22%2C%22locale%22%3A%22en-us%22%7D',
-        "content-type": "application/json",
-        "x-wix-brand": "wix",
-        "x-wix-client-artifact-id": "wix-thunderbolt",
-        //'x-wix-search-bi-correlation-id': '3b57cb81-b895-489c-3e83-d85c1aabd2dc',
-        Referer: this._baseURL,
-        "Referrer-Policy": "strict-origin-when-cross-origin",
-      },
+    url.searchParams.append("o", "getFilteredProducts");
+    url.searchParams.append("s", "WixStoresWebClient");
+    url.searchParams.append(
+      "q",
+      "query,getFilteredProductsWithHasDiscount($mainCollectionId:String!,$filters:ProductFilters,$sort:ProductSort,$offset:Int,$limit:Int,$withOptions:Boolean,=,false,$withPriceRange:Boolean,=,false){catalog{category(categoryId:$mainCollectionId){numOfProducts,productsWithMetaData(filters:$filters,limit:$limit,sort:$sort,offset:$offset,onlyVisible:true){totalCount,list{id,options{id,key,title,@include(if:$withOptions),optionType,@include(if:$withOptions),selections,@include(if:$withOptions){id,value,description,key,inStock}}productItems,@include(if:$withOptions){id,optionsSelections,price,formattedPrice}productType,price,sku,isInStock,urlPart,formattedPrice,name,description,brand,priceRange(withSubscriptionPriceRange:true),@include(if:$withPriceRange){fromPriceFormatted}}}}}}",
     );
-    const productQueryData = await productQuery?.json();
+    url.searchParams.append(
+      "v",
+      `{"mainCollectionId":"00000000-000000-000000-000000000001","offset":0,"limit":${this._limit},"sort":null,"filters":{"term":{"field":"name","op":"CONTAINS","values":["*${this._query}*"]}},"withOptions":true,"withPriceRange":false}`,
+    );
 
-    if (!productQueryData) {
+    console.debug("URL:", url.toString());
+
+    const queryResponse = (await this.httpGetJson(url, {
+      Authorization: this._accessToken,
+    })) as unknown as WixProductResponse;
+
+    console.debug("queryResponse:", queryResponse);
+
+    if (!queryResponse) {
       console.log("No JSON returned for", this._query);
       return;
     }
 
-    const resultDocuments = productQueryData.results.find(
-      (r: { documentType: string }) => r.documentType === "public/stores/products",
-    )?.documents;
-    if (!resultDocuments) {
-      console.log("No results for", this._query);
-      return;
-    }
-
-    this._queryResults = resultDocuments;
+    this._queryResults = queryResponse.data.catalog.category.productsWithMetaData
+      .list as WixProduct[];
   }
-  /*
-  protected async parseProducts(): Promise<void> {
-    const res = this._queryResults.map((value: unknown) => {
-      // supplier, title, url, price, quantity,
-      const typedValue = value as WixProduct;
-      const priceObj = parsePrice(typedValue.price.toString()) || {
-        price: typedValue.price,
-        currencyCode: this._productDefaults.currencyCode,
-        currencySymbol: this._productDefaults.currencySymbol,
-      };
-      const quantityFacet = typedValue.textOptionsFacets?.find((f: TextOptionFacet) =>
-        ["Weight", "Size", "Quantity", "Volume"].includes(f.name),
-      );
 
-      const quantityObj = parseQuantity(quantityFacet?.value || "");
-
-      console.debug("quantityObj:", quantityObj);
-
-      return {
-        ...this._productDefaults,
-        ...priceObj,
-        ...quantityObj,
-        supplier: this.supplierName,
-        title: typedValue.title,
-        url: `${this._baseURL}/${typedValue.url}`,
-        displayPrice: `${priceObj.currencySymbol}${priceObj.price}`,
-      } as Product;
-    });
-    this._products = res;
-  }
-  */
   protected async _getProductData(product: WixProduct): Promise<Product | void> {
-    if (!product.discountedPrice) {
+    if (!product.price) {
       return;
     }
 
-    const priceObj = (product.discountedPrice ? parsePrice(product.discountedPrice) : null) || {
-      price: product.discountedPrice,
-      currencyCode: this._productDefaults.currencyCode,
-      currencySymbol: this._productDefaults.currencySymbol,
-    };
-
-    const quantityFacet = product.textOptionsFacets?.find((f: TextOptionFacet) =>
-      ["Weight", "Size", "Quantity", "Volume"].includes(f.name),
+    // Geerat an object with the products UUID and formatted price, with the option ID as the keys
+    const productItems = Object.fromEntries(
+      product.productItems.map((item: WixProductItem) => {
+        return [
+          item.optionsSelections[0],
+          {
+            ...parsePrice(item.formattedPrice),
+            id: item.id,
+            quantity: item.price,
+          },
+        ];
+      }),
     );
 
-    if (!quantityFacet?.value) {
-      return;
-    }
+    // Generate an object with the product quantity selections and the product selection ID
+    // as the primary keys (to associate with the above object)
+    const productSelections = Object.fromEntries(
+      // I know the options is an array that could have more than one object, but it looks like it's
+      // always the first one (and I don't see a second one anyways)
+      product.options[0].selections.map((selection: WixProductSelection) => {
+        return [selection.id, parseQuantity(selection.value)];
+      }),
+    );
 
-    const quantityObj = parseQuantity(quantityFacet.value);
+    //
+    const productVariants = merge(productItems, productSelections);
 
-    if (!quantityObj) return;
+    console.log("productVariants:", { productVariants });
 
     return Promise.resolve({
       ...this._productDefaults,
-      ...priceObj,
-      ...quantityObj,
+      ...productVariants[1],
       supplier: this.supplierName,
-      title: product.title,
-      url: `${this._baseURL}/${product.url}`,
-      displayPrice: `${priceObj.currencySymbol}${priceObj.price}`,
-      displayQuantity: `${quantityObj.quantity} ${quantityObj.uom}`,
+      title: product.name,
+      url: `${this._baseURL}/product-page/${product.urlPart}`,
+      variants: Object.values(productVariants) as Variant[],
     } as Product);
   }
 }
