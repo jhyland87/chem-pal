@@ -53,7 +53,7 @@ export default class SupplierCarolina<T extends Product>
   // If using async requests, this will determine how many of them to batch together (using
   // something like Promise.all()). This is to avoid overloading the users bandwidth and
   // to not flood the supplier with 100+ requests all at once.
-  protected _http_request_batch_size: number = 10;
+  protected _http_request_batch_size: number = 4;
 
   // HTTP headers used as a basis for all queries.
   protected _headers: HeaderObject = {
@@ -76,10 +76,6 @@ export default class SupplierCarolina<T extends Product>
     "sec-gpc": "1",
     "x-requested-with": "XMLHttpRequest",
   };
-
-  //constructor(query: string, limit: number = 5, controller: AbortController) {
-  //  super(query, limit, controller);
-  //}
 
   protected _makeQueryUrl(query: string): string {
     const searchParams: SearchParams = {
@@ -108,7 +104,6 @@ export default class SupplierCarolina<T extends Product>
 
   protected async queryProducts(): Promise<void> {
     const queryURL = this._makeQueryUrl(this._query);
-    //console.debug({ queryURL })
     const response = await this.httpGet(queryURL);
 
     if (!response?.ok) {
@@ -116,7 +111,6 @@ export default class SupplierCarolina<T extends Product>
     }
 
     const resultHTML = await response.text();
-    //console.log('resultHTML:', resultHTML)
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(resultHTML, "text/html");
@@ -126,40 +120,50 @@ export default class SupplierCarolina<T extends Product>
     }
 
     const productElements: NodeListOf<HTMLElement> = doc.querySelectorAll("div.c-feature-product");
-    //console.log('productElements:', productElements)
 
     const elementList: _productIndexObject[] = [];
 
     const _trimSpaceLike = (txt: string) =>
       txt?.replaceAll(/(^(\\n|\\t|\s)*|(\\n|\\t|\s)*$)/gm, "");
 
+    interface Props extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+      href: string;
+      className?: string;
+    }
+
     for (const elem of productElements) {
+      const title = elem.querySelector("h3.c-product-title") as HTMLElement;
+      const link = elem.querySelector("a.c-product-link") as HTMLAnchorElement;
+      const price = elem.querySelector("p.c-product-price") as HTMLElement;
+      const count = elem.querySelector("p.c-product-total") as HTMLElement;
+
       elementList.push({
-        title: _trimSpaceLike((elem.querySelector("h3.c-product-title") as HTMLElement)?.innerText),
-        url: _trimSpaceLike(
-          (elem.querySelector("a.c-product-link") as HTMLAnchorElement)?.href?.replace(
-            /chrome-extension:\/\/[a-z]+/,
-            "",
-          ),
-        ),
-        prices: _trimSpaceLike((elem.querySelector("p.c-product-price") as HTMLElement)?.innerText),
-        count: _trimSpaceLike((elem.querySelector("p.c-product-total") as HTMLElement)?.innerText),
+        title: _trimSpaceLike(title?.innerText),
+        url: _trimSpaceLike(this._href(link.getAttribute("href") ?? "")),
+        prices: _trimSpaceLike(price?.innerText),
+        count: _trimSpaceLike(count?.innerText),
       });
     }
 
     this._queryResults = elementList.slice(0, this._limit);
-    //console.log('[queryProducts] this._queryResults:', this._queryResults)
   }
 
   protected async parseProducts(): Promise<(Product | void)[]> {
-    return Promise.all(this._queryResults.map((result) => this._getProductData(result)));
+    return Promise.all(
+      this._queryResults.map((result) => this._getProductData(result) as Promise<Product>),
+    );
   }
 
   protected async _getProductData(
     productIndexObject: _productIndexObject,
   ): Promise<Product | void> {
     try {
-      const response = await this.httpGet(`https://www.carolina.com${productIndexObject.url}`);
+      const response = await this.httpGet(
+        productIndexObject.url,
+        //productIndexObject.url.startsWith("http")
+        //? productIndexObject.url
+        //: `https://${this._baseURL}${productIndexObject.url}`,
+      );
       if (!response?.ok) {
         throw new Error(`Response status: ${response?.status}`);
       }
@@ -188,12 +192,11 @@ export default class SupplierCarolina<T extends Product>
       }
 
       const productAtgJson = JSON.parse(productScriptNonceTextMatch[0]);
-      //console.debug('productAtgJson:', productAtgJson)
 
-      const productData: ProductData = _.result(
+      const productData = _.result(
         productAtgJson,
         "fetch.response.contents.MainContent[0].atgResponse.response.response",
-      );
+      ) as ProductData;
 
       if (!productData) {
         throw new Error("Failed to find product data");
@@ -231,7 +234,7 @@ export default class SupplierCarolina<T extends Product>
         ...priceObj,
         supplier: this.supplierName,
         title: productData.displayName,
-        url: this._baseURL + productData.canonicalUrl,
+        url: this._href(productData.canonicalUrl),
         displayPrice: `${priceObj.currencySymbol}${priceObj.price}`,
         displayQuantity: `${quantityMatch.quantity} ${quantityMatch.uom}`,
         //price: priceObj.price,

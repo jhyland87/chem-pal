@@ -1,4 +1,4 @@
-import { preconnect } from "react-dom";
+import { getCachableResponse } from "../helpers/request";
 import { HeaderObject, Product } from "../types";
 
 /**
@@ -64,7 +64,6 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   constructor(query: string, limit: number = 5, controller: AbortController) {
     this._query = query;
     this._limit = limit;
-    //SupplierCarolina.controller = new AbortController()
     if (controller) {
       this._controller = controller;
     } else {
@@ -80,7 +79,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * @returns A promise that resolves when the preconnect is complete.
    */
   private _preconnect(): void {
-    preconnect(this._baseURL);
+    //preconnect(this._baseURL);
   }
 
   /**
@@ -96,8 +95,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    */
   protected async httpGetHeaders(url: string | URL): Promise<HeaderObject | void> {
     try {
-      console.debug("httpGetHeaders| this._controller.signal:", this._controller.signal);
-      const httpResponse = await fetch(url, {
+      const requestObj = new Request(this._href(url), {
         signal: this._controller.signal,
         headers: {
           ...this._headers,
@@ -111,7 +109,15 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
         credentials: "include",
       });
 
-      return Object.fromEntries(httpResponse.headers.entries());
+      const httpResponse = await fetch(requestObj);
+
+      // @todo: Override this if not in development mode
+      if (chrome.extension !== undefined && process.env.NODE_ENV === "development") {
+        const cacheData = getCachableResponse(requestObj, httpResponse);
+        console.log("cacheData:", cacheData);
+      }
+
+      return Object.fromEntries(httpResponse.headers.entries()) as HeaderObject;
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
         console.debug("Request was aborted", { error, signal: this._controller.signal });
@@ -144,7 +150,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
     headers: HeaderObject = {},
   ): Promise<Response | void> {
     try {
-      return await fetch(url, {
+      const requestObj = new Request(this._href(url), {
         signal: this._controller.signal,
         headers: {
           ...this._headers,
@@ -156,6 +162,17 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
         method: "POST",
         mode: "cors",
       });
+
+      // Fetch the goods
+      const httpResponse = await fetch(requestObj);
+
+      // @todo: Override this if not in development mode
+      if (chrome.extension !== undefined && process.env.NODE_ENV === "development") {
+        const cacheData = getCachableResponse(requestObj, httpResponse);
+        console.log("cacheData:", cacheData);
+      }
+
+      return httpResponse as Response;
     } catch (error) {
       console.error("Error received during fetch:", { error, signal: this._controller.signal });
     }
@@ -169,8 +186,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    */
   protected async httpGet(url: string | URL, headers: HeaderObject = {}): Promise<Response | void> {
     try {
-      console.debug("httpget| this._controller.signal:", this._controller.signal);
-      return await fetch(url, {
+      const requestObj = new Request(this._href(url), {
         signal: this._controller.signal,
         headers: {
           accept:
@@ -185,6 +201,17 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
         mode: "cors",
         credentials: "include",
       });
+
+      // Fetch the goods
+      const httpResponse = await fetch(requestObj);
+
+      // @todo: Override this if not in development mode
+      if (chrome.extension !== undefined && process.env.NODE_ENV === "development") {
+        const cacheData = getCachableResponse(requestObj, httpResponse);
+        console.log("cacheData:", cacheData);
+      }
+
+      return httpResponse as Response;
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
         console.debug("Request was aborted", { error, signal: this._controller.signal });
@@ -204,10 +231,10 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   protected async httpGetJson(
     url: string | URL,
     headers: HeaderObject = {},
-  ): Promise<Response | void> {
+  ): Promise<object | void> {
     try {
       const response = await this.httpGet(url, headers);
-      return response?.json();
+      return response?.json() as object;
     } catch (error) {
       console.error("Error received during fetch:", { error, signal: this._controller.signal });
     }
@@ -225,12 +252,8 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
 
       // Get the product data for each query result
       const productPromises = this._queryResults.map((r: unknown) => {
-        // @todo: This is a hack to remove chrome-extension:// from the href if it exists. Why
-        //        is it required? Should be able to use a URL without needing to remove this.
-        //if (r.url) r.url = (r.url as string).replace(/chrome-extension:\/\/[a-z]+/, "");
-        //if (r.href) r.href = (r.href as string).replace(/chrome-extension:\/\/[a-z]+/, "");
-
-        return this._getProductData(r as object);
+        const result = { ...(r as object) };
+        return this._getProductData(result as T) as Promise<T>;
       });
 
       console.log("productPromises:", productPromises);
@@ -238,7 +261,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
         try {
           const result = await resultPromise;
           if (result) {
-            yield this._finishProduct(result as T);
+            yield this._finishProduct(result) as T;
           }
         } catch (err) {
           // Here to catch errors in individual yields
@@ -262,8 +285,28 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * @returns The finished product.
    */
   protected _finishProduct(product: T): T {
-    product.url = (product.url as string).replace(/chrome-extension:\/\/[a-z]+/, "");
+    //product.url = (product.url as string).replace(/chrome-extension:\/\/[a-z]+/, "");
     return product;
+  }
+
+  /**
+   * Takes in either a relative or absolute URL and returns an absolute URL. This is useful for when you aren't
+   * sure if the link (retrieved from parsed text, a setting, an element, an anchor value, etc) is absolute or
+   * not. Using relative links will result in http://chrome-extension://... being added to the link.
+   *
+   * @param {string|URL} url - URL object or string
+   * @returns {string} - absolute URL
+   * @example
+   * ```ts
+   * this._href('/some/path')
+   * // https://supplier_base_url.com/some/path
+   * this._href('https://supplier_base_url.com/some/path')
+   * // https://supplier_base_url.com/some/path
+   * this._href(new URL('https://supplier_base_url.com/some/path'))
+   * // https://supplier_base_url.com/some/path
+   */
+  protected _href(url: string | URL): string {
+    return new URL(url, this._baseURL).toString();
   }
 
   /**

@@ -31,7 +31,7 @@
   },
   "useTsLinkResolution": true,
   "out": "docs",
-  "exclude": ["**/node_modules/**", "**/__tests__/**"],
+  "exclude": ["**/node_modules/**", "**/__tests__/**", "**/__mocks__/**"],
   "name": "Chem Crawler Documentation",
   "excludePrivate": true,
   "excludeProtected": true,

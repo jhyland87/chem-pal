@@ -121,8 +121,8 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       header: "Price",
       accessorKey: "price",
       cell: ({ row }: ProductRow) => {
-        const price = Number(parseFloat(row.original.price.toString()).toFixed(2)).toLocaleString();
-        return `${row.original.currencySymbol}${price}`;
+        //const price = Number(parseFloat(row.original.price.toString()).toFixed(2)).toLocaleString();
+        return `${row.original.currencySymbol}${row.original.price}`;
       },
       meta: {
         filterVariant: "range",

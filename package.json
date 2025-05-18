@@ -82,6 +82,7 @@
     "jest-transformer-svg": "^2.1.0",
     "jsdoc": "^4.0.4",
     "marked": "^15.0.11",
+    "msw": "^2.8.3",
     "prettier": "^3.5.3",
     "react-test-renderer": "^19.1.0",
     "sass-embedded": "^1.89.0",
@@ -107,5 +108,10 @@
     "vite": "^6.3.1",
     "vite-bundle-analyzer": "^0.20.1",
     "vite-plugin-static-copy": "^2.3.1"
+  },
+  "msw": {
+    "workerDirectory": [
+      "build"
+    ]
   }
 }

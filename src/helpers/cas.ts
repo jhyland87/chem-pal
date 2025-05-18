@@ -8,7 +8,7 @@ import { CAS } from "../types/cas";
  * @type {RegExp}
  * @category Helper
  * @example
- * ```ts
+ * ```typescript
  * CAS_REGEX.test('1234-56-6') // true
  * CAS_REGEX.test('50-00-0') // true
  * CAS_REGEX.test('1234-56-999') // false
@@ -38,7 +38,7 @@ export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_check
  * @returns {boolean} True if the CAS number is valid, false otherwise
  *
  * @example
- * ```ts
+ * ```typescript
  * isCas('1234-56-6') // Returns true
  * isCas('50-00-0') // Returns true
  * isCas('1234-56-999') // Returns false
@@ -52,7 +52,7 @@ export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_check
  * @see https://www.cas.org/training/documentation/chemical-substances/checkdig
  * @see https://www.allcheminfo.com/chemistry/cas-number-lookup.html
  */
-export function isCas(cas: string): boolean {
+export function isCas(cas: string): cas is CAS<string> {
   const regex = RegExp(`^${CAS_REGEX.source}$`);
   const match = cas.match(regex);
   if (!match || !match.groups?.seg_a || !match.groups?.seg_b || !match.groups?.seg_checksum)
@@ -80,7 +80,7 @@ export function isCas(cas: string): boolean {
  * @returns {CAS<string> | undefined} The first valid CAS number found, or undefined
  *
  * @example
- * ```ts
+ * ```typescript
  * findCas('Example of a valid cas: 1234-56-6..') // Returns '1234-56-6'
  * findCas('and 50-00-0 is another valid cas #') // Returns '50-00-0'
  * findCas('Example of an invalid cas: 1232-56-6..') // Returns undefined

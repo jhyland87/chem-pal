@@ -14,7 +14,7 @@ import {
  * @returns {string | undefined} The currency symbol if found, undefined otherwise
  * @category Helper
  * @example
- * ```ts
+ * ```typescript
  * getCurrencySymbol('$1000') // Returns '$'
  * getCurrencySymbol('1000€') // Returns '€'
  * getCurrencySymbol('1000£') // Returns '£'
@@ -22,10 +22,10 @@ import {
  * getCurrencySymbol('1000₹') // Returns '₹'
  * ```
  */
-export function getCurrencySymbol(price: string): string | undefined {
+export function getCurrencySymbol(price: string): CurrencySymbol | undefined {
   const match = price.match(/\p{Sc}/u);
   if (!match) return undefined;
-  return match[0];
+  return match[0] as CurrencySymbol;
 }
 
 /**
@@ -36,7 +36,7 @@ export function getCurrencySymbol(price: string): string | undefined {
  * @returns {ParsedPrice | void} Object containing currency code, symbol, and numeric price, or undefined if invalid
  * @category Helper
  * @example
- * ```ts
+ * ```typescript
  * parsePrice('$1000') // Returns { currencyCode: 'USD', price: 1000, currencySymbol: '$' }
  * parsePrice('1000€') // Returns { currencyCode: 'EUR', price: 1000, currencySymbol: '€' }
  * parsePrice('1000£') // Returns { currencyCode: 'GBP', price: 1000, currencySymbol: '£' }
@@ -63,7 +63,7 @@ export function parsePrice(price: string): ParsedPrice | void {
     currencyCode,
     currencySymbol,
     price: parseFloat(bareAmount),
-  };
+  } as ParsedPrice;
 }
 
 /**
@@ -76,7 +76,7 @@ export function parsePrice(price: string): ParsedPrice | void {
  * @throws {Error} If the API request fails
  * @category Helper
  * @example
- * ```ts
+ * ```typescript
  * await getCurrencyRate('USD', 'EUR') // Returns 0.85
  * await getCurrencyRate('EUR', 'USD') // Returns 1.1764705882352942
  * ```
@@ -103,7 +103,7 @@ export async function getCurrencyRate(from: CurrencyCode, to: CurrencyCode): Pro
  * @returns {CurrencyCode} The corresponding ISO currency code
  * @category Helper
  * @example
- * ```ts
+ * ```typescript
  * getCurrencyCodeFromSymbol('$') // Returns 'USD'
  * getCurrencyCodeFromSymbol('€') // Returns 'EUR'
  * getCurrencyCodeFromSymbol('£') // Returns 'GBP'
@@ -124,7 +124,7 @@ export function getCurrencyCodeFromSymbol(symbol: CurrencySymbol): CurrencyCode 
  * @returns {Promise<string>} The converted amount in USD, formatted to 2 decimal places
  * @category Helper
  * @example
- * ```ts
+ * ```typescript
  * await toUSD(100, 'EUR') // Returns '117.65'
  * await toUSD(100, 'GBP') // Returns '130.43'
  * await toUSD(100, 'JPY') // Returns '11000.00'
