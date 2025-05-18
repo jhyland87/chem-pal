@@ -1,5 +1,12 @@
 import { Column, StringOrTemplateHeader, Table } from "@tanstack/react-table";
 import { debounce, throttle } from "lodash";
+
+/**
+ * Implements custom methods for Tanstack Table columns
+ *
+ * @param table - The table instance
+ * @typeParam TData - The type of data in the table
+ */
 export function implementCustomMethods<TData>(table: Table<TData>) {
   // Add custom column methods to each column
   table.getAllColumns().forEach((column: Column<TData, unknown>) => {

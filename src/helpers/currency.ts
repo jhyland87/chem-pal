@@ -45,11 +45,12 @@ export function getCurrencySymbol(price: string): string | undefined {
  * ```
  */
 export function parsePrice(price: string): ParsedPrice | void {
+  if (typeof price !== "string") return;
   const currencySymbol = getCurrencySymbol(price) as CurrencySymbol;
   if (!currencySymbol) return;
 
   const currencyCode = getCurrencyCodeFromSymbol(currencySymbol);
-  let bareAmount = price.replace(currencySymbol, "").trim();
+  let bareAmount = price.replace(currencySymbol as string, "").trim();
 
   // Handle foreign number formats where commas and decimals are swapped
   if (bareAmount.match(/^(\d+\.\d+,\d{1,2}|\d{1,3},\d{1,2}|\d{1,3},\d{1,2})$/))

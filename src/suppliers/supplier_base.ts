@@ -91,7 +91,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * @param url - The URL to get the headers for.
    * @returns The headers for the HTTP GET request.
    */
-  protected async httpGetHeaders(url: string): Promise<HeaderObject | void> {
+  protected async httpGetHeaders(url: string | URL): Promise<HeaderObject | void> {
     try {
       console.debug("httpGetHeaders| this._controller.signal:", this._controller.signal);
       const httpResponse = await fetch(url, {
@@ -136,7 +136,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * ```
    */
   protected async httpPost(
-    url: string,
+    url: string | URL,
     body: object,
     headers: HeaderObject = {},
   ): Promise<Response | void> {
@@ -164,7 +164,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * @param headers - The headers for the GET request.
    * @returns The response from the GET request.
    */
-  protected async httpGet(url: string, headers: HeaderObject = {}): Promise<Response | void> {
+  protected async httpGet(url: string | URL, headers: HeaderObject = {}): Promise<Response | void> {
     try {
       console.debug("httpget| this._controller.signal:", this._controller.signal);
       return await fetch(url, {
@@ -195,11 +195,15 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   /**
    * Send a GET request to the given URL and return the response as a JSON object.
    * @param url - The URL to send the GET request to.
+   * @param headers - The headers for the GET request.
    * @returns The response from the GET request as a JSON object.
    */
-  protected async httpGetJson(url: string): Promise<Response | void> {
+  protected async httpGetJson(
+    url: string | URL,
+    headers: HeaderObject = {},
+  ): Promise<Response | void> {
     try {
-      const response = await this.httpGet(url);
+      const response = await this.httpGet(url, headers);
       return response?.json();
     } catch (error) {
       console.error("Error received during fetch:", { error, signal: this._controller.signal });
@@ -220,7 +224,9 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
       const productPromises = this._queryResults.map((r: unknown) => {
         // @todo: This is a hack to remove chrome-extension:// from the href if it exists. Why
         //        is it required? Should be able to use a URL without needing to remove this.
-        //r.href = r.href.replace(/chrome-extension:\/\/[a-z]+/, '')
+        //if (r.url) r.url = (r.url as string).replace(/chrome-extension:\/\/[a-z]+/, "");
+        //if (r.href) r.href = (r.href as string).replace(/chrome-extension:\/\/[a-z]+/, "");
+
         return this._getProductData(r as object);
       });
 
@@ -229,7 +235,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
         try {
           const result = await resultPromise;
           if (result) {
-            yield result as T;
+            yield this._finishProduct(result as T);
           }
         } catch (err) {
           // Here to catch errors in individual yields
@@ -245,6 +251,16 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
       }
       console.error("ERROR in generator fn:", err);
     }
+  }
+
+  /**
+   * This is a placeholder for any finishing touches that need to be done to the product.
+   * @param {Product} product - The product to finish.
+   * @returns The finished product.
+   */
+  protected _finishProduct(product: T): T {
+    product.url = (product.url as string).replace(/chrome-extension:\/\/[a-z]+/, "");
+    return product;
   }
 
   /**

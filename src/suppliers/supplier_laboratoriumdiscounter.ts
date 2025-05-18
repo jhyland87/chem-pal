@@ -1,70 +1,20 @@
-import { HeaderObject, Product } from "../types";
+import { CurrencySymbolMap, HeaderObject, Product } from "../types";
 import SupplierBase from "./supplier_base";
-
-type _productIndexObject = {
-  [key: string]: any; //string | number | { [key: string]: string | number };
-};
-
-// Add type definitions at the top of the file after imports
-type SearchParams = {
-  [key: string]: string;
-};
-
-type ProductData = {
-  displayName: string;
-  canonicalUrl: string;
-  dataLayer?: {
-    productPrice?: string[];
-  };
-  familyVariyantProductDetails?: {
-    productVariantsResult?: {
-      masterProductBean?: {
-        skus?: Array<{
-          priceInfo?: {
-            regularPrice?: string[];
-          };
-        }>;
-      };
-    };
-  };
-};
+import {
+  _productIndexObject,
+  LaboriumDiscounterResponse,
+  SearchParams,
+  type _Product,
+} from "./supplier_laboratoriumdiscounter.d";
 
 /**
- * Carolina.com uses Oracle ATG Commerce as their ecommerce platform.
+ * Laboratorium Discounter.nl uses a custom script to fetch product data.
  *
- * The ATG Commerce platform uses a custom script to fetch product data.
- * This script is located in the `script[nonce]` element of the product page.
+ * The script is located in the `script[nonce]` element of the product page.
  *
  * The script is a JSON object that contains the product data.
- *
- * Product search for Carolina.com will query the following URL (with `lithium` as the search query):
- *  - {@link https://www.carolina.com/browse/product-search-results?
- * product.productTypes=chemicals&
- * facetFields=product.productTypes&
- * defaultFilter=product.cbsLowPrice|GT%200.0||product.startDate|LTEQ%201.7457984E12||product.startDate|LTEQ%201.7457984E12&
- * Nr=AND%28product.siteId%3A100001%2COR%28product.type%3AProduct%29%2COR%28product.catalogId%3AcbsCatalog%29%29&
- * viewSize=120&
- * q=lithium&
- * noRedirect=true&
- * nore=y&
- * searchExecByFormSubmit=true&
- * tab=p&
- * question=lithium |test}
-
- * The query params are:
- * - product.productTypes: The product type to search for.
- * - facetFields: The fields to facet on.
- * - defaultFilter: The default filter to apply to the search.
- * - Nr: ???
- * - viewSize: The number of results to return per page.
- * - q: The search query.
- * - noRedirect: Whether to redirect to the search results page.
- * - nore: Whether to return the results in a non-redirecting format.
- * - searchExecByFormSubmit: Whether to execute the search by form submission.
- * - tab: The tab to display the results in.
- * - question: The search query.
+ * Duh... thanks, AI.
  */
-
 export default class SupplierLaboratoriumDiscounter<T extends Product>
   extends SupplierBase<T>
   implements AsyncIterable<T>
@@ -127,7 +77,7 @@ export default class SupplierLaboratoriumDiscounter<T extends Product>
       throw new Error(`Response status: ${response?.status}`);
     }
 
-    const resultJSON = await response.json();
+    const resultJSON = (await response.json()) as LaboriumDiscounterResponse;
     console.log("SupplierLaboratoriumDiscounter|resultJSON:", resultJSON);
     console.log(
       "SupplierLaboratoriumDiscounter|Setting this._queryResults to:",
@@ -139,13 +89,14 @@ export default class SupplierLaboratoriumDiscounter<T extends Product>
     return;
   }
 
-  protected _getProductData(result: _productIndexObject): Promise<Product | void> {
+  protected _getProductData(result: _Product): Promise<Product | void> {
     return Promise.resolve({
       uuid: result.id,
       title: result.title || result.fulltitle,
       description: result.description,
-      price: 123, //result.price
-      currency: "EUR",
+      price: result.price.price,
+      currencyCode: "EUR",
+      currencySymbol: CurrencySymbolMap.EUR,
       url: result.url,
       supplier: this.supplierName,
       displayPrice: result.price.price,
