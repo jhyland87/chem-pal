@@ -1,5 +1,5 @@
 import _ from "../lodash";
-import { RequestHashObject } from "./request.d";
+import { RequestHashObject, SerializedResponse, type CacheResponse } from "./request.d";
 
 /**
  * Generates a unique hash for a given Request object based on its method, URL path, search parameters, and body.
@@ -57,4 +57,60 @@ export function getRequestHash(request: Request): RequestHashObject {
     file: `${url.hostname}/${resultHash}.json`,
     url: url,
   } as RequestHashObject;
+}
+
+/**
+ * Creates a cacheable response object from a Request and Response pair.
+ * This function serializes the response content based on its content type
+ * and generates a hash for the request to be used as a cache key.
+ *
+ * @param {Request} request - The original Request object
+ * @param {Response} response - The Response object to be cached
+ * @returns {Promise<CacheResponse>} A Promise that resolves to a CacheResponse object containing:
+ *          - hash: The RequestHashObject with request details and hash
+ *          - data: A SerializedResponse containing the content type and serialized content
+ * @example
+ * ```typescript
+ * const request = new Request('https://api.example.com/data');
+ * const response = await fetch(request);
+ * const cacheResponse = await getCachableResponse(request, response);
+ * // Returns: {
+ * //   hash: {
+ * //     hash: '01b5190db0c0f8c232d2ad4d8957d5f4',
+ * //     file: 'api.example.com/01b5190db0c0f8c232d2ad4d8957d5f4.json',
+ * //     url: URL object
+ * //   },
+ * //   data: {
+ * //     contentType: 'application/json',
+ * //     content: '{"serialized":"content"}'
+ * //   }
+ * // }
+ * ```
+ * @category Helper
+ */
+export async function getCachableResponse(
+  request: Request,
+  response: Response,
+): Promise<CacheResponse> {
+  const reqHash = getRequestHash(request) as RequestHashObject;
+
+  // Generate a serialized object to be saved
+  const serializedResponse: SerializedResponse = {
+    contentType: response.headers.get("Content-Type")?.toString() ?? "",
+  };
+
+  const clonedResponse = response.clone();
+
+  if (serializedResponse.contentType.includes("json")) {
+    // Json gets stringified
+    serializedResponse.content = _.serialize(JSON.stringify(await clonedResponse.json()));
+  } else {
+    // Everything else is treated as text
+    serializedResponse.content = _.serialize(await clonedResponse.text());
+  }
+
+  return {
+    hash: reqHash,
+    data: serializedResponse,
+  };
 }

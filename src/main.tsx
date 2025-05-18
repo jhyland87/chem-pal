@@ -22,12 +22,19 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./main.scss";
+
+/**
+ * Enable mocking if there is no chrome.extension object (ie: were running outsie of the
+ * extension) and were in development mode
+ *
+ * @returns {Promise<void>}
+ */
 async function enableMocking() {
-  if (process.env.NODE_ENV !== "development") {
+  if (chrome.extension !== undefined && process.env.NODE_ENV !== "development") {
     return;
   }
 
-  const { worker } = await import("./mocks/browser.ts");
+  const { worker } = await import("./__mocks__/browser.ts");
 
   // `worker.start()` returns a Promise that resolves
   // once the Service Worker is up and ready to intercept requests.

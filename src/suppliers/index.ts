@@ -8,7 +8,7 @@
  * @module Suppliers
  *
  * @example
- * ```ts
+ * ```typescript
  * import { SupplierCarolina, SupplierBioFuranChem } from './suppliers';
  *
  * // Search Carolina supplier for Sodium Hydroxide

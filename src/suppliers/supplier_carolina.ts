@@ -126,17 +126,22 @@ export default class SupplierCarolina<T extends Product>
     const _trimSpaceLike = (txt: string) =>
       txt?.replaceAll(/(^(\\n|\\t|\s)*|(\\n|\\t|\s)*$)/gm, "");
 
+    interface Props extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+      href: string;
+      className?: string;
+    }
+
     for (const elem of productElements) {
+      const title = elem.querySelector("h3.c-product-title") as HTMLElement;
+      const link = elem.querySelector("a.c-product-link") as HTMLAnchorElement;
+      const price = elem.querySelector("p.c-product-price") as HTMLElement;
+      const count = elem.querySelector("p.c-product-total") as HTMLElement;
+
       elementList.push({
-        title: _trimSpaceLike((elem.querySelector("h3.c-product-title") as HTMLElement)?.innerText),
-        url: _trimSpaceLike(
-          (elem.querySelector("a.c-product-link") as HTMLAnchorElement)?.href?.replace(
-            /chrome-extension:\/\/[a-z]+/,
-            "",
-          ),
-        ),
-        prices: _trimSpaceLike((elem.querySelector("p.c-product-price") as HTMLElement)?.innerText),
-        count: _trimSpaceLike((elem.querySelector("p.c-product-total") as HTMLElement)?.innerText),
+        title: _trimSpaceLike(title?.innerText),
+        url: _trimSpaceLike(this._href(link.getAttribute("href") ?? "")),
+        prices: _trimSpaceLike(price?.innerText),
+        count: _trimSpaceLike(count?.innerText),
       });
     }
 
@@ -154,9 +159,10 @@ export default class SupplierCarolina<T extends Product>
   ): Promise<Product | void> {
     try {
       const response = await this.httpGet(
-        productIndexObject.url.startsWith("http")
-          ? productIndexObject.url
-          : `https://${this._baseURL}${productIndexObject.url}`,
+        productIndexObject.url,
+        //productIndexObject.url.startsWith("http")
+        //? productIndexObject.url
+        //: `https://${this._baseURL}${productIndexObject.url}`,
       );
       if (!response?.ok) {
         throw new Error(`Response status: ${response?.status}`);
@@ -228,7 +234,7 @@ export default class SupplierCarolina<T extends Product>
         ...priceObj,
         supplier: this.supplierName,
         title: productData.displayName,
-        url: this._baseURL + productData.canonicalUrl,
+        url: this._href(productData.canonicalUrl),
         displayPrice: `${priceObj.currencySymbol}${priceObj.price}`,
         displayQuantity: `${quantityMatch.quantity} ${quantityMatch.uom}`,
         //price: priceObj.price,

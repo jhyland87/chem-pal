@@ -2,7 +2,7 @@ import { DefaultBodyType, delay, http, HttpResponse, HttpResponseResolver, PathP
 import { getRequestHash } from "../helpers/request";
 import { RequestHashObject } from "../helpers/request.d";
 import { AccessTokenResponse } from "../suppliers/supplier_wixbase.d";
-// src/mocks/handlers.js
+// src/__mocks__/handlers.js
 
 function withDelay<
   // Recreate the generic signature of the HTTP resolver

@@ -33,7 +33,7 @@ export const uomAliases: Record<UOM, string[]> = {
  * @throws {Error} If the quantity string cannot be parsed
  *
  * @example
- * ```ts
+ * ```typescript
  * parseQuantity('100g') // Returns { quantity: 100, uom: 'g' }
  * parseQuantity('120 grams') // Returns { quantity: 120, uom: 'grams' }
  * parseQuantity('43.4 ounce') // Returns { quantity: 43.4, uom: 'ounce' }
@@ -84,7 +84,7 @@ export function parseQuantity(value: string): QuantityObject | void {
  * @returns {UOM | void} The standardized UOM, or undefined if not recognized
  *
  * @example
- * ```ts
+ * ```typescript
  * standardizeUom('qt') // Returns 'quart'
  * standardizeUom('kg') // Returns 'kilogram'
  * standardizeUom('kilograms') // Returns 'kilogram'
@@ -115,7 +115,7 @@ export function standardizeUom(uom: string): UOM | void {
  * @returns {number} The converted quantity in its base unit
  *
  * @example
- * ```ts
+ * ```typescript
  * convertToBaseUom(1, UOM.KM) // Returns 1000 (meters)
  * convertToBaseUom(1, UOM.LB) // Returns 453.592 (grams)
  * convertToBaseUom(1, UOM.G) // Returns 1 (no conversion needed)
