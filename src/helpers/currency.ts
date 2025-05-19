@@ -1,13 +1,19 @@
 //import type { ExchangeRateResponse, ParsedPrice } from "types";
-import type {
-  CurrencyCode,
-  CurrencySymbol,
-  ExchangeRateResponse,
-  ParsedPrice,
-} from "types/currency";
+import { LRUCache } from "lru-cache";
+import type { CurrencyCode, CurrencySymbol, ParsedPrice } from "types/currency";
 import { CurrencyCodeMap } from "../data/currency";
 
-//import "./types.d.ts";
+const lruCurrencyRate = new LRUCache({
+  max: 5,
+  fetchMethod: async (key: string) => {
+    const [from, to] = key.split(":");
+    const response = await fetch(
+      `https://hexarate.paikama.co/api/rates/latest/${from}?target=${to}`,
+    );
+    const result = await response.json();
+    return result.data.mid;
+  },
+});
 
 /**
  * Extracts the currency symbol from a price string.
@@ -72,6 +78,7 @@ export function parsePrice(price: string): ParsedPrice | void {
 /**
  * Fetches the current exchange rate between two currencies.
  * Uses the Hexarate API to get real-time exchange rates.
+ * The responses are cached using lru-cache npm module.
  *
  * @param {CurrencyCode} from - The source currency code
  * @param {CurrencyCode} to - The target currency code
@@ -86,11 +93,7 @@ export function parsePrice(price: string): ParsedPrice | void {
  */
 export async function getCurrencyRate(from: CurrencyCode, to: CurrencyCode): Promise<number> {
   try {
-    const response = await fetch(
-      `https://hexarate.paikama.co/api/rates/latest/${from as string}?target=${to as string}`,
-    );
-    const result = (await response.json()) as ExchangeRateResponse;
-    return result.data.mid;
+    return await lruCurrencyRate.fetch(`${from as string}:${to as string}`);
   } catch (error) {
     throw new Error(
       `Failed to get currency rate for ${from as string} to ${to as string} - ${error instanceof Error ? error.message : String(error)}`,
@@ -124,26 +127,17 @@ export function getCurrencyCodeFromSymbol(symbol: CurrencySymbol): CurrencyCode 
  *
  * @param {number} amount - The amount to convert
  * @param {CurrencyCode} from - The source currency code
- * @returns {Promise<string>} The converted amount in USD, formatted to 2 decimal places
+ * @returns {Promise<number>} The converted amount in USD, formatted to 2 decimal places
  * @category Helper
  * @example
  * ```typescript
- * await toUSD(100, 'EUR') // Returns '117.65'
- * await toUSD(100, 'GBP') // Returns '130.43'
- * await toUSD(100, 'JPY') // Returns '11000.00'
- * await toUSD(100, 'INR') // Returns '8500.00'
+ * await toUSD(100, 'EUR') // Returns 117.65
+ * await toUSD(100, 'GBP') // Returns 130.43
+ * await toUSD(100, 'JPY') // Returns 11000
+ * await toUSD(100, 'INR') // Returns 8500
  * ```
  */
-export async function toUSD(amount: number, from: CurrencyCode): Promise<string> {
+export async function toUSD(amount: number, from: CurrencyCode): Promise<number> {
   const rate = await getCurrencyRate(from, "USD");
-  return (amount * rate).toFixed(2);
+  return parseFloat(Number(amount * rate).toFixed(2));
 }
-
-//toUSD(100, 'EUR').then(console.log)
-//getCurrencyRate('USD', 'EUR').then(console.log)
-
-//console.log(getCurrencySymbol('$1000'))
-
-//console.log(fx.convert(1000, { from: 'USD', to: 'EUR' }))
-
-// https://hexarate.paikama.co/api/rates/latest/EUR?target=USD

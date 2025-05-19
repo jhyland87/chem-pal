@@ -2,7 +2,9 @@
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "target": "ES2022",
-    "lib": ["ES2023"],
+    "lib": [
+      "ES2023"
+    ],
     "module": "ESNext",
     "jsx": "react-jsx",
     "moduleResolution": "node",
@@ -16,10 +18,18 @@
     "esModuleInterop": true,
     "baseUrl": "./",
     "paths": {
-      "types/*" : ["src/types/*"],
-      "types" : ["src/types/types"],
-      "data/*" : ["src/data/*"],
-      "data" : ["src/data/data"]
+      "types/*": [
+        "src/types/*"
+      ],
+      "types": [
+        "src/types/types"
+      ],
+      "data/*": [
+        "src/data/*"
+      ],
+      "data": [
+        "src/data/data"
+      ]
     },
     /* Bundler mode */
     //"moduleResolution": "bundler",
@@ -27,7 +37,6 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": true,
-
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
@@ -38,10 +47,15 @@
       "./node_modules/@types",
       "./src/types/*",
       "./src/data/*",
-      //"./src/types/types.d",
-      //"./src/types/types.d.ts"
     ],
-    "types": ["jest", "node","chrome"]
+    "types": [
+      "jest",
+      "node",
+      "chrome"
+    ]
   },
-  "include": ["vite.config.ts","*.ts"]
+  "include": [
+    "vite.config.ts",
+    "*.ts"
+  ]
 }

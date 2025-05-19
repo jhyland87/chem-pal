@@ -1,6 +1,8 @@
 //import { CurrencySymbolMap, HeaderObject, Product } from "../types";
+import type { QuantityObject } from "data/quantity";
 import type { HeaderObject, Product } from "types";
 import { CurrencySymbolMap } from "../data/currency";
+import { parseQuantity } from "../helpers/quantity";
 import SupplierBase from "./supplier_base";
 import {
   _productIndexObject,
@@ -94,6 +96,15 @@ export default class SupplierLaboratoriumDiscounter<T extends Product>
   }
 
   protected _getProductData(result: _Product): Promise<Product | void> {
+    let quantity = parseQuantity(result.code);
+    if (!quantity) quantity = parseQuantity(result.sku);
+    if (!quantity) quantity = parseQuantity(result.fulltitle);
+    if (!quantity) quantity = parseQuantity(result.variant);
+    if (!quantity)
+      quantity = {
+        quantity: 1,
+        uom: "piece",
+      };
     return Promise.resolve({
       uuid: result.id,
       title: result.title || result.fulltitle,
@@ -104,8 +115,7 @@ export default class SupplierLaboratoriumDiscounter<T extends Product>
       url: result.url,
       supplier: this.supplierName,
       displayPrice: result.price.price,
-      quantity: 1,
-      uom: "piece",
+      ...(quantity as QuantityObject),
     });
   }
 }

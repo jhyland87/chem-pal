@@ -37,6 +37,7 @@ const details = sample(detailsGen);
  * @component
  *
  * @param {ProductRow} props - Component props
+ *
  * @param {Row<Product>} props.row - The table row data containing product information
  *
  * @example
