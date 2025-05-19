@@ -2,18 +2,9 @@ import Backdrop from "@mui/material/Backdrop";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Fade from "@mui/material/Fade";
+import { LoadingBackdropProps } from "types";
 import BenzeneBlueSpinner from "./icons/BenzeneBlueSpinner";
 import "./LoadingBackdrop.scss";
-
-/**
- * Props for the LoadingBackdrop component
- * @param {boolean} open - Whether the backdrop is visible
- * @param {Function} onClick - Function to call when the stop button is clicked
- */
-type LoadingBackdropProps = {
-  open: boolean;
-  onClick: () => void;
-};
 
 /**
  * LoadingBackdrop component that displays a full-screen loading overlay with a spinner and stop button.

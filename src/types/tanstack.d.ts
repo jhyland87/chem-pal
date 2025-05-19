@@ -1,4 +1,5 @@
 import "@tanstack/react-table";
+import { CSSProperties } from "react";
 
 /**
  * Extends the @tanstack/react-table module with custom column methods and metadata.
@@ -64,8 +65,7 @@ declare module "@tanstack/react-table" {
     setColumnVisibility: (visible: boolean) => void;
   }
 
-  //allows us to define custom properties for our columns
-  interface ColumnMeta {
+  interface ColumnMeta<TData = unknown, TValue = unknown> {
     /** The type of filter to use for this column */
     filterVariant?: "text" | "range" | "select";
     /** Array of unique values for select-type filters */

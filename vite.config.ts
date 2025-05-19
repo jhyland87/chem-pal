@@ -26,6 +26,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 1500,
     outDir: "build",
     rollupOptions: {
+      external: ["chrome", "data/currency", "data/quantity", "data/types"],
       input: {
         main: "./index.html",
       },

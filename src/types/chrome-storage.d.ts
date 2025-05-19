@@ -1,12 +1,12 @@
-export interface ChromeStorageItems {
+declare interface ChromeStorageItems {
   [key: string]: unknown;
 }
 
-export interface ChromeStorageCallback<T> {
+declare interface ChromeStorageCallback<T> {
   (items: T): void;
 }
 
-export interface ChromeStorage {
+declare interface ChromeStorage {
   local: {
     set(items: ChromeStorageItems): Promise<void>;
     get(items: string | string[] | ChromeStorageItems): Promise<ChromeStorageItems>;
@@ -17,13 +17,20 @@ export interface ChromeStorage {
   };
 }
 
-export interface Chrome {
+export type Chrome = {
   storage: ChromeStorage;
-}
-
+  extension: unknown;
+};
+/*
 declare global {
   interface Window {
     chrome: Chrome;
   }
   const chrome: Chrome;
 }
+  */
+/**
+ * ChromeStorageItems represents storage items supporting various primitive types
+ * @param {string|number|boolean|null|undefined} [key] - Storage items supporting various primitive types
+ */
+declare type ChromeStorageItems = { [key: string]: string | number | boolean | null | undefined };

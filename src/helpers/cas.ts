@@ -1,4 +1,4 @@
-import { CAS } from "../types/cas";
+import { CAS } from "types/cas";
 
 /**
  * Regular expression for validating CAS (Chemical Abstracts Service) numbers.

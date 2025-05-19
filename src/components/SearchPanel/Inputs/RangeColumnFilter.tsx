@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import { FilterVariantInputProps } from "../../../types";
+import { FilterVariantInputProps } from "types";
 import "./RangeColumnFilter.scss";
 
 /**

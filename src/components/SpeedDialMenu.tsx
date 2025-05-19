@@ -6,18 +6,11 @@ import SpeedDial from "@mui/material/SpeedDial";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
 import SpeedDialIcon from "@mui/material/SpeedDialIcon";
 import { MouseEvent, useEffect, useState } from "react";
+import { SpeedDialMenuProps } from "types";
 import { useAppContext } from "../context";
 import _ from "../lodash";
 import AboutModal from "./AboutModal";
 import HelpTooltip from "./HelpTooltip";
-
-/**
- * Props for the SpeedDialMenu component.
- *
- * @interface
- * @param {boolean} speedDialVisibility - Controls whether the speed dial menu is visible
- */
-type SpeedDialMenuProps = { speedDialVisibility: boolean };
 
 /**
  * SpeedDialMenu component that provides quick access to various application actions.

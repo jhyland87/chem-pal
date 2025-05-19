@@ -1,10 +1,13 @@
-import {
+//import type { ExchangeRateResponse, ParsedPrice } from "types";
+import type {
   CurrencyCode,
-  CurrencyCodeMap,
   CurrencySymbol,
   ExchangeRateResponse,
   ParsedPrice,
-} from "../types";
+} from "types/currency";
+import { CurrencyCodeMap } from "../data/currency";
+
+//import "./types.d.ts";
 
 /**
  * Extracts the currency symbol from a price string.
@@ -84,13 +87,13 @@ export function parsePrice(price: string): ParsedPrice | void {
 export async function getCurrencyRate(from: CurrencyCode, to: CurrencyCode): Promise<number> {
   try {
     const response = await fetch(
-      `https://hexarate.paikama.co/api/rates/latest/${from}?target=${to}`,
+      `https://hexarate.paikama.co/api/rates/latest/${from as string}?target=${to as string}`,
     );
     const result = (await response.json()) as ExchangeRateResponse;
     return result.data.mid;
   } catch (error) {
     throw new Error(
-      `Failed to get currency rate for ${from} to ${to} - ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to get currency rate for ${from as string} to ${to as string} - ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 }
@@ -112,7 +115,7 @@ export async function getCurrencyRate(from: CurrencyCode, to: CurrencyCode): Pro
  * ```
  */
 export function getCurrencyCodeFromSymbol(symbol: CurrencySymbol): CurrencyCode {
-  return CurrencyCodeMap[symbol];
+  return CurrencyCodeMap[symbol as string];
 }
 
 /**

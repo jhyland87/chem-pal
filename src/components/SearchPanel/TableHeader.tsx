@@ -1,10 +1,16 @@
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
-import { ColumnDef, flexRender, Header, HeaderGroup, Table } from "@tanstack/react-table";
+import {
+  ColumnDef,
+  ColumnMeta,
+  flexRender,
+  Header,
+  HeaderGroup,
+  Table,
+} from "@tanstack/react-table";
 import { CSSProperties } from "react";
-import { ColumnMeta, Product } from "../../types";
+import { Product } from "types";
 import "./TableHeader.scss";
-
 /**
  * TableHeader component that renders the header row of the product results table.
  * It handles column resizing, sorting, and filter configuration.
@@ -24,22 +30,21 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
    * Creates a configuration object for filterable columns based on their metadata.
    * Each filterable column gets an entry with its filter variant and empty arrays for range and unique values.
    *
-   * @returns {Record<string, ColumnMeta>} Object mapping column IDs to their filter configurations
+   * @returns {Record<string, ColumnMeta<Product, unknown>>} Object mapping column IDs to their filter configurations
    */
-  const filterableColumns = table.options.columns.reduce<Record<string, ColumnMeta>>(
-    (accu, column: ColumnDef<Product, unknown>) => {
-      const meta = column.meta as ColumnMeta | undefined;
-      if (meta?.filterVariant === undefined || !column.id) return accu;
+  const filterableColumns = table.options.columns.reduce<
+    Record<string, ColumnMeta<Product, unknown>>
+  >((accu, column: ColumnDef<Product, unknown>) => {
+    const meta = column.meta as ColumnMeta<Product, unknown> | undefined;
+    if (meta?.filterVariant === undefined || !column.id) return accu;
 
-      accu[column.id] = {
-        filterVariant: meta.filterVariant,
-        rangeValues: [],
-        uniqueValues: [],
-      };
-      return accu;
-    },
-    {},
-  );
+    accu[column.id] = {
+      filterVariant: meta.filterVariant,
+      rangeValues: [],
+      uniqueValues: [],
+    };
+    return accu;
+  }, {});
 
   // Now parse the results to get the filterable values.
   // @todo: This runs every time there's a row updated or added. It would be better to save
@@ -93,7 +98,7 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
           {headerGroup.headers.map((header: Header<Product, unknown>) => {
             // If the column has filterable values, populate the unique values for the column
             if (filterableColumns[header.id] !== undefined) {
-              const meta = header.column.columnDef.meta as ColumnMeta;
+              const meta = header.column.columnDef.meta as ColumnMeta<Product, unknown>;
               header.column.columnDef.meta = {
                 ...meta,
                 ...filterableColumns[header.id],

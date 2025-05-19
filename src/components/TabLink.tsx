@@ -1,6 +1,7 @@
 import Link from "@mui/material/Link";
-import { MouseEvent } from "react";
 
+import { MouseEvent } from "react";
+import { LinkProps } from "types";
 // When the user clicks on a link in the table
 const handleResultClick = (event: MouseEvent<HTMLAnchorElement>) => {
   // Stop the form from propagating
@@ -14,12 +15,6 @@ const handleResultClick = (event: MouseEvent<HTMLAnchorElement>) => {
     window.open(target.href, "_blank");
   }
 };
-
-/**
- * TabLink component that displays a link with a custom onClick handler.
- * @category Component
- */
-type LinkProps = { href: string; children: React.ReactNode };
 
 /**
  * TabLink component that displays a link with a custom onClick handler.

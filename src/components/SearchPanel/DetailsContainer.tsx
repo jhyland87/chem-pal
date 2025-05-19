@@ -6,7 +6,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { gen, sample } from "testcheck";
-import { ProductRow } from "../../types";
+import { ProductRow } from "types";
 import "./DetailsContainer.scss";
 
 /**

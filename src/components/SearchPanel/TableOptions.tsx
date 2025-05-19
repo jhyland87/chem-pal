@@ -3,7 +3,7 @@ import Toolbar from "@mui/material/Toolbar";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
-import { TableOptionsProps } from "../../types";
+import { TableOptionsProps } from "types";
 import FilterModal from "./FilterModal";
 import SearchInput from "./SearchInput";
 import "./TableOptions.scss";

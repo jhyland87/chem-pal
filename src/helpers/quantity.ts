@@ -1,4 +1,4 @@
-import { QuantityObject, UOM } from "../types";
+import { QuantityObject, UOM } from "../data/quantity";
 
 /**
  * Maps each unit of measure (UOM) to its possible string representations.

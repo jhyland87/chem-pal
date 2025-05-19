@@ -30,7 +30,7 @@ import "./main.scss";
  * @returns {Promise<void>}
  */
 async function enableMocking() {
-  if (chrome.extension !== undefined && process.env.NODE_ENV !== "development") {
+  if (chrome.extension !== undefined && import.meta.env.MODE !== "development") {
     return;
   }
 

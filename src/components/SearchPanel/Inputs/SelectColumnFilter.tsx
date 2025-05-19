@@ -8,7 +8,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { ChangeEvent, useState } from "react";
-import { FilterVariantInputProps } from "../../../types";
+import { FilterVariantInputProps } from "types";
 import { StyledFormControlSelector } from "../../Styles";
 
 /**

@@ -14,9 +14,9 @@ import {
 } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
 import { CSSProperties, Fragment, ReactElement, useEffect, useState } from "react";
+import { Product, ProductTableProps } from "types";
 import { useAppContext } from "../../context";
 import SupplierFactory from "../../suppliers/SupplierFactory";
-import { Product, ProductTableProps } from "../../types";
 import { implementCustomMethods } from "../../utils/tanstack";
 import LoadingBackdrop from "../LoadingBackdrop";
 import Pagination from "./Pagination";
@@ -89,7 +89,7 @@ export default function ResultsTable({
 
     chrome.storage.session.get(["searchResults"]).then((data) => {
       console.log("New search results", data.searchResults);
-      setShowSearchResults(data.searchResults);
+      setShowSearchResults(data.searchResults as Product[]);
     });
   }, [appContext.settings.searchResultUpdateTs]);
 
