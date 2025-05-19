@@ -3,7 +3,7 @@ import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import Grid from "@mui/material/Grid";
 import Modal from "@mui/material/Modal";
-import { SelectChangeEvent } from "@mui/material/Select";
+import { type SelectChangeEvent } from "@mui/material/Select";
 import { Table } from "@tanstack/react-table";
 import { ComponentType, useState } from "react";
 import { CustomColumn, FilterVariantComponentProps, FilterVariantInputProps, Product } from "types";

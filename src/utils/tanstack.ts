@@ -1,5 +1,6 @@
 import { Column, StringOrTemplateHeader, Table } from "@tanstack/react-table";
-import { debounce, throttle } from "lodash";
+import debounce from "lodash/debounce";
+import throttle from "lodash/throttle";
 
 /**
  * Implements custom methods for Tanstack Table columns

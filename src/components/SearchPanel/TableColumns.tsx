@@ -1,9 +1,9 @@
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import ArrowRightIcon from "@mui/icons-material/ArrowRight";
-import BookmarkIcon from "@mui/icons-material/Bookmark";
 import IconButton from "@mui/material/IconButton";
 import { ColumnDef, type Row, type SortingFn } from "@tanstack/react-table";
 import { Product, ProductRow } from "types";
+import ArrowDropDownIcon from "../../assets/icons/ArrowDropDownIcon";
+import ArrowRightIcon from "../../assets/icons/ArrowRightIcon";
+import BookmarkIcon from "../../assets/icons/BookmarkIcon";
 import { default as Link } from "../TabLink";
 import "./TableColumns.scss";
 
@@ -22,7 +22,7 @@ const BookmarkIconButton = ({ row }: ProductRow) => {
       onClick={() => console.log(row.original)}
       className="boookmark-icon boookmark-button"
     >
-      <BookmarkIcon fontSize="small" className="boookmark-button boookmark-icon" />
+      <BookmarkIcon className="boookmark-button boookmark-icon" />
     </IconButton>
   );
 };
@@ -69,20 +69,16 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       header: () => null,
       cell: ({ row }: ProductRow) => {
         return row.getCanExpand() ? (
-          <IconButton
-            size="small"
-            onClick={row.getToggleExpandedHandler()}
-            className="expand-row-details"
+          <button
+            {...{
+              onClick: row.getToggleExpandedHandler(),
+              style: { cursor: "pointer" },
+            }}
+            className="svg-button-icon"
           >
-            {row.getIsExpanded() ? (
-              <ArrowDropDownIcon fontSize="small" />
-            ) : (
-              <ArrowRightIcon fontSize="small" />
-            )}
-          </IconButton>
-        ) : (
-          "🔵"
-        );
+            {row.getIsExpanded() ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
+          </button>
+        ) : null;
       },
       enableHiding: false,
       enableSorting: false,

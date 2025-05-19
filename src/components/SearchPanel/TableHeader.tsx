@@ -1,5 +1,3 @@
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import {
   ColumnDef,
   ColumnMeta,
@@ -10,6 +8,8 @@ import {
 } from "@tanstack/react-table";
 import { CSSProperties } from "react";
 import { Product } from "types";
+import ArrowDropDownIcon from "../../assets/icons/ArrowDropDownIcon";
+import ArrowDropUpIcon from "../../assets/icons/ArrowDropUpIcon";
 import "./TableHeader.scss";
 /**
  * TableHeader component that renders the header row of the product results table.
@@ -127,15 +127,15 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
                       className={`resizer ${header.column.getIsResizing() ? "isResizing" : ""}`}
                     />
                     <div
-                      className={`${header.column.getCanSort() ? "cursor-pointer select-none" : ""}`}
-                      onClick={header.column.getToggleSortingHandler()}
+                      {...{
+                        className: header.column.getCanSort() ? "cursor-pointer select-none" : "",
+                        onClick: header.column.getToggleSortingHandler(),
+                      }}
                     >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
+                      {flexRender(header.column.columnDef.header, header.getContext())}
                       {{
-                        asc: <ArrowDropUpIcon className="sort-arrow" fontSize="small" />,
-                        desc: <ArrowDropDownIcon className="sort-arrow" fontSize="small" />,
+                        asc: <ArrowDropUpIcon className="sort-icon" />,
+                        desc: <ArrowDropDownIcon className="sort-icon" />,
                       }[header.column.getIsSorted() as string] ?? null}
                     </div>
                   </>

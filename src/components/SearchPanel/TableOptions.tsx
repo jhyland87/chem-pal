@@ -1,9 +1,9 @@
-import TuneIcon from "@mui/icons-material/Tune";
 import Toolbar from "@mui/material/Toolbar";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
 import { TableOptionsProps } from "types";
+import TuneIcon from "../../assets/icons/TuneIcon";
 import FilterModal from "./FilterModal";
 import SearchInput from "./SearchInput";
 import "./TableOptions.scss";
@@ -45,11 +45,9 @@ export default function TableOptions({ table, searchInput, setSearchInput }: Tab
           />
         </Typography>
         <Tooltip title="Filter list">
-          <TuneIcon
-            className="table-options-icon"
-            fontSize="small"
-            onClick={() => setFilterModalOpen(true)}
-          />
+          <button className="svg-button-icon" onClick={() => setFilterModalOpen(true)}>
+            <TuneIcon className="table-options-icon" />
+          </button>
         </Tooltip>
       </Toolbar>
       <FilterModal

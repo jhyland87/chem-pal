@@ -1,4 +1,5 @@
-import _ from "lodash";
+import LoDashStatic from "lodash";
+import mixin from "lodash/mixin";
 
 /**
  * Type declarations for custom Lodash methods.
@@ -309,7 +310,7 @@ async function delayAction(ms: number, action: () => void) {
   action();
 }
 
-_.mixin({
+mixin({
   md5,
   md5sum,
   sha256,
@@ -321,4 +322,4 @@ _.mixin({
   delayAction,
 });
 
-export default _;
+export default LoDashStatic;

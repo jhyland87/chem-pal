@@ -1,55 +1,73 @@
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import { viteStaticCopy } from "vite-plugin-static-copy";
-//import { analyzer } from 'vite-bundle-analyzer'
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [
-    react(),
-    viteStaticCopy({
-      targets: [
-        {
-          src: "public/manifest.json",
-          dest: ".",
-        },
-        {
-          src: "src/service-worker.js",
-          dest: ".",
-        },
-      ],
-    }),
-    // analyzer({
-    //   openAnalyzer: false
-    // })
-  ],
-  build: {
-    chunkSizeWarningLimit: 1500,
-    outDir: "build",
-    rollupOptions: {
-      external: ["chrome", "data/currency", "data/quantity", "data/types"],
-      input: {
-        main: "./index.html",
-      },
-      // output: {
-      //   manualChunks: (id: string) => {
-      //     if (id.includes("node_modules")) {
-      //       if (id.includes("lodash")) {
-      //         return "lodash";
-      //       }
 
-      //       if (id.includes("@mui") || id.includes("@material-ui")) {
-      //         return "vendor_mui";
-      //       }
+export default ({ mode }: { mode: string }) => {
+  const env = loadEnv(mode, process.cwd());
 
-      //       if (id.includes("react")) {
-      //         return "react";
-      //       }
-
-      //       return "vendor"; // all other package goes here
-      //     }
-      //     return "default";
-      //   },
-      // },
+  //console.log("process.env:", process.env);
+  const staticCopyTargets = [
+    {
+      src: "public/manifest.json",
+      dest: ".",
     },
-  },
-});
+    {
+      src: "src/service-worker.js",
+      dest: ".",
+    },
+    {
+      src: "src/__mocks__/mockServiceWorker.js",
+      dest: "public",
+    },
+  ];
+
+  if (mode === "mock" || mode === "development") {
+    staticCopyTargets.push({
+      src: "src/__mocks__/mockServiceWorker.js",
+      dest: "public",
+    });
+  }
+
+  return defineConfig({
+    define: {
+      "process.env": env,
+    },
+    plugins: [
+      react(),
+      viteStaticCopy({
+        targets: staticCopyTargets,
+      }),
+      /*
+      analyzer({
+        openAnalyzer: false,
+      }),*/
+    ],
+    build: {
+      chunkSizeWarningLimit: 1000,
+      outDir: "build",
+      rollupOptions: {
+        external: ["chrome", "data/currency", "data/quantity", "data/types"],
+        input: {
+          main: "./index.html",
+        },
+        output: {
+          manualChunks: {
+            vendor_mui_style: ["@mui/styled-engine", "@mui/styles"],
+            vendor_mui_material: ["@mui/material"],
+            vendor_mui_x_data_grid: ["@mui/x-data-grid"],
+            vendor_tanstack: ["@tanstack/react-table"],
+            vendor_lodash: ["lodash"],
+            vendor_react: [
+              "react",
+              "react-dom",
+              "react-form-hook",
+              "react-icons",
+              "react-virtuoso",
+            ],
+          },
+        },
+      },
+    },
+  });
+};

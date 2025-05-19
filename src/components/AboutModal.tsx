@@ -1,11 +1,12 @@
-import GitHubIcon from "@mui/icons-material/GitHub";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
+import IconButton from "@mui/material/IconButton";
 import Modal from "@mui/material/Modal";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { styled, Theme } from "@mui/material/styles";
+import { styled, type Theme } from "@mui/material/styles";
+import GitHubIcon from "../assets/icons/GitHubIcon";
 import "./AboutModal.scss";
 import { default as Link } from "./TabLink";
 
@@ -66,9 +67,14 @@ export default function AboutModal({
         <Box className="about-box">
           <Typography id="application-title" variant="h6" component="h2">
             About ChemPare
-            <Link href="https://github.com/jhyland87/chem-crawler/tree/main">
-              <GitHubIcon fontSize="small" className="github-icon" />
-            </Link>
+            <IconButton
+              href="https://github.com/justinhyland/chem-crawler"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="github-button"
+            >
+              <GitHubIcon className="github-icon" />
+            </IconButton>
           </Typography>
           <Typography id="application-description" variant="subtitle2" gutterBottom>
             Open source project aimed at helping amateur chemistry hobbyists find the best deals on

@@ -1,12 +1,8 @@
-import {
-  InputLabel,
-  MenuItem,
-  OutlinedInput,
-  Select,
-  SelectChangeEvent,
-  Theme,
-  useTheme,
-} from "@mui/material";
+import { useTheme, type SelectChangeEvent, type Theme } from "@mui/material";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import Select from "@mui/material/Select";
 import { ChangeEvent, useState } from "react";
 import { FilterVariantInputProps } from "types";
 import { StyledFormControlSelector } from "../../Styles";

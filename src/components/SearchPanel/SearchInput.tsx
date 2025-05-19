@@ -1,12 +1,12 @@
-import MenuIcon from "@mui/icons-material/Menu";
-import ScienceIcon from "@mui/icons-material/Science";
-import SearchIcon from "@mui/icons-material/Search";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import InputBase from "@mui/material/InputBase";
 import Paper from "@mui/material/Paper";
 import { useState } from "react";
 import { SearchInputStates } from "types";
+import MenuIcon from "../../assets/icons/MenuIcon";
+import ScienceIcon from "../../assets/icons/ScienceIcon";
+import SearchIcon from "../../assets/icons/SearchIcon";
 import "./SearchInput.scss";
 
 /**

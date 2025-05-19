@@ -1,12 +1,12 @@
-import AutoDeleteIcon from "@mui/icons-material/AutoDelete";
-import ClearIcon from "@mui/icons-material/Clear";
-import ContrastIcon from "@mui/icons-material/Contrast";
-import InfoOutlineIcon from "@mui/icons-material/InfoOutline";
 import SpeedDial from "@mui/material/SpeedDial";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
 import SpeedDialIcon from "@mui/material/SpeedDialIcon";
 import { MouseEvent, useEffect, useState } from "react";
 import { SpeedDialMenuProps } from "types";
+import AutoDeleteIcon from "../assets/icons/AutoDeleteIcon";
+import ClearIcon from "../assets/icons/ClearIcon";
+import ContrastIcon from "../assets/icons/ContrastIcon";
+import InfoOutlineIcon from "../assets/icons/InfoOutlineIcon";
 import { useAppContext } from "../context";
 import _ from "../lodash";
 import AboutModal from "./AboutModal";

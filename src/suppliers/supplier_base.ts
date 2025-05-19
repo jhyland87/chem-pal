@@ -113,9 +113,15 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
       const httpResponse = await fetch(requestObj);
 
       // @todo: Override this if not in development mode
-      if (chrome.extension !== undefined && import.meta.env.MODE !== "development") {
+      if (
+        chrome.extension !== undefined &&
+        import.meta.env.MODE !== "development" &&
+        httpResponse.headers.get("ismockedresponse") !== "true"
+      ) {
+        console.log("httpGetHeaders| httpResponse:", httpResponse);
+        console.log("httpGetHeaders| import.meta.env:", import.meta.env);
         const cacheData = getCachableResponse(requestObj, httpResponse);
-        console.log("cacheData:", cacheData);
+        console.log("httpGetHeaders| cacheData:", cacheData);
       }
 
       return Object.fromEntries(httpResponse.headers.entries()) as HeaderObject;
@@ -168,9 +174,15 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
       const httpResponse = await fetch(requestObj);
 
       // @todo: Override this if not in development mode
-      if (chrome.extension !== undefined && import.meta.env.MODE !== "development") {
+      if (
+        chrome.extension !== undefined &&
+        import.meta.env.MODE !== "development" &&
+        httpResponse.headers.get("ismockedresponse") !== "true"
+      ) {
+        console.log("httpPost| httpResponse:", httpResponse);
+        console.log("httpPost| import.meta.env:", import.meta.env);
         const cacheData = getCachableResponse(requestObj, httpResponse);
-        console.log("cacheData:", cacheData);
+        console.log("httpPost| cacheData:", cacheData);
       }
 
       return httpResponse as Response;
@@ -207,9 +219,15 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
       const httpResponse = await fetch(requestObj);
 
       // @todo: Override this if not in development mode
-      if (chrome.extension !== undefined && import.meta.env.MODE !== "development") {
+      if (
+        chrome.extension !== undefined &&
+        import.meta.env.MODE !== "development" &&
+        httpResponse.headers.get("ismockedresponse") !== "true"
+      ) {
+        console.log("httpGet| httpResponse:", httpResponse);
+        console.log("httpGet| import.meta.env:", import.meta.env);
         const cacheData = getCachableResponse(requestObj, httpResponse);
-        console.log("cacheData:", cacheData);
+        console.log("httpGet| cacheData:", cacheData);
       }
 
       return httpResponse as Response;

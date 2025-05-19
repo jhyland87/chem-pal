@@ -1,11 +1,9 @@
-import {
-  Box,
-  FormControl,
-  Slider,
-  SliderValueLabelProps,
-  Tooltip,
-  Typography,
-} from "@mui/material";
+import type { SliderValueLabelProps } from "@mui/material";
+import Box from "@mui/material/Box";
+import FormControl from "@mui/material/FormControl";
+import Slider from "@mui/material/Slider";
+import Tooltip from "@mui/material/Tooltip";
+import Typography from "@mui/material/Typography";
 import { useState } from "react";
 import { FilterVariantInputProps } from "types";
 import "./RangeColumnFilter.scss";

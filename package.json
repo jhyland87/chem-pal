@@ -9,8 +9,9 @@
   },
   "scripts": {
     "dev": "vite",
+    "dev-mock": "vite --mode=mock",
     "setup": "npm install --include=dev --legacy-peer-deps",
-    "build": "tsc -b && vite build --mode=dev",
+    "build": "tsc -b && vite build --mode=production",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "jest --coverage",
@@ -20,10 +21,9 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@material-ui/icons": "^4.11.3",
-    "@mui/icons-material": "^7.0.2",
-    "@mui/material": "^7.0.2",
+    "@mui/material": "^7.1.0",
     "@mui/styled-engine": "^7.0.2",
+    "@mui/styles": "^6.4.11",
     "@mui/x-data-grid": "^8.1.0",
     "@table-library/react-table-library": "^4.1.15",
     "@tanstack/react-table": "^8.21.3",
@@ -38,8 +38,7 @@
     "react-dom": "^19.0.0",
     "react-form-hook": "^0.0.1",
     "react-icons": "^5.5.0",
-    "react-virtuoso": "^4.12.7",
-    "vite-plugin-static-copy": "^2.3.1"
+    "react-virtuoso": "^4.12.7"
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.18.6",
