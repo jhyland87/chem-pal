@@ -3,10 +3,13 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "ES2021",
     "useDefineForClassFields": true,
-    "lib": ["ES2021", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2021",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "skipLibCheck": true,
-
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -17,10 +20,18 @@
     "jsx": "react-jsx",
     "baseUrl": "./",
     "paths": {
-      "types/*" : ["src/types/*"],
-      "types" : ["src/types/types"],
-      "data/*" : ["src/data/*"],
-      "data" : ["src/data/data"]
+      "types/*": [
+        "src/types/*"
+      ],
+      "types": [
+        "src/types/types"
+      ],
+      "data/*": [
+        "src/data/*"
+      ],
+      "data": [
+        "src/data/data"
+      ]
     },
     /* Linting */
     "strict": true,
@@ -33,10 +44,14 @@
       "./node_modules/@types",
       "./src/types/*",
       "./src/data/*",
-      //"./src/types/types.d",
-      //"./src/types/types.d.ts"
     ],
-    "types": ["jest", "node","chrome"]
+    "types": [
+      "jest",
+      "node",
+      "chrome"
+    ]
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }

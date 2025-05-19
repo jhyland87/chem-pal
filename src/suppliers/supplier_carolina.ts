@@ -135,7 +135,7 @@ export default class SupplierCarolina<T extends Product>
       const count = elem.querySelector("p.c-product-total") as HTMLElement;
 
       elementList.push({
-        url: linkElement?.href as string,
+        url: linkElement.getAttribute("href") as string,
         title: _trimSpaceLike(titleElement?.innerText),
         prices: _trimSpaceLike(price?.innerText),
         count: _trimSpaceLike(count?.innerText),

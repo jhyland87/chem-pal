@@ -145,5 +145,8 @@
   "typescript.inlayHints.enumValues.enabled": true,
   "typescript.inlayHints.typeArguments.enabled": true,
   "typescript.inlayHints.typeParameters.enabled": true,
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
 
 }

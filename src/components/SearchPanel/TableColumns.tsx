@@ -2,7 +2,7 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
 import IconButton from "@mui/material/IconButton";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, type Row, type SortingFn } from "@tanstack/react-table";
 import { Product, ProductRow } from "types";
 import { default as Link } from "../TabLink";
 import "./TableColumns.scss";
@@ -25,6 +25,16 @@ const BookmarkIconButton = ({ row }: ProductRow) => {
       <BookmarkIcon fontSize="small" className="boookmark-button boookmark-icon" />
     </IconButton>
   );
+};
+
+const priceSortingFn: SortingFn<Product> = (
+  rowA: Row<Product>,
+  rowB: Row<Product>,
+  columnId: string,
+) => {
+  const a = rowA.original.usdPrice as number;
+  const b = rowB.original.usdPrice as number;
+  return a > b ? 1 : a < b ? -1 : 0;
 };
 
 /**
@@ -122,8 +132,13 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       accessorKey: "price",
       cell: ({ row }: ProductRow) => {
         //const price = Number(parseFloat(row.original.price.toString()).toFixed(2)).toLocaleString();
-        return `${row.original.currencySymbol as string}${row.original.price}`;
+        //return `${row.original.currencySymbol as string}${row.original.price}`;
+        return new Intl.NumberFormat((row.original?.currencyCode as string) || "USD", {
+          style: "currency",
+          currency: (row.original?.currencyCode as string) || "USD",
+        }).format(row.original.price);
       },
+      sortingFn: priceSortingFn,
       meta: {
         filterVariant: "range",
       },

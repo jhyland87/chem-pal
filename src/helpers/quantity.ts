@@ -41,7 +41,7 @@ export const uomAliases: Record<UOM, string[]> = {
  * parseQuantity('1.2 L') // Returns { quantity: 1.2, uom: 'L' }
  * ```
  *
- * @see https://regex101.com/r/Ruid54/3
+ * @see {@link https://regex101.com/r/Ruid54/3 | Regex tests}
  */
 export function parseQuantity(value: string): QuantityObject | void {
   const quantityPattern = new RegExp(

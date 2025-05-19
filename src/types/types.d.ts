@@ -76,6 +76,7 @@ declare type Settings = {
  * @param {string} title - Name/title of the variant
  * @param {number} price - Price of the variant
  * @param {number} quantity - Available quantity
+ * @param {number} [usdPrice] - Price of the variant in USD
  * @param {string} [url] - url of variant
  * @param {number|string} [sku] - SKU number
  * @param {number|string} [id] - ID String or number
@@ -90,6 +91,7 @@ declare type Variant = {
   title: string;
   price: number;
   quantity: number;
+  usdPrice?: number;
   sku?: number | string;
   url?: string;
   id?: number | string;
@@ -113,6 +115,7 @@ declare type Variant = {
  * @param {string} uom - Unit of measure
  * @param {string} supplier - Name of the supplier
  * @param {string} url - Product URL
+ * @param {number} [usdPrice] - Price of the product in USD
  * @param {string} [description] - Product description
  * @param {string} [manufacturer] - Product manufacturer
  * @param {CAS<string>} [cas] - Chemical Abstracts Service number
@@ -136,6 +139,7 @@ declare type Product = Variant & {
   uom: string;
   supplier: string;
   description?: string;
+  //usdPrice?: string;
   //title: string;
   //url: string;
   //price: number;

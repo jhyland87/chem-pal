@@ -1,8 +1,12 @@
 {
   "name": "ChemPare Documentation",
-  "entryPoints": ["./src/**/*.ts", "./src/**/*.tsx"],
+  "entryPoints": [
+    "./src/**/*.ts",
+    "./src/**/*.tsx"
+  ],
   "plugin": [
     //"typedoc-github-theme",
+    "typedoc-plugin-expand-object-like-types",
     "typedoc-theme-hierarchy",
     "typedoc-plugin-rename-defaults",
     "typedoc-plugin-coverage",
@@ -16,11 +20,11 @@
   "lightHighlightTheme": "github-light-high-contrast",
   "darkHighlightTheme": "github-dark-dimmed",
   "collapseInternalModule": true,
-  "additionalModuleSources":["src/types"],
+  "additionalModuleSources": [],
   "cleanOutputDir": true,
   "pretty": true,
-  "groupReferencesByType":true,
-  "alwaysCreateEntryPointModule":true,
+  "groupReferencesByType": true,
+  "alwaysCreateEntryPointModule": true,
   "searchCategoryBoosts": {
     "Component": 2,
     "Helper": 1.1,
@@ -29,7 +33,7 @@
   "searchGroupBoosts": {
     "Classes": 1.5
   },
-  "jsDocCompatibility":true,
+  "jsDocCompatibility": true,
   "logLevel": "Verbose",
   "placeInternalsInOwningModule": true,
   "markdownItOptions": {
@@ -37,27 +41,36 @@
   },
   "useTsLinkResolution": true,
   "out": "docs",
-  "exclude": ["**/node_modules/**", "**/__tests__/**", "**/__mocks__/**"],
-
+  "exclude": [
+    "**/node_modules/**",
+    "**/__tests__/**",
+    "**/__mocks__/**"
+  ],
   "useFirstParagraphOfCommentAsSummary": true,
   "includeHierarchySummary": true,
   "searchInDocuments": true,
   "searchInComments": true,
-  "excludeTags": ["@internal", "@private", "@protected"],
+  "excludeTags": [
+    "@internal",
+    "@private",
+    "@protected"
+  ],
   "includeVersion": true,
   "hideGenerator": true,
   "readme": "README.md",
   "navigationLinks": {
     "GitHub": "https://github.com/jhyland87/chem-crawler"
   },
-  "sort": ["source-order"],
+  "sort": [
+    "source-order"
+  ],
   //"emit": "both",
   "excludeReferences": false,
   "excludeProtected": false,
   "excludePrivate": false,
   "excludeNotDocumented": false,
   "excludeInternal": false,
-  "resolveUtilityTypes":true,
+  "resolveUtilityTypes": true,
   "excludeExternals": false,
   "visibilityFilters": {
     "protected": true,

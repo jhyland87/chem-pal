@@ -1,4 +1,5 @@
 import type { HeaderObject, Product } from "types";
+import { toUSD } from "../helpers/currency";
 import { getCachableResponse } from "../helpers/request";
 
 /**
@@ -261,7 +262,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
         try {
           const result = await resultPromise;
           if (result) {
-            yield this._finishProduct(result) as T;
+            yield (await this._finishProduct(result)) as T;
           }
         } catch (err) {
           // Here to catch errors in individual yields
@@ -284,8 +285,16 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * @param {Product} product - The product to finish.
    * @returns The finished product.
    */
-  protected _finishProduct(product: T): T {
+  protected async _finishProduct(product: Product): Promise<Product> {
     //product.url = (product.url as string).replace(/chrome-extension:\/\/[a-z]+/, "");
+
+    product.usdPrice = product.price;
+
+    // If the product is a non-USD product, populate the usdPrice with the converted currency to aid in sorting/filtering
+    if (product.currencyCode !== "USD") {
+      product.usdPrice = await toUSD(product.price, product.currencyCode);
+    }
+
     return product;
   }
 
