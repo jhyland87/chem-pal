@@ -1,14 +1,14 @@
 import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
 
-//export default function BenzeneBlueIcon(props: SvgIconProps) {
-
-//React.FC<KeyboardDoubleArrowLeftIconProps>
-interface KeyboardDoubleArrowRightIconProps extends SvgIconProps {
-  className?: string;
-}
-
-const KeyboardDoubleArrowRightIcon: React.FC<KeyboardDoubleArrowRightIconProps> = (props) => {
-  //export default function KeyboardDoubleArrowLeftIcon(props: SvgIconProps) {
+/**
+ * A Material-UI icon component that renders a double right arrow icon.
+ * This icon is typically used to represent fast forward, next page, or skip functionality.
+ *
+ * @component
+ * @param {SvgIconProps} props - The props passed to the underlying SvgIcon component
+ * @returns {JSX.Element} A React component that renders the double right arrow icon
+ */
+const KeyboardDoubleArrowRightIcon: React.FC<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props}>
       <svg

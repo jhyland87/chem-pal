@@ -1,10 +1,14 @@
 import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
 
-interface KeyboardArrowLeftIconProps extends SvgIconProps {
-  className?: string;
-}
-
-const KeyboardArrowLeftIcon: React.FC<KeyboardArrowLeftIconProps> = (props) => {
+/**
+ * A Material-UI icon component that renders a single left arrow icon.
+ * This icon is typically used to represent back, previous, or left navigation.
+ *
+ * @component
+ * @param {SvgIconProps} props - The props passed to the underlying SvgIcon component
+ * @returns {JSX.Element} A React component that renders the left arrow icon
+ */
+const KeyboardArrowLeftIcon: React.FC<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props}>
       <svg

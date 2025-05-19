@@ -1,10 +1,14 @@
 import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
 
-interface ArrowDropDownIconProps extends SvgIconProps {
-  className?: string;
-}
-
-const ArrowDropDownIcon: React.FC<ArrowDropDownIconProps> = (props) => {
+/**
+ * A Material-UI icon component that renders a downward dropdown arrow icon.
+ * This icon is typically used to represent collapsing content, showing more options, or downward navigation.
+ *
+ * @component
+ * @param {SvgIconProps} props - The props passed to the underlying SvgIcon component
+ * @returns {JSX.Element} A React component that renders the downward dropdown arrow icon
+ */
+const ArrowDropDownIcon: React.FC<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props}>
       <svg

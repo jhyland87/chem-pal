@@ -1,10 +1,14 @@
 import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
 
-interface KeyboardDoubleArrowLeftIconProps extends SvgIconProps {
-  className?: string;
-}
-
-const KeyboardDoubleArrowLeftIcon: React.FC<KeyboardDoubleArrowLeftIconProps> = (props) => {
+/**
+ * A Material-UI icon component that renders a double left arrow icon.
+ * This icon is typically used to represent rewind, previous page, or skip back functionality.
+ *
+ * @component
+ * @param {SvgIconProps} props - The props passed to the underlying SvgIcon component
+ * @returns {JSX.Element} A React component that renders the double left arrow icon
+ */
+const KeyboardDoubleArrowLeftIcon: React.FC<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props}>
       <svg
