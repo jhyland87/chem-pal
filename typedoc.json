@@ -42,6 +42,7 @@
   "useTsLinkResolution": true,
   "out": "docs",
   "exclude": [
+    "**/vite-env*",
     "**/node_modules/**",
     "**/__tests__/**",
     "**/__mocks__/**"
