@@ -3,7 +3,7 @@ import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
 import IconButton from "@mui/material/IconButton";
 import { ColumnDef } from "@tanstack/react-table";
-import { Product, ProductRow } from "../../types";
+import { Product, ProductRow } from "types";
 import { default as Link } from "../TabLink";
 import "./TableColumns.scss";
 
@@ -122,7 +122,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       accessorKey: "price",
       cell: ({ row }: ProductRow) => {
         //const price = Number(parseFloat(row.original.price.toString()).toFixed(2)).toLocaleString();
-        return `${row.original.currencySymbol}${row.original.price}`;
+        return `${row.original.currencySymbol as string}${row.original.price}`;
       },
       meta: {
         filterVariant: "range",

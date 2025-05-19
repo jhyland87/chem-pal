@@ -1,7 +1,7 @@
 import merge from "lodash/merge";
+import type { Product, Variant } from "types";
 import { parsePrice } from "../helpers/currency";
 import { parseQuantity } from "../helpers/quantity";
-import { Product, Variant } from "../types";
 import SupplierBase from "./supplier_base";
 import {
   type WixProduct,
@@ -114,7 +114,7 @@ export default abstract class SupplierWixBase<T extends Product>
       supplier: this.supplierName,
       title: product.name,
       url: `${this._baseURL}/product-page/${product.urlPart}`,
-      variants: Object.values(productVariants) as Variant[],
+      variants: Object.values(productVariants) as unknown as Variant[],
     } as Product);
   }
 }

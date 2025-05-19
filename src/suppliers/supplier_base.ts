@@ -1,5 +1,5 @@
+import type { HeaderObject, Product } from "types";
 import { getCachableResponse } from "../helpers/request";
-import { HeaderObject, Product } from "../types";
 
 /**
  * The base class for all suppliers.
@@ -112,7 +112,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
       const httpResponse = await fetch(requestObj);
 
       // @todo: Override this if not in development mode
-      if (chrome.extension !== undefined && process.env.NODE_ENV === "development") {
+      if (chrome.extension !== undefined && import.meta.env.MODE !== "development") {
         const cacheData = getCachableResponse(requestObj, httpResponse);
         console.log("cacheData:", cacheData);
       }
@@ -167,7 +167,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
       const httpResponse = await fetch(requestObj);
 
       // @todo: Override this if not in development mode
-      if (chrome.extension !== undefined && process.env.NODE_ENV === "development") {
+      if (chrome.extension !== undefined && import.meta.env.MODE !== "development") {
         const cacheData = getCachableResponse(requestObj, httpResponse);
         console.log("cacheData:", cacheData);
       }
@@ -206,7 +206,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
       const httpResponse = await fetch(requestObj);
 
       // @todo: Override this if not in development mode
-      if (chrome.extension !== undefined && process.env.NODE_ENV === "development") {
+      if (chrome.extension !== undefined && import.meta.env.MODE !== "development") {
         const cacheData = getCachableResponse(requestObj, httpResponse);
         console.log("cacheData:", cacheData);
       }

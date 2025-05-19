@@ -1,7 +1,8 @@
+import type { QuantityObject } from "data/quantity";
+import type { HeaderObject, Product } from "types";
 import { parsePrice } from "../helpers/currency";
 import { parseQuantity } from "../helpers/quantity";
 import _ from "../lodash";
-import { HeaderObject, Product, QuantityObject } from "../types";
 import SupplierBase from "./supplier_base";
 import { _productIndexObject, ProductData, SearchParams } from "./supplier_carolina.d";
 
@@ -119,27 +120,23 @@ export default class SupplierCarolina<T extends Product>
       throw new Error("Failed to load product HTML into DOMParser");
     }
 
-    const productElements: NodeListOf<HTMLElement> = doc.querySelectorAll("div.c-feature-product");
+    //type Foo = HTMLElement | HTMLAnchorElement  | HTMLBaseElement;
+    const productElements: NodeListOf<Element> = doc.querySelectorAll("div.c-feature-product");
 
     const elementList: _productIndexObject[] = [];
 
     const _trimSpaceLike = (txt: string) =>
       txt?.replaceAll(/(^(\\n|\\t|\s)*|(\\n|\\t|\s)*$)/gm, "");
 
-    interface Props extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
-      href: string;
-      className?: string;
-    }
-
     for (const elem of productElements) {
-      const title = elem.querySelector("h3.c-product-title") as HTMLElement;
-      const link = elem.querySelector("a.c-product-link") as HTMLAnchorElement;
+      const titleElement = elem.querySelector("h3.c-product-title") as HTMLElement;
+      const linkElement = elem.querySelector("a.c-product-link") as HTMLAnchorElement;
       const price = elem.querySelector("p.c-product-price") as HTMLElement;
       const count = elem.querySelector("p.c-product-total") as HTMLElement;
 
       elementList.push({
-        title: _trimSpaceLike(title?.innerText),
-        url: _trimSpaceLike(this._href(link.getAttribute("href") ?? "")),
+        url: linkElement?.href as string,
+        title: _trimSpaceLike(titleElement?.innerText),
         prices: _trimSpaceLike(price?.innerText),
         count: _trimSpaceLike(count?.innerText),
       });
@@ -235,7 +232,7 @@ export default class SupplierCarolina<T extends Product>
         supplier: this.supplierName,
         title: productData.displayName,
         url: this._href(productData.canonicalUrl),
-        displayPrice: `${priceObj.currencySymbol}${priceObj.price}`,
+        //displayPrice: `${priceObj.currencySymbol}${priceObj.price}`,
         displayQuantity: `${quantityMatch.quantity} ${quantityMatch.uom}`,
         //price: priceObj.price,
         //currencyCode: priceObj.currencyCode,

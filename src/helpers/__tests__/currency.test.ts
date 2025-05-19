@@ -1,4 +1,4 @@
-import { CurrencySymbol, ExchangeRateResponse } from "../../types";
+import { CurrencySymbol, ExchangeRateResponse } from "types/currency";
 import {
   getCurrencyCodeFromSymbol,
   getCurrencyRate,

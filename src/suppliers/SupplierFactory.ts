@@ -1,6 +1,6 @@
+import type { Product } from "types";
 import * as suppliers from "../suppliers";
 import SupplierBase from "../suppliers/supplier_base";
-import { Product } from "../types";
 
 /**
  * Factory class for querying all suppliers.
@@ -78,8 +78,15 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
     return combineAsyncIterators(
       Object.entries(suppliers).reduce(
         (result: SupplierBase<Product>[], [supplierClassName, supplierClass]) => {
-          if (this._suppliers.length == 0 || this._suppliers.includes(supplierClassName))
-            result.push(new supplierClass(this._query, 10, this._controller));
+          if (this._suppliers.length == 0 || this._suppliers.includes(supplierClassName)) {
+            // Cast supplierClass to the correct type to fix type error
+            const SupplierClass = supplierClass as new (
+              query: string,
+              limit: number,
+              controller: AbortController,
+            ) => SupplierBase<Product>;
+            result.push(new SupplierClass(this._query, 10, this._controller));
+          }
           return result;
         },
         [] as SupplierBase<Product>[],

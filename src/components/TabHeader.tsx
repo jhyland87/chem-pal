@@ -6,8 +6,8 @@ import StoreIcon from "@mui/icons-material/Store";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import { SyntheticEvent } from "react";
+import { TabHeaderProps } from "types";
 import IconTextFader from "./IconTextFader";
-
 /**
  * Generates props for a tab component.
  * @param {number} index - The index of the tab
@@ -21,16 +21,6 @@ function tabProps(index: number, name: string) {
     "aria-controls": `full-width-tabpanel-${index}`,
   };
 }
-
-/**
- * Props for the TabHeader component
- * @param {number} page - Current active tab index
- * @param {Function} setPage - Function to update the active tab
- */
-type TabHeaderProps = {
-  page: number;
-  setPage: (page: number) => void;
-};
 
 /**
  * TabHeader component that renders a navigation bar with tabs for different sections of the application.

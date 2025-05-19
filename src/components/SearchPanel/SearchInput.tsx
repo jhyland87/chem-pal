@@ -6,17 +6,8 @@ import IconButton from "@mui/material/IconButton";
 import InputBase from "@mui/material/InputBase";
 import Paper from "@mui/material/Paper";
 import { useState } from "react";
+import { SearchInputStates } from "types";
 import "./SearchInput.scss";
-
-/**
- * Props for the SearchInput component
- * @param {string} searchInput - Current search input value
- * @param {Function} setSearchInput - Function to update the search input value
- */
-type SearchInputStates = {
-  searchInput: string;
-  setSearchInput: (value: string) => void;
-};
 
 /**
  * SearchInput component that provides a search interface with a text input and action buttons.

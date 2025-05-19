@@ -2,6 +2,8 @@
   "name": "ChemPare Documentation",
   "entryPoints": ["./src/**/*.ts", "./src/**/*.tsx"],
   "plugin": [
+    //"typedoc-github-theme",
+    "typedoc-theme-hierarchy",
     "typedoc-plugin-rename-defaults",
     "typedoc-plugin-coverage",
     "typedoc-plugin-include-example",
@@ -9,11 +11,16 @@
     "typedoc-plugin-mdn-links",
     "typedoc-plugin-missing-exports"
   ],
+  "theme": "hierarchy",
   "entryPointStrategy": "expand",
-  "lightHighlightTheme": "light-plus",
+  "lightHighlightTheme": "github-light-high-contrast",
+  "darkHighlightTheme": "github-dark-dimmed",
   "collapseInternalModule": true,
+  "additionalModuleSources":["src/types"],
   "cleanOutputDir": true,
   "pretty": true,
+  "groupReferencesByType":true,
+  "alwaysCreateEntryPointModule":true,
   "searchCategoryBoosts": {
     "Component": 2,
     "Helper": 1.1,
@@ -22,6 +29,9 @@
   "searchGroupBoosts": {
     "Classes": 1.5
   },
+  "jsDocCompatibility":true,
+  "logLevel": "Verbose",
+  "placeInternalsInOwningModule": true,
   "markdownItOptions": {
     "html": true
   },
@@ -31,6 +41,8 @@
 
   "useFirstParagraphOfCommentAsSummary": true,
   "includeHierarchySummary": true,
+  "searchInDocuments": true,
+  "searchInComments": true,
   "excludeTags": ["@internal", "@private", "@protected"],
   "includeVersion": true,
   "hideGenerator": true,
@@ -38,13 +50,14 @@
   "navigationLinks": {
     "GitHub": "https://github.com/jhyland87/chem-crawler"
   },
-  "searchInComments": true,
   "sort": ["source-order"],
+  //"emit": "both",
   "excludeReferences": false,
   "excludeProtected": false,
   "excludePrivate": false,
   "excludeNotDocumented": false,
   "excludeInternal": false,
+  "resolveUtilityTypes":true,
   "excludeExternals": false,
   "visibilityFilters": {
     "protected": true,

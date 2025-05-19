@@ -4,7 +4,7 @@ import KeyboardDoubleArrowLeftIcon from "@mui/icons-material/KeyboardDoubleArrow
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
 import IconButton from "@mui/material/IconButton";
 import { Table } from "@tanstack/react-table";
-import { Product } from "../../types";
+import { Product } from "types";
 import "./Pagination.scss";
 
 /**

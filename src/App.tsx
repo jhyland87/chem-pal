@@ -5,6 +5,7 @@ import { ThemeProvider, useTheme } from "@mui/material/styles";
 import "./App.scss";
 //import { extensionId } from "../config.json";
 import { useEffect, useState } from "react";
+import { Settings } from "types";
 import "./__mocks__/chromeStorageMock";
 import ErrorBoundary from "./components/ErrorBoundary";
 import FavoritesPanel from "./components/FavoritesPanel";
@@ -18,7 +19,6 @@ import TabPanel from "./components/TabPanel";
 import { AppContext } from "./context";
 import SupplierFactory from "./suppliers/SupplierFactory";
 import { darkTheme, lightTheme } from "./themes";
-import { Settings } from "./types";
 
 /**
  * Main application component that manages the overall layout and state.
@@ -103,8 +103,8 @@ function App() {
   // Load the settings from storage.local on the initial component load
   useEffect(() => {
     chrome.storage.session.get(["settings", "panel"]).then((data) => {
-      if (data.settings) setSettings({ ...data.settings });
-      if (data.panel) setPanel(data.panel);
+      if (data.settings) setSettings({ ...data.settings } as Settings);
+      if (data.panel) setPanel(data.panel as number);
     });
   }, []);
 

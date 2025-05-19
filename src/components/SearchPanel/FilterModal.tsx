@@ -6,12 +6,7 @@ import Modal from "@mui/material/Modal";
 import { SelectChangeEvent } from "@mui/material/Select";
 import { Table } from "@tanstack/react-table";
 import { ComponentType, useState } from "react";
-import {
-  CustomColumn,
-  FilterVariantComponentProps,
-  FilterVariantInputProps,
-  Product,
-} from "../../types";
+import { CustomColumn, FilterVariantComponentProps, FilterVariantInputProps, Product } from "types";
 import "./FilterModal.scss";
 import ColumnVisibilitySelect from "./Inputs/ColumnVisibilitySelect";
 import RangeColumnFilter from "./Inputs/RangeColumnFilter";

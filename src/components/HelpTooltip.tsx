@@ -2,7 +2,8 @@ import Tooltip from "@mui/material/Tooltip";
 import { MouseEvent, useEffect, useState } from "react";
 import { useAppContext } from "../context";
 import _ from "../lodash";
-import { HelpTooltipProps } from "../types";
+//import { HelpTooltipProps } from "../types";
+import { HelpTooltipProps } from "types";
 
 /**
  * A tooltip component that displays help text with customizable timing and styling.

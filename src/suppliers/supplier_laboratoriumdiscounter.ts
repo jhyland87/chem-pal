@@ -1,4 +1,6 @@
-import { CurrencySymbolMap, HeaderObject, Product } from "../types";
+//import { CurrencySymbolMap, HeaderObject, Product } from "../types";
+import type { HeaderObject, Product } from "types";
+import { CurrencySymbolMap } from "../data/currency";
 import SupplierBase from "./supplier_base";
 import {
   _productIndexObject,

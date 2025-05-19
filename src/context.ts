@@ -1,5 +1,6 @@
 import { createContext, useContext } from "react";
-import { AppContextProps } from "./types";
+import { AppContextProps } from "types";
+//import "./types.d.ts";
 
 /**
  * React context for managing global application state and settings.
