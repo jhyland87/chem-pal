@@ -95,6 +95,12 @@ export default class SupplierCarolina<T extends Product>
     "x-requested-with": "XMLHttpRequest",
   };
 
+  /**
+   * Make the query params for the Carolina API
+   *
+   * @param {string} query - The query to search for
+   * @returns {SearchParams} The query params
+   */
   protected _makeQueryParams(query: string): SearchParams {
     return {
       /*
@@ -114,12 +120,13 @@ export default class SupplierCarolina<T extends Product>
       searchExecByFormSubmit: "true",
       tab: "p",
     } as SearchParams;
-    //const url = new URL("/browse/product-search-results", this._baseURL);
-    //const params = new URLSearchParams(searchParams);
-    //url.search = params.toString();
-    //return url.toString();
   }
 
+  /**
+   * Query products from the Carolina API
+   *
+   * @returns {Promise<void>} A promise that resolves when the products are queried
+   */
   protected async queryProducts(): Promise<void> {
     const params = this._makeQueryParams(this._query);
     const response = await this.httpGet({ path: "/browse/product-search-results", params });
@@ -162,12 +169,23 @@ export default class SupplierCarolina<T extends Product>
     this._queryResults = elementList.slice(0, this._limit);
   }
 
+  /**
+   * Parse the products from the Carolina API
+   *
+   * @returns {Promise<(Product | void)[]>} A promise that resolves to the products
+   */
   protected async parseProducts(): Promise<(Product | void)[]> {
     return Promise.all(
       this._queryResults.map((result) => this._getProductData(result) as Promise<Product>),
     );
   }
 
+  /**
+   * Get the product data from the Carolina API
+   *
+   * @param {_productIndexObject} productIndexObject - The product index object
+   * @returns {Promise<Product | void>} A promise that resolves to the product data or void if the product has no price
+   */
   protected async _getProductData(
     productIndexObject: _productIndexObject,
   ): Promise<Product | void> {
@@ -213,12 +231,9 @@ export default class SupplierCarolina<T extends Product>
       throw new Error("Failed to find product data");
     }
 
-    //console.debug('productData:', productData)
-
     const quantityMatch: QuantityObject | void = parseQuantity(productData.displayName);
 
     if (!quantityMatch) return;
-    //console.debug('quantityMatch:', quantityMatch)
 
     // The price can be stored at different locations in the productData object. Select them all then
     // choose the first non-undefined, non-null value.
@@ -246,83 +261,10 @@ export default class SupplierCarolina<T extends Product>
       supplier: this.supplierName,
       title: productData.displayName,
       url: this._href(productData.canonicalUrl),
-      //displayPrice: `${priceObj.currencySymbol}${priceObj.price}`,
       displayQuantity: `${quantityMatch.quantity} ${quantityMatch.uom}`,
-      //price: priceObj.price,
-      //currencyCode: priceObj.currencyCode,
-      //currencySymbol: priceObj.currencySymbol,
       ...quantityMatch,
     };
 
-    //console.debug('[getProductData] product:', product)
-
     return product as Product;
-
-    //JSON.parse(document.querySelector('script[nonce]').innerText.match('(?<== )(.*)(?=;\\n)')[0]).fetch.response.contents.MainContent[0].atgResponse.response.response
-
-    /*
-      let description: { casNo?: string; formula?: string } = {}
-      const descMeta = doc.querySelector('meta[name=description]')
-
-      const descMetaContent = (descMeta as HTMLMetaElement).content;
-
-      if (descMetaContent) {
-        description = Object.fromEntries(
-          descMetaContent.trim().split('\n')
-            .map(e => e.split(':'))
-            .map(([k, v]) => ([_.camelCase(k?.trim()), v?.trim()]))
-        )
-      }
-
-      //const sku = parseInt((doc.getElementById('pdp-skuId') as HTMLMetaElement).innerText)
-      const title = (doc.querySelector('meta[property="og:title"]') as HTMLMetaElement).content
-      const url = (doc.querySelector('meta[property="og:url"]') as HTMLMetaElement).content
-
-      const pdpDataElem = Array.from(doc.getElementsByTagName("script"))
-        .filter(s => s.innerText.includes('pdpData'))?.[0]?.innerText
-
-      if (!pdpDataElem) {
-        console.warn('Unable to find or parse pdpData')
-        return
-      }
-
-      // https://regex101.com/r/3OhYbo/1
-      const pdpDataTxt = pdpDataElem.replace(/(?:^.*window.pdpData = (?={)|(?<=});(?:\n|\t|.)*$)/mgi, '')
-      const json_data = JSON.parse(pdpDataTxt)
-
-      const variants: Variant[] = json_data.skus.map((s: Sku) => ({
-        price: s.priceInfo.regularPrice[0],
-        quantity: s.variantsMap.volume,
-        sku: parseInt(s.skuId),
-        grade: s.variantsMap['chemical-grade'],
-        conc: s.variantsMap.concentration,
-        seoname: s.seoName,
-        status: s.inventoryStatus,
-        statusTxt: s.inventoryStatusMsg,
-        shippingInformation: s.specifications.shippingInformation
-      }));
-
-      const defaultVariant = variants.filter(v => v.sku == json_data.selectedSku.skuId)?.[0] || {}
-
-      const product = {
-        supplier: this.supplierName,
-        title, url,
-        manufacturer: "test",
-        cas: description['casNo'],
-        formula: description['formula'],
-        ...defaultVariant,
-        variants
-      }
-
-      this._products.push(product as T);
-      return product as T;
-      */
-    //} catch (error: unknown) {
-    //  if (error instanceof Error) {
-    //    console.error(error.message);
-    //  } else {
-    //    console.error("An unknown error occurred");
-    //  }
-    //}
   }
 }

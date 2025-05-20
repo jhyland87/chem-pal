@@ -44,6 +44,11 @@ export default abstract class SupplierWixBase<T extends Product>
     };
   }
 
+  /**
+   * Typeguarding for the WixQueryResponse type object
+   * @param {unknown} response - The response to check
+   * @returns {boolean} True if the response is a Wix query response, false otherwise
+   */
   protected _isWixQueryResponse(response: unknown): response is WixQueryResponse {
     if (typeof response !== "object" || response === null) return false;
 
@@ -53,32 +58,45 @@ export default abstract class SupplierWixBase<T extends Product>
     );
   }
 
+  /**
+   * Typeguarding for the WixProduct type object
+   *
+   * @param {unknown} product - The product to check
+   * @returns {boolean} True if the product is a Wix product, false otherwise
+   */
+  protected _isWixProduct(product: unknown): product is WixProduct {
+    return typeof product === "object" && product !== null && "price" in product;
+  }
+
+  /**
+   * Get the GraphQL query for the Wix API
+   *
+   * @returns {string} The GraphQL query
+   */
   protected _getGraphQLQuery(): string {
     return "query,getFilteredProductsWithHasDiscount($mainCollectionId:String!,$filters:ProductFilters,$sort:ProductSort,$offset:Int,$limit:Int,$withOptions:Boolean,=,false,$withPriceRange:Boolean,=,false){catalog{category(categoryId:$mainCollectionId){numOfProducts,productsWithMetaData(filters:$filters,limit:$limit,sort:$sort,offset:$offset,onlyVisible:true){totalCount,list{id,options{id,key,title,@include(if:$withOptions),optionType,@include(if:$withOptions),selections,@include(if:$withOptions){id,value,description,key,inStock}}productItems,@include(if:$withOptions){id,optionsSelections,price,formattedPrice}productType,price,sku,isInStock,urlPart,formattedPrice,name,description,brand,priceRange(withSubscriptionPriceRange:true),@include(if:$withPriceRange){fromPriceFormatted}}}}}}";
   }
 
+  /**
+   * Get the GraphQL variables for the Wix API
+   *
+   * @param {string} query - The query to search for
+   * @param {number} limit - The limit of products to return
+   * @returns {string} The GraphQL variables
+   */
   protected _getGraphQLVariables(query: string = this._query, limit: number = this._limit): string {
     return `{"mainCollectionId":"00000000-000000-000000-000000000001","offset":0,"limit":${limit},"sort":null,"filters":{"term":{"field":"name","op":"CONTAINS","values":["*${query}*"]}},"withOptions":true,"withPriceRange":false}`;
   }
 
+  /**
+   * Query products from the Wix API
+   * @returns {Promise<void>} A promise that resolves when the products are queried
+   */
   protected async queryProducts(): Promise<void> {
-    /*
-    const url = new URL(`${this._baseURL}/_api/wix-ecommerce-storefront-web/api`);
-
-    url.searchParams.append("o", "getFilteredProducts");
-    url.searchParams.append("s", "WixStoresWebClient");
-    url.searchParams.append(
-      "q",
-      "query,getFilteredProductsWithHasDiscount($mainCollectionId:String!,$filters:ProductFilters,$sort:ProductSort,$offset:Int,$limit:Int,$withOptions:Boolean,=,false,$withPriceRange:Boolean,=,false){catalog{category(categoryId:$mainCollectionId){numOfProducts,productsWithMetaData(filters:$filters,limit:$limit,sort:$sort,offset:$offset,onlyVisible:true){totalCount,list{id,options{id,key,title,@include(if:$withOptions),optionType,@include(if:$withOptions),selections,@include(if:$withOptions){id,value,description,key,inStock}}productItems,@include(if:$withOptions){id,optionsSelections,price,formattedPrice}productType,price,sku,isInStock,urlPart,formattedPrice,name,description,brand,priceRange(withSubscriptionPriceRange:true),@include(if:$withPriceRange){fromPriceFormatted}}}}}}",
-    );
-    url.searchParams.append(
-      "v",
-      `{"mainCollectionId":"00000000-000000-000000-000000000001","offset":0,"limit":${this._limit},"sort":null,"filters":{"term":{"field":"name","op":"CONTAINS","values":["*${this._query}*"]}},"withOptions":true,"withPriceRange":false}`,
-    );
-    */
-
     const q = this._getGraphQLQuery();
+
     const v = this._getGraphQLVariables();
+
     const queryResponse = await this.httpGetJson({
       path: "_api/wix-ecommerce-storefront-web/api",
       params: {
@@ -99,6 +117,12 @@ export default abstract class SupplierWixBase<T extends Product>
       .list as WixProduct[];
   }
 
+  /**
+   * Get the product data from the Wix API
+   *
+   * @param {WixProduct} product - The product to get the data for
+   * @returns {Promise<Product | void>} A promise that resolves to the product data or void if the product has no price
+   */
   protected async _getProductData(product: WixProduct): Promise<Product | void> {
     if (!product.price) {
       return;
@@ -132,8 +156,6 @@ export default abstract class SupplierWixBase<T extends Product>
     const productVariants = merge(productItems, productSelections);
 
     const productPrice = parsePrice(product.formattedPrice);
-
-    console.log("productVariants:", { productVariants });
 
     return Promise.resolve({
       ...this._productDefaults,

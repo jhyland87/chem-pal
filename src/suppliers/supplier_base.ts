@@ -195,7 +195,6 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
     params = {},
     headers = {},
   }: RequestOptions): Promise<Response | void> {
-    //try {
     const _headers = new Headers({
       ...this._headers,
       ...(headers as HeadersInit),
@@ -230,9 +229,6 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
     }
 
     return httpRequest;
-    //} catch (error) {
-    //  console.error("Error received during fetch:", { error, signal: this._controller.signal });
-    //}
   }
 
   /**
@@ -364,7 +360,6 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
     headers = {},
     host = undefined,
   }: RequestOptions): Promise<object | void> {
-    //try {
     const _headers = new Headers({
       ...this._headers,
       ...(headers as HeadersInit),
@@ -376,9 +371,6 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
     }
 
     return await response?.json();
-    //} catch (error) {
-    //  console.error("Error received during fetch:", { error, signal: this._controller.signal });
-    //}
   }
 
   /**
