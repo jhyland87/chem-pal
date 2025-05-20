@@ -50,6 +50,7 @@ export function parseQuantity(value: string): QuantityObject | void {
       "lb|(?:met|lit)[re]{2})s?|oz|k[mg]?|g|l|[cm]?[glm])",
     "i",
   );
+  if (!value) return;
   const quantityMatch = value.match(quantityPattern);
 
   if (
@@ -58,7 +59,8 @@ export function parseQuantity(value: string): QuantityObject | void {
     !quantityMatch.groups.quantity ||
     !quantityMatch.groups.uom
   ) {
-    throw new Error("Failed to parse quantity");
+    console.warn("Failed to parse quantity from string: ", value);
+    return;
   }
 
   let parsedQuantity: string | number = quantityMatch.groups.quantity;

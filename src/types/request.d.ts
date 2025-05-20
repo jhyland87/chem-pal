@@ -52,5 +52,3 @@ export type RequestParams = Record<string, string | number | boolean> | URLSearc
  * HeaderObject represents key-value string pairs for headers
  * @param {string} [key] - Key-value string pairs for headers
  */
-//export type HeaderObject = { [key: string]: string };
-//export type HeaderObject = Record<string, string | number | boolean>;

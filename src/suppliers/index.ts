@@ -24,10 +24,14 @@ import SupplierBioFuranChem from "./supplier_biofuranchem";
 import SupplierCarolina from "./supplier_carolina";
 import SupplierFtfScientific from "./supplier_ftfscientific";
 import SupplierLaboratoriumDiscounter from "./supplier_laboratoriumdiscounter";
+import SupplierHbarSci from "./SupplierHbarSci";
+import SupplierLaballey from "./SupplierLaballey";
 
 export {
   SupplierBioFuranChem,
   SupplierCarolina,
   SupplierFtfScientific,
+  SupplierHbarSci,
+  SupplierLaballey,
   SupplierLaboratoriumDiscounter,
 };

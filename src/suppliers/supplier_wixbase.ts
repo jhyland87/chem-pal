@@ -1,14 +1,14 @@
 import merge from "lodash/merge";
 import type { Product, Variant } from "types";
-import { parsePrice } from "../helpers/currency";
-import { parseQuantity } from "../helpers/quantity";
-import SupplierBase from "./supplier_base";
 import {
   type WixProduct,
   type WixProductItem,
   type WixProductSelection,
   type WixQueryResponse,
-} from "./supplier_wixbase.d";
+} from "types/wix";
+import { parsePrice } from "../helpers/currency";
+import { parseQuantity } from "../helpers/quantity";
+import SupplierBase from "./supplier_base";
 
 /**
  * SupplierWixBase class that extends SupplierBase and implements AsyncIterable<T>.

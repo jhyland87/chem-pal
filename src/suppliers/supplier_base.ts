@@ -111,8 +111,10 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    */
   private _isJsonResponse(response: Response | void): response is Response {
     if (!this._isResponse(response)) return false;
-    if (!response.headers.get("content-type")) return false;
-    if (response.headers.get("content-type")?.includes("application/json")) return true;
+    const contentType = response.headers.get("content-type");
+    console.log("contentType:", contentType);
+    if (!contentType) return false;
+    if (contentType.includes("json") || contentType.includes("javascript")) return true;
     return false;
   }
 

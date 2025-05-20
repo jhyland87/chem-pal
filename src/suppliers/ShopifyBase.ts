@@ -1,5 +1,6 @@
-import type { Product } from "types";
-import type { ShopifyQueryParams, ShopifySearchResponse } from "../types/shopify.d";
+import type { Product, Variant } from "types";
+import { parseQuantity } from "../helpers/quantity";
+import type { ShopifyItem, ShopifyQueryParams, ShopifySearchResponse } from "../types/shopify.d";
 import SupplierBase from "./supplier_base";
 
 // https://searchserverapi.com/getresults?
@@ -28,9 +29,11 @@ export default abstract class ShopifyBase<T extends Product>
   extends SupplierBase<T>
   implements AsyncIterable<T>
 {
-  protected _accessToken: string = "";
+  protected _apiKey: string = "";
 
-  protected _apiUrl: string = "https://searchserverapi.com";
+  protected _limit: number = 5;
+
+  protected _apiHost: string = "searchserverapi.com";
 
   protected async queryProducts(): Promise<void> {
     // curl -s --get https://searchserverapi.com/getresults \
@@ -57,7 +60,7 @@ export default abstract class ShopifyBase<T extends Product>
       // Setting the limit here to 1000, since the limit parameter should
       // apply to results returned from Supplier3SChem, not the rquests
       // made by it.
-      api_key: this._accessToken,
+      api_key: this._apiKey,
       q: this._query,
       maxResults: 15,
       startIndex: 0,
@@ -81,7 +84,7 @@ export default abstract class ShopifyBase<T extends Product>
 
     const searchRequest = await this.httpGetJson({
       path: `/getresults`,
-      host: this._apiUrl,
+      host: this._apiHost,
       params: getParams,
     });
 
@@ -91,7 +94,7 @@ export default abstract class ShopifyBase<T extends Product>
       throw new Error("Invalid search response");
     }
 
-    //this._queryResults = searchRequest.items[this._limit];
+    this._queryResults = searchRequest.items.slice(0, this._limit);
   }
 
   protected _isShopifySearchResponse(response: unknown): response is ShopifySearchResponse {
@@ -101,5 +104,73 @@ export default abstract class ShopifyBase<T extends Product>
       "totalItems" in response &&
       "items" in response
     );
+  }
+
+  protected async _getProductData(product: ShopifyItem): Promise<Product | void> {
+    if (!product.price) {
+      return;
+    }
+
+    const variants: Variant[] = product.shopify_variants.map((variant) => {
+      let quantity = parseQuantity(variant.sku);
+      if (!quantity && typeof variant?.options === "object")
+        quantity = parseQuantity((variant.options as { Model: string }).Model);
+
+      if (!quantity)
+        quantity = {
+          quantity: parseInt(variant.quantity_total) ?? 1,
+          uom: "piece",
+        };
+      return {
+        url: variant.link,
+        price: variant.price,
+        sku: variant.sku,
+        variant_id: variant.variant_id,
+        ...quantity,
+      };
+    });
+
+    const defaultVariant = variants.find(
+      (variant) => variant.sku === parseInt(product.product_code),
+    ) as Variant;
+
+    let quantity, uom;
+
+    if (defaultVariant) {
+      quantity = defaultVariant.quantity;
+      uom = defaultVariant.uom;
+    }
+
+    if (!quantity) {
+      let qty = parseQuantity(product.product_code);
+      if (!qty) qty = parseQuantity(product.quantity);
+      if (!qty) qty = parseQuantity(product.title);
+      if (!qty) qty = parseQuantity(product.description);
+      if (qty) {
+        quantity = qty.quantity;
+        uom = qty.uom;
+      }
+    }
+
+    if (!quantity || !product.price) {
+      console.warn("Invalid product data:", product);
+      return;
+    }
+
+    return {
+      ...defaultVariant,
+      title: product.title,
+      price: parseFloat(product.price),
+      description: product.description,
+      url: product.link,
+      quantity: quantity,
+      uom: uom ?? "unit",
+      currencyCode: "USD",
+      currencySymbol: "$",
+      supplier: this.supplierName,
+      variants: variants,
+      vendor: product.vendor,
+      id: product.product_id,
+    };
   }
 }
