@@ -59,7 +59,6 @@ export function parseQuantity(value: string): QuantityObject | void {
     !quantityMatch.groups.quantity ||
     !quantityMatch.groups.uom
   ) {
-    console.warn("Failed to parse quantity from string: ", value);
     return;
   }
 
@@ -76,6 +75,45 @@ export function parseQuantity(value: string): QuantityObject | void {
   const quantity = parseFloat(parsedQuantity.replace(/,/g, ""));
 
   if (uom && quantity) return { quantity, uom } as QuantityObject;
+}
+
+/**
+ * Parses a list of quantity strings into a structured object containing the numeric value and unit of measure.
+ * @category Helper
+ *
+ * @param {string[]} values - The list of quantity strings to parse
+ * @returns {QuantityObject} Object containing quantity and UOM
+ *
+ * @example
+ * ```typescript
+ * parseQuantityFromList(['100g', '120 grams'])
+ * // Returns { quantity: 120, uom: 'grams' }
+ */
+export function parseQuantityFromList(values: string[]): QuantityObject {
+  return values.reduce((acc, value) => {
+    // If we have a match, then just return the acc
+    if (Object.keys(acc).length !== 0) return acc;
+
+    // Skip this if its not a parseable string
+    if (typeof value !== "string") return acc;
+
+    const quantity = parseQuantity(value);
+
+    if (quantity) acc = quantity;
+
+    return acc;
+  }, {} as QuantityObject);
+}
+
+/**
+ * Checks if a value is a QuantityObject.
+ *
+ * @category Helper
+ * @param {unknown} value - The value to check
+ * @returns {boolean} True if the value is a QuantityObject, false otherwise
+ */
+export function isQuantityObject(value: unknown): value is QuantityObject {
+  return typeof value === "object" && value !== null && "quantity" in value && "uom" in value;
 }
 
 /**
