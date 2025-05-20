@@ -1,7 +1,6 @@
 import type { QuantityObject } from "data/quantity";
 import result from "lodash/result";
 import type { Product } from "types";
-//import type { HeaderObject } from "types/request";
 import type {
   CarolinaProductData,
   CarolinaProductIndexObject,

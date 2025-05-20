@@ -1,10 +1,7 @@
-//import { CurrencySymbolMap, HeaderObject, Product } from "../types";
 import type { QuantityObject } from "data/quantity";
 import type { Product } from "types";
-//import type { HeaderObject } from "types/request";
-
 import { CurrencySymbolMap } from "../data/currency";
-import { parseQuantity } from "../helpers/quantity";
+import { isQuantityObject, parseQuantityCoalesce } from "../helpers/quantity";
 import SupplierBase from "./supplier_base";
 import {
   _productIndexObject,
@@ -61,10 +58,6 @@ export default class SupplierLaboratoriumDiscounter<T extends Product>
     "x-requested-with": "XMLHttpRequest",
   };
 
-  //constructor(query: string, limit: number = 5, controller: AbortController) {
-  //  super(query, limit, controller);
-  //}
-
   protected _makeQueryUrl(query: string): string {
     const searchParams: SearchParams = {
       limit: this._limit.toString(),
@@ -85,35 +78,30 @@ export default class SupplierLaboratoriumDiscounter<T extends Product>
 
   protected async queryProducts(): Promise<void> {
     const params = this._makeQueryParams();
-    console.debug("SupplierLaboratoriumDiscounter|", { params });
     const response = await this.httpGet({ path: `/en/search/${this._query}`, params });
 
     if (!response?.ok) {
       throw new Error(`Response status: ${response?.status}`);
     }
 
+    //
     const resultJSON = (await response.json()) as LaboriumDiscounterResponse;
-    console.log("SupplierLaboratoriumDiscounter|resultJSON:", resultJSON);
-    console.log(
-      "SupplierLaboratoriumDiscounter|Setting this._queryResults to:",
-      resultJSON.collection.products,
-    );
 
+    // Save results
     this._queryResults = Object.values(resultJSON.collection.products);
-    //console.log('[queryProducts] this._queryResults:', this._queryResults)
     return;
   }
 
   protected _getProductData(result: _Product): Promise<Product | void> {
-    let quantity = parseQuantity(result.code);
-    if (!quantity) quantity = parseQuantity(result.sku);
-    if (!quantity) quantity = parseQuantity(result.fulltitle);
-    if (!quantity) quantity = parseQuantity(result.variant);
-    if (!quantity)
-      quantity = {
-        quantity: 1,
-        uom: "piece",
-      };
+    const quantity = parseQuantityCoalesce([
+      result.code,
+      result.sku,
+      result.fulltitle,
+      result.variant,
+    ]);
+
+    if (!isQuantityObject(quantity)) return Promise.resolve(undefined);
+
     return Promise.resolve({
       uuid: result.id,
       title: result.title || result.fulltitle,

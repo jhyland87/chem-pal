@@ -1,5 +1,5 @@
 import type { Product, Variant } from "types";
-import { parseQuantity } from "../helpers/quantity";
+import { isQuantityObject, parseQuantity, parseQuantityCoalesce } from "../helpers/quantity";
 import type { ShopifyItem, ShopifyQueryParams, ShopifySearchResponse } from "../types/shopify.d";
 import SupplierBase from "./supplier_base";
 
@@ -142,17 +142,20 @@ export default abstract class ShopifyBase<T extends Product>
     }
 
     if (!quantity) {
-      let qty = parseQuantity(product.product_code);
-      if (!qty) qty = parseQuantity(product.quantity);
-      if (!qty) qty = parseQuantity(product.title);
-      if (!qty) qty = parseQuantity(product.description);
+      const qty = parseQuantityCoalesce([
+        product.product_code,
+        product.quantity,
+        product.title,
+        product.description,
+      ]);
+
       if (qty) {
         quantity = qty.quantity;
         uom = qty.uom;
       }
     }
 
-    if (!quantity || !product.price) {
+    if (!isQuantityObject(quantity) || !product.price) {
       console.warn("Invalid product data:", product);
       return;
     }

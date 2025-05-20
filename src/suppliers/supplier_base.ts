@@ -1,5 +1,4 @@
 import type { UOM } from "data/quantity";
-//import type { HeaderObject, Product, RequestParams } from "types";
 import type { Product } from "types";
 import type { RequestOptions, RequestParams } from "types/request";
 import { toUSD } from "../helpers/currency";
