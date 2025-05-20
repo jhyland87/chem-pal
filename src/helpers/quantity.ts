@@ -107,30 +107,56 @@ export function standardizeUom(uom: string): UOM | void {
 }
 
 /**
- * Converts a quantity from its current unit to its base unit.
- * Currently supports conversion of kilometers to meters and pounds to grams.
+ * Converts a quantity from its current unit to a common unit of mass or volume.
+ * This is to make it easier to compare quantities of different units.
  * @category Helper
  * @param {number} quantity - The quantity to convert
- * @param {UOM} uom - The unit of measure of the quantity
+ * @param {UOM} unit - The unit of measure of the quantity
  * @returns {number} The converted quantity in its base unit
  *
  * @example
  * ```typescript
- * convertToBaseUom(1, UOM.KM) // Returns 1000 (meters)
- * convertToBaseUom(1, UOM.LB) // Returns 453.592 (grams)
- * convertToBaseUom(1, UOM.G) // Returns 1 (no conversion needed)
+ * toBaseQuantity(1, UOM.KM) // Returns 1000 (meters)
+ * toBaseQuantity(1, UOM.LB) // Returns 453.592 (grams)
+ * toBaseQuantity(1, UOM.G) // Returns 1 (no conversion needed)
  * ```
  */
-export function convertToBaseUom(quantity: number, uom: UOM): number {
-  switch (uom) {
-    // Convert km/kg to m/g
-    case UOM.KM:
-    case UOM.KG:
-      return quantity * 1000;
+export function toBaseQuantity(quantity: number, unit: UOM): number | void {
+  if (typeof quantity !== "number") return;
 
-    // Convert pounds to grams
+  switch (unit) {
+    // Solids (by weight)
+    case UOM.G:
+      return quantity;
+    case UOM.KG:
+      return quantity / 1000;
     case UOM.LB:
-      return quantity * 453.592;
+      return quantity / 0.0022046;
+    case UOM.OZ:
+      return quantity / 0.035274;
+
+    // Liquids (by volume)
+    case UOM.ML:
+      return quantity;
+    case UOM.L:
+      return quantity / 1000;
+    case UOM.QT:
+      return quantity / 946.353;
+    case UOM.GAL:
+      return quantity / 3785.41;
+
+    // Lengths
+    case UOM.MM:
+      return quantity;
+    case UOM.CM:
+      return quantity / 10;
+    case UOM.M:
+      return quantity / 1000;
+    case UOM.KM:
+      return quantity / 1000000;
+
+    // Unsupported units
+    default:
+      return quantity;
   }
-  return quantity;
 }

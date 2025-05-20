@@ -1,5 +1,7 @@
+import type { UOM } from "data/quantity";
 import type { HeaderObject, Product } from "types";
 import { toUSD } from "../helpers/currency";
+import { toBaseQuantity } from "../helpers/quantity";
 import { getCachableResponse } from "../helpers/request";
 
 /**
@@ -307,6 +309,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
     //product.url = (product.url as string).replace(/chrome-extension:\/\/[a-z]+/, "");
 
     product.usdPrice = product.price;
+    product.baseQuantity = toBaseQuantity(product.quantity, product.uom as UOM) ?? product.quantity;
 
     // If the product is a non-USD product, populate the usdPrice with the converted currency to aid in sorting/filtering
     if (product.currencyCode !== "USD") {

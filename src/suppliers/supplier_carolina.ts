@@ -1,8 +1,8 @@
 import type { QuantityObject } from "data/quantity";
+import result from "lodash/result";
 import type { HeaderObject, Product } from "types";
 import { parsePrice } from "../helpers/currency";
 import { parseQuantity } from "../helpers/quantity";
-import _ from "../lodash";
 import SupplierBase from "./supplier_base";
 import { _productIndexObject, ProductData, SearchParams } from "./supplier_carolina.d";
 
@@ -28,6 +28,22 @@ import { _productIndexObject, ProductData, SearchParams } from "./supplier_carol
  * - searchExecByFormSubmit: Whether to execute the search by form submission.
  * - tab: The tab to display the results in.
  * - question: The search query.
+ *
+ * Carolina.com uses VastCommerce, who does have an API that can be queried. Some useful endpoints are:
+ * - https://www.carolina.com/swagger-ui/
+ * - https://www.carolina.com/api/rest/openapi.json
+ * - https://www.carolina.com/api/rest/cb/product/product-quick-view/863810
+ * - https://www.carolina.com/api/rest/cb/cart/specificationDetails/863810
+ * - https://www.carolina.com/api/rest/cb/product/product-details/863810
+ *    curl -s https://www.carolina.com/api/rest/cb/product/product-details/863810 | jq '.response | fromjson'
+ * - https://www.carolina.com/api/rest/cb/static/fetch-suggestions-for-global-search/acid
+ * - https://www.carolina.com/api/rest/application.wadl
+ * - You can get the JSON value of any page by appending: &format=json&ajax=true
+ *   - https://www.carolina.com/chemistry-supplies/chemicals/10171.ct?format=json&ajax=true
+ *   - https://www.carolina.com/specialty-chemicals-d-l/16-hexanediamine-6-laboratory-grade-100-ml/867162.pr?format=json&ajax=true
+ *      curl -s 'https://www.carolina.com/specialty-chemicals-d-l/16-hexanediamine-6-laboratory-grade-100-ml/867162.pr?format=json&ajax=true' | jq '.contents.MainContent[0].atgResponse.response.response'
+ * - https://www.carolina.com/browse/product-search-results?q=acid&product.type=Product&tab=p&format=json&ajax=true
+ * - https://www.carolina.com/browse/product-search-results?tab=p&product.type=Product&product.productTypes=chemicals&facetFields=product.productTypes&format=json&ajax=true&viewSize=300&q=acid
  *
  * @module SupplierCarolina
  * @category Supplier
@@ -190,7 +206,7 @@ export default class SupplierCarolina<T extends Product>
 
       const productAtgJson = JSON.parse(productScriptNonceTextMatch[0]);
 
-      const productData = _.result(
+      const productData = result(
         productAtgJson,
         "fetch.response.contents.MainContent[0].atgResponse.response.response",
       ) as ProductData;

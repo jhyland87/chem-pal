@@ -22,7 +22,7 @@ export enum UOM {
   LB = "lb",
   ML = "ml",
   G = "g",
-  L = "L",
+  L = "l",
   QT = "qt",
   GAL = "gal",
   MM = "mm",

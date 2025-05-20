@@ -91,6 +91,9 @@ declare type Variant = {
   title: string;
   price: number;
   quantity: number;
+  //commonUom?: UOM;
+  baseQuantity?: number;
+  baseUom?: UOM;
   usdPrice?: number;
   sku?: number | string;
   url?: string;
@@ -137,6 +140,7 @@ declare type Product = Variant & {
   currencySymbol: CurrencySymbol;
   quantity: number;
   uom: string;
+  //commonUom: UOM;
   supplier: string;
   description?: string;
   //usdPrice?: string;
