@@ -2,10 +2,14 @@ import type { QuantityObject } from "data/quantity";
 import result from "lodash/result";
 import type { Product } from "types";
 //import type { HeaderObject } from "types/request";
+import type {
+  CarolinaProductData,
+  CarolinaProductIndexObject,
+  CarolinaSearchParams,
+} from "types/carolina";
 import { parsePrice } from "../helpers/currency";
 import { parseQuantity } from "../helpers/quantity";
 import SupplierBase from "./supplier_base";
-import { _productIndexObject, ProductData, SearchParams } from "./supplier_carolina.d";
 
 /**
  * Carolina.com uses Oracle ATG Commerce as their ecommerce platform.
@@ -60,7 +64,7 @@ export default class SupplierCarolina<T extends Product>
   protected _baseURL: string = "https://www.carolina.com";
 
   // Override the type of _queryResults to use our specific type
-  protected _queryResults: Array<_productIndexObject> = [];
+  protected _queryResults: Array<CarolinaProductIndexObject> = [];
 
   // This is a limit to how many queries can be sent to the supplier for any given query.
   protected _httpRequestHardLimit: number = 50;
@@ -99,9 +103,9 @@ export default class SupplierCarolina<T extends Product>
    * Make the query params for the Carolina API
    *
    * @param {string} query - The query to search for
-   * @returns {SearchParams} The query params
+   * @returns {CarolinaSearchParams} The query params
    */
-  protected _makeQueryParams(query: string): SearchParams {
+  protected _makeQueryParams(query: string): CarolinaSearchParams {
     return {
       /*
       790004999   Chemicals category ID
@@ -119,7 +123,7 @@ export default class SupplierCarolina<T extends Product>
       question: query,
       searchExecByFormSubmit: "true",
       tab: "p",
-    } as SearchParams;
+    } as CarolinaSearchParams;
   }
 
   /**
@@ -147,7 +151,7 @@ export default class SupplierCarolina<T extends Product>
     //type Foo = HTMLElement | HTMLAnchorElement  | HTMLBaseElement;
     const productElements: NodeListOf<Element> = doc.querySelectorAll("div.c-feature-product");
 
-    const elementList: _productIndexObject[] = [];
+    const elementList: CarolinaProductIndexObject[] = [];
 
     const _trimSpaceLike = (txt: string) =>
       txt?.replaceAll(/(^(\\n|\\t|\s)*|(\\n|\\t|\s)*$)/gm, "");
@@ -183,11 +187,11 @@ export default class SupplierCarolina<T extends Product>
   /**
    * Get the product data from the Carolina API
    *
-   * @param {_productIndexObject} productIndexObject - The product index object
+   * @param {CarolinaProductIndexObject} productIndexObject - The product index object
    * @returns {Promise<Product | void>} A promise that resolves to the product data or void if the product has no price
    */
   protected async _getProductData(
-    productIndexObject: _productIndexObject,
+    productIndexObject: CarolinaProductIndexObject,
   ): Promise<Product | void> {
     //try {
     const response = await this.httpGet({
@@ -225,7 +229,7 @@ export default class SupplierCarolina<T extends Product>
     const productData = result(
       productAtgJson,
       "fetch.response.contents.MainContent[0].atgResponse.response.response",
-    ) as ProductData;
+    ) as CarolinaProductData;
 
     if (!productData) {
       throw new Error("Failed to find product data");
