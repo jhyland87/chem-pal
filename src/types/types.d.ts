@@ -16,12 +16,6 @@ import { CurrencyCode, CurrencySymbol } from "types/currency";
 //export * from "types/quantity";
 
 /**
- * HeaderObject represents key-value string pairs for headers
- * @param {string} [key] - Key-value string pairs for headers
- */
-export type HeaderObject = { [key: string]: string };
-
-/**
  * ChromeStorageItems represents storage items supporting various primitive types
  * @param {string|number|boolean|null|undefined} [key] - Storage items supporting various primitive types
  */
@@ -73,7 +67,7 @@ declare type Settings = {
 
 /**
  * Variant interface representing a product variant
- * @param {string} title - Name/title of the variant
+ * @param {string} [title] - Name/title of the variant
  * @param {number} price - Price of the variant
  * @param {number} quantity - Available quantity
  * @param {number} [usdPrice] - Price of the variant in USD
@@ -88,9 +82,13 @@ declare type Settings = {
  * @param {string} [shippingInformation] - Shipping information
  */
 declare type Variant = {
-  title: string;
-  price: number;
-  quantity: number;
+  title?: string;
+  uom?: string;
+  price?: number;
+  quantity?: number;
+  //commonUom?: UOM;
+  baseQuantity?: number;
+  baseUom?: UOM;
   usdPrice?: number;
   sku?: number | string;
   url?: string;
@@ -130,13 +128,16 @@ declare type Variant = {
  * @param {string} [status] - Current status
  * @param {string} [statusTxt] - Status text message
  * @param {string} [shippingInformation] - Shipping information
+ * @param {string} [vendor] - Vendor name
  * @param {Variant[]} [variants] - Available variants of the product
  */
 declare type Product = Variant & {
   currencyCode: CurrencyCode;
   currencySymbol: CurrencySymbol;
   quantity: number;
+  price: number;
   uom: string;
+  //commonUom: UOM;
   supplier: string;
   description?: string;
   //usdPrice?: string;
@@ -155,6 +156,7 @@ declare type Product = Variant & {
   //status?: string;
   //statusTxt?: string;
   //shippingInformation?: string;
+  vendor?: string;
   variants?: Variant[];
 };
 

@@ -8,7 +8,7 @@ import ClearIcon from "../assets/icons/ClearIcon";
 import ContrastIcon from "../assets/icons/ContrastIcon";
 import InfoOutlineIcon from "../assets/icons/InfoOutlineIcon";
 import { useAppContext } from "../context";
-import _ from "../lodash";
+import { delayAction } from "../helpers/utils";
 import AboutModal from "./AboutModal";
 import HelpTooltip from "./HelpTooltip";
 
@@ -39,8 +39,8 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
   useEffect(() => {
     if (appContext.settings.showHelp === false) return;
 
-    _.delayAction(500, () => setShowHelp(true));
-    _.delayAction(2000, () => setShowHelp(false));
+    delayAction(500, () => setShowHelp(true));
+    delayAction(2000, () => setShowHelp(false));
   }, [appContext.settings.showHelp]);
 
   /**

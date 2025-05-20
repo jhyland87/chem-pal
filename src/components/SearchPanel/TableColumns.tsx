@@ -27,6 +27,15 @@ const BookmarkIconButton = ({ row }: ProductRow) => {
   );
 };
 
+/**
+ * Custom sorting function for price comparison between two product rows.
+ * Compares the USD prices of products and returns a sort order value.
+ *
+ * @param {Row<Product>} rowA - First row to compare
+ * @param {Row<Product>} rowB - Second row to compare
+ * @param {string} columnId - The column ID being sorted
+ * @returns {number} Returns 1 if rowA > rowB, -1 if rowA < rowB, 0 if equal
+ */
 const priceSortingFn: SortingFn<Product> = (
   rowA: Row<Product>,
   rowB: Row<Product>,
@@ -34,6 +43,25 @@ const priceSortingFn: SortingFn<Product> = (
 ) => {
   const a = rowA.original.usdPrice as number;
   const b = rowB.original.usdPrice as number;
+  return a > b ? 1 : a < b ? -1 : 0;
+};
+
+/**
+ * Custom sorting function for quantity comparison between two product rows.
+ * Compares the base quantity or regular quantity of products and returns a sort order value.
+ *
+ * @param {Row<Product>} rowA - First row to compare
+ * @param {Row<Product>} rowB - Second row to compare
+ * @param {string} columnId - The column ID being sorted
+ * @returns {number} Returns 1 if rowA > rowB, -1 if rowA < rowB, 0 if equal
+ */
+const quantitySortingFn: SortingFn<Product> = (
+  rowA: Row<Product>,
+  rowB: Row<Product>,
+  columnId: string,
+) => {
+  const a = (rowA.original.baseQuantity ?? rowA.original.quantity) as number;
+  const b = (rowB.original.baseQuantity ?? rowB.original.quantity) as number;
   return a > b ? 1 : a < b ? -1 : 0;
 };
 
@@ -150,6 +178,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       cell: ({ row }: ProductRow) => {
         return `${row.original.quantity} ${row.original.uom}`;
       },
+      sortingFn: quantitySortingFn,
       maxSize: 50,
     },
     {
@@ -169,7 +198,6 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
  * Each filterable column gets an entry with its filter variant and an empty array for filter data.
  *
  * @returns {Record<string, { filterVariant: string; filterData: unknown[] }>} Object mapping column IDs to their filter configurations
- *
  * @example
  * ```tsx
  * const filterConfig = getColumnFilterConfig();

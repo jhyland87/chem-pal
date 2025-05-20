@@ -1,8 +1,8 @@
 import { DefaultBodyType, delay, http, HttpResponse, HttpResponseResolver, PathParams } from "msw";
+import { AccessTokenResponse } from "types/wix";
 import { getRequestHash } from "../helpers/request";
-import { RequestHashObject } from "../helpers/request.d";
-import _ from "../lodash";
-import { AccessTokenResponse } from "../suppliers/supplier_wixbase.d";
+import { deserialize } from "../helpers/utils";
+import type { RequestHashObject } from "../types/request.d";
 // src/__mocks__/handlers.js
 
 function withDelay<
@@ -55,14 +55,14 @@ export const handlers = [
         return HttpResponse.json(
           JSON.parse(
             //decodeURIComponent(_d(cachedData.content))
-            _.deserialize(cachedData.content),
+            deserialize(cachedData.content),
           ),
           mockHeaders,
         );
       }
       return HttpResponse.text(
         //decodeURIComponent(_d(cachedData.content)), mockHeaders
-        _.deserialize(cachedData.content),
+        deserialize(cachedData.content),
         mockHeaders,
       );
     }),
@@ -89,14 +89,14 @@ export const handlers = [
         return HttpResponse.json(
           JSON.parse(
             //decodeURIComponent(_d(cachedData.content))
-            _.deserialize(cachedData.content),
+            deserialize(cachedData.content),
           ),
           mockHeaders,
         );
       }
       return HttpResponse.text(
         //decodeURIComponent(_d(cachedData.content))
-        _.deserialize(cachedData.content),
+        deserialize(cachedData.content),
         mockHeaders,
       );
     }),

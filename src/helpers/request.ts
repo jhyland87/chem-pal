@@ -1,5 +1,5 @@
-import _ from "../lodash";
-import { RequestHashObject, SerializedResponse, type CacheResponse } from "./request.d";
+import type { CacheResponse, RequestHashObject, SerializedResponse } from "types/request";
+import { md5sum, serialize } from "./utils";
 
 /**
  * Generates a unique hash for a given Request object based on its method, URL path, search parameters, and body.
@@ -48,7 +48,7 @@ import { RequestHashObject, SerializedResponse, type CacheResponse } from "./req
  */
 export function getRequestHash(request: Request): RequestHashObject {
   const url = new URL(request.url);
-  const resultHash = _.md5sum(
+  const resultHash = md5sum(
     request.method + (url.pathname ?? "") + (url.search ?? "") + (request.body ?? ""),
   );
 
@@ -96,17 +96,17 @@ export async function getCachableResponse(
 
   // Generate a serialized object to be saved
   const serializedResponse: SerializedResponse = {
-    contentType: response.headers.get("Content-Type")?.toString() ?? "",
+    contentType: response.headers.get("content-type")?.toString() ?? "",
   };
 
   const clonedResponse = response.clone();
 
-  if (serializedResponse.contentType.includes("json")) {
+  if (serializedResponse.contentType.includes("application/json")) {
     // Json gets stringified
-    serializedResponse.content = _.serialize(JSON.stringify(await clonedResponse.json()));
+    serializedResponse.content = serialize(JSON.stringify(await clonedResponse.json()));
   } else {
     // Everything else is treated as text
-    serializedResponse.content = _.serialize(await clonedResponse.text());
+    serializedResponse.content = serialize(await clonedResponse.text());
   }
 
   return {

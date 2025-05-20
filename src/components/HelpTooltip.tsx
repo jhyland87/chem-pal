@@ -1,9 +1,8 @@
 import Tooltip from "@mui/material/Tooltip";
 import { MouseEvent, useEffect, useState } from "react";
-import { useAppContext } from "../context";
-import _ from "../lodash";
-//import { HelpTooltipProps } from "../types";
 import { HelpTooltipProps } from "types";
+import { useAppContext } from "../context";
+import { delayAction } from "../helpers/utils";
 
 /**
  * A tooltip component that displays help text with customizable timing and styling.
@@ -58,8 +57,8 @@ export default function HelpTooltip({
   useEffect(() => {
     if (appContext.settings.showHelp === false) return;
 
-    _.delayAction(delay, () => setShowHelp(true));
-    _.delayAction(duration, () => setShowHelp(false));
+    delayAction(delay, () => setShowHelp(true));
+    delayAction(duration, () => setShowHelp(false));
   }, [delay, duration, appContext.settings.showHelp]);
 
   return (

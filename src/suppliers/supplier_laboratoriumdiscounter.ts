@@ -1,6 +1,8 @@
 //import { CurrencySymbolMap, HeaderObject, Product } from "../types";
 import type { QuantityObject } from "data/quantity";
-import type { HeaderObject, Product } from "types";
+import type { Product } from "types";
+//import type { HeaderObject } from "types/request";
+
 import { CurrencySymbolMap } from "../data/currency";
 import { parseQuantity } from "../helpers/quantity";
 import SupplierBase from "./supplier_base";
@@ -38,7 +40,7 @@ export default class SupplierLaboratoriumDiscounter<T extends Product>
   protected _httpRequstCount: number = 0;
 
   // HTTP headers used as a basis for all queries.
-  protected _headers: HeaderObject = {
+  protected _headers: HeadersInit = {
     //'accept': 'application/json, text/javascript, */*; q=0.01',
     accept:
       "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
@@ -74,10 +76,17 @@ export default class SupplierLaboratoriumDiscounter<T extends Product>
     return url.toString();
   }
 
+  protected _makeQueryParams(): SearchParams {
+    return {
+      limit: this._limit.toString(),
+      format: "json",
+    };
+  }
+
   protected async queryProducts(): Promise<void> {
-    const queryURL = this._makeQueryUrl(this._query);
-    console.debug("SupplierLaboratoriumDiscounter|", { queryURL });
-    const response = await this.httpGet(queryURL);
+    const params = this._makeQueryParams();
+    console.debug("SupplierLaboratoriumDiscounter|", { params });
+    const response = await this.httpGet({ path: `/en/search/${this._query}`, params });
 
     if (!response?.ok) {
       throw new Error(`Response status: ${response?.status}`);
