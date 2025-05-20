@@ -1,29 +1,18 @@
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
-import {
-  Column,
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  getExpandedRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  Row,
-  useReactTable,
-} from "@tanstack/react-table";
+import { Column, flexRender, Row } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
 import { CSSProperties, Fragment, ReactElement, useEffect, useState } from "react";
 import { Product, ProductTableProps } from "types";
 import { useAppContext } from "../../context";
-import SupplierFactory from "../../suppliers/SupplierFactory";
 import { implementCustomMethods } from "../../utils/tanstack";
 import LoadingBackdrop from "../LoadingBackdrop";
 import Pagination from "./Pagination";
 import "./ResultsTable.scss";
-import TableColumns, { getColumnFilterConfig } from "./TableColumns";
 import TableHeader from "./TableHeader";
 import TableOptions from "./TableOptions";
+import { useResultsTable } from "./useResultsTable";
+import { useSearch } from "./useSearch";
 let fetchController: AbortController;
 
 /**
@@ -58,6 +47,12 @@ export default function ResultsTable({
   const [showSearchResults, setShowSearchResults] = useState<Product[]>([]);
   const [, setStatusLabel] = useState<string | boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const { executeSearch, handleStopSearch } = useSearch({
+    setSearchResults,
+    setStatusLabel,
+    setIsLoading,
+  });
 
   /**
    * Initializes the table by loading saved search results and column visibility settings.
@@ -94,117 +89,6 @@ export default function ResultsTable({
   }, [appContext.settings.searchResultUpdateTs]);
 
   /**
-   * Handles stopping the current search operation.
-   */
-  const handleStopSearch = () => {
-    console.debug("triggering abort..");
-    setIsLoading(false);
-    fetchController.abort();
-    setStatusLabel(searchResults.length === 0 ? "Search aborted" : "");
-  };
-
-  /**
-   * Executes a search query and processes the results.
-   * @param {string} query - The search query to execute
-   * @returns {Promise<Product[]>} The search results
-   */
-  async function executeSearch(query: string) {
-    if (!query.trim()) {
-      return;
-    }
-    setIsLoading(true);
-
-    setSearchResults([]);
-    setStatusLabel("Searching...");
-
-    // This stores what type of filter each column has. Well build this object
-    // up as we iterate over the columns.
-    const columnFilterConfig = getColumnFilterConfig();
-
-    // Abort controller specific to this query
-    fetchController = new AbortController();
-    // Create the query instance
-    // Note: This does not actually run the HTTP calls or queries...
-    const productQueryResults = new SupplierFactory(
-      query,
-      fetchController,
-      appContext.settings.suppliers,
-    );
-
-    // Clear the products table
-    setSearchResults([]);
-
-    const startSearchTime = performance.now();
-    let resultCount = 0;
-    // Use the async generator to iterate over the products
-    // This is where the queries get run, when the iteration starts.
-    for await (const result of productQueryResults) {
-      resultCount++;
-      // Data for new row (must align with columns structure)
-
-      // Hide the status label thing
-      // Add each product to the table.
-      console.debug("newProduct:", result);
-
-      for (const [columnName, columnValue] of Object.entries(result)) {
-        if (columnName in columnFilterConfig === false) continue;
-
-        if (columnFilterConfig[columnName].filterVariant === "range") {
-          // For range filters, we only want the highest and lowest. So compare the columnValue
-          // with the first and second values in the filterData array (being lowest and highest
-          // values respectively), updating the values if they are lower or higher.
-          if (typeof columnValue !== "number") continue;
-
-          // Skip values that are less than the min value
-          if (
-            typeof columnFilterConfig[columnName].filterData[0] !== "number" ||
-            columnValue < columnFilterConfig[columnName].filterData[0]
-          ) {
-            columnFilterConfig[columnName].filterData[0] = columnValue;
-          } else if (
-            typeof columnFilterConfig[columnName].filterData[1] !== "number" ||
-            columnValue < columnFilterConfig[columnName].filterData[1]
-          ) {
-            columnFilterConfig[columnName].filterData[1] = columnValue;
-          }
-          // TODO: Implement range filter
-        } else if (columnFilterConfig[columnName].filterVariant === "select") {
-          // For select filters, we only want the unique values, so we verify  the columnValue
-          // is not already in the filterData array before adding it.
-          if (!columnFilterConfig[columnName].filterData.includes(columnValue)) {
-            columnFilterConfig[columnName].filterData.push(columnValue);
-          }
-        } else if (columnFilterConfig[columnName].filterVariant === "text") {
-          // Not sure what the best filter for text values are, but we can just add the unique
-          // values for now, maybe we cna use it for an autocomplete feature?..
-          if (!columnFilterConfig[columnName].filterData.includes(columnValue)) {
-            columnFilterConfig[columnName].filterData.push(columnValue);
-          }
-        }
-      }
-
-      // Hide the status label thing
-      setStatusLabel(false);
-
-      setSearchResults((prevProducts) => [
-        ...prevProducts,
-        {
-          // Each row needs a unique ID, so use the row count at each insertion
-          // as the ID value
-          id: prevProducts.length,
-          ...(result as Product),
-        },
-      ]);
-    }
-
-    const endSearchTime = performance.now();
-    const searchTime = endSearchTime - startSearchTime;
-    setIsLoading(false);
-    console.debug(`Found ${resultCount} products in ${searchTime} milliseconds`);
-    return searchResults;
-  }
-
-  /**
    * Executes the search when the search input changes.
    */
   useEffect(() => {
@@ -239,29 +123,10 @@ export default function ResultsTable({
     console.debug("searchResults UPDATED:", searchResults);
   }, [searchResults]);
 
-  const table = useReactTable({
-    data: showSearchResults,
-    enableColumnResizing: true,
-    defaultColumn: {
-      minSize: 60,
-      maxSize: 800,
-    },
-    columnResizeMode: "onChange",
-    columns: TableColumns() as ColumnDef<Product, unknown>[],
-    filterFns: {},
-    state: {
-      columnFilters: columnFilterFns[0],
-    },
-    onColumnFiltersChange: columnFilterFns[1],
-    getRowCanExpand: (row: Row<Product>) => getRowCanExpand(row),
-    getCoreRowModel: getCoreRowModel(),
-    getExpandedRowModel: getExpandedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(), //client side filtering
-    getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    debugTable: false,
-    debugHeaders: false,
-    debugColumns: false,
+  const table = useResultsTable({
+    showSearchResults,
+    columnFilterFns,
+    getRowCanExpand,
   });
 
   // Extend columns with getUniqueVisibleValues method
