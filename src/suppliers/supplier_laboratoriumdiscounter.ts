@@ -1,7 +1,7 @@
 import type { QuantityObject } from "data/quantity";
 import type { Product } from "types";
 import { CurrencySymbolMap } from "../data/currency";
-import { isQuantityObject, parseQuantityFromList } from "../helpers/quantity";
+import { isQuantityObject, parseQuantityCoalesce } from "../helpers/quantity";
 import SupplierBase from "./supplier_base";
 import {
   _productIndexObject,
@@ -93,7 +93,7 @@ export default class SupplierLaboratoriumDiscounter<T extends Product>
   }
 
   protected _getProductData(result: _Product): Promise<Product | void> {
-    const quantity = parseQuantityFromList([
+    const quantity = parseQuantityCoalesce([
       result.code,
       result.sku,
       result.fulltitle,

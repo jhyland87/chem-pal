@@ -1,5 +1,5 @@
 import type { Product, Variant } from "types";
-import { isQuantityObject, parseQuantity, parseQuantityFromList } from "../helpers/quantity";
+import { isQuantityObject, parseQuantity, parseQuantityCoalesce } from "../helpers/quantity";
 import type { ShopifyItem, ShopifyQueryParams, ShopifySearchResponse } from "../types/shopify.d";
 import SupplierBase from "./supplier_base";
 
@@ -142,7 +142,7 @@ export default abstract class ShopifyBase<T extends Product>
     }
 
     if (!quantity) {
-      const qty = parseQuantityFromList([
+      const qty = parseQuantityCoalesce([
         product.product_code,
         product.quantity,
         product.title,

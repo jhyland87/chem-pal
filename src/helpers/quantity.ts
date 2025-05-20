@@ -86,10 +86,10 @@ export function parseQuantity(value: string): QuantityObject | void {
  *
  * @example
  * ```typescript
- * parseQuantityFromList(['100g', '120 grams'])
+ * parseQuantityCoalesce(['100g', '120 grams'])
  * // Returns { quantity: 120, uom: 'grams' }
  */
-export function parseQuantityFromList(values: string[]): QuantityObject {
+export function parseQuantityCoalesce(values: string[]): QuantityObject {
   return values.reduce((acc, value) => {
     // If we have a match, then just return the acc
     if (Object.keys(acc).length !== 0) return acc;
