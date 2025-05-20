@@ -1,6 +1,7 @@
 import type { QuantityObject } from "data/quantity";
 import result from "lodash/result";
-import type { HeaderObject, Product } from "types";
+import type { Product } from "types";
+//import type { HeaderObject } from "types/request";
 import { parsePrice } from "../helpers/currency";
 import { parseQuantity } from "../helpers/quantity";
 import SupplierBase from "./supplier_base";
@@ -73,7 +74,7 @@ export default class SupplierCarolina<T extends Product>
   protected _http_request_batch_size: number = 4;
 
   // HTTP headers used as a basis for all queries.
-  protected _headers: HeaderObject = {
+  protected _headers: HeadersInit = {
     //'accept': 'application/json, text/javascript, */*; q=0.01',
     accept:
       "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
@@ -94,8 +95,8 @@ export default class SupplierCarolina<T extends Product>
     "x-requested-with": "XMLHttpRequest",
   };
 
-  protected _makeQueryUrl(query: string): string {
-    const searchParams: SearchParams = {
+  protected _makeQueryParams(query: string): SearchParams {
+    return {
       /*
       790004999   Chemicals category ID
       836054137   ACS grade
@@ -112,16 +113,16 @@ export default class SupplierCarolina<T extends Product>
       question: query,
       searchExecByFormSubmit: "true",
       tab: "p",
-    };
-    const url = new URL("/browse/product-search-results", this._baseURL);
-    const params = new URLSearchParams(searchParams);
-    url.search = params.toString();
-    return url.toString();
+    } as SearchParams;
+    //const url = new URL("/browse/product-search-results", this._baseURL);
+    //const params = new URLSearchParams(searchParams);
+    //url.search = params.toString();
+    //return url.toString();
   }
 
   protected async queryProducts(): Promise<void> {
-    const queryURL = this._makeQueryUrl(this._query);
-    const response = await this.httpGet(queryURL);
+    const params = this._makeQueryParams(this._query);
+    const response = await this.httpGet({ path: "/browse/product-search-results", params });
 
     if (!response?.ok) {
       throw new Error(`Response status: ${response?.status}`);
@@ -170,99 +171,96 @@ export default class SupplierCarolina<T extends Product>
   protected async _getProductData(
     productIndexObject: _productIndexObject,
   ): Promise<Product | void> {
-    try {
-      const response = await this.httpGet(
-        productIndexObject.url,
-        //productIndexObject.url.startsWith("http")
-        //? productIndexObject.url
-        //: `https://${this._baseURL}${productIndexObject.url}`,
-      );
-      if (!response?.ok) {
-        throw new Error(`Response status: ${response?.status}`);
-      }
+    //try {
+    const response = await this.httpGet({
+      path: productIndexObject.url,
+    });
+    if (!response?.ok) {
+      throw new Error(`Response status: ${response?.status}`);
+    }
 
-      const data = await response.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(data, "text/html");
-      if (!doc) {
-        throw new Error("Failed to load product HTML into DOMParser");
-      }
+    const data = await response.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(data, "text/html");
+    if (!doc) {
+      throw new Error("Failed to load product HTML into DOMParser");
+    }
 
-      const productScriptNonce = doc.querySelector("script[nonce]");
-      if (!productScriptNonce) {
-        throw new Error("Failed to find product script nonce");
-      }
+    const productScriptNonce = doc.querySelector("script[nonce]");
+    if (!productScriptNonce) {
+      throw new Error("Failed to find product script nonce");
+    }
 
-      const productScriptNonceText = productScriptNonce.textContent;
-      if (!productScriptNonceText) {
-        throw new Error("Failed to find product script nonce text");
-      }
+    const productScriptNonceText = productScriptNonce.textContent;
+    if (!productScriptNonceText) {
+      throw new Error("Failed to find product script nonce text");
+    }
 
-      const productScriptNonceTextMatch = productScriptNonceText.match("(?<== )(.*)(?=;\\n)");
+    const productScriptNonceTextMatch = productScriptNonceText.match("(?<== )(.*)(?=;\\n)");
 
-      if (!productScriptNonceTextMatch) {
-        throw new Error("Failed to find product script nonce text");
-      }
+    if (!productScriptNonceTextMatch) {
+      throw new Error("Failed to find product script nonce text");
+    }
 
-      const productAtgJson = JSON.parse(productScriptNonceTextMatch[0]);
+    const productAtgJson = JSON.parse(productScriptNonceTextMatch[0]);
 
-      const productData = result(
-        productAtgJson,
-        "fetch.response.contents.MainContent[0].atgResponse.response.response",
-      ) as ProductData;
+    const productData = result(
+      productAtgJson,
+      "fetch.response.contents.MainContent[0].atgResponse.response.response",
+    ) as ProductData;
 
-      if (!productData) {
-        throw new Error("Failed to find product data");
-      }
+    if (!productData) {
+      throw new Error("Failed to find product data");
+    }
 
-      //console.debug('productData:', productData)
+    //console.debug('productData:', productData)
 
-      const quantityMatch: QuantityObject | void = parseQuantity(productData.displayName);
+    const quantityMatch: QuantityObject | void = parseQuantity(productData.displayName);
 
-      if (!quantityMatch) return;
-      //console.debug('quantityMatch:', quantityMatch)
+    if (!quantityMatch) return;
+    //console.debug('quantityMatch:', quantityMatch)
 
-      // The price can be stored at different locations in the productData object. Select them all then
-      // choose the first non-undefined, non-null value.
-      const price = (() => {
-        const dataLayerPrice = productData.dataLayer?.productPrice?.[0];
-        if (dataLayerPrice) return dataLayerPrice;
+    // The price can be stored at different locations in the productData object. Select them all then
+    // choose the first non-undefined, non-null value.
+    const price = (() => {
+      const dataLayerPrice = productData.dataLayer?.productPrice?.[0];
+      if (dataLayerPrice) return dataLayerPrice;
 
-        const variantPrice =
-          productData.familyVariyantProductDetails?.productVariantsResult?.masterProductBean
-            ?.skus?.[0]?.priceInfo?.regularPrice?.[0];
-        if (variantPrice) return variantPrice;
+      const variantPrice =
+        productData.familyVariyantProductDetails?.productVariantsResult?.masterProductBean
+          ?.skus?.[0]?.priceInfo?.regularPrice?.[0];
+      if (variantPrice) return variantPrice;
 
-        return undefined;
-      })();
+      return undefined;
+    })();
 
-      const priceObj = parsePrice(price as string) || {
-        price,
-        currencyCode: this._productDefaults.currencyCode,
-        currencySymbol: this._productDefaults.currencySymbol,
-      };
+    const priceObj = parsePrice(price as string) || {
+      price,
+      currencyCode: this._productDefaults.currencyCode,
+      currencySymbol: this._productDefaults.currencySymbol,
+    };
 
-      const product = {
-        ...this._productDefaults,
-        ...priceObj,
-        supplier: this.supplierName,
-        title: productData.displayName,
-        url: this._href(productData.canonicalUrl),
-        //displayPrice: `${priceObj.currencySymbol}${priceObj.price}`,
-        displayQuantity: `${quantityMatch.quantity} ${quantityMatch.uom}`,
-        //price: priceObj.price,
-        //currencyCode: priceObj.currencyCode,
-        //currencySymbol: priceObj.currencySymbol,
-        ...quantityMatch,
-      };
+    const product = {
+      ...this._productDefaults,
+      ...priceObj,
+      supplier: this.supplierName,
+      title: productData.displayName,
+      url: this._href(productData.canonicalUrl),
+      //displayPrice: `${priceObj.currencySymbol}${priceObj.price}`,
+      displayQuantity: `${quantityMatch.quantity} ${quantityMatch.uom}`,
+      //price: priceObj.price,
+      //currencyCode: priceObj.currencyCode,
+      //currencySymbol: priceObj.currencySymbol,
+      ...quantityMatch,
+    };
 
-      //console.debug('[getProductData] product:', product)
+    //console.debug('[getProductData] product:', product)
 
-      return product as Product;
+    return product as Product;
 
-      //JSON.parse(document.querySelector('script[nonce]').innerText.match('(?<== )(.*)(?=;\\n)')[0]).fetch.response.contents.MainContent[0].atgResponse.response.response
+    //JSON.parse(document.querySelector('script[nonce]').innerText.match('(?<== )(.*)(?=;\\n)')[0]).fetch.response.contents.MainContent[0].atgResponse.response.response
 
-      /*
+    /*
       let description: { casNo?: string; formula?: string } = {}
       const descMeta = doc.querySelector('meta[name=description]')
 
@@ -319,12 +317,12 @@ export default class SupplierCarolina<T extends Product>
       this._products.push(product as T);
       return product as T;
       */
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error(error.message);
-      } else {
-        console.error("An unknown error occurred");
-      }
-    }
+    //} catch (error: unknown) {
+    //  if (error instanceof Error) {
+    //    console.error(error.message);
+    //  } else {
+    //    console.error("An unknown error occurred");
+    //  }
+    //}
   }
 }

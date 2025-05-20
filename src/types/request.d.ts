@@ -34,3 +34,23 @@ export type CacheResponse = {
   hash: RequestHashObject;
   data: SerializedResponse;
 };
+
+/**
+ * Represents the options for a request.
+ * This type is used to standardize the format of request options across different supplier implementations.
+ */
+export type RequestOptions = {
+  path: string | URL;
+  host?: string | undefined;
+  body?: object | string;
+  params?: RequestParams;
+  headers?: HeadersInit;
+};
+
+export type RequestParams = Record<string, string | number | boolean> | URLSearchParams;
+/**
+ * HeaderObject represents key-value string pairs for headers
+ * @param {string} [key] - Key-value string pairs for headers
+ */
+//export type HeaderObject = { [key: string]: string };
+//export type HeaderObject = Record<string, string | number | boolean>;

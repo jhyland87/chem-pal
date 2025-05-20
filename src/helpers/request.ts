@@ -1,4 +1,4 @@
-import { RequestHashObject, SerializedResponse, type CacheResponse } from "./request.d";
+import type { CacheResponse, RequestHashObject, SerializedResponse } from "types/request";
 import { md5sum, serialize } from "./utils";
 
 /**
@@ -96,12 +96,12 @@ export async function getCachableResponse(
 
   // Generate a serialized object to be saved
   const serializedResponse: SerializedResponse = {
-    contentType: response.headers.get("Content-Type")?.toString() ?? "",
+    contentType: response.headers.get("content-type")?.toString() ?? "",
   };
 
   const clonedResponse = response.clone();
 
-  if (serializedResponse.contentType.includes("json")) {
+  if (serializedResponse.contentType.includes("application/json")) {
     // Json gets stringified
     serializedResponse.content = serialize(JSON.stringify(await clonedResponse.json()));
   } else {

@@ -1,5 +1,7 @@
 import type { UOM } from "data/quantity";
-import type { HeaderObject, Product } from "types";
+//import type { HeaderObject, Product, RequestParams } from "types";
+import type { Product } from "types";
+import type { RequestOptions, RequestParams } from "types/request";
 import { toUSD } from "../helpers/currency";
 import { toBaseQuantity } from "../helpers/quantity";
 import { getCachableResponse } from "../helpers/request";
@@ -48,7 +50,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   protected _http_request_batch_size: number = 10;
 
   // HTTP headers used as a basis for all queries.
-  protected _headers: HeaderObject = {};
+  protected _headers: HeadersInit = {};
 
   // Default values for products. These will get overridden if they're found in the product data.
   protected _productDefaults = {
@@ -92,18 +94,39 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   protected async _setup(): Promise<void> {}
 
   /**
-   * Get the headers for the HTTP GET request.
-   * @param url - The URL to get the headers for.
-   * @returns The headers for the HTTP GET request.
+   * Check if the response is a valid Response object.
+   *
+   * @param {Response|void} response - The response to check.
+   * @returns {boolean} True if the response is a valid Response object, false otherwise.
    */
-  protected async httpGetHeaders(url: string | URL): Promise<HeaderObject | void> {
+  private _isResponse(response: Response | void): response is Response {
+    return response instanceof Response;
+  }
+
+  /**
+   * Check if the response is a valid JSON response.
+   *
+   * @param {Response|void} response - The response to check.
+   * @returns {boolean} True if the response is a valid JSON response, false otherwise.
+   */
+  private _isJsonResponse(response: Response | void): response is Response {
+    if (!this._isResponse(response)) return false;
+    if (!response.headers.get("content-type")) return false;
+    if (response.headers.get("content-type")?.includes("application/json")) return true;
+    return false;
+  }
+
+  /**
+   * Get the headers for the HTTP GET request.
+   *
+   * @param {string|URL} url - The URL to get the headers for.
+   * @returns {HeadersInit|void} The headers for the HTTP GET request.
+   */
+  protected async httpGetHeaders(url: string | URL): Promise<HeadersInit | void> {
     try {
       const requestObj = new Request(this._href(url), {
         signal: this._controller.signal,
-        headers: {
-          ...this._headers,
-          //accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8'
-        },
+        headers: new Headers(this._headers),
         referrer: this._baseURL,
         referrerPolicy: "strict-origin-when-cross-origin",
         body: null,
@@ -126,7 +149,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
         console.log("httpGetHeaders| cacheData:", cacheData);
       }
 
-      return Object.fromEntries(httpResponse.headers.entries()) as HeaderObject;
+      return Object.fromEntries(httpResponse.headers.entries()) as HeadersInit;
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
         console.debug("Request was aborted", { error, signal: this._controller.signal });
@@ -139,69 +162,151 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
 
   /**
    * Send a POST request to the given URL with the given body and headers.
-   * @param url - The URL to send the POST request to.
-   * @param body - The body of the POST request.
-   * @param headers - The headers for the POST request.
-   * @returns The response from the POST request.
+   *
+   * @param {RequestOptions} params - The parameters for the POST request.
+   * @param {string|URL} params.path - The URL to send the POST request to.
+   * @param {object} [params.body] - The body of the POST request.
+   * @param {RequestParams} [params.params] - The parameters to add to the URL.
+   * @param {HeaderObject} params.headers - The headers for the POST request.
+   * @returns {Response|void} The response from the POST request.
    * @example
-   * ```ts
-   * const request = await this.httpPost(
-   *    "http://example.com",
-   *    { name: "John" },
-   *    { "Content-Type": "application/json" }
-   * );
-   * const responseJSON = await request?.json();
+   * ```typescript
+   * const request = await this.httpPost({
+   *    path: "/api/v1/products",
+   *    body: { name: "John" },
+   *    headers: { "Content-Type": "application/json" }
+   * });
+   * // Sends HTTP POST request to https://supplier_base_url.com/api/v1/products with `{"name":"John"}` body.
+   *
+   * const request = await this.httpPost({
+   *    path: "/api/v1/products",
+   *    host: "api.example.com",
+   *    body: { name: "John" },
+   *    params: { a: "b", c: "d" },
+   *    headers: { "Content-Type": "application/json" }
+   * });
+   * // Sends HTTP POST request to https://api.example.com/api/v1/products?a=b&c=d with `{"name":"John"}` body.
    * ```
    */
-  protected async httpPost(
-    url: string | URL,
-    body: object,
-    headers: HeaderObject = {},
-  ): Promise<Response | void> {
-    try {
-      const requestObj = new Request(this._href(url), {
-        signal: this._controller.signal,
-        headers: {
-          ...this._headers,
-          ...headers,
-        },
-        referrer: this._baseURL,
-        referrerPolicy: "strict-origin-when-cross-origin",
-        body: JSON.stringify(body),
-        method: "POST",
-        mode: "cors",
-      });
+  protected async httpPost({
+    path,
+    host = undefined,
+    body = {},
+    params = {},
+    headers = {},
+  }: RequestOptions): Promise<Response | void> {
+    //try {
+    const _headers = new Headers({
+      ...this._headers,
+      ...(headers as HeadersInit),
+    });
+    const requestObj = new Request(this._href(path, params, host), {
+      signal: this._controller.signal,
+      headers: _headers,
+      referrer: this._baseURL,
+      referrerPolicy: "strict-origin-when-cross-origin",
+      body: typeof body === "string" ? body : JSON.stringify(body),
+      method: "POST",
+      mode: "cors",
+    });
 
-      // Fetch the goods
-      const httpResponse = await fetch(requestObj);
+    // Fetch the goods
+    const httpRequest = await fetch(requestObj);
 
-      // @todo: Override this if not in development mode
-      if (
-        chrome.extension !== undefined &&
-        import.meta.env.MODE !== "development" &&
-        httpResponse.headers.get("ismockedresponse") !== "true"
-      ) {
-        console.log("httpPost| httpResponse:", httpResponse);
-        console.log("httpPost| import.meta.env:", import.meta.env);
-        const cacheData = getCachableResponse(requestObj, httpResponse);
-        console.log("httpPost| cacheData:", cacheData);
-      }
-
-      return httpResponse as Response;
-    } catch (error) {
-      console.error("Error received during fetch:", { error, signal: this._controller.signal });
+    if (!this._isResponse(httpRequest)) {
+      throw new TypeError(`Invalid POST response: ${httpRequest}`);
     }
+
+    // @todo: Override this if not in development mode
+    if (
+      chrome.extension !== undefined &&
+      import.meta.env.MODE !== "development" &&
+      httpRequest.headers.get("ismockedresponse") !== "true"
+    ) {
+      console.log("httpPost| httpRequest:", httpRequest);
+      console.log("httpPost| import.meta.env:", import.meta.env);
+      const cacheData = getCachableResponse(requestObj, httpRequest);
+      console.log("httpPost| cacheData:", cacheData);
+    }
+
+    return httpRequest;
+    //} catch (error) {
+    //  console.error("Error received during fetch:", { error, signal: this._controller.signal });
+    //}
+  }
+
+  /**
+   * Send a POST request to the given URL with the given body and headers and return the response as a JSON object.
+   *
+   * @param {RequestOptions} params - The parameters for the POST request.
+   * @param {string|URL} params.path - The URL to send the POST request to.
+   * @param {string} [params.host] - The host to use for overrides (eg: needing to call a different host for an API)
+   * @param {object} [params.body] - The body of the POST request.
+   * @param {RequestParams} [params.params] - The parameters to add to the URL.
+   * @param {HeaderObject} [params.headers] - The headers for the POST request.
+   * @returns {object|void} The response from the POST request as a JSON object.
+   * @example
+   * ```typescript
+   * // Assume the baseURL is https://example.com
+   * const responseJSON = await this.httpPostJson({
+   *    path: "/api/v1/products",
+   *    body: { name: "John" },
+   *    headers: { "Content-Type": "application/json" }
+   * });
+   * // Sends HTTP POST request to https://example.com/api/v1/products with `{"name":"John"}` body.
+   * // Returns a JSON object.
+   *
+   * const responseJSON = await this.httpPostJson({
+   *    path: "/api/v1/products",
+   *    host: "api.example.com",
+   *    body: { name: "John" },
+   *    params: { a: "b", c: "d" },
+   *    headers: { "Content-Type": "application/json" }
+   * });
+   * // Sends HTTP POST request to https://api.example.com/api/v1/products?a=b&c=d with `{"name":"John"}` body.
+   * // Returns a JSON object.
+   * ```
+   */
+  protected async httpPostJson({
+    path,
+    host = undefined,
+    body = {},
+    params = {},
+    headers = {},
+  }: RequestOptions): Promise<object | void> {
+    const httpRequest = await this.httpPost({ path, host, body, params, headers });
+    if (!this._isJsonResponse(httpRequest)) {
+      throw new TypeError(`httpPostJson| Invalid POST response: ${httpRequest}`);
+    }
+    return await httpRequest.json();
   }
 
   /**
    * Send a GET request to the given URL with the given headers.
-   * @param url - The URL to send the GET request to.
-   * @param headers - The headers for the GET request.
-   * @returns The response from the GET request.
+   *
+   * @param {RequestOptions} params - The parameters for the GET request.
+   * @param {string|URL} params.path - The URL to send the GET request to.
+   * @param {RequestParams} [params.params] - The parameters to add to the URL.
+   * @param {HeaderObject} [params.headers] - The headers for the GET request.
+   * @param {string|URL} [params.host] - The host to use for overrides (eg: needing to call a different host for an API)
+   * @returns {Response|void} The response from the GET request.
+   * @example
+   * ```typescript
+   * const response = await this.httpGet({ path: "http://example.com", params: { a: "b", c: "d" } });
+   * // Sends HTTP GET request to https://example.com/some/path?a=b&c=d
+   *
+   * const response = await this.httpGet({ path: "http://example.com", params: { a: "b", c: "d" }, baseUrl: "https://another_host.com" });
+   * // Sends HTTP GET request to https://another_host.com/some/path?a=b&c=d
+   * ```
    */
-  protected async httpGet(url: string | URL, headers: HeaderObject = {}): Promise<Response | void> {
+  protected async httpGet({
+    path,
+    params = {},
+    headers = {},
+    host = undefined,
+  }: RequestOptions): Promise<Response | void> {
     try {
-      const requestObj = new Request(this._href(url), {
+      const requestObj = new Request(this._href(path, params, host), {
         signal: this._controller.signal,
         headers: {
           accept:
@@ -245,20 +350,35 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
 
   /**
    * Send a GET request to the given URL and return the response as a JSON object.
-   * @param url - The URL to send the GET request to.
-   * @param headers - The headers for the GET request.
-   * @returns The response from the GET request as a JSON object.
+   *
+   * @param {RequestOptions} params - The parameters for the GET request.
+   * @param {string|URL} params.path - The path to send the GET request to.
+   * @param {RequestParams} [params.params] - The parameters to add to the URL.
+   * @param {HeaderObject} [params.headers] - The headers for the GET request.
+   * @param {string} [params.host] - The host to use for overrides (eg: needing to call a different host for an API)
+   * @returns {object|void} The response from the GET request as a JSON object.
    */
-  protected async httpGetJson(
-    url: string | URL,
-    headers: HeaderObject = {},
-  ): Promise<object | void> {
-    try {
-      const response = await this.httpGet(url, headers);
-      return response?.json() as object;
-    } catch (error) {
-      console.error("Error received during fetch:", { error, signal: this._controller.signal });
+  protected async httpGetJson({
+    path,
+    params = {},
+    headers = {},
+    host = undefined,
+  }: RequestOptions): Promise<object | void> {
+    //try {
+    const _headers = new Headers({
+      ...this._headers,
+      ...(headers as HeadersInit),
+    });
+    const response = await this.httpGet({ path, params, headers: _headers, host });
+
+    if (!this._isJsonResponse(response)) {
+      throw new TypeError(`httpGetJson| response: ${response}`);
     }
+
+    return await response?.json();
+    //} catch (error) {
+    //  console.error("Error received during fetch:", { error, signal: this._controller.signal });
+    //}
   }
 
   /**
@@ -325,18 +445,48 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * not. Using relative links will result in http://chrome-extension://... being added to the link.
    *
    * @param {string|URL} url - URL object or string
+   * @param {RequestParams} [params] - The parameters to add to the URL.
+   * @param {string} [host] - The host to use for overrides (eg: needing to call a different host for an API)
    * @returns {string} - absolute URL
    * @example
-   * ```ts
+   * ```typescript
    * this._href('/some/path')
    * // https://supplier_base_url.com/some/path
+   *
+   * this._href('https://supplier_base_url.com/some/path', null, 'another_host.com')
+   * // https://another_host.com/some/path
+   *
+   * this._href('/some/path', { a: 'b', c: 'd' }, 'another_host.com')
+   * // http://another_host.com/some/path?a=b&c=d
+   *
    * this._href('https://supplier_base_url.com/some/path')
    * // https://supplier_base_url.com/some/path
+   *
    * this._href(new URL('https://supplier_base_url.com/some/path'))
    * // https://supplier_base_url.com/some/path
+   *
+   * this._href('/some/path', { a: 'b', c: 'd' })
+   * // https://supplier_base_url.com/some/path?a=b&c=d
+   *
+   * this._href('https://supplier_base_url.com/some/path', new URLSearchParams({ a: 'b', c: 'd' }))
+   * // https://supplier_base_url.com/some/path?a=b&c=d
    */
-  protected _href(url: string | URL): string {
-    return new URL(url, this._baseURL).toString();
+  protected _href(
+    path: string | URL,
+    params: RequestParams | null = {},
+    host: string | void = undefined,
+  ): string {
+    const urlObj = new URL(path, this._baseURL);
+
+    if (host) {
+      urlObj.host = host;
+    }
+
+    if (params) {
+      urlObj.search = new URLSearchParams(params as Record<string, string>).toString();
+    }
+
+    return urlObj.toString();
   }
 
   /**

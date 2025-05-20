@@ -33,6 +33,26 @@ export default abstract class ShopifyBase<T extends Product>
   protected _apiUrl: string = "https://searchserverapi.com";
 
   protected async queryProducts(): Promise<void> {
+    // curl -s --get https://searchserverapi.com/getresults \
+    //   --data-urlencode "api_key=8B7o0X1o7c" \
+    //   --data-urlencode "q=sulf" \
+    //   --data-urlencode "maxResults=6" \
+    //   --data-urlencode "startIndex=0" \
+    //   --data-urlencode "items=true" \
+    //   --data-urlencode "pages=true" \
+    //   --data-urlencode "facets=false" \
+    //   --data-urlencode "categories=true" \
+    //   --data-urlencode "suggestions=true" \
+    //   --data-urlencode "vendors=false" \
+    //   --data-urlencode "tags=false" \
+    //   --data-urlencode "pageStartIndex=0" \
+    //   --data-urlencode "pagesMaxResults=3" \
+    //   --data-urlencode "categoryStartIndex=0" \
+    //   --data-urlencode "categoriesMaxResults=3" \
+    //   --data-urlencode "suggestionsMaxResults=4" \
+    //   --data-urlencode "vendorsMaxResults=3" \
+    //   --data-urlencode "tagsMaxResults=3" \
+    //   --data-urlencode "_=1740051794061" | jq
     const getParams: ShopifyQueryParams = {
       // Setting the limit here to 1000, since the limit parameter should
       // apply to results returned from Supplier3SChem, not the rquests
@@ -59,20 +79,22 @@ export default abstract class ShopifyBase<T extends Product>
       _: new Date().getTime(),
     };
 
-    const searchRequest = await this.httpGetJson(
-      `${this._apiUrl}/getresults?${new URLSearchParams(getParams).toString()}`,
-    );
-
-    if (!this._isSearchRepsonse(searchRequest)) {
-      throw new Error("Invalid search response");
-    }
+    const searchRequest = await this.httpGetJson({
+      path: `/getresults`,
+      host: this._apiUrl,
+      params: getParams,
+    });
 
     console.log("searchRequest:", searchRequest);
 
-    this._queryResults = searchRequest.items[this._limit];
+    if (!this._isShopifySearchResponse(searchRequest)) {
+      throw new Error("Invalid search response");
+    }
+
+    //this._queryResults = searchRequest.items[this._limit];
   }
 
-  protected _isSearchRepsonse(response: unknown): response is ShopifySearchResponse {
+  protected _isShopifySearchResponse(response: unknown): response is ShopifySearchResponse {
     return (
       typeof response === "object" &&
       response !== null &&

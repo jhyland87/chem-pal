@@ -16,12 +16,6 @@ import { CurrencyCode, CurrencySymbol } from "types/currency";
 //export * from "types/quantity";
 
 /**
- * HeaderObject represents key-value string pairs for headers
- * @param {string} [key] - Key-value string pairs for headers
- */
-export type HeaderObject = { [key: string]: string };
-
-/**
  * ChromeStorageItems represents storage items supporting various primitive types
  * @param {string|number|boolean|null|undefined} [key] - Storage items supporting various primitive types
  */

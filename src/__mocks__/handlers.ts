@@ -1,8 +1,8 @@
 import { DefaultBodyType, delay, http, HttpResponse, HttpResponseResolver, PathParams } from "msw";
 import { getRequestHash } from "../helpers/request";
-import { RequestHashObject } from "../helpers/request.d";
 import { deserialize } from "../helpers/utils";
 import { AccessTokenResponse } from "../suppliers/supplier_wixbase.d";
+import type { RequestHashObject } from "../types/request.d";
 // src/__mocks__/handlers.js
 
 function withDelay<
