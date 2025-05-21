@@ -17,10 +17,10 @@ declare interface ChromeStorage {
   };
 }
 
-export type Chrome = {
+export interface Chrome {
   storage: ChromeStorage;
   extension: unknown;
-};
+}
 /*
 declare global {
   interface Window {
@@ -31,6 +31,16 @@ declare global {
   */
 /**
  * ChromeStorageItems represents storage items supporting various primitive types
- * @param {string|number|boolean|null|undefined} [key] - Storage items supporting various primitive types
+ * @param- Storage items supporting various primitive types
  */
-declare type ChromeStorageItems = { [key: string]: string | number | boolean | null | undefined };
+export interface ChromeStorageItems {
+  [key: string]: string | number | boolean | null | undefined;
+}
+
+/**
+ * ChromeStorageItems represents storage items supporting various primitive types
+ */
+export interface ChromeStorageItems {
+  /** Key-value pairs where values can be primitive types */
+  [key: string]: string | number | boolean | null | undefined;
+}
