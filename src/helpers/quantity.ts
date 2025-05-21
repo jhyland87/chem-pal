@@ -114,7 +114,7 @@ export function isQuantityObject(value: unknown): value is QuantityObject {
 export function standardizeUom(uom: string): UOM | void {
   const uomMap = Object.entries(UOM_ALIASES).reduce(
     (acc, [uom, aliases]) => {
-      aliases.forEach((alias) => {
+      aliases.forEach((alias: string) => {
         acc[alias] = uom;
       });
       return acc;
