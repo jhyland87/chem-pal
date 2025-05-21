@@ -1,3 +1,5 @@
+import type { UOMAliases } from "types";
+
 /**
  * Represents different rotation speeds for animations
  */
@@ -80,46 +82,54 @@ export enum UOM {
   PCS = "pcs",
 }
 
-// These are the UOM values that will be displayed to the user.
-// Changing the values here will change the UOM values in the
-// search results.
-// export enum UOM {
-//   kg = 'kg',
-//   lb = 'lb',
-//   ml = 'ml',
-//   g = 'g',
-//   L = 'L',
-//   qt = 'qt',
-//   gal = 'gal',
-//   mm = 'mm',
-//   cm = 'cm',
-//   m = 'm',
-//   oz = 'oz',
-//   mg = 'mg',
-//   km = 'km',
-// }
-
 /**
- * Maps each unit of measure (UOM) to its possible string representations.
- * This mapping helps standardize various ways of expressing the same unit.
- * @category Helper
+ * A constant mapping of units of measurement to their various string representations.
+ * This object implements the UOMAliases interface and provides standardized
+ * ways to recognize different text forms of the same unit of measurement.
+ *
+ * Used for parsing and normalizing unit strings in the application, this constant
+ * handles variations in spelling, pluralization, and common abbreviations.
+ *
+ * Type: UOMAliases
+ * Category: Helper
+ *
+ * Usage examples:
+ * // Get all possible representations of kilograms
+ * const kgAliases = UOM_ALIASES[UOM.KG]; // ["kilogram", "kilograms", "kg", "kgs"]
+ *
+ * // Check if a string represents a specific unit
+ * const isKilogram = UOM_ALIASES[UOM.KG].includes("kg"); // true
  */
-export const UOM_ALIASES: Record<UOM, string[]> = {
+export const UOM_ALIASES: UOMAliases = {
+  /** Piece aliases */
   [UOM.PCS]: ["piece", "pieces", "pc", "pcs"],
+  /** Kilogram aliases */
   [UOM.KG]: ["kilogram", "kilograms", "kg", "kgs"],
+  /** Pound aliases */
   [UOM.LB]: ["pound", "pounds", "lb", "lbs"],
+  /** Milliliter aliases */
   [UOM.ML]: ["ml", "mls", "millilitre", "milliliter", "milliliters", "millilitres"],
+  /** Gram aliases */
   [UOM.G]: ["grams", "g"],
+  /** Liter aliases */
   [UOM.L]: ["liters", "litres", "l"],
+  /** Quart aliases */
   [UOM.QT]: ["quarts", "qts", "qt"],
+  /** Gallon aliases */
   [UOM.GAL]: ["gallon", "gallons", "gal"],
+  /** Millimeter aliases */
   [UOM.MM]: ["millimeter", "millimeters", "millimetre", "millimetres", "mm"],
+  /** Centimeter aliases */
   [UOM.CM]: ["centimeter", "centimeters", "centimetre", "centimetres", "cm"],
+  /** Meter aliases */
   [UOM.M]: ["meters", "metre", "metres", "m", "meter"],
+  /** Ounce aliases */
   [UOM.OZ]: ["ounce", "ounces", "oz"],
+  /** Milligram aliases */
   [UOM.MG]: ["milligram", "milligrams", "mg", "mgs"],
+  /** Kilometer aliases */
   [UOM.KM]: ["kilometer", "kilometre", "kilometers", "kilometres", "km"],
-};
+} as const;
 
 /**
  * Hypertext Transfer Protocol (HTTP) response status codes.

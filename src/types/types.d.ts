@@ -287,3 +287,47 @@ export interface ProductRow {
   /** Table row data */
   row: Row<Product>;
 }
+
+/**
+ * Interface defining mappings between units of measurement and their string aliases.
+ * Each property represents a unit of measurement from the UOM enum and maps to an array
+ * of possible string representations for that unit.
+ *
+ * @interface
+ * @example
+ * ```typescript
+ * const aliases: UOMAliases = {
+ *   [UOM.KG]: ["kilogram", "kilograms", "kg", "kgs"]
+ * };
+ * ```
+ */
+export interface UOMAliases {
+  /** Array of string aliases for pieces/units */
+  [UOM.PCS]: string[];
+  /** Array of string aliases for kilograms */
+  [UOM.KG]: string[];
+  /** Array of string aliases for pounds */
+  [UOM.LB]: string[];
+  /** Array of string aliases for milliliters */
+  [UOM.ML]: string[];
+  /** Array of string aliases for grams */
+  [UOM.G]: string[];
+  /** Array of string aliases for liters */
+  [UOM.L]: string[];
+  /** Array of string aliases for quarts */
+  [UOM.QT]: string[];
+  /** Array of string aliases for gallons */
+  [UOM.GAL]: string[];
+  /** Array of string aliases for millimeters */
+  [UOM.MM]: string[];
+  /** Array of string aliases for centimeters */
+  [UOM.CM]: string[];
+  /** Array of string aliases for meters */
+  [UOM.M]: string[];
+  /** Array of string aliases for ounces */
+  [UOM.OZ]: string[];
+  /** Array of string aliases for milligrams */
+  [UOM.MG]: string[];
+  /** Array of string aliases for kilometers */
+  [UOM.KM]: string[];
+}
