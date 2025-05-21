@@ -80,7 +80,7 @@ export interface ShopifyProductVariant {
 /**
  * Represents a product item in Shopify
  */
-export type ShopifyItem = {
+export interface ShopifyItem {
   /* eslint-disable */
   /** Unique identifier for the product */
   product_id: string;
@@ -121,7 +121,7 @@ export type ShopifyItem = {
   /** Product tags */
   tags: string;
   /* eslint-enable */
-};
+}
 
 /**
  * Represents the response from a Shopify search query

@@ -19,14 +19,6 @@ export interface QuantityObject {
 }
 
 /**
- * ChromeStorageItems represents storage items supporting various primitive types
- */
-export interface ChromeStorageItems {
-  /** Key-value pairs where values can be primitive types */
-  [key: string]: string | number | boolean | null | undefined;
-}
-
-/**
  * Settings interface for application configuration
  */
 export interface Settings {

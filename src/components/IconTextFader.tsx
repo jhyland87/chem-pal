@@ -1,15 +1,6 @@
 import Collapse from "@mui/material/Collapse";
-import { ReactNode, useEffect, useState } from "react";
-
-/**
- * Props for the IconTextFader component
- * @param children - Icon element to display
- */
-type IconTextFaderProps = {
-  children: ReactNode;
-  text: string;
-  active: boolean;
-};
+import { useEffect, useState } from "react";
+import type { IconTextFaderProps } from "types/props";
 
 /**
  * IconTextFader component that smoothly transitions between an icon and text.

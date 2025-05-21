@@ -2,11 +2,11 @@ import js from "@eslint/js";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import tsdoc from "eslint-plugin-tsdoc";
+import unicorn from "eslint-plugin-unicorn";
 import globals from "globals";
 import { dirname } from "path";
 import tseslint from "typescript-eslint";
 import { fileURLToPath } from "url";
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -99,6 +99,15 @@ export default tseslint.config(
           format: ["UPPER_CASE", "camelCase", "PascalCase"],
         },
       ],
+      "unicorn/filename-case": [
+        "error",
+        {
+          cases: {
+            camelCase: true,
+            pascalCase: true,
+          },
+        },
+      ],
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-unused-vars": "error",
       "@typescript-eslint/no-unused-expressions": "error",
@@ -108,6 +117,7 @@ export default tseslint.config(
       "react-refresh": reactRefresh,
       //"@typescript-eslint": tseslint,
       tsdoc: tsdoc,
+      unicorn: unicorn,
     },
   },
 );

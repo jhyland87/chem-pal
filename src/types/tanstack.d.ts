@@ -2,13 +2,14 @@ import "@tanstack/react-table";
 import { CSSProperties } from "react";
 
 /**
- * Extends the @tanstack/react-table module with custom column methods and metadata.
+ * Extends the \@tanstack/react-table module with custom column methods and metadata.
  * These extensions provide additional functionality for column filtering, visibility,
  * and value range operations.
  *
- * @module @tanstack/react-table
+ * @module \@tanstack/react-table
  */
 declare module "@tanstack/react-table" {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Column<TData extends RowData, TValue> {
     /**
      * Returns a sorted array of unique values from the currently visible rows in the column.
@@ -65,6 +66,7 @@ declare module "@tanstack/react-table" {
     setColumnVisibility: (visible: boolean) => void;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData = unknown, TValue = unknown> {
     /** The type of filter to use for this column */
     filterVariant?: "text" | "range" | "select";

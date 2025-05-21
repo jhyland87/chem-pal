@@ -1,8 +1,7 @@
 // Import necessary modules
 import "@testing-library/jest-dom";
 import jestChrome from "jest-chrome";
-import type { ChromeStorageItems } from "types";
-import type { Chrome } from "types/chrome-storage";
+import type { Chrome, ChromeStorageItems } from "types/chromeStorage";
 import { promisify } from "util";
 
 // Assign jest-chrome to the global object

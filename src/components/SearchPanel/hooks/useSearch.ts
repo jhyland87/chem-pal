@@ -1,13 +1,8 @@
 import { Product } from "types";
+import type { UseSearchProps } from "types/props";
 import { useAppContext } from "../../../context";
 import SupplierFactory from "../../../suppliers/supplierFactory";
 import { getColumnFilterConfig } from "../TableColumns";
-
-interface UseSearchProps {
-  setSearchResults: React.Dispatch<React.SetStateAction<Product[]>>;
-  setStatusLabel: React.Dispatch<React.SetStateAction<string | boolean>>;
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-}
 
 export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: UseSearchProps) {
   const appContext = useAppContext();

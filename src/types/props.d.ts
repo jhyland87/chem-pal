@@ -238,3 +238,39 @@ export interface SearchInputStates {
   /** Function to update search input */
   setSearchInput: (value: string) => void;
 }
+
+/**
+ * Props interface for the results table hook
+ */
+export interface UseResultsTableProps {
+  /** Array of products to display in search results */
+  showSearchResults: Product[];
+  /** Column filter state and setter function tuple */
+  columnFilterFns: [ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>];
+  /** Function to determine if a row can be expanded */
+  getRowCanExpand: (row: Row<Product>) => boolean;
+}
+
+/**
+ * Props interface for the search hook
+ */
+export interface UseSearchProps {
+  /** Function to update the search results array */
+  setSearchResults: React.Dispatch<React.SetStateAction<Product[]>>;
+  /** Function to update the status label text/visibility */
+  setStatusLabel: React.Dispatch<React.SetStateAction<string | boolean>>;
+  /** Function to update the loading state */
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+/**
+ * Props interface for the IconTextFader component that fades between an icon and text
+ */
+export interface IconTextFaderProps {
+  /** Icon element to display */
+  children: ReactNode;
+  /** Text to display when fading from icon */
+  text: string;
+  /** Whether the component is in active state */
+  active: boolean;
+}
