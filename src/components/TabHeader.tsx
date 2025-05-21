@@ -1,23 +1,24 @@
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
+import BookmarkIcon from "icons/BookmarkIcon";
+import HistoryIcon from "icons/HistoryIcon";
+import SearchIcon from "icons/SearchIcon";
+import SettingsIcon from "icons/SettingsIcon";
+import StoreIcon from "icons/StoreIcon";
 import { SyntheticEvent } from "react";
-import { TabHeaderProps } from "types";
-import BookmarkIcon from "../assets/icons/BookmarkIcon";
-import HistoryIcon from "../assets/icons/HistoryIcon";
-import SearchIcon from "../assets/icons/SearchIcon";
-import SettingsIcon from "../assets/icons/SettingsIcon";
-import StoreIcon from "../assets/icons/StoreIcon";
+import { TabHeaderProps } from "types/props";
 import IconTextFader from "./IconTextFader";
 /**
  * Generates props for a tab component.
- * @param {number} index - The index of the tab
- * @param {string} name - The name of the tab panel
- * @returns {Object} Tab props including id, panel, and aria-controls
+ * @param index - The index of the tab
+ * @param name - The name of the tab panel
+ * @returns Tab props including id, panel, and aria-controls
  */
 function tabProps(index: number, name: string) {
   return {
     id: `full-width-tab-${index}`,
     panel: name,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     "aria-controls": `full-width-tabpanel-${index}`,
   };
 }
@@ -28,9 +29,7 @@ function tabProps(index: number, name: string) {
  *
  * @component
  * @category Component
- * @param {TabHeaderProps} props - Component props
- * @param {number} props.page - Current active tab index
- * @param {Function} props.setPage - Function to update the active tab
+ * @param props - Component props
  *
  * @example
  * ```tsx
@@ -43,6 +42,7 @@ export default function TabHeader({ page, setPage }: TabHeaderProps) {
   return (
     <Tabs
       sx={{
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         "& .MuiTabs-indicator": {
           backgroundColor: "rgba(0, 0, 0, 0.8)",
         },

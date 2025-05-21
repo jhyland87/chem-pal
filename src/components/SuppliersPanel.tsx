@@ -6,7 +6,7 @@ import ListItemAvatar from "@mui/material/ListItemAvatar";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import { useAppContext } from "../context";
-import SupplierFactory from "../suppliers/SupplierFactory";
+import SupplierFactory from "../suppliers/supplierFactory";
 
 /**
  * SuppliersPanel component that displays a list of available suppliers with toggle functionality.
@@ -28,8 +28,8 @@ export default function SuppliersPanel() {
    * Handles toggling a supplier's selection state.
    * Updates the application settings with the new list of selected suppliers.
    *
-   * @param {string} supplierName - The name of the supplier to toggle
-   * @returns {Function} A callback function that handles the toggle action
+   * @param supplierName - The name of the supplier to toggle
+   * @returns A callback function that handles the toggle action
    */
   const handleToggle = (supplierName: string) => () => {
     const selectedSuppliers = appContext.settings.suppliers;

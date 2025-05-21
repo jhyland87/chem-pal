@@ -6,22 +6,6 @@
       "syntaxKind": "block"
     },
     {
-      "tagName": "@example",
-      "syntaxKind": "block"
-    },
-    {
-      "tagName": "@param",
-      "syntaxKind": "block"
-    },
-    {
-      "tagName": "@returns",
-      "syntaxKind": "block"
-    },
-    {
-      "tagName": "@throws",
-      "syntaxKind": "block"
-    },
-    {
       "tagName": "@todo",
       "syntaxKind": "block"
     },
@@ -57,6 +41,7 @@
     "@interface": true,
     "@type": true,
     "@category": true,
-    "@abstract": true
+    "@abstract": true,
+    "@see": true
   }
 }

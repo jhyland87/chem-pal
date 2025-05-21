@@ -16,20 +16,20 @@
     "skipLibCheck": true,
     "allowJs": true,
     "esModuleInterop": true,
-    "baseUrl": "./",
+    "baseUrl": "./src",
     "paths": {
       "types/*": [
-        "src/types/*"
+        "./types/*"
       ],
       "types": [
-        "src/types/types"
+        "./types/types"
       ],
-      "data/*": [
-        "src/data/*"
+      "constants/*": [
+        "./constants/*"
       ],
-      "data": [
-        "src/data/data"
-      ]
+      "icons/*": [
+        "./assets/icons/*"
+      ],
     },
     /* Bundler mode */
     //"moduleResolution": "bundler",
@@ -47,6 +47,9 @@
       "./node_modules/@types",
       "./src/types/*",
       "./src/data/*",
+      "./src/constants/*",
+      "./src/assets/icons/*",
+      "./src/assets/icons"
     ],
     "types": [
       "jest",

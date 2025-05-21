@@ -1,0 +1,15 @@
+.icon-spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}

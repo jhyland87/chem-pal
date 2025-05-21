@@ -7,14 +7,16 @@ import {
   getSortedRowModel,
   Row,
   useReactTable,
+  type ColumnFiltersState,
 } from "@tanstack/react-table";
+import { Dispatch, SetStateAction } from "react";
 import { Product } from "types";
-import { implementCustomMethods } from "../../utils/tanstack";
-import TableColumns from "./TableColumns";
+import { implementCustomMethods } from "../../../utils/tanstack";
+import TableColumns from "../TableColumns";
 
 interface UseResultsTableProps {
   showSearchResults: Product[];
-  columnFilterFns: [any, any];
+  columnFilterFns: [ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>];
   getRowCanExpand: (row: Row<Product>) => boolean;
 }
 

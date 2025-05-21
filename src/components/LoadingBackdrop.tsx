@@ -2,49 +2,59 @@ import Backdrop from "@mui/material/Backdrop";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Fade from "@mui/material/Fade";
-import { LoadingBackdropProps } from "types";
-import BenzeneBlueSpinner from "./icons/BenzeneBlueSpinner";
+import BlueBenzeneIcon from "icons/BenzeneBlueIcon";
+import { type LoadingBackdropProps } from "types/props";
+import IconSpinner from "./IconSpinner";
 import "./LoadingBackdrop.scss";
-
 /**
- * LoadingBackdrop component that displays a full-screen loading overlay with a spinner and stop button.
- * The spinner fades in with a delay when the backdrop is opened.
+ * A full-screen loading overlay component with a spinning benzene molecule and stop button.
+ * The spinner has a delayed fade-in animation when the backdrop is opened.
  *
- * @component
- * @category Component
- * @param {LoadingBackdropProps} props - Component props
- * @param {boolean} props.open - Whether the backdrop is visible
- * @param {Function} props.onClick - Function to call when the stop button is clicked
+ * @param props - Component properties containing:
+ * - open: Controls the visibility of the backdrop
+ * - onClick: Callback function triggered when the stop button is clicked
+ * @returns A loading backdrop component
  *
  * @example
- * ```tsx
- * <LoadingBackdrop open={isLoading} onClick={handleStopLoading} />
+ * ```typescript
+ * <LoadingBackdrop
+ *   open={isLoading}
+ *   onClick={handleStopLoading}
+ * />
  * ```
  *
- * @todo Try to implement a <Suspense/> component instead of a manual loading state
- * @todo Add some timer that shows the Stop Search only after a second or two
+ * Future improvements:
+ * - Implement a Suspense component instead of manual loading state
+ * - Add a timer to show the Stop Search button after a delay
  */
 export default function LoadingBackdrop(props: LoadingBackdropProps) {
   // @todo: Try to implement a <Suspense/> component instead of a manual loading state
   // @todo: add some timer that shows the Stop Search only after a second or two.
   return (
-    <Backdrop open={props.open} id="loading-backdrop">
-      <Box className="loading-backdrop-box">
-        <Box className="spinner-box">
-          <Fade
-            in={props.open}
-            style={{
-              transitionDelay: props.open ? "800ms" : "0ms",
-            }}
-            unmountOnExit
-          >
-            <BenzeneBlueSpinner size={100} />
-          </Fade>
+    <>
+      <IconSpinner>
+        <BlueBenzeneIcon sx={{ width: 100, height: 100 }} />
+      </IconSpinner>
+      <Backdrop open={props.open} id="loading-backdrop">
+        <Box className="loading-backdrop-box">
+          <Box className="spinner-box">
+            <Fade
+              in={props.open}
+              style={{
+                transitionDelay: props.open ? "800ms" : "0ms",
+              }}
+              unmountOnExit
+            >
+              {/*<IconSpinner>*/}
+              <BlueBenzeneIcon sx={{ width: 100, height: 100 }} />
+              {/* </IconSpinner>*/}
+            </Fade>
+          </Box>
+          <Button className="status-button" onClick={props.onClick}>
+            {props.open ? "Stop loading" : "Loading"}
+          </Button>
         </Box>
-        <Button className="status-button" onClick={props.onClick}>
-          {props.open ? "Stop loading" : "Loading"}
-        </Button>
-      </Box>
-    </Backdrop>
+      </Backdrop>
+    </>
   );
 }

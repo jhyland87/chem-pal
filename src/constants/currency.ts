@@ -1,4 +1,5 @@
-export const CurrencyCodeMap: { [key: string]: string } = {
+/* eslint-disable @typescript-eslint/naming-convention */
+export const CURRENCY_CODE_MAP: { [key: string]: string } = {
   Lek: "ALL",
   "؋": "AFN",
   $: "USD",
@@ -70,7 +71,7 @@ export const CurrencyCodeMap: { [key: string]: string } = {
  * CurrencySymbolMap['EUR'] // returns '€'
  * ```
  */
-export const CurrencySymbolMap: { [key: string]: string } = {
+export const CURRENCY_SYMBOL_MAP: { [key: string]: string } = {
   AED: "د.إ",
   AFN: "؋",
   ALL: "L",

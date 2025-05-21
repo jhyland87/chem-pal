@@ -1,5 +1,5 @@
-import { IconSpinnerProps } from "types";
-import BenzeneIcon from "./BenzeneIcon";
+import BenzeneIcon from "icons/BenzeneIcon";
+import { type IconSpinnerProps } from "types/props";
 export default function BenzeneSpinner(props: IconSpinnerProps) {
   const style = {
     width: "200px",
@@ -15,6 +15,7 @@ export default function BenzeneSpinner(props: IconSpinnerProps) {
       sx={{
         ...style,
         animation: "spin 2s linear infinite",
+        /* eslint-disable */
         "@keyframes spin": {
           "0%": {
             transform: "rotate(360deg)",
@@ -22,6 +23,7 @@ export default function BenzeneSpinner(props: IconSpinnerProps) {
           "100%": {
             transform: "rotate(0deg)",
           },
+          /* eslint-enable */
         },
       }}
       {...props}

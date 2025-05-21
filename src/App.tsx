@@ -17,7 +17,7 @@ import SuppliersPanel from "./components/SuppliersPanel";
 import TabHeader from "./components/TabHeader";
 import TabPanel from "./components/TabPanel";
 import { AppContext } from "./context";
-import SupplierFactory from "./suppliers/SupplierFactory";
+import SupplierFactory from "./suppliers/supplierFactory";
 import { darkTheme, lightTheme } from "./themes";
 
 /**

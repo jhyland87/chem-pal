@@ -6,7 +6,6 @@ import throttle from "lodash/throttle";
  * Implements custom methods for Tanstack Table columns
  *
  * @param table - The table instance
- * @typeParam TData - The type of data in the table
  */
 export function implementCustomMethods<TData>(table: Table<TData>) {
   // Add custom column methods to each column

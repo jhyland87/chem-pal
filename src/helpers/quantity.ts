@@ -1,36 +1,14 @@
-import { QuantityObject, UOM } from "../data/quantity";
-
-/**
- * Maps each unit of measure (UOM) to its possible string representations.
- * This mapping helps standardize various ways of expressing the same unit.
- * @category Helper
- * @type {Record<UOM, string[]>}
- */
-export const uomAliases: Record<UOM, string[]> = {
-  [UOM.PCS]: ["piece", "pieces", "pc", "pcs"],
-  [UOM.KG]: ["kilogram", "kilograms", "kg", "kgs"],
-  [UOM.LB]: ["pound", "pounds", "lb", "lbs"],
-  [UOM.ML]: ["ml", "mls", "millilitre", "milliliter", "milliliters", "millilitres"],
-  [UOM.G]: ["grams", "g"],
-  [UOM.L]: ["liters", "litres", "l"],
-  [UOM.QT]: ["quarts", "qts", "qt"],
-  [UOM.GAL]: ["gallon", "gallons", "gal"],
-  [UOM.MM]: ["millimeter", "millimeters", "millimetre", "millimetres", "mm"],
-  [UOM.CM]: ["centimeter", "centimeters", "centimetre", "centimetres", "cm"],
-  [UOM.M]: ["meters", "metre", "metres", "m", "meter"],
-  [UOM.OZ]: ["ounce", "ounces", "oz"],
-  [UOM.MG]: ["milligram", "milligrams", "mg", "mgs"],
-  [UOM.KM]: ["kilometer", "kilometre", "kilometers", "kilometres", "km"],
-};
+import { UOM, UOM_ALIASES } from "constants/app";
+import type { QuantityObject } from "types";
 
 /**
  * Parses a quantity string into a structured object containing the numeric value and unit of measure.
  * Handles various formats including foreign number formats (e.g., 1.234,56).
  * Uses regex pattern matching to extract quantity and unit information.
  * @category Helper
- * @param {string} value - The quantity string to parse (e.g., '100g', '120 grams')
- * @returns {QuantityObject | void} Object containing quantity and UOM, or undefined if parsing fails
- * @throws {Error} If the quantity string cannot be parsed
+ * @param  value - The quantity string to parse (e.g., '100g', '120 grams')
+ * @returns Object containing quantity and UOM, or undefined if parsing fails
+ * @throws  If the quantity string cannot be parsed
  *
  * @example
  * ```typescript
@@ -41,7 +19,7 @@ export const uomAliases: Record<UOM, string[]> = {
  * parseQuantity('1.2 L') // Returns { quantity: 1.2, uom: 'L' }
  * ```
  *
- * @see {@link https://regex101.com/r/Ruid54/3 | Regex tests}
+ * @see https://regex101.com/r/Ruid54/3
  */
 export function parseQuantity(value: string): QuantityObject | void {
   const quantityPattern = new RegExp(
@@ -81,13 +59,14 @@ export function parseQuantity(value: string): QuantityObject | void {
  * Parses a list of quantity strings into a structured object containing the numeric value and unit of measure.
  * @category Helper
  *
- * @param {string[]} values - The list of quantity strings to parse
- * @returns {QuantityObject} Object containing quantity and UOM
+ * @param values - The list of quantity strings to parse
+ * @returns Object containing quantity and UOM
  *
  * @example
  * ```typescript
  * parseQuantityCoalesce(['100g', '120 grams'])
  * // Returns { quantity: 120, uom: 'grams' }
+ * ```
  */
 export function parseQuantityCoalesce(values: string[]): QuantityObject {
   return values.reduce((acc, value) => {
@@ -109,8 +88,8 @@ export function parseQuantityCoalesce(values: string[]): QuantityObject {
  * Checks if a value is a QuantityObject.
  *
  * @category Helper
- * @param {unknown} value - The value to check
- * @returns {boolean} True if the value is a QuantityObject, false otherwise
+ * @param value - The value to check
+ * @returns True if the value is a QuantityObject, false otherwise
  */
 export function isQuantityObject(value: unknown): value is QuantityObject {
   return typeof value === "object" && value !== null && "quantity" in value && "uom" in value;
@@ -120,8 +99,8 @@ export function isQuantityObject(value: unknown): value is QuantityObject {
  * Standardizes a unit of measure (UOM) to its canonical form.
  * Uses the uomAliases mapping to convert various representations to standard forms.
  * @category Helper
- * @param {string} uom - The unit of measure to standardize
- * @returns {UOM | void} The standardized UOM, or undefined if not recognized
+ * @param uom - The unit of measure to standardize
+ * @returns The standardized UOM, or undefined if not recognized
  *
  * @example
  * ```typescript
@@ -133,7 +112,7 @@ export function isQuantityObject(value: unknown): value is QuantityObject {
  * ```
  */
 export function standardizeUom(uom: string): UOM | void {
-  const uomMap = Object.entries(uomAliases).reduce(
+  const uomMap = Object.entries(UOM_ALIASES).reduce(
     (acc, [uom, aliases]) => {
       aliases.forEach((alias) => {
         acc[alias] = uom;
@@ -150,9 +129,9 @@ export function standardizeUom(uom: string): UOM | void {
  * Converts a quantity from its current unit to a common unit of mass or volume.
  * This is to make it easier to compare quantities of different units.
  * @category Helper
- * @param {number} quantity - The quantity to convert
- * @param {UOM} unit - The unit of measure of the quantity
- * @returns {number} The converted quantity in its base unit
+ * @param quantity - The quantity to convert
+ * @param unit - The unit of measure of the quantity
+ * @returns The converted quantity in its base unit
  *
  * @example
  * ```typescript

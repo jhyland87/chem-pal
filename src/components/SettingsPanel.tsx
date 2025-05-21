@@ -26,6 +26,7 @@ const inputStyle = {
 // Show the setting helper text only when that listitem is hovered over.
 // Just trying to be fancy with the hover effect
 const displayHelperOnHover = {
+  /* eslint-disable */
   "& > .MuiFormHelperText-root": {
     transition: "visibility 0s, opacity 0.5s linear",
     visibility: "hidden",
@@ -40,6 +41,7 @@ const displayHelperOnHover = {
     visibility: "visible",
     opacity: 1,
   },
+  /* eslint-enable */
 };
 
 /**

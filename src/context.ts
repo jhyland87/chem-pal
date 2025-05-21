@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { AppContextProps } from "types";
+import { type AppContextProps } from "types/props";
 //import "./types.d.ts";
 
 /**
@@ -22,7 +22,7 @@ export const AppContext = createContext<AppContextProps | undefined>(undefined);
  * Custom hook to access the application context.
  *
  * @returns The application context containing global state and settings
- * @throws {Error} If used outside of an AppContext.Provider
+ * @throws If used outside of an AppContext.Provider
  *
  * @example
  * ```tsx

@@ -1,14 +1,13 @@
-import type { QuantityObject } from "data/quantity";
 import result from "lodash/result";
-import type { Product } from "types";
-import type {
-  CarolinaProductData,
-  CarolinaProductIndexObject,
-  CarolinaSearchParams,
+import type { Product, QuantityObject } from "types";
+import {
+  type CarolinaProductData,
+  type CarolinaProductIndexObject,
+  type CarolinaSearchParams,
 } from "types/carolina";
 import { parsePrice } from "../helpers/currency";
 import { parseQuantity } from "../helpers/quantity";
-import SupplierBase from "./supplier_base";
+import SupplierBase from "./supplierBase";
 
 /**
  * Carolina.com uses Oracle ATG Commerce as their ecommerce platform.
@@ -74,11 +73,11 @@ export default class SupplierCarolina<T extends Product>
   // If using async requests, this will determine how many of them to batch together (using
   // something like Promise.all()). This is to avoid overloading the users bandwidth and
   // to not flood the supplier with 100+ requests all at once.
-  protected _http_request_batch_size: number = 4;
+  protected _httpRequestBatchSize: number = 4;
 
   // HTTP headers used as a basis for all queries.
   protected _headers: HeadersInit = {
-    //'accept': 'application/json, text/javascript, */*; q=0.01',
+    /* eslint-disable */
     accept:
       "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
     "accept-language": "en-US,en;q=0.6",
@@ -96,13 +95,14 @@ export default class SupplierCarolina<T extends Product>
     "sec-fetch-site": "same-origin",
     "sec-gpc": "1",
     "x-requested-with": "XMLHttpRequest",
+    /* eslint-enable */
   };
 
   /**
    * Make the query params for the Carolina API
    *
-   * @param {string} query - The query to search for
-   * @returns {CarolinaSearchParams} The query params
+   * @param query - The query to search for
+   * @returns The query params
    */
   protected _makeQueryParams(query: string): CarolinaSearchParams {
     return {
@@ -112,6 +112,7 @@ export default class SupplierCarolina<T extends Product>
       471891351   Lab grade
       3929848101  Reagent grade
       */
+      /* eslint-disable */
       N: "790004999",
       Nf: "product.cbsLowPrice|GT 0.0||product.startDate|LTEQ 1.7457984E12||product.startDate|LTEQ 1.7457984E12",
       Nr: "AND(product.siteId:100001,OR(product.type:Product),OR(product.catalogId:cbsCatalog))",
@@ -122,13 +123,14 @@ export default class SupplierCarolina<T extends Product>
       question: query,
       searchExecByFormSubmit: "true",
       tab: "p",
+      /* eslint-enable */
     } as CarolinaSearchParams;
   }
 
   /**
    * Query products from the Carolina API
    *
-   * @returns {Promise<void>} A promise that resolves when the products are queried
+   * @returns A promise that resolves when the products are queried
    */
   protected async queryProducts(): Promise<void> {
     const params = this._makeQueryParams(this._query);
@@ -175,7 +177,7 @@ export default class SupplierCarolina<T extends Product>
   /**
    * Parse the products from the Carolina API
    *
-   * @returns {Promise<(Product | void)[]>} A promise that resolves to the products
+   * @returns A promise that resolves to the products
    */
   protected async parseProducts(): Promise<(Product | void)[]> {
     return Promise.all(
@@ -186,8 +188,8 @@ export default class SupplierCarolina<T extends Product>
   /**
    * Get the product data from the Carolina API
    *
-   * @param {CarolinaProductIndexObject} productIndexObject - The product index object
-   * @returns {Promise<Product | void>} A promise that resolves to the product data or void if the product has no price
+   * @param productIndexObject - The product index object
+   * @returns A promise that resolves to the product data or void if the product has no price
    */
   protected async _getProductData(
     productIndexObject: CarolinaProductIndexObject,

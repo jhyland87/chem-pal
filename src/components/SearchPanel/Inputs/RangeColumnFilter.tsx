@@ -5,7 +5,7 @@ import Slider from "@mui/material/Slider";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
-import { FilterVariantInputProps } from "types";
+import { type FilterVariantInputProps } from "types/props";
 import "./RangeColumnFilter.scss";
 
 /**

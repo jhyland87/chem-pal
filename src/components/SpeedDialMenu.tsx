@@ -1,12 +1,12 @@
 import SpeedDial from "@mui/material/SpeedDial";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
 import SpeedDialIcon from "@mui/material/SpeedDialIcon";
+import AutoDeleteIcon from "icons/AutoDeleteIcon";
+import ClearIcon from "icons/ClearIcon";
+import ContrastIcon from "icons/ContrastIcon";
+import InfoOutlineIcon from "icons/InfoOutlineIcon";
 import { MouseEvent, useEffect, useState } from "react";
-import { SpeedDialMenuProps } from "types";
-import AutoDeleteIcon from "../assets/icons/AutoDeleteIcon";
-import ClearIcon from "../assets/icons/ClearIcon";
-import ContrastIcon from "../assets/icons/ContrastIcon";
-import InfoOutlineIcon from "../assets/icons/InfoOutlineIcon";
+import { SpeedDialMenuProps } from "types/props";
 import { useAppContext } from "../context";
 import { delayAction } from "../helpers/utils";
 import AboutModal from "./AboutModal";
@@ -19,8 +19,7 @@ import HelpTooltip from "./HelpTooltip";
  *
  * @component
  * @category Component
- * @param {SpeedDialMenuProps} props - Component props
- * @param {boolean} props.speedDialVisibility - Controls whether the speed dial menu is visible
+ * @param props - Component props
  *
  * @example
  * ```tsx
@@ -47,7 +46,7 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
    * Handles clearing all search results.
    * Updates the session storage and triggers a settings update.
    *
-   * @param {MouseEvent<HTMLAnchorElement>} event - The click event
+   * @param event - The click event
    */
   const handleClearResults = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
@@ -62,7 +61,7 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
    * Handles clearing the browser cache.
    * Deletes all cache entries for the application.
    *
-   * @param {MouseEvent<HTMLAnchorElement>} event - The click event
+   * @param event - The click event
    */
   const handleClearCache = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
@@ -76,7 +75,7 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
    * Handles toggling between light and dark themes.
    * Updates the application settings with the new theme.
    *
-   * @param {MouseEvent<HTMLAnchorElement>} event - The click event
+   * @param event - The click event
    */
   const handleToggleTheme = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();

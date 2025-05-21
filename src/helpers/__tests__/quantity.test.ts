@@ -1,7 +1,8 @@
-import { parseQuantity, standardizeUom, uomAliases } from "../quantity";
+import { UOM_ALIASES } from "constants/app";
+import { parseQuantity, standardizeUom } from "../quantity";
 
 describe("standardizeUom", () => {
-  for (const [output, testCases] of Object.entries(uomAliases)) {
+  for (const [output, testCases] of Object.entries(UOM_ALIASES)) {
     describe(`${output} aliases`, () => {
       for (const input of testCases) {
         it(`should return ${output} when standardizing: ${input}`, () =>
@@ -13,6 +14,7 @@ describe("standardizeUom", () => {
 
 describe("parseQuantity", () => {
   const testData = {
+    /* eslint-disable */
     "1": 1,
     "2.3": 2.3,
     "3,456.78": 3456.78,
@@ -22,9 +24,10 @@ describe("parseQuantity", () => {
     "1,2": 1.2,
     "1,234.56": 1234.56,
     "1,234,567.89": 1234567.89,
+    /* eslint-enable */
   };
 
-  for (const [uom, aliases] of Object.entries(uomAliases)) {
+  for (const [uom, aliases] of Object.entries(UOM_ALIASES)) {
     describe(aliases.join("/"), () => {
       for (const alias of aliases) {
         for (const [input, output] of Object.entries(testData)) {

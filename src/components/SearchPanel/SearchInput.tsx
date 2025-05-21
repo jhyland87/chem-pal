@@ -2,11 +2,11 @@ import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import InputBase from "@mui/material/InputBase";
 import Paper from "@mui/material/Paper";
+import MenuIcon from "icons/MenuIcon";
+import ScienceIcon from "icons/ScienceIcon";
+import SearchIcon from "icons/SearchIcon";
 import { useState } from "react";
-import { SearchInputStates } from "types";
-import MenuIcon from "../../assets/icons/MenuIcon";
-import ScienceIcon from "../../assets/icons/ScienceIcon";
-import SearchIcon from "../../assets/icons/SearchIcon";
+import { SearchInputStates } from "types/props";
 import "./SearchInput.scss";
 
 /**
@@ -15,9 +15,7 @@ import "./SearchInput.scss";
  *
  * @component
  *
- * @param {SearchInputStates} props - Component props
- * @param {string} props.searchInput - Current search input value
- * @param {Function} props.setSearchInput - Function to update the search input value
+ * @param props - Component props
  *
  * @example
  * ```tsx
@@ -32,7 +30,6 @@ export default function SearchInput({ searchInput, setSearchInput }: SearchInput
 
   /**
    * Handles form submission and updates the search input.
-   * @param {React.FormEvent<HTMLFormElement>} e - Form submission event
    */
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -41,7 +38,6 @@ export default function SearchInput({ searchInput, setSearchInput }: SearchInput
 
   /**
    * Handles changes to the search input field.
-   * @param {React.ChangeEvent<HTMLInputElement>} e - Input change event
    */
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInputValue(e.target.value);
@@ -65,6 +61,7 @@ export default function SearchInput({ searchInput, setSearchInput }: SearchInput
             onChange={handleSearchInputChange}
             className="search-query-input fullwidth"
             placeholder="Search..."
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             inputProps={{ "aria-label": "Search for chemicals" }}
           />
           <IconButton type="button" aria-label="search">

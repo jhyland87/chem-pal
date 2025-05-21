@@ -1,10 +1,10 @@
 import IconButton from "@mui/material/IconButton";
 import { Table } from "@tanstack/react-table";
-import { Product } from "types";
-import KeyboardArrowLeftIcon from "../../assets/icons/KeyboardArrowLeftIcon";
-import KeyboardArrowRightIcon from "../../assets/icons/KeyboardArrowRightIcon";
-import KeyboardDoubleArrowLeftIcon from "../../assets/icons/KeyboardDoubleArrowLeftIcon";
-import KeyboardDoubleArrowRightIcon from "../../assets/icons/KeyboardDoubleArrowRightIcon";
+import KeyboardArrowLeftIcon from "icons/KeyboardArrowLeftIcon";
+import KeyboardArrowRightIcon from "icons/KeyboardArrowRightIcon";
+import KeyboardDoubleArrowLeftIcon from "icons/KeyboardDoubleArrowLeftIcon";
+import KeyboardDoubleArrowRightIcon from "icons/KeyboardDoubleArrowRightIcon";
+import { type Product } from "types";
 import "./Pagination.scss";
 
 /**
@@ -14,8 +14,7 @@ import "./Pagination.scss";
  *
  * @component
  *
- * @param {Object} props - Component props
- * @param {Table<Product>} props.table - The table instance from TanStack Table
+ * @param props - Component props
  *
  * @example
  * ```tsx

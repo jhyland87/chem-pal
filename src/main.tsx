@@ -27,9 +27,9 @@ import "./main.scss";
  * Enable mocking if there is no chrome.extension object (ie: were running outsie of the
  * extension) and were in development mode
  *
- * @returns {Promise<void>}
  */
 async function enableMocking() {
+  return;
   if (chrome.extension !== undefined && import.meta.env.MODE !== "development") {
     return;
   }

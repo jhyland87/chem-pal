@@ -1,5 +1,20 @@
-import SvgIcon, { SvgIconProps } from "@mui/material/SvgIcon";
+import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
 
+/**
+ * A React component that renders a benzene molecule icon using SVG.
+ * This component extends Material-UI's SvgIcon component.
+ *
+ * @component
+ * @param props - The props from Material-UI's SvgIcon component
+ * @returns A benzene molecule icon component
+ *
+ * @example
+ * ```typescript
+ * <BenzeneIcon />
+ * // With custom props
+ * <BenzeneIcon fontSize="large" color="primary" />
+ * ```
+ */
 export default function BenzeneIcon(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>

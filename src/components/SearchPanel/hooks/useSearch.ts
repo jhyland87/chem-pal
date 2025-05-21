@@ -1,7 +1,7 @@
 import { Product } from "types";
-import { useAppContext } from "../../context";
-import SupplierFactory from "../../suppliers/SupplierFactory";
-import { getColumnFilterConfig } from "./TableColumns";
+import { useAppContext } from "../../../context";
+import SupplierFactory from "../../../suppliers/supplierFactory";
+import { getColumnFilterConfig } from "../TableColumns";
 
 interface UseSearchProps {
   setSearchResults: React.Dispatch<React.SetStateAction<Product[]>>;

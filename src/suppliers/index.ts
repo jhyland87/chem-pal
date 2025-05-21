@@ -19,13 +19,13 @@
  * ```
  */
 
-//import SupplierBunmurraLabs from './supplier_bunmurralabs'
-import SupplierBioFuranChem from "./supplier_biofuranchem";
-import SupplierCarolina from "./supplier_carolina";
-import SupplierFtfScientific from "./supplier_ftfscientific";
-import SupplierLaboratoriumDiscounter from "./supplier_laboratoriumdiscounter";
-import SupplierHbarSci from "./SupplierHbarSci";
-import SupplierLaballey from "./SupplierLaballey";
+//import SupplierBunmurraLabs from './supplierBunmurraLabs'
+import SupplierBioFuranChem from "./supplierBiofuranChem";
+import SupplierCarolina from "./supplierCarolina";
+import SupplierFtfScientific from "./supplierFtfScientific";
+import SupplierHbarSci from "./supplierHbarSci";
+import SupplierLaballey from "./supplierLaballey";
+import SupplierLaboratoriumDiscounter from "./supplierLaboratoriumDiscounter";
 
 export {
   SupplierBioFuranChem,

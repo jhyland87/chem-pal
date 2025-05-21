@@ -1,7 +1,7 @@
 import type { Product, Variant } from "types";
+import type { ShopifyItem, ShopifyQueryParams, ShopifySearchResponse } from "types/shopify";
 import { isQuantityObject, parseQuantity, parseQuantityCoalesce } from "../helpers/quantity";
-import type { ShopifyItem, ShopifyQueryParams, ShopifySearchResponse } from "../types/shopify.d";
-import SupplierBase from "./supplier_base";
+import SupplierBase from "./supplierBase";
 
 // https://searchserverapi.com/getresults?
 //   api_key=8B7o0X1o7c
@@ -60,6 +60,7 @@ export default abstract class ShopifyBase<T extends Product>
       // Setting the limit here to 1000, since the limit parameter should
       // apply to results returned from Supplier3SChem, not the rquests
       // made by it.
+      /* eslint-disable */
       api_key: this._apiKey,
       q: this._query,
       maxResults: 15,
@@ -80,6 +81,7 @@ export default abstract class ShopifyBase<T extends Product>
       tagsMaxResults: 3,
       output: "json",
       _: new Date().getTime(),
+      /* eslint-enable */
     };
 
     const searchRequest = await this.httpGetJson({
@@ -114,6 +116,7 @@ export default abstract class ShopifyBase<T extends Product>
     const variants: Variant[] = product.shopify_variants.map((variant) => {
       let quantity = parseQuantity(variant.sku);
       if (!quantity && typeof variant?.options === "object")
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         quantity = parseQuantity((variant.options as { Model: string }).Model);
 
       if (!quantity)
@@ -125,6 +128,7 @@ export default abstract class ShopifyBase<T extends Product>
         url: variant.link,
         price: variant.price,
         sku: variant.sku,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         variant_id: variant.variant_id,
         ...quantity,
       };

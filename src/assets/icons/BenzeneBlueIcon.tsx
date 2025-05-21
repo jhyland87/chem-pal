@@ -1,6 +1,19 @@
 import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
 
-export default function BenzeneBlueIcon(props: SvgIconProps) {
+/**
+ * A React component that renders a benzene molecule icon using SVG.
+ * This component extends Material-UI's SvgIcon component.
+ *
+ * @component
+ * @param props - The props from Material-UI's SvgIcon component
+ * @returns A benzene molecule icon component
+ *
+ * @example
+ * ```typescript
+ * <BenzeneBlueIcon />
+ * ```
+ */
+const BenzeneBlueIcon: React.FC<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props}>
       <svg
@@ -14,7 +27,7 @@ export default function BenzeneBlueIcon(props: SvgIconProps) {
         <path
           style={{ fill: "#444242" }}
           d="M256,512L34.298,383.999V128L256,0l221.702,128v255.999L256,512z M67.356,364.914L256,473.828
-	l188.644-108.914V147.085L256,38.172L67.356,147.085V364.914z"
+l188.644-108.914V147.085L256,38.172L67.356,147.085V364.914z"
         />
         <rect x="371.26" y="160.95" style={{ fill: "#528ACF" }} width="33.06" height="190.12" />
         <g>
@@ -40,7 +53,9 @@ export default function BenzeneBlueIcon(props: SvgIconProps) {
           style={{ fill: "#3A3839" }}
           d="M256,0l221.702,128v255.999L256,512v-38.172l188.644-108.914V147.085L256,38.172V0z"
         />
-      </svg>{" "}
+      </svg>
     </SvgIcon>
   );
-}
+};
+
+export default BenzeneBlueIcon;

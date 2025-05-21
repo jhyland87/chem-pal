@@ -1,9 +1,9 @@
 import Toolbar from "@mui/material/Toolbar";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
+import TuneIcon from "icons/TuneIcon";
 import { useState } from "react";
-import { TableOptionsProps } from "types";
-import TuneIcon from "../../assets/icons/TuneIcon";
+import { type TableOptionsProps } from "types/props";
 import FilterModal from "./FilterModal";
 import SearchInput from "./SearchInput";
 import "./TableOptions.scss";
@@ -15,10 +15,7 @@ import "./TableOptions.scss";
  *
  * @component
  *
- * @param {TableOptionsProps} props - Component props
- * @param {Table<Product>} props.table - The table instance from TanStack Table
- * @param {string} props.searchInput - The current search input value
- * @param {Function} props.setSearchInput - Function to update the search input value
+ * @param props - Component props
  *
  * @example
  * ```tsx
@@ -30,8 +27,6 @@ import "./TableOptions.scss";
  * ```
  */
 export default function TableOptions({ table, searchInput, setSearchInput }: TableOptionsProps) {
-  //const appContext = useAppContext();
-
   const [filterModalOpen, setFilterModalOpen] = useState(false);
 
   return (
