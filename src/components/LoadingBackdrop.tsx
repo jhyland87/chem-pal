@@ -1,10 +1,7 @@
 import Backdrop from "@mui/material/Backdrop";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Fade from "@mui/material/Fade";
-import BlueBenzeneIcon from "icons/BenzeneBlueIcon";
 import { type LoadingBackdropProps } from "types/props";
-import IconSpinner from "./IconSpinner";
 import "./LoadingBackdrop.scss";
 /**
  * A full-screen loading overlay component with a spinning benzene molecule and stop button.
@@ -32,12 +29,9 @@ export default function LoadingBackdrop(props: LoadingBackdropProps) {
   // @todo: add some timer that shows the Stop Search only after a second or two.
   return (
     <>
-      <IconSpinner>
-        <BlueBenzeneIcon sx={{ width: 100, height: 100 }} />
-      </IconSpinner>
       <Backdrop open={props.open} id="loading-backdrop">
         <Box className="loading-backdrop-box">
-          <Box className="spinner-box">
+          {/*<Box className="spinner-box">
             <Fade
               in={props.open}
               style={{
@@ -45,11 +39,11 @@ export default function LoadingBackdrop(props: LoadingBackdropProps) {
               }}
               unmountOnExit
             >
-              {/*<IconSpinner>*/}
-              <BlueBenzeneIcon sx={{ width: 100, height: 100 }} />
-              {/* </IconSpinner>*/}
+              <IconSpinner>
+                <BlueBenzeneIcon sx={{ width: 100, height: 100 }} />
+              </IconSpinner>
             </Fade>
-          </Box>
+          </Box>*/}
           <Button className="status-button" onClick={props.onClick}>
             {props.open ? "Stop loading" : "Loading"}
           </Button>
