@@ -6,7 +6,7 @@ import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { styled, type Theme } from "@mui/material/styles";
-import GitHubIcon from "../assets/icons/GitHubIcon";
+import GitHubIcon from "icons/GitHubIcon";
 import "./AboutModal.scss";
 import { default as Link } from "./TabLink";
 

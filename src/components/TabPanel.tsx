@@ -1,6 +1,6 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { TabPanelProps } from "types";
+import { TabPanelProps } from "types/props";
 
 /**
  * TabPanel component that renders content for a specific tab.

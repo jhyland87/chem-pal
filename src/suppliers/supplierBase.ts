@@ -1,6 +1,6 @@
-import { UOM } from "data/quantity";
-import { Product } from "types";
-import { RequestOptions, RequestParams } from "types/request";
+import { UOM } from "constants/app";
+import { type Product } from "types";
+import { type RequestOptions, type RequestParams } from "types/request";
 import { toUSD } from "../helpers/currency";
 import { toBaseQuantity } from "../helpers/quantity";
 import { getCachableResponse } from "../helpers/request";

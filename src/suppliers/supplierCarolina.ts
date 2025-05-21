@@ -1,10 +1,9 @@
-import { QuantityObject } from "data/quantity";
 import result from "lodash/result";
-import { Product } from "types";
+import type { Product, QuantityObject } from "types";
 import {
-  CarolinaProductData,
-  CarolinaProductIndexObject,
-  CarolinaSearchParams,
+  type CarolinaProductData,
+  type CarolinaProductIndexObject,
+  type CarolinaSearchParams,
 } from "types/carolina";
 import { parsePrice } from "../helpers/currency";
 import { parseQuantity } from "../helpers/quantity";

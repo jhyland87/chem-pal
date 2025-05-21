@@ -1,6 +1,6 @@
 import Tooltip from "@mui/material/Tooltip";
 import { MouseEvent, useEffect, useState } from "react";
-import { HelpTooltipProps } from "types";
+import { type HelpTooltipProps } from "types/props";
 import { useAppContext } from "../context";
 import { delayAction } from "../helpers/utils";
 

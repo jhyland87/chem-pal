@@ -4,7 +4,7 @@ import MenuItem from "@mui/material/MenuItem";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Select from "@mui/material/Select";
 import { ChangeEvent, useState } from "react";
-import { FilterVariantInputProps } from "types";
+import { FilterVariantInputProps } from "types/props";
 import { StyledFormControlSelector } from "../../Styles";
 
 /**

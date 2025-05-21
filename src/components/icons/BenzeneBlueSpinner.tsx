@@ -1,5 +1,5 @@
-import { IconSpinnerProps } from "types";
-import BenzeneBlueIcon from "./BenzeneBlueIcon";
+import BenzeneBlueIcon from "icons/BenzeneBlueIcon";
+import { type IconSpinnerProps } from "types/props";
 
 export default function BenzeneBlueSpinner(props: IconSpinnerProps) {
   const style = {

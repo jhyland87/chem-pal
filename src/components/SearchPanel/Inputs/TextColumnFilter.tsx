@@ -1,6 +1,6 @@
 import TextField from "@mui/material/TextField";
 import { ChangeEvent, useState } from "react";
-import { FilterVariantInputProps } from "types";
+import { FilterVariantInputProps } from "types/props";
 import { StyledFormControlSelector } from "../../Styles";
 
 /**

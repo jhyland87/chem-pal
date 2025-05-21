@@ -1,12 +1,11 @@
-import { QuantityObject } from "data/quantity";
-import { Product } from "types";
+import { CURRENCY_SYMBOL_MAP } from "constants/currency";
+import { type Product, type QuantityObject } from "types";
 import {
-  LaboratoriumDiscounterProduct,
-  LaboratoriumDiscounterProductIndexObject,
-  LaboriumDiscounterResponse,
-  SearchParams,
+  type LaboratoriumDiscounterProduct,
+  type LaboratoriumDiscounterProductIndexObject,
+  type LaboriumDiscounterResponse,
+  type SearchParams,
 } from "types/laboratoriumdiscounter";
-import { CurrencySymbolMap } from "../data/currency";
 import { isQuantityObject, parseQuantityCoalesce } from "../helpers/quantity";
 import SupplierBase from "./supplierBase";
 
@@ -109,7 +108,7 @@ export default class SupplierLaboratoriumDiscounter<T extends Product>
       description: result.description,
       price: result.price.price,
       currencyCode: "EUR",
-      currencySymbol: CurrencySymbolMap.EUR,
+      currencySymbol: CURRENCY_SYMBOL_MAP.EUR,
       url: result.url,
       supplier: this.supplierName,
       displayPrice: result.price.price,

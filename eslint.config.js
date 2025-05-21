@@ -94,6 +94,10 @@ export default tseslint.config(
           selector: "enumMember",
           format: ["UPPER_CASE"],
         },
+        {
+          selector: "enum",
+          format: ["UPPER_CASE", "camelCase", "PascalCase"],
+        },
       ],
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-unused-vars": "error",

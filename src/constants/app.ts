@@ -1,8 +1,131 @@
 /**
+ * Represents different rotation speeds for animations
+ */
+export enum SPIN_SPEED {
+  /** Slow rotation speed - 6 units */
+  SLOW = 6,
+  /** Medium rotation speed - 4 units */
+  MEDIUM = 4,
+  /** Fast rotation speed - 2 units */
+  FAST = 2,
+  /** Very fast rotation speed - 1 unit */
+  VERY_FAST = 1,
+}
+
+/**
+ * Contains full names of units of measurement
+ */
+export enum UOM_LONG {
+  /** Full name for kilogram unit */
+  KG = "kilogram",
+  /** Full name for pound unit */
+  LB = "pound",
+  /** Full name for milliliter unit */
+  ML = "milliliter",
+  /** Full name for gram unit */
+  G = "gram",
+  /** Full name for liter unit */
+  L = "liter",
+  /** Full name for quart unit */
+  QT = "quart",
+  /** Full name for gallon unit */
+  GAL = "gallon",
+  /** Full name for millimeter unit */
+  MM = "millimeter",
+  /** Full name for centimeter unit */
+  CM = "centimeter",
+  /** Full name for meter unit */
+  M = "meter",
+  /** Full name for ounce unit */
+  OZ = "ounce",
+  /** Full name for milligram unit */
+  MG = "milligram",
+  /** Full name for kilometer unit */
+  KM = "kilometer",
+  /** Full name for piece unit */
+  PCS = "piece",
+}
+
+/**
+ * Contains abbreviated forms of units of measurement
+ */
+export enum UOM {
+  /** Abbreviated form of kilogram */
+  KG = "kg",
+  /** Abbreviated form of pound */
+  LB = "lb",
+  /** Abbreviated form of milliliter */
+  ML = "ml",
+  /** Abbreviated form of gram */
+  G = "g",
+  /** Abbreviated form of liter */
+  L = "l",
+  /** Abbreviated form of quart */
+  QT = "qt",
+  /** Abbreviated form of gallon */
+  GAL = "gal",
+  /** Abbreviated form of millimeter */
+  MM = "mm",
+  /** Abbreviated form of centimeter */
+  CM = "cm",
+  /** Abbreviated form of meter */
+  M = "m",
+  /** Abbreviated form of ounce */
+  OZ = "oz",
+  /** Abbreviated form of milligram */
+  MG = "mg",
+  /** Abbreviated form of kilometer */
+  KM = "km",
+  /** Abbreviated form of piece */
+  PCS = "pcs",
+}
+
+// These are the UOM values that will be displayed to the user.
+// Changing the values here will change the UOM values in the
+// search results.
+// export enum UOM {
+//   kg = 'kg',
+//   lb = 'lb',
+//   ml = 'ml',
+//   g = 'g',
+//   L = 'L',
+//   qt = 'qt',
+//   gal = 'gal',
+//   mm = 'mm',
+//   cm = 'cm',
+//   m = 'm',
+//   oz = 'oz',
+//   mg = 'mg',
+//   km = 'km',
+// }
+
+/**
+ * Maps each unit of measure (UOM) to its possible string representations.
+ * This mapping helps standardize various ways of expressing the same unit.
+ * @category Helper
+ */
+export const UOM_ALIASES: Record<UOM, string[]> = {
+  [UOM.PCS]: ["piece", "pieces", "pc", "pcs"],
+  [UOM.KG]: ["kilogram", "kilograms", "kg", "kgs"],
+  [UOM.LB]: ["pound", "pounds", "lb", "lbs"],
+  [UOM.ML]: ["ml", "mls", "millilitre", "milliliter", "milliliters", "millilitres"],
+  [UOM.G]: ["grams", "g"],
+  [UOM.L]: ["liters", "litres", "l"],
+  [UOM.QT]: ["quarts", "qts", "qt"],
+  [UOM.GAL]: ["gallon", "gallons", "gal"],
+  [UOM.MM]: ["millimeter", "millimeters", "millimetre", "millimetres", "mm"],
+  [UOM.CM]: ["centimeter", "centimeters", "centimetre", "centimetres", "cm"],
+  [UOM.M]: ["meters", "metre", "metres", "m", "meter"],
+  [UOM.OZ]: ["ounce", "ounces", "oz"],
+  [UOM.MG]: ["milligram", "milligrams", "mg", "mgs"],
+  [UOM.KM]: ["kilometer", "kilometre", "kilometers", "kilometres", "km"],
+};
+
+/**
  * Hypertext Transfer Protocol (HTTP) response status codes.
  * @see [HTTP Status codes](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) for more information.
  */
-enum HttpStatusCode {
+export enum HTTP_STATUS_CODES {
   /**
    * The server has received the request headers and the client should proceed to send the request body
    * (in the case of a request for which a body needs to be sent; for example, a POST request).
@@ -376,5 +499,3 @@ enum HttpStatusCode {
    */
   NETWORK_AUTHENTICATION_REQUIRED_511 = 511,
 }
-
-export default HttpStatusCode;

@@ -18,19 +18,19 @@
     "noEmit": true,
     "experimentalDecorators": true,
     "jsx": "react-jsx",
-    "baseUrl": "./",
+    "baseUrl": "./src",
     "paths": {
       "types/*": [
-        "src/types/*"
+        "./types/*"
       ],
       "types": [
-        "src/types/types"
+        "./types/types"
       ],
-      "data/*": [
-        "src/data/*"
+      "constants/*": [
+        "./constants/*"
       ],
-      "data": [
-        "src/data/data"
+      "icons/*": [
+        "./assets/icons/*"
       ]
     },
     /* Linting */
@@ -52,6 +52,6 @@
     ]
   },
   "include": [
-    "src"
+    "./src"
   ]
 }

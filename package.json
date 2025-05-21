@@ -11,7 +11,7 @@
     "dev": "vite",
     "dev-mock": "vite --mode=mock",
     "setup": "npm install --include=dev --legacy-peer-deps",
-    "build": "tsc -b && vite build --mode=production",
+    "build": "tsc -b && vite build --mode=development",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "jest --coverage",

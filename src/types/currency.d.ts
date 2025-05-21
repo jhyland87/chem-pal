@@ -1,4 +1,4 @@
-import HttpStatusCode from "./HttpStatusCode";
+import { HTTP_STATUS_CODES } from "constants/app";
 import { CurrencyCodeMap, CurrencySymbolMap } from "./currency";
 
 /**
@@ -12,7 +12,7 @@ export type CurrencyRate = number;
 declare interface ExchangeRateResponse {
   /** HTTP status code of the response */
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  status_code: HttpStatusCode;
+  status_code: HTTP_STATUS_CODES;
   /** Exchange rate data */
   data: {
     /** Base currency code */

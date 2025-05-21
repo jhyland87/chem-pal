@@ -1,6 +1,6 @@
 import type { Product, Variant } from "types";
+import type { ShopifyItem, ShopifyQueryParams, ShopifySearchResponse } from "types/shopify";
 import { isQuantityObject, parseQuantity, parseQuantityCoalesce } from "../helpers/quantity";
-import type { ShopifyItem, ShopifyQueryParams, ShopifySearchResponse } from "../types/shopify";
 import SupplierBase from "./supplierBase";
 
 // https://searchserverapi.com/getresults?

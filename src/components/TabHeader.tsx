@@ -1,12 +1,12 @@
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
+import BookmarkIcon from "icons/BookmarkIcon";
+import HistoryIcon from "icons/HistoryIcon";
+import SearchIcon from "icons/SearchIcon";
+import SettingsIcon from "icons/SettingsIcon";
+import StoreIcon from "icons/StoreIcon";
 import { SyntheticEvent } from "react";
-import { TabHeaderProps } from "types";
-import BookmarkIcon from "../assets/icons/BookmarkIcon";
-import HistoryIcon from "../assets/icons/HistoryIcon";
-import SearchIcon from "../assets/icons/SearchIcon";
-import SettingsIcon from "../assets/icons/SettingsIcon";
-import StoreIcon from "../assets/icons/StoreIcon";
+import { TabHeaderProps } from "types/props";
 import IconTextFader from "./IconTextFader";
 /**
  * Generates props for a tab component.

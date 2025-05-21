@@ -1,9 +1,9 @@
 import Toolbar from "@mui/material/Toolbar";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
+import TuneIcon from "icons/TuneIcon";
 import { useState } from "react";
-import { TableOptionsProps } from "types";
-import TuneIcon from "../../assets/icons/TuneIcon";
+import { type TableOptionsProps } from "types/props";
 import FilterModal from "./FilterModal";
 import SearchInput from "./SearchInput";
 import "./TableOptions.scss";

@@ -6,10 +6,10 @@ import {
   HeaderGroup,
   Table,
 } from "@tanstack/react-table";
+import ArrowDropDownIcon from "icons/ArrowDropDownIcon";
+import ArrowDropUpIcon from "icons/ArrowDropUpIcon";
 import { CSSProperties } from "react";
-import { Product } from "types";
-import ArrowDropDownIcon from "../../assets/icons/ArrowDropDownIcon";
-import ArrowDropUpIcon from "../../assets/icons/ArrowDropUpIcon";
+import { type Product } from "types";
 import "./TableHeader.scss";
 /**
  * TableHeader component that renders the header row of the product results table.
