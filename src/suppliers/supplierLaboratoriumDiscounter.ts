@@ -1,14 +1,14 @@
-import type { QuantityObject } from "data/quantity";
-import type { Product } from "types";
-import { CurrencySymbolMap } from "../data/currency";
-import { isQuantityObject, parseQuantityCoalesce } from "../helpers/quantity";
-import SupplierBase from "./supplier_base";
+import { QuantityObject } from "data/quantity";
+import { Product } from "types";
 import {
-  _productIndexObject,
+  LaboratoriumDiscounterProduct,
+  LaboratoriumDiscounterProductIndexObject,
   LaboriumDiscounterResponse,
   SearchParams,
-  type _Product,
-} from "./supplier_laboratoriumdiscounter.d";
+} from "types/laboratoriumdiscounter";
+import { CurrencySymbolMap } from "../data/currency";
+import { isQuantityObject, parseQuantityCoalesce } from "../helpers/quantity";
+import SupplierBase from "./supplierBase";
 
 /**
  * Laboratorium Discounter.nl uses a custom script to fetch product data.
@@ -31,14 +31,14 @@ export default class SupplierLaboratoriumDiscounter<T extends Product>
   protected _baseURL: string = "https://www.laboratoriumdiscounter.nl";
 
   // Override the type of _queryResults to use our specific type
-  protected _queryResults: Array<_productIndexObject> = [];
+  protected _queryResults: Array<LaboratoriumDiscounterProductIndexObject> = [];
 
   // Used to keep track of how many requests have been made to the supplier.
   protected _httpRequstCount: number = 0;
 
   // HTTP headers used as a basis for all queries.
   protected _headers: HeadersInit = {
-    //'accept': 'application/json, text/javascript, */*; q=0.01',
+    /* eslint-disable */
     accept:
       "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
     "accept-language": "en-US,en;q=0.6",
@@ -56,6 +56,7 @@ export default class SupplierLaboratoriumDiscounter<T extends Product>
     "sec-fetch-site": "same-origin",
     "sec-gpc": "1",
     "x-requested-with": "XMLHttpRequest",
+    /* eslint-enable */
   };
 
   protected _makeQueryUrl(query: string): string {
@@ -92,7 +93,7 @@ export default class SupplierLaboratoriumDiscounter<T extends Product>
     return;
   }
 
-  protected _getProductData(result: _Product): Promise<Product | void> {
+  protected _getProductData(result: LaboratoriumDiscounterProduct): Promise<Product | void> {
     const quantity = parseQuantityCoalesce([
       result.code,
       result.sku,

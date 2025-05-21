@@ -1,5 +1,5 @@
-import type { Product } from "types";
-import ShopifyBase from "./ShopifyBase";
+import { Product } from "types";
+import ShopifyBase from "./shopifyBase";
 
 /**
  * SupplierHbarSci class that extends ShopifyBase and implements AsyncIterable<T>.

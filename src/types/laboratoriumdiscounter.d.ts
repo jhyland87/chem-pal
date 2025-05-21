@@ -1,9 +1,9 @@
 /**
  * Represents price information for a product, including both inclusive and exclusive prices
  * as well as old prices for comparison.
- * @mergeTarget SupplierLaboratoriumDiscounter
  */
-export type _Price = {
+export type LaboratoriumDiscounterPrice = {
+  /* eslint-disable */
   /** The current price of the product */
   price: number;
   /** The current price including taxes */
@@ -16,14 +16,15 @@ export type _Price = {
   price_old_incl: number;
   /** The previous price excluding taxes */
   price_old_excl: number;
+  /* eslint-enable */
 };
 
 /**
  * Represents a product in the Laboratorium Discounter system.
  * Contains all product details including pricing, availability, and metadata.
- * @mergeTarget SupplierLaboratoriumDiscounter
  */
-export type _Product = {
+export type LaboratoriumDiscounterProduct = {
+  /* eslint-disable */
   /** Unique identifier for the product */
   id: number;
   /** Variant identifier */
@@ -41,7 +42,7 @@ export type _Product = {
   /** Product score or rating */
   score: number;
   /** Price information for the product */
-  price: _Price;
+  price: LaboratoriumDiscounterPrice;
   /** Whether the product is currently available */
   available: boolean;
   /** Unit information */
@@ -60,6 +61,7 @@ export type _Product = {
   data_01: string;
   /** Index signature for additional properties */
   [key: string]: unknown;
+  /* eslint-enable */
 };
 
 /**
@@ -67,6 +69,7 @@ export type _Product = {
  * Contains page information, request details, and product collection.
  */
 export type LaboriumDiscounterResponse = {
+  /* eslint-disable */
   /** Page-related information */
   page: {
     /** Search query string */
@@ -115,7 +118,7 @@ export type LaboriumDiscounterResponse = {
   collection: {
     /** Map of products indexed by their identifiers */
     products: {
-      [key: string]: _Product;
+      [key: string]: LaboratoriumDiscounterProduct;
     };
     /** Index signature for additional collection properties */
     [key: string]: unknown;
@@ -127,7 +130,7 @@ export type LaboriumDiscounterResponse = {
 /**
  * Type for product index objects that can contain any string-keyed properties.
  */
-export type _productIndexObject = {
+export type LaboratoriumDiscounterProductIndexObject = {
   /** Index signature for any string-keyed properties */
   [key: string]: unknown;
 };

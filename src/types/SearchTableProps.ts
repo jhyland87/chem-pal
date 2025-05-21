@@ -1,6 +1,6 @@
 import { ColumnDef, ColumnFiltersState, OnChangeFn, Row } from "@tanstack/react-table";
 
-export type SearchTableProps<TData> = {
+export interface SearchTableProps<TData> {
   data: TData[];
   columns: ColumnDef<TData>[];
   renderSubComponent: (props: { row: Row<TData> }) => React.ReactElement;
@@ -8,4 +8,4 @@ export type SearchTableProps<TData> = {
   rerender: () => void;
   refreshData: () => void;
   columnFilterFns: [ColumnFiltersState, OnChangeFn<ColumnFiltersState>];
-};
+}

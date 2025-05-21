@@ -1,6 +1,6 @@
-import type { Product } from "types";
-import * as suppliers from "../suppliers";
-import SupplierBase from "../suppliers/supplier_base";
+import { Product } from "types";
+import * as suppliers from ".";
+import SupplierBase from "./supplierBase";
 
 /**
  * Factory class for querying all suppliers.
@@ -19,9 +19,9 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
   /**
    * Factory class for querying all suppliers.
    *
-   * @param query {string} - Value to query for
-   * @param controller {AbortController} - Fetch controller (can be used to terminate the query)
-   * @param suppliers {Array} - Array of suppliers to query (empty is the same as querying all)
+   * @param query - Value to query for
+   * @param controller - Fetch controller (can be used to terminate the query)
+   * @param suppliers - Array of suppliers to query (empty is the same as querying all)
    */
   constructor(query: string, controller: AbortController, suppliers: Array<string> = []) {
     this._query = query;
@@ -31,8 +31,7 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
 
   /**
    * Get the names of the supplier modules
-   *
-   * @returns {array} - List of supplier class names
+   * @returns List of supplier class names
    */
   public static supplierList(): Array<string> {
     return Object.keys(suppliers);
@@ -40,7 +39,7 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
 
   /**
    * Async iterator yielding results
-   * @returns AsyncGenerator<T, void, unknown>
+   * @returns Async generator yielding products of type T
    */
   async *[Symbol.asyncIterator](): AsyncGenerator<T, void, unknown> {
     try {
@@ -61,7 +60,7 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
 
   /**
    * Creates a master async generator that only includes the suppliers selected to query.
-   * @returns AsyncGenerator<Product, void, unknown>
+   * @returns Async generator yielding products
    */
   private _getConsolidatedGenerator(): AsyncGenerator<Product, void, unknown> {
     async function* combineAsyncIterators(

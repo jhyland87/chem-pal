@@ -1,5 +1,5 @@
-import type { Product } from "types";
-import SupplierWixBase from "./supplier_wixbase";
+import { Product } from "types";
+import SupplierWixBase from "./supplierWixBase";
 
 /**
  * SupplierBunmurraLabs class that extends SupplierWixBase and implements AsyncIterable<T>.

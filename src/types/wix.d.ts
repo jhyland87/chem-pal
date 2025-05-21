@@ -1,7 +1,7 @@
 /**
  * Response type for Wix access token requests
  */
-export type AccessTokenResponse = {
+export interface AccessTokenResponse {
   apps: {
     [key: string]: {
       instance: string;
@@ -9,12 +9,12 @@ export type AccessTokenResponse = {
     };
   };
   [key: string]: unknown;
-};
+}
 
 /**
  * Represents a specific product item with its price and options
  */
-export type WixProductItem = {
+export interface WixProductItem {
   /** Unique identifier for the product item */
   id: string;
   /** Array of selected option IDs */
@@ -23,12 +23,12 @@ export type WixProductItem = {
   price: number;
   /** Formatted price string (e.g. "$19.99") */
   formattedPrice: string;
-};
+}
 
 /**
  * Represents a product option (e.g. size, color)
  */
-export type WixProductOption = {
+export interface WixProductOption {
   /** Unique identifier for the option */
   id: string;
   /** Key identifier for the option */
@@ -39,12 +39,12 @@ export type WixProductOption = {
   optionType: string;
   /** Available selections for this option */
   selections: WixProductSelection[];
-};
+}
 
 /**
  * Represents a specific selection within a product option
  */
-export type WixProductSelection = {
+export interface WixProductSelection {
   /** Unique identifier for the selection */
   id: number;
   /** Value of the selection */
@@ -55,12 +55,12 @@ export type WixProductSelection = {
   key: string;
   /** Stock availability status */
   inStock: boolean | null;
-};
+}
 
 /**
  * Represents a complete product with all its details
  */
-export type WixProduct = {
+export interface WixProduct {
   /** Unique identifier for the product */
   id: string;
   /** Available options for the product */
@@ -85,19 +85,22 @@ export type WixProduct = {
   description: string;
   /** Brand name, if applicable */
   brand: string | null;
-};
+}
 
-export type WixQueryRequestParameters = {
+/**
+ * Represents the request parameters for a Wix product catalog query
+ */
+export interface WixQueryRequestParameters {
   o: string;
   s: string;
   q: string;
   v: string;
-};
+}
 
 /**
  * Response type for Wix product catalog queries
  */
-export type WixQueryResponse = {
+export interface WixQueryResponse {
   data: {
     catalog: {
       category: {
@@ -112,4 +115,4 @@ export type WixQueryResponse = {
       };
     };
   };
-};
+}

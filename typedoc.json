@@ -5,7 +5,7 @@
     "./src/**/*.tsx"
   ],
   "plugin": [
-    //"typedoc-github-theme",
+    "typedoc-plugin-mark-react-functional-components",
     "typedoc-plugin-expand-object-like-types",
     "typedoc-theme-hierarchy",
     "typedoc-plugin-rename-defaults",
@@ -17,6 +17,12 @@
   ],
   "theme": "hierarchy",
   "entryPointStrategy": "expand",
+  "reactReturnType": [
+    "ReactElement",
+    "JSX.Element",
+    "Element",
+    "React.ReactElement"
+  ],
   "lightHighlightTheme": "github-light-high-contrast",
   "darkHighlightTheme": "github-dark-dimmed",
   "collapseInternalModule": true,
@@ -26,14 +32,14 @@
   "groupReferencesByType": true,
   "alwaysCreateEntryPointModule": true,
   "searchCategoryBoosts": {
-    "Component": 2,
-    "Helper": 1.1,
-    "Supplier": 1.1
+    "Component": 3.3,
+    "Helper": 2.2,
+    "Supplier": 0.1
   },
   "searchGroupBoosts": {
     "Classes": 1.5
   },
-  "jsDocCompatibility": true,
+  "jsDocCompatibility": false,
   "logLevel": "Verbose",
   "placeInternalsInOwningModule": true,
   "markdownItOptions": {
@@ -65,7 +71,6 @@
   "sort": [
     "source-order"
   ],
-  //"emit": "both",
   "excludeReferences": false,
   "excludeProtected": false,
   "excludePrivate": false,

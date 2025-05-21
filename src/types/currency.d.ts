@@ -9,8 +9,9 @@ export type CurrencyRate = number;
 /**
  * Response structure for currency exchange rate data
  */
-declare type ExchangeRateResponse = {
+declare interface ExchangeRateResponse {
   /** HTTP status code of the response */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   status_code: HttpStatusCode;
   /** Exchange rate data */
   data: {
@@ -25,19 +26,19 @@ declare type ExchangeRateResponse = {
     /** Timestamp of the exchange rate in ISO format */
     timestamp: string; // ISOString
   };
-};
+}
 
 /**
  * Structure for parsed price information
  */
-declare type ParsedPrice = {
+declare interface ParsedPrice {
   /** Currency code (e.g., USD, EUR) */
   currencyCode: CurrencyCode;
   /** Currency symbol (e.g., $, €) */
   currencySymbol: CurrencySymbol;
   /** Numeric price value */
   price: number;
-};
+}
 
 /**
  * Type representing valid currency codes

@@ -1,7 +1,7 @@
 /**
  * Represents a product index object from Carolina Biological Supply Company
  */
-export type CarolinaProductIndexObject = {
+export interface CarolinaProductIndexObject {
   /** The URL of the product page */
   url: string;
   /** The title/name of the product */
@@ -10,12 +10,13 @@ export type CarolinaProductIndexObject = {
   prices: string;
   /** The quantity or count information */
   count: string;
-};
+}
 
 /**
  * Search parameters used for querying Carolina Biological Supply Company's website
  */
-export type CarolinaSearchParams = {
+export interface CarolinaSearchParams {
+  /* eslint-disable */
   /** Search parameter N */
   N: string;
   /** Search parameter Nf */
@@ -36,12 +37,13 @@ export type CarolinaSearchParams = {
   searchExecByFormSubmit: string;
   /** The active tab */
   tab: string;
-};
+  /* eslint-enable */
+}
 
 /**
  * Detailed product data structure from Carolina Biological Supply Company
  */
-export type CarolinaProductData = {
+export interface CarolinaProductData {
   /** The display name of the product */
   displayName: string;
   /** The canonical URL of the product */
@@ -68,4 +70,4 @@ export type CarolinaProductData = {
       };
     };
   };
-};
+}

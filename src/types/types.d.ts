@@ -11,127 +11,128 @@ import {
 } from "react";
 import { CAS } from "types/cas";
 import { CurrencyCode, CurrencySymbol } from "types/currency";
-///export * from "types/cas";
-//export * from "types/currency";
-//export * from "types/quantity";
 
 /**
  * ChromeStorageItems represents storage items supporting various primitive types
- * @param {string|number|boolean|null|undefined} [key] - Storage items supporting various primitive types
  */
-export type ChromeStorageItems = { [key: string]: string | number | boolean | null | undefined };
+export interface ChromeStorageItems {
+  /** Key-value pairs where values can be primitive types */
+  [key: string]: string | number | boolean | null | undefined;
+}
 
 /**
  * Settings interface for application configuration
- * @param {string} [searchResultUpdateTs] - Timestamp of last search result update
- * @param {boolean} showHelp - Whether to show help tooltips
- * @param {boolean} caching - Whether to enable caching
- * @param {boolean} autocomplete - Whether to enable autocomplete
- * @param {string} currency - Selected currency code
- * @param {string} location - User's location
- * @param {boolean} shipsToMyLocation - Whether to filter for items that ship to user's location
- * @param {string} foo - Temporary setting for testing
- * @param {boolean} jason - Feature flag for Jason's features
- * @param {boolean} antoine - Feature flag for Antoine's features
- * @param {string} popupSize - Size of the popup window
- * @param {boolean} autoResize - Whether to automatically resize the window
- * @param {boolean} someSetting - Generic setting flag
- * @param {string[]} suppliers - List of enabled suppliers
- * @param {string} theme - Current theme (light/dark)
- * @param {boolean} showAllColumns - Whether to show all columns
- * @param {string[]} hideColumns - List of columns to hide
- * @param {boolean} showColumnFilters - Whether to show column filters
- * @param {Record<string, ColumnMeta>} columnFilterConfig - Configuration for column filters
  */
-declare type Settings = {
+export interface Settings {
+  /** Timestamp of last search result update */
   searchResultUpdateTs?: string;
+  /** Whether to show help tooltips */
   showHelp: boolean;
+  /** Whether to enable caching */
   caching: boolean;
+  /** Whether to enable autocomplete */
   autocomplete: boolean;
+  /** Selected currency code */
   currency: string;
+  /** User's location */
   location: string;
+  /** Whether to show products that ship to user's location */
   shipsToMyLocation: boolean;
+  /** Foo setting */
   foo: string;
+  /** Jason feature flag */
   jason: boolean;
+  /** Antoine feature flag */
   antoine: boolean;
+  /** Size of popup window */
   popupSize: string;
+  /** Whether to automatically resize */
   autoResize: boolean;
+  /** Some setting flag */
   someSetting: boolean;
+  /** List of enabled suppliers */
   suppliers: Array<string>;
+  /** Selected theme */
   theme: string;
+  /** Whether to show all columns */
   showAllColumns: boolean;
+  /** List of columns to hide */
   hideColumns: Array<string>;
+  /** Whether to show column filters */
   showColumnFilters: boolean;
+  /** Configuration for column filters */
   columnFilterConfig: Record<string, ColumnMeta>;
-};
+}
 
 /**
  * Variant interface representing a product variant
- * @param {string} [title] - Name/title of the variant
- * @param {number} price - Price of the variant
- * @param {number} quantity - Available quantity
- * @param {number} [usdPrice] - Price of the variant in USD
- * @param {string} [url] - url of variant
- * @param {number|string} [sku] - SKU number
- * @param {number|string} [id] - ID String or number
- * @param {number|string} [uuid] - UUID of product
- * @param {string} [grade] - Chemical grade
- * @param {string} [conc] - Concentration
- * @param {string} [status] - Current status
- * @param {string} [statusTxt] - Status text message
- * @param {string} [shippingInformation] - Shipping information
  */
-declare type Variant = {
+export interface Variant {
+  /** Title of the variant */
   title?: string;
+  /** Unit of measurement */
   uom?: string;
+  /** Price of the variant */
   price?: number;
+  /** Quantity available */
   quantity?: number;
-  //commonUom?: UOM;
+  /** Base quantity for conversion */
   baseQuantity?: number;
+  /** Base unit of measurement */
   baseUom?: UOM;
+  /** Price in USD */
   usdPrice?: number;
+  /** Stock keeping unit identifier */
   sku?: number | string;
+  /** URL to product page */
   url?: string;
+  /** Unique identifier */
   id?: number | string;
+  /** Universal unique identifier */
   uuid?: number | string;
+  /** Chemical grade */
   grade?: string;
+  /** Concentration */
   conc?: string;
+  /** Status of the variant */
   status?: string;
+  /** Status text description */
   statusTxt?: string;
+  /** Shipping information */
   shippingInformation?: string;
-};
+}
 
 /**
  * Product interface representing a chemical product
- * @implements {Variant}
- *
- * @param {string} title - Product title
- * @param {number} price - Price of the variant
- * @param {CurrencyCode} currencyCode - Currency code (e.g., USD, EUR)
- * @param {CurrencySymbol} currencySymbol - Currency symbol (e.g., $, €)
- * @param {number} quantity - Available quantity
- * @param {string} uom - Unit of measure
- * @param {string} supplier - Name of the supplier
- * @param {string} url - Product URL
- * @param {number} [usdPrice] - Price of the product in USD
- * @param {string} [description] - Product description
- * @param {string} [manufacturer] - Product manufacturer
- * @param {CAS<string>} [cas] - Chemical Abstracts Service number
- * @param {string} [formula] - Chemical formula
- * @param {number} [quantity] - Quantity value
- * @param {string} [displayQuantity] - Formatted quantity string
- * @param {number|string} [sku] - SKU number
- * @param {number|string} [id] - ID String or number
- * @param {number|string} [uuid] - UUID of product
- * @param {string} [grade] - Chemical grade
- * @param {string} [conc] - Concentration
- * @param {string} [status] - Current status
- * @param {string} [statusTxt] - Status text message
- * @param {string} [shippingInformation] - Shipping information
- * @param {string} [vendor] - Vendor name
- * @param {Variant[]} [variants] - Available variants of the product
  */
-declare type Product = Variant & {
+export interface Product extends Variant {
+  /** Currency code for pricing */
+  currencyCode: CurrencyCode;
+  /** Currency symbol for display */
+  currencySymbol: CurrencySymbol;
+  /** Available quantity */
+  quantity: number;
+  /** Product price */
+  price: number;
+  /** Unit of measurement */
+  uom: string;
+  /** Product supplier */
+  supplier: string;
+  /** Product description */
+  description?: string;
+  /** Product manufacturer */
+  manufacturer?: string;
+  /** Chemical Abstracts Service number */
+  cas?: CAS<string>;
+  /** Chemical formula */
+  formula?: string;
+  /** Product vendor */
+  vendor?: string;
+  /** Available variants */
+  variants?: Variant[];
+}
+
+export interface Product extends Variant {
   currencyCode: CurrencyCode;
   currencySymbol: CurrencySymbol;
   quantity: number;
@@ -158,261 +159,277 @@ declare type Product = Variant & {
   //shippingInformation?: string;
   vendor?: string;
   variants?: Variant[];
-};
+}
 
 /**
  * HelpTooltipProps interface for help tooltip component
- * @param {string} text - The help text to display
- * @param {ReactElement<{className?: string}>} children - The element that triggers the tooltip
- * @param {number} [delay] - Delay before showing the tooltip in milliseconds
- * @param {number} [duration] - Duration to show the tooltip in milliseconds
  */
-declare type HelpTooltipProps = {
+export interface HelpTooltipProps {
+  /** Tooltip text content */
   text: string;
+  /** Child element to attach tooltip to */
   children: ReactElement<{ className?: string }>;
+  /** Delay before showing tooltip in milliseconds */
   delay?: number;
+  /** Duration to show tooltip in milliseconds */
   duration?: number;
-};
+}
 
 /**
  * Item interface representing a task or item
- * @param {number} id - Unique identifier
- * @param {string} name - Item name
- * @param {Date} deadline - Deadline date
- * @param {string} type - Item type
- * @param {boolean} isComplete - Whether the item is complete
- * @param {Item[]} [nodes] - Nested items
  */
-declare type Item = {
+export interface Item {
+  /** Unique identifier */
   id: number;
+  /** Item name */
   name: string;
+  /** Deadline date */
   deadline: Date;
+  /** Item type */
   type: string;
+  /** Completion status */
   isComplete: boolean;
+  /** Nested items */
   nodes?: Item[];
-};
+}
 
 /**
  * Sku interface representing a stock keeping unit
- * @param {Object} priceInfo - Price information
- * @param {number[]} priceInfo.regularPrice - Regular price array
- * @param {Object} variantsMap - Variant mapping
- * @param {number} variantsMap.volume - Volume
- * @param {string} variantsMap.chemical-grade - Chemical grade
- * @param {string} variantsMap.concentration - Concentration
- * @param {string} skuId - SKU identifier
- * @param {string} seoName - SEO-friendly name
- * @param {string} inventoryStatus - Current inventory status
- * @param {string} inventoryStatusMsg - Status message
- * @param {Object} specifications - Shipping specifications
- * @param {string} specifications.shippingInformation - Shipping information
  */
-declare type Sku = {
-  priceInfo: { regularPrice: number[] };
-  variantsMap: { volume: number; "chemical-grade": string; concentration: string };
+export interface Sku {
+  /** Price information */
+  priceInfo: {
+    /** Regular price array */
+    regularPrice: number[];
+  };
+  /** Variant mapping */
+  variantsMap: {
+    /** Volume */
+    volume: number;
+    /** Chemical grade */
+    chemicalGrade: string;
+    /** Concentration */
+    concentration: string;
+  };
+  /** SKU identifier */
   skuId: string;
+  /** SEO-friendly name */
   seoName: string;
+  /** Inventory status */
   inventoryStatus: string;
+  /** Inventory status message */
   inventoryStatusMsg: string;
-  specifications: { shippingInformation: string };
-};
-
-declare type ProductDetails = {};
+  /** Product specifications */
+  specifications: {
+    /** Shipping information */
+    shippingInformation: string;
+  };
+}
 
 /**
- * SearchProps interface for search functionality
- * @param {string} query - Current search query
- * @param {Function} setQuery - Function to update the search query
+ * ProductDetails interface for detailed product information
  */
-declare type SearchProps = {
+export interface ProductDetails {
+  /** Product name */
+  name: string;
+  /** Product description */
+  description: string;
+  /** Product price */
+  price: number;
+  /** Product quantity */
+}
+
+/**
+ * SearchProps interface for search component
+ */
+export interface SearchProps {
+  /** Search query string */
   query: string;
+  /** Function to update search query */
   setQuery: (value: string) => void;
-};
+}
 
 /**
  * Supplier interface representing a product supplier
- * @param {string} supplierName - Name of the supplier
- * @param {string} _query - Current search query
- * @param {Product[]} _products - Array of products from this supplier
- * @param {Record<string, unknown>[]} _queryResults - Raw query results
- * @param {string} _baseURL - Base URL for the supplier's API
- * @param {AbortController} _controller - Controller for aborting requests
- * @param {number} _limit - Query result limit
- * @param {number} _httpRequestHardLimit - Hard limit for HTTP requests
  */
-declare type Supplier = {
+export interface Supplier {
+  /** Name of the supplier */
   supplierName: string;
+  /** Current search query */
   _query: string;
+  /** Array of products */
   _products: Array<Product>;
+  /** Raw query results */
   _queryResults: Array<Record<string, unknown>>;
+  /** Base URL for API */
   _baseURL: string;
+  /** Abort controller for requests */
   _controller: AbortController;
+  /** Result limit */
   _limit: number;
+  /** Hard limit for HTTP requests */
   _httpRequestHardLimit: number;
-};
+  /** HTTP request headers */
+  _headers: HeadersInit;
+}
 
 /**
  * TabPanelProps interface for tab panel component
- * @param {ReactNode} [children] - Child elements
- * @param {string} [dir] - Text direction (ltr/rtl)
- * @param {number} index - Tab index
- * @param {number|string} value - Current value
- * @param {object} [style] - Additional styles
- * @param {string} name - Panel name
  */
-declare type TabPanelProps = {
+export interface TabPanelProps {
+  /** Child elements */
   children?: ReactNode;
+  /** Text direction */
   dir?: string;
+  /** Tab index */
   index: number;
+  /** Current value */
   value: number | string;
+  /** Custom styles */
   style?: object;
+  /** Panel name */
   name: string;
-};
+}
 
 /**
  * AppContextProps interface for application context
- * @param {Settings} settings - Application settings
- * @param {Function} setSettings - Function to update settings
  */
-declare type AppContextProps = {
+export interface AppContextProps {
+  /** Application settings */
   settings: Settings;
+  /** Function to update settings */
   setSettings: (settings: Settings) => void;
-};
+}
 
 /**
  * TableProps interface for table component
- * @typeParam TData - The type of data in the table
- * @param {TData[]} data - Array of data to display
- * @param {ColumnDef<TData>[]} columns - Column definitions
- * @param {Function} renderSubComponent - Function to render sub-components
- * @param {Function} getRowCanExpand - Function to determine if a row can be expanded
- * @param {Function} rerender - Function to trigger re-render
- * @param {Function} refreshData - Function to refresh data
- * @param {[ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>]} columnFilterFns - Column filter state and setter
  */
-declare type TableProps<TData extends RowData> = {
+export interface TableProps<TData extends RowData> {
+  /** Table data array */
   data: TData[];
+  /** Column definitions */
   columns: ColumnDef<TData>[];
+  /** Function to render sub-component */
   renderSubComponent: (props: { row: Row<TData> }) => React.ReactElement;
+  /** Function to determine if row can expand */
   getRowCanExpand: (row: Row<TData>) => boolean;
+  /** Function to trigger re-render */
   rerender: () => void;
+  /** Function to refresh data */
   refreshData: () => void;
+  /** Column filter state and setter */
   columnFilterFns: [ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>];
-};
+}
 
 /**
  * ProductTableProps interface for product table component
- * @typeParam TData - The type of data in the product table
- * @param {ColumnDef<TData, unknown>[]} [columns] - Column definitions
- * @param {Function} renderVariants - Function to render variants
- * @param {Function} getRowCanExpand - Function to determine if a row can be expanded
- * @param {[ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>]} columnFilterFns - Column filter state and setter
  */
-declare type ProductTableProps<TData extends RowData> = {
+export interface ProductTableProps<TData extends RowData> {
+  /** Column definitions */
   columns?: ColumnDef<TData, unknown>[];
+  /** Function to render variants */
   renderVariants: (props: { row: Row<TData> }) => React.ReactElement;
+  /** Function to determine if row can expand */
   getRowCanExpand: (row: Row<TData>) => boolean;
+  /** Column filter state and setter */
   columnFilterFns: [ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>];
-};
+}
 
 /**
  * ProductTableHeader interface for table header component
- * @typeParam TData - The type of data in the table header
- * @param {string} id - Column ID
- * @param {number} colSpan - Number of columns to span
- * @param {boolean} isPlaceholder - Whether this is a placeholder
- * @param {ColumnDef<TData, unknown>} column - Column definition
- * @param {Function} getCanFilter - Function to check if column can be filtered
- * @param {Function} getCanSort - Function to check if column can be sorted
- * @param {Function} getToggleSortingHandler - Function to handle sort toggle
- * @param {Function} getIsSorted - Function to get current sort state
- * @param {Function} getContext - Function to get column context
- * @param {Function} getSize - Function to get column size
- * @param {Partial<ColumnDef<TData>>} columnDef - Column definition with partial properties
  */
-declare type ProductTableHeader<TData extends RowData> = {
+export interface ProductTableHeader<TData extends RowData> {
+  /** Column identifier */
   id: string;
+  /** Column span */
   colSpan: number;
+  /** Whether column is placeholder */
   isPlaceholder: boolean;
+  /** Column definition */
   column: ColumnDef<TData, unknown>;
+  /** Whether column can be filtered */
   getCanFilter: () => boolean;
+  /** Whether column can be sorted */
   getCanSort: () => boolean;
+  /** Function to handle sort toggle */
   getToggleSortingHandler: () => void;
+  /** Get current sort direction */
   getIsSorted: () => string;
+  /** Get column context */
   getContext: () => Record<string, unknown>;
+  /** Get column size */
   getSize: () => number;
+  /** Column definition */
   columnDef: Partial<ColumnDef<TData>>;
-};
+}
 
 /**
  * FilterVariantComponentProps interface for filter variant component
- * @param {CustomColumn<Product, unknown>} column - Column to filter
  */
-declare type FilterVariantComponentProps = {
+export interface FilterVariantComponentProps {
+  /** Column to filter */
   column: CustomColumn<Product, unknown>;
-};
+}
 
 /**
  * TableOptionsProps interface for table options component
- * @param {Table<Product>} table - Table instance
- * @param {string} searchInput - Current search input
- * @param {Dispatch<SetStateAction<string>>} setSearchInput - Function to update search input
  */
-declare type TableOptionsProps = {
+export interface TableOptionsProps {
+  /** Table instance */
   table: Table<Product>;
+  /** Search input value */
   searchInput: string;
+  /** Function to update search input */
   setSearchInput: Dispatch<SetStateAction<string>>;
-};
+}
 
 /**
  * ProductRow interface representing a row in the product table
- * @param {Row<Product>} row - Row data
  */
-declare type ProductRow = {
+export interface ProductRow {
+  /** Table row data */
   row: Row<Product>;
-};
+}
 
 /**
  * TextOptionFacet interface for text option facets
- * @param {string} name - Facet name
- * @param {string} value - Facet value
  */
-declare type TextOptionFacet = {
+export interface TextOptionFacet {
+  /** Facet name */
   name: string;
+  /** Facet value */
   value: string;
-};
+}
 
 /**
  * WixProduct interface representing a Wix product
- * @param {string} [discountedPrice] - Discounted price if available
- * @param {string} price - Regular price
- * @param {string} title - Product title
- * @param {string} url - Product URL
- * @param {TextOptionFacet[]} [textOptionsFacets] - Text option facets
  */
-declare type WixProduct = {
+export interface WixProduct {
+  /** Discounted price */
   discountedPrice?: string;
+  /** Regular price */
   price: string;
+  /** Product title */
   title: string;
+  /** Product URL */
   url: string;
+  /** Text option facets */
   textOptionsFacets?: TextOptionFacet[];
-};
+}
 
 /**
  * FilterInputProps interface for filter input component
- * @param {Column<Product, unknown>} [column] - Column to filter
- * @param {ReactNode} [children] - Child elements
- * @param {string[]|number[]} [rangeValues] - Range values for numeric filters
- * @param {string} [label] - Input label
- * @param {Function} [onChange] - Change event handler
- * @param {string} [value] - Current value
- * @param {Record<string, unknown>} [props] - Additional props
  */
-export type FilterInputProps = {
+export interface FilterInputProps {
+  /** Column to filter */
   column?: Column<Product, unknown>;
+  /** Child elements */
   children?: ReactNode;
+  /** Range values for filter */
   rangeValues?: string[] | number[];
+  /** Input label */
   label?: string;
+  /** Change event handler */
   onChange?: (
     event:
       | SelectChangeEvent<string>
@@ -420,107 +437,112 @@ export type FilterInputProps = {
       | ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>
       | undefined,
   ) => void;
+  /** Input value */
   value?: string;
+  /** Additional props */
   props?: Record<string, unknown>;
-};
+}
 
 /**
  * ColumnMeta interface for column metadata
- * @param {("range"|"select"|"text")} [filterVariant] - Type of filter variant
- * @param {string[]} [uniqueValues] - Unique values for select filters
- * @param {number[]} [rangeValues] - Range values for numeric filters
- * @param {CSSProperties} [style] - Custom styles
  */
-declare type ColumnMeta = {
+export interface ColumnMeta {
+  /** Filter variant type */
   filterVariant?: "range" | "select" | "text";
+  /** Unique values for filter */
   uniqueValues?: string[];
+  /** Range values for filter */
   rangeValues?: number[];
+  /** Custom styles */
   style?: CSSProperties;
-};
+}
 
 /**
  * CustomColumn interface for custom column definition
- * @typeParam TData - The type of data in the column
- * @typeParam TValue - The type of value in the column
- * @param {Object} columnDef - Column definition
- * @param {ColumnMeta} [columnDef.meta] - Column metadata
  */
-declare type CustomColumn<TData extends RowData, TValue = unknown> = Column<TData, TValue> & {
+export interface CustomColumn<TData extends RowData, TValue = unknown>
+  extends Column<TData, TValue> {
+  /** Column definition with metadata */
   columnDef: {
+    /** Column metadata */
     meta?: ColumnMeta;
   };
-};
+}
 
 /**
  * Props interface for generic component props
- * @typeParam T - The type of items to render
- * @param {T[]} data - Array of items to render
- * @param {Function} renderItem - Function to render each item
  */
-declare type Props<T> = {
+export interface Props<T> {
+  /** Data array */
   data: T[];
+  /** Function to render item */
   renderItem: (item: T) => React.ReactNode;
-};
+}
 
 /**
  * IconSpinnerProps interface for icon spinner component
- * @param {number} [size] - Size of the spinner
- * @param {unknown} [key] - Additional props
  */
-declare type IconSpinnerProps = {
+export interface IconSpinnerProps {
+  /** Spinner size */
   size?: number;
+  /** Additional props */
   [key: string]: unknown;
-};
+}
 
 /**
  * FilterVariantInputProps interface for filter variant input component
- * @param {CustomColumn<Product, unknown>} column - Column to filter
- * @param {unknown} [key] - Additional props
  */
-declare type FilterVariantInputProps = {
+export interface FilterVariantInputProps {
+  /** Column to filter */
   column: CustomColumn<Product, unknown>;
+  /** Additional props */
   [key: string]: unknown;
-};
+}
 
 /**
  * Props for the LoadingBackdrop component
- * @param {boolean} open - Whether the backdrop is visible
- * @param {Function} onClick - Function to call when the stop button is clicked
  */
-declare type LoadingBackdropProps = {
+export interface LoadingBackdropProps {
+  /** Whether backdrop is visible */
   open: boolean;
+  /** Click handler */
   onClick: () => void;
-};
+}
 
 /**
- * Props for the SpeedDialMenu component.
- *
- * @interface
- * @param {boolean} speedDialVisibility - Controls whether the speed dial menu is visible
+ * Props for the SpeedDialMenu component
  */
-declare type SpeedDialMenuProps = { speedDialVisibility: boolean };
+export interface SpeedDialMenuProps {
+  /** Whether speed dial is visible */
+  speedDialVisibility: boolean;
+}
 
 /**
  * Props for the TabHeader component
- * @param {number} page - Current active tab index
- * @param {Function} setPage - Function to update the active tab
  */
-declare type TabHeaderProps = {
+export interface TabHeaderProps {
+  /** Current page number */
   page: number;
+  /** Function to update page */
   setPage: (page: number) => void;
-};
+}
 
 /**
- * TabLink component that displays a link with a custom onClick handler.
+ * TabLink component that displays a link with a custom onClick handler
  */
-declare type LinkProps = { href: IntrinsicAttributes; children: React.ReactNode };
+export interface LinkProps {
+  /** Link href */
+  href: IntrinsicAttributes;
+  /** Child elements */
+  children: React.ReactNode;
+}
 
 /**
  * Props for the SearchInput component
- * @param {string} searchInput - Current search input value
- * @param {Function} setSearchInput - Function to update the search input value
  */
-declare type SearchInputStates = {
+export interface SearchInputStates {
+  /** Search input value */
   searchInput: string;
+  /** Function to update search input */
   setSearchInput: (value: string) => void;
-};
+}

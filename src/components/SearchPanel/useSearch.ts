@@ -1,6 +1,6 @@
 import { Product } from "types";
 import { useAppContext } from "../../context";
-import SupplierFactory from "../../suppliers/SupplierFactory";
+import SupplierFactory from "../../suppliers/supplierFactory";
 import { getColumnFilterConfig } from "./TableColumns";
 
 interface UseSearchProps {

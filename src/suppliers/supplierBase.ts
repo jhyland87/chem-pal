@@ -1,6 +1,6 @@
-import type { UOM } from "data/quantity";
-import type { Product } from "types";
-import type { RequestOptions, RequestParams } from "types/request";
+import { UOM } from "data/quantity";
+import { Product } from "types";
+import { RequestOptions, RequestParams } from "types/request";
 import { toUSD } from "../helpers/currency";
 import { toBaseQuantity } from "../helpers/quantity";
 import { getCachableResponse } from "../helpers/request";
@@ -10,7 +10,10 @@ import { getCachableResponse } from "../helpers/request";
  * @abstract
  * @category Supplier
  * @module SupplierBase
- * @typeParam T - The type of product to return.
+ * @example
+ * ```typescript
+ * const supplier = new SupplierBase<Product>();
+ * ```
  */
 export default abstract class SupplierBase<T extends Product> implements AsyncIterable<T> {
   // The name of the supplier (used for display name, lists, etc)
@@ -46,7 +49,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   // If using async requests, this will determine how many of them to batch together (using
   // something like Promise.all()). This is to avoid overloading the users bandwidth and
   // to not flood the supplier with 100+ requests all at once.
-  protected _http_request_batch_size: number = 10;
+  protected _httpRequestBatchSize: number = 10;
 
   // HTTP headers used as a basis for all queries.
   protected _headers: HeadersInit = {};
@@ -95,8 +98,8 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   /**
    * Check if the response is a valid Response object.
    *
-   * @param {Response|void} response - The response to check.
-   * @returns {boolean} True if the response is a valid Response object, false otherwise.
+   * @param response - The response to check.
+   * @returns True if the response is a valid Response object, false otherwise.
    */
   private _isResponse(response: Response | void): response is Response {
     return response instanceof Response;
@@ -105,8 +108,8 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   /**
    * Check if the response is a valid JSON response.
    *
-   * @param {Response|void} response - The response to check.
-   * @returns {boolean} True if the response is a valid JSON response, false otherwise.
+   * @param response - The response to check.
+   * @returns True if the response is a valid JSON response, false otherwise.
    */
   private _isJsonResponse(response: Response | void): response is Response {
     if (!this._isResponse(response)) return false;
@@ -120,8 +123,8 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   /**
    * Get the headers for the HTTP GET request.
    *
-   * @param {string|URL} url - The URL to get the headers for.
-   * @returns {HeadersInit|void} The headers for the HTTP GET request.
+   * @param url - The URL to get the headers for.
+   * @returns The headers for the HTTP GET request.
    */
   protected async httpGetHeaders(url: string | URL): Promise<HeadersInit | void> {
     try {
@@ -163,13 +166,6 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
 
   /**
    * Send a POST request to the given URL with the given body and headers.
-   *
-   * @param {RequestOptions} params - The parameters for the POST request.
-   * @param {string|URL} params.path - The URL to send the POST request to.
-   * @param {object} [params.body] - The body of the POST request.
-   * @param {RequestParams} [params.params] - The parameters to add to the URL.
-   * @param {HeaderObject} params.headers - The headers for the POST request.
-   * @returns {Response|void} The response from the POST request.
    * @example
    * ```typescript
    * const request = await this.httpPost({
@@ -235,13 +231,8 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   /**
    * Send a POST request to the given URL with the given body and headers and return the response as a JSON object.
    *
-   * @param {RequestOptions} params - The parameters for the POST request.
-   * @param {string|URL} params.path - The URL to send the POST request to.
-   * @param {string} [params.host] - The host to use for overrides (eg: needing to call a different host for an API)
-   * @param {object} [params.body] - The body of the POST request.
-   * @param {RequestParams} [params.params] - The parameters to add to the URL.
-   * @param {HeaderObject} [params.headers] - The headers for the POST request.
-   * @returns {object|void} The response from the POST request as a JSON object.
+   * @param params - The parameters for the POST request.
+   * @returns The response from the POST request as a JSON object.
    * @example
    * ```typescript
    * // Assume the baseURL is https://example.com
@@ -281,12 +272,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   /**
    * Send a GET request to the given URL with the given headers.
    *
-   * @param {RequestOptions} params - The parameters for the GET request.
-   * @param {string|URL} params.path - The URL to send the GET request to.
-   * @param {RequestParams} [params.params] - The parameters to add to the URL.
-   * @param {HeaderObject} [params.headers] - The headers for the GET request.
-   * @param {string|URL} [params.host] - The host to use for overrides (eg: needing to call a different host for an API)
-   * @returns {Response|void} The response from the GET request.
+   * @returns The response from the GET request.
    * @example
    * ```typescript
    * const response = await this.httpGet({ path: "http://example.com", params: { a: "b", c: "d" } });
@@ -348,12 +334,8 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   /**
    * Send a GET request to the given URL and return the response as a JSON object.
    *
-   * @param {RequestOptions} params - The parameters for the GET request.
-   * @param {string|URL} params.path - The path to send the GET request to.
-   * @param {RequestParams} [params.params] - The parameters to add to the URL.
-   * @param {HeaderObject} [params.headers] - The headers for the GET request.
-   * @param {string} [params.host] - The host to use for overrides (eg: needing to call a different host for an API)
-   * @returns {object|void} The response from the GET request as a JSON object.
+   * @param options - The options for the GET request.
+   * @returns The response from the GET request as a JSON object.
    */
   protected async httpGetJson({
     path,
@@ -414,19 +396,47 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   }
 
   /**
+   * Check if the product is a valid Product object.
+   * @param product - The product to check.
+   * @returns True if the product is a valid Product object, false otherwise.
+   */
+  protected _isProduct(product: unknown): product is Product {
+    return (
+      typeof product === "object" &&
+      product !== null &&
+      "price" in product &&
+      "quantity" in product &&
+      "uom" in product
+    );
+  }
+
+  /**
    * This is a placeholder for any finishing touches that need to be done to the product.
-   * @param {Product} product - The product to finish.
+   * @param product - The product to finish.
    * @returns The finished product.
    */
-  protected async _finishProduct(product: Product): Promise<Product> {
+  protected async _finishProduct(product: Partial<Product>): Promise<Product | void> {
+    if (
+      !product ||
+      typeof product !== "object" ||
+      "quantity" in product === false ||
+      "price" in product === false ||
+      "uom" in product === false
+    )
+      return;
     //product.url = (product.url as string).replace(/chrome-extension:\/\/[a-z]+/, "");
-
-    product.usdPrice = product.price;
-    product.baseQuantity = toBaseQuantity(product.quantity, product.uom as UOM) ?? product.quantity;
+    product.usdPrice = product.price ?? 0;
+    product.baseQuantity =
+      toBaseQuantity(product.quantity ?? 0, product.uom as UOM) ?? product.quantity ?? 0;
 
     // If the product is a non-USD product, populate the usdPrice with the converted currency to aid in sorting/filtering
     if (product.currencyCode !== "USD") {
-      product.usdPrice = await toUSD(product.price, product.currencyCode);
+      product.usdPrice = await toUSD(product.price ?? 0, product.currencyCode ?? "USD");
+    }
+
+    if (!this._isProduct(product)) {
+      console.error(`_finishProduct| Invalid product: ${JSON.stringify(product)}`);
+      return;
     }
 
     return product;
@@ -437,10 +447,10 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * sure if the link (retrieved from parsed text, a setting, an element, an anchor value, etc) is absolute or
    * not. Using relative links will result in http://chrome-extension://... being added to the link.
    *
-   * @param {string|URL} url - URL object or string
-   * @param {RequestParams} [params] - The parameters to add to the URL.
-   * @param {string} [host] - The host to use for overrides (eg: needing to call a different host for an API)
-   * @returns {string} - absolute URL
+   * @param path - URL object or string
+   * @param params - The parameters to add to the URL.
+   * @param host - The host to use for overrides (eg: needing to call a different host for an API)
+   * @returns absolute URL
    * @example
    * ```typescript
    * this._href('/some/path')
@@ -463,6 +473,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    *
    * this._href('https://supplier_base_url.com/some/path', new URLSearchParams({ a: 'b', c: 'd' }))
    * // https://supplier_base_url.com/some/path?a=b&c=d
+   * ```
    */
   protected _href(
     path: string | URL,
