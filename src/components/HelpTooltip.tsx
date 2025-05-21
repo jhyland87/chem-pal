@@ -10,10 +10,6 @@ import { delayAction } from "../helpers/utils";
  * @component
  * @category Component
  * @param props - The component props
- * @param props.text - The help text to display in the tooltip
- * @param props.children - The element that triggers the tooltip
- * @param props.delay - Delay in milliseconds before showing the tooltip (default: 500)
- * @param props.duration - Duration in milliseconds to show the tooltip (default: 2000)
  * @returns A tooltip component that displays help text
  *
  * @example
@@ -66,6 +62,7 @@ export default function HelpTooltip({
       title={text}
       placement="left-start"
       sx={{
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         "& .MuiTooltip-tooltip": {
           backgroundColor: "rgba(0, 0, 0, 0.8)",
           color: "white",
@@ -79,6 +76,7 @@ export default function HelpTooltip({
           textShadow: "1px 1px 2px rgba(0, 0, 0, 0.5)",
           opacity: 0.8,
           transition: "opacity 0.3s ease-in-out",
+          // eslint-disable-next-line @typescript-eslint/naming-convention
           "&:hover": {
             opacity: 1,
           },

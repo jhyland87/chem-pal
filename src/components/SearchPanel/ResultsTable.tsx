@@ -7,13 +7,12 @@ import { Product, ProductTableProps } from "types";
 import { useAppContext } from "../../context";
 import { implementCustomMethods } from "../../utils/tanstack";
 import LoadingBackdrop from "../LoadingBackdrop";
+import { useResultsTable } from "./hooks/useResultsTable";
+import { useSearch } from "./hooks/useSearch";
 import Pagination from "./Pagination";
 import "./ResultsTable.scss";
 import TableHeader from "./TableHeader";
 import TableOptions from "./TableOptions";
-import { useResultsTable } from "./useResultsTable";
-import { useSearch } from "./useSearch";
-let fetchController: AbortController;
 
 /**
  * ResultsTable component that displays search results in a table format with filtering,
@@ -21,11 +20,6 @@ let fetchController: AbortController;
  * manages the loading state.
  *
  * @component
- *
- * @param {ProductTableProps<Product>} props - Component props
- * @param {Function} props.renderVariants - Function to render variant details
- * @param {Function} props.getRowCanExpand - Function to determine if a row can be expanded
- * @param {[ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>]} props.columnFilterFns - Column filter state and setter
  *
  * @example
  * ```tsx

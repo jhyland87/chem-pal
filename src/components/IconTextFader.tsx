@@ -3,9 +3,7 @@ import { ReactNode, useEffect, useState } from "react";
 
 /**
  * Props for the IconTextFader component
- * @param {ReactNode} children - Icon element to display
- * @param {string} text - Text to display when expanded
- * @param {boolean} active - Whether the component is in active state
+ * @param children - Icon element to display
  */
 type IconTextFaderProps = {
   children: ReactNode;
@@ -19,10 +17,7 @@ type IconTextFaderProps = {
  *
  * @component
  * @category Component
- * @param {IconTextFaderProps} props - Component props
- * @param {ReactNode} props.children - Icon element to display
- * @param {string} props.text - Text to display when expanded
- * @param {boolean} props.active - Whether the component is in active state
+ * @param props - Component props
  *
  * @example
  * ```tsx

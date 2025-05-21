@@ -12,9 +12,7 @@ import "./LoadingBackdrop.scss";
  *
  * @component
  * @category Component
- * @param {LoadingBackdropProps} props - Component props
- * @param {boolean} props.open - Whether the backdrop is visible
- * @param {Function} props.onClick - Function to call when the stop button is clicked
+ * @param props - Component props
  *
  * @example
  * ```tsx

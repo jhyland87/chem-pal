@@ -6,9 +6,7 @@ import { captureOwnerStack, Component, ReactNode } from "react";
  *
  * @component
  *
- * @param {Object} props - Component props
- * @param {ReactNode} props.children - Child components to render
- * @param {ReactNode} props.fallback - UI to render when an error occurs
+ * @param props - Component props
  *
  * @example
  * ```tsx
@@ -23,9 +21,7 @@ class ErrorBoundary extends Component<
 > {
   /**
    * Creates an instance of ErrorBoundary.
-   * @param {Object} props - Component props
-   * @param {ReactNode} props.children - Child components to render
-   * @param {ReactNode} props.fallback - UI to render when an error occurs
+   * @param props - Component props
    */
   constructor(props: { children: ReactNode; fallback: ReactNode }) {
     super(props);
@@ -35,7 +31,7 @@ class ErrorBoundary extends Component<
   /**
    * Static lifecycle method that is called when a descendant component throws an error.
    * Updates the state to show the fallback UI on the next render.
-   * @returns {Object} New state object with hasError set to true
+   * @returns New state object with hasError set to true
    */
   static getDerivedStateFromError() {
     // Update state so the next render will show the fallback UI.
@@ -45,9 +41,7 @@ class ErrorBoundary extends Component<
   /**
    * Lifecycle method that is called after an error has been thrown in a descendant component.
    * Logs the error and component stack trace.
-   * @param {Error} error - The error that was thrown
-   * @param {Object} info - Additional information about the error
-   * @param {string} info.componentStack - The component stack trace
+   * @param error - The error that was thrown
    */
   componentDidCatch(error: Error, info: { componentStack: string }) {
     console.error(
@@ -65,7 +59,7 @@ class ErrorBoundary extends Component<
 
   /**
    * Renders either the children or the fallback UI based on whether an error has occurred.
-   * @returns {ReactNode} The rendered component
+   * @returns The rendered component
    */
   render() {
     if (this.state.hasError) {

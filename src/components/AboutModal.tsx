@@ -14,8 +14,7 @@ import { default as Link } from "./TabLink";
  * Styled Paper component for contributor items.
  * Provides consistent styling for contributor links with theme-aware colors and spacing.
  *
- * @param {Object} props - Component props
- * @param {Theme} props.theme - Material-UI theme object
+ * @param props - Component props
  */
 const Item = styled(Paper)(({ theme }: { theme: Theme }) => ({
   backgroundColor: "#fff",
@@ -24,6 +23,7 @@ const Item = styled(Paper)(({ theme }: { theme: Theme }) => ({
   textAlign: "center",
   color: theme.palette.text.secondary,
   flexGrow: 1,
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   "&.dark": {
     backgroundColor: "#1A2027",
   },
@@ -35,9 +35,7 @@ const Item = styled(Paper)(({ theme }: { theme: Theme }) => ({
  *
  * @component
  * @category Component
- * @param {Object} props - Component props
- * @param {boolean} props.aboutOpen - Controls whether the modal is open
- * @param {Function} props.setAboutOpen - Function to update the modal's open state
+ * @param props - Component props
  * @example
  * ```tsx
  * <AboutModal

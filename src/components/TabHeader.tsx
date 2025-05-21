@@ -10,14 +10,15 @@ import StoreIcon from "../assets/icons/StoreIcon";
 import IconTextFader from "./IconTextFader";
 /**
  * Generates props for a tab component.
- * @param {number} index - The index of the tab
- * @param {string} name - The name of the tab panel
- * @returns {Object} Tab props including id, panel, and aria-controls
+ * @param index - The index of the tab
+ * @param name - The name of the tab panel
+ * @returns Tab props including id, panel, and aria-controls
  */
 function tabProps(index: number, name: string) {
   return {
     id: `full-width-tab-${index}`,
     panel: name,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     "aria-controls": `full-width-tabpanel-${index}`,
   };
 }
@@ -28,9 +29,7 @@ function tabProps(index: number, name: string) {
  *
  * @component
  * @category Component
- * @param {TabHeaderProps} props - Component props
- * @param {number} props.page - Current active tab index
- * @param {Function} props.setPage - Function to update the active tab
+ * @param props - Component props
  *
  * @example
  * ```tsx
@@ -43,6 +42,7 @@ export default function TabHeader({ page, setPage }: TabHeaderProps) {
   return (
     <Tabs
       sx={{
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         "& .MuiTabs-indicator": {
           backgroundColor: "rgba(0, 0, 0, 0.8)",
         },

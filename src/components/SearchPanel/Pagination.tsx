@@ -14,8 +14,7 @@ import "./Pagination.scss";
  *
  * @component
  *
- * @param {Object} props - Component props
- * @param {Table<Product>} props.table - The table instance from TanStack Table
+ * @param props - Component props
  *
  * @example
  * ```tsx

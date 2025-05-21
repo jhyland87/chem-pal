@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import FormControl, { FormControlProps } from "@mui/material/FormControl";
 import { styled } from "@mui/material/styles";
 

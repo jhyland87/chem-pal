@@ -8,13 +8,7 @@ import { TabPanelProps } from "types";
  *
  * @component
  * @category Component
- * @param {TabPanelProps} props - Component props
- * @param {ReactNode} [props.children] - Child elements to render
- * @param {string} [props.dir] - Text direction (ltr/rtl)
- * @param {number} props.index - Tab index
- * @param {number|string} props.value - Current value
- * @param {object} [props.style] - Additional styles
- * @param {string} props.name - Panel name
+ * @param props - Component props
  *
  * @example
  * ```tsx

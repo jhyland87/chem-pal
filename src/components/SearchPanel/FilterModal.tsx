@@ -16,8 +16,6 @@ import TextColumnFilter from "./Inputs/TextColumnFilter";
 /**
  * Map of filter variants to their corresponding filter components.
  * Each variant (text, range, select) has a dedicated component for handling its specific filtering needs.
- *
- * @type {Record<string, ComponentType<FilterVariantInputProps>>}
  */
 const filterComponentMap: Record<string, ComponentType<FilterVariantInputProps>> = {
   text: TextColumnFilter,
@@ -31,10 +29,9 @@ const filterComponentMap: Record<string, ComponentType<FilterVariantInputProps>>
  *
  * @component
  *
- * @param {FilterVariantComponentProps} props - Component props
- * @param {CustomColumn<Product, unknown>} props.column - The column configuration
+ * @param props - Component props
  *
- * @returns {JSX.Element} The rendered filter component
+ * @returns The rendered filter component
  */
 function FilterVariantComponent({ column }: FilterVariantComponentProps) {
   const ComponentToRender = filterComponentMap[column.columnDef?.meta?.filterVariant ?? "text"];
@@ -49,10 +46,7 @@ function FilterVariantComponent({ column }: FilterVariantComponentProps) {
  *
  * @component
  *
- * @param {Object} props - Component props
- * @param {boolean} props.filterModalOpen - Whether the modal is open
- * @param {Function} props.setFilterModalOpen - Function to update the modal's open state
- * @param {Table<Product>} props.table - The table instance from TanStack Table
+ * @param props - Component props
  *
  * @example
  * ```tsx
@@ -79,7 +73,7 @@ export default function FilterModal({
 
   /**
    * Gets the list of currently visible column IDs.
-   * @returns {string[]} Array of visible column IDs
+   * @returns Array of visible column IDs
    */
   const columnStatus = table
     .getAllColumns()
@@ -94,7 +88,7 @@ export default function FilterModal({
    * Handles changes to column visibility selection.
    * Updates the visibility state and applies changes to the table columns.
    *
-   * @param {SelectChangeEvent<typeof columnVisibility>} event - The change event from the select component
+   * @param event - The change event from the select component
    */
   const handleColumnVisibilityChange = (event: SelectChangeEvent<typeof columnVisibility>) => {
     const {
@@ -112,7 +106,7 @@ export default function FilterModal({
 
   /**
    * Gets a map of column IDs to their header text for filterable columns.
-   * @returns {Record<string, string>} Object mapping column IDs to their header text
+   * @returns Object mapping column IDs to their header text
    */
   const columnNames = table
     .getAllColumns()

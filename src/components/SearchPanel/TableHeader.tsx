@@ -17,9 +17,6 @@ import "./TableHeader.scss";
  *
  * @component
  *
- * @param {Object} props - Component props
- * @param {Table<Product>} props.table - The table instance from TanStack Table
- *
  * @example
  * ```tsx
  * <TableHeader table={table} />
@@ -30,7 +27,7 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
    * Creates a configuration object for filterable columns based on their metadata.
    * Each filterable column gets an entry with its filter variant and empty arrays for range and unique values.
    *
-   * @returns {Record<string, ColumnMeta<Product, unknown>>} Object mapping column IDs to their filter configurations
+   * @returns Object mapping column IDs to their filter configurations
    */
   const filterableColumns = table.options.columns.reduce<
     Record<string, ColumnMeta<Product, unknown>>
@@ -57,8 +54,7 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
     if (filterVariant === "range") {
       /**
        * Calculates the range values (min and max) for numeric columns.
-       * @param {Product[]} table.options.data - The table data
-       * @returns {[number, number]} Array containing [min, max] values
+       * @returns Array containing [min, max] values
        */
       const rangeValues = table.options.data.reduce(
         (accu, row: Product) => {
@@ -78,8 +74,7 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
 
     /**
      * Collects unique values for non-range columns.
-     * @param {Product[]} table.options.data - The table data
-     * @returns {string[]} Array of unique values
+     * @returns Array of unique values
      */
     const uniqueValues = table.options.data.reduce<string[]>((accu, row: Product) => {
       const value = row[colName as keyof Product] as string;
@@ -112,7 +107,9 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
                 style={
                   {
                     width: `calc(var(--header-${header?.id}-size) * 1px)`,
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
                     "--header-size": `${header.getSize()}px`,
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
                     "--col-size": `${header.column.getSize()}px`,
                   } as CSSProperties
                 }
