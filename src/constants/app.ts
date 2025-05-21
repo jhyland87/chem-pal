@@ -499,3 +499,21 @@ export enum HTTP_STATUS_CODES {
    */
   NETWORK_AUTHENTICATION_REQUIRED_511 = 511,
 }
+
+/**
+ * Regular expression for validating CAS (Chemical Abstracts Service) numbers.
+ * Matches the standard format of three segments: 2-7 digits, 2 digits, and 1 checksum digit.
+ *
+
+ * @category Helper
+ * @example
+ * ```typescript
+ * CAS_REGEX.test('1234-56-6') // true
+ * CAS_REGEX.test('50-00-0') // true
+ * CAS_REGEX.test('1234-56-999') // false
+ * ```
+ *
+ * @see https://regex101.com/r/xPF1Yp/2
+ * @see https://www.cas.org/training/documentation/chemical-substances/checkdig
+ */
+export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_checksum>\d)/;

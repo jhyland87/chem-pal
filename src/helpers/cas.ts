@@ -1,23 +1,5 @@
+import { CAS_REGEX } from "constants/app";
 import { CAS } from "types/cas";
-
-/**
- * Regular expression for validating CAS (Chemical Abstracts Service) numbers.
- * Matches the standard format of three segments: 2-7 digits, 2 digits, and 1 checksum digit.
- *
-
- * @type {RegExp}
- * @category Helper
- * @example
- * ```typescript
- * CAS_REGEX.test('1234-56-6') // true
- * CAS_REGEX.test('50-00-0') // true
- * CAS_REGEX.test('1234-56-999') // false
- * ```
- *
- * @see https://regex101.com/r/xPF1Yp/2
- * @see https://www.cas.org/training/documentation/chemical-substances/checkdig
- */
-export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_checksum>\d)/;
 
 /**
  * Validates a CAS (Chemical Abstracts Service) number.
@@ -34,8 +16,8 @@ export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_check
  * 3. Multiplying each digit by its position
  * 4. Taking the modulo 10 of the sum
  * @category Helper
- * @param {string} cas - The CAS number to validate
- * @returns {boolean} True if the CAS number is valid, false otherwise
+ * @param cas - The CAS number to validate
+ * @returns True if the CAS number is valid, false otherwise
  *
  * @example
  * ```typescript
@@ -76,8 +58,8 @@ export function isCas(cas: string): cas is CAS<string> {
  * Searches for a valid CAS number within a string.
  * Returns the first valid CAS number found, or undefined if none are found.
  * @category Helper
- * @param {string} data - The string to search for a CAS number
- * @returns {CAS<string> | undefined} The first valid CAS number found, or undefined
+ * @param data - The string to search for a CAS number
+ * @returns The first valid CAS number found, or undefined
  *
  * @example
  * ```typescript
