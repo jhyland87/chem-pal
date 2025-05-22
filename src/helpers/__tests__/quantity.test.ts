@@ -38,6 +38,6 @@ describe("parseQuantity", () => {
     });
   }
 
-  it(`should throw an Error when parsing: foobar`, () =>
-    expect(() => parseQuantity("foobar")).toThrow("Failed to parse quantity"));
+  it(`should return undefined when parsing: foobar`, () =>
+    expect(parseQuantity("foobar")).toBeUndefined());
 });

@@ -22,9 +22,9 @@ const handleResultClick = (event: MouseEvent<HTMLAnchorElement>) => {
  * @param props - The component props
  * @returns The TabLink component
  */
-export default function TabLink({ href, children }: LinkProps) {
+export default function TabLink({ href, children, ...props }: LinkProps) {
   return (
-    <Link href={href} onClick={handleResultClick}>
+    <Link href={href} onClick={handleResultClick} {...props}>
       {children}
     </Link>
   );

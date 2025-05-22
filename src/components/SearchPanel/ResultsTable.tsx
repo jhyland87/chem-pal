@@ -75,10 +75,10 @@ export default function ResultsTable({
    * Updates the displayed search results when the search result timestamp changes.
    */
   useEffect(() => {
-    console.log("Search result timestamp was updated", appContext.settings.searchResultUpdateTs);
+    //console.log("Search result timestamp was updated", appContext.settings.searchResultUpdateTs);
 
     chrome.storage.session.get(["searchResults"]).then((data) => {
-      console.log("New search results", data.searchResults);
+      //console.log("New search results", data.searchResults);
       setShowSearchResults(data.searchResults as Product[]);
     });
   }, [appContext.settings.searchResultUpdateTs]);
@@ -87,7 +87,7 @@ export default function ResultsTable({
    * Executes the search when the search input changes.
    */
   useEffect(() => {
-    executeSearch(searchInput).then(console.log).catch(console.error);
+    executeSearch(searchInput); //.then(console.log).catch(console.error);
   }, [searchInput]);
 
   /**
@@ -113,11 +113,11 @@ export default function ResultsTable({
 
   /**
    * Logs search results updates for debugging.
-   */
+  
   useEffect(() => {
     console.debug("searchResults UPDATED:", searchResults);
   }, [searchResults]);
-
+ */
   const table = useResultsTable({
     showSearchResults,
     columnFilterFns,

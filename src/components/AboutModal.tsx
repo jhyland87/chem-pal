@@ -55,17 +55,18 @@ export default function AboutModal({
     <div>
       <Modal
         id="about-modal"
+        data-testid="about-modal"
         onClick={() => setAboutOpen(false)}
         open={aboutOpen}
         onClose={() => setAboutOpen(false)}
         aria-labelledby="application-title"
         aria-describedby="application-description"
-        aria-contributors="application-contributors"
       >
         <Box className="about-box">
           <Typography id="application-title" variant="h6" component="h2">
             About ChemPare
             <IconButton
+              data-testid="github-button"
               href="https://github.com/justinhyland/chem-crawler"
               target="_blank"
               rel="noopener noreferrer"
@@ -86,19 +87,30 @@ export default function AboutModal({
               Contributors
             </Typography>
           </Divider>
-          <Typography id="application-contributors" sx={{ color: "text.secondary" }}>
-            <Stack direction="row" useFlexGap>
-              <Item>
-                <Link href="https://github.com/jhyland87">Justin Hyland</Link>
-              </Item>
-              <Item>
-                <Link href="https://github.com/YourHeatingMantle">Maui3</Link>
-              </Item>
-              <Item>
-                <Link href="https://github.com/spous">Spous</Link>
-              </Item>
-            </Stack>
-          </Typography>
+
+          <Stack direction="row" useFlexGap>
+            <Item>
+              <Link data-testid="contributor-justin" href="https://github.com/jhyland87">
+                <Typography className="application-contributors" sx={{ color: "text.secondary" }}>
+                  Justin Hyland
+                </Typography>
+              </Link>
+            </Item>
+            <Item>
+              <Link data-testid="contributor-maui" href="https://github.com/YourHeatingMantle">
+                <Typography className="application-contributors" sx={{ color: "text.secondary" }}>
+                  Maui3
+                </Typography>
+              </Link>
+            </Item>
+            <Item>
+              <Link data-testid="contributor-spous" href="https://github.com/spous">
+                <Typography className="application-contributors" sx={{ color: "text.secondary" }}>
+                  Spous
+                </Typography>
+              </Link>
+            </Item>
+          </Stack>
         </Box>
       </Modal>
     </div>

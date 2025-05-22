@@ -1,29 +1,45 @@
 // Import necessary modules
 import "@testing-library/jest-dom";
-import jestChrome from "jest-chrome";
-import type { Chrome, ChromeStorageItems } from "types/chromeStorage";
+import type { ChromeStorageItems } from "types/chromeStorage";
 import { promisify } from "util";
 
-// Assign jest-chrome to the global object
-Object.assign(global, jestChrome);
+// Initialize Chrome mock
+const mockChrome = {
+  storage: {
+    session: {
+      set: jest.fn(),
+      get: jest.fn(),
+    },
+    local: {
+      set: jest.fn(),
+      get: jest.fn(),
+    },
+  },
+};
 
-// Type assertion for the global chrome object
-const globalChrome = global as unknown as { chrome: Chrome };
+// Assign mock to global
+Object.assign(global, { chrome: mockChrome });
 
 // Promisify chrome.storage.session.set and chrome.storage.session.get
-globalChrome.chrome.storage.session.set = promisify(globalChrome.chrome.storage.session.set) as (
+global.chrome.storage.session.set = promisify(global.chrome.storage.session.set) as (
   items: ChromeStorageItems,
 ) => Promise<void>;
 
-globalChrome.chrome.storage.session.get = promisify(globalChrome.chrome.storage.session.get) as (
-  items: string | string[] | ChromeStorageItems,
-) => Promise<ChromeStorageItems>;
+global.chrome.storage.session.get = promisify(global.chrome.storage.session.get) as {
+  <T = { [key: string]: any }>(
+    keys?: string | string[] | { [key: string]: any } | null,
+  ): Promise<T>;
+  <T = { [key: string]: any }>(callback: (items: T) => void): void;
+};
 
 // Promisify chrome.storage.local.set and chrome.storage.local.get
-globalChrome.chrome.storage.local.set = promisify(globalChrome.chrome.storage.local.set) as (
+global.chrome.storage.local.set = promisify(global.chrome.storage.local.set) as (
   items: ChromeStorageItems,
 ) => Promise<void>;
 
-globalChrome.chrome.storage.local.get = promisify(globalChrome.chrome.storage.local.get) as (
-  items: string | string[] | ChromeStorageItems,
-) => Promise<ChromeStorageItems>;
+global.chrome.storage.local.get = promisify(global.chrome.storage.local.get) as {
+  <T = { [key: string]: any }>(
+    keys?: string | string[] | { [key: string]: any } | null,
+  ): Promise<T>;
+  <T = { [key: string]: any }>(callback: (items: T) => void): void;
+};

@@ -144,11 +144,11 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
       // @todo: Override this if not in development mode
       if (
         chrome.extension !== undefined &&
-        import.meta.env.MODE !== "development" &&
+        process.env.MODE !== "development" &&
         httpResponse.headers.get("ismockedresponse") !== "true"
       ) {
         console.log("httpGetHeaders| httpResponse:", httpResponse);
-        console.log("httpGetHeaders| import.meta.env:", import.meta.env);
+        console.log("httpGetHeaders| process.env:", process.env);
         const cacheData = getCachableResponse(requestObj, httpResponse);
         console.log("httpGetHeaders| cacheData:", cacheData);
       }
@@ -216,11 +216,11 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
     // @todo: Override this if not in development mode
     if (
       chrome.extension !== undefined &&
-      import.meta.env.MODE !== "development" &&
+      process.env.MODE !== "development" &&
       httpRequest.headers.get("ismockedresponse") !== "true"
     ) {
       console.log("httpPost| httpRequest:", httpRequest);
-      console.log("httpPost| import.meta.env:", import.meta.env);
+      console.log("httpPost| process.env:", process.env);
       const cacheData = getCachableResponse(requestObj, httpRequest);
       console.log("httpPost| cacheData:", cacheData);
     }
@@ -311,11 +311,11 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
       // @todo: Override this if not in development mode
       if (
         chrome.extension !== undefined &&
-        import.meta.env.MODE !== "development" &&
+        process.env.MODE !== "development" &&
         httpResponse.headers.get("ismockedresponse") !== "true"
       ) {
         console.log("httpGet| httpResponse:", httpResponse);
-        console.log("httpGet| import.meta.env:", import.meta.env);
+        console.log("httpGet| process.env:", process.env);
         const cacheData = getCachableResponse(requestObj, httpResponse);
         console.log("httpGet| cacheData:", cacheData);
       }

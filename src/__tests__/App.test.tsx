@@ -47,27 +47,6 @@ describe("App", () => {
     });
   });
 
-  // describe('Suppliers', () => {
-  //   it('tab should activate the suppliers panel', () => {
-  //     const tablist = screen.getByRole('tablist');
-  //     const tab = queryHelpers.queryByAttribute('panel',tablist, 'suppliers-panel')
-  //     expect(tab).toBeInTheDocument()
-  //     fireEvent.click(tab as HTMLElement)
-  //     expect((tab as HTMLElement).getAttribute('panel')).toEqual('suppliers-panel')
-  //   });
-
-  //   it('should open the suppliers panel', () => {
-  //     const panel = screen.getByRole('tabpanel')
-  //     expect(panel).toBeInTheDocument();
-  //     expect(panel.getAttribute('name')).toEqual('suppliers-panel')
-  //   })
-
-  //   // it('should have the suppliers input', () => {
-  //   //   const queryInput = screen.getByPlaceholderText('Search...')
-  //   //   expect(queryInput).toBeInTheDocument();
-  //   // })
-  // })
-
   describe("Search", () => {
     it("tab should activate the search panel", () => {
       const tablist = screen.getByRole("tablist");
@@ -82,39 +61,5 @@ describe("App", () => {
       expect(panel).toBeInTheDocument();
       expect(panel.getAttribute("name")).toEqual("search-panel");
     });
-
-    /*it('should have the search input', () => {
-      const queryInput = screen.getByPlaceholderText('Search...')
-      expect(queryInput).toBeInTheDocument();
-    })*/
   });
-
-  // describe('all tabs ', () => {
-  //   it('testing each tab', () => {
-  //     const tabs = screen.getAllByRole('tab');
-  //     expect(tabs).toHaveLength(3)
-  //     for (const tab of tabs) {
-  //       const tabName = tab.getAttribute('panel')
-  //       fireEvent.click(tab)
-  //       const panel = screen.getByRole('tabpanel')
-  //       expect(panel).toBeInTheDocument();
-  //       expect(panel.getAttribute('name')).toEqual(tabName)
-  //     }
-  //   });
-
-  //   // test('Snapshot', () => {
-  //   //   const { asFragment } = render(<App />);
-  //   //   expect(asFragment()).toMatchSnapshot();
-  //   // })
-
-  //   it('suppliers panel', () => {
-  //     //const queryInput = screen.getByPlaceholderText('Search...')
-  //     //expect(queryInput).toBeInTheDocument();
-  //     const headerElement = screen.getByText('Suppliers');
-  //     expect(headerElement).toBeInTheDocument();
-  //     fireEvent.click(headerElement)
-  //     const checkbox1 = screen.getByLabelText(/^Supplier.+/);
-  //     expect(checkbox1).toBeInTheDocument();
-  //   })
-  // })
 });

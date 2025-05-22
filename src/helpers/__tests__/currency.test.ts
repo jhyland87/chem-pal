@@ -27,6 +27,14 @@ describe("getCurrencyRate", () => {
   beforeEach(() => (global.fetch = jest.fn()));
   afterEach(() => jest.resetAllMocks());
 
+  it("should throw error for failed API call", async () => {
+    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error("API Error"));
+
+    await expect(getCurrencyRate("USD", "EUR")).rejects.toThrow(
+      "Failed to get currency rate for USD to EUR",
+    );
+  });
+
   it("should return exchange rate for valid currency pair", async () => {
     const mockResponse: ExchangeRateResponse = {
       status_code: 200,
@@ -50,14 +58,6 @@ describe("getCurrencyRate", () => {
     expect(exchangeRate).toBe(0.889);
     expect(mockFetch).toHaveBeenCalledWith(
       "https://hexarate.paikama.co/api/rates/latest/USD?target=EUR",
-    );
-  });
-
-  it("should throw error for failed API call", async () => {
-    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error("API Error"));
-
-    await expect(getCurrencyRate("USD", "EUR")).rejects.toThrow(
-      "Failed to get currency rate for USD to EUR",
     );
   });
 });
@@ -87,7 +87,7 @@ describe("toUSD", () => {
     });
 
     const result = await toUSD(100, "EUR");
-    expect(result).toBe("117.65");
+    expect(result).toBe(117.65);
   });
 });
 
