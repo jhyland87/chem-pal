@@ -1,8 +1,10 @@
 import type { Product } from "types";
 import {
+  type CarolinaATGResponse,
   type CarolinaContentFolder,
   type CarolinaContentRuleZoneItem,
   type CarolinaMainContentItem,
+  type CarolinaProductResponse,
   type CarolinaResultsContainer,
   type CarolinaSearchParams,
   type CarolinaSearchResponse,
@@ -59,6 +61,8 @@ export default class SupplierCarolina<T extends Product>
 {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "Carolina";
+
+  protected _limit: number = 5;
 
   // Base URL for HTTP(s) requests
   protected _baseURL: string = "https://www.carolina.com";
@@ -134,7 +138,7 @@ export default class SupplierCarolina<T extends Product>
       "responseStatusCode" in response &&
       response.responseStatusCode === 200 &&
       "@type" in response &&
-      response["@type"] === "PageSlotContainer" &&
+      //response["@type"] === "PageSlotContainer" &&
       "contents" in response &&
       typeof response.contents === "object"
     );
@@ -201,7 +205,7 @@ export default class SupplierCarolina<T extends Product>
     //console.log(response.contents.ContentFolderZone[0].childRules);
 
     const results = await this._extractSearchResults(response);
-    console.log(results);
+    this._queryResults = results.slice(0, this._limit);
   }
 
   protected _extractSearchResults(response: unknown): CarolinaSearchResult[] {
@@ -303,6 +307,80 @@ export default class SupplierCarolina<T extends Product>
     }
   }
 
+  protected _isProductResponse(obj: unknown): obj is CarolinaProductResponse {
+    if (!obj || typeof obj !== "object") {
+      return false;
+    }
+
+    const response = obj as Partial<CarolinaProductResponse>;
+
+    // Check if contents and MainContent exist and are properly structured
+    if (!response.contents?.MainContent || !Array.isArray(response.contents.MainContent)) {
+      return false;
+    }
+
+    // Check if there's at least one MainContent item with atgResponse
+    if (
+      response.contents.MainContent.length === 0 ||
+      !response.contents.MainContent[0]?.atgResponse
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  protected _isATGResponse(obj: unknown): obj is CarolinaATGResponse {
+    if (!obj || typeof obj !== "object") {
+      return false;
+    }
+
+    const response = obj as Partial<CarolinaATGResponse>;
+
+    // Check required properties and types
+    if (typeof response.result !== "string" || response.result !== "success") {
+      return false;
+    }
+
+    if (!response.response?.response || typeof response.response.response !== "object") {
+      return false;
+    }
+
+    const innerResponse = response.response.response;
+
+    // Check for required properties in the inner response
+    const requiredProps = [
+      "displayName",
+      "longDescription",
+      "shortDescription",
+      "product",
+      "dataLayer",
+      "canonicalUrl",
+    ];
+
+    return requiredProps.every((prop) => prop in innerResponse);
+  }
+
+  protected _extractATGResponse(
+    productResponse: unknown,
+  ): CarolinaATGResponse["response"]["response"] | null {
+    if (!this._isProductResponse(productResponse)) {
+      return null;
+    }
+
+    try {
+      const atgResponse = productResponse.contents.MainContent[0].atgResponse;
+
+      if (!this._isATGResponse(atgResponse)) {
+        return null;
+      }
+
+      return atgResponse.response.response;
+    } catch (error) {
+      console.error("Error extracting ATG response:", error);
+      return null;
+    }
+  }
   /**
    * Parse the products from the Carolina API
    *
@@ -315,8 +393,32 @@ export default class SupplierCarolina<T extends Product>
   }
   */
 
-  protected async _getProductData(result: CarolinaSearchResult): Promise<Product> {
-    console.log("result:", result);
-    return {} as Product;
+  protected async _getProductData(result: CarolinaSearchResult): Promise<Product | void> {
+    try {
+      const productResponse = await this.httpGetJson({
+        path: result.productUrl,
+        params: {
+          format: "json",
+          ajax: true,
+        },
+      });
+
+      if (!this._isResponseOk(productResponse)) {
+        console.warn("Response status:", productResponse);
+        return;
+      }
+
+      const atgResponse = this._extractATGResponse(productResponse);
+      if (!atgResponse) {
+        console.error("No ATG response found");
+        return;
+      }
+      console.log("atgResponse:", atgResponse);
+      console.log("--------------------------------");
+      //return atgResponse as Product;
+    } catch (error) {
+      console.error("Error getting product data:", error);
+      return;
+    }
   }
 }
