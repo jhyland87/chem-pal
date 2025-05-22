@@ -13,75 +13,56 @@ import {
 import SupplierBase from "./supplierBase";
 
 /**
-import { isSearchResultItem } from 'utils/carolinaSearch';
- * Carolina.com uses Oracle ATG Commerce as their ecommerce platform.
+ * Supplier implementation for Carolina Biological Supply Company.
  *
- * The ATG Commerce platform uses a custom script to fetch product data.
- * This script is located in the `script[nonce]` element of the product page.
+ * Carolina.com uses Oracle ATG Commerce as their ecommerce platform which has a predictable
+ * output format, though very bulky. But very parseable.
  *
- * The script is a JSON object that contains the product data.
+ * Product search uses the following endpoints:
+ * - Product Search: /browse/product-search-results?tab=p&q=acid
+ * - Product Search JSON: /browse/product-search-results?tab=p&format=json&ajax=true&q=acid
+ * - Product Details: /:category/:productName/:productId.pr
+ * - Product Details JSON: /:category/:productName/:productId.pr?format=json&ajax=true
  *
- * Product search for Carolina.com will query the following URL (with `lithium` as the search query):
-
- * The query params are:
- * - product.productTypes: The product type to search for.
- * - facetFields: The fields to facet on.
- * - defaultFilter: The default filter to apply to the search.
- * - Nr: ???
- * - viewSize: The number of results to return per page.
- * - q: The search query.
- * - noRedirect: Whether to redirect to the search results page.
- * - nore: Whether to return the results in a non-redirecting format.
- * - searchExecByFormSubmit: Whether to execute the search by form submission.
- * - tab: The tab to display the results in.
- * - question: The search query.
+ * API Documentation:
+ * - Swagger UI: https://www.carolina.com/swagger-ui/
+ * - OpenAPI Spec: https://www.carolina.com/api/rest/openapi.json
+ * - WADL: https://www.carolina.com/api/rest/application.wadl
  *
- * Carolina.com uses VastCommerce, who does have an API that can be queried. Some useful endpoints are:
- * - https://www.carolina.com/swagger-ui/
- * - https://www.carolina.com/api/rest/openapi.json
- * - https://www.carolina.com/api/rest/cb/product/product-quick-view/863810
- * - https://www.carolina.com/api/rest/cb/cart/specificationDetails/863810
- * - https://www.carolina.com/api/rest/cb/product/product-details/863810
- *    curl -s https://www.carolina.com/api/rest/cb/product/product-details/863810 | jq '.response | fromjson'
- * - https://www.carolina.com/api/rest/cb/static/fetch-suggestions-for-global-search/acid
- * - https://www.carolina.com/api/rest/application.wadl
- * - You can get the JSON value of any page by appending: &format=json&ajax=true
- *   - https://www.carolina.com/chemistry-supplies/chemicals/10171.ct?format=json&ajax=true
- *   - https://www.carolina.com/specialty-chemicals-d-l/16-hexanediamine-6-laboratory-grade-100-ml/867162.pr?format=json&ajax=true
- *      curl -s 'https://www.carolina.com/specialty-chemicals-d-l/16-hexanediamine-6-laboratory-grade-100-ml/867162.pr?format=json&ajax=true' | jq '.contents.MainContent[0].atgResponse.response.response'
- * - https://www.carolina.com/browse/product-search-results?q=acid&product.type=Product&tab=p&format=json&ajax=true
- * - https://www.carolina.com/browse/product-search-results?tab=p&product.type=Product&product.productTypes=chemicals&facetFields=product.productTypes&format=json&ajax=true&viewSize=300&q=acid
+ * Common API Endpoints:
+ * - Product Quick View: /api/rest/cb/product/product-quick-view/:id
+ * - Product Details: /api/rest/cb/product/product-details/:id
+ * - Search Suggestions: /api/rest/cb/static/fetch-suggestions-for-global-search/:term
  *
- * @module SupplierCarolina
- * @category Supplier
+ * JSON Format:
+ * Append &format=json&ajax=true to any URL to get JSON response
  */
 export default class SupplierCarolina<T extends Product>
   extends SupplierBase<T>
   implements AsyncIterable<T>
 {
-  // Name of supplier (for display purposes)
+  /** Display name of the supplier */
   public readonly supplierName: string = "Carolina";
 
+  /** Maximum number of results to return */
   protected _limit: number = 5;
 
-  // Base URL for HTTP(s) requests
+  /** Base URL for all API requests */
   protected _baseURL: string = "https://www.carolina.com";
 
-  // Override the type of _queryResults to use our specific type
+  /** Cached search results from the last query */
   protected _queryResults: Array<CarolinaSearchResult> = [];
 
-  // This is a limit to how many queries can be sent to the supplier for any given query.
+  /** Maximum number of HTTP requests allowed per query */
   protected _httpRequestHardLimit: number = 50;
 
-  // Used to keep track of how many requests have been made to the supplier.
+  /** Counter for HTTP requests made during current query */
   protected _httpRequstCount: number = 0;
 
-  // If using async requests, this will determine how many of them to batch together (using
-  // something like Promise.all()). This is to avoid overloading the users bandwidth and
-  // to not flood the supplier with 100+ requests all at once.
+  /** Number of requests to process in parallel */
   protected _httpRequestBatchSize: number = 4;
 
-  // HTTP headers used as a basis for all queries.
+  /** Default headers sent with every request */
   protected _headers: HeadersInit = {
     /* eslint-disable */
     accept:
@@ -105,10 +86,9 @@ export default class SupplierCarolina<T extends Product>
   };
 
   /**
-   * Make the query params for the Carolina API
-   *
-   * @param query - The query to search for
-   * @returns The query params
+   * Constructs the query parameters for a product search request
+   * @param query - Search term to look for
+   * @returns Object containing all required search parameters
    */
   protected _makeQueryParams(query: string): CarolinaSearchParams {
     return {
@@ -126,10 +106,9 @@ export default class SupplierCarolina<T extends Product>
   }
 
   /**
-   * Check if the response is a valid Carolina search response
-   *
-   * @param response - The response to check
-   * @returns True if the response is a valid Carolina search response, false otherwise
+   * Validates that a response has a successful status code and expected structure
+   * @param response - Response object to validate
+   * @returns True if response is valid and successful
    */
   protected _isResponseOk(response: unknown): response is CarolinaSearchResponse {
     return (
@@ -138,14 +117,15 @@ export default class SupplierCarolina<T extends Product>
       "responseStatusCode" in response &&
       response.responseStatusCode === 200 &&
       "@type" in response &&
-      //response["@type"] === "PageSlotContainer" &&
       "contents" in response &&
       typeof response.contents === "object"
     );
   }
 
   /**
-   * Type guard to check if an object is a valid Carolina response
+   * Performs deep validation of a search response object
+   * @param obj - Response object to validate
+   * @returns True if the response matches expected Carolina search response structure
    */
   protected _isValidResponse(obj: unknown): obj is CarolinaSearchResponse {
     if (!obj || typeof obj !== "object") {
@@ -185,9 +165,8 @@ export default class SupplierCarolina<T extends Product>
   }
 
   /**
-   * Query products from the Carolina API
-   *
-   * @returns A promise that resolves when the products are queried
+   * Executes a product search query and stores results
+   * Fetches products matching the current search query and updates internal results cache
    */
   protected async queryProducts(): Promise<void> {
     const params = this._makeQueryParams(this._query);
@@ -202,35 +181,35 @@ export default class SupplierCarolina<T extends Product>
       return;
     }
 
-    //console.log(response.contents.ContentFolderZone[0].childRules);
-
     const results = await this._extractSearchResults(response);
     this._queryResults = results.slice(0, this._limit);
   }
 
+  /**
+   * Extracts product search results from a response object
+   * Navigates through nested response structure to find product listings
+   * @param response - Raw response object from search request
+   * @returns Array of validated search result items
+   */
   protected _extractSearchResults(response: unknown): CarolinaSearchResult[] {
     try {
-      // Type guard the response first
       if (!this._isValidResponse(response)) {
         console.error("Invalid response structure");
         return [];
       }
 
-      // Navigate through the nested structure to find results
       const contentFolder = response.contents.ContentFolderZone[0];
       if (!contentFolder?.childRules?.[0]?.ContentRuleZone) {
         console.error("No content rules found");
         return [];
       }
 
-      // Find the TwoColumnFullWidthHeaderPage content
       const pageContent = contentFolder.childRules[0].ContentRuleZone[0];
       if (!pageContent?.contents?.MainContent) {
         console.error("No MainContent found");
         return [];
       }
 
-      // Look through MainContent for the PluginSlotContainer with Products - Search
       const mainContentItems = pageContent.contents.MainContent;
       const pluginSlotContainer = mainContentItems.find((item: CarolinaMainContentItem) =>
         item.contents?.ContentFolderZone?.some(
@@ -243,7 +222,6 @@ export default class SupplierCarolina<T extends Product>
         return [];
       }
 
-      // Find the Products - Search folder
       const productsFolder = pluginSlotContainer.contents.ContentFolderZone.find(
         (folder: CarolinaContentFolder) => folder.folderPath === "Products - Search",
       );
@@ -253,7 +231,6 @@ export default class SupplierCarolina<T extends Product>
         return [];
       }
 
-      // Get the results container
       const resultsContainer = productsFolder.childRules[0].ContentRuleZone.find(
         (zone: CarolinaContentRuleZoneItem): zone is CarolinaResultsContainer => {
           return (
@@ -268,7 +245,6 @@ export default class SupplierCarolina<T extends Product>
         return [];
       }
 
-      // Extract and validate results
       return resultsContainer.results.filter(this._isSearchResultItem);
     } catch (error) {
       console.error("Error extracting search results:", error);
@@ -276,6 +252,11 @@ export default class SupplierCarolina<T extends Product>
     }
   }
 
+  /**
+   * Type guard for validating search result items
+   * @param result - Object to validate as a search result
+   * @returns True if object matches CarolinaSearchResult structure
+   */
   protected _isSearchResultItem(result: unknown): result is CarolinaSearchResult {
     if (!result || typeof result !== "object") {
       return false;
@@ -307,6 +288,11 @@ export default class SupplierCarolina<T extends Product>
     }
   }
 
+  /**
+   * Type guard for validating product response objects
+   * @param obj - Object to validate as a product response
+   * @returns True if object matches CarolinaProductResponse structure
+   */
   protected _isProductResponse(obj: unknown): obj is CarolinaProductResponse {
     if (!obj || typeof obj !== "object") {
       return false;
@@ -314,12 +300,10 @@ export default class SupplierCarolina<T extends Product>
 
     const response = obj as Partial<CarolinaProductResponse>;
 
-    // Check if contents and MainContent exist and are properly structured
     if (!response.contents?.MainContent || !Array.isArray(response.contents.MainContent)) {
       return false;
     }
 
-    // Check if there's at least one MainContent item with atgResponse
     if (
       response.contents.MainContent.length === 0 ||
       !response.contents.MainContent[0]?.atgResponse
@@ -330,6 +314,11 @@ export default class SupplierCarolina<T extends Product>
     return true;
   }
 
+  /**
+   * Type guard for validating ATG response objects
+   * @param obj - Object to validate as an ATG response
+   * @returns True if object matches CarolinaATGResponse structure
+   */
   protected _isATGResponse(obj: unknown): obj is CarolinaATGResponse {
     if (!obj || typeof obj !== "object") {
       return false;
@@ -337,7 +326,6 @@ export default class SupplierCarolina<T extends Product>
 
     const response = obj as Partial<CarolinaATGResponse>;
 
-    // Check required properties and types
     if (typeof response.result !== "string" || response.result !== "success") {
       return false;
     }
@@ -348,7 +336,6 @@ export default class SupplierCarolina<T extends Product>
 
     const innerResponse = response.response.response;
 
-    // Check for required properties in the inner response
     const requiredProps = [
       "displayName",
       "longDescription",
@@ -361,6 +348,11 @@ export default class SupplierCarolina<T extends Product>
     return requiredProps.every((prop) => prop in innerResponse);
   }
 
+  /**
+   * Extracts ATG response data from a product response
+   * @param productResponse - Raw product response object
+   * @returns Parsed ATG response data or null if invalid
+   */
   protected _extractATGResponse(
     productResponse: unknown,
   ): CarolinaATGResponse["response"]["response"] | null {
@@ -381,18 +373,12 @@ export default class SupplierCarolina<T extends Product>
       return null;
     }
   }
-  /**
-   * Parse the products from the Carolina API
-   *
-   * @returns A promise that resolves to the products
-   *
-  protected async parseProducts(): Promise<(Product | void)[]> {
-    return Promise.all(
-      this._queryResults.map((result) => this._getProductData(result) as Promise<Product>),
-    );
-  }
-  */
 
+  /**
+   * Fetches detailed product data for a search result
+   * @param result - Search result item to get details for
+   * @returns Promise resolving to complete product data or void if failed
+   */
   protected async _getProductData(result: CarolinaSearchResult): Promise<Product | void> {
     try {
       const productResponse = await this.httpGetJson({
@@ -415,7 +401,6 @@ export default class SupplierCarolina<T extends Product>
       }
       console.log("atgResponse:", atgResponse);
       console.log("--------------------------------");
-      //return atgResponse as Product;
     } catch (error) {
       console.error("Error getting product data:", error);
       return;
