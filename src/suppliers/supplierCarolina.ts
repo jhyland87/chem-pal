@@ -1,15 +1,17 @@
-import result from "lodash/result";
-import type { Product, QuantityObject } from "types";
+import type { Product } from "types";
 import {
-  type CarolinaProductData,
-  type CarolinaProductIndexObject,
+  type CarolinaContentFolder,
+  type CarolinaContentRuleZoneItem,
+  type CarolinaMainContentItem,
+  type CarolinaResultsContainer,
   type CarolinaSearchParams,
+  type CarolinaSearchResponse,
+  type CarolinaSearchResult,
 } from "types/carolina";
-import { parsePrice } from "../helpers/currency";
-import { parseQuantity } from "../helpers/quantity";
 import SupplierBase from "./supplierBase";
 
 /**
+import { isSearchResultItem } from 'utils/carolinaSearch';
  * Carolina.com uses Oracle ATG Commerce as their ecommerce platform.
  *
  * The ATG Commerce platform uses a custom script to fetch product data.
@@ -62,7 +64,7 @@ export default class SupplierCarolina<T extends Product>
   protected _baseURL: string = "https://www.carolina.com";
 
   // Override the type of _queryResults to use our specific type
-  protected _queryResults: Array<CarolinaProductIndexObject> = [];
+  protected _queryResults: Array<CarolinaSearchResult> = [];
 
   // This is a limit to how many queries can be sent to the supplier for any given query.
   protected _httpRequestHardLimit: number = 50;
@@ -106,25 +108,76 @@ export default class SupplierCarolina<T extends Product>
    */
   protected _makeQueryParams(query: string): CarolinaSearchParams {
     return {
-      /*
-      790004999   Chemicals category ID
-      836054137   ACS grade
-      471891351   Lab grade
-      3929848101  Reagent grade
-      */
       /* eslint-disable */
-      N: "790004999",
-      Nf: "product.cbsLowPrice|GT 0.0||product.startDate|LTEQ 1.7457984E12||product.startDate|LTEQ 1.7457984E12",
-      Nr: "AND(product.siteId:100001,OR(product.type:Product),OR(product.catalogId:cbsCatalog))",
-      Nrpp: "120",
-      Ntt: query,
-      noRedirect: "true",
-      nore: "y",
-      question: query,
-      searchExecByFormSubmit: "true",
       tab: "p",
+      "product.type": "Product",
+      "product.productTypes": "chemicals",
+      facetFields: "product.productTypes",
+      format: "json",
+      ajax: true,
+      viewSize: 300,
+      q: query,
       /* eslint-enable */
-    } as CarolinaSearchParams;
+    } satisfies CarolinaSearchParams;
+  }
+
+  /**
+   * Check if the response is a valid Carolina search response
+   *
+   * @param response - The response to check
+   * @returns True if the response is a valid Carolina search response, false otherwise
+   */
+  protected _isResponseOk(response: unknown): response is CarolinaSearchResponse {
+    return (
+      !!response &&
+      typeof response === "object" &&
+      "responseStatusCode" in response &&
+      response.responseStatusCode === 200 &&
+      "@type" in response &&
+      response["@type"] === "PageSlotContainer" &&
+      "contents" in response &&
+      typeof response.contents === "object"
+    );
+  }
+
+  /**
+   * Type guard to check if an object is a valid Carolina response
+   */
+  protected _isValidResponse(obj: unknown): obj is CarolinaSearchResponse {
+    if (!obj || typeof obj !== "object") {
+      console.error("Response is not an object");
+      return false;
+    }
+
+    try {
+      const response = obj as Partial<CarolinaSearchResponse>;
+
+      if (!response.contents) {
+        console.error("Response missing contents");
+        return false;
+      }
+      if (!Array.isArray(response.contents.ContentFolderZone)) {
+        console.error("ContentFolderZone is not an array");
+        return false;
+      }
+      if (response.contents.ContentFolderZone.length === 0) {
+        console.error("ContentFolderZone is empty");
+        return false;
+      }
+      if (!response.contents.ContentFolderZone[0].childRules) {
+        console.error("No child rules found");
+        return false;
+      }
+      if (!Array.isArray(response.contents.ContentFolderZone[0].childRules)) {
+        console.error("Child rules is not an array");
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error validating response:", error);
+      return false;
+    }
   }
 
   /**
@@ -134,142 +187,136 @@ export default class SupplierCarolina<T extends Product>
    */
   protected async queryProducts(): Promise<void> {
     const params = this._makeQueryParams(this._query);
-    const response = await this.httpGet({ path: "/browse/product-search-results", params });
 
-    if (!response?.ok) {
-      throw new Error(`Response status: ${response?.status}`);
+    const response: unknown = await this.httpGetJson({
+      path: "/browse/product-search-results",
+      params,
+    });
+
+    if (!this._isResponseOk(response)) {
+      console.warn("Response status:", response);
+      return;
     }
 
-    const resultHTML = await response.text();
+    //console.log(response.contents.ContentFolderZone[0].childRules);
 
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(resultHTML, "text/html");
+    const results = await this._extractSearchResults(response);
+    console.log(results);
+  }
 
-    if (!doc) {
-      throw new Error("Failed to load product HTML into DOMParser");
+  protected _extractSearchResults(response: unknown): CarolinaSearchResult[] {
+    try {
+      // Type guard the response first
+      if (!this._isValidResponse(response)) {
+        console.error("Invalid response structure");
+        return [];
+      }
+
+      // Navigate through the nested structure to find results
+      const contentFolder = response.contents.ContentFolderZone[0];
+      if (!contentFolder?.childRules?.[0]?.ContentRuleZone) {
+        console.error("No content rules found");
+        return [];
+      }
+
+      // Find the TwoColumnFullWidthHeaderPage content
+      const pageContent = contentFolder.childRules[0].ContentRuleZone[0];
+      if (!pageContent?.contents?.MainContent) {
+        console.error("No MainContent found");
+        return [];
+      }
+
+      // Look through MainContent for the PluginSlotContainer with Products - Search
+      const mainContentItems = pageContent.contents.MainContent;
+      const pluginSlotContainer = mainContentItems.find((item: CarolinaMainContentItem) =>
+        item.contents?.ContentFolderZone?.some(
+          (folder: CarolinaContentFolder) => folder.folderPath === "Products - Search",
+        ),
+      );
+
+      if (!pluginSlotContainer?.contents?.ContentFolderZone) {
+        console.error("No Products - Search folder found");
+        return [];
+      }
+
+      // Find the Products - Search folder
+      const productsFolder = pluginSlotContainer.contents.ContentFolderZone.find(
+        (folder: CarolinaContentFolder) => folder.folderPath === "Products - Search",
+      );
+
+      if (!productsFolder?.childRules?.[0]?.ContentRuleZone) {
+        console.error("No content rules in Products folder");
+        return [];
+      }
+
+      // Get the results container
+      const resultsContainer = productsFolder.childRules[0].ContentRuleZone.find(
+        (zone: CarolinaContentRuleZoneItem): zone is CarolinaResultsContainer => {
+          return (
+            zone["@type"] === "ResultsContainer" &&
+            Array.isArray((zone as Partial<CarolinaResultsContainer>).results)
+          );
+        },
+      );
+
+      if (!resultsContainer) {
+        console.error("No results container found");
+        return [];
+      }
+
+      // Extract and validate results
+      return resultsContainer.results.filter(this._isSearchResultItem);
+    } catch (error) {
+      console.error("Error extracting search results:", error);
+      return [];
+    }
+  }
+
+  protected _isSearchResultItem(result: unknown): result is CarolinaSearchResult {
+    if (!result || typeof result !== "object") {
+      return false;
     }
 
-    //type Foo = HTMLElement | HTMLAnchorElement  | HTMLBaseElement;
-    const productElements: NodeListOf<Element> = doc.querySelectorAll("div.c-feature-product");
+    try {
+      const item = result as Record<string, unknown>;
 
-    const elementList: CarolinaProductIndexObject[] = [];
+      const requiredStringProps = [
+        "product.productId",
+        "product.productName",
+        "product.shortDescription",
+        "itemPrice",
+        "product.seoName",
+        "productUrl",
+        "productName",
+      ];
 
-    const _trimSpaceLike = (txt: string) =>
-      txt?.replaceAll(/(^(\\n|\\t|\s)*|(\\n|\\t|\s)*$)/gm, "");
+      const hasAllRequiredProps = requiredStringProps.every(
+        (prop) => prop in item && typeof item[prop] === "string",
+      );
 
-    for (const elem of productElements) {
-      const titleElement = elem.querySelector("h3.c-product-title") as HTMLElement;
-      const linkElement = elem.querySelector("a.c-product-link") as HTMLAnchorElement;
-      const price = elem.querySelector("p.c-product-price") as HTMLElement;
-      const count = elem.querySelector("p.c-product-total") as HTMLElement;
+      const hasValidBoolean =
+        "qtyDiscountAvailable" in item && typeof item.qtyDiscountAvailable === "boolean";
 
-      elementList.push({
-        url: linkElement.getAttribute("href") as string,
-        title: _trimSpaceLike(titleElement?.innerText),
-        prices: _trimSpaceLike(price?.innerText),
-        count: _trimSpaceLike(count?.innerText),
-      });
+      return hasAllRequiredProps && hasValidBoolean;
+    } catch {
+      return false;
     }
-
-    this._queryResults = elementList.slice(0, this._limit);
   }
 
   /**
    * Parse the products from the Carolina API
    *
    * @returns A promise that resolves to the products
-   */
+   *
   protected async parseProducts(): Promise<(Product | void)[]> {
     return Promise.all(
       this._queryResults.map((result) => this._getProductData(result) as Promise<Product>),
     );
   }
+  */
 
-  /**
-   * Get the product data from the Carolina API
-   *
-   * @param productIndexObject - The product index object
-   * @returns A promise that resolves to the product data or void if the product has no price
-   */
-  protected async _getProductData(
-    productIndexObject: CarolinaProductIndexObject,
-  ): Promise<Product | void> {
-    //try {
-    const response = await this.httpGet({
-      path: productIndexObject.url,
-    });
-    if (!response?.ok) {
-      throw new Error(`Response status: ${response?.status}`);
-    }
-
-    const data = await response.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(data, "text/html");
-    if (!doc) {
-      throw new Error("Failed to load product HTML into DOMParser");
-    }
-
-    const productScriptNonce = doc.querySelector("script[nonce]");
-    if (!productScriptNonce) {
-      throw new Error("Failed to find product script nonce");
-    }
-
-    const productScriptNonceText = productScriptNonce.textContent;
-    if (!productScriptNonceText) {
-      throw new Error("Failed to find product script nonce text");
-    }
-
-    const productScriptNonceTextMatch = productScriptNonceText.match("(?<== )(.*)(?=;\\n)");
-
-    if (!productScriptNonceTextMatch) {
-      throw new Error("Failed to find product script nonce text");
-    }
-
-    const productAtgJson = JSON.parse(productScriptNonceTextMatch[0]);
-
-    const productData = result(
-      productAtgJson,
-      "fetch.response.contents.MainContent[0].atgResponse.response.response",
-    ) as CarolinaProductData;
-
-    if (!productData) {
-      throw new Error("Failed to find product data");
-    }
-
-    const quantityMatch: QuantityObject | void = parseQuantity(productData.displayName);
-
-    if (!quantityMatch) return;
-
-    // The price can be stored at different locations in the productData object. Select them all then
-    // choose the first non-undefined, non-null value.
-    const price = (() => {
-      const dataLayerPrice = productData.dataLayer?.productPrice?.[0];
-      if (dataLayerPrice) return dataLayerPrice;
-
-      const variantPrice =
-        productData.familyVariyantProductDetails?.productVariantsResult?.masterProductBean
-          ?.skus?.[0]?.priceInfo?.regularPrice?.[0];
-      if (variantPrice) return variantPrice;
-
-      return undefined;
-    })();
-
-    const priceObj = parsePrice(price as string) || {
-      price,
-      currencyCode: this._productDefaults.currencyCode,
-      currencySymbol: this._productDefaults.currencySymbol,
-    };
-
-    const product = {
-      ...this._productDefaults,
-      ...priceObj,
-      supplier: this.supplierName,
-      title: productData.displayName,
-      url: this._href(productData.canonicalUrl),
-      displayQuantity: `${quantityMatch.quantity} ${quantityMatch.uom}`,
-      ...quantityMatch,
-    };
-
-    return product as Product;
+  protected async _getProductData(result: CarolinaSearchResult): Promise<Product> {
+    console.log("result:", result);
+    return {} as Product;
   }
 }

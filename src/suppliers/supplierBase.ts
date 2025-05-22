@@ -503,5 +503,5 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * Parse the products from the supplier.
    * @returns A promise that resolves when the products have been parsed.
    */
-  protected abstract _getProductData(productIndexObject: object): Promise<Product | void>;
+  protected abstract _getProductData(productIndexObject: object): Promise<Partial<Product> | void>;
 }
