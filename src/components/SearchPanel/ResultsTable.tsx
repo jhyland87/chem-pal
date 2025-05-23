@@ -40,7 +40,7 @@ export default function ResultsTable({
   const [searchInput, setSearchInput] = useState<string>("");
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [showSearchResults, setShowSearchResults] = useState<Product[]>([]);
-  const [, setStatusLabel] = useState<string | boolean>(false);
+  const [statusLabel, setStatusLabel] = useState<string | boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { executeSearch, handleStopSearch } = useSearch({
@@ -75,11 +75,8 @@ export default function ResultsTable({
    * Updates the displayed search results when the search result timestamp changes.
    */
   useEffect(() => {
-    //console.log("Search result timestamp was updated", appContext.settings.searchResultUpdateTs);
-
     chrome.storage.session.get(["searchResults"]).then((data) => {
-      //console.log("New search results", data.searchResults);
-      setShowSearchResults(data.searchResults as Product[]);
+      if (Array.isArray(data.searchResults)) setShowSearchResults(data.searchResults);
     });
   }, [appContext.settings.searchResultUpdateTs]);
 
@@ -87,7 +84,7 @@ export default function ResultsTable({
    * Executes the search when the search input changes.
    */
   useEffect(() => {
-    executeSearch(searchInput); //.then(console.log).catch(console.error);
+    executeSearch(searchInput);
   }, [searchInput]);
 
   /**
@@ -95,8 +92,6 @@ export default function ResultsTable({
    */
   useEffect(() => {
     console.log(searchResults.length + " search results");
-    // Not sure i'm happy with how I'm handling the search result update sequence.
-    // May need to refactor later.
     chrome.storage.session.set({ searchResults }).then(() => {
       if (!searchResults.length) {
         setStatusLabel(
@@ -110,15 +105,8 @@ export default function ResultsTable({
         searchResultUpdateTs: new Date().toISOString(),
       });
     });
-  }, [searchResults]); // <-- this is the dependency
-
-  /**
-   * Logs search results updates for debugging.
-
-  useEffect(() => {
-    console.debug("searchResults UPDATED:", searchResults);
   }, [searchResults]);
- */
+
   const table = useResultsTable({
     showSearchResults,
     columnFilterFns,
@@ -150,52 +138,61 @@ export default function ResultsTable({
         <Box
           className="search-input-container fullwidth"
           component="form"
-          //sx={{ "& > :not(style)": { m: 0 } }}
           noValidate
           autoComplete="off"
         />
         <div className="p-2" style={{ minHeight: "369px" }}>
           <TableOptions table={table} searchInput={searchInput} setSearchInput={setSearchInput} />
           <div className="h-4" />
-          <table
-            className="search-results"
-            style={{
-              ...columnSizeVars(),
-            }}
-          >
-            <TableHeader table={table} />
-            <tbody>
-              {table.getRowModel().rows.map((row) => {
-                return (
-                  <Fragment key={row.id}>
-                    <tr>
-                      {row.getVisibleCells().map((cell) => {
-                        return (
-                          <td
-                            key={cell.id}
-                            // @todo: Find a more sensible solution to this. Should be able to add custom properties
-                            // to the meta object.
-                            style={(cell.column.columnDef.meta as { style?: CSSProperties })?.style}
-                          >
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                    {row.getIsExpanded() && (
-                      <tr>
-                        <td colSpan={row.getVisibleCells().length}>
-                          {renderVariants({ row: row as Row<Product> })}
-                        </td>
-                      </tr>
-                    )}
-                  </Fragment>
-                );
-              })}
-            </tbody>
-          </table>
-          <div className="h-2" />
-          <Pagination table={table} />
+          {Array.isArray(showSearchResults) && showSearchResults.length > 0 && (
+            <>
+              <table
+                className="search-results"
+                style={{
+                  ...columnSizeVars(),
+                }}
+              >
+                <TableHeader table={table} />
+                <tbody>
+                  {table.getRowModel().rows.map((row) => {
+                    return (
+                      <Fragment key={row.id}>
+                        <tr>
+                          {row.getVisibleCells().map((cell) => {
+                            return (
+                              <td
+                                key={cell.id}
+                                style={
+                                  (cell.column.columnDef.meta as { style?: CSSProperties })?.style
+                                }
+                              >
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                        {row.getIsExpanded() && (
+                          <tr>
+                            <td colSpan={row.getVisibleCells().length}>
+                              {renderVariants({ row: row as Row<Product> })}
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <div className="h-2" />
+              <Pagination table={table} />
+            </>
+          )}
+          {((!isLoading && !Array.isArray(showSearchResults)) ||
+            showSearchResults.length === 0) && (
+            <div className="text-center p-4">
+              <p>{statusLabel || "No results found. Try a different search term."}</p>
+            </div>
+          )}
         </div>
       </Paper>
     </>

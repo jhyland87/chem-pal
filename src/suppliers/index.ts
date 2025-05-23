@@ -19,20 +19,10 @@
  * ```
  */
 
-import SupplierBioFuranChem from "./supplierBiofuranChem";
-import SupplierBunmurraLabs from "./supplierBunmurraLabs";
-import SupplierCarolina from "./supplierCarolina";
-import SupplierFtfScientific from "./supplierFtfScientific";
-import SupplierHbarSci from "./supplierHbarSci";
-import SupplierLaballey from "./supplierLaballey";
-import SupplierLaboratoriumDiscounter from "./supplierLaboratoriumDiscounter";
-
-export {
-  SupplierBioFuranChem,
-  SupplierBunmurraLabs,
-  SupplierCarolina,
-  SupplierFtfScientific,
-  SupplierHbarSci,
-  SupplierLaballey,
-  SupplierLaboratoriumDiscounter,
-};
+export { default as SupplierBioFuranChem } from "./supplierBiofuranChem";
+//export { default as SupplierBunmurraLabs } from "./supplierBunmurraLabs";
+export { default as SupplierCarolina } from "./supplierCarolina";
+export { default as SupplierFtfScientific } from "./supplierFtfScientific";
+export { default as SupplierHbarSci } from "./supplierHbarSci";
+export { default as SupplierLaballey } from "./supplierLaballey";
+export { default as SupplierLaboratoriumDiscounter } from "./supplierLaboratoriumDiscounter";

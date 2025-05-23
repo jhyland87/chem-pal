@@ -8,7 +8,7 @@ import {
 } from "@tanstack/react-table";
 import ArrowDropDownIcon from "icons/ArrowDropDownIcon";
 import ArrowDropUpIcon from "icons/ArrowDropUpIcon";
-import { CSSProperties } from "react";
+import { CSSProperties, useMemo } from "react";
 import { type Product } from "types";
 import "./TableHeader.scss";
 /**
@@ -29,62 +29,64 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
    *
    * @returns Object mapping column IDs to their filter configurations
    */
-  const filterableColumns = table.options.columns.reduce<
-    Record<string, ColumnMeta<Product, unknown>>
-  >((accu, column: ColumnDef<Product, unknown>) => {
-    const meta = column.meta as ColumnMeta<Product, unknown> | undefined;
-    if (meta?.filterVariant === undefined || !column.id) return accu;
+  const filterableColumns = useMemo(() => {
+    return table.options.columns.reduce<Record<string, ColumnMeta<Product, unknown>>>(
+      (accu, column: ColumnDef<Product, unknown>) => {
+        const meta = column.meta as ColumnMeta<Product, unknown> | undefined;
+        if (meta?.filterVariant === undefined || !column.id) return accu;
 
-    accu[column.id] = {
-      filterVariant: meta.filterVariant,
-      rangeValues: [],
-      uniqueValues: [],
-    };
-    return accu;
-  }, {});
+        accu[column.id] = {
+          filterVariant: meta.filterVariant,
+          rangeValues: [],
+          uniqueValues: [],
+        };
+        return accu;
+      },
+      {},
+    );
+  }, [table.options.columns]);
 
-  // Now parse the results to get the filterable values.
-  // @todo: This runs every time there's a row updated or added. It would be better to save
-  // this data as the rows are outputted from the factory method, then set the column filter
-  // values once its finished.
-  for (const [colName, { filterVariant }] of Object.entries(filterableColumns)) {
-    const col = table.options.columns.find((col) => col.id === colName);
-    if (col === undefined) continue;
+  // Process the filterable columns with memoization
+  useMemo(() => {
+    for (const [colName, { filterVariant }] of Object.entries(filterableColumns)) {
+      const col = table.options.columns.find((col) => col.id === colName);
+      if (col === undefined) continue;
 
-    if (filterVariant === "range") {
-      /**
-       * Calculates the range values (min and max) for numeric columns.
-       * @returns Array containing [min, max] values
-       */
-      const rangeValues = table.options.data.reduce(
-        (accu, row: Product) => {
-          const value = row[colName as keyof Product] as number;
-          if (value < accu[0]) {
-            accu[0] = value;
-          } else if (value > accu[1]) {
-            accu[1] = value;
-          }
-          return accu;
-        },
-        [0, 0],
-      );
-      filterableColumns[colName].rangeValues = rangeValues;
-      continue;
-    }
-
-    /**
-     * Collects unique values for non-range columns.
-     * @returns Array of unique values
-     */
-    const uniqueValues = table.options.data.reduce<string[]>((accu, row: Product) => {
-      const value = row[colName as keyof Product] as string;
-      if (value !== undefined && accu.indexOf(value) === -1) {
-        accu.push(value);
+      if (filterVariant === "range") {
+        /**
+         * Calculates the range values (min and max) for numeric columns.
+         * @returns Array containing [min, max] values
+         */
+        const rangeValues = table.options.data.reduce(
+          (accu, row: Product) => {
+            const value = row[colName as keyof Product] as number;
+            if (value < accu[0]) {
+              accu[0] = value;
+            } else if (value > accu[1]) {
+              accu[1] = value;
+            }
+            return accu;
+          },
+          [0, 0],
+        );
+        filterableColumns[colName].rangeValues = rangeValues;
+        continue;
       }
-      return accu;
-    }, []);
-    filterableColumns[colName].uniqueValues = uniqueValues;
-  }
+
+      /**
+       * Collects unique values for non-range columns.
+       * @returns Array of unique values
+       */
+      const uniqueValues = table.options.data.reduce<string[]>((accu, row: Product) => {
+        const value = row[colName as keyof Product] as string;
+        if (value !== undefined && accu.indexOf(value) === -1) {
+          accu.push(value);
+        }
+        return accu;
+      }, []);
+      filterableColumns[colName].uniqueValues = uniqueValues;
+    }
+  }, [filterableColumns, table.options.data, table.options.columns]);
 
   return (
     <thead>
