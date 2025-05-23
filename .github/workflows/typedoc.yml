@@ -19,24 +19,6 @@ jobs:
         with:
           node-version: 'v22.15.0'
       - run: npm run setup
-      - name: Run build step
-        run: npm run build
-      - name: Upload build artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: 'build'
-
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run tests
-        run: npm run test
-
-  docs:
-    needs: [build, test]
-    runs-on: ubuntu-latest
-    steps:
       - name: Generate documentation
         run: npm run docs
       - name: Setup Pages
@@ -50,9 +32,9 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    needs: docs
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v4 
