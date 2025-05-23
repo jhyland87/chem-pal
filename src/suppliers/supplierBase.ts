@@ -54,6 +54,8 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   // HTTP headers used as a basis for all queries.
   protected _headers: HeadersInit = {};
 
+  //protected _logger = log.getLogger("default");
+
   // Default values for products. These will get overridden if they're found in the product data.
   protected _productDefaults = {
     uom: "ea",

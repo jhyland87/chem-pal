@@ -1,4 +1,5 @@
-import type { Product } from "types";
+import { isQuantityObject, parseQuantityCoalesce } from "helpers/quantity";
+import type { Product, QuantityObject } from "types";
 import {
   type ATGResponse,
   type ContentFolder,
@@ -10,6 +11,8 @@ import {
   type SearchResponse,
   type SearchResult,
 } from "types/carolina";
+import type { ParsedPrice } from "types/currency";
+import { parsePrice } from "../helpers/currency";
 import SupplierBase from "./supplierBase";
 
 /**
@@ -374,31 +377,49 @@ export default class SupplierCarolina
    * @param result - Search result item to get details for
    * @returns Promise resolving to complete product data or void if failed
    */
-  protected async _getProductData(result: SearchResult): Promise<Product | void> {
-    try {
-      const productResponse = await this._httpGetJson({
-        path: result.productUrl,
-        params: {
-          format: "json",
-          ajax: true,
-        },
-      });
+  protected async _getProductData(result: SearchResult): Promise<Partial<Product> | void> {
+    const productResponse = await this._httpGetJson({
+      path: result.productUrl,
+      params: {
+        format: "json",
+        ajax: true,
+      },
+    });
 
-      if (!this._isResponseOk(productResponse)) {
-        console.warn("Response status:", productResponse);
-        return;
-      }
-
-      const atgResponse = this._extractATGResponse(productResponse);
-      if (!atgResponse) {
-        console.error("No ATG response found");
-        return;
-      }
-      console.log("atgResponse:", atgResponse);
-      console.log("--------------------------------");
-    } catch (error) {
-      console.error("Error getting product data:", error);
+    if (!this._isResponseOk(productResponse)) {
+      console.warn("Response status:", productResponse);
       return;
     }
+
+    const atgResponse = this._extractATGResponse(productResponse);
+    if (!atgResponse) {
+      console.error("No ATG response found");
+      return;
+    }
+    console.log("atgResponse:", atgResponse);
+
+    const productPrice = parsePrice(atgResponse.dataLayer.productPrice[0]);
+    if (!productPrice) {
+      console.error("No product price found");
+      return;
+    }
+
+    const quantity = parseQuantityCoalesce([
+      atgResponse.displayName,
+      atgResponse.shortDescription,
+      atgResponse.standardResult.productName,
+    ]);
+
+    if (!isQuantityObject(quantity)) return Promise.resolve(undefined);
+
+    return Promise.resolve({
+      id: parseInt(atgResponse.product),
+      title: atgResponse.displayName,
+      url: atgResponse.canonicalUrl,
+      description: atgResponse.shortDescription,
+      supplier: this.supplierName,
+      ...(productPrice as ParsedPrice),
+      ...(quantity as QuantityObject),
+    } satisfies Partial<Product>);
   }
 }

@@ -244,66 +244,77 @@ export interface SearchParams {
  * Contains detailed product information including descriptions, display data, and metadata.
  */
 export interface ATGResponse {
-  /** Result status */
+  /** Status of the ATG request result */
   result: string;
-  /** Response data */
+  /** Container for the main response data */
   response: {
-    /** Inner response object */
+    /** Inner response object containing product details and metadata */
     response: {
-      /** Breadcrumb schema data */
+      /** Schema data for breadcrumb navigation including JSON structure and data layer information */
       breadCrumbSchemaJson: {
-        /** JSON string of breadcrumb schema */
+        /** JSON string containing the structured breadcrumb schema data */
         breadCrumbSchemaJson: string;
-        /** Data layer object for breadcrumbs */
+        /** Analytics data layer object specific to breadcrumb navigation */
         dataLayer_obj: Record<string, string>;
       };
-      /** Detailed product description */
+      /** Standard result object containing core product information */
+      standardResult: {
+        /** Name of the product */
+        productName: string;
+        /** Unique identifier for the product */
+        productId: string;
+        /** Order-related data for the product display page */
+        pdpOrderResult: Record<string, unknown>;
+      };
+      /** Detailed description of the product */
       longDescription: string;
-      /** Product data */
+      /** Product data in string format */
       product: string;
-      /** Data layer information */
+      /** Analytics and tracking data container */
       dataLayer: {
-        /** Product detail information */
+        /** Detailed product information for analytics */
         productDetail: {
-          /** URL of the product image */
+          /** URL of the product's primary image */
           productImageUrl: string;
-          /** Unique product identifier */
+          /** Unique identifier for the product */
           productId: string;
-          /** URL to the product page */
+          /** URL to the product's detail page */
           productUrl: string;
-          /** Type of page */
+          /** Type of page being displayed */
           page_type: string;
           /** Name of the product */
           productName: string;
         };
-        /** Data layer object container */
+        /** Array of product price information */
+        productPrice: string[];
+        /** Container for data layer information */
         dataLayerObject: {
-          /** JSON string of data layer information */
+          /** JSON object containing analytics data layer information */
           dataLayerJson: Record<string, string>;
         };
       };
-      /** Canonical URL for the product */
+      /** Canonical URL for the product page */
       canonicalUrl: string;
-      /** Indicates if this is a digital learning product */
+      /** Indicates if the product is a digital learning product */
       isDLProduct: boolean;
-      /** Display name of the product */
+      /** Display name shown for the product */
       displayName: string;
-      /** Indicates if the product is discontinued */
+      /** Indicates if the product has been discontinued */
       isDiscontinuedItem: boolean;
       /** Indicates if this is a product grouping */
       isproductGrouping: boolean;
-      /** Brief product description */
+      /** Brief description of the product */
       shortDescription: string;
-      /** Type of product */
+      /** Type or category of the product */
       prodType: string;
-      /** Details about product family variants */
+      /** Details about product variants within the same family */
       familyVariyantProductDetails: Record<string, unknown>;
       /** Display name for the product family variant */
       familyVariyantDisplayName: string;
-      /** Organization details */
+      /** Details about the organization */
       organizationDetails: Record<string, unknown>;
     };
-    /** Response status */
+    /** Status of the response */
     status: string;
   };
 }

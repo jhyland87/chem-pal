@@ -6,6 +6,11 @@ import type { Product } from "types";
 import type { ItemListing, SearchResponse } from "types/woocommerce";
 import SupplierBase from "./supplierBase";
 
+/**
+ * https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/products.md
+ * https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/products.md#list-products
+ *
+ */
 export default abstract class SupplierBaseWoocommerce
   extends SupplierBase<ItemListing, Product>
   implements AsyncIterable<Product>
