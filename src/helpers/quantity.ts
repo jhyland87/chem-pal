@@ -22,23 +22,17 @@ import type { QuantityObject } from "types";
  * @see https://regex101.com/r/Ruid54/3
  */
 export function parseQuantity(value: string): QuantityObject | void {
+  if (!value) return;
+
   const quantityPattern = new RegExp(
     "(?<quantity>\\d[\\d.,]*)\\s?(?<uom>(?:milli|kilo|centi)?" +
       "(?:ounce|g(?:allon|ram|al)|pound|quart|qt|piece|pc|" +
       "lb|(?:met|lit)[re]{2})s?|oz|k[mg]?|g|l|[cm]?[glm])",
     "i",
   );
-  if (!value) return;
   const quantityMatch = value.match(quantityPattern);
 
-  if (
-    !quantityMatch ||
-    !quantityMatch.groups ||
-    !quantityMatch.groups.quantity ||
-    !quantityMatch.groups.uom
-  ) {
-    return;
-  }
+  if (!quantityMatch?.groups?.quantity || !quantityMatch?.groups?.uom) return;
 
   let parsedQuantity: string | number = quantityMatch.groups.quantity;
 
@@ -52,41 +46,7 @@ export function parseQuantity(value: string): QuantityObject | void {
   const uom = standardizeUom(quantityMatch.groups.uom);
   const quantity = parseFloat(parsedQuantity.replace(/,/g, ""));
 
-  if (uom && quantity) return { quantity, uom } as QuantityObject;
-}
-
-/**
- * Takes a function and an array of values, applies the function to each value in sequence,
- * and returns the first non-undefined result. Useful for trying multiple possible inputs
- * until finding one that produces a valid result.
- *
- * @category Helper
- * @param fn - The function to apply to each value
- * @param properties - Array of values to try the function on
- * @returns The first non-undefined result from applying the function, or undefined if all attempts fail
- *
- * @example
- * ```typescript
- * // Try parsing quantity from different fields
- * const quantity = coalesce(parseQuantity, ["100g", "invalid", "200ml"]);
- * // Returns { quantity: 100, uom: 'g' }
- *
- * // Generic usage with any function that might return undefined
- * const result = coalesce(
- *   (x: string) => x.match(/\d+/)?.[0],
- *   ["abc", "123", "def"]
- * );
- * // Returns "123"
- * ```
- */
-export function coalesce<T, R>(fn: (arg: T) => R | void, properties: T[]): R | void {
-  for (const prop of properties) {
-    const result = fn(prop);
-    if (result !== undefined) {
-      return result;
-    }
-  }
-  return undefined;
+  if (uom && quantity) return { quantity, uom } satisfies QuantityObject;
 }
 
 /**
@@ -97,7 +57,14 @@ export function coalesce<T, R>(fn: (arg: T) => R | void, properties: T[]): R | v
  * @returns True if the value is a QuantityObject, false otherwise
  */
 export function isQuantityObject(value: unknown): value is QuantityObject {
-  return typeof value === "object" && value !== null && "quantity" in value && "uom" in value;
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    "quantity" in value &&
+    "uom" in value &&
+    typeof value.quantity === "number" &&
+    typeof value.uom === "string"
+  );
 }
 
 /**

@@ -1,3 +1,4 @@
+import * as contentType from "content-type";
 import type { CacheResponse, RequestHashObject, SerializedResponse } from "types/request";
 import { md5sum, serialize } from "./utils";
 
@@ -18,8 +19,8 @@ import { md5sum, serialize } from "./utils";
  * So instead, we just use the hash to store the file in a location that is guaranteed to be unique. This is the
  * same way that the python request_cache library works, and that worked pretty well.
  *
- * @param {Request} request - The Request object to generate a hash for
- * @returns {RequestHashObject} - A RequestHashObject containing:
+ * @param  request - The Request object to generate a hash for
+ * @returns A RequestHashObject containing:
  *          - hash: The MD5 hash of the request
  *          - file: The suggested file location for caching the request
  *          - url: The parsed URL object from the request
@@ -44,6 +45,7 @@ import { md5sum, serialize } from "./utils";
  * //     ...other URL properties
  * //   }
  * // }
+ * ```
  * @category Helper
  */
 export function getRequestHash(request: Request): RequestHashObject {
@@ -56,7 +58,7 @@ export function getRequestHash(request: Request): RequestHashObject {
     hash: resultHash,
     file: `${url.hostname}/${resultHash}.json`,
     url: url,
-  } as RequestHashObject;
+  } satisfies RequestHashObject;
 }
 
 /**
@@ -64,9 +66,9 @@ export function getRequestHash(request: Request): RequestHashObject {
  * This function serializes the response content based on its content type
  * and generates a hash for the request to be used as a cache key.
  *
- * @param {Request} request - The original Request object
- * @param {Response} response - The Response object to be cached
- * @returns {Promise<CacheResponse>} A Promise that resolves to a CacheResponse object containing:
+ * @param request - The original Request object
+ * @param response - The Response object to be cached
+ * @returns A Promise that resolves to a CacheResponse object containing:
  *          - hash: The RequestHashObject with request details and hash
  *          - data: A SerializedResponse containing the content type and serialized content
  * @example
@@ -92,16 +94,18 @@ export async function getCachableResponse(
   request: Request,
   response: Response,
 ): Promise<CacheResponse> {
-  const reqHash = getRequestHash(request) as RequestHashObject;
+  const reqHash = getRequestHash(request);
 
   // Generate a serialized object to be saved
+  const dataType = contentType.parse(response.headers.get("content-type")?.toString() ?? "");
+
   const serializedResponse: SerializedResponse = {
-    contentType: response.headers.get("content-type")?.toString() ?? "",
+    contentType: dataType.type,
   };
 
   const clonedResponse = response.clone();
 
-  if (serializedResponse.contentType.includes("application/json")) {
+  if (serializedResponse.contentType === "application/json") {
     // Json gets stringified
     serializedResponse.content = serialize(JSON.stringify(await clonedResponse.json()));
   } else {
@@ -112,5 +116,5 @@ export async function getCachableResponse(
   return {
     hash: reqHash,
     data: serializedResponse,
-  };
+  } satisfies CacheResponse;
 }

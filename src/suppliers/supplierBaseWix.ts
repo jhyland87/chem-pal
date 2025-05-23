@@ -1,8 +1,8 @@
+import { parsePrice } from "helpers/currency";
+import { parseQuantity } from "helpers/quantity";
 import merge from "lodash/merge";
 import { Product, Variant } from "types";
 import { ProductItem, ProductObject, ProductSelection, QueryResponse } from "types/wix";
-import { parsePrice } from "../helpers/currency";
-import { parseQuantity } from "../helpers/quantity";
 import SupplierBase from "./supplierBase";
 
 /**

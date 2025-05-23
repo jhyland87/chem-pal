@@ -3,6 +3,27 @@ import { CURRENCY_CODE_MAP } from "constants/currency";
 import { LRUCache } from "lru-cache";
 import type { CurrencyCode, CurrencySymbol, ParsedPrice } from "types/currency";
 
+/**
+ * LRU (Least Recently Used) cache for storing currency exchange rates.
+ * Implements caching to minimize API calls to the exchange rate service.
+ *
+ * Configuration:
+ * - Maximum size: 5 entries
+ * - Automatic fetching of missing rates
+ * - Fetches from Hexarate API (https://hexarate.paikama.co)
+ *
+ * Cache key format: "FROM:TO" (e.g., "USD:EUR")
+ * Cache value: Exchange rate as a number
+ *
+ * @example
+ * ```typescript
+ * // Cache usage is automatic through getCurrencyRate():
+ * const rate1 = await getCurrencyRate('USD', 'EUR'); // Fetches from API
+ * const rate2 = await getCurrencyRate('USD', 'EUR'); // Uses cached value
+ *
+ * // After 5 different currency pairs, least recently used pair is evicted
+ * ```
+ */
 const lruCurrencyRate = new LRUCache({
   max: 5,
   fetchMethod: async (key: string) => {
@@ -18,39 +39,51 @@ const lruCurrencyRate = new LRUCache({
 /**
  * Extracts the currency symbol from a price string.
  * Uses Unicode property escapes to match currency symbols.
+ * Supports a wide range of international currency symbols.
  *
- * @param price - The price string to extract the currency symbol from
- * @returns  The currency symbol if found, undefined otherwise
  * @category Helper
+ * @param price - The price string to extract the currency symbol from
+ * @returns The currency symbol if found, undefined otherwise
+ *
  * @example
  * ```typescript
  * getCurrencySymbol('$1000') // Returns '$'
  * getCurrencySymbol('1000€') // Returns '€'
- * getCurrencySymbol('1000£') // Returns '£'
- * getCurrencySymbol('1000¥') // Returns '¥'
- * getCurrencySymbol('1000₹') // Returns '₹'
+ * getCurrencySymbol('£99.99') // Returns '£'
+ * getCurrencySymbol('¥10000') // Returns '¥'
+ * getCurrencySymbol('₹1500') // Returns '₹'
+ * getCurrencySymbol('1000') // Returns undefined (no symbol)
  * ```
  */
-export function getCurrencySymbol(price: string): CurrencySymbol | undefined {
+export function getCurrencySymbol(price: string): CurrencySymbol | void {
   const match = price.match(/\p{Sc}/u);
-  if (!match) return undefined;
-  return match[0] as CurrencySymbol;
+  if (!match) return;
+  return match[0] satisfies CurrencySymbol;
 }
 
 /**
  * Parses a price string into a structured object containing currency information.
- * Handles various price formats including foreign number formats (e.g., 1.234,56).
+ * Handles various price formats and number representations:
+ * - Different currency symbol positions (prefix/suffix)
+ * - International number formats (e.g., 1.234,56 or 1,234.56)
+ * - Various currency symbols (€, $, £, ¥, etc.)
  *
- * @param  price - The price string to parse
- * @returns Object containing currency code, symbol, and numeric price, or undefined if invalid
  * @category Helper
+ * @param price - The price string to parse (e.g., "$1,234.56" or "1.234,56€")
+ * @returns Object with currency code, symbol, and numeric price, or undefined if invalid
+ *
  * @example
  * ```typescript
- * parsePrice('$1000') // Returns { currencyCode: 'USD', price: 1000, currencySymbol: '$' }
- * parsePrice('1000€') // Returns { currencyCode: 'EUR', price: 1000, currencySymbol: '€' }
- * parsePrice('1000£') // Returns { currencyCode: 'GBP', price: 1000, currencySymbol: '£' }
- * parsePrice('1000¥') // Returns { currencyCode: 'JPY', price: 1000, currencySymbol: '¥' }
- * parsePrice('1000') // Returns undefined
+ * parsePrice('$1,234.56')
+ * // Returns { currencyCode: 'USD', price: 1234.56, currencySymbol: '$' }
+ *
+ * parsePrice('1.234,56€')
+ * // Returns { currencyCode: 'EUR', price: 1234.56, currencySymbol: '€' }
+ *
+ * parsePrice('£99.99')
+ * // Returns { currencyCode: 'GBP', price: 99.99, currencySymbol: '£' }
+ *
+ * parsePrice('invalid') // Returns undefined
  * ```
  */
 export function parsePrice(price: string): ParsedPrice | void {
@@ -72,23 +105,32 @@ export function parsePrice(price: string): ParsedPrice | void {
     currencyCode,
     currencySymbol,
     price: parseFloat(bareAmount),
-  } as ParsedPrice;
+  } satisfies ParsedPrice;
 }
 
 /**
  * Fetches the current exchange rate between two currencies.
  * Uses the Hexarate API to get real-time exchange rates.
- * The responses are cached using lru-cache npm module.
+ * Implements caching using LRU cache to minimize API calls.
  *
- * @param from - The source currency code
- * @param to - The target currency code
- * @returns The exchange rate between the currencies
- * @throws Error  If the API request fails
  * @category Helper
+ * @param from - The source currency code (e.g., 'USD', 'EUR')
+ * @param to - The target currency code
+ * @returns The exchange rate as a number
+ * @throws Error if the API request fails or rate cannot be fetched
+ *
  * @example
  * ```typescript
- * await getCurrencyRate('USD', 'EUR') // Returns 0.85
- * await getCurrencyRate('EUR', 'USD') // Returns 1.1764705882352942
+ * // Get EUR to USD rate
+ * const rate = await getCurrencyRate('EUR', 'USD')
+ * // Returns something like 1.18 (meaning 1 EUR = 1.18 USD)
+ *
+ * // Convert amount using rate
+ * const amount = 100;
+ * const converted = amount * rate; // 118 USD
+ *
+ * // Rates are cached for subsequent calls
+ * await getCurrencyRate('EUR', 'USD') // Uses cached value
  * ```
  */
 export async function getCurrencyRate(from: CurrencyCode, to: CurrencyCode): Promise<number> {
@@ -102,12 +144,14 @@ export async function getCurrencyRate(from: CurrencyCode, to: CurrencyCode): Pro
 }
 
 /**
- * Maps a currency symbol to its corresponding currency code.
- * Uses a predefined mapping of symbols to ISO currency codes.
+ * Maps a currency symbol to its corresponding ISO currency code.
+ * Uses a predefined mapping from the CURRENCY_CODE_MAP constant.
+ * Supports major international currency symbols.
  *
- * @param symbol - The currency symbol to look up
- * @returns The corresponding ISO currency code
  * @category Helper
+ * @param symbol - The currency symbol to look up (e.g., '$', '€', '£')
+ * @returns The corresponding ISO currency code (e.g., 'USD', 'EUR', 'GBP')
+ *
  * @example
  * ```typescript
  * getCurrencyCodeFromSymbol('$') // Returns 'USD'
@@ -115,6 +159,10 @@ export async function getCurrencyRate(from: CurrencyCode, to: CurrencyCode): Pro
  * getCurrencyCodeFromSymbol('£') // Returns 'GBP'
  * getCurrencyCodeFromSymbol('¥') // Returns 'JPY'
  * getCurrencyCodeFromSymbol('₹') // Returns 'INR'
+ *
+ * // Useful in combination with getCurrencySymbol
+ * const symbol = getCurrencySymbol('$100');
+ * const code = getCurrencyCodeFromSymbol(symbol); // 'USD'
  * ```
  */
 export function getCurrencyCodeFromSymbol(symbol: CurrencySymbol): CurrencyCode {
@@ -124,17 +172,28 @@ export function getCurrencyCodeFromSymbol(symbol: CurrencySymbol): CurrencyCode 
 /**
  * Converts a given amount from any supported currency to USD.
  * Uses real-time exchange rates from the Hexarate API.
+ * Results are rounded to 2 decimal places for standard currency format.
  *
- * @param amount - The amount to convert
- * @param from - The source currency code
- * @returns The converted amount in USD, formatted to 2 decimal places
  * @category Helper
+ * @param amount - The amount to convert
+ * @param from - The source currency code (e.g., 'EUR', 'GBP')
+ * @returns The converted amount in USD, formatted to 2 decimal places
+ *
  * @example
  * ```typescript
- * await toUSD(100, 'EUR') // Returns 117.65
- * await toUSD(100, 'GBP') // Returns 130.43
- * await toUSD(100, 'JPY') // Returns 11000
- * await toUSD(100, 'INR') // Returns 8500
+ * // Convert 100 EUR to USD
+ * await toUSD(100, 'EUR')
+ * // Returns 118.45 (if rate is 1.1845)
+ *
+ * // Convert 1000 JPY to USD
+ * await toUSD(1000, 'JPY')
+ * // Returns 9.12 (if rate is 0.00912)
+ *
+ * // Chain conversions
+ * const price = parsePrice('€50.00');
+ * if (price) {
+ *   const usdAmount = await toUSD(price.price, price.currencyCode);
+ * }
  * ```
  */
 export async function toUSD(amount: number, from: CurrencyCode): Promise<number> {

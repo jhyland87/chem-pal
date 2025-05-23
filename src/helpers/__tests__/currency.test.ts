@@ -9,12 +9,14 @@ import {
 
 describe("getCurrencySymbol", () => {
   const testData = {
+    /* eslint-disable */
     $1000: "$",
     "1000€": "€",
     "£1000": "£",
     "1000¥": "¥",
     "₹1000": "₹",
     "1000": undefined,
+    /* eslint-enable */
   };
 
   for (const [input, expected] of Object.entries(testData)) {
@@ -37,6 +39,7 @@ describe("getCurrencyRate", () => {
 
   it("should return exchange rate for valid currency pair", async () => {
     const mockResponse: ExchangeRateResponse = {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       status_code: 200,
       data: {
         base: "USD",
@@ -63,11 +66,13 @@ describe("getCurrencyRate", () => {
 });
 describe("getCurrencyCodeFromSymbol", () => {
   const testData = {
+    /* eslint-disable */
     $: "USD",
     "€": "EUR",
     "£": "GBP",
     "¥": "JPY",
     "₹": "INR",
+    /* eslint-enable */
   };
 
   for (const [symbol, code] of Object.entries(testData)) {

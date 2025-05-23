@@ -1,6 +1,7 @@
+import { parseQuantity } from "helpers/quantity";
+import { firstMap } from "helpers/utils";
 import type { Product, Variant } from "types";
 import type { ItemListing, QueryParams, SearchResponse } from "types/shopify";
-import { coalesce, parseQuantity } from "../helpers/quantity";
 import SupplierBase from "./supplierBase";
 
 // https://searchserverapi.com/getresults?
@@ -177,7 +178,7 @@ export default abstract class SupplierBaseShopify
     }
 
     if (!quantity) {
-      const qty = coalesce(parseQuantity, [
+      const qty = firstMap(parseQuantity, [
         product.product_code,
         product.quantity,
         product.title,

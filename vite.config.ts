@@ -56,7 +56,7 @@ export default ({ mode }: { mode: string }) => {
       chunkSizeWarningLimit: 1000,
       outDir: "build",
       rollupOptions: {
-        external: ["chrome", "data/currency", "data/quantity", "data/types"],
+        external: ["chrome", "data/currency", "data/quantity", "data/types", "data/helpers"],
         input: {
           main: "./index.html",
         },

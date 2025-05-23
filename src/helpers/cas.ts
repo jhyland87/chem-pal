@@ -69,7 +69,7 @@ export function isCas(cas: string): cas is CAS<string> {
  * findCas('and 50-00-1 is another valid cas #') // Returns undefined
  * ```
  */
-export function findCas(data: string): CAS<string> | undefined {
+export function findCas(data: string): CAS<string> | void {
   const regex = RegExp(CAS_REGEX.source, "g");
   const match = data.match(regex);
   if (match && isCas(match[0])) return match[0] as CAS<string>;

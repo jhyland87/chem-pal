@@ -1,9 +1,9 @@
 import { UOM } from "constants/app";
+import { toUSD } from "helpers/currency";
+import { toBaseQuantity } from "helpers/quantity";
+import { getCachableResponse } from "helpers/request";
 import { type Product } from "types";
 import { type RequestOptions, type RequestParams } from "types/request";
-import { toUSD } from "../helpers/currency";
-import { toBaseQuantity } from "../helpers/quantity";
-import { getCachableResponse } from "../helpers/request";
 
 /**
  * The base class for all suppliers.

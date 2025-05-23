@@ -31,6 +31,9 @@
       ],
       "icons/*": [
         "./assets/icons/*"
+      ],
+      "helpers/*": [
+        "./helpers/*"
       ]
     },
     /* Linting */
@@ -43,7 +46,6 @@
     "typeRoots": [
       "./node_modules/@types",
       "./src/types/*",
-      "./src/data/*",
     ],
     "types": [
       "jest",
