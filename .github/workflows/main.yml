@@ -18,9 +18,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 'v22.15.0'
-      - name: Install dependencies
-        run: npm install
-      - run: npm run setup
+      - name: Setup dependencies
+        run: npm run setup
       - name: Upload workspace
         uses: actions/upload-artifact@v4
         with:
@@ -41,8 +40,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 'v22.15.0'
-      - name: Install dependencies
-        run: npm install
+      - name: Setup dependencies
+        run: npm run setup
       - name: Run tests
         run: npm run test
 
@@ -58,8 +57,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 'v22.15.0'
-      - name: Install dependencies
-        run: npm install
+      - name: Setup dependencies
+        run: npm run setup
       - name: Generate documentation
         run: npm run docs
       - name: Setup Pages
