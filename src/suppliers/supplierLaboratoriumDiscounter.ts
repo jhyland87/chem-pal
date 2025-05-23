@@ -133,7 +133,7 @@ export default class SupplierLaboratoriumDiscounter
     const params = this._makeQueryParams();
 
     const response: unknown = await this._httpGetJson({
-      path: `/en/search/${this._query}`,
+      path: `/en/search/${query}`,
       params,
     });
 
@@ -142,7 +142,7 @@ export default class SupplierLaboratoriumDiscounter
       return;
     }
 
-    return Object.values(response.collection.products);
+    return Object.values(response.collection.products) satisfies ProductObject[];
   }
 
   /**
@@ -161,7 +161,7 @@ export default class SupplierLaboratoriumDiscounter
    * }
    * ```
    */
-  protected _getProductData(result: ProductObject): Promise<Partial<Product> | void> {
+  protected async _getProductData(result: ProductObject): Promise<Partial<Product> | void> {
     const quantity = firstMap(parseQuantity, [
       result.code,
       result.sku,
@@ -169,8 +169,9 @@ export default class SupplierLaboratoriumDiscounter
       result.variant,
     ]);
 
-    if (!isQuantityObject(quantity)) return Promise.resolve(undefined);
-    return Promise.resolve({
+    if (!isQuantityObject(quantity)) return;
+
+    return {
       uuid: result.id,
       title: result.title || result.fulltitle,
       description: result.description,
@@ -179,8 +180,7 @@ export default class SupplierLaboratoriumDiscounter
       currencySymbol: CURRENCY_SYMBOL_MAP.EUR,
       url: result.url,
       supplier: this.supplierName,
-      displayPrice: result.price.price,
       ...(quantity as QuantityObject),
-    });
+    } satisfies Partial<Product>;
   }
 }
