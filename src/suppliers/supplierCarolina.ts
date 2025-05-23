@@ -1,7 +1,7 @@
 import { parsePrice } from "helpers/currency";
 import { isQuantityObject, parseQuantity } from "helpers/quantity";
 import { firstMap } from "helpers/utils";
-import type { Product, QuantityObject } from "types";
+import type { Product } from "types";
 import {
   type ATGResponse,
   type ContentFolder,
@@ -13,8 +13,7 @@ import {
   type SearchResponse,
   type SearchResult,
 } from "types/carolina";
-import type { CAS } from "types/cas";
-import type { ParsedPrice } from "types/currency";
+import { ProductBuilder } from "./productBuilder";
 import SupplierBase from "./supplierBase";
 
 /**
@@ -482,15 +481,13 @@ export default class SupplierCarolina
       casNumber = specifications.stringValue;
     }
 
-    return {
-      id: parseInt(atgResponse.product),
-      title: atgResponse.displayName,
-      url: atgResponse.canonicalUrl,
-      description: atgResponse.shortDescription,
-      supplier: this.supplierName,
-      ...(productPrice as ParsedPrice),
-      ...(quantity as QuantityObject),
-      cas: casNumber as CAS<string>,
-    } satisfies Partial<Product>;
+    const builder = new ProductBuilder(this._baseURL);
+    return builder
+      .setBasicInfo(atgResponse.displayName, atgResponse.canonicalUrl, this.supplierName)
+      .setPricing(productPrice.price, productPrice.currencyCode, productPrice.currencySymbol)
+      .setQuantity(quantity.quantity, quantity.uom)
+      .setDescription(atgResponse.shortDescription)
+      .setCAS(casNumber || "")
+      .build();
   }
 }

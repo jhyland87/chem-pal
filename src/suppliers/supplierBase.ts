@@ -1,10 +1,8 @@
-import { UOM } from "constants/app";
 import * as contentType from "content-type";
-import { toUSD } from "helpers/currency";
-import { toBaseQuantity } from "helpers/quantity";
 import { getCachableResponse } from "helpers/request";
 import { type Product } from "types";
 import { type RequestOptions, type RequestParams } from "types/request";
+import { ProductBuilder } from "./productBuilder";
 
 /**
  * The base class for all suppliers.
@@ -468,8 +466,6 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   protected _isMinimalProduct(product: unknown): product is Partial<Product> {
     if (!product || typeof product !== "object") return false;
 
-    //const item = product as Record<string, unknown>;
-
     const requiredStringProps = {
       quantity: "number",
       price: "number",
@@ -515,28 +511,15 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * ```
    */
   protected async _finishProduct(product: Partial<Product>): Promise<Product | void> {
-    // Check if the partial product has the minimal amount of data to be finished/displayed
-    if (!this._isMinimalProduct(product)) return;
+    const builder = new ProductBuilder(this._baseURL);
 
-    //product.url = (product.url as string).replace(/chrome-extension:\/\/[a-z]+/, "");
-    product.usdPrice = product.price ?? 0;
-    product.baseQuantity =
-      toBaseQuantity(product.quantity ?? 0, product.uom as UOM) ?? product.quantity ?? 0;
-
-    // If the product is a non-USD product, populate the usdPrice with the converted currency to aid in sorting/filtering
-    if (product.currencyCode !== "USD") {
-      product.usdPrice = await toUSD(product.price ?? 0, product.currencyCode ?? "USD");
-    }
-
-    if (!this._isProduct(product)) {
-      console.error(`_finishProduct| Invalid product: ${JSON.stringify(product)}`);
-      return;
-    }
-
-    // Make sure the url is an absolute URL to the suppliers site
-    product.url = this._href(product.url);
-
-    return product;
+    return builder
+      .setBasicInfo(product.title!, product.url!, product.supplier!)
+      .setPricing(product.price!, product.currencyCode!, product.currencySymbol!)
+      .setQuantity(product.quantity!, product.uom!)
+      .setDescription(product.description || "")
+      .setCAS(product.cas || "")
+      .build();
   }
 
   /**

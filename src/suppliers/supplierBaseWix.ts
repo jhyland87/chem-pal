@@ -3,6 +3,7 @@ import { parseQuantity } from "helpers/quantity";
 import merge from "lodash/merge";
 import { Product, Variant } from "types";
 import { ProductItem, ProductObject, ProductSelection, QueryResponse } from "types/wix";
+import { ProductBuilder } from "./productBuilder";
 import SupplierBase from "./supplierBase";
 
 /**
@@ -161,7 +162,7 @@ export default abstract class SupplierBaseWix
       return;
     }
 
-    // Geerat an object with the products UUID and formatted price, with the option ID as the keys
+    // Generate an object with the products UUID and formatted price, with the option ID as the keys
     const productItems = Object.fromEntries(
       product.productItems.map((item: ProductItem) => {
         return [
@@ -185,19 +186,37 @@ export default abstract class SupplierBaseWix
       }),
     );
 
-    //
     const productVariants = merge(productItems, productSelections);
-
     const productPrice = parsePrice(product.formattedPrice);
 
-    return {
-      ...this._productDefaults,
-      ...productVariants[Object.keys(productVariants)[0]],
-      ...productPrice,
-      supplier: this.supplierName,
-      title: product.name,
-      url: `${this._baseURL}/product-page/${product.urlPart}`,
-      variants: Object.values(productVariants) as unknown as Variant[],
-    } satisfies Partial<Product>;
+    if (!productPrice) {
+      return;
+    }
+
+    const firstVariant = productVariants[Object.keys(productVariants)[0]];
+    if (!firstVariant || !("quantity" in firstVariant) || !("uom" in firstVariant)) {
+      return;
+    }
+
+    const builder = new ProductBuilder(this._baseURL);
+    return builder
+      .setBasicInfo(
+        product.name,
+        `${this._baseURL}/product-page/${product.urlPart}`,
+        this.supplierName,
+      )
+      .setPricing(productPrice.price, productPrice.currencyCode, productPrice.currencySymbol)
+      .setQuantity(firstVariant.quantity, firstVariant.uom)
+      .setDescription(product.description || "")
+      .build()
+      .then((product) => {
+        if (product) {
+          return {
+            ...product,
+            variants: Object.values(productVariants) as unknown as Variant[],
+          };
+        }
+        return product;
+      });
   }
 }

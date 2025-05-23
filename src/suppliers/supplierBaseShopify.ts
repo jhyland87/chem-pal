@@ -2,6 +2,7 @@ import { parseQuantity } from "helpers/quantity";
 import { firstMap } from "helpers/utils";
 import type { Product, Variant } from "types";
 import type { ItemListing, QueryParams, SearchResponse } from "types/shopify";
+import { ProductBuilder } from "./productBuilder";
 import SupplierBase from "./supplierBase";
 
 // https://searchserverapi.com/getresults?
@@ -201,20 +202,23 @@ export default abstract class SupplierBaseShopify
       return;
     }
 
-    return {
-      ...defaultVariant,
-      title: product.title,
-      price: parseFloat(product.price),
-      description: product.description,
-      url: product.link,
-      quantity: quantity,
-      uom: uom ?? "unit",
-      currencyCode: "USD",
-      currencySymbol: "$",
-      supplier: this.supplierName,
-      variants: variants,
-      vendor: product.vendor,
-      id: product.product_id,
-    } satisfies Partial<Product>;
+    const builder = new ProductBuilder(this._baseURL);
+    return builder
+      .setBasicInfo(product.title, product.link, this.supplierName)
+      .setPricing(parseFloat(product.price), "USD", "$")
+      .setQuantity(quantity, uom ?? "unit")
+      .setDescription(product.description || "")
+      .build()
+      .then((builtProduct) => {
+        if (builtProduct) {
+          return {
+            ...builtProduct,
+            variants,
+            vendor: product.vendor,
+            id: product.product_id,
+          };
+        }
+        return builtProduct;
+      });
   }
 }
