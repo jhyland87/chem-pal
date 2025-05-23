@@ -39,6 +39,8 @@ jobs:
         with:
           name: 'built'
           path: 'build'
+      - name: List build directory
+        run: ls -la build
       - name: Run tests
         run: npm run test
 
@@ -51,6 +53,8 @@ jobs:
         with:
           name: 'built'
           path: 'build'
+      - name: List build directory
+        run: ls -la build
       - name: Generate documentation
         run: npm run docs
       - name: Setup Pages
