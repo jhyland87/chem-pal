@@ -127,7 +127,7 @@ export default class SupplierCarolina
    * @param obj - Response object to validate
    * @returns True if the response matches expected Carolina search response structure
    */
-  protected _isValidResponse(obj: unknown): obj is CarolinaSearchResponse {
+  protected _isValidSearchResponse(obj: unknown): obj is CarolinaSearchResponse {
     if (!obj || typeof obj !== "object") {
       console.error("Response is not an object");
       return false;
@@ -193,7 +193,7 @@ export default class SupplierCarolina
    */
   protected _extractSearchResults(response: unknown): CarolinaSearchResult[] {
     try {
-      if (!this._isValidResponse(response)) {
+      if (!this._isValidSearchResponse(response)) {
         console.error("Invalid response structure");
         return [];
       }
@@ -293,7 +293,7 @@ export default class SupplierCarolina
    * @param obj - Object to validate as a product response
    * @returns True if object matches CarolinaProductResponse structure
    */
-  protected _isProductResponse(obj: unknown): obj is CarolinaProductResponse {
+  protected _isValidProductResponse(obj: unknown): obj is CarolinaProductResponse {
     if (!obj || typeof obj !== "object") {
       return false;
     }
@@ -351,7 +351,7 @@ export default class SupplierCarolina
   protected _extractATGResponse(
     productResponse: unknown,
   ): CarolinaATGResponse["response"]["response"] | null {
-    if (!this._isProductResponse(productResponse)) {
+    if (!this._isValidProductResponse(productResponse)) {
       return null;
     }
 

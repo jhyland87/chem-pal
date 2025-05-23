@@ -25,7 +25,7 @@ import SupplierBase from "./supplierBase";
 //   &output=json
 //   &_=1740051794061
 
-export default abstract class ShopifyBase
+export default abstract class SupplierBaseShopify
   extends SupplierBase<ShopifyItem, Product>
   implements AsyncIterable<Product>
 {
@@ -99,14 +99,14 @@ export default abstract class ShopifyBase
 
     console.log("searchRequest:", searchRequest);
 
-    if (!this._isShopifySearchResponse(searchRequest)) {
+    if (!this._isValidSearchResponse(searchRequest)) {
       throw new Error("Invalid search response");
     }
 
     return searchRequest.items.slice(0, this._limit);
   }
 
-  protected _isShopifySearchResponse(response: unknown): response is ShopifySearchResponse {
+  protected _isValidSearchResponse(response: unknown): response is ShopifySearchResponse {
     return (
       typeof response === "object" &&
       response !== null &&

@@ -6,12 +6,12 @@ import { parseQuantity } from "../helpers/quantity";
 import SupplierBase from "./supplierBase";
 
 /**
- * SupplierWixBase class that extends SupplierBase and implements AsyncIterable<Product>.
+ * SupplierBaseWix class that extends SupplierBase and implements AsyncIterable<Product>.
  * @abstract
  * @category Supplier
- * @module SupplierWixBase
+ * @module SupplierBaseWix
  */
-export default abstract class SupplierWixBase
+export default abstract class SupplierBaseWix
   extends SupplierBase<WixProduct, Product>
   implements AsyncIterable<Product>
 {
@@ -62,7 +62,7 @@ export default abstract class SupplierWixBase
    * @param response - The response to check
    * @returns True if the response is a Wix query response, false otherwise
    */
-  protected _isWixQueryResponse(response: unknown): response is WixQueryResponse {
+  protected _isValidSearchResponse(response: unknown): response is WixQueryResponse {
     if (typeof response !== "object" || response === null) return false;
 
     return (
@@ -125,7 +125,7 @@ export default abstract class SupplierWixBase
 
     console.debug("queryResponse:", queryResponse);
 
-    if (this._isWixQueryResponse(queryResponse) === false) {
+    if (this._isValidSearchResponse(queryResponse) === false) {
       throw new Error(`Invalid or empty Wix query response for ${this._query}`);
     }
 
