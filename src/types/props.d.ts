@@ -199,6 +199,8 @@ export interface LoadingBackdropProps {
   open: boolean;
   /** Click handler */
   onClick: () => void;
+  /** Number of results */
+  resultCount: number;
 }
 
 /**

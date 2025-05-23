@@ -5,7 +5,7 @@ import {
   type SearchParams,
   type SearchResponse,
 } from "types/laboratoriumdiscounter";
-import { isQuantityObject, parseQuantityCoalesce } from "../helpers/quantity";
+import { coalesce, isQuantityObject, parseQuantity } from "../helpers/quantity";
 import SupplierBase from "./supplierBase";
 
 /**
@@ -57,6 +57,16 @@ export default class SupplierLaboratoriumDiscounter
     /* eslint-enable */
   };
 
+  /**
+   * Constructs a complete search URL for the given query
+   * @param query - Search term to look for
+   * @returns Fully qualified search URL as string
+   * @example
+   * ```typescript
+   * const url = this._makeQueryUrl("acid");
+   * // Returns: https://www.laboratoriumdiscounter.nl/en/search/acid?limit=10&format=json
+   * ```
+   */
   protected _makeQueryUrl(query: string): string {
     const searchParams: SearchParams = {
       limit: this._limit.toString(),
@@ -68,19 +78,58 @@ export default class SupplierLaboratoriumDiscounter
     return url.toString();
   }
 
-  protected _makeQueryParams(query: string): SearchParams {
+  /**
+   * Constructs the query parameters for a product search request
+   * @returns Object containing all required search parameters
+   * @example
+   * ```typescript
+   * const params = this._makeQueryParams();
+   * // Returns: { limit: "10", format: "json" }
+   * ```
+   */
+  protected _makeQueryParams(): SearchParams {
     return {
       limit: this._limit.toString(),
       format: "json",
     };
   }
 
+  /**
+   * Validates that a response has the expected structure for a search response
+   * @param response - Response object to validate
+   * @returns Type predicate indicating if response is a valid SearchResponse
+   * @example
+   * ```typescript
+   * const response = await this._httpGetJson({
+   *   path: "/en/search/acid",
+   *   params: { format: "json" }
+   * });
+   * if (this._isResponseOk(response)) {
+   *   // Process valid response
+   *   console.log(response.collection.products);
+   * }
+   * ```
+   */
   protected _isResponseOk(response: unknown): response is SearchResponse {
     return !!response && typeof response === "object" && "collection" in response;
   }
 
+  /**
+   * Executes a product search query and returns matching products
+   * @param query - Search term to look for
+   * @returns Promise resolving to array of product objects or void if search fails
+   * @example
+   * ```typescript
+   * const products = await this._queryProducts("acid");
+   * if (products) {
+   *   products.forEach(product => {
+   *     console.log(product.title, product.price);
+   *   });
+   * }
+   * ```
+   */
   protected async _queryProducts(query: string): Promise<ProductObject[] | void> {
-    const params = this._makeQueryParams(query);
+    const params = this._makeQueryParams();
 
     const response: unknown = await this._httpGetJson({
       path: `/en/search/${this._query}`,
@@ -95,8 +144,24 @@ export default class SupplierLaboratoriumDiscounter
     return Object.values(response.collection.products);
   }
 
+  /**
+   * Transforms a Laboratorium Discounter product into the common Product type
+   * Extracts quantity information from various product fields and normalizes the data
+   * @param result - Product object from Laboratorium Discounter
+   * @returns Promise resolving to a partial Product object or void if invalid
+   * @example
+   * ```typescript
+   * const products = await this._queryProducts("acid");
+   * if (products) {
+   *   const product = await this._getProductData(products[0]);
+   *   if (product) {
+   *     console.log(product.title, product.price, product.quantity, product.uom);
+   *   }
+   * }
+   * ```
+   */
   protected _getProductData(result: ProductObject): Promise<Partial<Product> | void> {
-    const quantity = parseQuantityCoalesce([
+    const quantity = coalesce(parseQuantity, [
       result.code,
       result.sku,
       result.fulltitle,

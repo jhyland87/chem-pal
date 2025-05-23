@@ -116,6 +116,8 @@ export interface Product extends Variant {
   uom: string;
   /** Product supplier */
   supplier: string;
+  /** Product link */
+  url: string;
   /** Product description */
   description?: string;
   /** Product manufacturer */

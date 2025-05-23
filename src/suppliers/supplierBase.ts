@@ -32,6 +32,9 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   // those results are stored here
   protected _queryResults: Array<S> = [];
 
+  // The base search params for the supplier. These are the params that are always included in the search.
+  protected _baseSearchParams: Record<string, string | number> = {};
+
   // The AbortController interface represents a controller object that allows you to
   // abort one or more Web requests as and when desired.
   protected _controller: AbortController;
@@ -374,23 +377,30 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
         return;
       }
 
-      // Get the product data for each query result
-      const productPromises = this._queryResults.map((r: unknown) => {
-        const result = { ...(r as object) };
-        return this._getProductData(result as S) as Promise<T>;
-      });
+      // Process results in batches to maintain controlled concurrency
+      for (let i = 0; i < this._queryResults.length; i += this._httpRequestBatchSize) {
+        const batch = this._queryResults.slice(i, i + this._httpRequestBatchSize);
 
-      console.log("productPromises:", productPromises);
-      for (const resultPromise of productPromises) {
-        try {
-          const result = await resultPromise;
-          if (result) {
-            yield (await this._finishProduct(result)) as T;
+        // Create promises for the current batch
+        const batchPromises = batch.map((r: unknown) => {
+          const result = { ...(r as object) };
+          return this._getProductData(result as S) as Promise<T>;
+        });
+
+        // Process batch results as they complete
+        const batchResults = await Promise.allSettled(batchPromises);
+        for (const result of batchResults) {
+          try {
+            if (result.status === "fulfilled" && result.value) {
+              const finishedProduct = await this._finishProduct(result.value);
+              if (finishedProduct) {
+                yield finishedProduct as T;
+              }
+            }
+          } catch (err) {
+            console.error(`Error found when yielding a product:`, err);
+            continue;
           }
-        } catch (err) {
-          // Here to catch errors in individual yields
-          console.error(`Error found when yielding a product:`, err);
-          continue;
         }
       }
     } catch (err) {
@@ -405,8 +415,14 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
 
   /**
    * Check if the product is a valid Product object.
-   * @param product - The product to check.
-   * @returns True if the product is a valid Product object, false otherwise.
+   * @param product - The product to check
+   * @returns True if the product is a valid Product object, false otherwise
+   * @example
+   * ```typescript
+   * if (this._isProduct(someObject)) {
+   *   console.log("Valid product:", someObject.price, someObject.quantity);
+   * }
+   * ```
    */
   protected _isProduct(product: unknown): product is Product {
     return (
@@ -419,19 +435,78 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   }
 
   /**
-   * This is a placeholder for any finishing touches that need to be done to the product.
-   * @param product - The product to finish.
-   * @returns The finished product.
+   * Checks if a product object has the minimal required properties to be considered a valid partial product.
+   * @param product - The product object to validate
+   * @returns True if the product has all required properties with correct types, false otherwise
+   * @example
+   * ```typescript
+   * const partialProduct = {
+   *   quantity: 1,
+   *   price: 29.99,
+   *   uom: "ea",
+   *   url: "https://example.com/product",
+   *   currencyCode: "USD",
+   *   currencySymbol: "$",
+   *   title: "Test Product"
+   * };
+   * if (this._isMinimalProduct(partialProduct)) {
+   *   // Process the valid partial product
+   * }
+   * ```
+   */
+  protected _isMinimalProduct(product: unknown): product is Partial<Product> {
+    if (!product || typeof product !== "object") return false;
+
+    //const item = product as Record<string, unknown>;
+
+    const requiredStringProps = {
+      quantity: "number",
+      price: "number",
+      uom: "string",
+      url: "string",
+      currencyCode: "string",
+      currencySymbol: "string",
+      title: "string",
+    };
+
+    const hasAllRequiredProps = Object.entries(requiredStringProps).every(([key, val]) => {
+      return key in product && typeof product[key as keyof typeof product] === val;
+    });
+
+    return hasAllRequiredProps;
+  }
+
+  /**
+   * Finalizes a partial product by adding computed properties and validating the result.
+   * This method:
+   * 1. Validates the product has minimal required properties
+   * 2. Computes USD price if product is in different currency
+   * 3. Calculates base quantity using the unit of measure
+   * 4. Ensures the product URL is absolute
+   *
+   * @param product - The partial product to finalize
+   * @returns Promise resolving to a complete Product object or void if validation fails
+   * @example
+   * ```typescript
+   * const partialProduct = {
+   *   title: "Test Chemical",
+   *   price: 29.99,
+   *   quantity: 100,
+   *   uom: "g",
+   *   currencyCode: "EUR",
+   *   url: "/products/test-chemical"
+   * };
+   * const finalProduct = await this._finishProduct(partialProduct);
+   * if (finalProduct) {
+   *   console.log("USD Price:", finalProduct.usdPrice);
+   *   console.log("Base Quantity:", finalProduct.baseQuantity);
+   * }
+   * ```
    */
   protected async _finishProduct(product: Partial<Product>): Promise<Product | void> {
-    if (
-      !product ||
-      typeof product !== "object" ||
-      "quantity" in product === false ||
-      "price" in product === false ||
-      "uom" in product === false
-    )
-      return;
+    // Check if the partial product has the minimal amount of data to be finished/displayed
+    if (!this._isMinimalProduct(product)) return;
+
     //product.url = (product.url as string).replace(/chrome-extension:\/\/[a-z]+/, "");
     product.usdPrice = product.price ?? 0;
     product.baseQuantity =
@@ -446,6 +521,9 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
       console.error(`_finishProduct| Invalid product: ${JSON.stringify(product)}`);
       return;
     }
+
+    // Make sure the url is an absolute URL to the suppliers site
+    product.url = this._href(product.url);
 
     return product;
   }
@@ -503,13 +581,34 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
 
   /**
    * Query the products from the supplier.
-   * @returns A promise that resolves when the products have been queried.
+   * @param query - The search query string to find products
+   * @returns Promise resolving to an array of supplier-specific product objects or void
+   * @example
+   * ```typescript
+   * const results = await this._queryProducts("sodium chloride");
+   * if (results) {
+   *   for (const result of results) {
+   *     // Process each product result
+   *   }
+   * }
+   * ```
    */
   protected abstract _queryProducts(query: string): Promise<Array<S> | void>;
 
   /**
-   * Parse the products from the supplier.
-   * @returns A promise that resolves when the products have been parsed.
+   * Parse the supplier-specific product data into the common Product type.
+   * @param productIndexObject - The supplier-specific product data to parse
+   * @returns Promise resolving to a partial Product object or void if parsing fails
+   * @example
+   * ```typescript
+   * const supplierProduct = await this._queryProducts("test");
+   * if (supplierProduct) {
+   *   const commonProduct = await this._getProductData(supplierProduct[0]);
+   *   if (commonProduct) {
+   *     console.log("Parsed product:", commonProduct.title);
+   *   }
+   * }
+   * ```
    */
   protected abstract _getProductData(productIndexObject: S): Promise<Partial<Product> | void>;
 }

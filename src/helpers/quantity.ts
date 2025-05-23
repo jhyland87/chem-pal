@@ -56,32 +56,37 @@ export function parseQuantity(value: string): QuantityObject | void {
 }
 
 /**
- * Parses a list of quantity strings into a structured object containing the numeric value and unit of measure.
- * @category Helper
+ * Takes a function and an array of values, applies the function to each value in sequence,
+ * and returns the first non-undefined result. Useful for trying multiple possible inputs
+ * until finding one that produces a valid result.
  *
- * @param values - The list of quantity strings to parse
- * @returns Object containing quantity and UOM
+ * @category Helper
+ * @param fn - The function to apply to each value
+ * @param properties - Array of values to try the function on
+ * @returns The first non-undefined result from applying the function, or undefined if all attempts fail
  *
  * @example
  * ```typescript
- * parseQuantityCoalesce(['100g', '120 grams'])
- * // Returns { quantity: 120, uom: 'grams' }
+ * // Try parsing quantity from different fields
+ * const quantity = coalesce(parseQuantity, ["100g", "invalid", "200ml"]);
+ * // Returns { quantity: 100, uom: 'g' }
+ *
+ * // Generic usage with any function that might return undefined
+ * const result = coalesce(
+ *   (x: string) => x.match(/\d+/)?.[0],
+ *   ["abc", "123", "def"]
+ * );
+ * // Returns "123"
  * ```
  */
-export function parseQuantityCoalesce(values: string[]): QuantityObject {
-  return values.reduce((acc, value) => {
-    // If we have a match, then just return the acc
-    if (Object.keys(acc).length !== 0) return acc;
-
-    // Skip this if its not a parseable string
-    if (typeof value !== "string") return acc;
-
-    const quantity = parseQuantity(value);
-
-    if (quantity) acc = quantity;
-
-    return acc;
-  }, {} as QuantityObject);
+export function coalesce<T, R>(fn: (arg: T) => R | void, properties: T[]): R | void {
+  for (const prop of properties) {
+    const result = fn(prop);
+    if (result !== undefined) {
+      return result;
+    }
+  }
+  return undefined;
 }
 
 /**

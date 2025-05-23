@@ -3,8 +3,28 @@ import * as suppliers from ".";
 import SupplierBase from "./supplierBase";
 
 /**
- * Factory class for querying all suppliers.
+ * Factory class for querying multiple chemical suppliers simultaneously.
+ * This class provides a unified interface to search across multiple supplier implementations.
+ *
  * @category Supplier
+ * @typeParam T - Type of product objects returned by suppliers, must extend Product interface
+ * @example
+ * ```typescript
+ * // Create a factory to search all suppliers
+ * const factory = new SupplierFactory("sodium chloride", new AbortController());
+ *
+ * // Create a factory to search specific suppliers
+ * const factory = new SupplierFactory(
+ *   "sodium chloride",
+ *   new AbortController(),
+ *   ["SupplierCarolina", "SupplierLaballey"]
+ * );
+ *
+ * // Iterate over results from all selected suppliers
+ * for await (const product of factory) {
+ *   console.log(product.supplier, product.title, product.price);
+ * }
+ * ```
  */
 export default class SupplierFactory<T extends Product> implements AsyncIterable<T> {
   // Term being queried
@@ -30,16 +50,41 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
   }
 
   /**
-   * Get the names of the supplier modules
-   * @returns List of supplier class names
+   * Get the list of available supplier module names.
+   * Use these names when specifying which suppliers to query in the constructor.
+   *
+   * @returns Array of supplier class names that can be queried
+   * @example
+   * ```typescript
+   * const suppliers = SupplierFactory.supplierList();
+   * // Returns: ["SupplierCarolina", "SupplierLaballey", "SupplierBioFuranChem", ...]
+   *
+   * // Use these names to create a targeted factory
+   * const factory = new SupplierFactory("acid", controller, suppliers.slice(0, 2));
+   * ```
    */
   public static supplierList(): Array<string> {
     return Object.keys(suppliers);
   }
 
   /**
-   * Async iterator yielding results
-   * @returns Async generator yielding products of type T
+   * Implements the AsyncIterable interface to allow for-await-of iteration over products.
+   * Yields products from all selected suppliers in sequence.
+   *
+   * @returns AsyncGenerator yielding products of type T
+   * @throws Error if a supplier query fails (unless due to abort)
+   * @example
+   * ```typescript
+   * const factory = new SupplierFactory("acid", new AbortController());
+   *
+   * try {
+   *   for await (const product of factory) {
+   *     console.log(product.title);
+   *   }
+   * } catch (err) {
+   *   console.error("Search failed:", err);
+   * }
+   * ```
    */
   async *[Symbol.asyncIterator](): AsyncGenerator<T, void, unknown> {
     try {
@@ -59,8 +104,21 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
   }
 
   /**
-   * Creates a master async generator that only includes the suppliers selected to query.
-   * @returns Async generator yielding products
+   * Creates a consolidated async generator that yields products from selected suppliers.
+   * This method:
+   * 1. Filters suppliers based on the names provided in constructor
+   * 2. Instantiates selected supplier classes
+   * 3. Combines their async iterators into a single stream
+   *
+   * @returns AsyncGenerator yielding products from all selected suppliers
+   * @example
+   * ```typescript
+   * // Internal use only
+   * const generator = this._getConsolidatedGenerator();
+   * for await (const product of generator) {
+   *   // Process each product
+   * }
+   * ```
    */
   private _getConsolidatedGenerator(): AsyncGenerator<Product, void, unknown> {
     async function* combineAsyncIterators(

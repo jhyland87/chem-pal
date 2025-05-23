@@ -62,12 +62,28 @@ export default abstract class SupplierBaseWoocommerce
   }
 
   /**
-   * Type guard to validate if a response matches the WooCommerce search response structure
-   * @param response - Unknown response object to validate
-   * @returns Type predicate indicating if response is a valid WooCommerce search response
+   * Validates if the response from the WooCommerce API is a valid SearchResponse object.
+   * @param response - The response object to validate
+   * @returns True if the response is a valid SearchResponse object, false otherwise
+   * @example
+   * ```typescript
+   * const searchRequest = await this._httpGetJson({
+   *   path: `/wp-json/wc/store/v1/products`,
+   *   params: { search: "test" }
+   * });
+   *
+   * if (!this._isValidSearchResponse(searchRequest)) {
+   *   throw new Error("Invalid search response");
+   * }
+   * ```
    */
   protected _isValidSearchResponse(response: unknown): response is SearchResponse {
-    return response !== null && Array.isArray(response);
+    return (
+      typeof response === "object" &&
+      response !== null &&
+      "totalItems" in response &&
+      "items" in response
+    );
   }
 
   /**

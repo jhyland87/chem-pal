@@ -20,7 +20,7 @@
  */
 
 import SupplierBioFuranChem from "./supplierBiofuranChem";
-import SupplierBunmurraLabs from "./supplierBunmurraLabs";
+//import SupplierBunmurraLabs from "./supplierBunmurraLabs";
 import SupplierCarolina from "./supplierCarolina";
 import SupplierFtfScientific from "./supplierFtfScientific";
 import SupplierHbarSci from "./supplierHbarSci";
@@ -29,7 +29,7 @@ import SupplierLaboratoriumDiscounter from "./supplierLaboratoriumDiscounter";
 
 export {
   SupplierBioFuranChem,
-  SupplierBunmurraLabs,
+  //SupplierBunmurraLabs,
   SupplierCarolina,
   SupplierFtfScientific,
   SupplierHbarSci,
