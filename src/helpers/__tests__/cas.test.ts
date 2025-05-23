@@ -1,10 +1,10 @@
 import { CAS_REGEX } from "constants/app";
-import { findCas, isCas } from "../cas";
+import { findCAS, isCAS } from "../cas";
 describe("CAS_REGEX", () => {
   it("should be a valid regex", () => expect(CAS_REGEX).toBeInstanceOf(RegExp));
 });
 
-describe("isCas", () => {
+describe("isCAS", () => {
   const testData = {
     /* eslint-disable @typescript-eslint/naming-convention */
     "1234-56-6": true,
@@ -18,11 +18,11 @@ describe("isCas", () => {
   };
 
   for (const [input, output] of Object.entries(testData)) {
-    it(`should return ${output} for CAS number: ${input}`, () => expect(isCas(input)).toBe(output));
+    it(`should return ${output} for CAS number: ${input}`, () => expect(isCAS(input)).toBe(output));
   }
 });
 
-describe("findCas", () => {
+describe("findCAS", () => {
   const testData = {
     /* eslint-disable @typescript-eslint/naming-convention */
     "Example of a valid cas: 1234-56-6..": "1234-56-6",
@@ -33,6 +33,6 @@ describe("findCas", () => {
   };
 
   for (const [input, output] of Object.entries(testData)) {
-    it(`should return ${output} for content: ${input}`, () => expect(findCas(input)).toBe(output));
+    it(`should return ${output} for content: ${input}`, () => expect(findCAS(input)).toBe(output));
   }
 });

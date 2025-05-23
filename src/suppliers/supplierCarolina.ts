@@ -1,4 +1,5 @@
 import { parsePrice } from "helpers/currency";
+import { ProductBuilder } from "helpers/productBuilder";
 import { isQuantityObject, parseQuantity } from "helpers/quantity";
 import { firstMap } from "helpers/utils";
 import type { Product } from "types";
@@ -13,7 +14,6 @@ import {
   type SearchResponse,
   type SearchResult,
 } from "types/carolina";
-import { ProductBuilder } from "./productBuilder";
 import SupplierBase from "./supplierBase";
 
 /**
@@ -437,7 +437,7 @@ export default class SupplierCarolina
    * }
    * ```
    */
-  protected async _getProductData(result: SearchResult): Promise<Partial<Product> | void> {
+  protected async _getProductData(result: SearchResult): Promise<Product | void> {
     const productResponse = await this._httpGetJson({
       path: result.productUrl,
       params: {

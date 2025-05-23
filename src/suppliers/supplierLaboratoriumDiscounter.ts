@@ -1,4 +1,5 @@
 import { CURRENCY_SYMBOL_MAP } from "constants/currency";
+import { ProductBuilder } from "helpers/productBuilder";
 import { isQuantityObject, parseQuantity } from "helpers/quantity";
 import { firstMap } from "helpers/utils";
 import { type Product } from "types";
@@ -7,7 +8,6 @@ import {
   type SearchParams,
   type SearchResponse,
 } from "types/laboratoriumdiscounter";
-import { ProductBuilder } from "./productBuilder";
 import SupplierBase from "./supplierBase";
 
 /**

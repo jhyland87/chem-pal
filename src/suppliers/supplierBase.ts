@@ -1,8 +1,8 @@
 import * as contentType from "content-type";
+import { ProductBuilder } from "helpers/productBuilder";
 import { getCachableResponse } from "helpers/request";
 import { type Product } from "types";
 import { type RequestOptions, type RequestParams } from "types/request";
-import { ProductBuilder } from "./productBuilder";
 
 /**
  * The base class for all suppliers.

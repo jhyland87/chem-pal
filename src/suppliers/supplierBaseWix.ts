@@ -1,9 +1,9 @@
 import { parsePrice } from "helpers/currency";
+import { ProductBuilder } from "helpers/productBuilder";
 import { parseQuantity } from "helpers/quantity";
 import merge from "lodash/merge";
 import { Product, Variant } from "types";
 import { ProductItem, ProductObject, ProductSelection, QueryResponse } from "types/wix";
-import { ProductBuilder } from "./productBuilder";
 import SupplierBase from "./supplierBase";
 
 /**
