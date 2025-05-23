@@ -121,7 +121,9 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
 
     if (!dataType) return false;
 
-    return ["application/json", "application/javascript"].includes(dataType.type);
+    return ["application/json", "application/javascript", "text/javascript"].includes(
+      dataType.type,
+    );
   }
 
   /**
@@ -157,7 +159,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
         console.log("_httpGetHeaders| cacheData:", cacheData);
       }
 
-      return Object.fromEntries(httpResponse.headers.entries()) as HeadersInit;
+      return Object.fromEntries(httpResponse.headers.entries()) satisfies HeadersInit;
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
         console.debug("Request was aborted", { error, signal: this._controller.signal });
@@ -214,6 +216,8 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     const httpRequest = await fetch(requestObj);
 
     if (!this._isResponse(httpRequest)) {
+      const badResponse = await (httpRequest as unknown as Response)?.text();
+      console.error("Invalid POST response: ", badResponse);
       throw new TypeError(`Invalid POST response: ${httpRequest}`);
     }
 
@@ -293,6 +297,12 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     host = undefined,
   }: RequestOptions): Promise<Response | void> {
     try {
+      // Check if the request has been aborted before proceeding
+      if (this._controller.signal.aborted) {
+        console.debug("Request was aborted before fetch", { signal: this._controller.signal });
+        return;
+      }
+
       const requestObj = new Request(this._href(path, params, host), {
         signal: this._controller.signal,
         headers: {
@@ -351,13 +361,15 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
       ...this._headers,
       ...(headers as HeadersInit),
     });
-    const response = await this._httpGet({ path, params, headers: _headers, host });
+    const httpRequest = await this._httpGet({ path, params, headers: _headers, host });
 
-    if (!this._isJsonResponse(response)) {
-      throw new TypeError(`_httpGetJson| response: ${response}`);
+    if (!this._isJsonResponse(httpRequest)) {
+      const badResponse = await (httpRequest as unknown as Response)?.text();
+      console.error("_httpGetJson| Invalid GET response: ", badResponse);
+      throw new TypeError(`_httpGetJson| response: ${httpRequest}`);
     }
 
-    return await response?.json();
+    return await httpRequest?.json();
   }
 
   /**

@@ -7,7 +7,6 @@ import SupplierBase from "./supplierBase";
  * This class provides a unified interface to search across multiple supplier implementations.
  *
  * @category Supplier
- * @typeParam T - Type of product objects returned by suppliers, must extend Product interface
  * @example
  * ```typescript
  * // Create a factory to search all suppliers
@@ -146,7 +145,7 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
           }
           return result;
         },
-        [] as SupplierBase<unknown, Product>[],
+        [] satisfies SupplierBase<unknown, Product>[],
       ),
     );
   }

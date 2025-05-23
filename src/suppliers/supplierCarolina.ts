@@ -116,48 +116,57 @@ export default class SupplierCarolina
    * @returns True if response is valid and successful
    */
   protected _isResponseOk(response: unknown): response is SearchResponse {
-    return (
-      !!response &&
-      typeof response === "object" &&
-      "responseStatusCode" in response &&
-      response.responseStatusCode === 200 &&
-      "@type" in response &&
-      "contents" in response &&
-      typeof response.contents === "object"
-    );
-  }
-
-  /**
-   * Performs deep validation of a search response object
-   * @param obj - Response object to validate
-   * @returns True if the response matches expected Carolina search response structure
-   */
-  protected _isValidSearchResponse(obj: unknown): obj is SearchResponse {
-    if (!obj || typeof obj !== "object") {
+    if (!response || typeof response !== "object") {
       console.error("Response is not an object");
       return false;
     }
 
     try {
-      const response = obj as Partial<SearchResponse>;
+      const _response = response as Partial<SearchResponse>;
 
-      if (!response.contents) {
+      return (
+        _response.responseStatusCode === 200 &&
+        "@type" in _response &&
+        "contents" in _response &&
+        typeof _response.contents === "object"
+      );
+    } catch (error) {
+      console.error("Error validating response:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Performs deep validation of a search response object
+   * @param response - Response object to validate
+   * @returns True if the response matches expected Carolina search response structure
+   */
+  protected _isValidSearchResponse(response: unknown): response is SearchResponse {
+    if (!response || typeof response !== "object") {
+      console.error("Response is not an object");
+      return false;
+    }
+
+    try {
+      const _response = response as Partial<SearchResponse>;
+
+      if (!_response.contents) {
         console.error("Response missing contents");
         return false;
       }
-      if (!Array.isArray(response.contents.ContentFolderZone)) {
+      if (!Array.isArray(_response.contents.ContentFolderZone)) {
         console.error("ContentFolderZone is not an array");
         return false;
       }
-      if (response.contents.ContentFolderZone.length === 0) {
+      if (_response.contents.ContentFolderZone.length === 0) {
         console.error("ContentFolderZone is empty");
         return false;
       }
-      if (!response.contents.ContentFolderZone[0].childRules) {
+      if (!_response.contents.ContentFolderZone[0].childRules) {
         console.error("No child rules found");
         return false;
       }
-      if (!Array.isArray(response.contents.ContentFolderZone[0].childRules)) {
+      if (!Array.isArray(_response.contents.ContentFolderZone[0].childRules)) {
         console.error("Child rules is not an array");
         return false;
       }
@@ -462,7 +471,7 @@ export default class SupplierCarolina
       atgResponse.standardResult.productName,
     ]);
 
-    if (!isQuantityObject(quantity)) return Promise.resolve(undefined);
+    if (!isQuantityObject(quantity)) return;
 
     let casNumber: string | undefined;
     const specifications =
@@ -473,7 +482,7 @@ export default class SupplierCarolina
       casNumber = specifications.stringValue;
     }
 
-    return Promise.resolve({
+    return {
       id: parseInt(atgResponse.product),
       title: atgResponse.displayName,
       url: atgResponse.canonicalUrl,
@@ -482,6 +491,6 @@ export default class SupplierCarolina
       ...(productPrice as ParsedPrice),
       ...(quantity as QuantityObject),
       cas: casNumber as CAS<string>,
-    } satisfies Partial<Product>);
+    } satisfies Partial<Product>;
   }
 }
