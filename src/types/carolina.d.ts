@@ -161,7 +161,7 @@ export interface CarolinaFacetsContainer extends CarolinaBaseObject {
  * Represents a single search result item with product details.
  * Contains product information including images, descriptions, and pricing.
  */
-export interface CarolinaSearchResult {
+export interface CarolinaSearchResult extends Record<string, unknown> {
   /** URL of the product thumbnail image */
   "product.thumbnailImg": string;
   /** Name of the product */

@@ -6,9 +6,9 @@ import SupplierWixBase from "./supplierWixBase";
  * @module SupplierBunmurraLabs
  * @category Supplier
  */
-export default class SupplierBunmurraLabs<T extends Product>
-  extends SupplierWixBase<T>
-  implements AsyncIterable<T>
+export default class SupplierBunmurraLabs
+  extends SupplierWixBase
+  implements AsyncIterable<Product>
 {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "Bunmurra Labs";

@@ -64,11 +64,11 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
    */
   private _getConsolidatedGenerator(): AsyncGenerator<Product, void, unknown> {
     async function* combineAsyncIterators(
-      asyncIterators: SupplierBase<Product>[],
+      asyncIterators: SupplierBase<unknown, Product>[],
     ): AsyncGenerator<Product, void, unknown> {
       for (const iterator of asyncIterators) {
         for await (const value of iterator) {
-          yield value as Product;
+          yield value;
         }
       }
     }
@@ -76,19 +76,19 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
     // Only iterate over the suppliers that are selected (or all if none are selected)
     return combineAsyncIterators(
       Object.entries(suppliers).reduce(
-        (result: SupplierBase<Product>[], [supplierClassName, supplierClass]) => {
+        (result: SupplierBase<unknown, Product>[], [supplierClassName, supplierClass]) => {
           if (this._suppliers.length == 0 || this._suppliers.includes(supplierClassName)) {
             // Cast supplierClass to the correct type to fix type error
             const SupplierClass = supplierClass as new (
               query: string,
               limit: number,
               controller: AbortController,
-            ) => SupplierBase<Product>;
+            ) => SupplierBase<unknown, Product>;
             result.push(new SupplierClass(this._query, 10, this._controller));
           }
           return result;
         },
-        [] as SupplierBase<Product>[],
+        [] as SupplierBase<unknown, Product>[],
       ),
     );
   }

@@ -37,9 +37,9 @@ import SupplierBase from "./supplierBase";
  * JSON Format:
  * Append &format=json&ajax=true to any URL to get JSON response
  */
-export default class SupplierCarolina<T extends Product>
-  extends SupplierBase<T>
-  implements AsyncIterable<T>
+export default class SupplierCarolina
+  extends SupplierBase<CarolinaSearchResult, Product>
+  implements AsyncIterable<Product>
 {
   /** Display name of the supplier */
   public readonly supplierName: string = "Carolina";
@@ -168,10 +168,10 @@ export default class SupplierCarolina<T extends Product>
    * Executes a product search query and stores results
    * Fetches products matching the current search query and updates internal results cache
    */
-  protected async queryProducts(): Promise<void> {
-    const params = this._makeQueryParams(this._query);
+  protected async _queryProducts(query: string): Promise<CarolinaSearchResult[] | void> {
+    const params = this._makeQueryParams(query);
 
-    const response: unknown = await this.httpGetJson({
+    const response: unknown = await this._httpGetJson({
       path: "/browse/product-search-results",
       params,
     });
@@ -182,7 +182,7 @@ export default class SupplierCarolina<T extends Product>
     }
 
     const results = await this._extractSearchResults(response);
-    this._queryResults = results.slice(0, this._limit);
+    return results.slice(0, this._limit);
   }
 
   /**
@@ -304,14 +304,9 @@ export default class SupplierCarolina<T extends Product>
       return false;
     }
 
-    if (
-      response.contents.MainContent.length === 0 ||
-      !response.contents.MainContent[0]?.atgResponse
-    ) {
-      return false;
-    }
-
-    return true;
+    return !(
+      response.contents.MainContent.length === 0 || !response.contents.MainContent[0]?.atgResponse
+    );
   }
 
   /**
@@ -381,7 +376,7 @@ export default class SupplierCarolina<T extends Product>
    */
   protected async _getProductData(result: CarolinaSearchResult): Promise<Product | void> {
     try {
-      const productResponse = await this.httpGetJson({
+      const productResponse = await this._httpGetJson({
         path: result.productUrl,
         params: {
           format: "json",

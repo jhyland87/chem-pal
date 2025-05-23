@@ -19,9 +19,9 @@ import SupplierBase from "./supplierBase";
  * @module SupplierLaboratoriumDiscounter
  * @category Supplier
  */
-export default class SupplierLaboratoriumDiscounter<T extends Product>
-  extends SupplierBase<T>
-  implements AsyncIterable<T>
+export default class SupplierLaboratoriumDiscounter
+  extends SupplierBase<LaboratoriumDiscounterProductIndexObject, Product>
+  implements AsyncIterable<Product>
 {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "Laboratorium Discounter";
@@ -69,30 +69,36 @@ export default class SupplierLaboratoriumDiscounter<T extends Product>
     return url.toString();
   }
 
-  protected _makeQueryParams(): SearchParams {
+  protected _makeQueryParams(query: string): SearchParams {
     return {
       limit: this._limit.toString(),
       format: "json",
     };
   }
 
-  protected async queryProducts(): Promise<void> {
-    const params = this._makeQueryParams();
-    const response = await this.httpGet({ path: `/en/search/${this._query}`, params });
-
-    if (!response?.ok) {
-      throw new Error(`Response status: ${response?.status}`);
-    }
-
-    //
-    const resultJSON = (await response.json()) as LaboriumDiscounterResponse;
-
-    // Save results
-    this._queryResults = Object.values(resultJSON.collection.products);
-    return;
+  protected _isResponseOk(response: unknown): response is LaboriumDiscounterResponse {
+    return !!response && typeof response === "object" && "collection" in response;
   }
 
-  protected _getProductData(result: LaboratoriumDiscounterProduct): Promise<Product | void> {
+  protected async _queryProducts(query: string): Promise<LaboratoriumDiscounterProduct[] | void> {
+    const params = this._makeQueryParams(query);
+
+    const response: unknown = await this._httpGetJson({
+      path: `/en/search/${this._query}`,
+      params,
+    });
+
+    if (!this._isResponseOk(response)) {
+      console.log("Bad search response:", response);
+      return;
+    }
+
+    return Object.values(response.collection.products);
+  }
+
+  protected _getProductData(
+    result: LaboratoriumDiscounterProduct,
+  ): Promise<Partial<Product> | void> {
     const quantity = parseQuantityCoalesce([
       result.code,
       result.sku,

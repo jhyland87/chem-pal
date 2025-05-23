@@ -331,3 +331,8 @@ export interface UOMAliases {
   /** Array of string aliases for kilometers */
   [UOM.KM]: string[];
 }
+
+/**
+ * Awaitable type
+ */
+export type Awaitable<T> = T | Promise<T>;
