@@ -61,6 +61,8 @@ jobs:
         run: ls -la
       - name: List build directory
         run: ls -la build
+      - name: Install jest
+        run: npm install jest
       - name: Run tests
         run: npm run test
 
