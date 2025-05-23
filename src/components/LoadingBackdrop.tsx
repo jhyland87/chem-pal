@@ -45,7 +45,7 @@ export default function LoadingBackdrop(props: LoadingBackdropProps) {
             </Fade>
           </Box>*/}
           <Button className="status-button" onClick={props.onClick}>
-            {props.open ? "Stop loading" : "Loading"}
+            {props.resultCount === 0 ? "Loading..." : `Found ${props.resultCount} results..`}
           </Button>
         </Box>
       </Backdrop>

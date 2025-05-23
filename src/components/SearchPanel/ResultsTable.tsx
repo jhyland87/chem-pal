@@ -94,6 +94,7 @@ export default function ResultsTable({
    * Updates the search results in storage and updates the timestamp when results change.
    */
   useEffect(() => {
+    console.log(searchResults.length + " search results");
     // Not sure i'm happy with how I'm handling the search result update sequence.
     // May need to refactor later.
     chrome.storage.session.set({ searchResults }).then(() => {
@@ -113,7 +114,7 @@ export default function ResultsTable({
 
   /**
    * Logs search results updates for debugging.
-  
+
   useEffect(() => {
     console.debug("searchResults UPDATED:", searchResults);
   }, [searchResults]);
@@ -140,7 +141,11 @@ export default function ResultsTable({
 
   return (
     <>
-      <LoadingBackdrop open={isLoading} onClick={handleStopSearch} />
+      <LoadingBackdrop
+        open={isLoading}
+        resultCount={searchResults.length}
+        onClick={handleStopSearch}
+      />
       <Paper id="search-results-table-container">
         <Box
           className="search-input-container fullwidth"

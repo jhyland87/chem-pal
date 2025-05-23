@@ -19,8 +19,8 @@ export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: Us
     if (!query.trim()) {
       return;
     }
-    setIsLoading(true);
 
+    setIsLoading(true);
     setSearchResults([]);
     setStatusLabel("Searching...");
 

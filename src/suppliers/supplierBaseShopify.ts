@@ -1,6 +1,6 @@
 import type { Product, Variant } from "types";
 import type { ItemListing, QueryParams, SearchResponse } from "types/shopify";
-import { isQuantityObject, parseQuantity, parseQuantityCoalesce } from "../helpers/quantity";
+import { coalesce, parseQuantity } from "../helpers/quantity";
 import SupplierBase from "./supplierBase";
 
 // https://searchserverapi.com/getresults?
@@ -31,7 +31,7 @@ export default abstract class SupplierBaseShopify
 {
   protected _apiKey: string = "";
 
-  protected _limit: number = 5;
+  protected _limit: number = 10;
 
   protected _apiHost: string = "searchserverapi.com";
 
@@ -70,7 +70,7 @@ export default abstract class SupplierBaseShopify
       /* eslint-disable */
       api_key: this._apiKey,
       q: query,
-      maxResults: 15,
+      maxResults: this._limit,
       startIndex: 0,
       items: true,
       pages: true,
@@ -80,24 +80,23 @@ export default abstract class SupplierBaseShopify
       vendors: true,
       tags: true,
       pageStartIndex: 0,
-      pagesMaxResults: 15,
+      pagesMaxResults: this._limit,
       categoryStartIndex: 0,
       categoriesMaxResults: 3,
       suggestionsMaxResults: 4,
-      vendorsMaxResults: 4,
+      vendorsMaxResults: this._limit,
       tagsMaxResults: 3,
       output: "json",
       _: new Date().getTime(),
+      ...this._baseSearchParams,
       /* eslint-enable */
     };
 
     const searchRequest = await this._httpGetJson({
-      path: `/getresults`,
+      path: "/getresults",
       host: this._apiHost,
       params: getParams,
     });
-
-    console.log("searchRequest:", searchRequest);
 
     if (!this._isValidSearchResponse(searchRequest)) {
       throw new Error("Invalid search response");
@@ -106,6 +105,18 @@ export default abstract class SupplierBaseShopify
     return searchRequest.items.slice(0, this._limit);
   }
 
+  /**
+   * Validates if the response from the search API is a valid SearchResponse object.
+   * @param response - The response object to validate
+   * @returns True if the response is a valid SearchResponse object, false otherwise
+   * @example
+   * ```typescript
+   * const isValid = this._isValidSearchResponse(response);
+   * if (!isValid) {
+   *   throw new Error("Invalid search response");
+   * }
+   * ```
+   */
   protected _isValidSearchResponse(response: unknown): response is SearchResponse {
     return (
       typeof response === "object" &&
@@ -115,6 +126,19 @@ export default abstract class SupplierBaseShopify
     );
   }
 
+  /**
+   * Transforms a Shopify product listing into the common Product type.
+   * @param product - The Shopify product listing to transform
+   * @returns Promise resolving to a partial Product object or void if invalid
+   * @example
+   * ```typescript
+   * const productData = await this._getProductData(itemListing);
+   * if (productData) {
+   *   // Process valid product data
+   *   console.log(productData.title, productData.price);
+   * }
+   * ```
+   */
   protected async _getProductData(product: ItemListing): Promise<Partial<Product> | void> {
     if (!product.price) {
       return;
@@ -153,7 +177,7 @@ export default abstract class SupplierBaseShopify
     }
 
     if (!quantity) {
-      const qty = parseQuantityCoalesce([
+      const qty = coalesce(parseQuantity, [
         product.product_code,
         product.quantity,
         product.title,
@@ -166,8 +190,13 @@ export default abstract class SupplierBaseShopify
       }
     }
 
-    if (!isQuantityObject(quantity) || !product.price) {
-      console.warn("Invalid product data:", product);
+    if (!quantity || !uom) {
+      console.warn("Failed to get quantity from retrieved product data:", product);
+      return;
+    }
+
+    if (!product.price) {
+      console.warn("Failed to get price from retrieved product data:", product);
       return;
     }
 

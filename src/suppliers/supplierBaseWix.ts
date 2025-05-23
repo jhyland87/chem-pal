@@ -32,6 +32,16 @@ export default abstract class SupplierBaseWix
     currencySymbol: "$",
   };
 
+  /**
+   * Sets up the Wix API access by retrieving and setting the access token.
+   * This method must be called before making any API requests.
+   * @returns Promise that resolves when the access token is set
+   * @example
+   * ```typescript
+   * await this._setup();
+   * // Now the access token is set and API requests can be made
+   * ```
+   */
   protected async _setup(): Promise<void> {
     const accessTokenResponse = await fetch(`${this._baseURL}/_api/v1/access-tokens`, {
       headers: {
@@ -81,9 +91,18 @@ export default abstract class SupplierBaseWix
   }
 
   /**
-   * Get the GraphQL query for the Wix API
-   *
-   * @returns The GraphQL query
+   * Gets the GraphQL query for fetching filtered products from the Wix API.
+   * The query includes product details like ID, options, price, stock status, etc.
+   * @returns The GraphQL query string
+   * @example
+   * ```typescript
+   * const query = this._getGraphQLQuery();
+   * // Use the query with variables to fetch products
+   * const response = await this._httpGetJson({
+   *   path: "_api/wix-ecommerce-storefront-web/api",
+   *   params: { q: query, v: variables }
+   * });
+   * ```
    */
   protected _getGraphQLQuery(): string {
     return "query,getFilteredProductsWithHasDiscount($mainCollectionId:String!,$filters:ProductFilters,$sort:ProductSort,$offset:Int,$limit:Int,$withOptions:Boolean,=,false,$withPriceRange:Boolean,=,false){catalog{category(categoryId:$mainCollectionId){numOfProducts,productsWithMetaData(filters:$filters,limit:$limit,sort:$sort,offset:$offset,onlyVisible:true){totalCount,list{id,options{id,key,title,@include(if:$withOptions),optionType,@include(if:$withOptions),selections,@include(if:$withOptions){id,value,description,key,inStock}}productItems,@include(if:$withOptions){id,optionsSelections,price,formattedPrice}productType,price,sku,isInStock,urlPart,formattedPrice,name,description,brand,priceRange(withSubscriptionPriceRange:true),@include(if:$withPriceRange){fromPriceFormatted}}}}}}";

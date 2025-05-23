@@ -265,6 +265,14 @@ export interface ATGResponse {
         productId: string;
         /** Order-related data for the product display page */
         pdpOrderResult: Record<string, unknown>;
+        /** Specifications for the product */
+        tabsResult: {
+          /** List of specifications */
+          pdpspecifications: {
+            /** List of specification items */
+            specificationList: SpecificationItem[];
+          };
+        };
       };
       /** Detailed description of the product */
       longDescription: string;
@@ -319,6 +327,14 @@ export interface ATGResponse {
   };
 }
 
+export interface SpecificationItem {
+  /** Display name of the specification */
+  specificationDisplayName: string;
+  /** Value of the specification */
+  stringValue: string;
+  /** Size of the specification */
+  size: number;
+}
 /**
  * Complete product response structure for Carolina products.
  * Contains ATG response data and additional template and content information.

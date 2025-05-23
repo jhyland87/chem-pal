@@ -1,4 +1,4 @@
-import { isQuantityObject, parseQuantityCoalesce } from "helpers/quantity";
+import { coalesce, isQuantityObject, parseQuantity } from "helpers/quantity";
 import type { Product, QuantityObject } from "types";
 import {
   type ATGResponse,
@@ -11,6 +11,7 @@ import {
   type SearchResponse,
   type SearchResult,
 } from "types/carolina";
+import type { CAS } from "types/cas";
 import type { ParsedPrice } from "types/currency";
 import { parsePrice } from "../helpers/currency";
 import SupplierBase from "./supplierBase";
@@ -48,7 +49,7 @@ export default class SupplierCarolina
   public readonly supplierName: string = "Carolina";
 
   /** Maximum number of results to return */
-  protected _limit: number = 5;
+  protected _limit: number = 15;
 
   /** Base URL for all API requests */
   protected _baseURL: string = "https://www.carolina.com";
@@ -63,7 +64,7 @@ export default class SupplierCarolina
   protected _httpRequstCount: number = 0;
 
   /** Number of requests to process in parallel */
-  protected _httpRequestBatchSize: number = 4;
+  protected _httpRequestBatchSize: number = 5;
 
   /** Default headers sent with every request */
   protected _headers: HeadersInit = {
@@ -256,9 +257,17 @@ export default class SupplierCarolina
   }
 
   /**
-   * Type guard for validating search result items
+   * Validates that an object matches the SearchResult interface structure
    * @param result - Object to validate as a search result
-   * @returns True if object matches SearchResult structure
+   * @returns Type predicate indicating if object is a valid SearchResult
+   * @example
+   * ```typescript
+   * const item = getSearchItem();
+   * if (this._isSearchResultItem(item)) {
+   *   // Process valid search result
+   *   console.log(item.productId, item.name);
+   * }
+   * ```
    */
   protected _isSearchResultItem(result: unknown): result is SearchResult {
     if (!result || typeof result !== "object") {
@@ -292,9 +301,19 @@ export default class SupplierCarolina
   }
 
   /**
-   * Type guard for validating product response objects
-   * @param obj - Object to validate as a product response
-   * @returns True if object matches ProductResponse structure
+   * Validates that a response matches the ProductResponse interface structure
+   * @param obj - Response object to validate
+   * @returns Type predicate indicating if object is a valid ProductResponse
+   * @example
+   * ```typescript
+   * const response = await this._httpGetJson({
+   *   path: `/api/rest/cb/product/product-details/${productId}`
+   * });
+   * if (this._isValidProductResponse(response)) {
+   *   // Process valid product response
+   *   console.log(response.product.name);
+   * }
+   * ```
    */
   protected _isValidProductResponse(obj: unknown): obj is ProductResponse {
     if (!obj || typeof obj !== "object") {
@@ -313,9 +332,19 @@ export default class SupplierCarolina
   }
 
   /**
-   * Type guard for validating ATG response objects
-   * @param obj - Object to validate as an ATG response
-   * @returns True if object matches ATGResponse structure
+   * Validates that a response matches the ATGResponse interface structure
+   * @param obj - Response object to validate
+   * @returns Type predicate indicating if object is a valid ATGResponse
+   * @example
+   * ```typescript
+   * const response = await this._httpGetJson({
+   *   path: `/api/rest/cb/product/product-quick-view/${productId}`
+   * });
+   * if (this._isATGResponse(response)) {
+   *   // Process valid ATG response
+   *   console.log(response.response.response.products[0]);
+   * }
+   * ```
    */
   protected _isATGResponse(obj: unknown): obj is ATGResponse {
     if (!obj || typeof obj !== "object") {
@@ -347,9 +376,20 @@ export default class SupplierCarolina
   }
 
   /**
-   * Extracts ATG response data from a product response
-   * @param productResponse - Raw product response object
-   * @returns Parsed ATG response data or null if invalid
+   * Extracts the relevant product data from an ATG response object
+   * Navigates through the nested response structure to find product information
+   * @param productResponse - Raw ATG response object
+   * @returns Product data from response or null if invalid/not found
+   * @example
+   * ```typescript
+   * const response = await this._httpGetJson({
+   *   path: `/api/rest/cb/product/product-quick-view/${productId}`
+   * });
+   * const productData = this._extractATGResponse(response);
+   * if (productData) {
+   *   console.log(productData.products[0]);
+   * }
+   * ```
    */
   protected _extractATGResponse(
     productResponse: unknown,
@@ -373,9 +413,20 @@ export default class SupplierCarolina
   }
 
   /**
-   * Fetches detailed product data for a search result
-   * @param result - Search result item to get details for
-   * @returns Promise resolving to complete product data or void if failed
+   * Transforms a Carolina search result into the common Product type
+   * Makes additional API calls if needed to get complete product details
+   * @param result - Carolina search result to transform
+   * @returns Promise resolving to a partial Product object or void if invalid
+   * @example
+   * ```typescript
+   * const searchResults = await this._queryProducts("acid");
+   * if (searchResults) {
+   *   const product = await this._getProductData(searchResults[0]);
+   *   if (product) {
+   *     console.log(product.title, product.price);
+   *   }
+   * }
+   * ```
    */
   protected async _getProductData(result: SearchResult): Promise<Partial<Product> | void> {
     const productResponse = await this._httpGetJson({
@@ -404,13 +455,22 @@ export default class SupplierCarolina
       return;
     }
 
-    const quantity = parseQuantityCoalesce([
+    const quantity = coalesce(parseQuantity, [
       atgResponse.displayName,
       atgResponse.shortDescription,
       atgResponse.standardResult.productName,
     ]);
 
     if (!isQuantityObject(quantity)) return Promise.resolve(undefined);
+
+    let casNumber: string | undefined;
+    const specifications =
+      atgResponse.standardResult?.tabsResult?.pdpspecifications?.specificationList?.find(
+        (item) => item.specificationDisplayName === "CAS Number",
+      );
+    if (specifications) {
+      casNumber = specifications.stringValue;
+    }
 
     return Promise.resolve({
       id: parseInt(atgResponse.product),
@@ -420,6 +480,7 @@ export default class SupplierCarolina
       supplier: this.supplierName,
       ...(productPrice as ParsedPrice),
       ...(quantity as QuantityObject),
+      cas: casNumber as CAS<string>,
     } satisfies Partial<Product>);
   }
 }
