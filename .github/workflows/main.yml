@@ -1,4 +1,4 @@
-name: "Bild, test, docgen, publish"
+name: "Build, test, docgen, publish"
 on:
   push:
     branches: [main]
@@ -19,8 +19,39 @@ jobs:
         with:
           node-version: 'v22.15.0'
       - run: npm run setup
+      - name: Upload workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace
+          path: .
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download workspace
+        uses: actions/download-artifact@v4
+        with:
+          name: workspace
+      - name: Setup App
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'v22.15.0'
       - name: Run tests
         run: npm run test
+
+  docs:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download workspace
+        uses: actions/download-artifact@v4
+        with:
+          name: workspace
+      - name: Setup App
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'v22.15.0'
       - name: Generate documentation
         run: npm run docs
       - name: Setup Pages
@@ -34,9 +65,9 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    needs: build
+    needs: docs
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4 
+        uses: actions/deploy-pages@v4
