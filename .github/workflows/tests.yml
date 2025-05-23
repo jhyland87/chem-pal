@@ -5,6 +5,7 @@ on:
 
 permissions:
   contents: read
+  pages: write
   id-token: write
 
 jobs:
@@ -19,4 +20,4 @@ jobs:
           node-version: 'v22.15.0'
       - run: npm run setup
       - name: Run tests
-        run: npm run tests
+        run: npm run test
