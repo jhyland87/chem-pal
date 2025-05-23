@@ -1,4 +1,4 @@
-name: "Generate TypeDoc files and publish to Github Pages"
+name: "Bild, test, docgen, publish"
 on:
   push:
     branches: [main]
@@ -19,6 +19,8 @@ jobs:
         with:
           node-version: 'v22.15.0'
       - run: npm run setup
+      - name: Run tests
+        run: npm run test
       - name: Generate documentation
         run: npm run docs
       - name: Setup Pages
