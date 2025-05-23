@@ -32,6 +32,8 @@
     "classnames": "^2.5.1",
     "currency.js": "^2.0.4",
     "lodash": "^4.17.21",
+    "loglevel": "^1.9.2",
+    "loglevel-plugin-prefix": "^0.8.4",
     "lru-cache": "^11.1.0",
     "money": "^0.2.0",
     "react": "^19.0.0",

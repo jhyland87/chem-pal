@@ -1,10 +1,9 @@
 import { CURRENCY_SYMBOL_MAP } from "constants/currency";
 import { type Product, type QuantityObject } from "types";
 import {
-  type LaboratoriumDiscounterProduct,
-  type LaboratoriumDiscounterProductIndexObject,
-  type LaboriumDiscounterResponse,
+  type ProductObject,
   type SearchParams,
+  type SearchResponse,
 } from "types/laboratoriumdiscounter";
 import { isQuantityObject, parseQuantityCoalesce } from "../helpers/quantity";
 import SupplierBase from "./supplierBase";
@@ -19,9 +18,9 @@ import SupplierBase from "./supplierBase";
  * @module SupplierLaboratoriumDiscounter
  * @category Supplier
  */
-export default class SupplierLaboratoriumDiscounter<T extends Product>
-  extends SupplierBase<T>
-  implements AsyncIterable<T>
+export default class SupplierLaboratoriumDiscounter
+  extends SupplierBase<ProductObject, Product>
+  implements AsyncIterable<Product>
 {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "Laboratorium Discounter";
@@ -30,7 +29,7 @@ export default class SupplierLaboratoriumDiscounter<T extends Product>
   protected _baseURL: string = "https://www.laboratoriumdiscounter.nl";
 
   // Override the type of _queryResults to use our specific type
-  protected _queryResults: Array<LaboratoriumDiscounterProductIndexObject> = [];
+  protected _queryResults: Array<ProductObject> = [];
 
   // Used to keep track of how many requests have been made to the supplier.
   protected _httpRequstCount: number = 0;
@@ -69,30 +68,34 @@ export default class SupplierLaboratoriumDiscounter<T extends Product>
     return url.toString();
   }
 
-  protected _makeQueryParams(): SearchParams {
+  protected _makeQueryParams(query: string): SearchParams {
     return {
       limit: this._limit.toString(),
       format: "json",
     };
   }
 
-  protected async queryProducts(): Promise<void> {
-    const params = this._makeQueryParams();
-    const response = await this.httpGet({ path: `/en/search/${this._query}`, params });
-
-    if (!response?.ok) {
-      throw new Error(`Response status: ${response?.status}`);
-    }
-
-    //
-    const resultJSON = (await response.json()) as LaboriumDiscounterResponse;
-
-    // Save results
-    this._queryResults = Object.values(resultJSON.collection.products);
-    return;
+  protected _isResponseOk(response: unknown): response is SearchResponse {
+    return !!response && typeof response === "object" && "collection" in response;
   }
 
-  protected _getProductData(result: LaboratoriumDiscounterProduct): Promise<Product | void> {
+  protected async _queryProducts(query: string): Promise<ProductObject[] | void> {
+    const params = this._makeQueryParams(query);
+
+    const response: unknown = await this._httpGetJson({
+      path: `/en/search/${this._query}`,
+      params,
+    });
+
+    if (!this._isResponseOk(response)) {
+      console.log("Bad search response:", response);
+      return;
+    }
+
+    return Object.values(response.collection.products);
+  }
+
+  protected _getProductData(result: ProductObject): Promise<Partial<Product> | void> {
     const quantity = parseQuantityCoalesce([
       result.code,
       result.sku,
@@ -101,7 +104,6 @@ export default class SupplierLaboratoriumDiscounter<T extends Product>
     ]);
 
     if (!isQuantityObject(quantity)) return Promise.resolve(undefined);
-
     return Promise.resolve({
       uuid: result.id,
       title: result.title || result.fulltitle,

@@ -239,9 +239,9 @@ export interface TextOptionFacet {
 }
 
 /**
- * WixProduct interface representing a Wix product
+ * ProductObject interface representing a Wix product
  */
-export interface WixProduct {
+export interface ProductObject {
   /** Discounted price */
   discountedPrice?: string;
   /** Regular price */
@@ -331,3 +331,8 @@ export interface UOMAliases {
   /** Array of string aliases for kilometers */
   [UOM.KM]: string[];
 }
+
+/**
+ * Awaitable type
+ */
+export type Awaitable<T> = T | Promise<T>;

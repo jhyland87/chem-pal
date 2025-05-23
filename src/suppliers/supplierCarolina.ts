@@ -1,81 +1,71 @@
-import result from "lodash/result";
+import { isQuantityObject, parseQuantityCoalesce } from "helpers/quantity";
 import type { Product, QuantityObject } from "types";
 import {
-  type CarolinaProductData,
-  type CarolinaProductIndexObject,
-  type CarolinaSearchParams,
+  type ATGResponse,
+  type ContentFolder,
+  type ContentRuleZoneItem,
+  type MainContentItem,
+  type ProductResponse,
+  type ResultsContainer,
+  type SearchParams,
+  type SearchResponse,
+  type SearchResult,
 } from "types/carolina";
+import type { ParsedPrice } from "types/currency";
 import { parsePrice } from "../helpers/currency";
-import { parseQuantity } from "../helpers/quantity";
 import SupplierBase from "./supplierBase";
 
 /**
- * Carolina.com uses Oracle ATG Commerce as their ecommerce platform.
+ * Supplier implementation for Carolina Biological Supply Company.
  *
- * The ATG Commerce platform uses a custom script to fetch product data.
- * This script is located in the `script[nonce]` element of the product page.
+ * Carolina.com uses Oracle ATG Commerce as their ecommerce platform which has a predictable
+ * output format, though very bulky. But very parseable.
  *
- * The script is a JSON object that contains the product data.
+ * Product search uses the following endpoints:
+ * - Product Search: /browse/product-search-results?tab=p&q=acid
+ * - Product Search JSON: /browse/product-search-results?tab=p&format=json&ajax=true&q=acid
+ * - Product Details: /:category/:productName/:productId.pr
+ * - Product Details JSON: /:category/:productName/:productId.pr?format=json&ajax=true
  *
- * Product search for Carolina.com will query the following URL (with `lithium` as the search query):
-
- * The query params are:
- * - product.productTypes: The product type to search for.
- * - facetFields: The fields to facet on.
- * - defaultFilter: The default filter to apply to the search.
- * - Nr: ???
- * - viewSize: The number of results to return per page.
- * - q: The search query.
- * - noRedirect: Whether to redirect to the search results page.
- * - nore: Whether to return the results in a non-redirecting format.
- * - searchExecByFormSubmit: Whether to execute the search by form submission.
- * - tab: The tab to display the results in.
- * - question: The search query.
+ * API Documentation:
+ * - Swagger UI: https://www.carolina.com/swagger-ui/
+ * - OpenAPI Spec: https://www.carolina.com/api/rest/openapi.json
+ * - WADL: https://www.carolina.com/api/rest/application.wadl
  *
- * Carolina.com uses VastCommerce, who does have an API that can be queried. Some useful endpoints are:
- * - https://www.carolina.com/swagger-ui/
- * - https://www.carolina.com/api/rest/openapi.json
- * - https://www.carolina.com/api/rest/cb/product/product-quick-view/863810
- * - https://www.carolina.com/api/rest/cb/cart/specificationDetails/863810
- * - https://www.carolina.com/api/rest/cb/product/product-details/863810
- *    curl -s https://www.carolina.com/api/rest/cb/product/product-details/863810 | jq '.response | fromjson'
- * - https://www.carolina.com/api/rest/cb/static/fetch-suggestions-for-global-search/acid
- * - https://www.carolina.com/api/rest/application.wadl
- * - You can get the JSON value of any page by appending: &format=json&ajax=true
- *   - https://www.carolina.com/chemistry-supplies/chemicals/10171.ct?format=json&ajax=true
- *   - https://www.carolina.com/specialty-chemicals-d-l/16-hexanediamine-6-laboratory-grade-100-ml/867162.pr?format=json&ajax=true
- *      curl -s 'https://www.carolina.com/specialty-chemicals-d-l/16-hexanediamine-6-laboratory-grade-100-ml/867162.pr?format=json&ajax=true' | jq '.contents.MainContent[0].atgResponse.response.response'
- * - https://www.carolina.com/browse/product-search-results?q=acid&product.type=Product&tab=p&format=json&ajax=true
- * - https://www.carolina.com/browse/product-search-results?tab=p&product.type=Product&product.productTypes=chemicals&facetFields=product.productTypes&format=json&ajax=true&viewSize=300&q=acid
+ * Common API Endpoints:
+ * - Product Quick View: /api/rest/cb/product/product-quick-view/:id
+ * - Product Details: /api/rest/cb/product/product-details/:id
+ * - Search Suggestions: /api/rest/cb/static/fetch-suggestions-for-global-search/:term
  *
- * @module SupplierCarolina
- * @category Supplier
+ * JSON Format:
+ * Append &format=json&ajax=true to any URL to get JSON response
  */
-export default class SupplierCarolina<T extends Product>
-  extends SupplierBase<T>
-  implements AsyncIterable<T>
+export default class SupplierCarolina
+  extends SupplierBase<SearchResult, Product>
+  implements AsyncIterable<Product>
 {
-  // Name of supplier (for display purposes)
+  /** Display name of the supplier */
   public readonly supplierName: string = "Carolina";
 
-  // Base URL for HTTP(s) requests
+  /** Maximum number of results to return */
+  protected _limit: number = 5;
+
+  /** Base URL for all API requests */
   protected _baseURL: string = "https://www.carolina.com";
 
-  // Override the type of _queryResults to use our specific type
-  protected _queryResults: Array<CarolinaProductIndexObject> = [];
+  /** Cached search results from the last query */
+  protected _queryResults: Array<SearchResult> = [];
 
-  // This is a limit to how many queries can be sent to the supplier for any given query.
+  /** Maximum number of HTTP requests allowed per query */
   protected _httpRequestHardLimit: number = 50;
 
-  // Used to keep track of how many requests have been made to the supplier.
+  /** Counter for HTTP requests made during current query */
   protected _httpRequstCount: number = 0;
 
-  // If using async requests, this will determine how many of them to batch together (using
-  // something like Promise.all()). This is to avoid overloading the users bandwidth and
-  // to not flood the supplier with 100+ requests all at once.
+  /** Number of requests to process in parallel */
   protected _httpRequestBatchSize: number = 4;
 
-  // HTTP headers used as a basis for all queries.
+  /** Default headers sent with every request */
   protected _headers: HeadersInit = {
     /* eslint-disable */
     accept:
@@ -99,177 +89,337 @@ export default class SupplierCarolina<T extends Product>
   };
 
   /**
-   * Make the query params for the Carolina API
-   *
-   * @param query - The query to search for
-   * @returns The query params
+   * Constructs the query parameters for a product search request
+   * @param query - Search term to look for
+   * @returns Object containing all required search parameters
    */
-  protected _makeQueryParams(query: string): CarolinaSearchParams {
+  protected _makeQueryParams(query: string): SearchParams {
     return {
-      /*
-      790004999   Chemicals category ID
-      836054137   ACS grade
-      471891351   Lab grade
-      3929848101  Reagent grade
-      */
       /* eslint-disable */
-      N: "790004999",
-      Nf: "product.cbsLowPrice|GT 0.0||product.startDate|LTEQ 1.7457984E12||product.startDate|LTEQ 1.7457984E12",
-      Nr: "AND(product.siteId:100001,OR(product.type:Product),OR(product.catalogId:cbsCatalog))",
-      Nrpp: "120",
-      Ntt: query,
-      noRedirect: "true",
-      nore: "y",
-      question: query,
-      searchExecByFormSubmit: "true",
       tab: "p",
+      "product.type": "Product",
+      "product.productTypes": "chemicals",
+      facetFields: "product.productTypes",
+      format: "json",
+      ajax: true,
+      viewSize: 300,
+      q: query,
       /* eslint-enable */
-    } as CarolinaSearchParams;
+    } satisfies SearchParams;
   }
 
   /**
-   * Query products from the Carolina API
-   *
-   * @returns A promise that resolves when the products are queried
+   * Validates that a response has a successful status code and expected structure
+   * @param response - Response object to validate
+   * @returns True if response is valid and successful
    */
-  protected async queryProducts(): Promise<void> {
-    const params = this._makeQueryParams(this._query);
-    const response = await this.httpGet({ path: "/browse/product-search-results", params });
-
-    if (!response?.ok) {
-      throw new Error(`Response status: ${response?.status}`);
-    }
-
-    const resultHTML = await response.text();
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(resultHTML, "text/html");
-
-    if (!doc) {
-      throw new Error("Failed to load product HTML into DOMParser");
-    }
-
-    //type Foo = HTMLElement | HTMLAnchorElement  | HTMLBaseElement;
-    const productElements: NodeListOf<Element> = doc.querySelectorAll("div.c-feature-product");
-
-    const elementList: CarolinaProductIndexObject[] = [];
-
-    const _trimSpaceLike = (txt: string) =>
-      txt?.replaceAll(/(^(\\n|\\t|\s)*|(\\n|\\t|\s)*$)/gm, "");
-
-    for (const elem of productElements) {
-      const titleElement = elem.querySelector("h3.c-product-title") as HTMLElement;
-      const linkElement = elem.querySelector("a.c-product-link") as HTMLAnchorElement;
-      const price = elem.querySelector("p.c-product-price") as HTMLElement;
-      const count = elem.querySelector("p.c-product-total") as HTMLElement;
-
-      elementList.push({
-        url: linkElement.getAttribute("href") as string,
-        title: _trimSpaceLike(titleElement?.innerText),
-        prices: _trimSpaceLike(price?.innerText),
-        count: _trimSpaceLike(count?.innerText),
-      });
-    }
-
-    this._queryResults = elementList.slice(0, this._limit);
-  }
-
-  /**
-   * Parse the products from the Carolina API
-   *
-   * @returns A promise that resolves to the products
-   */
-  protected async parseProducts(): Promise<(Product | void)[]> {
-    return Promise.all(
-      this._queryResults.map((result) => this._getProductData(result) as Promise<Product>),
+  protected _isResponseOk(response: unknown): response is SearchResponse {
+    return (
+      !!response &&
+      typeof response === "object" &&
+      "responseStatusCode" in response &&
+      response.responseStatusCode === 200 &&
+      "@type" in response &&
+      "contents" in response &&
+      typeof response.contents === "object"
     );
   }
 
   /**
-   * Get the product data from the Carolina API
-   *
-   * @param productIndexObject - The product index object
-   * @returns A promise that resolves to the product data or void if the product has no price
+   * Performs deep validation of a search response object
+   * @param obj - Response object to validate
+   * @returns True if the response matches expected Carolina search response structure
    */
-  protected async _getProductData(
-    productIndexObject: CarolinaProductIndexObject,
-  ): Promise<Product | void> {
-    //try {
-    const response = await this.httpGet({
-      path: productIndexObject.url,
+  protected _isValidSearchResponse(obj: unknown): obj is SearchResponse {
+    if (!obj || typeof obj !== "object") {
+      console.error("Response is not an object");
+      return false;
+    }
+
+    try {
+      const response = obj as Partial<SearchResponse>;
+
+      if (!response.contents) {
+        console.error("Response missing contents");
+        return false;
+      }
+      if (!Array.isArray(response.contents.ContentFolderZone)) {
+        console.error("ContentFolderZone is not an array");
+        return false;
+      }
+      if (response.contents.ContentFolderZone.length === 0) {
+        console.error("ContentFolderZone is empty");
+        return false;
+      }
+      if (!response.contents.ContentFolderZone[0].childRules) {
+        console.error("No child rules found");
+        return false;
+      }
+      if (!Array.isArray(response.contents.ContentFolderZone[0].childRules)) {
+        console.error("Child rules is not an array");
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error validating response:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Executes a product search query and stores results
+   * Fetches products matching the current search query and updates internal results cache
+   */
+  protected async _queryProducts(query: string): Promise<SearchResult[] | void> {
+    const params = this._makeQueryParams(query);
+
+    const response: unknown = await this._httpGetJson({
+      path: "/browse/product-search-results",
+      params,
     });
-    if (!response?.ok) {
-      throw new Error(`Response status: ${response?.status}`);
+
+    if (!this._isResponseOk(response)) {
+      console.warn("Response status:", response);
+      return;
     }
 
-    const data = await response.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(data, "text/html");
-    if (!doc) {
-      throw new Error("Failed to load product HTML into DOMParser");
+    const results = await this._extractSearchResults(response);
+    return results.slice(0, this._limit);
+  }
+
+  /**
+   * Extracts product search results from a response object
+   * Navigates through nested response structure to find product listings
+   * @param response - Raw response object from search request
+   * @returns Array of validated search result items
+   */
+  protected _extractSearchResults(response: unknown): SearchResult[] {
+    try {
+      if (!this._isValidSearchResponse(response)) {
+        console.error("Invalid response structure");
+        return [];
+      }
+
+      const contentFolder = response.contents.ContentFolderZone[0];
+      if (!contentFolder?.childRules?.[0]?.ContentRuleZone) {
+        console.error("No content rules found");
+        return [];
+      }
+
+      const pageContent = contentFolder.childRules[0].ContentRuleZone[0];
+      if (!pageContent?.contents?.MainContent) {
+        console.error("No MainContent found");
+        return [];
+      }
+
+      const mainContentItems = pageContent.contents.MainContent;
+      const pluginSlotContainer = mainContentItems.find((item: MainContentItem) =>
+        item.contents?.ContentFolderZone?.some(
+          (folder: ContentFolder) => folder.folderPath === "Products - Search",
+        ),
+      );
+
+      if (!pluginSlotContainer?.contents?.ContentFolderZone) {
+        console.error("No Products - Search folder found");
+        return [];
+      }
+
+      const productsFolder = pluginSlotContainer.contents.ContentFolderZone.find(
+        (folder: ContentFolder) => folder.folderPath === "Products - Search",
+      );
+
+      if (!productsFolder?.childRules?.[0]?.ContentRuleZone) {
+        console.error("No content rules in Products folder");
+        return [];
+      }
+
+      const resultsContainer = productsFolder.childRules[0].ContentRuleZone.find(
+        (zone: ContentRuleZoneItem): zone is ResultsContainer => {
+          return (
+            zone["@type"] === "ResultsContainer" &&
+            Array.isArray((zone as Partial<ResultsContainer>).results)
+          );
+        },
+      );
+
+      if (!resultsContainer) {
+        console.error("No results container found");
+        return [];
+      }
+
+      return resultsContainer.results.filter(this._isSearchResultItem);
+    } catch (error) {
+      console.error("Error extracting search results:", error);
+      return [];
+    }
+  }
+
+  /**
+   * Type guard for validating search result items
+   * @param result - Object to validate as a search result
+   * @returns True if object matches SearchResult structure
+   */
+  protected _isSearchResultItem(result: unknown): result is SearchResult {
+    if (!result || typeof result !== "object") {
+      return false;
     }
 
-    const productScriptNonce = doc.querySelector("script[nonce]");
-    if (!productScriptNonce) {
-      throw new Error("Failed to find product script nonce");
+    try {
+      const item = result as Record<string, unknown>;
+
+      const requiredStringProps = [
+        "product.productId",
+        "product.productName",
+        "product.shortDescription",
+        "itemPrice",
+        "product.seoName",
+        "productUrl",
+        "productName",
+      ];
+
+      const hasAllRequiredProps = requiredStringProps.every(
+        (prop) => prop in item && typeof item[prop] === "string",
+      );
+
+      const hasValidBoolean =
+        "qtyDiscountAvailable" in item && typeof item.qtyDiscountAvailable === "boolean";
+
+      return hasAllRequiredProps && hasValidBoolean;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Type guard for validating product response objects
+   * @param obj - Object to validate as a product response
+   * @returns True if object matches ProductResponse structure
+   */
+  protected _isValidProductResponse(obj: unknown): obj is ProductResponse {
+    if (!obj || typeof obj !== "object") {
+      return false;
     }
 
-    const productScriptNonceText = productScriptNonce.textContent;
-    if (!productScriptNonceText) {
-      throw new Error("Failed to find product script nonce text");
+    const response = obj as Partial<ProductResponse>;
+
+    if (!response.contents?.MainContent || !Array.isArray(response.contents.MainContent)) {
+      return false;
     }
 
-    const productScriptNonceTextMatch = productScriptNonceText.match("(?<== )(.*)(?=;\\n)");
+    return !(
+      response.contents.MainContent.length === 0 || !response.contents.MainContent[0]?.atgResponse
+    );
+  }
 
-    if (!productScriptNonceTextMatch) {
-      throw new Error("Failed to find product script nonce text");
+  /**
+   * Type guard for validating ATG response objects
+   * @param obj - Object to validate as an ATG response
+   * @returns True if object matches ATGResponse structure
+   */
+  protected _isATGResponse(obj: unknown): obj is ATGResponse {
+    if (!obj || typeof obj !== "object") {
+      return false;
     }
 
-    const productAtgJson = JSON.parse(productScriptNonceTextMatch[0]);
+    const response = obj as Partial<ATGResponse>;
 
-    const productData = result(
-      productAtgJson,
-      "fetch.response.contents.MainContent[0].atgResponse.response.response",
-    ) as CarolinaProductData;
-
-    if (!productData) {
-      throw new Error("Failed to find product data");
+    if (typeof response.result !== "string" || response.result !== "success") {
+      return false;
     }
 
-    const quantityMatch: QuantityObject | void = parseQuantity(productData.displayName);
+    if (!response.response?.response || typeof response.response.response !== "object") {
+      return false;
+    }
 
-    if (!quantityMatch) return;
+    const innerResponse = response.response.response;
 
-    // The price can be stored at different locations in the productData object. Select them all then
-    // choose the first non-undefined, non-null value.
-    const price = (() => {
-      const dataLayerPrice = productData.dataLayer?.productPrice?.[0];
-      if (dataLayerPrice) return dataLayerPrice;
+    const requiredProps = [
+      "displayName",
+      "longDescription",
+      "shortDescription",
+      "product",
+      "dataLayer",
+      "canonicalUrl",
+    ];
 
-      const variantPrice =
-        productData.familyVariyantProductDetails?.productVariantsResult?.masterProductBean
-          ?.skus?.[0]?.priceInfo?.regularPrice?.[0];
-      if (variantPrice) return variantPrice;
+    return requiredProps.every((prop) => prop in innerResponse);
+  }
 
-      return undefined;
-    })();
+  /**
+   * Extracts ATG response data from a product response
+   * @param productResponse - Raw product response object
+   * @returns Parsed ATG response data or null if invalid
+   */
+  protected _extractATGResponse(
+    productResponse: unknown,
+  ): ATGResponse["response"]["response"] | null {
+    if (!this._isValidProductResponse(productResponse)) {
+      return null;
+    }
 
-    const priceObj = parsePrice(price as string) || {
-      price,
-      currencyCode: this._productDefaults.currencyCode,
-      currencySymbol: this._productDefaults.currencySymbol,
-    };
+    try {
+      const atgResponse = productResponse.contents.MainContent[0].atgResponse;
 
-    const product = {
-      ...this._productDefaults,
-      ...priceObj,
+      if (!this._isATGResponse(atgResponse)) {
+        return null;
+      }
+
+      return atgResponse.response.response;
+    } catch (error) {
+      console.error("Error extracting ATG response:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Fetches detailed product data for a search result
+   * @param result - Search result item to get details for
+   * @returns Promise resolving to complete product data or void if failed
+   */
+  protected async _getProductData(result: SearchResult): Promise<Partial<Product> | void> {
+    const productResponse = await this._httpGetJson({
+      path: result.productUrl,
+      params: {
+        format: "json",
+        ajax: true,
+      },
+    });
+
+    if (!this._isResponseOk(productResponse)) {
+      console.warn("Response status:", productResponse);
+      return;
+    }
+
+    const atgResponse = this._extractATGResponse(productResponse);
+    if (!atgResponse) {
+      console.error("No ATG response found");
+      return;
+    }
+    console.log("atgResponse:", atgResponse);
+
+    const productPrice = parsePrice(atgResponse.dataLayer.productPrice[0]);
+    if (!productPrice) {
+      console.error("No product price found");
+      return;
+    }
+
+    const quantity = parseQuantityCoalesce([
+      atgResponse.displayName,
+      atgResponse.shortDescription,
+      atgResponse.standardResult.productName,
+    ]);
+
+    if (!isQuantityObject(quantity)) return Promise.resolve(undefined);
+
+    return Promise.resolve({
+      id: parseInt(atgResponse.product),
+      title: atgResponse.displayName,
+      url: atgResponse.canonicalUrl,
+      description: atgResponse.shortDescription,
       supplier: this.supplierName,
-      title: productData.displayName,
-      url: this._href(productData.canonicalUrl),
-      displayQuantity: `${quantityMatch.quantity} ${quantityMatch.uom}`,
-      ...quantityMatch,
-    };
-
-    return product as Product;
+      ...(productPrice as ParsedPrice),
+      ...(quantity as QuantityObject),
+    } satisfies Partial<Product>);
   }
 }

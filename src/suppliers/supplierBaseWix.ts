@@ -1,21 +1,36 @@
 import merge from "lodash/merge";
 import { Product, Variant } from "types";
-import { WixProduct, WixProductItem, WixProductSelection, WixQueryResponse } from "types/wix";
+import { ProductItem, ProductObject, ProductSelection, QueryResponse } from "types/wix";
 import { parsePrice } from "../helpers/currency";
 import { parseQuantity } from "../helpers/quantity";
 import SupplierBase from "./supplierBase";
 
 /**
- * SupplierWixBase class that extends SupplierBase and implements AsyncIterable<T>.
+ * SupplierBaseWix class that extends SupplierBase and implements AsyncIterable<Product>.
  * @abstract
  * @category Supplier
- * @module SupplierWixBase
+ * @module SupplierBaseWix
  */
-export default abstract class SupplierWixBase<T extends Product>
-  extends SupplierBase<T>
-  implements AsyncIterable<T>
+export default abstract class SupplierBaseWix
+  extends SupplierBase<ProductObject, Product>
+  implements AsyncIterable<Product>
 {
+  /** Display name of the supplier */
+  public abstract readonly supplierName: string;
+
+  /** Base URL for all API requests */
+  protected abstract _baseURL: string;
+
+  /** Access token for Wix API authentication */
   protected _accessToken: string = "";
+
+  /** Default values for products */
+  protected _productDefaults = {
+    uom: "ea",
+    quantity: 1,
+    currencyCode: "USD",
+    currencySymbol: "$",
+  };
 
   protected async _setup(): Promise<void> {
     const accessTokenResponse = await fetch(`${this._baseURL}/_api/v1/access-tokens`, {
@@ -43,26 +58,25 @@ export default abstract class SupplierWixBase<T extends Product>
   }
 
   /**
-   * Typeguarding for the WixQueryResponse type object
+   * Typeguarding for the QueryResponse type object
    * @param response - The response to check
    * @returns True if the response is a Wix query response, false otherwise
    */
-  protected _isWixQueryResponse(response: unknown): response is WixQueryResponse {
+  protected _isValidSearchResponse(response: unknown): response is QueryResponse {
     if (typeof response !== "object" || response === null) return false;
 
     return (
-      (response as WixQueryResponse).data?.catalog?.category?.productsWithMetaData?.list !==
-      undefined
+      (response as QueryResponse).data?.catalog?.category?.productsWithMetaData?.list !== undefined
     );
   }
 
   /**
-   * Typeguarding for the WixProduct type object
+   * Typeguarding for the ProductObject type object
    *
    * @param product - The product to check
    * @returns True if the product is a Wix product, false otherwise
    */
-  protected _isWixProduct(product: unknown): product is WixProduct {
+  protected _isWixProduct(product: unknown): product is ProductObject {
     return typeof product === "object" && product !== null && "price" in product;
   }
 
@@ -82,20 +96,23 @@ export default abstract class SupplierWixBase<T extends Product>
    * @param limit - The limit of products to return
    * @returns The GraphQL variables
    */
-  protected _getGraphQLVariables(query: string = this._query, limit: number = this._limit): string {
+  protected _getGraphQLVariables(query: string, limit: number = this._limit): string {
     return `{"mainCollectionId":"00000000-000000-000000-000000000001","offset":0,"limit":${limit},"sort":null,"filters":{"term":{"field":"name","op":"CONTAINS","values":["*${query}*"]}},"withOptions":true,"withPriceRange":false}`;
   }
 
   /**
    * Query products from the Wix API
+   *
+   * @param query - The query to search for
+   * @param limit - The limit of products to return
    * @returns A promise that resolves when the products are queried
    */
-  protected async queryProducts(): Promise<void> {
+  protected async _queryProducts(query: string): Promise<ProductObject[]> {
     const q = this._getGraphQLQuery();
 
-    const v = this._getGraphQLVariables();
+    const v = this._getGraphQLVariables(query);
 
-    const queryResponse = await this.httpGetJson({
+    const queryResponse = await this._httpGetJson({
       path: "_api/wix-ecommerce-storefront-web/api",
       params: {
         o: "getFilteredProducts",
@@ -107,12 +124,11 @@ export default abstract class SupplierWixBase<T extends Product>
 
     console.debug("queryResponse:", queryResponse);
 
-    if (this._isWixQueryResponse(queryResponse) === false) {
+    if (this._isValidSearchResponse(queryResponse) === false) {
       throw new Error(`Invalid or empty Wix query response for ${this._query}`);
     }
 
-    this._queryResults = queryResponse.data.catalog.category.productsWithMetaData
-      .list as WixProduct[];
+    return queryResponse.data.catalog.category.productsWithMetaData.list;
   }
 
   /**
@@ -121,14 +137,14 @@ export default abstract class SupplierWixBase<T extends Product>
    * @param product - The product to get the data for
    * @returns A promise that resolves to the product data or void if the product has no price
    */
-  protected async _getProductData(product: WixProduct): Promise<Product | void> {
+  protected async _getProductData(product: ProductObject): Promise<Partial<Product> | void> {
     if (!product.price) {
       return;
     }
 
     // Geerat an object with the products UUID and formatted price, with the option ID as the keys
     const productItems = Object.fromEntries(
-      product.productItems.map((item: WixProductItem) => {
+      product.productItems.map((item: ProductItem) => {
         return [
           item.optionsSelections[0],
           {
@@ -145,7 +161,7 @@ export default abstract class SupplierWixBase<T extends Product>
     const productSelections = Object.fromEntries(
       // I know the options is an array that could have more than one object, but it looks like it's
       // always the first one (and I don't see a second one anyways)
-      product.options[0].selections.map((selection: WixProductSelection) => {
+      product.options[0].selections.map((selection: ProductSelection) => {
         return [selection.id, parseQuantity(selection.value)];
       }),
     );
@@ -155,7 +171,7 @@ export default abstract class SupplierWixBase<T extends Product>
 
     const productPrice = parsePrice(product.formattedPrice);
 
-    return Promise.resolve({
+    return {
       ...this._productDefaults,
       ...productVariants[Object.keys(productVariants)[0]],
       ...productPrice,
@@ -163,6 +179,6 @@ export default abstract class SupplierWixBase<T extends Product>
       title: product.name,
       url: `${this._baseURL}/product-page/${product.urlPart}`,
       variants: Object.values(productVariants) as unknown as Variant[],
-    } as Product);
+    } satisfies Partial<Product>;
   }
 }

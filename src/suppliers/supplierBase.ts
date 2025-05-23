@@ -15,7 +15,7 @@ import { getCachableResponse } from "../helpers/request";
  * const supplier = new SupplierBase<Product>();
  * ```
  */
-export default abstract class SupplierBase<T extends Product> implements AsyncIterable<T> {
+export default abstract class SupplierBase<S, T extends Product> implements AsyncIterable<T> {
   // The name of the supplier (used for display name, lists, etc)
   public abstract readonly supplierName: string;
 
@@ -30,7 +30,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
 
   // If the products first require a query of a search page that gets iterated over,
   // those results are stored here
-  protected _queryResults: Array<unknown> = [];
+  protected _queryResults: Array<S> = [];
 
   // The AbortController interface represents a controller object that allows you to
   // abort one or more Web requests as and when desired.
@@ -53,6 +53,8 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
 
   // HTTP headers used as a basis for all queries.
   protected _headers: HeadersInit = {};
+
+  //protected _logger = log.getLogger("default");
 
   // Default values for products. These will get overridden if they're found in the product data.
   protected _productDefaults = {
@@ -126,7 +128,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * @param url - The URL to get the headers for.
    * @returns The headers for the HTTP GET request.
    */
-  protected async httpGetHeaders(url: string | URL): Promise<HeadersInit | void> {
+  protected async _httpGetHeaders(url: string | URL): Promise<HeadersInit | void> {
     try {
       const requestObj = new Request(this._href(url), {
         signal: this._controller.signal,
@@ -147,10 +149,10 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
         process.env.MODE !== "development" &&
         httpResponse.headers.get("ismockedresponse") !== "true"
       ) {
-        console.log("httpGetHeaders| httpResponse:", httpResponse);
-        console.log("httpGetHeaders| process.env:", process.env);
+        console.log("_httpGetHeaders| httpResponse:", httpResponse);
+        console.log("_httpGetHeaders| process.env:", process.env);
         const cacheData = getCachableResponse(requestObj, httpResponse);
-        console.log("httpGetHeaders| cacheData:", cacheData);
+        console.log("_httpGetHeaders| cacheData:", cacheData);
       }
 
       return Object.fromEntries(httpResponse.headers.entries()) as HeadersInit;
@@ -168,14 +170,14 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * Send a POST request to the given URL with the given body and headers.
    * @example
    * ```typescript
-   * const request = await this.httpPost({
+   * const request = await this._httpPost({
    *    path: "/api/v1/products",
    *    body: { name: "John" },
    *    headers: { "Content-Type": "application/json" }
    * });
    * // Sends HTTP POST request to https://supplier_base_url.com/api/v1/products with `{"name":"John"}` body.
    *
-   * const request = await this.httpPost({
+   * const request = await this._httpPost({
    *    path: "/api/v1/products",
    *    host: "api.example.com",
    *    body: { name: "John" },
@@ -185,7 +187,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * // Sends HTTP POST request to https://api.example.com/api/v1/products?a=b&c=d with `{"name":"John"}` body.
    * ```
    */
-  protected async httpPost({
+  protected async _httpPost({
     path,
     host = undefined,
     body = {},
@@ -219,10 +221,10 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
       process.env.MODE !== "development" &&
       httpRequest.headers.get("ismockedresponse") !== "true"
     ) {
-      console.log("httpPost| httpRequest:", httpRequest);
-      console.log("httpPost| process.env:", process.env);
+      console.log("_httpPost| httpRequest:", httpRequest);
+      console.log("_httpPost| process.env:", process.env);
       const cacheData = getCachableResponse(requestObj, httpRequest);
-      console.log("httpPost| cacheData:", cacheData);
+      console.log("_httpPost| cacheData:", cacheData);
     }
 
     return httpRequest;
@@ -236,7 +238,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * @example
    * ```typescript
    * // Assume the baseURL is https://example.com
-   * const responseJSON = await this.httpPostJson({
+   * const responseJSON = await this._httpPostJson({
    *    path: "/api/v1/products",
    *    body: { name: "John" },
    *    headers: { "Content-Type": "application/json" }
@@ -244,7 +246,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * // Sends HTTP POST request to https://example.com/api/v1/products with `{"name":"John"}` body.
    * // Returns a JSON object.
    *
-   * const responseJSON = await this.httpPostJson({
+   * const responseJSON = await this._httpPostJson({
    *    path: "/api/v1/products",
    *    host: "api.example.com",
    *    body: { name: "John" },
@@ -255,16 +257,16 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * // Returns a JSON object.
    * ```
    */
-  protected async httpPostJson({
+  protected async _httpPostJson({
     path,
     host = undefined,
     body = {},
     params = {},
     headers = {},
   }: RequestOptions): Promise<object | void> {
-    const httpRequest = await this.httpPost({ path, host, body, params, headers });
+    const httpRequest = await this._httpPost({ path, host, body, params, headers });
     if (!this._isJsonResponse(httpRequest)) {
-      throw new TypeError(`httpPostJson| Invalid POST response: ${httpRequest}`);
+      throw new TypeError(`_httpPostJson| Invalid POST response: ${httpRequest}`);
     }
     return await httpRequest.json();
   }
@@ -275,14 +277,14 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * @returns The response from the GET request.
    * @example
    * ```typescript
-   * const response = await this.httpGet({ path: "http://example.com", params: { a: "b", c: "d" } });
+   * const response = await this._httpGet({ path: "http://example.com", params: { a: "b", c: "d" } });
    * // Sends HTTP GET request to https://example.com/some/path?a=b&c=d
    *
-   * const response = await this.httpGet({ path: "http://example.com", params: { a: "b", c: "d" }, baseUrl: "https://another_host.com" });
+   * const response = await this._httpGet({ path: "http://example.com", params: { a: "b", c: "d" }, baseUrl: "https://another_host.com" });
    * // Sends HTTP GET request to https://another_host.com/some/path?a=b&c=d
    * ```
    */
-  protected async httpGet({
+  protected async _httpGet({
     path,
     params = {},
     headers = {},
@@ -314,10 +316,10 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
         process.env.MODE !== "development" &&
         httpResponse.headers.get("ismockedresponse") !== "true"
       ) {
-        console.log("httpGet| httpResponse:", httpResponse);
-        console.log("httpGet| process.env:", process.env);
+        console.log("_httpGet| httpResponse:", httpResponse);
+        console.log("_httpGet| process.env:", process.env);
         const cacheData = getCachableResponse(requestObj, httpResponse);
-        console.log("httpGet| cacheData:", cacheData);
+        console.log("_httpGet| cacheData:", cacheData);
       }
 
       return httpResponse as Response;
@@ -337,7 +339,7 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * @param options - The options for the GET request.
    * @returns The response from the GET request as a JSON object.
    */
-  protected async httpGetJson({
+  protected async _httpGetJson({
     path,
     params = {},
     headers = {},
@@ -347,10 +349,10 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
       ...this._headers,
       ...(headers as HeadersInit),
     });
-    const response = await this.httpGet({ path, params, headers: _headers, host });
+    const response = await this._httpGet({ path, params, headers: _headers, host });
 
     if (!this._isJsonResponse(response)) {
-      throw new TypeError(`httpGetJson| response: ${response}`);
+      throw new TypeError(`_httpGetJson| response: ${response}`);
     }
 
     return await response?.json();
@@ -364,12 +366,18 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
   async *[Symbol.asyncIterator](): AsyncGenerator<T, void, unknown> {
     try {
       await this._setup();
-      await this.queryProducts();
+      const results = await this._queryProducts(this._query);
+      this._queryResults = results || [];
+
+      if (this._queryResults.length === 0) {
+        console.debug(`No query results found`);
+        return;
+      }
 
       // Get the product data for each query result
       const productPromises = this._queryResults.map((r: unknown) => {
         const result = { ...(r as object) };
-        return this._getProductData(result as T) as Promise<T>;
+        return this._getProductData(result as S) as Promise<T>;
       });
 
       console.log("productPromises:", productPromises);
@@ -497,11 +505,11 @@ export default abstract class SupplierBase<T extends Product> implements AsyncIt
    * Query the products from the supplier.
    * @returns A promise that resolves when the products have been queried.
    */
-  protected abstract queryProducts(): Promise<void>;
+  protected abstract _queryProducts(query: string): Promise<Array<S> | void>;
 
   /**
    * Parse the products from the supplier.
    * @returns A promise that resolves when the products have been parsed.
    */
-  protected abstract _getProductData(productIndexObject: object): Promise<Product | void>;
+  protected abstract _getProductData(productIndexObject: S): Promise<Partial<Product> | void>;
 }

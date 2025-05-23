@@ -2,7 +2,7 @@
  * Represents price information for a product, including both inclusive and exclusive prices
  * as well as old prices for comparison.
  */
-export interface LaboratoriumDiscounterPrice {
+export interface PriceObject {
   /* eslint-disable */
   /** The current price of the product */
   price: number;
@@ -23,7 +23,7 @@ export interface LaboratoriumDiscounterPrice {
  * Represents a product in the Laboratorium Discounter system.
  * Contains all product details including pricing, availability, and metadata.
  */
-export interface LaboratoriumDiscounterProduct {
+export interface ProductObject {
   /* eslint-disable */
   /** Unique identifier for the product */
   id: number;
@@ -42,7 +42,7 @@ export interface LaboratoriumDiscounterProduct {
   /** Product score or rating */
   score: number;
   /** Price information for the product */
-  price: LaboratoriumDiscounterPrice;
+  price: PriceObject;
   /** Whether the product is currently available */
   available: boolean;
   /** Unit information */
@@ -68,7 +68,7 @@ export interface LaboratoriumDiscounterProduct {
  * Represents the complete response from the Laboratorium Discounter API.
  * Contains page information, request details, and product collection.
  */
-export interface LaboriumDiscounterResponse {
+export interface SearchResponse {
   /* eslint-disable */
   /** Page-related information */
   page: {
@@ -118,7 +118,7 @@ export interface LaboriumDiscounterResponse {
   collection: {
     /** Map of products indexed by their identifiers */
     products: {
-      [key: string]: LaboratoriumDiscounterProduct;
+      [key: string]: ProductObject;
     };
     /** Index signature for additional collection properties */
     [key: string]: unknown;
@@ -130,7 +130,7 @@ export interface LaboriumDiscounterResponse {
 /**
  * Type for product index objects that can contain any string-keyed properties.
  */
-export interface LaboratoriumDiscounterProductIndexObject {
+export interface ProductIndexObject {
   /** Index signature for any string-keyed properties */
   [key: string]: unknown;
 }

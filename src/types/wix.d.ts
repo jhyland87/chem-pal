@@ -14,7 +14,7 @@ export interface AccessTokenResponse {
 /**
  * Represents a specific product item with its price and options
  */
-export interface WixProductItem {
+export interface ProductItem {
   /** Unique identifier for the product item */
   id: string;
   /** Array of selected option IDs */
@@ -28,7 +28,7 @@ export interface WixProductItem {
 /**
  * Represents a product option (e.g. size, color)
  */
-export interface WixProductOption {
+export interface ProductOption {
   /** Unique identifier for the option */
   id: string;
   /** Key identifier for the option */
@@ -38,13 +38,13 @@ export interface WixProductOption {
   /** Type of option (e.g. "dropdown", "radio") */
   optionType: string;
   /** Available selections for this option */
-  selections: WixProductSelection[];
+  selections: ProductSelection[];
 }
 
 /**
  * Represents a specific selection within a product option
  */
-export interface WixProductSelection {
+export interface ProductSelection {
   /** Unique identifier for the selection */
   id: number;
   /** Value of the selection */
@@ -60,13 +60,13 @@ export interface WixProductSelection {
 /**
  * Represents a complete product with all its details
  */
-export interface WixProduct {
+export interface ProductObject {
   /** Unique identifier for the product */
   id: string;
   /** Available options for the product */
-  options: WixProductOption[];
+  options: ProductOption[];
   /** Specific product items with their variations */
-  productItems: WixProductItem[];
+  productItems: ProductItem[];
   /** Type of product */
   productType: string;
   /** Base price of the product */
@@ -90,7 +90,7 @@ export interface WixProduct {
 /**
  * Represents the request parameters for a Wix product catalog query
  */
-export interface WixQueryRequestParameters {
+export interface QueryRequestParameters {
   o: string;
   s: string;
   q: string;
@@ -100,7 +100,7 @@ export interface WixQueryRequestParameters {
 /**
  * Response type for Wix product catalog queries
  */
-export interface WixQueryResponse {
+export interface QueryResponse {
   data: {
     catalog: {
       category: {
@@ -110,7 +110,7 @@ export interface WixQueryResponse {
           /** Total count of products returned */
           totalCount: number;
           /** List of products in the response */
-          list: WixProduct[];
+          list: ProductObject[];
         };
       };
     };

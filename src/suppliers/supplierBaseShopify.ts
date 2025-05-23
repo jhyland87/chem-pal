@@ -1,5 +1,5 @@
 import type { Product, Variant } from "types";
-import type { ShopifyItem, ShopifyQueryParams, ShopifySearchResponse } from "types/shopify";
+import type { ItemListing, QueryParams, SearchResponse } from "types/shopify";
 import { isQuantityObject, parseQuantity, parseQuantityCoalesce } from "../helpers/quantity";
 import SupplierBase from "./supplierBase";
 
@@ -25,9 +25,9 @@ import SupplierBase from "./supplierBase";
 //   &output=json
 //   &_=1740051794061
 
-export default abstract class ShopifyBase<T extends Product>
-  extends SupplierBase<T>
-  implements AsyncIterable<T>
+export default abstract class SupplierBaseShopify
+  extends SupplierBase<ItemListing, Product>
+  implements AsyncIterable<Product>
 {
   protected _apiKey: string = "";
 
@@ -35,7 +35,14 @@ export default abstract class ShopifyBase<T extends Product>
 
   protected _apiHost: string = "searchserverapi.com";
 
-  protected async queryProducts(): Promise<void> {
+  /**
+   * Query products from the Shopify API
+   *
+   * @param query - The query to search for
+   * @param limit - The limit of products to return
+   * @returns A promise that resolves when the products are queried
+   */
+  protected async _queryProducts(query: string): Promise<ItemListing[]> {
     // curl -s --get https://searchserverapi.com/getresults \
     //   --data-urlencode "api_key=8B7o0X1o7c" \
     //   --data-urlencode "q=sulf" \
@@ -56,13 +63,13 @@ export default abstract class ShopifyBase<T extends Product>
     //   --data-urlencode "vendorsMaxResults=3" \
     //   --data-urlencode "tagsMaxResults=3" \
     //   --data-urlencode "_=1740051794061" | jq
-    const getParams: ShopifyQueryParams = {
+    const getParams: QueryParams = {
       // Setting the limit here to 1000, since the limit parameter should
       // apply to results returned from Supplier3SChem, not the rquests
       // made by it.
       /* eslint-disable */
       api_key: this._apiKey,
-      q: this._query,
+      q: query,
       maxResults: 15,
       startIndex: 0,
       items: true,
@@ -84,7 +91,7 @@ export default abstract class ShopifyBase<T extends Product>
       /* eslint-enable */
     };
 
-    const searchRequest = await this.httpGetJson({
+    const searchRequest = await this._httpGetJson({
       path: `/getresults`,
       host: this._apiHost,
       params: getParams,
@@ -92,14 +99,14 @@ export default abstract class ShopifyBase<T extends Product>
 
     console.log("searchRequest:", searchRequest);
 
-    if (!this._isShopifySearchResponse(searchRequest)) {
+    if (!this._isValidSearchResponse(searchRequest)) {
       throw new Error("Invalid search response");
     }
 
-    this._queryResults = searchRequest.items.slice(0, this._limit);
+    return searchRequest.items.slice(0, this._limit);
   }
 
-  protected _isShopifySearchResponse(response: unknown): response is ShopifySearchResponse {
+  protected _isValidSearchResponse(response: unknown): response is SearchResponse {
     return (
       typeof response === "object" &&
       response !== null &&
@@ -108,7 +115,7 @@ export default abstract class ShopifyBase<T extends Product>
     );
   }
 
-  protected async _getProductData(product: ShopifyItem): Promise<Product | void> {
+  protected async _getProductData(product: ItemListing): Promise<Partial<Product> | void> {
     if (!product.price) {
       return;
     }
@@ -178,6 +185,6 @@ export default abstract class ShopifyBase<T extends Product>
       variants: variants,
       vendor: product.vendor,
       id: product.product_id,
-    };
+    } satisfies Partial<Product>;
   }
 }

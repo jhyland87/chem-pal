@@ -1,14 +1,14 @@
 import { type Product } from "types";
-import SupplierWixBase from "./supplierWixBase";
+import SupplierBaseWix from "./supplierBaseWix";
 
 /**
- * SupplierBioFuranChem class that extends SupplierWixBase and implements AsyncIterable<T>.
+ * SupplierBioFuranChem class that extends SupplierBaseWix and implements AsyncIterable<Product>.
  * @module SupplierBioFuranChem
  * @category Supplier
  */
-export default class SupplierBioFuranChem<T extends Product>
-  extends SupplierWixBase<T>
-  implements AsyncIterable<T>
+export default class SupplierBioFuranChem
+  extends SupplierBaseWix
+  implements AsyncIterable<Product>
 {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "BioFuran Chem";

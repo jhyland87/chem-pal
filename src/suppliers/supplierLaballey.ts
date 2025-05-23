@@ -1,14 +1,14 @@
 import { type Product } from "types";
-import ShopifyBase from "./shopifyBase";
+import SupplierBaseShopify from "./supplierBaseShopify";
 
 /**
- * SupplierLaballey class that extends ShopifyBase and implements AsyncIterable<T>.
+ * SupplierLaballey class that extends SupplierBaseShopify and implements AsyncIterable<T>.
  * @module SupplierLaballey
  * @category Supplier
  */
-export default class SupplierLaballey<T extends Product>
-  extends ShopifyBase<T>
-  implements AsyncIterable<T>
+export default class SupplierLaballey
+  extends SupplierBaseShopify
+  implements AsyncIterable<Product>
 {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "Laballey";
