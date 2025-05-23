@@ -62,7 +62,7 @@ jobs:
       - name: List build directory
         run: ls -la build
       - name: Install jest
-        run: npm install jest
+        run: npm install jest --legacy-peer-deps
       - name: Run tests
         run: npm run test
 
