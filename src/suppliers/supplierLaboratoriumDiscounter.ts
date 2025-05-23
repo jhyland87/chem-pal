@@ -1,11 +1,12 @@
 import { CURRENCY_SYMBOL_MAP } from "constants/currency";
+import { isQuantityObject, parseQuantity } from "helpers/quantity";
+import { firstMap } from "helpers/utils";
 import { type Product, type QuantityObject } from "types";
 import {
   type ProductObject,
   type SearchParams,
   type SearchResponse,
 } from "types/laboratoriumdiscounter";
-import { coalesce, isQuantityObject, parseQuantity } from "../helpers/quantity";
 import SupplierBase from "./supplierBase";
 
 /**
@@ -161,7 +162,7 @@ export default class SupplierLaboratoriumDiscounter
    * ```
    */
   protected _getProductData(result: ProductObject): Promise<Partial<Product> | void> {
-    const quantity = coalesce(parseQuantity, [
+    const quantity = firstMap(parseQuantity, [
       result.code,
       result.sku,
       result.fulltitle,

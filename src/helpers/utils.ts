@@ -1,9 +1,17 @@
 /**
- * MD5 hash function
- * @param inputString - The input string to hash.
- * @returns The MD5 hash of the input string.
+ * Core MD5 hash function implementation.
+ * Follows the MD5 specification for message digest calculation.
+ *
+ * @param input - The string to hash
+ * @returns MD5 hash of the input string
+ *
+ * @example
+ * ```typescript
+ * md5("hello") // Returns "5d41402abc4b2a76b9719d911017c592"
+ * md5("") // Returns "d41d8cd98f00b204e9800998ecf8427e"
+ * ```
  */
-function md5(inputString: string) {
+function md5(input: string) {
   const hc = "0123456789abcdef";
   function rh(n: number) {
     let j,
@@ -45,7 +53,7 @@ function md5(inputString: string) {
     blks[nblk * 16 - 2] = x.length * 8;
     return blks;
   }
-  const x = sb("" + inputString);
+  const x = sb("" + input);
   let a = 1732584193,
     b = -271733879,
     c = -1732584194,
@@ -132,90 +140,104 @@ function md5(inputString: string) {
 }
 
 /**
- * MD5 hash function
- * @param input - The input to hash.
- * @returns The MD5 hash of the input.
+ * MD5 hash function that handles various input types.
+ * Converts input to string representation before hashing.
+ *
+ * @category Helper
+ * @param input - The input to hash. Can be string, number, object, or null/undefined.
+ * @returns The MD5 hash of the input as a string, or the input itself if null/undefined
+ * @throws Error if input type is not supported (e.g., Symbol)
+ *
+ * @example
+ * ```typescript
+ * md5sum("hello") // Returns "5d41402abc4b2a76b9719d911017c592"
+ * md5sum(123) // Returns "202cb962ac59075b964b07152d234b70"
+ * md5sum({ foo: "bar" }) // Returns hash of stringified object
+ * md5sum(null) // Returns null
+ * ```
  */
-export function md5sum(input: unknown): string {
-  if (input === null || input === undefined) return md5("");
+export function md5sum<T>(input: NonNullable<T>): string | T {
+  if (input === null || input === undefined) {
+    return input;
+  }
 
-  if (typeof input === "object" && input !== null) return md5(JSON.stringify(input));
+  if (typeof input === "object" && input !== null) {
+    return md5(JSON.stringify(input));
+  }
 
-  if (typeof input === "number") return md5(input.toString());
+  if (typeof input === "number") {
+    return md5(input.toString());
+  }
 
-  if (typeof input !== "string") throw new Error("Unexpected input type: " + typeof input);
+  if (typeof input !== "string") {
+    throw new Error("Unexpected input type: " + typeof input);
+  }
 
   return md5(input);
 }
 
 /**
- * SHA256 hash function
- * @param message - The message to hash.
- * @returns The SHA256 hash of the message.
- */
-export async function sha256(message: string) {
-  // encode as UTF-8
-  const msgBuffer = new TextEncoder().encode(message);
-
-  // hash the message
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-
-  // convert ArrayBuffer to Array
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-
-  // convert bytes to hex string
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-/**
- * SHA256 hash function
- * @param input - The input to hash.
- * @returns The SHA256 hash of the input.
- */
-export async function sha256sum(input: unknown) {
-  if (input === null || input === undefined) return await sha256("");
-
-  if (typeof input === "object" && input !== null) return await sha256(JSON.stringify(input));
-
-  if (typeof input === "number") return await sha256(input.toString());
-
-  if (typeof input !== "string") throw new Error("Unexpected input type: " + typeof input);
-
-  return await sha256(input);
-}
-
-/**
  * Serializes a string to a base64 encoded string.
- * @param data - The string to serialize.
- * @returns A base64 encoded string.
+ * Useful for safely storing strings that may contain special characters.
+ * First URI encodes the string, then base64 encodes it.
+ *
+ * @category Helper
+ * @param data - The string to serialize
+ * @returns A base64 encoded string that can be safely stored/transmitted
+ *
+ * @example
+ * ```typescript
+ * serialize("Hello World") // Returns "SGVsbG8gV29ybGQ="
+ * serialize("Special chars: !@#$") // Returns safely encoded string
+ * serialize("Unicode: 你好") // Handles unicode characters
+ * ```
  */
 export function serialize(data: string): string {
   return btoa(encodeURIComponent(data));
 }
 
 /**
- * Deserializes a base64 encoded string to a string.
- * @param data - The base64 encoded string to deserialize.
- * @returns A string.
+ * Deserializes a base64 encoded string back to its original form.
+ * Reverses the serialize() operation by first base64 decoding,
+ * then URI decoding the result.
+ *
+ * @category Helper
+ * @param data - The base64 encoded string to deserialize
+ * @returns The original string that was serialized
+ *
+ * @example
+ * ```typescript
+ * deserialize("SGVsbG8gV29ybGQ=") // Returns "Hello World"
+ * deserialize(serialize("Special!")) // Returns "Special!"
+ * deserialize(serialize("你好")) // Returns "你好"
+ * ```
  */
 export function deserialize(data: string): string {
   return decodeURIComponent(atob(data));
 }
 
 /**
- * Similar to mysql's COALESCE function, this returns the first non-undefined,
- * non-null value in the array.
- * @param data - The array of values to coalesce.
- * @returns The first non-undefined, non-null value in the array.
- */
-export function coalesce(data: unknown[]): unknown {
-  return data.find((item) => item !== undefined && item !== null);
-}
-
-/**
- * Creates a promise that resolves after the specified number of milliseconds.
+ * Creates a promise that resolves after the specified delay.
+ * Useful for adding delays in async operations or rate limiting.
+ *
+ * @category Helper
  * @param ms - The number of milliseconds to sleep
  * @returns A promise that resolves after the specified delay
+ *
+ * @example
+ * ```typescript
+ * async function example() {
+ *   console.log("Start");
+ *   await sleep(1000); // Waits 1 second
+ *   console.log("End"); // Prints after delay
+ * }
+ *
+ * // For rate limiting:
+ * for (const item of items) {
+ *   await processItem(item);
+ *   await sleep(100); // Wait 100ms between items
+ * }
+ * ```
  */
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -223,11 +245,68 @@ export function sleep(ms: number) {
 
 /**
  * Delays the execution of an action by the specified number of milliseconds.
+ * Combines sleep() with a callback function for cleaner async code.
+ *
+ * @category Helper
  * @param ms - The number of milliseconds to delay
- * @param action - The action to execute after the delay
+ * @param action - The function to execute after the delay
  * @returns A promise that resolves after the action is executed
+ *
+ * @example
+ * ```typescript
+ * // Simple delay
+ * await delayAction(1000, () => console.log("Delayed message"));
+ *
+ * // With complex function
+ * await delayAction(500, () => {
+ *   processData();
+ *   updateUI();
+ * });
+ *
+ * // In a sequence
+ * await delayAction(100, step1);
+ * await delayAction(200, step2);
+ * ```
  */
 export async function delayAction(ms: number, action: () => void) {
   await sleep(ms);
   action();
+}
+
+/**
+ * Takes a function and an array of values, applies the function to each value in sequence,
+ * and returns the first non-undefined/null result. Useful for trying multiple possible inputs
+ * until finding one that produces a valid result.
+ *
+ * @category Helper
+ * @param fn - The function to apply to each value
+ * @param properties - Array of values to try the function on
+ * @returns The first non-undefined/null result from applying the function, or undefined if all attempts fail
+ *
+ * @example
+ * ```typescript
+ * // Parse number from different formats
+ * const getNumber = (s: string) => s.match(/\d+/)?.[0];
+ * firstMap(getNumber, ["no nums", "abc123", "def"]) // Returns "123"
+ *
+ * // Find first valid item
+ * const isValid = (x: number) => x > 10 ? x : undefined;
+ * firstMap(isValid, [5, 8, 15, 20]) // Returns 15
+ *
+ * // Complex transformations
+ * const parseDate = (s: string) => {
+ *   const date = new Date(s);
+ *   return isNaN(date.getTime()) ? undefined : date;
+ * };
+ * firstMap(parseDate, ["invalid", "2023-01-01", "also invalid"])
+ * ```
+ */
+export function firstMap<T, R>(fn: (arg: T) => R | void, properties: T[]): R | void {
+  for (const prop of properties) {
+    const result = fn(prop);
+    if (result !== undefined && result !== null) {
+      return result;
+    }
+  }
+  return undefined;
 }

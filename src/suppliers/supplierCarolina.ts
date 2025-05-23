@@ -1,4 +1,5 @@
-import { coalesce, isQuantityObject, parseQuantity } from "helpers/quantity";
+import { parsePrice } from "helpers/currency";
+import { isQuantityObject, parseQuantity } from "helpers/quantity";
 import type { Product, QuantityObject } from "types";
 import {
   type ATGResponse,
@@ -13,7 +14,6 @@ import {
 } from "types/carolina";
 import type { CAS } from "types/cas";
 import type { ParsedPrice } from "types/currency";
-import { parsePrice } from "../helpers/currency";
 import SupplierBase from "./supplierBase";
 
 /**
@@ -455,11 +455,11 @@ export default class SupplierCarolina
       return;
     }
 
-    const quantity = coalesce(parseQuantity, [
+    const quantity = [
       atgResponse.displayName,
       atgResponse.shortDescription,
       atgResponse.standardResult.productName,
-    ]);
+    ].find(parseQuantity);
 
     if (!isQuantityObject(quantity)) return Promise.resolve(undefined);
 

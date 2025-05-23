@@ -1,6 +1,7 @@
 import SpeedDial from "@mui/material/SpeedDial";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
 import SpeedDialIcon from "@mui/material/SpeedDialIcon";
+import { delayAction } from "helpers/utils";
 import AutoDeleteIcon from "icons/AutoDeleteIcon";
 import ClearIcon from "icons/ClearIcon";
 import ContrastIcon from "icons/ContrastIcon";
@@ -8,7 +9,6 @@ import InfoOutlineIcon from "icons/InfoOutlineIcon";
 import { MouseEvent, useEffect, useState } from "react";
 import { SpeedDialMenuProps } from "types/props";
 import { useAppContext } from "../context";
-import { delayAction } from "../helpers/utils";
 import AboutModal from "./AboutModal";
 import HelpTooltip from "./HelpTooltip";
 

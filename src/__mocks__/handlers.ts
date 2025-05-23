@@ -1,8 +1,8 @@
+import { getRequestHash } from "helpers/request";
+import { deserialize } from "helpers/utils";
 import { DefaultBodyType, delay, http, HttpResponse, HttpResponseResolver, PathParams } from "msw";
+import type { RequestHashObject } from "types/request.d";
 import { AccessTokenResponse } from "types/wix";
-import { getRequestHash } from "../helpers/request";
-import { deserialize } from "../helpers/utils";
-import type { RequestHashObject } from "../types/request.d";
 // src/__mocks__/handlers.js
 
 function withDelay<

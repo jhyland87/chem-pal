@@ -30,6 +30,9 @@
       "icons/*": [
         "./assets/icons/*"
       ],
+      "helpers/*": [
+        "./helpers/*"
+      ]
     },
     /* Bundler mode */
     //"moduleResolution": "bundler",
@@ -46,10 +49,6 @@
     "typeRoots": [
       "./node_modules/@types",
       "./src/types/*",
-      "./src/data/*",
-      "./src/constants/*",
-      "./src/assets/icons/*",
-      "./src/assets/icons"
     ],
     "types": [
       "jest",
