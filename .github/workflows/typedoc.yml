@@ -34,7 +34,7 @@ jobs:
         run: npm run test
 
   docs:
-    needs: build
+    needs: [build, test]
     runs-on: ubuntu-latest
     steps:
       - name: Generate documentation
