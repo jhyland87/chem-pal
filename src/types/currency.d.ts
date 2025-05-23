@@ -1,5 +1,5 @@
 import { HTTP_STATUS_CODES } from "constants/app";
-import { CurrencyCodeMap, CurrencySymbolMap } from "./currency";
+import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "constants/currency";
 
 /**
  * Represents a currency exchange rate as a number
@@ -16,9 +16,9 @@ declare interface ExchangeRateResponse {
   /** Exchange rate data */
   data: {
     /** Base currency code */
-    base: CurrencyCode;
+    base: keyof typeof CURRENCY_CODE_MAP;
     /** Target currency code */
-    target: CurrencyCode;
+    target: keyof typeof CURRENCY_CODE_MAP;
     /** Mid-point exchange rate */
     mid: number;
     /** Unit of the exchange rate */
@@ -44,13 +44,13 @@ declare interface ParsedPrice {
  * Type representing valid currency codes
  * Derived from the keys of CurrencySymbolMap
  */
-declare type CurrencyCode = keyof typeof CurrencySymbolMap;
+declare type CurrencyCode = valueof<typeof CURRENCY_CODE_MAP>;
 
 /**
  * Type representing valid currency symbols
  * Derived from the keys of CurrencyCodeMap
  */
-declare type CurrencySymbol = keyof typeof CurrencyCodeMap;
+declare type CurrencySymbol = valueof<typeof CURRENCY_SYMBOL_MAP>;
 
 /**
  * Mapping of currency symbols to their corresponding ISO currency codes

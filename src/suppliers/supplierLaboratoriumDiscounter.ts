@@ -1,7 +1,8 @@
 import { CURRENCY_SYMBOL_MAP } from "constants/currency";
+import { ProductBuilder } from "helpers/productBuilder";
 import { isQuantityObject, parseQuantity } from "helpers/quantity";
 import { firstMap } from "helpers/utils";
-import { type Product, type QuantityObject } from "types";
+import { type Product } from "types";
 import {
   type ProductObject,
   type SearchParams,
@@ -171,16 +172,12 @@ export default class SupplierLaboratoriumDiscounter
 
     if (!isQuantityObject(quantity)) return;
 
-    return {
-      uuid: result.id,
-      title: result.title || result.fulltitle,
-      description: result.description,
-      price: result.price.price,
-      currencyCode: "EUR",
-      currencySymbol: CURRENCY_SYMBOL_MAP.EUR,
-      url: result.url,
-      supplier: this.supplierName,
-      ...(quantity as QuantityObject),
-    } satisfies Partial<Product>;
+    const builder = new ProductBuilder(this._baseURL);
+    return builder
+      .setBasicInfo(result.title || result.fulltitle, result.url, this.supplierName)
+      .setPricing(result.price.price, "EUR", CURRENCY_SYMBOL_MAP.EUR)
+      .setQuantity(quantity.quantity, quantity.uom)
+      .setDescription(result.description || "")
+      .build();
   }
 }

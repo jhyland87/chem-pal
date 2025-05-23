@@ -21,20 +21,20 @@ import { CAS } from "types/cas";
  *
  * @example
  * ```typescript
- * isCas('1234-56-6') // Returns true
- * isCas('50-00-0') // Returns true
- * isCas('1234-56-999') // Returns false
- * isCas('1234-56') // Returns false
- * isCas('1234-56-0') // Returns false
- * isCas('0000-00-0') // Returns false
- * isCas('00-10-0') // Returns false
+ * isCAS('1234-56-6') // Returns true
+ * isCAS('50-00-0') // Returns true
+ * isCAS('1234-56-999') // Returns false
+ * isCAS('1234-56') // Returns false
+ * isCAS('1234-56-0') // Returns false
+ * isCAS('0000-00-0') // Returns false
+ * isCAS('00-10-0') // Returns false
  * ```
  *
  * @see https://regex101.com/r/xPF1Yp/2
  * @see https://www.cas.org/training/documentation/chemical-substances/checkdig
  * @see https://www.allcheminfo.com/chemistry/cas-number-lookup.html
  */
-export function isCas(cas: string): cas is CAS<string> {
+export function isCAS(cas: string): cas is CAS<string> {
   const regex = RegExp(`^${CAS_REGEX.source}$`);
   const match = cas.match(regex);
   if (!match || !match.groups?.seg_a || !match.groups?.seg_b || !match.groups?.seg_checksum)
@@ -63,14 +63,14 @@ export function isCas(cas: string): cas is CAS<string> {
  *
  * @example
  * ```typescript
- * findCas('Example of a valid cas: 1234-56-6..') // Returns '1234-56-6'
- * findCas('and 50-00-0 is another valid cas #') // Returns '50-00-0'
- * findCas('Example of an invalid cas: 1232-56-6..') // Returns undefined
- * findCas('and 50-00-1 is another valid cas #') // Returns undefined
+ * findCAS('Example of a valid cas: 1234-56-6..') // Returns '1234-56-6'
+ * findCAS('and 50-00-0 is another valid cas #') // Returns '50-00-0'
+ * findCAS('Example of an invalid cas: 1232-56-6..') // Returns undefined
+ * findCAS('and 50-00-1 is another valid cas #') // Returns undefined
  * ```
  */
-export function findCas(data: string): CAS<string> | void {
+export function findCAS(data: string): CAS<string> | void {
   const regex = RegExp(CAS_REGEX.source, "g");
   const match = data.match(regex);
-  if (match && isCas(match[0])) return match[0] as CAS<string>;
+  if (match && isCAS(match[0])) return match[0] as CAS<string>;
 }
