@@ -45,29 +45,11 @@ jobs:
           name: 'root'
           if-no-files-found: error
           path: '.'
-
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Getting artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: 'root'
-          path: '.'
-      - name: Get pwd
-        run: pwd
-      - name: List root directory
-        run: ls -la
-      - name: List build directory
-        run: ls -la build
-      - name: Install jest
-        run: npm install jest --legacy-peer-deps
       - name: Run tests
         run: npm run test
 
   docs:
-    needs: [build, test]
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Getting artifacts
