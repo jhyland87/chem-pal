@@ -1,5 +1,6 @@
 import { parsePrice } from "helpers/currency";
 import { isQuantityObject, parseQuantity } from "helpers/quantity";
+import { firstMap } from "helpers/utils";
 import type { Product, QuantityObject } from "types";
 import {
   type ATGResponse,
@@ -455,11 +456,11 @@ export default class SupplierCarolina
       return;
     }
 
-    const quantity = [
+    const quantity = firstMap(parseQuantity, [
       atgResponse.displayName,
       atgResponse.shortDescription,
       atgResponse.standardResult.productName,
-    ].find(parseQuantity);
+    ]);
 
     if (!isQuantityObject(quantity)) return Promise.resolve(undefined);
 
