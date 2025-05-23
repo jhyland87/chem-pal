@@ -1,4 +1,5 @@
 import { UOM } from "constants/app";
+import * as contentType from "content-type";
 import { toUSD } from "helpers/currency";
 import { toBaseQuantity } from "helpers/quantity";
 import { getCachableResponse } from "helpers/request";
@@ -24,9 +25,6 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
 
   // String to query for (Product name, CAS, etc)
   protected _query: string;
-
-  // The products after all http calls are made and responses have been parsed/filtered.
-  protected _products: Array<Product> = [];
 
   // If the products first require a query of a search page that gets iterated over,
   // those results are stored here
@@ -118,11 +116,12 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    */
   private _isJsonResponse(response: Response | void): response is Response {
     if (!this._isResponse(response)) return false;
-    const contentType = response.headers.get("content-type");
-    console.log("contentType:", contentType);
-    if (!contentType) return false;
-    if (contentType.includes("json") || contentType.includes("javascript")) return true;
-    return false;
+    const dataType = contentType.parse(response.headers.get("content-type") ?? "");
+    console.log("contentType:", dataType.type);
+
+    if (!dataType) return false;
+
+    return ["application/json", "application/javascript"].includes(dataType.type);
   }
 
   /**

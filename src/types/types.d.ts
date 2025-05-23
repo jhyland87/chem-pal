@@ -104,20 +104,22 @@ export interface Variant {
  * Product interface representing a chemical product
  */
 export interface Product extends Variant {
+  /** Product supplier */
+  supplier: string;
+  /** Product name */
+  name: string;
+  /** Product link (absolute url)*/
+  url: string;
+  /** Product price */
+  price: number;
   /** Currency code for pricing */
   currencyCode: CurrencyCode;
   /** Currency symbol for display */
   currencySymbol: CurrencySymbol;
   /** Available quantity */
   quantity: number;
-  /** Product price */
-  price: number;
-  /** Unit of measurement */
-  uom: string;
-  /** Product supplier */
-  supplier: string;
-  /** Product link */
-  url: string;
+  /** Unit of measurement (ml, g, kg, etc.) */
+  uom: valueof<typeof UOM>;
   /** Product description */
   description?: string;
   /** Product manufacturer */
@@ -130,12 +132,14 @@ export interface Product extends Variant {
   vendor?: string;
   /** Available variants */
   variants?: Variant[];
+  /** Document links (e.g. MSDS, SDS, etc.) */
+  docLinks?: string[];
 }
 
 /**
  * Item interface representing a task or item
  */
-export interface Item {
+export interface Itemxxx {
   /** Unique identifier */
   id: number;
   /** Item name */
@@ -147,7 +151,7 @@ export interface Item {
   /** Completion status */
   isComplete: boolean;
   /** Nested items */
-  nodes?: Item[];
+  nodes?: Itemxxx[];
 }
 
 /**
@@ -214,8 +218,6 @@ export interface Supplier {
   supplierName: string;
   /** Current search query */
   _query: string;
-  /** Array of products */
-  _products: Array<Product>;
   /** Raw query results */
   _queryResults: Array<Record<string, unknown>>;
   /** Base URL for API */
