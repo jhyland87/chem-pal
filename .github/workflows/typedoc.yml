@@ -21,22 +21,36 @@ jobs:
       - run: npm run setup
       - name: Run build step
         run: npm run build
+      - name: List build directory
+        run: ls -la build
       - name: Upload build artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
+          name: 'built'
+          if-no-files-found: error
           path: 'build'
 
   test:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Getting artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: 'built'
+          path: 'build'
       - name: Run tests
         run: npm run test
 
   docs:
-    needs: build
+    needs: [build, test]
     runs-on: ubuntu-latest
     steps:
+      - name: Getting artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: 'built'
+          path: 'build'
       - name: Generate documentation
         run: npm run docs
       - name: Setup Pages
