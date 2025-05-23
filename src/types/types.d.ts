@@ -239,9 +239,9 @@ export interface TextOptionFacet {
 }
 
 /**
- * WixProduct interface representing a Wix product
+ * ProductObject interface representing a Wix product
  */
-export interface WixProduct {
+export interface ProductObject {
   /** Discounted price */
   discountedPrice?: string;
   /** Regular price */

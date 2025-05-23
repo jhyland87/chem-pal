@@ -1,10 +1,9 @@
 import { CURRENCY_SYMBOL_MAP } from "constants/currency";
 import { type Product, type QuantityObject } from "types";
 import {
-  type LaboratoriumDiscounterProduct,
-  type LaboratoriumDiscounterProductIndexObject,
-  type LaboriumDiscounterResponse,
+  type ProductObject,
   type SearchParams,
+  type SearchResponse,
 } from "types/laboratoriumdiscounter";
 import { isQuantityObject, parseQuantityCoalesce } from "../helpers/quantity";
 import SupplierBase from "./supplierBase";
@@ -20,7 +19,7 @@ import SupplierBase from "./supplierBase";
  * @category Supplier
  */
 export default class SupplierLaboratoriumDiscounter
-  extends SupplierBase<LaboratoriumDiscounterProductIndexObject, Product>
+  extends SupplierBase<ProductObject, Product>
   implements AsyncIterable<Product>
 {
   // Name of supplier (for display purposes)
@@ -30,7 +29,7 @@ export default class SupplierLaboratoriumDiscounter
   protected _baseURL: string = "https://www.laboratoriumdiscounter.nl";
 
   // Override the type of _queryResults to use our specific type
-  protected _queryResults: Array<LaboratoriumDiscounterProductIndexObject> = [];
+  protected _queryResults: Array<ProductObject> = [];
 
   // Used to keep track of how many requests have been made to the supplier.
   protected _httpRequstCount: number = 0;
@@ -76,11 +75,11 @@ export default class SupplierLaboratoriumDiscounter
     };
   }
 
-  protected _isResponseOk(response: unknown): response is LaboriumDiscounterResponse {
+  protected _isResponseOk(response: unknown): response is SearchResponse {
     return !!response && typeof response === "object" && "collection" in response;
   }
 
-  protected async _queryProducts(query: string): Promise<LaboratoriumDiscounterProduct[] | void> {
+  protected async _queryProducts(query: string): Promise<ProductObject[] | void> {
     const params = this._makeQueryParams(query);
 
     const response: unknown = await this._httpGetJson({
@@ -96,9 +95,7 @@ export default class SupplierLaboratoriumDiscounter
     return Object.values(response.collection.products);
   }
 
-  protected _getProductData(
-    result: LaboratoriumDiscounterProduct,
-  ): Promise<Partial<Product> | void> {
+  protected _getProductData(result: ProductObject): Promise<Partial<Product> | void> {
     const quantity = parseQuantityCoalesce([
       result.code,
       result.sku,
@@ -107,7 +104,6 @@ export default class SupplierLaboratoriumDiscounter
     ]);
 
     if (!isQuantityObject(quantity)) return Promise.resolve(undefined);
-
     return Promise.resolve({
       uuid: result.id,
       title: result.title || result.fulltitle,

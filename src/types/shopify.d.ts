@@ -1,7 +1,7 @@
 /**
  * Represents a category in the Shopify store
  */
-export interface ShopifyCategory {
+export interface ItemCategory {
   /* eslint-disable */
   /** Unique identifier for the category */
   category_id: string;
@@ -19,7 +19,7 @@ export interface ShopifyCategory {
 /**
  * Represents a page in the Shopify store
  */
-export interface ShopifyPage {
+export interface StorePage {
   /* eslint-disable */
   /** Unique identifier for the page */
   page_id: string;
@@ -37,14 +37,14 @@ export interface ShopifyPage {
 /**
  * Represents product options in Shopify
  */
-export interface ShopifyProductOption {
+export interface ProductOption {
   [key: string]: string | number | boolean | undefined;
 }
 
 /**
  * Represents a product variant in Shopify
  */
-export interface ShopifyProductVariant {
+export interface ProductVariant {
   /* eslint-disable */
   /** Unique identifier for the variant */
   variant_id: string;
@@ -59,7 +59,7 @@ export interface ShopifyProductVariant {
   /** Whether the variant is taxable */
   taxable: string;
   /** Product options associated with this variant */
-  options: ShopifyProductOption;
+  options: ProductOption;
   /** Whether the variant is available for purchase */
   available: string;
   /** Array of variant metafields data for search */
@@ -80,7 +80,7 @@ export interface ShopifyProductVariant {
 /**
  * Represents a product item in Shopify
  */
-export interface ShopifyItem {
+export interface ItemListing {
   /* eslint-disable */
   /** Unique identifier for the product */
   product_id: string;
@@ -113,7 +113,7 @@ export interface ShopifyItem {
   /** Average review score for the product */
   reviews_average_score: string;
   /** Array of product variants */
-  shopify_variants: ShopifyProductVariant[];
+  shopify_variants: ProductVariant[];
   /** Array of product image URLs */
   shopify_images: string[];
   /** Optional array of alt text for product images */
@@ -126,7 +126,7 @@ export interface ShopifyItem {
 /**
  * Represents the response from a Shopify search query
  */
-export interface ShopifySearchResponse {
+export interface SearchResponse {
   /** Total number of items found */
   totalItems: number;
   /** Starting index of the current result set */
@@ -146,17 +146,17 @@ export interface ShopifySearchResponse {
   /** Array of search suggestions */
   suggestions: string[];
   /** Array of matching categories */
-  categories: ShopifyCategory[];
+  categories: ItemCategory[];
   /** Array of matching pages */
-  pages: ShopifyPage[];
+  pages: StorePage[];
   /** Array of matching products */
-  items: ShopifyItem[];
+  items: ItemListing[];
 }
 
 /**
  * Represents the query parameters for a Shopify search request
  */
-export interface ShopifyQueryParams extends RequestParams {
+export interface QueryParams extends RequestParams {
   /** API key for authentication */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   api_key: string;

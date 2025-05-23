@@ -3,7 +3,7 @@
  * Base interface for common properties shared across many objects in the Carolina system.
  * Contains core attributes like template type, metadata, content IDs, and execution details.
  */
-export interface CarolinaBaseObject {
+export interface BaseObject {
   /** The type of template being used */
   templateType: string;
   /** Optional metadata key-value pairs associated with the object */
@@ -24,11 +24,11 @@ export interface CarolinaBaseObject {
  * Represents a content folder structure in the Carolina system.
  * Contains folder path information and optional child rules for content organization.
  */
-export interface CarolinaContentFolder extends CarolinaBaseObject {
+export interface ContentFolder extends BaseObject {
   /** Path to the content folder */
   folderPath: string;
   /** Optional array of content rules that apply to this folder */
-  childRules?: CarolinaContentRule[];
+  childRules?: ContentRule[];
   /** Type identifier for content rule folders */
   "@type": "ContentRuleFolder";
 }
@@ -37,7 +37,7 @@ export interface CarolinaContentFolder extends CarolinaBaseObject {
  * Container for search results in the Carolina system.
  * Extends the content rule zone item to hold an array of search result items.
  */
-export interface CarolinaResultsContainer extends CarolinaContentRuleZoneItem {
+export interface ResultsContainer extends ContentRuleZoneItem {
   /** Type identifier for results containers */
   "@type": "ResultsContainer";
   /** Array of search result items */
@@ -48,7 +48,7 @@ export interface CarolinaResultsContainer extends CarolinaContentRuleZoneItem {
  * Defines content rules for page organization and structure.
  * Contains rule identification and associated content zone items.
  */
-export interface CarolinaContentRule extends CarolinaBaseObject {
+export interface ContentRule extends BaseObject {
   /** Title of the page associated with this rule */
   pageTitle: string;
   /** Type identifier for content rules */
@@ -56,42 +56,42 @@ export interface CarolinaContentRule extends CarolinaBaseObject {
   /** Unique identifier for the rule */
   ruleId: string;
   /** Array of content rule zone items */
-  ContentRuleZone: CarolinaContentRuleZoneItem[];
+  ContentRuleZone: ContentRuleZoneItem[];
 }
 
 /**
  * Represents items within a content rule zone.
  * Can contain various content types including folders, main content, and navigation menus.
  */
-export interface CarolinaContentRuleZoneItem extends CarolinaBaseObject {
+export interface ContentRuleZoneItem extends BaseObject {
   /** Type identifier for the zone item */
   "@type": string;
   /** Optional content sections including folders and main content */
   contents?: {
     /** Array of content folders within this zone */
-    ContentFolderZone?: CarolinaContentFolder[];
+    ContentFolderZone?: ContentFolder[];
     /** Array of main content items */
-    MainContent?: CarolinaMainContentItem[];
+    MainContent?: MainContentItem[];
   };
   /** Optional submenu items for navigation */
-  subMenus?: CarolinaMenuItem[];
+  subMenus?: MenuItem[];
   /** Optional top-level category menu items */
-  topCategories?: CarolinaMenuItem[];
+  topCategories?: MenuItem[];
   /** Optional most popular menu items */
-  mostPopular?: CarolinaMenuItem[];
+  mostPopular?: MenuItem[];
 }
 
 /**
  * Defines main content items within the content structure.
  * Can contain nested content folders and other content-specific data.
  */
-export interface CarolinaMainContentItem extends CarolinaBaseObject {
+export interface MainContentItem extends BaseObject {
   /** Type identifier for the main content item */
   "@type": string;
   /** Optional content sections */
   contents?: {
     /** Array of content folders within this main content item */
-    ContentFolderZone?: CarolinaContentFolder[];
+    ContentFolderZone?: ContentFolder[];
   };
 }
 
@@ -99,7 +99,7 @@ export interface CarolinaMainContentItem extends CarolinaBaseObject {
  * Represents a navigation menu item in the Carolina system.
  * Contains link information, display properties, and optional category identification.
  */
-export interface CarolinaMenuItem {
+export interface MenuItem {
   /** URL for the menu item */
   link: string;
   /** Descriptive text for the menu item */
@@ -116,7 +116,7 @@ export interface CarolinaMenuItem {
  * Represents a single facet item used for filtering and navigation.
  * Contains facet metadata and URL information for filtering purposes.
  */
-export interface CarolinaFacetItem {
+export interface FacetItem {
   /** Display name of the facet */
   name: string;
   /** Number of items with this facet value */
@@ -135,9 +135,9 @@ export interface CarolinaFacetItem {
  * Container for managing faceted navigation and filtering.
  * Includes facet collections, sorting information, and selected filter crumbs.
  */
-export interface CarolinaFacetsContainer extends CarolinaBaseObject {
+export interface FacetsContainer extends BaseObject {
   /** Collection of facets grouped by field name */
-  facets: Array<Record<string, CarolinaFacetItem[]>>;
+  facets: Array<Record<string, FacetItem[]>>;
   /** Mapping of facet names to their sort types */
   facetSortMap: Record<string, string>;
   /** Mapping of facet names to their sort order arrays */
@@ -161,7 +161,7 @@ export interface CarolinaFacetsContainer extends CarolinaBaseObject {
  * Represents a single search result item with product details.
  * Contains product information including images, descriptions, and pricing.
  */
-export interface CarolinaSearchResult extends Record<string, unknown> {
+export interface SearchResult extends Record<string, unknown> {
   /** URL of the product thumbnail image */
   "product.thumbnailImg": string;
   /** Name of the product */
@@ -188,7 +188,7 @@ export interface CarolinaSearchResult extends Record<string, unknown> {
  * Main response structure for search operations.
  * Contains search results, page information, and associated content data.
  */
-export interface CarolinaSearchResponse extends CarolinaBaseObject {
+export interface SearchResponse extends BaseObject {
   /** Search recommendations page object */
   ssRecsInfoPageObj: {
     /** Page information */
@@ -208,7 +208,7 @@ export interface CarolinaSearchResponse extends CarolinaBaseObject {
   /** Content sections */
   contents: {
     /** Array of content folders */
-    ContentFolderZone: CarolinaContentFolder[];
+    ContentFolderZone: ContentFolder[];
   };
   /** Data layer object for analytics */
   dataLayer_obj3: Record<string, unknown>;
@@ -220,7 +220,7 @@ export interface CarolinaSearchResponse extends CarolinaBaseObject {
  * Parameters used for constructing search queries.
  * Defines the structure for search requests to the Carolina Biological Supply Company website.
  */
-export interface CarolinaSearchParams {
+export interface SearchParams {
   /** Active tab for the search */
   tab: string;
   /** Product type filter */
@@ -243,7 +243,7 @@ export interface CarolinaSearchParams {
  * Response structure for ATG (Art Technology Group) product requests.
  * Contains detailed product information including descriptions, display data, and metadata.
  */
-export interface CarolinaATGResponse {
+export interface ATGResponse {
   /** Result status */
   result: string;
   /** Response data */
@@ -312,13 +312,13 @@ export interface CarolinaATGResponse {
  * Complete product response structure for Carolina products.
  * Contains ATG response data and additional template and content information.
  */
-export interface CarolinaProductResponse {
+export interface ProductResponse {
   /** Content sections */
   contents: {
     /** Main content array */
     MainContent: Array<{
       /** ATG response data */
-      atgResponse: CarolinaATGResponse;
+      atgResponse: ATGResponse;
       /** Type of template used */
       templateType: string;
       /** Unique content identifier */

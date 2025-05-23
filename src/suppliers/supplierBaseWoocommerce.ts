@@ -3,11 +3,11 @@
  * Extends the base supplier class and provides WooCommerce-specific implementation.
  */
 import type { Product } from "types";
-import type { WoocommerceItem, WoocommerceSearchResponse } from "types/woocommerce";
+import type { ItemListing, SearchResponse } from "types/woocommerce";
 import SupplierBase from "./supplierBase";
 
 export default abstract class SupplierBaseWoocommerce
-  extends SupplierBase<WoocommerceItem, Product>
+  extends SupplierBase<ItemListing, Product>
   implements AsyncIterable<Product>
 {
   /** API key for WooCommerce authentication */
@@ -21,7 +21,7 @@ export default abstract class SupplierBaseWoocommerce
    * @param query - The search term to query products
    * @returns Promise resolving to an array of WooCommerce product items
    */
-  protected async _queryProducts(query: string): Promise<WoocommerceItem[]> {
+  protected async _queryProducts(query: string): Promise<ItemListing[]> {
     const getParams = {
       search: query,
     };
@@ -45,7 +45,7 @@ export default abstract class SupplierBaseWoocommerce
    * @param response - Unknown response object to validate
    * @returns Type predicate indicating if response is a valid WooCommerce product response
    */
-  protected _isValidProductResponse(response: unknown): response is WoocommerceItem {
+  protected _isValidProductResponse(response: unknown): response is ItemListing {
     const requiredStringProps = ["id", "name", "type", "description", "price", "sku", "permalink"];
     const hasAllRequiredProps = requiredStringProps.every((prop) => {
       if (!response || typeof response !== "object") return false;
@@ -61,7 +61,7 @@ export default abstract class SupplierBaseWoocommerce
    * @param response - Unknown response object to validate
    * @returns Type predicate indicating if response is a valid WooCommerce search response
    */
-  protected _isValidSearchResponse(response: unknown): response is WoocommerceSearchResponse {
+  protected _isValidSearchResponse(response: unknown): response is SearchResponse {
     return response !== null && Array.isArray(response);
   }
 
@@ -70,7 +70,7 @@ export default abstract class SupplierBaseWoocommerce
    * @param product - WooCommerce product item to transform
    * @returns Promise resolving to a partial Product object or void if invalid
    */
-  protected async _getProductData(product: WoocommerceItem): Promise<Partial<Product> | void> {
+  protected async _getProductData(product: ItemListing): Promise<Partial<Product> | void> {
     if (!product.price) {
       return;
     }

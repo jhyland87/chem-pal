@@ -1,7 +1,7 @@
 /**
  * Search parameters for WooCommerce API
  */
-export interface WoocommerceSearchParams {
+export interface SearchParams {
   /**
    * Search query string to filter products
    */
@@ -11,17 +11,17 @@ export interface WoocommerceSearchParams {
 /**
  * Search response from WooCommerce API
  */
-export interface WoocommerceSearchResponse {
+export interface SearchResponse {
   /**
    * Array of product items returned from the search
    */
-  items: WoocommerceItem[];
+  items: ItemListing[];
 }
 
 /**
  * Product item from WooCommerce API
  */
-export interface WoocommerceItem {
+export interface ItemListing {
   /* eslint-disable */
   /** Unique identifier for the product */
   id: number;

@@ -1,5 +1,5 @@
 import type { Product, Variant } from "types";
-import type { ShopifyItem, ShopifyQueryParams, ShopifySearchResponse } from "types/shopify";
+import type { ItemListing, QueryParams, SearchResponse } from "types/shopify";
 import { isQuantityObject, parseQuantity, parseQuantityCoalesce } from "../helpers/quantity";
 import SupplierBase from "./supplierBase";
 
@@ -26,7 +26,7 @@ import SupplierBase from "./supplierBase";
 //   &_=1740051794061
 
 export default abstract class SupplierBaseShopify
-  extends SupplierBase<ShopifyItem, Product>
+  extends SupplierBase<ItemListing, Product>
   implements AsyncIterable<Product>
 {
   protected _apiKey: string = "";
@@ -42,7 +42,7 @@ export default abstract class SupplierBaseShopify
    * @param limit - The limit of products to return
    * @returns A promise that resolves when the products are queried
    */
-  protected async _queryProducts(query: string): Promise<ShopifyItem[]> {
+  protected async _queryProducts(query: string): Promise<ItemListing[]> {
     // curl -s --get https://searchserverapi.com/getresults \
     //   --data-urlencode "api_key=8B7o0X1o7c" \
     //   --data-urlencode "q=sulf" \
@@ -63,7 +63,7 @@ export default abstract class SupplierBaseShopify
     //   --data-urlencode "vendorsMaxResults=3" \
     //   --data-urlencode "tagsMaxResults=3" \
     //   --data-urlencode "_=1740051794061" | jq
-    const getParams: ShopifyQueryParams = {
+    const getParams: QueryParams = {
       // Setting the limit here to 1000, since the limit parameter should
       // apply to results returned from Supplier3SChem, not the rquests
       // made by it.
@@ -106,7 +106,7 @@ export default abstract class SupplierBaseShopify
     return searchRequest.items.slice(0, this._limit);
   }
 
-  protected _isValidSearchResponse(response: unknown): response is ShopifySearchResponse {
+  protected _isValidSearchResponse(response: unknown): response is SearchResponse {
     return (
       typeof response === "object" &&
       response !== null &&
@@ -115,7 +115,7 @@ export default abstract class SupplierBaseShopify
     );
   }
 
-  protected async _getProductData(product: ShopifyItem): Promise<Partial<Product> | void> {
+  protected async _getProductData(product: ItemListing): Promise<Partial<Product> | void> {
     if (!product.price) {
       return;
     }

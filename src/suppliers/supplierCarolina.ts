@@ -1,14 +1,14 @@
 import type { Product } from "types";
 import {
-  type CarolinaATGResponse,
-  type CarolinaContentFolder,
-  type CarolinaContentRuleZoneItem,
-  type CarolinaMainContentItem,
-  type CarolinaProductResponse,
-  type CarolinaResultsContainer,
-  type CarolinaSearchParams,
-  type CarolinaSearchResponse,
-  type CarolinaSearchResult,
+  type ATGResponse,
+  type ContentFolder,
+  type ContentRuleZoneItem,
+  type MainContentItem,
+  type ProductResponse,
+  type ResultsContainer,
+  type SearchParams,
+  type SearchResponse,
+  type SearchResult,
 } from "types/carolina";
 import SupplierBase from "./supplierBase";
 
@@ -38,7 +38,7 @@ import SupplierBase from "./supplierBase";
  * Append &format=json&ajax=true to any URL to get JSON response
  */
 export default class SupplierCarolina
-  extends SupplierBase<CarolinaSearchResult, Product>
+  extends SupplierBase<SearchResult, Product>
   implements AsyncIterable<Product>
 {
   /** Display name of the supplier */
@@ -51,7 +51,7 @@ export default class SupplierCarolina
   protected _baseURL: string = "https://www.carolina.com";
 
   /** Cached search results from the last query */
-  protected _queryResults: Array<CarolinaSearchResult> = [];
+  protected _queryResults: Array<SearchResult> = [];
 
   /** Maximum number of HTTP requests allowed per query */
   protected _httpRequestHardLimit: number = 50;
@@ -90,7 +90,7 @@ export default class SupplierCarolina
    * @param query - Search term to look for
    * @returns Object containing all required search parameters
    */
-  protected _makeQueryParams(query: string): CarolinaSearchParams {
+  protected _makeQueryParams(query: string): SearchParams {
     return {
       /* eslint-disable */
       tab: "p",
@@ -102,7 +102,7 @@ export default class SupplierCarolina
       viewSize: 300,
       q: query,
       /* eslint-enable */
-    } satisfies CarolinaSearchParams;
+    } satisfies SearchParams;
   }
 
   /**
@@ -110,7 +110,7 @@ export default class SupplierCarolina
    * @param response - Response object to validate
    * @returns True if response is valid and successful
    */
-  protected _isResponseOk(response: unknown): response is CarolinaSearchResponse {
+  protected _isResponseOk(response: unknown): response is SearchResponse {
     return (
       !!response &&
       typeof response === "object" &&
@@ -127,14 +127,14 @@ export default class SupplierCarolina
    * @param obj - Response object to validate
    * @returns True if the response matches expected Carolina search response structure
    */
-  protected _isValidSearchResponse(obj: unknown): obj is CarolinaSearchResponse {
+  protected _isValidSearchResponse(obj: unknown): obj is SearchResponse {
     if (!obj || typeof obj !== "object") {
       console.error("Response is not an object");
       return false;
     }
 
     try {
-      const response = obj as Partial<CarolinaSearchResponse>;
+      const response = obj as Partial<SearchResponse>;
 
       if (!response.contents) {
         console.error("Response missing contents");
@@ -168,7 +168,7 @@ export default class SupplierCarolina
    * Executes a product search query and stores results
    * Fetches products matching the current search query and updates internal results cache
    */
-  protected async _queryProducts(query: string): Promise<CarolinaSearchResult[] | void> {
+  protected async _queryProducts(query: string): Promise<SearchResult[] | void> {
     const params = this._makeQueryParams(query);
 
     const response: unknown = await this._httpGetJson({
@@ -191,7 +191,7 @@ export default class SupplierCarolina
    * @param response - Raw response object from search request
    * @returns Array of validated search result items
    */
-  protected _extractSearchResults(response: unknown): CarolinaSearchResult[] {
+  protected _extractSearchResults(response: unknown): SearchResult[] {
     try {
       if (!this._isValidSearchResponse(response)) {
         console.error("Invalid response structure");
@@ -211,9 +211,9 @@ export default class SupplierCarolina
       }
 
       const mainContentItems = pageContent.contents.MainContent;
-      const pluginSlotContainer = mainContentItems.find((item: CarolinaMainContentItem) =>
+      const pluginSlotContainer = mainContentItems.find((item: MainContentItem) =>
         item.contents?.ContentFolderZone?.some(
-          (folder: CarolinaContentFolder) => folder.folderPath === "Products - Search",
+          (folder: ContentFolder) => folder.folderPath === "Products - Search",
         ),
       );
 
@@ -223,7 +223,7 @@ export default class SupplierCarolina
       }
 
       const productsFolder = pluginSlotContainer.contents.ContentFolderZone.find(
-        (folder: CarolinaContentFolder) => folder.folderPath === "Products - Search",
+        (folder: ContentFolder) => folder.folderPath === "Products - Search",
       );
 
       if (!productsFolder?.childRules?.[0]?.ContentRuleZone) {
@@ -232,10 +232,10 @@ export default class SupplierCarolina
       }
 
       const resultsContainer = productsFolder.childRules[0].ContentRuleZone.find(
-        (zone: CarolinaContentRuleZoneItem): zone is CarolinaResultsContainer => {
+        (zone: ContentRuleZoneItem): zone is ResultsContainer => {
           return (
             zone["@type"] === "ResultsContainer" &&
-            Array.isArray((zone as Partial<CarolinaResultsContainer>).results)
+            Array.isArray((zone as Partial<ResultsContainer>).results)
           );
         },
       );
@@ -255,9 +255,9 @@ export default class SupplierCarolina
   /**
    * Type guard for validating search result items
    * @param result - Object to validate as a search result
-   * @returns True if object matches CarolinaSearchResult structure
+   * @returns True if object matches SearchResult structure
    */
-  protected _isSearchResultItem(result: unknown): result is CarolinaSearchResult {
+  protected _isSearchResultItem(result: unknown): result is SearchResult {
     if (!result || typeof result !== "object") {
       return false;
     }
@@ -291,14 +291,14 @@ export default class SupplierCarolina
   /**
    * Type guard for validating product response objects
    * @param obj - Object to validate as a product response
-   * @returns True if object matches CarolinaProductResponse structure
+   * @returns True if object matches ProductResponse structure
    */
-  protected _isValidProductResponse(obj: unknown): obj is CarolinaProductResponse {
+  protected _isValidProductResponse(obj: unknown): obj is ProductResponse {
     if (!obj || typeof obj !== "object") {
       return false;
     }
 
-    const response = obj as Partial<CarolinaProductResponse>;
+    const response = obj as Partial<ProductResponse>;
 
     if (!response.contents?.MainContent || !Array.isArray(response.contents.MainContent)) {
       return false;
@@ -312,14 +312,14 @@ export default class SupplierCarolina
   /**
    * Type guard for validating ATG response objects
    * @param obj - Object to validate as an ATG response
-   * @returns True if object matches CarolinaATGResponse structure
+   * @returns True if object matches ATGResponse structure
    */
-  protected _isATGResponse(obj: unknown): obj is CarolinaATGResponse {
+  protected _isATGResponse(obj: unknown): obj is ATGResponse {
     if (!obj || typeof obj !== "object") {
       return false;
     }
 
-    const response = obj as Partial<CarolinaATGResponse>;
+    const response = obj as Partial<ATGResponse>;
 
     if (typeof response.result !== "string" || response.result !== "success") {
       return false;
@@ -350,7 +350,7 @@ export default class SupplierCarolina
    */
   protected _extractATGResponse(
     productResponse: unknown,
-  ): CarolinaATGResponse["response"]["response"] | null {
+  ): ATGResponse["response"]["response"] | null {
     if (!this._isValidProductResponse(productResponse)) {
       return null;
     }
@@ -374,7 +374,7 @@ export default class SupplierCarolina
    * @param result - Search result item to get details for
    * @returns Promise resolving to complete product data or void if failed
    */
-  protected async _getProductData(result: CarolinaSearchResult): Promise<Product | void> {
+  protected async _getProductData(result: SearchResult): Promise<Product | void> {
     try {
       const productResponse = await this._httpGetJson({
         path: result.productUrl,
