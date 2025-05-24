@@ -81,9 +81,14 @@ export default class SupplierLoudwolf
 
     const results = $("div.product-layout.product-list");
 
+    console.log("Loudwolf results:", results);
     for (const result of results) {
-      const product = $(result).data();
-      console.log("product:", product);
+      const title = $(result).find("div.caption h4 a").text().trim();
+      const price = $(result).find("div.caption > p.price").text().trim();
+      const description = $(result).find("div.caption > p:nth-child(2)").text().trim();
+      const url = $(result).find("div.caption h4 a").attr("href");
+
+      console.log("Loudwolf product:", { title, price, description, url });
     }
     return results as unknown as CheerioElement[];
   }
