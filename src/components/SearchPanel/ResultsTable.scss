@@ -1,0 +1,48 @@
+@use "./SearchPanel.scss";
+
+#search-results-table-container {
+  min-height: 369px;
+  width: 100%;
+  //padding: 0px;
+  table.search-results {
+    tbody {
+      vertical-align: top;
+    }
+    width: 100%;
+    min-height: 275px;
+    tr {
+      td,
+      tr {
+        &:first-child {
+          padding: 0;
+        }
+      }
+    }
+  }
+  .search-input-container {
+    & > :not(style) {
+      margin: 0;
+    }
+  }
+}
+
+.search-results {
+  .boookmark-icon {
+    padding: 0px !important;
+    border-radius: 10% !important;
+    cursor: pointer;
+  }
+  tr {
+    th,
+    td {
+      &:first-child {
+        padding: 0;
+        max-width: 10px;
+      }
+      &:nth-child(2) {
+        padding: 0;
+        max-width: 10px;
+      }
+    }
+  }
+}

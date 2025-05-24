@@ -1,28 +1,123 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
+import js from "@eslint/js";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+import tsdoc from "eslint-plugin-tsdoc";
+import unicorn from "eslint-plugin-unicorn";
+import globals from "globals";
+import { dirname } from "path";
+import tseslint from "typescript-eslint";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export default tseslint.config(
-  { ignores: ['dist'] },
+  { ignores: ["dist", "dev", "docs"] },
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ['**/*.{ts,tsx}'],
+    extends: [
+      js.configs.recommended,
+      ...tseslint.configs.recommended,
+      //  , tsdoc.configs.recommended
+    ],
+    files: ["src/**/*.{ts,tsx}"],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
-    },
-    plugins: {
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
+      parser: tseslint.parser,
+      parserOptions: {
+        project: ["./tsconfig.json", "./tsconfig.app.json"],
+        tsconfigRootDir: __dirname,
+        ecmaVersion: 2018,
+        sourceType: "module",
+      },
     },
     rules: {
-      ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
+      "tsdoc/syntax": "error",
+      "@typescript-eslint/naming-convention": [
+        "error",
+        {
+          selector: "parameter",
+          format: ["camelCase"],
+          leadingUnderscore: "allow",
+          trailingUnderscore: "allow",
+        },
+        {
+          selector: "property",
+          format: ["camelCase"],
+          leadingUnderscore: "allow",
+          trailingUnderscore: "allow",
+        },
+        {
+          selector: "memberLike",
+          format: ["camelCase"],
+          modifiers: ["public"],
+          leadingUnderscore: "forbid",
+          trailingUnderscore: "forbid",
+        },
+        {
+          selector: "memberLike",
+          format: ["camelCase"],
+          modifiers: ["private", "protected", "#private"],
+          leadingUnderscore: "require",
+          //trailingUnderscore: "allow",
+        },
+        {
+          selector: "class",
+          format: ["PascalCase"],
+          leadingUnderscore: "forbid",
+          trailingUnderscore: "forbid",
+        },
+        {
+          selector: "default",
+          format: ["camelCase"],
+          leadingUnderscore: "allow",
+          trailingUnderscore: "allow",
+        },
+        {
+          selector: "variable",
+          format: ["camelCase", "PascalCase", "UPPER_CASE"],
+          leadingUnderscore: "allow",
+          trailingUnderscore: "allow",
+        },
+        {
+          selector: "import",
+          format: ["camelCase", "PascalCase"],
+        },
+        {
+          selector: "function",
+          format: ["camelCase", "PascalCase"],
+        },
+        {
+          selector: "typeLike",
+          format: ["PascalCase"],
+        },
+        {
+          selector: "enumMember",
+          format: ["UPPER_CASE"],
+        },
+        {
+          selector: "enum",
+          format: ["UPPER_CASE", "camelCase", "PascalCase"],
+        },
       ],
+      "unicorn/filename-case": [
+        "error",
+        {
+          cases: {
+            camelCase: true,
+            pascalCase: true,
+          },
+        },
+      ],
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/no-unused-vars": "error",
+      "@typescript-eslint/no-unused-expressions": "error",
+    },
+    plugins: {
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh,
+      //"@typescript-eslint": tseslint,
+      tsdoc: tsdoc,
+      unicorn: unicorn,
     },
   },
-)
+);

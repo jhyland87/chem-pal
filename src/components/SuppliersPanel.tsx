@@ -1,18 +1,38 @@
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import Checkbox from '@mui/material/Checkbox';
-import Avatar from '@mui/material/Avatar';
-import SupplierFactory from '../suppliers/supplier_factory';
-import { useSettings } from '../context';
+import { useAppContext } from "@/context";
+import SupplierFactory from "@/suppliers/supplierFactory";
+import Avatar from "@mui/material/Avatar";
+import Checkbox from "@mui/material/Checkbox";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemAvatar from "@mui/material/ListItemAvatar";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
 
+/**
+ * SuppliersPanel component that displays a list of available suppliers with toggle functionality.
+ * Each supplier is represented by an avatar and name, with a checkbox to enable/disable them.
+ * The component manages the state of selected suppliers through the application context.
+
+ * @component
+ * @category Component
+ *
+ * @example
+ * ```tsx
+ * <SuppliersPanel />
+ * ```
+ */
 export default function SuppliersPanel() {
-  const settingsContext = useSettings();
+  const appContext = useAppContext();
 
+  /**
+   * Handles toggling a supplier's selection state.
+   * Updates the application settings with the new list of selected suppliers.
+   *
+   * @param supplierName - The name of the supplier to toggle
+   * @returns A callback function that handles the toggle action
+   */
   const handleToggle = (supplierName: string) => () => {
-    const selectedSuppliers = settingsContext.settings.suppliers
+    const selectedSuppliers = appContext.settings.suppliers;
     const currentIndex = selectedSuppliers.indexOf(supplierName);
     const newChecked = [...selectedSuppliers];
 
@@ -22,14 +42,14 @@ export default function SuppliersPanel() {
       newChecked.splice(currentIndex, 1);
     }
 
-    settingsContext.setSettings({
-      ...settingsContext.settings,
-      suppliers: newChecked
+    appContext.setSettings({
+      ...appContext.settings,
+      suppliers: newChecked,
     });
   };
 
   return (
-    <List dense sx={{ width: '100%', bgcolor: 'background.paper', color: 'text.primary' }}>
+    <List dense sx={{ width: "100%", bgcolor: "background.paper", color: "text.primary" }}>
       {SupplierFactory.supplierList().map((supplierName) => {
         const labelId = `checkbox-list-secondary-label-${supplierName}`;
         return (
@@ -38,11 +58,11 @@ export default function SuppliersPanel() {
             secondaryAction={
               <Checkbox
                 value={supplierName}
-                edge='end'
+                edge="end"
                 onChange={handleToggle(supplierName)}
-                checked={settingsContext.settings.suppliers.includes(supplierName)}
+                checked={appContext.settings.suppliers.includes(supplierName)}
                 aria-labelledby={labelId}
-                size='small'
+                size="small"
               />
             }
             disablePadding
@@ -54,7 +74,7 @@ export default function SuppliersPanel() {
                   src={`/static/images/avatar/${supplierName}.png`}
                 />
               </ListItemAvatar>
-              <ListItemText id={labelId} primary={supplierName.replace(/^Supplier/, '')} />
+              <ListItemText id={labelId} primary={supplierName.replace(/^Supplier/, "")} />
             </ListItemButton>
           </ListItem>
         );

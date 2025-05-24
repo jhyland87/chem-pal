@@ -1,0 +1,21 @@
+.search-result-details-container {
+  table.result-details-table {
+    th {
+      text-align: center !important;
+    }
+    .description,
+    .title {
+      text-align: left !important;
+    }
+    .price,
+    .quantity {
+      text-align: center !important;
+    }
+    body > tr {
+      &:last-child td,
+      &:last-child th {
+        border: 0;
+      }
+    }
+  }
+}

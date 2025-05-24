@@ -1,16 +1,54 @@
-import './SearchPanel.css'
-import CancelIcon from '@mui/icons-material/Cancel';
-import Stack from '@mui/material/Stack';
-import Backdrop from '@mui/material/Backdrop';
-
-
-export default function LoadingBackdrop(props: { open: boolean, onClick: () => void }) {
+import { type LoadingBackdropProps } from "@/types/props";
+import Backdrop from "@mui/material/Backdrop";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import "./LoadingBackdrop.scss";
+/**
+ * A full-screen loading overlay component with a spinning benzene molecule and stop button.
+ * The spinner has a delayed fade-in animation when the backdrop is opened.
+ *
+ * @param props - Component properties containing:
+ * - open: Controls the visibility of the backdrop
+ * - onClick: Callback function triggered when the stop button is clicked
+ * @returns A loading backdrop component
+ *
+ * @example
+ * ```typescript
+ * <LoadingBackdrop
+ *   open={isLoading}
+ *   onClick={handleStopLoading}
+ * />
+ * ```
+ *
+ * Future improvements:
+ * - Implement a Suspense component instead of manual loading state
+ * - Add a timer to show the Stop Search button after a delay
+ */
+export default function LoadingBackdrop(props: LoadingBackdropProps) {
   // @todo: Try to implement a <Suspense/> component instead of a manual loading state
+  // @todo: add some timer that shows the Stop Search only after a second or two.
   return (
-    <Backdrop open={props.open} style={{ zIndex: 1 }}>
-      <Stack style={{ textAlign: 'center' }}>
-        <CancelIcon onClick={props.onClick} sx={{ fontSize: 40 }} style={{ cursor: 'pointer' }} />
-      </Stack>
-    </Backdrop>
+    <>
+      <Backdrop open={props.open} id="loading-backdrop">
+        <Box className="loading-backdrop-box">
+          {/*<Box className="spinner-box">
+            <Fade
+              in={props.open}
+              style={{
+                transitionDelay: props.open ? "800ms" : "0ms",
+              }}
+              unmountOnExit
+            >
+              <IconSpinner>
+                <BlueBenzeneIcon sx={{ width: 100, height: 100 }} />
+              </IconSpinner>
+            </Fade>
+          </Box>*/}
+          <Button className="status-button" onClick={props.onClick}>
+            {props.resultCount === 0 ? "Loading..." : `Found ${props.resultCount} results..`}
+          </Button>
+        </Box>
+      </Backdrop>
+    </>
   );
 }

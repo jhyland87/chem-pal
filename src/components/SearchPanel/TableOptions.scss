@@ -1,0 +1,12 @@
+.table-options-toolbar {
+  padding-left: 0;
+  padding-right: 0;
+  div.search-input {
+    //flex: 1 1 100%;
+    width: 100%;
+  }
+  .table-options-icon {
+    margin-left: 8px;
+    cursor: pointer;
+  }
+}

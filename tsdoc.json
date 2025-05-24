@@ -1,0 +1,47 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json",
+  "tagDefinitions": [
+    {
+      "tagName": "@component",
+      "syntaxKind": "block"
+    },
+    {
+      "tagName": "@todo",
+      "syntaxKind": "block"
+    },
+    {
+      "tagName": "@module",
+      "syntaxKind": "block"
+    },
+    {
+      "tagName": "@interface",
+      "syntaxKind": "block"
+    },
+    {
+      "tagName": "@type",
+      "syntaxKind": "block"
+    },
+    {
+      "tagName": "@category",
+      "syntaxKind": "block"
+    },
+    {
+      "tagName": "@abstract",
+      "syntaxKind": "block"
+    }
+  ],
+  "supportForTags": {
+    "@component": true,
+    "@example": true,
+    "@param": true,
+    "@returns": true,
+    "@throws": true,
+    "@todo": true,
+    "@module": true,
+    "@interface": true,
+    "@type": true,
+    "@category": true,
+    "@abstract": true,
+    "@see": true
+  }
+}

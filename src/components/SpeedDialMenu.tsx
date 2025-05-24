@@ -1,89 +1,136 @@
-import { MouseEvent } from 'react';
-import { SpeedDial, SpeedDialIcon, SpeedDialAction } from '@mui/material';
-import {
-  Save as SaveIcon,
-  Clear as ClearIcon,
-  AutoDelete as AutoDeleteIcon,
-  Contrast as ContrastIcon
-} from '@mui/icons-material';
-import { useSettings } from '../context';
+import { useAppContext } from "@/context";
+import { delayAction } from "@/helpers/utils";
+import AutoDeleteIcon from "@/icons/AutoDeleteIcon";
+import ClearIcon from "@/icons/ClearIcon";
+import ContrastIcon from "@/icons/ContrastIcon";
+import InfoOutlineIcon from "@/icons/InfoOutlineIcon";
+import { type SpeedDialMenuProps } from "@/types/props";
+import SpeedDial from "@mui/material/SpeedDial";
+import SpeedDialAction from "@mui/material/SpeedDialAction";
+import SpeedDialIcon from "@mui/material/SpeedDialIcon";
+import { MouseEvent, useEffect, useState } from "react";
+import AboutModal from "./AboutModal";
+import HelpTooltip from "./HelpTooltip";
 
-type SpeedDialMenuProps = { setSearchResults: (results: any[]) => void, speedDialVisibility: boolean }
+/**
+ * SpeedDialMenu component that provides quick access to various application actions.
+ * Displays a floating action button that expands to show multiple action buttons when clicked.
+ * Includes actions for clearing results, clearing cache, toggling theme, and showing about information.
+ *
+ * @component
+ * @category Component
+ * @param props - Component props
+ *
+ * @example
+ * ```tsx
+ * <SpeedDialMenu speedDialVisibility={true} />
+ * ```
+ */
+export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProps) {
+  const appContext = useAppContext();
 
-export default function SpeedDialMenu({ setSearchResults, speedDialVisibility }: SpeedDialMenuProps) {
-  const settingsContext = useSettings();
+  const [, setShowHelp] = useState(false);
 
+  /**
+   * Effect hook to show and hide help tooltip based on settings.
+   * Shows help tooltip after 500ms and hides it after 2000ms if showHelp is enabled.
+   */
+  useEffect(() => {
+    if (appContext.settings.showHelp === false) return;
+
+    delayAction(500, () => setShowHelp(true));
+    delayAction(2000, () => setShowHelp(false));
+  }, [appContext.settings.showHelp]);
+
+  /**
+   * Handles clearing all search results.
+   * Updates the session storage and triggers a settings update.
+   *
+   * @param event - The click event
+   */
   const handleClearResults = (event: MouseEvent<HTMLAnchorElement>) => {
-    console.debug('clearing results')
     event.preventDefault();
-    setSearchResults([])
+    chrome.storage.session.set({ searchResults: [] });
+    appContext.setSettings({
+      ...appContext.settings,
+      searchResultUpdateTs: new Date().toISOString(),
+    });
   };
 
+  /**
+   * Handles clearing the browser cache.
+   * Deletes all cache entries for the application.
+   *
+   * @param event - The click event
+   */
   const handleClearCache = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
 
-    const CACHE_VERSION = 1;
-    const CURRENT_CACHES = {
-      query: `query-cache-v${CACHE_VERSION}`,
-    };
-    const expectedCacheNamesSet = new Set(Object.values(CURRENT_CACHES));
-    //event.waitUntil(
     caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          console.debug('Deleting cache:', cacheName);
-          return caches.delete(cacheName);
-        })
-      )
-    })
-    //);
-  };
-
-  const handleSaveResults = (event: MouseEvent<HTMLAnchorElement>) => {
-    console.debug('saving results')
-    event.preventDefault();
-  };
-
-  const handleToggleTheme = (event: MouseEvent<HTMLAnchorElement>) => {
-    console.debug('toggling theme')
-    event.preventDefault();
-
-    settingsContext.setSettings({
-      ...settingsContext.settings,
-      theme: settingsContext.settings.theme === 'light' ? 'dark' : 'light'
+      return Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
     });
-
-    console.debug('settingsContext.settings.theme', settingsContext.settings.theme)
   };
 
+  /**
+   * Handles toggling between light and dark themes.
+   * Updates the application settings with the new theme.
+   *
+   * @param event - The click event
+   */
+  const handleToggleTheme = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+
+    appContext.setSettings({
+      ...appContext.settings,
+      theme: appContext.settings.theme === "light" ? "dark" : "light",
+    });
+  };
+
+  const [aboutOpen, setAboutOpen] = useState(false);
+
+  /**
+   * Handles opening the about modal.
+   */
+  const handleAboutOpen = () => setAboutOpen(true);
+
+  /**
+   * Array of action configurations for the speed dial menu.
+   * Each action includes an icon, name, and click handler.
+   */
   const actions = [
-    { icon: <ClearIcon />, name: 'Clear Resultsss', onClick: handleClearResults },
-    { icon: <AutoDeleteIcon />, name: 'Clear Cache', onClick: handleClearCache },
-    { icon: <SaveIcon />, name: 'Save Results', onClick: handleSaveResults },
-    { icon: <ContrastIcon />, name: 'Toggle Theme', onClick: handleToggleTheme },
+    { icon: <ClearIcon />, name: "Clear Results", onClick: handleClearResults },
+    { icon: <AutoDeleteIcon />, name: "Clear Cache", onClick: handleClearCache },
+    { icon: <ContrastIcon />, name: "Toggle Theme", onClick: handleToggleTheme },
+    { icon: <InfoOutlineIcon />, name: "About", onClick: handleAboutOpen },
   ];
 
-
   return (
-    <SpeedDial
-      id='speed-dial-menu'
-      className={speedDialVisibility ? 'speed-dial-menu open' : 'speed-dial-menu'}
-      FabProps={{ size: 'small' }}
-      ariaLabel='SpeedDial Menu'
-      sx={{ position: 'absolute', bottom: 6, right: 0 }}
-      icon={<SpeedDialIcon />}
-    >
-      {actions.map((action) => (
-        <SpeedDialAction
-          id={action.name}
-          onClick={(e: MouseEvent<HTMLDivElement>) => {
-            action.onClick(e as unknown as MouseEvent<HTMLAnchorElement>);
-          }}
-          key={action.name}
-          icon={action.icon}
-          tooltipTitle={action.name}
-        />
-      ))}
-    </SpeedDial>
+    <>
+      <AboutModal aboutOpen={aboutOpen} setAboutOpen={setAboutOpen} />
+      <SpeedDial
+        id="speed-dial-menu"
+        className={speedDialVisibility ? "speed-dial-menu open" : "speed-dial-menu"}
+        FabProps={{ size: "small" }}
+        ariaLabel="SpeedDial Menu"
+        sx={{ position: "fixed", bottom: 6, right: 0 }}
+        icon={
+          <HelpTooltip text="Bring your cursor to the bottom right corner of the screen to open the menu">
+            <SpeedDialIcon />
+          </HelpTooltip>
+        }
+      >
+        {actions.map((action) => (
+          <SpeedDialAction
+            id={action.name}
+            onClick={(e: MouseEvent<HTMLDivElement>) => {
+              action.onClick(e as unknown as MouseEvent<HTMLAnchorElement>);
+            }}
+            key={action.name}
+            icon={action.icon}
+            title={action.name}
+          />
+        ))}
+      </SpeedDial>
+    </>
   );
 }

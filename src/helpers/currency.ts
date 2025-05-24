@@ -1,124 +1,202 @@
-import {
-  CurrencyCode,
-  ExchangeRateResponse,
-  CurrencyCodeMap,
-  CurrencySymbol,
-  ParsedPrice
-} from '../types'
+//import type { ExchangeRateResponse, ParsedPrice } from "types";
+import { CURRENCY_CODE_MAP } from "@/constants/currency";
+import type { CurrencyCode, CurrencySymbol, ParsedPrice } from "@/types/currency";
+import { LRUCache } from "lru-cache";
 
 /**
- * Get the currency symbol from a price string.
+ * LRU (Least Recently Used) cache for storing currency exchange rates.
+ * Implements caching to minimize API calls to the exchange rate service.
  *
- * @param {string} price - The price string to get the currency symbol from.
- * @returns {string | undefined} - The currency symbol or undefined if no symbol is found.
+ * Configuration:
+ * - Maximum size: 5 entries
+ * - Automatic fetching of missing rates
+ * - Fetches from Hexarate API (https://hexarate.paikama.co)
+ *
+ * Cache key format: "FROM:TO" (e.g., "USD:EUR")
+ * Cache value: Exchange rate as a number
+ *
  * @example
- * getCurrencySymbol('$1000') // '$'
- * getCurrencySymbol('1000€') // '€'
- * getCurrencySymbol('1000£') // '£'
- * getCurrencySymbol('1000¥') // '¥'
- * getCurrencySymbol('1000₹') // '₹'
+ * ```typescript
+ * // Cache usage is automatic through getCurrencyRate():
+ * const rate1 = await getCurrencyRate('USD', 'EUR'); // Fetches from API
+ * const rate2 = await getCurrencyRate('USD', 'EUR'); // Uses cached value
+ *
+ * // After 5 different currency pairs, least recently used pair is evicted
+ * ```
  */
-export function getCurrencySymbol(price: string): string | undefined {
+const lruCurrencyRate = new LRUCache({
+  max: 5,
+  fetchMethod: async (key: string) => {
+    const [from, to] = key.split(":");
+    const response = await fetch(
+      `https://hexarate.paikama.co/api/rates/latest/${from}?target=${to}`,
+    );
+    const result = await response.json();
+    return result.data.mid;
+  },
+});
+
+/**
+ * Extracts the currency symbol from a price string.
+ * Uses Unicode property escapes to match currency symbols.
+ * Supports a wide range of international currency symbols.
+ *
+ * @category Helper
+ * @param price - The price string to extract the currency symbol from
+ * @returns The currency symbol if found, undefined otherwise
+ *
+ * @example
+ * ```typescript
+ * getCurrencySymbol('$1000') // Returns '$'
+ * getCurrencySymbol('1000€') // Returns '€'
+ * getCurrencySymbol('£99.99') // Returns '£'
+ * getCurrencySymbol('¥10000') // Returns '¥'
+ * getCurrencySymbol('₹1500') // Returns '₹'
+ * getCurrencySymbol('1000') // Returns undefined (no symbol)
+ * ```
+ */
+export function getCurrencySymbol(price: string): CurrencySymbol | void {
   const match = price.match(/\p{Sc}/u);
-  if (!match) return undefined
-  return match[0]
+  if (!match) return;
+  return match[0] satisfies CurrencySymbol;
 }
 
 /**
- * Parse a price string into a ParsedPrice object.
+ * Parses a price string into a structured object containing currency information.
+ * Handles various price formats and number representations:
+ * - Different currency symbol positions (prefix/suffix)
+ * - International number formats (e.g., 1.234,56 or 1,234.56)
+ * - Various currency symbols (€, $, £, ¥, etc.)
  *
- * @param {string} price - The price string to parse.
- * @returns {ParsedPrice | void} - The parsed price or undefined if the price is invalid.
+ * @category Helper
+ * @param price - The price string to parse (e.g., "$1,234.56" or "1.234,56€")
+ * @returns Object with currency code, symbol, and numeric price, or undefined if invalid
+ *
  * @example
- * parsePrice('$1000') // { currencyCode: 'USD', price: 1000, currencySymbol: '$' }
- * parsePrice('1000€') // { currencyCode: 'EUR', price: 1000, currencySymbol: '€' }
- * parsePrice('1000£') // { currencyCode: 'GBP', price: 1000, currencySymbol: '£' }
- * parsePrice('1000¥') // { currencyCode: 'JPY', price: 1000, currencySymbol: '¥' }
- * parsePrice('1000') // undefined
+ * ```typescript
+ * parsePrice('$1,234.56')
+ * // Returns { currencyCode: 'USD', price: 1234.56, currencySymbol: '$' }
+ *
+ * parsePrice('1.234,56€')
+ * // Returns { currencyCode: 'EUR', price: 1234.56, currencySymbol: '€' }
+ *
+ * parsePrice('£99.99')
+ * // Returns { currencyCode: 'GBP', price: 99.99, currencySymbol: '£' }
+ *
+ * parsePrice('invalid') // Returns undefined
+ * ```
  */
 export function parsePrice(price: string): ParsedPrice | void {
-  const currencySymbol = getCurrencySymbol(price) as CurrencySymbol
+  if (typeof price !== "string") return;
+  const currencySymbol = getCurrencySymbol(price) as CurrencySymbol;
   if (!currencySymbol) return;
 
-  const currencyCode = getCurrencyCodeFromSymbol(currencySymbol)
-  let bareAmount = price.replace(currencySymbol, '').trim()
+  const currencyCode = getCurrencyCodeFromSymbol(currencySymbol);
+  let bareAmount = price.replace(currencySymbol as string, "").trim();
 
-  // https://regex101.com/r/Q5w26N/2
-  // If the prices (like quantities) could be the weird foreign style where the commas and
-  // decimals are swapped, (eg: 1.234,56 instead of 1,234.56), then we need to swap the
-  // commas and decimals for easier parsing and handling.
+  // Handle foreign number formats where commas and decimals are swapped
   if (bareAmount.match(/^(\d+\.\d+,\d{1,2}|\d{1,3},\d{1,2}|\d{1,3},\d{1,2})$/))
-    bareAmount = bareAmount.replaceAll('.', 'xx').replaceAll(',', '.').replaceAll('xx', ',')
+    bareAmount = bareAmount.replaceAll(".", "xx").replaceAll(",", ".").replaceAll("xx", ",");
 
   // Remove all commas from the amount to make it castable to a number
-  bareAmount = bareAmount.replace(/,/g, '')
+  bareAmount = bareAmount.replace(/,/g, "");
 
   return {
-    currencyCode, currencySymbol,
+    currencyCode,
+    currencySymbol,
     price: parseFloat(bareAmount),
-  }
+  } satisfies ParsedPrice;
 }
 
 /**
- * Get the currency rate for a given currency pair.
+ * Fetches the current exchange rate between two currencies.
+ * Uses the Hexarate API to get real-time exchange rates.
+ * Implements caching using LRU cache to minimize API calls.
  *
- * @param {CurrencyCode} from - The currency to convert from.
- * @param {CurrencyCode} to - The currency to convert to.
- * @returns {Promise<number>} - The currency rate.
+ * @category Helper
+ * @param from - The source currency code (e.g., 'USD', 'EUR')
+ * @param to - The target currency code
+ * @returns The exchange rate as a number
+ * @throws Error if the API request fails or rate cannot be fetched
+ *
  * @example
- * getCurrencyRate('USD', 'EUR') // 0.85
- * getCurrencyRate('EUR', 'USD') // 1.1764705882352942
+ * ```typescript
+ * // Get EUR to USD rate
+ * const rate = await getCurrencyRate('EUR', 'USD')
+ * // Returns something like 1.18 (meaning 1 EUR = 1.18 USD)
+ *
+ * // Convert amount using rate
+ * const amount = 100;
+ * const converted = amount * rate; // 118 USD
+ *
+ * // Rates are cached for subsequent calls
+ * await getCurrencyRate('EUR', 'USD') // Uses cached value
+ * ```
  */
 export async function getCurrencyRate(from: CurrencyCode, to: CurrencyCode): Promise<number> {
   try {
-    const response = await fetch(`https://hexarate.paikama.co/api/rates/latest/${from}?target=${to}`)
-    const result = await response.json() as ExchangeRateResponse
-    return result.data.mid
-  }
-  catch (error) {
-    throw new Error(`Failed to get currency rate for ${from} to ${to}`)
+    return await lruCurrencyRate.fetch(`${from as string}:${to as string}`);
+  } catch (error) {
+    throw new Error(
+      `Failed to get currency rate for ${from as string} to ${to as string} - ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 
 /**
- * Get the currency code from a currency symbol.
+ * Maps a currency symbol to its corresponding ISO currency code.
+ * Uses a predefined mapping from the CURRENCY_CODE_MAP constant.
+ * Supports major international currency symbols.
  *
- * @param {CurrencySymbolMap} symbol - The currency symbol to get the currency code from.
- * @returns {CurrencyCodeMap} - The currency code.
+ * @category Helper
+ * @param symbol - The currency symbol to look up (e.g., '$', '€', '£')
+ * @returns The corresponding ISO currency code (e.g., 'USD', 'EUR', 'GBP')
+ *
  * @example
- * getCurrencyCodeFromSymbol('$') // 'USD'
- * getCurrencyCodeFromSymbol('€') // 'EUR'
- * getCurrencyCodeFromSymbol('£') // 'GBP'
- * getCurrencyCodeFromSymbol('¥') // 'JPY'
- * getCurrencyCodeFromSymbol('₹') // 'INR'
+ * ```typescript
+ * getCurrencyCodeFromSymbol('$') // Returns 'USD'
+ * getCurrencyCodeFromSymbol('€') // Returns 'EUR'
+ * getCurrencyCodeFromSymbol('£') // Returns 'GBP'
+ * getCurrencyCodeFromSymbol('¥') // Returns 'JPY'
+ * getCurrencyCodeFromSymbol('₹') // Returns 'INR'
+ *
+ * // Useful in combination with getCurrencySymbol
+ * const symbol = getCurrencySymbol('$100');
+ * const code = getCurrencyCodeFromSymbol(symbol); // 'USD'
+ * ```
  */
 export function getCurrencyCodeFromSymbol(symbol: CurrencySymbol): CurrencyCode {
-  return CurrencyCodeMap[symbol]
+  return CURRENCY_CODE_MAP[symbol as string];
 }
 
 /**
- * Convert a given amount from a specified currency to USD.
+ * Converts a given amount from any supported currency to USD.
+ * Uses real-time exchange rates from the Hexarate API.
+ * Results are rounded to 2 decimal places for standard currency format.
  *
- * @param {number} amount - The amount to convert.
- * @param {CurrencyCode} from - The currency to convert from.
- * @returns {Promise<string>} - The amount in USD.
+ * @category Helper
+ * @param amount - The amount to convert
+ * @param from - The source currency code (e.g., 'EUR', 'GBP')
+ * @returns The converted amount in USD, formatted to 2 decimal places
+ *
  * @example
- * toUSD(100, 'EUR') // '117.65'
- * toUSD(100, 'GBP') // '130.43'
- * toUSD(100, 'JPY') // '11000.00'
- * toUSD(100, 'INR') // '8500.00'
+ * ```typescript
+ * // Convert 100 EUR to USD
+ * await toUSD(100, 'EUR')
+ * // Returns 118.45 (if rate is 1.1845)
+ *
+ * // Convert 1000 JPY to USD
+ * await toUSD(1000, 'JPY')
+ * // Returns 9.12 (if rate is 0.00912)
+ *
+ * // Chain conversions
+ * const price = parsePrice('€50.00');
+ * if (price) {
+ *   const usdAmount = await toUSD(price.price, price.currencyCode);
+ * }
+ * ```
  */
-export async function toUSD(amount: number, from: CurrencyCode): Promise<string> {
-  const rate = await getCurrencyRate(from, 'USD')
-  return (amount * rate).toFixed(2)
+export async function toUSD(amount: number, from: CurrencyCode): Promise<number> {
+  const rate = await getCurrencyRate(from, "USD");
+  return parseFloat(Number(amount * rate).toFixed(2));
 }
-
-//toUSD(100, 'EUR').then(console.log)
-//getCurrencyRate('USD', 'EUR').then(console.log)
-
-
-//console.log(getCurrencySymbol('$1000'))
-
-//console.log(fx.convert(1000, { from: 'USD', to: 'EUR' }))
-
-// https://hexarate.paikama.co/api/rates/latest/EUR?target=USD

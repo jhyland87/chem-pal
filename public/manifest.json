@@ -1,19 +1,16 @@
 {
   "manifest_version": 3,
   "name": "Chem Crawler",
-  "version": "0.0.2",
+  "version": "0.0.12",
   "description": "A simple React app as a Chrome extension",
   "action": {
     "default_popup": "index.html"
   },
-  "permissions": [
-    "scripting",
-    "activeTab",
-    "storage"
-  ],
-  "host_permissions": [
-    "<all_urls>"
-  ],
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "permissions": ["scripting", "sidePanel", "activeTab", "storage", "runtime", "nativeMessaging"],
+  "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "service-worker.js"
   }

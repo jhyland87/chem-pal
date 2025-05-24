@@ -1,0 +1,17 @@
+@use "./SearchPanel.scss";
+
+#search-results-table-container {
+  .search-input-container {
+    padding: 0px;
+
+    .search-query-input-form {
+      display: flex;
+      align-items: center;
+
+      .search-query-input {
+        margin-left: 8px;
+        //flex: 1;
+      }
+    }
+  }
+}

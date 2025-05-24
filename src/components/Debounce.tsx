@@ -1,4 +1,4 @@
-import { InputHTMLAttributes, useState, useEffect } from 'react'
+import { InputHTMLAttributes, useEffect, useState } from "react";
 
 // A typical debounced input react component
 export default function DebouncedInput({
@@ -7,25 +7,23 @@ export default function DebouncedInput({
   debounce = 500,
   ...props
 }: {
-  value: string | number
-  onChange: (value: string | number) => void
-  debounce?: number
-} & Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'>) {
-  const [value, setValue] = useState(initialValue)
+  value: string | number;
+  onChange: (value: string | number) => void;
+  debounce?: number;
+} & Omit<InputHTMLAttributes<HTMLInputElement>, "onChange">) {
+  const [value, setValue] = useState(initialValue);
 
   useEffect(() => {
-    setValue(initialValue)
-  }, [initialValue])
+    setValue(initialValue);
+  }, [initialValue]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      onChange(value)
-    }, debounce)
+      onChange(value);
+    }, debounce);
 
-    return () => clearTimeout(timeout)
-  }, [value])
+    return () => clearTimeout(timeout);
+  }, [value]);
 
-  return (
-    <input {...props} value={value} onChange={e => setValue(e.target.value)} />
-  )
+  return <input {...props} value={value} onChange={(e) => setValue(e.target.value)} />;
 }

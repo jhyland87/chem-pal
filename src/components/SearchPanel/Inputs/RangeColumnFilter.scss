@@ -1,0 +1,17 @@
+.range-column-filter-tooltip {
+  margin: 0;
+}
+
+.range-column-filter {
+  margin: 0;
+  line-height: 1em;
+  font-size: 1em;
+  .filter-minmax {
+    cursor: pointer;
+    font-size: 0.8em;
+  }
+  div {
+    display: flex;
+    justify-content: space-between;
+  }
+}

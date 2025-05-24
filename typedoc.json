@@ -1,0 +1,101 @@
+{
+  "name": "ChemPare Documentation",
+  "entryPoints": [
+    "./src/**/*.ts",
+    "./src/**/*.tsx"
+  ],
+  "plugin": [
+    "typedoc-plugin-mark-react-functional-components",
+    "typedoc-plugin-expand-object-like-types",
+    "typedoc-theme-hierarchy",
+    "typedoc-plugin-rename-defaults",
+    "typedoc-plugin-coverage",
+    "typedoc-plugin-include-example",
+    "typedoc-plugin-dt-links",
+    "typedoc-plugin-mdn-links",
+    "typedoc-plugin-missing-exports",
+  ],
+  "theme": "hierarchy",
+  "entryPointStrategy": "expand",
+  "reactReturnType": [
+    "ReactElement",
+    "JSX.Element",
+    "Element",
+    "React.ReactElement"
+  ],
+  "lightHighlightTheme": "github-light-high-contrast",
+  "darkHighlightTheme": "github-dark-dimmed",
+  "collapseInternalModule": true,
+  "additionalModuleSources": [],
+  "cleanOutputDir": true,
+  "pretty": true,
+  "groupReferencesByType": true,
+  "alwaysCreateEntryPointModule": true,
+  "searchCategoryBoosts": {
+    "Component": 3.3,
+    "Helper": 2.2,
+    "Supplier": 0.1
+  },
+  "searchGroupBoosts": {
+    "Classes": 1.5
+  },
+  "jsDocCompatibility": false,
+  "logLevel": "Verbose",
+  "placeInternalsInOwningModule": true,
+  "markdownItOptions": {
+    "html": true
+  },
+  "useTsLinkResolution": true,
+  "out": "docs",
+  "exclude": [
+    "**/vite-env*",
+    "**/node_modules/**",
+    "**/__tests__/**",
+    "**/__mocks__/**"
+  ],
+  "useFirstParagraphOfCommentAsSummary": true,
+  "includeHierarchySummary": true,
+  "searchInDocuments": true,
+  "searchInComments": true,
+  "excludeTags": [
+    "@internal",
+    "@private",
+    "@protected"
+  ],
+  "includeVersion": true,
+  "hideGenerator": true,
+  "readme": "README.md",
+  "navigationLinks": {
+    "GitHub": "https://github.com/jhyland87/chem-crawler"
+  },
+  "sort": [
+    "source-order"
+  ],
+  "excludeReferences": false,
+  "excludeProtected": false,
+  "excludePrivate": false,
+  "excludeNotDocumented": false,
+  "excludeInternal": false,
+  "resolveUtilityTypes": true,
+  "excludeExternals": false,
+  "visibilityFilters": {
+    "protected": true,
+    "private": true,
+    "inherited": true,
+    "external": true
+  },
+  "sourceLinkTemplate": "https://github.com/jhyland87/chem-crawler/blob/main/{path}#L{line}",
+  "disableSources": false,
+  "categorizeByGroup": true,
+  "defaultCategory": "Supplier",
+  "categoryOrder": [
+    "Supplier",
+    "Components",
+    "Utils",
+    "Hooks",
+    "Types",
+    "Context",
+    "*"
+  ],
+  "options": "./typedoc-conf.js"
+}

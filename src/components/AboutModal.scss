@@ -1,0 +1,36 @@
+#about-modal {
+  .about-box {
+    position: absolute;
+    top: 200px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    background-color: #fff;
+    border: 2px solid #000;
+    box-shadow: 24;
+    padding: 32px;
+    #application-title {
+      text-align: center;
+      .github-icon {
+        margin-left: 10px;
+      }
+    }
+    #application-description {
+      margin-top: 4px;
+      display: block;
+    }
+    #application-contributors {
+      margin-top: 16px;
+      font-size: 0.8rem;
+      text-align: center;
+      .MuiStack-root {
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+    }
+    [role="separator"] {
+      margin: 16px 0 16px;
+      font-size: 0.8rem;
+    }
+  }
+}

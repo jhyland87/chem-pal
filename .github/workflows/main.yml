@@ -1,0 +1,80 @@
+name: "Build, test, docgen, publish"
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup App
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'v22.15.0'
+      - name: Setup dependencies
+        run: npm run setup
+      - name: Upload workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace
+          path: |
+            .
+            !node_modules
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download workspace
+        uses: actions/download-artifact@v4
+        with:
+          name: workspace
+      - name: Setup App
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'v22.15.0'
+      - name: Setup dependencies
+        run: npm run setup
+      - name: Run tests
+        run: npm run test
+
+  docs:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download workspace
+        uses: actions/download-artifact@v4
+        with:
+          name: workspace
+      - name: Setup App
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'v22.15.0'
+      - name: Setup dependencies
+        run: npm run setup
+      - name: Generate documentation
+        run: npm run docs
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'docs'
+
+  publish:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
