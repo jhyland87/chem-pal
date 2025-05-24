@@ -1,5 +1,5 @@
 import { type Product } from "types";
-import SupplierBaseWix from "./supplierBaseWix";
+import SupplierBaseWoocommerce from "./supplierBaseWoocommerce";
 
 /**
  * SupplierBunmurraLabs class that extends SupplierBaseWix and implements AsyncIterable<T>.
@@ -7,7 +7,7 @@ import SupplierBaseWix from "./supplierBaseWix";
  * @category Supplier
  */
 export default class SupplierBunmurraLabs
-  extends SupplierBaseWix
+  extends SupplierBaseWoocommerce
   implements AsyncIterable<Product>
 {
   // Name of supplier (for display purposes)

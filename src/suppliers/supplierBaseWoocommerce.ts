@@ -2,8 +2,12 @@
  * Abstract base class for WooCommerce suppliers that implements product fetching functionality.
  * Extends the base supplier class and provides WooCommerce-specific implementation.
  */
+import { findCAS } from "helpers/cas";
+import { ProductBuilder } from "helpers/productBuilder";
+import { parseQuantity } from "helpers/quantity";
+import { firstMap } from "helpers/utils";
 import type { Product } from "types";
-import type { ItemListing, SearchResponse } from "types/woocommerce";
+import type { ProductVariant, SearchResponse, SearchResponseItem } from "types/woocommerce";
 import SupplierBase from "./supplierBase";
 
 /**
@@ -12,27 +16,27 @@ import SupplierBase from "./supplierBase";
  *
  */
 export default abstract class SupplierBaseWoocommerce
-  extends SupplierBase<ItemListing, Product>
+  extends SupplierBase<SearchResponseItem, Product>
   implements AsyncIterable<Product>
 {
   /** API key for WooCommerce authentication */
   protected _apiKey: string = "";
 
   /** Maximum number of products to return in a query */
-  protected _limit: number = 5;
+  protected _limit: number = 20;
 
   /**
    * Queries WooCommerce products based on a search string
    * @param query - The search term to query products
    * @returns Promise resolving to an array of WooCommerce product items
    */
-  protected async _queryProducts(query: string): Promise<ItemListing[]> {
+  protected async _queryProducts(query: string): Promise<SearchResponseItem[]> {
     const getParams = {
       search: query,
     };
 
     const searchRequest = await this._httpGetJson({
-      path: `/wp-json/wc/store/v1/products`,
+      path: "/wp-json/wc/store/v1/products",
       params: getParams,
     });
 
@@ -42,23 +46,28 @@ export default abstract class SupplierBaseWoocommerce
       throw new Error("Invalid search response");
     }
 
-    return searchRequest.items.slice(0, this._limit);
+    return searchRequest.slice(0, this._limit);
   }
 
   /**
-   * Type guard to validate if a response matches the WooCommerce product response structure
+   * Type guard to validate if a response matches the WooCommerce product response structure.
+   * This is for individual product responses (ie: /wp-json/wc/store/v1/products/:id), which
+   * contain a single object in the root with a little more data than the search response.
    * @param response - Unknown response object to validate
    * @returns Type predicate indicating if response is a valid WooCommerce product response
    */
-  protected _isValidProductResponse(response: unknown): response is ItemListing {
-    const requiredStringProps = ["id", "name", "type", "description", "price", "sku", "permalink"];
-    const hasAllRequiredProps = requiredStringProps.every((prop) => {
-      if (!response || typeof response !== "object") return false;
-      const obj = response as Record<string, unknown>;
-      return prop in obj && typeof obj[prop] === "string";
-    });
+  protected _isValidSearchResponseItem(response: unknown): response is SearchResponseItem {
+    if (!response || typeof response !== "object" || Array.isArray(response)) {
+      return false;
+    }
 
-    return hasAllRequiredProps;
+    return ["id", "name", "type", "description", "prices", "sku", "permalink", "variations"].every(
+      (prop) => {
+        if (!response || typeof response !== "object") return false;
+        const obj = response as Record<string, unknown>;
+        return prop in obj && typeof obj[prop];
+      },
+    );
   }
 
   /**
@@ -78,12 +87,23 @@ export default abstract class SupplierBaseWoocommerce
    * ```
    */
   protected _isValidSearchResponse(response: unknown): response is SearchResponse {
-    return (
-      typeof response === "object" &&
-      response !== null &&
-      "totalItems" in response &&
-      "items" in response
-    );
+    if (!response || typeof response !== "object" || !Array.isArray(response)) {
+      return false;
+    }
+
+    try {
+      return response.every(this._isValidSearchResponseItem);
+    } catch {
+      return false;
+    }
+  }
+
+  protected _isValidProductVariant(response: unknown): response is ProductVariant {
+    if (!this._isValidSearchResponseItem(response)) return false;
+
+    if ("variation" in response === false) return false;
+
+    return true;
   }
 
   /**
@@ -91,11 +111,54 @@ export default abstract class SupplierBaseWoocommerce
    * @param product - WooCommerce product item to transform
    * @returns Promise resolving to a partial Product object or void if invalid
    */
-  protected async _getProductData(product: ItemListing): Promise<Partial<Product> | void> {
-    if (!product.price) {
+  protected async _getProductData(product: SearchResponseItem): Promise<Partial<Product> | void> {
+    console.log("product:", product);
+
+    const productResponse: unknown = await this._httpGetJson({
+      path: `/wp-json/wc/store/v1/products/${product.id}`,
+    });
+
+    console.log("productResponse:", productResponse);
+
+    if (!this._isValidProductVariant(productResponse)) {
+      console.error("Invalid product object:", productResponse);
       return;
     }
 
-    return {} satisfies Partial<Product>;
+    const productPrice = parseFloat(productResponse.prices.price);
+
+    if ("variation" in productResponse === false) {
+      console.error("No variation found for product:", product);
+      return;
+    }
+
+    const quantity = firstMap(parseQuantity, [
+      productResponse.variation,
+      productResponse.sku,
+      productResponse.description,
+      productResponse.variations[0].attributes[0].value,
+    ]);
+
+    if (!quantity) {
+      console.error("No quantity found for product:", product);
+      return;
+    }
+
+    const casNumber = findCAS(productResponse.short_description);
+
+    const builder = new ProductBuilder(this._baseURL);
+    return (
+      builder
+        .setBasicInfo(product.name, product.permalink, this.supplierName)
+        .setPricing(
+          productPrice,
+          productResponse.prices.currency_code,
+          productResponse.prices.currency_symbol,
+        )
+        .setQuantity(quantity.quantity, quantity.uom)
+        //.setDescription(description)
+        .setCAS(casNumber || "")
+        .build()
+    );
   }
 }

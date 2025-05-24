@@ -148,6 +148,21 @@ export class ProductBuilder {
     return this;
   }
 
+  setId(id: number): ProductBuilder {
+    this.product.id = id;
+    return this;
+  }
+
+  setUUID(uuid: string): ProductBuilder {
+    this.product.uuid = uuid;
+    return this;
+  }
+
+  setSku(sku: string): ProductBuilder {
+    this.product.sku = sku;
+    return this;
+  }
+
   /**
    * Validates that a product object has the minimum required properties.
    *

@@ -22,6 +22,7 @@
 export { default as SupplierBioFuranChem } from "./supplierBiofuranChem";
 //export { default as SupplierBunmurraLabs } from "./supplierBunmurraLabs";
 export { default as SupplierCarolina } from "./supplierCarolina";
+export { default as SupplierCarolinaChemical } from "./supplierCarolinaChemical";
 export { default as SupplierFtfScientific } from "./supplierFtfScientific";
 export { default as SupplierHbarSci } from "./supplierHbarSci";
 export { default as SupplierLaballey } from "./supplierLaballey";

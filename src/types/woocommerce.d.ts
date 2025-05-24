@@ -11,17 +11,9 @@ export interface SearchParams {
 /**
  * Search response from WooCommerce API
  */
-export interface SearchResponse {
-  /**
-   * Array of product items returned from the search
-   */
-  items: ItemListing[];
-}
+export type SearchResponse = Array<SearchResponseItem>;
 
-/**
- * Product item from WooCommerce API
- */
-export interface ItemListing {
+export interface SearchResponseItem {
   /* eslint-disable */
   /** Unique identifier for the product */
   id: number;
@@ -51,7 +43,7 @@ export interface ItemListing {
   sku: string;
 
   /** Detailed pricing information for the product */
-  price: {
+  prices: {
     /** Current price of the product */
     price: string;
 
@@ -60,9 +52,6 @@ export interface ItemListing {
 
     /** Sale price if the product is on sale */
     sale_price: string;
-
-    /** Price range for variable products */
-    price_range: string;
 
     /** ISO currency code (e.g., 'USD', 'EUR') */
     currency_code: string;
@@ -87,7 +76,7 @@ export interface ItemListing {
   };
 
   /** Categories the product belongs to */
-  categories: {
+  categories?: {
     /** Unique identifier for the category */
     id: number;
 
@@ -101,6 +90,33 @@ export interface ItemListing {
     link: string;
   }[];
 
+  attributes: {
+    id: number;
+    name: string;
+    taxonomy: string;
+    has_variations: boolean;
+    terms: {
+      id: number;
+      name: string;
+      slug: string;
+    }[];
+  }[];
+
+  variations: {
+    id: number;
+    attributes: {
+      name: string;
+      value: string;
+    }[];
+  }[];
   /** Array of tag names associated with the product */
-  tags: string[];
+  tags?: string[];
+}
+
+/**
+ * Individual product response format from WooCommerce API when requesting a single product.
+ * @see https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/products.md#get-product
+ */
+export interface ProductVariant extends SearchResponseItem {
+  variation: string;
 }
