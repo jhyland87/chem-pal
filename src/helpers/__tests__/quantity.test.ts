@@ -38,6 +38,24 @@ describe("parseQuantity", () => {
     });
   }
 
-  it(`should return undefined when parsing: foobar`, () =>
-    expect(parseQuantity("foobar")).toBeUndefined());
+  const negativeTestData = {
+    /* eslint-disable */
+    "100 MESH": undefined,
+    "100 MESH 100G": { quantity: 100, uom: "g" },
+    "1.3M": undefined,
+    foobar: undefined,
+    /* eslint-enable */
+  };
+
+  for (const [value, toExpect] of Object.entries(negativeTestData)) {
+    if (typeof toExpect === "object") {
+      it(`should return ${JSON.stringify(toExpect)} when parsing: ${value}`, () =>
+        expect(parseQuantity(value)).toMatchObject(toExpect));
+    } else {
+      it(`should return ${toExpect} when parsing: ${value}`, () =>
+        expect(parseQuantity(value)).toBe(toExpect));
+    }
+  }
 });
+
+describe("parseQuantity", () => {});

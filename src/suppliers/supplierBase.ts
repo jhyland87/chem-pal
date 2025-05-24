@@ -588,13 +588,20 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
 
     if (typeof path === "string" && isFullURL(path)) {
       href = new URL(path);
+    } else if (path instanceof URL) {
+      href = path;
+    } else {
+      href = new URL(path, this._baseURL);
     }
 
-    href = new URL(path, this._baseURL);
-
-    if (host) {
-      href.host = host;
+    if (typeof host === "string") {
+      if (isFullURL(host)) {
+        href.host = new URL(host).host;
+      } else {
+        href.host = host;
+      }
     }
+    //href = new URL(path, this._baseURL);
 
     if (params && Object.keys(params).length > 0) {
       href.search = new URLSearchParams(params as Record<string, string>).toString();

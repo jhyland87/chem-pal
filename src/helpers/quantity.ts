@@ -19,15 +19,15 @@ import type { QuantityObject } from "@/types";
  * parseQuantity('1.2 L') // Returns { quantity: 1.2, uom: 'L' }
  * ```
  *
- * @see https://regex101.com/r/Ruid54/3
+ * @see https://regex101.com/r/Ruid54/5
  */
 export function parseQuantity(value: string): QuantityObject | void {
   if (!value) return;
 
   const quantityPattern = new RegExp(
     "(?<quantity>\\d[\\d.,]*)\\s?(?<uom>(?:milli|kilo|centi)?" +
-      "(?:ounce|g(?:allon|ram|al)|pound|quart|qt|piece|pc|" +
-      "lb|(?:met|lit)[re]{2})s?|oz|k[mg]?|g|l|[cm]?[glm])",
+      "(?:ounce|g(?:allon|ram|al)|pound|quart|qt|piece|pc|lb|" +
+      "(?:lit)[re]{2})s?|oz|k[g]?|g|l|[cm]?[gl])s?(?![A-Za-z])",
     "i",
   );
   const quantityMatch = value.match(quantityPattern);
@@ -135,16 +135,6 @@ export function toBaseQuantity(quantity: number, unit: UOM): number | void {
       return quantity / 946.353;
     case UOM.GAL:
       return quantity / 3785.41;
-
-    // Lengths
-    case UOM.MM:
-      return quantity;
-    case UOM.CM:
-      return quantity / 10;
-    case UOM.M:
-      return quantity / 1000;
-    case UOM.KM:
-      return quantity / 1000000;
 
     // Unsupported units
     default:

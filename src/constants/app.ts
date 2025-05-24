@@ -32,18 +32,10 @@ export enum UOM_LONG {
   QT = "quart",
   /** Full name for gallon unit */
   GAL = "gallon",
-  /** Full name for millimeter unit */
-  MM = "millimeter",
-  /** Full name for centimeter unit */
-  CM = "centimeter",
-  /** Full name for meter unit */
-  M = "meter",
   /** Full name for ounce unit */
   OZ = "ounce",
   /** Full name for milligram unit */
   MG = "milligram",
-  /** Full name for kilometer unit */
-  KM = "kilometer",
   /** Full name for piece unit */
   PCS = "piece",
 }
@@ -66,18 +58,10 @@ export enum UOM {
   QT = "qt",
   /** Abbreviated form of gallon */
   GAL = "gal",
-  /** Abbreviated form of millimeter */
-  MM = "mm",
-  /** Abbreviated form of centimeter */
-  CM = "cm",
-  /** Abbreviated form of meter */
-  M = "m",
   /** Abbreviated form of ounce */
   OZ = "oz",
   /** Abbreviated form of milligram */
   MG = "mg",
-  /** Abbreviated form of kilometer */
-  KM = "km",
   /** Abbreviated form of piece */
   PCS = "pcs",
 }
@@ -117,18 +101,10 @@ export const UOM_ALIASES: UOMAliases = {
   [UOM.QT]: ["quarts", "qts", "qt"],
   /** Gallon aliases */
   [UOM.GAL]: ["gallon", "gallons", "gal"],
-  /** Millimeter aliases */
-  [UOM.MM]: ["millimeter", "millimeters", "millimetre", "millimetres", "mm"],
-  /** Centimeter aliases */
-  [UOM.CM]: ["centimeter", "centimeters", "centimetre", "centimetres", "cm"],
-  /** Meter aliases */
-  [UOM.M]: ["meters", "metre", "metres", "m", "meter"],
   /** Ounce aliases */
   [UOM.OZ]: ["ounce", "ounces", "oz"],
   /** Milligram aliases */
   [UOM.MG]: ["milligram", "milligrams", "mg", "mgs"],
-  /** Kilometer aliases */
-  [UOM.KM]: ["kilometer", "kilometre", "kilometers", "kilometres", "km"],
 } as const;
 
 /**
