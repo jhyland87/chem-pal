@@ -3,9 +3,22 @@ import debounce from "lodash/debounce";
 import throttle from "lodash/throttle";
 
 /**
- * Implements custom methods for Tanstack Table columns
+ * Implements custom methods for Tanstack Table columns.
  *
- * @param table - The table instance
+ * This function extends each column in the table with additional utility methods.
+ * Each column will be enhanced with the following methods:
+ *
+ * - `getHeaderText()` - Gets the displayable header text
+ * - `getVisibleUniqueValues()` - Gets unique values from visible rows
+ * - `getAllUniqueValues()` - Gets all unique values regardless of filters
+ * - `getFullRange()` - Gets the min/max range of all values
+ * - `getVisibleRange()` - Gets the min/max range of visible values
+ * - `setFilterValueDebounced()` - Debounced filter value setter
+ * - `setFilterValueThrottled()` - Throttled filter value setter
+ * - `setColumnVisibility()` - Sets column visibility
+ *
+ * @param TData - The type of data in the table rows
+ * @param table - The table instance to extend with custom methods
  */
 export function implementCustomMethods<TData>(table: Table<TData>) {
   // Add custom column methods to each column
