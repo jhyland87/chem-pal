@@ -23,7 +23,7 @@ export default class SupplierChemsavers
   public readonly supplierName: string = "Chemsavers";
 
   // Base URL for HTTP(s) requests
-  protected _baseURL: string = "https://www.chem-savers.com";
+  protected _baseURL: string = "https://www.chemsavers.com";
 
   protected _apiURL: string = "0ul35zwtpkx14ifhp-1.a1.typesense.net";
 
