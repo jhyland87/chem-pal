@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { UOM } from "@/constants/app";
 import { type Product } from "@/types";
 import SupplierBase from "../supplierBase";
@@ -77,7 +78,7 @@ describe("SupplierBase", () => {
     });
 
     it("should override host when provided", () => {
-      const url = mockSupplier["_href"]("/products", null, "api.example.com");
+      const url = mockSupplier["_href"]("/products", undefined, "api.example.com");
       expect(url).toBe("https://api.example.com/products");
     });
   });

@@ -1,115 +1,160 @@
 /**
- * Response type for Wix access token requests
+ * Response type for Wix access token requests. Contains authentication and app instance information.
  */
 export interface AccessTokenResponse {
+  /**
+   * Object containing app-specific information keyed by app ID
+   */
   apps: {
     [key: string]: {
+      /** Instance token for the app */
       instance: string;
+      /** Internal ID number for the app */
       intId: number;
     };
   };
+  /**
+   * Additional dynamic properties that may be present in the response
+   */
   [key: string]: unknown;
 }
 
 /**
- * Represents a specific product item with its price and options
+ * Represents a specific product item with its price and options. Used for product variations.
  */
 export interface ProductItem {
   /** Unique identifier for the product item */
   id: string;
-  /** Array of selected option IDs */
+  /** Array of selected option IDs that define this specific product variation */
   optionsSelections: number[];
-  /** Numeric price value */
+  /** Numeric price value of the product item */
   price: number;
-  /** Formatted price string (e.g. "$19.99") */
+  /** Human-readable formatted price string (e.g. "$19.99") */
   formattedPrice: string;
 }
 
 /**
- * Represents a product option (e.g. size, color)
+ * Represents a product option (e.g. size, color) that can be selected for a product.
  */
 export interface ProductOption {
   /** Unique identifier for the option */
   id: string;
-  /** Key identifier for the option */
+  /** Machine-readable key identifier for the option */
   key: string;
-  /** Display title of the option */
+  /** Human-readable display title of the option */
   title: string;
-  /** Type of option (e.g. "dropdown", "radio") */
+  /** Type of option UI control (e.g. "dropdown", "radio") */
   optionType: string;
-  /** Available selections for this option */
+  /** Array of available selections for this option */
   selections: ProductSelection[];
 }
 
 /**
- * Represents a specific selection within a product option
+ * Represents a specific selection choice within a product option.
  */
 export interface ProductSelection {
-  /** Unique identifier for the selection */
+  /** Unique numeric identifier for the selection */
   id: number;
-  /** Value of the selection */
+  /** Display value of the selection */
   value: string;
-  /** Description of the selection */
+  /** Additional descriptive text for the selection */
   description: string;
-  /** Key identifier for the selection */
+  /** Machine-readable key identifier for the selection */
   key: string;
-  /** Stock availability status */
+  /** Indicates whether this selection is currently in stock */
   inStock: boolean | null;
 }
 
 /**
- * Represents a complete product with all its details
+ * Represents a complete product with all its details, options, and variations.
  */
 export interface ProductObject {
   /** Unique identifier for the product */
   id: string;
-  /** Available options for the product */
+  /** Array of available customization options for the product */
   options: ProductOption[];
-  /** Specific product items with their variations */
+  /** Array of specific product variations with their unique combinations */
   productItems: ProductItem[];
-  /** Type of product */
+  /** Classification or category of the product */
   productType: string;
-  /** Base price of the product */
+  /** Base price of the product before options */
   price: number;
-  /** Stock keeping unit */
+  /** Stock keeping unit identifier */
   sku: string;
-  /** Overall stock availability status */
+  /** Indicates whether the product is currently available for purchase */
   isInStock: boolean;
-  /** URL-friendly identifier for the product */
+  /** URL-friendly identifier used in product page links */
   urlPart: string;
-  /** Formatted price string (e.g. "$19.99") */
+  /** Human-readable formatted price string (e.g. "$19.99") */
   formattedPrice: string;
-  /** Name of the product */
+  /** Display name of the product */
   name: string;
-  /** Product description */
+  /** Detailed product description */
   description: string;
-  /** Brand name, if applicable */
+  /** Manufacturer or brand name of the product */
   brand: string | null;
 }
 
 /**
- * Represents the request parameters for a Wix product catalog query
+ * Represents the request parameters for querying the Wix product catalog.
  */
 export interface QueryRequestParameters {
+  /** Operation identifier */
   o: string;
+  /** Source identifier */
   s: string;
+  /** GraphQL query string */
   q: string;
+  /** JSON stringified variables for the query */
   v: string;
 }
 
 /**
- * Response type for Wix product catalog queries
+ * Variables used in GraphQL queries for the Wix product catalog.
+ */
+export interface GraphQLQueryVariables {
+  /** ID of the main collection to query */
+  mainCollectionId: string;
+  /** Number of items to skip in pagination */
+  offset: number;
+  /** Maximum number of items to return */
+  limit: number;
+  /** Sort criteria for the results */
+  sort: string | null;
+  /** Filter criteria for the query */
+  filters: {
+    term: {
+      /** Field to filter on */
+      field: string;
+      /** Operation to perform (e.g. equals, contains) */
+      op: string;
+      /** Values to filter by */
+      values: string[];
+    };
+  };
+  /** Whether to include option details in the response */
+  withOptions: boolean;
+  /** Whether to include price range information in the response */
+  withPriceRange: boolean;
+}
+
+/**
+ * Response type for Wix product catalog queries, containing paginated product data.
  */
 export interface QueryResponse {
+  /** Root response data object */
   data: {
+    /** Catalog information */
     catalog: {
+      /** Category information */
       category: {
         /** Total number of products in the category */
         numOfProducts: number;
+        /** Paginated product data with metadata */
         productsWithMetaData: {
-          /** Total count of products returned */
+          /** Total count of all available products matching the query */
           totalCount: number;
-          /** List of products in the response */
+          /** Array of products in the current page */
           list: ProductObject[];
         };
       };

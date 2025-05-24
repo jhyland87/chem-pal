@@ -109,26 +109,30 @@ describe("SupplierBaseWix", () => {
     it("should return the correct GraphQL query string", () => {
       const query = mockSupplier["_getGraphQLQuery"]();
       expect(typeof query).toBe("string");
-      expect(query).toContain("query,getFilteredProductsWithHasDiscount");
-      expect(query).toContain("mainCollectionId:String!");
+      expect(query).toContain("getFilteredProductsWithHasDiscount");
+      expect(query).toContain("productsWithMetaData");
+      expect(query).toMatch(/mainCollectionId:\s?String!/);
     });
   });
 
   describe("_getGraphQLVariables", () => {
-    it("should return correct variables with default limit", () => {
+    it("should return correct correct datatype with correct values", () => {
       const variables = mockSupplier["_getGraphQLVariables"]("test");
-      const parsed = JSON.parse(variables);
-
-      expect(parsed.mainCollectionId).toBe("00000000-000000-000000-000000000001");
-      expect(parsed.limit).toBe(5);
-      expect(parsed.filters.term.values).toEqual(["*test*"]);
+      expect(variables).toBeDefined();
+      expect(variables).toHaveProperty("mainCollectionId", "00000000-000000-000000-000000000001");
+      expect(variables).toHaveProperty("limit", mockSupplier["_limit"]);
+      expect(variables).toHaveProperty("filters");
+      expect(variables).toHaveProperty("filters.term");
+      expect(variables).toHaveProperty("filters.term.values[0]", "*test*");
     });
 
-    it("should return correct variables with custom limit", () => {
+    it("should return object variables with custom limit", () => {
       const variables = mockSupplier["_getGraphQLVariables"]("test", 10);
-      const parsed = JSON.parse(variables);
 
-      expect(parsed.limit).toBe(10);
+      expect(variables).toBeDefined();
+      expect(variables).toHaveProperty("mainCollectionId");
+      expect(variables).toHaveProperty("limit", 10);
+      expect(variables).toHaveProperty("filters.term.values[0]", "*test*");
     });
   });
 

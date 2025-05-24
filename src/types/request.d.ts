@@ -43,8 +43,8 @@ export interface RequestOptions {
   path: string | URL;
   host?: string | undefined;
   body?: object | string;
-  params?: RequestParams;
-  headers?: HeadersInit;
+  params?: Maybe<RequestParams>;
+  headers?: Maybe<HeadersInit>;
 }
 
 export interface RequestParams extends Record<TKey, TData> {

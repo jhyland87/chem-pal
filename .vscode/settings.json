@@ -120,4 +120,7 @@
   "jsdoc-generator.generateDescriptionForParameters": false,
   "jsdoc-generator.includeTypes": false,
   "javascript.suggest.completeJSDocs": true,
+  "[graphql]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
 }

@@ -118,3 +118,17 @@ export async function getCachableResponse(
     data: serializedResponse,
   } satisfies CacheResponse;
 }
+
+/**
+ * Checks if a value is a full URL.
+ * @param val - The value to check
+ * @returns True if the value is a full URL, false otherwise
+ */
+export function isFullURL(val: unknown): val is URL {
+  try {
+    new URL(val as string);
+    return true;
+  } catch {
+    return false;
+  }
+}

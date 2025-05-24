@@ -92,7 +92,7 @@ export default abstract class SupplierBaseWoocommerce
       search: query,
     };
 
-    const searchRequest = await this._httpGetJson({
+    const searchRequest: unknown = await this._httpGetJson({
       path: "/wp-json/wc/store/v1/products",
       params: getParams,
     });
@@ -103,7 +103,7 @@ export default abstract class SupplierBaseWoocommerce
       throw new Error("Invalid search response");
     }
 
-    return searchRequest.slice(0, this._limit);
+    return searchRequest.slice(0, this._limit) satisfies SearchResponseItem[];
   }
 
   /**
@@ -259,7 +259,7 @@ export default abstract class SupplierBaseWoocommerce
 
     const casNumber = findCAS(productResponse.short_description);
 
-    const builder = new ProductBuilder(this._baseURL);
+    const builder = new ProductBuilder<Product>(this._baseURL);
     return (
       builder
         .setBasicInfo(product.name, product.permalink, this.supplierName)

@@ -1,14 +1,17 @@
 import { ProductBuilder } from "@/helpers/productBuilder";
-import { getCachableResponse } from "@/helpers/request";
-import { type HTMLResponse, type Product } from "@/types";
+import { getCachableResponse, isFullURL } from "@/helpers/request";
+import { type HTMLResponse, type Maybe, type Product } from "@/types";
 import { type RequestOptions, type RequestParams } from "@/types/request";
 import * as contentType from "content-type";
+import { type JsonValue } from "type-fest";
 
 /**
  * The base class for all suppliers.
  * @abstract
  * @category Supplier
  * @module SupplierBase
+ * @typeParam S  the partial product
+ * @typeParam T The product type
  * @example
  * ```typescript
  * const supplier = new SupplierBase<Product>();
@@ -140,7 +143,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     return ["text/html", "text/xml", "application/xhtml+xml"].includes(dataType.type);
   }
 
-  protected async _httpGetHeaders(url: string | URL): Promise<HeadersInit | void> {
+  protected async _httpGetHeaders(url: string | URL): Promise<Maybe<HeadersInit>> {
     try {
       const requestObj = new Request(this._href(url), {
         signal: this._controller.signal,
@@ -201,11 +204,11 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    */
   protected async _httpPost({
     path,
-    host = undefined,
-    body = {},
-    params = {},
-    headers = {},
-  }: RequestOptions): Promise<Response | void> {
+    host,
+    body,
+    params,
+    headers,
+  }: RequestOptions): Promise<Maybe<Response>> {
     const _headers = new Headers({
       ...this._headers,
       ...(headers as HeadersInit),
@@ -273,11 +276,11 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    */
   protected async _httpPostJson({
     path,
-    host = undefined,
-    body = {},
-    params = {},
-    headers = {},
-  }: RequestOptions): Promise<object | void> {
+    host,
+    body,
+    params,
+    headers,
+  }: RequestOptions): Promise<Maybe<JsonValue>> {
     const httpRequest = await this._httpPost({ path, host, body, params, headers });
     if (!this._isJsonResponse(httpRequest)) {
       throw new TypeError(`_httpPostJson| Invalid POST response: ${httpRequest}`);
@@ -300,10 +303,10 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    */
   protected async _httpGet({
     path,
-    params = {},
-    headers = {},
-    host = undefined,
-  }: RequestOptions): Promise<Response | void> {
+    params,
+    headers,
+    host,
+  }: RequestOptions): Promise<Maybe<Response>> {
     try {
       // Check if the request has been aborted before proceeding
       if (this._controller.signal.aborted) {
@@ -355,10 +358,10 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
 
   protected async _httpGetHtml({
     path,
-    params = {},
-    headers = {},
-    host = undefined,
-  }: RequestOptions): Promise<string | void> {
+    params,
+    headers,
+    host,
+  }: RequestOptions): Promise<Maybe<string>> {
     const httpResponse = await this._httpGet({ path, params, headers, host });
     if (!this._isHtmlResponse(httpResponse)) {
       throw new TypeError(`_httpGetHtml| Invalid GET response: ${httpResponse}`);
@@ -374,10 +377,10 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    */
   protected async _httpGetJson({
     path,
-    params = {},
-    headers = {},
-    host = undefined,
-  }: RequestOptions): Promise<object | void> {
+    params,
+    headers,
+    host,
+  }: RequestOptions): Promise<Maybe<JsonValue>> {
     const _headers = new Headers({
       ...this._headers,
       ...(headers as HeadersInit),
@@ -403,6 +406,8 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
       await this._setup();
       const results = await this._queryProducts(this._query);
       this._queryResults = results || [];
+
+      console.log("this._queryResults:", this._queryResults);
 
       if (this._queryResults.length === 0) {
         console.debug(`No query results found`);
@@ -486,7 +491,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * }
    * ```
    */
-  protected _isMinimalProduct(product: unknown): product is Partial<Product> {
+  protected _isMinimalProduct(product: unknown): product is Partial<T> {
     if (!product || typeof product !== "object") return false;
 
     const requiredStringProps = {
@@ -533,8 +538,8 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * }
    * ```
    */
-  protected async _finishProduct(product: Partial<Product>): Promise<Product | void> {
-    const builder = new ProductBuilder(this._baseURL);
+  protected async _finishProduct(product: Partial<T>): Promise<Maybe<T>> {
+    const builder = new ProductBuilder<T>(this._baseURL);
 
     return builder
       .setBasicInfo(product.title!, product.url!, product.supplier!)
@@ -578,22 +583,24 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * // https://supplier_base_url.com/some/path?a=b&c=d
    * ```
    */
-  protected _href(
-    path: string | URL,
-    params: RequestParams | null = {},
-    host: string | void = undefined,
-  ): string {
-    const urlObj = new URL(path, this._baseURL);
+  protected _href(path: string | URL, params?: RequestParams, host?: string): string {
+    let href: URL;
+
+    if (typeof path === "string" && isFullURL(path)) {
+      href = new URL(path);
+    }
+
+    href = new URL(path, this._baseURL);
 
     if (host) {
-      urlObj.host = host;
+      href.host = host;
     }
 
-    if (params) {
-      urlObj.search = new URLSearchParams(params as Record<string, string>).toString();
+    if (params && Object.keys(params).length > 0) {
+      href.search = new URLSearchParams(params as Record<string, string>).toString();
     }
 
-    return urlObj.toString();
+    return href.toString();
   }
 
   /**
@@ -627,5 +634,5 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * }
    * ```
    */
-  protected abstract _getProductData(productIndexObject: S): Promise<Partial<Product> | void>;
+  protected abstract _getProductData(productIndexObject: S): Promise<Maybe<Partial<T>>>;
 }

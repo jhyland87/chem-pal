@@ -2,7 +2,7 @@ import { UOM } from "@/constants/app";
 import { isCAS } from "@/helpers/cas";
 import { toUSD } from "@/helpers/currency";
 import { toBaseQuantity } from "@/helpers/quantity";
-import { type Product, type Variant } from "@/types";
+import { type Maybe, type Product, type Variant } from "@/types";
 
 /**
  * Builder class for constructing Product objects with a fluent interface.
@@ -11,7 +11,7 @@ import { type Product, type Variant } from "@/types";
  *
  * @example
  * ```typescript
- * const builder = new ProductBuilder('https://example.com');
+ * const builder = new ProductBuilder<Product>('https://example.com');
  * const product = await builder
  *   .setBasicInfo('Sodium Chloride', '/products/nacl', 'ChemSupplier')
  *   .setPricing(29.99, 'USD', '$')
@@ -27,8 +27,8 @@ import { type Product, type Variant } from "@/types";
  * }
  * ```
  */
-export class ProductBuilder {
-  private _product: Partial<Product> = {};
+export class ProductBuilder<T extends Product> {
+  private _product: Partial<T> = {};
   private _baseURL: string;
   /**
    * Creates a new ProductBuilder instance.
@@ -41,6 +41,17 @@ export class ProductBuilder {
    */
   constructor(_baseURL: string) {
     this._baseURL = _baseURL;
+  }
+
+  /**
+   * Sets the data for the _product.
+   *
+   * @param data - The data to set
+   * @returns The builder instance for method chaining
+   */
+  setData(data: Partial<T>): ProductBuilder<T> {
+    Object.assign(this._product, data);
+    return this;
   }
 
   /**
@@ -59,7 +70,7 @@ export class ProductBuilder {
    * );
    * ```
    */
-  setBasicInfo(title: string, url: string, supplier: string): ProductBuilder {
+  setBasicInfo(title: string, url: string, supplier: string): ProductBuilder<T> {
     this._product.title = title;
     this._product.url = url;
     this._product.supplier = supplier;
@@ -80,7 +91,7 @@ export class ProductBuilder {
    * builder.setPricing(29.99, 'USD', '$');
    * ```
    */
-  setPricing(price: number, currencyCode: string, currencySymbol: string): ProductBuilder {
+  setPricing(price: number, currencyCode: string, currencySymbol: string): ProductBuilder<T> {
     this._product.price = price;
     this._product.currencyCode = currencyCode;
     this._product.currencySymbol = currencySymbol;
@@ -103,7 +114,7 @@ export class ProductBuilder {
    * builder.setQuantity(100, 'ml');
    * ```
    */
-  setQuantity(quantity: number, uom: string): ProductBuilder {
+  setQuantity(quantity: number, uom: string): ProductBuilder<T> {
     this._product.quantity = quantity;
     this._product.uom = uom;
     return this;
@@ -121,7 +132,7 @@ export class ProductBuilder {
    * );
    * ```
    */
-  setDescription(description: string): ProductBuilder {
+  setDescription(description: string): ProductBuilder<T> {
     this._product.description = description;
     return this;
   }
@@ -140,24 +151,24 @@ export class ProductBuilder {
    * builder.setCAS('invalid-cas');
    * ```
    */
-  setCAS(cas: string): ProductBuilder {
+  setCAS(cas: string): ProductBuilder<T> {
     if (isCAS(cas)) {
       this._product.cas = cas;
     }
     return this;
   }
 
-  setId(id: number): ProductBuilder {
+  setId(id: number): ProductBuilder<T> {
     this._product.id = id;
     return this;
   }
 
-  setUUID(uuid: string): ProductBuilder {
+  setUUID(uuid: string): ProductBuilder<T> {
     this._product.uuid = uuid;
     return this;
   }
 
-  setSku(sku: string): ProductBuilder {
+  setSku(sku: string): ProductBuilder<T> {
     this._product.sku = sku;
     return this;
   }
@@ -178,7 +189,7 @@ export class ProductBuilder {
    * });
    * ```
    */
-  addVariant(variant: Partial<Variant>): ProductBuilder {
+  addVariant(variant: Partial<Variant>): ProductBuilder<T> {
     if (!this._product.variants) {
       this._product.variants = [];
     }
@@ -209,7 +220,7 @@ export class ProductBuilder {
    * ]);
    * ```
    */
-  addVariants(variants: Partial<Variant>[]): ProductBuilder {
+  addVariants(variants: Partial<Variant>[]): ProductBuilder<T> {
     if (!this._product.variants) {
       this._product.variants = [];
     }
@@ -251,7 +262,7 @@ export class ProductBuilder {
    * @param product - The product object to validate
    * @returns Type predicate indicating if the object has minimum required properties
    */
-  private _isMinimalProduct(_product: unknown): _product is Partial<Product> {
+  private _isMinimalProduct(_product: unknown): _product is Partial<T> {
     if (!_product || typeof _product !== "object") return false;
 
     const requiredStringProps = {
@@ -277,7 +288,7 @@ export class ProductBuilder {
    * @param product - The product object to validate
    * @returns Type predicate indicating if the object is a complete Product
    */
-  private _isProduct(_product: unknown): _product is Product {
+  private _isProduct(_product: unknown): _product is T {
     return (
       typeof _product === "object" &&
       _product !== null &&
@@ -323,7 +334,7 @@ export class ProductBuilder {
    *   .build();
    * ```
    */
-  async build(): Promise<Product | void> {
+  async build(): Promise<Maybe<T>> {
     if (!this._isMinimalProduct(this._product)) {
       return;
     }
@@ -349,7 +360,7 @@ export class ProductBuilder {
       );
 
       // Process each variant
-      for (const variant of this._product.variants) {
+      for (const variant of this._product.variants ?? []) {
         if (variant.quantity && variant.uom) {
           variant.baseQuantity =
             toBaseQuantity(variant.quantity, variant.uom as UOM) ?? variant.quantity;
@@ -372,10 +383,10 @@ export class ProductBuilder {
 
     this._product.url = this._href(this._product.url);
     console.log("Built product:", this._product);
-    return this._product satisfies Product;
+    return this._product satisfies T;
   }
 
-  dump(): Partial<Product> {
+  dump(): Partial<T> {
     return this._product;
   }
 }

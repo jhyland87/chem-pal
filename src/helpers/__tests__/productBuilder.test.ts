@@ -1,6 +1,7 @@
 import { toUSD } from "@/helpers/currency";
 import { ProductBuilder } from "@/helpers/productBuilder";
 import { toBaseQuantity } from "@/helpers/quantity";
+import type { Product } from "@/types";
 
 // Mock the currency and quantity helper functions
 jest.mock("@/helpers/currency", () => ({
@@ -13,7 +14,7 @@ jest.mock("@/helpers/quantity", () => ({
 
 describe("ProductBuilder", () => {
   const baseURL = "https://example.com";
-  let builder: ProductBuilder;
+  let builder: ProductBuilder<Product>;
 
   beforeEach(() => {
     builder = new ProductBuilder(baseURL);

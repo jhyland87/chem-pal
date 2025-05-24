@@ -1,17 +1,17 @@
 import { parsePrice } from "@/helpers/currency";
 import { ProductBuilder } from "@/helpers/productBuilder";
 import { parseQuantity } from "@/helpers/quantity";
-import { type Product, type Variant } from "@/types";
+import { type Maybe, type Product, type Variant } from "@/types";
 import {
+  type GraphQLQueryVariables,
   type ProductItem,
   type ProductObject,
   type ProductSelection,
   type QueryResponse,
 } from "@/types/wix";
 import merge from "lodash/merge";
+//import query from "./queries/getFilteredProductsWithHasDiscount-wix.graphql";
 import SupplierBase from "./supplierBase";
-// import { buildClientSchema } from 'graphql';
-
 /**
  * SupplierBaseWix class that extends SupplierBase and implements AsyncIterable<Product>.
  * @abstract
@@ -112,7 +112,66 @@ export default abstract class SupplierBaseWix
    * ```
    */
   protected _getGraphQLQuery(): string {
-    return "query,getFilteredProductsWithHasDiscount($mainCollectionId:String!,$filters:ProductFilters,$sort:ProductSort,$offset:Int,$limit:Int,$withOptions:Boolean,=,false,$withPriceRange:Boolean,=,false){catalog{category(categoryId:$mainCollectionId){numOfProducts,productsWithMetaData(filters:$filters,limit:$limit,sort:$sort,offset:$offset,onlyVisible:true){totalCount,list{id,options{id,key,title,@include(if:$withOptions),optionType,@include(if:$withOptions),selections,@include(if:$withOptions){id,value,description,key,inStock}}productItems,@include(if:$withOptions){id,optionsSelections,price,formattedPrice}productType,price,sku,isInStock,urlPart,formattedPrice,name,description,brand,priceRange(withSubscriptionPriceRange:true),@include(if:$withPriceRange){fromPriceFormatted}}}}}}";
+    return `
+    query,getFilteredProductsWithHasDiscount(
+        $mainCollectionId: String!
+        $filters: ProductFilters
+        $sort: ProductSort
+        $offset: Int
+        $limit: Int
+        $withOptions: Boolean = false
+        $withPriceRange: Boolean = false
+      ) {
+        catalog {
+          category(categoryId: $mainCollectionId) {
+            numOfProducts
+            productsWithMetaData(
+              filters: $filters
+              limit: $limit
+              sort: $sort
+              offset: $offset
+              onlyVisible: true
+            ) {
+              totalCount
+              list {
+                id
+                options {
+                  id
+                  key
+                  title @include(if: $withOptions)
+                  optionType @include(if: $withOptions)
+                  selections @include(if: $withOptions) {
+                    id
+                    value
+                    description
+                    key
+                    inStock
+                  }
+                }
+                productItems @include(if: $withOptions) {
+                  id
+                  optionsSelections
+                  price
+                  formattedPrice
+                }
+                productType
+                price
+                sku
+                isInStock
+                urlPart
+                formattedPrice
+                name
+                description
+                brand
+                priceRange(withSubscriptionPriceRange: true) @include(if: $withPriceRange) {
+                  fromPriceFormatted
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
   }
 
   /**
@@ -122,8 +181,25 @@ export default abstract class SupplierBaseWix
    * @param limit - The limit of products to return
    * @returns The GraphQL variables
    */
-  protected _getGraphQLVariables(query: string, limit: number = this._limit): string {
-    return `{"mainCollectionId":"00000000-000000-000000-000000000001","offset":0,"limit":${limit},"sort":null,"filters":{"term":{"field":"name","op":"CONTAINS","values":["*${query}*"]}},"withOptions":true,"withPriceRange":false}`;
+  protected _getGraphQLVariables(
+    query: string,
+    limit: number = this._limit,
+  ): GraphQLQueryVariables {
+    return {
+      mainCollectionId: "00000000-000000-000000-000000000001",
+      offset: 0,
+      limit: limit,
+      sort: null,
+      filters: {
+        term: {
+          field: "name",
+          op: "CONTAINS",
+          values: [`*${query}*`],
+        },
+      },
+      withOptions: true,
+      withPriceRange: false,
+    } satisfies GraphQLQueryVariables;
   }
 
   /**
@@ -144,11 +220,9 @@ export default abstract class SupplierBaseWix
         o: "getFilteredProducts",
         s: "WixStoresWebClient",
         q,
-        v,
+        v: JSON.stringify(v),
       },
     });
-
-    console.debug("queryResponse:", queryResponse);
 
     if (this._isValidSearchResponse(queryResponse) === false) {
       throw new Error(`Invalid or empty Wix query response for ${this._query}`);
@@ -163,7 +237,7 @@ export default abstract class SupplierBaseWix
    * @param product - The product to get the data for
    * @returns A promise that resolves to the product data or void if the product has no price
    */
-  protected async _getProductData(product: ProductObject): Promise<Partial<Product> | void> {
+  protected async _getProductData(product: ProductObject): Promise<Maybe<Partial<Product>>> {
     if (!product.price) {
       return;
     }
@@ -204,7 +278,7 @@ export default abstract class SupplierBaseWix
       return;
     }
 
-    const builder = new ProductBuilder(this._baseURL);
+    const builder = new ProductBuilder<Product>(this._baseURL);
     return builder
       .setBasicInfo(
         product.name,

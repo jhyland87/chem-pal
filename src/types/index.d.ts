@@ -9,347 +9,970 @@ import { CSSProperties } from "react";
 //export type UOM = string;
 
 /**
- * Quantity object type
+ * Represents a quantity measurement with a numeric value and unit.
+ * Used for specifying product amounts and their units of measurement.
+ *
+ * @example
+ * ```typescript
+ * const quantity: QuantityObject = {
+ *   quantity: 100,
+ *   uom: "g"
+ * };
+ * console.log(`${quantity.quantity}${quantity.uom}`); // "100g"
+ * ```
  */
 export interface QuantityObject {
-  /** Quantity */
+  /**
+   * The numeric amount of the quantity
+   * @example 100
+   */
   quantity: number;
-  /** Unit of measurement */
+
+  /**
+   * The unit of measurement (e.g., 'g', 'ml', 'kg')
+   * @example "g"
+   */
   uom: string;
 }
 
 /**
- * Settings interface for application configuration
+ * Application configuration settings that control various features and behaviors.
+ * Used to store user preferences and feature flags.
+ *
+ * @example
+ * ```typescript
+ * const settings: Settings = {
+ *   showHelp: true,
+ *   caching: true,
+ *   currency: "USD",
+ *   location: "US",
+ *   suppliers: ["supplier1", "supplier2"],
+ *   theme: "light"
+ * };
+ * ```
  */
 export interface Settings {
-  /** Timestamp of last search result update */
+  /**
+   * ISO timestamp of when search results were last updated
+   * @example "2024-03-20T15:30:00Z"
+   */
   searchResultUpdateTs?: string;
-  /** Whether to show help tooltips */
+
+  /**
+   * Controls visibility of help tooltips throughout the application.
+   * Defaults to false.
+   */
   showHelp: boolean;
-  /** Whether to enable caching */
+
+  /**
+   * Enables or disables data caching functionality.
+   * Defaults to true.
+   */
   caching: boolean;
-  /** Whether to enable autocomplete */
+
+  /**
+   * Enables or disables search autocomplete suggestions.
+   * Defaults to true.
+   */
   autocomplete: boolean;
-  /** Selected currency code */
+
+  /**
+   * Selected currency code for price display
+   * @example "USD"
+   */
   currency: string;
-  /** User's location */
+
+  /**
+   * User's geographical location for shipping calculations
+   * @example "US"
+   */
   location: string;
-  /** Whether to show products that ship to user's location */
+
+  /**
+   * Filter products based on shipping availability to user's location.
+   * Defaults to false.
+   */
   shipsToMyLocation: boolean;
-  /** Foo setting */
+
+  /**
+   * Legacy feature flag for experimental functionality.
+   * Note: This feature is deprecated and will be removed in a future version.
+   * Use more specific feature flags instead.
+   */
   foo: string;
-  /** Jason feature flag */
+
+  /**
+   * Feature flag for Jason's experimental features.
+   * Defaults to false.
+   */
   jason: boolean;
-  /** Antoine feature flag */
+
+  /**
+   * Feature flag for Antoine's experimental features.
+   * Defaults to false.
+   */
   antoine: boolean;
-  /** Size of popup window */
+
+  /**
+   * Dimensions of the popup window in format 'widthxheight'
+   * @example "800x600"
+   */
   popupSize: string;
-  /** Whether to automatically resize */
+
+  /**
+   * Controls automatic window resizing behavior.
+   * Defaults to true.
+   */
   autoResize: boolean;
-  /** Some setting flag */
+
+  /**
+   * Generic feature flag for experimental functionality.
+   * Defaults to false.
+   */
   someSetting: boolean;
-  /** List of enabled suppliers */
+
+  /**
+   * List of supplier IDs that are enabled for searching
+   * @example ["supplier1", "supplier2"]
+   */
   suppliers: Array<string>;
-  /** Selected theme */
+
+  /**
+   * Selected UI theme identifier
+   * @example "light"
+   */
   theme: string;
-  /** Whether to show all columns */
+
+  /**
+   * Controls visibility of all available table columns.
+   * Defaults to true.
+   */
   showAllColumns: boolean;
-  /** List of columns to hide */
+
+  /**
+   * List of column identifiers that should be hidden from view
+   * @example ["price", "quantity"]
+   */
   hideColumns: Array<string>;
-  /** Whether to show column filters */
+
+  /**
+   * Controls visibility of column filter UI elements.
+   * Defaults to false.
+   */
   showColumnFilters: boolean;
-  /** Configuration for column filters */
+
+  /**
+   * Configuration object for individual column filter settings.
+   * @example
+   * ```typescript
+   * {
+   *   price: {
+   *     filterVariant: "range",
+   *     rangeValues: [0, 1000]
+   *   }
+   * }
+   * ```
+   */
   columnFilterConfig: Record<string, ColumnMeta>;
 }
 
 /**
- * Variant interface representing a product variant
+ * Represents a specific variation of a product with its unique characteristics and pricing.
+ * Used to model different versions or package sizes of the same product.
+ *
+ * @example
+ * ```typescript
+ * const variant: Variant = {
+ *   title: "Sodium Chloride 500g",
+ *   uom: "g",
+ *   price: 19.99,
+ *   quantity: 500,
+ *   grade: "ACS",
+ *   sku: "NaCl-500"
+ * };
+ * ```
  */
 export interface Variant {
-  /** Title of the variant */
+  /**
+   * Display name of the variant
+   * @example "Sodium Chloride 500g"
+   */
   title?: string;
-  /** Unit of measurement */
+
+  /**
+   * Unit of measurement for the variant quantity
+   * @example "g"
+   */
   uom?: string;
-  /** Price of the variant */
+
+  /**
+   * Numeric price value of the variant
+   * @example 19.99
+   */
   price?: number;
-  /** Quantity available */
+
+  /**
+   * Available quantity in stock
+   * @example 100
+   */
   quantity?: number;
-  /** Base quantity for conversion */
+
+  /**
+   * Reference quantity for unit conversion calculations
+   * @example 500
+   */
   baseQuantity?: number;
-  /** Base unit of measurement */
+
+  /**
+   * Reference unit of measurement for conversions
+   * @example "g"
+   */
   baseUom?: UOM;
-  /** Price in USD */
+
+  /**
+   * Price converted to USD for comparison
+   * @example 19.99
+   */
   usdPrice?: number;
-  /** Stock keeping unit identifier */
+
+  /**
+   * Stock keeping unit identifier for inventory tracking
+   * @example "NaCl-500"
+   */
   sku?: number | string;
-  /** URL to product page */
+
+  /**
+   * URL to the variant's detail page
+   * @example "/products/sodium-chloride-500g"
+   */
   url?: string;
-  /** Unique identifier */
+
+  /**
+   * Unique identifier within the system
+   * @example 12345
+   */
   id?: number | string;
-  /** Universal unique identifier */
+
+  /**
+   * Globally unique identifier
+   * @example "550e8400-e29b-41d4-a716-446655440000"
+   */
   uuid?: number | string;
-  /** Chemical grade */
+
+  /**
+   * Chemical grade specification (e.g., 'ACS', 'Technical')
+   * @example "ACS"
+   */
   grade?: string;
-  /** Concentration */
+
+  /**
+   * Chemical concentration specification
+   * @example "98%"
+   */
   conc?: string;
-  /** Status of the variant */
+
+  /**
+   * Current status code of the variant
+   * @example "IN_STOCK"
+   */
   status?: string;
-  /** Status text description */
+
+  /**
+   * Human-readable status description
+   * @example "In Stock"
+   */
   statusTxt?: string;
-  /** Shipping information */
+
+  /**
+   * Special shipping requirements or information
+   * @example "Hazardous material - special shipping required"
+   */
   shippingInformation?: string;
 }
 
 /**
- * Product interface representing a chemical product
+ * Represents a chemical product with its complete details, extending the Variant interface.
+ * This is the main product type used throughout the application.
+ *
+ * @example
+ * ```typescript
+ * const product: Product = {
+ *   supplier: "Loudwolf",
+ *   title: "Sodium Chloride ACS Grade",
+ *   url: "/products/sodium-chloride-acs",
+ *   price: 19.99,
+ *   currencyCode: "USD",
+ *   currencySymbol: "$",
+ *   quantity: 500,
+ *   uom: "g",
+ *   cas: "7647-14-5",
+ *   formula: "NaCl"
+ * };
+ * ```
  */
 export interface Product extends Variant {
-  /** Product supplier */
+  /**
+   * Name of the supplier providing the product
+   * @example "Loudwolf"
+   */
   supplier: string;
-  /** Product name */
-  name: string;
-  /** Product link (absolute url)*/
+
+  /**
+   * Full product title/name
+   * @example "Sodium Chloride ACS Grade 500g"
+   */
+  title: string;
+
+  /**
+   * Absolute URL to the product's detail page
+   * @example "https://supplier.com/products/sodium-chloride-500g"
+   */
   url: string;
-  /** Product price */
+
+  /**
+   * Current price of the product
+   * @example 19.99
+   */
   price: number;
-  /** Currency code for pricing */
+
+  /**
+   * ISO currency code for the price
+   * @example "USD"
+   */
   currencyCode: CurrencyCode;
-  /** Currency symbol for display */
+
+  /**
+   * Display symbol for the currency
+   * @example "$"
+   */
   currencySymbol: CurrencySymbol;
-  /** Available quantity */
+
+  /**
+   * Available quantity in stock
+   * @example 100
+   */
   quantity: number;
-  /** Unit of measurement (ml, g, kg, etc.) */
+
+  /**
+   * Standardized unit of measurement
+   * @example "g"
+   */
   uom: valueof<typeof UOM>;
-  /** Product description */
+
+  /**
+   * Detailed product description
+   * @example "ACS grade sodium chloride suitable for analytical use"
+   */
   description?: string;
-  /** Product manufacturer */
+
+  /**
+   * Name of the product manufacturer
+   * @example "Sigma-Aldrich"
+   */
   manufacturer?: string;
-  /** Chemical Abstracts Service number */
+
+  /**
+   * Chemical Abstracts Service registry number
+   * @example "7647-14-5"
+   */
   cas?: CAS<string>;
-  /** Chemical formula */
+
+  /**
+   * Chemical molecular formula
+   * @example "NaCl"
+   */
   formula?: string;
-  /** Product vendor */
+
+  /**
+   * Alternative name for the supplier
+   * @example "Sigma"
+   */
   vendor?: string;
-  /** Available variants */
+
+  /**
+   * Array of available product variations
+   */
   variants?: Variant[];
-  /** Document links (e.g. MSDS, SDS, etc.) */
+
+  /**
+   * URLs to related documentation (MSDS, SDS, etc.)
+   * @example ["https://supplier.com/msds/nacl.pdf"]
+   */
   docLinks?: string[];
 }
 
 /**
- * Item interface representing a task or item
+ * Represents a hierarchical task or item with nested structure.
+ * Used for organizing items in a tree-like structure.
+ *
+ * @example
+ * ```typescript
+ * const item: Itemxxx = {
+ *   id: 1,
+ *   name: "Project A",
+ *   deadline: new Date("2024-12-31"),
+ *   type: "project",
+ *   isComplete: false,
+ *   nodes: [
+ *     {
+ *       id: 2,
+ *       name: "Task 1",
+ *       deadline: new Date("2024-06-30"),
+ *       type: "task",
+ *       isComplete: true
+ *     }
+ *   ]
+ * };
+ * ```
  */
 export interface Itemxxx {
-  /** Unique identifier */
+  /**
+   * Unique numeric identifier
+   * @example 1
+   */
   id: number;
-  /** Item name */
+
+  /**
+   * Display name of the item
+   * @example "Project A"
+   */
   name: string;
-  /** Deadline date */
+
+  /**
+   * Due date for the item
+   * @example new Date("2024-12-31")
+   */
   deadline: Date;
-  /** Item type */
+
+  /**
+   * Classification or category of the item
+   * @example "project"
+   */
   type: string;
-  /** Completion status */
+
+  /**
+   * Indicates whether the item has been completed
+   * @example false
+   */
   isComplete: boolean;
-  /** Nested items */
+
+  /**
+   * Optional array of child items
+   */
   nodes?: Itemxxx[];
 }
 
 /**
- * Sku interface representing a stock keeping unit
+ * Represents a stock keeping unit with detailed inventory and pricing information.
+ * Used for managing product variants and their specific characteristics.
+ *
+ * @example
+ * ```typescript
+ * const sku: Sku = {
+ *   priceInfo: {
+ *     regularPrice: [19.99, 17.99, 15.99]
+ *   },
+ *   variantsMap: {
+ *     volume: 500,
+ *     chemicalGrade: "ACS",
+ *     concentration: "98%"
+ *   },
+ *   skuId: "NaCl-500-ACS",
+ *   seoName: "sodium-chloride-500g-acs",
+ *   inventoryStatus: "IN_STOCK",
+ *   inventoryStatusMsg: "In Stock",
+ *   specifications: {
+ *     shippingInformation: "Hazardous material"
+ *   }
+ * };
+ * ```
  */
 export interface Sku {
-  /** Price information */
+  /**
+   * Pricing information for the SKU
+   */
   priceInfo: {
-    /** Regular price array */
+    /**
+     * Array of regular prices (may include different quantities)
+     * @example [19.99, 17.99, 15.99]
+     */
     regularPrice: number[];
   };
-  /** Variant mapping */
+
+  /**
+   * Mapping of variant-specific characteristics
+   */
   variantsMap: {
-    /** Volume */
+    /**
+     * Volume of the product
+     * @example 500
+     */
     volume: number;
-    /** Chemical grade */
+
+    /**
+     * Chemical grade specification
+     * @example "ACS"
+     */
     chemicalGrade: string;
-    /** Concentration */
+
+    /**
+     * Chemical concentration value
+     * @example "98%"
+     */
     concentration: string;
   };
-  /** SKU identifier */
+
+  /**
+   * Unique identifier for the SKU
+   * @example "NaCl-500-ACS"
+   */
   skuId: string;
-  /** SEO-friendly name */
+
+  /**
+   * URL-friendly name for SEO purposes
+   * @example "sodium-chloride-500g-acs"
+   */
   seoName: string;
-  /** Inventory status */
+
+  /**
+   * Current inventory status code
+   * @example "IN_STOCK"
+   */
   inventoryStatus: string;
-  /** Inventory status message */
+
+  /**
+   * Human-readable inventory status message
+   * @example "In Stock"
+   */
   inventoryStatusMsg: string;
-  /** Product specifications */
+
+  /**
+   * Additional product specifications
+   */
   specifications: {
-    /** Shipping information */
+    /**
+     * Special shipping requirements or information
+     * @example "Hazardous material"
+     */
     shippingInformation: string;
   };
 }
 
 /**
- * ProductDetails interface for detailed product information
+ * Basic product information structure.
+ * Used for simplified product representations.
+ *
+ * @example
+ * ```typescript
+ * const details: ProductDetails = {
+ *   name: "Sodium Chloride",
+ *   description: "ACS grade sodium chloride",
+ *   price: 19.99,
+ *   quantity: 500
+ * };
+ * ```
  */
 export interface ProductDetails {
-  /** Product name */
+  /**
+   * Display name of the product
+   * @example "Sodium Chloride"
+   */
   name: string;
-  /** Product description */
+
+  /**
+   * Detailed product description
+   * @example "ACS grade sodium chloride"
+   */
   description: string;
-  /** Product price */
+
+  /**
+   * Current price of the product
+   * @example 19.99
+   */
   price: number;
-  /** Product quantity */
+
+  /**
+   * Available quantity in stock
+   * @example 500
+   */
+  quantity: number;
 }
 
 /**
- * SearchProps interface for search component
+ * Props interface for search component functionality.
+ * Used to manage search state in React components.
+ *
+ * @example
+ * ```typescript
+ * const SearchComponent: React.FC<SearchProps> = ({ query, setQuery }) => {
+ *   return (
+ *     <input
+ *       value={query}
+ *       onChange={(e) => setQuery(e.target.value)}
+ *       placeholder="Search..."
+ *     />
+ *   );
+ * };
+ * ```
  */
 export interface SearchProps {
-  /** Search query string */
+  /**
+   * Current search query string
+   * @example "sodium chloride"
+   */
   query: string;
-  /** Function to update search query */
+
+  /**
+   * Callback function to update the search query
+   */
   setQuery: (value: string) => void;
 }
 
 /**
- * Supplier interface representing a product supplier
+ * Base interface for product supplier implementation.
+ * Defines the common structure and functionality that all suppliers must implement.
+ *
+ * @example
+ * ```typescript
+ * class MySupplier implements Supplier {
+ *   supplierName = "MySupplier";
+ *   _query = "";
+ *   _queryResults = [];
+ *   _baseURL = "https://mysupplier.com";
+ *   _controller = new AbortController();
+ *   _limit = 10;
+ *   _httpRequestHardLimit = 50;
+ *   _headers = { "Content-Type": "application/json" };
+ * }
+ * ```
  */
 export interface Supplier {
-  /** Name of the supplier */
+  /**
+   * Display name of the supplier
+   * @example "Sigma-Aldrich"
+   */
   supplierName: string;
-  /** Current search query */
+
+  /**
+   * Current active search query
+   * @example "sodium chloride"
+   */
   _query: string;
-  /** Raw query results */
+
+  /**
+   * Raw results from the last search query
+   */
   _queryResults: Array<Record<string, unknown>>;
-  /** Base URL for API */
+
+  /**
+   * Base URL for supplier's API endpoints
+   * @example "https://api.supplier.com"
+   */
   _baseURL: string;
-  /** Abort controller for requests */
+
+  /**
+   * AbortController for canceling in-flight requests
+   */
   _controller: AbortController;
-  /** Result limit */
+
+  /**
+   * Maximum number of results to return
+   * @example 10
+   */
   _limit: number;
-  /** Hard limit for HTTP requests */
+
+  /**
+   * Maximum number of concurrent HTTP requests
+   * @example 50
+   */
   _httpRequestHardLimit: number;
-  /** HTTP request headers */
+
+  /**
+   * Custom headers for API requests
+   * @example { "Authorization": "Bearer token123" }
+   */
   _headers: HeadersInit;
 }
 
 /**
- * TextOptionFacet interface for text option facets
+ * Represents a faceted search option with text values.
+ * Used for filtering and categorizing search results.
+ *
+ * @example
+ * ```typescript
+ * const facet: TextOptionFacet = {
+ *   name: "grade",
+ *   value: "ACS"
+ * };
+ * ```
  */
 export interface TextOptionFacet {
-  /** Facet name */
+  /**
+   * Name of the facet category
+   * @example "grade"
+   */
   name: string;
-  /** Facet value */
+
+  /**
+   * Selected or available facet value
+   * @example "ACS"
+   */
   value: string;
 }
 
 /**
- * ProductObject interface representing a Wix product
+ * Represents a product object in the Wix platform format.
+ * Used for compatibility with Wix e-commerce platform.
+ *
+ * @example
+ * ```typescript
+ * const product: ProductObject = {
+ *   discountedPrice: "17.99",
+ *   price: "19.99",
+ *   title: "Sodium Chloride ACS Grade",
+ *   url: "/products/sodium-chloride",
+ *   textOptionsFacets: [
+ *     { name: "grade", value: "ACS" }
+ *   ]
+ * };
+ * ```
  */
 export interface ProductObject {
-  /** Discounted price */
+  /**
+   * Price after applying any discounts
+   * @example "17.99"
+   */
   discountedPrice?: string;
-  /** Regular price */
+
+  /**
+   * Regular price of the product
+   * @example "19.99"
+   */
   price: string;
-  /** Product title */
+
+  /**
+   * Display title of the product
+   * @example "Sodium Chloride ACS Grade"
+   */
   title: string;
-  /** Product URL */
+
+  /**
+   * URL to the product's detail page
+   * @example "/products/sodium-chloride"
+   */
   url: string;
-  /** Text option facets */
+
+  /**
+   * Available text-based filtering options
+   */
   textOptionsFacets?: TextOptionFacet[];
 }
 
 /**
- * ColumnMeta interface for column metadata
+ * Configuration metadata for table columns.
+ * Used to customize column behavior and appearance.
+ *
+ * @example
+ * ```typescript
+ * const columnMeta: ColumnMeta = {
+ *   filterVariant: "range",
+ *   uniqueValues: ["ACS", "Technical", "USP"],
+ *   rangeValues: [0, 1000],
+ *   style: { width: "200px" }
+ * };
+ * ```
  */
 export interface ColumnMeta {
-  /** Filter variant type */
+  /**
+   * Type of filter to use for this column
+   * @example "range"
+   */
   filterVariant?: "range" | "select" | "text";
-  /** Unique values for filter */
+
+  /**
+   * List of all possible unique values for select filters
+   * @example ["ACS", "Technical", "USP"]
+   */
   uniqueValues?: string[];
-  /** Range values for filter */
+
+  /**
+   * Minimum and maximum values for range filters
+   * @example [0, 1000]
+   */
   rangeValues?: number[];
-  /** Custom styles */
+
+  /**
+   * Custom CSS styles to apply to the column
+   * @example { width: "200px" }
+   */
   style?: CSSProperties;
 }
 
 /**
- * CustomColumn interface for custom column definition
+ * Extended column interface with additional metadata support.
+ * Used to enhance TanStack Table columns with custom metadata.
+ *
+ * @param TData - The type of data in the table rows
+ * @param TValue - The type of value in the column cells
+ *
+ * @example
+ * ```typescript
+ * // Example column with range filter metadata
+ * const column: CustomColumn<Product, number> = {
+ *   id: "price",
+ *   header: "Price",
+ *   accessorKey: "price",
+ *   columnDef: {
+ *     meta: {
+ *       filterVariant: "range",
+ *       rangeValues: [0, 1000]
+ *     }
+ *   }
+ * };
+ * ```
  */
 export interface CustomColumn<TData extends RowData, TValue = unknown>
   extends Column<TData, TValue> {
-  /** Column definition with metadata */
+  /**
+   * Extended column definition including metadata
+   */
   columnDef: {
-    /** Column metadata */
+    /**
+     * Additional column configuration metadata
+     */
     meta?: ColumnMeta;
   };
 }
 
 /**
- * ProductRow interface representing a row in the product table
+ * Represents a row in the product table.
+ * Used for type-safe row operations in TanStack Table.
+ *
+ * @example
+ * ```typescript
+ * const productRow: ProductRow = {
+ *   row: {
+ *     original: {
+ *       title: "Sodium Chloride",
+ *       price: 19.99,
+ *       quantity: 500
+ *     }
+ *   }
+ * };
+ * ```
  */
 export interface ProductRow {
-  /** Table row data */
+  /**
+   * Table row containing product data
+   */
   row: Row<Product>;
 }
 
 /**
- * Interface defining mappings between units of measurement and their string aliases.
- * Each property represents a unit of measurement from the UOM enum and maps to an array
- * of possible string representations for that unit.
+ * Mapping of standard units of measurement to their various string representations.
+ * Used for normalizing unit of measurement strings from different suppliers.
  *
- * @interface
  * @example
  * ```typescript
- * const aliases: UOMAliases = {
- *   [UOM.KG]: ["kilogram", "kilograms", "kg", "kgs"]
+ * const uomAliases: UOMAliases = {
+ *   [UOM.G]: ["g", "gram", "grams"],
+ *   [UOM.KG]: ["kg", "kilo", "kilogram"],
+ *   [UOM.ML]: ["ml", "milliliter", "milliliters"]
  * };
  * ```
  */
 export interface UOMAliases {
-  /** Array of string aliases for pieces/units */
+  /** Alternative strings representing pieces/units */
   [UOM.PCS]: string[];
-  /** Array of string aliases for kilograms */
+  /** Alternative strings representing kilograms */
   [UOM.KG]: string[];
-  /** Array of string aliases for pounds */
+  /** Alternative strings representing pounds */
   [UOM.LB]: string[];
-  /** Array of string aliases for milliliters */
+  /** Alternative strings representing milliliters */
   [UOM.ML]: string[];
-  /** Array of string aliases for grams */
+  /** Alternative strings representing grams */
   [UOM.G]: string[];
-  /** Array of string aliases for liters */
+  /** Alternative strings representing liters */
   [UOM.L]: string[];
-  /** Array of string aliases for quarts */
+  /** Alternative strings representing quarts */
   [UOM.QT]: string[];
-  /** Array of string aliases for gallons */
+  /** Alternative strings representing gallons */
   [UOM.GAL]: string[];
-  /** Array of string aliases for millimeters */
+  /** Alternative strings representing millimeters */
   [UOM.MM]: string[];
-  /** Array of string aliases for centimeters */
+  /** Alternative strings representing centimeters */
   [UOM.CM]: string[];
-  /** Array of string aliases for meters */
+  /** Alternative strings representing meters */
   [UOM.M]: string[];
-  /** Array of string aliases for ounces */
+  /** Alternative strings representing ounces */
   [UOM.OZ]: string[];
-  /** Array of string aliases for milligrams */
+  /** Alternative strings representing milligrams */
   [UOM.MG]: string[];
-  /** Array of string aliases for kilometers */
+  /** Alternative strings representing kilometers */
   [UOM.KM]: string[];
 }
 
 /**
- * Awaitable type
+ * Type that allows either a value or a Promise of that value.
+ * Used for functions that may return either synchronously or asynchronously.
+ *
+ * @param T - The type of the value
+ *
+ * @example
+ * ```typescript
+ * // Example function returning either sync or async value
+ * async function getData(): Awaitable<string> {
+ *   return Math.random() > 0.5
+ *     ? "immediate value"
+ *     : Promise.resolve("async value");
+ * }
+ * ```
  */
 export type Awaitable<T> = T | Promise<T>;
 
 /**
- * HTML response type
+ * Extended Response type specifically for HTML responses.
+ * Used for handling HTTP responses containing HTML content.
+ *
+ * @example
+ * ```typescript
+ * async function fetchHTML(): Promise<HTMLResponse> {
+ *   const response = await fetch("https://example.com");
+ *   return response as HTMLResponse;
+ * }
+ * ```
  */
 export type HTMLResponse = Response & {
-  /** Text content of the response */
+  /** Returns the response body as a string */
   text: () => Promise<string>;
 };
 
 /**
- * JSON response type
+ * Response type specifically for JSON responses.
+ * Used for handling HTTP responses containing JSON content.
+ *
+ * @example
+ * ```typescript
+ * async function fetchJSON(): Promise<JSONResponse> {
+ *   const response = await fetch("https://api.example.com/data");
+ *   return response as JSONResponse;
+ * }
+ * ```
  */
 export type JSONResponse = Response;
+
+/**
+ * Type that represents either a non-null value of T or undefined.
+ * Used for optional values that cannot be null when present.
+ *
+ * @param T - The type of the value
+ *
+ * @example
+ * ```typescript
+ * // Example function handling Maybe type
+ * function processValue(value: Maybe<string>) {
+ *   return value ? value.toUpperCase() : "no value";
+ * }
+ * ```
+ */
+type Maybe<T> = NonNullable<T> | undefined | void;
