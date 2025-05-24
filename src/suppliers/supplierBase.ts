@@ -386,8 +386,8 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
 
     if (!this._isJsonResponse(httpRequest)) {
       const badResponse = await (httpRequest as unknown as Response)?.text();
-      console.error("_httpGetJson| Invalid GET response: ", badResponse);
-      throw new TypeError(`_httpGetJson| response: ${httpRequest}`);
+      console.error("Invalid HTTP GET response: ", badResponse);
+      throw new TypeError("Invalid HTTP GET response");
     }
 
     return await httpRequest?.json();
