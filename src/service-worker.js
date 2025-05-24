@@ -25,7 +25,6 @@ self.addEventListener("activate", (event) => {
             // If this cache name isn't present in the set of
             // "expected" cache names, then delete it.
             console.debug("Deleting out of date cache:", cacheName);
-            console.debug("Deleting out of date cache:", cacheName);
             return caches.delete(cacheName);
           }
         }),
@@ -48,7 +47,6 @@ self.addEventListener("fetch", (event) => {
             // If there is an entry in the cache for event.request,
             // then response will be defined and we can just return it.
             // Note that in this example, only font resources are cached.
-            console.debug(" Found response in cache:", response);
             console.debug(" Found response in cache:", response);
 
             return response;
