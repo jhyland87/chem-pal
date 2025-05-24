@@ -6,8 +6,8 @@ import React from "react";
  * This icon is typically used to represent GitHub integration, repository links, or source code.
  *
  * @component
- * @param {SvgIconProps} props - The props passed to the underlying SvgIcon component
- * @returns {JSX.Element} A React component that renders the GitHub icon
+ * @param props - The props passed to the underlying SvgIcon component
+ * @returns A React component that renders the GitHub icon
  */
 const GitHubIcon: React.FC<SvgIconProps> = (props) => {
   return (

@@ -6,8 +6,8 @@ import React from "react";
  * This icon is typically used to represent a store, marketplace, or shopping interface.
  *
  * @component
- * @param {SvgIconProps} props - The props passed to the underlying SvgIcon component
- * @returns {JSX.Element} A React component that renders the store icon
+ * @param props - The props passed to the underlying SvgIcon component
+ * @returns A React component that renders the store icon
  */
 const StoreIcon: React.FC<SvgIconProps> = (props) => {
   return (

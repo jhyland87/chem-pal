@@ -6,8 +6,8 @@ import React from "react";
  * This icon is typically used to represent contrast settings, theme switching, or visual adjustments.
  *
  * @component
- * @param {SvgIconProps} props - The props passed to the underlying SvgIcon component
- * @returns {JSX.Element} A React component that renders the contrast icon
+ * @param props - The props passed to the underlying SvgIcon component
+ * @returns A React component that renders the contrast icon
  */
 const ContrastIcon: React.FC<SvgIconProps> = (props) => {
   return (

@@ -5,8 +5,8 @@ import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
  * This icon is typically used to represent rewind, previous page, or skip back functionality.
  *
  * @component
- * @param {SvgIconProps} props - The props passed to the underlying SvgIcon component
- * @returns {JSX.Element} A React component that renders the double left arrow icon
+ * @param props - The props passed to the underlying SvgIcon component
+ * @returns  A React component that renders the double left arrow icon
  */
 const KeyboardDoubleArrowLeftIcon: React.FC<SvgIconProps> = (props) => {
   return (

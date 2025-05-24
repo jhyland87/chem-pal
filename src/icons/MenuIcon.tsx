@@ -6,8 +6,8 @@ import React from "react";
  * This icon is typically used to represent a navigation menu or list of options.
  *
  * @component
- * @param {SvgIconProps} props - The props passed to the underlying SvgIcon component
- * @returns {JSX.Element} A React component that renders the menu icon
+ * @param props - The props passed to the underlying SvgIcon component
+ * @returns A React component that renders the menu icon
  */
 const MenuIcon: React.FC<SvgIconProps> = (props) => {
   return (

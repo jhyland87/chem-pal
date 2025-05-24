@@ -1,7 +1,7 @@
 import { ProductBuilder } from "@/helpers/productBuilder";
 import { getCachableResponse } from "@/helpers/request";
-import { type RequestOptions, type RequestParams } from "@/types/request";
 import { type HTMLResponse, type Product } from "@/types";
+import { type RequestOptions, type RequestParams } from "@/types/request";
 import * as contentType from "content-type";
 
 /**

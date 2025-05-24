@@ -6,8 +6,8 @@ import React from "react";
  * This icon is typically used to represent search functionality or search interfaces.
  *
  * @component
- * @param {SvgIconProps} props - The props passed to the underlying SvgIcon component
- * @returns {JSX.Element} A React component that renders the search icon
+ * @param props - The props passed to the underlying SvgIcon component
+ * @returns A React component that renders the search icon
  */
 const SearchIcon: React.FC<SvgIconProps> = (props) => {
   return (

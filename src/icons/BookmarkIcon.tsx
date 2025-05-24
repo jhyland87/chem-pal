@@ -6,8 +6,8 @@ import React from "react";
  * This icon is typically used to represent saving, bookmarking, or marking items for later reference.
  *
  * @component
- * @param {SvgIconProps} props - The props passed to the underlying SvgIcon component
- * @returns {JSX.Element} A React component that renders the bookmark icon
+ * @param props - The props passed to the underlying SvgIcon component
+ * @returns A React component that renders the bookmark icon
  */
 const BookmarkIcon: React.FC<SvgIconProps> = (props) => {
   return (

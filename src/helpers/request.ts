@@ -1,6 +1,6 @@
+import { md5sum, serialize } from "@/helpers/utils";
 import type { CacheResponse, RequestHashObject, SerializedResponse } from "@/types/request";
 import * as contentType from "content-type";
-import { md5sum, serialize } from "./utils";
 
 /**
  * Generates a unique hash for a given Request object based on its method, URL path, search parameters, and body.

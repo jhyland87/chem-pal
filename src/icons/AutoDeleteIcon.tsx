@@ -6,8 +6,8 @@ import React from "react";
  * This icon is typically used to represent automatic deletion, cleanup, or scheduled removal of items.
  *
  * @component
- * @param {SvgIconProps} props - The props passed to the underlying SvgIcon component
- * @returns {JSX.Element} A React component that renders the auto-delete icon
+ * @param props - The props passed to the underlying SvgIcon component
+ * @returns A React component that renders the auto-delete icon
  */
 const AutoDeleteIcon: React.FC<SvgIconProps> = (props) => {
   return (

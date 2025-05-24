@@ -6,8 +6,8 @@ import React from "react";
  * This icon is typically used to represent history, past actions, or time-based records.
  *
  * @component
- * @param {SvgIconProps} props - The props passed to the underlying SvgIcon component
- * @returns {JSX.Element} A React component that renders the history icon
+ * @param props - The props passed to the underlying SvgIcon component
+ * @returns A React component that renders the history icon
  */
 const HistoryIcon: React.FC<SvgIconProps> = (props) => {
   return (

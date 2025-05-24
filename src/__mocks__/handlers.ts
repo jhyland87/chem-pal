@@ -1,6 +1,6 @@
 import { getRequestHash } from "@/helpers/request";
 import { deserialize } from "@/helpers/utils";
-import type { RequestHashObject } from "@/types/request.d";
+import type { RequestHashObject } from "@/types/request";
 import { AccessTokenResponse } from "@/types/wix";
 import { DefaultBodyType, delay, http, HttpResponse, HttpResponseResolver, PathParams } from "msw";
 // src/__mocks__/handlers.js

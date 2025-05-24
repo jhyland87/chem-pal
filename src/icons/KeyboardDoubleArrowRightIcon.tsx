@@ -5,8 +5,8 @@ import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
  * This icon is typically used to represent fast forward, next page, or skip functionality.
  *
  * @component
- * @param {SvgIconProps} props - The props passed to the underlying SvgIcon component
- * @returns {JSX.Element} A React component that renders the double right arrow icon
+ * @param props - The props passed to the underlying SvgIcon component
+ * @returns A React component that renders the double right arrow icon
  */
 const KeyboardDoubleArrowRightIcon: React.FC<SvgIconProps> = (props) => {
   return (

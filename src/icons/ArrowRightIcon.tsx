@@ -6,8 +6,8 @@ import React from "react";
  * This icon is typically used to represent forward navigation, next step, or right direction.
  *
  * @component
- * @param {SvgIconProps} props - The props passed to the underlying SvgIcon component
- * @returns {JSX.Element} A React component that renders the right arrow icon
+ * @param props - The props passed to the underlying SvgIcon component
+ * @returns A React component that renders the right arrow icon
  */
 const ArrowRightIcon: React.FC<SvgIconProps> = (props) => {
   return (

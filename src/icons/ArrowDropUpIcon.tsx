@@ -5,6 +5,7 @@ import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
  * This icon is typically used to represent expanding content, showing more options, or upward navigation.
  *
  * @component
+ * @param props - The props passed to the underlying SvgIcon component
  * @returns A React component that renders the upward dropdown arrow icon
  */
 const ArrowDropUpIcon: React.FC<SvgIconProps> = (props) => {

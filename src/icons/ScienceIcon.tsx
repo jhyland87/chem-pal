@@ -6,8 +6,8 @@ import React from "react";
  * This icon is typically used to represent scientific research, laboratory work, or chemical analysis.
  *
  * @component
- * @param {SvgIconProps} props - The props passed to the underlying SvgIcon component
- * @returns {JSX.Element} A React component that renders the science icon
+ * @param props - The props passed to the underlying SvgIcon component
+ * @returns A React component that renders the science icon
  */
 const ScienceIcon: React.FC<SvgIconProps> = (props) => {
   return (
