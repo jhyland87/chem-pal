@@ -1,7 +1,7 @@
-import AutoDeleteIcon from "@/assets/icons/AutoDeleteIcon";
-import ClearIcon from "@/assets/icons/ClearIcon";
-import ContrastIcon from "@/assets/icons/ContrastIcon";
-import InfoOutlineIcon from "@/assets/icons/InfoOutlineIcon";
+import AutoDeleteIcon from "@/icons/AutoDeleteIcon";
+import ClearIcon from "@/icons/ClearIcon";
+import ContrastIcon from "@/icons/ContrastIcon";
+import InfoOutlineIcon from "@/icons/InfoOutlineIcon";
 import { useAppContext } from "@/context";
 import { delayAction } from "@/helpers/utils";
 import { type SpeedDialMenuProps } from "@/types/props";

@@ -1,7 +1,7 @@
-import ArrowDropDownIcon from "@/assets/icons/ArrowDropDownIcon";
-import ArrowRightIcon from "@/assets/icons/ArrowRightIcon";
-import BookmarkIcon from "@/assets/icons/BookmarkIcon";
-import { type Product, type ProductRow } from "@/types/types";
+import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
+import ArrowRightIcon from "@/icons/ArrowRightIcon";
+import BookmarkIcon from "@/icons/BookmarkIcon";
+import { type Product, type ProductRow } from "@/types";
 import IconButton from "@mui/material/IconButton";
 import { ColumnDef, type Row, type SortingFn } from "@tanstack/react-table";
 import { default as Link } from "../TabLink";

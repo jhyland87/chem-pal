@@ -1,7 +1,7 @@
 import { useAppContext } from "@/context";
+import { implementCustomMethods } from "@/mixins/tanstack";
+import { type Product } from "@/types";
 import { type ProductTableProps } from "@/types/props";
-import { type Product } from "@/types/types";
-import { implementCustomMethods } from "@/utils/tanstack";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import { type Column, flexRender, type Row } from "@tanstack/react-table";

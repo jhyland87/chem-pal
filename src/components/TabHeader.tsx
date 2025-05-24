@@ -1,8 +1,8 @@
-import BookmarkIcon from "@/assets/icons/BookmarkIcon";
-import HistoryIcon from "@/assets/icons/HistoryIcon";
-import SearchIcon from "@/assets/icons/SearchIcon";
-import SettingsIcon from "@/assets/icons/SettingsIcon";
-import StoreIcon from "@/assets/icons/StoreIcon";
+import BookmarkIcon from "@/icons/BookmarkIcon";
+import HistoryIcon from "@/icons/HistoryIcon";
+import SearchIcon from "@/icons/SearchIcon";
+import SettingsIcon from "@/icons/SettingsIcon";
+import StoreIcon from "@/icons/StoreIcon";
 import { type TabHeaderProps } from "@/types/props";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";

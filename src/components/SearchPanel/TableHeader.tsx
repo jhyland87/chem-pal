@@ -1,6 +1,6 @@
-import ArrowDropDownIcon from "@/assets/icons/ArrowDropDownIcon";
-import ArrowDropUpIcon from "@/assets/icons/ArrowDropUpIcon";
-import { type Product } from "@/types/types";
+import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
+import ArrowDropUpIcon from "@/icons/ArrowDropUpIcon";
+import { type Product } from "@/types";
 import {
   type ColumnDef,
   type ColumnMeta,

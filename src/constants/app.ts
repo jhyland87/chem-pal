@@ -1,4 +1,4 @@
-import type { UOMAliases } from "@/types/types";
+import type { UOMAliases } from "@/types";
 
 /**
  * Represents different rotation speeds for animations

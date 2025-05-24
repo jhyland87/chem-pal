@@ -12,9 +12,7 @@ import { StyledFormControlSelector } from "../../Styles";
  * It allows users to filter data by selecting multiple values from a dropdown menu.
  *
  * @component
- *
  * @param props - Component props
- *
  * @example
  * ```tsx
  * <SelectColumnFilter column={column} />
@@ -48,6 +46,7 @@ export default function SelectColumnFilter({ column }: FilterVariantInputProps) 
   const ITEM_HEIGHT = 48;
   const ITEM_PADDING_TOP = 8;
   const MenuProps = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     PaperProps: {
       style: {
         maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
@@ -91,7 +90,7 @@ export default function SelectColumnFilter({ column }: FilterVariantInputProps) 
         {columnFilterOptions.length === 0 ? (
           <MenuItem>No Options Available</MenuItem>
         ) : (
-          columnFilterOptions.map((option) => (
+          columnFilterOptions.map((option: string) => (
             <MenuItem
               key={option}
               value={option}

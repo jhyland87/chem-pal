@@ -1,7 +1,7 @@
 import { parsePrice } from "@/helpers/currency";
 import { ProductBuilder } from "@/helpers/productBuilder";
 import { parseQuantity } from "@/helpers/quantity";
-import { type Product, type Variant } from "@/types/types";
+import { type Product, type Variant } from "@/types";
 import {
   type ProductItem,
   type ProductObject,
@@ -10,6 +10,7 @@ import {
 } from "@/types/wix";
 import merge from "lodash/merge";
 import SupplierBase from "./supplierBase";
+// import { buildClientSchema } from 'graphql';
 
 /**
  * SupplierBaseWix class that extends SupplierBase and implements AsyncIterable<Product>.

@@ -1,8 +1,8 @@
-import KeyboardArrowLeftIcon from "@/assets/icons/KeyboardArrowLeftIcon";
-import KeyboardArrowRightIcon from "@/assets/icons/KeyboardArrowRightIcon";
-import KeyboardDoubleArrowLeftIcon from "@/assets/icons/KeyboardDoubleArrowLeftIcon";
-import KeyboardDoubleArrowRightIcon from "@/assets/icons/KeyboardDoubleArrowRightIcon";
-import { type Product } from "@/types/types";
+import KeyboardArrowLeftIcon from "@/icons/KeyboardArrowLeftIcon";
+import KeyboardArrowRightIcon from "@/icons/KeyboardArrowRightIcon";
+import KeyboardDoubleArrowLeftIcon from "@/icons/KeyboardDoubleArrowLeftIcon";
+import KeyboardDoubleArrowRightIcon from "@/icons/KeyboardDoubleArrowRightIcon";
+import { type Product } from "@/types";
 import IconButton from "@mui/material/IconButton";
 import { type Table } from "@tanstack/react-table";
 import "./Pagination.scss";

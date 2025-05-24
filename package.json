@@ -33,6 +33,7 @@
     "classnames": "^2.5.1",
     "content-type": "^1.0.5",
     "currency.js": "^2.0.4",
+    "graphql": "^16.11.0",
     "lodash": "^4.17.21",
     "loglevel": "^1.9.2",
     "loglevel-plugin-prefix": "^0.8.4",

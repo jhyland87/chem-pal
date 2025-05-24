@@ -1,4 +1,4 @@
-import GitHubIcon from "@/assets/icons/GitHubIcon";
+import GitHubIcon from "@/icons/GitHubIcon";
 import { default as Link } from "@/components/TabLink";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";

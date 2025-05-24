@@ -7,7 +7,7 @@ import {
   type SearchParams,
   type SearchResponse,
 } from "@/types/laboratoriumdiscounter";
-import { type Product } from "@/types/types";
+import { type Product } from "@/types";
 import SupplierBase from "./supplierBase";
 
 /**

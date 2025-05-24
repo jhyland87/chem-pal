@@ -1,5 +1,5 @@
 import type { FilterVariantComponentProps, FilterVariantInputProps } from "@/types/props";
-import { type CustomColumn, type Product } from "@/types/types";
+import { type CustomColumn, type Product } from "@/types";
 import { Button, Typography } from "@mui/material";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";

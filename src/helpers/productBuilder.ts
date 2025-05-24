@@ -2,7 +2,7 @@ import { UOM } from "@/constants/app";
 import { isCAS } from "@/helpers/cas";
 import { toUSD } from "@/helpers/currency";
 import { toBaseQuantity } from "@/helpers/quantity";
-import { type Product, type Variant } from "@/types/types";
+import { type Product, type Variant } from "@/types";
 
 /**
  * Builder class for constructing Product objects with a fluent interface.

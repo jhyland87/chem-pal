@@ -2,7 +2,7 @@
  * Abstract base class for WooCommerce suppliers that implements product fetching functionality.
  * Extends the base supplier class and provides WooCommerce-specific implementation.
  */
-import type { Product } from "@/types/types";
+import type { Product } from "@/types";
 import * as cheerio from "cheerio";
 import SupplierBase from "./supplierBase";
 
