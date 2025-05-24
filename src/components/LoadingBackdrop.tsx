@@ -1,7 +1,7 @@
+import { type LoadingBackdropProps } from "@/types/props";
 import Backdrop from "@mui/material/Backdrop";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import { type LoadingBackdropProps } from "types/props";
 import "./LoadingBackdrop.scss";
 /**
  * A full-screen loading overlay component with a spinning benzene molecule and stop button.

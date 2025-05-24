@@ -1,4 +1,4 @@
-import { type Product } from "types";
+import { type Product } from "@/types/types";
 import * as suppliers from ".";
 import SupplierBase from "./supplierBase";
 

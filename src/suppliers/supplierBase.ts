@@ -1,8 +1,8 @@
+import { ProductBuilder } from "@/helpers/productBuilder";
+import { getCachableResponse } from "@/helpers/request";
+import { type RequestOptions, type RequestParams } from "@/types/request";
+import { type HTMLResponse, type Product } from "@/types/types";
 import * as contentType from "content-type";
-import { ProductBuilder } from "helpers/productBuilder";
-import { getCachableResponse } from "helpers/request";
-import { type Product } from "types";
-import { type RequestOptions, type RequestParams } from "types/request";
 
 /**
  * The base class for all suppliers.
@@ -125,11 +125,21 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   }
 
   /**
-   * Get the headers for the HTTP GET request.
+   * Check if the response is a valid HTML response.
    *
-   * @param url - The URL to get the headers for.
-   * @returns The headers for the HTTP GET request.
+   * @param response - The response to check.
+   * @returns True if the response is a valid HTML response, false otherwise.
    */
+  private _isHtmlResponse(response: Response | void): response is HTMLResponse {
+    if (!this._isResponse(response)) return false;
+    const dataType = contentType.parse(response.headers.get("content-type") ?? "");
+    console.log("contentType:", dataType.type);
+
+    if (!dataType) return false;
+
+    return ["text/html", "text/xml", "application/xhtml+xml"].includes(dataType.type);
+  }
+
   protected async _httpGetHeaders(url: string | URL): Promise<HeadersInit | void> {
     try {
       const requestObj = new Request(this._href(url), {
@@ -341,6 +351,19 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
         console.error("Error received during fetch:", { error, signal: this._controller.signal });
       }
     }
+  }
+
+  protected async _httpGetHtml({
+    path,
+    params = {},
+    headers = {},
+    host = undefined,
+  }: RequestOptions): Promise<string | void> {
+    const httpResponse = await this._httpGet({ path, params, headers, host });
+    if (!this._isHtmlResponse(httpResponse)) {
+      throw new TypeError(`_httpGetHtml| Invalid GET response: ${httpResponse}`);
+    }
+    return await httpResponse.text();
   }
 
   /**

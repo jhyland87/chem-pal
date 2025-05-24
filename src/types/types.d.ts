@@ -1,8 +1,8 @@
+import { UOM } from "@/constants/app";
+import { CAS } from "@/types/cas";
+import { CurrencyCode, CurrencySymbol } from "@/types/currency";
 import { Column, RowData } from "@tanstack/react-table";
-import { UOM } from "constants/app";
 import { CSSProperties } from "react";
-import { CAS } from "types/cas";
-import { CurrencyCode, CurrencySymbol } from "types/currency";
 /**
  * Unit of measurement type
  */
@@ -340,3 +340,16 @@ export interface UOMAliases {
  * Awaitable type
  */
 export type Awaitable<T> = T | Promise<T>;
+
+/**
+ * HTML response type
+ */
+export type HTMLResponse = Response & {
+  /** Text content of the response */
+  text: () => Promise<string>;
+};
+
+/**
+ * JSON response type
+ */
+export type JSONResponse = Response;

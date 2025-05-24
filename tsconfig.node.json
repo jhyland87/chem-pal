@@ -16,23 +16,11 @@
     "skipLibCheck": true,
     "allowJs": true,
     "esModuleInterop": true,
-    "baseUrl": "./src",
+    "baseUrl": "./",
     "paths": {
-      "types/*": [
-        "./types/*"
+      "@/*": [
+        "./src/*"
       ],
-      "types": [
-        "./types/types"
-      ],
-      "constants/*": [
-        "./constants/*"
-      ],
-      "icons/*": [
-        "./assets/icons/*"
-      ],
-      "helpers/*": [
-        "./helpers/*"
-      ]
     },
     /* Bundler mode */
     //"moduleResolution": "bundler",

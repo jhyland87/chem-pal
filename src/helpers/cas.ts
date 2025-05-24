@@ -1,5 +1,5 @@
-import { CAS_REGEX } from "constants/app";
-import { CAS } from "types/cas";
+import { CAS_REGEX } from "@/constants/app";
+import { CAS } from "@/types/cas";
 
 /**
  * Validates a CAS (Chemical Abstracts Service) number.

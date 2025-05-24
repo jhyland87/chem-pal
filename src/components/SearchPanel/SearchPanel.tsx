@@ -1,4 +1,4 @@
-import { ColumnFiltersState } from "@tanstack/react-table";
+import { type ColumnFiltersState } from "@tanstack/react-table";
 import { useState } from "react";
 import DetailsContainer from "./DetailsContainer";
 import ResultsTable from "./ResultsTable";

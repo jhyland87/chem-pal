@@ -1,8 +1,8 @@
+import { useAppContext } from "@/context";
+import { delayAction } from "@/helpers/utils";
+import { type HelpTooltipProps } from "@/types/props";
 import Tooltip from "@mui/material/Tooltip";
-import { delayAction } from "helpers/utils";
 import { MouseEvent, useEffect, useState } from "react";
-import { type HelpTooltipProps } from "types/props";
-import { useAppContext } from "../context";
 
 /**
  * A tooltip component that displays help text with customizable timing and styling.

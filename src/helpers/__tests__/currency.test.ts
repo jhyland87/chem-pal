@@ -1,11 +1,11 @@
-import { CurrencySymbol, ExchangeRateResponse } from "types/currency";
 import {
   getCurrencyCodeFromSymbol,
   getCurrencyRate,
   getCurrencySymbol,
   parsePrice,
   toUSD,
-} from "../currency";
+} from "@/helpers/currency";
+import type { CurrencySymbol, ExchangeRateResponse } from "@/types/currency";
 
 describe("getCurrencySymbol", () => {
   const testData = {

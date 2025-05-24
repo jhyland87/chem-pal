@@ -1,5 +1,5 @@
-import { UOM } from "constants/app";
-import { type Product } from "types";
+import { UOM } from "@/constants/app";
+import { type Product } from "@/types/types";
 import SupplierBase from "../supplierBase";
 
 // Mock implementation of SupplierBase for testing

@@ -1,5 +1,5 @@
-import { CAS_REGEX } from "constants/app";
-import { findCAS, isCAS } from "../cas";
+import { CAS_REGEX } from "@/constants/app";
+import { findCAS, isCAS } from "@/helpers/cas";
 describe("CAS_REGEX", () => {
   it("should be a valid regex", () => expect(CAS_REGEX).toBeInstanceOf(RegExp));
 });

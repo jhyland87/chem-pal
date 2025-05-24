@@ -1,4 +1,4 @@
-import { delayAction, deserialize, firstMap, md5sum, serialize, sleep } from "../utils";
+import { delayAction, deserialize, firstMap, md5sum, serialize, sleep } from "@/helpers/utils";
 
 describe("md5sum", () => {
   it("should hash strings correctly", () => {

@@ -2,12 +2,12 @@
  * Abstract base class for WooCommerce suppliers that implements product fetching functionality.
  * Extends the base supplier class and provides WooCommerce-specific implementation.
  */
-import { findCAS } from "helpers/cas";
-import { ProductBuilder } from "helpers/productBuilder";
-import { parseQuantity } from "helpers/quantity";
-import { firstMap } from "helpers/utils";
-import type { Product } from "types";
-import type { ProductVariant, SearchResponse, SearchResponseItem } from "types/woocommerce";
+import { findCAS } from "@/helpers/cas";
+import { ProductBuilder } from "@/helpers/productBuilder";
+import { parseQuantity } from "@/helpers/quantity";
+import { firstMap } from "@/helpers/utils";
+import type { Product } from "@/types/types";
+import type { ProductVariant, SearchResponse, SearchResponseItem } from "@/types/woocommerce";
 import SupplierBase from "./supplierBase";
 
 /**

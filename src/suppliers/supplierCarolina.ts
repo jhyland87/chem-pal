@@ -1,8 +1,7 @@
-import { parsePrice } from "helpers/currency";
-import { ProductBuilder } from "helpers/productBuilder";
-import { isQuantityObject, parseQuantity } from "helpers/quantity";
-import { firstMap } from "helpers/utils";
-import type { Product } from "types";
+import { parsePrice } from "@/helpers/currency";
+import { ProductBuilder } from "@/helpers/productBuilder";
+import { isQuantityObject, parseQuantity } from "@/helpers/quantity";
+import { firstMap } from "@/helpers/utils";
 import {
   type ATGResponse,
   type ContentFolder,
@@ -13,7 +12,8 @@ import {
   type SearchParams,
   type SearchResponse,
   type SearchResult,
-} from "types/carolina";
+} from "@/types/carolina";
+import type { Product } from "@/types/types";
 import SupplierBase from "./supplierBase";
 
 /**
@@ -481,13 +481,22 @@ export default class SupplierCarolina
       casNumber = specifications.stringValue;
     }
 
-    const builder = new ProductBuilder(this._baseURL);
-    return builder
+    let builder = new ProductBuilder(this._baseURL)
       .setBasicInfo(atgResponse.displayName, atgResponse.canonicalUrl, this.supplierName)
       .setPricing(productPrice.price, productPrice.currencyCode, productPrice.currencySymbol)
       .setQuantity(quantity.quantity, quantity.uom)
       .setDescription(atgResponse.shortDescription)
-      .setCAS(casNumber || "")
-      .build();
+      .setCAS(casNumber || "");
+
+    builder = builder.addVariants([
+      {
+        title: "100g",
+        price: productPrice.price,
+        quantity: 100,
+        uom: "g",
+      },
+    ]);
+
+    return builder.build();
   }
 }

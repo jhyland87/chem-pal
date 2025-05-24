@@ -1,13 +1,13 @@
-import { toUSD } from "helpers/currency";
-import { ProductBuilder } from "helpers/productBuilder";
-import { toBaseQuantity } from "helpers/quantity";
+import { toUSD } from "@/helpers/currency";
+import { ProductBuilder } from "@/helpers/productBuilder";
+import { toBaseQuantity } from "@/helpers/quantity";
 
 // Mock the currency and quantity helper functions
-jest.mock("helpers/currency", () => ({
+jest.mock("@/helpers/currency", () => ({
   toUSD: jest.fn(),
 }));
 
-jest.mock("helpers/quantity", () => ({
+jest.mock("@/helpers/quantity", () => ({
   toBaseQuantity: jest.fn(),
 }));
 

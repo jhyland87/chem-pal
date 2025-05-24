@@ -1,12 +1,12 @@
+import { useAppContext } from "@/context";
+import { type ProductTableProps } from "@/types/props";
+import { type Product } from "@/types/types";
+import { implementCustomMethods } from "@/utils/tanstack";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
-import { Column, flexRender, Row } from "@tanstack/react-table";
+import { type Column, flexRender, type Row } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
 import { CSSProperties, Fragment, ReactElement, useEffect, useState } from "react";
-import { type ProductTableProps } from "types/props";
-import { type Product } from "types/types";
-import { useAppContext } from "../../context";
-import { implementCustomMethods } from "../../utils/tanstack";
 import LoadingBackdrop from "../LoadingBackdrop";
 import { useResultsTable } from "./hooks/useResultsTable";
 import { useSearch } from "./hooks/useSearch";

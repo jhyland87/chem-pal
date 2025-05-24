@@ -1,3 +1,6 @@
+import { type UseResultsTableProps } from "@/types/props";
+import { type Product } from "@/types/types";
+import { implementCustomMethods } from "@/utils/tanstack";
 import {
   ColumnDef,
   getCoreRowModel,
@@ -8,9 +11,6 @@ import {
   Row,
   useReactTable,
 } from "@tanstack/react-table";
-import { Product } from "types";
-import type { UseResultsTableProps } from "types/props";
-import { implementCustomMethods } from "../../../utils/tanstack";
 import TableColumns from "../TableColumns";
 
 export function useResultsTable({

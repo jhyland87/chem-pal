@@ -1,7 +1,7 @@
 //import type { ExchangeRateResponse, ParsedPrice } from "types";
-import { CURRENCY_CODE_MAP } from "constants/currency";
+import { CURRENCY_CODE_MAP } from "@/constants/currency";
+import type { CurrencyCode, CurrencySymbol, ParsedPrice } from "@/types/currency";
 import { LRUCache } from "lru-cache";
-import type { CurrencyCode, CurrencySymbol, ParsedPrice } from "types/currency";
 
 /**
  * LRU (Least Recently Used) cache for storing currency exchange rates.

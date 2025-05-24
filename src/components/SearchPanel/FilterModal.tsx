@@ -1,13 +1,13 @@
+import type { FilterVariantComponentProps, FilterVariantInputProps } from "@/types/props";
+import { type CustomColumn, type Product } from "@/types/types";
 import { Button, Typography } from "@mui/material";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import Grid from "@mui/material/Grid";
 import Modal from "@mui/material/Modal";
 import { type SelectChangeEvent } from "@mui/material/Select";
-import { Table } from "@tanstack/react-table";
+import { type Table } from "@tanstack/react-table";
 import { ComponentType, useState } from "react";
-import { CustomColumn, Product } from "types";
-import { FilterVariantComponentProps, FilterVariantInputProps } from "types/props";
 import "./FilterModal.scss";
 import ColumnVisibilitySelect from "./Inputs/ColumnVisibilitySelect";
 import RangeColumnFilter from "./Inputs/RangeColumnFilter";

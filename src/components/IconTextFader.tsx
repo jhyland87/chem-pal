@@ -1,6 +1,6 @@
+import type { IconTextFaderProps } from "@/types/props";
 import Collapse from "@mui/material/Collapse";
 import { useEffect, useState } from "react";
-import type { IconTextFaderProps } from "types/props";
 
 /**
  * IconTextFader component that smoothly transitions between an icon and text.

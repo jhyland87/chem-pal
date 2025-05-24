@@ -29,6 +29,7 @@
     "@tanstack/react-table": "^8.21.3",
     "axios": "^1.9.0",
     "chance": "^1.1.12",
+    "cheerio": "^1.0.0",
     "classnames": "^2.5.1",
     "content-type": "^1.0.5",
     "currency.js": "^2.0.4",

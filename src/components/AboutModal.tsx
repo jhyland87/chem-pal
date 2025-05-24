@@ -1,3 +1,5 @@
+import GitHubIcon from "@/assets/icons/GitHubIcon";
+import { default as Link } from "@/components/TabLink";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
@@ -6,9 +8,7 @@ import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { styled, type Theme } from "@mui/material/styles";
-import GitHubIcon from "icons/GitHubIcon";
 import "./AboutModal.scss";
-import { default as Link } from "./TabLink";
 
 /**
  * Styled Paper component for contributor items.

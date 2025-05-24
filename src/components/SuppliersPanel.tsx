@@ -1,3 +1,5 @@
+import { useAppContext } from "@/context";
+import SupplierFactory from "@/suppliers/supplierFactory";
 import Avatar from "@mui/material/Avatar";
 import Checkbox from "@mui/material/Checkbox";
 import List from "@mui/material/List";
@@ -5,8 +7,6 @@ import ListItem from "@mui/material/ListItem";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
-import { useAppContext } from "../context";
-import SupplierFactory from "../suppliers/supplierFactory";
 
 /**
  * SuppliersPanel component that displays a list of available suppliers with toggle functionality.

@@ -1,3 +1,4 @@
+import { useAppContext } from "@/context";
 import Button from "@mui/material/Button";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import Divider from "@mui/material/Divider";
@@ -17,7 +18,6 @@ import Switch from "@mui/material/Switch";
 import TextField from "@mui/material/TextField";
 import { ChangeEvent, MouseEvent } from "react";
 import { currencies, locations } from "../../config.json";
-import { useAppContext } from "../context";
 const inputStyle = {
   width: 120,
   size: "small",

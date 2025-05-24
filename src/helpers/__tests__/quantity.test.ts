@@ -1,5 +1,5 @@
-import { UOM_ALIASES } from "constants/app";
-import { parseQuantity, standardizeUom } from "../quantity";
+import { UOM_ALIASES } from "@/constants/app";
+import { parseQuantity, standardizeUom } from "@/helpers/quantity";
 
 describe("standardizeUom", () => {
   for (const [output, testCases] of Object.entries(UOM_ALIASES)) {

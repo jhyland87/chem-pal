@@ -4,8 +4,10 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider, useTheme } from "@mui/material/styles";
 import "./App.scss";
 //import { extensionId } from "../config.json";
+import { AppContext } from "@/context";
+import SupplierFactory from "@/suppliers/supplierFactory";
+import { Settings } from "@/types/types";
 import { useEffect, useState } from "react";
-import { Settings } from "types";
 import "./__mocks__/chromeStorageMock";
 import ErrorBoundary from "./components/ErrorBoundary";
 import FavoritesPanel from "./components/FavoritesPanel";
@@ -16,8 +18,6 @@ import SpeedDialMenu from "./components/SpeedDialMenu";
 import SuppliersPanel from "./components/SuppliersPanel";
 import TabHeader from "./components/TabHeader";
 import TabPanel from "./components/TabPanel";
-import { AppContext } from "./context";
-import SupplierFactory from "./suppliers/supplierFactory";
 import { darkTheme, lightTheme } from "./themes";
 
 /**

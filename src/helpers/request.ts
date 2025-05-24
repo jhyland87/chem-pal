@@ -1,5 +1,5 @@
+import type { CacheResponse, RequestHashObject, SerializedResponse } from "@/types/request";
 import * as contentType from "content-type";
-import type { CacheResponse, RequestHashObject, SerializedResponse } from "types/request";
 import { md5sum, serialize } from "./utils";
 
 /**

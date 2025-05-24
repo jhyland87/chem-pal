@@ -1,5 +1,5 @@
+import { type AppContextProps } from "@/types/props";
 import { createContext, useContext } from "react";
-import { type AppContextProps } from "types/props";
 //import "./types.d.ts";
 
 /**

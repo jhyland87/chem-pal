@@ -1,8 +1,8 @@
-import { ProductBuilder } from "helpers/productBuilder";
-import { parseQuantity } from "helpers/quantity";
-import { firstMap } from "helpers/utils";
-import type { Product, Variant } from "types";
-import type { ItemListing, QueryParams, SearchResponse } from "types/shopify";
+import { ProductBuilder } from "@/helpers/productBuilder";
+import { parseQuantity } from "@/helpers/quantity";
+import { firstMap } from "@/helpers/utils";
+import type { ItemListing, QueryParams, SearchResponse } from "@/types/shopify";
+import type { Product, Variant } from "@/types/types";
 import SupplierBase from "./supplierBase";
 
 // https://searchserverapi.com/getresults?

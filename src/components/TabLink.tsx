@@ -1,6 +1,6 @@
+import { type LinkProps } from "@/types/props";
 import Link from "@mui/material/Link";
 import { MouseEvent } from "react";
-import { LinkProps } from "types/props";
 
 // When the user clicks on a link in the table
 const handleResultClick = (event: MouseEvent<HTMLAnchorElement>) => {

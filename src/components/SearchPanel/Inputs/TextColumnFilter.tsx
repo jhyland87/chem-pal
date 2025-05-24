@@ -1,6 +1,6 @@
+import { type FilterVariantInputProps } from "@/types/props";
 import TextField from "@mui/material/TextField";
 import { ChangeEvent, useState } from "react";
-import { FilterVariantInputProps } from "types/props";
 import { StyledFormControlSelector } from "../../Styles";
 
 /**
@@ -9,8 +9,8 @@ import { StyledFormControlSelector } from "../../Styles";
  *
  * @component
  *
- * @param {FilterVariantInputProps} props - Component props
- * @param {CustomColumn<Product, unknown>} props.column - The column configuration
+ * @param props - Component props
+ * @param column - The column configuration
  *
  * @example
  * ```tsx
@@ -26,7 +26,7 @@ export default function TextColumnFilter({ column }: FilterVariantInputProps) {
    * Handles changes to the text filter input.
    * Updates the local state and triggers the column filter update with debouncing.
    *
-   * @param {ChangeEvent<HTMLInputElement>} event - The change event
+   * @param event - The change event
    */
   const handleColumnTextFilterChange = (event: ChangeEvent<HTMLInputElement>) => {
     const {

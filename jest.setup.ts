@@ -1,6 +1,6 @@
 // Import necessary modules
+import type { ChromeStorageItems } from "@/types/chromeStorage";
 import "@testing-library/jest-dom";
-import type { ChromeStorageItems } from "types/chromeStorage";
 import { promisify } from "util";
 
 // Initialize Chrome mock

@@ -1,5 +1,5 @@
-import { UOM, UOM_ALIASES } from "constants/app";
-import type { QuantityObject } from "types";
+import { UOM, UOM_ALIASES } from "@/constants/app";
+import type { QuantityObject } from "@/types/types";
 
 /**
  * Parses a quantity string into a structured object containing the numeric value and unit of measure.

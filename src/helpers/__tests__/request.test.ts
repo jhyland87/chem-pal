@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { getCachableResponse, getRequestHash } from "../request";
-import { serialize } from "../utils";
+import { getCachableResponse, getRequestHash } from "@/helpers/request";
+import { serialize } from "@/helpers/utils";
 
 describe("getRequestHash", () => {
   it("should generate correct hash for GET request without body", () => {

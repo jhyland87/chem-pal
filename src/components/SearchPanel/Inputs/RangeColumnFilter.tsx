@@ -1,11 +1,11 @@
-import type { SliderValueLabelProps } from "@mui/material";
+import { type FilterVariantInputProps } from "@/types/props";
+import { type SliderValueLabelProps } from "@mui/material";
 import Box from "@mui/material/Box";
 import FormControl from "@mui/material/FormControl";
 import Slider from "@mui/material/Slider";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
-import { type FilterVariantInputProps } from "types/props";
 import "./RangeColumnFilter.scss";
 
 /**
@@ -14,8 +14,7 @@ import "./RangeColumnFilter.scss";
  *
  * @component
  *
- * @param {FilterVariantInputProps} props - Component props
- * @param {CustomColumn<Product, unknown>} props.column - The column configuration
+ * @param props - Component props
  *
  * @example
  * ```tsx
@@ -28,9 +27,7 @@ export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
    *
    * @component
    *
-   * @param {SliderValueLabelProps} props - Props for the value label component
-   * @param {React.ReactNode} props.children - Child elements
-   * @param {number} props.value - Current slider value
+   * @param  props - Props for the value label component
    *
    * @returns {JSX.Element} Tooltip-wrapped value label
    */
@@ -57,8 +54,8 @@ export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
    * Handles changes to the range filter slider.
    * Updates the local state and triggers the column filter update with debouncing.
    *
-   * @param {Event} event - The change event
-   * @param {number[]} newValue - The new range values [min, max]
+   * @param  event - The change event
+   * @param newValue - The new range values [min, max]
    */
   const handleColumnFilterChange = (event: Event, newValue: number[]) => {
     setColumnFilterRange(newValue);

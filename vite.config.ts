@@ -37,10 +37,7 @@ export default ({ mode }: { mode: string }) => {
     },
     resolve: {
       alias: {
-        icons: path.resolve(__dirname, "./src/assets/icons"),
-        constants: path.resolve(__dirname, "./src/constants"),
-        helpers: path.resolve(__dirname, "./src/helpers"),
-        types: path.resolve(__dirname, "./src/types"),
+        "@": path.resolve(__dirname, "./src"),
       },
     },
     plugins: [

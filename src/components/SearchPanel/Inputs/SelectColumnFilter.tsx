@@ -1,10 +1,10 @@
+import { type FilterVariantInputProps } from "@/types/props";
 import { useTheme, type SelectChangeEvent, type Theme } from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Select from "@mui/material/Select";
 import { ChangeEvent, useState } from "react";
-import { FilterVariantInputProps } from "types/props";
 import { StyledFormControlSelector } from "../../Styles";
 
 /**
@@ -13,8 +13,7 @@ import { StyledFormControlSelector } from "../../Styles";
  *
  * @component
  *
- * @param {FilterVariantInputProps} props - Component props
- * @param {CustomColumn<Product, unknown>} props.column - The column configuration
+ * @param props - Component props
  *
  * @example
  * ```tsx
@@ -31,7 +30,7 @@ export default function SelectColumnFilter({ column }: FilterVariantInputProps) 
    * Handles changes to the select filter value.
    * Updates the local state and triggers the column filter update with debouncing.
    *
-   * @param {ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string[]>} event - The change event
+   * @param event - The change event
    */
   const handleColumnFilterValueChange = (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string[]>,
@@ -60,10 +59,10 @@ export default function SelectColumnFilter({ column }: FilterVariantInputProps) 
   /**
    * Returns the appropriate styles for a menu item based on whether it's selected.
    *
-   * @param {string} name - The option value
-   * @param {string[]} personName - Array of selected values
-   * @param {Theme} theme - The Material-UI theme
-   * @returns {Object} Style object with appropriate font weight
+   * @param name - The option value
+   * @param personName - Array of selected values
+   * @param theme - The Material-UI theme
+   * @returns Style object with appropriate font weight
    */
   function getStyles(name: string, personName: string[], theme: Theme) {
     return {
