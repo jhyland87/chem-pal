@@ -117,7 +117,7 @@ export default class SupplierCarolina
    */
   protected _isResponseOk(response: unknown): response is SearchResponse {
     if (!response || typeof response !== "object") {
-      console.error("_isResponseOk| Response is not an object:", response);
+      this._logger.error("_isResponseOk| Response is not an object:", response);
       return false;
     }
 
@@ -125,28 +125,31 @@ export default class SupplierCarolina
       const _response = response as Partial<SearchResponse>;
 
       if (_response.responseStatusCode !== 200) {
-        console.error("_isResponseOk| Invalid response status code:", _response.responseStatusCode);
+        this._logger.error(
+          "_isResponseOk| Invalid response status code:",
+          _response.responseStatusCode,
+        );
         return false;
       }
 
       if (!("@type" in _response)) {
-        console.error("_isResponseOk| Missing @type property");
+        this._logger.error("_isResponseOk| Missing @type property");
         return false;
       }
 
       if (!("contents" in _response)) {
-        console.error("_isResponseOk| Missing contents property");
+        this._logger.error("_isResponseOk| Missing contents property");
         return false;
       }
 
       if (typeof _response.contents !== "object") {
-        console.error("_isResponseOk| Contents is not an object:", typeof _response.contents);
+        this._logger.error("_isResponseOk| Contents is not an object:", typeof _response.contents);
         return false;
       }
 
       return true;
     } catch (error) {
-      console.error("_isResponseOk| Error validating response:", error);
+      this._logger.error("_isResponseOk| Error validating response:", error);
       return false;
     }
   }
@@ -158,38 +161,41 @@ export default class SupplierCarolina
    */
   protected _isValidSearchResponse(response: unknown): response is SearchResponse {
     if (typeof response !== "object" || response === null) {
-      console.error("_isValidSearchResponse| Response is not an object:", response);
+      this._logger.error("_isValidSearchResponse| Response is not an object:", response);
       return false;
     }
 
     const requiredProps = {
       contents: (val: unknown) => {
         if (typeof val !== "object" || val === null) {
-          console.error("_isValidSearchResponse| Contents is not an object:", val);
+          this._logger.error("_isValidSearchResponse| Contents is not an object:", val);
           return false;
         }
         const contents = val as Record<string, unknown>;
 
         if (!Array.isArray(contents.ContentFolderZone)) {
-          console.error(
+          this._logger.error(
             "_isValidSearchResponse| ContentFolderZone is not an array:",
             contents.ContentFolderZone,
           );
           return false;
         }
         if (contents.ContentFolderZone.length === 0) {
-          console.error("_isValidSearchResponse| ContentFolderZone is empty");
+          this._logger.error("_isValidSearchResponse| ContentFolderZone is empty");
           return false;
         }
 
         const folder = contents.ContentFolderZone[0] as Record<string, unknown>;
         if (!Array.isArray(folder.childRules)) {
-          console.error("_isValidSearchResponse| childRules is not an array:", folder.childRules);
+          this._logger.error(
+            "_isValidSearchResponse| childRules is not an array:",
+            folder.childRules,
+          );
           return false;
         }
 
         if (folder.childRules.length === 0) {
-          console.error("_isValidSearchResponse| childRules is empty");
+          this._logger.error("_isValidSearchResponse| childRules is empty");
           return false;
         }
 
@@ -199,7 +205,7 @@ export default class SupplierCarolina
       responseStatusCode: (val: unknown) => {
         const isValid = val === 200;
         if (!isValid) {
-          console.error("_isValidSearchResponse| Invalid response status code:", val);
+          this._logger.error("_isValidSearchResponse| Invalid response status code:", val);
         }
         return isValid;
       },
@@ -208,13 +214,13 @@ export default class SupplierCarolina
     return Object.entries(requiredProps).every(([key, validator]) => {
       const value = (response as Record<string, unknown>)[key];
       if (value === undefined) {
-        console.error(`_isValidSearchResponse| Missing required property: ${key}`);
+        this._logger.error(`_isValidSearchResponse| Missing required property: ${key}`);
         return false;
       }
       if (typeof validator === "string") {
         const isValid = typeof value === validator;
         if (!isValid) {
-          console.error(
+          this._logger.error(
             `_isValidSearchResponse| Invalid type for ${key}, expected ${validator}, got ${typeof value}`,
           );
         }
@@ -237,7 +243,7 @@ export default class SupplierCarolina
     });
 
     if (!this._isResponseOk(response)) {
-      console.warn("Response status:", response);
+      this._logger.warn("Response status:", response);
       return;
     }
 
@@ -254,19 +260,19 @@ export default class SupplierCarolina
   protected _extractSearchResults(response: unknown): SearchResult[] {
     try {
       if (!this._isValidSearchResponse(response)) {
-        console.error("Invalid response structure");
+        this._logger.error("Invalid response structure");
         return [];
       }
 
       const contentFolder = response.contents.ContentFolderZone[0];
       if (!contentFolder?.childRules?.[0]?.ContentRuleZone) {
-        console.error("No content rules found");
+        this._logger.error("No content rules found");
         return [];
       }
 
       const pageContent = contentFolder.childRules[0].ContentRuleZone[0];
       if (!pageContent?.contents?.MainContent) {
-        console.error("No MainContent found");
+        this._logger.error("No MainContent found");
         return [];
       }
 
@@ -278,7 +284,7 @@ export default class SupplierCarolina
       );
 
       if (!pluginSlotContainer?.contents?.ContentFolderZone) {
-        console.error("No Products - Search folder found");
+        this._logger.error("No Products - Search folder found");
         return [];
       }
 
@@ -287,7 +293,7 @@ export default class SupplierCarolina
       );
 
       if (!productsFolder?.childRules?.[0]?.ContentRuleZone) {
-        console.error("No content rules in Products folder");
+        this._logger.error("No content rules in Products folder");
         return [];
       }
 
@@ -301,13 +307,13 @@ export default class SupplierCarolina
       );
 
       if (!resultsContainer) {
-        console.error("No results container found");
+        this._logger.error("No results container found");
         return [];
       }
 
       return resultsContainer.results.filter(this._isSearchResultItem);
     } catch (error) {
-      console.error("Error extracting search results:", error);
+      this._logger.error("Error extracting search results:", error);
       return [];
     }
   }
@@ -317,7 +323,7 @@ export default class SupplierCarolina
    */
   protected _isSearchResultItem(result: unknown): result is SearchResult {
     if (typeof result !== "object" || result === null) {
-      console.error("_isSearchResultItem| Result is not an object:", result);
+      this._logger.error("_isSearchResultItem| Result is not an object:", result);
       return false;
     }
 
@@ -337,12 +343,12 @@ export default class SupplierCarolina
     const hasRequiredProps = Object.entries(requiredProps).every(([key, expectedType]) => {
       const item = result as Record<string, unknown>;
       if (!(key in item)) {
-        console.error(`_isSearchResultItem| Missing property: ${key}`);
+        this._logger.error(`_isSearchResultItem| Missing property: ${key}`);
         return false;
       }
       const actualType = typeof item[key];
       if (actualType !== expectedType) {
-        console.error(
+        this._logger.error(
           `_isSearchResultItem| Invalid type for ${key}, expected ${expectedType}, got ${actualType}`,
         );
         return false;
@@ -536,7 +542,7 @@ export default class SupplierCarolina
 
       return atgResponse.response.response;
     } catch (error) {
-      console.error("Error extracting ATG response:", error);
+      this._logger.error("Error extracting ATG response:", error);
       return null;
     }
   }

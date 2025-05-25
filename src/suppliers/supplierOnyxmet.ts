@@ -1,7 +1,3 @@
-/**
- * Abstract base class for WooCommerce suppliers that implements product fetching functionality.
- * Extends the base supplier class and provides WooCommerce-specific implementation.
- */
 import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
@@ -80,6 +76,7 @@ export default class SupplierOnyxmet
    * to extract basic product information.
    *
    * @param query - The search term to query products for
+   * @param limit - The maximum number of results to query for
    * @returns Promise resolving to an array of partial product objects or void if search fails
    *
    * @example
@@ -92,26 +89,29 @@ export default class SupplierOnyxmet
    * }
    * ```
    */
-  protected async _queryProducts(query: string): Promise<Maybe<Partial<Product>[]>> {
+  protected async _queryProducts(
+    query: string,
+    limit: number = this._limit,
+  ): Promise<Maybe<Partial<Product>[]>> {
     localStorage.setItem("display", "list");
 
-    console.log("query:", query);
+    this._logger.debug("query:", query);
 
     const searchResponse = await this._httpGetHtml({
       path: "/storefront/index.php?route=product/search",
       params: {
         search: query,
         route: "product/search",
-        limit: this._limit,
+        limit,
       },
     });
 
     if (!searchResponse) {
-      console.error("No search response");
+      this._logger.error("No search response");
       return;
     }
 
-    console.log("searchResponse:", searchResponse);
+    this._logger.debug("searchResponse:", searchResponse);
 
     const $ = cheerio.load(searchResponse);
 
@@ -119,7 +119,7 @@ export default class SupplierOnyxmet
 
     //const results: Partial<Product>[] = [];
 
-    console.log("Loudwolf results:", $elements);
+    this._logger.debug("Loudwolf results:", $elements);
 
     return $elements
       .map((index, element) => {
@@ -127,7 +127,7 @@ export default class SupplierOnyxmet
         const href = $(element).find("div.caption h4 a").attr("href");
 
         if (href === undefined) {
-          console.error("No URL for product");
+          this._logger.error("No URL for product");
           return;
         }
 
@@ -136,7 +136,7 @@ export default class SupplierOnyxmet
         const id = url.searchParams.get("product_id");
 
         if (id === null) {
-          console.error("No ID for product");
+          this._logger.error("No ID for product");
           return;
         }
 
@@ -178,15 +178,15 @@ export default class SupplierOnyxmet
    * ```
    */
   protected async _getProductData(product: Partial<Product>): Promise<Maybe<Partial<Product>>> {
-    console.log("Querying data for partialproduct:", product);
+    this._logger.debug("Querying data for partialproduct:", product);
 
     if ("url" in product === false || typeof product.url !== "string") {
-      console.error("No URL for product");
+      this._logger.error("No URL for product");
       return;
     }
 
     if ("title" in product === false || typeof product.title !== "string") {
-      console.error("No title for product");
+      this._logger.error("No title for product");
       return;
     }
 
@@ -201,11 +201,11 @@ export default class SupplierOnyxmet
     });
 
     if (!productResponse) {
-      console.error("No product response");
+      this._logger.warn("No product response");
       return;
     }
 
-    console.log("productResponse:", productResponse);
+    this._logger.debug("productResponse:", productResponse);
 
     const $ = cheerio.load(productResponse);
     const $content = $("#content");

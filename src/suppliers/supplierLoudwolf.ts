@@ -1,7 +1,3 @@
-/**
- * Abstract base class for WooCommerce suppliers that implements product fetching functionality.
- * Extends the base supplier class and provides WooCommerce-specific implementation.
- */
 import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
@@ -10,7 +6,6 @@ import * as cheerio from "cheerio";
 import chunk from "lodash/chunk";
 import SupplierBase from "./supplierBase";
 
-//type CheerioElement = cheerio.Cheerio<Element>;
 /**
  * Supplier implementation for Loudwolf chemical supplier.
  * Extends the base supplier class and provides Loudwolf-specific implementation
@@ -80,6 +75,7 @@ export default class SupplierLoudwolf
    * to extract basic product information.
    *
    * @param query - The search term to query products for
+   * @param limit - The maximum number of results to query for
    * @returns Promise resolving to an array of partial product objects or void if search fails
    *
    * @example
@@ -92,7 +88,10 @@ export default class SupplierLoudwolf
    * }
    * ```
    */
-  protected async _queryProducts(query: string): Promise<Maybe<Partial<Product>[]>> {
+  protected async _queryProducts(
+    query: string,
+    limit: number = this._limit,
+  ): Promise<Maybe<Partial<Product>[]>> {
     localStorage.setItem("display", "list");
 
     this._logger.log("query:", query);
@@ -102,7 +101,7 @@ export default class SupplierLoudwolf
       params: {
         search: query,
         route: "product/search",
-        limit: this._limit,
+        limit,
       },
     });
 

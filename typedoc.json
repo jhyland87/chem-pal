@@ -27,6 +27,7 @@
   "darkHighlightTheme": "github-dark-dimmed",
   "collapseInternalModule": true,
   "additionalModuleSources": [],
+  "warnOnUnstableDtLink": false,
   "cleanOutputDir": true,
   "pretty": true,
   "groupReferencesByType": true,

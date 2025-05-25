@@ -90,6 +90,19 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
+   * Sets the formula for the product.
+   *
+   * @param formula - The formula to set
+   * @returns The builder instance for method chaining
+   */
+  setFormula(formula?: string): ProductBuilder<T> {
+    if (formula && typeof formula === "string" && formula.trim().length > 0) {
+      this._product.formula = formula;
+    }
+    return this;
+  }
+
+  /**
    * Sets the grade/purity level of the product.
    * Only sets the grade if a non-empty string is provided.
    *

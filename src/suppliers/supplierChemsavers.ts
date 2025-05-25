@@ -74,13 +74,18 @@ export default class SupplierChemsavers
    * @returns A type predicate indicating if the response is a valid ProductObject
    */
   protected _isValidSearchResponseItem(response: unknown): response is ProductObject {
-    if (typeof response !== "object" || response === null) return false;
+    if (typeof response !== "object" || response === null) {
+      this._logger.warn("Invalid search response item - No object found:", response);
+      return false;
+    }
     if (
       "document" in response === false ||
       response.document === undefined ||
       typeof response.document !== "object"
-    )
+    ) {
+      this._logger.warn("Invalid search response - No document object found:", response);
       return false;
+    }
 
     const requiredResultsProps = {
       /* eslint-disable */
@@ -100,7 +105,15 @@ export default class SupplierChemsavers
 
     return Object.entries(requiredResultsProps).every(([key, val]) => {
       const document = response.document as Record<string, unknown>;
-      return key in document && typeof document[key] === val;
+      if (key in document === false) {
+        this._logger.warn("Invalid search response item - No key found:", { key, response });
+        return false;
+      }
+      if (typeof document[key] !== val) {
+        this._logger.warn("Invalid search response item - Wrong type:", { key, response });
+        return false;
+      }
+      return true;
     });
   }
 
@@ -121,23 +134,37 @@ export default class SupplierChemsavers
   protected _isValidSearchResponse(response: unknown): response is SearchResponse {
     try {
       if (typeof response !== "object" || response === null || !("results" in response)) {
+        this._logger.warn("Invalid search response - No results object found:", response);
         return false;
       }
 
       const { results } = response as { results: unknown };
 
-      if (
-        !Array.isArray(results) ||
-        results.length === 0 ||
-        typeof results[0] !== "object" ||
-        !results[0] ||
-        !("hits" in results[0])
-      ) {
+      if (!Array.isArray(results) || results.length === 0) {
+        this._logger.warn("Invalid search response - results object is not an array:", {
+          response,
+          results,
+        });
         return false;
       }
 
-      // Flatten the nested hits array and validate each item
-      return results[0].hits.flat().every(this._isValidSearchResponseItem);
+      if (!("hits" in results[0]) || !Array.isArray(results[0].hits)) {
+        this._logger.warn("Invalid search response - No hits object found:", {
+          response,
+          results,
+          hits: results[0].hits,
+        });
+        return false;
+      }
+
+      // Validate each hit in the nested array structure
+      return results[0].hits.every((hitArray: unknown[]) => {
+        if (!Array.isArray(hitArray)) {
+          this._logger.warn("Invalid search response - hit is not an array:", hitArray);
+          return false;
+        }
+        return hitArray.every((hit) => this._isValidSearchResponseItem(hit));
+      });
     } catch {
       return false;
     }
@@ -146,6 +173,7 @@ export default class SupplierChemsavers
   /**
    * Executes a product search query and returns matching products
    * @param query - Search term to look for
+   * @param limit - The maximum number of results to query for
    * @returns Promise resolving to array of product objects or void if search fails
    * @example
    * ```typescript
@@ -157,33 +185,42 @@ export default class SupplierChemsavers
    * }
    * ```
    */
-  protected async _queryProducts(query: string): Promise<Maybe<ProductObject[]>> {
-    const body = this._makeRequestBody(query);
+  protected async _queryProducts(
+    query: string,
+    limit: number = this._limit,
+  ): Promise<Maybe<ProductObject[]>> {
+    try {
+      const body = this._makeRequestBody(query, limit);
 
-    const response: unknown = await this._httpPostJson({
-      path: `/multi_search`,
-      host: this._apiURL,
-      params: {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        "x-typesense-api-key": this._apiKey,
-      },
-      //headers: this._headers,
-      body,
-    });
+      const response: unknown = await this._httpPostJson({
+        path: `/multi_search`,
+        host: this._apiURL,
+        params: {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          "x-typesense-api-key": this._apiKey,
+        },
+        //headers: this._headers,
+        body,
+      });
 
-    console.log("Query response:", response);
+      this._logger.debug("Query response:", response);
 
-    if (!this._isValidSearchResponse(response)) {
-      console.log("Bad search response:", response);
+      if (!this._isValidSearchResponse(response)) {
+        this._logger.warn("Bad search response:", response);
+        return;
+      }
+
+      const products = mapDefined((hit) => {
+        if ("document" in hit === false) return undefined;
+        return hit.document as ProductObject;
+      }, response.results[0].hits.flat());
+
+      this._logger.debug("Mapped response objects:", response);
+      return products.slice(0, limit);
+    } catch (error) {
+      this._logger.error("Error querying products:", error);
       return;
     }
-
-    const products = mapDefined((hit) => {
-      if ("document" in hit === false) return undefined;
-      return hit.document as ProductObject;
-    }, response.results[0].hits.flat());
-
-    return products;
   }
 
   /**
@@ -233,7 +270,7 @@ export default class SupplierChemsavers
    * ```
    */
   protected async _getProductData(result: ProductObject): Promise<Partial<Product> | void> {
-    console.log("Products iterating over:", result);
+    this._logger.debug("Products iterating over:", result);
 
     const quantity = parseQuantity(result.name);
     if (quantity === undefined) return;

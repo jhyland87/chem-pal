@@ -44,7 +44,10 @@ export default abstract class SupplierBaseShopify
    * @param limit - The limit of products to return
    * @returns A promise that resolves when the products are queried
    */
-  protected async _queryProducts(query: string): Promise<ItemListing[]> {
+  protected async _queryProducts(
+    query: string,
+    limit: number = this._limit,
+  ): Promise<ItemListing[]> {
     // curl -s --get https://searchserverapi.com/getresults \
     //   --data-urlencode "api_key=8B7o0X1o7c" \
     //   --data-urlencode "q=sulf" \
@@ -72,7 +75,7 @@ export default abstract class SupplierBaseShopify
       /* eslint-disable */
       api_key: this._apiKey,
       q: query,
-      maxResults: this._limit,
+      maxResults: limit,
       startIndex: 0,
       items: true,
       pages: true,
@@ -82,11 +85,11 @@ export default abstract class SupplierBaseShopify
       vendors: true,
       tags: true,
       pageStartIndex: 0,
-      pagesMaxResults: this._limit,
+      pagesMaxResults: limit,
       categoryStartIndex: 0,
       categoriesMaxResults: 3,
       suggestionsMaxResults: 4,
-      vendorsMaxResults: this._limit,
+      vendorsMaxResults: limit,
       tagsMaxResults: 3,
       output: "json",
       _: new Date().getTime(),
@@ -104,7 +107,7 @@ export default abstract class SupplierBaseShopify
       throw new Error("Invalid search response");
     }
 
-    return searchRequest.items.slice(0, this._limit);
+    return searchRequest.items.slice(0, limit);
   }
 
   /**

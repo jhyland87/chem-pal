@@ -333,10 +333,13 @@ export default abstract class SupplierBaseWix
    * @param limit - The limit of products to return
    * @returns A promise that resolves when the products are queried
    */
-  protected async _queryProducts(query: string): Promise<ProductObject[]> {
+  protected async _queryProducts(
+    query: string,
+    limit: number = this._limit,
+  ): Promise<ProductObject[]> {
     const q = this._getGraphQLQuery();
 
-    const v = this._getGraphQLVariables(query);
+    const v = this._getGraphQLVariables(query, limit);
 
     const queryResponse = await this._httpGetJson({
       path: "_api/wix-ecommerce-storefront-web/api",
@@ -349,7 +352,7 @@ export default abstract class SupplierBaseWix
     });
 
     if (this._isValidSearchResponse(queryResponse) === false) {
-      throw new Error(`Invalid or empty Wix query response for ${this._query}`);
+      throw new Error(`Invalid or empty Wix query response for ${query}`);
     }
 
     return queryResponse.data.catalog.category.productsWithMetaData.list;

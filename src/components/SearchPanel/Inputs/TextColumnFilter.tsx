@@ -10,14 +10,15 @@ import { StyledFormControlSelector } from "../../Styles";
  * @component
  *
  * @param props - Component props
- * @param column - The column configuration
  *
  * @example
  * ```tsx
  * <TextColumnFilter column={column} />
  * ```
  */
-export default function TextColumnFilter({ column }: FilterVariantInputProps) {
+export default function TextColumnFilter(props: FilterVariantInputProps) {
+  const { column } = props;
+
   const [columnFilterValue, setColumnFilterValue] = useState<string>(
     column.getFilterValue() as string,
   );

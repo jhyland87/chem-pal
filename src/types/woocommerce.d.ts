@@ -109,6 +109,13 @@ export interface SearchResponseItem {
       value: string;
     }[];
   }[];
+
+  add_to_cart?: {
+    text?: string;
+    description?: string;
+    url?: string;
+  };
+
   /** Array of tag names associated with the product */
   tags?: string[];
 }

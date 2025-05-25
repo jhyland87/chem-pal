@@ -81,7 +81,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     if (controller) {
       this._controller = controller;
     } else {
-      console.debug("Made a new AbortController");
+      this._logger.debug("Made a new AbortController");
       this._controller = new AbortController();
     }
 
@@ -185,19 +185,22 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
         process.env.MODE !== "development" &&
         httpResponse.headers.get("ismockedresponse") !== "true"
       ) {
-        console.log("_httpGetHeaders| httpResponse:", httpResponse);
-        console.log("_httpGetHeaders| process.env:", process.env);
+        this._logger.debug("_httpGetHeaders| httpResponse:", httpResponse);
+        this._logger.debug("_httpGetHeaders| process.env:", process.env);
         const cacheData = getCachableResponse(requestObj, httpResponse);
-        console.log("_httpGetHeaders| cacheData:", cacheData);
+        this._logger.debug("_httpGetHeaders| cacheData:", cacheData);
       }
 
       return Object.fromEntries(httpResponse.headers.entries()) satisfies HeadersInit;
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
-        console.debug("Request was aborted", { error, signal: this._controller.signal });
+        this._logger.warn("Request was aborted", { error, signal: this._controller.signal });
         this._controller.abort();
       } else {
-        console.error("Error received during fetch:", { error, signal: this._controller.signal });
+        this._logger.error("Error received during fetch:", {
+          error,
+          signal: this._controller.signal,
+        });
       }
     }
   }
@@ -252,7 +255,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
 
     if (!this._isResponse(httpRequest)) {
       const badResponse = await (httpRequest as unknown as Response)?.text();
-      console.error("Invalid POST response: ", badResponse);
+      this._logger.error("Invalid POST response: ", badResponse);
       throw new TypeError(`Invalid POST response: ${httpRequest}`);
     }
 
@@ -262,10 +265,10 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
       process.env.MODE !== "development" &&
       httpRequest.headers.get("ismockedresponse") !== "true"
     ) {
-      console.log("_httpPost| httpRequest:", httpRequest);
-      console.log("_httpPost| process.env:", process.env);
+      this._logger.debug("_httpPost| httpRequest:", httpRequest);
+      this._logger.debug("_httpPost| process.env:", process.env);
       const cacheData = getCachableResponse(requestObj, httpRequest);
-      console.log("_httpPost| cacheData:", cacheData);
+      this._logger.debug("_httpPost| cacheData:", cacheData);
     }
 
     return httpRequest;
@@ -344,7 +347,9 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     try {
       // Check if the request has been aborted before proceeding
       if (this._controller.signal.aborted) {
-        console.debug("Request was aborted before fetch", { signal: this._controller.signal });
+        this._logger.warn("Request was aborted before fetch", {
+          signal: this._controller.signal,
+        });
         return;
       }
 
@@ -373,19 +378,22 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
         process.env.MODE !== "development" &&
         httpResponse.headers.get("ismockedresponse") !== "true"
       ) {
-        console.log("_httpGet| httpResponse:", httpResponse);
-        console.log("_httpGet| process.env:", process.env);
+        this._logger.debug("_httpGet| httpResponse:", httpResponse);
+        this._logger.debug("_httpGet| process.env:", process.env);
         const cacheData = getCachableResponse(requestObj, httpResponse);
-        console.log("_httpGet| cacheData:", cacheData);
+        this._logger.debug("_httpGet| cacheData:", cacheData);
       }
 
       return httpResponse as Response;
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
-        console.debug("Request was aborted", { error, signal: this._controller.signal });
+        this._logger.warn("Request was aborted", { error, signal: this._controller.signal });
         this._controller.abort();
       } else {
-        console.error("Error received during fetch:", { error, signal: this._controller.signal });
+        this._logger.error("Error received during fetch:", {
+          error,
+          signal: this._controller.signal,
+        });
       }
     }
   }
@@ -445,7 +453,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
 
     if (!this._isJsonResponse(httpRequest)) {
       const badResponse = await (httpRequest as unknown as Response)?.text();
-      console.error("Invalid HTTP GET response: ", badResponse);
+      this._logger.error("Invalid HTTP GET response: ", badResponse);
       throw new TypeError("Invalid HTTP GET response");
     }
 
@@ -474,13 +482,13 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   async *[Symbol.asyncIterator](): AsyncGenerator<T, void, unknown> {
     try {
       await this._setup();
-      const results = await this._queryProducts(this._query);
+      const results = await this._queryProducts(this._query, this._limit);
       this._queryResults = results || [];
 
-      console.log("this._queryResults:", this._queryResults);
+      this._logger.debug("this._queryResults:", this._queryResults);
 
       if (this._queryResults.length === 0) {
-        console.debug(`No query results found`);
+        this._logger.debug(`No query results found`);
         return;
       }
 
@@ -507,17 +515,17 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
               }
             }
           } catch (err) {
-            console.error(`Error found when yielding a product:`, err);
+            this._logger.error(`Error found when yielding a product:`, err);
             continue;
           }
         }
       }
     } catch (err) {
       if (this._controller.signal.aborted === true) {
-        console.debug("Search was aborted");
+        this._logger.warn("Search was aborted");
         return;
       }
-      console.error("ERROR in generator fn:", err);
+      this._logger.error("ERROR in generator fn:", err);
     }
   }
 
@@ -689,7 +697,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * }
    * ```
    */
-  protected abstract _queryProducts(query: string): Promise<Array<S> | void>;
+  protected abstract _queryProducts(query: string, limit: number): Promise<Array<S> | void>;
 
   /**
    * Parse the supplier-specific product data into the common Product type.

@@ -46,6 +46,18 @@ const validSearchResponse: SearchResponse = {
   ],
 };
 
+// Mock the API key and host
+jest.mock("../supplierChemsavers", () => {
+  const originalModule = jest.requireActual("../supplierChemsavers");
+  return {
+    __esModule: true,
+    default: class extends originalModule.default {
+      protected _apiKey = "test-api-key";
+      protected _apiURL = "test-api-host.com";
+    },
+  };
+});
+
 describe("SupplierChemsavers", () => {
   let supplier: SupplierChemsavers;
   let mockAbortController: AbortController;
@@ -148,6 +160,13 @@ describe("SupplierChemsavers", () => {
       const results = await supplier["_queryProducts"]("sodium chloride");
       expect(results).toHaveLength(1);
       expect(results?.[0]).toEqual(validProductObject);
+
+      // Verify the API call
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      const request = (global.fetch as jest.Mock).mock.calls[0][0] as Request;
+      expect(request.url).toContain("test-api-host.com/multi_search");
+      expect(request.url).toContain("x-typesense-api-key=test-api-key");
+      expect(request.method).toBe("POST");
     });
 
     it("should handle invalid response", async () => {
@@ -169,6 +188,13 @@ describe("SupplierChemsavers", () => {
           headers: { "content-type": "application/json" },
         }),
       );
+
+      const results = await supplier["_queryProducts"]("test");
+      expect(results).toBeUndefined();
+    });
+
+    it("should handle fetch rejection", async () => {
+      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error("Network error"));
 
       const results = await supplier["_queryProducts"]("test");
       expect(results).toBeUndefined();

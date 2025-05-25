@@ -34,20 +34,32 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
 
   // List of supplier class names to include in query results
   private _suppliers: Array<string>;
+
+  // Maximum number of results for each supplier
+  private _limit: number = 5;
+
+  // Logger instance
   private _logger: Logger;
 
   /**
    * Factory class for querying all suppliers.
    *
    * @param query - Value to query for
+   * @param limit - Maximum number of results for each supplier
    * @param controller - Fetch controller (can be used to terminate the query)
    * @param suppliers - Array of suppliers to query (empty is the same as querying all)
    */
-  constructor(query: string, controller: AbortController, suppliers: Array<string> = []) {
+  constructor(
+    query: string,
+    limit: number = this._limit,
+    controller: AbortController,
+    suppliers: Array<string> = [],
+  ) {
     this._logger = new Logger("SupplierFactory");
     this._logger.debug("initialized");
     this._query = query;
     this._logger.debug("Query:", this._query);
+    this._limit = limit;
     this._controller = controller;
     this._suppliers = suppliers;
     this._logger.debug("Suppliers:", this._suppliers);
@@ -101,10 +113,10 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
     } catch (err) {
       // Here to catch when the overall search fails
       if (this._controller.signal.aborted === true) {
-        console.debug("Search was aborted");
+        this._logger.warn("Search was aborted");
         return;
       }
-      console.error("ERROR in generator fn:", err);
+      this._logger.error("ERROR in generator fn:", err);
     }
   }
 
@@ -148,7 +160,7 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
               limit: number,
               controller: AbortController,
             ) => SupplierBase<unknown, Product>;
-            result.push(new SupplierClass(this._query, 10, this._controller));
+            result.push(new SupplierClass(this._query, this._limit, this._controller));
           }
           return result;
         },

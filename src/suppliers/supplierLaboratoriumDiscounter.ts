@@ -164,6 +164,7 @@ export default class SupplierLaboratoriumDiscounter
 
   /**
    * Constructs the query parameters for a product search request
+   * @param limit - The maximum number of results to query for
    * @returns Object containing all required search parameters
    * @example
    * ```typescript
@@ -171,9 +172,9 @@ export default class SupplierLaboratoriumDiscounter
    * // Returns: { limit: "10", format: "json" }
    * ```
    */
-  protected _makeQueryParams(): SearchParams {
+  protected _makeQueryParams(limit: number = this._limit): SearchParams {
     return {
-      limit: this._limit.toString(),
+      limit: limit.toString(),
       format: "json",
     };
   }
@@ -195,27 +196,47 @@ export default class SupplierLaboratoriumDiscounter
    * ```
    */
   protected _isResponseOk(response: unknown): response is SearchResponse {
-    if (typeof response !== "object" || response === null) return false;
+    if (typeof response !== "object" || response === null) {
+      this._logger.warn("Invalid response: - Non object", { response });
+      return false;
+    }
 
     // Check for required top-level properties
     if (!("page" in response && "request" in response && "collection" in response)) {
+      this._logger.warn(
+        "Invalid response: - Missing required properties: page, request or collection",
+        { response },
+      );
       return false;
     }
 
     const { page, request, collection } = response as SearchResponse;
 
-    // Validate page object
-    if (
-      typeof page !== "object" ||
-      !page ||
-      !(
-        "search" in page &&
-        "session_id" in page &&
-        "key" in page &&
-        "title" in page &&
-        "status" in page
-      )
-    ) {
+    if (typeof page !== "object" || !page) {
+      this._logger.warn("Invalid page object, missing required properties", { page });
+      return false;
+    }
+
+    if (typeof request !== "object" || !request) {
+      this._logger.warn("Invalid request object, missing required properties", { request });
+      return false;
+    }
+
+    if (typeof collection !== "object" || !collection) {
+      this._logger.warn("Invalid collection object, missing required properties", { collection });
+      return false;
+    }
+
+    const badProps = ["search", "session_id", "key", "title", "status"].filter((prop) => {
+      if (prop in page === false) {
+        this._logger.warn(`Invalid response, expected to find ${prop} in page`, { page });
+        return true;
+      }
+      return false;
+    });
+
+    if (badProps.length > 0) {
+      this._logger.warn("Invalid page object, missing required properties", { page });
       return false;
     }
 
@@ -225,6 +246,9 @@ export default class SupplierLaboratoriumDiscounter
       !request ||
       !("url" in request && "method" in request && "get" in request && "device" in request)
     ) {
+      this._logger.warn("Invalid request object, missing required properties from request", {
+        request,
+      });
       return false;
     }
 
@@ -235,6 +259,9 @@ export default class SupplierLaboratoriumDiscounter
       !("products" in collection) ||
       typeof collection.products !== "object"
     ) {
+      this._logger.warn("Invalid collection object, missing required properties from collection", {
+        collection,
+      });
       return false;
     }
 
@@ -245,6 +272,7 @@ export default class SupplierLaboratoriumDiscounter
   /**
    * Executes a product search query and returns matching products
    * @param query - Search term to look for
+   * @param limit - The maximum number of results to query for
    * @returns Promise resolving to array of product objects or void if search fails
    * @example
    * ```typescript
@@ -256,10 +284,13 @@ export default class SupplierLaboratoriumDiscounter
    * }
    * ```
    */
-  protected async _queryProducts(query: string): Promise<ProductObject[] | void> {
+  protected async _queryProducts(
+    query: string,
+    limit: number = this._limit,
+  ): Promise<ProductObject[] | void> {
     const params = this._makeQueryParams();
     if (!this._isValidSearchParams(params)) {
-      console.error("Invalid search parameters:", params);
+      this._logger.warn("Invalid search parameters:", params);
       return;
     }
 
@@ -269,11 +300,11 @@ export default class SupplierLaboratoriumDiscounter
     });
 
     if (!this._isResponseOk(response)) {
-      console.error("Bad search response:", response);
+      this._logger.warn("Bad search response:", response);
       return;
     }
 
-    return Object.values(response.collection.products);
+    return Object.values(response.collection.products).slice(0, limit);
   }
 
   /**
@@ -295,7 +326,7 @@ export default class SupplierLaboratoriumDiscounter
   protected async _getProductData(result: ProductObject): Promise<Partial<Product> | void> {
     try {
       if (!this._isProductObject(result)) {
-        console.error("Invalid product object:", result);
+        this._logger.warn("Invalid product object:", result);
         return;
       }
 
@@ -307,7 +338,7 @@ export default class SupplierLaboratoriumDiscounter
       ]);
 
       if (!isQuantityObject(quantity)) {
-        console.debug("Could not parse quantity from product:", {
+        this._logger.debug("Could not parse quantity from product:", {
           code: result.code,
           sku: result.sku,
           fulltitle: result.fulltitle,
@@ -324,7 +355,7 @@ export default class SupplierLaboratoriumDiscounter
         .setDescription(result.description || "")
         .build();
     } catch (error) {
-      console.error("Error processing product data:", error);
+      this._logger.error("Error processing product data:", error);
       return;
     }
   }

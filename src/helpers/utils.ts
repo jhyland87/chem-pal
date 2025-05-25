@@ -302,13 +302,18 @@ export async function delayAction(ms: number, action: () => void) {
  * ```
  */
 export function firstMap<T, R>(fn: (arg: T) => R | void, properties: T[]): R | void {
-  for (const prop of properties) {
-    const result = fn(prop);
-    if (result !== undefined && result !== null) {
-      return result;
+  try {
+    for (const prop of properties) {
+      const result = fn(prop);
+      if (result !== undefined && result !== null) {
+        return result;
+      }
     }
+    return undefined;
+  } catch (error) {
+    console.error("ERROR in firstMap:", error);
+    return undefined;
   }
-  return undefined;
 }
 
 /**
