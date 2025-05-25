@@ -85,8 +85,41 @@ describe("SupplierBaseWix", () => {
   describe("_isWixProduct", () => {
     it("should return true for valid Wix product", () => {
       const validProduct = {
-        price: 10.99,
-        name: "Test Product",
+        id: "839d44b3-9208-7939-203a-ee73dcfc1d5f",
+        options: [
+          {
+            id: "opt-20",
+            key: "Size",
+            title: "Size",
+            optionType: "DROP_DOWN",
+            selections: [
+              {
+                id: 1,
+                value: "25g",
+                description: "25g",
+                key: "25g",
+                inStock: null,
+              },
+            ],
+          },
+        ],
+        productItems: [
+          {
+            id: "3984a603-652d-4b58-be8d-836bf1301599",
+            optionsSelections: [4],
+            price: 217,
+            formattedPrice: "$217.00",
+          },
+        ],
+        productType: "physical",
+        price: 61,
+        sku: "",
+        isInStock: true,
+        urlPart: "n-methyliminodiacetic-acid-cas-4408-64-4",
+        formattedPrice: "$61.00",
+        name: "N-Methyliminodiacetic acid, CAS 4408-64-4",
+        description: "test",
+        brand: null,
       };
 
       expect(mockSupplier["_isWixProduct"](validProduct)).toBe(true);
@@ -241,7 +274,7 @@ describe("SupplierBaseWix", () => {
 
     it("should process product with valid data", async () => {
       const product: ProductObject = {
-        id: "1",
+        id: "9d44b3-9208-7939-203a-ee73dcfc1d5f",
         price: 10.99,
         formattedPrice: "$10.99",
         name: "Test Product",

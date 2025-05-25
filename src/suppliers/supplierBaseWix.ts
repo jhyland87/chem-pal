@@ -75,26 +75,150 @@ export default abstract class SupplierBaseWix
   }
 
   /**
-   * Typeguarding for the QueryResponse type object
-   * @param response - The response to check
-   * @returns True if the response is a Wix query response, false otherwise
+   * Typeguard for the QueryResponse type object
    */
   protected _isValidSearchResponse(response: unknown): response is QueryResponse {
-    if (typeof response !== "object" || response === null) return false;
+    if (typeof response !== "object" || response === null) {
+      return false;
+    }
 
-    return (
-      (response as QueryResponse).data?.catalog?.category?.productsWithMetaData?.list !== undefined
+    // Check for nested structure existence
+    if (
+      !("data" in response) ||
+      typeof response.data !== "object" ||
+      response.data === null ||
+      !("catalog" in response.data) ||
+      typeof response.data.catalog !== "object" ||
+      response.data.catalog === null ||
+      !("category" in response.data.catalog) ||
+      typeof response.data.catalog.category !== "object" ||
+      response.data.catalog.category === null ||
+      !("productsWithMetaData" in response.data.catalog.category) ||
+      typeof response.data.catalog.category.productsWithMetaData !== "object" ||
+      response.data.catalog.category.productsWithMetaData === null
+    ) {
+      return false;
+    }
+
+    const productsData = response.data.catalog.category.productsWithMetaData;
+
+    // Check required properties and their types
+    const requiredProps = {
+      totalCount: "number",
+      list: Array.isArray,
+    };
+
+    const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
+      if (typeof validator === "string") {
+        return (
+          key in productsData && typeof productsData[key as keyof typeof productsData] === validator
+        );
+      }
+      return key in productsData && validator((productsData as Record<string, unknown>)[key]);
+    });
+
+    if (!hasRequiredProps) return false;
+
+    // Check that list contains valid products
+    return (productsData as { list: unknown[] }).list.every((product: unknown) =>
+      this._isWixProduct(product),
     );
   }
 
   /**
-   * Typeguarding for the ProductObject type object
-   *
-   * @param product - The product to check
-   * @returns True if the product is a Wix product, false otherwise
+   * Type guard for ProductItem
+   */
+  protected _isProductItem(item: unknown): item is ProductItem {
+    if (typeof item !== "object" || item === null) {
+      return false;
+    }
+
+    const requiredProps = {
+      id: "string",
+      formattedPrice: "string",
+      price: "number",
+      optionsSelections: Array.isArray,
+    };
+
+    const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
+      if (typeof validator === "string") {
+        return key in item && typeof item[key as keyof typeof item] === validator;
+      }
+      return key in item && validator(item[key as keyof typeof item]);
+    });
+
+    if (!hasRequiredProps) return false;
+
+    // Check that optionsSelections is a non-empty array
+    return (item as ProductItem).optionsSelections.length > 0;
+  }
+
+  /**
+   * Type guard for ProductSelection
+   */
+  protected _isProductSelection(selection: unknown): selection is ProductSelection {
+    if (typeof selection !== "object" || selection === null) {
+      return false;
+    }
+
+    const requiredProps = {
+      id: (val: unknown) => typeof val === "string" || typeof val === "number",
+      value: "string",
+      description: "string",
+      key: "string",
+      inStock: (val: unknown) => typeof val === "boolean" || val === null,
+    };
+
+    return Object.entries(requiredProps).every(([key, validator]) => {
+      if (typeof validator === "string") {
+        return key in selection && typeof selection[key as keyof typeof selection] === validator;
+      }
+      return key in selection && validator(selection[key as keyof typeof selection]);
+    });
+  }
+
+  /**
+   * Type guard for ProductObject
    */
   protected _isWixProduct(product: unknown): product is ProductObject {
-    return typeof product === "object" && product !== null && "price" in product;
+    if (typeof product !== "object" || product === null) {
+      return false;
+    }
+
+    const requiredProps = {
+      price: "number",
+      formattedPrice: "string",
+      name: "string",
+      urlPart: "string",
+      productItems: Array.isArray,
+      options: Array.isArray,
+    };
+
+    const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
+      if (typeof validator === "string") {
+        return key in product && typeof product[key as keyof typeof product] === validator;
+      }
+      return key in product && validator(product[key as keyof typeof product]);
+    });
+
+    if (!hasRequiredProps) return false;
+
+    // Check product items
+    const productItems = (product as ProductObject).productItems;
+    if (!productItems.every((item) => this._isProductItem(item))) {
+      return false;
+    }
+
+    // Check options and selections if they exist
+    const options = (product as ProductObject).options;
+    if (
+      options.length > 0 &&
+      !options[0]?.selections?.every((selection) => this._isProductSelection(selection))
+    ) {
+      return false;
+    }
+
+    return true;
   }
 
   /**
@@ -238,32 +362,46 @@ export default abstract class SupplierBaseWix
    * @returns A promise that resolves to the product data or void if the product has no price
    */
   protected async _getProductData(product: ProductObject): Promise<Maybe<Partial<Product>>> {
+    if (!this._isWixProduct(product)) {
+      console.error("Invalid Wix product object:", product);
+      return;
+    }
+
     if (!product.price) {
       return;
     }
 
     // Generate an object with the products UUID and formatted price, with the option ID as the keys
     const productItems = Object.fromEntries(
-      product.productItems.map((item: ProductItem) => {
-        return [
-          item.optionsSelections[0],
-          {
-            ...parsePrice(item.formattedPrice),
-            id: item.id,
-            quantity: item.price,
-          },
-        ];
-      }),
+      product.productItems
+        .map((item: ProductItem) => {
+          if (!this._isProductItem(item)) {
+            console.warn("Invalid product item:", item);
+            return [];
+          }
+          return [
+            item.optionsSelections[0],
+            {
+              ...parsePrice(item.formattedPrice),
+              id: item.id,
+              quantity: item.price,
+            },
+          ];
+        })
+        .filter((entry) => entry.length > 0),
     );
 
     // Generate an object with the product quantity selections and the product selection ID
-    // as the primary keys (to associate with the above object)
     const productSelections = Object.fromEntries(
-      // I know the options is an array that could have more than one object, but it looks like it's
-      // always the first one (and I don't see a second one anyways)
-      product.options[0].selections.map((selection: ProductSelection) => {
-        return [selection.id, parseQuantity(selection.value)];
-      }),
+      product.options[0].selections
+        .map((selection: ProductSelection) => {
+          if (!this._isProductSelection(selection)) {
+            console.warn("Invalid product selection:", selection);
+            return [];
+          }
+          return [selection.id, parseQuantity(selection.value)];
+        })
+        .filter((entry) => entry.length > 0),
     );
 
     const productVariants = merge(productItems, productSelections);

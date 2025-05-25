@@ -29,6 +29,7 @@ class MockSupplier extends SupplierBase<{ id: string; title: string }, Product> 
       url: `/products/${productIndexObject.id}`,
       currencyCode: "USD",
       currencySymbol: "$",
+      supplier: this.supplierName,
     };
   }
 }
@@ -166,6 +167,7 @@ describe("SupplierBase", () => {
     it("should complete a partial product with required fields", async () => {
       const partialProduct = {
         title: "Test Product",
+        supplier: "Mock Supplier",
         price: 10.99,
         quantity: 1,
         uom: "ea" as UOM,
@@ -180,6 +182,7 @@ describe("SupplierBase", () => {
         expect.objectContaining({
           title: "Test Product",
           price: 10.99,
+          supplier: "Mock Supplier",
           quantity: 1,
           uom: "ea",
           url: "https://mock-supplier.com/products/123",
@@ -197,7 +200,7 @@ describe("SupplierBase", () => {
         // Missing required fields
       };
 
-      const result = await mockSupplier["_finishProduct"](invalidProduct);
+      const result = await mockSupplier["_finishProduct"](invalidProduct as Product);
       expect(result).toBeUndefined();
     });
   });

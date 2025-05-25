@@ -17,7 +17,8 @@ import {
 import SupplierBase from "./supplierBase";
 
 /**
- * Supplier implementation for Carolina Biological Supply Company.
+ * Implementation of the Carolina Biological Supply Company supplier.
+ * Provides product search and data extraction functionality for Carolina.com.
  *
  * Carolina.com uses Oracle ATG Commerce as their ecommerce platform which has a predictable
  * output format, though very bulky. But very parseable.
@@ -116,21 +117,36 @@ export default class SupplierCarolina
    */
   protected _isResponseOk(response: unknown): response is SearchResponse {
     if (!response || typeof response !== "object") {
-      console.error("Response is not an object");
+      console.error("_isResponseOk| Response is not an object:", response);
       return false;
     }
 
     try {
       const _response = response as Partial<SearchResponse>;
 
-      return (
-        _response.responseStatusCode === 200 &&
-        "@type" in _response &&
-        "contents" in _response &&
-        typeof _response.contents === "object"
-      );
+      if (_response.responseStatusCode !== 200) {
+        console.error("_isResponseOk| Invalid response status code:", _response.responseStatusCode);
+        return false;
+      }
+
+      if (!("@type" in _response)) {
+        console.error("_isResponseOk| Missing @type property");
+        return false;
+      }
+
+      if (!("contents" in _response)) {
+        console.error("_isResponseOk| Missing contents property");
+        return false;
+      }
+
+      if (typeof _response.contents !== "object") {
+        console.error("_isResponseOk| Contents is not an object:", typeof _response.contents);
+        return false;
+      }
+
+      return true;
     } catch (error) {
-      console.error("Error validating response:", error);
+      console.error("_isResponseOk| Error validating response:", error);
       return false;
     }
   }
@@ -141,40 +157,71 @@ export default class SupplierCarolina
    * @returns True if the response matches expected Carolina search response structure
    */
   protected _isValidSearchResponse(response: unknown): response is SearchResponse {
-    if (!response || typeof response !== "object") {
-      console.error("Response is not an object");
+    if (typeof response !== "object" || response === null) {
+      console.error("_isValidSearchResponse| Response is not an object:", response);
       return false;
     }
 
-    try {
-      const _response = response as Partial<SearchResponse>;
+    const requiredProps = {
+      contents: (val: unknown) => {
+        if (typeof val !== "object" || val === null) {
+          console.error("_isValidSearchResponse| Contents is not an object:", val);
+          return false;
+        }
+        const contents = val as Record<string, unknown>;
 
-      if (!_response.contents) {
-        console.error("Response missing contents");
-        return false;
-      }
-      if (!Array.isArray(_response.contents.ContentFolderZone)) {
-        console.error("ContentFolderZone is not an array");
-        return false;
-      }
-      if (_response.contents.ContentFolderZone.length === 0) {
-        console.error("ContentFolderZone is empty");
-        return false;
-      }
-      if (!_response.contents.ContentFolderZone[0].childRules) {
-        console.error("No child rules found");
-        return false;
-      }
-      if (!Array.isArray(_response.contents.ContentFolderZone[0].childRules)) {
-        console.error("Child rules is not an array");
-        return false;
-      }
+        if (!Array.isArray(contents.ContentFolderZone)) {
+          console.error(
+            "_isValidSearchResponse| ContentFolderZone is not an array:",
+            contents.ContentFolderZone,
+          );
+          return false;
+        }
+        if (contents.ContentFolderZone.length === 0) {
+          console.error("_isValidSearchResponse| ContentFolderZone is empty");
+          return false;
+        }
 
-      return true;
-    } catch (error) {
-      console.error("Error validating response:", error);
-      return false;
-    }
+        const folder = contents.ContentFolderZone[0] as Record<string, unknown>;
+        if (!Array.isArray(folder.childRules)) {
+          console.error("_isValidSearchResponse| childRules is not an array:", folder.childRules);
+          return false;
+        }
+
+        if (folder.childRules.length === 0) {
+          console.error("_isValidSearchResponse| childRules is empty");
+          return false;
+        }
+
+        return true;
+      },
+      "@type": "string",
+      responseStatusCode: (val: unknown) => {
+        const isValid = val === 200;
+        if (!isValid) {
+          console.error("_isValidSearchResponse| Invalid response status code:", val);
+        }
+        return isValid;
+      },
+    };
+
+    return Object.entries(requiredProps).every(([key, validator]) => {
+      const value = (response as Record<string, unknown>)[key];
+      if (value === undefined) {
+        console.error(`_isValidSearchResponse| Missing required property: ${key}`);
+        return false;
+      }
+      if (typeof validator === "string") {
+        const isValid = typeof value === validator;
+        if (!isValid) {
+          console.error(
+            `_isValidSearchResponse| Invalid type for ${key}, expected ${validator}, got ${typeof value}`,
+          );
+        }
+        return isValid;
+      }
+      return validator(value);
+    });
   }
 
   /**
@@ -266,47 +313,44 @@ export default class SupplierCarolina
   }
 
   /**
-   * Validates that an object matches the SearchResult interface structure
-   * @param result - Object to validate as a search result
-   * @returns Type predicate indicating if object is a valid SearchResult
-   * @example
-   * ```typescript
-   * const item = getSearchItem();
-   * if (this._isSearchResultItem(item)) {
-   *   // Process valid search result
-   *   console.log(item.productId, item.name);
-   * }
-   * ```
+   * Type guard for SearchResult
    */
   protected _isSearchResultItem(result: unknown): result is SearchResult {
-    if (!result || typeof result !== "object") {
+    if (typeof result !== "object" || result === null) {
+      console.error("_isSearchResultItem| Result is not an object:", result);
       return false;
     }
 
-    try {
+    const requiredProps = {
+      /* eslint-disable */
+      "product.productId": "string",
+      "product.productName": "string",
+      "product.shortDescription": "string",
+      itemPrice: "string",
+      "product.seoName": "string",
+      productUrl: "string",
+      productName: "string",
+      qtyDiscountAvailable: "boolean",
+      /* eslint-enable */
+    };
+
+    const hasRequiredProps = Object.entries(requiredProps).every(([key, expectedType]) => {
       const item = result as Record<string, unknown>;
+      if (!(key in item)) {
+        console.error(`_isSearchResultItem| Missing property: ${key}`);
+        return false;
+      }
+      const actualType = typeof item[key];
+      if (actualType !== expectedType) {
+        console.error(
+          `_isSearchResultItem| Invalid type for ${key}, expected ${expectedType}, got ${actualType}`,
+        );
+        return false;
+      }
+      return true;
+    });
 
-      const requiredStringProps = [
-        "product.productId",
-        "product.productName",
-        "product.shortDescription",
-        "itemPrice",
-        "product.seoName",
-        "productUrl",
-        "productName",
-      ];
-
-      const hasAllRequiredProps = requiredStringProps.every(
-        (prop) => prop in item && typeof item[prop] === "string",
-      );
-
-      const hasValidBoolean =
-        "qtyDiscountAvailable" in item && typeof item.qtyDiscountAvailable === "boolean";
-
-      return hasAllRequiredProps && hasValidBoolean;
-    } catch {
-      return false;
-    }
+    return hasRequiredProps;
   }
 
   /**
@@ -325,19 +369,54 @@ export default class SupplierCarolina
    * ```
    */
   protected _isValidProductResponse(obj: unknown): obj is ProductResponse {
-    if (!obj || typeof obj !== "object") {
+    if (typeof obj !== "object" || obj === null) {
+      console.error("_isValidProductResponse| Object is not an object:", obj);
       return false;
     }
 
     const response = obj as Partial<ProductResponse>;
 
-    if (!response.contents?.MainContent || !Array.isArray(response.contents.MainContent)) {
+    if (!response.contents?.MainContent) {
+      console.error("_isValidProductResponse| Missing contents.MainContent");
       return false;
     }
 
-    return !(
-      response.contents.MainContent.length === 0 || !response.contents.MainContent[0]?.atgResponse
-    );
+    if (!Array.isArray(response.contents.MainContent)) {
+      console.error(
+        "_isValidProductResponse| MainContent is not an array:",
+        response.contents.MainContent,
+      );
+      return false;
+    }
+
+    if (response.contents.MainContent.length === 0) {
+      console.error("_isValidProductResponse| MainContent array is empty");
+      return false;
+    }
+
+    const mainContent = response.contents.MainContent[0];
+    if (typeof mainContent !== "object" || mainContent === null) {
+      console.error(
+        "_isValidProductResponse| First MainContent item is not an object:",
+        mainContent,
+      );
+      return false;
+    }
+
+    if (!("atgResponse" in mainContent)) {
+      console.error("_isValidProductResponse| Missing atgResponse in MainContent");
+      return false;
+    }
+
+    if (typeof mainContent.atgResponse !== "object" || mainContent.atgResponse === null) {
+      console.error(
+        "_isValidProductResponse| atgResponse is not an object:",
+        mainContent.atgResponse,
+      );
+      return false;
+    }
+
+    return true;
   }
 
   /**
@@ -356,32 +435,73 @@ export default class SupplierCarolina
    * ```
    */
   protected _isATGResponse(obj: unknown): obj is ATGResponse {
-    if (!obj || typeof obj !== "object") {
+    if (typeof obj !== "object" || obj === null) {
+      console.error("_isATGResponse| Object is not an object:", obj);
       return false;
     }
 
     const response = obj as Partial<ATGResponse>;
 
-    if (typeof response.result !== "string" || response.result !== "success") {
-      return false;
-    }
+    const requiredProps = {
+      result: (val: unknown) => {
+        const isValid = val === "success";
+        if (!isValid) {
+          console.error("_isATGResponse| Invalid result value:", val);
+        }
+        return isValid;
+      },
+      response: (val: unknown) => {
+        if (typeof val !== "object" || val === null) {
+          console.error("_isATGResponse| Response is not an object:", val);
+          return false;
+        }
+        const innerResponse = (val as { response?: unknown }).response;
+        if (typeof innerResponse !== "object" || innerResponse === null) {
+          console.error("_isATGResponse| Inner response is not an object:", innerResponse);
+          return false;
+        }
 
-    if (!response.response?.response || typeof response.response.response !== "object") {
-      return false;
-    }
+        const requiredInnerProps = {
+          displayName: "string",
+          longDescription: "string",
+          shortDescription: "string",
+          product: "string",
+          dataLayer: "object",
+          canonicalUrl: "string",
+        };
 
-    const innerResponse = response.response.response;
+        return Object.entries(requiredInnerProps).every(([key, expectedType]) => {
+          const value = (innerResponse as Record<string, unknown>)[key];
+          if (value === undefined) {
+            console.error(`_isATGResponse| Missing inner property: ${key}`);
+            return false;
+          }
+          if (expectedType === "object") {
+            if (typeof value !== "object" || value === null) {
+              console.error(
+                `_isATGResponse| Invalid type for ${key}, expected object, got:`,
+                value,
+              );
+              return false;
+            }
+          } else if (typeof value !== expectedType) {
+            console.error(
+              `_isATGResponse| Invalid type for ${key}, expected ${expectedType}, got ${typeof value}`,
+            );
+            return false;
+          }
+          return true;
+        });
+      },
+    };
 
-    const requiredProps = [
-      "displayName",
-      "longDescription",
-      "shortDescription",
-      "product",
-      "dataLayer",
-      "canonicalUrl",
-    ];
-
-    return requiredProps.every((prop) => prop in innerResponse);
+    return Object.entries(requiredProps).every(([key, validator]) => {
+      if (!(key in response)) {
+        console.error(`_isATGResponse| Missing required property: ${key}`);
+        return false;
+      }
+      return validator((response as Record<string, unknown>)[key]);
+    });
   }
 
   /**

@@ -1,5 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json",
+  "extends": ["typedoc/tsdoc.json"],
   "tagDefinitions": [
     {
       "tagName": "@component",
@@ -7,26 +8,6 @@
     },
     {
       "tagName": "@todo",
-      "syntaxKind": "block"
-    },
-    {
-      "tagName": "@module",
-      "syntaxKind": "block"
-    },
-    {
-      "tagName": "@interface",
-      "syntaxKind": "block"
-    },
-    {
-      "tagName": "@type",
-      "syntaxKind": "block"
-    },
-    {
-      "tagName": "@category",
-      "syntaxKind": "block"
-    },
-    {
-      "tagName": "@abstract",
       "syntaxKind": "block"
     }
   ],
@@ -38,10 +19,10 @@
     "@throws": true,
     "@todo": true,
     "@module": true,
-    "@interface": true,
     "@type": true,
-    "@category": true,
     "@abstract": true,
-    "@see": true
+    "@see": true,
+    "@category": true,
+    "@typeparam": true
   }
 }

@@ -136,7 +136,8 @@ export default class SupplierChemsavers
         return false;
       }
 
-      return results[0].hits.every(this._isValidSearchResponseItem);
+      // Flatten the nested hits array and validate each item
+      return results[0].hits.flat().every(this._isValidSearchResponseItem);
     } catch {
       return false;
     }

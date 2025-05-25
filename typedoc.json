@@ -40,7 +40,7 @@
     "Classes": 1.5
   },
   "jsDocCompatibility": false,
-  "logLevel": "Verbose",
+  "logLevel": "Info",
   "placeInternalsInOwningModule": true,
   "markdownItOptions": {
     "html": true

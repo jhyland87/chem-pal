@@ -4,6 +4,7 @@ import { isQuantityObject, parseQuantity } from "@/helpers/quantity";
 import { firstMap } from "@/helpers/utils";
 import { type Product } from "@/types";
 import {
+  type PriceObject,
   type ProductObject,
   type SearchParams,
   type SearchResponse,
@@ -16,9 +17,7 @@ import SupplierBase from "./supplierBase";
  * The script is located in the `script[nonce]` element of the product page.
  *
  * The script is a JSON object that contains the product data.
- * Duh... thanks, AI.
  * @module SupplierLaboratoriumDiscounter
- * @category Supplier
  */
 export default class SupplierLaboratoriumDiscounter
   extends SupplierBase<ProductObject, Product>
@@ -60,6 +59,87 @@ export default class SupplierLaboratoriumDiscounter
   };
 
   /**
+   * Type guard to validate PriceObject structure
+   * @param price - Object to validate as PriceObject
+   * @returns Type predicate indicating if price is a valid PriceObject
+   */
+  protected _isPriceObject(price: unknown): price is PriceObject {
+    if (typeof price !== "object" || price === null) return false;
+
+    const requiredProps = {
+      /* eslint-disable */
+      price: "number",
+      price_incl: "number",
+      price_excl: "number",
+      price_old: "number",
+      price_old_incl: "number",
+      price_old_excl: "number",
+      /* eslint-enable */
+    };
+
+    return Object.entries(requiredProps).every(([key, type]) => {
+      return key in price && typeof price[key as keyof typeof price] === type;
+    });
+  }
+
+  /**
+   * Type guard to validate ProductObject structure
+   * @param product - Object to validate as ProductObject
+   * @returns Type predicate indicating if product is a valid ProductObject
+   */
+  protected _isProductObject(product: unknown): product is ProductObject {
+    if (typeof product !== "object" || product === null) return false;
+
+    const requiredProps = {
+      /* eslint-disable */
+      id: "number",
+      vid: "number",
+      image: "number",
+      brand: "boolean",
+      code: "string",
+      ean: "string",
+      sku: "string",
+      score: "number",
+      available: "boolean",
+      unit: "boolean",
+      url: "string",
+      title: "string",
+      fulltitle: "string",
+      variant: "string",
+      description: "string",
+      data_01: "string",
+      /* eslint-enable */
+    };
+
+    const hasRequiredProps = Object.entries(requiredProps).every(([key, type]) => {
+      return key in product && typeof product[key as keyof typeof product] === type;
+    });
+
+    if (!hasRequiredProps) return false;
+
+    // Validate price object separately
+    return "price" in product && this._isPriceObject(product.price);
+  }
+
+  /**
+   * Validates search parameters structure and values
+   * @param params - Parameters to validate
+   * @returns Type predicate indicating if params are valid SearchParams
+   */
+  protected _isValidSearchParams(params: unknown): params is SearchParams {
+    if (typeof params !== "object" || params === null) return false;
+
+    const requiredProps = {
+      limit: (val: unknown) => typeof val === "string" && !isNaN(Number(val)),
+      format: (val: unknown) => val === "json",
+    };
+
+    return Object.entries(requiredProps).every(([key, validator]) => {
+      return key in params && validator(params[key as keyof typeof params]);
+    });
+  }
+
+  /**
    * Constructs a complete search URL for the given query
    * @param query - Search term to look for
    * @returns Fully qualified search URL as string
@@ -70,11 +150,13 @@ export default class SupplierLaboratoriumDiscounter
    * ```
    */
   protected _makeQueryUrl(query: string): string {
-    const searchParams: SearchParams = {
-      limit: this._limit.toString(),
-      format: "json",
-    };
-    const url = new URL(`en/search/${query}`, this._baseURL);
+    const searchParams = this._makeQueryParams();
+    if (!this._isValidSearchParams(searchParams)) {
+      throw new Error("Invalid search parameters");
+    }
+
+    const encodedQuery = encodeURIComponent(query);
+    const url = new URL(`en/search/${encodedQuery}`, this._baseURL);
     const params = new URLSearchParams(searchParams);
     url.search = params.toString();
     return url.toString();
@@ -113,7 +195,51 @@ export default class SupplierLaboratoriumDiscounter
    * ```
    */
   protected _isResponseOk(response: unknown): response is SearchResponse {
-    return !!response && typeof response === "object" && "collection" in response;
+    if (typeof response !== "object" || response === null) return false;
+
+    // Check for required top-level properties
+    if (!("page" in response && "request" in response && "collection" in response)) {
+      return false;
+    }
+
+    const { page, request, collection } = response as SearchResponse;
+
+    // Validate page object
+    if (
+      typeof page !== "object" ||
+      !page ||
+      !(
+        "search" in page &&
+        "session_id" in page &&
+        "key" in page &&
+        "title" in page &&
+        "status" in page
+      )
+    ) {
+      return false;
+    }
+
+    // Validate request object
+    if (
+      typeof request !== "object" ||
+      !request ||
+      !("url" in request && "method" in request && "get" in request && "device" in request)
+    ) {
+      return false;
+    }
+
+    // Validate collection and products
+    if (
+      typeof collection !== "object" ||
+      !collection ||
+      !("products" in collection) ||
+      typeof collection.products !== "object"
+    ) {
+      return false;
+    }
+
+    // Validate each product in the collection
+    return Object.values(collection.products).every((product) => this._isProductObject(product));
   }
 
   /**
@@ -132,6 +258,10 @@ export default class SupplierLaboratoriumDiscounter
    */
   protected async _queryProducts(query: string): Promise<ProductObject[] | void> {
     const params = this._makeQueryParams();
+    if (!this._isValidSearchParams(params)) {
+      console.error("Invalid search parameters:", params);
+      return;
+    }
 
     const response: unknown = await this._httpGetJson({
       path: `/en/search/${query}`,
@@ -139,11 +269,11 @@ export default class SupplierLaboratoriumDiscounter
     });
 
     if (!this._isResponseOk(response)) {
-      console.log("Bad search response:", response);
+      console.error("Bad search response:", response);
       return;
     }
 
-    return Object.values(response.collection.products) satisfies ProductObject[];
+    return Object.values(response.collection.products);
   }
 
   /**
@@ -163,21 +293,39 @@ export default class SupplierLaboratoriumDiscounter
    * ```
    */
   protected async _getProductData(result: ProductObject): Promise<Partial<Product> | void> {
-    const quantity = firstMap(parseQuantity, [
-      result.code,
-      result.sku,
-      result.fulltitle,
-      result.variant,
-    ]);
+    try {
+      if (!this._isProductObject(result)) {
+        console.error("Invalid product object:", result);
+        return;
+      }
 
-    if (!isQuantityObject(quantity)) return;
+      const quantity = firstMap(parseQuantity, [
+        result.code,
+        result.sku,
+        result.fulltitle,
+        result.variant,
+      ]);
 
-    const builder = new ProductBuilder(this._baseURL);
-    return builder
-      .setBasicInfo(result.title || result.fulltitle, result.url, this.supplierName)
-      .setPricing(result.price.price, "EUR", CURRENCY_SYMBOL_MAP.EUR)
-      .setQuantity(quantity.quantity, quantity.uom)
-      .setDescription(result.description || "")
-      .build();
+      if (!isQuantityObject(quantity)) {
+        console.debug("Could not parse quantity from product:", {
+          code: result.code,
+          sku: result.sku,
+          fulltitle: result.fulltitle,
+          variant: result.variant,
+        });
+        return;
+      }
+
+      const builder = new ProductBuilder(this._baseURL);
+      return builder
+        .setBasicInfo(result.title || result.fulltitle, result.url, this.supplierName)
+        .setPricing(result.price.price, "EUR", CURRENCY_SYMBOL_MAP.EUR)
+        .setQuantity(quantity.quantity, quantity.uom)
+        .setDescription(result.description || "")
+        .build();
+    } catch (error) {
+      console.error("Error processing product data:", error);
+      return;
+    }
   }
 }

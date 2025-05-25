@@ -110,6 +110,217 @@ describe("ProductBuilder", () => {
     });
   });
 
+  describe("setData", () => {
+    it("should set multiple properties at once", async () => {
+      const data = {
+        title: "Bulk Data Product",
+        price: 99.99,
+        quantity: 1000,
+        uom: "g",
+      };
+
+      const result = await builder
+        .setData(data)
+        .setBasicInfo("Bulk Data Product", "/product/bulk", "Test Supplier")
+        .setPricing(99.99, "USD", "$")
+        .setQuantity(1000, "g")
+        .build();
+
+      expect(result).toMatchObject(data);
+    });
+  });
+
+  describe("setId, setUUID, and setSku", () => {
+    it("should set ID correctly", async () => {
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setId(12345)
+        .build();
+
+      expect(result).toMatchObject({ id: 12345 });
+    });
+
+    it("should set UUID correctly", async () => {
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setUUID("test-uuid-123")
+        .build();
+
+      expect(result).toMatchObject({ uuid: "test-uuid-123" });
+    });
+
+    it("should set SKU correctly", async () => {
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setSku("TEST-SKU-123")
+        .build();
+
+      expect(result).toMatchObject({ sku: "TEST-SKU-123" });
+    });
+  });
+
+  describe("variants", () => {
+    beforeEach(() => {
+      (toUSD as jest.Mock).mockResolvedValue(34.99);
+      (toBaseQuantity as jest.Mock).mockReturnValue(0.5);
+    });
+
+    it("should add a single variant correctly", async () => {
+      const variant = {
+        title: "Large Pack",
+        price: 49.99,
+        quantity: 1000,
+        uom: "g",
+        sku: "LARGE-PACK",
+      };
+
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .addVariant(variant)
+        .build();
+
+      expect(result?.variants).toHaveLength(1);
+      expect(result?.variants?.[0]).toMatchObject(variant);
+    });
+
+    it("should add multiple variants correctly", async () => {
+      const variants = [
+        {
+          title: "Small Pack",
+          price: 29.99,
+          quantity: 250,
+          uom: "g",
+        },
+        {
+          title: "Large Pack",
+          price: 49.99,
+          quantity: 1000,
+          uom: "g",
+        },
+      ];
+
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .addVariants(variants)
+        .build();
+
+      expect(result?.variants).toHaveLength(2);
+      expect(result?.variants).toMatchObject(variants);
+    });
+
+    it("should process variant currency conversion", async () => {
+      const variant = {
+        title: "Euro Pack",
+        price: 39.99,
+        quantity: 1000,
+        uom: "g",
+        url: "/variants/euro",
+      };
+
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "EUR", "€")
+        .setQuantity(500, "g")
+        .addVariant(variant)
+        .build();
+
+      expect(result?.variants?.[0]).toMatchObject({
+        ...variant,
+        usdPrice: 34.99,
+        url: "https://example.com/variants/euro",
+      });
+    });
+
+    it("should filter out invalid variants", async () => {
+      const validVariant = {
+        title: "Valid Pack",
+        price: 29.99,
+        quantity: 250,
+        uom: "g",
+      };
+
+      const invalidVariant = {
+        title: 123, // Invalid: title should be string
+        price: "49.99", // Invalid: price should be number
+        quantity: "1000", // Invalid: quantity should be number
+        uom: 123, // Invalid: uom should be string
+      };
+
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .addVariants([validVariant, invalidVariant as unknown as Partial<Product>])
+        .build();
+
+      expect(result?.variants).toHaveLength(1);
+      expect(result?.variants?.[0]).toMatchObject(validVariant);
+    });
+  });
+
+  describe("dump", () => {
+    it("should return current product state", () => {
+      const data = {
+        title: "Test Product",
+        price: 29.99,
+        quantity: 500,
+        uom: "g",
+      };
+
+      builder.setData(data);
+      const result = builder.dump();
+
+      expect(result).toMatchObject(data);
+    });
+  });
+
+  describe("error handling", () => {
+    it("should handle invalid product data gracefully", async () => {
+      const invalidData = {
+        title: 123, // Invalid: title should be string
+        price: "29.99", // Invalid: price should be number
+      };
+
+      const result = await builder.setData(invalidData as unknown as Partial<Product>).build();
+
+      expect(result).toBeUndefined();
+    });
+
+    it("should handle missing required fields", async () => {
+      const result = await builder
+        .setData({
+          title: "Test Product",
+          // Missing price, quantity, uom
+        })
+        .build();
+
+      expect(result).toBeUndefined();
+    });
+
+    it("should handle null values in product data", async () => {
+      const nullData = {
+        title: null,
+        price: null,
+        quantity: null,
+        uom: null,
+      };
+
+      const result = await builder.setData(nullData as unknown as Partial<Product>).build();
+
+      expect(result).toBeUndefined();
+    });
+  });
+
   describe("build", () => {
     beforeEach(() => {
       (toUSD as jest.Mock).mockResolvedValue(29.99);

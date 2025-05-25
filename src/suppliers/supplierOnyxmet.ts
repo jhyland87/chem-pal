@@ -27,7 +27,7 @@ import SupplierBase from "./supplierBase";
  * }
  * ```
  */
-export default class SupplierLoudwolf
+export default class SupplierOnyxmet
   extends SupplierBase<Partial<Product>, Product>
   implements AsyncIterable<Product>
 {
@@ -35,7 +35,7 @@ export default class SupplierLoudwolf
    * Display name of the supplier used for UI and logging
    * @readonly
    */
-  public readonly supplierName: string = "Loudwolf";
+  public readonly supplierName: string = "Onyxmet";
 
   /**
    * Maximum number of results to return per search query
@@ -45,7 +45,7 @@ export default class SupplierLoudwolf
 
   /**
    * Base URL for all API and web requests to Loudwolf
-   * @defaultValue "https://www.loudwolf.com/"
+   * @defaultValue "https://onyxmet.com//"
    */
   protected _baseURL: string = "https://www.loudwolf.com/";
 
@@ -98,7 +98,7 @@ export default class SupplierLoudwolf
     console.log("query:", query);
 
     const searchResponse = await this._httpGetHtml({
-      path: "/storefront/index.php",
+      path: "/storefront/index.php?route=product/search",
       params: {
         search: query,
         route: "product/search",
@@ -116,6 +116,8 @@ export default class SupplierLoudwolf
     const $ = cheerio.load(searchResponse);
 
     const $elements = $("div.product-layout.product-list");
+
+    //const results: Partial<Product>[] = [];
 
     console.log("Loudwolf results:", $elements);
 
@@ -190,6 +192,12 @@ export default class SupplierLoudwolf
 
     const productResponse = await this._httpGetHtml({
       path: product.url,
+      /*
+      params: {
+        route: "product/product",
+        product_id: product.id,
+      },
+      */
     });
 
     if (!productResponse) {
@@ -203,9 +211,7 @@ export default class SupplierLoudwolf
     const $content = $("#content");
 
     const dataGrid = $content
-      .find("p:contains('CAS')")
-      .closest("table.MsoTableGrid")
-      .find("p")
+      .find("#tab-description > div:nth-child(3) > table > tbody > tr > td > p")
       .map((index, element) => {
         const text = $(element).text().trim();
         return text;

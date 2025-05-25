@@ -1,6 +1,7 @@
 import { ProductBuilder } from "@/helpers/productBuilder";
 import { getCachableResponse, isFullURL } from "@/helpers/request";
 import { type HTMLResponse, type Maybe, type Product } from "@/types";
+import { type OptionalProductFields, type RequiredProductFields } from "@/types/product";
 import { type RequestOptions, type RequestParams } from "@/types/request";
 import * as contentType from "content-type";
 import { type JsonValue } from "type-fest";
@@ -100,49 +101,67 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   protected async _setup(): Promise<void> {}
 
   /**
-   * Check if the response is a valid Response object.
-   *
-   * @param response - The response to check.
-   * @returns True if the response is a valid Response object, false otherwise.
+   * Type guard to check if a value is a valid Response object.
    */
-  private _isResponse(response: Response | void): response is Response {
+  private _isResponse(response: unknown): response is Response {
     return response instanceof Response;
   }
 
   /**
-   * Check if the response is a valid JSON response.
-   *
-   * @param response - The response to check.
-   * @returns True if the response is a valid JSON response, false otherwise.
+   * Type guard to check if a value is a valid JSON response.
    */
-  private _isJsonResponse(response: Response | void): response is Response {
+  private _isJsonResponse(response: unknown): response is Response {
     if (!this._isResponse(response)) return false;
-    const dataType = contentType.parse(response.headers.get("content-type") ?? "");
-    console.log("contentType:", dataType.type);
 
-    if (!dataType) return false;
+    try {
+      const contentTypeHeader = response.headers.get("content-type");
+      if (!contentTypeHeader) return false;
 
-    return ["application/json", "application/javascript", "text/javascript"].includes(
-      dataType.type,
-    );
+      const dataType = contentType.parse(contentTypeHeader);
+      if (!dataType?.type) return false;
+
+      return ["application/json", "application/javascript", "text/javascript"].includes(
+        dataType.type,
+      );
+    } catch {
+      return false;
+    }
   }
 
   /**
-   * Check if the response is a valid HTML response.
-   *
-   * @param response - The response to check.
-   * @returns True if the response is a valid HTML response, false otherwise.
+   * Type guard to check if a value is a valid HTML response.
    */
-  private _isHtmlResponse(response: Response | void): response is HTMLResponse {
+  private _isHtmlResponse(response: unknown): response is HTMLResponse {
     if (!this._isResponse(response)) return false;
-    const dataType = contentType.parse(response.headers.get("content-type") ?? "");
-    console.log("contentType:", dataType.type);
 
-    if (!dataType) return false;
+    try {
+      const contentTypeHeader = response.headers.get("content-type");
+      if (!contentTypeHeader) return false;
 
-    return ["text/html", "text/xml", "application/xhtml+xml"].includes(dataType.type);
+      const dataType = contentType.parse(contentTypeHeader);
+      if (!dataType?.type) return false;
+
+      return ["text/html", "text/xml", "application/xhtml+xml"].includes(dataType.type);
+    } catch {
+      return false;
+    }
   }
 
+  /**
+   * Retrieves HTTP headers from a URL using a HEAD request.
+   * Useful for checking content types, caching headers, and other metadata without downloading the full response.
+   *
+   * @param url - The URL to fetch headers from
+   * @returns Promise resolving to the response headers or void if request fails
+   * @example
+   * ```typescript
+   * const headers = await this._httpGetHeaders('https://example.com/product/123');
+   * if (headers) {
+   *   console.log('Content-Type:', headers['content-type']);
+   *   console.log('Last-Modified:', headers['last-modified']);
+   * }
+   * ```
+   */
   protected async _httpGetHeaders(url: string | URL): Promise<Maybe<HeadersInit>> {
     try {
       const requestObj = new Request(this._href(url), {
@@ -182,24 +201,27 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   }
 
   /**
-   * Send a POST request to the given URL with the given body and headers.
+   * Sends a POST request to the given URL with the given body and headers.
+   * Handles request setup, error handling, and response caching.
+   *
+   * @param options - The request configuration options
+   * @returns Promise resolving to the Response object or void if request fails
    * @example
    * ```typescript
-   * const request = await this._httpPost({
-   *    path: "/api/v1/products",
-   *    body: { name: "John" },
-   *    headers: { "Content-Type": "application/json" }
+   * // Basic POST request
+   * const response = await this._httpPost({
+   *   path: "/api/v1/products",
+   *   body: { name: "Test Chemical" }
    * });
-   * // Sends HTTP POST request to https://supplier_base_url.com/api/v1/products with `{"name":"John"}` body.
    *
-   * const request = await this._httpPost({
-   *    path: "/api/v1/products",
-   *    host: "api.example.com",
-   *    body: { name: "John" },
-   *    params: { a: "b", c: "d" },
-   *    headers: { "Content-Type": "application/json" }
+   * // POST with custom host and params
+   * const response = await this._httpPost({
+   *   path: "/api/v1/products",
+   *   host: "api.example.com",
+   *   body: { name: "Test Chemical" },
+   *   params: { version: "2" },
+   *   headers: { "Content-Type": "application/json" }
    * });
-   * // Sends HTTP POST request to https://api.example.com/api/v1/products?a=b&c=d with `{"name":"John"}` body.
    * ```
    */
   protected async _httpPost({
@@ -289,16 +311,26 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   }
 
   /**
-   * Send a GET request to the given URL with the given headers.
+   * Sends a GET request to the given URL with the specified options.
+   * Handles request setup, error handling, and response caching.
    *
-   * @returns The response from the GET request.
+   * @param options - The request configuration options
+   * @returns Promise resolving to the Response object or void if request fails
    * @example
    * ```typescript
-   * const response = await this._httpGet({ path: "http://example.com", params: { a: "b", c: "d" } });
-   * // Sends HTTP GET request to https://example.com/some/path?a=b&c=d
+   * // Basic GET request
+   * const response = await this._httpGet({
+   *   path: "/products/search",
+   *   params: { query: "sodium chloride" }
+   * });
    *
-   * const response = await this._httpGet({ path: "http://example.com", params: { a: "b", c: "d" }, baseUrl: "https://another_host.com" });
-   * // Sends HTTP GET request to https://another_host.com/some/path?a=b&c=d
+   * // GET with custom host and headers
+   * const response = await this._httpGet({
+   *   path: "/api/products",
+   *   host: "api.example.com",
+   *   params: { category: "chemicals" },
+   *   headers: { "Accept": "application/json" }
+   * });
    * ```
    */
   protected async _httpGet({
@@ -356,6 +388,28 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     }
   }
 
+  /**
+   * Sends a GET request to a URL and returns the response as HTML text.
+   * Validates that the response has the correct content type before returning.
+   *
+   * @param options - The request configuration options
+   * @returns Promise resolving to the HTML text content or void if request fails
+   * @throws {TypeError} If the response is not valid HTML content
+   * @example
+   * ```typescript
+   * const html = await this._httpGetHtml({
+   *   path: '/products/search',
+   *   params: { query: 'sodium chloride' },
+   *   headers: { 'Accept': 'text/html' }
+   * });
+   * if (html) {
+   *   const $ = cheerio.load(html);
+   *   const products = $('.product-item').map((i, el) => {
+   *     return $(el).text();
+   *   }).get();
+   * }
+   * ```
+   */
   protected async _httpGetHtml({
     path,
     params,
@@ -397,6 +451,20 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   }
 
   /**
+   * Type guard to check if a value is a valid result object with required fields
+   */
+  protected _isValidResult(
+    result: unknown,
+  ): result is { value: RequiredProductFields & Partial<OptionalProductFields> } {
+    return (
+      typeof result === "object" &&
+      result !== null &&
+      "value" in result &&
+      this._isMinimalProduct((result as any).value)
+    );
+  }
+
+  /**
    * The function asynchronously iterates over query results, retrieves product data, and yields valid
    * results.
    * @returns An async generator that yields valid results.
@@ -420,18 +488,20 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
 
         // Create promises for the current batch
         const batchPromises = batch.map((r: unknown) => {
-          const result = { ...(r as object) };
-          return this._getProductData(result as S) as Promise<T>;
+          if (typeof r !== "object" || r === null) {
+            return Promise.reject(new Error("Invalid result object"));
+          }
+          return this._getProductData(r as S);
         });
 
         // Process batch results as they complete
         const batchResults = await Promise.allSettled(batchPromises);
         for (const result of batchResults) {
           try {
-            if (result.status === "fulfilled" && result.value) {
+            if (result.status === "fulfilled" && this._isValidResult(result)) {
               const finishedProduct = await this._finishProduct(result.value);
               if (finishedProduct) {
-                yield finishedProduct as T;
+                yield finishedProduct;
               }
             }
           } catch (err) {
@@ -441,7 +511,6 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
         }
       }
     } catch (err) {
-      // Here to catch when the overall search fails
       if (this._controller.signal.aborted === true) {
         console.debug("Search was aborted");
         return;
@@ -467,7 +536,11 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
       product !== null &&
       "price" in product &&
       "quantity" in product &&
-      "uom" in product
+      "uom" in product &&
+      "supplier" in product &&
+      "url" in product &&
+      "currencyCode" in product &&
+      "currencySymbol" in product
     );
   }
 
@@ -475,40 +548,24 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * Checks if a product object has the minimal required properties to be considered a valid partial product.
    * @param product - The product object to validate
    * @returns True if the product has all required properties with correct types, false otherwise
-   * @example
-   * ```typescript
-   * const partialProduct = {
-   *   quantity: 1,
-   *   price: 29.99,
-   *   uom: "ea",
-   *   url: "https://example.com/product",
-   *   currencyCode: "USD",
-   *   currencySymbol: "$",
-   *   title: "Test Product"
-   * };
-   * if (this._isMinimalProduct(partialProduct)) {
-   *   // Process the valid partial product
-   * }
-   * ```
    */
-  protected _isMinimalProduct(product: unknown): product is Partial<T> {
+  protected _isMinimalProduct(product: unknown): product is RequiredProductFields {
     if (!product || typeof product !== "object") return false;
 
-    const requiredStringProps = {
-      quantity: "number",
+    const requiredProps: Record<keyof RequiredProductFields, string> = {
+      title: "string",
       price: "number",
+      quantity: "number",
       uom: "string",
+      supplier: "string",
       url: "string",
       currencyCode: "string",
       currencySymbol: "string",
-      title: "string",
     };
 
-    const hasAllRequiredProps = Object.entries(requiredStringProps).every(([key, val]) => {
-      return key in product && typeof product[key as keyof typeof product] === val;
+    return Object.entries(requiredProps).every(([key, expectedType]) => {
+      return key in product && typeof product[key as keyof typeof product] === expectedType;
     });
-
-    return hasAllRequiredProps;
   }
 
   /**
@@ -521,33 +578,27 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    *
    * @param product - The partial product to finalize
    * @returns Promise resolving to a complete Product object or void if validation fails
-   * @example
-   * ```typescript
-   * const partialProduct = {
-   *   title: "Test Chemical",
-   *   price: 29.99,
-   *   quantity: 100,
-   *   uom: "g",
-   *   currencyCode: "EUR",
-   *   url: "/products/test-chemical"
-   * };
-   * const finalProduct = await this._finishProduct(partialProduct);
-   * if (finalProduct) {
-   *   console.log("USD Price:", finalProduct.usdPrice);
-   *   console.log("Base Quantity:", finalProduct.baseQuantity);
-   * }
-   * ```
    */
-  protected async _finishProduct(product: Partial<T>): Promise<Maybe<T>> {
+  protected async _finishProduct(
+    product: RequiredProductFields & Partial<OptionalProductFields>,
+  ): Promise<Maybe<T>> {
+    if (!this._isMinimalProduct(product)) {
+      return;
+    }
+
     const builder = new ProductBuilder<T>(this._baseURL);
 
-    return builder
-      .setBasicInfo(product.title!, product.url!, product.supplier!)
-      .setPricing(product.price!, product.currencyCode!, product.currencySymbol!)
-      .setQuantity(product.quantity!, product.uom!)
-      .setDescription(product.description || "")
-      .setCAS(product.cas || "")
-      .build();
+    return (
+      builder
+        //.setData(product)
+        .setGrade(product?.grade)
+        .setBasicInfo(product.title, product.url!, product.supplier!)
+        .setPricing(product.price, product.currencyCode!, product.currencySymbol!)
+        .setQuantity(product.quantity, product.uom)
+        .setDescription(product.description || "")
+        .setCAS(product.cas || "")
+        .build()
+    );
   }
 
   /**
@@ -588,20 +639,13 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
 
     if (typeof path === "string" && isFullURL(path)) {
       href = new URL(path);
-    } else if (path instanceof URL) {
-      href = path;
-    } else {
-      href = new URL(path, this._baseURL);
     }
 
-    if (typeof host === "string") {
-      if (isFullURL(host)) {
-        href.host = new URL(host).host;
-      } else {
-        href.host = host;
-      }
+    href = new URL(path, this._baseURL);
+
+    if (host) {
+      href.host = host;
     }
-    //href = new URL(path, this._baseURL);
 
     if (params && Object.keys(params).length > 0) {
       href.search = new URLSearchParams(params as Record<string, string>).toString();
