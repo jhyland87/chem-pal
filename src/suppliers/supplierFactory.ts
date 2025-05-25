@@ -1,7 +1,7 @@
 import { type Product } from "@/types";
+import { Logger } from "@/utils/Logger";
 import * as suppliers from ".";
 import SupplierBase from "./supplierBase";
-
 /**
  * Factory class for querying multiple chemical suppliers simultaneously.
  * This class provides a unified interface to search across multiple supplier implementations.
@@ -34,6 +34,7 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
 
   // List of supplier class names to include in query results
   private _suppliers: Array<string>;
+  private _logger: Logger;
 
   /**
    * Factory class for querying all suppliers.
@@ -43,9 +44,13 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
    * @param suppliers - Array of suppliers to query (empty is the same as querying all)
    */
   constructor(query: string, controller: AbortController, suppliers: Array<string> = []) {
+    this._logger = new Logger("SupplierFactory");
+    this._logger.debug("initialized");
     this._query = query;
+    this._logger.debug("Query:", this._query);
     this._controller = controller;
     this._suppliers = suppliers;
+    this._logger.debug("Suppliers:", this._suppliers);
   }
 
   /**
@@ -87,6 +92,7 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
    */
   async *[Symbol.asyncIterator](): AsyncGenerator<T, void, unknown> {
     try {
+      this._logger.debug("Starting search");
       const supplierIterator = this._getConsolidatedGenerator();
 
       for await (const value of supplierIterator) {
@@ -135,6 +141,7 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
       Object.entries(suppliers).reduce(
         (result: SupplierBase<unknown, Product>[], [supplierClassName, supplierClass]) => {
           if (this._suppliers.length == 0 || this._suppliers.includes(supplierClassName)) {
+            this._logger.debug("Initializing supplier class:", supplierClassName);
             // Cast supplierClass to the correct type to fix type error
             const SupplierClass = supplierClass as new (
               query: string,

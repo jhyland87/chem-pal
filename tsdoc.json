@@ -23,6 +23,8 @@
     "@abstract": true,
     "@see": true,
     "@category": true,
-    "@typeparam": true
+    "@typeparam": true,
+    "@readonly": true,
+    "@defaultValue": true
   }
 }

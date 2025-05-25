@@ -16,8 +16,8 @@ import SupplierBase from "./supplierBase";
  * Extends the base supplier class and provides Loudwolf-specific implementation
  * for product searching and data extraction.
  *
- * @template S - The supplier-specific product type (Partial<Product>)
- * @template T - The common Product type that all suppliers map to
+ * @typeParam S - The supplier-specific product type (Partial<Product>)
+ * @typeParam T - The common Product type that all suppliers map to
  *
  * @example
  * ```typescript

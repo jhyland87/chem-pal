@@ -325,8 +325,8 @@ export class ProductBuilder<T extends Product> {
    * @param product - The product object to validate
    * @returns Type predicate indicating if the object has minimum required properties
    */
-  private _isMinimalProduct(_product: unknown): _product is Partial<T> {
-    if (!_product || typeof _product !== "object") return false;
+  private _isMinimalProduct(product: unknown): product is Partial<T> {
+    if (!product || typeof product !== "object") return false;
 
     const requiredStringProps = {
       quantity: "number",
@@ -339,7 +339,7 @@ export class ProductBuilder<T extends Product> {
     };
 
     const hasAllRequiredProps = Object.entries(requiredStringProps).every(([key, val]) => {
-      return key in _product && typeof _product[key as keyof typeof _product] === val;
+      return key in product && typeof product[key as keyof typeof product] === val;
     });
 
     return hasAllRequiredProps;
@@ -352,13 +352,13 @@ export class ProductBuilder<T extends Product> {
    * @param product - The product object to validate
    * @returns Type predicate indicating if the object is a complete Product
    */
-  private _isProduct(_product: unknown): _product is T {
+  private _isProduct(product: unknown): product is T {
     return (
-      typeof _product === "object" &&
-      _product !== null &&
-      "price" in _product &&
-      "quantity" in _product &&
-      "uom" in _product
+      typeof product === "object" &&
+      product !== null &&
+      "price" in product &&
+      "quantity" in product &&
+      "uom" in product
     );
   }
 
