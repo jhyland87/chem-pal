@@ -3,6 +3,7 @@ import { getCachableResponse, isFullURL } from "@/helpers/request";
 import { type HTMLResponse, type Maybe, type Product } from "@/types";
 import { type OptionalProductFields, type RequiredProductFields } from "@/types/product";
 import { type RequestOptions, type RequestParams } from "@/types/request";
+import { Logger } from "@/utils/Logger";
 import * as contentType from "content-type";
 import { type JsonValue } from "type-fest";
 
@@ -57,7 +58,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   // HTTP headers used as a basis for all queries.
   protected _headers: HeadersInit = {};
 
-  //protected _logger = log.getLogger("default");
+  protected _logger: Logger;
 
   // Default values for products. These will get overridden if they're found in the product data.
   protected _productDefaults = {
@@ -74,6 +75,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * @param controller - The AbortController to use for the query.
    */
   constructor(query: string, limit: number = 5, controller: AbortController) {
+    this._logger = new Logger(this.constructor.name);
     this._query = query;
     this._limit = limit;
     if (controller) {
@@ -531,17 +533,36 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * ```
    */
   protected _isProduct(product: unknown): product is Product {
-    return (
-      typeof product === "object" &&
-      product !== null &&
-      "price" in product &&
-      "quantity" in product &&
-      "uom" in product &&
-      "supplier" in product &&
-      "url" in product &&
-      "currencyCode" in product &&
-      "currencySymbol" in product
-    );
+    if (typeof product !== "object" || product === null) {
+      this._logger.debug("Invalid product object", { product });
+      return false;
+    }
+
+    const requiredProps: Record<keyof RequiredProductFields, string> = {
+      title: "string",
+      price: "number",
+      quantity: "number",
+      uom: "string",
+      supplier: "string",
+      url: "string",
+      currencyCode: "string",
+      currencySymbol: "string",
+    };
+
+    return Object.entries(requiredProps).every(([key, expectedType]) => {
+      if (key in product === false) {
+        this._logger.debug("Missing required property", { key, product });
+        return false;
+      }
+
+      if (typeof product[key as keyof typeof product] !== expectedType) {
+        this._logger.debug("Invalid property type", { key, expectedType, product });
+        return false;
+      }
+
+      return true;
+      //typeof product[key as keyof typeof product] === expectedType;
+    });
   }
 
   /**

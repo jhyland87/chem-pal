@@ -95,7 +95,7 @@ export default class SupplierLoudwolf
   protected async _queryProducts(query: string): Promise<Maybe<Partial<Product>[]>> {
     localStorage.setItem("display", "list");
 
-    console.log("query:", query);
+    this._logger.log("query:", query);
 
     const searchResponse = await this._httpGetHtml({
       path: "/storefront/index.php",
@@ -107,17 +107,17 @@ export default class SupplierLoudwolf
     });
 
     if (!searchResponse) {
-      console.error("No search response");
+      this._logger.error("No search response");
       return;
     }
 
-    console.log("searchResponse:", searchResponse);
+    this._logger.log("searchResponse:", searchResponse);
 
     const $ = cheerio.load(searchResponse);
 
     const $elements = $("div.product-layout.product-list");
 
-    console.log("Loudwolf results:", $elements);
+    this._logger.log("Loudwolf results:", $elements);
 
     return $elements
       .map((index, element) => {
@@ -125,7 +125,7 @@ export default class SupplierLoudwolf
         const href = $(element).find("div.caption h4 a").attr("href");
 
         if (href === undefined) {
-          console.error("No URL for product");
+          this._logger.error("No URL for product");
           return;
         }
 
@@ -134,7 +134,7 @@ export default class SupplierLoudwolf
         const id = url.searchParams.get("product_id");
 
         if (id === null) {
-          console.error("No ID for product");
+          this._logger.error("No ID for product");
           return;
         }
 
@@ -176,15 +176,15 @@ export default class SupplierLoudwolf
    * ```
    */
   protected async _getProductData(product: Partial<Product>): Promise<Maybe<Partial<Product>>> {
-    console.log("Querying data for partialproduct:", product);
+    this._logger.debug("Querying data for partialproduct:", product);
 
     if ("url" in product === false || typeof product.url !== "string") {
-      console.error("No URL for product");
+      this._logger.error("No URL for product");
       return;
     }
 
     if ("title" in product === false || typeof product.title !== "string") {
-      console.error("No title for product");
+      this._logger.error("No title for product");
       return;
     }
 
@@ -193,11 +193,11 @@ export default class SupplierLoudwolf
     });
 
     if (!productResponse) {
-      console.error("No product response");
+      this._logger.warn("No product response");
       return;
     }
 
-    console.log("productResponse:", productResponse);
+    this._logger.debug("productResponse:", productResponse);
 
     const $ = cheerio.load(productResponse);
     const $content = $("#content");

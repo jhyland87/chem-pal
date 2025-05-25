@@ -76,7 +76,7 @@ export default abstract class SupplierBaseWoocommerce
     });
 
     if (!this._isSearchResponse(searchRequest)) {
-      console.error("Invalid search response:", searchRequest);
+      this._logger.error("Invalid search response:", searchRequest);
       return;
     }
 
@@ -176,17 +176,12 @@ export default abstract class SupplierBaseWoocommerce
       variations: Array.isArray,
     };
 
-    const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
+    return Object.entries(requiredProps).every(([key, validator]) => {
       if (typeof validator === "string") {
         return key in response && typeof response[key as keyof typeof response] === validator;
       }
       return key in response && validator(response[key as keyof typeof response]);
     });
-
-    if (!hasRequiredProps) return false;
-
-    // Check variations array
-    return response.variations.length > 0 && Array.isArray(response.variations[0].attributes);
   }
 
   /**
@@ -204,17 +199,17 @@ export default abstract class SupplierBaseWoocommerce
       path: `/wp-json/wc/store/v1/products/${product.id}`,
     });
 
-    console.log("productResponse:", productResponse);
+    this._logger.debug("productResponse:", productResponse);
 
     if (!this._isValidProductVariant(productResponse)) {
-      console.error("Invalid product object:", productResponse);
+      this._logger.error("Invalid product object:", productResponse);
       return;
     }
 
     const productPrice = parseFloat(productResponse.prices.price);
 
     if ("variation" in productResponse === false) {
-      console.error("No variation found for product:", product);
+      this._logger.error("No variation found for product:", product);
       return;
     }
 
@@ -226,7 +221,7 @@ export default abstract class SupplierBaseWoocommerce
     ]);
 
     if (!quantity) {
-      console.error("No quantity found for product:", product);
+      this._logger.error("No quantity found for product:", product);
       return;
     }
 

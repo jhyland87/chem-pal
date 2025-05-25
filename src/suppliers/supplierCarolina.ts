@@ -370,19 +370,19 @@ export default class SupplierCarolina
    */
   protected _isValidProductResponse(obj: unknown): obj is ProductResponse {
     if (typeof obj !== "object" || obj === null) {
-      console.error("_isValidProductResponse| Object is not an object:", obj);
+      this._logger.error("_isValidProductResponse| Object is not an object:", obj);
       return false;
     }
 
     const response = obj as Partial<ProductResponse>;
 
     if (!response.contents?.MainContent) {
-      console.error("_isValidProductResponse| Missing contents.MainContent");
+      this._logger.error("_isValidProductResponse| Missing contents.MainContent");
       return false;
     }
 
     if (!Array.isArray(response.contents.MainContent)) {
-      console.error(
+      this._logger.error(
         "_isValidProductResponse| MainContent is not an array:",
         response.contents.MainContent,
       );
@@ -390,13 +390,13 @@ export default class SupplierCarolina
     }
 
     if (response.contents.MainContent.length === 0) {
-      console.error("_isValidProductResponse| MainContent array is empty");
+      this._logger.error("_isValidProductResponse| MainContent array is empty");
       return false;
     }
 
     const mainContent = response.contents.MainContent[0];
     if (typeof mainContent !== "object" || mainContent === null) {
-      console.error(
+      this._logger.error(
         "_isValidProductResponse| First MainContent item is not an object:",
         mainContent,
       );
@@ -404,12 +404,12 @@ export default class SupplierCarolina
     }
 
     if (!("atgResponse" in mainContent)) {
-      console.error("_isValidProductResponse| Missing atgResponse in MainContent");
+      this._logger.error("_isValidProductResponse| Missing atgResponse in MainContent");
       return false;
     }
 
     if (typeof mainContent.atgResponse !== "object" || mainContent.atgResponse === null) {
-      console.error(
+      this._logger.error(
         "_isValidProductResponse| atgResponse is not an object:",
         mainContent.atgResponse,
       );
@@ -436,7 +436,7 @@ export default class SupplierCarolina
    */
   protected _isATGResponse(obj: unknown): obj is ATGResponse {
     if (typeof obj !== "object" || obj === null) {
-      console.error("_isATGResponse| Object is not an object:", obj);
+      this._logger.error("_isATGResponse| Object is not an object:", obj);
       return false;
     }
 
@@ -446,18 +446,18 @@ export default class SupplierCarolina
       result: (val: unknown) => {
         const isValid = val === "success";
         if (!isValid) {
-          console.error("_isATGResponse| Invalid result value:", val);
+          this._logger.error("_isATGResponse| Invalid result value:", val);
         }
         return isValid;
       },
       response: (val: unknown) => {
         if (typeof val !== "object" || val === null) {
-          console.error("_isATGResponse| Response is not an object:", val);
+          this._logger.error("_isATGResponse| Response is not an object:", val);
           return false;
         }
         const innerResponse = (val as { response?: unknown }).response;
         if (typeof innerResponse !== "object" || innerResponse === null) {
-          console.error("_isATGResponse| Inner response is not an object:", innerResponse);
+          this._logger.error("_isATGResponse| Inner response is not an object:", innerResponse);
           return false;
         }
 
@@ -473,19 +473,19 @@ export default class SupplierCarolina
         return Object.entries(requiredInnerProps).every(([key, expectedType]) => {
           const value = (innerResponse as Record<string, unknown>)[key];
           if (value === undefined) {
-            console.error(`_isATGResponse| Missing inner property: ${key}`);
+            this._logger.error(`_isATGResponse| Missing inner property: ${key}`);
             return false;
           }
           if (expectedType === "object") {
             if (typeof value !== "object" || value === null) {
-              console.error(
+              this._logger.error(
                 `_isATGResponse| Invalid type for ${key}, expected object, got:`,
                 value,
               );
               return false;
             }
           } else if (typeof value !== expectedType) {
-            console.error(
+            this._logger.error(
               `_isATGResponse| Invalid type for ${key}, expected ${expectedType}, got ${typeof value}`,
             );
             return false;
@@ -497,7 +497,7 @@ export default class SupplierCarolina
 
     return Object.entries(requiredProps).every(([key, validator]) => {
       if (!(key in response)) {
-        console.error(`_isATGResponse| Missing required property: ${key}`);
+        this._logger.error(`_isATGResponse| Missing required property: ${key}`);
         return false;
       }
       return validator((response as Record<string, unknown>)[key]);
@@ -567,20 +567,20 @@ export default class SupplierCarolina
     });
 
     if (!this._isResponseOk(productResponse)) {
-      console.warn("Response status:", productResponse);
+      this._logger.warn("Response status:", productResponse);
       return;
     }
 
     const atgResponse = this._extractATGResponse(productResponse);
     if (!atgResponse) {
-      console.error("No ATG response found");
+      this._logger.error("No ATG response found");
       return;
     }
-    console.log("atgResponse:", atgResponse);
+    this._logger.debug("atgResponse:", atgResponse);
 
     const productPrice = parsePrice(atgResponse.dataLayer.productPrice[0]);
     if (!productPrice) {
-      console.error("No product price found");
+      this._logger.error("No product price found");
       return;
     }
 

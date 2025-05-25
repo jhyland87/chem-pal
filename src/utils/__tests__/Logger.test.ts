@@ -296,4 +296,233 @@ describe("Logger", () => {
       );
     });
   });
+
+  describe("console-like methods", () => {
+    let logger: Logger;
+
+    beforeEach(() => {
+      logger = new Logger("Test", LogLevel.DEBUG);
+      jest.spyOn(Date.prototype, "toISOString").mockReturnValue("2024-01-01T00:00:00.000Z");
+      // Mock additional console methods
+      console.dir = jest.fn();
+      console.clear = jest.fn();
+      console.table = jest.fn();
+      console.timeStamp = jest.fn();
+      // Mock performance.now()
+      jest
+        .spyOn(performance, "now")
+        .mockReturnValueOnce(1000) // First call (time start)
+        .mockReturnValueOnce(2500) // Second call (timeEnd/timeLog)
+        .mockReturnValueOnce(3000); // Third call (another timeEnd/timeLog)
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    describe("dir", () => {
+      it("should call console.dir with object and options", () => {
+        const obj = { test: "value" };
+        const options = { depth: 2, colors: true };
+        logger.dir(obj, options);
+        expect(console.dir).toHaveBeenCalledWith(obj, options);
+      });
+
+      it("should not call console.dir when level is above DEBUG", () => {
+        logger.setLogLevel(LogLevel.INFO);
+        logger.dir({ test: "value" });
+        expect(console.dir).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("count and countReset", () => {
+      it("should increment counter and log count", () => {
+        logger.count("test");
+        logger.count("test");
+        expect(console.log).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [INFO] [Test] test: 1",
+        );
+        expect(console.log).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [INFO] [Test] test: 2",
+        );
+      });
+
+      it("should use 'default' label when none provided", () => {
+        logger.count();
+        expect(console.log).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [INFO] [Test] default: 1",
+        );
+      });
+
+      it("should reset counter", () => {
+        logger.count("test");
+        logger.countReset("test");
+        logger.count("test");
+        expect(console.log).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [INFO] [Test] test: 1",
+        );
+      });
+    });
+
+    describe("group methods", () => {
+      it("should increment group depth and log group label", () => {
+        logger.group("Group 1");
+        logger.log("Message 1");
+        logger.group("Group 2");
+        logger.log("Message 2");
+        logger.groupEnd();
+        logger.groupEnd();
+
+        expect(console.log).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [INFO] [Test] Group 1",
+        );
+        expect(console.log).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [INFO] [Test]   Message 1",
+        );
+        expect(console.log).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [INFO] [Test]   Group 2",
+        );
+        expect(console.log).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [INFO] [Test]     Message 2",
+        );
+      });
+
+      it("should handle groupCollapsed same as group", () => {
+        logger.groupCollapsed("Collapsed Group");
+        logger.log("Message");
+        logger.groupEnd();
+
+        expect(console.log).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [INFO] [Test] Collapsed Group",
+        );
+        expect(console.log).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [INFO] [Test]   Message",
+        );
+      });
+
+      it("should not go below zero group depth", () => {
+        logger.groupEnd(); // Try to go negative
+        logger.log("Message");
+        expect(console.log).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [INFO] [Test] Message",
+        );
+      });
+    });
+
+    describe("trace", () => {
+      it("should log stack trace", () => {
+        logger.trace();
+        expect(console.debug).toHaveBeenCalledWith(
+          expect.stringMatching(/\[.*\] \[DEBUG\] \[Test\] .*at.*/),
+        );
+      });
+
+      it("should include message with stack trace", () => {
+        logger.trace("Error occurred");
+        expect(console.debug).toHaveBeenCalledWith(
+          expect.stringMatching(/\[.*\] \[DEBUG\] \[Test\] Error occurred\n.*at.*/),
+        );
+      });
+
+      it("should not log when level is above DEBUG", () => {
+        logger.setLogLevel(LogLevel.INFO);
+        logger.trace("Test");
+        expect(console.debug).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("table", () => {
+      it("should log tabular data", () => {
+        const data = [{ id: 1, name: "Test" }];
+        logger.table(data);
+        expect(console.log).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [INFO] [Test] Table Output:",
+        );
+        expect(console.table).toHaveBeenCalledWith(data, undefined);
+      });
+
+      it("should log tabular data with specific columns", () => {
+        const data = [{ id: 1, name: "Test", extra: "Hidden" }];
+        logger.table(data, ["name"]);
+        expect(console.table).toHaveBeenCalledWith(data, ["name"]);
+      });
+
+      it("should handle invalid data", () => {
+        logger.table("not an object");
+        expect(console.log).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [INFO] [Test] Invalid data for table display",
+        );
+      });
+    });
+
+    describe("timing methods", () => {
+      it("should track timer duration", () => {
+        logger.time("test");
+        logger.timeEnd("test");
+        expect(console.debug).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [DEBUG] [Test] Timer 'test' started",
+        );
+        expect(console.debug).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [DEBUG] [Test] Timer 'test': 1500.00ms",
+        );
+      });
+
+      it("should handle timeLog with additional data", () => {
+        logger.time("test");
+        logger.timeLog("test", { progress: "50%" });
+        expect(console.debug).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [DEBUG] [Test] Timer 'test': 1500.00ms",
+          { progress: "50%" },
+        );
+      });
+
+      it("should warn when ending non-existent timer", () => {
+        logger.timeEnd("nonexistent");
+        expect(console.warn).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [WARN] [Test] Timer 'nonexistent' does not exist",
+        );
+      });
+
+      it("should warn when logging non-existent timer", () => {
+        logger.timeLog("nonexistent");
+        expect(console.warn).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [WARN] [Test] Timer 'nonexistent' does not exist",
+        );
+      });
+
+      it("should warn when starting duplicate timer", () => {
+        logger.time("test");
+        logger.time("test");
+        expect(console.warn).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [WARN] [Test] Timer 'test' already exists",
+        );
+      });
+    });
+
+    describe("timeStamp", () => {
+      it("should use console.timeStamp when available", () => {
+        logger.timeStamp("event");
+        expect(console.timeStamp).toHaveBeenCalledWith("event");
+        expect(console.debug).toHaveBeenCalledWith(expect.stringContaining("Timestamp 'event':"));
+      });
+
+      it("should fallback to debug log when timeStamp not available", () => {
+        console.timeStamp = undefined as unknown as typeof console.timeStamp;
+        logger.timeStamp("event");
+        expect(console.debug).toHaveBeenCalledWith(expect.stringContaining("Timestamp 'event':"));
+      });
+
+      it("should handle unlabeled timestamps", () => {
+        logger.timeStamp();
+        expect(console.debug).toHaveBeenCalledWith(expect.stringContaining("Timestamp: "));
+      });
+    });
+
+    describe("clear", () => {
+      it("should call console.clear", () => {
+        logger.clear();
+        expect(console.clear).toHaveBeenCalled();
+      });
+    });
+  });
 });
