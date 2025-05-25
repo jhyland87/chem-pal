@@ -3,6 +3,7 @@ import { isCAS } from "@/helpers/cas";
 import { toUSD } from "@/helpers/currency";
 import { toBaseQuantity } from "@/helpers/quantity";
 import { type Maybe, type Product, type Variant } from "@/types";
+import { findFormulaInHtml } from "./science";
 
 /**
  * Builder class for constructing Product objects with a fluent interface.
@@ -94,10 +95,22 @@ export class ProductBuilder<T extends Product> {
    *
    * @param formula - The formula to set
    * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setFormula('foobar K<sub>2</sub>Cr<sub>2</sub>O<sub>7</sub> baz');
+   * // sets this._product.formula to "K₂Cr₂O₇"
+   * builder.setFormula("H<sub>2</sub>SO<sub>4</sub>");
+   * // sets this._product.formula to "H₂SO ₄"
+   * builder.setFormula("Just some text");
+   * // sets this._product.formula to undefined
+   * ```
    */
   setFormula(formula?: string): ProductBuilder<T> {
     if (formula && typeof formula === "string" && formula.trim().length > 0) {
-      this._product.formula = formula;
+      const parsedResult = findFormulaInHtml(formula);
+      if (parsedResult) {
+        this._product.formula = parsedResult;
+      }
     }
     return this;
   }

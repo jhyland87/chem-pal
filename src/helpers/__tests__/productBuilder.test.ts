@@ -84,6 +84,54 @@ describe("ProductBuilder", () => {
     });
   });
 
+  describe("setFormula", () => {
+    it("should set formula correctly with valid HTML chemical formula", async () => {
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setFormula("K<sub>2</sub>Cr<sub>2</sub>O<sub>7</sub>")
+        .build();
+
+      expect(result).toMatchObject({
+        formula: "K₂Cr₂O₇",
+      });
+    });
+
+    it("should not set formula with invalid chemical formula", async () => {
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setFormula("Not a chemical formula")
+        .build();
+
+      expect(result).not.toHaveProperty("formula");
+    });
+
+    it("should handle undefined formula input", async () => {
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setFormula(undefined)
+        .build();
+
+      expect(result).not.toHaveProperty("formula");
+    });
+
+    it("should handle empty string formula input", async () => {
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setFormula("")
+        .build();
+
+      expect(result).not.toHaveProperty("formula");
+    });
+  });
+
   describe("setCAS", () => {
     it("should set valid CAS number", async () => {
       const result = await builder

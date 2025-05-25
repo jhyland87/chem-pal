@@ -48,14 +48,14 @@ export const superscript = (str: string) => {
  * findFormulaInHtml('Just some text')
  * // Returns undefined
  * ```
- * @see https://regex101.com/r/H6DXwK/5 - Regex pattern explanation
+ * @see https://regex101.com/r/H6DXwK/6 - Regex pattern explanation
  */
 export const findFormulaInHtml = (html: string): string | undefined => {
   const pattern = new RegExp(
     "((?:(?:H[eogf]?|L[iau]|B[eari]?|C[arouseld]?|N[eiapdb]?|O[sg]?" +
       "|F[rle]?|M[gon]|A[lrsgutc]|S[icernmb]?|P[uabotmrd]?|Kr?|T[icebmalh]|" +
       "V|Z[nr]|G[ade]|R[buhena]|Yb?|I[nr]?|Xe|E[ur]|Dy|W|U)+" +
-      "(?:(?:<sub>(?:[2-9][0-9]*)</sub>)|[2-9][0-9]*)*){2,})",
+      "(?:(?:<su[bp]>(?:[2-9][0-9]*)</su[bp]>)|[2-9][0-9]*)*){2,})",
   );
   const match = html.match(pattern);
   if (!match) {

@@ -28,12 +28,14 @@ export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: Us
     // up as we iterate over the columns.
     const columnFilterConfig = getColumnFilterConfig();
 
+    const searchLimit = appContext.settings.searchLimit ?? 5;
     // Abort controller specific to this query
     fetchController = new AbortController();
     // Create the query instance
     // Note: This does not actually run the HTTP calls or queries...
     const productQueryResults = new SupplierFactory(
       query,
+      searchLimit,
       fetchController,
       appContext.settings.suppliers,
     );
