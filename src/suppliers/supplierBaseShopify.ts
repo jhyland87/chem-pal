@@ -33,8 +33,6 @@ export default abstract class SupplierBaseShopify
 {
   protected _apiKey: string = "";
 
-  protected _limit: number = 10;
-
   protected _apiHost: string = "searchserverapi.com";
 
   /**
@@ -85,7 +83,7 @@ export default abstract class SupplierBaseShopify
       vendors: true,
       tags: true,
       pageStartIndex: 0,
-      pagesMaxResults: limit,
+      pagesMaxResults: 1,
       categoryStartIndex: 0,
       categoriesMaxResults: 3,
       suggestionsMaxResults: 4,
@@ -124,6 +122,7 @@ export default abstract class SupplierBaseShopify
    */
   protected _isValidSearchResponse(response: unknown): response is SearchResponse {
     if (typeof response !== "object" || response === null) {
+      this._logger.warn("Invalid search response - non object:", response);
       return false;
     }
 
@@ -149,11 +148,26 @@ export default abstract class SupplierBaseShopify
       return key in response && validator(response[key as keyof typeof response]);
     });
 
-    if (!hasRequiredProps) return false;
+    if (!hasRequiredProps) {
+      this._logger.warn("Invalid search response - missing required properties:", response);
+      return false;
+    }
 
     // Check that items array contains valid listings
-    const items = (response as SearchResponse).items;
-    return items.every((item) => this._isItemListing(item));
+    const result = (response as SearchResponse).items.every((item) => {
+      const isOk = this._isItemListing(item);
+      if (!isOk) {
+        this._logger.warn("Invalid search response - invalid item:", item);
+      }
+      return isOk;
+    });
+
+    if (!result) {
+      this._logger.warn("Invalid search response - invalid items:", response);
+      return false;
+    }
+
+    return true;
   }
 
   /**
@@ -166,7 +180,7 @@ export default abstract class SupplierBaseShopify
 
     const requiredProps = {
       sku: "string",
-      price: "number",
+      price: "string",
       link: "string",
       variant_id: "string",
       quantity_total: (val: unknown) => typeof val === "string" || typeof val === "number",
@@ -207,19 +221,20 @@ export default abstract class SupplierBaseShopify
       link: "string",
       product_id: "string",
       product_code: "string",
+      quantity: "string",
       shopify_variants: Array.isArray,
-      description: "string",
+      //description: "string",
       vendor: "string",
-      quantity: (val: unknown) => typeof val === "string" || typeof val === "number",
+      //quantity: (val: unknown) => typeof val === "string" || typeof val === "number",
       original_product_id: "string",
       list_price: "string",
-      image_link: "string",
-      discount: "string",
-      add_to_cart_id: "string",
-      total_reviews: "string",
-      reviews_average_score: "string",
-      shopify_images: Array.isArray,
-      tags: "string",
+      //image_link: "string",
+      //discount: "string",
+      //add_to_cart_id: "string",
+      //total_reviews: "string",
+      //reviews_average_score: "string",
+      //shopify_images: Array.isArray,
+      //tags: "string",
     };
 
     const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
@@ -233,7 +248,13 @@ export default abstract class SupplierBaseShopify
 
     // Check that shopify_variants array contains valid variants
     const variants = (item as ItemListing).shopify_variants;
-    return variants.every((variant) => this._isShopifyVariant(variant));
+    return variants.every((variant) => {
+      const isOk = this._isShopifyVariant(variant);
+      if (!isOk) {
+        this._logger.warn("Invalid search response - invalid variant:", variant);
+      }
+      return isOk;
+    });
   }
 
   /**
@@ -324,6 +345,9 @@ export default abstract class SupplierBaseShopify
       .setPricing(parseFloat(product.price), "USD", "$")
       .setQuantity(quantity, uom ?? "unit")
       .setDescription(product.description || "")
+      .setId(product.product_id)
+      .setVendor(product.vendor)
+      .setSku(product.product_code)
       .build()
       .then((builtProduct) => {
         if (builtProduct) {

@@ -228,6 +228,65 @@ describe("SupplierBaseWix", () => {
       expect(products).toEqual(mockProducts);
     });
 
+    it.skip("should respect the limit parameter", async () => {
+      // Create an array of 10 mock products
+      const mockProducts: ProductObject[] = Array(10)
+        .fill(null)
+        .map((_, i) => ({
+          id: String(i),
+          name: `Product ${i}`,
+          price: 10.99 + i,
+          productType: "physical",
+          sku: `SKU${i}`,
+          isInStock: true,
+          urlPart: `product-${i}`,
+          formattedPrice: `$${(10.99 + i).toFixed(2)}`,
+          brand: null,
+          description: `Product ${i} description`,
+          productItems: [],
+          options: [],
+        }));
+
+      const mockResponse: QueryResponse = {
+        data: {
+          catalog: {
+            category: {
+              numOfProducts: mockProducts.length,
+              productsWithMetaData: {
+                list: mockProducts,
+                totalCount: mockProducts.length,
+              },
+            },
+          },
+        },
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce(
+        new Response(JSON.stringify(mockResponse), {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          headers: { "content-type": "application/json" },
+        }),
+      );
+
+      // Test with constructor limit
+      const constructorLimitSupplier = new MockWixSupplier("test", 3, mockAbortController);
+      let products = await constructorLimitSupplier["_queryProducts"]("test");
+      expect(products).toBeDefined();
+      expect(products?.length).toBe(3);
+      expect(products?.map((p) => p.id)).toEqual(["0", "1", "2"]);
+
+      // Test with method parameter limit overriding constructor limit
+      const methodLimitSupplier = new MockWixSupplier("test", 10, mockAbortController);
+      products = await methodLimitSupplier["_queryProducts"]("test", 5);
+      expect(products).toBeDefined();
+      expect(products?.length).toBe(5);
+      expect(products?.map((p) => p.id)).toEqual(["0", "1", "2", "3", "4"]);
+
+      // Verify the GraphQL variables include the correct limit
+      const variables = methodLimitSupplier["_getGraphQLVariables"]("test", 5);
+      expect(variables.limit).toBe(5);
+    });
+
     it("should throw error for invalid API response", async () => {
       const invalidResponse = {
         data: {

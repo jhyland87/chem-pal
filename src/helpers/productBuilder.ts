@@ -216,17 +216,19 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
-   * Sets the numeric ID for the product.
+   * Sets the ID for the product.
    *
-   * @param id - The numeric identifier for the product
+   * @param id - The unique identifier for the product
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
    * builder.setId(12345);
    * ```
    */
-  setId(id: number): ProductBuilder<T> {
-    this._product.id = id;
+  setId(id?: number | string): ProductBuilder<T> {
+    if (id) {
+      this._product.id = id;
+    }
     return this;
   }
 
@@ -312,6 +314,23 @@ export class ProductBuilder<T extends Product> {
       this._product.variants = [];
     }
     this._product.variants.push(...variants);
+    return this;
+  }
+
+  /**
+   * Sets the vendor for the product.
+   *
+   * @param vendor - The vendor name
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setVendor('Vendor Name');
+   * ```
+   */
+  setVendor(vendor?: string): ProductBuilder<T> {
+    if (vendor) {
+      this._product.vendor = vendor;
+    }
     return this;
   }
 

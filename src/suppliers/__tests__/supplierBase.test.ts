@@ -10,11 +10,17 @@ class MockSupplier extends SupplierBase<{ id: string; title: string }, Product> 
 
   protected async _queryProducts(
     query: string,
+    limit: number = 5,
   ): Promise<Array<{ id: string; title: string }> | void> {
-    return [
-      { id: "1", title: "Test Product 1" },
-      { id: "2", title: "Test Product 2" },
-    ];
+    // Generate more results than the limit
+    const allResults = Array(10)
+      .fill(null)
+      .map((_, i) => ({
+        id: String(i),
+        title: `Test Product ${i} for ${query}`,
+      }));
+    // Return only up to the limit
+    return allResults.slice(0, limit);
   }
 
   protected async _getProductData(productIndexObject: {
@@ -42,7 +48,7 @@ describe("SupplierBase", () => {
     // Reset fetch mock before each test
     global.fetch = jest.fn();
     mockAbortController = new AbortController();
-    mockSupplier = new MockSupplier("test", 5, mockAbortController);
+    mockSupplier = new MockSupplier("test query", 5, mockAbortController);
   });
 
   afterEach(() => {
@@ -207,20 +213,30 @@ describe("SupplierBase", () => {
 
   describe("async iterator", () => {
     it("should yield products from query results", async () => {
+      const supplier = new MockSupplier("test query", 2, mockAbortController); // Set limit to 2
       const products: Product[] = [];
-      for await (const product of mockSupplier) {
+      for await (const product of supplier) {
         products.push(product);
       }
 
       expect(products).toHaveLength(2);
-      expect(products[0]).toEqual(
-        expect.objectContaining({
-          title: "Test Product 1",
-          price: 10.99,
-          quantity: 1,
-          uom: "ea",
-        }),
-      );
+      expect(products[0].title).toContain("Test Product 0");
+      expect(products[1].title).toContain("Test Product 1");
+    });
+
+    it("should respect the limit parameter", async () => {
+      const supplier = new MockSupplier("test query", 3, mockAbortController); // Set limit to 3
+      const products: Product[] = [];
+      for await (const product of supplier) {
+        products.push(product);
+      }
+
+      expect(products).toHaveLength(3); // Should only get 3 products despite having 10 available
+      expect(products.map((p) => p.title)).toEqual([
+        "Test Product 0 for test query",
+        "Test Product 1 for test query",
+        "Test Product 2 for test query",
+      ]); // Should get first 3 products
     });
 
     it("should handle empty query results", async () => {

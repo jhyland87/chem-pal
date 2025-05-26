@@ -4,6 +4,8 @@
     "target": "ES2021",
     "strictNullChecks": true,
     "useDefineForClassFields": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
     "lib": [
       "ES2021",
       "DOM",

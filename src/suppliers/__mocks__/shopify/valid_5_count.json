@@ -1,0 +1,255 @@
+{
+  "totalItems": 509,
+  "startIndex": 0,
+  "itemsPerPage": 6,
+  "currentItemCount": 6,
+  "categoryStartIndex": 0,
+  "totalCategories": 23,
+  "pageStartIndex": 0,
+  "totalPages": 19,
+  "suggestions": ["sulfuric acid", "sulfuric acid 98%", "sulfur powder", "sulfuric acid 96%"],
+  "categories": [],
+  "pages": [],
+  "items": [
+    {
+      "product_id": "576748650555",
+      "original_product_id": "576748650555",
+      "title": "Sulfamic Acid ACS Grade",
+      "description": "Sulfamic Acid, also known as Amidosulfonic Acid, Aminosulfonic Acid and Amidosulfuric Acid has the chemical formula H3NO3S. It appears as a white orthorhombic crystalline, odorless solid. It is soluble in Water and slightly soluble in Methanol and Acetone. It is the simplest of the Sulfamic Acids having a single Sulfur Atom bound by Oxygen, Hydroxy, and Amino groups. It is prepared from Urea and Fuming Sulfuric Acid.As a cleaning agent, it is mainly utilized to clean: heat exchangers, ...",
+      "link": "/products/sulfamic-acid-acs",
+      "price": "100.1000",
+      "list_price": "0.0000",
+      "quantity": "1",
+      "product_code": "C7997-100g",
+      "image_link": "https://cdn.test.com/s/files/1/0003/3406/9819/files/post-apple-generic-CORRECT_8de8dc6f-b4a7-4d1a-8190-d8477152450f_large.png?v=1741691242",
+      "vendor": "Post Apple",
+      "discount": "0",
+      "add_to_cart_id": "7219082690619",
+      "total_reviews": "0",
+      "reviews_average_score": "0",
+      "shopify_variants": [
+        {
+          "variant_id": "7219082690619",
+          "sku": "C7997-100g",
+          "barcode": "",
+          "price": "100.1000",
+          "list_price": "0.0000",
+          "taxable": "1",
+          "options": {
+            "Model": "100g"
+          },
+          "available": "1",
+          "search_variant_metafields_data": [],
+          "filter_variant_metafields_data": [],
+          "image_link": "",
+          "image_alt": "",
+          "quantity_total": "",
+          "link": "/products/sulfamic-acid-acs?variant=7219082690619"
+        }
+      ],
+      "shopify_images": [],
+      "tags": ""
+    },
+    {
+      "product_id": "576746684475",
+      "original_product_id": "576746684475",
+      "title": "Sodium Sulfate Anhydrous, Lab Grade (Fine Granular)",
+      "description": "Sodium Sulfate Anhydrous is an inorganic salt, fine granular form. It readily dissolves in water and dissociates into sodium and sulfate ions. The sodium ion is the most abundant cation in extracellular fluid and is used extensively in the treatment of fluid/electrolyte imbalance. Due to the presence of impurities, Lab Alley’s Sodium Sulfate Anhydrous is certified as the Lab Grade reagent. Lab grade chemicals possess reasonable purity but do not comply with any official standard for quality ...",
+      "link": "/products/sodium-sulfate-anhydrous-lab-grade",
+      "price": "44.9300",
+      "list_price": "0.0000",
+      "quantity": "1",
+      "product_code": "SOSUATGL-1LB",
+      "image_link": "https://cdn.test.com/s/files/1/0003/3406/9819/files/C7760-1LB_large.jpg?v=1744204799",
+      "vendor": "Lab Alley",
+      "discount": "0",
+      "add_to_cart_id": "45438771101851",
+      "total_reviews": "0",
+      "reviews_average_score": "0",
+      "shopify_variants": [
+        {
+          "variant_id": "44100358668443",
+          "sku": "SOSUATGL-25KG",
+          "barcode": "",
+          "price": "140.8000",
+          "list_price": "0.0000",
+          "taxable": "1",
+          "options": {
+            "Model": "25 Kilograms"
+          },
+          "available": "1",
+          "search_variant_metafields_data": [],
+          "filter_variant_metafields_data": [],
+          "image_link": "https://cdn.test.com/s/files/1/0003/3406/9819/files/C7760-25KG_large.jpg?v=1744204796",
+          "image_alt": "",
+          "quantity_total": "",
+          "link": "/products/sodium-sulfate-anhydrous-lab-grade?variant=44100358668443"
+        }
+      ],
+      "shopify_images": [],
+      "shopify_images_alt": ["", "", "", "", "", "", ""],
+      "tags": ""
+    },
+    {
+      "product_id": "576748879931",
+      "original_product_id": "576748879931",
+      "title": "Precipitated Sulfur Powder, Purified, 99.5%",
+      "description": "Precipitated sulfur refers to a form of sulfur that is obtained through a chemical process called precipitation. Sulfur is extracted from raw materials such as natural gas, crude oil, or mined from sulfur deposits. The process involves reacting sulfur dioxide (SO2) with other chemicals, like hydrogen sulfide (H2S), to produce elemental sulfur.Once obtained, this elemental sulfur is then converted into various forms, including precipitated sulfur. This form of sulfur is finely ground and ...",
+      "link": "/products/sulfur-precipitated-purified-powder",
+      "price": "44.0000",
+      "list_price": "0.0000",
+      "quantity": "1",
+      "product_code": "SUPREPL-1LB",
+      "image_link": "https://cdn.test.com/s/files/1/0003/3406/9819/files/SUPREPL-500G_large.jpg?v=1744263708",
+      "vendor": "Lab Alley",
+      "discount": "0",
+      "add_to_cart_id": "43989052850331",
+      "total_reviews": "0",
+      "reviews_average_score": "0",
+      "shopify_variants": [
+        {
+          "variant_id": "43989052981403",
+          "sku": "SUPREPL-25KG",
+          "barcode": "",
+          "price": "367.6100",
+          "list_price": "0.0000",
+          "taxable": "1",
+          "options": {
+            "Model": "25 Kilograms"
+          },
+          "available": "1",
+          "search_variant_metafields_data": [],
+          "filter_variant_metafields_data": [],
+          "image_link": "https://cdn.test.com/s/files/1/0003/3406/9819/files/SUPREPL-25KG_large.jpg?v=1744263705",
+          "image_alt": "",
+          "quantity_total": "",
+          "link": "/products/sulfur-precipitated-purified-powder?variant=43989052981403"
+        }
+      ],
+      "shopify_images": [],
+      "shopify_images_alt": ["", "", "", "", "", "", "", ""],
+      "tags": ""
+    },
+    {
+      "product_id": "576748912699",
+      "original_product_id": "576748912699",
+      "title": "Precipitated Sulfur Powder 99.5% USP Grade",
+      "description": "Precipitated sulfur refers to a form of sulfur that is obtained through a chemical process called precipitation. Sulfur is extracted from raw materials such as natural gas, crude oil, or mined from sulfur deposits. The process involves reacting sulfur dioxide (SO2) with other chemicals, like hydrogen sulfide (H2S), to produce elemental sulfur. Once obtained, this elemental sulfur is then converted into various forms, including precipitated sulfur. This form of sulfur is finely ground and ...",
+      "link": "/products/sulfur-precipitated-usp-powder",
+      "price": "44.0000",
+      "list_price": "0.0000",
+      "quantity": "1",
+      "product_code": "SUPREPU-1LB",
+      "image_link": "https://cdn.test.com/s/files/1/0003/3406/9819/files/SUPREPU-1LB_large.jpg?v=1744197304",
+      "vendor": "Lab Alley",
+      "discount": "0",
+      "add_to_cart_id": "43988466466971",
+      "total_reviews": "0",
+      "reviews_average_score": "0",
+      "shopify_variants": [
+        {
+          "variant_id": "43988466663579",
+          "sku": "SUPREPU-25KG",
+          "barcode": "",
+          "price": "489.6000",
+          "list_price": "0.0000",
+          "taxable": "1",
+          "options": {
+            "Model": "25 Kilograms"
+          },
+          "available": "1",
+          "search_variant_metafields_data": [],
+          "filter_variant_metafields_data": [],
+          "image_link": "https://cdn.test.com/s/files/1/0003/3406/9819/files/SUPREPU-25KG_large.jpg?v=1744197314",
+          "image_alt": "",
+          "quantity_total": "",
+          "link": "/products/sulfur-precipitated-usp-powder?variant=43988466663579"
+        }
+      ],
+      "shopify_images": [],
+      "shopify_images_alt": ["", "", "", "", "", "", "", "", "", "", ""],
+      "tags": ""
+    },
+    {
+      "product_id": "6584060674203",
+      "original_product_id": "6584060674203",
+      "title": "Sulfuric Acid 96% Solution, Semiconductor/Electronic Grade",
+      "description": "Sulfuric Acid, also known as Mattling Acid, is a mineral acid that is recognized as Oil of Vitriol. It is highly acidic and corrosive due to its low pH. It must be handled carefully and kept away from incompatible materials such as water, organic compounds, metals, amines, bases, and high temperatures. Solvents used for electronics production are known as Electronic Grade solvents. Heavy metal concentrations in these solvents are extremely low, measured in parts per billion or parts per ...",
+      "link": "/products/sulfuric-acid-electronic-grade-semiconductor-grade-96",
+      "price": "50.4000",
+      "list_price": "0.0000",
+      "quantity": "1",
+      "product_code": "SUAS96-500ML",
+      "image_link": "https://cdn.test.com/s/files/1/0003/3406/9819/products/SUAS96-500ML_large.jpg?v=1744267182",
+      "vendor": "Lab Alley",
+      "discount": "0",
+      "add_to_cart_id": "40875817435291",
+      "total_reviews": "0",
+      "reviews_average_score": "0",
+      "shopify_variants": [
+        {
+          "variant_id": "40875817664667",
+          "sku": "SUAS96-55GAL",
+          "barcode": "",
+          "price": "2280.6000",
+          "list_price": "0.0000",
+          "taxable": "1",
+          "options": {
+            "Model": "55 Gallons"
+          },
+          "available": "1",
+          "search_variant_metafields_data": [],
+          "filter_variant_metafields_data": [],
+          "image_link": "https://cdn.test.com/s/files/1/0003/3406/9819/products/SUAS96-55GAL_large.jpg?v=1744267180",
+          "image_alt": "Sulfuric Acid 96% Solution, Semiconductor Grade, 55 Gallons",
+          "quantity_total": "",
+          "link": "/products/sulfuric-acid-electronic-grade-semiconductor-grade-96?variant=40875817664667"
+        }
+      ],
+      "shopify_images": [],
+      "shopify_images_alt": [],
+      "tags": ""
+    },
+    {
+      "product_id": "576749731899",
+      "original_product_id": "576749731899",
+      "title": "Sulfuric Acid 5% Solution",
+      "description": "This chemical compound is categorized as an inorganic acid with a very low pH, which requires precaution before using it as well as safe handling; Ideally, it should be physically stored away from materials such as water, organic materials, metals, amines, bases, and excess heat, since it can generate undesirable reactions.A 5% sulfuric acid solution is a relatively dilute form of sulfuric acid, which is commonly known as battery acid. Due to its lower concentration, it's used in various ...",
+      "link": "/products/sulfuric-acid-5",
+      "price": "33.0000",
+      "list_price": "0.0000",
+      "quantity": "1",
+      "product_code": "SUAL5-500ML",
+      "image_link": "https://cdn.test.com/s/files/1/0003/3406/9819/files/SUAL5-500ML_large.jpg?v=1744268536",
+      "vendor": "Lab Alley",
+      "discount": "0",
+      "add_to_cart_id": "40875819499675",
+      "total_reviews": "0",
+      "reviews_average_score": "0",
+      "shopify_variants": [
+        {
+          "variant_id": "43999390433435",
+          "sku": "SUAL5-55GAL",
+          "barcode": "",
+          "price": "968.0000",
+          "list_price": "0.0000",
+          "taxable": "1",
+          "options": {
+            "Model": "55 Gallons"
+          },
+          "available": "1",
+          "search_variant_metafields_data": [],
+          "filter_variant_metafields_data": [],
+          "image_link": "https://cdn.test.com/s/files/1/0003/3406/9819/files/SUAL5-55GAL_large.jpg?v=1744268534",
+          "image_alt": "",
+          "quantity_total": "",
+          "link": "/products/sulfuric-acid-5?variant=43999390433435"
+        }
+      ],
+      "shopify_images": [],
+      "shopify_images_alt": ["", "", "", "", "", "", "", "", ""],
+      "tags": ""
+    }
+  ],
+  "facets": []
+}

@@ -355,7 +355,7 @@ export default abstract class SupplierBaseWix
       throw new Error(`Invalid or empty Wix query response for ${query}`);
     }
 
-    return queryResponse.data.catalog.category.productsWithMetaData.list;
+    return queryResponse.data.catalog.category.productsWithMetaData.list.slice(0, limit);
   }
 
   /**

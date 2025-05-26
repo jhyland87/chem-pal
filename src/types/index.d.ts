@@ -407,7 +407,7 @@ export interface Product extends Variant {
  *
  * @example
  * ```typescript
- * const item: Itemxxx = {
+ * const item: Item = {
  *   id: 1,
  *   name: "Project A",
  *   deadline: new Date("2024-12-31"),
@@ -425,7 +425,7 @@ export interface Product extends Variant {
  * };
  * ```
  */
-export interface Itemxxx {
+export interface Item {
   /**
    * Unique numeric identifier
    * @example 1
@@ -459,7 +459,7 @@ export interface Itemxxx {
   /**
    * Optional array of child items
    */
-  nodes?: Itemxxx[];
+  nodes?: Item[];
 }
 
 /**

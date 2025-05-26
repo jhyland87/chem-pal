@@ -626,6 +626,10 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
         .setQuantity(product.quantity, product.uom)
         .setDescription(product.description || "")
         .setCAS(product.cas || "")
+        .setId(product.id)
+        .setUUID(product.uuid)
+        .setSku(product.sku)
+        .setVendor(product.vendor)
         .build()
     );
   }

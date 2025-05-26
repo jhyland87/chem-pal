@@ -126,4 +126,5 @@
   "[html]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "openCoverage.coverageFilePath": "coverage/lcov-report/index.html",
 }

@@ -53,3 +53,10 @@ global.console = {
   warn: jest.fn(),
   info: jest.fn(),
 };
+
+// Ensure all fetch calls are mocked
+global.fetch = jest.fn().mockImplementation(() => {
+  throw new Error(
+    'All fetch calls must be mocked! Use jest.spyOn(global, "fetch").mockImplementation() in your test.',
+  );
+});
