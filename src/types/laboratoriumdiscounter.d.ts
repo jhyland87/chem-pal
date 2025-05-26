@@ -23,7 +23,7 @@ export interface PriceObject {
  * Represents a product in the Laboratorium Discounter system.
  * Contains all product details including pricing, availability, and metadata.
  */
-export interface ProductObject {
+export interface SearchResponseProduct {
   /* eslint-disable */
   /** Unique identifier for the product */
   id: number;
@@ -64,6 +64,32 @@ export interface ProductObject {
   /* eslint-enable */
 }
 
+export interface VariantObject {
+  /* eslint-disable */
+  /** Index signature for additional properties */
+
+  id: number;
+  position: number;
+  price: PriceObject;
+  sku: string;
+  ean: string;
+  code: string;
+  title: string;
+  active: boolean;
+  stock: {
+    available: boolean;
+    on_stock: boolean;
+    level: number;
+    minimum: number;
+    maximum: number;
+    delivery?: {
+      title: string;
+    };
+    allow_backorders: boolean;
+  };
+  /* eslint-enable */
+}
+
 /**
  * Represents the complete response from the Laboratorium Discounter API.
  * Contains page information, request details, and product collection.
@@ -99,7 +125,7 @@ export interface SearchResponse {
       limit: string;
     };
     /** POST parameters */
-    post: any[];
+    post: Record<string, unknown>[];
     /** Device information */
     device: {
       /** Platform information */
@@ -116,15 +142,34 @@ export interface SearchResponse {
   };
   /** Collection of products */
   collection: {
+    count: number;
+    limit: number;
+    page: number;
+    pages: number;
+    total: string;
     /** Map of products indexed by their identifiers */
     products: {
-      [key: string]: ProductObject;
+      [key: string]: SearchResponseProduct;
     };
     /** Index signature for additional collection properties */
     [key: string]: unknown;
   };
+  shop: {
+    /** Base currency */
+    base_currency: string;
+    status: string;
+    currency: string;
+    language: string;
+    country: string;
+    /** Index signature for additional shop properties */
+    [key: string]: unknown;
+  };
   /** Index signature for additional response properties */
   [key: string]: unknown;
+}
+
+export interface ProductObject extends SearchResponseProduct {
+  product: SearchResponseProduct & { variants?: boolean | { [key: string]: VariantObject } };
 }
 
 /**

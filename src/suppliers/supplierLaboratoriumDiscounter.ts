@@ -1,22 +1,24 @@
+import { AVAILABILITY } from "@/constants/app";
 import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
+import { findCAS } from "@/helpers/cas";
 import { ProductBuilder } from "@/helpers/productBuilder";
-import { isQuantityObject, parseQuantity } from "@/helpers/quantity";
-import { firstMap } from "@/helpers/utils";
 import { type Product } from "@/types";
 import {
   type PriceObject,
   type ProductObject,
   type SearchParams,
   type SearchResponse,
+  type SearchResponseProduct,
+  type VariantObject,
 } from "@/types/laboratoriumdiscounter";
 import SupplierBase from "./supplierBase";
 
 /**
- * Laboratorium Discounter.nl uses a custom script to fetch product data.
+ * Laboratorium Discounter uses a custom script to fetch product data.
+ * This supplier seems to use Lightspeed eCom (webshopapp) as their ecommerce platform, as
+ * can be determined by loking at the shop.domains.main value of a search response, or
+ * looking at where some of their assets are pulled from (cdn.webshopapp.com).
  *
- * The script is located in the `script[nonce]` element of the product page.
- *
- * The script is a JSON object that contains the product data.
  * @module SupplierLaboratoriumDiscounter
  */
 export default class SupplierLaboratoriumDiscounter
@@ -59,6 +61,98 @@ export default class SupplierLaboratoriumDiscounter
   };
 
   /**
+   * Validates that a response has the expected structure for a search response
+   * @param response - Response object to validate
+   * @returns Type predicate indicating if response is a valid SearchResponse
+   * @example
+   * ```typescript
+   * const response = await this._httpGetJson({
+   *   path: "/en/search/acid",
+   *   params: { format: "json" }
+   * });
+   * if (this._isResponseOk(response)) {
+   *   // Process valid response
+   *   console.log(response.collection.products);
+   * }
+   * ```
+   */
+  protected _isSearchResponseOk(response: unknown): response is SearchResponse {
+    if (typeof response !== "object" || response === null) {
+      this._logger.warn("Invalid response: - Non object", { response });
+      return false;
+    }
+
+    // Check for required top-level properties
+    if (!("page" in response && "request" in response && "collection" in response)) {
+      this._logger.warn(
+        "Invalid response: - Missing required properties: page, request or collection",
+        { response },
+      );
+      return false;
+    }
+
+    const { page, request, collection } = response as Partial<SearchResponse>;
+
+    if (typeof page !== "object" || !page) {
+      this._logger.warn("Invalid page object, missing required properties", { page });
+      return false;
+    }
+
+    if (typeof request !== "object" || !request) {
+      this._logger.warn("Invalid request object, missing required properties", { request });
+      return false;
+    }
+
+    if (typeof collection !== "object" || !collection) {
+      this._logger.warn("Invalid collection object, missing required properties", { collection });
+      return false;
+    }
+
+    const badProps = ["search", "session_id", "key", "title", "status"].filter((prop) => {
+      if (prop in page === false) {
+        this._logger.warn(`Invalid response, expected to find ${prop} in page`, { page });
+        return true;
+      }
+      return false;
+    });
+
+    if (badProps.length > 0) {
+      this._logger.warn("Invalid page object, missing required properties", { page });
+      return false;
+    }
+
+    // Validate request object
+    if (
+      typeof request !== "object" ||
+      !request ||
+      !("url" in request && "method" in request && "get" in request && "device" in request)
+    ) {
+      this._logger.warn("Invalid request object, missing required properties from request", {
+        request,
+      });
+      return false;
+    }
+
+    // Validate collection and products
+    if (
+      typeof collection !== "object" ||
+      !collection ||
+      !("products" in collection) ||
+      typeof collection.products !== "object"
+    ) {
+      this._logger.warn("Invalid collection object, missing required properties from collection", {
+        collection,
+      });
+      return false;
+    }
+
+    // Validate each product in the collection
+    return Object.values(collection.products).every((product) =>
+      this._isSearchResponseProduct(product),
+    );
+  }
+
+  /**
    * Type guard to validate PriceObject structure
    * @param price - Object to validate as PriceObject
    * @returns Type predicate indicating if price is a valid PriceObject
@@ -87,7 +181,7 @@ export default class SupplierLaboratoriumDiscounter
    * @param product - Object to validate as ProductObject
    * @returns Type predicate indicating if product is a valid ProductObject
    */
-  protected _isProductObject(product: unknown): product is ProductObject {
+  protected _isSearchResponseProduct(product: unknown): product is SearchResponseProduct {
     if (typeof product !== "object" || product === null) return false;
 
     const requiredProps = {
@@ -119,6 +213,21 @@ export default class SupplierLaboratoriumDiscounter
 
     // Validate price object separately
     return "price" in product && this._isPriceObject(product.price);
+  }
+
+  /**
+   * Type guard to validate ProductObject structure
+   * @param product - Object to validate as ProductObject
+   * @returns Type predicate indicating if product is a valid ProductObject
+   */
+  protected _isProductObject(data: unknown): data is ProductObject {
+    if (typeof data !== "object" || data === null) return false;
+    if ("product" in data === false || typeof data.product !== "object" || data.product === null)
+      return false;
+    return (
+      "variants" in data.product &&
+      (typeof data.product.variants === "object" || data.product.variants === false)
+    );
   }
 
   /**
@@ -180,96 +289,6 @@ export default class SupplierLaboratoriumDiscounter
   }
 
   /**
-   * Validates that a response has the expected structure for a search response
-   * @param response - Response object to validate
-   * @returns Type predicate indicating if response is a valid SearchResponse
-   * @example
-   * ```typescript
-   * const response = await this._httpGetJson({
-   *   path: "/en/search/acid",
-   *   params: { format: "json" }
-   * });
-   * if (this._isResponseOk(response)) {
-   *   // Process valid response
-   *   console.log(response.collection.products);
-   * }
-   * ```
-   */
-  protected _isResponseOk(response: unknown): response is SearchResponse {
-    if (typeof response !== "object" || response === null) {
-      this._logger.warn("Invalid response: - Non object", { response });
-      return false;
-    }
-
-    // Check for required top-level properties
-    if (!("page" in response && "request" in response && "collection" in response)) {
-      this._logger.warn(
-        "Invalid response: - Missing required properties: page, request or collection",
-        { response },
-      );
-      return false;
-    }
-
-    const { page, request, collection } = response as SearchResponse;
-
-    if (typeof page !== "object" || !page) {
-      this._logger.warn("Invalid page object, missing required properties", { page });
-      return false;
-    }
-
-    if (typeof request !== "object" || !request) {
-      this._logger.warn("Invalid request object, missing required properties", { request });
-      return false;
-    }
-
-    if (typeof collection !== "object" || !collection) {
-      this._logger.warn("Invalid collection object, missing required properties", { collection });
-      return false;
-    }
-
-    const badProps = ["search", "session_id", "key", "title", "status"].filter((prop) => {
-      if (prop in page === false) {
-        this._logger.warn(`Invalid response, expected to find ${prop} in page`, { page });
-        return true;
-      }
-      return false;
-    });
-
-    if (badProps.length > 0) {
-      this._logger.warn("Invalid page object, missing required properties", { page });
-      return false;
-    }
-
-    // Validate request object
-    if (
-      typeof request !== "object" ||
-      !request ||
-      !("url" in request && "method" in request && "get" in request && "device" in request)
-    ) {
-      this._logger.warn("Invalid request object, missing required properties from request", {
-        request,
-      });
-      return false;
-    }
-
-    // Validate collection and products
-    if (
-      typeof collection !== "object" ||
-      !collection ||
-      !("products" in collection) ||
-      typeof collection.products !== "object"
-    ) {
-      this._logger.warn("Invalid collection object, missing required properties from collection", {
-        collection,
-      });
-      return false;
-    }
-
-    // Validate each product in the collection
-    return Object.values(collection.products).every((product) => this._isProductObject(product));
-  }
-
-  /**
    * Executes a product search query and returns matching products
    * @param query - Search term to look for
    * @param limit - The maximum number of results to query for
@@ -287,7 +306,7 @@ export default class SupplierLaboratoriumDiscounter
   protected async _queryProducts(
     query: string,
     limit: number = this._limit,
-  ): Promise<ProductObject[] | void> {
+  ): Promise<ProductBuilder<Product>[] | void> {
     const params = this._makeQueryParams();
     if (!this._isValidSearchParams(params)) {
       this._logger.warn("Invalid search parameters:", params);
@@ -299,12 +318,38 @@ export default class SupplierLaboratoriumDiscounter
       params,
     });
 
-    if (!this._isResponseOk(response)) {
+    if (!this._isSearchResponseOk(response)) {
       this._logger.warn("Bad search response:", response);
       return;
     }
 
-    return Object.values(response.collection.products).slice(0, limit);
+    const products: ProductBuilder<Product>[] = [];
+
+    for (const [productId, product] of Object.entries(response.collection.products).slice(
+      0,
+      limit,
+    )) {
+      const productBuilder = new ProductBuilder(this._baseURL);
+      productBuilder
+        .addRawData(product)
+        .setBasicInfo(product.title, product.url, this.supplierName)
+        .setDescription(product.description)
+        .setId(productId)
+        .setAvailability(product.available)
+        .setSku(product.sku)
+        .setUUID(product.code)
+        .setPricing(
+          product.price.price,
+          response.shop.base_currency.toUpperCase(),
+          CURRENCY_SYMBOL_MAP.EUR,
+        )
+        .setQuantity(product.variant)
+        .setCAS(typeof product.content === "string" ? (findCAS(product.content) ?? "") : "");
+
+      products.push(productBuilder);
+    }
+
+    return products;
   }
 
   /**
@@ -323,37 +368,54 @@ export default class SupplierLaboratoriumDiscounter
    * }
    * ```
    */
-  protected async _getProductData(result: ProductObject): Promise<Partial<Product> | void> {
+  protected async _getProductData(
+    product: ProductBuilder<Product>,
+  ): Promise<ProductBuilder<Product> | void> {
     try {
-      if (!this._isProductObject(result)) {
-        this._logger.warn("Invalid product object:", result);
+      if (product instanceof ProductBuilder === false) {
+        this._logger.warn("Invalid product object - Expected ProductBuilder instance:", product);
         return;
       }
 
-      const quantity = firstMap(parseQuantity, [
-        result.code,
-        result.sku,
-        result.fulltitle,
-        result.variant,
-      ]);
+      const productResponse = await this._httpGetJson({
+        path: product.get("url"),
+        params: {
+          format: "json",
+        },
+      });
 
-      if (!isQuantityObject(quantity)) {
-        this._logger.debug("Could not parse quantity from product:", {
-          code: result.code,
-          sku: result.sku,
-          fulltitle: result.fulltitle,
-          variant: result.variant,
-        });
+      if (this._isProductObject(productResponse) === false) {
+        this._logger.warn("Invalid product data - did not pass typeguard:", productResponse);
         return;
       }
+      const productData = productResponse.product;
 
-      const builder = new ProductBuilder(this._baseURL);
-      return builder
-        .setBasicInfo(result.title || result.fulltitle, result.url, this.supplierName)
-        .setPricing(result.price.price, "EUR", CURRENCY_SYMBOL_MAP.EUR)
-        .setQuantity(quantity.quantity, quantity.uom)
-        .setDescription(result.description || "")
-        .build();
+      if (typeof productData.variants === "object") {
+        for (const variant of Object.values(
+          productData.variants as { [key: string]: VariantObject },
+        )) {
+          if (variant.active === false) continue;
+          product.addVariant({
+            id: variant.id,
+            uuid: variant.code,
+            sku: variant.sku,
+            title: variant.title,
+            price: variant.price.price,
+            availability: variant.stock
+              ? typeof variant.stock === "object"
+                ? ((stock) => {
+                    if (stock.available) return AVAILABILITY.IN_STOCK;
+                    if (stock.on_stock) return AVAILABILITY.IN_STOCK;
+                    if (stock.allow_backorders) return AVAILABILITY.BACKORDER;
+                    return AVAILABILITY.OUT_OF_STOCK;
+                  })(variant.stock)
+                : undefined
+              : undefined,
+          });
+        }
+      }
+
+      return product;
     } catch (error) {
       this._logger.error("Error processing product data:", error);
       return;

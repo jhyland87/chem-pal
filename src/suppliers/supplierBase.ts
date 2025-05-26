@@ -5,6 +5,7 @@ import { type OptionalProductFields, type RequiredProductFields } from "@/types/
 import { type RequestOptions, type RequestParams } from "@/types/request";
 import { Logger } from "@/utils/Logger";
 import * as contentType from "content-type";
+
 import { type JsonValue } from "type-fest";
 
 /**
@@ -12,8 +13,8 @@ import { type JsonValue } from "type-fest";
  * @abstract
  * @category Supplier
  * @module SupplierBase
- * @typeParam S  the partial product
- * @typeParam T The product type
+ * @typeParam S - the partial product
+ * @typeParam T - The product type
  * @example
  * ```typescript
  * const supplier = new SupplierBase<Product>();
@@ -43,6 +44,9 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   // How many results to return for this query (This is not a limit on how many requests
   // can be made to a supplier for any given query).
   protected _limit: number;
+
+  // The products that are being built by the supplier
+  protected _products: ProductBuilder<T>[] = [];
 
   // This is a limit to how many queries can be sent to the supplier for any given query.
   protected _httpRequestHardLimit: number = 50;
@@ -483,36 +487,40 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     try {
       await this._setup();
       const results = await this._queryProducts(this._query, this._limit);
-      this._queryResults = results || [];
 
-      this._logger.debug("this._queryResults:", this._queryResults);
-
-      if (this._queryResults.length === 0) {
+      if (typeof results === "undefined" || results.length === 0) {
         this._logger.debug(`No query results found`);
         return;
       }
+      this._products = results;
 
       // Process results in batches to maintain controlled concurrency
-      for (let i = 0; i < this._queryResults.length; i += this._httpRequestBatchSize) {
-        const batch = this._queryResults.slice(i, i + this._httpRequestBatchSize);
+      for (let i = 0; i < this._products.length; i += this._httpRequestBatchSize) {
+        const batch = this._products.slice(i, i + this._httpRequestBatchSize);
 
         // Create promises for the current batch
+        //const batchPromises = batch.map((r) => this._getProductData(r));
         const batchPromises = batch.map((r: unknown) => {
-          if (typeof r !== "object" || r === null) {
-            return Promise.reject(new Error("Invalid result object"));
+          if (r instanceof ProductBuilder === false) {
+            this._logger.error("Invalid product builder:", r);
+            return Promise.reject(new Error("Invalid product builder"));
           }
-          return this._getProductData(r as S);
+          return this._getProductData(r as ProductBuilder<T>);
         });
 
         // Process batch results as they complete
         const batchResults = await Promise.allSettled(batchPromises);
         for (const result of batchResults) {
+          if (result.status === "rejected") {
+            this._logger.error(`Error found when yielding a product:`, result);
+            continue;
+          }
+
           try {
-            if (result.status === "fulfilled" && this._isValidResult(result)) {
-              const finishedProduct = await this._finishProduct(result.value);
-              if (finishedProduct) {
-                yield finishedProduct;
-              }
+            const finishedProduct = await this._finishProduct(result.value as ProductBuilder<T>);
+
+            if (finishedProduct) {
+              yield finishedProduct;
             }
           } catch (err) {
             this._logger.error(`Error found when yielding a product:`, err);
@@ -608,30 +616,13 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * @param product - The partial product to finalize
    * @returns Promise resolving to a complete Product object or void if validation fails
    */
-  protected async _finishProduct(
-    product: RequiredProductFields & Partial<OptionalProductFields>,
-  ): Promise<Maybe<T>> {
-    if (!this._isMinimalProduct(product)) {
+  protected async _finishProduct(product: ProductBuilder<T>): Promise<Maybe<T>> {
+    if (!this._isMinimalProduct(product.dump())) {
+      this._logger.warn("Unable to finish product - Minimum data not set", { product });
       return;
     }
 
-    const builder = new ProductBuilder<T>(this._baseURL);
-
-    return (
-      builder
-        //.setData(product)
-        .setGrade(product?.grade)
-        .setBasicInfo(product.title, product.url!, product.supplier!)
-        .setPricing(product.price, product.currencyCode!, product.currencySymbol!)
-        .setQuantity(product.quantity, product.uom)
-        .setDescription(product.description || "")
-        .setCAS(product.cas || "")
-        .setId(product.id)
-        .setUUID(product.uuid)
-        .setSku(product.sku)
-        .setVendor(product.vendor)
-        .build()
-    );
+    return await product.build();
   }
 
   /**
@@ -701,11 +692,14 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * }
    * ```
    */
-  protected abstract _queryProducts(query: string, limit: number): Promise<Array<S> | void>;
+  protected abstract _queryProducts(
+    query: string,
+    limit: number,
+  ): Promise<ProductBuilder<T>[] | void>;
 
   /**
    * Parse the supplier-specific product data into the common Product type.
-   * @param productIndexObject - The supplier-specific product data to parse
+   * @param product - The supplier-specific product data to parse
    * @returns Promise resolving to a partial Product object or void if parsing fails
    * @example
    * ```typescript
@@ -718,5 +712,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * }
    * ```
    */
-  protected abstract _getProductData(productIndexObject: S): Promise<Maybe<Partial<T>>>;
+  protected abstract _getProductData(
+    product: ProductBuilder<Product>,
+  ): Promise<ProductBuilder<Product> | void>;
 }

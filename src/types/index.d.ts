@@ -7,7 +7,6 @@ import { CSSProperties } from "react";
  * Unit of measurement type
  */
 //export type UOM = string;
-
 /**
  * Represents a quantity measurement with a numeric value and unit.
  * Used for specifying product amounts and their units of measurement.
@@ -288,6 +287,12 @@ export interface Variant {
    * @example "Hazardous material - special shipping required"
    */
   shippingInformation?: string;
+
+  /**
+   * Availability of the variant
+   * @example "IN_STOCK"
+   */
+  availability?: Availability;
 }
 
 /**

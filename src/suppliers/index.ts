@@ -19,15 +19,15 @@
  * ```
  */
 
-export { default as SupplierBioFuranChem } from "./supplierBiofuranChem";
+//export { default as SupplierBioFuranChem } from "./supplierBiofuranChem";
 //export { default as SupplierBunmurraLabs } from "./supplierBunmurraLabs";
-export { default as SupplierCarolina } from "./supplierCarolina";
-export { default as SupplierCarolinaChemical } from "./supplierCarolinaChemical";
-export { default as SupplierChemsavers } from "./supplierChemsavers";
-export { default as SupplierFtfScientific } from "./supplierFtfScientific";
-export { default as SupplierHbarSci } from "./supplierHbarSci";
-export { default as SupplierLaballey } from "./supplierLaballey";
+//export { default as SupplierCarolina } from "./supplierCarolina";
+//export { default as SupplierCarolinaChemical } from "./supplierCarolinaChemical";
+//export { default as SupplierChemsavers } from "./supplierChemsavers";
+//export { default as SupplierFtfScientific } from "./supplierFtfScientific";
+//export { default as SupplierHbarSci } from "./supplierHbarSci";
+//export { default as SupplierLaballey } from "./supplierLaballey";
 export { default as SupplierLaboratoriumDiscounter } from "./supplierLaboratoriumDiscounter";
-export { default as SupplierLibertySci } from "./supplierLibertySci";
-export { default as SupplierLoudwolf } from "./supplierLoudwolf";
-export { default as SupplierOnyxmet } from "./supplierOnyxmet";
+//export { default as SupplierLibertySci } from "./supplierLibertySci";
+//export { default as SupplierLoudwolf } from "./supplierLoudwolf";
+//export { default as SupplierOnyxmet } from "./supplierOnyxmet";

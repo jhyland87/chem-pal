@@ -1,6 +1,17 @@
 import type { UOMAliases } from "@/types";
 
 /**
+ * Represents the availability of a product
+ */
+export enum AVAILABILITY {
+  IN_STOCK = "IN_STOCK",
+  OUT_OF_STOCK = "OUT_OF_STOCK",
+  PRE_ORDER = "PRE_ORDER",
+  BACKORDER = "BACKORDER",
+  DISCONTINUED = "DISCONTINUED",
+}
+
+/**
  * Represents different rotation speeds for animations
  */
 export enum SPIN_SPEED {

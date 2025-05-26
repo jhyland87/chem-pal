@@ -1,8 +1,9 @@
-import { UOM } from "@/constants/app";
-import { isCAS } from "@/helpers/cas";
+import { AVAILABILITY, UOM } from "@/constants/app";
+import { findCAS, isCAS } from "@/helpers/cas";
 import { toUSD } from "@/helpers/currency";
-import { toBaseQuantity } from "@/helpers/quantity";
-import { type Maybe, type Product, type Variant } from "@/types";
+import { isQuantityObject, parseQuantity, toBaseQuantity } from "@/helpers/quantity";
+import { type Maybe, type Product, type QuantityObject, type Variant } from "@/types";
+import { Logger } from "@/utils/Logger";
 import { findFormulaInHtml } from "./science";
 
 /**
@@ -32,8 +33,13 @@ export class ProductBuilder<T extends Product> {
   /** The partial product object being built */
   private _product: Partial<T> = {};
 
+  /** The raw data of the product */
+  private _rawData: Record<string, unknown> = {};
+
   /** The base URL of the supplier's website */
   private _baseURL: string;
+
+  private _logger: Logger;
 
   /**
    * Creates a new ProductBuilder instance.
@@ -45,6 +51,7 @@ export class ProductBuilder<T extends Product> {
    */
   constructor(_baseURL: string) {
     this._baseURL = _baseURL;
+    this._logger = new Logger("ProductBuilder");
   }
 
   /**
@@ -171,9 +178,47 @@ export class ProductBuilder<T extends Product> {
    * builder.setQuantity(100, 'ml');
    * ```
    */
-  setQuantity(quantity: number, uom: string): ProductBuilder<T> {
-    this._product.quantity = quantity;
-    this._product.uom = uom;
+  setQuantity(quantity: QuantityObject): ProductBuilder<T>;
+  setQuantity(quantity: string): ProductBuilder<T>;
+  setQuantity(quantity: number, uom: string): ProductBuilder<T>;
+  setQuantity(quantity: QuantityObject | string | number, uom?: string): ProductBuilder<T> {
+    if (typeof quantity === "undefined") return this;
+
+    if (isQuantityObject(quantity)) {
+      this._product.quantity = quantity.quantity;
+      this._product.uom = quantity.uom;
+      return this;
+    }
+
+    if (typeof quantity === "string" && typeof uom === "undefined") {
+      const parsedQuantity = parseQuantity(quantity);
+      if (parsedQuantity) {
+        this._product.quantity = parsedQuantity.quantity;
+        this._product.uom = parsedQuantity.uom;
+        return this;
+      }
+
+      const [qty, unit] = quantity.split(/\s(.+)/s);
+
+      if (Number.isNaN(Number(qty))) {
+        this._logger.warn(`Unable to parse quantity from string: ${quantity}`);
+        return this;
+      }
+      this._product.quantity = Number(qty);
+      this._product.uom = unit;
+      return this;
+    }
+
+    if (typeof quantity === "number" || Number.isInteger(quantity)) {
+      this._product.quantity = Number(quantity);
+      this._product.uom = uom ?? "pieces";
+
+      return this;
+    }
+
+    this._logger.warn(
+      `Unknown quantity type: ${typeof quantity} - Expected number, string, or QuantityObject`,
+    );
     return this;
   }
 
@@ -211,6 +256,11 @@ export class ProductBuilder<T extends Product> {
   setCAS(cas: string): ProductBuilder<T> {
     if (isCAS(cas)) {
       this._product.cas = cas;
+    } else {
+      const parsedACAS = findCAS(cas);
+      if (parsedACAS) {
+        this._product.cas = parsedACAS;
+      }
     }
     return this;
   }
@@ -263,6 +313,117 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
+   * Sets the vendor for the product.
+   *
+   * @param vendor - The vendor name
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setVendor('Vendor Name');
+   * ```
+   */
+  setVendor(vendor?: string): ProductBuilder<T> {
+    if (vendor) {
+      this._product.vendor = vendor;
+    }
+    return this;
+  }
+
+  /**
+   * Tries to determine the availability of the product based on variable input.
+   *
+   * @param availability - The availability of the product
+   * @returns The availability of the product
+   * @example
+   * ```typescript
+   * const availability = builder.determineAvailability("IN_STOCK");
+   * console.log(availability); // "IN_STOCK"
+   * ```
+   */
+  determineAvailability(
+    availability?: typeof AVAILABILITY | boolean | string,
+  ): Maybe<AVAILABILITY> {
+    if (typeof availability === "undefined") return;
+
+    if (this._isAvailability(availability)) return availability;
+
+    if (typeof availability === "boolean")
+      return availability ? AVAILABILITY.IN_STOCK : AVAILABILITY.OUT_OF_STOCK;
+
+    if (typeof availability === "string") {
+      // converting to lower and removing all non-alpha characters just to standardize the values for easier processing.
+      switch (availability.toLowerCase().replaceAll(/[^a-z]/g, "")) {
+        case "instock":
+        case "available":
+          return AVAILABILITY.IN_STOCK;
+        case "unavailable":
+        case "outofstock":
+          return AVAILABILITY.OUT_OF_STOCK;
+        case "preorder":
+          return AVAILABILITY.PRE_ORDER;
+        case "backorder":
+          return AVAILABILITY.BACKORDER;
+        case "discontinued":
+          return AVAILABILITY.DISCONTINUED;
+        default:
+          return;
+      }
+    }
+  }
+
+  /**
+   * Sets the availability of the product.
+   *
+   * @param availability - The availability of the product
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setAvailability("IN_STOCK");
+   * builder.setAvailability("OUT_OF_STOCK");
+   * builder.setAvailability("PRE_ORDER");
+   * builder.setAvailability("BACKORDER");
+   * builder.setAvailability("DISCONTINUED");
+   * builder.setAvailability(true);
+   * builder.setAvailability(false);
+   * builder.setAvailability("instock");
+   * builder.setAvailability("unavailable");
+   * builder.setAvailability("outofstock");
+   * builder.setAvailability("preorder");
+   * builder.setAvailability("backorder");
+   * builder.setAvailability("discontinued");
+   * ```
+   */
+  setAvailability(availability?: typeof AVAILABILITY | boolean | string): ProductBuilder<T> {
+    const avail = this.determineAvailability(availability);
+
+    if (typeof avail === "undefined") {
+      this._logger.warn(`Unknown availability: ${availability}`);
+      return this;
+    }
+
+    this._product.availability = avail;
+    return this;
+  }
+
+  /**
+   * Just a place to hold the products original response object.
+   *
+   * @param data - The raw data to add the raw data.
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.addRawData({
+   *   title: 'Sodium Chloride',
+   *   price: 29.99,
+   * });
+   * ```
+   */
+  addRawData(data?: Record<string, unknown>): ProductBuilder<T> {
+    Object.assign(this._rawData, data);
+    return this;
+  }
+
+  /**
    * Adds a single variant to the product.
    *
    * @param variant - The variant object to add
@@ -310,28 +471,25 @@ export class ProductBuilder<T extends Product> {
    * ```
    */
   addVariants(variants: Partial<Variant>[]): ProductBuilder<T> {
-    if (!this._product.variants) {
-      this._product.variants = [];
+    for (const variant of variants) {
+      this.addVariant(variant);
     }
-    this._product.variants.push(...variants);
     return this;
   }
 
   /**
-   * Sets the vendor for the product.
+   * Get a specific property from the product.
    *
-   * @param vendor - The vendor name
-   * @returns The builder instance for method chaining
+   * @param key - The key of the property to get
+   * @returns The value of the property
    * @example
    * ```typescript
-   * builder.setVendor('Vendor Name');
+   * const title = builder.get("title");
+   * console.log(title); // "Sodium Chloride"
    * ```
    */
-  setVendor(vendor?: string): ProductBuilder<T> {
-    if (vendor) {
-      this._product.vendor = vendor;
-    }
-    return this;
+  get(key: keyof T): T[keyof T] | undefined {
+    return this._product[key] as T[keyof T] | undefined;
   }
 
   /**
@@ -421,6 +579,13 @@ export class ProductBuilder<T extends Product> {
   private _href(path: string | URL): string {
     const urlObj = new URL(path, this._baseURL);
     return urlObj.toString();
+  }
+
+  private _isAvailability(availability: unknown): availability is AVAILABILITY {
+    return (
+      typeof availability === "string" &&
+      Object.values(AVAILABILITY).includes(availability as AVAILABILITY)
+    );
   }
 
   /**
