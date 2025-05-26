@@ -1,8 +1,9 @@
 import { AVAILABILITY, UOM } from "@/constants/app";
 import { findCAS, isCAS } from "@/helpers/cas";
-import { toUSD } from "@/helpers/currency";
+import { isParsedPrice, parsePrice, toUSD } from "@/helpers/currency";
 import { isQuantityObject, parseQuantity, toBaseQuantity } from "@/helpers/quantity";
 import { type Maybe, type Product, type QuantityObject, type Variant } from "@/types";
+import type { ParsedPrice } from "@/types/currency";
 import { Logger } from "@/utils/Logger";
 import { findFormulaInHtml } from "./science";
 
@@ -155,10 +156,44 @@ export class ProductBuilder<T extends Product> {
    * builder.setPricing(29.99, 'USD', '$');
    * ```
    */
-  setPricing(price: number, currencyCode: string, currencySymbol: string): ProductBuilder<T> {
-    this._product.price = price;
-    this._product.currencyCode = currencyCode;
-    this._product.currencySymbol = currencySymbol;
+  setPricing(price: ParsedPrice): ProductBuilder<T>;
+  setPricing(price: string): ProductBuilder<T>;
+  setPricing(
+    price: number | string,
+    currencyCode: string,
+    currencySymbol: string,
+  ): ProductBuilder<T>;
+  setPricing(
+    price: number | string | ParsedPrice,
+    currencyCode?: string,
+    currencySymbol?: string,
+  ): ProductBuilder<T> {
+    if (isParsedPrice(price)) {
+      this._product.price = price.price;
+      this._product.currencyCode = price.currencyCode;
+      this._product.currencySymbol = price.currencySymbol;
+      return this;
+    }
+    if (typeof currencyCode === "string") this._product.currencyCode = currencyCode;
+    if (typeof currencySymbol === "string") this._product.currencySymbol = currencySymbol;
+
+    if (typeof price === "string") {
+      if (Number.isNaN(Number(price)) === false) {
+        this._product.price = Number(price);
+        return this;
+      }
+
+      const parsedPrice = parsePrice(price);
+      if (parsedPrice) {
+        this._product.price = parsedPrice.price;
+        this._product.currencyCode = parsedPrice.currencyCode;
+        this._product.currencySymbol = parsedPrice.currencySymbol;
+        return this;
+      }
+    }
+
+    this._product.price = Number(price);
+
     return this;
   }
 
@@ -254,6 +289,11 @@ export class ProductBuilder<T extends Product> {
    * ```
    */
   setCAS(cas: string): ProductBuilder<T> {
+    if (typeof cas !== "string") {
+      this._logger.warn(`setCAS| Invalid CAS number: ${cas}`);
+      return this;
+    }
+
     if (isCAS(cas)) {
       this._product.cas = cas;
     } else {

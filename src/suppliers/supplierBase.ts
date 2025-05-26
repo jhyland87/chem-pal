@@ -512,18 +512,23 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
         const batchResults = await Promise.allSettled(batchPromises);
         for (const result of batchResults) {
           if (result.status === "rejected") {
-            this._logger.error(`Error found when yielding a product:`, result);
+            this._logger.error("Error found when yielding a product:", { result });
             continue;
           }
 
           try {
+            if (typeof result.value === "undefined") {
+              this._logger.warn("Product value was undefined", { result });
+              continue;
+            }
+
             const finishedProduct = await this._finishProduct(result.value as ProductBuilder<T>);
 
             if (finishedProduct) {
               yield finishedProduct;
             }
           } catch (err) {
-            this._logger.error(`Error found when yielding a product:`, err);
+            this._logger.error("Error found when yielding a product:", { err });
             continue;
           }
         }
@@ -533,7 +538,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
         this._logger.warn("Search was aborted");
         return;
       }
-      this._logger.error("ERROR in generator fn:", err);
+      this._logger.error("ERROR in generator fn:", { err });
     }
   }
 

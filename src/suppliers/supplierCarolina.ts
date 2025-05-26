@@ -1,3 +1,4 @@
+import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { ProductBuilder } from "@/helpers/productBuilder";
 import { isQuantityObject, parseQuantity } from "@/helpers/quantity";
@@ -14,6 +15,7 @@ import {
   type SearchResponse,
   type SearchResult,
 } from "@/types/carolina";
+import type { ParsedPrice } from "@/types/currency";
 import SupplierBase from "./supplierBase";
 
 /**
@@ -234,7 +236,10 @@ export default class SupplierCarolina
    * Executes a product search query and stores results
    * Fetches products matching the current search query and updates internal results cache
    */
-  protected async _queryProducts(query: string): Promise<SearchResult[] | void> {
+  protected async _queryProducts(
+    query: string,
+    limit: number = this._limit,
+  ): Promise<ProductBuilder<Product>[] | void> {
     const params = this._makeQueryParams(query);
 
     const response: unknown = await this._httpGetJson({
@@ -248,7 +253,23 @@ export default class SupplierCarolina
     }
 
     const results = await this._extractSearchResults(response);
-    return results.slice(0, this._limit);
+    return this._initProductBuilders(results.slice(0, limit));
+  }
+
+  protected _initProductBuilders(results: SearchResult[]): ProductBuilder<Product>[] {
+    return results.map((result) => {
+      const builder = new ProductBuilder(this._baseURL)
+        .setBasicInfo(result.productName, result.productUrl, this.supplierName)
+        .setPricing(parsePrice(result.itemPrice) as ParsedPrice);
+      const casNo = findCAS(result["product.shortDescription"]);
+
+      if (typeof casNo === "string") builder.setCAS(casNo);
+
+      return builder;
+      //.setQuantity(result.qtyDiscountAvailable, "1")
+      //.setDescription(result.shortDescription)
+      //.setCAS(result.casNumber)
+    });
   }
 
   /**
@@ -323,7 +344,7 @@ export default class SupplierCarolina
    */
   protected _isSearchResultItem(result: unknown): result is SearchResult {
     if (typeof result !== "object" || result === null) {
-      this._logger.error("_isSearchResultItem| Result is not an object:", result);
+      this?._logger?.error("_isSearchResultItem| Result is not an object:", result);
       return false;
     }
 
@@ -340,15 +361,16 @@ export default class SupplierCarolina
       /* eslint-enable */
     };
 
+    const _logger = this?._logger;
     const hasRequiredProps = Object.entries(requiredProps).every(([key, expectedType]) => {
       const item = result as Record<string, unknown>;
       if (!(key in item)) {
-        this._logger.error(`_isSearchResultItem| Missing property: ${key}`);
+        _logger?.error(`_isSearchResultItem| Missing property: ${key}`);
         return false;
       }
       const actualType = typeof item[key];
       if (actualType !== expectedType) {
-        this._logger.error(
+        _logger?.error(
           `_isSearchResultItem| Invalid type for ${key}, expected ${expectedType}, got ${actualType}`,
         );
         return false;
@@ -563,66 +585,87 @@ export default class SupplierCarolina
    * }
    * ```
    */
-  protected async _getProductData(result: SearchResult): Promise<Product | void> {
-    const productResponse = await this._httpGetJson({
-      path: result.productUrl,
-      params: {
-        format: "json",
-        ajax: true,
-      },
-    });
+  protected async _getProductData(
+    product: ProductBuilder<Product>,
+  ): Promise<ProductBuilder<Product> | void> {
+    try {
+      if (product instanceof ProductBuilder === false) {
+        this._logger.warn("Invalid product object - Expected ProductBuilder instance:", product);
+        return;
+      }
 
-    if (!this._isResponseOk(productResponse)) {
-      this._logger.warn("Response status:", productResponse);
+      const productResponse = await this._httpGetJson({
+        path: product.get("url"),
+        params: {
+          format: "json",
+          ajax: true,
+        },
+      });
+
+      if (!this._isResponseOk(productResponse)) {
+        this._logger.warn("Response status:", productResponse);
+        return;
+      }
+
+      const atgResponse = this._extractATGResponse(productResponse);
+
+      console.log("atgResponse:", atgResponse);
+      console.log("familyVariyantProductDetails:", atgResponse?.familyVariyantProductDetails);
+      console.log("familyVariyantDisplayName:", atgResponse?.familyVariyantDisplayName);
+
+      if (!atgResponse) {
+        this._logger.warn("No ATG response found");
+        return;
+      }
+      this._logger.debug("atgResponse:", atgResponse);
+
+      const productPrice = parsePrice(atgResponse.dataLayer.productPrice[0]);
+      if (!productPrice) {
+        this._logger.warn("No product price found");
+        return;
+      }
+
+      product.setPricing(productPrice);
+
+      const quantity = firstMap(parseQuantity, [
+        atgResponse.displayName,
+        atgResponse.shortDescription,
+        //atgResponse?.standardResult?.productName,
+      ]);
+
+      if (!isQuantityObject(quantity)) {
+        this._logger.warn("No quantity object found");
+        return;
+      }
+
+      product.setQuantity(quantity);
+
+      const casNo = firstMap(findCAS, [
+        atgResponse.displayName,
+        atgResponse.shortDescription,
+        atgResponse.longDescription,
+        //atgResponse?.standardResult?.productName,
+      ]);
+
+      if (casNo) product.setCAS(casNo);
+
+      product.setDescription(atgResponse.shortDescription);
+
+      /*
+      product.addVariants([
+        {
+          title: "100g",
+          price: productPrice.price,
+          quantity: 100,
+          uom: "g",
+        },
+      ]);
+      */
+
+      return product;
+    } catch (error) {
+      this._logger.error("Error getting product data:", error);
       return;
     }
-
-    const atgResponse = this._extractATGResponse(productResponse);
-    if (!atgResponse) {
-      this._logger.error("No ATG response found");
-      return;
-    }
-    this._logger.debug("atgResponse:", atgResponse);
-
-    const productPrice = parsePrice(atgResponse.dataLayer.productPrice[0]);
-    if (!productPrice) {
-      this._logger.error("No product price found");
-      return;
-    }
-
-    const quantity = firstMap(parseQuantity, [
-      atgResponse.displayName,
-      atgResponse.shortDescription,
-      atgResponse.standardResult.productName,
-    ]);
-
-    if (!isQuantityObject(quantity)) return;
-
-    let casNumber: string | undefined;
-    const specifications =
-      atgResponse.standardResult?.tabsResult?.pdpspecifications?.specificationList?.find(
-        (item) => item.specificationDisplayName === "CAS Number",
-      );
-    if (specifications) {
-      casNumber = specifications.stringValue;
-    }
-
-    let builder = new ProductBuilder(this._baseURL)
-      .setBasicInfo(atgResponse.displayName, atgResponse.canonicalUrl, this.supplierName)
-      .setPricing(productPrice.price, productPrice.currencyCode, productPrice.currencySymbol)
-      .setQuantity(quantity.quantity, quantity.uom)
-      .setDescription(atgResponse.shortDescription)
-      .setCAS(casNumber || "");
-
-    builder = builder.addVariants([
-      {
-        title: "100g",
-        price: productPrice.price,
-        quantity: 100,
-        uom: "g",
-      },
-    ]);
-
-    return builder.build();
   }
 }
