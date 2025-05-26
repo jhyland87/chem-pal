@@ -1,15 +1,14 @@
-import { findCAS } from "@/helpers/cas";
+import { findCAS, isCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import type { Maybe, Product } from "@/types";
+import type { SearchResultItem, SearchResultResponse } from "@/types/onyxmet";
 import * as cheerio from "cheerio";
-import chunk from "lodash/chunk";
 import SupplierBase from "./supplierBase";
 
-//type CheerioElement = cheerio.Cheerio<Element>;
 /**
- * Supplier implementation for Loudwolf chemical supplier.
- * Extends the base supplier class and provides Loudwolf-specific implementation
+ * Supplier implementation for Onyxmet chemical supplier.
+ * Extends the base supplier class and provides Onyxmet-specific implementation
  * for product searching and data extraction.
  *
  * @typeParam S - The supplier-specific product type (Partial<Product>)
@@ -17,21 +16,21 @@ import SupplierBase from "./supplierBase";
  *
  * @example
  * ```typescript
- * const supplier = new SupplierLoudwolf("sodium chloride", 10, new AbortController());
+ * const supplier = new SupplierOnyxmet("sodium chloride", 10, new AbortController());
  * for await (const product of supplier) {
  *   console.log("Found product:", product.title, product.price);
  * }
  * ```
  */
 export default class SupplierOnyxmet
-  extends SupplierBase<Partial<Product>, Product>
+  extends SupplierBase<SearchResultResponse, Product>
   implements AsyncIterable<Product>
 {
   /**
    * Display name of the supplier used for UI and logging
    * @readonly
    */
-  public readonly supplierName: string = "Onyxmet";
+  public readonly supplierName: string = "OnyxMet";
 
   /**
    * Maximum number of results to return per search query
@@ -40,16 +39,16 @@ export default class SupplierOnyxmet
   protected _limit: number = 15;
 
   /**
-   * Base URL for all API and web requests to Loudwolf
-   * @defaultValue "https://onyxmet.com//"
+   * Base URL for all API and web requests to Onyxmet
+   * @defaultValue "https://onyxmet.com"
    */
-  protected _baseURL: string = "https://www.loudwolf.com/";
+  protected _baseURL: string = "https://onyxmet.com";
 
   /**
    * Cached search results from the last query execution
    * @defaultValue []
    */
-  protected _queryResults: Array<Partial<Product>> = [];
+  protected _queryResults: SearchResultResponse[] = [];
 
   /**
    * Maximum number of HTTP requests allowed per search query
@@ -71,8 +70,16 @@ export default class SupplierOnyxmet
   protected _httpRequestBatchSize: number = 5;
 
   /**
-   * Queries Loudwolf products based on a search string.
-   * Makes a GET request to the Loudwolf search endpoint and parses the HTML response
+   * Sets up the supplier by setting the display to list.
+   * @returns A promise that resolves when the setup is complete.
+   */
+  protected async _setup(): Promise<void> {
+    localStorage.setItem("display", "list");
+  }
+
+  /**
+   * Queries OnyxMet products based on a search string.
+   * Makes a GET request to the OnyxMet search endpoint and parses the HTML response
    * to extract basic product information.
    *
    * @param query - The search term to query products for
@@ -81,7 +88,7 @@ export default class SupplierOnyxmet
    *
    * @example
    * ```typescript
-   * const supplier = new SupplierLoudwolf("acetone", 10, new AbortController());
+   * const supplier = new SupplierOnyxmet("acetone", 10, new AbortController());
    * const results = await supplier._queryProducts("acetone");
    * if (results) {
    *   console.log(`Found ${results.length} products`);
@@ -92,17 +99,14 @@ export default class SupplierOnyxmet
   protected async _queryProducts(
     query: string,
     limit: number = this._limit,
-  ): Promise<Maybe<Partial<Product>[]>> {
-    localStorage.setItem("display", "list");
-
-    this._logger.debug("query:", query);
+  ): Promise<SearchResultResponse[] | void> {
+    this._logger.log("query:", query);
 
     const searchResponse = await this._httpGetHtml({
-      path: "/storefront/index.php?route=product/search",
+      path: "index.php?route=&term=potassium",
       params: {
-        search: query,
-        route: "product/search",
-        limit,
+        term: query,
+        route: "product/search/json",
       },
     });
 
@@ -111,44 +115,21 @@ export default class SupplierOnyxmet
       return;
     }
 
-    this._logger.debug("searchResponse:", searchResponse);
+    const data = JSON.parse(searchResponse);
 
-    const $ = cheerio.load(searchResponse);
+    this._logger.debug("all search results:", data);
+    return data.splice(0, limit);
+  }
 
-    const $elements = $("div.product-layout.product-list");
-
-    //const results: Partial<Product>[] = [];
-
-    this._logger.debug("Loudwolf results:", $elements);
-
-    return $elements
-      .map((index, element) => {
-        const price = parsePrice($(element).find("div.caption > p.price").text().trim());
-        const href = $(element).find("div.caption h4 a").attr("href");
-
-        if (href === undefined) {
-          this._logger.error("No URL for product");
-          return;
-        }
-
-        const url = new URL(href, this._baseURL);
-
-        const id = url.searchParams.get("product_id");
-
-        if (id === null) {
-          this._logger.error("No ID for product");
-          return;
-        }
-
-        return {
-          title: $(element).find("div.caption h4 a").text().trim(),
-          description: $(element).find("div.caption > p:nth-child(2)").text().trim(),
-          url: href,
-          id,
-          ...price,
-        };
-      })
-      .toArray();
+  protected _isSearchResultItem(product: unknown): product is SearchResultItem {
+    return (
+      typeof product === "object" &&
+      product !== null &&
+      "label" in product &&
+      "image" in product &&
+      "description" in product &&
+      "href" in product
+    );
   }
 
   /**
@@ -177,27 +158,16 @@ export default class SupplierOnyxmet
    * }
    * ```
    */
-  protected async _getProductData(product: Partial<Product>): Promise<Maybe<Partial<Product>>> {
+  protected async _getProductData(product: SearchResultResponse): Promise<Maybe<Partial<Product>>> {
     this._logger.debug("Querying data for partialproduct:", product);
 
-    if ("url" in product === false || typeof product.url !== "string") {
-      this._logger.error("No URL for product");
-      return;
-    }
-
-    if ("title" in product === false || typeof product.title !== "string") {
-      this._logger.error("No title for product");
+    if (!this._isSearchResultItem(product)) {
+      this._logger.warn("Invalid product");
       return;
     }
 
     const productResponse = await this._httpGetHtml({
-      path: product.url,
-      /*
-      params: {
-        route: "product/product",
-        product_id: product.id,
-      },
-      */
+      path: product.href,
     });
 
     if (!productResponse) {
@@ -210,28 +180,76 @@ export default class SupplierOnyxmet
     const $ = cheerio.load(productResponse);
     const $content = $("#content");
 
-    const dataGrid = $content
-      .find("#tab-description > div:nth-child(3) > table > tbody > tr > td > p")
-      .map((index, element) => {
-        const text = $(element).text().trim();
-        return text;
-      })
-      .toArray();
+    const cas = findCAS(product.description);
+    const title = $content.find("h3.product-title").text().trim();
+    const statusTxt = $content
+      .find("span:contains('Availability')")
+      .parent()
+      .text()
+      .split(":")[1]
+      .trim();
+    const productPrice = $content.find(".product-price").text().trim();
 
-    const datagridInfo = chunk(dataGrid, 2).reduce((acc, [key, value]) => {
-      if (key.match(/CAS/i)) {
-        acc.cas = findCAS(value.trim()) ?? undefined;
-      } else if (key.match(/TOTAL [A-Z]+ OF PRODUCT/i)) {
-        const qty = parseQuantity(value);
-        if (qty) {
-          Object.assign(acc, qty);
-        }
-      } else if (key.match(/GRADE/i)) {
-        acc.grade = value;
-      }
-      return acc;
-    }, {} as Partial<Product>);
+    const price = parsePrice(productPrice);
 
-    return { ...datagridInfo, ...product, supplier: this.supplierName } satisfies Partial<Product>;
+    if (!price) {
+      this._logger.warn("No price for product");
+      return;
+    }
+    const quantity = parseQuantity(title);
+
+    if (!quantity) {
+      this._logger.warn("No quantity for product");
+      return;
+    }
+    /*
+    const $productElem = $content.find("#product");
+
+    const availabileOptionHeader = $productElem.find(".product-option");
+
+
+    let options;
+    if (availabileOptionHeader.length > 0) {
+      options = $productElem
+        .find("input[name^='option']")
+        .parent()
+        .map((idx, elem) => $(elem).text().trim())
+        .toArray()
+        .reduce(
+          (acc, option) => {
+            const match = option.match(/^([0-9]+[a-zA-Z]+)\s*\n\s*\(([0-9]+\.[0-9]+\p{Sc})/u);
+
+            if (!match) return acc;
+
+            const [, qty, prc] = match;
+            const thisOption = {};
+            const optionPrice = parsePrice(prc);
+            const optionQuantity = parseQuantity(qty);
+
+            if (optionPrice) Object.assign(thisOption, optionPrice);
+            if (optionQuantity) Object.assign(thisOption, optionQuantity);
+
+            if (Object.keys(thisOption).length > 0) {
+              acc.push(thisOption);
+            }
+
+            return acc;
+          },
+          [] as Array<Record<string, number | string>>,
+        );
+
+      this._logger.debug("options:", options);
+    }
+    */
+
+    return {
+      title,
+      cas: cas && isCAS(cas) ? cas : undefined,
+      statusTxt,
+      url: product.href,
+      supplier: this.supplierName,
+      ...quantity,
+      ...price,
+    } satisfies Partial<Product>;
   }
 }

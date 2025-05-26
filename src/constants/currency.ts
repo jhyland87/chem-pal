@@ -67,8 +67,8 @@ export const CURRENCY_CODE_MAP: { [key: string]: string } = {
  * Mapping of ISO currency codes to their corresponding currency symbols
  * @example
  * ```typescript
- * CurrencySymbolMap['USD'] // returns '$'
- * CurrencySymbolMap['EUR'] // returns '€'
+ * CURRENCY_SYMBOL_MAP['USD'] // returns '$'
+ * CURRENCY_SYMBOL_MAP['EUR'] // returns '€'
  * ```
  */
 export const CURRENCY_SYMBOL_MAP: { [key: string]: string } = {

@@ -40,9 +40,9 @@ export default class SupplierLoudwolf
 
   /**
    * Base URL for all API and web requests to Loudwolf
-   * @defaultValue "https://www.loudwolf.com/"
+   * @defaultValue "https://www.loudwolf.com"
    */
-  protected _baseURL: string = "https://www.loudwolf.com/";
+  protected _baseURL: string = "https://www.loudwolf.com";
 
   /**
    * Cached search results from the last query execution
@@ -70,6 +70,12 @@ export default class SupplierLoudwolf
   protected _httpRequestBatchSize: number = 5;
 
   /**
+   * Sets up the supplier by setting the display to list.
+   * @returns A promise that resolves when the setup is complete.
+   */
+  protected async _setup(): Promise<void> {}
+
+  /**
    * Queries Loudwolf products based on a search string.
    * Makes a GET request to the Loudwolf search endpoint and parses the HTML response
    * to extract basic product information.
@@ -92,9 +98,8 @@ export default class SupplierLoudwolf
     query: string,
     limit: number = this._limit,
   ): Promise<Maybe<Partial<Product>[]>> {
-    localStorage.setItem("display", "list");
-
     this._logger.log("query:", query);
+    localStorage.setItem("display", "list");
 
     const searchResponse = await this._httpGetHtml({
       path: "/storefront/index.php",

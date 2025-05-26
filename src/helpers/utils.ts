@@ -338,3 +338,40 @@ export function firstMap<T, R>(fn: (arg: T) => R | void, properties: T[]): R | v
 export function mapDefined<T, R>(fn: (arg: T) => R | null | undefined, items: T[]): R[] {
   return items.map(fn).filter((result): result is R => result !== undefined && result !== null);
 }
+
+/**
+ * Decodes HTML entities in a string.
+ *
+ * @category Helper
+ * @param text - The string to decode
+ * @returns The decoded string
+ *
+ * @example
+ * ```typescript
+ * decodeHTMLEntities("&lt;div&gt;Hello &amp; World&lt;/div&gt;") // Returns "<div>Hello & World</div>"
+ * decodeHTMLEntities("&#39;Hello&#39;") // Returns "'Hello'"
+ * ```
+ */
+export function decodeHTMLEntities(text: string) {
+  const entities: Record<string, string> = {
+    /* eslint-disable */
+    "&nbsp;": " ",
+    "&lt;": "<",
+    "&gt;": ">",
+    "&amp;": "&",
+    "&quot;": '"',
+    "&#39;": "'",
+    "&apos;": "'",
+    "&cent;": "¢",
+    "&pound;": "£",
+    "&yen;": "¥",
+    "&euro;": "€",
+    "&copy;": "©",
+    "&reg;": "®",
+    /* eslint-enable */
+  } as const;
+
+  return text
+    .replace(/&[a-z]+;/gi, (match) => entities[match] || match)
+    .replace(/&#(\d+);/gi, (match, dec) => String.fromCharCode(dec));
+}

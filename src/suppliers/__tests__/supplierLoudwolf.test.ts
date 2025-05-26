@@ -36,7 +36,7 @@ describe("SupplierLoudwolf", () => {
   describe("constructor", () => {
     it("should initialize with correct properties", () => {
       expect(supplier.supplierName).toBe("Loudwolf");
-      expect(supplier["_baseURL"]).toBe("https://www.loudwolf.com/");
+      expect(supplier["_baseURL"]).toBe("https://www.loudwolf.com");
       expect(supplier["_limit"]).toBe(15);
     });
   });
