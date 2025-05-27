@@ -169,7 +169,22 @@ export interface SearchResponse {
 }
 
 export interface ProductObject extends SearchResponseProduct {
+  /* eslint-disable */
   product: SearchResponseProduct & { variants?: boolean | { [key: string]: VariantObject } };
+  shop: {
+    currencies: {
+      [key: string]: {
+        symbol: string;
+        code: string;
+      };
+    };
+    currency: string;
+    country: string;
+    language: string;
+    status: string;
+    base_currency: string;
+  };
+  /* eslint-enable */
 }
 
 /**

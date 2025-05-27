@@ -1,0 +1,1919 @@
+{
+  "data": {
+    "catalog": {
+      "category": {
+        "numOfProducts": 698,
+        "productsWithMetaData": {
+          "totalCount": 53,
+          "list": [
+            {
+              "id": "db7a41e7-9345-762b-335c-db4391bd1a6e",
+              "options": [
+                {
+                  "id": "opt-20",
+                  "key": "Size",
+                  "title": "Size",
+                  "optionType": "DROP_DOWN",
+                  "selections": [
+                    {
+                      "id": 1,
+                      "value": "25g",
+                      "description": "25g",
+                      "key": "25g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 2,
+                      "value": "50g",
+                      "description": "50g",
+                      "key": "50g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 3,
+                      "value": "100g",
+                      "description": "100g",
+                      "key": "100g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 4,
+                      "value": "500g",
+                      "description": "500g",
+                      "key": "500g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 5,
+                      "value": "1kg",
+                      "description": "1kg",
+                      "key": "1kg",
+                      "inStock": null
+                    }
+                  ]
+                }
+              ],
+              "productItems": [
+                {
+                  "id": "0992f636-2f3e-4760-b2da-8325f2f5aa8d",
+                  "optionsSelections": [
+                    4
+                  ],
+                  "price": 198.0,
+                  "formattedPrice": "$198.00"
+                },
+                {
+                  "id": "d05cd0ea-90be-46a0-94e2-5005c05da9e5",
+                  "optionsSelections": [
+                    5
+                  ],
+                  "price": 298.0,
+                  "formattedPrice": "$298.00"
+                },
+                {
+                  "id": "64b94ce3-7ea5-496a-b199-29442cd09c95",
+                  "optionsSelections": [
+                    1
+                  ],
+                  "price": 61.0,
+                  "formattedPrice": "$61.00"
+                },
+                {
+                  "id": "23f48398-9a60-40ed-9d3b-efb8212dd474",
+                  "optionsSelections": [
+                    2
+                  ],
+                  "price": 76.0,
+                  "formattedPrice": "$76.00"
+                },
+                {
+                  "id": "eaf65bfb-3764-44bd-a586-461be8d3ff4e",
+                  "optionsSelections": [
+                    3
+                  ],
+                  "price": 87.0,
+                  "formattedPrice": "$87.00"
+                }
+              ],
+              "productType": "physical",
+              "price": 61.0,
+              "sku": "",
+              "isInStock": true,
+              "urlPart": "mucic-acid-cas-526-99-8",
+              "formattedPrice": "$61.00",
+              "name": "Mucic acid, CAS 526-99-8",
+              "description": "<p>Appearance: off-white crystalline powder</p><p>CAS: 526-99-8</p><p>Product ID: MUCH</p><p>Purity: 98%+</p><p>Formula: C6H10O8</p><p>MW: 210.14g/mol</p><p>MP: 215-225C</p><p>Solubility: water soluble</p><p>HS Code: 291819</p><p>MDL: MFCD00004239</p><p>SMILES: OC(C(O)C(O)C(O)=O)C(O)C(O)=O</p><p>LD50 (rat, oral) &gt;5,000mg/kg</p><p>TSCA: Yes</p>",
+              "brand": null
+            },
+            {
+              "id": "6bbde9b2-596c-9136-83f6-df76718088b5",
+              "options": [
+                {
+                  "id": "opt-20",
+                  "key": "Size",
+                  "title": "Size",
+                  "optionType": "DROP_DOWN",
+                  "selections": [
+                    {
+                      "id": 1,
+                      "value": "25g",
+                      "description": "25g",
+                      "key": "25g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 2,
+                      "value": "50g",
+                      "description": "50g",
+                      "key": "50g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 3,
+                      "value": "100g",
+                      "description": "100g",
+                      "key": "100g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 4,
+                      "value": "500g",
+                      "description": "500g",
+                      "key": "500g",
+                      "inStock": null
+                    }
+                  ]
+                }
+              ],
+              "productItems": [
+                {
+                  "id": "457f84a1-29d1-4c48-a135-756ccae16ce0",
+                  "optionsSelections": [
+                    1
+                  ],
+                  "price": 115.0,
+                  "formattedPrice": "$115.00"
+                },
+                {
+                  "id": "e2218c18-e1d6-45a5-a0c8-287a131f2ed9",
+                  "optionsSelections": [
+                    2
+                  ],
+                  "price": 187.0,
+                  "formattedPrice": "$187.00"
+                },
+                {
+                  "id": "60397574-f9f7-474e-a032-a99b46246a08",
+                  "optionsSelections": [
+                    3
+                  ],
+                  "price": 219.0,
+                  "formattedPrice": "$219.00"
+                },
+                {
+                  "id": "ef4e5424-d867-4162-8c03-18b20737173c",
+                  "optionsSelections": [
+                    4
+                  ],
+                  "price": 525.0,
+                  "formattedPrice": "$525.00"
+                }
+              ],
+              "productType": "physical",
+              "price": 115.0,
+              "sku": "",
+              "isInStock": true,
+              "urlPart": "tricarballylic-acid-cas-99-14-9",
+              "formattedPrice": "$115.00",
+              "name": "Tricarballylic acid, CAS 99-14-9",
+              "description": "<p>Appearance: colorless to brownish powder</p><p>CAS: 99-14-9</p><p>Product ID: TCBA</p><p>Purity: 98%+</p><p>Formula: C6H8O6</p><p>MW: 176.12g/mol</p><p>MP: 155-162C</p><p>Solubility: water soluble</p><p>HS Code: 291719</p><p>MDL: MFCD00002723</p><p>SMILES: C(C(CC(=O)O)C(=O)O)C(=O)O</p><p>TSCA: Yes</p>",
+              "brand": null
+            },
+            {
+              "id": "839d44b3-9208-7939-203a-ee73dcfc1d5f",
+              "options": [
+                {
+                  "id": "opt-20",
+                  "key": "Size",
+                  "title": "Size",
+                  "optionType": "DROP_DOWN",
+                  "selections": [
+                    {
+                      "id": 1,
+                      "value": "25g",
+                      "description": "25g",
+                      "key": "25g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 2,
+                      "value": "50g",
+                      "description": "50g",
+                      "key": "50g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 3,
+                      "value": "100g",
+                      "description": "100g",
+                      "key": "100g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 4,
+                      "value": "500g",
+                      "description": "500g",
+                      "key": "500g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 5,
+                      "value": "1kg",
+                      "description": "1kg",
+                      "key": "1kg",
+                      "inStock": null
+                    }
+                  ]
+                }
+              ],
+              "productItems": [
+                {
+                  "id": "3984a603-652d-4b58-be8d-836bf1301599",
+                  "optionsSelections": [
+                    4
+                  ],
+                  "price": 217.0,
+                  "formattedPrice": "$217.00"
+                },
+                {
+                  "id": "d1887369-16ab-473d-9abe-6ed4756f5629",
+                  "optionsSelections": [
+                    5
+                  ],
+                  "price": 393.0,
+                  "formattedPrice": "$393.00"
+                },
+                {
+                  "id": "ae12f152-89f9-439a-ad5a-674f09710c11",
+                  "optionsSelections": [
+                    1
+                  ],
+                  "price": 61.0,
+                  "formattedPrice": "$61.00"
+                },
+                {
+                  "id": "df0c6e86-0e8d-4e08-a877-bf8f148bd0ed",
+                  "optionsSelections": [
+                    2
+                  ],
+                  "price": 87.0,
+                  "formattedPrice": "$87.00"
+                },
+                {
+                  "id": "ce99090b-a5ca-466d-8583-fb3bbc81eddf",
+                  "optionsSelections": [
+                    3
+                  ],
+                  "price": 111.0,
+                  "formattedPrice": "$111.00"
+                }
+              ],
+              "productType": "physical",
+              "price": 61.0,
+              "sku": "",
+              "isInStock": true,
+              "urlPart": "n-methyliminodiacetic-acid-cas-4408-64-4",
+              "formattedPrice": "$61.00",
+              "name": "N-Methyliminodiacetic acid, CAS 4408-64-4",
+              "description": "<p>Appearance: colorless powder</p><p>CAS: 4408-64-4</p><p>Product ID: MIDAA</p><p>Purity: 99%+</p><p>Formula: C5H9NO4</p><p>MW: 147.13g/mol</p><p>MP: 219-226C</p><p>Solubility: water soluble</p><p>HS Code: 291719</p><p>MDL: MFCD00004284</p><p>SMILES: CN(CC(O)=O)CC(O)=O</p><p>LD50 (rat, oral) &gt;2,000mg/kg</p><p>TSCA: No</p>",
+              "brand": null
+            },
+            {
+              "id": "288d4fe7-d046-e5e7-ccdc-a58255ae4195",
+              "options": [
+                {
+                  "id": "opt-20",
+                  "key": "Size",
+                  "title": "Size",
+                  "optionType": "DROP_DOWN",
+                  "selections": [
+                    {
+                      "id": 1,
+                      "value": "25g",
+                      "description": "25g",
+                      "key": "25g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 2,
+                      "value": "50g",
+                      "description": "50g",
+                      "key": "50g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 3,
+                      "value": "100g",
+                      "description": "100g",
+                      "key": "100g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 4,
+                      "value": "500g",
+                      "description": "500g",
+                      "key": "500g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 5,
+                      "value": "1kg",
+                      "description": "1kg",
+                      "key": "1kg",
+                      "inStock": null
+                    }
+                  ]
+                }
+              ],
+              "productItems": [
+                {
+                  "id": "26854534-a930-4c69-95c2-a43a4d51af18",
+                  "optionsSelections": [
+                    4
+                  ],
+                  "price": 126.0,
+                  "formattedPrice": "$126.00"
+                },
+                {
+                  "id": "30f39d8b-d9e2-4c61-bc40-36c98d79f24b",
+                  "optionsSelections": [
+                    5
+                  ],
+                  "price": 185.0,
+                  "formattedPrice": "$185.00"
+                },
+                {
+                  "id": "dc9624fc-ce0b-4bcc-a7ce-370d0a0a873c",
+                  "optionsSelections": [
+                    1
+                  ],
+                  "price": 54.0,
+                  "formattedPrice": "$54.00"
+                },
+                {
+                  "id": "492928af-d45c-4295-8db8-4b504fd62d35",
+                  "optionsSelections": [
+                    2
+                  ],
+                  "price": 67.0,
+                  "formattedPrice": "$67.00"
+                },
+                {
+                  "id": "9d01a37a-c620-4f42-a333-22dec49515ee",
+                  "optionsSelections": [
+                    3
+                  ],
+                  "price": 76.0,
+                  "formattedPrice": "$76.00"
+                }
+              ],
+              "productType": "physical",
+              "price": 54.0,
+              "sku": "",
+              "isInStock": true,
+              "urlPart": "iminodiacetic-acid-cas-142-73-4",
+              "formattedPrice": "$54.00",
+              "name": "Iminodiacetic acid, CAS 142-73-4",
+              "description": "<p>Appearance: colorless to yellowish powder</p><p>CAS: 142-73-4</p><p>Product ID: IDAA</p><p>Purity: 98%+</p><p>Formula: C4H7NO4</p><p>MW: 133.1g/mol</p><p>MP: 240-250C</p><p>Solubility: water soluble</p><p>HS Code: 292249</p><p>MDL: MFCD00004280</p><p>SMILES: OC(=O)CNCC(O)=O</p><p>LD50 (rat, oral) &gt;2,000mg/kg</p><p>TSCA: Yes</p>",
+              "brand": null
+            },
+            {
+              "id": "0d760a72-50a1-44bc-ae2d-1aad8d226bfa",
+              "options": [
+                {
+                  "id": "opt-20",
+                  "key": "Size",
+                  "title": "Size",
+                  "optionType": "DROP_DOWN",
+                  "selections": [
+                    {
+                      "id": 1,
+                      "value": "25g",
+                      "description": "25g",
+                      "key": "25g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 2,
+                      "value": "50g",
+                      "description": "50g",
+                      "key": "50g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 3,
+                      "value": "100g",
+                      "description": "100g",
+                      "key": "100g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 4,
+                      "value": "500g",
+                      "description": "500g",
+                      "key": "500g",
+                      "inStock": null
+                    }
+                  ]
+                }
+              ],
+              "productItems": [
+                {
+                  "id": "98f2cac4-45ec-4f7d-96b2-786f93f5c143",
+                  "optionsSelections": [
+                    1
+                  ],
+                  "price": 154.0,
+                  "formattedPrice": "$154.00"
+                },
+                {
+                  "id": "8bc545ee-8356-42ce-857a-2b1988c94740",
+                  "optionsSelections": [
+                    2
+                  ],
+                  "price": 194.0,
+                  "formattedPrice": "$194.00"
+                },
+                {
+                  "id": "1fb7c133-0e6e-4b3d-87a8-89b7b352a110",
+                  "optionsSelections": [
+                    3
+                  ],
+                  "price": 385.0,
+                  "formattedPrice": "$385.00"
+                },
+                {
+                  "id": "ecaabd30-a447-4a0e-9b9c-e6c92d7c9dd0",
+                  "optionsSelections": [
+                    4
+                  ],
+                  "price": 1659.0,
+                  "formattedPrice": "$1,659.00"
+                }
+              ],
+              "productType": "physical",
+              "price": 154.0,
+              "sku": "",
+              "isInStock": true,
+              "urlPart": "7-aminoheptanoic-acid-cas-929-17-9",
+              "formattedPrice": "$154.00",
+              "name": "7-Aminoheptanoic acid, CAS 929-17-9",
+              "description": "<p>Appearance: off-white powder</p><p>CAS: 929-17-9</p><p>Product ID: 7NH2HEP</p><p>Purity: 98%+</p><p>Formula: C7H15NO2</p><p>MW: 145.2g/mol</p><p>MP: 187-196C</p><p>Solubility: water soluble</p><p>HS Code: 292249</p><p>MDL: MFCD00008242</p><p>SMILES: NCCCCCCC(O)=O</p><p>LD50 (rat, oral) &gt;9,000mg/kg</p><p>TSCA: Yes</p>",
+              "brand": null
+            },
+            {
+              "id": "4961cec6-12c4-3a3a-aee9-8fb4941066d4",
+              "options": [
+                {
+                  "id": "opt-20",
+                  "key": "Size",
+                  "title": "Size",
+                  "optionType": "DROP_DOWN",
+                  "selections": [
+                    {
+                      "id": 1,
+                      "value": "25g",
+                      "description": "25g",
+                      "key": "25g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 2,
+                      "value": "50g",
+                      "description": "50g",
+                      "key": "50g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 3,
+                      "value": "100g",
+                      "description": "100g",
+                      "key": "100g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 4,
+                      "value": "500g",
+                      "description": "500g",
+                      "key": "500g",
+                      "inStock": null
+                    }
+                  ]
+                }
+              ],
+              "productItems": [
+                {
+                  "id": "d92ff1ed-b925-400b-a6ca-af16a8925613",
+                  "optionsSelections": [
+                    1
+                  ],
+                  "price": 54.0,
+                  "formattedPrice": "$54.00"
+                },
+                {
+                  "id": "370143f2-a3d6-4342-852c-080cb2ac7d61",
+                  "optionsSelections": [
+                    2
+                  ],
+                  "price": 64.0,
+                  "formattedPrice": "$64.00"
+                },
+                {
+                  "id": "cb042afe-2fb4-4a99-915d-8fbb6c787091",
+                  "optionsSelections": [
+                    3
+                  ],
+                  "price": 72.0,
+                  "formattedPrice": "$72.00"
+                },
+                {
+                  "id": "c51fd3de-788e-4627-9a70-e6a980c4c6e0",
+                  "optionsSelections": [
+                    4
+                  ],
+                  "price": 89.0,
+                  "formattedPrice": "$89.00"
+                }
+              ],
+              "productType": "physical",
+              "price": 54.0,
+              "sku": "",
+              "isInStock": true,
+              "urlPart": "d-gluconic-acid-50-cas-526-95-4",
+              "formattedPrice": "$54.00",
+              "name": "D-Gluconic acid, 50%, CAS 526-95-4",
+              "description": "<p>Appearance: yellowish liquid</p><p>CAS: 526-95-4</p><p>Product ID: GLUCOH</p><p>Purity: 98%+</p><p>Formula: C6H12O7</p><p>MW: 196.2g/mol</p><p>BP: 100-106C</p><p>Density: 1.1-1.3g/mL</p><p>Solubility: water soluble</p><p>HS Code: 291816</p><p>MDL: MFCD00004240</p><p>SMILES: C(C(C(C(C(C(=O)O)O)O)O)O)O</p><p>TSCA: Yes</p>",
+              "brand": null
+            },
+            {
+              "id": "a71880dc-4599-46dc-cd5c-c82bfdd35f4c",
+              "options": [
+                {
+                  "id": "opt-20",
+                  "key": "Size",
+                  "title": "Size",
+                  "optionType": "DROP_DOWN",
+                  "selections": [
+                    {
+                      "id": 1,
+                      "value": "25g",
+                      "description": "25g",
+                      "key": "25g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 2,
+                      "value": "50g",
+                      "description": "50g",
+                      "key": "50g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 3,
+                      "value": "100g",
+                      "description": "100g",
+                      "key": "100g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 4,
+                      "value": "500g",
+                      "description": "500g",
+                      "key": "500g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 5,
+                      "value": "1kg",
+                      "description": "1kg",
+                      "key": "1kg",
+                      "inStock": null
+                    }
+                  ]
+                }
+              ],
+              "productItems": [
+                {
+                  "id": "e36d28b7-6f10-4430-9871-958b72ad5836",
+                  "optionsSelections": [
+                    4
+                  ],
+                  "price": 131.0,
+                  "formattedPrice": "$131.00"
+                },
+                {
+                  "id": "0d32d926-e33a-4bfc-a70c-29f5520d5758",
+                  "optionsSelections": [
+                    5
+                  ],
+                  "price": 250.0,
+                  "formattedPrice": "$250.00"
+                },
+                {
+                  "id": "6ac29942-2f84-45c3-872e-3aaf60dcb573",
+                  "optionsSelections": [
+                    1
+                  ],
+                  "price": 59.0,
+                  "formattedPrice": "$59.00"
+                },
+                {
+                  "id": "a0afcc4b-9d87-472b-bee7-34cd55a5c2d4",
+                  "optionsSelections": [
+                    2
+                  ],
+                  "price": 76.0,
+                  "formattedPrice": "$76.00"
+                },
+                {
+                  "id": "a2ace8ea-1ae9-4119-98a9-502d15115510",
+                  "optionsSelections": [
+                    3
+                  ],
+                  "price": 93.0,
+                  "formattedPrice": "$93.00"
+                }
+              ],
+              "productType": "physical",
+              "price": 59.0,
+              "sku": "",
+              "isInStock": true,
+              "urlPart": "cyclohexane-1-2-dicarboxylic-acid-cas-610-09-3",
+              "formattedPrice": "$59.00",
+              "name": "Cyclohexane-1,2-dicarboxylic acid, CAS 610-09-3",
+              "description": "<p>Appearance: colorless crystalline powder</p><p>CAS: 610-09-3</p><p>Product ID: CHDA</p><p>Purity: 98%+</p><p>Formula: C8H12O4</p><p>MW: 172.18g/mol</p><p>MP: 187-195C</p><p>Solubility: organo-soluble</p><p>HS Code: 291720</p><p>MDL: MFCD00064949</p><p>SMILES: O=C([C@H]1[C@@H](C(O)=O)CCCC1)O</p><p>TSCA: No</p>",
+              "brand": null
+            },
+            {
+              "id": "6e879dc4-321d-6253-0e9f-3ee0eb9095a8",
+              "options": [
+                {
+                  "id": "opt-20",
+                  "key": "Size",
+                  "title": "Size",
+                  "optionType": "DROP_DOWN",
+                  "selections": [
+                    {
+                      "id": 1,
+                      "value": "25g",
+                      "description": "25g",
+                      "key": "25g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 2,
+                      "value": "50g",
+                      "description": "50g",
+                      "key": "50g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 3,
+                      "value": "100g",
+                      "description": "100g",
+                      "key": "100g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 4,
+                      "value": "500g",
+                      "description": "500g",
+                      "key": "500g",
+                      "inStock": null
+                    }
+                  ]
+                }
+              ],
+              "productItems": [
+                {
+                  "id": "677eddac-7ab5-4b8f-b3b1-f170de6aab35",
+                  "optionsSelections": [
+                    1
+                  ],
+                  "price": 86.0,
+                  "formattedPrice": "$86.00"
+                },
+                {
+                  "id": "0c372c75-20f2-4d83-a2f0-405661f907d1",
+                  "optionsSelections": [
+                    2
+                  ],
+                  "price": 142.0,
+                  "formattedPrice": "$142.00"
+                },
+                {
+                  "id": "f1dabe83-8911-4d19-8875-8607214bd7d7",
+                  "optionsSelections": [
+                    3
+                  ],
+                  "price": 186.0,
+                  "formattedPrice": "$186.00"
+                },
+                {
+                  "id": "cb648840-6e28-4fc8-b649-fe4cb29e365f",
+                  "optionsSelections": [
+                    4
+                  ],
+                  "price": 477.0,
+                  "formattedPrice": "$477.00"
+                }
+              ],
+              "productType": "physical",
+              "price": 86.0,
+              "sku": "",
+              "isInStock": true,
+              "urlPart": "quinaldic-acid-cas-93-10-7",
+              "formattedPrice": "$86.00",
+              "name": "Quinaldic acid, CAS 93-10-7",
+              "description": "<p>Appearance: orange to green crystalline powder</p><p>CAS: 93-10-7</p><p>Product ID: QUINALDH</p><p>Purity: 98%+</p><p>Formula: C10H7NO2</p><p>MW: 173.17g/mol</p><p>MP: 154-166C</p><p>Solubility: organo-soluble</p><p>HS Code: 293349</p><p>MDL: MFCD00006752</p><p>SMILES: OC(=O)C1=NC2=C(C=CC=C2)C=C1</p><p>TSCA: Yes</p>",
+              "brand": null
+            },
+            {
+              "id": "06dd6467-9169-c556-894f-676ca2751c87",
+              "options": [
+                {
+                  "id": "opt-20",
+                  "key": "Size",
+                  "title": "Size",
+                  "optionType": "DROP_DOWN",
+                  "selections": [
+                    {
+                      "id": 1,
+                      "value": "25g",
+                      "description": "25g",
+                      "key": "25g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 2,
+                      "value": "50g",
+                      "description": "50g",
+                      "key": "50g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 3,
+                      "value": "100g",
+                      "description": "100g",
+                      "key": "100g",
+                      "inStock": null
+                    }
+                  ]
+                }
+              ],
+              "productItems": [
+                {
+                  "id": "655a0d36-f6c8-4092-a8cc-acac8420ce32",
+                  "optionsSelections": [
+                    1
+                  ],
+                  "price": 98.0,
+                  "formattedPrice": "$98.00"
+                },
+                {
+                  "id": "0f1a29e5-f3b2-493e-b439-922c149ea1c0",
+                  "optionsSelections": [
+                    2
+                  ],
+                  "price": 167.0,
+                  "formattedPrice": "$167.00"
+                },
+                {
+                  "id": "c785129a-8380-410d-b2b8-eb3065897e59",
+                  "optionsSelections": [
+                    3
+                  ],
+                  "price": 259.0,
+                  "formattedPrice": "$259.00"
+                }
+              ],
+              "productType": "physical",
+              "price": 98.0,
+              "sku": "",
+              "isInStock": true,
+              "urlPart": "bicinchoninic-acid-disodium-salt-cas-979-88-4",
+              "formattedPrice": "$98.00",
+              "name": "Bicinchoninic acid disodium salt, CAS 979-88-4",
+              "description": "<p>Appearance: yellowish powder</p><p>CAS: 979-88-4</p><p>Product ID: BCA1313</p><p>Purity: 98%+</p><p>Formula: C20H10N2Na2O4</p><p>MW: 388.29g/mol</p><p>MP <span>&gt;</span> 300C</p><p>Solubility: water soluble</p><p>HS Code: 293399</p><p>MDL: MFCD10567219</p><p>SMILES: O=C(C1=CC(C2=NC3=CC=CC=C3C(C([O-])=O)=C2)=NC4=CC=CC=C14)[O-].[Na+].[Na+]</p><p>TSCA: Yes</p><p>LD50 (rat, oral) &gt;2,000mg/kg</p><p>Storage: cold</p>",
+              "brand": null
+            },
+            {
+              "id": "6fb1e27d-5b5c-5704-c51c-22184cdcd65e",
+              "options": [
+                {
+                  "id": "opt-20",
+                  "key": "Size",
+                  "title": "Size",
+                  "optionType": "DROP_DOWN",
+                  "selections": [
+                    {
+                      "id": 1,
+                      "value": "25g",
+                      "description": "25g",
+                      "key": "25g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 2,
+                      "value": "50g",
+                      "description": "50g",
+                      "key": "50g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 3,
+                      "value": "100g",
+                      "description": "100g",
+                      "key": "100g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 4,
+                      "value": "500g",
+                      "description": "500g",
+                      "key": "500g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 5,
+                      "value": "1kg",
+                      "description": "1kg",
+                      "key": "1kg",
+                      "inStock": null
+                    }
+                  ]
+                }
+              ],
+              "productItems": [
+                {
+                  "id": "ef62d862-cc64-4803-88d5-64ec5341a230",
+                  "optionsSelections": [
+                    4
+                  ],
+                  "price": 75.0,
+                  "formattedPrice": "$75.00"
+                },
+                {
+                  "id": "d19b329d-916b-42a9-afcf-bd73ee1196e6",
+                  "optionsSelections": [
+                    5
+                  ],
+                  "price": 99.0,
+                  "formattedPrice": "$99.00"
+                },
+                {
+                  "id": "6f34c091-408a-4f51-b4e6-717942008fd4",
+                  "optionsSelections": [
+                    1
+                  ],
+                  "price": 49.0,
+                  "formattedPrice": "$49.00"
+                },
+                {
+                  "id": "6a039630-e764-4d77-b3c0-25cb6652d614",
+                  "optionsSelections": [
+                    2
+                  ],
+                  "price": 59.0,
+                  "formattedPrice": "$59.00"
+                },
+                {
+                  "id": "ba6df50a-3b17-4caa-a6dc-fdfc65e000bb",
+                  "optionsSelections": [
+                    3
+                  ],
+                  "price": 68.0,
+                  "formattedPrice": "$68.00"
+                }
+              ],
+              "productType": "physical",
+              "price": 49.0,
+              "sku": "",
+              "isInStock": true,
+              "urlPart": "itaconic-acid-cas-97-65-4",
+              "formattedPrice": "$49.00",
+              "name": "Itaconic acid, CAS 97-65-4",
+              "description": "<p>Appearance: colorless crystalline powder</p><p>CAS: 97-65-4</p><p>Product ID: ITACON</p><p>Purity: 98%+</p><p>Formula: C5H6O4</p><p>MW: 130.1g/mol</p><p>MP: 163-171C</p><p>Solubility: alcohol soluble</p><p>HS Code: 291719</p><p>MDL: MFCD00004260</p><p>SMILES: C(C(CC(O)=O)=C)(O)=O</p><p>TSCA: Yes</p>",
+              "brand": null
+            },
+            {
+              "id": "3c66390c-00d2-0103-c989-7ceae8401a1c",
+              "options": [
+                {
+                  "id": "opt-20",
+                  "key": "Size",
+                  "title": "Size",
+                  "optionType": "DROP_DOWN",
+                  "selections": [
+                    {
+                      "id": 1,
+                      "value": "25g",
+                      "description": "25g",
+                      "key": "25g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 2,
+                      "value": "50g",
+                      "description": "50g",
+                      "key": "50g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 3,
+                      "value": "100g",
+                      "description": "100g",
+                      "key": "100g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 4,
+                      "value": "500g",
+                      "description": "500g",
+                      "key": "500g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 5,
+                      "value": "1kg",
+                      "description": "1kg",
+                      "key": "1kg",
+                      "inStock": null
+                    }
+                  ]
+                }
+              ],
+              "productItems": [
+                {
+                  "id": "debf8ab9-10a6-489a-80ca-7fab7469d835",
+                  "optionsSelections": [
+                    4
+                  ],
+                  "price": 136.0,
+                  "formattedPrice": "$136.00"
+                },
+                {
+                  "id": "5bf1fb07-c69d-474e-83f2-8f5d73b211f0",
+                  "optionsSelections": [
+                    5
+                  ],
+                  "price": 195.0,
+                  "formattedPrice": "$195.00"
+                },
+                {
+                  "id": "85fe471f-0138-4750-8518-9f7c2bdcca94",
+                  "optionsSelections": [
+                    1
+                  ],
+                  "price": 56.0,
+                  "formattedPrice": "$56.00"
+                },
+                {
+                  "id": "7cc478cf-c5f8-461f-a1b6-6433b418aa53",
+                  "optionsSelections": [
+                    2
+                  ],
+                  "price": 69.0,
+                  "formattedPrice": "$69.00"
+                },
+                {
+                  "id": "7e99b950-b9b9-49db-af48-f4535aca9c19",
+                  "optionsSelections": [
+                    3
+                  ],
+                  "price": 84.0,
+                  "formattedPrice": "$84.00"
+                }
+              ],
+              "productType": "physical",
+              "price": 56.0,
+              "sku": "",
+              "isInStock": true,
+              "urlPart": "dl-glutamic-acid-monohydrate-cas-19285-83-7",
+              "formattedPrice": "$56.00",
+              "name": "DL-Glutamic acid monohydrate, CAS 19285-83-7",
+              "description": "<p>Appearance: off-white crystalline powder</p><p>CAS: 19285-83-7</p><p>Product ID: GLUT</p><p>Purity: 98%+</p><p>Formula: C5H11NO5</p><p>MW: 165.15g/mol</p><p>MP: 185-194C</p><p>Solubility: water soluble</p><p>HS Code: 292242</p><p>MDL: MFCD00150703</p><p>SMILES: O.NC(CCC(O)=O)C(O)=O</p><p>LD50 (rat, oral) &gt;2,000mg/kg</p><p>TSCA: No</p>",
+              "brand": null
+            },
+            {
+              "id": "bd96a15f-564d-e115-3435-f20798c644e6",
+              "options": [
+                {
+                  "id": "opt-20",
+                  "key": "Size",
+                  "title": "Size",
+                  "optionType": "DROP_DOWN",
+                  "selections": [
+                    {
+                      "id": 1,
+                      "value": "25g",
+                      "description": "25g",
+                      "key": "25g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 2,
+                      "value": "50g",
+                      "description": "50g",
+                      "key": "50g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 3,
+                      "value": "100g",
+                      "description": "100g",
+                      "key": "100g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 4,
+                      "value": "500g",
+                      "description": "500g",
+                      "key": "500g",
+                      "inStock": null
+                    }
+                  ]
+                }
+              ],
+              "productItems": [
+                {
+                  "id": "32dd14c8-8f7b-4b98-bd95-8ac99f3283e6",
+                  "optionsSelections": [
+                    1
+                  ],
+                  "price": 54.0,
+                  "formattedPrice": "$54.00"
+                },
+                {
+                  "id": "adcd2bc7-6907-48be-94cf-10bc2658c7d4",
+                  "optionsSelections": [
+                    2
+                  ],
+                  "price": 75.0,
+                  "formattedPrice": "$75.00"
+                },
+                {
+                  "id": "f89decf2-553a-4df9-ab83-4ab0e9503174",
+                  "optionsSelections": [
+                    3
+                  ],
+                  "price": 113.0,
+                  "formattedPrice": "$113.00"
+                },
+                {
+                  "id": "22df1531-25c8-4d8e-8f17-2ebb1817408a",
+                  "optionsSelections": [
+                    4
+                  ],
+                  "price": 267.0,
+                  "formattedPrice": "$267.00"
+                }
+              ],
+              "productType": "physical",
+              "price": 54.0,
+              "sku": "",
+              "isInStock": true,
+              "urlPart": "dl-nipecotic-acid-cas-498-95-3",
+              "formattedPrice": "$54.00",
+              "name": "DL-Nipecotic acid, CAS 498-95-3",
+              "description": "<p>Appearance: Off-white crystalline powder</p><p>CAS: 498-95-3</p><p>Product ID: NIPEC</p><p>Purity: 98%+</p><p>Formula: C6H11NO2</p><p>MW: 129.16g/mol</p><p>MP: 257-163C, dec.</p><p>Solubility: organo-soluble</p><p>HS Code: 293399</p><p>MDL: MFCD00005992</p><p>SMILES: O=C(C1CNCCC1)O</p><p>TSCA: No</p>",
+              "brand": null
+            },
+            {
+              "id": "a51b878b-1798-ba1d-3c8b-540325b50911",
+              "options": [
+                {
+                  "id": "opt-20",
+                  "key": "Size",
+                  "title": "Size",
+                  "optionType": "DROP_DOWN",
+                  "selections": [
+                    {
+                      "id": 1,
+                      "value": "25g",
+                      "description": "25g",
+                      "key": "25g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 2,
+                      "value": "50g",
+                      "description": "50g",
+                      "key": "50g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 3,
+                      "value": "100g",
+                      "description": "100g",
+                      "key": "100g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 4,
+                      "value": "500g",
+                      "description": "500g",
+                      "key": "500g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 5,
+                      "value": "1kg",
+                      "description": "1kg",
+                      "key": "1kg",
+                      "inStock": null
+                    }
+                  ]
+                }
+              ],
+              "productItems": [
+                {
+                  "id": "d26c46cb-abe2-4dbd-abbd-0d6467e5e89d",
+                  "optionsSelections": [
+                    4
+                  ],
+                  "price": 193.75,
+                  "formattedPrice": "$193.75"
+                },
+                {
+                  "id": "fde24bf8-3420-494d-b86e-b9736b419821",
+                  "optionsSelections": [
+                    5
+                  ],
+                  "price": 295.65,
+                  "formattedPrice": "$295.65"
+                },
+                {
+                  "id": "5727a8c5-b9cc-429d-97a5-60ca65ef6a87",
+                  "optionsSelections": [
+                    1
+                  ],
+                  "price": 51.0,
+                  "formattedPrice": "$51.00"
+                },
+                {
+                  "id": "23caf24a-5ede-4244-be3c-412d25307396",
+                  "optionsSelections": [
+                    2
+                  ],
+                  "price": 63.5,
+                  "formattedPrice": "$63.50"
+                },
+                {
+                  "id": "9f5570f0-6923-4436-8cfc-ea13cbdd90c9",
+                  "optionsSelections": [
+                    3
+                  ],
+                  "price": 76.35,
+                  "formattedPrice": "$76.35"
+                }
+              ],
+              "productType": "physical",
+              "price": 51.0,
+              "sku": "",
+              "isInStock": true,
+              "urlPart": "caffeic-acid-cas-331-39-5",
+              "formattedPrice": "$51.00",
+              "name": "Caffeic acid, CAS 331-39-5",
+              "description": "<p>Appearance: yellowish crystalline powder</p><p>CAS: 331-39-5</p><p>Product ID: CA</p><p>Purity: 98%+</p><p>Formula: C9H8O4</p><p>MW: 180.2g/mol</p><p>MP: 219-227C</p><p>Solubility: organo-soluble</p><p>HS Code: 291829</p><p>MDL: MFCD00004392</p><p>SMILES: OC(=O)\\C=C\\C1=CC(O)=C(O)C=C1</p><p>TSCA: No</p>",
+              "brand": null
+            },
+            {
+              "id": "2c9c4fcb-a061-0213-0899-269ac08d5c63",
+              "options": [
+                {
+                  "id": "opt-20",
+                  "key": "Size",
+                  "title": "Size",
+                  "optionType": "DROP_DOWN",
+                  "selections": [
+                    {
+                      "id": 1,
+                      "value": "25g",
+                      "description": "25g",
+                      "key": "25g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 2,
+                      "value": "50g",
+                      "description": "50g",
+                      "key": "50g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 3,
+                      "value": "100g",
+                      "description": "100g",
+                      "key": "100g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 4,
+                      "value": "500g",
+                      "description": "500g",
+                      "key": "500g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 5,
+                      "value": "1kg",
+                      "description": "1kg",
+                      "key": "1kg",
+                      "inStock": null
+                    }
+                  ]
+                }
+              ],
+              "productItems": [
+                {
+                  "id": "f3895e77-48b8-4d2d-872c-2761d6a17aea",
+                  "optionsSelections": [
+                    4
+                  ],
+                  "price": 193.0,
+                  "formattedPrice": "$193.00"
+                },
+                {
+                  "id": "334223d5-5158-4d8d-9ebe-15684fb53b88",
+                  "optionsSelections": [
+                    5
+                  ],
+                  "price": 290.0,
+                  "formattedPrice": "$290.00"
+                },
+                {
+                  "id": "a7486a05-d31e-4d59-bc8e-6d03466ec17a",
+                  "optionsSelections": [
+                    1
+                  ],
+                  "price": 51.56,
+                  "formattedPrice": "$51.56"
+                },
+                {
+                  "id": "7e8b9871-c4d8-4a0d-bc56-3f9c7dc054cf",
+                  "optionsSelections": [
+                    2
+                  ],
+                  "price": 65.67,
+                  "formattedPrice": "$65.67"
+                },
+                {
+                  "id": "c59ca0df-001e-47cf-b875-f6fe112c22e4",
+                  "optionsSelections": [
+                    3
+                  ],
+                  "price": 77.34,
+                  "formattedPrice": "$77.34"
+                }
+              ],
+              "productType": "physical",
+              "price": 51.56,
+              "sku": "",
+              "isInStock": true,
+              "urlPart": "vanillic-acid-cas-121-34-6",
+              "formattedPrice": "$51.56",
+              "name": "Vanillic acid, CAS 121-34-6",
+              "description": "<p>Appearance: colorless powder</p><p>CAS: 121-34-6</p><p>Product ID: VA</p><p>Purity: 98%+</p><p>Formula: C8H8O4</p><p>MW: 168.15g/mol</p><p>MP: 208-218C</p><p>Solubility: alcohol soluble</p><p>HS Code: 291890</p><p>MDL: MFCD00002551</p><p>SMILES: COC1=CC(=CC=C1O)C(O)=O</p><p>LD50 (rat, oral) &gt;2,000mg/kg</p><p>TSCA: Yes</p>",
+              "brand": null
+            },
+            {
+              "id": "2cf482ac-5c63-b00d-5ea6-19f2606a6e6b",
+              "options": [
+                {
+                  "id": "opt-20",
+                  "key": "Size",
+                  "title": "Size",
+                  "optionType": "DROP_DOWN",
+                  "selections": [
+                    {
+                      "id": 1,
+                      "value": "25g",
+                      "description": "25g",
+                      "key": "25g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 2,
+                      "value": "50g",
+                      "description": "50g",
+                      "key": "50g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 3,
+                      "value": "100g",
+                      "description": "100g",
+                      "key": "100g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 4,
+                      "value": "500g",
+                      "description": "500g",
+                      "key": "500g",
+                      "inStock": null
+                    }
+                  ]
+                }
+              ],
+              "productItems": [
+                {
+                  "id": "44f3694f-50a5-41e1-8626-34ca45d7edfb",
+                  "optionsSelections": [
+                    1
+                  ],
+                  "price": 84.09,
+                  "formattedPrice": "$84.09"
+                },
+                {
+                  "id": "f480ab62-5065-420e-8f73-b49f4118297d",
+                  "optionsSelections": [
+                    2
+                  ],
+                  "price": 126.14,
+                  "formattedPrice": "$126.14"
+                },
+                {
+                  "id": "6c06eef0-151a-4e4f-b70f-4dd6c69b74f8",
+                  "optionsSelections": [
+                    3
+                  ],
+                  "price": 189.2,
+                  "formattedPrice": "$189.20"
+                },
+                {
+                  "id": "9d3b325c-16ac-463a-ba0b-2e966a27a130",
+                  "optionsSelections": [
+                    4
+                  ],
+                  "price": 473.0,
+                  "formattedPrice": "$473.00"
+                }
+              ],
+              "productType": "physical",
+              "price": 84.09,
+              "sku": "",
+              "isInStock": true,
+              "urlPart": "5-benzotriazolecarboxylic-acid-cas-23814-12-2",
+              "formattedPrice": "$84.09",
+              "name": "5-Benzotriazolecarboxylic acid, CAS 23814-12-2",
+              "description": "<p>Appearance: yellowish to brownish powder</p><p>CAS: 23814-12-2</p><p>Product ID: BTCA</p><p>Purity: 98%+</p><p>Formula: C7H5N3O2</p><p>MW: 163.13g/mol</p><p>MP &gt; 300C</p><p>Solubility: alcohol soluble</p><p>HS Code: 293399</p><p>MDL: MFCD00012318</p><p>SMILES: C1=CC2=NNN=C2C=C1C(=O)O</p><p>LD50 (rat, oral) &gt;4,000mg/kg</p>",
+              "brand": null
+            },
+            {
+              "id": "b5a01908-0fc6-89fd-2702-0c37346365c1",
+              "options": [
+                {
+                  "id": "opt-20",
+                  "key": "Size",
+                  "title": "Size",
+                  "optionType": "DROP_DOWN",
+                  "selections": [
+                    {
+                      "id": 1,
+                      "value": "25g",
+                      "description": "25g",
+                      "key": "25g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 2,
+                      "value": "50g",
+                      "description": "50g",
+                      "key": "50g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 3,
+                      "value": "100g",
+                      "description": "100g",
+                      "key": "100g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 4,
+                      "value": "500g",
+                      "description": "500g",
+                      "key": "500g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 5,
+                      "value": "1kg",
+                      "description": "1kg",
+                      "key": "1kg",
+                      "inStock": null
+                    }
+                  ]
+                }
+              ],
+              "productItems": [
+                {
+                  "id": "8945073c-c8e5-4cec-ac29-a4ebddcf36ff",
+                  "optionsSelections": [
+                    4
+                  ],
+                  "price": 271.87,
+                  "formattedPrice": "$271.87"
+                },
+                {
+                  "id": "84aa0ce4-6fe2-472d-8191-8d349743fc26",
+                  "optionsSelections": [
+                    5
+                  ],
+                  "price": 454.67,
+                  "formattedPrice": "$454.67"
+                },
+                {
+                  "id": "616e69e3-85ec-45a8-8307-c800a83198be",
+                  "optionsSelections": [
+                    1
+                  ],
+                  "price": 53.89,
+                  "formattedPrice": "$53.89"
+                },
+                {
+                  "id": "58b6a647-8503-431b-ae3a-d57bddbdc1e8",
+                  "optionsSelections": [
+                    2
+                  ],
+                  "price": 80.84,
+                  "formattedPrice": "$80.84"
+                },
+                {
+                  "id": "e27c6768-fbbf-45b6-ac8a-7a7cd631a00f",
+                  "optionsSelections": [
+                    3
+                  ],
+                  "price": 121.25,
+                  "formattedPrice": "$121.25"
+                }
+              ],
+              "productType": "physical",
+              "price": 53.89,
+              "sku": "",
+              "isInStock": true,
+              "urlPart": "4-4-dibenzoic-acid-cas-787-70-2",
+              "formattedPrice": "$53.89",
+              "name": "4,4'-Dibenzoic acid, CAS 787-70-2",
+              "description": "<p>Appearance: Off-white powder</p><p>CAS: 787-70-2</p><p>Product ID: BPDC</p><p>Purity: 98%+</p><p>Formula: C15H10O5</p><p>MW: 242.23g/mol</p><p>MP <span>&gt;</span> 300C</p><p>Solubility: organo-soluble</p><p>HS Code: 291739</p><p>MDL: MFCD00002554</p><p>SMILES: OC(=O)c1ccc(cc1)c1ccc(cc1)C(=O)O</p><p>TSCA: Yes</p>",
+              "brand": null
+            },
+            {
+              "id": "7f8b6f6a-60d4-9aa7-f56d-ff7418b063d3",
+              "options": [
+                {
+                  "id": "opt-20",
+                  "key": "Size",
+                  "title": "Size",
+                  "optionType": "DROP_DOWN",
+                  "selections": [
+                    {
+                      "id": 1,
+                      "value": "25g",
+                      "description": "25g",
+                      "key": "25g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 2,
+                      "value": "50g",
+                      "description": "50g",
+                      "key": "50g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 3,
+                      "value": "100g",
+                      "description": "100g",
+                      "key": "100g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 4,
+                      "value": "500g",
+                      "description": "500g",
+                      "key": "500g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 5,
+                      "value": "1kg",
+                      "description": "1kg",
+                      "key": "1kg",
+                      "inStock": null
+                    }
+                  ]
+                }
+              ],
+              "productItems": [
+                {
+                  "id": "76da2c0d-794f-42bb-b3aa-014ec9fe07e0",
+                  "optionsSelections": [
+                    4
+                  ],
+                  "price": 111.34,
+                  "formattedPrice": "$111.34"
+                },
+                {
+                  "id": "98ef2e27-657f-43f9-9fd9-a402bd1bd753",
+                  "optionsSelections": [
+                    5
+                  ],
+                  "price": 167.0,
+                  "formattedPrice": "$167.00"
+                },
+                {
+                  "id": "b05f0cae-40c1-43e5-9e24-89cd107f4821",
+                  "optionsSelections": [
+                    1
+                  ],
+                  "price": 29.69,
+                  "formattedPrice": "$29.69"
+                },
+                {
+                  "id": "4da041bc-fa87-481b-8704-399250bef478",
+                  "optionsSelections": [
+                    2
+                  ],
+                  "price": 42.76,
+                  "formattedPrice": "$42.76"
+                },
+                {
+                  "id": "1250b490-ed68-425e-9974-3d33f848be6e",
+                  "optionsSelections": [
+                    3
+                  ],
+                  "price": 54.54,
+                  "formattedPrice": "$54.54"
+                }
+              ],
+              "productType": "physical",
+              "price": 29.69,
+              "sku": "",
+              "isInStock": true,
+              "urlPart": "dibenzoyl-l-tartaric-acid-cas-2743-38-6",
+              "formattedPrice": "$29.69",
+              "name": "Dibenzoyl-l-tartaric acid, CAS 2743-38-6",
+              "description": "<p>Appearance: colorless to yellowish powder</p><p>CAS: 2743-38-6</p><p>Product ID: LDBTA</p><p>Purity: 98%+</p><p>Formula: C18H16O9</p><p>MW: 358.30g/mol</p><p>MP: 86-91C</p><p>Solubility: organo-soluble</p><p>HS Code: 291819</p><p>MDL: MFCD00149119</p><p>SMILES: O=C(OC(C(=O)O)C(OC(=O)c1ccccc1)C(O)=O)c1ccccc1</p><p>LD50 (rat, oral) &gt;5,000mg/kg</p><p>TSCA: Yes</p>",
+              "brand": null
+            },
+            {
+              "id": "2b021897-72e1-0e6e-a7ad-05a1feb90011",
+              "options": [
+                {
+                  "id": "opt-20",
+                  "key": "Size",
+                  "title": "Size",
+                  "optionType": "DROP_DOWN",
+                  "selections": [
+                    {
+                      "id": 1,
+                      "value": "25g",
+                      "description": "25g",
+                      "key": "25g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 2,
+                      "value": "50g",
+                      "description": "50g",
+                      "key": "50g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 3,
+                      "value": "100g",
+                      "description": "100g",
+                      "key": "100g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 4,
+                      "value": "500g",
+                      "description": "500g",
+                      "key": "500g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 5,
+                      "value": "1kg",
+                      "description": "1kg",
+                      "key": "1kg",
+                      "inStock": null
+                    },
+                    {
+                      "id": 6,
+                      "value": "2kg",
+                      "description": "2kg",
+                      "key": "2kg",
+                      "inStock": null
+                    },
+                    {
+                      "id": 7,
+                      "value": "5kg",
+                      "description": "5kg",
+                      "key": "5kg",
+                      "inStock": null
+                    },
+                    {
+                      "id": 8,
+                      "value": "10kg",
+                      "description": "10kg",
+                      "key": "10kg",
+                      "inStock": null
+                    }
+                  ]
+                }
+              ],
+              "productItems": [
+                {
+                  "id": "577c0c19-db8a-4aaf-8dbc-04a5b98d7e63",
+                  "optionsSelections": [
+                    8
+                  ],
+                  "price": 390.0,
+                  "formattedPrice": "$390.00"
+                },
+                {
+                  "id": "01ce47ef-87b8-4f2a-b40f-55046d6712c6",
+                  "optionsSelections": [
+                    4
+                  ],
+                  "price": 91.7,
+                  "formattedPrice": "$91.70"
+                },
+                {
+                  "id": "7de4c958-2ed0-4f71-9a72-ec9a38d89158",
+                  "optionsSelections": [
+                    5
+                  ],
+                  "price": 120.0,
+                  "formattedPrice": "$120.00"
+                },
+                {
+                  "id": "d962a839-47f4-4819-aec7-2993af26b147",
+                  "optionsSelections": [
+                    6
+                  ],
+                  "price": 180.0,
+                  "formattedPrice": "$180.00"
+                },
+                {
+                  "id": "432fb33d-8400-4518-afc3-08669d8fd6ba",
+                  "optionsSelections": [
+                    1
+                  ],
+                  "price": 53.0,
+                  "formattedPrice": "$53.00"
+                },
+                {
+                  "id": "723b9f48-1402-4e9e-b53f-dea166f32be2",
+                  "optionsSelections": [
+                    2
+                  ],
+                  "price": 63.0,
+                  "formattedPrice": "$63.00"
+                },
+                {
+                  "id": "2795df92-9625-4bd6-8887-774b9f8be1c6",
+                  "optionsSelections": [
+                    7
+                  ],
+                  "price": 240.0,
+                  "formattedPrice": "$240.00"
+                },
+                {
+                  "id": "8f740ca9-df6e-401c-afea-3f7b57d93c12",
+                  "optionsSelections": [
+                    3
+                  ],
+                  "price": 70.5,
+                  "formattedPrice": "$70.50"
+                }
+              ],
+              "productType": "physical",
+              "price": 53.0,
+              "sku": "",
+              "isInStock": true,
+              "urlPart": "palmitic-acid-cas-57-10-3",
+              "formattedPrice": "$53.00",
+              "name": "Palmitic acid, CAS 57-10-3",
+              "description": "<p>Appearance: colorless powder or flakes</p><p>CAS: 57-10-3</p><p>Product ID: PALMH</p><p>Purity: 98%+</p><p>Formula: C16H32O2</p><p>MW: 256.42g/mol</p><p>MP: 60-68C</p><p>Solubility: organo-soluble</p><p>HS Code: 291570</p><p>MDL: MFCD00002747</p><p>SMILES: CCCCCCCCCCCCCCCC(=O)O</p><p>LD50 (rat, oral) &gt;5,000mg/kg</p><p>TSCA: Yes</p>",
+              "brand": null
+            },
+            {
+              "id": "24f4eaec-0259-74dd-a6c9-061ab87f2f41",
+              "options": [
+                {
+                  "id": "opt-20",
+                  "key": "Size",
+                  "title": "Size",
+                  "optionType": "DROP_DOWN",
+                  "selections": [
+                    {
+                      "id": 1,
+                      "value": "25g",
+                      "description": "25g",
+                      "key": "25g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 2,
+                      "value": "50g",
+                      "description": "50g",
+                      "key": "50g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 3,
+                      "value": "100g",
+                      "description": "100g",
+                      "key": "100g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 4,
+                      "value": "500g",
+                      "description": "500g",
+                      "key": "500g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 5,
+                      "value": "1kg",
+                      "description": "1kg",
+                      "key": "1kg",
+                      "inStock": null
+                    }
+                  ]
+                }
+              ],
+              "productItems": [
+                {
+                  "id": "e113e000-81d0-479f-a4da-642b63b57e4c",
+                  "optionsSelections": [
+                    4
+                  ],
+                  "price": 173.34,
+                  "formattedPrice": "$173.34"
+                },
+                {
+                  "id": "7892ed87-695c-45bf-9d01-26b7b0f58f5a",
+                  "optionsSelections": [
+                    5
+                  ],
+                  "price": 260.0,
+                  "formattedPrice": "$260.00"
+                },
+                {
+                  "id": "01107083-2aac-4ef5-8173-cabd0f207720",
+                  "optionsSelections": [
+                    1
+                  ],
+                  "price": 44.15,
+                  "formattedPrice": "$44.15"
+                },
+                {
+                  "id": "178a9f62-5cb5-421a-8d67-99a7372a224e",
+                  "optionsSelections": [
+                    2
+                  ],
+                  "price": 66.22,
+                  "formattedPrice": "$66.22"
+                },
+                {
+                  "id": "ee08525f-ebee-4991-8d18-48074fa09707",
+                  "optionsSelections": [
+                    3
+                  ],
+                  "price": 99.33,
+                  "formattedPrice": "$99.33"
+                }
+              ],
+              "productType": "physical",
+              "price": 44.15,
+              "sku": "",
+              "isInStock": true,
+              "urlPart": "picolinic-acid-cas-98-98-6",
+              "formattedPrice": "$44.15",
+              "name": "Picolinic acid, CAS 98-98-6",
+              "description": "<p>Appearance: Off-white crystalline powder</p><p>CAS: 98-98-6</p><p>Product ID: 2PICOH</p><p>Purity: 98%+</p><p>Formula: C6H5NO2</p><p>MW: 123.11g/mol</p><p>MP: 135-142C</p><p>Solubility: water soluble</p><p>HS Code: 293339</p><p>MDL: MFCD00006293</p><p>SMILES: OC(=O)C1=CC=CC=N1</p><p>LD50 (rat, oral) &gt;500mg/kg</p><p>TSCA: Yes</p>",
+              "brand": null
+            },
+            {
+              "id": "29f88cb2-4077-d49c-638a-99a6aa909629",
+              "options": [
+                {
+                  "id": "opt-20",
+                  "key": "Size",
+                  "title": "Size",
+                  "optionType": "DROP_DOWN",
+                  "selections": [
+                    {
+                      "id": 1,
+                      "value": "25g",
+                      "description": "25g",
+                      "key": "25g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 2,
+                      "value": "50g",
+                      "description": "50g",
+                      "key": "50g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 3,
+                      "value": "100g",
+                      "description": "100g",
+                      "key": "100g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 4,
+                      "value": "500g",
+                      "description": "500g",
+                      "key": "500g",
+                      "inStock": null
+                    },
+                    {
+                      "id": 5,
+                      "value": "1kg",
+                      "description": "1kg",
+                      "key": "1kg",
+                      "inStock": null
+                    }
+                  ]
+                }
+              ],
+              "productItems": [
+                {
+                  "id": "d9a06479-7b8b-4653-94c9-18e68b2435d2",
+                  "optionsSelections": [
+                    4
+                  ],
+                  "price": 214.67,
+                  "formattedPrice": "$214.67"
+                },
+                {
+                  "id": "6d0d1dab-d143-4a50-ba34-7a7ab4864b7c",
+                  "optionsSelections": [
+                    5
+                  ],
+                  "price": 322.0,
+                  "formattedPrice": "$322.00"
+                },
+                {
+                  "id": "3d72f706-5a7e-4cfa-b78e-8e94f85c518c",
+                  "optionsSelections": [
+                    1
+                  ],
+                  "price": 48.16,
+                  "formattedPrice": "$48.16"
+                },
+                {
+                  "id": "3bfcf955-f61c-4463-a9ea-89b61312107b",
+                  "optionsSelections": [
+                    2
+                  ],
+                  "price": 57.25,
+                  "formattedPrice": "$57.25"
+                },
+                {
+                  "id": "90878512-bd27-41b1-8b02-1d0d73b05ea9",
+                  "optionsSelections": [
+                    3
+                  ],
+                  "price": 85.87,
+                  "formattedPrice": "$85.87"
+                }
+              ],
+              "productType": "physical",
+              "price": 48.16,
+              "sku": "",
+              "isInStock": true,
+              "urlPart": "2-6-dipicolinic-acid-cas-499-83-2",
+              "formattedPrice": "$48.16",
+              "name": "2,6-Dipicolinic acid, CAS 499-83-2",
+              "description": "<p>Appearance: colorless crystalline powder</p><p>CAS: 499-83-2</p><p>Product ID: 26DPA</p><p>Purity: 98%+</p><p>Formula: C7H5NO4</p><p>MW: 167.12g/mol</p><p>MP: 246-252C</p><p>Solubility: water soluble</p><p>HS Code: 293339</p><p>MDL: MFCD00006299</p><p>SMILES: OC(=O)C1=CC=CC(=N1)C(O)=O</p><p>LD50 (rat, oral) &gt;10,000mg/kg</p><p>TSCA: Yes</p>",
+              "brand": null
+            }
+          ]
+        }
+      }
+    }
+  }
+}

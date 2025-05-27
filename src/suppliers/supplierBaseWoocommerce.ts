@@ -34,15 +34,34 @@
 import { findCAS } from "@/helpers/cas";
 import { ProductBuilder } from "@/helpers/productBuilder";
 import { parseQuantity } from "@/helpers/quantity";
-import { findFormulaInHtml } from "@/helpers/science";
 import { firstMap } from "@/helpers/utils";
-import type { Product } from "@/types";
+import type { Product, Variant } from "@/types";
 import type { ProductVariant, SearchResponse, SearchResponseItem } from "@/types/woocommerce";
 import SupplierBase from "./supplierBase";
 
 /**
  * Base class for WooCommerce-based suppliers that provides common functionality for
  * interacting with WooCommerce REST API endpoints.
+ *
+ * Woocommerce has two versons of API endpoints for products.
+ * The V1 endpoints are:
+ * - /wp-json/wc/v1
+ * - /wp-json/wc/store/v1/products
+ * - /wp-json/wc/store/v1/products?search=borohydride&per_page=20&page=1
+ * - /wp-json/wc/store/v1/products/6981
+ *
+ * And the V2 endpoints are:
+ * - /wp-json/wp/v2
+ * - /wp-json/wp/v2/product
+ * - /wp-json/wp/v2/product?search=borohydride&per_page=20&page=1
+ * - /wp-json/wp/v2/product/6981
+ *
+ * There are plenty of differences between the two, but mainly it looks like the v2 endpoint
+ * doesn't include any of the variatins in the search responses.
+ *
+ * The first endpoint is used to search for products and returns a list of products.
+ * The second endpoint is used to get the details of a single product.
+ *
  *
  * @example
  * ```typescript
@@ -117,7 +136,7 @@ export default abstract class SupplierBaseWoocommerce
   protected async _queryProducts(
     query: string,
     limit: number = this._limit,
-  ): Promise<Array<SearchResponseItem> | void> {
+  ): Promise<ProductBuilder<Product>[] | void> {
     const searchRequest = await this._httpGetJson({
       path: `/wp-json/wc/store/v1/products`,
       params: { search: query },
@@ -128,7 +147,93 @@ export default abstract class SupplierBaseWoocommerce
       return;
     }
 
-    return searchRequest.slice(0, limit) as Array<SearchResponseItem>;
+    const results: SearchResponseItem[] = searchRequest;
+    return this._initProductBuilders(results.slice(0, limit));
+  }
+
+  /**
+   * Initialize product builders from WooCommerce search response data.
+   * Transforms WooCommerce product data into ProductBuilder instances, handling:
+   * - Basic product information (name, URL, supplier)
+   * - Product identifiers (ID, SKU)
+   * - Pricing information with currency details
+   * - CAS number extraction from descriptions
+   * - Quantity parsing from product names and descriptions
+   * - Product variations with their attributes
+   *
+   * @param results - Array of WooCommerce search response items
+   * @returns Array of ProductBuilder instances initialized with WooCommerce product data
+   * @example
+   * ```typescript
+   * const results = await this._queryProducts("sodium chloride");
+   * if (results) {
+   *   const builders = this._initProductBuilders(results);
+   *   // Each builder contains parsed product data from WooCommerce
+   *   for (const builder of builders) {
+   *     const product = await builder.build();
+   *     console.log(product.title, product.price, product.quantity);
+   *   }
+   * }
+   * ```
+   */
+  protected _initProductBuilders(results: SearchResponseItem[]): ProductBuilder<Product>[] {
+    return results.map((item) => {
+      const builder = new ProductBuilder<Product>(this._baseURL);
+
+      builder
+        .setBasicInfo(item.name, item.permalink, this.supplierName)
+        .setId(item.id)
+        .setSku(item.sku)
+        .setPricing(
+          Number(item.prices.price) / 100,
+          item.prices.currency_code,
+          item.prices.currency_symbol,
+        );
+
+      const cas = firstMap(findCAS, [item.description, item.short_description]);
+
+      if (cas) builder.setCAS(cas);
+
+      const toParseForQuantity = [item.name, item.description, item.short_description];
+
+      if ("variations" in item) {
+        const variations = item.variations.map((variation) => {
+          const variant: Partial<Variant> = {
+            id: variation.id,
+          };
+
+          if (Array.isArray(variation.attributes)) {
+            const size = variation.attributes.find(
+              (attribute) => attribute.name.toLowerCase() === "size",
+            );
+            if (size && size?.value) {
+              toParseForQuantity.push(size?.value);
+              const variantQty = parseQuantity(size.value);
+
+              if (variantQty) {
+                variant.quantity = variantQty.quantity;
+                variant.uom = variantQty.uom;
+              }
+            }
+          }
+
+          return variant;
+        });
+
+        if (variations.length > 0) {
+          builder.addVariants(variations);
+        }
+      }
+
+      const quantity = firstMap(parseQuantity, toParseForQuantity);
+      if (quantity) {
+        builder.setQuantity(quantity.quantity, quantity.uom);
+      }
+
+      this._logger.debug("initProductBuilder product:", builder.dump());
+
+      return builder;
+    });
   }
 
   /**
@@ -354,67 +459,11 @@ export default abstract class SupplierBaseWoocommerce
    * }
    * ```
    */
-  protected async _getProductData(product: SearchResponseItem): Promise<Partial<Product> | void> {
-    if (!this._isSearchResponseItem(product)) {
-      this._logger.error("Invalid search response item:", product);
-      return;
-    }
+  protected async _getProductData(
+    product: ProductBuilder<Product>,
+  ): Promise<ProductBuilder<Product> | void> {
+    this._logger.debug("getProductData for build item:", product.dump());
 
-    this._logger.debug("product:", product);
-
-    const productResponse: unknown = await this._httpGetJson({
-      path: `/wp-json/wc/store/v1/products/${product.id}`,
-    });
-
-    this._logger.debug("productResponse:", productResponse);
-
-    if (!this._isValidProductVariant(productResponse)) {
-      this._logger.error("Invalid product object:", productResponse);
-      return;
-    }
-
-    const productPrice = parseInt(productResponse.prices.price) / 100;
-
-    if ("variation" in productResponse === false) {
-      this._logger.error("No variation found for product:", product);
-      return;
-    }
-
-    const quantity = firstMap(parseQuantity, [
-      productResponse.name,
-      productResponse.variation,
-      productResponse.sku,
-      productResponse.description,
-      productResponse?.variations?.[0]?.attributes?.[0]?.value || "",
-      productResponse?.add_to_cart?.description || "",
-    ]);
-
-    if (!quantity) {
-      this._logger.error("No quantity found for product:", product);
-      return;
-    }
-
-    const casNumber = firstMap(findCAS, [
-      productResponse.description,
-      productResponse.short_description,
-    ]);
-
-    const formula = firstMap(findFormulaInHtml, [
-      productResponse.description,
-      productResponse.short_description,
-    ]);
-
-    const builder = new ProductBuilder<Product>(this._baseURL);
-    return builder
-      .setBasicInfo(product.name, product.permalink, this.supplierName)
-      .setPricing(
-        productPrice,
-        productResponse.prices.currency_code,
-        productResponse.prices.currency_symbol,
-      )
-      .setQuantity(quantity.quantity, quantity.uom)
-      .setCAS(casNumber || "")
-      .setFormula(formula || "")
-      .build();
+    return product;
   }
 }

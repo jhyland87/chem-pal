@@ -1,7 +1,7 @@
 import { parsePrice } from "@/helpers/currency";
 import { ProductBuilder } from "@/helpers/productBuilder";
 import { parseQuantity } from "@/helpers/quantity";
-import { type Maybe, type Product, type Variant } from "@/types";
+import { type Product, type Variant } from "@/types";
 import {
   type GraphQLQueryVariables,
   type ProductItem,
@@ -11,6 +11,8 @@ import {
 } from "@/types/wix";
 import merge from "lodash/merge";
 //import query from "./queries/getFilteredProductsWithHasDiscount-wix.graphql";
+import { findFormulaInHtml } from "@/helpers/science";
+import { firstMap } from "@/helpers/utils";
 import SupplierBase from "./supplierBase";
 /**
  * SupplierBaseWix class that extends SupplierBase and implements AsyncIterable<Product>.
@@ -336,7 +338,7 @@ export default abstract class SupplierBaseWix
   protected async _queryProducts(
     query: string,
     limit: number = this._limit,
-  ): Promise<ProductObject[]> {
+  ): Promise<ProductBuilder<Product>[] | void> {
     const q = this._getGraphQLQuery();
 
     const v = this._getGraphQLVariables(query, limit);
@@ -355,7 +357,116 @@ export default abstract class SupplierBaseWix
       throw new Error(`Invalid or empty Wix query response for ${query}`);
     }
 
-    return queryResponse.data.catalog.category.productsWithMetaData.list.slice(0, limit);
+    return this._initProductBuilders(
+      queryResponse.data.catalog.category.productsWithMetaData.list.slice(0, limit),
+    );
+  }
+
+  /**
+   * Initialize product builders from Wix search response data.
+   * Transforms Wix product objects into ProductBuilder instances, handling:
+   * - Basic product information (name, URL, supplier)
+   * - Pricing information with currency details
+   * - Product descriptions
+   * - Product IDs and SKUs
+   * - CAS number extraction from product text
+   * - Complex variant handling:
+   *   - Merges product items with their price and quantity information
+   *   - Processes product selections for variant options
+   *   - Handles multiple variant attributes and their values
+   *
+   * @param results - Array of Wix product objects from search results
+   * @returns Array of ProductBuilder instances initialized with Wix product data
+   * @example
+   * ```typescript
+   * const results = await this._queryProducts("sodium chloride");
+   * if (results) {
+   *   const builders = this._initProductBuilders(results);
+   *   // Each builder contains parsed product data from Wix
+   *   for (const builder of builders) {
+   *     const product = await builder.build();
+   *     console.log(product.title, product.price, product.variants);
+   *   }
+   * }
+   * ```
+   */
+  protected _initProductBuilders(results: ProductObject[]): ProductBuilder<Product>[] {
+    return results
+      .map((product) => {
+        if (!product.price) {
+          return;
+        }
+
+        // Generate an object with the products UUID and formatted price, with the option ID as the keys
+        const productItems = Object.fromEntries(
+          product.productItems
+            .map((item: ProductItem) => {
+              if (!this._isProductItem(item)) {
+                console.warn("Invalid product item:", item);
+                return [];
+              }
+              return [
+                item.optionsSelections[0],
+                {
+                  ...parsePrice(item.formattedPrice),
+                  id: item.id,
+                  quantity: item.price,
+                },
+              ];
+            })
+            .filter((entry) => entry.length > 0),
+        );
+
+        // Generate an object with the product quantity selections and the product selection ID
+        const productSelections = Object.fromEntries(
+          product.options[0].selections
+            .map((selection: ProductSelection) => {
+              if (!this._isProductSelection(selection)) {
+                console.warn("Invalid product selection:", selection);
+                return [];
+              }
+              return [selection.id, parseQuantity(selection.value)];
+            })
+            .filter((entry) => entry.length > 0),
+        );
+
+        const productVariants = merge(productItems, productSelections);
+        const productPrice = parsePrice(product.formattedPrice);
+
+        if (!productPrice) {
+          return;
+        }
+
+        const firstVariant = productVariants[Object.keys(productVariants)[0]];
+        if (!firstVariant || !("quantity" in firstVariant) || !("uom" in firstVariant)) {
+          return;
+        }
+
+        const builder = new ProductBuilder<Product>(this._baseURL);
+
+        const cas = firstMap(findFormulaInHtml, [
+          product.name,
+          product.description,
+          product.urlPart,
+        ]);
+
+        builder
+          .setBasicInfo(
+            product.name,
+            `${this._baseURL}/product-page/${product.urlPart}`,
+            this.supplierName,
+          )
+          .setPricing(productPrice.price, productPrice.currencyCode, productPrice.currencySymbol)
+          .setQuantity(firstVariant.quantity, firstVariant.uom)
+          .setId(product.id)
+          .setCAS(cas ?? "")
+          .setSku(product.sku)
+          .setDescription(product.description)
+          .setVariants(Object.values(productVariants) as unknown as Variant[]);
+
+        return builder;
+      })
+      .filter((builder) => builder !== undefined);
   }
 
   /**
@@ -364,80 +475,9 @@ export default abstract class SupplierBaseWix
    * @param product - The product to get the data for
    * @returns A promise that resolves to the product data or void if the product has no price
    */
-  protected async _getProductData(product: ProductObject): Promise<Maybe<Partial<Product>>> {
-    if (!this._isWixProduct(product)) {
-      console.error("Invalid Wix product object:", product);
-      return;
-    }
-
-    if (!product.price) {
-      return;
-    }
-
-    // Generate an object with the products UUID and formatted price, with the option ID as the keys
-    const productItems = Object.fromEntries(
-      product.productItems
-        .map((item: ProductItem) => {
-          if (!this._isProductItem(item)) {
-            console.warn("Invalid product item:", item);
-            return [];
-          }
-          return [
-            item.optionsSelections[0],
-            {
-              ...parsePrice(item.formattedPrice),
-              id: item.id,
-              quantity: item.price,
-            },
-          ];
-        })
-        .filter((entry) => entry.length > 0),
-    );
-
-    // Generate an object with the product quantity selections and the product selection ID
-    const productSelections = Object.fromEntries(
-      product.options[0].selections
-        .map((selection: ProductSelection) => {
-          if (!this._isProductSelection(selection)) {
-            console.warn("Invalid product selection:", selection);
-            return [];
-          }
-          return [selection.id, parseQuantity(selection.value)];
-        })
-        .filter((entry) => entry.length > 0),
-    );
-
-    const productVariants = merge(productItems, productSelections);
-    const productPrice = parsePrice(product.formattedPrice);
-
-    if (!productPrice) {
-      return;
-    }
-
-    const firstVariant = productVariants[Object.keys(productVariants)[0]];
-    if (!firstVariant || !("quantity" in firstVariant) || !("uom" in firstVariant)) {
-      return;
-    }
-
-    const builder = new ProductBuilder<Product>(this._baseURL);
-    return builder
-      .setBasicInfo(
-        product.name,
-        `${this._baseURL}/product-page/${product.urlPart}`,
-        this.supplierName,
-      )
-      .setPricing(productPrice.price, productPrice.currencyCode, productPrice.currencySymbol)
-      .setQuantity(firstVariant.quantity, firstVariant.uom)
-      .setDescription(product.description || "")
-      .build()
-      .then((product) => {
-        if (product) {
-          return {
-            ...product,
-            variants: Object.values(productVariants) as unknown as Variant[],
-          };
-        }
-        return product;
-      });
+  protected async _getProductData(
+    product: ProductBuilder<Product>,
+  ): Promise<ProductBuilder<Product> | void> {
+    return product;
   }
 }

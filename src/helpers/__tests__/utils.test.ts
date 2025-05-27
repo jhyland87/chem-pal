@@ -1,4 +1,12 @@
-import { delayAction, deserialize, firstMap, md5sum, serialize, sleep } from "@/helpers/utils";
+import {
+  delayAction,
+  deserialize,
+  firstMap,
+  mapDefined,
+  md5sum,
+  serialize,
+  sleep,
+} from "@/helpers/utils";
 
 describe("md5sum", () => {
   it("should hash strings correctly", () => {
@@ -81,5 +89,46 @@ describe("firstMap", () => {
     const fn = (x: string) => x;
     const result = firstMap(fn, []);
     expect(result).toBeUndefined();
+  });
+});
+
+describe("mapDefined", () => {
+  it("should filter out null and undefined values after mapping", () => {
+    const input = [1, 2, 3, 4, 5];
+    const fn = (x: number) => (x % 2 === 0 ? x : undefined);
+    expect(mapDefined(input, fn)).toEqual([2, 4]);
+  });
+
+  it("should handle empty arrays", () => {
+    const input: number[] = [];
+    const fn = (x: number) => x * 2;
+    expect(mapDefined(input, fn)).toEqual([]);
+  });
+
+  it("should work with object transformations", () => {
+    interface User {
+      name: string;
+      age?: number;
+    }
+    const input: User[] = [
+      { name: "Alice", age: 25 },
+      { name: "Bob" },
+      { name: "Charlie", age: 30 },
+    ];
+    const fn = (user: User) => user.age;
+    expect(mapDefined(input, fn)).toEqual([25, 30]);
+  });
+
+  it("should handle array with all null/undefined results", () => {
+    const input = [1, 2, 3];
+    const fn = () => null;
+    expect(mapDefined(input, fn)).toEqual([]);
+  });
+
+  it("should preserve non-null falsy values", () => {
+    type FalsyValue = string | number | boolean | null | undefined;
+    const input: FalsyValue[] = ["", 0, false, null, undefined, "test"];
+    const fn = (x: FalsyValue) => x;
+    expect(mapDefined(input, fn)).toEqual(["", 0, false, "test"]);
   });
 });

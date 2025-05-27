@@ -980,4 +980,20 @@ export type JSONResponse = Response;
  * }
  * ```
  */
-type Maybe<T> = NonNullable<T> | undefined | void;
+export type Maybe<T> = NonNullable<T> | undefined | void;
+
+/**
+ * Type that allows either a single value or an array of values of type T.
+ * Used for functions that may return either a single value or an array of values.
+ *
+ * @param T - The type of the value
+ *
+ * @example
+ * ```typescript
+ * // Example function returning either a single value or an array of values
+ * function getValues(): MaybeArray<string> {
+ *   return Math.random() > 0.5 ? "single value" : ["value1", "value2"];
+ * }
+ * ```
+ */
+export type MaybeArray<T> = T | T[];

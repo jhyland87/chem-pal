@@ -333,7 +333,9 @@ export class ProductBuilder<T extends Product> {
    * ```
    */
   setUUID(uuid: string): ProductBuilder<T> {
-    this._product.uuid = uuid;
+    if (uuid && uuid.trim().length > 0) {
+      this._product.uuid = uuid;
+    }
     return this;
   }
 
@@ -348,7 +350,9 @@ export class ProductBuilder<T extends Product> {
    * ```
    */
   setSku(sku: string): ProductBuilder<T> {
-    this._product.sku = sku;
+    if (sku && sku.trim().length > 0) {
+      this._product.sku = sku;
+    }
     return this;
   }
 
@@ -518,6 +522,22 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
+   * Sets the variants for the product. Slightly different from addVariants in that it
+   * will replace the existing variants with the new ones.
+   *
+   * @param variants - The variants to set
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setVariants([{ id: 1, title: '500g Package', price: 49.99, quantity: 500, uom: 'g' }]);
+   * ```
+   */
+  setVariants(variants: Partial<Variant>[]): ProductBuilder<T> {
+    this._product.variants = variants;
+    return this;
+  }
+
+  /**
    * Get a specific property from the product.
    *
    * @param key - The key of the property to get
@@ -528,13 +548,21 @@ export class ProductBuilder<T extends Product> {
    * console.log(title); // "Sodium Chloride"
    * ```
    */
-  get(key: keyof T): T[keyof T] | undefined {
-    return this._product[key] as T[keyof T] | undefined;
+  get(key: keyof T): T[keyof T] | Maybe<T[keyof T]> {
+    if (key in this._product && typeof this._product[key] !== "undefined") {
+      return this._product[key] as T[keyof T];
+    }
+
+    return;
   }
 
   /**
    * Validates that a variant object has valid properties.
    * Checks numeric and string properties for correct types.
+   * Not all the same properties that are required for a valid
+   * Product are required for a variant, as the variant can just
+   * inherit some of the properties from the product (uom, currency,
+   * etc. Even the URL can be inherited from the product).
    *
    * @param variant - The variant object to validate
    * @returns boolean indicating if the variant is valid
@@ -543,7 +571,7 @@ export class ProductBuilder<T extends Product> {
     if (!variant || typeof variant !== "object") return false;
 
     // Check that any numeric properties are actually numbers
-    const numericProps = ["price", "quantity", "baseQuantity"];
+    const numericProps = ["price", "quantity"];
     for (const prop of numericProps) {
       if (prop in variant && typeof variant[prop as keyof typeof variant] !== "number") {
         return false;
@@ -551,7 +579,7 @@ export class ProductBuilder<T extends Product> {
     }
 
     // Check that any string properties are actually strings
-    const stringProps = ["title", "uom", "sku", "url", "grade", "conc", "status", "statusTxt"];
+    const stringProps = ["title"];
     for (const prop of stringProps) {
       if (prop in variant && typeof variant[prop as keyof typeof variant] !== "string") {
         return false;

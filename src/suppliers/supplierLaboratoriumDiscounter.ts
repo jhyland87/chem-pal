@@ -1,7 +1,8 @@
 import { AVAILABILITY } from "@/constants/app";
-import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 import { findCAS } from "@/helpers/cas";
 import { ProductBuilder } from "@/helpers/productBuilder";
+import { urlencode } from "@/helpers/request";
+import { mapDefined } from "@/helpers/utils";
 import { type Product } from "@/types";
 import {
   type PriceObject,
@@ -9,7 +10,6 @@ import {
   type SearchParams,
   type SearchResponse,
   type SearchResponseProduct,
-  type VariantObject,
 } from "@/types/laboratoriumdiscounter";
 import SupplierBase from "./supplierBase";
 
@@ -70,9 +70,11 @@ export default class SupplierLaboratoriumDiscounter
    *   path: "/en/search/acid",
    *   params: { format: "json" }
    * });
-   * if (this._isResponseOk(response)) {
+   * if (this._isSearchResponseOk(response)) {
    *   // Process valid response
    *   console.log(response.collection.products);
+   * } else {
+   *   console.error("Invalid response structure");
    * }
    * ```
    */
@@ -156,6 +158,22 @@ export default class SupplierLaboratoriumDiscounter
    * Type guard to validate PriceObject structure
    * @param price - Object to validate as PriceObject
    * @returns Type predicate indicating if price is a valid PriceObject
+   * @example
+   * ```typescript
+   * const priceData = {
+   *   price: 29.99,
+   *   price_incl: 29.99,
+   *   price_excl: 24.79,
+   *   price_old: 39.99,
+   *   price_old_incl: 39.99,
+   *   price_old_excl: 33.05
+   * };
+   * if (this._isPriceObject(priceData)) {
+   *   console.log("Valid price object:", priceData.price);
+   * } else {
+   *   console.error("Invalid price structure");
+   * }
+   * ```
    */
   protected _isPriceObject(price: unknown): price is PriceObject {
     if (typeof price !== "object" || price === null) return false;
@@ -180,6 +198,40 @@ export default class SupplierLaboratoriumDiscounter
    * Type guard to validate ProductObject structure
    * @param product - Object to validate as ProductObject
    * @returns Type predicate indicating if product is a valid ProductObject
+   * @example
+   * ```typescript
+   * const productData = {
+   *   id: 12345,
+   *   vid: 67890,
+   *   image: 1,
+   *   brand: false,
+   *   code: "CHEM-001",
+   *   ean: "1234567890123",
+   *   sku: "SKU-001",
+   *   score: 1.0,
+   *   available: true,
+   *   unit: true,
+   *   url: "/products/chemical-1",
+   *   title: "Sodium Chloride",
+   *   fulltitle: "Sodium Chloride 500g",
+   *   variant: "500g",
+   *   description: "High purity sodium chloride",
+   *   data_01: "Additional info",
+   *   price: {
+   *     price: 29.99,
+   *     price_incl: 29.99,
+   *     price_excl: 24.79,
+   *     price_old: 39.99,
+   *     price_old_incl: 39.99,
+   *     price_old_excl: 33.05
+   *   }
+   * };
+   * if (this._isSearchResponseProduct(productData)) {
+   *   console.log("Valid product:", productData.title);
+   * } else {
+   *   console.error("Invalid product structure");
+   * }
+   * ```
    */
   protected _isSearchResponseProduct(product: unknown): product is SearchResponseProduct {
     if (typeof product !== "object" || product === null) return false;
@@ -219,6 +271,25 @@ export default class SupplierLaboratoriumDiscounter
    * Type guard to validate ProductObject structure
    * @param product - Object to validate as ProductObject
    * @returns Type predicate indicating if product is a valid ProductObject
+   * @example
+   * ```typescript
+   * const productData = {
+   *   product: {
+   *     variants: {
+   *       "1": {
+   *         id: 1,
+   *         title: "500g",
+   *         price: 29.99
+   *       }
+   *     }
+   *   }
+   * };
+   * if (this._isProductObject(productData)) {
+   *   console.log("Valid product object with variants");
+   * } else {
+   *   console.error("Invalid product object structure");
+   * }
+   * ```
    */
   protected _isProductObject(data: unknown): data is ProductObject {
     if (typeof data !== "object" || data === null) return false;
@@ -234,6 +305,18 @@ export default class SupplierLaboratoriumDiscounter
    * Validates search parameters structure and values
    * @param params - Parameters to validate
    * @returns Type predicate indicating if params are valid SearchParams
+   * @example
+   * ```typescript
+   * const searchParams = {
+   *   limit: "10",
+   *   format: "json"
+   * };
+   * if (this._isValidSearchParams(searchParams)) {
+   *   console.log("Valid search parameters");
+   * } else {
+   *   console.error("Invalid search parameters");
+   * }
+   * ```
    */
   protected _isValidSearchParams(params: unknown): params is SearchParams {
     if (typeof params !== "object" || params === null) return false;
@@ -249,36 +332,19 @@ export default class SupplierLaboratoriumDiscounter
   }
 
   /**
-   * Constructs a complete search URL for the given query
-   * @param query - Search term to look for
-   * @returns Fully qualified search URL as string
-   * @example
-   * ```typescript
-   * const url = this._makeQueryUrl("acid");
-   * // Returns: https://www.laboratoriumdiscounter.nl/en/search/acid?limit=10&format=json
-   * ```
-   */
-  protected _makeQueryUrl(query: string): string {
-    const searchParams = this._makeQueryParams();
-    if (!this._isValidSearchParams(searchParams)) {
-      throw new Error("Invalid search parameters");
-    }
-
-    const encodedQuery = encodeURIComponent(query);
-    const url = new URL(`en/search/${encodedQuery}`, this._baseURL);
-    const params = new URLSearchParams(searchParams);
-    url.search = params.toString();
-    return url.toString();
-  }
-
-  /**
    * Constructs the query parameters for a product search request
    * @param limit - The maximum number of results to query for
    * @returns Object containing all required search parameters
    * @example
    * ```typescript
-   * const params = this._makeQueryParams();
-   * // Returns: { limit: "10", format: "json" }
+   * const params = this._makeQueryParams(20);
+   * // Returns: { limit: "20", format: "json" }
+   *
+   * // Use in search request
+   * const response = await this._httpGetJson({
+   *   path: "/en/search/chemical",
+   *   params: this._makeQueryParams(20)
+   * });
    * ```
    */
   protected _makeQueryParams(limit: number = this._limit): SearchParams {
@@ -295,11 +361,16 @@ export default class SupplierLaboratoriumDiscounter
    * @returns Promise resolving to array of product objects or void if search fails
    * @example
    * ```typescript
-   * const products = await this._queryProducts("acid");
+   * // Search for sodium chloride with a limit of 10 results
+   * const products = await this._queryProducts("sodium chloride", 10);
    * if (products) {
-   *   products.forEach(product => {
-   *     console.log(product.title, product.price);
-   *   });
+   *   console.log(`Found ${products.length} products`);
+   *   for (const product of products) {
+   *     const builtProduct = await product.build();
+   *     console.log(builtProduct.title, builtProduct.price);
+   *   }
+   * } else {
+   *   console.error("No products found or search failed");
    * }
    * ```
    */
@@ -314,7 +385,7 @@ export default class SupplierLaboratoriumDiscounter
     }
 
     const response: unknown = await this._httpGetJson({
-      path: `/en/search/${query}`,
+      path: `/en/search/${urlencode(query)}`,
       params,
     });
 
@@ -323,33 +394,57 @@ export default class SupplierLaboratoriumDiscounter
       return;
     }
 
-    const products: ProductBuilder<Product>[] = [];
+    return this._initProductBuilders(Object.values(response.collection.products).slice(0, limit));
+  }
 
-    for (const [productId, product] of Object.entries(response.collection.products).slice(
-      0,
-      limit,
-    )) {
+  /**
+   * Initialize product builders from Laboratorium Discounter search response data.
+   * Transforms product listings into ProductBuilder instances, handling:
+   * - Basic product information (title, URL, supplier)
+   * - Product descriptions and content
+   * - Product IDs and SKUs
+   * - Availability status
+   * - CAS number extraction from product content
+   * - Quantity parsing from variant information
+   * - Product codes and EANs
+   *
+   * @param data - Array of product listings from search results
+   * @returns Array of ProductBuilder instances initialized with product data
+   * @example
+   * ```typescript
+   * const results = await this._queryProducts("sodium chloride");
+   * if (results) {
+   *   const builders = this._initProductBuilders(results);
+   *   // Each builder contains parsed product data
+   *   for (const builder of builders) {
+   *     const product = await builder.build();
+   *     console.log({
+   *       title: product.title,
+   *       price: product.price,
+   *       quantity: product.quantity,
+   *       uom: product.uom,
+   *       cas: product.cas
+   *     });
+   *   }
+   * }
+   * ```
+   */
+  protected _initProductBuilders(data: SearchResponseProduct[]): ProductBuilder<Product>[] {
+    return mapDefined(data, (product) => {
       const productBuilder = new ProductBuilder(this._baseURL);
       productBuilder
-        .addRawData(product)
+        //.addRawData(product)
         .setBasicInfo(product.title, product.url, this.supplierName)
         .setDescription(product.description)
-        .setId(productId)
+        .setId(product.id)
         .setAvailability(product.available)
         .setSku(product.sku)
         .setUUID(product.code)
-        .setPricing(
-          product.price.price,
-          response.shop.base_currency.toUpperCase(),
-          CURRENCY_SYMBOL_MAP.EUR,
-        )
+        //.setPricing(product.price.price, product?.currency as string, CURRENCY_SYMBOL_MAP.EUR)
         .setQuantity(product.variant)
         .setCAS(typeof product.content === "string" ? (findCAS(product.content) ?? "") : "");
-
-      products.push(productBuilder);
-    }
-
-    return products;
+      return productBuilder;
+    });
   }
 
   /**
@@ -363,7 +458,14 @@ export default class SupplierLaboratoriumDiscounter
    * if (products) {
    *   const product = await this._getProductData(products[0]);
    *   if (product) {
-   *     console.log(product.title, product.price, product.quantity, product.uom);
+   *     const builtProduct = await product.build();
+   *     console.log({
+   *       title: builtProduct.title,
+   *       price: builtProduct.price,
+   *       quantity: builtProduct.quantity,
+   *       uom: builtProduct.uom,
+   *       variants: builtProduct.variants
+   *     });
    *   }
    * }
    * ```
@@ -390,10 +492,11 @@ export default class SupplierLaboratoriumDiscounter
       }
       const productData = productResponse.product;
 
+      const currency = productResponse.shop.currencies[productResponse.shop.currency];
+      product.setPricing(productData.price.price, currency.code, currency.symbol);
+
       if (typeof productData.variants === "object") {
-        for (const variant of Object.values(
-          productData.variants as { [key: string]: VariantObject },
-        )) {
+        for (const variant of Object.values(productData.variants)) {
           if (variant.active === false) continue;
           product.addVariant({
             id: variant.id,

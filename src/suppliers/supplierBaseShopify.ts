@@ -1,31 +1,9 @@
 import { ProductBuilder } from "@/helpers/productBuilder";
 import { parseQuantity } from "@/helpers/quantity";
 import { firstMap } from "@/helpers/utils";
-import type { Product, Variant } from "@/types";
+import type { Product } from "@/types";
 import type { ItemListing, QueryParams, SearchResponse, ShopifyVariant } from "@/types/shopify";
 import SupplierBase from "./supplierBase";
-
-// https://searchserverapi.com/getresults?
-//   api_key=8B7o0X1o7c
-//   &q=sulf
-//   &maxResults=6
-//   &startIndex=0
-//   &items=true
-//   &pages=true
-//   &facets=false
-//   &categories=true
-//   &suggestions=true
-//   &vendors=false
-//   &tags=false
-//   &pageStartIndex=0
-//   &pagesMaxResults=3
-//   &categoryStartIndex=0
-//   &categoriesMaxResults=3
-//   &suggestionsMaxResults=4
-//   &vendorsMaxResults=3
-//   &tagsMaxResults=3
-//   &output=json
-//   &_=1740051794061
 
 export default abstract class SupplierBaseShopify
   extends SupplierBase<ItemListing, Product>
@@ -41,11 +19,28 @@ export default abstract class SupplierBaseShopify
    * @param query - The query to search for
    * @param limit - The limit of products to return
    * @returns A promise that resolves when the products are queried
+   * @example
+   * ```typescript
+   * // Search for sodium chloride with a limit of 10 results
+   * const products = await this._queryProducts("sodium chloride", 10);
+   * if (products) {
+   *   console.log(`Found ${products.length} products`);
+   *   for (const product of products) {
+   *     const builtProduct = await product.build();
+   *     console.log({
+   *       title: builtProduct.title,
+   *       price: builtProduct.price,
+   *       quantity: builtProduct.quantity,
+   *       uom: builtProduct.uom
+   *     });
+   *   }
+   * }
+   * ```
    */
   protected async _queryProducts(
     query: string,
     limit: number = this._limit,
-  ): Promise<ItemListing[]> {
+  ): Promise<ProductBuilder<Product>[] | void> {
     // curl -s --get https://searchserverapi.com/getresults \
     //   --data-urlencode "api_key=8B7o0X1o7c" \
     //   --data-urlencode "q=sulf" \
@@ -105,7 +100,90 @@ export default abstract class SupplierBaseShopify
       throw new Error("Invalid search response");
     }
 
-    return searchRequest.items.slice(0, limit);
+    return this._initProductBuilders(searchRequest.items.slice(0, limit));
+  }
+
+  /**
+   * Initialize product builders from Shopify search response data.
+   * Transforms Shopify product listings into ProductBuilder instances, handling:
+   * - Basic product information (title, link, supplier)
+   * - Pricing information in USD
+   * - Product descriptions
+   * - SKU/product codes
+   * - Vendor information
+   * - Quantity parsing from multiple fields
+   * - Shopify-specific variants with their attributes
+   *
+   * @param results - Array of Shopify item listings from search results
+   * @returns Array of ProductBuilder instances initialized with Shopify product data
+   * @example
+   * ```typescript
+   * const results = await this._queryProducts("sodium chloride");
+   * if (results) {
+   *   const builders = this._initProductBuilders(results);
+   *   // Each builder contains parsed product data from Shopify
+   *   for (const builder of builders) {
+   *     const product = await builder.build();
+   *     console.log({
+   *       title: product.title,
+   *       price: product.price,
+   *       quantity: product.quantity,
+   *       uom: product.uom,
+   *       variants: product.variants
+   *     });
+   *   }
+   * }
+   * ```
+   */
+  protected _initProductBuilders(results: ItemListing[]): ProductBuilder<Product>[] {
+    return results
+      .map((item) => {
+        const builder = new ProductBuilder(this._baseURL);
+        builder
+          .setBasicInfo(item.title, item.link, this.supplierName)
+          .setPricing(parseFloat(item.price), "USD", "$")
+          .setDescription(item.description)
+          .setSku(item.product_code)
+          .setVendor(item.vendor);
+
+        const quantity = firstMap(parseQuantity, [
+          item.product_code,
+          item.quantity,
+          item.title,
+          item.description,
+        ]);
+
+        if (!quantity) {
+          this._logger.warn("Failed to get quantity from retrieved product data:", item);
+          return;
+        }
+
+        builder.setQuantity(quantity.quantity, quantity.uom);
+
+        if ("shopify_variants" in item && Array.isArray(item.shopify_variants)) {
+          item.shopify_variants.forEach((variant) => {
+            if (!this._isShopifyVariant(variant)) return;
+
+            const variantQuantity = firstMap(parseQuantity, [
+              variant.sku,
+              (variant?.options?.Model as string) ?? "",
+            ]);
+
+            builder.addVariant({
+              id: variant.variant_id,
+              sku: variant.sku,
+              //title: variant.title,
+              price: variant.price,
+              title: (variant?.options?.Model as string) ?? "",
+              url: variant.link,
+              ...variantQuantity,
+            });
+          });
+        }
+
+        return builder;
+      })
+      .filter((builder): builder is ProductBuilder<Product> => builder !== undefined);
   }
 
   /**
@@ -114,9 +192,16 @@ export default abstract class SupplierBaseShopify
    * @returns True if the response is a valid SearchResponse object, false otherwise
    * @example
    * ```typescript
-   * const isValid = this._isValidSearchResponse(response);
-   * if (!isValid) {
-   *   throw new Error("Invalid search response");
+   * const response = await this._httpGetJson({
+   *   path: "/getresults",
+   *   params: searchParams
+   * });
+   *
+   * if (this._isValidSearchResponse(response)) {
+   *   // Process valid response
+   *   console.log(`Found ${response.items.length} items`);
+   * } else {
+   *   console.error("Invalid search response structure");
    * }
    * ```
    */
@@ -172,6 +257,27 @@ export default abstract class SupplierBaseShopify
 
   /**
    * Type guard for ShopifyVariant
+   * @param variant - The variant object to validate
+   * @returns True if the variant is a valid ShopifyVariant, false otherwise
+   * @example
+   * ```typescript
+   * const variant = {
+   *   sku: "CHEM-001",
+   *   price: "29.99",
+   *   link: "/products/chemical-1",
+   *   variant_id: "12345",
+   *   quantity_total: "100",
+   *   options: {
+   *     Model: "500g"
+   *   }
+   * };
+   *
+   * if (this._isShopifyVariant(variant)) {
+   *   console.log("Valid variant:", variant.sku);
+   * } else {
+   *   console.error("Invalid variant structure");
+   * }
+   * ```
    */
   protected _isShopifyVariant(variant: unknown): variant is ShopifyVariant {
     if (typeof variant !== "object" || variant === null) {
@@ -179,12 +285,14 @@ export default abstract class SupplierBaseShopify
     }
 
     const requiredProps = {
+      /* eslint-disable */
       sku: "string",
       price: "string",
       link: "string",
       variant_id: "string",
       quantity_total: (val: unknown) => typeof val === "string" || typeof val === "number",
       options: (val: unknown) => typeof val === "object" && val !== null,
+      /* eslint-enable */
     };
 
     const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
@@ -198,17 +306,54 @@ export default abstract class SupplierBaseShopify
 
     // Check options object if it exists
     const options = (variant as ShopifyVariant).options;
+    if (typeof options === "undefined") return false;
+    /*
     if (options && typeof options === "object") {
       if ("Model" in options && typeof options.Model !== "string") {
         return false;
       }
     }
+    */
 
     return true;
   }
 
   /**
    * Type guard for ItemListing
+   * @param item - The item object to validate
+   * @returns True if the item is a valid ItemListing, false otherwise
+   * @example
+   * ```typescript
+   * const item = {
+   *   title: "Sodium Chloride",
+   *   price: "29.99",
+   *   link: "/products/nacl",
+   *   product_id: "12345",
+   *   product_code: "CHEM-001",
+   *   quantity: "500g",
+   *   vendor: "Chemical Supplier",
+   *   original_product_id: "12345",
+   *   list_price: "39.99",
+   *   shopify_variants: [
+   *     {
+   *       sku: "CHEM-001-500G",
+   *       price: "29.99",
+   *       link: "/products/nacl?variant=1",
+   *       variant_id: "1",
+   *       quantity_total: "100",
+   *       options: {
+   *         Model: "500g"
+   *       }
+   *     }
+   *   ]
+   * };
+   *
+   * if (this._isItemListing(item)) {
+   *   console.log("Valid item listing:", item.title);
+   * } else {
+   *   console.error("Invalid item listing structure");
+   * }
+   * ```
    */
   protected _isItemListing(item: unknown): item is ItemListing {
     if (typeof item !== "object" || item === null) {
@@ -216,6 +361,7 @@ export default abstract class SupplierBaseShopify
     }
 
     const requiredProps = {
+      /* eslint-disable */
       title: "string",
       price: (val: unknown) => typeof val === "string" || typeof val === "number",
       link: "string",
@@ -223,18 +369,10 @@ export default abstract class SupplierBaseShopify
       product_code: "string",
       quantity: "string",
       shopify_variants: Array.isArray,
-      //description: "string",
       vendor: "string",
-      //quantity: (val: unknown) => typeof val === "string" || typeof val === "number",
       original_product_id: "string",
       list_price: "string",
-      //image_link: "string",
-      //discount: "string",
-      //add_to_cart_id: "string",
-      //total_reviews: "string",
-      //reviews_average_score: "string",
-      //shopify_images: Array.isArray,
-      //tags: "string",
+      /* eslint-enable */
     };
 
     const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
@@ -263,102 +401,30 @@ export default abstract class SupplierBaseShopify
    * @returns Promise resolving to a partial Product object or void if invalid
    * @example
    * ```typescript
-   * const productData = await this._getProductData(itemListing);
-   * if (productData) {
-   *   // Process valid product data
-   *   console.log(productData.title, productData.price);
+   * const products = await this._queryProducts("sodium chloride");
+   * if (products) {
+   *   const product = await this._getProductData(products[0]);
+   *   if (product) {
+   *     const builtProduct = await product.build();
+   *     console.log({
+   *       title: builtProduct.title,
+   *       price: builtProduct.price,
+   *       quantity: builtProduct.quantity,
+   *       uom: builtProduct.uom,
+   *       variants: builtProduct.variants
+   *     });
+   *   }
    * }
    * ```
    */
-  protected async _getProductData(product: ItemListing): Promise<Partial<Product> | void> {
-    if (!this._isItemListing(product)) {
+  protected async _getProductData(
+    product: ProductBuilder<Product>,
+  ): Promise<ProductBuilder<Product> | void> {
+    if (product instanceof ProductBuilder === false) {
       console.error("Invalid Shopify product listing:", product);
       return;
     }
 
-    if (!product.price) {
-      return;
-    }
-
-    const variants: Variant[] = product.shopify_variants
-      .filter((variant) => this._isShopifyVariant(variant))
-      .map((variant) => {
-        let quantity = parseQuantity(variant.sku);
-        if (!quantity && typeof variant?.options === "object") {
-          quantity = parseQuantity((variant.options as { Model: string }).Model);
-        }
-
-        if (!quantity) {
-          quantity = {
-            quantity: parseInt(variant.quantity_total) ?? 1,
-            uom: "piece",
-          };
-        }
-
-        return {
-          url: variant.link,
-          price: variant.price,
-          sku: variant.sku,
-          variant_id: variant.variant_id,
-          ...quantity,
-        };
-      });
-
-    const defaultVariant = variants.find(
-      (variant) => variant.sku === parseInt(product.product_code),
-    ) as Variant;
-
-    let quantity, uom;
-
-    if (defaultVariant) {
-      quantity = defaultVariant.quantity;
-      uom = defaultVariant.uom;
-    }
-
-    if (!quantity) {
-      const qty = firstMap(parseQuantity, [
-        product.product_code,
-        product.quantity,
-        product.title,
-        product.description,
-      ]);
-
-      if (qty) {
-        quantity = qty.quantity;
-        uom = qty.uom;
-      }
-    }
-
-    if (!quantity || !uom) {
-      console.warn("Failed to get quantity from retrieved product data:", product);
-      return;
-    }
-
-    if (!product.price) {
-      console.warn("Failed to get price from retrieved product data:", product);
-      return;
-    }
-
-    const builder = new ProductBuilder(this._baseURL);
-    return builder
-      .setBasicInfo(product.title, product.link, this.supplierName)
-      .setPricing(parseFloat(product.price), "USD", "$")
-      .setQuantity(quantity, uom ?? "unit")
-      .setDescription(product.description || "")
-      .setId(product.product_id)
-      .setVendor(product.vendor)
-      .setSku(product.product_code)
-      .build()
-      .then((builtProduct) => {
-        if (builtProduct) {
-          return {
-            ...builtProduct,
-            variants,
-            vendor: product.vendor,
-            id: product.product_id,
-          };
-        }
-        return builtProduct;
-      });
+    return product;
   }
 }

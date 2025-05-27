@@ -1,7 +1,8 @@
 import { isCAS } from "@/helpers/cas";
+import { ProductBuilder } from "@/helpers/productBuilder";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
-import { type Product, Maybe } from "@/types";
+import { type Product } from "@/types";
 import { type ProductObject, type SearchResponse } from "@/types/chemsavers";
 import SupplierBase from "./supplierBase";
 
@@ -158,13 +159,7 @@ export default class SupplierChemsavers
       }
 
       // Validate each hit in the nested array structure
-      return results[0].hits.every((hitArray: unknown[]) => {
-        if (!Array.isArray(hitArray)) {
-          this._logger.warn("Invalid search response - hit is not an array:", hitArray);
-          return false;
-        }
-        return hitArray.every((hit) => this._isValidSearchResponseItem(hit));
-      });
+      return results[0].hits.every((hit: unknown) => this._isValidSearchResponseItem(hit));
     } catch {
       return false;
     }
@@ -188,7 +183,7 @@ export default class SupplierChemsavers
   protected async _queryProducts(
     query: string,
     limit: number = this._limit,
-  ): Promise<Maybe<ProductObject[]>> {
+  ): Promise<ProductBuilder<Product>[] | void> {
     try {
       const body = this._makeRequestBody(query, limit);
 
@@ -210,17 +205,70 @@ export default class SupplierChemsavers
         return;
       }
 
-      const products = mapDefined((hit) => {
-        if ("document" in hit === false) return undefined;
+      const products = mapDefined(response.results[0].hits.flat(), (hit: unknown) => {
+        if (
+          typeof hit !== "object" ||
+          hit === null ||
+          "document" in hit === false ||
+          typeof hit.document !== "object"
+        )
+          return;
         return hit.document as ProductObject;
-      }, response.results[0].hits.flat());
+      });
 
-      this._logger.debug("Mapped response objects:", response);
-      return products.slice(0, limit);
+      this._logger.debug("Mapped response objects:", products);
+
+      return this._initProductBuilders(products);
     } catch (error) {
       this._logger.error("Error querying products:", error);
       return;
     }
+  }
+
+  /**
+   * Initialize product builders from Chemsavers search response data.
+   * Transforms product listings into ProductBuilder instances, handling:
+   * - Basic product information (title, URL, supplier)
+   * - Product descriptions and specifications
+   * - Product IDs and SKUs
+   * - Pricing information with currency details
+   * - CAS number extraction from product text
+   * - Quantity parsing from product names and descriptions
+   * - Grade/purity level extraction
+   * - Product categories and classifications
+   *
+   * @param data - Array of product listings from search results
+   * @returns Array of ProductBuilder instances initialized with product data
+   * @example
+   * ```typescript
+   * const results = await this._queryProducts("sodium chloride");
+   * if (results) {
+   *   const builders = this._initProductBuilders(results);
+   *   // Each builder contains parsed product data
+   *   for (const builder of builders) {
+   *     const product = await builder.build();
+   *     console.log(product.title, product.price, product.grade);
+   *   }
+   * }
+   * ```
+   */
+  protected _initProductBuilders(results: ProductObject[]): ProductBuilder<Product>[] {
+    return mapDefined(results, (result) => {
+      const builder = new ProductBuilder<Product>(this._baseURL);
+
+      const quantity = parseQuantity(result.name);
+      if (quantity === undefined) return;
+
+      builder
+        .setBasicInfo(result.name, result.url, this.supplierName)
+        .setDescription(result.description)
+        .setId(result.id)
+        .setSku(result.sku)
+        .setPricing(result.price, "USD", "$")
+        .setQuantity(quantity.quantity, quantity.uom)
+        .setCAS(isCAS(result.CAS) ? result.CAS : "");
+      return builder;
+    }).filter((builder) => builder !== undefined);
   }
 
   /**
@@ -269,24 +317,9 @@ export default class SupplierChemsavers
    * }
    * ```
    */
-  protected async _getProductData(result: ProductObject): Promise<Partial<Product> | void> {
-    this._logger.debug("Products iterating over:", result);
-
-    const quantity = parseQuantity(result.name);
-    if (quantity === undefined) return;
-
-    return {
-      title: result.name,
-      supplier: this.supplierName,
-      cas: isCAS(result.CAS) ? result.CAS : undefined,
-      price: result.price,
-      currencySymbol: "$",
-      currencyCode: "USD",
-      description: result.description,
-      url: result.url,
-      id: result.id,
-      sku: result.sku,
-      ...quantity,
-    } satisfies Partial<Product>;
+  protected async _getProductData(
+    product: ProductBuilder<Product>,
+  ): Promise<ProductBuilder<Product> | void> {
+    return product;
   }
 }

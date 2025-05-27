@@ -328,14 +328,14 @@ export function firstMap<T, R>(fn: (arg: T) => R | void, properties: T[]): R | v
  * ```typescript
  * const nums = ["1", "a", "2", "b", "3"];
  * const parseNum = (s: string) => isNaN(Number(s)) ? undefined : Number(s);
- * mapDefined(parseNum, nums) // Returns [1, 2, 3]
+ * mapDefined(nums, parseNum) // Returns [1, 2, 3]
  *
  * const users = [{name: "Alice"}, null, {name: "Bob"}];
  * const getName = (user: any) => user?.name;
- * mapDefined(getName, users) // Returns ["Alice", "Bob"]
+ * mapDefined(users, getName) // Returns ["Alice", "Bob"]
  * ```
  */
-export function mapDefined<T, R>(fn: (arg: T) => R | null | undefined, items: T[]): R[] {
+export function mapDefined<T, R>(items: T[], fn: (arg: T) => R | null | undefined): R[] {
   return items.map(fn).filter((result): result is R => result !== undefined && result !== null);
 }
 

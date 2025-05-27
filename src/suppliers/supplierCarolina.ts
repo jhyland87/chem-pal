@@ -203,6 +203,7 @@ export default class SupplierCarolina
 
         return true;
       },
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       "@type": "string",
       responseStatusCode: (val: unknown) => {
         const isValid = val === 200;
@@ -256,15 +257,40 @@ export default class SupplierCarolina
     return this._initProductBuilders(results.slice(0, limit));
   }
 
-  protected _initProductBuilders(results: SearchResult[]): ProductBuilder<Product>[] {
-    return results.map((result) => {
+  /**
+   * Initialize product builders from Carolina search response data.
+   * Transforms product listings into ProductBuilder instances, handling:
+   * - Basic product information (title, URL, supplier)
+   * - Product descriptions and specifications
+   * - Product IDs and SKUs
+   * - Pricing information with currency details
+   * - CAS number extraction from product text
+   * - Quantity parsing from product names and descriptions
+   * - Grade/purity level extraction
+   * - Product categories and classifications
+   *
+   * @param data - Array of product listings from search results
+   * @returns Array of ProductBuilder instances initialized with product data
+   * @example
+   * ```typescript
+   * const results = await this._queryProducts("sodium chloride");
+   * if (results) {
+   *   const builders = this._initProductBuilders(results);
+   *   // Each builder contains parsed product data
+   *   for (const builder of builders) {
+   *     const product = await builder.build();
+   *     console.log(product.title, product.price, product.grade);
+   *   }
+   * }
+   * ```
+   */
+  protected _initProductBuilders(data: SearchResult[]): ProductBuilder<Product>[] {
+    return data.map((result) => {
       const builder = new ProductBuilder(this._baseURL)
         .setBasicInfo(result.productName, result.productUrl, this.supplierName)
         .setPricing(parsePrice(result.itemPrice) as ParsedPrice);
       const casNo = findCAS(result["product.shortDescription"]);
-
       if (typeof casNo === "string") builder.setCAS(casNo);
-
       return builder;
       //.setQuantity(result.qtyDiscountAvailable, "1")
       //.setDescription(result.shortDescription)
@@ -344,7 +370,7 @@ export default class SupplierCarolina
    */
   protected _isSearchResultItem(result: unknown): result is SearchResult {
     if (typeof result !== "object" || result === null) {
-      this?._logger?.error("_isSearchResultItem| Result is not an object:", result);
+      this._logger.error("_isSearchResultItem| Result is not an object:", result);
       return false;
     }
 
@@ -361,16 +387,15 @@ export default class SupplierCarolina
       /* eslint-enable */
     };
 
-    const _logger = this?._logger;
     const hasRequiredProps = Object.entries(requiredProps).every(([key, expectedType]) => {
       const item = result as Record<string, unknown>;
       if (!(key in item)) {
-        _logger?.error(`_isSearchResultItem| Missing property: ${key}`);
+        this._logger.error(`_isSearchResultItem| Missing property: ${key}`);
         return false;
       }
       const actualType = typeof item[key];
       if (actualType !== expectedType) {
-        _logger?.error(
+        this._logger.error(
           `_isSearchResultItem| Invalid type for ${key}, expected ${expectedType}, got ${actualType}`,
         );
         return false;

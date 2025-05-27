@@ -1,7 +1,9 @@
-import { findCAS, isCAS } from "@/helpers/cas";
+import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
+import { ProductBuilder } from "@/helpers/productBuilder";
 import { parseQuantity } from "@/helpers/quantity";
-import type { Maybe, Product } from "@/types";
+import { mapDefined } from "@/helpers/utils";
+import type { Product } from "@/types";
 import type { SearchResultItem, SearchResultResponse } from "@/types/onyxmet";
 import * as cheerio from "cheerio";
 import SupplierBase from "./supplierBase";
@@ -30,7 +32,7 @@ export default class SupplierOnyxmet
    * Display name of the supplier used for UI and logging
    * @readonly
    */
-  public readonly supplierName: string = "OnyxMet";
+  public readonly supplierName: string = "Onyxmet";
 
   /**
    * Maximum number of results to return per search query
@@ -99,11 +101,11 @@ export default class SupplierOnyxmet
   protected async _queryProducts(
     query: string,
     limit: number = this._limit,
-  ): Promise<SearchResultResponse[] | void> {
+  ): Promise<ProductBuilder<Product>[] | void> {
     this._logger.log("query:", query);
 
     const searchResponse = await this._httpGetHtml({
-      path: "index.php?route=&term=potassium",
+      path: "index.php",
       params: {
         term: query,
         route: "product/search/json",
@@ -118,9 +120,94 @@ export default class SupplierOnyxmet
     const data = JSON.parse(searchResponse);
 
     this._logger.debug("all search results:", data);
-    return data.splice(0, limit);
+    return this._initProductBuilders(data.splice(0, limit));
   }
 
+  /**
+   * Initialize product builders from Onyxmet search response data.
+   * Transforms product listings into ProductBuilder instances, handling:
+   * - Basic product information (title, URL, supplier)
+   * - Product descriptions and specifications
+   * - Product IDs and SKUs
+   * - Pricing information with currency details
+   * - CAS number extraction from product text
+   * - Quantity parsing from product names and descriptions
+   * - Grade/purity level extraction
+   * - Product categories and classifications
+   *
+   * @param data - Array of product listings from search results
+   * @returns Array of ProductBuilder instances initialized with product data
+   * @example
+   * ```typescript
+   * const results = await this._queryProducts("sodium chloride");
+   * if (results) {
+   *   const builders = this._initProductBuilders(results);
+   *   // Each builder contains parsed product data
+   *   for (const builder of builders) {
+   *     const product = await builder.build();
+   *     console.log(product.title, product.price, product.grade);
+   *   }
+   * }
+   * ```
+   */
+  protected _initProductBuilders(data: SearchResultItem[]): ProductBuilder<Product>[] {
+    return mapDefined(data, (item) => {
+      if (!this._isSearchResultItem(item)) {
+        this._logger.warn("Invalid search result item:", item);
+        return;
+      }
+
+      const builder = new ProductBuilder<Product>(this._baseURL);
+
+      builder.setBasicInfo(item.label, item.href, this.supplierName);
+      builder.setDescription(item.description);
+      return builder;
+    });
+  }
+
+  /**
+   * Type guard to validate if an object matches the SearchResultItem structure.
+   * Checks for the presence and correct types of required properties in Onyxmet search results.
+   *
+   * Required properties:
+   * - label: Product name/title
+   * - image: Product image URL or identifier
+   * - description: Product description text
+   * - href: Product URL or path
+   *
+   * @param product - The object to validate
+   * @returns Type predicate indicating if the object is a valid SearchResultItem
+   * @typeguard
+   * @example
+   * ```typescript
+   * // Valid search result item
+   * const validItem = {
+   *   label: "Sodium Chloride",
+   *   image: "nacl.jpg",
+   *   description: "High purity NaCl",
+   *   href: "/products/nacl"
+   * };
+   * if (this._isSearchResultItem(validItem)) {
+   *   console.log("Valid item:", validItem.label);
+   * }
+   *
+   * // Invalid search result item (missing properties)
+   * const invalidItem = {
+   *   label: "Sodium Chloride",
+   *   image: "nacl.jpg"
+   *   // Missing description and href
+   * };
+   * if (!this._isSearchResultItem(invalidItem)) {
+   *   console.log("Invalid item - missing required properties");
+   * }
+   *
+   * // Invalid search result item (wrong type)
+   * const wrongType = "not an object";
+   * if (!this._isSearchResultItem(wrongType)) {
+   *   console.log("Invalid item - not an object");
+   * }
+   * ```
+   */
   protected _isSearchResultItem(product: unknown): product is SearchResultItem {
     return (
       typeof product === "object" &&
@@ -158,16 +245,13 @@ export default class SupplierOnyxmet
    * }
    * ```
    */
-  protected async _getProductData(product: SearchResultResponse): Promise<Maybe<Partial<Product>>> {
+  protected async _getProductData(
+    product: ProductBuilder<Product>,
+  ): Promise<ProductBuilder<Product> | void> {
     this._logger.debug("Querying data for partialproduct:", product);
 
-    if (!this._isSearchResultItem(product)) {
-      this._logger.warn("Invalid product");
-      return;
-    }
-
     const productResponse = await this._httpGetHtml({
-      path: product.href,
+      path: product.get("url"),
     });
 
     if (!productResponse) {
@@ -180,7 +264,7 @@ export default class SupplierOnyxmet
     const $ = cheerio.load(productResponse);
     const $content = $("#content");
 
-    const cas = findCAS(product.description);
+    const cas = findCAS(product.get("description"));
     const title = $content.find("h3.product-title").text().trim();
     const statusTxt = $content
       .find("span:contains('Availability')")
@@ -202,54 +286,11 @@ export default class SupplierOnyxmet
       this._logger.warn("No quantity for product");
       return;
     }
-    /*
-    const $productElem = $content.find("#product");
 
-    const availabileOptionHeader = $productElem.find(".product-option");
-
-
-    let options;
-    if (availabileOptionHeader.length > 0) {
-      options = $productElem
-        .find("input[name^='option']")
-        .parent()
-        .map((idx, elem) => $(elem).text().trim())
-        .toArray()
-        .reduce(
-          (acc, option) => {
-            const match = option.match(/^([0-9]+[a-zA-Z]+)\s*\n\s*\(([0-9]+\.[0-9]+\p{Sc})/u);
-
-            if (!match) return acc;
-
-            const [, qty, prc] = match;
-            const thisOption = {};
-            const optionPrice = parsePrice(prc);
-            const optionQuantity = parseQuantity(qty);
-
-            if (optionPrice) Object.assign(thisOption, optionPrice);
-            if (optionQuantity) Object.assign(thisOption, optionQuantity);
-
-            if (Object.keys(thisOption).length > 0) {
-              acc.push(thisOption);
-            }
-
-            return acc;
-          },
-          [] as Array<Record<string, number | string>>,
-        );
-
-      this._logger.debug("options:", options);
-    }
-    */
-
-    return {
-      title,
-      cas: cas && isCAS(cas) ? cas : undefined,
-      statusTxt,
-      url: product.href,
-      supplier: this.supplierName,
-      ...quantity,
-      ...price,
-    } satisfies Partial<Product>;
+    return product
+      .setPricing(price.price, price.currencyCode, price.currencySymbol)
+      .setQuantity(quantity.quantity, quantity.uom)
+      .setCAS(cas ?? "")
+      .setAvailability(statusTxt ?? "");
   }
 }

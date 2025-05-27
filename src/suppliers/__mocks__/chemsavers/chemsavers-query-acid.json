@@ -1,0 +1,345 @@
+{
+  "results": [
+    {
+      "facet_counts": [],
+      "found": 3941,
+      "hits": [
+        {
+          "document": {
+            "CAS": "1343-98-2",
+            "calculatedPrice": 303,
+            "categories": [
+              "S"
+            ],
+            "description": "<b>CAS#: 1343-98-2  |    Specifications: Chloride 0.01 %  Max, Heavy metals (as Pb) 0.005 %  Max, Iron 0.01 %  Max, Loss on Ignition (typical) (%) 10 %  Max, Sulfate 0.02 %  Max </b><br><br>",
+            "hasOptions": false,
+            "id": "88783",
+            "images": [
+              {
+                "description": "",
+                "isThumbnail": true,
+                "sortOrder": 0,
+                "urlStandard": "https://cdn11.bigcommerce.com/s-ityfqr2/products/88783/images/12246/logo_gfs__32036.1688414115.600.600.png?c=2",
+                "urlThumbnail": "https://cdn11.bigcommerce.com/s-ityfqr2/products/88783/images/12246/logo_gfs__32036.1688414115.200.200.png?c=2"
+              }
+            ],
+            "inventoryLevel": 0,
+            "inventory_level": 0,
+            "inventory_tracking": "none",
+            "mapPrice": 0,
+            "meta_description": "",
+            "meta_keywords": [],
+            "name": "SILICIC ACID, -100 MESH, FOR CHROMATOGRAPHY - 500 G",
+            "price": 303.56,
+            "product_id": 88783,
+            "retailPrice": 0,
+            "salePrice": 0,
+            "sku": "89163",
+            "sortOrder": 7350,
+            "upc": "",
+            "url": "/s/silicic-acid-100-mesh-500-g/"
+          },
+          "highlight": {
+            "name": {
+              "matched_tokens": [
+                "ACI"
+              ],
+              "snippet": "SILICIC <mark>ACI</mark>D, -100 MESH, FOR CHROMATOGRAPHY - 500 G",
+              "value": "SILICIC <mark>ACI</mark>D, -100 MESH, FOR CHROMATOGRAPHY - 500 G"
+            }
+          },
+          "highlights": [
+            {
+              "field": "name",
+              "matched_tokens": [
+                "ACI"
+              ],
+              "snippet": "SILICIC <mark>ACI</mark>D, -100 MESH, FOR CHROMATOGRAPHY - 500 G",
+              "value": "SILICIC <mark>ACI</mark>D, -100 MESH, FOR CHROMATOGRAPHY - 500 G"
+            }
+          ],
+          "text_match": 578730089005449337,
+          "text_match_info": {
+            "best_field_score": "1108074561536",
+            "best_field_weight": 15,
+            "fields_matched": 1,
+            "num_tokens_dropped": 0,
+            "score": "578730089005449337",
+            "tokens_matched": 1,
+            "typo_prefix_score": 1
+          }
+        },
+        {
+          "document": {
+            "CAS": "1343-98-2",
+            "calculatedPrice": 49,
+            "categories": [
+              "S"
+            ],
+            "description": "<b>CAS#: 1343-98-2  |    Specifications: Chloride 0.01 %  Max, Heavy metals (as Pb) 0.005 %  Max, Iron 0.01 %  Max, Loss on Ignition (typical) (%) 10 %  Max, Sulfate 0.02 %  Max </b><br><br>",
+            "hasOptions": false,
+            "id": "88782",
+            "images": [
+              {
+                "description": "",
+                "isThumbnail": true,
+                "sortOrder": 0,
+                "urlStandard": "https://cdn11.bigcommerce.com/s-ityfqr2/products/88782/images/12245/logo_gfs__36320.1688414114.600.600.png?c=2",
+                "urlThumbnail": "https://cdn11.bigcommerce.com/s-ityfqr2/products/88782/images/12245/logo_gfs__36320.1688414114.200.200.png?c=2"
+              }
+            ],
+            "inventoryLevel": 0,
+            "inventory_level": 0,
+            "inventory_tracking": "none",
+            "mapPrice": 0,
+            "meta_description": "",
+            "meta_keywords": [],
+            "name": "SILICIC ACID, -100 MESH, FOR CHROMATOGRAPHY - 25 G",
+            "price": 49.4,
+            "product_id": 88782,
+            "retailPrice": 0,
+            "salePrice": 0,
+            "sku": "89161",
+            "sortOrder": 7348,
+            "upc": "",
+            "url": "/s/silicic-acid-100-mesh-25-g/"
+          },
+          "highlight": {
+            "name": {
+              "matched_tokens": [
+                "ACI"
+              ],
+              "snippet": "SILICIC <mark>ACI</mark>D, -100 MESH, FOR CHROMATOGRAPHY - 25 G",
+              "value": "SILICIC <mark>ACI</mark>D, -100 MESH, FOR CHROMATOGRAPHY - 25 G"
+            }
+          },
+          "highlights": [
+            {
+              "field": "name",
+              "matched_tokens": [
+                "ACI"
+              ],
+              "snippet": "SILICIC <mark>ACI</mark>D, -100 MESH, FOR CHROMATOGRAPHY - 25 G",
+              "value": "SILICIC <mark>ACI</mark>D, -100 MESH, FOR CHROMATOGRAPHY - 25 G"
+            }
+          ],
+          "text_match": 578730089005449337,
+          "text_match_info": {
+            "best_field_score": "1108074561536",
+            "best_field_weight": 15,
+            "fields_matched": 1,
+            "num_tokens_dropped": 0,
+            "score": "578730089005449337",
+            "tokens_matched": 1,
+            "typo_prefix_score": 1
+          }
+        },
+        {
+          "document": {
+            "CAS": "6192-52-5",
+            "calculatedPrice": 819,
+            "categories": [
+              "P"
+            ],
+            "description": "<p><strong>CAS#: 6192-52-5 | Formula: CH3C6H4SO3H.H2O | Specifications: Assay 98.5 % - Min, Clarity of solution - passes test, Heavy metals (as Pb) 0.001 % Max, Iron 0.01 % Max, Residue after ignition 0.1 % Max, Sodium 0.002 % Max, Sulfate 0.3 % Max, Water 9.5 - 11.5 % </strong><br /><br /></p>",
+            "hasOptions": false,
+            "id": "88619",
+            "images": [
+              {
+                "description": "",
+                "isThumbnail": true,
+                "sortOrder": 0,
+                "urlStandard": "https://cdn11.bigcommerce.com/s-ityfqr2/products/88619/images/12190/logo_gfs__23967.1688414107.600.600.png?c=2",
+                "urlThumbnail": "https://cdn11.bigcommerce.com/s-ityfqr2/products/88619/images/12190/logo_gfs__23967.1688414107.200.200.png?c=2"
+              }
+            ],
+            "inventoryLevel": 0,
+            "inventory_level": 0,
+            "inventory_tracking": "none",
+            "mapPrice": 0,
+            "meta_description": "",
+            "meta_keywords": [],
+            "name": "p-TOLUENESULFONIC ACID, MONOHYDRATE, REAGENT (ACS) - 10 KG",
+            "price": 819.28,
+            "product_id": 88619,
+            "retailPrice": 0,
+            "salePrice": 0,
+            "sku": "88334",
+            "sortOrder": 7236,
+            "upc": "",
+            "url": "/p/p-toluenesulfonic-acid-10-kg/"
+          },
+          "highlight": {
+            "name": {
+              "matched_tokens": [
+                "ACI"
+              ],
+              "snippet": "p-TOLUENESULFONIC <mark>ACI</mark>D, MONOHYDRATE, REAGENT (ACS) - 10 KG",
+              "value": "p-TOLUENESULFONIC <mark>ACI</mark>D, MONOHYDRATE, REAGENT (ACS) - 10 KG"
+            }
+          },
+          "highlights": [
+            {
+              "field": "name",
+              "matched_tokens": [
+                "ACI"
+              ],
+              "snippet": "p-TOLUENESULFONIC <mark>ACI</mark>D, MONOHYDRATE, REAGENT (ACS) - 10 KG",
+              "value": "p-TOLUENESULFONIC <mark>ACI</mark>D, MONOHYDRATE, REAGENT (ACS) - 10 KG"
+            }
+          ],
+          "text_match": 578730089005449337,
+          "text_match_info": {
+            "best_field_score": "1108074561536",
+            "best_field_weight": 15,
+            "fields_matched": 1,
+            "num_tokens_dropped": 0,
+            "score": "578730089005449337",
+            "tokens_matched": 1,
+            "typo_prefix_score": 1
+          }
+        },
+        {
+          "document": {
+            "CAS": "6192-52-5",
+            "calculatedPrice": 62,
+            "categories": [
+              "P"
+            ],
+            "description": "<p><strong>CAS#: 6192-52-5 | Formula: CH3C6H4SO3H.H2O | Specifications: Assay 98.5 % - Min, Clarity of solution - passes test, Heavy metals (as Pb) 0.001 % Max, Iron 0.01 % Max, Residue after ignition 0.1 % Max, Sodium 0.002 % Max, Sulfate 0.3 % Max, Water 9.5 - 11.5 % </strong><br /><br /></p>",
+            "hasOptions": false,
+            "id": "88621",
+            "images": [
+              {
+                "description": "",
+                "isThumbnail": true,
+                "sortOrder": 0,
+                "urlStandard": "https://cdn11.bigcommerce.com/s-ityfqr2/products/88621/images/12192/logo_gfs__16858.1688414107.600.600.png?c=2",
+                "urlThumbnail": "https://cdn11.bigcommerce.com/s-ityfqr2/products/88621/images/12192/logo_gfs__16858.1688414107.200.200.png?c=2"
+              }
+            ],
+            "inventoryLevel": 0,
+            "inventory_level": 0,
+            "inventory_tracking": "none",
+            "mapPrice": 0,
+            "meta_description": "",
+            "meta_keywords": [],
+            "name": "p-TOLUENESULFONIC ACID, MONOHYDRATE, REAGENT (ACS) - 500 G",
+            "price": 62.46,
+            "product_id": 88621,
+            "retailPrice": 0,
+            "salePrice": 0,
+            "sku": "88332",
+            "sortOrder": 7235,
+            "upc": "",
+            "url": "/p/p-toluenesulfonic-acid-500-g/"
+          },
+          "highlight": {
+            "name": {
+              "matched_tokens": [
+                "ACI"
+              ],
+              "snippet": "p-TOLUENESULFONIC <mark>ACI</mark>D, MONOHYDRATE, REAGENT (ACS) - 500 G",
+              "value": "p-TOLUENESULFONIC <mark>ACI</mark>D, MONOHYDRATE, REAGENT (ACS) - 500 G"
+            }
+          },
+          "highlights": [
+            {
+              "field": "name",
+              "matched_tokens": [
+                "ACI"
+              ],
+              "snippet": "p-TOLUENESULFONIC <mark>ACI</mark>D, MONOHYDRATE, REAGENT (ACS) - 500 G",
+              "value": "p-TOLUENESULFONIC <mark>ACI</mark>D, MONOHYDRATE, REAGENT (ACS) - 500 G"
+            }
+          ],
+          "text_match": 578730089005449337,
+          "text_match_info": {
+            "best_field_score": "1108074561536",
+            "best_field_weight": 15,
+            "fields_matched": 1,
+            "num_tokens_dropped": 0,
+            "score": "578730089005449337",
+            "tokens_matched": 1,
+            "typo_prefix_score": 1
+          }
+        },
+        {
+          "document": {
+            "CAS": "6192-52-5",
+            "calculatedPrice": 36,
+            "categories": [
+              "P"
+            ],
+            "description": "<p><strong>CAS#: 6192-52-5 | Formula: CH3C6H4SO3H.H2O | Specifications: Assay 98.5 % - Min, Clarity of solution - passes test, Heavy metals (as Pb) 0.001 % Max, Iron 0.01 % Max, Residue after ignition 0.1 % Max, Sodium 0.002 % Max, Sulfate 0.3 % Max, Water 9.5 - 11.5 % </strong><br /><br /></p>",
+            "hasOptions": false,
+            "id": "88620",
+            "images": [
+              {
+                "description": "",
+                "isThumbnail": true,
+                "sortOrder": 0,
+                "urlStandard": "https://cdn11.bigcommerce.com/s-ityfqr2/products/88620/images/12191/logo_gfs__27985.1688414107.600.600.png?c=2",
+                "urlThumbnail": "https://cdn11.bigcommerce.com/s-ityfqr2/products/88620/images/12191/logo_gfs__27985.1688414107.200.200.png?c=2"
+              }
+            ],
+            "inventoryLevel": 0,
+            "inventory_level": 0,
+            "inventory_tracking": "none",
+            "mapPrice": 0,
+            "meta_description": "",
+            "meta_keywords": [],
+            "name": "p-TOLUENESULFONIC ACID, MONOHYDRATE, REAGENT (ACS) - 100 G",
+            "price": 36.43,
+            "product_id": 88620,
+            "retailPrice": 0,
+            "salePrice": 0,
+            "sku": "88331",
+            "sortOrder": 7234,
+            "upc": "",
+            "url": "/p/p-toluenesulfonic-acid-100-g/"
+          },
+          "highlight": {
+            "name": {
+              "matched_tokens": [
+                "ACI"
+              ],
+              "snippet": "p-TOLUENESULFONIC <mark>ACI</mark>D, MONOHYDRATE, REAGENT (ACS) - 100 G",
+              "value": "p-TOLUENESULFONIC <mark>ACI</mark>D, MONOHYDRATE, REAGENT (ACS) - 100 G"
+            }
+          },
+          "highlights": [
+            {
+              "field": "name",
+              "matched_tokens": [
+                "ACI"
+              ],
+              "snippet": "p-TOLUENESULFONIC <mark>ACI</mark>D, MONOHYDRATE, REAGENT (ACS) - 100 G",
+              "value": "p-TOLUENESULFONIC <mark>ACI</mark>D, MONOHYDRATE, REAGENT (ACS) - 100 G"
+            }
+          ],
+          "text_match": 578730089005449337,
+          "text_match_info": {
+            "best_field_score": "1108074561536",
+            "best_field_weight": 15,
+            "fields_matched": 1,
+            "num_tokens_dropped": 0,
+            "score": "578730089005449337",
+            "tokens_matched": 1,
+            "typo_prefix_score": 1
+          }
+        }
+      ],
+      "out_of": 39506,
+      "page": 1,
+      "request_params": {
+        "collection_name": "products",
+        "first_q": "acid",
+        "per_page": 5,
+        "q": "aci"
+      },
+      "search_cutoff": false,
+      "search_time_ms": 2
+    }
+  ]
+}

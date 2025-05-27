@@ -1,7 +1,9 @@
 import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
+import { ProductBuilder } from "@/helpers/productBuilder";
 import { parseQuantity } from "@/helpers/quantity";
-import type { Maybe, Product } from "@/types";
+import { mapDefined } from "@/helpers/utils";
+import type { Product } from "@/types";
 import * as cheerio from "cheerio";
 import chunk from "lodash/chunk";
 import SupplierBase from "./supplierBase";
@@ -97,14 +99,14 @@ export default class SupplierLoudwolf
   protected async _queryProducts(
     query: string,
     limit: number = this._limit,
-  ): Promise<Maybe<Partial<Product>[]>> {
+  ): Promise<ProductBuilder<Product>[] | void> {
     this._logger.log("query:", query);
     localStorage.setItem("display", "list");
 
     const searchResponse = await this._httpGetHtml({
       path: "/storefront/index.php",
       params: {
-        search: query,
+        search: encodeURIComponent(query),
         route: "product/search",
         limit,
       },
@@ -117,12 +119,9 @@ export default class SupplierLoudwolf
 
     this._logger.log("searchResponse:", searchResponse);
 
-    const $ = cheerio.load(searchResponse);
+    return this._initProductBuilders(searchResponse);
 
-    const $elements = $("div.product-layout.product-list");
-
-    this._logger.log("Loudwolf results:", $elements);
-
+    /*
     return $elements
       .map((index, element) => {
         const price = parsePrice($(element).find("div.caption > p.price").text().trim());
@@ -151,6 +150,73 @@ export default class SupplierLoudwolf
         };
       })
       .toArray();
+      */
+  }
+
+  /**
+   * Initialize product builders from Loudwolf HTML search response data.
+   * Transforms HTML product listings into ProductBuilder instances, handling:
+   * - Basic product information (title, URL, supplier)
+   * - Pricing information with currency details
+   * - Product descriptions
+   * - Product IDs and SKUs
+   * - HTML parsing of product listings
+   * - Price extraction from formatted strings
+   * - URL and ID extraction from product links
+   *
+   * @param data - HTML string containing product listings
+   * @returns Array of ProductBuilder instances initialized with product data
+   * @example
+   * ```typescript
+   * const results = await this._queryProducts("sodium chloride");
+   * if (results) {
+   *   const builders = this._initProductBuilders(results);
+   *   // Each builder contains parsed product data from HTML
+   *   for (const builder of builders) {
+   *     const product = await builder.build();
+   *     console.log(product.title, product.price, product.id);
+   *   }
+   * }
+   * ```
+   */
+  protected _initProductBuilders(data: string): ProductBuilder<Product>[] {
+    const $ = cheerio.load(data);
+
+    const $elements = $("div.product-layout.product-list");
+
+    return mapDefined($elements.toArray(), (element) => {
+      const builder = new ProductBuilder<Product>(this._baseURL);
+
+      const price = parsePrice($(element).find("div.caption > p.price").text().trim());
+
+      if (price === undefined) {
+        this._logger.error("No price for product", element);
+        return;
+      }
+
+      const href = $(element).find("div.caption h4 a").attr("href");
+
+      if (href === undefined) {
+        this._logger.error("No URL for product");
+        return;
+      }
+
+      const url = new URL(href, this._baseURL);
+
+      const id = url.searchParams.get("product_id");
+
+      if (id === null) {
+        this._logger.error("No ID for product");
+        return;
+      }
+      const title = $(element).find("div.caption h4 a").text().trim();
+
+      return builder
+        .setBasicInfo(title, url.toString(), this.supplierName)
+        .setDescription($(element).find("div.caption > p:nth-child(2)").text().trim())
+        .setId(id)
+        .setPricing(price.price, price.currencyCode, price.currencySymbol);
+    });
   }
 
   /**
@@ -179,21 +245,18 @@ export default class SupplierLoudwolf
    * }
    * ```
    */
-  protected async _getProductData(product: Partial<Product>): Promise<Maybe<Partial<Product>>> {
+  protected async _getProductData(
+    product: ProductBuilder<Product>,
+  ): Promise<ProductBuilder<Product> | void> {
     this._logger.debug("Querying data for partialproduct:", product);
 
-    if ("url" in product === false || typeof product.url !== "string") {
-      this._logger.error("No URL for product");
-      return;
-    }
-
-    if ("title" in product === false || typeof product.title !== "string") {
-      this._logger.error("No title for product");
+    if (typeof product === "undefined") {
+      this._logger.error("No products to get data for");
       return;
     }
 
     const productResponse = await this._httpGetHtml({
-      path: product.url,
+      path: product.get("url"),
     });
 
     if (!productResponse) {
@@ -230,6 +293,6 @@ export default class SupplierLoudwolf
       return acc;
     }, {} as Partial<Product>);
 
-    return { ...datagridInfo, ...product, supplier: this.supplierName } satisfies Partial<Product>;
+    return product.setData(datagridInfo);
   }
 }
