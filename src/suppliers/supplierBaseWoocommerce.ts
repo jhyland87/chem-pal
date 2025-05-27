@@ -1,9 +1,9 @@
 import { findCAS } from "@/helpers/cas";
-import { ProductBuilder } from "@/helpers/productBuilder";
 import { parseQuantity } from "@/helpers/quantity";
 import { firstMap } from "@/helpers/utils";
 import type { Product, Variant } from "@/types";
 import type { ProductVariant, SearchResponse, SearchResponseItem } from "@/types/woocommerce";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import SupplierBase from "./supplierBase";
 
 /**
@@ -29,8 +29,8 @@ import SupplierBase from "./supplierBase";
  *
  * The first endpoint is used to search for products and returns a list of products.
  * The second endpoint is used to get the details of a single product.
- *
- *
+ * @module SupplierBaseWoocommerce
+ * @category Suppliers
  * @example
  * ```typescript
  * class MyChemicalSupplier extends SupplierBaseWoocommerce {

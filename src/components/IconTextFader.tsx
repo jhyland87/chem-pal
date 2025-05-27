@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
  * The text is shown when the component is hovered or active, and the icon is shown otherwise.
  *
  * @component
- * @category Component
+ * @category Components
  * @param props - Component props
  *
  * @example

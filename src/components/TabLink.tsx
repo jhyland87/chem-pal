@@ -18,7 +18,7 @@ const handleResultClick = (event: MouseEvent<HTMLAnchorElement>) => {
 
 /**
  * TabLink component that displays a link with a custom onClick handler.
- * @category Component
+ * @category Components
  * @param props - The component props
  * @returns The TabLink component
  */

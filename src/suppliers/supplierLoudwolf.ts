@@ -1,9 +1,9 @@
 import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
-import { ProductBuilder } from "@/helpers/productBuilder";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
 import type { Product } from "@/types";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import * as cheerio from "cheerio";
 import chunk from "lodash/chunk";
 import SupplierBase from "./supplierBase";

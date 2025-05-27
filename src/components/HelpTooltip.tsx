@@ -8,7 +8,7 @@ import { MouseEvent, useEffect, useState } from "react";
  * A tooltip component that displays help text with customizable timing and styling.
  *
  * @component
- * @category Component
+ * @category Components
  * @param props - The component props
  * @returns A tooltip component that displays help text
  *

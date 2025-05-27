@@ -1,9 +1,9 @@
 import { isCAS } from "@/helpers/cas";
-import { ProductBuilder } from "@/helpers/productBuilder";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
 import { type Product } from "@/types";
 import { type ProductObject, type SearchResponse } from "@/types/chemsavers";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import SupplierBase from "./supplierBase";
 
 /**
@@ -14,7 +14,7 @@ import SupplierBase from "./supplierBase";
  * The script is a JSON object that contains the product data.
  * Duh... thanks, AI.
  * @module SupplierChemsavers
- * @category Supplier
+ * @category Suppliers
  */
 export default class SupplierChemsavers
   extends SupplierBase<ProductObject, Product>

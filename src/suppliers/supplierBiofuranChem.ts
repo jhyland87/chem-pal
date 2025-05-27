@@ -4,7 +4,7 @@ import SupplierBaseWix from "./supplierBaseWix";
 /**
  * SupplierBioFuranChem class that extends SupplierBaseWix and implements AsyncIterable<Product>.
  * @module SupplierBioFuranChem
- * @category Supplier
+ * @category Suppliers
  */
 export default class SupplierBioFuranChem
   extends SupplierBaseWix

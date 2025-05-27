@@ -46,7 +46,7 @@ const displayHelperOnHover = {
 
 /**
  * SettingsPanel component that displays a list of settings.
- * @category Component
+ * @category Components
  */
 export default function SettingsPanel() {
   const appContext = useAppContext();

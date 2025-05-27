@@ -1,3 +1,7 @@
+/**
+ * @group Constants
+ * @groupDescription Application-wide constants and enumerations used throughout the codebase.
+ */
 /* eslint-disable @typescript-eslint/naming-convention */
 export const CURRENCY_CODE_MAP: { [key: string]: string } = {
   Lek: "ALL",

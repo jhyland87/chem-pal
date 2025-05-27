@@ -1,6 +1,6 @@
 import { toUSD } from "@/helpers/currency";
-import { ProductBuilder } from "@/helpers/productBuilder";
 import type { Product } from "@/types";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 
 /*
 // Mock the currency and quantity helper functions

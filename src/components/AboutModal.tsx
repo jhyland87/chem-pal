@@ -1,5 +1,5 @@
-import GitHubIcon from "@/icons/GitHubIcon";
 import { default as Link } from "@/components/TabLink";
+import GitHubIcon from "@/icons/GitHubIcon";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
@@ -34,7 +34,7 @@ const Item = styled(Paper)(({ theme }: { theme: Theme }) => ({
  * Shows the application title, description, and contributor information in a modal dialog.
  *
  * @component
- * @category Component
+ * @category Components
  * @param props - Component props
  * @example
  * ```tsx

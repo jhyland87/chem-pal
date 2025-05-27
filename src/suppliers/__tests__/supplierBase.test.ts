@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { UOM } from "@/constants/app";
-import { ProductBuilder } from "@/helpers/productBuilder";
 import { mapDefined } from "@/helpers/utils";
 import { type MaybeArray, type Product } from "@/types";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 //import SupplierBase from "../supplierBase";
 import SupplierBase from "../supplierBase";
 

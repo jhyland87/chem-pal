@@ -28,7 +28,7 @@ function tabProps(index: number, name: string) {
  * Each tab includes an icon and text that fades based on the active state.
  *
  * @component
- * @category Component
+ * @category Components
  * @param props - Component props
  *
  * @example

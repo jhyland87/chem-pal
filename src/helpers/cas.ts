@@ -2,6 +2,9 @@ import { CAS_REGEX } from "@/constants/app";
 import { CAS } from "@/types/cas";
 
 /**
+ * @group Helpers
+ * @groupDescription Chemical Abstracts Service (CAS) number validation and parsing utilities.
+ *
  * Validates a CAS (Chemical Abstracts Service) number.
  * CAS numbers follow a specific format and include a checksum digit for validation.
  *
@@ -15,7 +18,7 @@ import { CAS } from "@/types/cas";
  * 2. Iterating over each digit in reverse order
  * 3. Multiplying each digit by its position
  * 4. Taking the modulo 10 of the sum
- * @category Helper
+ * @category Helpers
  * @param cas - The CAS number to validate
  * @returns True if the CAS number is valid, false otherwise
  *
@@ -57,7 +60,7 @@ export function isCAS(cas: string): cas is CAS<string> {
 /**
  * Searches for a valid CAS number within a string.
  * Returns the first valid CAS number found, or undefined if none are found.
- * @category Helper
+ * @category Helpers
  * @param data - The string to search for a CAS number
  * @returns The first valid CAS number found, or undefined
  *

@@ -1,9 +1,9 @@
+import { useAppContext } from "@/context";
+import { delayAction } from "@/helpers/utils";
 import AutoDeleteIcon from "@/icons/AutoDeleteIcon";
 import ClearIcon from "@/icons/ClearIcon";
 import ContrastIcon from "@/icons/ContrastIcon";
 import InfoOutlineIcon from "@/icons/InfoOutlineIcon";
-import { useAppContext } from "@/context";
-import { delayAction } from "@/helpers/utils";
 import { type SpeedDialMenuProps } from "@/types/props";
 import SpeedDial from "@mui/material/SpeedDial";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
@@ -18,7 +18,7 @@ import HelpTooltip from "./HelpTooltip";
  * Includes actions for clearing results, clearing cache, toggling theme, and showing about information.
  *
  * @component
- * @category Component
+ * @category Components
  * @param props - Component props
  *
  * @example

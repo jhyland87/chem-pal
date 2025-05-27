@@ -6,7 +6,7 @@ import SupplierBase from "./supplierBase";
  * Factory class for querying multiple chemical suppliers simultaneously.
  * This class provides a unified interface to search across multiple supplier implementations.
  *
- * @category Supplier
+ * @category Suppliers
  * @example
  * ```typescript
  * // Create a factory to search all suppliers

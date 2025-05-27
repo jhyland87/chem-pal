@@ -1,4 +1,9 @@
 /**
+ * @group Constants
+ * @groupDescription Application-wide constants and enumerations used throughout the codebase.
+ */
+
+/**
  * A mapping of regular characters to their Unicode subscript equivalents.
  * Used for converting numbers and basic mathematical symbols to subscript format.
  *

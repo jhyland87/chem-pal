@@ -2,6 +2,8 @@
  * Core MD5 hash function implementation.
  * Follows the MD5 specification for message digest calculation.
  *
+ * @group Helpers
+ * @groupDescription Core utility functions for data manipulation, encoding, and transformation.
  * @param input - The string to hash
  * @returns MD5 hash of the input string
  *
@@ -143,7 +145,7 @@ function md5(input: string) {
  * MD5 hash function that handles various input types.
  * Converts input to string representation before hashing.
  *
- * @category Helper
+ * @category Helpers
  * @param input - The input to hash. Can be string, number, object, or null/undefined.
  * @returns The MD5 hash of the input as a string, or the input itself if null/undefined
  * @throws Error if input type is not supported (e.g., Symbol)
@@ -181,7 +183,7 @@ export function md5sum<T>(input: NonNullable<T>): string | T {
  * Useful for safely storing strings that may contain special characters.
  * First URI encodes the string, then base64 encodes it.
  *
- * @category Helper
+ * @category Helpers
  * @param data - The string to serialize
  * @returns A base64 encoded string that can be safely stored/transmitted
  *
@@ -201,7 +203,7 @@ export function serialize(data: string): string {
  * Reverses the serialize() operation by first base64 decoding,
  * then URI decoding the result.
  *
- * @category Helper
+ * @category Helpers
  * @param data - The base64 encoded string to deserialize
  * @returns The original string that was serialized
  *
@@ -220,7 +222,7 @@ export function deserialize(data: string): string {
  * Creates a promise that resolves after the specified delay.
  * Useful for adding delays in async operations or rate limiting.
  *
- * @category Helper
+ * @category Helpers
  * @param ms - The number of milliseconds to sleep
  * @returns A promise that resolves after the specified delay
  *
@@ -247,7 +249,7 @@ export function sleep(ms: number) {
  * Delays the execution of an action by the specified number of milliseconds.
  * Combines sleep() with a callback function for cleaner async code.
  *
- * @category Helper
+ * @category Helpers
  * @param ms - The number of milliseconds to delay
  * @param action - The function to execute after the delay
  * @returns A promise that resolves after the action is executed
@@ -278,7 +280,7 @@ export async function delayAction(ms: number, action: () => void) {
  * and returns the first non-undefined/null result. Useful for trying multiple possible inputs
  * until finding one that produces a valid result.
  *
- * @category Helper
+ * @category Helpers
  * @param fn - The function to apply to each value
  * @param properties - Array of values to try the function on
  * @returns The first non-undefined/null result from applying the function, or undefined if all attempts fail
@@ -319,7 +321,7 @@ export function firstMap<T, R>(fn: (arg: T) => R | void, properties: T[]): R | v
 /**
  * Maps an array of items using a function and filters out any null or undefined results.
  *
- * @category Helper
+ * @category Helpers
  * @param fn - The mapping function that may return undefined/null
  * @param items - Array of items to map
  * @returns Array of non-null/undefined results after mapping
@@ -342,7 +344,7 @@ export function mapDefined<T, R>(items: T[], fn: (arg: T) => R | null | undefine
 /**
  * Decodes HTML entities in a string.
  *
- * @category Helper
+ * @category Helpers
  * @param text - The string to decode
  * @returns The decoded string
  *

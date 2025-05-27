@@ -1,10 +1,53 @@
-import { ProductBuilder } from "@/helpers/productBuilder";
 import { parseQuantity } from "@/helpers/quantity";
 import { firstMap } from "@/helpers/utils";
 import type { Product } from "@/types";
 import type { ItemListing, QueryParams, SearchResponse, ShopifyVariant } from "@/types/shopify";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import SupplierBase from "./supplierBase";
 
+/**
+ * Base class for Shopify-based suppliers that provides common functionality for
+ * interacting with Shopify API endpoints.
+ *
+ * @remarks
+ * I'm pretty sure that there's a different API tht could be used, but I noticed that when I started
+ * searching for a product in the search bar, all of the shopify sites were making a call to a
+ * `/getresults` endpoint hosted at `searchserverapi.com`. That domain belongs to
+ * {@link https://searchanise.io/ | Searchanise}, who provides tracking data and autocomplete
+ * functionality for the search feature on the website. There are quite a few query parameters for
+ * that page, but the ones we care about most are:
+ * - `api_key` - The API key for the search server, this is unique for each supplier.
+ * - `q` - The query to search for.
+ * - `maxResults` - The maximum number of results to return.
+ *
+ * - {@link https://searchserverapi.com/getresults?api_key=8B7o0X1o7c&q=acid&maxResults=3 | Query three "Acid" products from LabAlley}
+ *
+ *
+ * The suppliers using this endpoint need literally no custom code at all, with the exception of the
+ * `api_key` value being specified.
+ * Another possible solution would be the graphql api endpoint, which can be found at
+ * `/api/2024-10/graphql.json`. I can use this to query data about specific products, but I don't
+ * see that its an more useful than just the searchserveapi results.
+ *
+ * @module SupplierBaseShopify
+ * @category Suppliers
+ * @example
+ * ```typescript
+ * // Crate a new class using the SupplierBaseShopify class
+ * export default class SupplierFoobar
+ *   extends SupplierBaseShopify
+ *   implements AsyncIterable<Product>
+ * {
+ *   // Name of supplier (for display purposes)
+ *   public readonly supplierName: string = "Foobar";
+ *
+ *   protected _apiKey: string = "<api_key>";
+ *
+ *   // Base URL for HTTP(s) requests
+ *   protected _baseURL: string = "https://www.foobar.com";
+ * }
+ * ```
+ */
 export default abstract class SupplierBaseShopify
   extends SupplierBase<ItemListing, Product>
   implements AsyncIterable<Product>

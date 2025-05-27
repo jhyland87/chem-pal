@@ -2,16 +2,38 @@ import { AVAILABILITY, UOM } from "@/constants/app";
 import { findCAS, isCAS } from "@/helpers/cas";
 import { isParsedPrice, parsePrice, toUSD } from "@/helpers/currency";
 import { isQuantityObject, parseQuantity, toBaseQuantity } from "@/helpers/quantity";
+import { findFormulaInHtml } from "@/helpers/science";
 import { type Maybe, type Product, type QuantityObject, type Variant } from "@/types";
 import type { ParsedPrice } from "@/types/currency";
 import { Logger } from "@/utils/Logger";
-import { findFormulaInHtml } from "./science";
+
+/**
+ * Product builder utility class for building product data up over different requests
+ *
+ * @remarks
+ * This is a utility class for building product data up over different requests.
+ * It is used to build the product data up over different requests, and then return a complete
+ * product object.
+ * @category Utils
+ * @group Utils
+ * @groupDescription Core utility classes for building and managing product data, including validation, transformation, and data enrichment.
+ * @module ProductBuilder
+ * @example
+ * ```typescript
+ * const builder = new ProductBuilder<Product>('https://example.com');
+ * const product = await builder.build();
+ * ```
+ */
 
 /**
  * Builder class for constructing Product objects with a fluent interface.
  * Implements the Builder pattern to handle complex product construction with optional fields
  * and data validation.
  *
+ * @category Utils
+ * @group Utils
+ * @groupDescription Core utility classes for building and managing product data, including validation, transformation, and data enrichment.
+ * @module ProductBuilder
  * @example
  * ```typescript
  * const builder = new ProductBuilder<Product>('https://example.com');

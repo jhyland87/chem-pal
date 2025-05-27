@@ -1,10 +1,10 @@
 import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
-import { ProductBuilder } from "@/helpers/productBuilder";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
 import type { Product } from "@/types";
 import type { SearchResultItem, SearchResultResponse } from "@/types/onyxmet";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import * as cheerio from "cheerio";
 import SupplierBase from "./supplierBase";
 

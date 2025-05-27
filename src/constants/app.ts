@@ -1,6 +1,11 @@
 import type { UOMAliases } from "@/types";
 
 /**
+ * @group Constants
+ * @groupDescription Application-wide constants and enumerations used throughout the codebase.
+ */
+
+/**
  * Represents the availability of a product
  */
 export enum AVAILABILITY {
@@ -502,7 +507,7 @@ export enum HTTP_STATUS_CODES {
  * Matches the standard format of three segments: 2-7 digits, 2 digits, and 1 checksum digit.
  *
 
- * @category Helper
+ * @category Helpers
  * @example
  * ```typescript
  * CAS_REGEX.test('1234-56-6') // true

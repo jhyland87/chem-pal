@@ -7,7 +7,7 @@ import Typography from "@mui/material/Typography";
  * The content is only visible when the tab is selected.
  *
  * @component
- * @category Component
+ * @category Components
  * @param props - Component props
  *
  * @example

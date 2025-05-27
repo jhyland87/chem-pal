@@ -4,6 +4,11 @@ import type { CurrencyCode, CurrencySymbol, ParsedPrice } from "@/types/currency
 import { LRUCache } from "lru-cache";
 
 /**
+ * @group Helpers
+ * @groupDescription Currency conversion and price parsing utilities for handling different currencies and formats.
+ */
+
+/**
  * LRU (Least Recently Used) cache for storing currency exchange rates.
  * Implements caching to minimize API calls to the exchange rate service.
  *
@@ -41,7 +46,7 @@ const lruCurrencyRate = new LRUCache({
  * Uses Unicode property escapes to match currency symbols.
  * Supports a wide range of international currency symbols.
  *
- * @category Helper
+ * @category Helpers
  * @param price - The price string to extract the currency symbol from
  * @returns The currency symbol if found, undefined otherwise
  *
@@ -68,7 +73,7 @@ export function getCurrencySymbol(price: string): CurrencySymbol | void {
  * - International number formats (e.g., 1.234,56 or 1,234.56)
  * - Various currency symbols (€, $, £, ¥, etc.)
  *
- * @category Helper
+ * @category Helpers
  * @param price - The price string to parse (e.g., "$1,234.56" or "1.234,56€")
  * @returns Object with currency code, symbol, and numeric price, or undefined if invalid
  *
@@ -122,7 +127,7 @@ export function isParsedPrice(data: unknown): data is ParsedPrice {
  * Uses the Hexarate API to get real-time exchange rates.
  * Implements caching using LRU cache to minimize API calls.
  *
- * @category Helper
+ * @category Helpers
  * @param from - The source currency code (e.g., 'USD', 'EUR')
  * @param to - The target currency code
  * @returns The exchange rate as a number
@@ -157,7 +162,7 @@ export async function getCurrencyRate(from: CurrencyCode, to: CurrencyCode): Pro
  * Uses a predefined mapping from the CURRENCY_CODE_MAP constant.
  * Supports major international currency symbols.
  *
- * @category Helper
+ * @category Helpers
  * @param symbol - The currency symbol to look up (e.g., '$', '€', '£')
  * @returns The corresponding ISO currency code (e.g., 'USD', 'EUR', 'GBP')
  *
@@ -183,7 +188,7 @@ export function getCurrencyCodeFromSymbol(symbol: CurrencySymbol): CurrencyCode 
  * Uses real-time exchange rates from the Hexarate API.
  * Results are rounded to 2 decimal places for standard currency format.
  *
- * @category Helper
+ * @category Helpers
  * @param amount - The amount to convert
  * @param from - The source currency code (e.g., 'EUR', 'GBP')
  * @returns The converted amount in USD, formatted to 2 decimal places

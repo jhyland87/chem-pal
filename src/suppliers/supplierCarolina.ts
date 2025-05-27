@@ -1,6 +1,5 @@
 import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
-import { ProductBuilder } from "@/helpers/productBuilder";
 import { isQuantityObject, parseQuantity } from "@/helpers/quantity";
 import { firstMap } from "@/helpers/utils";
 import type { Product } from "@/types";
@@ -16,6 +15,7 @@ import {
   type SearchResult,
 } from "@/types/carolina";
 import type { ParsedPrice } from "@/types/currency";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import SupplierBase from "./supplierBase";
 
 /**

@@ -1,5 +1,4 @@
 import { parsePrice } from "@/helpers/currency";
-import { ProductBuilder } from "@/helpers/productBuilder";
 import { parseQuantity } from "@/helpers/quantity";
 import { type Product, type Variant } from "@/types";
 import {
@@ -9,6 +8,7 @@ import {
   type ProductSelection,
   type QueryResponse,
 } from "@/types/wix";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import merge from "lodash/merge";
 //import query from "./queries/getFilteredProductsWithHasDiscount-wix.graphql";
 import { findFormulaInHtml } from "@/helpers/science";
@@ -17,8 +17,8 @@ import SupplierBase from "./supplierBase";
 /**
  * SupplierBaseWix class that extends SupplierBase and implements AsyncIterable<Product>.
  * @abstract
- * @category Supplier
  * @module SupplierBaseWix
+ * @category Suppliers
  */
 export default abstract class SupplierBaseWix
   extends SupplierBase<ProductObject, Product>

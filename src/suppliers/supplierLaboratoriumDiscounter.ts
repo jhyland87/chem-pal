@@ -1,14 +1,5 @@
-// Copyright (c) Example Company. All rights reserved. Licensed under the MIT license.
-
-/**
- * This description will be used on the **member** page
- * @summary
- * This description will be used on the **module** page
- */
-/** @module SupplierLaboratoriumDiscounter */
 import { AVAILABILITY } from "@/constants/app";
 import { findCAS } from "@/helpers/cas";
-import { ProductBuilder } from "@/helpers/productBuilder";
 import { urlencode } from "@/helpers/request";
 import { mapDefined } from "@/helpers/utils";
 import { type Product } from "@/types";
@@ -19,17 +10,42 @@ import {
   type SearchResponse,
   type SearchResponseProduct,
 } from "@/types/laboratoriumdiscounter";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import SupplierBase from "./supplierBase";
 
 /**
- * Laboratorium Discounter uses a custom script to fetch product data.
- * This supplier seems to use Lightspeed eCom (webshopapp) as their ecommerce platform, as
+ * Class for retrieving search results and iterating over Laboratorium Discounter online
+ * web store.
+ *
+ * @remarks
+ * Laboratorium Discounters seems to use Lightspeed eCom (webshopapp) as their ecommerce platform, as
  * can be determined by loking at the shop.domains.main value of a search response, or
  * looking at where some of their assets are pulled from (cdn.webshopapp.com).
  *
- * @remarks
- * foo bar baz
+ * Laboratorium Discounters API is pretty easy to use, and the search results are in JSON format.
+ * It looks like any page (including home page) can be displayed in JSON format if you append
+ * `?format=json` to the URL.
+ * - {@link https://www.laboratoriumdiscounter.nl/en/search/acid?format=json | Search Results for "acid" (JSON)}
+ *   - With the search results being found at `collection.products` and some other useful data at
+ *    `gtag.events.view_item_list.items[]`.
  *
+ * But to get the variants or other product specific data, you need to fetch the product details page.
+ * - {@link https://www.laboratoriumdiscounter.nl/en/nitric-acid-5.html?format=json | Nitric acid (JSON)}
+ *   - With all the product specific data found at `product` and variants at `product.variants`.
+ *
+ * Links:
+ * - {@link https://www.laboratoriumdiscounter.nl | Laboratorium Discounters Home Page}
+ * - {@link https://www.laboratoriumdiscounter.nl/en/sitemap/?format=json Sitemap (JSON)}
+ * - {@link https://www.laboratoriumdiscounter.nl/en/search/acid | Search Results for "acid"}
+ * - {@link https://www.laboratoriumdiscounter.nl/en/search/acid?format=json | Search Results for "acid" (JSON)}
+ *
+ * @category Suppliers
+ * @example
+ * ```typescript
+ * const supplier = new SupplierLaboratoriumDiscounter();
+ * for await (const product of supplier) {
+ *   console.log(product);
+ * }
  */
 export default class SupplierLaboratoriumDiscounter
   extends SupplierBase<ProductObject, Product>

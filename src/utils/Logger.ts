@@ -1,20 +1,7 @@
 /**
- * Available logging levels in ascending order of severity:
- * DEBUG → INFO → WARN → ERROR
- */
-export enum LogLevel {
-  /** Detailed information for debugging purposes */
-  DEBUG = "DEBUG",
-  /** General information about program execution */
-  INFO = "INFO",
-  /** Potentially harmful situations that don't affect program execution */
-  WARN = "WARN",
-  /** Error conditions that affect program execution */
-  ERROR = "ERROR",
-}
-
-/**
  * A flexible logging utility that supports different log levels and prefixed output.
+ *
+ * @remarks
  * Works in both Node.js and browser environments. Each logger instance can either maintain
  * its own fixed log level or automatically sync with environment variables. Instances of
  * Logger should be mostly accurate substitutions for the console object as it includes
@@ -28,7 +15,54 @@ export enum LogLevel {
  * - Formatted output with timestamps
  * - Support for additional metadata in logs
  * - Can substitute for the console object
+ * @category Logging
+ * @group Utils
+ * @groupDescription Core utility classes for logging, including level-based logging, timestamps, and console method compatibility.
+ * @module Logger
+ * @example
+ * ```typescript
+ * // Create a logger that automatically syncs with environment variables
+ * const envLogger = new Logger('App');
+ * // LOG_LEVEL=DEBUG
+ * envLogger.debug('Will show if LOG_LEVEL is DEBUG');  // Shows
+ * // LOG_LEVEL=INFO
+ * envLogger.debug('Will not show if LOG_LEVEL is INFO'); // Hidden
  *
+ * // Create a logger with a fixed log level (ignores environment)
+ * const fixedLogger = new Logger('API', LogLevel.DEBUG);
+ * fixedLogger.debug('Always shows regardless of LOG_LEVEL');
+ *
+ * // Switch from environment sync to fixed level
+ * envLogger.setLogLevel(LogLevel.WARN);  // Now ignores LOG_LEVEL changes
+ * ```
+ */
+
+/**
+ * Available logging levels in ascending order of severity:
+ * DEBUG → INFO → WARN → ERROR
+ * @category Logging
+ * @group Utils
+ * @module Logger
+ * @groupDescription Log level definitions and their usage in the application.
+ */
+export enum LogLevel {
+  /** Detailed information for debugging purposes */
+  DEBUG = "DEBUG",
+  /** General information about program execution */
+  INFO = "INFO",
+  /** Potentially harmful situations that don't affect program execution */
+  WARN = "WARN",
+  /** Error conditions that affect program execution */
+  ERROR = "ERROR",
+}
+
+/**
+ * The logger class.
+ *
+ * @category Logging
+ * @group Utils
+ * @module Logger
+ * @groupDescription Core utility classes for logging, including level-based logging, timestamps, and console method compatibility.
  * @example
  * ```typescript
  * // Create a logger that automatically syncs with environment variables

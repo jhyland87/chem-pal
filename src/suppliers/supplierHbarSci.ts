@@ -6,7 +6,7 @@ import SupplierBaseShopify from "./supplierBaseShopify";
  *
  * Example search URL: https://www.hbarsci.com/pages/search-results-page?q=acid&tab=products&page=2&rb_filter_ptag_bf51a4bd1f5efe4002b3d50737306113=Chemicals
  * @module SupplierHbarSci
- * @category Supplier
+ * @category Suppliers
  */
 export default class SupplierHbarSci extends SupplierBaseShopify implements AsyncIterable<Product> {
   // Name of supplier (for display purposes)

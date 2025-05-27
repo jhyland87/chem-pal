@@ -14,7 +14,7 @@ import ListItemText from "@mui/material/ListItemText";
  * The component manages the state of selected suppliers through the application context.
 
  * @component
- * @category Component
+ * @category Components
  *
  * @example
  * ```tsx

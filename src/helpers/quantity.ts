@@ -2,10 +2,15 @@ import { UOM, UOM_ALIASES } from "@/constants/app";
 import type { QuantityObject } from "@/types";
 
 /**
+ * @group Helpers
+ * @groupDescription Quantity parsing and unit conversion utilities for handling different units of measurement.
+ */
+
+/**
  * Parses a quantity string into a structured object containing the numeric value and unit of measure.
  * Handles various formats including foreign number formats (e.g., 1.234,56).
  * Uses regex pattern matching to extract quantity and unit information.
- * @category Helper
+ * @category Helpers
  * @param  value - The quantity string to parse (e.g., '100g', '120 grams')
  * @returns Object containing quantity and UOM, or undefined if parsing fails
  * @throws  If the quantity string cannot be parsed
@@ -52,7 +57,7 @@ export function parseQuantity(value: string): QuantityObject | void {
 /**
  * Checks if a value is a QuantityObject.
  *
- * @category Helper
+ * @category Helpers
  * @param value - The value to check
  * @returns True if the value is a QuantityObject, false otherwise
  */
@@ -70,7 +75,7 @@ export function isQuantityObject(value: unknown): value is QuantityObject {
 /**
  * Standardizes a unit of measure (UOM) to its canonical form.
  * Uses the uomAliases mapping to convert various representations to standard forms.
- * @category Helper
+ * @category Helpers
  * @param uom - The unit of measure to standardize
  * @returns The standardized UOM, or undefined if not recognized
  *
@@ -100,7 +105,7 @@ export function standardizeUom(uom: string): UOM | void {
 /**
  * Converts a quantity from its current unit to a common unit of mass or volume.
  * This is to make it easier to compare quantities of different units.
- * @category Helper
+ * @category Helpers
  * @param quantity - The quantity to convert
  * @param unit - The unit of measure of the quantity
  * @returns The converted quantity in its base unit

@@ -1,28 +1,16 @@
-// Copyright (c) Example Company. All rights reserved. Licensed under the MIT license.
-
-/**
- * The base class for all suppliers.
- *
- * @remarks
- * The `supplier-lib` defines the {@link SupplierBase} class,
- * which is used to build suppliers.
- *
- * @packageDocumentation
- */
-/** End file docs */
-import { ProductBuilder } from "@/helpers/productBuilder";
 import { getCachableResponse, isFullURL } from "@/helpers/request";
 import { type Maybe, type MaybeArray, type Product } from "@/types";
 import { type RequiredProductFields } from "@/types/product";
 import { type RequestOptions, type RequestParams } from "@/types/request";
 import { Logger } from "@/utils/Logger";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 
 import { type JsonValue } from "type-fest";
 
 /**
  * The base class for all suppliers.
  * @abstract
- * @category Supplier
+ * @category Suppliers
  * @module SupplierBase
  * @typeParam S - the partial product
  * @typeParam T - The product type
@@ -120,57 +108,6 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
       this._logger.debug("Made a new AbortController");
       this._controller = new AbortController();
     }
-
-    this._preconnect();
-  }
-
-  /**
-   * Establishes a connection to the supplier's base URL before making any requests.
-   * This method can be used to perform any necessary setup or validation before querying products.
-   *
-   * @returns Promise resolving to void
-   *
-   * @example
-   * ```typescript
-   * // Example implementation in a supplier class
-   * protected async _preconnect(): Promise<void> {
-   *   try {
-   *     // Attempt to fetch the homepage to verify connectivity
-   *     const response = await this._fetch(this._baseURL);
-   *     if (!this._isHtmlResponse(response)) {
-   *       throw new Error("Invalid response from supplier homepage");
-   *     }
-   *
-   *     // Check if the site is accessible
-   *     const html = await response.text();
-   *     if (!html.includes("Welcome to Supplier Site")) {
-   *       throw new Error("Unexpected homepage content");
-   *     }
-   *
-   *     this._logger.info("Successfully connected to supplier", {
-   *       baseURL: this._baseURL
-   *     });
-   *   } catch (error) {
-   *     this._logger.error("Failed to connect to supplier", {
-   *       error,
-   *       baseURL: this._baseURL
-   *     });
-   *     throw error;
-   *   }
-   * }
-   *
-   * // Example usage
-   * try {
-   *   await this._preconnect();
-   *   console.log("Successfully connected to supplier");
-   * } catch (error) {
-   *   console.error("Failed to connect:", error.message);
-   * }
-   * ```
-   */
-  protected async _preconnect(): Promise<void> {
-    // Default implementation does nothing
-    return;
   }
 
   /**

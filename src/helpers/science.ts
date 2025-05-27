@@ -1,6 +1,11 @@
 import { SUBSCRIPTS, SUPERSCRIPTS } from "../constants/science";
 
 /**
+ * @group Helpers
+ * @groupDescription Scientific formula parsing and chemical notation utilities.
+ */
+
+/**
  * Converts regular numbers in a string to subscript Unicode characters.
  * @param str - The string containing numbers to convert to subscripts
  * @returns The string with numbers converted to subscript characters

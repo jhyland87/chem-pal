@@ -5,7 +5,6 @@
     "./src/helpers/*.ts",
     "./src/constants/*.ts",
     "./src/types/*.ts",
-    "./src/utils/*.ts",
   ],
   "plugin": [
     "typedoc-plugin-mark-react-functional-components",
@@ -36,12 +35,15 @@
   "groupReferencesByType": true,
   "alwaysCreateEntryPointModule": true,
   "searchCategoryBoosts": {
-    "Component": 3.3,
-    "Helper": 2.2,
-    "Supplier": 0.1
+    "Components": 3.3,
+    "Helpers": 2.2,
+    "Suppliers": 0.1
   },
   "searchGroupBoosts": {
-    "Classes": 1.5
+    "Modules": 5.0,
+    "Classes": 4.0,
+    "Interfaces": 3.0,
+    "Functions": 2.0
   },
   "jsDocCompatibility": false,
   "logLevel": "Info",
@@ -91,14 +93,22 @@
   "sourceLinkTemplate": "https://github.com/jhyland87/chem-crawler/blob/main/{path}#L{line}",
   "disableSources": false,
   "categorizeByGroup": true,
-  "defaultCategory": "Supplier",
+  "defaultCategory": "Suppliers",
   "categoryOrder": [
-    "Supplier",
+    "Suppliers",
     "Components",
     "Utils",
     "Hooks",
     "Types",
     "Context",
+    "*"
+  ],
+  "groupOrder": [
+    "Logging",
+    "Utils",
+    "Components",
+    "Hooks",
+    "Types",
     "*"
   ],
   "options": "./typedoc-conf.js"

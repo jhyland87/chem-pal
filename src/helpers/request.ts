@@ -3,6 +3,11 @@ import type { CacheResponse, RequestHashObject, SerializedResponse } from "@/typ
 import * as contentType from "content-type";
 
 /**
+ * @group Helpers
+ * @groupDescription HTTP request utilities for making API calls and handling responses.
+ */
+
+/**
  * Generates a unique hash for a given Request object based on its method, URL path, search parameters, and body.
  * This hash can be used to identify and cache requests. This is used to store the mocked response body
  * at a location with a unique filename (based on the hash).
@@ -46,7 +51,7 @@ import * as contentType from "content-type";
  * //   }
  * // }
  * ```
- * @category Helper
+ * @category Helpers
  */
 export function getRequestHash(request: Request): RequestHashObject {
   const url = new URL(request.url);
@@ -88,7 +93,7 @@ export function getRequestHash(request: Request): RequestHashObject {
  * //   }
  * // }
  * ```
- * @category Helper
+ * @category Helpers
  */
 export async function getCachableResponse(
   request: Request,
