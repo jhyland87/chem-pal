@@ -5,6 +5,7 @@
     "./src/helpers/*.ts",
     "./src/constants/*.ts",
     "./src/types/*.ts",
+    "./src/mixins/*.ts"
   ],
   "plugin": [
     "typedoc-plugin-mark-react-functional-components",
