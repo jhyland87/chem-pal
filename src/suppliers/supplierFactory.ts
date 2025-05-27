@@ -154,6 +154,7 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
         (result: SupplierBase<unknown, Product>[], [supplierClassName, supplierClass]) => {
           if (this._suppliers.length == 0 || this._suppliers.includes(supplierClassName)) {
             this._logger.debug("Initializing supplier class:", supplierClassName);
+            this._logger.debug("this._limit:", this._limit);
             // Cast supplierClass to the correct type to fix type error
             const SupplierClass = supplierClass as new (
               query: string,

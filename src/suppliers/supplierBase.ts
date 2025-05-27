@@ -4,7 +4,7 @@ import { type RequiredProductFields } from "@/types/product";
 import { type RequestOptions, type RequestParams } from "@/types/request";
 import { Logger } from "@/utils/Logger";
 import { ProductBuilder } from "@/utils/ProductBuilder";
-
+import { partial_ratio, token_similarity_sort_ratio, token_sort_ratio } from "fuzzball";
 import { type JsonValue } from "type-fest";
 
 /**
@@ -207,8 +207,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     if (!response) return false;
     const contentType = response.headers.get("Content-Type");
     return (
-      contentType !== null &&
-      (contentType.includes("application/json") || contentType.includes("text/json"))
+      contentType !== null && (contentType.includes("/json") || contentType.includes("/javascript"))
     );
   }
 
@@ -511,6 +510,23 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     }
   }
 
+  protected _fuzzyCheck(query: string, result: string): number {
+    /* eslint-disable */
+    const _token_sort_ratio = token_sort_ratio(query, result);
+    const _token_similarity_sort_ratio = token_similarity_sort_ratio(query, result);
+    const _partial_ratio = partial_ratio(query, result);
+
+    console.log({
+      query,
+      result,
+      _token_sort_ratio,
+      _token_similarity_sort_ratio,
+      _partial_ratio,
+    });
+    return _token_sort_ratio;
+    /* eslint-enable */
+  }
+
   /**
    * Sends a GET request to a URL and returns the response as HTML text.
    * Validates that the response has the correct content type before returning.
@@ -607,7 +623,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     if (!this._isJsonResponse(httpRequest)) {
       const badResponse = await (httpRequest as unknown as Response)?.text();
       this._logger.error("Invalid HTTP GET response: ", badResponse);
-      throw new TypeError("Invalid HTTP GET response");
+      return;
     }
 
     return await httpRequest?.json();
@@ -928,6 +944,12 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     if (!this._isMinimalProduct(product.dump())) {
       this._logger.warn("Unable to finish product - Minimum data not set", { product });
       return;
+    }
+
+    const title = product.get("title");
+    if (title) {
+      const fuzz = this._fuzzyCheck(title as string, this._query);
+      console.log("fuzz score for", title, fuzz);
     }
 
     return await product.build();

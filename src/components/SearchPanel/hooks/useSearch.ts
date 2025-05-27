@@ -28,7 +28,10 @@ export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: Us
     // up as we iterate over the columns.
     const columnFilterConfig = getColumnFilterConfig();
 
-    const searchLimit = appContext.settings.searchLimit ?? 5;
+    if (!appContext.settings.supplierSearchLimit) {
+      console.warn("No supplier search limit set - defaulting to 5");
+    }
+    const searchLimit = appContext.settings.supplierResultLimit ?? 5;
     // Abort controller specific to this query
     fetchController = new AbortController();
     // Create the query instance

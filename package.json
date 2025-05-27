@@ -34,6 +34,7 @@
     "content-type": "^1.0.5",
     "currency-parser": "^1.0.0",
     "currency.js": "^2.0.4",
+    "fuzzball": "^2.2.2",
     "graphql": "^16.11.0",
     "lodash": "^4.17.21",
     "loglevel": "^1.9.2",
