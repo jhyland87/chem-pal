@@ -220,7 +220,9 @@ describe("SupplierBase", () => {
         currencySymbol: "$",
       };
 
-      const finishedProduct = await mockSupplier["_finishProduct"](partialProduct);
+      const finishedProduct = await mockSupplier["_finishProduct"](
+        partialProduct as unknown as ProductBuilder<Product>,
+      );
 
       expect(finishedProduct).toEqual(
         expect.objectContaining({
@@ -244,7 +246,9 @@ describe("SupplierBase", () => {
         // Missing required fields
       };
 
-      const result = await mockSupplier["_finishProduct"](invalidProduct as Product);
+      const result = await mockSupplier["_finishProduct"](
+        invalidProduct as unknown as ProductBuilder<Product>,
+      );
       expect(result).toBeUndefined();
     });
   });
@@ -280,7 +284,7 @@ describe("SupplierBase", () => {
     it("should handle empty query results", async () => {
       // Create a new instance with mocked _queryProducts
       const emptySupplier = new (class extends MockSupplier {
-        protected async _queryProducts(): Promise<Array<{ id: string; title: string }> | void> {
+        protected async _queryProducts(): Promise<ProductBuilder<Product>[] | void> {
           return [];
         }
       })("test", 5, mockAbortController);
