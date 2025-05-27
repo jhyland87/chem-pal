@@ -1,3 +1,15 @@
+// Copyright (c) Example Company. All rights reserved. Licensed under the MIT license.
+
+/**
+ * The base class for all suppliers.
+ *
+ * @remarks
+ * The `supplier-lib` defines the {@link SupplierBase} class,
+ * which is used to build suppliers.
+ *
+ * @packageDocumentation
+ */
+/** End file docs */
 import { ProductBuilder } from "@/helpers/productBuilder";
 import { getCachableResponse, isFullURL } from "@/helpers/request";
 import { type Maybe, type MaybeArray, type Product } from "@/types";

@@ -1,3 +1,4 @@
+/** @internal */
 import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
 import React from "react";
 
@@ -5,7 +6,7 @@ import React from "react";
  * A Material-UI icon component that renders a menu/hamburger icon.
  * This icon is typically used to represent a navigation menu or list of options.
  *
- * @component
+ * @group Icons
  * @param props - The props passed to the underlying SvgIcon component
  * @returns A React component that renders the menu icon
  */

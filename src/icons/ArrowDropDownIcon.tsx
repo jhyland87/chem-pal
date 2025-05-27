@@ -1,10 +1,11 @@
+/** @internal */
 import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
 
 /**
  * A Material-UI icon component that renders a downward dropdown arrow icon.
  * This icon is typically used to represent collapsing content, showing more options, or downward navigation.
  *
- * @component
+ * @group Icons
  * @param props - The props passed to the underlying SvgIcon component
  * @returns A React component that renders the downward dropdown arrow icon
  */

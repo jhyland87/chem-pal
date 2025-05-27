@@ -1,36 +1,3 @@
-/**
- * Abstract base class for WooCommerce suppliers that implements product fetching functionality.
- * Extends the base supplier class and provides WooCommerce-specific implementation.
- *
- * This class handles the interaction with WooCommerce's REST API, including:
- * - Product searching and retrieval
- * - Data validation and type checking
- * - Transformation of WooCommerce product format to internal Product type
- *
- * @example
- * ```typescript
- * class MyChemicalSupplier extends SupplierBaseWoocommerce {
- *   public readonly supplierName = "My Chemical Supplier";
- *   protected _baseURL = "https://mychemicalsupplier.com";
- *   protected _apiKey = "your_api_key";
- *
- *   // Optionally override methods for custom behavior
- *   protected async _getProductData(product: SearchResponseItem) {
- *     const data = await super._getProductData(product);
- *     // Add custom processing...
- *     return data;
- *   }
- * }
- *
- * // Usage
- * const supplier = new MyChemicalSupplier();
- * for await (const product of supplier) {
- *   console.log(product);
- * }
- * ```
- *
- * @see https://woocommerce.github.io/woocommerce-rest-api-docs/
- */
 import { findCAS } from "@/helpers/cas";
 import { ProductBuilder } from "@/helpers/productBuilder";
 import { parseQuantity } from "@/helpers/quantity";
@@ -43,18 +10,19 @@ import SupplierBase from "./supplierBase";
  * Base class for WooCommerce-based suppliers that provides common functionality for
  * interacting with WooCommerce REST API endpoints.
  *
+ * @remarks
  * Woocommerce has two versons of API endpoints for products.
  * The V1 endpoints are:
- * - /wp-json/wc/v1
- * - /wp-json/wc/store/v1/products
- * - /wp-json/wc/store/v1/products?search=borohydride&per_page=20&page=1
- * - /wp-json/wc/store/v1/products/6981
+ * - `/wp-json/wc/v1`
+ * - `/wp-json/wc/store/v1/products`
+ * - `/wp-json/wc/store/v1/products?search=borohydride&per_page=20&page=1`
+ * - `/wp-json/wc/store/v1/products/6981`
  *
  * And the V2 endpoints are:
- * - /wp-json/wp/v2
- * - /wp-json/wp/v2/product
- * - /wp-json/wp/v2/product?search=borohydride&per_page=20&page=1
- * - /wp-json/wp/v2/product/6981
+ * - `/wp-json/wp/v2`
+ * - `/wp-json/wp/v2/product`
+ * - `/wp-json/wp/v2/product?search=borohydride&per_page=20&page=1`
+ * - `/wp-json/wp/v2/product/6981`
  *
  * There are plenty of differences between the two, but mainly it looks like the v2 endpoint
  * doesn't include any of the variatins in the search responses.

@@ -1,3 +1,4 @@
+/** @internal */
 import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
 
 /**

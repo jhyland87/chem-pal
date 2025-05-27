@@ -31,6 +31,15 @@
     "@readonly": true,
     "@defaultValue": true,
     "@typeguard": true,
-    "@overload": true
+    "@overload": true,
+    "@remarks": true,
+    "@packageDocumentation": true,
+    "@link": true,
+    "@mergeModuleWith": true,
+    "@group": true,
+    "@groupDescription": true,
+    "@showGroups": true,
+    "@summary": true,
+    "@internal": true
   }
 }

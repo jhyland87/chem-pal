@@ -1,8 +1,11 @@
 {
   "name": "ChemPare Documentation",
   "entryPoints": [
-    "./src/**/*.ts",
-    "./src/**/*.tsx"
+    "./src/**/index.ts",
+    "./src/helpers/*.ts",
+    "./src/constants/*.ts",
+    "./src/types/*.ts",
+    "./src/utils/*.ts",
   ],
   "plugin": [
     "typedoc-plugin-mark-react-functional-components",
@@ -42,7 +45,7 @@
   },
   "jsDocCompatibility": false,
   "logLevel": "Info",
-  "placeInternalsInOwningModule": true,
+  "placeInternalsInOwningModule": false,
   "markdownItOptions": {
     "html": true
   },
@@ -59,7 +62,7 @@
   "searchInDocuments": true,
   "searchInComments": true,
   "excludeTags": [
-    "@internal",
+    //"@internal",
     "@private",
     "@protected"
   ],
@@ -76,7 +79,7 @@
   "excludeProtected": false,
   "excludePrivate": false,
   "excludeNotDocumented": false,
-  "excludeInternal": false,
+  "excludeInternal": true,
   "resolveUtilityTypes": true,
   "excludeExternals": false,
   "visibilityFilters": {

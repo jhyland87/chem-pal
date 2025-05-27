@@ -22,27 +22,28 @@ import SupplierBase from "./supplierBase";
  * Implementation of the Carolina Biological Supply Company supplier.
  * Provides product search and data extraction functionality for Carolina.com.
  *
+ * @remarks
  * Carolina.com uses Oracle ATG Commerce as their ecommerce platform which has a predictable
  * output format, though very bulky. But very parseable.
  *
  * Product search uses the following endpoints:
- * - Product Search: /browse/product-search-results?tab=p&q=acid
- * - Product Search JSON: /browse/product-search-results?tab=p&format=json&ajax=true&q=acid
- * - Product Details: /:category/:productName/:productId.pr
- * - Product Details JSON: /:category/:productName/:productId.pr?format=json&ajax=true
+ * - Product Search: `/browse/product-search-results?tab=p&q=acid`
+ * - Product Search JSON: `/browse/product-search-results?tab=p&format=json&ajax=true&q=acid`
+ * - Product Details: `/:category/:productName/:productId.pr`
+ * - Product Details JSON: `/:category/:productName/:productId.pr?format=json&ajax=true`
  *
  * API Documentation:
- * - Swagger UI: https://www.carolina.com/swagger-ui/
- * - OpenAPI Spec: https://www.carolina.com/api/rest/openapi.json
- * - WADL: https://www.carolina.com/api/rest/application.wadl
+ * - Swagger UI: `https://www.carolina.com/swagger-ui/`
+ * - OpenAPI Spec: `https://www.carolina.com/api/rest/openapi.json`
+ * - WADL: `https://www.carolina.com/api/rest/application.wadl`
  *
  * Common API Endpoints:
- * - Product Quick View: /api/rest/cb/product/product-quick-view/:id
- * - Product Details: /api/rest/cb/product/product-details/:id
- * - Search Suggestions: /api/rest/cb/static/fetch-suggestions-for-global-search/:term
+ * - Product Quick View: `/api/rest/cb/product/product-quick-view/:id`
+ * - Product Details: `/api/rest/cb/product/product-details/:id`
+ * - Search Suggestions: `/api/rest/cb/static/fetch-suggestions-for-global-search/:term`
  *
  * JSON Format:
- * Append &format=json&ajax=true to any URL to get JSON response
+ * Append `&format=json&ajax=true` to any URL to get JSON response
  */
 export default class SupplierCarolina
   extends SupplierBase<SearchResult, Product>

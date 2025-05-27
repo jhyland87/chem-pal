@@ -1,3 +1,11 @@
+// Copyright (c) Example Company. All rights reserved. Licensed under the MIT license.
+
+/**
+ * This description will be used on the **member** page
+ * @summary
+ * This description will be used on the **module** page
+ */
+/** @module SupplierLaboratoriumDiscounter */
 import { AVAILABILITY } from "@/constants/app";
 import { findCAS } from "@/helpers/cas";
 import { ProductBuilder } from "@/helpers/productBuilder";
@@ -19,7 +27,9 @@ import SupplierBase from "./supplierBase";
  * can be determined by loking at the shop.domains.main value of a search response, or
  * looking at where some of their assets are pulled from (cdn.webshopapp.com).
  *
- * @module SupplierLaboratoriumDiscounter
+ * @remarks
+ * foo bar baz
+ *
  */
 export default class SupplierLaboratoriumDiscounter
   extends SupplierBase<ProductObject, Product>
