@@ -24,6 +24,7 @@ export default {
     // "^helpers/(.*)$": "<rootDir>/src/helpers/$1",
     "^@/(.*)$": "<rootDir>/src/$1",
   },
+  testPathIgnorePatterns: ["<rootDir>/dev"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.(ts|tsx)$",
 };
