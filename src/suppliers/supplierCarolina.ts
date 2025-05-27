@@ -597,7 +597,7 @@ export default class SupplierCarolina
   /**
    * Transforms a Carolina search result into the common Product type
    * Makes additional API calls if needed to get complete product details
-   * @param result - Carolina search result to transform
+   * @param product - Carolina search result to transform
    * @returns Promise resolving to a partial Product object or void if invalid
    * @example
    * ```typescript

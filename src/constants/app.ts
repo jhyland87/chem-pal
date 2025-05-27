@@ -4,11 +4,11 @@ import type { UOMAliases } from "@/types";
  * Represents the availability of a product
  */
 export enum AVAILABILITY {
-  IN_STOCK = "IN_STOCK",
-  OUT_OF_STOCK = "OUT_OF_STOCK",
-  PRE_ORDER = "PRE_ORDER",
-  BACKORDER = "BACKORDER",
-  DISCONTINUED = "DISCONTINUED",
+  IN_STOCK = "in stock",
+  OUT_OF_STOCK = "out of stock",
+  PRE_ORDER = "preorder",
+  BACKORDER = "backorder",
+  DISCONTINUED = "discontinued",
 }
 
 /**

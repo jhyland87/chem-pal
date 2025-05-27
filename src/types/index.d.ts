@@ -1,4 +1,4 @@
-import { UOM } from "@/constants/app";
+import { AVAILABILITY, UOM } from "@/constants/app";
 import { CAS } from "@/types/cas";
 import { CurrencyCode, CurrencySymbol } from "@/types/currency";
 import { Column, RowData } from "@tanstack/react-table";
@@ -292,7 +292,7 @@ export interface Variant {
    * Availability of the variant
    * @example "IN_STOCK"
    */
-  availability?: Availability;
+  availability?: AVAILABILITY;
 }
 
 /**
@@ -808,7 +808,7 @@ export interface ColumnMeta {
 
   /**
    * Custom CSS styles to apply to the column
-   * @example { width: "200px" }
+   * @example \{ width: "200px" \}
    */
   style?: CSSProperties;
 }

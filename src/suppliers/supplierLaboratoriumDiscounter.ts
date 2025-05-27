@@ -269,7 +269,7 @@ export default class SupplierLaboratoriumDiscounter
 
   /**
    * Type guard to validate ProductObject structure
-   * @param product - Object to validate as ProductObject
+   * @param data - Object to validate as ProductObject
    * @returns Type predicate indicating if product is a valid ProductObject
    * @example
    * ```typescript
@@ -450,7 +450,7 @@ export default class SupplierLaboratoriumDiscounter
   /**
    * Transforms a Laboratorium Discounter product into the common Product type
    * Extracts quantity information from various product fields and normalizes the data
-   * @param result - Product object from Laboratorium Discounter
+   * @param product - Product object from Laboratorium Discounter
    * @returns Promise resolving to a partial Product object or void if invalid
    * @example
    * ```typescript

@@ -30,6 +30,7 @@
     "@typeparam": true,
     "@readonly": true,
     "@defaultValue": true,
-    "@typeguard": true
+    "@typeguard": true,
+    "@overload": true
   }
 }

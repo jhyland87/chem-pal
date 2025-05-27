@@ -252,8 +252,8 @@ export default class SupplierChemsavers
    * }
    * ```
    */
-  protected _initProductBuilders(results: ProductObject[]): ProductBuilder<Product>[] {
-    return mapDefined(results, (result) => {
+  protected _initProductBuilders(data: ProductObject[]): ProductBuilder<Product>[] {
+    return mapDefined(data, (result) => {
       const builder = new ProductBuilder<Product>(this._baseURL);
 
       const quantity = parseQuantity(result.name);
@@ -268,7 +268,7 @@ export default class SupplierChemsavers
         .setQuantity(quantity.quantity, quantity.uom)
         .setCAS(isCAS(result.CAS) ? result.CAS : "");
       return builder;
-    }).filter((builder) => builder !== undefined);
+    });
   }
 
   /**
@@ -304,7 +304,7 @@ export default class SupplierChemsavers
   /**
    * Transforms a Laboratorium Discounter product into the common Product type
    * Extracts quantity information from various product fields and normalizes the data
-   * @param result - Product object from Laboratorium Discounter
+   * @param product - Product object from Laboratorium Discounter
    * @returns Promise resolving to a partial Product object or void if invalid
    * @example
    * ```typescript

@@ -143,21 +143,48 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
-   * Sets the pricing information for the product including price and currency details.
-   *
-   * @param price - The numeric price value
+   * Sets the pricing information for the product including price and currency details when given a parsedPrice object
+   * @overload
+   * @param price - ParsedPrice instance
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setPricing(parsePrice('$123.34'));
+   * // Sets this._product.price to 123.34
+   * // Sets this._product.currencyCode to 'USD'
+   * // Sets this._product.currencySymbol to '$'
+   * ```
+   */
+  setPricing(price: ParsedPrice): ProductBuilder<T>;
+  /**
+   * Sets the pricing information for the product including price and currency details when given a price
+   * @overload
+   * @param price - Price in string format
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setPricing('$123.34');
+   * // Sets this._product.price to 123.34
+   * // Sets this._product.currencyCode to 'USD'
+   * // Sets this._product.currencySymbol to '$'
+   * ```
+   */
+  setPricing(price: string): ProductBuilder<T>;
+  /**
+   * Sets the pricing information for the product including price and currency details when given a price
+   * @overload
+   * @param price - Price in number format
    * @param currencyCode - The ISO currency code (e.g., 'USD', 'EUR')
    * @param currencySymbol - The currency symbol (e.g., '$', '€')
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
-   * builder.setPricing(49.99, 'EUR', '€');
-   * // For USD pricing
-   * builder.setPricing(29.99, 'USD', '$');
+   * builder.setPricing(123.34, 'USD', '$');
+   * // Sets this._product.price to 123.34
+   * // Sets this._product.currencyCode to 'USD'
+   * // Sets this._product.currencySymbol to '$'
    * ```
    */
-  setPricing(price: ParsedPrice): ProductBuilder<T>;
-  setPricing(price: string): ProductBuilder<T>;
   setPricing(
     price: number | string,
     currencyCode: string,
@@ -199,22 +226,46 @@ export class ProductBuilder<T extends Product> {
 
   /**
    * Sets the quantity information for the product.
-   *
-   * @param quantity - The numeric quantity value
+   * @overload
+   * @param quantity - QuantityObject format
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * // For 500 grams
+   * builder.setQuantity(parseQuantity('500g'));
+   * // Sets this._product.quantity to 500
+   * // Sets this._product.uom to 'g'
+   * ```
+   */
+  setQuantity(quantity: QuantityObject): ProductBuilder<T>;
+  /**
+   * Sets the quantity information for the product.
+   * @overload
+   * @param quantity - Quantity in string format
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * // For 500 grams
+   * builder.setQuantity('500g');
+   * // Sets this._product.quantity to 500
+   * // Sets this._product.uom to 'g'
+   * ```
+   */
+  setQuantity(quantity: string): ProductBuilder<T>;
+  /**
+   * Sets the quantity information for the product.
+   * @overload
+   * @param quantity - Quantity in number format
    * @param uom - The unit of measure (e.g., 'g', 'ml', 'kg')
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
    * // For 500 grams
    * builder.setQuantity(500, 'g');
-   * // For 1 liter
-   * builder.setQuantity(1, 'L');
-   * // For 100 milliliters
-   * builder.setQuantity(100, 'ml');
+   * // Sets this._product.quantity to 500
+   * // Sets this._product.uom to 'g'
    * ```
    */
-  setQuantity(quantity: QuantityObject): ProductBuilder<T>;
-  setQuantity(quantity: string): ProductBuilder<T>;
   setQuantity(quantity: number, uom: string): ProductBuilder<T>;
   setQuantity(quantity: QuantityObject | string | number, uom?: string): ProductBuilder<T> {
     if (typeof quantity === "undefined") return this;
@@ -380,13 +431,18 @@ export class ProductBuilder<T extends Product> {
    * @returns The availability of the product
    * @example
    * ```typescript
-   * const availability = builder.determineAvailability("IN_STOCK");
-   * console.log(availability); // "IN_STOCK"
+   * // In stock
+   * builder.determineAvailability("instock");
+   * builder.determineAvailability(true);
+   * builder.determineAvailability("outofstock");
+   * builder.determineAvailability("unavailable");
+   * builder.determineAvailability(false);
+   * builder.determineAvailability("preorder");
+   * builder.determineAvailability("backorder");
+   * builder.determineAvailability("discontinued");
    * ```
    */
-  determineAvailability(
-    availability?: typeof AVAILABILITY | boolean | string,
-  ): Maybe<AVAILABILITY> {
+  determineAvailability(availability?: AVAILABILITY | boolean | string): Maybe<AVAILABILITY> {
     if (typeof availability === "undefined") return;
 
     if (this._isAvailability(availability)) return availability;
@@ -422,22 +478,18 @@ export class ProductBuilder<T extends Product> {
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
+   * // In stock
    * builder.setAvailability("IN_STOCK");
-   * builder.setAvailability("OUT_OF_STOCK");
-   * builder.setAvailability("PRE_ORDER");
-   * builder.setAvailability("BACKORDER");
-   * builder.setAvailability("DISCONTINUED");
-   * builder.setAvailability(true);
+   * // Set as in stock
    * builder.setAvailability(false);
-   * builder.setAvailability("instock");
-   * builder.setAvailability("unavailable");
-   * builder.setAvailability("outofstock");
-   * builder.setAvailability("preorder");
-   * builder.setAvailability("backorder");
-   * builder.setAvailability("discontinued");
+   * // Out of stock
+   * // etc
    * ```
    */
-  setAvailability(availability?: typeof AVAILABILITY | boolean | string): ProductBuilder<T> {
+  setAvailability(availability: AVAILABILITY): ProductBuilder<T>;
+  setAvailability(availability: boolean): ProductBuilder<T>;
+  setAvailability(availability: string): ProductBuilder<T>;
+  setAvailability(availability: AVAILABILITY | boolean | string): ProductBuilder<T> {
     const avail = this.determineAvailability(availability);
 
     if (typeof avail === "undefined") {
@@ -649,6 +701,12 @@ export class ProductBuilder<T extends Product> {
     return urlObj.toString();
   }
 
+  /**
+   * Checks if a value is a valid availability value.
+   *
+   * @param availability - The value to check
+   * @returns boolean indicating if the value is a valid availability value
+   */
   private _isAvailability(availability: unknown): availability is AVAILABILITY {
     return (
       typeof availability === "string" &&
