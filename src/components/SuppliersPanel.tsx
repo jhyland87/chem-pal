@@ -2,11 +2,13 @@ import { useAppContext } from "@/context";
 import SupplierFactory from "@/suppliers/supplierFactory";
 import Avatar from "@mui/material/Avatar";
 import Checkbox from "@mui/material/Checkbox";
+import Divider from "@mui/material/Divider";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
+import { ChangeEvent } from "react";
 
 /**
  * SuppliersPanel component that displays a list of available suppliers with toggle functionality.
@@ -48,8 +50,32 @@ export default function SuppliersPanel() {
     });
   };
 
+  const handleToggleAll = (e: ChangeEvent<HTMLInputElement>) => {
+    let newChecked: string[] = [];
+    if (e.target.checked === false) {
+      newChecked = [...SupplierFactory.supplierList()];
+    }
+
+    appContext.setSettings({
+      ...appContext.settings,
+      suppliers: newChecked,
+    });
+  };
+
   return (
     <List dense sx={{ width: "100%", bgcolor: "background.paper", color: "text.primary" }}>
+      <ListItem>
+        <ListItemText primary="Suppliers" />
+        <Checkbox
+          value="all"
+          edge="end"
+          onChange={handleToggleAll}
+          checked={appContext.settings.suppliers.length === SupplierFactory.supplierList().length}
+          aria-labelledby="checkbox-list-secondary-label-all"
+          size="small"
+        />
+      </ListItem>
+      <Divider />
       {SupplierFactory.supplierList().map((supplierName) => {
         const labelId = `checkbox-list-secondary-label-${supplierName}`;
         return (

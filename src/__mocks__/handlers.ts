@@ -28,7 +28,7 @@ const mockHeaders = {
 export const handlers = [
   http.get<never, never, AccessTokenResponse>(
     "https://*/_api/v1/access-tokens",
-    withDelay(150, async ({ request }) => {
+    withDelay(150, async () => {
       const response = await import("./responses/wix/access-tokens.json");
       return HttpResponse.json(response, mockHeaders);
     }),

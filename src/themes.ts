@@ -23,6 +23,7 @@ export const lightTheme = createTheme({
   },
   spacing: 8,
   components: {
+    /* eslint-disable */
     MuiLink: {
       styleOverrides: {
         root: {
@@ -117,6 +118,7 @@ export const darkTheme = createTheme({
   },
   spacing: 8,
   components: {
+    /* eslint-disable */
     MuiList: {
       defaultProps: {
         dense: true,
@@ -166,6 +168,7 @@ export const darkTheme = createTheme({
       },
     },
   },
+  /* eslint-enable */
 });
 
 export const lightThemeOld = createTheme({
@@ -200,6 +203,7 @@ export const blueTheme = createTheme({
     },
   },
   components: {
+    /* eslint-disable */
     // Name of the component ⚛️
     MuiTableCell: {
       defaultProps: {
@@ -214,4 +218,5 @@ export const blueTheme = createTheme({
       },
     },
   },
+  /* eslint-enable */
 });

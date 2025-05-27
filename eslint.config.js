@@ -11,7 +11,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default tseslint.config(
-  { ignores: ["dist", "dev", "docs"] },
+  {
+    ignores: [
+      "dist",
+      "dev",
+      "docs",
+      "build",
+      "coverage",
+      "node_modules",
+      "src/*/__tests__/*",
+      "src/*/__mocks__/*",
+    ],
+  },
   {
     extends: [
       js.configs.recommended,
@@ -105,6 +116,7 @@ export default tseslint.config(
           cases: {
             camelCase: true,
             pascalCase: true,
+            kebabCase: true,
           },
         },
       ],

@@ -1,5 +1,5 @@
-import type { FilterVariantComponentProps, FilterVariantInputProps } from "@/types/props";
 import { type CustomColumn, type Product } from "@/types";
+import type { FilterVariantComponentProps, FilterVariantInputProps } from "@/types/props";
 import { Button, Typography } from "@mui/material";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
@@ -12,6 +12,7 @@ import "./FilterModal.scss";
 import ColumnVisibilitySelect from "./Inputs/ColumnVisibilitySelect";
 import RangeColumnFilter from "./Inputs/RangeColumnFilter";
 import SelectColumnFilter from "./Inputs/SelectColumnFilter";
+import SupplierResultLimit from "./Inputs/SupplierResultLimit";
 import TextColumnFilter from "./Inputs/TextColumnFilter";
 
 /**
@@ -151,6 +152,9 @@ export default function FilterModal({
                 </Grid>
               );
             })}
+            <Grid size={6} key="query_limit">
+              <SupplierResultLimit />
+            </Grid>
           </Grid>
           <Grid container spacing={2}>
             <Divider />

@@ -173,6 +173,12 @@ export interface Settings {
    * ```
    */
   columnFilterConfig: Record<string, ColumnMeta>;
+
+  /**
+   * Number of results to display per supplier
+   * @example 20
+   */
+  supplierResultLimit: number;
 }
 
 /**
@@ -694,7 +700,7 @@ export interface Supplier {
 
   /**
    * Custom headers for API requests
-   * @example { "Authorization": "Bearer token123" }
+   * @example \{ "Authorization": "Bearer token123" \}
    */
   _headers: HeadersInit;
 }

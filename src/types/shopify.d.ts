@@ -123,14 +123,12 @@ export interface StorePage {
  * ```
  */
 export interface ProductOption {
-  /* eslint-disable */
   /**
    * Dynamic key-value pairs for product options.
    * Keys are option names and values can be strings, numbers, or booleans.
    * Undefined is allowed to represent unset options.
    */
   [key: string]: string | number | boolean | undefined;
-  /* eslint-enable */
 }
 
 /**

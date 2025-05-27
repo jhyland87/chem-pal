@@ -90,6 +90,7 @@ function App() {
     jason: false,
     antoine: true,
     popupSize: "small",
+    supplierResultLimit: 20,
     autoResize: true,
     someSetting: false,
     suppliers: SupplierFactory.supplierList(),

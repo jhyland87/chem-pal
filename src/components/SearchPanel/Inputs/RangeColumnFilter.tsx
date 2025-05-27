@@ -13,9 +13,8 @@ import "./RangeColumnFilter.scss";
  * It allows users to filter data based on a minimum and maximum value range.
  *
  * @component
- *
+ * {@link FilterVariantInputProps}
  * @param props - Component props
- *
  * @example
  * ```tsx
  * <RangeColumnFilter column={column} />
@@ -26,10 +25,8 @@ export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
    * Custom value label component for the slider that displays the current value in a tooltip.
    *
    * @component
-   *
    * @param  props - Props for the value label component
-   *
-   * @returns {JSX.Element} Tooltip-wrapped value label
+   * @returns Tooltip-wrapped value label
    */
   function ValueLabelComponent(props: SliderValueLabelProps) {
     const { children, value } = props;

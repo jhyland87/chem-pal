@@ -267,7 +267,6 @@ export default abstract class SupplierBaseWoocommerce
 
     // Check prices object structure
     const prices = (item as SearchResponseItem).prices;
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     const requiredPriceProps = {
       /* eslint-disable */
       price: "string",

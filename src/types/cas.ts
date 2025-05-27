@@ -25,11 +25,13 @@ type CS<T, S = "0", A = "0"> = T extends `${infer F}${infer R}`
   ? CS<R, Add<F, S>, Add<A, S>>
   : Add<A, S>;
 
-type Len<T extends string, A extends any[] = []> = T extends `${infer _}${infer R}`
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type Len<T extends string, A extends unknown[] = []> = T extends `${infer _}${infer R}`
   ? Len<R, [0, ...A]>
   : A["length"];
 
-type Trunc<T, A extends any[], O extends string = ""> = A extends [infer _, ...infer RA]
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type Trunc<T, A extends unknown[], O extends string = ""> = A extends [infer _, ...infer RA]
   ? T extends `${infer F}${infer R}`
     ? Trunc<R, RA, `${O}${F}`>
     : O

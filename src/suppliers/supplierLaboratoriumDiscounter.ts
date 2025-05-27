@@ -35,7 +35,7 @@ import SupplierBase from "./supplierBase";
  *
  * Links:
  * - {@link https://www.laboratoriumdiscounter.nl | Laboratorium Discounters Home Page}
- * - {@link https://www.laboratoriumdiscounter.nl/en/sitemap/?format=json Sitemap (JSON)}
+ * - {@link https://www.laboratoriumdiscounter.nl/en/sitemap/?format=json | Sitemap (JSON)}
  * - {@link https://www.laboratoriumdiscounter.nl/en/search/acid | Search Results for "acid"}
  * - {@link https://www.laboratoriumdiscounter.nl/en/search/acid?format=json | Search Results for "acid" (JSON)}
  *
@@ -46,6 +46,7 @@ import SupplierBase from "./supplierBase";
  * for await (const product of supplier) {
  *   console.log(product);
  * }
+ * ```
  */
 export default class SupplierLaboratoriumDiscounter
   extends SupplierBase<ProductObject, Product>

@@ -5,10 +5,10 @@ import { StyledFormControlSelector } from "../../Styles";
 /**
  * Returns the appropriate styles for a menu item based on whether it's selected.
  *
- * @param {string} name - The option value
- * @param {string[]} personName - Array of selected values
- * @param {Theme} theme - The Material-UI theme
- * @returns {Object} Style object with appropriate font weight
+ * @param name - The option value
+ * @param personName - Array of selected values
+ * @param theme - The Material-UI theme
+ * @returns  Style object with appropriate font weight
  */
 function getStyles(name: string, personName: string[], theme: Theme) {
   return {
@@ -24,6 +24,7 @@ function getStyles(name: string, personName: string[], theme: Theme) {
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   PaperProps: {
     style: {
       maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
@@ -39,10 +40,7 @@ const MenuProps = {
  *
  * @component
  *
- * @param {Object} props - Component props
- * @param {Record<string, string>} props.columnNames - Object mapping column IDs to their display names
- * @param {string[]} props.columnVisibility - Array of currently visible column IDs
- * @param {Function} props.handleColumnVisibilityChange - Function to handle visibility changes
+ * @param props - Component props
  *
  * @example
  * ```tsx
