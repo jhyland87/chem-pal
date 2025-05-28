@@ -1,3 +1,5 @@
+/* eslint-disable no-debugger */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
@@ -5,9 +7,10 @@ import { mapDefined } from "@/helpers/utils";
 import type { Product } from "@/types";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import * as cheerio from "cheerio";
+import { select } from "cheerio-select";
+import { parseDocument } from "htmlparser2";
 import chunk from "lodash/chunk";
 import SupplierBase from "./supplierBase";
-
 /**
  * Supplier implementation for Loudwolf chemical supplier.
  * Extends the base supplier class and provides Loudwolf-specific implementation
@@ -108,7 +111,7 @@ export default class SupplierLoudwolf
       params: {
         search: encodeURIComponent(query),
         route: "product/search",
-        limit,
+        limit: 100,
       },
     });
 
@@ -119,7 +122,10 @@ export default class SupplierLoudwolf
 
     this._logger.log("searchResponse:", searchResponse);
 
-    return this._initProductBuilders(searchResponse);
+    const $fuzzResults = this._fuzzHtmlResponse(query, searchResponse);
+    this._logger.info("fuzzResults:", Array.from($fuzzResults));
+
+    return this._initProductBuilders($fuzzResults.slice(0, limit));
 
     /*
     return $elements
@@ -153,6 +159,32 @@ export default class SupplierLoudwolf
       */
   }
 
+  protected _fuzzHtmlResponse(query: string, response: string): any[] {
+    const document = parseDocument(response);
+
+    const productList = select("div.product-layout.product-list", document);
+    debugger;
+    const fuzzeResults = this._fuzzyFilter<any>(query, productList as any);
+    debugger;
+    return fuzzeResults;
+
+    /*
+    const $ = cheerio.load(document);
+    const $elements = $("div.product-layout.product-list");
+    debugger;
+    const $fuzz = this._fuzzyFilter<any>(query, $elements as any);
+    debugger;
+    return $fuzz;
+    debugger;
+    const $ = cheerio.load(response);
+    const $elements = $("div.product-layout.product-list");
+    debugger;
+    const $fuzz = this._fuzzyFilter<any>(query, $elements as any);
+    debugger;
+    return $fuzz;
+    */
+  }
+
   /**
    * Initialize product builders from Loudwolf HTML search response data.
    * Transforms HTML product listings into ProductBuilder instances, handling:
@@ -179,22 +211,20 @@ export default class SupplierLoudwolf
    * }
    * ```
    */
-  protected _initProductBuilders(data: string): ProductBuilder<Product>[] {
-    const $ = cheerio.load(data);
-
-    const $elements = $("div.product-layout.product-list");
-
-    return mapDefined($elements.toArray(), (element) => {
+  protected _initProductBuilders($elements: any): ProductBuilder<Product>[] {
+    return mapDefined($elements, (element: any) => {
       const builder = new ProductBuilder<Product>(this._baseURL);
 
-      const price = parsePrice($(element).find("div.caption > p.price").text().trim());
+      const priceElem = select("div.caption > p.price", element);
+      console.log("priceElem:", priceElem);
+      const price = parsePrice(priceElem[0]?.children?.[0].toString());
 
       if (price === undefined) {
         this._logger.error("No price for product", element);
         return;
       }
 
-      const href = $(element).find("div.caption h4 a").attr("href");
+      const href = element.find("div.caption h4 a").attr("href");
 
       if (href === undefined) {
         this._logger.error("No URL for product");
@@ -209,11 +239,11 @@ export default class SupplierLoudwolf
         this._logger.error("No ID for product");
         return;
       }
-      const title = $(element).find("div.caption h4 a").text().trim();
+      const title = element.find("div.caption h4 a").text().trim();
 
       return builder
         .setBasicInfo(title, url.toString(), this.supplierName)
-        .setDescription($(element).find("div.caption > p:nth-child(2)").text().trim())
+        .setDescription(element.find("div.caption > p:nth-child(2)").text().trim())
         .setId(id)
         .setPricing(price.price, price.currencyCode, price.currencySymbol);
     });
@@ -294,5 +324,18 @@ export default class SupplierLoudwolf
     }, {} as Partial<Product>);
 
     return product.setData(datagridInfo);
+  }
+
+  /**
+   * Selects the title of a product from the search response
+   * @param data - Product object from search response
+   * @returns - The title of the product
+   */
+  protected _titleSelector(data: any): string {
+    if ("find" in data) {
+      return data.find("div.caption h4 a").text().trim();
+    }
+    const title = select("div.caption h4 a", data);
+    return title?.[0]?.children?.[0].toString() || "";
   }
 }

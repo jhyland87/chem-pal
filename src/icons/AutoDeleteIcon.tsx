@@ -9,6 +9,11 @@ import React from "react";
  * @component
  * @param props - The props passed to the underlying SvgIcon component
  * @returns A React component that renders the auto-delete icon
+ * @example
+ * ```tsx
+ * <AutoDeleteIcon />
+ * ```
+ * {@includeCode ./AutoDeleteIcon.tsx}
  */
 const AutoDeleteIcon: React.FC<SvgIconProps> = (props) => {
   return (

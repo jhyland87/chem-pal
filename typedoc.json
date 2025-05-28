@@ -5,7 +5,8 @@
     "./src/helpers/*.ts",
     "./src/constants/*.ts",
     "./src/types/*.ts",
-    "./src/mixins/*.ts"
+    "./src/mixins/*.ts",
+    "./documents/*.md"
   ],
   "plugin": [
     "typedoc-plugin-mark-react-functional-components",
@@ -25,6 +26,13 @@
     "JSX.Element",
     "Element",
     "React.ReactElement"
+  ],
+  "markdownItOptions": {
+    "html": true,
+    "linkify": true
+  },
+  "projectDocuments": [
+    "./documents/**/*.md"
   ],
   "lightHighlightTheme": "github-light-high-contrast",
   "darkHighlightTheme": "github-dark-dimmed",
@@ -49,9 +57,6 @@
   "jsDocCompatibility": false,
   "logLevel": "Info",
   "placeInternalsInOwningModule": false,
-  "markdownItOptions": {
-    "html": true
-  },
   "useTsLinkResolution": true,
   "out": "docs",
   "exclude": [
@@ -70,7 +75,7 @@
     "@protected"
   ],
   "includeVersion": true,
-  "hideGenerator": true,
+  "hideGenerator": false,
   "readme": "README.md",
   "navigationLinks": {
     "GitHub": "https://github.com/jhyland87/chem-crawler"

@@ -255,7 +255,11 @@ export default class SupplierCarolina
     }
 
     const results = await this._extractSearchResults(response);
-    return this._initProductBuilders(results.slice(0, limit));
+
+    const fuzzResults = this._fuzzyFilter<SearchResult>(query, results);
+    this._logger.info("fuzzResults:", fuzzResults);
+
+    return this._initProductBuilders(fuzzResults.slice(0, limit));
   }
 
   /**
@@ -693,5 +697,14 @@ export default class SupplierCarolina
       this._logger.error("Error getting product data:", error);
       return;
     }
+  }
+
+  /**
+   * Selects the title of a product from the search response
+   * @param data - Product object from search response
+   * @returns - The title of the product
+   */
+  protected _titleSelector(data: SearchResult): string {
+    return data.productName;
   }
 }

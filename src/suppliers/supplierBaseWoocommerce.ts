@@ -100,6 +100,7 @@ export default abstract class SupplierBaseWoocommerce
    *   console.log(`Found ${products.length} matching products`);
    * }
    * ```
+   * https://carolinachemical.com/wp-json/wc/store/v1/products?search=a&page=1&per_page=100
    */
   protected async _queryProducts(
     query: string,
@@ -107,7 +108,8 @@ export default abstract class SupplierBaseWoocommerce
   ): Promise<ProductBuilder<Product>[] | void> {
     const searchRequest = await this._httpGetJson({
       path: `/wp-json/wc/store/v1/products`,
-      params: { search: query },
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      params: { search: query, per_page: 100 },
     });
 
     if (!this._isSearchResponse(searchRequest)) {
@@ -116,7 +118,19 @@ export default abstract class SupplierBaseWoocommerce
     }
 
     const results: SearchResponseItem[] = searchRequest;
-    return this._initProductBuilders(results.slice(0, limit));
+    const fuzzFiltered = this._fuzzyFilter<SearchResponseItem>(query, results);
+    this._logger.info("fuzzFiltered:", fuzzFiltered);
+
+    return this._initProductBuilders(fuzzFiltered.slice(0, limit));
+  }
+
+  /**
+   * Selects the title of a product from the search response
+   * @param data - Product object from search response
+   * @returns Title of the product
+   */
+  protected _titleSelector(data: SearchResponseItem): string {
+    return data.name;
   }
 
   /**

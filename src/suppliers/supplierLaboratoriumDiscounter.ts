@@ -38,6 +38,11 @@ import SupplierBase from "./supplierBase";
  * - {@link https://www.laboratoriumdiscounter.nl/en/sitemap/?format=json | Sitemap (JSON)}
  * - {@link https://www.laboratoriumdiscounter.nl/en/search/acid | Search Results for "acid"}
  * - {@link https://www.laboratoriumdiscounter.nl/en/search/acid?format=json | Search Results for "acid" (JSON)}
+ * - {@link https://ecom-support.lightspeedhq.com/hc/en-us/articles/115002509593-3-g-AJAX-and-JSON | Lightspeed eCom Support - AJAX and JSON}
+ *  > [!IMPORTANT]
+ *  >  Be careful that your scripts do not produce too many XHR calls. A few (2-3) calls per page or making
+ *  > calls based on user input could be acceptable, but letting users do multiple calls in a short period of time
+ *  > could see them BANNED from shops. Please only use these methods as workarounds in specific instances.
  *
  * @category Suppliers
  * @example
@@ -421,7 +426,21 @@ export default class SupplierLaboratoriumDiscounter
       return;
     }
 
-    return this._initProductBuilders(Object.values(response.collection.products).slice(0, limit));
+    const rawSearchResults = Object.values(response.collection.products);
+
+    const fuzzFiltered = this._fuzzyFilter<SearchResponseProduct>(query, rawSearchResults);
+    this._logger.info("fuzzFiltered:", fuzzFiltered);
+
+    return this._initProductBuilders(fuzzFiltered.slice(0, limit));
+  }
+
+  /**
+   * Selects the title of a product from the search response
+   * @param data - Product object from search response
+   * @returns Title of the product
+   */
+  protected _titleSelector(data: SearchResponseProduct): string {
+    return data.title;
   }
 
   /**

@@ -9,6 +9,11 @@ import React from "react";
  * @group Icons
  * @param props - The props passed to the underlying SvgIcon component
  * @returns A React component that renders the right arrow icon
+ * @example
+ * ```tsx
+ * <ArrowRightIcon />
+ * ```
+ * {@includeCode ./ArrowRightIcon.tsx}
  */
 const ArrowRightIcon: React.FC<SvgIconProps> = (props) => {
   return (

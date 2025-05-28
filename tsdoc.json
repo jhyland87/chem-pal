@@ -40,6 +40,7 @@
     "@groupDescription": true,
     "@showGroups": true,
     "@summary": true,
-    "@internal": true
+    "@internal": true,
+    "@includeCode": true
   }
 }

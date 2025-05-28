@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { type Product, type Variant } from "@/types";
@@ -307,14 +309,11 @@ export default abstract class SupplierBaseWix
    * @param limit - The limit of products to return
    * @returns The GraphQL variables
    */
-  protected _getGraphQLVariables(
-    query: string,
-    limit: number = this._limit,
-  ): GraphQLQueryVariables {
+  protected _getGraphQLVariables(query: string): GraphQLQueryVariables {
     return {
       mainCollectionId: "00000000-000000-000000-000000000001",
       offset: 0,
-      limit: limit,
+      limit: 150,
       sort: null,
       filters: {
         term: {
@@ -341,7 +340,7 @@ export default abstract class SupplierBaseWix
   ): Promise<ProductBuilder<Product>[] | void> {
     const q = this._getGraphQLQuery();
 
-    const v = this._getGraphQLVariables(query, limit);
+    const v = this._getGraphQLVariables(query);
 
     const queryResponse = await this._httpGetJson({
       path: "_api/wix-ecommerce-storefront-web/api",
@@ -357,9 +356,14 @@ export default abstract class SupplierBaseWix
       throw new Error(`Invalid or empty Wix query response for ${query}`);
     }
 
-    return this._initProductBuilders(
-      queryResponse.data.catalog.category.productsWithMetaData.list.slice(0, limit),
+    const fuzzResults = this._fuzzyFilter<ProductObject>(
+      query,
+      queryResponse.data.catalog.category.productsWithMetaData.list,
     );
+
+    this._logger.info("fuzzResults:", fuzzResults);
+
+    return this._initProductBuilders(fuzzResults.slice(0, limit));
   }
 
   /**
@@ -479,5 +483,14 @@ export default abstract class SupplierBaseWix
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     return product;
+  }
+
+  /**
+   * Selects the title of a product from the search response
+   * @param data - Product object from search response
+   * @returns - The title of the product
+   */
+  protected _titleSelector(data: any): any {
+    return data.name;
   }
 }

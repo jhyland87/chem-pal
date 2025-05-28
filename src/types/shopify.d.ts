@@ -541,119 +541,119 @@ export interface QueryParams extends RequestParams {
    * Limits total result set size.
    * @example 20
    */
-  maxResults: number;
+  maxResults?: number;
 
   /**
    * Starting index for results.
    * Zero-based index for pagination.
    * @example 0
    */
-  startIndex: number;
+  startIndex?: number;
 
   /**
    * Whether to include items in results.
    * Controls product inclusion in response.
    * @example true
    */
-  items: boolean;
+  items?: boolean;
 
   /**
    * Whether to include pages in results.
    * Controls static page inclusion in response.
    * @example false
    */
-  pages: boolean;
+  pages?: boolean;
 
   /**
    * Whether to include facets in results.
    * Controls faceted navigation data in response.
    * @example true
    */
-  facets: boolean;
+  facets?: boolean;
 
   /**
    * Whether to include categories in results.
    * Controls category inclusion in response.
    * @example true
    */
-  categories: boolean;
+  categories?: boolean;
 
   /**
    * Whether to include suggestions in results.
    * Controls search suggestions in response.
    * @example true
    */
-  suggestions: boolean;
+  suggestions?: boolean;
 
   /**
    * Whether to include vendors in results.
    * Controls vendor facet inclusion in response.
    * @example true
    */
-  vendors: boolean;
+  vendors?: boolean;
 
   /**
    * Whether to include tags in results.
    * Controls tag facet inclusion in response.
    * @example true
    */
-  tags: boolean;
+  tags?: boolean;
 
   /**
    * Starting index for pages.
    * Zero-based index for page pagination.
    * @example 0
    */
-  pageStartIndex: number;
+  pageStartIndex?: number;
 
   /**
    * Maximum number of pages to return.
    * Limits page result set size.
    * @example 5
    */
-  pagesMaxResults: number;
+  pagesMaxResults?: number;
 
   /**
    * Starting index for categories.
    * Zero-based index for category pagination.
    * @example 0
    */
-  categoryStartIndex: number;
+  categoryStartIndex?: number;
 
   /**
    * Maximum number of categories to return.
    * Limits category result set size.
    * @example 10
    */
-  categoriesMaxResults: number;
+  categoriesMaxResults?: number;
 
   /**
    * Maximum number of suggestions to return.
    * Limits suggestion result set size.
    * @example 5
    */
-  suggestionsMaxResults: number;
+  suggestionsMaxResults?: number;
 
   /**
    * Maximum number of vendors to return.
    * Limits vendor facet result set size.
    * @example 20
    */
-  vendorsMaxResults: number;
+  vendorsMaxResults?: number;
 
   /**
    * Maximum number of tags to return.
    * Limits tag facet result set size.
    * @example 50
    */
-  tagsMaxResults: number;
+  tagsMaxResults?: number;
 
   /**
    * Output format for the response.
    * Controls response serialization format.
    * @example "json"
    */
-  output: string;
+  output?: string;
 
   /**
    * Timestamp for cache busting.

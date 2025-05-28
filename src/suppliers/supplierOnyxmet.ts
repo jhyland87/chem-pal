@@ -293,4 +293,8 @@ export default class SupplierOnyxmet
       .setCAS(cas ?? "")
       .setAvailability(statusTxt ?? "");
   }
+
+  protected _titleSelector(data: unknown): string {
+    return data as string;
+  }
 }

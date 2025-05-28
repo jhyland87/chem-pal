@@ -185,7 +185,7 @@ export default class SupplierChemsavers
     limit: number = this._limit,
   ): Promise<ProductBuilder<Product>[] | void> {
     try {
-      const body = this._makeRequestBody(query, limit);
+      const body = this._makeRequestBody(query);
 
       const response: unknown = await this._httpPostJson({
         path: `/multi_search`,
@@ -218,7 +218,11 @@ export default class SupplierChemsavers
 
       this._logger.debug("Mapped response objects:", products);
 
-      return this._initProductBuilders(products);
+      const fuzzResults = this._fuzzyFilter<ProductObject>(query, products);
+
+      this._logger.info("fuzzResults:", fuzzResults);
+
+      return this._initProductBuilders(fuzzResults.slice(0, limit));
     } catch (error) {
       this._logger.error("Error querying products:", error);
       return;
@@ -284,7 +288,7 @@ export default class SupplierChemsavers
    * @param limit - Maximum number of results to return (defaults to this._limit)
    * @returns An object containing the search configuration for the Typesense API
    */
-  protected _makeRequestBody(query: string, limit: number = this._limit): object {
+  protected _makeRequestBody(query: string, limit: number = 100): object {
     /* eslint-disable */
     return {
       searches: [
@@ -321,5 +325,14 @@ export default class SupplierChemsavers
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     return product;
+  }
+
+  /**
+   * Selects the title of a product from the search response
+   * @param data - Product object from search response
+   * @returns - The title of the product
+   */
+  protected _titleSelector(data: ProductObject): string {
+    return data.name;
   }
 }

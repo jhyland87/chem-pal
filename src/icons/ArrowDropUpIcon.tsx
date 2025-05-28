@@ -8,6 +8,11 @@ import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
  * @group Icons
  * @param props - The props passed to the underlying SvgIcon component
  * @returns A React component that renders the upward dropdown arrow icon
+ * @example
+ * ```tsx
+ * <ArrowDropUpIcon />
+ * ```
+ * {@includeCode ./ArrowDropUpIcon.tsx}
  */
 const ArrowDropUpIcon: React.FC<SvgIconProps> = (props) => {
   return (

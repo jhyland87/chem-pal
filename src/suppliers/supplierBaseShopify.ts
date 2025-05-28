@@ -111,22 +111,12 @@ export default abstract class SupplierBaseShopify
       /* eslint-disable */
       api_key: this._apiKey,
       q: query,
-      maxResults: limit,
+      maxResults: 200,
       startIndex: 0,
       items: true,
-      pages: true,
-      facets: true,
-      categories: true,
-      suggestions: true,
-      vendors: true,
-      tags: true,
       pageStartIndex: 0,
       pagesMaxResults: 1,
-      categoryStartIndex: 0,
-      categoriesMaxResults: 3,
-      suggestionsMaxResults: 4,
-      vendorsMaxResults: limit,
-      tagsMaxResults: 3,
+      vendorsMaxResults: 200,
       output: "json",
       _: new Date().getTime(),
       ...this._baseSearchParams,
@@ -143,7 +133,10 @@ export default abstract class SupplierBaseShopify
       throw new Error("Invalid search response");
     }
 
-    return this._initProductBuilders(searchRequest.items.slice(0, limit));
+    const fuzzResults = this._fuzzyFilter<ItemListing>(query, searchRequest.items);
+    this._logger.info("fuzzResults:", fuzzResults);
+
+    return this._initProductBuilders(fuzzResults.slice(0, limit));
   }
 
   /**
@@ -469,5 +462,14 @@ export default abstract class SupplierBaseShopify
     }
 
     return product;
+  }
+
+  /**
+   * Selects the title of a product from the search response
+   * @param data - Product object from search response
+   * @returns - The title of the product
+   */
+  protected _titleSelector(data: ItemListing): string {
+    return data.title;
   }
 }

@@ -56,6 +56,7 @@ import * as contentType from "content-type";
 export function getRequestHash(request: Request): RequestHashObject {
   const url = new URL(request.url);
   const resultHash = md5sum(
+    // POST
     request.method + (url.pathname ?? "") + (url.search ?? "") + (request.body ?? ""),
   );
 
@@ -128,6 +129,12 @@ export async function getCachableResponse(
  * Checks if a value is a full URL.
  * @param val - The value to check
  * @returns True if the value is a full URL, false otherwise
+ * @category Helpers
+ * @example
+ * ```typescript
+ * const isUrl = isFullURL("https://www.google.com");
+ * // Returns: true
+ * ```
  */
 export function isFullURL(val: unknown): val is URL {
   try {
@@ -138,12 +145,9 @@ export function isFullURL(val: unknown): val is URL {
   }
 }
 
-export function urlencode(str: string): string {
-  return encodeURIComponent(str)
-    .replace(/!/g, "%21")
-    .replace(/'/g, "%27")
-    .replace(/\(/g, "%28")
-    .replace(/\)/g, "%29")
-    .replace(/\*/g, "%2A")
-    .replace(/%20/g, "+");
+export function isRequest(req: unknown): req is Request {
+  return req instanceof Request;
 }
+
+export { fetchDecorator, generateRequestHash, generateSimpleHash } from "./request/fetch";
+export { default as urlencode } from "./request/urlencode";

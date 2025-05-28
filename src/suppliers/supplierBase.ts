@@ -1,10 +1,11 @@
-import { getCachableResponse, isFullURL } from "@/helpers/request";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { fetchDecorator, isFullURL } from "@/helpers/request";
 import { type Maybe, type MaybeArray, type Product } from "@/types";
 import { type RequiredProductFields } from "@/types/product";
 import { type RequestOptions, type RequestParams } from "@/types/request";
 import { Logger } from "@/utils/Logger";
 import { ProductBuilder } from "@/utils/ProductBuilder";
-import { partial_ratio, token_similarity_sort_ratio, token_sort_ratio } from "fuzzball";
+import { extract, WRatio } from "fuzzball";
 import { type JsonValue } from "type-fest";
 
 /**
@@ -289,19 +290,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
         credentials: "include",
       });
 
-      const httpResponse = await fetch(requestObj);
-
-      // @todo: Override this if not in development mode
-      if (
-        chrome.extension !== undefined &&
-        process.env.MODE !== "development" &&
-        httpResponse.headers.get("ismockedresponse") !== "true"
-      ) {
-        this._logger.debug("_httpGetHeaders| httpResponse:", httpResponse);
-        this._logger.debug("_httpGetHeaders| process.env:", process.env);
-        const cacheData = getCachableResponse(requestObj, httpResponse);
-        this._logger.debug("_httpGetHeaders| cacheData:", cacheData);
-      }
+      const httpResponse = await this._fetch(requestObj);
 
       return Object.fromEntries(httpResponse.headers.entries()) satisfies HeadersInit;
     } catch (error) {
@@ -348,39 +337,35 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     params,
     headers,
   }: RequestOptions): Promise<Maybe<Response>> {
-    const _headers = new Headers({
+    const method = "POST";
+    const mode = "cors";
+    const referrer = this._baseURL;
+    const referrerPolicy = "strict-origin-when-cross-origin";
+    const signal = this._controller.signal;
+    const bodyStr = typeof body === "string" ? body : (JSON.stringify(body) ?? null);
+    const headersObj = new Headers({
       ...this._headers,
       ...(headers as HeadersInit),
     });
-    const requestObj = new Request(this._href(path, params, host), {
-      signal: this._controller.signal,
-      headers: _headers,
-      referrer: this._baseURL,
-      referrerPolicy: "strict-origin-when-cross-origin",
-      body: typeof body === "string" ? body : JSON.stringify(body),
-      method: "POST",
-      mode: "cors",
+    const url = this._href(path, params, host);
+
+    const requestObj = new Request(url, {
+      signal,
+      headers: headersObj,
+      referrer,
+      referrerPolicy,
+      body: bodyStr,
+      method,
+      mode,
     });
 
     // Fetch the goods
-    const httpRequest = await fetch(requestObj);
+    const httpRequest = await this._fetch(url, requestObj);
 
     if (!this._isResponse(httpRequest)) {
       const badResponse = await (httpRequest as unknown as Response)?.text();
       this._logger.error("Invalid POST response: ", badResponse);
       throw new TypeError(`Invalid POST response: ${httpRequest}`);
-    }
-
-    // @todo: Override this if not in development mode
-    if (
-      chrome.extension !== undefined &&
-      process.env.MODE !== "development" &&
-      httpRequest.headers.get("ismockedresponse") !== "true"
-    ) {
-      this._logger.debug("_httpPost| httpRequest:", httpRequest);
-      this._logger.debug("_httpPost| process.env:", process.env);
-      const cacheData = getCachableResponse(requestObj, httpRequest);
-      this._logger.debug("_httpPost| cacheData:", cacheData);
     }
 
     return httpRequest;
@@ -482,21 +467,10 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
       });
 
       // Fetch the goods
-      const httpResponse = await fetch(requestObj);
+      const httpResponse = await this._fetch(requestObj.url, requestObj);
+      //const httpResponse = await fetchDecorator(requestObj.url, requestObj);
 
-      // @todo: Override this if not in development mode
-      if (
-        chrome.extension !== undefined &&
-        process.env.MODE !== "development" &&
-        httpResponse.headers.get("ismockedresponse") !== "true"
-      ) {
-        this._logger.debug("_httpGet| httpResponse:", httpResponse);
-        this._logger.debug("_httpGet| process.env:", process.env);
-        const cacheData = getCachableResponse(requestObj, httpResponse);
-        this._logger.debug("_httpGet| cacheData:", cacheData);
-      }
-
-      return httpResponse as Response;
+      return httpResponse;
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
         this._logger.warn("Request was aborted", { error, signal: this._controller.signal });
@@ -510,22 +484,160 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     }
   }
 
-  protected _fuzzyCheck(query: string, result: string): number {
-    /* eslint-disable */
-    const _token_sort_ratio = token_sort_ratio(query, result);
-    const _token_similarity_sort_ratio = token_similarity_sort_ratio(query, result);
-    const _partial_ratio = partial_ratio(query, result);
+  /**
+   * Filters an array of data using fuzzy string matching to find items that closely match a query string.
+   * Uses the WRatio algorithm from fuzzball for string similarity comparison.
+   *
+   * @param query - The search string to match against
+   * @param data - Array of data objects to search through
+   * @param cutoff - Minimum similarity score (0-100) for a match to be included (default: 40)
+   * @returns Array of matching data objects with added fuzzy match metadata
+   *
+   * @example
+   * ```typescript
+   * // Example with simple string array
+   * const products = [
+   *   { title: "Sodium Chloride", price: 29.99 },
+   *   { title: "Sodium Hydroxide", price: 39.99 },
+   *   { title: "Potassium Chloride", price: 19.99 }
+   * ];
+   *
+   * const matches = this._fuzzyFilter("sodium chloride", products);
+   * // Returns: [
+   * //   {
+   * //     title: "Sodium Chloride",
+   * //     price: 29.99,
+   * //     ___fuzz: { score: 100, idx: 0 }
+   * //   },
+   * //   {
+   * //     title: "Sodium Hydroxide",
+   * //     price: 39.99,
+   * //     ___fuzz: { score: 85, idx: 1 }
+   * //   }
+   * // ]
+   *
+   * // Example with custom cutoff
+   * const strictMatches = this._fuzzyFilter("sodium chloride", products, 90);
+   * // Returns only exact matches with score >= 90
+   *
+   * // Example with different data structure
+   * const chemicals = [
+   *   { name: "NaCl", formula: "Sodium Chloride" },
+   *   { name: "NaOH", formula: "Sodium Hydroxide" }
+   * ];
+   *
+   * // Override _titleSelector to use formula field
+   * this._titleSelector = (data) => data.formula;
+   * const formulaMatches = this._fuzzyFilter("sodium chloride", chemicals);
+   * ```
+   */
+  protected _fuzzyFilter<X>(query: string, data: X[], cutoff: number = 40): X[] {
+    const res = extract(query, data, {
+      scorer: WRatio,
+      processor: this._titleSelector as (choice: unknown) => string,
+      cutoff: cutoff,
+      sortBySimilarity: true,
+    }).reduce(
+      (acc, [obj, score, idx]) => {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        acc[idx] = { ...obj, ___fuzz: { score, idx: idx } };
+        return acc;
+      },
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      [] as Array<X & { ___fuzz: { score: number; idx: number } }>,
+    ) as X[];
 
-    console.log({
-      query,
-      result,
-      _token_sort_ratio,
-      _token_similarity_sort_ratio,
-      _partial_ratio,
-    });
-    return _token_sort_ratio;
-    /* eslint-enable */
+    this._logger.debug("fuzzed search results:", res);
+
+    return res;
   }
+
+  /**
+   * Abstract method to select the title from the initial raw search data.
+   * This method should be implemented by each supplier to handle their specific data structure.
+   * The selected title is used by _fuzzyFilter for string similarity matching.
+   *
+   * @param data - The data object to extract the title from
+   * @returns The title string to use for fuzzy matching
+   * @abstract
+   * @example
+   * ```typescript
+   * // Example implementation for a supplier with simple title field
+   * protected _titleSelector(data: SupplierProduct): string {
+   *   return data.title;
+   * }
+   *
+   * // Example implementation for a supplier with nested title
+   * protected _titleSelector(data: SupplierProduct): string {
+   *   return data.productInfo.name;
+   * }
+   *
+   * // Example implementation for a supplier with multiple possible title fields
+   * protected _titleSelector(data: SupplierProduct): string {
+   *   return data.displayName || data.productName || data.name || '';
+   * }
+   *
+   * // Example implementation for a supplier with formatted title
+   * protected _titleSelector(data: SupplierProduct): string {
+   *   return `${data.name} ${data.grade} ${data.purity}`.trim();
+   * }
+   * ```
+   */
+  /**
+   * Abstract method to select the title from the initial raw search data.
+   * This method should be implemented by each supplier to handle their specific data structure.
+   * The selected title is used by _fuzzyFilter for string similarity matching.
+   *
+   * @overload
+   * @param data - The data object (Cheerio Element) to parse for the title
+   * @returns The title string to use for fuzzy matching
+   * @abstract
+   * @example
+   * ```typescript
+   * // Example implementation for a supplier with simple title field
+   * const $ = cheerio.load(html);
+   * const $elemens = $("div.caption h4 a");
+   * const title = this._titleSelector($elemens[0]);
+   * console.log(title);
+   * ```
+   * @example
+   * ```typescript
+   * // Example implementation for a supplier with simple title field
+   * protected _titleSelector(data: Cheerio<Element>): string {
+   *   return data.find("div.caption h4 a").text().trim();
+   * }
+   * ```
+   */
+  //protected abstract _titleSelector(data: Cheerio<Element>): string;
+  /**
+   * Abstract method to select the title from the initial raw search data.
+   * This method should be implemented by each supplier to handle their specific data structure.
+   * The selected title is used by _fuzzyFilter for string similarity matching.
+   *
+   * @overload
+   * @param data - The data object to extract the title from
+   * @returns The title string to use for fuzzy matching
+   * @abstract
+   * @example
+   * ```typescript
+   * // Example implementation for a supplier with simple title field
+   * protected _titleSelector(data: S): string {
+   *   return data.title;
+   * }
+   * ```
+   */
+  //protected abstract _titleSelector(data: S): string;
+  /**
+   * Abstract method to select the title from the initial raw search data.
+   * This method should be implemented by each supplier to handle their specific data structure.
+   * The selected title is used by _fuzzyFilter for string similarity matching.
+   *
+   * @overload
+   * @param data - The data object to extract the title from
+   * @returns The title string to use for fuzzy matching
+   * @abstract
+   */
+  protected abstract _titleSelector(data: any): string;
 
   /**
    * Sends a GET request to a URL and returns the response as HTML text.
@@ -626,7 +738,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
       return;
     }
 
-    return await httpRequest?.json();
+    return await httpRequest.json();
   }
 
   /**
@@ -946,11 +1058,13 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
       return;
     }
 
+    /*
     const title = product.get("title");
     if (title) {
-      const fuzz = this._fuzzyCheck(title as string, this._query);
-      console.log("fuzz score for", title, fuzz);
+      const fuzz = this._fuzzyFilter(this._query, [title], 2, 0.5);
+      console.log("fuzz score for", title, fuzz[0]?.[1] ?? 0);
     }
+    */
 
     return await product.build();
   }
@@ -1233,7 +1347,20 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * }
    * ```
    */
-  protected async _fetch(url: string, init?: RequestInit): Promise<Response> {
+  protected async _fetch(...args: Parameters<typeof fetchDecorator>): Promise<Response> {
+    const [input] = args;
+    console.log(`Fetching: ${input}`);
+    const response = await fetchDecorator(...args);
+    console.log(`Response Status: ${response.status}`);
+
+    console.log("response hash:", response._requestHash);
+    return response;
+  }
+
+  /**
+   * @deprecated Use _fetch instead
+   */
+  protected async _fetchx(url: string, init?: RequestInit): Promise<Response> {
     if (this._requestCount >= this._limit) {
       throw new Error("Request limit exceeded");
     }
