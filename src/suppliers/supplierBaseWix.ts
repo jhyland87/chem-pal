@@ -306,7 +306,6 @@ export default abstract class SupplierBaseWix
    * Get the GraphQL variables for the Wix API
    *
    * @param query - The query to search for
-   * @param limit - The limit of products to return
    * @returns The GraphQL variables
    */
   protected _getGraphQLVariables(query: string): GraphQLQueryVariables {

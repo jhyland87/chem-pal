@@ -196,7 +196,7 @@ export default class SupplierLoudwolf
    * - Price extraction from formatted strings
    * - URL and ID extraction from product links
    *
-   * @param data - HTML string containing product listings
+   * @param $elements - HTML string containing product listings
    * @returns Array of ProductBuilder instances initialized with product data
    * @example
    * ```typescript

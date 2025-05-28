@@ -66,6 +66,10 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   // name of the inheriting class.
   protected _logger: Logger;
 
+  // Cache configuration
+  private static readonly cacheKey = "supplier_cache";
+  private static readonly cacheSize = 100; // Maximum number of cached results
+
   // Default values for products. These will get overridden if they're found in the product data.
   protected _productDefaults = {
     uom: "ea",
@@ -360,7 +364,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     });
 
     // Fetch the goods
-    const httpRequest = await this._fetch(url, requestObj);
+    const httpRequest = await this._fetch(requestObj);
 
     if (!this._isResponse(httpRequest)) {
       const badResponse = await (httpRequest as unknown as Response)?.text();
@@ -814,12 +818,241 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   }
 
   /**
+   * Generates a cache key based on the query, limit, and supplier name.
+   * Uses a combination of base64 encoding methods that work in both browser and Node environments.
+   *
+   * @returns A string hash that uniquely identifies this search request
+   * @example
+   * ```typescript
+   * // Example with a basic search
+   * const supplier = new MySupplier("sodium chloride", 5);
+   * const key = supplier._generateCacheKey();
+   * // Returns: "c29kaXVtIGNobG9yaWRlOjU6TXlTdXBwbGllcg=="
+   *
+   * // Example with empty values
+   * const supplier = new MySupplier("", 0);
+   * const key = supplier._generateCacheKey();
+   * // Returns: "OjA6TXlTdXBwbGllcg=="
+   *
+   * // Example with special characters
+   * const supplier = new MySupplier("NaCl (99.9%)", 10);
+   * const key = supplier._generateCacheKey();
+   * // Returns: "TmFDbCAoOTkuOSUpOjEwOk15U3VwcGxpZXI="
+   * ```
+   */
+  private _generateCacheKey(): string {
+    const data = `${this._query || ""}:${this._limit || 0}:${this.supplierName || ""}`;
+    this._logger.debug("Generating cache key with:", {
+      query: this._query,
+      limit: this._limit,
+      supplierName: this.supplierName,
+      data,
+    });
+    try {
+      // Try browser's btoa first
+      const key = btoa(data);
+      this._logger.debug("Generated cache key:", key);
+      return key;
+    } catch {
+      try {
+        // Fallback to Node's Buffer if available
+        if (typeof Buffer !== "undefined") {
+          const key = Buffer.from(data).toString("base64");
+          this._logger.debug("Generated cache key (Buffer):", key);
+          return key;
+        }
+        // If neither is available, use a simple hash function
+        let hash = 0;
+        for (let i = 0; i < data.length; i++) {
+          const char = data.charCodeAt(i);
+          hash = (hash << 5) - hash + char;
+          hash = hash & hash; // Convert to 32bit integer
+        }
+        const key = hash.toString(36);
+        this._logger.debug("Generated cache key (hash):", key);
+        return key;
+      } catch (error) {
+        this._logger.error("Error generating cache key:", error);
+        // Fallback to a simple string if all else fails
+        const key = data.replace(/[^a-zA-Z0-9]/g, "_");
+        this._logger.debug("Generated cache key (fallback):", key);
+        return key;
+      }
+    }
+  }
+
+  /**
+   * Gets cached results for the current query if they exist.
+   * Checks the Chrome storage for previously cached results using the generated cache key.
+   * If found, updates the timestamp to mark it as recently used.
+   *
+   * @returns Promise resolving to the cached results array or undefined if not found
+   * @example
+   * ```typescript
+   * // Example of retrieving cached results
+   * const supplier = new MySupplier("sodium chloride", 5);
+   * const cachedResults = await supplier._getCachedResults();
+   * if (cachedResults) {
+   *   console.log("Found cached results:", cachedResults.length);
+   * } else {
+   *   console.log("No cached results found");
+   * }
+   *
+   * // Example of cache miss
+   * const supplier = new MySupplier("unique query", 10);
+   * const cachedResults = await supplier._getCachedResults();
+   * // Returns: undefined
+   * ```
+   */
+  private async _getCachedResults(): Promise<Maybe<T[]>> {
+    try {
+      const key = this._generateCacheKey();
+      this._logger.debug("Looking up cache with key:", key);
+      const result = await chrome.storage.local.get(SupplierBase.cacheKey);
+      const cache =
+        (result[SupplierBase.cacheKey] as Record<string, { data: T[]; timestamp: number }>) || {};
+      const cached = cache[key];
+
+      this._logger.debug("Cache lookup result:", {
+        key,
+        found: !!cached,
+        cacheSize: Object.keys(cache).length,
+        cacheKeys: Object.keys(cache),
+      });
+
+      if (cached) {
+        // Update the timestamp to mark as recently used
+        await this._updateCacheTimestamp(key);
+        return cached.data;
+      }
+      return undefined;
+    } catch (error) {
+      this._logger.error("Error retrieving from cache:", error);
+      return undefined;
+    }
+  }
+
+  /**
+   * Updates the timestamp for a cache entry to mark it as recently used.
+   * This is part of the LRU (Least Recently Used) cache implementation.
+   *
+   * @param key - The cache key to update
+   * @example
+   * ```typescript
+   * // Example of updating a cache entry timestamp
+   * const supplier = new MySupplier("sodium chloride", 5);
+   * const key = supplier._generateCacheKey();
+   * await supplier._updateCacheTimestamp(key);
+   *
+   * // Example with error handling
+   * try {
+   *   await supplier._updateCacheTimestamp("invalid-key");
+   * } catch (error) {
+   *   console.error("Failed to update timestamp:", error);
+   * }
+   * ```
+   */
+  private async _updateCacheTimestamp(key: string): Promise<void> {
+    try {
+      const result = await chrome.storage.local.get(SupplierBase.cacheKey);
+      const cache =
+        (result[SupplierBase.cacheKey] as Record<string, { data: T[]; timestamp: number }>) || {};
+      if (cache[key]) {
+        cache[key].timestamp = Date.now();
+        await chrome.storage.local.set({ [SupplierBase.cacheKey]: cache });
+      }
+    } catch (error) {
+      this._logger.error("Error updating cache timestamp:", error);
+    }
+  }
+
+  /**
+   * Stores results in the cache, implementing LRU behavior.
+   * If the cache is full, removes the oldest entry before adding the new one.
+   * Each cache entry includes the data and a timestamp for LRU tracking.
+   *
+   * @param results - The array of results to cache
+   * @example
+   * ```typescript
+   * // Example of caching results
+   * const supplier = new MySupplier("sodium chloride", 5);
+   * const results = [
+   *   { title: "Sodium Chloride", price: 29.99, quantity: 500, uom: "g" },
+   *   { title: "NaCl", price: 24.99, quantity: 1000, uom: "g" }
+   * ];
+   * await supplier._cacheResults(results);
+   *
+   * // Example of cache eviction
+   * // If cache is full (100 entries), oldest entry will be removed
+   * const manyResults = Array(5).fill({
+   *   title: "Test Product",
+   *   price: 19.99,
+   *   quantity: 100,
+   *   uom: "g"
+   * });
+   * await supplier._cacheResults(manyResults);
+   *
+   * // Example with error handling
+   * try {
+   *   await supplier._cacheResults(results);
+   * } catch (error) {
+   *   console.error("Failed to cache results:", error);
+   * }
+   * ```
+   */
+  private async _cacheResults(results: T[]): Promise<void> {
+    try {
+      const key = this._generateCacheKey();
+      this._logger.debug("Storing in cache with key:", key);
+      const result = await chrome.storage.local.get(SupplierBase.cacheKey);
+      const cache =
+        (result[SupplierBase.cacheKey] as Record<string, { data: T[]; timestamp: number }>) || {};
+
+      // If cache is full, remove oldest entry
+      if (Object.keys(cache).length >= SupplierBase.cacheSize) {
+        const oldestKey = Object.entries(cache).sort(
+          ([, a], [, b]) => a.timestamp - b.timestamp,
+        )[0][0];
+        this._logger.debug("Removing oldest cache entry:", oldestKey);
+        delete cache[oldestKey];
+      }
+
+      // Add new entry
+      cache[key] = {
+        data: results,
+        timestamp: Date.now(),
+      };
+
+      this._logger.debug("Cache state after update:", {
+        key,
+        cacheSize: Object.keys(cache).length,
+        cacheKeys: Object.keys(cache),
+      });
+
+      await chrome.storage.local.set({ [SupplierBase.cacheKey]: cache });
+    } catch (error) {
+      this._logger.error("Error storing in cache:", error);
+    }
+  }
+
+  /**
    * The function asynchronously iterates over query results, retrieves product data, and yields valid
    * results.
    * @returns An async generator that yields valid results.
    */
   async *[Symbol.asyncIterator](): AsyncGenerator<T, void, unknown> {
     try {
+      // Check cache first
+      const cachedResults = await this._getCachedResults();
+      console.log("[iterator]cachedResults", cachedResults);
+      if (cachedResults) {
+        this._logger.debug("Returning cached results");
+        for (const result of cachedResults) {
+          yield result;
+        }
+        return;
+      }
+
       await this._setup();
       const results = await this._queryProducts(this._query, this._limit);
 
@@ -830,11 +1063,11 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
       this._products = results;
 
       // Process results in batches to maintain controlled concurrency
+      const allResults: T[] = [];
       for (let i = 0; i < this._products.length; i += this._httpRequestBatchSize) {
         const batch = this._products.slice(i, i + this._httpRequestBatchSize);
 
         // Create promises for the current batch
-        //const batchPromises = batch.map((r) => this._getProductData(r));
         const batchPromises = batch.map((r: unknown) => {
           if (r instanceof ProductBuilder === false) {
             this._logger.error("Invalid product builder:", r);
@@ -860,6 +1093,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
             const finishedProduct = await this._finishProduct(result.value as ProductBuilder<T>);
 
             if (finishedProduct) {
+              allResults.push(finishedProduct);
               yield finishedProduct;
             }
           } catch (err) {
@@ -867,6 +1101,11 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
             continue;
           }
         }
+      }
+
+      // Cache the results after processing all batches
+      if (allResults.length > 0) {
+        await this._cacheResults(allResults);
       }
     } catch (err) {
       if (this._controller.signal.aborted === true) {
@@ -1300,8 +1539,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * Makes an HTTP request to the specified URL with optional configuration.
    * This method handles request limits, retries, and error handling.
    *
-   * @param url - The URL to fetch
-   * @param init - Optional fetch configuration (headers, method, etc.)
+   * @param args - Identical to the fetch function
    * @returns Promise resolving to a Response object
    * @throws Error if the request fails or exceeds retry attempts
    *
@@ -1355,32 +1593,5 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
 
     console.log("response hash:", response._requestHash);
     return response;
-  }
-
-  /**
-   * @deprecated Use _fetch instead
-   */
-  protected async _fetchx(url: string, init?: RequestInit): Promise<Response> {
-    if (this._requestCount >= this._limit) {
-      throw new Error("Request limit exceeded");
-    }
-
-    this._requestCount++;
-
-    try {
-      const response = await fetch(url, {
-        ...init,
-        signal: this._controller.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return response;
-    } catch (error) {
-      this._logger.error("Fetch failed", { error, url });
-      throw error;
-    }
   }
 }

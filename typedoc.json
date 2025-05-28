@@ -6,7 +6,7 @@
     "./src/constants/*.ts",
     "./src/types/*.ts",
     "./src/mixins/*.ts",
-    "./documents/*.md"
+    "./pages/*.md"
   ],
   "plugin": [
     "typedoc-plugin-mark-react-functional-components",
@@ -32,7 +32,7 @@
     "linkify": true
   },
   "projectDocuments": [
-    "./documents/**/*.md"
+    "./pages/**/*.md"
   ],
   "lightHighlightTheme": "github-light-high-contrast",
   "darkHighlightTheme": "github-dark-dimmed",
@@ -78,7 +78,10 @@
   "hideGenerator": false,
   "readme": "README.md",
   "navigationLinks": {
-    "GitHub": "https://github.com/jhyland87/chem-crawler"
+    "Getting Started": "https://github.com/yourusername/chem-crawler#getting-started",
+    "Examples": "https://github.com/yourusername/chem-crawler#examples",
+    "API Reference": "https://github.com/yourusername/chem-crawler#api-reference",
+    "test": "documents/test.html"
   },
   "sort": [
     "source-order"
