@@ -6,6 +6,8 @@ import { findFormulaInHtml } from "@/helpers/science";
 import { type Maybe, type Product, type QuantityObject, type Variant } from "@/types";
 import type { ParsedPrice } from "@/types/currency";
 import { Logger } from "@/utils/Logger";
+import { isMinimalProduct, isProduct } from "@/utils/typeGuards/common";
+import { isAvailability, isValidVariant } from "@/utils/typeGuards/productbuilder";
 
 /**
  * Product builder utility class for building product data up over different requests
@@ -467,7 +469,7 @@ export class ProductBuilder<T extends Product> {
   determineAvailability(availability?: AVAILABILITY | boolean | string): Maybe<AVAILABILITY> {
     if (typeof availability === "undefined") return;
 
-    if (this._isAvailability(availability)) return availability;
+    if (isAvailability(availability)) return availability;
 
     if (typeof availability === "boolean")
       return availability ? AVAILABILITY.IN_STOCK : AVAILABILITY.OUT_OF_STOCK;
@@ -631,83 +633,6 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
-   * Validates that a variant object has valid properties.
-   * Checks numeric and string properties for correct types.
-   * Not all the same properties that are required for a valid
-   * Product are required for a variant, as the variant can just
-   * inherit some of the properties from the product (uom, currency,
-   * etc. Even the URL can be inherited from the product).
-   *
-   * @param variant - The variant object to validate
-   * @returns boolean indicating if the variant is valid
-   */
-  private _isValidVariant(variant: unknown): variant is Partial<Variant> {
-    if (!variant || typeof variant !== "object") return false;
-
-    // Check that any numeric properties are actually numbers
-    const numericProps = ["price", "quantity"];
-    for (const prop of numericProps) {
-      if (prop in variant && typeof variant[prop as keyof typeof variant] !== "number") {
-        return false;
-      }
-    }
-
-    // Check that any string properties are actually strings
-    const stringProps = ["title"];
-    for (const prop of stringProps) {
-      if (prop in variant && typeof variant[prop as keyof typeof variant] !== "string") {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  /**
-   * Validates that a product object has the minimum required properties.
-   * Checks for presence and correct types of essential fields.
-   *
-   * @param product - The product object to validate
-   * @returns Type predicate indicating if the object has minimum required properties
-   */
-  private _isMinimalProduct(product: unknown): product is Partial<T> {
-    if (!product || typeof product !== "object") return false;
-
-    const requiredStringProps = {
-      quantity: "number",
-      price: "number",
-      uom: "string",
-      url: "string",
-      currencyCode: "string",
-      currencySymbol: "string",
-      title: "string",
-    };
-
-    const hasAllRequiredProps = Object.entries(requiredStringProps).every(([key, val]) => {
-      return key in product && typeof product[key as keyof typeof product] === val;
-    });
-
-    return hasAllRequiredProps;
-  }
-
-  /**
-   * Validates that an object is a complete Product type.
-   * Checks for presence of core product properties.
-   *
-   * @param product - The product object to validate
-   * @returns Type predicate indicating if the object is a complete Product
-   */
-  private _isProduct(product: unknown): product is T {
-    return (
-      typeof product === "object" &&
-      product !== null &&
-      "price" in product &&
-      "quantity" in product &&
-      "uom" in product
-    );
-  }
-
-  /**
    * Converts a relative or partial URL to an absolute URL using the base URL.
    *
    * @param path - The URL or path to convert
@@ -721,19 +646,6 @@ export class ProductBuilder<T extends Product> {
   private _href(path: string | URL): string {
     const urlObj = new URL(path, this._baseURL);
     return urlObj.toString();
-  }
-
-  /**
-   * Checks if a value is a valid availability value.
-   *
-   * @param availability - The value to check
-   * @returns boolean indicating if the value is a valid availability value
-   */
-  private _isAvailability(availability: unknown): availability is AVAILABILITY {
-    return (
-      typeof availability === "string" &&
-      Object.values(AVAILABILITY).includes(availability as AVAILABILITY)
-    );
   }
 
   /**
@@ -761,8 +673,8 @@ export class ProductBuilder<T extends Product> {
    *   .build();
    * ```
    */
-  async build(): Promise<Maybe<T>> {
-    if (!this._isMinimalProduct(this._product)) {
+  async build(): Promise<Maybe<Product>> {
+    if (!isMinimalProduct(this._product)) {
       return;
     }
 
@@ -782,9 +694,7 @@ export class ProductBuilder<T extends Product> {
     // Process variants if present
     if (this._product.variants?.length) {
       // Filter out invalid variants
-      this._product.variants = this._product.variants.filter((variant) =>
-        this._isValidVariant(variant),
-      );
+      this._product.variants = this._product.variants.filter((variant) => isValidVariant(variant));
 
       // Process each variant
       for (const variant of this._product.variants ?? []) {
@@ -803,14 +713,14 @@ export class ProductBuilder<T extends Product> {
       }
     }
 
-    if (!this._isProduct(this._product)) {
+    if (!isProduct(this._product)) {
       console.error(`ProductBuilder| Invalid _product: ${JSON.stringify(this._product)}`);
       return;
     }
 
     this._product.url = this._href(this._product.url);
     console.log("Built product:", this._product);
-    return this._product satisfies T;
+    return this._product;
   }
 
   /**

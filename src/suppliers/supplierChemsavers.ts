@@ -2,8 +2,9 @@ import { isCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
 import { type Product } from "@/types";
-import { type ProductObject, type SearchResponse } from "@/types/chemsavers";
+import { type ProductObject } from "@/types/chemsavers";
 import { ProductBuilder } from "@/utils/ProductBuilder";
+import { isValidSearchResponse } from "@/utils/typeGuards/chemsavers";
 import SupplierBase from "./supplierBase";
 
 /**
@@ -56,116 +57,6 @@ export default class SupplierChemsavers
   };
 
   /**
-   * Validates if an unknown object matches the ProductObject type structure.
-   *
-   * Checks for required properties and their types:
-   * - CAS: string
-   * - id: string
-   * - inventoryLevel: number
-   * - name: string
-   * - product_id: number
-   * - retailPrice: number
-   * - salePrice: number
-   * - price: number
-   * - sku: string
-   * - upc: string
-   * - url: string
-   *
-   * @param response - The object to validate
-   * @returns A type predicate indicating if the response is a valid ProductObject
-   */
-  protected _isValidSearchResponseItem(response: unknown): response is ProductObject {
-    if (typeof response !== "object" || response === null) {
-      this._logger.warn("Invalid search response item - No object found:", response);
-      return false;
-    }
-    if (
-      "document" in response === false ||
-      response.document === undefined ||
-      typeof response.document !== "object"
-    ) {
-      this._logger.warn("Invalid search response - No document object found:", response);
-      return false;
-    }
-
-    const requiredResultsProps = {
-      /* eslint-disable */
-      CAS: "string",
-      id: "string",
-      inventoryLevel: "number",
-      name: "string",
-      product_id: "number",
-      retailPrice: "number",
-      salePrice: "number",
-      price: "number",
-      sku: "string",
-      upc: "string",
-      url: "string",
-      /* eslint-enable */
-    };
-
-    return Object.entries(requiredResultsProps).every(([key, val]) => {
-      const document = response.document as Record<string, unknown>;
-      if (key in document === false) {
-        this._logger.warn("Invalid search response item - No key found:", { key, response });
-        return false;
-      }
-      if (typeof document[key] !== val) {
-        this._logger.warn("Invalid search response item - Wrong type:", { key, response });
-        return false;
-      }
-      return true;
-    });
-  }
-
-  /**
-   * Validates if an unknown object matches the SearchResponse type structure.
-   *
-   * Performs the following validations:
-   * 1. Checks if response is a non-null object with a 'results' property
-   * 2. Validates that results is a non-empty array
-   * 3. Ensures the first result has a 'hits' property
-   * 4. Verifies each hit is a valid ProductObject using _isValidSearchResponseItem
-   *
-   * Note: All errors are caught and return false - this method will never throw.
-   *
-   * @param response - The object to validate
-   * @returns A type predicate indicating if the response is a valid SearchResponse
-   */
-  protected _isValidSearchResponse(response: unknown): response is SearchResponse {
-    try {
-      if (typeof response !== "object" || response === null || !("results" in response)) {
-        this._logger.warn("Invalid search response - No results object found:", response);
-        return false;
-      }
-
-      const { results } = response as { results: unknown };
-
-      if (!Array.isArray(results) || results.length === 0) {
-        this._logger.warn("Invalid search response - results object is not an array:", {
-          response,
-          results,
-        });
-        return false;
-      }
-
-      if (!("hits" in results[0]) || !Array.isArray(results[0].hits)) {
-        this._logger.warn("Invalid search response - No hits object found:", {
-          response,
-          results,
-          hits: results[0].hits,
-        });
-        return false;
-      }
-
-      // Validate each hit in the nested array structure
-      return results[0].hits.every((hit: unknown) => this._isValidSearchResponseItem(hit));
-    } catch {
-      return false;
-    }
-  }
-
-  /**
    * Executes a product search query and returns matching products
    * @param query - Search term to look for
    * @param limit - The maximum number of results to query for
@@ -200,7 +91,7 @@ export default class SupplierChemsavers
 
       this._logger.debug("Query response:", response);
 
-      if (!this._isValidSearchResponse(response)) {
+      if (!isValidSearchResponse(response)) {
         this._logger.warn("Bad search response:", response);
         return;
       }

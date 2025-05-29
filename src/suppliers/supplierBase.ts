@@ -1,10 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { fetchDecorator, isFullURL } from "@/helpers/request";
 import { type Maybe, type MaybeArray, type Product } from "@/types";
-import { type RequiredProductFields } from "@/types/product";
 import { type RequestOptions, type RequestParams } from "@/types/request";
 import { Logger } from "@/utils/Logger";
 import { ProductBuilder } from "@/utils/ProductBuilder";
+import {
+  isHtmlResponse,
+  isHttpResponse,
+  isJsonResponse,
+  isMinimalProduct,
+} from "@/utils/typeGuards/common";
 import { extract, WRatio } from "fuzzball";
 import { type JsonValue } from "type-fest";
 
@@ -20,7 +25,7 @@ import { type JsonValue } from "type-fest";
  * const supplier = new SupplierBase<Product>();
  * ```
  */
-export default abstract class SupplierBase<S, T extends Product> implements AsyncIterable<T> {
+export default abstract class SupplierBase<S, T extends Product> implements AsyncIterable<Product> {
   // The name of the supplier (used for display name, lists, etc)
   public abstract readonly supplierName: string;
 
@@ -258,151 +263,6 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   protected async _setup(): Promise<void> {}
 
   /**
-   * Type guard to validate if a value is a valid Response object.
-   * Checks for the presence of required Response properties and methods.
-   *
-   * @param value - The value to validate
-   * @returns Type predicate indicating if the value is a valid Response object
-   * @typeguard
-   *
-   * @example
-   * ```typescript
-   * // Example with a valid Response
-   * const response = await fetch("https://api.supplier.com/products");
-   * if (this._isResponse(response)) {
-   *   console.log("Valid response:", response.status);
-   * } else {
-   *   console.log("Invalid response object");
-   * }
-   *
-   * // Example with invalid values
-   * const invalidValues = [
-   *   null,
-   *   undefined,
-   *   {},
-   *   { status: 200 }, // Missing required methods
-   *   { ok: true, status: 200, statusText: "OK" } // Missing required methods
-   * ];
-   *
-   * for (const value of invalidValues) {
-   *   if (!this._isResponse(value)) {
-   *     console.log("Invalid response:", value);
-   *   }
-   * }
-   * ```
-   */
-  protected _isResponse(value: unknown): value is Response {
-    return (
-      value !== null &&
-      typeof value === "object" &&
-      "ok" in value &&
-      "status" in value &&
-      "statusText" in value &&
-      typeof (value as Response).json === "function" &&
-      typeof (value as Response).text === "function"
-    );
-  }
-
-  /**
-   * Type guard to validate if a Response object contains JSON content.
-   * Checks the Content-Type header for JSON MIME types.
-   *
-   * @param response - The Response object to validate
-   * @returns Type predicate indicating if the response contains JSON content
-   * @typeguard
-   *
-   * @example
-   * ```typescript
-   * // Example with JSON response
-   * const response = await fetch("https://api.supplier.com/products");
-   * if (this._isJsonResponse(response)) {
-   *   const data = await response.json();
-   *   console.log("JSON data:", data);
-   * } else {
-   *   console.log("Not a JSON response");
-   * }
-   *
-   * // Example with different content types
-   * const responses = [
-   *   new Response(JSON.stringify({ data: "json" }), {
-   *     headers: { "Content-Type": "application/json" }
-   *   }),
-   *   new Response("<html>", {
-   *     headers: { "Content-Type": "text/html" }
-   *   }),
-   *   new Response("text", {
-   *     headers: { "Content-Type": "text/plain" }
-   *   })
-   * ];
-   *
-   * for (const response of responses) {
-   *   if (this._isJsonResponse(response)) {
-   *     console.log("JSON response:", response.headers.get("Content-Type"));
-   *   } else {
-   *     console.log("Non-JSON response:", response.headers.get("Content-Type"));
-   *   }
-   * }
-   * ```
-   */
-  protected _isJsonResponse(response: Maybe<Response>): response is Response {
-    if (!response) return false;
-    const contentType = response.headers.get("Content-Type");
-    return (
-      contentType !== null && (contentType.includes("/json") || contentType.includes("/javascript"))
-    );
-  }
-
-  /**
-   * Type guard to validate if a Response object contains HTML content.
-   * Checks the Content-Type header for HTML MIME types.
-   *
-   * @param response - The Response object to validate
-   * @returns Type predicate indicating if the response contains HTML content
-   * @typeguard
-   *
-   * @example
-   * ```typescript
-   * // Example with HTML response
-   * const response = await fetch("https://supplier.com/products");
-   * if (this._isHtmlResponse(response)) {
-   *   const html = await response.text();
-   *   console.log("HTML content:", html);
-   * } else {
-   *   console.log("Not an HTML response");
-   * }
-   *
-   * // Example with different content types
-   * const responses = [
-   *   new Response("<html>", {
-   *     headers: { "Content-Type": "text/html" }
-   *   }),
-   *   new Response(JSON.stringify({ data: "json" }), {
-   *     headers: { "Content-Type": "application/json" }
-   *   }),
-   *   new Response("text", {
-   *     headers: { "Content-Type": "text/plain" }
-   *   })
-   * ];
-   *
-   * for (const response of responses) {
-   *   if (this._isHtmlResponse(response)) {
-   *     console.log("HTML response:", response.headers.get("Content-Type"));
-   *   } else {
-   *     console.log("Non-HTML response:", response.headers.get("Content-Type"));
-   *   }
-   * }
-   * ```
-   */
-  protected _isHtmlResponse(response: Maybe<Response>): response is Response {
-    if (!response) return false;
-    const contentType = response.headers.get("Content-Type");
-    return (
-      contentType !== null &&
-      (contentType.includes("text/html") || contentType.includes("application/xhtml+xml"))
-    );
-  }
-
-  /**
    * Retrieves HTTP headers from a URL using a HEAD request.
    * Useful for checking content types, caching headers, and other metadata without downloading the full response.
    *
@@ -502,7 +362,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     // Fetch the goods
     const httpRequest = await this._fetch(requestObj);
 
-    if (!this._isResponse(httpRequest)) {
+    if (!isHttpResponse(httpRequest)) {
       const badResponse = await (httpRequest as unknown as Response)?.text();
       this._logger.error("Invalid POST response: ", badResponse);
       throw new TypeError(`Invalid POST response: ${httpRequest}`);
@@ -546,7 +406,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     headers,
   }: RequestOptions): Promise<Maybe<JsonValue>> {
     const httpRequest = await this._httpPost({ path, host, body, params, headers });
-    if (!this._isJsonResponse(httpRequest)) {
+    if (!isJsonResponse(httpRequest)) {
       throw new TypeError(`_httpPostJson| Invalid POST response: ${httpRequest}`);
     }
     return await httpRequest.json();
@@ -732,7 +592,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     host,
   }: RequestOptions): Promise<Maybe<string>> {
     const httpResponse = await this._httpGet({ path, params, headers, host });
-    if (!this._isHtmlResponse(httpResponse)) {
+    if (!isHtmlResponse(httpResponse)) {
       throw new TypeError(`_httpGetHtml| Invalid GET response: ${httpResponse}`);
     }
     return await httpResponse.text();
@@ -796,85 +656,13 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     });
     const httpRequest = await this._httpGet({ path, params, headers: _headers, host });
 
-    if (!this._isJsonResponse(httpRequest)) {
+    if (!isJsonResponse(httpRequest)) {
       const badResponse = await (httpRequest as unknown as Response)?.text();
       this._logger.error("Invalid HTTP GET response: ", badResponse);
       return;
     }
 
     return await httpRequest.json();
-  }
-
-  /**
-   * Type guard to validate if a value is a valid result object.
-   * Checks for the presence of required result properties.
-   *
-   * @param value - The value to validate
-   * @returns Type predicate indicating if the value is a valid result object
-   * @typeguard
-   *
-   * @example
-   * ```typescript
-   * // Example with valid result
-   * const result = {
-   *   title: "Sodium Chloride",
-   *   price: 29.99,
-   *   quantity: 500,
-   *   uom: "g",
-   *   supplier: "ChemSupplier",
-   *   url: "/products/nacl",
-   *   currencyCode: "USD",
-   *   currencySymbol: "$"
-   * };
-   *
-   * if (this._isValidResult(result)) {
-   *   console.log("Valid result:", result.title);
-   * } else {
-   *   console.log("Invalid result object");
-   * }
-   *
-   * // Example with invalid values
-   * const invalidValues = [
-   *   null,
-   *   undefined,
-   *   {},
-   *   { title: "Sodium Chloride" }, // Missing required fields
-   *   {
-   *     title: "Sodium Chloride",
-   *     price: "29.99", // Wrong type for price
-   *     quantity: 500,
-   *     uom: "g",
-   *     supplier: "ChemSupplier",
-   *     url: "/products/nacl",
-   *     currencyCode: "USD",
-   *     currencySymbol: "$"
-   *   }
-   * ];
-   *
-   * for (const value of invalidValues) {
-   *   if (!this._isValidResult(value)) {
-   *     console.log("Invalid result:", value);
-   *   }
-   * }
-   * ```
-   */
-  protected _isValidResult(value: unknown): value is RequiredProductFields {
-    if (!value || typeof value !== "object") return false;
-
-    const requiredProps: Record<keyof RequiredProductFields, string> = {
-      title: "string",
-      price: "number",
-      quantity: "number",
-      uom: "string",
-      supplier: "string",
-      url: "string",
-      currencyCode: "string",
-      currencySymbol: "string",
-    };
-
-    return Object.entries(requiredProps).every(([key, expectedType]) => {
-      return key in value && typeof value[key as keyof typeof value] === expectedType;
-    });
   }
 
   /**
@@ -1060,13 +848,14 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * }
    * ```
    */
-  private async _cacheResults(results: T[]): Promise<void> {
+  private async _cacheResults(results: Product[]): Promise<void> {
     try {
       const key = this._generateCacheKey();
       this._logger.debug("Storing in cache with key:", key);
       const result = await chrome.storage.local.get(SupplierBase.cacheKey);
       const cache =
-        (result[SupplierBase.cacheKey] as Record<string, { data: T[]; timestamp: number }>) || {};
+        (result[SupplierBase.cacheKey] as Record<string, { data: Product[]; timestamp: number }>) ||
+        {};
 
       // If cache is full, remove oldest entry
       if (Object.keys(cache).length >= SupplierBase.cacheSize) {
@@ -1100,7 +889,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * results.
    * @returns An async generator that yields valid results.
    */
-  async *[Symbol.asyncIterator](): AsyncGenerator<T, void, unknown> {
+  async *[Symbol.asyncIterator](): AsyncGenerator<Product, void, unknown> {
     try {
       // Check cache first
       const cachedResults = await this._getCachedResults();
@@ -1123,7 +912,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
       this._products = results;
 
       // Process results in batches to maintain controlled concurrency
-      const allResults: T[] = [];
+      const allResults: Product[] = [];
       for (let i = 0; i < this._products.length; i += this._httpRequestBatchSize) {
         const batch = this._products.slice(i, i + this._httpRequestBatchSize);
 
@@ -1177,138 +966,6 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   }
 
   /**
-   * Type guard to validate if a value is a complete Product object.
-   * Checks for the presence and correct types of all required product fields.
-   * This is a stricter validation than _isMinimalProduct as it ensures all required fields are present.
-   *
-   * @param product - The value to validate
-   * @returns Type predicate indicating if the value is a complete Product object
-   * @typeguard
-   *
-   * @example
-   * ```typescript
-   * const completeProduct = {
-   *   title: "Sodium Chloride",
-   *   price: 29.99,
-   *   quantity: 500,
-   *   uom: "g",
-   *   supplier: "ChemSupplier",
-   *   url: "/products/nacl",
-   *   currencyCode: "USD",
-   *   currencySymbol: "$",
-   *   description: "High purity sodium chloride",
-   *   cas: "7647-14-5"
-   * };
-   *
-   * if (this._isProduct(completeProduct)) {
-   *   console.log('Valid complete product:', completeProduct.title);
-   * } else {
-   *   console.log('Invalid product object');
-   * }
-   *
-   * // Example with missing required fields
-   * const partialProduct = {
-   *   title: "Sodium Chloride",
-   *   price: 29.99
-   *   // Missing required fields
-   * };
-   * if (!this._isProduct(partialProduct)) {
-   *   console.log('Invalid product - missing required fields');
-   * }
-   * ```
-   */
-  protected _isProduct(product: unknown): product is Product {
-    if (typeof product !== "object" || product === null) {
-      this._logger.debug("Invalid product object", { product });
-      return false;
-    }
-
-    const requiredProps: Record<keyof RequiredProductFields, string> = {
-      title: "string",
-      price: "number",
-      quantity: "number",
-      uom: "string",
-      supplier: "string",
-      url: "string",
-      currencyCode: "string",
-      currencySymbol: "string",
-    };
-
-    return Object.entries(requiredProps).every(([key, expectedType]) => {
-      if (key in product === false) {
-        this._logger.debug("Missing required property", { key, product });
-        return false;
-      }
-
-      if (typeof product[key as keyof typeof product] !== expectedType) {
-        this._logger.debug("Invalid property type", { key, expectedType, product });
-        return false;
-      }
-
-      return true;
-    });
-  }
-
-  /**
-   * Type guard to validate if a value has the minimal required properties of a Product.
-   * This is a less strict validation than _isProduct as it only checks for the minimum required fields.
-   * Useful for validating partial product data during construction.
-   *
-   * @param product - The value to validate
-   * @returns Type predicate indicating if the value has minimal required product properties
-   * @typeguard
-   *
-   * @example
-   * ```typescript
-   * const minimalProduct = {
-   *   title: "Sodium Chloride",
-   *   price: 29.99,
-   *   quantity: 500,
-   *   uom: "g",
-   *   supplier: "ChemSupplier",
-   *   url: "/products/nacl",
-   *   currencyCode: "USD",
-   *   currencySymbol: "$"
-   * };
-   *
-   * if (this._isMinimalProduct(minimalProduct)) {
-   *   console.log('Valid minimal product:', minimalProduct.title);
-   * } else {
-   *   console.log('Invalid minimal product');
-   * }
-   *
-   * // Example with missing required fields
-   * const invalidProduct = {
-   *   title: "Sodium Chloride",
-   *   price: 29.99,
-   *   quantity: 500
-   *   // Missing other required fields
-   * };
-   * if (!this._isMinimalProduct(invalidProduct)) {
-   *   console.log('Invalid minimal product - missing required fields');
-   * }
-   * ```
-   */
-  protected _isMinimalProduct(product: unknown): product is RequiredProductFields {
-    if (!product || typeof product !== "object") return false;
-
-    const requiredProps: Record<keyof RequiredProductFields, string> = {
-      title: "string",
-      price: "number",
-      quantity: "number",
-      uom: "string",
-      supplier: "string",
-      url: "string",
-      currencyCode: "string",
-      currencySymbol: "string",
-    };
-
-    return Object.entries(requiredProps).every(([key, expectedType]) => {
-      return key in product && typeof product[key as keyof typeof product] === expectedType;
-    });
-  }
-
-  /**
    * Finalizes a partial product by adding computed properties and validating the result.
    * This method:
    * 1. Validates the product has minimal required properties
@@ -1351,8 +1008,8 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * }
    * ```
    */
-  protected async _finishProduct(product: ProductBuilder<T>): Promise<Maybe<T>> {
-    if (!this._isMinimalProduct(product.dump())) {
+  protected async _finishProduct(product: ProductBuilder<Product>): Promise<Maybe<Product>> {
+    if (!isMinimalProduct(product.dump())) {
       this._logger.warn("Unable to finish product - Minimum data not set", { product });
       return;
     }
@@ -1505,7 +1162,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * // Example usage with basic GET request
    * try {
    *   const response = await this._fetch("https://api.supplier.com/products");
-   *   if (this._isJsonResponse(response)) {
+   *   if (isJsonResponse(response)) {
    *     const data = await response.json();
    *     console.log("Received data:", data);
    *   }

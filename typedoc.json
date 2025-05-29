@@ -2,6 +2,8 @@
   "name": "ChemPare Documentation",
   "entryPoints": [
     "./src/**/index.ts",
+    //"./src/components/SearchPanel/index.ts",
+    //"./src/**/index.ts",
     "./src/helpers/*.ts",
     "./src/constants/*.ts",
     "./src/types/*.ts",

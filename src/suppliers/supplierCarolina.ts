@@ -8,14 +8,19 @@ import {
   type ContentFolder,
   type ContentRuleZoneItem,
   type MainContentItem,
-  type ProductResponse,
   type ResultsContainer,
   type SearchParams,
-  type SearchResponse,
   type SearchResult,
 } from "@/types/carolina";
 import type { ParsedPrice } from "@/types/currency";
 import { ProductBuilder } from "@/utils/ProductBuilder";
+import {
+  isATGResponse,
+  isResponseOk,
+  isSearchResultItem,
+  isValidProductResponse,
+  isValidSearchResponse,
+} from "@/utils/typeGuards/carolina";
 import SupplierBase from "./supplierBase";
 
 /**
@@ -111,127 +116,6 @@ export default class SupplierCarolina
   }
 
   /**
-   * Validates that a response has a successful status code and expected structure
-   * @param response - Response object to validate
-   * @returns True if response is valid and successful
-   */
-  protected _isResponseOk(response: unknown): response is SearchResponse {
-    if (!response || typeof response !== "object") {
-      this._logger.error("_isResponseOk| Response is not an object:", response);
-      return false;
-    }
-
-    try {
-      const _response = response as Partial<SearchResponse>;
-
-      if (_response.responseStatusCode !== 200) {
-        this._logger.error(
-          "_isResponseOk| Invalid response status code:",
-          _response.responseStatusCode,
-        );
-        return false;
-      }
-
-      if (!("@type" in _response)) {
-        this._logger.error("_isResponseOk| Missing @type property");
-        return false;
-      }
-
-      if (!("contents" in _response)) {
-        this._logger.error("_isResponseOk| Missing contents property");
-        return false;
-      }
-
-      if (typeof _response.contents !== "object") {
-        this._logger.error("_isResponseOk| Contents is not an object:", typeof _response.contents);
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      this._logger.error("_isResponseOk| Error validating response:", error);
-      return false;
-    }
-  }
-
-  /**
-   * Performs deep validation of a search response object
-   * @param response - Response object to validate
-   * @returns True if the response matches expected Carolina search response structure
-   */
-  protected _isValidSearchResponse(response: unknown): response is SearchResponse {
-    if (typeof response !== "object" || response === null) {
-      this._logger.error("_isValidSearchResponse| Response is not an object:", response);
-      return false;
-    }
-
-    const requiredProps = {
-      contents: (val: unknown) => {
-        if (typeof val !== "object" || val === null) {
-          this._logger.error("_isValidSearchResponse| Contents is not an object:", val);
-          return false;
-        }
-        const contents = val as Record<string, unknown>;
-
-        if (!Array.isArray(contents.ContentFolderZone)) {
-          this._logger.error(
-            "_isValidSearchResponse| ContentFolderZone is not an array:",
-            contents.ContentFolderZone,
-          );
-          return false;
-        }
-        if (contents.ContentFolderZone.length === 0) {
-          this._logger.error("_isValidSearchResponse| ContentFolderZone is empty");
-          return false;
-        }
-
-        const folder = contents.ContentFolderZone[0] as Record<string, unknown>;
-        if (!Array.isArray(folder.childRules)) {
-          this._logger.error(
-            "_isValidSearchResponse| childRules is not an array:",
-            folder.childRules,
-          );
-          return false;
-        }
-
-        if (folder.childRules.length === 0) {
-          this._logger.error("_isValidSearchResponse| childRules is empty");
-          return false;
-        }
-
-        return true;
-      },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      "@type": "string",
-      responseStatusCode: (val: unknown) => {
-        const isValid = val === 200;
-        if (!isValid) {
-          this._logger.error("_isValidSearchResponse| Invalid response status code:", val);
-        }
-        return isValid;
-      },
-    };
-
-    return Object.entries(requiredProps).every(([key, validator]) => {
-      const value = (response as Record<string, unknown>)[key];
-      if (value === undefined) {
-        this._logger.error(`_isValidSearchResponse| Missing required property: ${key}`);
-        return false;
-      }
-      if (typeof validator === "string") {
-        const isValid = typeof value === validator;
-        if (!isValid) {
-          this._logger.error(
-            `_isValidSearchResponse| Invalid type for ${key}, expected ${validator}, got ${typeof value}`,
-          );
-        }
-        return isValid;
-      }
-      return validator(value);
-    });
-  }
-
-  /**
    * Executes a product search query and stores results
    * Fetches products matching the current search query and updates internal results cache
    */
@@ -246,7 +130,7 @@ export default class SupplierCarolina
       params,
     });
 
-    if (!this._isResponseOk(response)) {
+    if (!isResponseOk(response)) {
       this._logger.warn("Response status:", response);
       return;
     }
@@ -308,7 +192,7 @@ export default class SupplierCarolina
    */
   protected _extractSearchResults(response: unknown): SearchResult[] {
     try {
-      if (!this._isValidSearchResponse(response)) {
+      if (!isValidSearchResponse(response)) {
         this._logger.warn("Invalid response structure");
         return [];
       }
@@ -360,203 +244,11 @@ export default class SupplierCarolina
         return [];
       }
 
-      return resultsContainer.results.filter(this._isSearchResultItem);
+      return resultsContainer.results.filter(isSearchResultItem);
     } catch (error) {
       this._logger.error("Error extracting search results:", error);
       return [];
     }
-  }
-
-  /**
-   * Type guard for SearchResult
-   */
-  protected _isSearchResultItem(result: unknown): result is SearchResult {
-    if (typeof result !== "object" || result === null) {
-      this._logger.error("_isSearchResultItem| Result is not an object:", result);
-      return false;
-    }
-
-    const requiredProps = {
-      /* eslint-disable */
-      "product.productId": "string",
-      "product.productName": "string",
-      "product.shortDescription": "string",
-      itemPrice: "string",
-      "product.seoName": "string",
-      productUrl: "string",
-      productName: "string",
-      qtyDiscountAvailable: "boolean",
-      /* eslint-enable */
-    };
-
-    const hasRequiredProps = Object.entries(requiredProps).every(([key, expectedType]) => {
-      const item = result as Record<string, unknown>;
-      if (!(key in item)) {
-        console.warn(`_isSearchResultItem| Missing property: ${key}`);
-        return false;
-      }
-      const actualType = typeof item[key];
-      if (actualType !== expectedType) {
-        console.warn(
-          `_isSearchResultItem| Invalid type for ${key}, expected ${expectedType}, got ${actualType}`,
-        );
-        return false;
-      }
-      return true;
-    });
-
-    return hasRequiredProps;
-  }
-
-  /**
-   * Validates that a response matches the ProductResponse interface structure
-   * @param obj - Response object to validate
-   * @returns Type predicate indicating if object is a valid ProductResponse
-   * @example
-   * ```typescript
-   * const response = await this._httpGetJson({
-   *   path: `/api/rest/cb/product/product-details/${productId}`
-   * });
-   * if (this._isValidProductResponse(response)) {
-   *   // Process valid product response
-   *   console.log(response.product.name);
-   * }
-   * ```
-   */
-  protected _isValidProductResponse(obj: unknown): obj is ProductResponse {
-    if (typeof obj !== "object" || obj === null) {
-      this._logger.warn("_isValidProductResponse| Object is not an object:", obj);
-      return false;
-    }
-
-    const response = obj as Partial<ProductResponse>;
-
-    if (!response.contents?.MainContent) {
-      this._logger.warn("_isValidProductResponse| Missing contents.MainContent");
-      return false;
-    }
-
-    if (!Array.isArray(response.contents.MainContent)) {
-      this._logger.warn(
-        "_isValidProductResponse| MainContent is not an array:",
-        response.contents.MainContent,
-      );
-      return false;
-    }
-
-    if (response.contents.MainContent.length === 0) {
-      this._logger.warn("_isValidProductResponse| MainContent array is empty");
-      return false;
-    }
-
-    const mainContent = response.contents.MainContent[0];
-    if (typeof mainContent !== "object" || mainContent === null) {
-      this._logger.warn(
-        "_isValidProductResponse| First MainContent item is not an object:",
-        mainContent,
-      );
-      return false;
-    }
-
-    if (!("atgResponse" in mainContent)) {
-      this._logger.warn("_isValidProductResponse| Missing atgResponse in MainContent");
-      return false;
-    }
-
-    if (typeof mainContent.atgResponse !== "object" || mainContent.atgResponse === null) {
-      this._logger.warn(
-        "_isValidProductResponse| atgResponse is not an object:",
-        mainContent.atgResponse,
-      );
-      return false;
-    }
-
-    return true;
-  }
-
-  /**
-   * Validates that a response matches the ATGResponse interface structure
-   * @param obj - Response object to validate
-   * @returns Type predicate indicating if object is a valid ATGResponse
-   * @example
-   * ```typescript
-   * const response = await this._httpGetJson({
-   *   path: `/api/rest/cb/product/product-quick-view/${productId}`
-   * });
-   * if (this._isATGResponse(response)) {
-   *   // Process valid ATG response
-   *   console.log(response.response.response.products[0]);
-   * }
-   * ```
-   */
-  protected _isATGResponse(obj: unknown): obj is ATGResponse {
-    if (typeof obj !== "object" || obj === null) {
-      this._logger.warn("_isATGResponse| Object is not an object:", obj);
-      return false;
-    }
-
-    const response = obj as Partial<ATGResponse>;
-
-    const requiredProps = {
-      result: (val: unknown) => {
-        const isValid = val === "success";
-        if (!isValid) {
-          this._logger.warn("_isATGResponse| Invalid result value:", val);
-        }
-        return isValid;
-      },
-      response: (val: unknown) => {
-        if (typeof val !== "object" || val === null) {
-          this._logger.warn("_isATGResponse| Response is not an object:", val);
-          return false;
-        }
-        const innerResponse = (val as { response?: unknown }).response;
-        if (typeof innerResponse !== "object" || innerResponse === null) {
-          this._logger.warn("_isATGResponse| Inner response is not an object:", innerResponse);
-          return false;
-        }
-
-        const requiredInnerProps = {
-          displayName: "string",
-          longDescription: "string",
-          shortDescription: "string",
-          product: "string",
-          dataLayer: "object",
-          canonicalUrl: "string",
-        };
-
-        return Object.entries(requiredInnerProps).every(([key, expectedType]) => {
-          const value = (innerResponse as Record<string, unknown>)[key];
-          if (value === undefined) {
-            this._logger.warn(`_isATGResponse| Missing inner property: ${key}`);
-            return false;
-          }
-          if (expectedType === "object") {
-            if (typeof value !== "object" || value === null) {
-              this._logger.warn(
-                `_isATGResponse| Invalid type for ${key}, expected object, got:`,
-                value,
-              );
-              return false;
-            }
-          } else if (typeof value !== expectedType) {
-            this._logger.warn(
-              `_isATGResponse| Invalid type for ${key}, expected ${expectedType}, got ${typeof value}`,
-            );
-            return false;
-          }
-          return true;
-        });
-      },
-    };
-
-    return Object.entries(requiredProps).every(([key, validator]) => {
-      if (!(key in response)) {
-        this._logger.warn(`_isATGResponse| Missing required property: ${key}`);
-        return false;
-      }
-      return validator((response as Record<string, unknown>)[key]);
-    });
   }
 
   /**
@@ -578,14 +270,14 @@ export default class SupplierCarolina
   protected _extractATGResponse(
     productResponse: unknown,
   ): ATGResponse["response"]["response"] | null {
-    if (!this._isValidProductResponse(productResponse)) {
+    if (!isValidProductResponse(productResponse)) {
       return null;
     }
 
     try {
       const atgResponse = productResponse.contents.MainContent[0].atgResponse;
 
-      if (!this._isATGResponse(atgResponse)) {
+      if (!isATGResponse(atgResponse)) {
         return null;
       }
 
@@ -629,7 +321,7 @@ export default class SupplierCarolina
         },
       });
 
-      if (!this._isResponseOk(productResponse)) {
+      if (!isResponseOk(productResponse)) {
         this._logger.warn("Response status:", productResponse);
         return;
       }

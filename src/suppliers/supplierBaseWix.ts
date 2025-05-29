@@ -8,13 +8,13 @@ import {
   type ProductItem,
   type ProductObject,
   type ProductSelection,
-  type QueryResponse,
 } from "@/types/wix";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import merge from "lodash/merge";
 //import query from "./queries/getFilteredProductsWithHasDiscount-wix.graphql";
 import { findFormulaInHtml } from "@/helpers/science";
 import { firstMap } from "@/helpers/utils";
+import { isProductItem, isProductSelection, isValidSearchResponse } from "@/utils/typeGuards/wix";
 import SupplierBase from "./supplierBase";
 /**
  * SupplierBaseWix class that extends SupplierBase and implements AsyncIterable<Product>.
@@ -76,153 +76,6 @@ export default abstract class SupplierBaseWix
       // eslint-disable-next-line @typescript-eslint/naming-convention
       Authorization: this._accessToken,
     };
-  }
-
-  /**
-   * Typeguard for the QueryResponse type object
-   */
-  protected _isValidSearchResponse(response: unknown): response is QueryResponse {
-    if (typeof response !== "object" || response === null) {
-      return false;
-    }
-
-    // Check for nested structure existence
-    if (
-      !("data" in response) ||
-      typeof response.data !== "object" ||
-      response.data === null ||
-      !("catalog" in response.data) ||
-      typeof response.data.catalog !== "object" ||
-      response.data.catalog === null ||
-      !("category" in response.data.catalog) ||
-      typeof response.data.catalog.category !== "object" ||
-      response.data.catalog.category === null ||
-      !("productsWithMetaData" in response.data.catalog.category) ||
-      typeof response.data.catalog.category.productsWithMetaData !== "object" ||
-      response.data.catalog.category.productsWithMetaData === null
-    ) {
-      return false;
-    }
-
-    const productsData = response.data.catalog.category.productsWithMetaData;
-
-    // Check required properties and their types
-    const requiredProps = {
-      totalCount: "number",
-      list: Array.isArray,
-    };
-
-    const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
-      if (typeof validator === "string") {
-        return (
-          key in productsData && typeof productsData[key as keyof typeof productsData] === validator
-        );
-      }
-      return key in productsData && validator((productsData as Record<string, unknown>)[key]);
-    });
-
-    if (!hasRequiredProps) return false;
-
-    // Check that list contains valid products
-    return (productsData as { list: unknown[] }).list.every((product: unknown) =>
-      this._isWixProduct(product),
-    );
-  }
-
-  /**
-   * Type guard for ProductItem
-   */
-  protected _isProductItem(item: unknown): item is ProductItem {
-    if (typeof item !== "object" || item === null) {
-      return false;
-    }
-
-    const requiredProps = {
-      id: "string",
-      formattedPrice: "string",
-      price: "number",
-      optionsSelections: Array.isArray,
-    };
-
-    const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
-      if (typeof validator === "string") {
-        return key in item && typeof item[key as keyof typeof item] === validator;
-      }
-      return key in item && validator(item[key as keyof typeof item]);
-    });
-
-    if (!hasRequiredProps) return false;
-
-    // Check that optionsSelections is a non-empty array
-    return (item as ProductItem).optionsSelections.length > 0;
-  }
-
-  /**
-   * Type guard for ProductSelection
-   */
-  protected _isProductSelection(selection: unknown): selection is ProductSelection {
-    if (typeof selection !== "object" || selection === null) {
-      return false;
-    }
-
-    const requiredProps = {
-      id: (val: unknown) => typeof val === "string" || typeof val === "number",
-      value: "string",
-      description: "string",
-      key: "string",
-      inStock: (val: unknown) => typeof val === "boolean" || val === null,
-    };
-
-    return Object.entries(requiredProps).every(([key, validator]) => {
-      if (typeof validator === "string") {
-        return key in selection && typeof selection[key as keyof typeof selection] === validator;
-      }
-      return key in selection && validator(selection[key as keyof typeof selection]);
-    });
-  }
-
-  /**
-   * Type guard for ProductObject
-   */
-  protected _isWixProduct(product: unknown): product is ProductObject {
-    if (typeof product !== "object" || product === null) {
-      return false;
-    }
-
-    const requiredProps = {
-      price: "number",
-      formattedPrice: "string",
-      name: "string",
-      urlPart: "string",
-      productItems: Array.isArray,
-      options: Array.isArray,
-    };
-
-    const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
-      if (typeof validator === "string") {
-        return key in product && typeof product[key as keyof typeof product] === validator;
-      }
-      return key in product && validator(product[key as keyof typeof product]);
-    });
-
-    if (!hasRequiredProps) return false;
-
-    // Check product items
-    const productItems = (product as ProductObject).productItems;
-    if (!productItems.every((item) => this._isProductItem(item))) {
-      return false;
-    }
-
-    // Check options and selections if they exist
-    const options = (product as ProductObject).options;
-    if (
-      options.length > 0 &&
-      !options[0]?.selections?.every((selection) => this._isProductSelection(selection))
-    ) {
-      return false;
-    }
-
-    return true;
   }
 
   /**
@@ -351,7 +204,7 @@ export default abstract class SupplierBaseWix
       },
     });
 
-    if (this._isValidSearchResponse(queryResponse) === false) {
+    if (isValidSearchResponse(queryResponse) === false) {
       throw new Error(`Invalid or empty Wix query response for ${query}`);
     }
 
@@ -404,7 +257,7 @@ export default abstract class SupplierBaseWix
         const productItems = Object.fromEntries(
           product.productItems
             .map((item: ProductItem) => {
-              if (!this._isProductItem(item)) {
+              if (!isProductItem(item)) {
                 console.warn("Invalid product item:", item);
                 return [];
               }
@@ -424,7 +277,7 @@ export default abstract class SupplierBaseWix
         const productSelections = Object.fromEntries(
           product.options[0].selections
             .map((selection: ProductSelection) => {
-              if (!this._isProductSelection(selection)) {
+              if (!isProductSelection(selection)) {
                 console.warn("Invalid product selection:", selection);
                 return [];
               }
@@ -489,7 +342,7 @@ export default abstract class SupplierBaseWix
    * @param data - Product object from search response
    * @returns - The title of the product
    */
-  protected _titleSelector(data: any): any {
-    return data.name;
+  protected _titleSelector(data: ProductObject): string {
+    return data.name as string;
   }
 }

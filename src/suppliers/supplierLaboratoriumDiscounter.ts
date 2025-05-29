@@ -4,13 +4,16 @@ import { urlencode } from "@/helpers/request";
 import { mapDefined } from "@/helpers/utils";
 import { type Product } from "@/types";
 import {
-  type PriceObject,
   type ProductObject,
   type SearchParams,
-  type SearchResponse,
   type SearchResponseProduct,
 } from "@/types/laboratoriumdiscounter";
 import { ProductBuilder } from "@/utils/ProductBuilder";
+import {
+  isProductObject,
+  isSearchResponseOk,
+  isValidSearchParams,
+} from "@/utils/typeGuards/laboratoriumdiscounter";
 import SupplierBase from "./supplierBase";
 
 /**
@@ -93,277 +96,6 @@ export default class SupplierLaboratoriumDiscounter
   };
 
   /**
-   * Validates that a response has the expected structure for a search response
-   * @param response - Response object to validate
-   * @returns Type predicate indicating if response is a valid SearchResponse
-   * @example
-   * ```typescript
-   * const response = await this._httpGetJson({
-   *   path: "/en/search/acid",
-   *   params: { format: "json" }
-   * });
-   * if (this._isSearchResponseOk(response)) {
-   *   // Process valid response
-   *   console.log(response.collection.products);
-   * } else {
-   *   console.error("Invalid response structure");
-   * }
-   * ```
-   */
-  protected _isSearchResponseOk(response: unknown): response is SearchResponse {
-    if (typeof response !== "object" || response === null) {
-      this._logger.warn("Invalid response: - Non object", { response });
-      return false;
-    }
-
-    // Check for required top-level properties
-    if (!("page" in response && "request" in response && "collection" in response)) {
-      this._logger.warn(
-        "Invalid response: - Missing required properties: page, request or collection",
-        { response },
-      );
-      return false;
-    }
-
-    const { page, request, collection } = response as Partial<SearchResponse>;
-
-    if (typeof page !== "object" || !page) {
-      this._logger.warn("Invalid page object, missing required properties", { page });
-      return false;
-    }
-
-    if (typeof request !== "object" || !request) {
-      this._logger.warn("Invalid request object, missing required properties", { request });
-      return false;
-    }
-
-    if (typeof collection !== "object" || !collection) {
-      this._logger.warn("Invalid collection object, missing required properties", { collection });
-      return false;
-    }
-
-    const badProps = ["search", "session_id", "key", "title", "status"].filter((prop) => {
-      if (prop in page === false) {
-        this._logger.warn(`Invalid response, expected to find ${prop} in page`, { page });
-        return true;
-      }
-      return false;
-    });
-
-    if (badProps.length > 0) {
-      this._logger.warn("Invalid page object, missing required properties", { page });
-      return false;
-    }
-
-    // Validate request object
-    if (
-      typeof request !== "object" ||
-      !request ||
-      !("url" in request && "method" in request && "get" in request && "device" in request)
-    ) {
-      this._logger.warn("Invalid request object, missing required properties from request", {
-        request,
-      });
-      return false;
-    }
-
-    // Validate collection and products
-    if (
-      typeof collection !== "object" ||
-      !collection ||
-      !("products" in collection) ||
-      typeof collection.products !== "object"
-    ) {
-      this._logger.warn("Invalid collection object, missing required properties from collection", {
-        collection,
-      });
-      return false;
-    }
-
-    // Validate each product in the collection
-    return Object.values(collection.products).every((product) =>
-      this._isSearchResponseProduct(product),
-    );
-  }
-
-  /**
-   * Type guard to validate PriceObject structure
-   * @param price - Object to validate as PriceObject
-   * @returns Type predicate indicating if price is a valid PriceObject
-   * @example
-   * ```typescript
-   * const priceData = {
-   *   price: 29.99,
-   *   price_incl: 29.99,
-   *   price_excl: 24.79,
-   *   price_old: 39.99,
-   *   price_old_incl: 39.99,
-   *   price_old_excl: 33.05
-   * };
-   * if (this._isPriceObject(priceData)) {
-   *   console.log("Valid price object:", priceData.price);
-   * } else {
-   *   console.error("Invalid price structure");
-   * }
-   * ```
-   */
-  protected _isPriceObject(price: unknown): price is PriceObject {
-    if (typeof price !== "object" || price === null) return false;
-
-    const requiredProps = {
-      /* eslint-disable */
-      price: "number",
-      price_incl: "number",
-      price_excl: "number",
-      price_old: "number",
-      price_old_incl: "number",
-      price_old_excl: "number",
-      /* eslint-enable */
-    };
-
-    return Object.entries(requiredProps).every(([key, type]) => {
-      return key in price && typeof price[key as keyof typeof price] === type;
-    });
-  }
-
-  /**
-   * Type guard to validate ProductObject structure
-   * @param product - Object to validate as ProductObject
-   * @returns Type predicate indicating if product is a valid ProductObject
-   * @example
-   * ```typescript
-   * const productData = {
-   *   id: 12345,
-   *   vid: 67890,
-   *   image: 1,
-   *   brand: false,
-   *   code: "CHEM-001",
-   *   ean: "1234567890123",
-   *   sku: "SKU-001",
-   *   score: 1.0,
-   *   available: true,
-   *   unit: true,
-   *   url: "/products/chemical-1",
-   *   title: "Sodium Chloride",
-   *   fulltitle: "Sodium Chloride 500g",
-   *   variant: "500g",
-   *   description: "High purity sodium chloride",
-   *   data_01: "Additional info",
-   *   price: {
-   *     price: 29.99,
-   *     price_incl: 29.99,
-   *     price_excl: 24.79,
-   *     price_old: 39.99,
-   *     price_old_incl: 39.99,
-   *     price_old_excl: 33.05
-   *   }
-   * };
-   * if (this._isSearchResponseProduct(productData)) {
-   *   console.log("Valid product:", productData.title);
-   * } else {
-   *   console.error("Invalid product structure");
-   * }
-   * ```
-   */
-  protected _isSearchResponseProduct(product: unknown): product is SearchResponseProduct {
-    if (typeof product !== "object" || product === null) return false;
-
-    const requiredProps = {
-      /* eslint-disable */
-      id: "number",
-      vid: "number",
-      image: "number",
-      brand: "boolean",
-      code: "string",
-      ean: "string",
-      sku: "string",
-      score: "number",
-      available: "boolean",
-      unit: "boolean",
-      url: "string",
-      title: "string",
-      fulltitle: "string",
-      variant: "string",
-      description: "string",
-      data_01: "string",
-      /* eslint-enable */
-    };
-
-    const hasRequiredProps = Object.entries(requiredProps).every(([key, type]) => {
-      return key in product && typeof product[key as keyof typeof product] === type;
-    });
-
-    if (!hasRequiredProps) return false;
-
-    // Validate price object separately
-    return "price" in product && this._isPriceObject(product.price);
-  }
-
-  /**
-   * Type guard to validate ProductObject structure
-   * @param data - Object to validate as ProductObject
-   * @returns Type predicate indicating if product is a valid ProductObject
-   * @example
-   * ```typescript
-   * const productData = {
-   *   product: {
-   *     variants: {
-   *       "1": {
-   *         id: 1,
-   *         title: "500g",
-   *         price: 29.99
-   *       }
-   *     }
-   *   }
-   * };
-   * if (this._isProductObject(productData)) {
-   *   console.log("Valid product object with variants");
-   * } else {
-   *   console.error("Invalid product object structure");
-   * }
-   * ```
-   */
-  protected _isProductObject(data: unknown): data is ProductObject {
-    if (typeof data !== "object" || data === null) return false;
-    if ("product" in data === false || typeof data.product !== "object" || data.product === null)
-      return false;
-    return (
-      "variants" in data.product &&
-      (typeof data.product.variants === "object" || data.product.variants === false)
-    );
-  }
-
-  /**
-   * Validates search parameters structure and values
-   * @param params - Parameters to validate
-   * @returns Type predicate indicating if params are valid SearchParams
-   * @example
-   * ```typescript
-   * const searchParams = {
-   *   limit: "10",
-   *   format: "json"
-   * };
-   * if (this._isValidSearchParams(searchParams)) {
-   *   console.log("Valid search parameters");
-   * } else {
-   *   console.error("Invalid search parameters");
-   * }
-   * ```
-   */
-  protected _isValidSearchParams(params: unknown): params is SearchParams {
-    if (typeof params !== "object" || params === null) return false;
-
-    const requiredProps = {
-      limit: (val: unknown) => typeof val === "string" && !isNaN(Number(val)),
-      format: (val: unknown) => val === "json",
-    };
-
-    return Object.entries(requiredProps).every(([key, validator]) => {
-      return key in params && validator(params[key as keyof typeof params]);
-    });
-  }
-
-  /**
    * Constructs the query parameters for a product search request
    * @param limit - The maximum number of results to query for
    * @returns Object containing all required search parameters
@@ -411,7 +143,7 @@ export default class SupplierLaboratoriumDiscounter
     limit: number = this._limit,
   ): Promise<ProductBuilder<Product>[] | void> {
     const params = this._makeQueryParams();
-    if (!this._isValidSearchParams(params)) {
+    if (!isValidSearchParams(params)) {
       this._logger.warn("Invalid search parameters:", params);
       return;
     }
@@ -421,7 +153,7 @@ export default class SupplierLaboratoriumDiscounter
       params,
     });
 
-    if (!this._isSearchResponseOk(response)) {
+    if (!isSearchResponseOk(response)) {
       this._logger.warn("Bad search response:", response);
       return;
     }
@@ -532,7 +264,7 @@ export default class SupplierLaboratoriumDiscounter
         },
       });
 
-      if (this._isProductObject(productResponse) === false) {
+      if (isProductObject(productResponse) === false) {
         this._logger.warn("Invalid product data - did not pass typeguard:", productResponse);
         return;
       }

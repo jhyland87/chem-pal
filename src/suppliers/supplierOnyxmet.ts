@@ -5,6 +5,7 @@ import { mapDefined } from "@/helpers/utils";
 import type { Product } from "@/types";
 import type { SearchResultItem, SearchResultResponse } from "@/types/onyxmet";
 import { ProductBuilder } from "@/utils/ProductBuilder";
+import { isSearchResultItem } from "@/utils/typeGuards/onyxmet";
 import SupplierBase from "./supplierBase";
 
 /**
@@ -148,7 +149,7 @@ export default class SupplierOnyxmet
    */
   protected _initProductBuilders(data: SearchResultItem[]): ProductBuilder<Product>[] {
     return mapDefined(data, (item) => {
-      if (!this._isSearchResultItem(item)) {
+      if (!isSearchResultItem(item)) {
         this._logger.warn("Invalid search result item:", item);
         return;
       }
@@ -159,60 +160,6 @@ export default class SupplierOnyxmet
       builder.setDescription(item.description);
       return builder;
     });
-  }
-
-  /**
-   * Type guard to validate if an object matches the SearchResultItem structure.
-   * Checks for the presence and correct types of required properties in Onyxmet search results.
-   * Required properties:
-   * - label: Product name/title
-   * - image: Product image URL or identifier
-   * - description: Product description text
-   * - href: Product URL or path
-   *
-   * @param product - The object to validate
-   * @returns Type predicate indicating if the object is a valid SearchResultItem
-   * @typeguard
-   *
-   * @example
-   * ```typescript
-   * // Valid search result item
-   * const validItem = {
-   *   label: "Sodium Chloride",
-   *   image: "nacl.jpg",
-   *   description: "High purity NaCl",
-   *   href: "/products/nacl"
-   * };
-   * if (this._isSearchResultItem(validItem)) {
-   *   console.log("Valid item:", validItem.label);
-   * }
-   *
-   * // Invalid search result item (missing properties)
-   * const invalidItem = {
-   *   label: "Sodium Chloride",
-   *   image: "nacl.jpg"
-   *   // Missing description and href
-   * };
-   * if (!this._isSearchResultItem(invalidItem)) {
-   *   console.log("Invalid item - missing required properties");
-   * }
-   *
-   * // Invalid search result item (wrong type)
-   * const wrongType = "not an object";
-   * if (!this._isSearchResultItem(wrongType)) {
-   *   console.log("Invalid item - not an object");
-   * }
-   * ```
-   */
-  protected _isSearchResultItem(product: unknown): product is SearchResultItem {
-    return (
-      typeof product === "object" &&
-      product !== null &&
-      "label" in product &&
-      "image" in product &&
-      "description" in product &&
-      "href" in product
-    );
   }
 
   /**

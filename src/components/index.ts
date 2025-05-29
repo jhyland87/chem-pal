@@ -11,25 +11,3 @@ export { default as SuppliersPanel } from "./SuppliersPanel";
 export { default as TabHeader } from "./TabHeader";
 export { default as TabLink } from "./TabLink";
 export { default as TabPanel } from "./TabPanel";
-/*
-  AboutModal.scss
-  AboutModal.tsx
-  Debounce.tsx
-  ErrorBoundary.tsx
-  FavoritesPanel.tsx
-  HelpTooltip.tsx
-  HistoryPanel.tsx
-  IconSpinner.scss
-  IconSpinner.tsx
-  IconTextFader.tsx
-  LoadingBackdrop.scss
-  LoadingBackdrop.tsx
-  SearchPanel
-  SettingsPanel.tsx
-  SpeedDialMenu.tsx
-  Styles.ts
-  SuppliersPanel.tsx
-  TabHeader.tsx
-  TabLink.tsx
-  TabPanel.tsx
-*/

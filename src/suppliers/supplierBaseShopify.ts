@@ -1,8 +1,9 @@
 import { parseQuantity } from "@/helpers/quantity";
 import { firstMap } from "@/helpers/utils";
 import type { Product } from "@/types";
-import type { ItemListing, QueryParams, SearchResponse, ShopifyVariant } from "@/types/shopify";
+import type { ItemListing, QueryParams } from "@/types/shopify";
 import { ProductBuilder } from "@/utils/ProductBuilder";
+import { isShopifyVariant, isValidSearchResponse } from "@/utils/typeGuards/shopify";
 import SupplierBase from "./supplierBase";
 
 /**
@@ -129,7 +130,7 @@ export default abstract class SupplierBaseShopify
       params: getParams,
     });
 
-    if (!this._isValidSearchResponse(searchRequest)) {
+    if (!isValidSearchResponse(searchRequest)) {
       throw new Error("Invalid search response");
     }
 
@@ -198,7 +199,7 @@ export default abstract class SupplierBaseShopify
 
         if ("shopify_variants" in item && Array.isArray(item.shopify_variants)) {
           item.shopify_variants.forEach((variant) => {
-            if (!this._isShopifyVariant(variant)) return;
+            if (!isShopifyVariant(variant)) return;
 
             const variantQuantity = firstMap(parseQuantity, [
               variant.sku,
@@ -220,215 +221,6 @@ export default abstract class SupplierBaseShopify
         return builder;
       })
       .filter((builder): builder is ProductBuilder<Product> => builder !== undefined);
-  }
-
-  /**
-   * Validates if the response from the search API is a valid SearchResponse object.
-   * @param response - The response object to validate
-   * @returns True if the response is a valid SearchResponse object, false otherwise
-   * @example
-   * ```typescript
-   * const response = await this._httpGetJson({
-   *   path: "/getresults",
-   *   params: searchParams
-   * });
-   *
-   * if (this._isValidSearchResponse(response)) {
-   *   // Process valid response
-   *   console.log(`Found ${response.items.length} items`);
-   * } else {
-   *   console.error("Invalid search response structure");
-   * }
-   * ```
-   */
-  protected _isValidSearchResponse(response: unknown): response is SearchResponse {
-    if (typeof response !== "object" || response === null) {
-      this._logger.warn("Invalid search response - non object:", response);
-      return false;
-    }
-
-    const requiredProps = {
-      totalItems: "number",
-      startIndex: "number",
-      itemsPerPage: "number",
-      currentItemCount: "number",
-      //categoryStartIndex: "number",
-      //totalCategories: "number",
-      pageStartIndex: "number",
-      totalPages: "number",
-      suggestions: Array.isArray,
-      //categories: Array.isArray,
-      pages: Array.isArray,
-      items: Array.isArray,
-    };
-
-    const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
-      if (typeof validator === "string") {
-        return key in response && typeof response[key as keyof typeof response] === validator;
-      }
-      return key in response && validator(response[key as keyof typeof response]);
-    });
-
-    if (!hasRequiredProps) {
-      this._logger.warn("Invalid search response - missing required properties:", response);
-      return false;
-    }
-
-    // Check that items array contains valid listings
-    const result = (response as SearchResponse).items.every((item) => {
-      const isOk = this._isItemListing(item);
-      if (!isOk) {
-        this._logger.warn("Invalid search response - invalid item:", item);
-      }
-      return isOk;
-    });
-
-    if (!result) {
-      this._logger.warn("Invalid search response - invalid items:", response);
-      return false;
-    }
-
-    return true;
-  }
-
-  /**
-   * Type guard for ShopifyVariant
-   * @param variant - The variant object to validate
-   * @returns True if the variant is a valid ShopifyVariant, false otherwise
-   * @example
-   * ```typescript
-   * const variant = {
-   *   sku: "CHEM-001",
-   *   price: "29.99",
-   *   link: "/products/chemical-1",
-   *   variant_id: "12345",
-   *   quantity_total: "100",
-   *   options: {
-   *     Model: "500g"
-   *   }
-   * };
-   *
-   * if (this._isShopifyVariant(variant)) {
-   *   console.log("Valid variant:", variant.sku);
-   * } else {
-   *   console.error("Invalid variant structure");
-   * }
-   * ```
-   */
-  protected _isShopifyVariant(variant: unknown): variant is ShopifyVariant {
-    if (typeof variant !== "object" || variant === null) {
-      return false;
-    }
-
-    const requiredProps = {
-      /* eslint-disable */
-      sku: "string",
-      price: "string",
-      link: "string",
-      variant_id: "string",
-      quantity_total: (val: unknown) => typeof val === "string" || typeof val === "number",
-      options: (val: unknown) => typeof val === "object" && val !== null,
-      /* eslint-enable */
-    };
-
-    const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
-      if (typeof validator === "string") {
-        return key in variant && typeof variant[key as keyof typeof variant] === validator;
-      }
-      return key in variant && validator(variant[key as keyof typeof variant]);
-    });
-
-    if (!hasRequiredProps) return false;
-
-    // Check options object if it exists
-    const options = (variant as ShopifyVariant).options;
-    if (typeof options === "undefined") return false;
-    /*
-    if (options && typeof options === "object") {
-      if ("Model" in options && typeof options.Model !== "string") {
-        return false;
-      }
-    }
-    */
-
-    return true;
-  }
-
-  /**
-   * Type guard for ItemListing
-   * @param item - The item object to validate
-   * @returns True if the item is a valid ItemListing, false otherwise
-   * @example
-   * ```typescript
-   * const item = {
-   *   title: "Sodium Chloride",
-   *   price: "29.99",
-   *   link: "/products/nacl",
-   *   product_id: "12345",
-   *   product_code: "CHEM-001",
-   *   quantity: "500g",
-   *   vendor: "Chemical Supplier",
-   *   original_product_id: "12345",
-   *   list_price: "39.99",
-   *   shopify_variants: [
-   *     {
-   *       sku: "CHEM-001-500G",
-   *       price: "29.99",
-   *       link: "/products/nacl?variant=1",
-   *       variant_id: "1",
-   *       quantity_total: "100",
-   *       options: {
-   *         Model: "500g"
-   *       }
-   *     }
-   *   ]
-   * };
-   *
-   * if (this._isItemListing(item)) {
-   *   console.log("Valid item listing:", item.title);
-   * } else {
-   *   console.error("Invalid item listing structure");
-   * }
-   * ```
-   */
-  protected _isItemListing(item: unknown): item is ItemListing {
-    if (typeof item !== "object" || item === null) {
-      return false;
-    }
-
-    const requiredProps = {
-      /* eslint-disable */
-      title: "string",
-      price: (val: unknown) => typeof val === "string" || typeof val === "number",
-      link: "string",
-      product_id: "string",
-      product_code: "string",
-      quantity: "string",
-      shopify_variants: Array.isArray,
-      vendor: "string",
-      original_product_id: "string",
-      list_price: "string",
-      /* eslint-enable */
-    };
-
-    const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
-      if (typeof validator === "string") {
-        return key in item && typeof item[key as keyof typeof item] === validator;
-      }
-      return key in item && validator(item[key as keyof typeof item]);
-    });
-
-    if (!hasRequiredProps) return false;
-
-    // Check that shopify_variants array contains valid variants
-    const variants = (item as ItemListing).shopify_variants;
-    return variants.every((variant) => {
-      const isOk = this._isShopifyVariant(variant);
-      if (!isOk) {
-        this._logger.warn("Invalid search response - invalid variant:", variant);
-      }
-      return isOk;
-    });
   }
 
   /**
