@@ -1,7 +1,8 @@
+import { SHIPPING_SCOPE } from "@/constants/common";
 import { isCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
-import { type Product } from "@/types";
+import { type CountryCode, type Product } from "@/types";
 import { type ProductObject } from "@/types/chemsavers";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isValidSearchResponse } from "@/utils/typeGuards/chemsavers";
@@ -55,6 +56,18 @@ export default class SupplierChemsavers
     "sec-gpc": "1",
     /* eslint-enable */
   };
+
+  /**
+   * Shipping scope for Chemsavers
+   * @defaultValue SHIPPING_SCOPE.International
+   */
+  public readonly shippingScope: SHIPPING_SCOPE = SHIPPING_SCOPE.International;
+
+  /**
+   * The country code of the supplier.
+   * This is used to determine the currency and other country-specific information.
+   */
+  public readonly countryCode: CountryCode = "US";
 
   /**
    * Executes a product search query and returns matching products

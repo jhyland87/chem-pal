@@ -1,4 +1,4 @@
-import { AVAILABILITY, UOM } from "@/constants/app";
+import { AVAILABILITY, UOM } from "@/constants/common";
 import { CAS } from "@/types/cas";
 import { CurrencyCode, CurrencySymbol } from "@/types/currency";
 import { Column, RowData } from "@tanstack/react-table";
@@ -1003,3 +1003,8 @@ export type Maybe<T> = NonNullable<T> | undefined | void;
  * ```
  */
 export type MaybeArray<T> = T | T[];
+
+/**
+ * Country code type
+ */
+export type CountryCode = (typeof COUNTRIES)[number]["code"];

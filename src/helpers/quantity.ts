@@ -1,4 +1,4 @@
-import { UOM, UOM_ALIASES } from "@/constants/app";
+import { UOM, UOM_ALIASES } from "@/constants/common";
 import type { QuantityObject } from "@/types";
 
 /**

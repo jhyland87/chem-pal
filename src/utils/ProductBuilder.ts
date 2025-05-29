@@ -1,4 +1,4 @@
-import { AVAILABILITY, UOM } from "@/constants/app";
+import { AVAILABILITY, UOM } from "@/constants/common";
 import { findCAS, isCAS } from "@/helpers/cas";
 import { isParsedPrice, parsePrice, toUSD } from "@/helpers/currency";
 import { isQuantityObject, parseQuantity, toBaseQuantity } from "@/helpers/quantity";

@@ -1,4 +1,4 @@
-import { AVAILABILITY } from "@/constants/app";
+import { AVAILABILITY } from "@/constants/common";
 import type { Variant } from "@/types";
 /**
  * Type guard to validate if a value is a valid availability status.

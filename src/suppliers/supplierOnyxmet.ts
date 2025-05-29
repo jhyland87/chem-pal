@@ -1,8 +1,9 @@
+import { SHIPPING_SCOPE } from "@/constants/common";
 import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
-import type { Product } from "@/types";
+import type { CountryCode, Product } from "@/types";
 import type { SearchResultItem, SearchResultResponse } from "@/types/onyxmet";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isSearchResultItem } from "@/utils/typeGuards/onyxmet";
@@ -64,6 +65,18 @@ export default class SupplierOnyxmet
    * @defaultValue 5
    */
   protected _httpRequestBatchSize: number = 5;
+
+  /**
+   * Shipping scope for Onyxmet
+   * @defaultValue SHIPPING_SCOPE.International
+   */
+  public readonly shippingScope: SHIPPING_SCOPE = SHIPPING_SCOPE.International;
+
+  /**
+   * The country code of the supplier.
+   * This is used to determine the currency and other country-specific information.
+   */
+  public readonly countryCode: CountryCode = "CA";
 
   /**
    * Sets up the supplier by setting the display to list.

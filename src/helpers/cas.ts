@@ -1,4 +1,4 @@
-import { CAS_REGEX } from "@/constants/app";
+import { CAS_REGEX } from "@/constants/common";
 import { CAS } from "@/types/cas";
 
 /**

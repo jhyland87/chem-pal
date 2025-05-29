@@ -1,4 +1,5 @@
-import { type Product } from "@/types";
+import { SHIPPING_SCOPE } from "@/constants/common";
+import { type CountryCode, type Product } from "@/types";
 import SupplierBaseWoocommerce from "./supplierBaseWoocommerce";
 
 /**
@@ -38,6 +39,18 @@ export default class SupplierLibertySci
    * ```
    */
   public readonly supplierName: string = "LibertySci";
+
+  /**
+   * Shipping scope for Loudwolf
+   * @defaultValue SHIPPING_SCOPE.Worldwide
+   */
+  public readonly shippingScope: SHIPPING_SCOPE = SHIPPING_SCOPE.Worldwide;
+
+  /**
+   * The country code of the supplier.
+   * This is used to determine the currency and other country-specific information.
+   */
+  public readonly countryCode: CountryCode = "US";
 
   /**
    * The base URL for the supplier's website.

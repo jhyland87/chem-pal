@@ -1,4 +1,5 @@
-import { type Product } from "@/types";
+import { SHIPPING_SCOPE } from "@/constants/common";
+import { type CountryCode, type Product } from "@/types";
 import SupplierBaseWix from "./supplierBaseWix";
 
 /**
@@ -15,4 +16,16 @@ export default class SupplierFtfScientific
 
   // Base URL for HTTP(s) requests
   protected _baseURL: string = "https://www.ftfscientific.com";
+
+  /**
+   * Shipping scope for FtfScientific
+   * @defaultValue SHIPPING_SCOPE.Worldwide
+   */
+  public readonly shippingScope: SHIPPING_SCOPE = SHIPPING_SCOPE.Worldwide;
+
+  /**
+   * The country code of the supplier.
+   * This is used to determine the currency and other country-specific information.
+   */
+  public readonly countryCode: CountryCode = "US";
 }

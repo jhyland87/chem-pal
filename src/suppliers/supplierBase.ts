@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import type { SHIPPING_SCOPE } from "@/constants/common";
 import { fetchDecorator, isFullURL } from "@/helpers/request";
-import { type Maybe, type MaybeArray, type Product } from "@/types";
+import { type CountryCode, type Maybe, type MaybeArray, type Product } from "@/types";
 import { type RequestOptions, type RequestParams } from "@/types/request";
 import { Logger } from "@/utils/Logger";
 import { ProductBuilder } from "@/utils/ProductBuilder";
@@ -204,6 +205,14 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   // Logger for the supplier. This gets initialized in this constructor with the
   // name of the inheriting class.
   protected _logger: Logger;
+
+  public abstract readonly shippingScope: SHIPPING_SCOPE;
+
+  /**
+   * The country code of the supplier.
+   * This is used to determine the currency and other country-specific information.
+   */
+  public abstract readonly countryCode: CountryCode;
 
   // Cache configuration
   private static readonly cacheKey = "supplier_cache";

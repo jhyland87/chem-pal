@@ -1,4 +1,4 @@
-import { UOM_ALIASES } from "@/constants/app";
+import { UOM_ALIASES } from "@/constants/common";
 import { parseQuantity, standardizeUom } from "@/helpers/quantity";
 
 describe("standardizeUom", () => {

@@ -1,8 +1,9 @@
+import { SHIPPING_SCOPE } from "@/constants/common";
 import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { isQuantityObject, parseQuantity } from "@/helpers/quantity";
 import { firstMap } from "@/helpers/utils";
-import type { Product } from "@/types";
+import type { CountryCode, Product } from "@/types";
 import {
   type ATGResponse,
   type ContentFolder,
@@ -94,6 +95,18 @@ export default class SupplierCarolina
     "x-requested-with": "XMLHttpRequest",
     /* eslint-enable */
   };
+
+  /**
+   * Shipping scope for Carolina
+   * @defaultValue SHIPPING_SCOPE.Domestic
+   */
+  public readonly shippingScope: SHIPPING_SCOPE = SHIPPING_SCOPE.Domestic;
+
+  /**
+   * The country code of the supplier.
+   * This is used to determine the currency and other country-specific information.
+   */
+  public readonly countryCode: CountryCode = "US";
 
   /**
    * Constructs the query parameters for a product search request

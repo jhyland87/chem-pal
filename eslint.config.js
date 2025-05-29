@@ -103,7 +103,7 @@ export default tseslint.config(
         },
         {
           selector: "enumMember",
-          format: ["UPPER_CASE"],
+          format: ["PascalCase"],
         },
         {
           selector: "enum",

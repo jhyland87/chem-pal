@@ -1,8 +1,8 @@
-import { AVAILABILITY } from "@/constants/app";
+import { AVAILABILITY, SHIPPING_SCOPE } from "@/constants/common";
 import { findCAS } from "@/helpers/cas";
 import { urlencode } from "@/helpers/request";
 import { mapDefined } from "@/helpers/utils";
-import { type Product } from "@/types";
+import { type CountryCode, type Product } from "@/types";
 import {
   type ProductObject,
   type SearchParams,
@@ -71,6 +71,18 @@ export default class SupplierLaboratoriumDiscounter
 
   // Used to keep track of how many requests have been made to the supplier.
   protected _httpRequstCount: number = 0;
+
+  /**
+   * Shipping scope for Laboratorium Discounter
+   * @defaultValue SHIPPING_SCOPE.Domestic
+   */
+  public readonly shippingScope: SHIPPING_SCOPE = SHIPPING_SCOPE.Domestic;
+
+  /**
+   * The country code of the supplier.
+   * This is used to determine the currency and other country-specific information.
+   */
+  public readonly countryCode: CountryCode = "NL";
 
   // HTTP headers used as a basis for all queries.
   protected _headers: HeadersInit = {
