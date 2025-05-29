@@ -69,23 +69,6 @@ export default abstract class SupplierBaseWoocommerce
   protected _apiKey: string = "";
 
   /**
-   * Maximum number of products to return in a single API query.
-   * Limits the number of products returned from the WooCommerce API to prevent excessive data transfer.
-   * Can be overridden in implementing classes to adjust the batch size.
-   *
-   * @example
-   * ```typescript
-   * class MySupplier extends SupplierBaseWoocommerce {
-   *   constructor() {
-   *     super();
-   *     this._limit = 50; // Increase limit to 50 products per request
-   *   }
-   * }
-   * ```
-   */
-  protected _limit: number = 5;
-
-  /**
    * Queries the WooCommerce API for products matching the given search term.
    * Makes a GET request to the WooCommerce Store API v1 products endpoint.
    *

@@ -5,7 +5,6 @@ import { mapDefined } from "@/helpers/utils";
 import type { Product } from "@/types";
 import type { SearchResultItem, SearchResultResponse } from "@/types/onyxmet";
 import { ProductBuilder } from "@/utils/ProductBuilder";
-import * as cheerio from "cheerio";
 import SupplierBase from "./supplierBase";
 
 /**
@@ -33,12 +32,6 @@ export default class SupplierOnyxmet
    * @readonly
    */
   public readonly supplierName: string = "Onyxmet";
-
-  /**
-   * Maximum number of results to return per search query
-   * @defaultValue 15
-   */
-  protected _limit: number = 15;
 
   /**
    * Base URL for all API and web requests to Onyxmet
@@ -120,7 +113,10 @@ export default class SupplierOnyxmet
     const data = JSON.parse(searchResponse);
 
     this._logger.debug("all search results:", data);
-    return this._initProductBuilders(data.splice(0, limit));
+
+    const fuzzResults = this._fuzzyFilter<SearchResultItem>(query, data);
+
+    return this._initProductBuilders(fuzzResults.splice(0, limit));
   }
 
   /**
@@ -168,7 +164,6 @@ export default class SupplierOnyxmet
   /**
    * Type guard to validate if an object matches the SearchResultItem structure.
    * Checks for the presence and correct types of required properties in Onyxmet search results.
-   *
    * Required properties:
    * - label: Product name/title
    * - image: Product image URL or identifier
@@ -178,6 +173,7 @@ export default class SupplierOnyxmet
    * @param product - The object to validate
    * @returns Type predicate indicating if the object is a valid SearchResultItem
    * @typeguard
+   *
    * @example
    * ```typescript
    * // Valid search result item
@@ -261,18 +257,35 @@ export default class SupplierOnyxmet
 
     this._logger.debug("productResponse:", productResponse);
 
-    const $ = cheerio.load(productResponse);
-    const $content = $("#content");
+    const parser = new DOMParser();
+    const parsedHTML = parser.parseFromString(productResponse, "text/html");
+    const content = parsedHTML.querySelector("#content");
+
+    if (!content) {
+      this._logger.warn("No content for product");
+      return;
+    }
+
+    const productData = Array.from(content.querySelectorAll(".desc"))
+      .find((element: Element) => element.textContent?.includes("Availability"))
+      ?.closest("ul")
+      ?.querySelectorAll("li");
+
+    const productInfo = Array.from(productData || []).reduce(
+      (acc, element) => {
+        const [key, value] = element.textContent?.split(": ") || [];
+        if (key && value) {
+          acc[key] = value;
+        }
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
 
     const cas = findCAS(product.get("description"));
-    const title = $content.find("h3.product-title").text().trim();
-    const statusTxt = $content
-      .find("span:contains('Availability')")
-      .parent()
-      .text()
-      .split(":")[1]
-      .trim();
-    const productPrice = $content.find(".product-price").text().trim();
+    const title = content?.querySelector("h3.product-title")?.textContent?.trim() || "";
+    const statusTxt = productInfo.Availability || "";
+    const productPrice = content.querySelector(".product-price")?.textContent?.trim() || "";
 
     const price = parsePrice(productPrice);
 
@@ -294,7 +307,29 @@ export default class SupplierOnyxmet
       .setAvailability(statusTxt ?? "");
   }
 
-  protected _titleSelector(data: unknown): string {
-    return data as string;
+  /**
+   * Extracts the product title from a search result item.
+   * Returns the label property of the search result item, which contains
+   * the product name/title in Onyxmet's search response format.
+   *
+   * @param data - The search result item to extract the title from
+   * @returns The product title as a string
+   *
+   * @example
+   * ```typescript
+   * const searchResult = {
+   *   label: "Sodium Chloride, ACS Grade",
+   *   image: "nacl.jpg",
+   *   description: "High purity NaCl",
+   *   href: "/products/nacl"
+   * };
+   *
+   * const title = this._titleSelector(searchResult);
+   * console.log("Product title:", title);
+   * // Output: "Sodium Chloride, ACS Grade"
+   * ```
+   */
+  protected _titleSelector(data: SearchResultItem): string {
+    return data.label;
   }
 }

@@ -6,7 +6,7 @@ import { getColumnFilterConfig } from "../TableColumns";
 
 export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: UseSearchProps) {
   const appContext = useAppContext();
-  let fetchController: AbortController;
+  let fetchController: AbortController = new AbortController();
 
   const handleStopSearch = () => {
     console.debug("triggering abort..");

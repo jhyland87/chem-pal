@@ -52,9 +52,6 @@ export default class SupplierCarolina
   /** Display name of the supplier */
   public readonly supplierName: string = "Carolina";
 
-  /** Maximum number of results to return */
-  protected _limit: number = 15;
-
   /** Base URL for all API requests */
   protected _baseURL: string = "https://www.carolina.com";
 

@@ -6,9 +6,6 @@ import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
 import type { Product } from "@/types";
 import { ProductBuilder } from "@/utils/ProductBuilder";
-import * as cheerio from "cheerio";
-import { select } from "cheerio-select";
-import { parseDocument } from "htmlparser2";
 import chunk from "lodash/chunk";
 import SupplierBase from "./supplierBase";
 /**
@@ -36,12 +33,6 @@ export default class SupplierLoudwolf
    * @readonly
    */
   public readonly supplierName: string = "Loudwolf";
-
-  /**
-   * Maximum number of results to return per search query
-   * @defaultValue 15
-   */
-  protected _limit: number = 15;
 
   /**
    * Base URL for all API and web requests to Loudwolf
@@ -103,7 +94,7 @@ export default class SupplierLoudwolf
     query: string,
     limit: number = this._limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    this._logger.log("query:", query);
+    this._logger.log("queryProducts:", { query, limit });
     localStorage.setItem("display", "list");
 
     const searchResponse = await this._httpGetHtml({
@@ -159,30 +150,39 @@ export default class SupplierLoudwolf
       */
   }
 
-  protected _fuzzHtmlResponse(query: string, response: string): any[] {
-    const document = parseDocument(response);
+  /**
+   * Parses HTML response and performs fuzzy filtering on product elements.
+   * Creates a DOM from the HTML response, selects product elements, and applies
+   * fuzzy filtering to find matches for the search query.
+   *
+   * @param query - The search term to filter products by
+   * @param response - The HTML response string containing product listings
+   * @returns Array of DOM Elements that match the fuzzy search criteria
+   *
+   * @example
+   * ```typescript
+   * const html = await this._httpGetHtml({ path: "/search", params: { q: "acetone" } });
+   * if (html) {
+   *   const matchingElements = this._fuzzHtmlResponse("acetone", html);
+   *   console.log(`Found ${matchingElements.length} matching products`);
+   *   // Elements can be used to extract product details
+   *   for (const element of matchingElements) {
+   *     const title = element.querySelector("h4 a")?.textContent;
+   *     console.log("Product:", title);
+   *   }
+   * }
+   * ```
+   */
+  protected _fuzzHtmlResponse(query: string, response: string): Element[] {
+    // Create a new DOM to do the travesing/parsing
+    const parser = new DOMParser();
+    const parsedHTML = parser.parseFromString(response, "text/html");
 
-    const productList = select("div.product-layout.product-list", document);
-    debugger;
-    const fuzzeResults = this._fuzzyFilter<any>(query, productList as any);
-    debugger;
-    return fuzzeResults;
+    // Select all products by a known selector path
+    const products = parsedHTML.querySelectorAll("div.product-layout.product-list");
 
-    /*
-    const $ = cheerio.load(document);
-    const $elements = $("div.product-layout.product-list");
-    debugger;
-    const $fuzz = this._fuzzyFilter<any>(query, $elements as any);
-    debugger;
-    return $fuzz;
-    debugger;
-    const $ = cheerio.load(response);
-    const $elements = $("div.product-layout.product-list");
-    debugger;
-    const $fuzz = this._fuzzyFilter<any>(query, $elements as any);
-    debugger;
-    return $fuzz;
-    */
+    // Do the fuzzy filtering using the element found when using this._titleSelector()
+    return this._fuzzyFilter<Element>(query, Array.from(products));
   }
 
   /**
@@ -211,22 +211,22 @@ export default class SupplierLoudwolf
    * }
    * ```
    */
-  protected _initProductBuilders($elements: any): ProductBuilder<Product>[] {
-    return mapDefined($elements, (element: any) => {
+  protected _initProductBuilders($elements: Element[]): ProductBuilder<Product>[] {
+    return mapDefined($elements, (element: Element) => {
       const builder = new ProductBuilder<Product>(this._baseURL);
 
-      const priceElem = select("div.caption > p.price", element);
+      const priceElem = element.querySelector("div.caption > p.price");
       console.log("priceElem:", priceElem);
-      const price = parsePrice(priceElem[0]?.children?.[0].toString());
+      const price = parsePrice(priceElem?.textContent?.trim() || "");
 
       if (price === undefined) {
         this._logger.error("No price for product", element);
         return;
       }
 
-      const href = element.find("div.caption h4 a").attr("href");
+      const href = element.querySelector("div.caption h4 a")?.getAttribute("href");
 
-      if (href === undefined) {
+      if (!href) {
         this._logger.error("No URL for product");
         return;
       }
@@ -239,11 +239,13 @@ export default class SupplierLoudwolf
         this._logger.error("No ID for product");
         return;
       }
-      const title = element.find("div.caption h4 a").text().trim();
+      const title = element.querySelector("div.caption h4 a")?.textContent?.trim() || "";
 
       return builder
         .setBasicInfo(title, url.toString(), this.supplierName)
-        .setDescription(element.find("div.caption > p:nth-child(2)").text().trim())
+        .setDescription(
+          element.querySelector("div.caption > p:nth-child(2)")?.textContent?.trim() || "",
+        )
         .setId(id)
         .setPricing(price.price, price.currencyCode, price.currencySymbol);
     });
@@ -296,20 +298,18 @@ export default class SupplierLoudwolf
 
     this._logger.debug("productResponse:", productResponse);
 
-    const $ = cheerio.load(productResponse);
-    const $content = $("#content");
+    const parser = new DOMParser();
+    const parsedHTML = parser.parseFromString(productResponse, "text/html");
+    const domContent = parsedHTML.querySelector("#content");
+    const dataGrid = Array.from(
+      domContent?.querySelectorAll("#content .tab-content .MsoTableGrid") || [],
+    )
+      .find((element) => element.textContent?.trim().match(/CAS/i))
+      ?.querySelectorAll("p");
 
-    const dataGrid = $content
-      .find("p:contains('CAS')")
-      .closest("table.MsoTableGrid")
-      .find("p")
-      .map((index, element) => {
-        const text = $(element).text().trim();
-        return text;
-      })
-      .toArray();
+    const dataRows = Array.from(dataGrid || []).map((n) => n.innerText);
 
-    const datagridInfo = chunk(dataGrid, 2).reduce((acc, [key, value]) => {
+    const datagridInfo = chunk(dataRows, 2).reduce((acc, [key, value]) => {
       if (key.match(/CAS/i)) {
         acc.cas = findCAS(value.trim()) ?? undefined;
       } else if (key.match(/TOTAL [A-Z]+ OF PRODUCT/i)) {
@@ -327,15 +327,29 @@ export default class SupplierLoudwolf
   }
 
   /**
-   * Selects the title of a product from the search response
-   * @param data - Product object from search response
-   * @returns - The title of the product
+   * Extracts the product title from a DOM Element.
+   * Searches for the product title within the product listing element using
+   * a specific CSS selector path. Returns an empty string if no title is found.
+   *
+   * @param data - The DOM Element containing the product listing
+   * @returns The product title as a string, or empty string if not found
+   *
+   * @example
+   * ```typescript
+   * const element = document.querySelector(".product-layout");
+   * if (element) {
+   *   const title = this._titleSelector(element);
+   *   console.log("Product title:", title);
+   *   // Output: "Sodium Chloride, ACS Grade, 500g"
+   * }
+   * ```
    */
-  protected _titleSelector(data: any): string {
-    if ("find" in data) {
-      return data.find("div.caption h4 a").text().trim();
+  protected _titleSelector(data: Element): string {
+    const title = data.querySelector("div.caption h4 a");
+    if (title === null) {
+      this._logger.error("No title for product");
+      return "";
     }
-    const title = select("div.caption h4 a", data);
-    return title?.[0]?.children?.[0].toString() || "";
+    return title.textContent?.trim() || "";
   }
 }

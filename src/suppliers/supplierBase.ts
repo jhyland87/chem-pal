@@ -27,39 +27,173 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   // The base URL for the supplier.
   protected abstract _baseURL: string;
 
-  // String to query for (Product name, CAS, etc)
+  /**
+   * String to query for (Product name, CAS, etc).
+   * This is the search term that will be used to find products.
+   * Set during construction and used throughout the supplier's lifecycle.
+   *
+   * @example
+   * ```typescript
+   * const supplier = new MySupplier("sodium chloride", 10);
+   * console.log(supplier._query); // "sodium chloride"
+   * ```
+   */
   protected _query: string;
 
-  // If the products first require a query of a search page that gets iterated over,
-  // those results are stored here
+  /**
+   * If the products first require a query of a search page that gets iterated over,
+   * those results are stored here. This acts as a cache for the initial search results
+   * before they are processed into full product objects.
+   *
+   * @example
+   * ```typescript
+   * // After a search query
+   * await supplier._queryProducts("acetone");
+   * console.log(`Found ${supplier._queryResults.length} initial results`);
+   * ```
+   */
   protected _queryResults: Array<S> = [];
 
-  // The base search params for the supplier. These are the params that are always included in the search.
+  /**
+   * The base search parameters that are always included in search requests.
+   * These parameters are merged with any additional search parameters
+   * when making requests to the supplier's API.
+   *
+   * @example
+   * ```typescript
+   * class MySupplier extends SupplierBase<Product> {
+   *   constructor() {
+   *     super();
+   *     this._baseSearchParams = {
+   *       format: "json",
+   *       version: "2.0"
+   *     };
+   *   }
+   * }
+   * ```
+   */
   protected _baseSearchParams: Record<string, string | number> = {};
 
-  // The AbortController interface represents a controller object that allows you to
-  // abort one or more Web requests as and when desired.
+  /**
+   * The AbortController instance used to manage and cancel ongoing requests.
+   * This allows for cancellation of in-flight requests when needed,
+   * such as when a new search is started or the supplier is disposed.
+   *
+   * @example
+   * ```typescript
+   * const controller = new AbortController();
+   * const supplier = new MySupplier("acetone", 10, controller);
+   *
+   * // Later, to cancel all pending requests:
+   * controller.abort();
+   * ```
+   */
   protected _controller: AbortController;
 
-  // How many results to return for this query (This is not a limit on how many requests
-  // can be made to a supplier for any given query).
+  /**
+   * The maximum number of results to return for a search query.
+   * This is not a limit on HTTP requests, but rather the number of
+   * products that will be returned to the caller.
+   *
+   * @example
+   * ```typescript
+   * const supplier = new MySupplier("acetone", 5); // Limit to 5 results
+   * for await (const product of supplier) {
+   *   // Will yield at most 5 products
+   * }
+   * ```
+   */
   protected _limit: number;
 
-  // The products that are being built by the supplier
+  /**
+   * The products that are currently being built by the supplier.
+   * This array holds ProductBuilder instances that are in the process
+   * of being transformed into complete Product objects.
+   *
+   * @example
+   * ```typescript
+   * await supplier._queryProducts("acetone");
+   * console.log(`Building ${supplier._products.length} products`);
+   * for (const builder of supplier._products) {
+   *   const product = await builder.build();
+   *   console.log("Built product:", product.title);
+   * }
+   * ```
+   */
   protected _products: ProductBuilder<T>[] = [];
 
-  // This is a limit to how many queries can be sent to the supplier for any given query.
+  /**
+   * Maximum number of HTTP requests allowed per search query.
+   * This is a hard limit to prevent excessive requests to the supplier's API.
+   * If this limit is reached, the supplier will stop making new requests.
+   *
+   * @defaultValue 50
+   * @example
+   * ```typescript
+   * class MySupplier extends SupplierBase<Product> {
+   *   constructor() {
+   *     super();
+   *     this._httpRequestHardLimit = 100; // Allow more requests
+   *   }
+   * }
+   * ```
+   */
   protected _httpRequestHardLimit: number = 50;
 
-  // Used to keep track of how many requests have been made to the supplier.
+  /**
+   * Counter for HTTP requests made during the current query execution.
+   * This is used to track the number of requests and ensure we don't
+   * exceed the _httpRequestHardLimit.
+   *
+   * @defaultValue 0
+   * @example
+   * ```typescript
+   * await supplier._queryProducts("acetone");
+   * console.log(`Made ${supplier._requestCount} requests`);
+   * if (supplier._requestCount >= supplier._httpRequestHardLimit) {
+   *   console.log("Reached request limit");
+   * }
+   * ```
+   */
   protected _requestCount: number = 0;
 
-  // If using async requests, this will determine how many of them to batch together (using
-  // something like Promise.all()). This is to avoid overloading the users bandwidth and
-  // to not flood the supplier with 100+ requests all at once.
+  /**
+   * Number of requests to process in parallel when fetching product details.
+   * This controls the batch size for concurrent requests to avoid overwhelming
+   * the supplier's API and the user's bandwidth.
+   *
+   * @defaultValue 10
+   * @example
+   * ```typescript
+   * class MySupplier extends SupplierBase<Product> {
+   *   constructor() {
+   *     super();
+   *     // Process 5 requests at a time
+   *     this._httpRequestBatchSize = 5;
+   *   }
+   * }
+   * ```
+   */
   protected _httpRequestBatchSize: number = 10;
 
-  // HTTP headers used as a basis for all queries.
+  /**
+   * HTTP headers used as a basis for all requests to the supplier.
+   * These headers are merged with any request-specific headers when
+   * making HTTP requests.
+   *
+   * @example
+   * ```typescript
+   * class MySupplier extends SupplierBase<Product> {
+   *   constructor() {
+   *     super();
+   *     this._headers = {
+   *       "Accept": "application/json",
+   *       "User-Agent": "ChemCrawler/1.0"
+   *     };
+   *   }
+   * }
+   * ```
+   */
   protected _headers: HeadersInit = {};
 
   // Logger for the supplier. This gets initialized in this constructor with the
@@ -68,7 +202,9 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
 
   // Cache configuration
   private static readonly cacheKey = "supplier_cache";
-  private static readonly cacheSize = 100; // Maximum number of cached results
+
+  // Maximum number of cached results
+  private static readonly cacheSize = 100;
 
   // Default values for products. These will get overridden if they're found in the product data.
   protected _productDefaults = {
@@ -544,7 +680,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     }).reduce(
       (acc, [obj, score, idx]) => {
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        acc[idx] = { ...obj, ___fuzz: { score, idx: idx } };
+        acc[idx] = Object.assign(obj, { ___fuzz: { score, idx } });
         return acc;
       },
       // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -567,8 +703,8 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * @example
    * ```typescript
    * // Example implementation for a supplier with simple title field
-   * protected _titleSelector(data: SupplierProduct): string {
-   *   return data.title;
+   * protected _titleSelector(data: Cheerio<Element>): string {
+   *   return data.text();
    * }
    *
    * // Example implementation for a supplier with nested title
@@ -587,84 +723,8 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * }
    * ```
    */
-  /**
-   * Abstract method to select the title from the initial raw search data.
-   * This method should be implemented by each supplier to handle their specific data structure.
-   * The selected title is used by _fuzzyFilter for string similarity matching.
-   *
-   * @overload
-   * @param data - The data object (Cheerio Element) to parse for the title
-   * @returns The title string to use for fuzzy matching
-   * @abstract
-   * @example
-   * ```typescript
-   * // Example implementation for a supplier with simple title field
-   * const $ = cheerio.load(html);
-   * const $elemens = $("div.caption h4 a");
-   * const title = this._titleSelector($elemens[0]);
-   * console.log(title);
-   * ```
-   * @example
-   * ```typescript
-   * // Example implementation for a supplier with simple title field
-   * protected _titleSelector(data: Cheerio<Element>): string {
-   *   return data.find("div.caption h4 a").text().trim();
-   * }
-   * ```
-   */
-  //protected abstract _titleSelector(data: Cheerio<Element>): string;
-  /**
-   * Abstract method to select the title from the initial raw search data.
-   * This method should be implemented by each supplier to handle their specific data structure.
-   * The selected title is used by _fuzzyFilter for string similarity matching.
-   *
-   * @overload
-   * @param data - The data object to extract the title from
-   * @returns The title string to use for fuzzy matching
-   * @abstract
-   * @example
-   * ```typescript
-   * // Example implementation for a supplier with simple title field
-   * protected _titleSelector(data: S): string {
-   *   return data.title;
-   * }
-   * ```
-   */
-  //protected abstract _titleSelector(data: S): string;
-  /**
-   * Abstract method to select the title from the initial raw search data.
-   * This method should be implemented by each supplier to handle their specific data structure.
-   * The selected title is used by _fuzzyFilter for string similarity matching.
-   *
-   * @overload
-   * @param data - The data object to extract the title from
-   * @returns The title string to use for fuzzy matching
-   * @abstract
-   */
   protected abstract _titleSelector(data: any): string;
 
-  /**
-   * Sends a GET request to a URL and returns the response as HTML text.
-   * Validates that the response has the correct content type before returning.
-   *
-   * @param options - The request configuration options
-   * @returns Promise resolving to the HTML text content or void if request fails
-   * @throws TypeError - If the response is not valid HTML content
-   * @example
-   * ```typescript
-   * const html = await this._httpGetHtml({
-   *   path: '/products/search',
-   *   params: { query: 'sodium chloride' },
-   *   headers: { 'Accept': 'text/html' }
-   * });
-   * if (html) {
-   *   const $ = cheerio.load(html);
-   *   const products = $('.product-item').map((i, el) => {
-   *     return $(el).text();
-   *   }).get();
-   * }
-   * ```
-   */
   protected async _httpGetHtml({
     path,
     params,
@@ -1361,114 +1421,11 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     return href.toString();
   }
 
-  /**
-   * Abstract method to query products from a supplier's search endpoint.
-   * This method should be implemented by each supplier to handle their specific search API or page structure.
-   *
-   * @param query - The search query string to find products
-   * @param limit - The maximum number of products to return
-   * @returns Promise resolving to an array of ProductBuilder instances or void if the query fails
-   *
-   * @example
-   * ```typescript
-   * // Example implementation in a supplier class
-   * protected async _queryProducts(query: string, limit: number): Promise<ProductBuilder<Product>[] | void> {
-   *   try {
-   *     // Construct the search URL
-   *     const searchUrl = `${this._baseURL}/search?q=${encodeURIComponent(query)}&limit=${limit}`;
-   *
-   *     // Fetch the search results
-   *     const response = await this._fetch(searchUrl);
-   *     if (!this._isHtmlResponse(response)) {
-   *       this._logger.warn("Invalid response type for search results", { url: searchUrl });
-   *       return;
-   *     }
-   *
-   *     // Parse the HTML content
-   *     const html = await response.text();
-   *     const $ = cheerio.load(html);
-   *
-   *     // Extract product listings
-   *     const products: ProductBuilder<Product>[] = [];
-   *     $('.product-listing').each((_, element) => {
-   *       const builder = new ProductBuilder<Product>(this._baseURL);
-   *
-   *       // Extract basic product information
-   *       const title = $(element).find('.product-title').text().trim();
-   *       const url = $(element).find('a').attr('href') || '';
-   *       const price = parseFloat($(element).find('.price').text().replace(/[^0-9.]/g, ''));
-   *       const quantity = parseInt($(element).find('.quantity').text().replace(/[^0-9]/g, ''));
-   *       const uom = $(element).find('.uom').text().trim();
-   *
-   *       // Set the basic information
-   *       builder
-   *         .setBasicInfo(title, url, this.supplierName)
-   *         .setPricing(price, "USD", "$")
-   *         .setQuantity(quantity, uom);
-   *
-   *       products.push(builder);
-   *     });
-   *
-   *     return products;
-   *   } catch (error) {
-   *     this._logger.error("Error querying products", {
-   *       error,
-   *       query
-   *     });
-   *     return;
-   *   }
-   * }
-   * ```
-   */
   protected abstract _queryProducts(
     query: string,
     limit: number,
   ): Promise<ProductBuilder<T>[] | void>;
 
-  /**
-   * Abstract method to fetch and process detailed product data from a product page.
-   * This method should be implemented by each supplier to handle their specific product page structure.
-   *
-   * @param product - The ProductBuilder instance containing basic product information
-   * @returns Promise resolving to a complete Product object or void if processing fails
-   *
-   * @example
-   * ```typescript
-   * // Example implementation in a supplier class
-   * protected async _getProductData(product: ProductBuilder<Product>): Promise<Maybe<Product>> {
-   *   try {
-   *     // Fetch the product page
-   *     const response = await this._fetch(product.dump().url);
-   *     if (!this._isHtmlResponse(response)) {
-   *       this._logger.warn("Invalid response type for product page", { url: product.dump().url });
-   *       return;
-   *     }
-   *
-   *     // Parse the HTML content
-   *     const html = await response.text();
-   *     const $ = cheerio.load(html);
-   *
-   *     // Extract additional product details
-   *     const description = $('.product-description').text().trim();
-   *     const cas = $('.cas-number').text().trim();
-   *
-   *     // Update the product builder with new information
-   *     product
-   *       .setDescription(description)
-   *       .setCas(cas);
-   *
-   *     // Finalize the product
-   *     return await this._finishProduct(product);
-   *   } catch (error) {
-   *     this._logger.error("Error fetching product data", {
-   *       error,
-   *       url: product.dump().url
-   *     });
-   *     return;
-   *   }
-   * }
-   * ```
-   */
   protected abstract _getProductData(product: ProductBuilder<T>): Promise<ProductBuilder<T> | void>;
 
   /**
