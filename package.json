@@ -16,7 +16,8 @@
     "preview": "vite preview",
     "test": "jest --coverage",
     "docs": "typedoc --options typedoc.json",
-    "validate-docs": "tsc --noEmit"
+    "validate-docs": "tsc --noEmit",
+    "wwwdocs": "npx http-server -p 8080 docs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -50,6 +51,7 @@
     "react-icons": "^5.5.0",
     "react-virtuoso": "^4.12.7",
     "ts-jest-mock": "^1.4.2",
+    "typedoc-plugin-markdown": "^4.6.3",
     "utility-types": "^3.11.0"
   },
   "devDependencies": {
@@ -121,6 +123,7 @@
     "typedoc-plugin-rename-defaults": "^0.7.3",
     "typedoc-plugin-sourcefile-url": "^1.0.6",
     "typedoc-theme-hierarchy": "^6.0.0",
+    "typedoc-theme-oxide": "^0.2.0",
     "typedoc-unhoax-theme": "^0.5.3",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.26.1",

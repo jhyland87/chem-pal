@@ -1,7 +1,8 @@
 Just a simple React/Typescript plugin for Chrome - Proof of concept
 
 Example output:
-![chem-crawler example](./assets/images/chem-crawler-demo.gif)
+
+<img src="./assets/images/chem-crawler-demo.gif" alt="chem-crawler example" width="600"/>
 
 ## Node version
 

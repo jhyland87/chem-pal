@@ -12,6 +12,8 @@ import { StyledFormControlSelector } from "../../Styles";
  * It allows users to filter data by selecting multiple values from a dropdown menu.
  *
  * @component
+ * @category Components
+ * @subcategory SearchPanel
  * @param props - Component props
  * @example
  * ```tsx

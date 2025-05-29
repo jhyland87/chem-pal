@@ -4,7 +4,9 @@ import { StyledFormControlSelector } from "../../Styles";
 
 /**
  * Returns the appropriate styles for a menu item based on whether it's selected.
- *
+ * @component
+ * @category Components
+ * @subcategory SearchPanel
  * @param name - The option value
  * @param personName - Array of selected values
  * @param theme - The Material-UI theme

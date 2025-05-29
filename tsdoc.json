@@ -13,6 +13,10 @@
     {
       "tagName": "@typeguard",
       "syntaxKind": "block"
+    },
+    {
+      "tagName": "@subcategory",
+      "syntaxKind": "block"
     }
   ],
   "supportForTags": {
@@ -41,6 +45,8 @@
     "@showGroups": true,
     "@summary": true,
     "@internal": true,
-    "@includeCode": true
+    "@includeCode": true,
+    "@subcategory": true,
+    "@class": true
   }
 }

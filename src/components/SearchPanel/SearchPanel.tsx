@@ -9,7 +9,8 @@ import ResultsTable from "./ResultsTable";
  * and row expansion.
  *
  * @component
- *
+ * @category Components
+ * @subcategory SearchPanel
  * @example
  * ```tsx
  * <SearchPanel />

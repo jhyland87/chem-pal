@@ -13,6 +13,8 @@ import "./RangeColumnFilter.scss";
  * It allows users to filter data based on a minimum and maximum value range.
  *
  * @component
+ * @category Components
+ * @subcategory SearchPanel
  * {@link FilterVariantInputProps}
  * @param props - Component props
  * @example

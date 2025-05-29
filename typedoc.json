@@ -11,15 +11,18 @@
   "plugin": [
     "typedoc-plugin-mark-react-functional-components",
     "typedoc-plugin-expand-object-like-types",
-    "typedoc-theme-hierarchy",
+    //"typedoc-theme-hierarchy",
     "typedoc-plugin-rename-defaults",
     "typedoc-plugin-coverage",
     "typedoc-plugin-include-example",
     "typedoc-plugin-dt-links",
     "typedoc-plugin-mdn-links",
     "typedoc-plugin-missing-exports",
+    "typedoc-theme-oxide",
+    "typedoc-unhoax-theme"
+    //"typedoc-theme-category-nav"
   ],
-  "theme": "hierarchy",
+  "theme": "unhoax",
   "entryPointStrategy": "expand",
   "reactReturnType": [
     "ReactElement",
@@ -78,10 +81,8 @@
   "hideGenerator": false,
   "readme": "README.md",
   "navigationLinks": {
-    "Getting Started": "https://github.com/yourusername/chem-crawler#getting-started",
-    "Examples": "https://github.com/yourusername/chem-crawler#examples",
-    "API Reference": "https://github.com/yourusername/chem-crawler#api-reference",
-    "test": "documents/test.html"
+    "Reference": "https://jhyland87.github.io/chem-crawler",
+    "test": "/test.html"
   },
   "sort": [
     "source-order"
@@ -120,5 +121,5 @@
     "Types",
     "*"
   ],
-  "options": "./typedoc-conf.js"
+  "options": "./typedoc-conf.js",
 }
