@@ -84,31 +84,39 @@ export function isValidSearchResponse(response: unknown): response is SearchResp
       startIndex: "number",
       itemsPerPage: "number",
       currentItemCount: "number",
-      //categoryStartIndex: "number",
-      //totalCategories: "number",
-      pageStartIndex: "number",
-      totalPages: "number",
-      suggestions: Array.isArray,
-      //categories: Array.isArray,
-      pages: Array.isArray,
-      items: Array.isArray,
     };
 
     const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
-      if (typeof validator === "string") {
-        return key in response && typeof response[key as keyof typeof response] === validator;
+      if (key in response === false) {
+        console.log("key not in response:", key);
+
+        return false;
       }
-      return key in response && validator(response[key as keyof typeof response]);
+
+      if (typeof response[key as keyof typeof response] !== validator) {
+        console.log(
+          "type mismatch:",
+          key,
+          typeof response[key as keyof typeof response],
+          validator,
+        );
+
+        return false;
+      }
+
+      return true;
     });
 
     if (!hasRequiredProps) {
       return false;
     }
 
-    // Check that items array contains valid listings
-    const result = (response as SearchResponse).items.every((item) => isItemListing(item));
+    if (!("items" in response) || !Array.isArray(response.items)) {
+      return false;
+    }
 
-    return result;
+    // Check that items array contains valid listings
+    return response.items.every((item) => isItemListing(item));
   } catch {
     return false;
   }

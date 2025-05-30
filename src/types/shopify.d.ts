@@ -444,27 +444,6 @@ export interface SearchResponse {
   itemsPerPage: number;
 
   /**
-   * Number of items in the current result set.
-   * May be less than itemsPerPage on last page.
-   * @example 20
-   */
-  currentItemCount: number;
-
-  /**
-   * Starting index for categories in the result set.
-   * Zero-based index for category pagination.
-   * @example 0
-   */
-  categoryStartIndex: number;
-
-  /**
-   * Total number of categories matching the search.
-   * Used for category pagination calculations.
-   * @example 5
-   */
-  totalCategories: number;
-
-  /**
    * Starting index for pages in the result set.
    * Zero-based index for page pagination.
    * @example 0
@@ -477,31 +456,6 @@ export interface SearchResponse {
    * @example 3
    */
   totalPages: number;
-
-  /**
-   * Array of search term suggestions.
-   * Used for search autocomplete and "did you mean".
-   * @example ["sodium chloride", "sodium hydroxide"]
-   */
-  suggestions: string[];
-
-  /**
-   * Array of matching categories.
-   * Contains category objects with details.
-   */
-  categories: ItemCategory[];
-
-  /**
-   * Array of matching pages.
-   * Contains page objects with details.
-   */
-  pages: StorePage[];
-
-  /**
-   * Array of matching products.
-   * Contains product objects with details.
-   */
-  items: ItemListing[];
 }
 
 /**

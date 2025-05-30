@@ -116,10 +116,29 @@ export default abstract class SupplierBaseShopify
     });
 
     if (!isValidSearchResponse(searchRequest)) {
-      throw new Error("Invalid search response");
+      this._logger.error("Invalid search response:", searchRequest);
+      return;
     }
 
-    const fuzzResults = this._fuzzyFilter<ItemListing>(query, searchRequest.items);
+    if (!("items" in searchRequest)) {
+      this._logger.error("Invalid search response:", searchRequest);
+      return;
+    }
+
+    if ("items" in searchRequest === false || !Array.isArray(searchRequest.items)) {
+      this._logger.error("Search response items is not an array:", searchRequest.items);
+      return;
+    }
+
+    if (searchRequest.items.length === 0) {
+      this._logger.error("Search response items is empty:", searchRequest.items);
+      return;
+    }
+
+    const validItems = (searchRequest.items as unknown as (ItemListing | null)[]).filter(
+      (item): item is ItemListing => item !== null,
+    );
+    const fuzzResults = this._fuzzyFilter<ItemListing>(query, validItems);
     this._logger.info("fuzzResults:", fuzzResults);
 
     return this._initProductBuilders(fuzzResults.slice(0, limit));

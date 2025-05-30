@@ -29,8 +29,8 @@ import "./main.scss";
  *
  */
 async function enableMocking() {
-  //return;
-  if (chrome.extension !== undefined && import.meta.env.MODE !== "development") {
+  return;
+  if (typeof chrome.extension === "undefined") {
     return;
   }
 
