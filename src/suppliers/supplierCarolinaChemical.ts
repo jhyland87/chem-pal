@@ -1,5 +1,4 @@
-import { SHIPPING_SCOPE } from "@/constants/common";
-import { type CountryCode, type Product } from "@/types";
+import { type CountryCode, type Product, type ShippingRange } from "@/types";
 import SupplierBaseWoocommerce from "./supplierBaseWoocommerce";
 
 /**
@@ -40,32 +39,12 @@ export default class SupplierCarolinaChemical
    */
   public readonly supplierName: string = "Carolina Chemical";
 
-  /**
-   * The base URL for the supplier's website.
-   * Used as the root URL for all HTTP requests to the supplier's API.
-   *
-   * @example
-   * ```typescript
-   * class CustomCarolinaChemical extends SupplierCarolinaChemical {
-   *   constructor() {
-   *     super();
-   *     // Use staging environment
-   *     this._baseURL = "https://staging.carolinachemical.com";
-   *   }
-   * }
-   * ```
-   */
-  protected _baseURL: string = "https://carolinachemical.com";
+  // The base URL for the supplier's website.
+  public readonly baseURL: string = "https://carolinachemical.com";
 
-  /**
-   * Shipping scope for Carolina Chemical
-   * @defaultValue SHIPPING_SCOPE.Domestic
-   */
-  public readonly shippingScope: SHIPPING_SCOPE = SHIPPING_SCOPE.Domestic;
+  // Shipping scope for Carolina Chemical
+  public readonly shipping: ShippingRange = "domestic";
 
-  /**
-   * The country code of the supplier.
-   * This is used to determine the currency and other country-specific information.
-   */
-  public readonly countryCode: CountryCode = "US";
+  // The country code of the supplier.
+  public readonly country: CountryCode = "US";
 }

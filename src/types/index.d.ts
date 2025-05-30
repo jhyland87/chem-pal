@@ -410,6 +410,18 @@ export interface Product extends Variant {
    * @example ["https://supplier.com/msds/nacl.pdf"]
    */
   docLinks?: string[];
+
+  /**
+   * Country of the supplier
+   * @example "US"
+   */
+  supplierCountry?: CountryCode;
+
+  /**
+   * Shipping scope of the supplier
+   * @example "worldwide" | "domestic" | "international" | "local"
+   */
+  supplierShipping?: ShippingRange;
 }
 
 /**
@@ -649,7 +661,7 @@ export interface SearchProps {
  *   supplierName = "MySupplier";
  *   _query = "";
  *   _queryResults = [];
- *   _baseURL = "https://mysupplier.com";
+ *   baseURL = "https://mysupplier.com";
  *   _controller = new AbortController();
  *   _limit = 10;
  *   _httpRequestHardLimit = 50;
@@ -679,7 +691,7 @@ export interface Supplier {
    * Base URL for supplier's API endpoints
    * @example "https://api.supplier.com"
    */
-  _baseURL: string;
+  baseURL: string;
 
   /**
    * AbortController for canceling in-flight requests
@@ -1008,3 +1020,9 @@ export type MaybeArray<T> = T | T[];
  * Country code type
  */
 export type CountryCode = (typeof COUNTRIES)[number]["code"];
+
+/**
+ * Shipping range type
+ * @example "worldwide" | "domestic" | "international" | "local"
+ */
+export type ShippingRange = "worldwide" | "domestic" | "international" | "local";

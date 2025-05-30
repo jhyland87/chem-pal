@@ -1,12 +1,19 @@
-import { AVAILABILITY, UOM } from "@/constants/common";
+import { AVAILABILITY } from "@/constants/common";
 import { findCAS, isCAS } from "@/helpers/cas";
 import { isParsedPrice, parsePrice, toUSD } from "@/helpers/currency";
 import { isQuantityObject, parseQuantity, toBaseQuantity } from "@/helpers/quantity";
 import { findFormulaInHtml } from "@/helpers/science";
-import { type Maybe, type Product, type QuantityObject, type Variant } from "@/types";
+import {
+  type CountryCode,
+  type Maybe,
+  type Product,
+  type QuantityObject,
+  type ShippingRange,
+  type Variant,
+} from "@/types";
 import type { ParsedPrice } from "@/types/currency";
 import { Logger } from "@/utils/Logger";
-import { isMinimalProduct, isProduct } from "@/utils/typeGuards/common";
+import { isMinimalProduct, isProduct, isUOM } from "@/utils/typeGuards/common";
 import { isAvailability, isValidVariant } from "@/utils/typeGuards/productbuilder";
 
 /**
@@ -62,20 +69,21 @@ export class ProductBuilder<T extends Product> {
   private _rawData: Record<string, unknown> = {};
 
   /** The base URL of the supplier's website */
-  private _baseURL: string;
+  private baseURL: string;
 
+  /** The logger for the product builder */
   private _logger: Logger;
 
   /**
    * Creates a new ProductBuilder instance.
-   * @param _baseURL - The base URL of the supplier's website, used for resolving relative URLs
+   * @param baseURL - The base URL of the supplier's website, used for resolving relative URLs
    * @example
    * ```typescript
    * const builder = new ProductBuilder('https://example.com');
    * ```
    */
-  constructor(_baseURL: string) {
-    this._baseURL = _baseURL;
+  constructor(baseURL: string) {
+    this.baseURL = baseURL;
     this._logger = new Logger("ProductBuilder");
   }
 
@@ -103,7 +111,7 @@ export class ProductBuilder<T extends Product> {
    * Sets the basic information for the product including title, URL, and supplier name.
    *
    * @param title - The display name/title of the product
-   * @param url - The URL where the product can be found (can be relative to _baseURL)
+   * @param url - The URL where the product can be found (can be relative to baseURL)
    * @param supplier - The name of the supplier/vendor
    * @returns The builder instance for method chaining
    * @example
@@ -329,6 +337,36 @@ export class ProductBuilder<T extends Product> {
     this._logger.warn(
       `Unknown quantity type: ${typeof quantity} - Expected number, string, or QuantityObject`,
     );
+    return this;
+  }
+
+  /**
+   * Sets the country of the supplier.
+   *
+   * @param country - The country of the supplier
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setSupplierCountry("US");
+   * ```
+   */
+  setSupplierCountry(country: CountryCode): ProductBuilder<T> {
+    this._product.supplierCountry = country;
+    return this;
+  }
+
+  /**
+   * Sets the shipping scope of the supplier.
+   *
+   * @param shipping - The shipping scope of the supplier
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setSupplierShipping("worldwide");
+   * ```
+   */
+  setSupplierShipping(shipping: ShippingRange): ProductBuilder<T> {
+    this._product.supplierShipping = shipping;
     return this;
   }
 
@@ -644,7 +682,7 @@ export class ProductBuilder<T extends Product> {
    * ```
    */
   private _href(path: string | URL): string {
-    const urlObj = new URL(path, this._baseURL);
+    const urlObj = new URL(path, this.baseURL);
     return urlObj.toString();
   }
 
@@ -678,17 +716,14 @@ export class ProductBuilder<T extends Product> {
       return;
     }
 
-    this._product.usdPrice = this._product.price ?? 0;
-    this._product.baseQuantity =
-      toBaseQuantity(this._product.quantity ?? 0, this._product.uom as UOM) ??
-      this._product.quantity ??
-      0;
+    this._product.usdPrice = this._product.price;
+    const baseQuantity = toBaseQuantity(this._product.quantity, this._product.uom);
+    if (baseQuantity) {
+      this._product.baseQuantity = baseQuantity;
+    }
 
     if (this._product.currencyCode !== "USD") {
-      this._product.usdPrice = await toUSD(
-        this._product.price ?? 0,
-        this._product.currencyCode ?? "USD",
-      );
+      this._product.usdPrice = await toUSD(this._product.price, this._product.currencyCode);
     }
 
     // Process variants if present
@@ -698,12 +733,20 @@ export class ProductBuilder<T extends Product> {
 
       // Process each variant
       for (const variant of this._product.variants ?? []) {
-        if (variant.quantity && variant.uom) {
-          variant.baseQuantity =
-            toBaseQuantity(variant.quantity, variant.uom as UOM) ?? variant.quantity;
+        if (
+          "quantity" in variant &&
+          "uom" in variant &&
+          variant.quantity &&
+          isUOM(variant.uom) &&
+          typeof variant.price === "number"
+        ) {
+          const baseQuantity = toBaseQuantity(variant.quantity, variant.uom);
+          if (baseQuantity) {
+            variant.baseQuantity = baseQuantity;
+          }
         }
 
-        if (variant.price && this._product.currencyCode !== "USD") {
+        if (typeof variant.price === "number" && this._product.currencyCode !== "USD") {
           variant.usdPrice = await toUSD(variant.price, this._product.currencyCode ?? "USD");
         }
 

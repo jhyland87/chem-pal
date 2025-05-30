@@ -1,8 +1,7 @@
-import { SHIPPING_SCOPE } from "@/constants/common";
 import { isCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
-import { type CountryCode, type Product } from "@/types";
+import { type CountryCode, type Product, type ShippingRange } from "@/types";
 import { type ProductObject } from "@/types/chemsavers";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isValidSearchResponse } from "@/utils/typeGuards/chemsavers";
@@ -26,7 +25,13 @@ export default class SupplierChemsavers
   public readonly supplierName: string = "Chemsavers";
 
   // Base URL for HTTP(s) requests
-  protected _baseURL: string = "https://www.chemsavers.com";
+  public readonly baseURL: string = "https://www.chemsavers.com";
+
+  // Shipping scope for Chemsavers
+  public readonly shipping: ShippingRange = "international";
+
+  // The country code of the supplier.
+  public readonly country: CountryCode = "US";
 
   protected _apiURL: string = "0ul35zwtpkx14ifhp-1.a1.typesense.net";
 
@@ -36,6 +41,7 @@ export default class SupplierChemsavers
   // Used to keep track of how many requests have been made to the supplier.
   protected _httpRequstCount: number = 0;
 
+  // API key for Typesense search API
   protected _apiKey: string = "iPltuzpMbSZEuxT0fjPI0Ct9R1UBETTd";
 
   // HTTP headers used as a basis for all queries.
@@ -56,18 +62,6 @@ export default class SupplierChemsavers
     "sec-gpc": "1",
     /* eslint-enable */
   };
-
-  /**
-   * Shipping scope for Chemsavers
-   * @defaultValue SHIPPING_SCOPE.International
-   */
-  public readonly shippingScope: SHIPPING_SCOPE = SHIPPING_SCOPE.International;
-
-  /**
-   * The country code of the supplier.
-   * This is used to determine the currency and other country-specific information.
-   */
-  public readonly countryCode: CountryCode = "US";
 
   /**
    * Executes a product search query and returns matching products
@@ -162,7 +156,7 @@ export default class SupplierChemsavers
    */
   protected _initProductBuilders(data: ProductObject[]): ProductBuilder<Product>[] {
     return mapDefined(data, (result) => {
-      const builder = new ProductBuilder<Product>(this._baseURL);
+      const builder = new ProductBuilder<Product>(this.baseURL);
 
       const quantity = parseQuantity(result.name);
       if (quantity === undefined) return;

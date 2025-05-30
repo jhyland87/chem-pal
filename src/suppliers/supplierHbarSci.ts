@@ -1,5 +1,4 @@
-import { SHIPPING_SCOPE } from "@/constants/common";
-import { type CountryCode, type Product } from "@/types";
+import { type CountryCode, type Product, type ShippingRange } from "@/types";
 import SupplierBaseShopify from "./supplierBaseShopify";
 
 /**
@@ -13,26 +12,22 @@ export default class SupplierHbarSci extends SupplierBaseShopify implements Asyn
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "SupplierHbarSci";
 
+  // Base URL for HTTP(s) requests
+  public readonly baseURL: string = "https://www.hbarsci.com";
+
+  // Shipping scope for HbarSci
+  public readonly shipping: ShippingRange = "international";
+
+  // The country code of the supplier.
+  public readonly country: CountryCode = "US";
+
+  // API key for Typesense search API
   protected _apiKey: string = "2H3i9C5v0m";
 
+  // Base search parameters for Typesense search API
   protected _baseSearchParams: Record<string, string> = {
     tab: "products",
     // eslint-disable-next-line @typescript-eslint/naming-convention
     "restrictBy[filter_ptag_bf51a4bd1f5efe4002b3d50737306113]": "Chemicals",
   };
-
-  // Base URL for HTTP(s) requests
-  protected _baseURL: string = "https://www.hbarsci.com";
-
-  /**
-   * Shipping scope for HbarSci
-   * @defaultValue SHIPPING_SCOPE.International
-   */
-  public readonly shippingScope: SHIPPING_SCOPE = SHIPPING_SCOPE.International;
-
-  /**
-   * The country code of the supplier.
-   * This is used to determine the currency and other country-specific information.
-   */
-  public readonly countryCode: CountryCode = "US";
 }

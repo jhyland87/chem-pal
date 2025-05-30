@@ -1,9 +1,8 @@
-import { SHIPPING_SCOPE } from "@/constants/common";
 import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { isQuantityObject, parseQuantity } from "@/helpers/quantity";
 import { firstMap } from "@/helpers/utils";
-import type { CountryCode, Product } from "@/types";
+import type { CountryCode, Product, ShippingRange } from "@/types";
 import {
   type ATGResponse,
   type ContentFolder,
@@ -59,7 +58,13 @@ export default class SupplierCarolina
   public readonly supplierName: string = "Carolina";
 
   /** Base URL for all API requests */
-  protected _baseURL: string = "https://www.carolina.com";
+  public readonly baseURL: string = "https://www.carolina.com";
+
+  // Shipping scope for Carolina
+  public readonly shipping: ShippingRange = "domestic";
+
+  // The country code of the supplier.
+  public readonly country: CountryCode = "US";
 
   /** Cached search results from the last query */
   protected _queryResults: Array<SearchResult> = [];
@@ -95,18 +100,6 @@ export default class SupplierCarolina
     "x-requested-with": "XMLHttpRequest",
     /* eslint-enable */
   };
-
-  /**
-   * Shipping scope for Carolina
-   * @defaultValue SHIPPING_SCOPE.Domestic
-   */
-  public readonly shippingScope: SHIPPING_SCOPE = SHIPPING_SCOPE.Domestic;
-
-  /**
-   * The country code of the supplier.
-   * This is used to determine the currency and other country-specific information.
-   */
-  public readonly countryCode: CountryCode = "US";
 
   /**
    * Constructs the query parameters for a product search request
@@ -185,7 +178,7 @@ export default class SupplierCarolina
    */
   protected _initProductBuilders(data: SearchResult[]): ProductBuilder<Product>[] {
     return data.map((result) => {
-      const builder = new ProductBuilder(this._baseURL)
+      const builder = new ProductBuilder(this.baseURL)
         .setBasicInfo(result.productName, result.productUrl, this.supplierName)
         .setPricing(parsePrice(result.itemPrice) as ParsedPrice);
       const casNo = findCAS(result["product.shortDescription"]);

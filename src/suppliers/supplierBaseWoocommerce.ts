@@ -36,7 +36,7 @@ import SupplierBase from "./supplierBase";
  * ```typescript
  * class MyChemicalSupplier extends SupplierBaseWoocommerce {
  *   public readonly supplierName = "My Chemical Supplier";
- *   protected _baseURL = "https://mychemicalsupplier.com";
+ *   protected baseURL = "https://mychemicalsupplier.com";
  * }
  *
  * const supplier = new MyChemicalSupplier();
@@ -144,7 +144,7 @@ export default abstract class SupplierBaseWoocommerce
    */
   protected _initProductBuilders(results: SearchResponseItem[]): ProductBuilder<Product>[] {
     return results.map((item) => {
-      const builder = new ProductBuilder<Product>(this._baseURL);
+      const builder = new ProductBuilder<Product>(this.baseURL);
 
       builder
         .setBasicInfo(item.name, item.permalink, this.supplierName)

@@ -520,18 +520,6 @@ export enum HTTP_STATUS_CODES {
  */
 export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_checksum>\d)/;
 
-/**
- * Represents the scope of shipping for a product
- */
-export enum SHIPPING_SCOPE {
-  /** Worldwide shipping */
-  Worldwide = "worldwide",
-  /** Domestic shipping */
-  Domestic = "domestic",
-  /** International shipping */
-  International = "international",
-}
-
 export const COUNTRIES = [
   { name: "United States", code: "US" },
   { name: "Canada", code: "CA" },

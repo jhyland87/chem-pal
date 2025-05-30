@@ -51,8 +51,9 @@ export default function SuppliersPanel() {
   };
 
   const handleToggleAll = (e: ChangeEvent<HTMLInputElement>) => {
+    console.log("handleToggleAll", e.target.checked);
     let newChecked: string[] = [];
-    if (e.target.checked === false) {
+    if (e.target.checked === true) {
       newChecked = [...SupplierFactory.supplierList()];
     }
 

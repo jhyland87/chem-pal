@@ -1,11 +1,11 @@
 /* eslint-disable no-debugger */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { SHIPPING_SCOPE } from "@/constants/common";
+
 import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
-import type { CountryCode, Product } from "@/types";
+import type { CountryCode, Product, ShippingRange } from "@/types";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import chunk from "lodash/chunk";
 import SupplierBase from "./supplierBase";
@@ -29,54 +29,31 @@ export default class SupplierLoudwolf
   extends SupplierBase<Partial<Product>, Product>
   implements AsyncIterable<Product>
 {
-  /**
-   * Display name of the supplier used for UI and logging
-   * @readonly
-   */
+  // Display name of the supplier used for UI and logging
   public readonly supplierName: string = "Loudwolf";
 
-  /**
-   * Base URL for all API and web requests to Loudwolf
-   * @defaultValue "https://www.loudwolf.com"
-   */
-  protected _baseURL: string = "https://www.loudwolf.com";
+  // Base URL for all API and web requests to Loudwolf
+  public readonly baseURL: string = "https://www.loudwolf.com";
 
-  /**
-   * Cached search results from the last query execution
-   * @defaultValue []
-   */
+  // Shipping scope for Loudwolf
+  public readonly shipping: ShippingRange = "worldwide";
+
+  // The country code of the supplier.
+  // This is used to determine the currency and other country-specific information.
+  public readonly country: CountryCode = "US";
+
+  // Cached search results from the last query execution
   protected _queryResults: Array<Partial<Product>> = [];
 
-  /**
-   * Maximum number of HTTP requests allowed per search query
-   * Used to prevent excessive requests to supplier
-   * @defaultValue 50
-   */
+  // Maximum number of HTTP requests allowed per search query
+  // Used to prevent excessive requests to supplier
   protected _httpRequestHardLimit: number = 50;
 
-  /**
-   * Counter for HTTP requests made during current query execution
-   * @defaultValue 0
-   */
+  // Counter for HTTP requests made during current query execution
   protected _httpRequstCount: number = 0;
 
-  /**
-   * Number of requests to process in parallel when fetching product details
-   * @defaultValue 5
-   */
+  // Number of requests to process in parallel when fetching product details
   protected _httpRequestBatchSize: number = 5;
-
-  /**
-   * Shipping scope for Loudwolf
-   * @defaultValue SHIPPING_SCOPE.Worldwide
-   */
-  public readonly shippingScope: SHIPPING_SCOPE = SHIPPING_SCOPE.Worldwide;
-
-  /**
-   * The country code of the supplier.
-   * This is used to determine the currency and other country-specific information.
-   */
-  public readonly countryCode: CountryCode = "US";
 
   /**
    * Sets up the supplier by setting the display to list.
@@ -142,7 +119,7 @@ export default class SupplierLoudwolf
           return;
         }
 
-        const url = new URL(href, this._baseURL);
+        const url = new URL(href, this.baseURL);
 
         const id = url.searchParams.get("product_id");
 
@@ -226,7 +203,7 @@ export default class SupplierLoudwolf
    */
   protected _initProductBuilders($elements: Element[]): ProductBuilder<Product>[] {
     return mapDefined($elements, (element: Element) => {
-      const builder = new ProductBuilder<Product>(this._baseURL);
+      const builder = new ProductBuilder<Product>(this.baseURL);
 
       const priceElem = element.querySelector("div.caption > p.price");
       console.log("priceElem:", priceElem);
@@ -244,7 +221,7 @@ export default class SupplierLoudwolf
         return;
       }
 
-      const url = new URL(href, this._baseURL);
+      const url = new URL(href, this.baseURL);
 
       const id = url.searchParams.get("product_id");
 

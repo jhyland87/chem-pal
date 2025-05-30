@@ -29,7 +29,7 @@ import "./main.scss";
  *
  */
 async function enableMocking() {
-  return;
+  //return;
   if (chrome.extension !== undefined && import.meta.env.MODE !== "development") {
     return;
   }

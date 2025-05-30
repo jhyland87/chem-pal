@@ -1,3 +1,4 @@
+import { UOM } from "@/constants/common";
 import { type Product } from "@/types";
 import type { RequiredProductFields } from "@/types/product";
 
@@ -38,6 +39,33 @@ export function isHttpResponse(value: unknown): value is Response {
     typeof (value as Response).json === "function" &&
     typeof (value as Response).text === "function"
   );
+}
+
+/**
+ * Type guard to validate if a value is a valid UOM.
+ * Checks if the value is a string and if it is in the UOM array.
+ *
+ * @param uom - The value to validate
+ * @returns Type predicate indicating if the value is a valid UOM
+ * @typeguard
+ *
+ * @example
+ * ```typescript
+ * // Valid UOM
+ * const validUOM = "g";
+ * if (isUOM(validUOM)) {
+ *   console.log('Valid UOM:', validUOM);
+ * }
+ *
+ * // Invalid UOM
+ * const invalidUOM = 123; // Number instead of string
+ * if (!isUOM(invalidUOM)) {
+ *   console.log('Invalid UOM:', invalidUOM);
+ * }
+ * ```
+ */
+export function isUOM(uom: unknown): uom is UOM {
+  return typeof uom === "string" && Object.values(UOM).includes(uom as UOM);
 }
 
 /**

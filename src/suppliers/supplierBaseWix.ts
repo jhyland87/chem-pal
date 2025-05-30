@@ -30,7 +30,7 @@ export default abstract class SupplierBaseWix
   public abstract readonly supplierName: string;
 
   /** Base URL for all API requests */
-  protected abstract _baseURL: string;
+  protected abstract baseURL: string;
 
   /** Access token for Wix API authentication */
   protected _accessToken: string = "";
@@ -54,7 +54,7 @@ export default abstract class SupplierBaseWix
    * ```
    */
   protected async _setup(): Promise<void> {
-    const accessTokenResponse = await fetch(`${this._baseURL}/_api/v1/access-tokens`, {
+    const accessTokenResponse = await fetch(`${this.baseURL}/_api/v1/access-tokens`, {
       headers: {
         /* eslint-disable */
         accept: "*/*",
@@ -62,7 +62,7 @@ export default abstract class SupplierBaseWix
         "cache-control": "no-cache",
         pragma: "no-cache",
         priority: "u=1, i",
-        referer: this._baseURL,
+        referer: this.baseURL,
         "user-agent":
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
         /* eslint-enable */
@@ -298,7 +298,7 @@ export default abstract class SupplierBaseWix
           return;
         }
 
-        const builder = new ProductBuilder<Product>(this._baseURL);
+        const builder = new ProductBuilder<Product>(this.baseURL);
 
         const cas = firstMap(findFormulaInHtml, [
           product.name,
@@ -309,7 +309,7 @@ export default abstract class SupplierBaseWix
         builder
           .setBasicInfo(
             product.name,
-            `${this._baseURL}/product-page/${product.urlPart}`,
+            `${this.baseURL}/product-page/${product.urlPart}`,
             this.supplierName,
           )
           .setPricing(productPrice.price, productPrice.currencyCode, productPrice.currencySymbol)

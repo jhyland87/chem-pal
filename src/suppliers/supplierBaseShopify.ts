@@ -45,7 +45,7 @@ import SupplierBase from "./supplierBase";
  *   protected _apiKey: string = "<api_key>";
  *
  *   // Base URL for HTTP(s) requests
- *   protected _baseURL: string = "https://www.foobar.com";
+ *   public readonly baseURL: string = "https://www.foobar.com";
  * }
  * ```
  */
@@ -89,22 +89,7 @@ export default abstract class SupplierBaseShopify
     //   --data-urlencode "api_key=8B7o0X1o7c" \
     //   --data-urlencode "q=sulf" \
     //   --data-urlencode "maxResults=6" \
-    //   --data-urlencode "startIndex=0" \
-    //   --data-urlencode "items=true" \
-    //   --data-urlencode "pages=true" \
-    //   --data-urlencode "facets=false" \
-    //   --data-urlencode "categories=true" \
-    //   --data-urlencode "suggestions=true" \
-    //   --data-urlencode "vendors=false" \
-    //   --data-urlencode "tags=false" \
-    //   --data-urlencode "pageStartIndex=0" \
-    //   --data-urlencode "pagesMaxResults=3" \
-    //   --data-urlencode "categoryStartIndex=0" \
-    //   --data-urlencode "categoriesMaxResults=3" \
-    //   --data-urlencode "suggestionsMaxResults=4" \
-    //   --data-urlencode "vendorsMaxResults=3" \
-    //   --data-urlencode "tagsMaxResults=3" \
-    //   --data-urlencode "_=1740051794061" | jq
+    //   --data-urlencode "items=true" | jq
     const getParams: QueryParams = {
       // Setting the limit here to 1000, since the limit parameter should
       // apply to results returned from Supplier3SChem, not the rquests
@@ -175,7 +160,7 @@ export default abstract class SupplierBaseShopify
   protected _initProductBuilders(results: ItemListing[]): ProductBuilder<Product>[] {
     return results
       .map((item) => {
-        const builder = new ProductBuilder(this._baseURL);
+        const builder = new ProductBuilder(this.baseURL);
         builder
           .setBasicInfo(item.title, item.link, this.supplierName)
           .setPricing(parseFloat(item.price), "USD", "$")

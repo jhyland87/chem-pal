@@ -1,8 +1,8 @@
-import { AVAILABILITY, SHIPPING_SCOPE } from "@/constants/common";
+import { AVAILABILITY } from "@/constants/common";
 import { findCAS } from "@/helpers/cas";
 import { urlencode } from "@/helpers/request";
 import { mapDefined } from "@/helpers/utils";
-import { type CountryCode, type Product } from "@/types";
+import { type CountryCode, type Product, type ShippingRange } from "@/types";
 import {
   type ProductObject,
   type SearchParams,
@@ -64,25 +64,19 @@ export default class SupplierLaboratoriumDiscounter
   public readonly supplierName: string = "Laboratorium Discounter";
 
   // Base URL for HTTP(s) requests
-  protected _baseURL: string = "https://www.laboratoriumdiscounter.nl";
+  public readonly baseURL: string = "https://www.laboratoriumdiscounter.nl";
+
+  // Shipping scope for Laboratorium Discounter
+  public readonly shipping: ShippingRange = "domestic";
+
+  // The country code of the supplier.
+  public readonly country: CountryCode = "NL";
 
   // Override the type of _queryResults to use our specific type
   protected _queryResults: Array<ProductObject> = [];
 
   // Used to keep track of how many requests have been made to the supplier.
   protected _httpRequstCount: number = 0;
-
-  /**
-   * Shipping scope for Laboratorium Discounter
-   * @defaultValue SHIPPING_SCOPE.Domestic
-   */
-  public readonly shippingScope: SHIPPING_SCOPE = SHIPPING_SCOPE.Domestic;
-
-  /**
-   * The country code of the supplier.
-   * This is used to determine the currency and other country-specific information.
-   */
-  public readonly countryCode: CountryCode = "NL";
 
   // HTTP headers used as a basis for all queries.
   protected _headers: HeadersInit = {
@@ -221,7 +215,7 @@ export default class SupplierLaboratoriumDiscounter
    */
   protected _initProductBuilders(data: SearchResponseProduct[]): ProductBuilder<Product>[] {
     return mapDefined(data, (product) => {
-      const productBuilder = new ProductBuilder(this._baseURL);
+      const productBuilder = new ProductBuilder(this.baseURL);
       productBuilder
         //.addRawData(product)
         .setBasicInfo(product.title, product.url, this.supplierName)

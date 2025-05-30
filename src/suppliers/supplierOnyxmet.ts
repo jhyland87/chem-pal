@@ -1,9 +1,8 @@
-import { SHIPPING_SCOPE } from "@/constants/common";
 import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
-import type { CountryCode, Product } from "@/types";
+import type { CountryCode, Product, ShippingRange } from "@/types";
 import type { SearchResultItem, SearchResultResponse } from "@/types/onyxmet";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isSearchResultItem } from "@/utils/typeGuards/onyxmet";
@@ -29,54 +28,31 @@ export default class SupplierOnyxmet
   extends SupplierBase<SearchResultResponse, Product>
   implements AsyncIterable<Product>
 {
-  /**
-   * Display name of the supplier used for UI and logging
-   * @readonly
-   */
+  // Display name of the supplier used for UI and logging
   public readonly supplierName: string = "Onyxmet";
 
-  /**
-   * Base URL for all API and web requests to Onyxmet
-   * @defaultValue "https://onyxmet.com"
-   */
-  protected _baseURL: string = "https://onyxmet.com";
+  // Base URL for all API and web requests to Onyxmet
+  public readonly baseURL: string = "https://onyxmet.com";
 
-  /**
-   * Cached search results from the last query execution
-   * @defaultValue []
-   */
+  // Shipping scope for Onyxmet
+  public readonly shipping: ShippingRange = "international";
+
+  // The country code of the supplier.
+  // This is used to determine the currency and other country-specific information.
+  public readonly country: CountryCode = "CA";
+
+  // Cached search results from the last query execution
   protected _queryResults: SearchResultResponse[] = [];
 
-  /**
-   * Maximum number of HTTP requests allowed per search query
-   * Used to prevent excessive requests to supplier
-   * @defaultValue 50
-   */
+  // Maximum number of HTTP requests allowed per search query
+  // Used to prevent excessive requests to supplier
   protected _httpRequestHardLimit: number = 50;
 
-  /**
-   * Counter for HTTP requests made during current query execution
-   * @defaultValue 0
-   */
+  // Counter for HTTP requests made during current query execution
   protected _httpRequstCount: number = 0;
 
-  /**
-   * Number of requests to process in parallel when fetching product details
-   * @defaultValue 5
-   */
+  // Number of requests to process in parallel when fetching product details
   protected _httpRequestBatchSize: number = 5;
-
-  /**
-   * Shipping scope for Onyxmet
-   * @defaultValue SHIPPING_SCOPE.International
-   */
-  public readonly shippingScope: SHIPPING_SCOPE = SHIPPING_SCOPE.International;
-
-  /**
-   * The country code of the supplier.
-   * This is used to determine the currency and other country-specific information.
-   */
-  public readonly countryCode: CountryCode = "CA";
 
   /**
    * Sets up the supplier by setting the display to list.
@@ -167,7 +143,7 @@ export default class SupplierOnyxmet
         return;
       }
 
-      const builder = new ProductBuilder<Product>(this._baseURL);
+      const builder = new ProductBuilder<Product>(this.baseURL);
 
       builder.setBasicInfo(item.label, item.href, this.supplierName);
       builder.setDescription(item.description);

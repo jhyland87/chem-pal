@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { SHIPPING_SCOPE } from "@/constants/common";
 import { fetchDecorator, isFullURL } from "@/helpers/request";
-import { type CountryCode, type Maybe, type MaybeArray, type Product } from "@/types";
+import {
+  type CountryCode,
+  type Maybe,
+  type MaybeArray,
+  type Product,
+  type ShippingRange,
+} from "@/types";
 import { type RequestOptions, type RequestParams } from "@/types/request";
 import { Logger } from "@/utils/Logger";
 import { ProductBuilder } from "@/utils/ProductBuilder";
@@ -31,7 +36,19 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   public abstract readonly supplierName: string;
 
   // The base URL for the supplier.
-  protected abstract _baseURL: string;
+  protected abstract baseURL: string;
+
+  /**
+   * The shipping scope of the supplier.
+   * This is used to determine the shipping scope of the supplier.
+   */
+  public abstract readonly shipping: ShippingRange;
+
+  /**
+   * The country code of the supplier.
+   * This is used to determine the currency and other country-specific information.
+   */
+  public abstract readonly country: CountryCode;
 
   /**
    * String to query for (Product name, CAS, etc).
@@ -205,15 +222,6 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   // Logger for the supplier. This gets initialized in this constructor with the
   // name of the inheriting class.
   protected _logger: Logger;
-
-  public abstract readonly shippingScope: SHIPPING_SCOPE;
-
-  /**
-   * The country code of the supplier.
-   * This is used to determine the currency and other country-specific information.
-   */
-  public abstract readonly countryCode: CountryCode;
-
   // Cache configuration
   private static readonly cacheKey = "supplier_cache";
 
@@ -291,7 +299,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
       const requestObj = new Request(this._href(url), {
         signal: this._controller.signal,
         headers: new Headers(this._headers),
-        referrer: this._baseURL,
+        referrer: this.baseURL,
         referrerPolicy: "strict-origin-when-cross-origin",
         body: null,
         method: "HEAD",
@@ -348,7 +356,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   }: RequestOptions): Promise<Maybe<Response>> {
     const method = "POST";
     const mode = "cors";
-    const referrer = this._baseURL;
+    const referrer = this.baseURL;
     const referrerPolicy = "strict-origin-when-cross-origin";
     const signal = this._controller.signal;
     const bodyStr = typeof body === "string" ? body : (JSON.stringify(body) ?? null);
@@ -467,7 +475,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
           ...this._headers,
           ...headers,
         },
-        referrer: this._baseURL,
+        referrer: this.baseURL,
         referrerPolicy: "no-referrer",
         body: null,
         method: "GET",
@@ -594,6 +602,39 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    */
   protected abstract _titleSelector(data: any): string;
 
+  /**
+   * Makes an HTTP GET request and returns the response as a string.
+   * Handles request configuration, error handling, and HTML parsing.
+   *
+   * @param options - The request configuration options
+   * @returns Promise resolving to the HTML response as a string or void if request fails
+   * @throws TypeError - If the response is not valid HTML content
+   *
+   * @example
+   * ```typescript
+   * // Basic GET request
+   * const html = await this._httpGetHtml({
+   *   path: "/api/products",
+   *   params: { search: "sodium" }
+   * });
+   *
+   * // GET request with custom headers
+   * const html = await this._httpGetHtml({
+   *   path: "/api/products",
+   *   headers: {
+   *     "Authorization": "Bearer token123",
+   *     "Accept": "text/html"
+   *   }
+   * });
+   *
+   * // GET request with custom host
+   * const html = await this._httpGetHtml({
+   *   path: "/products",
+   *   host: "api.supplier.com",
+   *   params: { limit: 10 }
+   * });
+   * ```
+   */
   protected async _httpGetHtml({
     path,
     params,
@@ -988,7 +1029,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * @example
    * ```typescript
    * // Example with a valid partial product
-   * const builder = new ProductBuilder<Product>(this._baseURL);
+   * const builder = new ProductBuilder<Product>(this.baseURL);
    * builder
    *   .setBasicInfo("Sodium Chloride", "/products/nacl", "ChemSupplier")
    *   .setPricing(29.99, "USD", "$")
@@ -1007,7 +1048,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * }
    *
    * // Example with an invalid partial product
-   * const invalidBuilder = new ProductBuilder<Product>(this._baseURL);
+   * const invalidBuilder = new ProductBuilder<Product>(this.baseURL);
    * invalidBuilder.setBasicInfo("Sodium Chloride", "/products/nacl", "ChemSupplier");
    * // Missing required fields
    *
@@ -1022,6 +1063,11 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
       this._logger.warn("Unable to finish product - Minimum data not set", { product });
       return;
     }
+
+    // Set the country and shipping scope of the supplier. Later these may change if they
+    // have different restrictions on different products or countries.
+    product.setSupplierCountry(this.country);
+    product.setSupplierShipping(this.shipping);
 
     /*
     const title = product.get("title");
@@ -1074,7 +1120,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
       href = new URL(path);
     }
 
-    href = new URL(path, this._baseURL);
+    href = new URL(path, this.baseURL);
 
     if (host) {
       href.host = host;
@@ -1106,7 +1152,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * // Example implementation in a supplier class
    * protected _initProductBuilders(products: SupplierProduct[]): ProductBuilder<Product>[] {
    *   return products.map(product => {
-   *     const builder = new ProductBuilder<Product>(this._baseURL);
+   *     const builder = new ProductBuilder<Product>(this.baseURL);
    *
    *     // Transform supplier-specific data into common format
    *     builder
@@ -1211,6 +1257,11 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   protected async _fetch(...args: Parameters<typeof fetchDecorator>): Promise<Response> {
     const [input] = args;
     console.log(`Fetching: ${input}`);
+    this._requestCount++;
+    if (this._requestCount > this._httpRequestHardLimit) {
+      this._logger.warn("Request count exceeded hard limit", { requestCount: this._requestCount });
+      throw new Error("Request count exceeded hard limit");
+    }
     const response = await fetchDecorator(...args);
     console.log(`Response Status: ${response.status}`);
 
