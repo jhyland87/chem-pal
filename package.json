@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "vite",
     "dev-mock": "vite --mode=mock",
-    "setup": "npm install --include=dev --legacy-peer-deps",
+    "setup": "pnpm install --include=dev --legacy-peer-deps",
     "type-check": "tsc --noEmit",
     "build": "vite build --mode=development",
     "build:full": "pnpm type-check && pnpm build",
