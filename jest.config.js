@@ -30,6 +30,7 @@ export default {
   testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.(ts|tsx)$",
   collectCoverage: true,
   collectCoverageFrom: ["src/**/*.ts", "src/**/*.tsx"],
+  coverageDirectory: "<rootDir>/coverage",
   coveragePathIgnorePatterns: [
     "node_modules",
     "test-config",
