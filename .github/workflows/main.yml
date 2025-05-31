@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: 'v22.15.0'
       - name: Setup dependencies
-        run: npm run setup
+        run: pnpm run setup
       - name: Upload workspace
         uses: actions/upload-artifact@v4
         with:
@@ -40,10 +40,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 'v22.15.0'
+      - name: Install pnpm
+        run: npm install -g pnpm
       - name: Setup dependencies
-        run: npm run setup
+        run: pnpm run setup
       - name: Run tests
-        run: npm run test
+        run: pnpm run test
 
   docs:
     needs: test
@@ -57,10 +59,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 'v22.15.0'
+      - name: Install pnpm
+        run: npm install -g pnpm
       - name: Setup dependencies
-        run: npm run setup
+        run: pnpm run setup
       - name: Generate documentation
-        run: npm run docs
+        run: pnpm run docs
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
