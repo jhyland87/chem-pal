@@ -19,13 +19,18 @@ nvm use --lts
 node --version # Should output v22.15.0
 ```
 
+Install pnpm (package manager)
+```bash
+npm install -g pnpm
+```
+
 ## Building the extension
 
 ```bash
 git clone https://github.com/jhyland87/chem-crawler.git
 cd chem-crawler
-npm run setup
-npm run build
+pnpm run setup
+pnpm run build
 ```
 
 Then import the build folder as an unpacked chrome extension.
@@ -34,11 +39,11 @@ Then import the build folder as an unpacked chrome extension.
 
 ```bash
 # Install dev dependencies
-npm run setup
+pnpm run setup
 
 # Run unit tests
-npm run test
+pnpm run test
 
-# Start local app (doesn't work so well currently, outside of chrome)
-npm run dev
+# Run the build.
+pnpm run build
 ```

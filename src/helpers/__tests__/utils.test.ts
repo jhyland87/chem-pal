@@ -7,7 +7,7 @@ import {
   serialize,
   sleep,
 } from "@/helpers/utils";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 describe("md5sum", () => {
   it("should hash strings correctly", () => {

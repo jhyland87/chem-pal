@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom";
 import { fireEvent, queryHelpers, render, screen } from "@testing-library/react";
+import React from "react";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 //import userEvent from '@testing-library/user-event'
 

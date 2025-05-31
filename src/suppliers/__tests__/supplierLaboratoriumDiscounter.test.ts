@@ -1,5 +1,5 @@
 import type { Product } from "@/types";
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import eur_to_usd_rate from "../__fixtures__/common/eur-to-usd-rate.json";
 import {
   resetChromeStorageMock,
@@ -46,8 +46,8 @@ describe("SupplierLaboratoriumDiscounter", async () => {
 
   describe("search", () => {
     beforeEach(async () => {
-      getCachedResultsSpy.mockClear();
-      httpGetJsonMock.mockClear();
+      (getCachedResultsSpy as Mock).mockClear();
+      (httpGetJsonMock as Mock).mockClear();
 
       //borohydride_search = laboratoriumiscounter_fixtures.search("borohydride");
       //borohydride_search_raw = await borohydride_search("results");

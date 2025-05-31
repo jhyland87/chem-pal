@@ -8,6 +8,9 @@
     {
       // tsconfig.node.json is specifically for Node.js environment files (like vite.config.ts, build scripts, etc.)
       "path": "./tsconfig.node.json"
+    },
+    {
+      "path": "./tsconfig.test.json"
     }
   ],
   "compilerOptions": {
