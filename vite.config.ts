@@ -40,6 +40,15 @@ export default ({ mode }: { mode: string }) => {
         "@": path.resolve(__dirname, "./src"),
       },
     },
+    optimizeDeps: {
+      exclude: [
+        "**/__tests__/**",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+      ],
+    },
     plugins: [
       react(),
       viteStaticCopy({

@@ -51,6 +51,7 @@
     "react-icons": "^5.5.0",
     "react-virtuoso": "^4.12.7",
     "ts-jest-mock": "^1.4.2",
+    "type-fest": "^4.41.0",
     "typedoc-plugin-markdown": "^4.6.3",
     "utility-types": "^3.11.0"
   },
