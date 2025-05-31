@@ -15,6 +15,8 @@ describe("isCAS", () => {
     ["1234-56-0", false],
     ["0000-00-0", false],
     ["00-10-0", false],
+    ["test", false],
+    ["1234-56-6-1234-56-6", false],
   ])("should return %s for CAS number: %s", (input, output) => expect(isCAS(input)).toBe(output));
 });
 

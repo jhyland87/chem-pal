@@ -4,6 +4,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   plugins: [reactSWC()],
   test: {
+    //reporters: ["html", "text","c"],
     pool: "vmThreads",
     environment: "jsdom",
     globals: true,
@@ -14,6 +15,19 @@ export default defineConfig({
       web: {
         transformCss: true,
       },
+    },
+    coverage: {
+      enabled: true,
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        "**/*.d.ts",
+        "**/__mocks__/**",
+        "**/__tests__/**",
+        "**/__fixtures__/**",
+        "**/node_modules/**",
+        "**/*.test.{js,ts,jsx,tsx}",
+        "**/*.spec.{js,ts,jsx,tsx}",
+      ],
     },
   },
   resolve: {

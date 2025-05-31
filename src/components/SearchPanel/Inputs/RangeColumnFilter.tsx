@@ -46,8 +46,10 @@ export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
   }
 
   const [MIN, MAX] = column.getFullRange();
-  // Trigger the column filter update with a debounce or throttle
-  const [columnFilterRange, setColumnFilterRange] = useState<number[]>([MIN, MAX]);
+  // Initialize with existing filter value or full range
+  const [columnFilterRange, setColumnFilterRange] = useState<number[]>(
+    (column.getFilterValue() as number[]) || [MIN, MAX],
+  );
 
   /**
    * Handles changes to the range filter slider.
@@ -60,7 +62,17 @@ export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
     setColumnFilterRange(newValue);
     column.setFilterValueDebounced(newValue);
   };
-  console.log("columnFilterRange", columnFilterRange);
+
+  /**
+   * Resets the range filter to the full range.
+   * Updates both local state and triggers the column filter update.
+   */
+  const handleResetRange = () => {
+    const fullRange = [MIN, MAX];
+    setColumnFilterRange(fullRange);
+    column.setFilterValueDebounced(fullRange);
+  };
+
   const marks = [
     {
       value: MIN,
@@ -75,25 +87,16 @@ export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
   return (
     <FormControl className="range-column-filter fullwidth">
       <Box className="flex-row">
-        <Typography
-          variant="body2"
-          onClick={() => setColumnFilterRange([MIN, MAX])}
-          className="filter-minmax"
-        >
+        <Typography variant="body2" onClick={handleResetRange} className="filter-minmax">
           {MIN}
         </Typography>
         <Typography gutterBottom>{column.getHeaderText()}</Typography>
-        <Typography
-          variant="body2"
-          onClick={() => setColumnFilterRange([MIN, MAX])}
-          className="filter-minmax"
-        >
+        <Typography variant="body2" onClick={handleResetRange} className="filter-minmax">
           {MAX}
         </Typography>
       </Box>
       <Slider
         marks={marks}
-        //step={10}
         value={columnFilterRange}
         valueLabelDisplay="auto"
         min={MIN}
@@ -103,11 +106,9 @@ export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
         slots={{
           valueLabel: ValueLabelComponent,
         }}
-        //aria-label="custom thumb label Small"
         size="small"
         getAriaLabel={() => `${column.getHeaderText()} range`}
         onChange={handleColumnFilterChange}
-        // getAriaValueText={valuetext}
       />
     </FormControl>
   );

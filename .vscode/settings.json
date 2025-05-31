@@ -128,4 +128,5 @@
   },
   "openCoverage.coverageFilePath": "coverage/lcov-report/index.html",
   "vitest.shellType": "terminal",
+  "testing.coverageToolbarEnabled": true,
 }

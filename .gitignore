@@ -13,6 +13,8 @@ dist
 dist-ssr
 dev
 *.local
+html
+html-report
 
 # Editor directories and files
 
