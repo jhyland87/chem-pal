@@ -1,0 +1,56 @@
+{
+  "product": {
+    "id": "123456",
+    "title": "Sodium Borohydride",
+    "description": "Sodium borohydride, also known as sodium tetrahydridoborate and sodium tetrahydroborate, is an inorganic compound with the formula NaBH4.",
+    "url": "/en/sodium-borohydride.html",
+    "code": "SBH-001",
+    "sku": "SBH-001",
+    "available": true,
+    "content": "CAS: 16940-66-2",
+    "price": {
+      "price": 99.99
+    },
+    "variants": {
+      "variant1": {
+        "id": "v1",
+        "code": "SBH-001-100G",
+        "sku": "SBH-001-100G",
+        "title": "100g",
+        "active": true,
+        "price": {
+          "price": 99.99
+        },
+        "stock": {
+          "available": true,
+          "on_stock": true,
+          "allow_backorders": false
+        }
+      },
+      "variant2": {
+        "id": "v2",
+        "code": "SBH-001-500G",
+        "sku": "SBH-001-500G",
+        "title": "500g",
+        "active": true,
+        "price": {
+          "price": 399.99
+        },
+        "stock": {
+          "available": true,
+          "on_stock": true,
+          "allow_backorders": false
+        }
+      }
+    }
+  },
+  "shop": {
+    "currency": "EUR",
+    "currencies": {
+      "EUR": {
+        "code": "EUR",
+        "symbol": "€"
+      }
+    }
+  }
+}

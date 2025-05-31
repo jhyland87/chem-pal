@@ -1,0 +1,10 @@
+{
+  "status_code": 200,
+  "data": {
+    "base": "EUR",
+    "target": "USD",
+    "mid": 1.138,
+    "unit": 1,
+    "timestamp": "2025-05-30T00:02:34.344Z"
+  }
+}

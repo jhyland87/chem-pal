@@ -14,6 +14,7 @@ export default {
     ],
     //'^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
   },
+
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
   moduleNameMapper: {
     "\\.(css|less|sass|scss)$": "identity-obj-proxy",
@@ -24,7 +25,27 @@ export default {
     // "^helpers/(.*)$": "<rootDir>/src/helpers/$1",
     "^@/(.*)$": "<rootDir>/src/$1",
   },
-  testPathIgnorePatterns: ["<rootDir>/dev"],
+  testPathIgnorePatterns: ["<rootDir>/dev", "<rootDir>/src/.*/__fixtures__/.*"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.(ts|tsx)$",
+  collectCoverage: true,
+  collectCoverageFrom: ["src/**/*.ts", "src/**/*.tsx"],
+  coveragePathIgnorePatterns: [
+    "node_modules",
+    "test-config",
+    "interfaces",
+    "jestGlobalMocks.ts",
+    "__fixtures__",
+    "__mocks__",
+    "src/types",
+    "src/constants",
+  ],
+  coverageThreshold: {
+    global: {
+      branches: 20,
+      functions: 30,
+      lines: 40, // Will be raised as I make more tests
+      statements: 40, // Will be raised as I make more tests
+    },
+  },
 };

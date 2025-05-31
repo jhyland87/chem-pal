@@ -45,6 +45,7 @@ global.chrome.storage.local.get = promisify(global.chrome.storage.local.get) as 
 };
 
 // Suppress console.log, console.error, console.warn, console.info
+/**/
 global.console = {
   ...global.console,
   log: jest.fn(),
