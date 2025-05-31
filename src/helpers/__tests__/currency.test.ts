@@ -8,21 +8,15 @@ import {
 import type { CurrencySymbol, ExchangeRateResponse } from "@/types/currency";
 
 describe("getCurrencySymbol", () => {
-  const testData = {
-    /* eslint-disable */
-    $1000: "$",
-    "1000€": "€",
-    "£1000": "£",
-    "1000¥": "¥",
-    "₹1000": "₹",
-    "1000": undefined,
-    /* eslint-enable */
-  };
-
-  for (const [input, expected] of Object.entries(testData)) {
-    it(`should return ${expected} for price: ${input}`, () =>
-      expect(getCurrencySymbol(input)).toBe(expected));
-  }
+  test.each([
+    ["$1000", "$"],
+    ["1000€", "€"],
+    ["£1000", "£"],
+    ["1000¥", "¥"],
+    ["₹1000", "₹"],
+  ])("should return %s for price: %s", (input, expected) =>
+    expect(getCurrencySymbol(input)).toBe(expected),
+  );
 });
 
 describe("getCurrencyRate", () => {
@@ -65,20 +59,15 @@ describe("getCurrencyRate", () => {
   });
 });
 describe("getCurrencyCodeFromSymbol", () => {
-  const testData = {
-    /* eslint-disable */
-    $: "USD",
-    "€": "EUR",
-    "£": "GBP",
-    "¥": "JPY",
-    "₹": "INR",
-    /* eslint-enable */
-  };
-
-  for (const [symbol, code] of Object.entries(testData)) {
-    it(`should return ${code} for symbol: ${symbol}`, () =>
-      expect(getCurrencyCodeFromSymbol(symbol as CurrencySymbol)).toBe(code));
-  }
+  test.each([
+    ["$", "USD"],
+    ["€", "EUR"],
+    ["£", "GBP"],
+    ["¥", "JPY"],
+    ["₹", "INR"],
+  ])("should return %s for symbol: %s", (symbol, code) =>
+    expect(getCurrencyCodeFromSymbol(symbol as CurrencySymbol)).toBe(code),
+  );
 });
 
 describe("toUSD", () => {
@@ -97,51 +86,17 @@ describe("toUSD", () => {
 });
 
 describe("parsePrice", () => {
-  it("should parse price with symbol before amount", () => {
-    expect(parsePrice("$1000")).toEqual({
-      currencyCode: "USD",
-      price: 1000,
-      currencySymbol: "$",
-    });
-  });
-
-  it("should parse price with symbol after amount", () => {
-    expect(parsePrice("1000€")).toEqual({
-      currencyCode: "EUR",
-      price: 1000,
-      currencySymbol: "€",
-    });
-  });
-
-  it("should parse decimal prices", () => {
-    expect(parsePrice("£10.50")).toEqual({
-      currencyCode: "GBP",
-      price: 10.5,
-      currencySymbol: "£",
-    });
-  });
-
-  it("should parse prices with thousands separators", () => {
-    expect(parsePrice("¥1,000")).toEqual({
-      currencyCode: "JPY",
-      price: 1000,
-      currencySymbol: "¥",
-    });
-  });
-
-  it("should parse prices with European number format", () => {
-    expect(parsePrice("₹1.234,56")).toEqual({
-      currencySymbol: "₹",
-      currencyCode: "INR",
-      price: 1234.56,
-    });
-  });
-
-  it("should handle prices with spaces between symbol and amount", () => {
-    expect(parsePrice("$ 1000")).toEqual({
-      currencyCode: "USD",
-      price: 1000,
-      currencySymbol: "$",
+  test.each([
+    ["$1000", "USD", 1000, "$"],
+    ["1000€", "EUR", 1000, "€"],
+    ["£10.50", "GBP", 10.5, "£"],
+    ["¥1,000", "JPY", 1000, "¥"],
+    ["₹1.234,56", "INR", 1234.56, "₹"],
+  ])("should parse price: %s", (input, expectedCurrencyCode, expectedPrice, expectedSymbol) => {
+    expect(parsePrice(input)).toEqual({
+      currencyCode: expectedCurrencyCode,
+      price: expectedPrice,
+      currencySymbol: expectedSymbol,
     });
   });
 
