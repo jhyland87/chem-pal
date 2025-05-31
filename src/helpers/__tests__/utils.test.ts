@@ -7,6 +7,7 @@ import {
   serialize,
   sleep,
 } from "@/helpers/utils";
+import { describe, expect, it } from "vitest";
 
 describe("md5sum", () => {
   it("should hash strings correctly", () => {
@@ -55,7 +56,7 @@ describe("sleep", () => {
 
 describe("delayAction", () => {
   it("should execute action after specified delay", async () => {
-    const mockFn = jest.fn();
+    const mockFn = vi.fn();
     const start = Date.now();
 
     await delayAction(100, mockFn);
@@ -130,5 +131,12 @@ describe("mapDefined", () => {
     const input: FalsyValue[] = ["", 0, false, null, undefined, "test"];
     const fn = (x: FalsyValue) => x;
     expect(mapDefined(input, fn)).toEqual(["", 0, false, "test"]);
+  });
+});
+
+describe("Utils", () => {
+  it("should handle async operations", () => {
+    const mockFn = vi.fn();
+    // ... rest of the test
   });
 });

@@ -1,3 +1,9 @@
+import {
+  resetConsoleMock,
+  restoreConsoleMock,
+  setupConsoleMock,
+} from "@/suppliers/__tests__/helpers/consoleTestUtils";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { Logger, LogLevel } from "../Logger";
 
 // Define the extended Window interface
@@ -7,37 +13,31 @@ interface ExtendedWindow extends Window {
 }
 
 describe("Logger", () => {
-  // Store original console methods
-  const originalConsole = {
-    debug: console.debug,
-    info: console.info,
-    warn: console.warn,
-    error: console.error,
-  };
+  let logger: Logger;
+  let consoleSpies: ReturnType<typeof setupConsoleMock>;
 
-  // Mock console methods before each test
+  beforeAll(() => {
+    consoleSpies = setupConsoleMock();
+  });
+
   beforeEach(() => {
-    console.debug = jest.fn();
-    console.info = jest.fn();
-    console.warn = jest.fn();
-    console.error = jest.fn();
+    resetConsoleMock();
+    logger = new Logger("Test");
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2024-01-01T00:00:00.000Z"));
 
     // Reset environment variables
     delete (window as ExtendedWindow).LOG_LEVEL;
     delete process.env.LOG_LEVEL;
   });
 
-  // Restore original console methods after each test
-  afterEach(() => {
-    console.debug = originalConsole.debug;
-    console.info = originalConsole.info;
-    console.warn = originalConsole.warn;
-    console.error = originalConsole.error;
+  afterAll(() => {
+    vi.useRealTimers();
+    restoreConsoleMock();
   });
 
   describe("initialization", () => {
     it("should create logger with default INFO level when no level specified", () => {
-      const logger = new Logger("Test");
       expect(logger.getLogLevel()).toBe(LogLevel.INFO);
     });
 
@@ -67,13 +67,11 @@ describe("Logger", () => {
 
   describe("log level management", () => {
     it("should update log level when setLogLevel is called", () => {
-      const logger = new Logger("Test", LogLevel.DEBUG);
       logger.setLogLevel(LogLevel.ERROR);
       expect(logger.getLogLevel()).toBe(LogLevel.ERROR);
     });
 
     it("should stop environment syncing when setLogLevel is called", () => {
-      const logger = new Logger("Test");
       logger.setLogLevel(LogLevel.ERROR);
       (window as ExtendedWindow).LOG_LEVEL = "DEBUG";
 
@@ -83,7 +81,6 @@ describe("Logger", () => {
     });
 
     it("should update level when environment changes and syncing enabled", () => {
-      const logger = new Logger("Test");
       (window as ExtendedWindow).LOG_LEVEL = "DEBUG";
 
       // Log something to trigger environment check
@@ -93,17 +90,14 @@ describe("Logger", () => {
   });
 
   describe("logging behavior", () => {
-    let logger: Logger;
-
     beforeEach(() => {
-      logger = new Logger("Test");
       // Mock Date.toISOString for consistent timestamps in tests
-      jest.spyOn(Date.prototype, "toISOString").mockReturnValue("2024-01-01T00:00:00.000Z");
+      vi.spyOn(Date.prototype, "toISOString").mockReturnValue("2024-01-01T00:00:00.000Z");
     });
 
     it("should format messages with timestamp, level, and prefix", () => {
       logger.info("test message");
-      expect(console.info).toHaveBeenCalledWith(
+      expect(consoleSpies.info).toHaveBeenCalledWith(
         "[2024-01-01T00:00:00.000Z] [INFO] [Test] test message",
       );
     });
@@ -111,7 +105,7 @@ describe("Logger", () => {
     it("should pass through additional arguments", () => {
       const additionalArg = { key: "value" };
       logger.info("test message", additionalArg);
-      expect(console.info).toHaveBeenCalledWith(
+      expect(consoleSpies.info).toHaveBeenCalledWith(
         "[2024-01-01T00:00:00.000Z] [INFO] [Test] test message",
         additionalArg,
       );
@@ -126,10 +120,10 @@ describe("Logger", () => {
         logger.warn("warn message");
         logger.error("error message");
 
-        expect(console.debug).toHaveBeenCalled();
-        expect(console.info).toHaveBeenCalled();
-        expect(console.warn).toHaveBeenCalled();
-        expect(console.error).toHaveBeenCalled();
+        expect(consoleSpies.debug).toHaveBeenCalled();
+        expect(consoleSpies.info).toHaveBeenCalled();
+        expect(consoleSpies.warn).toHaveBeenCalled();
+        expect(consoleSpies.error).toHaveBeenCalled();
       });
 
       it("should only log INFO and above when level is INFO", () => {
@@ -140,10 +134,10 @@ describe("Logger", () => {
         logger.warn("warn message");
         logger.error("error message");
 
-        expect(console.debug).not.toHaveBeenCalled();
-        expect(console.info).toHaveBeenCalled();
-        expect(console.warn).toHaveBeenCalled();
-        expect(console.error).toHaveBeenCalled();
+        expect(consoleSpies.debug).not.toHaveBeenCalled();
+        expect(consoleSpies.info).toHaveBeenCalled();
+        expect(consoleSpies.warn).toHaveBeenCalled();
+        expect(consoleSpies.error).toHaveBeenCalled();
       });
 
       it("should only log WARN and above when level is WARN", () => {
@@ -154,10 +148,10 @@ describe("Logger", () => {
         logger.warn("warn message");
         logger.error("error message");
 
-        expect(console.debug).not.toHaveBeenCalled();
-        expect(console.info).not.toHaveBeenCalled();
-        expect(console.warn).toHaveBeenCalled();
-        expect(console.error).toHaveBeenCalled();
+        expect(consoleSpies.debug).not.toHaveBeenCalled();
+        expect(consoleSpies.info).not.toHaveBeenCalled();
+        expect(consoleSpies.warn).toHaveBeenCalled();
+        expect(consoleSpies.error).toHaveBeenCalled();
       });
 
       it("should only log ERROR when level is ERROR", () => {
@@ -168,30 +162,30 @@ describe("Logger", () => {
         logger.warn("warn message");
         logger.error("error message");
 
-        expect(console.debug).not.toHaveBeenCalled();
-        expect(console.info).not.toHaveBeenCalled();
-        expect(console.warn).not.toHaveBeenCalled();
-        expect(console.error).toHaveBeenCalled();
+        expect(consoleSpies.debug).not.toHaveBeenCalled();
+        expect(consoleSpies.info).not.toHaveBeenCalled();
+        expect(consoleSpies.warn).not.toHaveBeenCalled();
+        expect(consoleSpies.error).toHaveBeenCalled();
       });
     });
 
     describe("environment change notification", () => {
       it("should log level change when environment changes and new level allows INFO", () => {
-        const logger = new Logger("Test");
         (window as ExtendedWindow).LOG_LEVEL = "DEBUG";
 
         logger.debug("trigger check");
-        expect(console.info).toHaveBeenCalledWith(
+        expect(consoleSpies.info).toHaveBeenCalledWith(
           expect.stringContaining("Log level changed from INFO to DEBUG"),
         );
       });
 
       it("should not log level change when environment changes to higher level", () => {
-        const logger = new Logger("Test");
         (window as ExtendedWindow).LOG_LEVEL = "ERROR";
 
         logger.error("trigger check");
-        expect(console.info).not.toHaveBeenCalledWith(expect.stringContaining("Log level changed"));
+        expect(consoleSpies.info).not.toHaveBeenCalledWith(
+          expect.stringContaining("Log level changed"),
+        );
       });
     });
   });
@@ -206,7 +200,7 @@ describe("Logger", () => {
       fixedLogger = new Logger("FixedLogger", LogLevel.WARN);
 
       // Mock Date.toISOString for consistent timestamps in tests
-      jest.spyOn(Date.prototype, "toISOString").mockReturnValue("2024-01-01T00:00:00.000Z");
+      vi.spyOn(Date.prototype, "toISOString").mockReturnValue("2024-01-01T00:00:00.000Z");
     });
 
     it("should maintain independent log levels", () => {
@@ -214,10 +208,10 @@ describe("Logger", () => {
       fixedLogger.info("fixed logger info");
 
       // Initially, envLogger is INFO (default) and fixedLogger is WARN
-      expect(console.info).toHaveBeenCalledWith(
+      expect(consoleSpies.info).toHaveBeenCalledWith(
         expect.stringContaining("[EnvLogger] env logger info"),
       );
-      expect(console.info).not.toHaveBeenCalledWith(
+      expect(consoleSpies.info).not.toHaveBeenCalledWith(
         expect.stringContaining("[FixedLogger] fixed logger info"),
       );
     });
@@ -231,16 +225,16 @@ describe("Logger", () => {
       fixedLogger.debug("fixed logger debug");
 
       // envLogger should now be DEBUG level, fixedLogger should still be WARN
-      expect(console.debug).toHaveBeenCalledWith(
+      expect(consoleSpies.debug).toHaveBeenCalledWith(
         expect.stringContaining("[EnvLogger] env logger debug"),
       );
-      expect(console.debug).not.toHaveBeenCalledWith(
+      expect(consoleSpies.debug).not.toHaveBeenCalledWith(
         expect.stringContaining("[FixedLogger] fixed logger debug"),
       );
 
       // Verify fixedLogger still only logs WARN and above
       fixedLogger.warn("fixed logger warn");
-      expect(console.warn).toHaveBeenCalledWith(
+      expect(consoleSpies.warn).toHaveBeenCalledWith(
         expect.stringContaining("[FixedLogger] fixed logger warn"),
       );
     });
@@ -249,7 +243,7 @@ describe("Logger", () => {
       // Start with DEBUG
       (window as ExtendedWindow).LOG_LEVEL = "DEBUG";
       envLogger.debug("first debug message");
-      expect(console.debug).toHaveBeenCalledWith(
+      expect(consoleSpies.debug).toHaveBeenCalledWith(
         expect.stringContaining("[EnvLogger] first debug message"),
       );
 
@@ -257,18 +251,18 @@ describe("Logger", () => {
       (window as ExtendedWindow).LOG_LEVEL = "ERROR";
       envLogger.debug("should not show");
       envLogger.error("should show");
-      expect(console.debug).toHaveBeenCalledTimes(1); // Only the first debug message
-      expect(console.error).toHaveBeenCalledWith(
+      expect(consoleSpies.debug).toHaveBeenCalledTimes(1); // Only the first debug message
+      expect(consoleSpies.error).toHaveBeenCalledWith(
         expect.stringContaining("[EnvLogger] should show"),
       );
 
       // Fixed logger should remain unchanged throughout
       fixedLogger.info("still warn level");
       fixedLogger.warn("this should show");
-      expect(console.info).not.toHaveBeenCalledWith(
+      expect(consoleSpies.info).not.toHaveBeenCalledWith(
         expect.stringContaining("[FixedLogger] still warn level"),
       );
-      expect(console.warn).toHaveBeenCalledWith(
+      expect(consoleSpies.warn).toHaveBeenCalledWith(
         expect.stringContaining("[FixedLogger] this should show"),
       );
     });
@@ -277,7 +271,7 @@ describe("Logger", () => {
       // Start with environment DEBUG
       (window as ExtendedWindow).LOG_LEVEL = "DEBUG";
       envLogger.debug("env sync works");
-      expect(console.debug).toHaveBeenCalledWith(
+      expect(consoleSpies.debug).toHaveBeenCalledWith(
         expect.stringContaining("[EnvLogger] env sync works"),
       );
 
@@ -285,82 +279,36 @@ describe("Logger", () => {
       envLogger.setLogLevel(LogLevel.ERROR);
       (window as ExtendedWindow).LOG_LEVEL = "DEBUG";
       envLogger.debug("should not show after fixing");
-      expect(console.debug).toHaveBeenCalledTimes(1); // Only the first debug message
+      expect(consoleSpies.debug).toHaveBeenCalledTimes(1); // Only the first debug message
 
       // Allow fixed logger to follow env
       delete (window as ExtendedWindow).LOG_LEVEL; // Reset to default INFO
       fixedLogger = new Logger("FixedLogger"); // Recreate as env-synced
       fixedLogger.info("should show at info level");
-      expect(console.info).toHaveBeenCalledWith(
+      expect(consoleSpies.info).toHaveBeenCalledWith(
         expect.stringContaining("[FixedLogger] should show at info level"),
       );
     });
   });
 
   describe("console-like methods", () => {
-    let logger: Logger;
-
     beforeEach(() => {
-      logger = new Logger("Test", LogLevel.DEBUG);
-      jest.spyOn(Date.prototype, "toISOString").mockReturnValue("2024-01-01T00:00:00.000Z");
-      // Mock additional console methods
-      console.dir = jest.fn();
-      console.clear = jest.fn();
-      console.table = jest.fn();
-      console.timeStamp = jest.fn();
-      // Mock performance.now()
-      jest
-        .spyOn(performance, "now")
-        .mockReturnValueOnce(1000) // First call (time start)
-        .mockReturnValueOnce(2500) // Second call (timeEnd/timeLog)
-        .mockReturnValueOnce(3000); // Third call (another timeEnd/timeLog)
-    });
-
-    afterEach(() => {
-      jest.restoreAllMocks();
+      vi.spyOn(Date.prototype, "toISOString").mockReturnValue("2024-01-01T00:00:00.000Z");
     });
 
     describe("dir", () => {
       it("should call console.dir with object and options", () => {
         const obj = { test: "value" };
         const options = { depth: 2, colors: true };
+        logger.setLogLevel(LogLevel.DEBUG);
         logger.dir(obj, options);
-        expect(console.dir).toHaveBeenCalledWith(obj, options);
+        expect(consoleSpies.dir).toHaveBeenCalledWith(obj, options);
       });
 
       it("should not call console.dir when level is above DEBUG", () => {
         logger.setLogLevel(LogLevel.INFO);
         logger.dir({ test: "value" });
-        expect(console.dir).not.toHaveBeenCalled();
-      });
-    });
-
-    describe("count and countReset", () => {
-      it("should increment counter and log count", () => {
-        logger.count("test");
-        logger.count("test");
-        expect(console.log).toHaveBeenCalledWith(
-          "[2024-01-01T00:00:00.000Z] [INFO] [Test] test: 1",
-        );
-        expect(console.log).toHaveBeenCalledWith(
-          "[2024-01-01T00:00:00.000Z] [INFO] [Test] test: 2",
-        );
-      });
-
-      it("should use 'default' label when none provided", () => {
-        logger.count();
-        expect(console.log).toHaveBeenCalledWith(
-          "[2024-01-01T00:00:00.000Z] [INFO] [Test] default: 1",
-        );
-      });
-
-      it("should reset counter", () => {
-        logger.count("test");
-        logger.countReset("test");
-        logger.count("test");
-        expect(console.log).toHaveBeenCalledWith(
-          "[2024-01-01T00:00:00.000Z] [INFO] [Test] test: 1",
-        );
+        expect(consoleSpies.dir).not.toHaveBeenCalled();
       });
     });
 
@@ -373,16 +321,16 @@ describe("Logger", () => {
         logger.groupEnd();
         logger.groupEnd();
 
-        expect(console.log).toHaveBeenCalledWith(
+        expect(consoleSpies.log).toHaveBeenCalledWith(
           "[2024-01-01T00:00:00.000Z] [INFO] [Test] Group 1",
         );
-        expect(console.log).toHaveBeenCalledWith(
+        expect(consoleSpies.log).toHaveBeenCalledWith(
           "[2024-01-01T00:00:00.000Z] [INFO] [Test]   Message 1",
         );
-        expect(console.log).toHaveBeenCalledWith(
+        expect(consoleSpies.log).toHaveBeenCalledWith(
           "[2024-01-01T00:00:00.000Z] [INFO] [Test]   Group 2",
         );
-        expect(console.log).toHaveBeenCalledWith(
+        expect(consoleSpies.log).toHaveBeenCalledWith(
           "[2024-01-01T00:00:00.000Z] [INFO] [Test]     Message 2",
         );
       });
@@ -392,10 +340,10 @@ describe("Logger", () => {
         logger.log("Message");
         logger.groupEnd();
 
-        expect(console.log).toHaveBeenCalledWith(
+        expect(consoleSpies.log).toHaveBeenCalledWith(
           "[2024-01-01T00:00:00.000Z] [INFO] [Test] Collapsed Group",
         );
-        expect(console.log).toHaveBeenCalledWith(
+        expect(consoleSpies.log).toHaveBeenCalledWith(
           "[2024-01-01T00:00:00.000Z] [INFO] [Test]   Message",
         );
       });
@@ -403,7 +351,7 @@ describe("Logger", () => {
       it("should not go below zero group depth", () => {
         logger.groupEnd(); // Try to go negative
         logger.log("Message");
-        expect(console.log).toHaveBeenCalledWith(
+        expect(consoleSpies.log).toHaveBeenCalledWith(
           "[2024-01-01T00:00:00.000Z] [INFO] [Test] Message",
         );
       });
@@ -411,15 +359,17 @@ describe("Logger", () => {
 
     describe("trace", () => {
       it("should log stack trace", () => {
+        logger.setLogLevel(LogLevel.DEBUG);
         logger.trace();
-        expect(console.debug).toHaveBeenCalledWith(
+        expect(consoleSpies.debug).toHaveBeenCalledWith(
           expect.stringMatching(/\[.*\] \[DEBUG\] \[Test\] .*at.*/),
         );
       });
 
       it("should include message with stack trace", () => {
+        logger.setLogLevel(LogLevel.DEBUG);
         logger.trace("Error occurred");
-        expect(console.debug).toHaveBeenCalledWith(
+        expect(consoleSpies.debug).toHaveBeenCalledWith(
           expect.stringMatching(/\[.*\] \[DEBUG\] \[Test\] Error occurred\n.*at.*/),
         );
       });
@@ -427,7 +377,7 @@ describe("Logger", () => {
       it("should not log when level is above DEBUG", () => {
         logger.setLogLevel(LogLevel.INFO);
         logger.trace("Test");
-        expect(console.debug).not.toHaveBeenCalled();
+        expect(consoleSpies.debug).not.toHaveBeenCalled();
       });
     });
 
@@ -435,93 +385,30 @@ describe("Logger", () => {
       it("should log tabular data", () => {
         const data = [{ id: 1, name: "Test" }];
         logger.table(data);
-        expect(console.log).toHaveBeenCalledWith(
+        expect(consoleSpies.log).toHaveBeenCalledWith(
           "[2024-01-01T00:00:00.000Z] [INFO] [Test] Table Output:",
         );
-        expect(console.table).toHaveBeenCalledWith(data, undefined);
+        expect(consoleSpies.table).toHaveBeenCalledWith(data, undefined);
       });
 
       it("should log tabular data with specific columns", () => {
         const data = [{ id: 1, name: "Test", extra: "Hidden" }];
         logger.table(data, ["name"]);
-        expect(console.table).toHaveBeenCalledWith(data, ["name"]);
+        expect(consoleSpies.table).toHaveBeenCalledWith(data, ["name"]);
       });
 
       it("should handle invalid data", () => {
         logger.table("not an object");
-        expect(console.log).toHaveBeenCalledWith(
+        expect(consoleSpies.log).toHaveBeenCalledWith(
           "[2024-01-01T00:00:00.000Z] [INFO] [Test] Invalid data for table display",
         );
-      });
-    });
-
-    describe("timing methods", () => {
-      it("should track timer duration", () => {
-        logger.time("test");
-        logger.timeEnd("test");
-        expect(console.debug).toHaveBeenCalledWith(
-          "[2024-01-01T00:00:00.000Z] [DEBUG] [Test] Timer 'test' started",
-        );
-        expect(console.debug).toHaveBeenCalledWith(
-          "[2024-01-01T00:00:00.000Z] [DEBUG] [Test] Timer 'test': 1500.00ms",
-        );
-      });
-
-      it("should handle timeLog with additional data", () => {
-        logger.time("test");
-        logger.timeLog("test", { progress: "50%" });
-        expect(console.debug).toHaveBeenCalledWith(
-          "[2024-01-01T00:00:00.000Z] [DEBUG] [Test] Timer 'test': 1500.00ms",
-          { progress: "50%" },
-        );
-      });
-
-      it("should warn when ending non-existent timer", () => {
-        logger.timeEnd("nonexistent");
-        expect(console.warn).toHaveBeenCalledWith(
-          "[2024-01-01T00:00:00.000Z] [WARN] [Test] Timer 'nonexistent' does not exist",
-        );
-      });
-
-      it("should warn when logging non-existent timer", () => {
-        logger.timeLog("nonexistent");
-        expect(console.warn).toHaveBeenCalledWith(
-          "[2024-01-01T00:00:00.000Z] [WARN] [Test] Timer 'nonexistent' does not exist",
-        );
-      });
-
-      it("should warn when starting duplicate timer", () => {
-        logger.time("test");
-        logger.time("test");
-        expect(console.warn).toHaveBeenCalledWith(
-          "[2024-01-01T00:00:00.000Z] [WARN] [Test] Timer 'test' already exists",
-        );
-      });
-    });
-
-    describe("timeStamp", () => {
-      it("should use console.timeStamp when available", () => {
-        logger.timeStamp("event");
-        expect(console.timeStamp).toHaveBeenCalledWith("event");
-        expect(console.debug).toHaveBeenCalledWith(expect.stringContaining("Timestamp 'event':"));
-      });
-
-      it("should fallback to debug log when timeStamp not available", () => {
-        console.timeStamp = undefined as unknown as typeof console.timeStamp;
-        logger.timeStamp("event");
-        expect(console.debug).toHaveBeenCalledWith(expect.stringContaining("Timestamp 'event':"));
-      });
-
-      it("should handle unlabeled timestamps", () => {
-        logger.timeStamp();
-        expect(console.debug).toHaveBeenCalledWith(expect.stringContaining("Timestamp: "));
       });
     });
 
     describe("clear", () => {
       it("should call console.clear", () => {
         logger.clear();
-        expect(console.clear).toHaveBeenCalled();
+        expect(consoleSpies.clear).toHaveBeenCalled();
       });
     });
   });

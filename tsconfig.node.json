@@ -41,7 +41,6 @@
       "./src/types/*",
     ],
     "types": [
-      "jest",
       "node",
       "chrome"
     ]

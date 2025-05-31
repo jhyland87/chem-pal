@@ -6,9 +6,11 @@
 export const fixtureData = (supplierName: string) => {
   return {
     httpGetJson: async (path: string) => {
+      console.log("Called fixture httpGetJson");
       const fixtureName = path.replace(/^\//, "").replaceAll("/", "__") + ".json";
       const fixtueFile = `../${supplierName}/${fixtureName}`;
       const result = await import(fixtueFile);
+      console.log("Fixture httpGetJson is returning file found at", fixtueFile);
       return result.default;
     },
     search: (query: string) => {

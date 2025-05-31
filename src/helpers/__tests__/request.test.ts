@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { getCachableResponse, getRequestHash } from "@/helpers/request";
 import { serialize } from "@/helpers/utils";
+import { describe, expect, it } from "vitest";
 
 describe("getRequestHash", () => {
   it("should generate correct hash for GET request without body", () => {

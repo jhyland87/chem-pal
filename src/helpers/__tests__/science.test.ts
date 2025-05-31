@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { findFormulaInHtml, subscript, superscript } from "../science";
 
 describe("science helpers", () => {

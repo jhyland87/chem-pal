@@ -1,20 +1,8 @@
-import { toUSD } from "@/helpers/currency";
 import type { Product } from "@/types";
 import { ProductBuilder } from "@/utils/ProductBuilder";
-
-/*
-// Mock the currency and quantity helper functions
-jest.mock("@/helpers/currency", () => ({
-  toUSD: jest.fn(),
-  isParsedPrice: jest.fn(),
-}));
-
-jest.mock("@/helpers/quantity", () => ({
-  toBaseQuantity: jest.fn(),
-  parseQuantity: jest.fn(),
-  isQuantityObject: jest.fn(),
-}));
-*/
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import * as currencyHelpers from "../currency";
+import * as quantityHelpers from "../quantity";
 
 describe("ProductBuilder", () => {
   const baseURL = "https://example.com";
@@ -22,7 +10,7 @@ describe("ProductBuilder", () => {
 
   beforeEach(() => {
     builder = new ProductBuilder(baseURL);
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("setBasicInfo", () => {
@@ -420,7 +408,7 @@ describe("ProductBuilder", () => {
     });
 
     it.skip("should convert non-USD prices to USD", async () => {
-      //(toUSD as jest.Mock).mockResolvedValue(34.99);
+      const toUSDSpy = vi.spyOn(currencyHelpers, "toUSD");
 
       const result = await builder
         .setBasicInfo("Test Product", "/product/123", "Test Supplier")
@@ -428,7 +416,7 @@ describe("ProductBuilder", () => {
         .setQuantity(500, "g")
         .build();
 
-      expect(toUSD).toHaveBeenCalledWith(29.99, "EUR");
+      expect(toUSDSpy).toHaveBeenCalledWith(29.99, "EUR");
       expect(result).toMatchObject({
         price: 29.99,
         currencyCode: "EUR",
@@ -437,7 +425,7 @@ describe("ProductBuilder", () => {
     });
 
     it("should convert quantities to base units", async () => {
-      //(toBaseQuantity as jest.Mock).mockReturnValue(0.5);
+      const toBaseQuantitySpy = vi.spyOn(quantityHelpers, "toBaseQuantity");
 
       const result = await builder
         .setBasicInfo("Test Product", "/product/123", "Test Supplier")
@@ -445,7 +433,7 @@ describe("ProductBuilder", () => {
         .setQuantity(500, "g")
         .build();
 
-      //expect(toBaseQuantity).toHaveBeenCalledWith(500, "g");
+      expect(toBaseQuantitySpy).toHaveBeenCalledWith(500, "g");
       expect(result).toMatchObject({
         quantity: 500,
         uom: "g",

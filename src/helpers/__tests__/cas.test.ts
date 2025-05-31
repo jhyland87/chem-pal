@@ -1,5 +1,7 @@
 import { CAS_REGEX } from "@/constants/common";
 import { findCAS, isCAS } from "@/helpers/cas";
+import { describe, expect, it, test } from "vitest";
+
 describe("CAS_REGEX", () => {
   it("should be a valid regex", () => expect(CAS_REGEX).toBeInstanceOf(RegExp));
 });

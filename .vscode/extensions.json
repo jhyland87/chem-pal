@@ -5,13 +5,10 @@
     "kuscamara.remove-unused-imports",
     "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
-    "connorshea.vscode-test-explorer-status-bar",
-    "hbenl.vscode-test-explorer",
-    "orta.vscode-jest",
-    "ms-vscode.test-adapter-converter",
-    "smarschollek.vscode-react-scripts-test-adapter",
     "henrynguyen5-vsc.vsc-nvm",
-    "psulek-solo.typedoc-live-preview"
+    "psulek-solo.typedoc-live-preview",
+    "vitest.explorer",
+    "rluvaton.vscode-vitest"
   ],
   "unwantedRecommendations": []
 }
