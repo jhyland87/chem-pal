@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  crypto-browserify: https://github.com/dominictarr/crypto-browserify.git#95c5d505
+
 importers:
 
   .:
