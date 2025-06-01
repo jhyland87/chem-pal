@@ -45,7 +45,7 @@ declare global {
     host?: string | undefined;
     body?: object | string;
     params?: Maybe<RequestParams>;
-    headers?: Maybe<HeadersInit>;
+    headers?: Maybe<Record<string, string | number | boolean>>;
   }
 
   interface RequestParams extends Record<string, unknown> {

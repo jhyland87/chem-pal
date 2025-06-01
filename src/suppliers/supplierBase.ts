@@ -459,14 +459,17 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
         return;
       }
 
+      const headersRaw = { ...this._headers };
+
+      Object.assign(headersRaw, {
+        accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        ...(headers ?? {}),
+      });
+
       const requestObj = new Request(this._href(path, params, host), {
         signal: this._controller.signal,
-        headers: {
-          accept:
-            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-          ...this._headers,
-          ...headers,
-        },
+        headers: new Headers(headersRaw),
         referrer: this.baseURL,
         referrerPolicy: "no-referrer",
         body: null,
@@ -558,7 +561,8 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
 
     this._logger.debug("fuzzed search results:", res);
 
-    return res;
+    // Get rid of any empty items that didn't match closely enough
+    return res.filter((item) => !!item);
   }
 
   /**
@@ -692,11 +696,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     headers,
     host,
   }: RequestOptions): Promise<Maybe<JsonValue>> {
-    const _headers = new Headers({
-      ...this._headers,
-      ...(headers as HeadersInit),
-    });
-    const httpRequest = await this._httpGet({ path, params, headers: _headers, host });
+    const httpRequest = await this._httpGet({ path, params, headers, host });
 
     if (!isJsonResponse(httpRequest)) {
       const badResponse = await (httpRequest as unknown as Response)?.text();
@@ -1121,7 +1121,16 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     }
 
     if (params && Object.keys(params).length > 0) {
-      href.search = new URLSearchParams(params as Record<string, string>).toString();
+      href.search = new URLSearchParams(
+        Object.entries(params).reduce(
+          (acc, [key, value]) => {
+            acc[key] = String(value);
+            return acc;
+          },
+          {} as Record<string, string>,
+        ),
+      ).toString();
+      //href.search = new URLSearchParams(params as Record<string, string>).toString();
     }
 
     return href.toString();

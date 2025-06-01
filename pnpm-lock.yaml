@@ -156,6 +156,9 @@ importers:
       '@types/debug':
         specifier: ^4.1.12
         version: 4.1.12
+      '@types/js-md5':
+        specifier: ^0.7.2
+        version: 0.7.2
       '@types/lodash':
         specifier: ^4.17.16
         version: 4.17.17
@@ -225,6 +228,9 @@ importers:
       identity-obj-proxy:
         specifier: ^3.0.0
         version: 3.0.0
+      js-md5:
+        specifier: ^0.8.3
+        version: 0.8.3
       jsdoc:
         specifier: ^4.0.4
         version: 4.0.4
@@ -1783,6 +1789,9 @@ packages:
   '@types/hast@3.0.4':
     resolution: {integrity: sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==}
 
+  '@types/js-md5@0.7.2':
+    resolution: {integrity: sha512-IwcFIov1JbiEToo3DgrVEwkMUR1BVlVyLjk245AzGHyyOlyddDFIeSIZO+WlhTortOa4P1PdCS8cDrTl7RW1HA==}
+
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
@@ -2765,6 +2774,9 @@ packages:
 
   jju@1.4.0:
     resolution: {integrity: sha512-8wb9Yw966OSxApiCt0K3yNJL8pnNeIv+OEq2YMidz4FKP6nonSRoOXc80iXY4JaN2FC11B9qsNmDsm+ZOfMROA==}
+
+  js-md5@0.8.3:
+    resolution: {integrity: sha512-qR0HB5uP6wCuRMrWPTrkMaev7MJZwJuuw4fnwAzRgP4J4/F8RwtodOKpGp4XpqsLBFzzgqIO42efFAyz2Et6KQ==}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -5551,6 +5563,8 @@ snapshots:
     dependencies:
       '@types/unist': 3.0.3
 
+  '@types/js-md5@0.7.2': {}
+
   '@types/json-schema@7.0.15': {}
 
   '@types/linkify-it@5.0.0': {}
@@ -6634,6 +6648,8 @@ snapshots:
       '@pkgjs/parseargs': 0.11.0
 
   jju@1.4.0: {}
+
+  js-md5@0.8.3: {}
 
   js-tokens@4.0.0: {}
 
