@@ -1,6 +1,3 @@
-/* eslint-disable no-debugger */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";

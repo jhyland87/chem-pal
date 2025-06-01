@@ -41,7 +41,7 @@
  * }
  * ```
  */
-export function isSearchResultItem(product: unknown): product is SearchResultItem {
+export function isSearchResultItem(product: unknown): product is OnyxMetSearchResultItem {
   return (
     typeof product === "object" &&
     product !== null &&

@@ -47,7 +47,7 @@ import SupplierBase from "./supplierBase";
  * @see https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/products.md#list-products
  */
 export default abstract class SupplierBaseWoocommerce
-  extends SupplierBase<SearchResponseItem, Product>
+  extends SupplierBase<WooCommerceSearchResponseItem, Product>
   implements AsyncIterable<Product>
 {
   /**
@@ -99,8 +99,8 @@ export default abstract class SupplierBaseWoocommerce
       return;
     }
 
-    const results: SearchResponseItem[] = searchRequest;
-    const fuzzFiltered = this._fuzzyFilter<SearchResponseItem>(query, results);
+    const results: WooCommerceSearchResponseItem[] = searchRequest;
+    const fuzzFiltered = this._fuzzyFilter<WooCommerceSearchResponseItem>(query, results);
     this._logger.info("fuzzFiltered:", fuzzFiltered);
 
     return this._initProductBuilders(fuzzFiltered.slice(0, limit));
@@ -111,7 +111,7 @@ export default abstract class SupplierBaseWoocommerce
    * @param data - Product object from search response
    * @returns Title of the product
    */
-  protected _titleSelector(data: SearchResponseItem): string {
+  protected _titleSelector(data: WooCommerceSearchResponseItem): string {
     return data.name;
   }
 
@@ -140,7 +140,9 @@ export default abstract class SupplierBaseWoocommerce
    * }
    * ```
    */
-  protected _initProductBuilders(results: SearchResponseItem[]): ProductBuilder<Product>[] {
+  protected _initProductBuilders(
+    results: WooCommerceSearchResponseItem[],
+  ): ProductBuilder<Product>[] {
     return results.map((item) => {
       const builder = new ProductBuilder<Product>(this.baseURL);
 

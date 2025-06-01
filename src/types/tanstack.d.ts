@@ -65,8 +65,7 @@ declare global {
       setColumnVisibility: (visible: boolean) => void;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    interface ColumnMeta<TData = unknown, TValue = unknown> {
+    interface ColumnMeta {
       /** The type of filter to use for this column */
       filterVariant?: "text" | "range" | "select";
       /** Array of unique values for select-type filters */
@@ -77,10 +76,21 @@ declare global {
       style?: CSSProperties;
     }
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData = unknown, TValue = unknown> {
+    /** The type of filter to use for this column */
+    filterVariant?: "text" | "range" | "select";
+    /** Array of unique values for select-type filters */
+    uniqueValues?: string[];
+    /** Array of range values for range-type filters */
+    rangeValues?: number[];
+    /** CSS properties to apply to the column */
+    style?: CSSProperties;
+  }
 }
 
 declare module "@tanstack/react-table" {
-  interface Column<TData, TValue> {
+  interface Column {
     getHeaderText?: () => string;
     getVisibleUniqueValues?: () => (string | number)[];
     getAllUniqueValues?: () => (string | number)[];

@@ -4,7 +4,7 @@ declare global {
    * Base interface for common properties shared across many objects in the Carolina system.
    * Contains core attributes like template type, metadata, content IDs, and execution details.
    */
-  interface BaseObject {
+  interface CarolinaBaseObject {
     /** The type of template being used */
     templateType: string;
     /** Optional metadata key-value pairs associated with the object */
@@ -25,7 +25,7 @@ declare global {
    * Represents a content folder structure in the Carolina system.
    * Contains folder path information and optional child rules for content organization.
    */
-  interface ContentFolder extends BaseObject {
+  interface ContentFolder extends CarolinaBaseObject {
     /** Path to the content folder */
     folderPath: string;
     /** Optional array of content rules that apply to this folder */
@@ -49,7 +49,7 @@ declare global {
    * Defines content rules for page organization and structure.
    * Contains rule identification and associated content zone items.
    */
-  interface ContentRule extends BaseObject {
+  interface ContentRule extends CarolinaBaseObject {
     /** Title of the page associated with this rule */
     pageTitle: string;
     /** Type identifier for content rules */
@@ -64,7 +64,7 @@ declare global {
    * Represents items within a content rule zone.
    * Can contain various content types including folders, main content, and navigation menus.
    */
-  interface ContentRuleZoneItem extends BaseObject {
+  interface ContentRuleZoneItem extends CarolinaBaseObject {
     /** Type identifier for the zone item */
     "@type": string;
     /** Optional content sections including folders and main content */
@@ -86,7 +86,7 @@ declare global {
    * Defines main content items within the content structure.
    * Can contain nested content folders and other content-specific data.
    */
-  interface MainContentItem extends BaseObject {
+  interface MainContentItem extends CarolinaBaseObject {
     /** Type identifier for the main content item */
     "@type": string;
     /** Optional content sections */
@@ -136,7 +136,7 @@ declare global {
    * Container for managing faceted navigation and filtering.
    * Includes facet collections, sorting information, and selected filter crumbs.
    */
-  interface FacetsContainer extends BaseObject {
+  interface FacetsContainer extends CarolinaBaseObject {
     /** Collection of facets grouped by field name */
     facets: Array<Record<string, FacetItem[]>>;
     /** Mapping of facet names to their sort types */
@@ -162,7 +162,7 @@ declare global {
    * Represents a single search result item with product details.
    * Contains product information including images, descriptions, and pricing.
    */
-  interface SearchResult extends Record<string, unknown> {
+  interface CarolinaSearchResult extends Record<string, unknown> {
     /** URL of the product thumbnail image */
     "product.thumbnailImg": string;
     /** Name of the product */
@@ -189,7 +189,7 @@ declare global {
    * Main response structure for search operations.
    * Contains search results, page information, and associated content data.
    */
-  interface SearchResponse extends BaseObject {
+  interface CarolinaSearchResponse extends CarolinaBaseObject {
     /** Search recommendations page object */
     ssRecsInfoPageObj: {
       /** Page information */
@@ -221,7 +221,7 @@ declare global {
    * Parameters used for constructing search queries.
    * Defines the structure for search requests to the Carolina Biological Supply Company website.
    */
-  interface SearchParams {
+  interface CarolinaSearchParams {
     /** Active tab for the search */
     tab: string;
     /** Product type filter */
@@ -238,6 +238,8 @@ declare global {
     viewSize: number;
     /** Search query string */
     q: string;
+    /** Index signature for additional properties */
+    [key: string]: string | number | boolean | undefined;
   }
 
   /**
@@ -342,13 +344,15 @@ declare global {
    * Response structure for product detail requests.
    * Contains main content, response status, and template information.
    */
-  interface ProductResponse {
+  interface CarolinaProductResponse {
     /** Content sections */
     contents: {
       /** Main content array */
       MainContent: Array<{
         /** ATG response data */
-        atgResponse: ATGResponse;
+        atgResponse: {
+          response: ATGResponse;
+        };
         /** Type of template used */
         templateType: string;
         /** Unique content identifier */

@@ -16,8 +16,8 @@ declare global {
    * };
    * ```
    */
-  type RequiredProductFields<T> = Pick<
-    T,
+  type RequiredProductFields = Pick<
+    Product,
     "title" | "price" | "currencySymbol" | "currencyCode" | "url" | "quantity" | "uom" | "supplier"
   >;
 

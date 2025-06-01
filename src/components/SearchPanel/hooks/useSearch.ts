@@ -102,8 +102,8 @@ export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: Us
         {
           // Each row needs a unique ID, so use the row count at each insertion
           // as the ID value
+          ...result,
           id: prevProducts.length,
-          ...(result as Product),
         },
       ]);
     }

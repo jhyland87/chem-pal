@@ -1107,7 +1107,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * // https://supplier_base_url.com/some/path?a=b&c=d
    * ```
    */
-  protected _href(path: string | URL, params?: RequestParams, host?: string): string {
+  protected _href(path: string | URL, params?: Maybe<RequestParams>, host?: string): string {
     let href: URL;
 
     if (typeof path === "string" && isFullURL(path)) {

@@ -41,7 +41,7 @@ import SupplierBase from "./supplierBase";
  * Append `&format=json&ajax=true` to any URL to get JSON response
  */
 export default class SupplierCarolina
-  extends SupplierBase<SearchResult, Product>
+  extends SupplierBase<CarolinaSearchResult, Product>
   implements AsyncIterable<Product>
 {
   /** Display name of the supplier */
@@ -57,7 +57,7 @@ export default class SupplierCarolina
   public readonly country: CountryCode = "US";
 
   /** Cached search results from the last query */
-  protected _queryResults: Array<SearchResult> = [];
+  protected _queryResults: Array<CarolinaSearchResult> = [];
 
   /** Maximum number of HTTP requests allowed per query */
   protected _httpRequestHardLimit: number = 50;
@@ -96,7 +96,7 @@ export default class SupplierCarolina
    * @param query - Search term to look for
    * @returns Object containing all required search parameters
    */
-  protected _makeQueryParams(query: string): SearchParams {
+  protected _makeQueryParams(query: string): CarolinaSearchParams {
     return {
       /* eslint-disable */
       tab: "p",
@@ -108,7 +108,7 @@ export default class SupplierCarolina
       viewSize: 300,
       q: query,
       /* eslint-enable */
-    } satisfies SearchParams;
+    } satisfies CarolinaSearchParams;
   }
 
   /**
@@ -133,7 +133,7 @@ export default class SupplierCarolina
 
     const results = await this._extractSearchResults(response);
 
-    const fuzzResults = this._fuzzyFilter<SearchResult>(query, results);
+    const fuzzResults = this._fuzzyFilter<CarolinaSearchResult>(query, results);
     this._logger.info("fuzzResults:", fuzzResults);
 
     return this._initProductBuilders(fuzzResults.slice(0, limit));
@@ -166,7 +166,7 @@ export default class SupplierCarolina
    * }
    * ```
    */
-  protected _initProductBuilders(data: SearchResult[]): ProductBuilder<Product>[] {
+  protected _initProductBuilders(data: CarolinaSearchResult[]): ProductBuilder<Product>[] {
     return data.map((result) => {
       const builder = new ProductBuilder(this.baseURL)
         .setBasicInfo(result.productName, result.productUrl, this.supplierName)
@@ -186,7 +186,7 @@ export default class SupplierCarolina
    * @param response - Raw response object from search request
    * @returns Array of validated search result items
    */
-  protected _extractSearchResults(response: unknown): SearchResult[] {
+  protected _extractSearchResults(response: unknown): CarolinaSearchResult[] {
     try {
       if (!isValidSearchResponse(response)) {
         this._logger.warn("Invalid response structure");
@@ -263,9 +263,7 @@ export default class SupplierCarolina
    * }
    * ```
    */
-  protected _extractATGResponse(
-    productResponse: unknown,
-  ): ATGResponse["response"]["response"] | null {
+  protected _extractATGResponse(productResponse: unknown): ATGResponse["response"] | null {
     if (!isValidProductResponse(productResponse)) {
       return null;
     }
@@ -389,7 +387,7 @@ export default class SupplierCarolina
    * @param data - Product object from search response
    * @returns - The title of the product
    */
-  protected _titleSelector(data: SearchResult): string {
+  protected _titleSelector(data: CarolinaSearchResult): string {
     return data.productName;
   }
 }

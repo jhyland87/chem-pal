@@ -1,13 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import merge from "lodash/merge";
-//import query from "./queries/getFilteredProductsWithHasDiscount-wix.graphql";
 import { findFormulaInHtml } from "@/helpers/science";
 import { firstMap } from "@/helpers/utils";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isProductItem, isProductSelection, isValidSearchResponse } from "@/utils/typeGuards/wix";
+import merge from "lodash/merge";
 import SupplierBase from "./supplierBase";
 /**
  * SupplierBaseWix class that extends SupplierBase and implements AsyncIterable<Product>.

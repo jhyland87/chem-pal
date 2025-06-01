@@ -138,7 +138,7 @@ declare global {
    *
    * @example
    * ```typescript
-   * const variant: ProductVariant = {
+   * const variant: ShopifyProductVariant = {
    *   variant_id: "123456",
    *   sku: "CHEM-NACL-500G",
    *   barcode: "123456789012",
@@ -152,7 +152,7 @@ declare global {
    * };
    * ```
    */
-  interface ProductVariant {
+  interface ShopifyProductVariant {
     /* eslint-disable */
     /**
      * Unique identifier for the variant.
@@ -382,7 +382,7 @@ declare global {
      * Array of product variants.
      * Contains detailed variant information.
      */
-    shopify_variants: ProductVariant[];
+    shopify_variants: ShopifyProductVariant[];
 
     /**
      * Array of product image URLs.

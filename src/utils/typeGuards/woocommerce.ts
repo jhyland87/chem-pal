@@ -59,7 +59,7 @@
  * }
  * ```
  */
-export function isSearchResponseItem(item: unknown): item is SearchResponseItem {
+export function isSearchResponseItem(item: unknown): item is WooCommerceSearchResponseItem {
   if (typeof item !== "object" || item === null) {
     return false;
   }
@@ -89,7 +89,7 @@ export function isSearchResponseItem(item: unknown): item is SearchResponseItem 
   if (!hasRequiredProps) return false;
 
   // Check prices object structure
-  const prices = (item as SearchResponseItem).prices;
+  const prices = (item as WooCommerceSearchResponseItem).prices;
   const requiredPriceProps = {
     /* eslint-disable */
     price: "string",
@@ -181,7 +181,7 @@ export function isSearchResponseItem(item: unknown): item is SearchResponseItem 
  * }
  * ```
  */
-export function isSearchResponse(response: unknown): response is SearchResponse {
+export function isSearchResponse(response: unknown): response is WooCommerceSearchResponse {
   if (!Array.isArray(response)) {
     return false;
   }
@@ -190,11 +190,11 @@ export function isSearchResponse(response: unknown): response is SearchResponse 
 }
 
 /**
- * Type guard to validate if an unknown object is a valid WooCommerce ProductVariant.
+ * Type guard to validate if an unknown object is a valid WooCommerce WooCommerceProductVariant.
  * Checks if the object is a valid SearchResponseItem and has the required variant properties.
  *
  * @param product - Object to validate
- * @returns Type predicate indicating if the object is a valid ProductVariant
+ * @returns Type predicate indicating if the object is a valid WooCommerceProductVariant
  * @typeguard
  *
  * @example
@@ -247,12 +247,12 @@ export function isSearchResponse(response: unknown): response is SearchResponse 
  * }
  * ```
  */
-export function isProductVariant(product: unknown): product is ProductVariant {
+export function isProductVariant(product: unknown): product is WooCommerceProductVariant {
   if (!isSearchResponseItem(product)) {
     return false;
   }
 
-  if (typeof (product as ProductVariant).variation !== "string") {
+  if (typeof (product as WooCommerceProductVariant).variation !== "string") {
     return false;
   }
 
@@ -261,10 +261,10 @@ export function isProductVariant(product: unknown): product is ProductVariant {
 
 /**
  * Type guard to validate if a product response contains all required variant information.
- * Extends the basic ProductVariant validation with additional required properties for complete variant data.
+ * Extends the basic WooCommerceProductVariant validation with additional required properties for complete variant data.
  *
  * @param response - Object to validate
- * @returns Type predicate indicating if the response is a valid and complete ProductVariant
+ * @returns Type predicate indicating if the response is a valid and complete WooCommerceProductVariant
  * @typeguard
  *
  * @example
@@ -326,7 +326,7 @@ export function isProductVariant(product: unknown): product is ProductVariant {
  * }
  * ```
  */
-export function isValidProductVariant(response: unknown): response is ProductVariant {
+export function isValidProductVariant(response: unknown): response is WooCommerceProductVariant {
   if (!isProductVariant(response)) {
     return false;
   }

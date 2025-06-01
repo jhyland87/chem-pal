@@ -48,8 +48,8 @@ declare global {
     headers?: Maybe<HeadersInit>;
   }
 
-  interface RequestParams extends Record<TKey, TData> {
-    [key: TKey]: TData;
+  interface RequestParams extends Record<string, unknown> {
+    [key: string]: unknown;
   }
 }
 

@@ -421,7 +421,7 @@ export class ProductBuilder<T extends Product> {
    */
   setId(id?: number | string): ProductBuilder<T> {
     if (id) {
-      this._product.id = id;
+      this._product.id = id as T["id"];
     }
     return this;
   }

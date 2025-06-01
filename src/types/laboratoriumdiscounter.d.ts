@@ -204,6 +204,8 @@ declare global {
   interface LaboratoriumDiscounterSearchParams {
     limit: string;
     format: string;
+    /** Index signature for additional properties */
+    [key: string]: string | number | boolean | undefined;
   }
 
   /**

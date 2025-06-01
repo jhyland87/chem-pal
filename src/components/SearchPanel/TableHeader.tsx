@@ -1,15 +1,12 @@
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowDropUpIcon from "@/icons/ArrowDropUpIcon";
-import {
-  ColumnDef,
-  ColumnMeta,
-  flexRender,
-  Header,
-  HeaderGroup,
-  Table,
-} from "@tanstack/react-table";
+import { ColumnDef, flexRender, Header, HeaderGroup, Table } from "@tanstack/react-table";
 import { CSSProperties, useMemo } from "react";
 import "./TableHeader.scss";
+
+// Add type alias for the global ColumnMeta
+type ColumnMeta = TanStackTable.ColumnMeta;
+
 /**
  * TableHeader component that renders the header row of the product results table.
  * It handles column resizing, sorting, and filter configuration.
@@ -29,9 +26,9 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
    * @returns Object mapping column IDs to their filter configurations
    */
   const filterableColumns = useMemo(() => {
-    return table.options.columns.reduce<Record<string, ColumnMeta<Product, unknown>>>(
+    return table.options.columns.reduce<Record<string, ColumnMeta>>(
       (accu, column: ColumnDef<Product, unknown>) => {
-        const meta = column.meta as ColumnMeta<Product, unknown> | undefined;
+        const meta = column.meta as ColumnMeta | undefined;
         if (meta?.filterVariant === undefined || !column.id) return accu;
 
         accu[column.id] = {
@@ -94,7 +91,7 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
           {headerGroup.headers.map((header: Header<Product, unknown>) => {
             // If the column has filterable values, populate the unique values for the column
             if (filterableColumns[header.id] !== undefined) {
-              const meta = header.column.columnDef.meta as ColumnMeta<Product, unknown>;
+              const meta = header.column.columnDef.meta as ColumnMeta;
               header.column.columnDef.meta = {
                 ...meta,
                 ...filterableColumns[header.id],

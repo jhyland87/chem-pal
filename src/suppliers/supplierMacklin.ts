@@ -16,7 +16,7 @@ import SupplierBase from "./supplierBase";
  *    - Collect all non-empty, non-object header values (excluding Content-Type)
  *    - Sort headers alphabetically by key (case-insensitive)
  *    - Format as "key=value" pairs joined by "&"
- *    - Append "&salt=ndksyr9834@#$32ndsfu"
+ *    - Append "&salt=ndksyr9834\@#$32ndsfu"
  *    - Convert to lowercase
  *    - Hash using custom MD5-like transform
  *
@@ -25,7 +25,7 @@ import SupplierBase from "./supplierBase";
  *    - For POST/PUT requests: Use request body
  *    - Sort parameters alphabetically by key (case-insensitive)
  *    - Format as "key=value" pairs joined by "&"
- *    - Append "&salt=ndksyr9834@#$32ndsfu"
+ *    - Append "&salt=ndksyr9834\@#$32ndsfu"
  *    - Convert to lowercase
  *    - Hash using custom MD5-like transform
  *
@@ -123,6 +123,7 @@ export default class SupplierMacklin
   }
 
   protected _initProductBuilders(data: Product[]): ProductBuilder<Product>[] {
+    console.log("data:", data);
     return [];
   }
 }

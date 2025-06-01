@@ -53,13 +53,13 @@
  * }
  * ```
  */
-export function isResponseOk(response: unknown): response is SearchResponse {
+export function isResponseOk(response: unknown): response is CarolinaSearchResponse {
   if (!response || typeof response !== "object") {
     return false;
   }
 
   try {
-    const _response = response as Partial<SearchResponse>;
+    const _response = response as Partial<CarolinaSearchResponse>;
 
     if (
       _response.responseStatusCode !== 200 ||
@@ -148,7 +148,7 @@ export function isResponseOk(response: unknown): response is SearchResponse {
  * }
  * ```
  */
-export function isValidSearchResponse(response: unknown): response is SearchResponse {
+export function isValidSearchResponse(response: unknown): response is CarolinaSearchResponse {
   if (typeof response !== "object" || response === null) {
     return false;
   }
@@ -251,7 +251,7 @@ export function isValidSearchResponse(response: unknown): response is SearchResp
  * }
  * ```
  */
-export function isSearchResultItem(result: unknown): result is SearchResult {
+export function isSearchResultItem(result: unknown): result is CarolinaSearchResult {
   if (typeof result !== "object" || result === null) {
     return false;
   }
@@ -296,12 +296,12 @@ export function isSearchResultItem(result: unknown): result is SearchResult {
  * }
  * ```
  */
-export function isValidProductResponse(obj: unknown): obj is ProductResponse {
+export function isValidProductResponse(obj: unknown): obj is CarolinaProductResponse {
   if (typeof obj !== "object" || obj === null) {
     return false;
   }
 
-  const response = obj as Partial<ProductResponse>;
+  const response = obj as Partial<CarolinaProductResponse>;
 
   return !(
     !response.contents?.MainContent ||

@@ -12,12 +12,12 @@ declare global {
   /**
    * Search response from WooCommerce API
    */
-  type SearchResponse = Array<SearchResponseItem>;
+  type WooCommerceSearchResponse = Array<WooCommerceSearchResponseItem>;
 
   /**
    * Represents a product item from the WooCommerce API search response
    */
-  interface SearchResponseItem {
+  interface WooCommerceSearchResponseItem {
     /* eslint-disable */
     /** Unique identifier for the product */
     id: number;
@@ -147,7 +147,7 @@ declare global {
    * Extends SearchResponseItem with variation-specific information.
    * @see https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/products.md#get-product
    */
-  interface ProductVariant extends SearchResponseItem {
+  interface WooCommerceProductVariant extends WooCommerceSearchResponseItem {
     /** Variation identifier */
     variation: string;
   }

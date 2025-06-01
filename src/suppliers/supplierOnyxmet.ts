@@ -23,7 +23,7 @@ import SupplierBase from "./supplierBase";
  * ```
  */
 export default class SupplierOnyxmet
-  extends SupplierBase<SearchResultResponse, Product>
+  extends SupplierBase<OnyxMetSearchResultResponse, Product>
   implements AsyncIterable<Product>
 {
   // Display name of the supplier used for UI and logging
@@ -40,7 +40,7 @@ export default class SupplierOnyxmet
   public readonly country: CountryCode = "CA";
 
   // Cached search results from the last query execution
-  protected _queryResults: SearchResultResponse[] = [];
+  protected _queryResults: OnyxMetSearchResultResponse[] = [];
 
   // Maximum number of HTTP requests allowed per search query
   // Used to prevent excessive requests to supplier
@@ -102,7 +102,7 @@ export default class SupplierOnyxmet
 
     this._logger.debug("all search results:", data);
 
-    const fuzzResults = this._fuzzyFilter<SearchResultItem>(query, data);
+    const fuzzResults = this._fuzzyFilter<OnyxMetSearchResultItem>(query, data);
 
     return this._initProductBuilders(fuzzResults.splice(0, limit));
   }
@@ -134,7 +134,7 @@ export default class SupplierOnyxmet
    * }
    * ```
    */
-  protected _initProductBuilders(data: SearchResultItem[]): ProductBuilder<Product>[] {
+  protected _initProductBuilders(data: OnyxMetSearchResultItem[]): ProductBuilder<Product>[] {
     return mapDefined(data, (item) => {
       if (!isSearchResultItem(item)) {
         this._logger.warn("Invalid search result item:", item);
@@ -263,7 +263,7 @@ export default class SupplierOnyxmet
    * // Output: "Sodium Chloride, ACS Grade"
    * ```
    */
-  protected _titleSelector(data: SearchResultItem): string {
+  protected _titleSelector(data: OnyxMetSearchResultItem): string {
     return data.label;
   }
 }
