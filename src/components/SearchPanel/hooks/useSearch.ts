@@ -52,6 +52,7 @@ export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: Us
     // This is where the queries get run, when the iteration starts.
     for await (const result of productQueryResults) {
       resultCount++;
+
       // Data for new row (must align with columns structure)
 
       // Hide the status label thing

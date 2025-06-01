@@ -1,10 +1,10 @@
-import type { Product } from "@/types";
-import { beforeAll, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
-import eur_to_usd_rate from "../__fixtures__/common/eur-to-usd-rate.json";
 import {
   resetChromeStorageMock,
   setupChromeStorageMock,
-} from "../__fixtures__/helpers/chromeStorageMock";
+} from "@/__fixtures__/helpers/chromeStorageMock";
+import type { Product } from "@/types";
+import { beforeAll, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import eur_to_usd_rate from "../__fixtures__/common/eur-to-usd-rate.json";
 import { fixtureData } from "../__fixtures__/helpers/fixtureData";
 import SupplierLaboratoriumDiscounter from "../supplierLaboratoriumDiscounter";
 import { spyOnSupplier } from "./helpers/supplierTestUtils";
@@ -24,7 +24,6 @@ describe("SupplierLaboratoriumDiscounter", async () => {
   const borohydride_search_raw = await borohydride_search("results");
 
   let supplier: SupplierLaboratoriumDiscounter;
-  let mockAbortController: AbortController;
 
   const { getCachedResultsSpy, httpGetJsonMock } = spyOnSupplier(
     SupplierLaboratoriumDiscounter,
@@ -37,7 +36,6 @@ describe("SupplierLaboratoriumDiscounter", async () => {
 
   beforeEach(() => {
     resetChromeStorageMock();
-    mockAbortController = new AbortController();
     // Mock the global fetch function to handle both search and product detail requests
     global.fetch = vi.fn().mockImplementation((url) => {
       throw new Error("Fetch not mocked");
@@ -55,7 +53,7 @@ describe("SupplierLaboratoriumDiscounter", async () => {
 
     describe("_getCachedResults", () => {
       it("should not have cached result on first call", async () => {
-        supplier = new SupplierLaboratoriumDiscounter("borohydride", 4, mockAbortController);
+        supplier = new SupplierLaboratoriumDiscounter("borohydride", 4);
 
         const results: Product[] = [];
         for await (const product of supplier) {
@@ -70,7 +68,7 @@ describe("SupplierLaboratoriumDiscounter", async () => {
       });
 
       it("should use cached result on second call", async () => {
-        supplier = new SupplierLaboratoriumDiscounter("borohydride", 4, mockAbortController);
+        supplier = new SupplierLaboratoriumDiscounter("borohydride", 4);
 
         let results: Product[] = [];
         for await (const product of supplier) {
@@ -81,7 +79,7 @@ describe("SupplierLaboratoriumDiscounter", async () => {
         expect(httpGetJsonMock).toHaveBeenCalledTimes(5);
         expect(results).toHaveLength(4);
 
-        supplier = new SupplierLaboratoriumDiscounter("borohydride", 4, mockAbortController);
+        supplier = new SupplierLaboratoriumDiscounter("borohydride", 4);
 
         results = [];
         for await (const product of supplier) {
@@ -91,6 +89,24 @@ describe("SupplierLaboratoriumDiscounter", async () => {
         expect(getCachedResultsSpy).toHaveBeenCalledTimes(2);
         expect(httpGetJsonMock).toHaveBeenCalledTimes(5);
         expect(results).toHaveLength(4);
+      });
+    });
+
+    describe.skip("async iteration", () => {
+      it("should abort when given the signal", async () => {
+        const mockAbortController = new AbortController();
+        supplier = new SupplierLaboratoriumDiscounter("borohydride", 4);
+
+        let results: Product[] = [];
+        for await (const product of supplier) {
+          results.push(product);
+
+          mockAbortController.abort();
+        }
+
+        expect(results).toHaveLength(1);
+        expect(httpGetJsonMock).toHaveBeenCalledTimes(1);
+        //expect(getCachedResultsSpy).toHaveBeenCalledTimes(0);
       });
     });
   });

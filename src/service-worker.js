@@ -9,9 +9,9 @@ const CURRENT_CACHES = {
 //     });
 //   });
 // })
-
+/*
 self.addEventListener("activate", (event) => {
-  console.log("import.meta.env.MODE:", import.meta.env.MODE);
+  //console.log("import.meta.env.MODE:", import.meta.env.MODE);
   // Delete all caches that aren't named in CURRENT_CACHES.
   // While there is only one cache in this example, the same logic
   // will handle the case where there are multiple versioned caches.
@@ -20,7 +20,7 @@ self.addEventListener("activate", (event) => {
     caches.keys().then((cacheNames) =>
       Promise.all(
         cacheNames.map((cacheName) => {
-          console.log("import.meta.env.MODE:", import.meta.env.MODE);
+          //console.log("import.meta.env.MODE:", import.meta.env.MODE);
           if (!expectedCacheNamesSet.has(cacheName)) {
             // If this cache name isn't present in the set of
             // "expected" cache names, then delete it.
@@ -92,3 +92,4 @@ self.addEventListener("fetch", (event) => {
     }),
   );
 });
+*/

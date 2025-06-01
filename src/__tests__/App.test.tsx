@@ -1,10 +1,9 @@
 import "@testing-library/jest-dom";
 import { fireEvent, queryHelpers, render, screen } from "@testing-library/react";
-import React from "react";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 //import userEvent from '@testing-library/user-event'
 
-import { setupChromeStorageMock } from "@/suppliers/__fixtures__/helpers/chromeStorageMock";
+import { setupChromeStorageMock } from "@/__fixtures__/helpers/chromeStorageMock";
 import App from "../App";
 
 describe("App", () => {

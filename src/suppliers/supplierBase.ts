@@ -261,7 +261,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * controller.abort();
    * ```
    */
-  constructor(query: string, limit: number = 5, controller: AbortController) {
+  constructor(query: string, limit: number = 5, controller?: AbortController) {
     this._logger = new Logger(this.constructor.name);
     this._query = query;
     this._limit = limit;
@@ -978,6 +978,8 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
         // Process batch results as they complete
         const batchResults = await Promise.allSettled(batchPromises);
         for (const result of batchResults) {
+          if (this._controller.signal.aborted) throw this._controller.signal.reason;
+
           if (result.status === "rejected") {
             this._logger.error("Error found when yielding a product:", { result });
             continue;

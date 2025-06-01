@@ -9,17 +9,8 @@
   "side_panel": {
     "default_path": "index.html"
   },
-  "permissions": [
-    "scripting",
-    "sidePanel",
-    "activeTab",
-    "storage",
-    "runtime",
-    "nativeMessaging"
-  ],
-  "host_permissions": [
-    "<all_urls>"
-  ],
+  "permissions": ["scripting", "sidePanel", "activeTab", "storage", "nativeMessaging"],
+  "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "service-worker.js"
   }

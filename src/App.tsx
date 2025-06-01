@@ -8,7 +8,7 @@ import { AppContext } from "@/context";
 import SupplierFactory from "@/suppliers/supplierFactory";
 import { Settings } from "@/types";
 import { useEffect, useState } from "react";
-import "./__mocks__/chromeStorageMock";
+//import "./__mocks__/chromeStorageMock";
 import ErrorBoundary from "./components/ErrorBoundary";
 import FavoritesPanel from "./components/FavoritesPanel";
 import HistoryPanel from "./components/HistoryPanel";

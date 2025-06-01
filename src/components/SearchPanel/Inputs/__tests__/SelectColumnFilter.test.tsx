@@ -1,9 +1,9 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   resetChromeStorageMock,
   setupChromeStorageMock,
-} from "../../../../suppliers/__fixtures__/helpers/chromeStorageMock";
+} from "@/__fixtures__/helpers/chromeStorageMock";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import SelectColumnFilter from "../SelectColumnFilter";
 
 // Mock the column object that would be passed as props
