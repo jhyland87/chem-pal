@@ -1,5 +1,4 @@
 import TuneIcon from "@/icons/TuneIcon";
-import { type TableOptionsProps } from "@/types/props";
 import Toolbar from "@mui/material/Toolbar";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";

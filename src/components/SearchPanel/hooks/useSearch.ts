@@ -1,7 +1,5 @@
 import { useAppContext } from "@/context";
 import SupplierFactory from "@/suppliers/supplierFactory";
-import { type Product } from "@/types";
-import { type UseSearchProps } from "@/types/props";
 import { getColumnFilterConfig } from "../TableColumns";
 
 export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: UseSearchProps) {

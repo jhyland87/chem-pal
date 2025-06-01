@@ -1,10 +1,3 @@
-import {
-  type ATGResponse,
-  type ProductResponse,
-  type SearchResponse,
-  type SearchResult,
-} from "@/types/carolina";
-
 /**
  * Type guard to validate if a response has a valid basic structure for a Carolina search response.
  * Checks for the presence of required properties and correct response status code.

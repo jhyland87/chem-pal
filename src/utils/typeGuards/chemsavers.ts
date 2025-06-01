@@ -1,5 +1,3 @@
-import { type ProductObject, type SearchResponse } from "@/types/chemsavers";
-
 /**
  * Type guard to validate if an object matches the Chemsavers ProductObject structure.
  * Checks for the presence and correct types of all required product properties including

@@ -1,6 +1,5 @@
 //import type { ExchangeRateResponse, ParsedPrice } from "types";
 import { CURRENCY_CODE_MAP } from "@/constants/currency";
-import type { CurrencyCode, CurrencySymbol, ParsedPrice } from "@/types/currency";
 import { LRUCache } from "lru-cache";
 
 /**

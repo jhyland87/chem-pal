@@ -1,8 +1,6 @@
 import { findCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
 import { firstMap } from "@/helpers/utils";
-import type { Product, Variant } from "@/types";
-import type { SearchResponseItem } from "@/types/woocommerce";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isSearchResponse } from "@/utils/typeGuards/woocommerce";
 import SupplierBase from "./supplierBase";

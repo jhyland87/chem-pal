@@ -1,5 +1,3 @@
-import type { ItemListing, SearchResponse, ShopifyVariant } from "@/types/shopify";
-
 /**
  * Type guard to validate if a response from the Shopify search API is a valid SearchResponse object.
  * Checks for the presence and correct types of all required properties including pagination info,

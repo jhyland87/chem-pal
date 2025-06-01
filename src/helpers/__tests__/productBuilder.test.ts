@@ -1,4 +1,3 @@
-import type { Product } from "@/types";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as currencyHelpers from "../currency";

@@ -1,6 +1,4 @@
 import { implementCustomMethods } from "@/mixins/tanstack";
-import { type Product } from "@/types";
-import { type UseResultsTableProps } from "@/types/props";
 import {
   ColumnDef,
   getCoreRowModel,

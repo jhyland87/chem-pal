@@ -1,4 +1,3 @@
-import { type CountryCode, type Product, type ShippingRange } from "@/types";
 import SupplierBaseShopify from "./supplierBaseShopify";
 
 /**

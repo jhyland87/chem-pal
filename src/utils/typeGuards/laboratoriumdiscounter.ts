@@ -1,11 +1,3 @@
-import {
-  type PriceObject,
-  type ProductObject,
-  type SearchParams,
-  type SearchResponse,
-  type SearchResponseProduct,
-} from "@/types/laboratoriumdiscounter";
-
 /**
  * Type guard to validate if a response from the Laboratorium Discounter search API is valid.
  * Checks for the presence and correct types of all required properties including page info,
@@ -452,13 +444,21 @@ export function isSearchResponseProduct(product: unknown): product is SearchResp
  * }
  * ```
  */
-export function isProductObject(data: unknown): data is ProductObject {
+export function isProductObject(data: unknown): data is LaboratoriumDiscounterProductObject {
   if (typeof data !== "object" || data === null) return false;
   if ("product" in data === false || typeof data.product !== "object" || data.product === null)
     return false;
   return (
     "variants" in data.product &&
-    (typeof data.product.variants === "object" || data.product.variants === false)
+    (typeof data.product.variants === "object" || data.product.variants === false) &&
+    "shop" in data &&
+    typeof data.shop === "object" &&
+    data.shop !== null &&
+    "currencies" in data.shop &&
+    typeof data.shop.currencies === "object" &&
+    data.shop.currencies !== null &&
+    "currency" in data.shop &&
+    typeof data.shop.currency === "string"
   );
 }
 
@@ -521,15 +521,12 @@ export function isProductObject(data: unknown): data is ProductObject {
  * }
  * ```
  */
-export function isValidSearchParams(params: unknown): params is SearchParams {
+export function isValidSearchParams(params: unknown): params is LaboratoriumDiscounterSearchParams {
   if (typeof params !== "object" || params === null) return false;
-
-  const requiredProps = {
-    limit: (val: unknown) => typeof val === "string" && !isNaN(Number(val)),
-    format: (val: unknown) => val === "json",
-  };
-
-  return Object.entries(requiredProps).every(([key, validator]) => {
-    return key in params && validator(params[key as keyof typeof params]);
-  });
+  return (
+    "limit" in params &&
+    typeof params.limit === "string" &&
+    "format" in params &&
+    typeof params.format === "string"
+  );
 }

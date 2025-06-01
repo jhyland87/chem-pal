@@ -3,7 +3,6 @@ import HistoryIcon from "@/icons/HistoryIcon";
 import SearchIcon from "@/icons/SearchIcon";
 import SettingsIcon from "@/icons/SettingsIcon";
 import StoreIcon from "@/icons/StoreIcon";
-import { type TabHeaderProps } from "@/types/props";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import { SyntheticEvent } from "react";

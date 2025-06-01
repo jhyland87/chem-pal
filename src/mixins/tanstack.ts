@@ -1,8 +1,6 @@
-import { Column, Table } from "@tanstack/react-table";
+import { type Column, type StringOrTemplateHeader, type Table } from "@tanstack/react-table";
 import debounce from "lodash/debounce";
 import throttle from "lodash/throttle";
-
-import { StringOrTemplateHeader } from "@tanstack/react-table";
 
 /**
  * Gets the displayable header text for a column.

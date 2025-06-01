@@ -5,7 +5,6 @@ import {
   parsePrice,
   toUSD,
 } from "@/helpers/currency";
-import type { CurrencySymbol, ExchangeRateResponse } from "@/types/currency";
 import type { Mock } from "vitest";
 import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
 

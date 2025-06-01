@@ -5,7 +5,6 @@ import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
-import type { CountryCode, Product, ShippingRange } from "@/types";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import chunk from "lodash/chunk";
 import SupplierBase from "./supplierBase";

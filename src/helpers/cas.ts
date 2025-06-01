@@ -1,5 +1,4 @@
 import { CAS_REGEX } from "@/constants/common";
-import { CAS } from "@/types/cas";
 
 /**
  * @group Helpers

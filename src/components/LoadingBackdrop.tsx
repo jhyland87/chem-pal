@@ -1,4 +1,3 @@
-import { type LoadingBackdropProps } from "@/types/props";
 import Backdrop from "@mui/material/Backdrop";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";

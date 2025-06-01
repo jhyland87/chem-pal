@@ -1,5 +1,4 @@
 import { md5sum, serialize } from "@/helpers/utils";
-import type { CacheResponse, RequestHashObject, SerializedResponse } from "@/types/request";
 import * as contentType from "content-type";
 
 /**

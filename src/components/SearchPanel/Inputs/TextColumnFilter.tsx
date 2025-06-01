@@ -1,4 +1,3 @@
-import { type FilterVariantInputProps } from "@/types/props";
 import TextField from "@mui/material/TextField";
 import { ChangeEvent, useState } from "react";
 import { StyledFormControlSelector } from "../../Styles";

@@ -1,4 +1,3 @@
-import type { IconTextFaderProps } from "@/types/props";
 import Collapse from "@mui/material/Collapse";
 import { useEffect, useState } from "react";
 

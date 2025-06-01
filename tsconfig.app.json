@@ -36,7 +36,7 @@
     "forceConsistentCasingInFileNames": true,
     "typeRoots": [
       "./node_modules/@types",
-      "./src/types/*",
+      "./src/types/**/*"
     ],
     "types": [
       "node",

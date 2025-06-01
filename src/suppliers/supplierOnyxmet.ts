@@ -2,8 +2,6 @@ import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
-import type { CountryCode, Product, ShippingRange } from "@/types";
-import type { SearchResultItem, SearchResultResponse } from "@/types/onyxmet";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isSearchResultItem } from "@/utils/typeGuards/onyxmet";
 import SupplierBase from "./supplierBase";

@@ -6,7 +6,6 @@ import "./App.scss";
 //import { extensionId } from "../config.json";
 import { AppContext } from "@/context";
 import SupplierFactory from "@/suppliers/supplierFactory";
-import { Settings } from "@/types";
 import { useEffect, useState } from "react";
 //import "./__mocks__/chromeStorageMock";
 import ErrorBoundary from "./components/ErrorBoundary";

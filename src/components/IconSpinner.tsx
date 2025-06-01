@@ -1,5 +1,4 @@
 import { SPIN_SPEED } from "@/constants/common";
-import { type IconSpinnerProps } from "@/types/props";
 import { keyframes, styled } from "@mui/material/styles";
 import { cloneElement } from "react";
 import "./IconSpinner.scss";

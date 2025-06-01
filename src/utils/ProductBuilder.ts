@@ -3,15 +3,6 @@ import { findCAS, isCAS } from "@/helpers/cas";
 import { isParsedPrice, parsePrice, toUSD } from "@/helpers/currency";
 import { isQuantityObject, parseQuantity, toBaseQuantity } from "@/helpers/quantity";
 import { findFormulaInHtml } from "@/helpers/science";
-import {
-  type CountryCode,
-  type Maybe,
-  type Product,
-  type QuantityObject,
-  type ShippingRange,
-  type Variant,
-} from "@/types";
-import type { ParsedPrice } from "@/types/currency";
 import { Logger } from "@/utils/Logger";
 import { isMinimalProduct, isProduct, isUOM } from "@/utils/typeGuards/common";
 import { isAvailability, isValidVariant } from "@/utils/typeGuards/productbuilder";

@@ -1,6 +1,4 @@
 import { UOM } from "@/constants/common";
-import { type Product } from "@/types";
-import type { RequiredProductFields } from "@/types/product";
 
 /**
  * Type guard to validate if a value is a valid HTTP Response object.

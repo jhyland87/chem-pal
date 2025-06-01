@@ -2,17 +2,7 @@ import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { isQuantityObject, parseQuantity } from "@/helpers/quantity";
 import { firstMap } from "@/helpers/utils";
-import type { CountryCode, Product, ShippingRange } from "@/types";
-import {
-  type ATGResponse,
-  type ContentFolder,
-  type ContentRuleZoneItem,
-  type MainContentItem,
-  type ResultsContainer,
-  type SearchParams,
-  type SearchResult,
-} from "@/types/carolina";
-import type { ParsedPrice } from "@/types/currency";
+
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import {
   isATGResponse,

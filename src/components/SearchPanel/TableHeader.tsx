@@ -1,13 +1,12 @@
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowDropUpIcon from "@/icons/ArrowDropUpIcon";
-import { type Product } from "@/types";
 import {
-  type ColumnDef,
-  type ColumnMeta,
+  ColumnDef,
+  ColumnMeta,
   flexRender,
-  type Header,
-  type HeaderGroup,
-  type Table,
+  Header,
+  HeaderGroup,
+  Table,
 } from "@tanstack/react-table";
 import { CSSProperties, useMemo } from "react";
 import "./TableHeader.scss";

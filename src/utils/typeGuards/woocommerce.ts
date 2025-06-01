@@ -1,5 +1,3 @@
-import type { ProductVariant, SearchResponse, SearchResponseItem } from "@/types/woocommerce";
-
 /**
  * Type guard to validate if an unknown object is a valid SearchResponseItem from WooCommerce.
  * Checks for the presence and correct types of all required properties including nested price information.

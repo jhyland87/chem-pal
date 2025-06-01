@@ -1,5 +1,3 @@
-import type { SearchResultItem } from "@/types/onyxmet";
-
 /**
  * Type guard to validate if an object matches the SearchResultItem structure.
  * Checks for the presence and correct types of required properties in Onyxmet search results.

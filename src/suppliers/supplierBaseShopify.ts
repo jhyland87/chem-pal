@@ -1,7 +1,5 @@
 import { parseQuantity } from "@/helpers/quantity";
 import { firstMap } from "@/helpers/utils";
-import type { Product } from "@/types";
-import type { ItemListing, QueryParams } from "@/types/shopify";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isShopifyVariant, isValidSearchResponse } from "@/utils/typeGuards/shopify";
 import SupplierBase from "./supplierBase";

@@ -2,12 +2,6 @@ import { AVAILABILITY } from "@/constants/common";
 import { findCAS } from "@/helpers/cas";
 import { urlencode } from "@/helpers/request";
 import { mapDefined } from "@/helpers/utils";
-import { type CountryCode, type Product, type ShippingRange } from "@/types";
-import {
-  type ProductObject,
-  type SearchParams,
-  type SearchResponseProduct,
-} from "@/types/laboratoriumdiscounter";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import {
   isProductObject,
@@ -42,10 +36,11 @@ import SupplierBase from "./supplierBase";
  * - {@link https://www.laboratoriumdiscounter.nl/en/search/acid | Search Results for "acid"}
  * - {@link https://www.laboratoriumdiscounter.nl/en/search/acid?format=json | Search Results for "acid" (JSON)}
  * - {@link https://ecom-support.lightspeedhq.com/hc/en-us/articles/115002509593-3-g-AJAX-and-JSON | Lightspeed eCom Support - AJAX and JSON}
- *  > [!IMPORTANT]
- *  >  Be careful that your scripts do not produce too many XHR calls. A few (2-3) calls per page or making
- *  > calls based on user input could be acceptable, but letting users do multiple calls in a short period of time
- *  > could see them BANNED from shops. Please only use these methods as workarounds in specific instances.
+ *
+ * \> [!IMPORTANT]
+ * \>  Be careful that your scripts do not produce too many XHR calls. A few (2-3) calls per page or making
+ * \> calls based on user input could be acceptable, but letting users do multiple calls in a short period of time
+ * \> could see them BANNED from shops. Please only use these methods as workarounds in specific instances.
  *
  * @category Suppliers
  * @example
@@ -57,7 +52,7 @@ import SupplierBase from "./supplierBase";
  * ```
  */
 export default class SupplierLaboratoriumDiscounter
-  extends SupplierBase<ProductObject, Product>
+  extends SupplierBase<LaboratoriumDiscounterProductObject, Product>
   implements AsyncIterable<Product>
 {
   // Name of supplier (for display purposes)
@@ -73,7 +68,7 @@ export default class SupplierLaboratoriumDiscounter
   public readonly country: CountryCode = "NL";
 
   // Override the type of _queryResults to use our specific type
-  protected _queryResults: Array<ProductObject> = [];
+  protected _queryResults: Array<LaboratoriumDiscounterProductObject> = [];
 
   // Used to keep track of how many requests have been made to the supplier.
   protected _httpRequstCount: number = 0;
@@ -117,7 +112,7 @@ export default class SupplierLaboratoriumDiscounter
    * });
    * ```
    */
-  protected _makeQueryParams(limit: number = this._limit): SearchParams {
+  protected _makeQueryParams(limit: number = this._limit): LaboratoriumDiscounterSearchParams {
     return {
       limit: limit.toString(),
       format: "json",
@@ -213,7 +208,9 @@ export default class SupplierLaboratoriumDiscounter
    * }
    * ```
    */
-  protected _initProductBuilders(data: SearchResponseProduct[]): ProductBuilder<Product>[] {
+  protected _initProductBuilders(
+    data: LaboratoriumDiscounterSearchResponseProduct[],
+  ): ProductBuilder<Product>[] {
     return mapDefined(data, (product) => {
       const productBuilder = new ProductBuilder(this.baseURL);
       productBuilder
@@ -270,17 +267,17 @@ export default class SupplierLaboratoriumDiscounter
         },
       });
 
-      if (isProductObject(productResponse) === false) {
+      if (!productResponse || !isProductObject(productResponse)) {
         this._logger.warn("Invalid product data - did not pass typeguard:", productResponse);
         return;
       }
-      const productData = productResponse.product;
 
+      const productData = productResponse.product;
       const currency = productResponse.shop.currencies[productResponse.shop.currency];
       product.setPricing(productData.price.price, currency.code, currency.symbol);
 
-      if (typeof productData.variants === "object") {
-        for (const variant of Object.values(productData.variants)) {
+      if (typeof productData.variants === "object" && productData.variants !== null) {
+        for (const variant of Object.values(productData.variants) as VariantObject[]) {
           if (variant.active === false) continue;
           product.addVariant({
             id: variant.id,

@@ -1,7 +1,6 @@
 import MenuIcon from "@/icons/MenuIcon";
 import ScienceIcon from "@/icons/ScienceIcon";
 import SearchIcon from "@/icons/SearchIcon";
-import { type SearchInputStates } from "@/types/props";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import InputBase from "@mui/material/InputBase";

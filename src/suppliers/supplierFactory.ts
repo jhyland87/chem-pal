@@ -1,4 +1,3 @@
-import { type Product } from "@/types";
 import { Logger } from "@/utils/Logger";
 import * as suppliers from ".";
 import SupplierBase from "./supplierBase";

@@ -1,4 +1,4 @@
-import { type FilterVariantInputProps } from "@/types/props";
+import type { FilterVariantInputProps } from "@/types/props";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import RangeColumnFilter from "../RangeColumnFilter";

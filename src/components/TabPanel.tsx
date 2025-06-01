@@ -1,4 +1,3 @@
-import { type TabPanelProps } from "@/types/props";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 

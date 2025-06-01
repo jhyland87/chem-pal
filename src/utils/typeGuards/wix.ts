@@ -1,10 +1,3 @@
-import {
-  type ProductItem,
-  type ProductObject,
-  type ProductSelection,
-  type QueryResponse,
-} from "@/types/wix";
-
 /**
  * Type guard to validate if a response matches the Wix QueryResponse structure.
  * Performs deep validation of the response object including the nested catalog structure,

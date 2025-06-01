@@ -1,8 +1,6 @@
 import { isCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
-import { type CountryCode, type Product, type ShippingRange } from "@/types";
-import { type ProductObject } from "@/types/chemsavers";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isValidSearchResponse } from "@/utils/typeGuards/chemsavers";
 import SupplierBase from "./supplierBase";

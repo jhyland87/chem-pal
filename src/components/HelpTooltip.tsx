@@ -1,6 +1,5 @@
 import { useAppContext } from "@/context";
 import { delayAction } from "@/helpers/utils";
-import { type HelpTooltipProps } from "@/types/props";
 import Tooltip from "@mui/material/Tooltip";
 import { MouseEvent, useEffect, useState } from "react";
 

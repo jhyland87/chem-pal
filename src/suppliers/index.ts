@@ -30,4 +30,5 @@ export { default as SupplierLaballey } from "./supplierLaballey";
 export { default as SupplierLaboratoriumDiscounter } from "./supplierLaboratoriumDiscounter";
 export { default as SupplierLibertySci } from "./supplierLibertySci";
 export { default as SupplierLoudwolf } from "./supplierLoudwolf";
+export { default as SupplierMacklin } from "./supplierMacklin";
 export { default as SupplierOnyxmet } from "./supplierOnyxmet";

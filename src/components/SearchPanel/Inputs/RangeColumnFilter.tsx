@@ -1,5 +1,4 @@
-import { type FilterVariantInputProps } from "@/types/props";
-import { type SliderValueLabelProps } from "@mui/material";
+import { SliderValueLabelProps } from "@mui/material";
 import Box from "@mui/material/Box";
 import FormControl from "@mui/material/FormControl";
 import Slider from "@mui/material/Slider";

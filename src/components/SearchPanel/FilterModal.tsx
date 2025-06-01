@@ -1,5 +1,3 @@
-import { type CustomColumn, type Product } from "@/types";
-import type { FilterVariantComponentProps, FilterVariantInputProps } from "@/types/props";
 import { Button, Typography } from "@mui/material";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
@@ -102,7 +100,8 @@ export default function FilterModal({
     );
 
     table.getAllColumns().forEach((column: CustomColumn<Product, unknown>) => {
-      column.setColumnVisibility(!column.getCanHide() || columnVisibility.includes(column.id));
+      if (typeof column === "undefined") return;
+      column.setColumnVisibility?.(!column.getCanHide() || columnVisibility.includes(column.id));
     });
   };
 
@@ -113,7 +112,7 @@ export default function FilterModal({
   const columnNames = table
     .getAllColumns()
     .reduce((accu: Record<string, string>, col: CustomColumn<Product, unknown>) => {
-      if (col.getCanFilter()) accu[col.id] = col.getHeaderText() ?? "";
+      if (col.getCanFilter()) accu[col.id] = col?.getHeaderText?.() ?? "";
       return accu;
     }, {});
 

@@ -2,9 +2,8 @@ import KeyboardArrowLeftIcon from "@/icons/KeyboardArrowLeftIcon";
 import KeyboardArrowRightIcon from "@/icons/KeyboardArrowRightIcon";
 import KeyboardDoubleArrowLeftIcon from "@/icons/KeyboardDoubleArrowLeftIcon";
 import KeyboardDoubleArrowRightIcon from "@/icons/KeyboardDoubleArrowRightIcon";
-import { type Product } from "@/types";
 import IconButton from "@mui/material/IconButton";
-import { type Table } from "@tanstack/react-table";
+import { Table } from "@tanstack/react-table";
 import "./Pagination.scss";
 
 /**

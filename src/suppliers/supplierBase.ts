@@ -1,13 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { fetchDecorator, isFullURL } from "@/helpers/request";
-import {
-  type CountryCode,
-  type Maybe,
-  type MaybeArray,
-  type Product,
-  type ShippingRange,
-} from "@/types";
-import { type RequestOptions, type RequestParams } from "@/types/request";
 import { Logger } from "@/utils/Logger";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import {

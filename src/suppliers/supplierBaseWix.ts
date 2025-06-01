@@ -2,13 +2,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
-import { type Product, type Variant } from "@/types";
-import {
-  type GraphQLQueryVariables,
-  type ProductItem,
-  type ProductObject,
-  type ProductSelection,
-} from "@/types/wix";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import merge from "lodash/merge";
 //import query from "./queries/getFilteredProductsWithHasDiscount-wix.graphql";

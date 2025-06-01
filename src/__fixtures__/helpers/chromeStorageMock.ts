@@ -1,4 +1,3 @@
-import type { ChromeStorageItems } from "@/types/chromeStorage";
 import { vi } from "vitest";
 
 type StorageValue = unknown;

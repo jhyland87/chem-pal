@@ -1,4 +1,4 @@
-import type { ChromeStorageItems } from "@/types/chromeStorage";
+import "@/types/chromeStorage";
 import { vi } from "vitest";
 
 /**

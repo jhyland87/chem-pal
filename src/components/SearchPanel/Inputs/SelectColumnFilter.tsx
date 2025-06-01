@@ -1,4 +1,3 @@
-import { type FilterVariantInputProps } from "@/types/props";
 import { useTheme, type SelectChangeEvent, type Theme } from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";

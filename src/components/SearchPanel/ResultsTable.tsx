@@ -1,10 +1,8 @@
 import { useAppContext } from "@/context";
 import { implementCustomMethods } from "@/mixins/tanstack";
-import { type Product } from "@/types";
-import { type ProductTableProps } from "@/types/props";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
-import { type Column, flexRender, type Row } from "@tanstack/react-table";
+import { Column, flexRender, Row } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
 import { CSSProperties, Fragment, ReactElement, useEffect, useState } from "react";
 import LoadingBackdrop from "../LoadingBackdrop";
