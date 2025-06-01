@@ -140,6 +140,11 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       cell: ({ row }: ProductRow) => {
         //const price = Number(parseFloat(row.original.price.toString()).toFixed(2)).toLocaleString();
         //return `${row.original.currencySymbol as string}${row.original.price}`;
+        return new Intl.NumberFormat("USD", {
+          style: "currency",
+          currency: "USD",
+        }).format(row.original.usdPrice as number);
+
         return new Intl.NumberFormat((row.original?.currencyCode as string) || "USD", {
           style: "currency",
           currency: (row.original?.currencyCode as string) || "USD",

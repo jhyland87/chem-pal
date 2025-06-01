@@ -304,6 +304,10 @@ declare global {
     /** Total number of products matching the search */
     total: number;
   }
+
+  type MacklinSearchResultProducts = MacklinSearchResult<MacklinProduct>;
+
+  type MacklinProductDetailsResponse = MacklinSearchResult<MacklinProductDetails[]>;
 }
 
 export {};

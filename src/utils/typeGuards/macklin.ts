@@ -129,53 +129,24 @@ export function isMacklinSearchResult<T>(data: unknown): data is MacklinSearchRe
 }
 
 /**
- * Validates if data matches the Macklin product format.
- * Checks for all required product properties and their types.
- * This is used to validate individual product variants in search results.
+ * Validates if data matches the Macklin product details response format.
+ * Product details response contains a list of product details.
  *
  * @param data - The data to validate
- * @returns True if the data matches the product format
- * @example
- * ```ts
- * const product = response.data.list['16903-61-0'][0];
- * if (isMacklinProduct(product)) {
- *   // TypeScript now knows product has all required fields
- *   console.log(product.item_en_name);
- * }
- * ```
+ * @returns True if the data matches the product details response format
  */
-export function isMacklinProduct(data: unknown): data is MacklinProduct {
-  const requiredProps = {
-    /* eslint-disable */
-    chem_cas: "string",
-    item_code: "string",
-    item_cn_name: "string",
-    item_id: "number",
-    chem_mf: "string",
-    item_specification: "string",
-    item_if_bio: "number",
-    item_transport: "number",
-    chem_id: "number",
-    item_order: "number",
-    item_en_name: "string",
-    item_safe_level: "number",
-    item_upimg: "string",
-    item_product_cate: "number",
-    if_yj: "number",
-    cas: "string",
-    /* eslint-enable */
-  };
-
-  return Object.entries(requiredProps).every(([key, type]) => {
-    return (
-      typeof data === "object" &&
-      data !== null &&
-      key in data &&
-      data[key as keyof typeof data] !== null &&
-      data[key as keyof typeof data] !== undefined &&
-      typeof data[key as keyof typeof data] === type
-    );
-  });
+export function isMacklinProductDetailsResponse(
+  data: unknown,
+): data is MacklinProductDetailsResponse {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    "list" in data &&
+    data.list !== null &&
+    typeof data.list === "object" &&
+    Array.isArray(data.list) &&
+    data.list.every(isMacklinProductDetails)
+  );
 }
 
 /**
@@ -195,13 +166,25 @@ export function isMacklinProduct(data: unknown): data is MacklinProduct {
  * ```
  */
 export function isMacklinProductDetails(data: unknown): data is MacklinProductDetails {
+  if (typeof data !== "object" || data === null) {
+    return false;
+  }
+
   const requiredProps = {
     /* eslint-disable */
+    item_id: "number",
+    item_code: "string",
     product_id: "number",
     product_code: "string",
     product_price: "string",
     product_unit: "string",
     product_locked_stock: "string",
+    product_pack: "string",
+    item_en_name: "string",
+    product_stock: "string",
+    chem_cas: "string",
+    delivery_desc_show: "string",
+    /*
     product_delivery_days: "number",
     product_stock_sh: "string",
     product_stock_sd: "string",
@@ -210,12 +193,8 @@ export function isMacklinProductDetails(data: unknown): data is MacklinProductDe
     product_stock_wh: "string",
     product_stock_hb: "string",
     product_if_production: "number",
-    product_stock: "string",
     product_weight: "string",
-    product_pack: "string",
     product_cate: "number",
-    item_id: "number",
-    item_code: "string",
     item_safe_level: "number",
     item_transport: "number",
     item_if_bio: "number",
@@ -227,17 +206,15 @@ export function isMacklinProductDetails(data: unknown): data is MacklinProductDe
     item_can_pack: "number",
     item_delivery_days: "number",
     item_cn_name: "string",
-    item_en_name: "string",
     item_weihuaxuhao: "string",
     item_specification: "string",
     item_en_specification: "string",
+    */
     /* eslint-enable */
   };
 
   return Object.entries(requiredProps).every(([key, type]) => {
     return (
-      typeof data === "object" &&
-      data !== null &&
       key in data &&
       data[key as keyof typeof data] !== null &&
       data[key as keyof typeof data] !== undefined &&

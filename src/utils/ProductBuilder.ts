@@ -332,6 +332,23 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
+   * Sets the unit of measure for the product.
+   *
+   * @param uom - The unit of measure for the product
+   * @returns The builder instance for method chaining
+   * @example
+   */
+  setUOM(uom: string): ProductBuilder<T> {
+    if (typeof uom === "string" && uom.trim().length > 0) {
+      this._product.uom = uom;
+      return this;
+    }
+
+    this._logger.warn(`Unknown UOM: ${uom}`);
+    return this;
+  }
+
+  /**
    * Sets the country of the supplier.
    *
    * @param country - The country of the supplier
