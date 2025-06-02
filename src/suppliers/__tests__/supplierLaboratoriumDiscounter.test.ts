@@ -13,13 +13,12 @@ vi.mock("@/helpers/currency", () => ({
   isParsedPrice: vi.fn(),
 }));
 
-//Object.assign(global, { chrome: mockChromeStorage });
-
-//process.env.LOG_LEVEL = "DEBUG";
-
 describe("SupplierLaboratoriumDiscounter", async () => {
+  // Get the laboratoriumdiscounter fixture data thingy
   const supplierFixtures = fixtureData("laboratoriumdiscounter");
+  // Load up the borohyride search content
   const searchBorohydride = supplierFixtures.search("borohydride");
+  // Results from one of the borohydride searches (not the same as the raw http response from supplier)
   const searchBorohydrideRaw = await searchBorohydride("results");
 
   let supplier: SupplierModule;
