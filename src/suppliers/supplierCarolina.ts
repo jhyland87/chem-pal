@@ -39,6 +39,8 @@ import SupplierBase from "./supplierBase";
  *
  * JSON Format:
  * Append `&format=json&ajax=true` to any URL to get JSON response
+ *
+ * @category Suppliers
  */
 export default class SupplierCarolina
   extends SupplierBase<CarolinaSearchResult, Product>

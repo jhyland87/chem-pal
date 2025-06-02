@@ -99,27 +99,27 @@ export class Logger {
    * Stores named counters for the `count()` and `countReset()` methods.
    * Keys are counter labels, values are the current count.
    */
-  private _counters: Record<string, number> = {};
+  private counters: Record<string, number> = {};
 
   /**
    * Stores active timers for the `time()`, `timeEnd()`, and `timeLog()` methods.
    * Keys are timer labels, values are the start timestamps in milliseconds.
    */
-  private _timers: Record<string, number> = {};
+  private timers: Record<string, number> = {};
 
   /**
    * Tracks the current nesting level for the `group()` and `groupCollapsed()` methods.
    * Incremented by group/groupCollapsed, decremented by groupEnd.
    * Used to determine the indentation level of log messages.
    */
-  private _groupDepth = 0;
+  private groupDepth = 0;
 
   /**
    * The indentation string used for each group level.
    * Each nested group will add this string to the message prefix.
    * Default is two spaces per level of nesting.
    */
-  private readonly _groupIndent = "  ";
+  private readonly groupIndent = "  ";
 
   /**
    * Retrieves the log level from environment variables.
@@ -174,14 +174,14 @@ export class Logger {
    * The identifier prefix that will be included in all log messages from this instance.
    * Used to distinguish logs from different parts of the application.
    */
-  private _prefix: string;
+  private prefix: string;
 
   /**
    * The current minimum log level for this logger instance.
    * Messages with a level lower than this will not be logged.
    * Can be changed at runtime using `setLogLevel()`.
    */
-  private _currentLogLevel: LogLevel;
+  private currentLogLevel: LogLevel;
 
   /**
    * Controls whether this logger instance should automatically sync its log level
@@ -189,7 +189,7 @@ export class Logger {
    * before each log operation to detect changes. When false, the logger maintains
    * a fixed log level regardless of environment changes.
    */
-  private _useEnvOverride: boolean;
+  private useEnvOverride: boolean;
 
   /**
    * Creates a new Logger instance with the specified prefix and optional initial log level.
@@ -212,9 +212,9 @@ export class Logger {
    * ```
    */
   constructor(prefix: string, initialLogLevel?: LogLevel) {
-    this._prefix = prefix;
-    this._useEnvOverride = !initialLogLevel;
-    this._currentLogLevel = initialLogLevel ?? Logger.getEnvLogLevel();
+    this.prefix = prefix;
+    this.useEnvOverride = !initialLogLevel;
+    this.currentLogLevel = initialLogLevel ?? Logger.getEnvLogLevel();
   }
 
   /**
@@ -231,8 +231,8 @@ export class Logger {
    * ```
    */
   public setLogLevel(level: LogLevel): void {
-    this._useEnvOverride = false;
-    this._currentLogLevel = level;
+    this.useEnvOverride = false;
+    this.currentLogLevel = level;
   }
 
   /**
@@ -261,7 +261,7 @@ export class Logger {
    * ```
    */
   public getLogLevel(): LogLevel {
-    return this._currentLogLevel;
+    return this.currentLogLevel;
   }
 
   /**
@@ -274,17 +274,17 @@ export class Logger {
    * @example
    * ```typescript
    * // Internal method usage:
-   * this._formatMessage(LogLevel.INFO, "User logged in");
+   * this.formatMessage(LogLevel.INFO, "User logged in");
    * // Returns: "[2024-01-01T00:00:00.000Z] [INFO] [MyApp] User logged in"
    *
-   * this._formatMessage(LogLevel.ERROR, "Database connection failed");
+   * this.formatMessage(LogLevel.ERROR, "Database connection failed");
    * // Returns: "[2024-01-01T00:00:00.000Z] [ERROR] [MyApp] Database connection failed"
    * ```
    */
-  private _formatMessage(level: LogLevel, message: string): string {
+  private formatMessage(level: LogLevel, message: string): string {
     const timestamp = new Date().toISOString();
-    const indentation = this._groupIndent.repeat(this._groupDepth);
-    return `[${timestamp}] [${level}] [${this._prefix}] ${indentation}${message}`;
+    const indentation = this.groupIndent.repeat(this.groupDepth);
+    return `[${timestamp}] [${level}] [${this.prefix}] ${indentation}${message}`;
   }
 
   /**
@@ -299,28 +299,28 @@ export class Logger {
    * // Internal method usage:
    * const logger = new Logger('MyApp', LogLevel.INFO);
    *
-   * logger._shouldLog(LogLevel.DEBUG); // Returns: false
-   * logger._shouldLog(LogLevel.INFO);  // Returns: true
-   * logger._shouldLog(LogLevel.WARN);  // Returns: true
-   * logger._shouldLog(LogLevel.ERROR); // Returns: true
+   * logger.shouldLog(LogLevel.DEBUG); // Returns: false
+   * logger.shouldLog(LogLevel.INFO);  // Returns: true
+   * logger.shouldLog(LogLevel.WARN);  // Returns: true
+   * logger.shouldLog(LogLevel.ERROR); // Returns: true
    *
    * // With environment sync:
    * const envLogger = new Logger('MyApp');
    * window.LOG_LEVEL = 'DEBUG';
-   * envLogger._shouldLog(LogLevel.DEBUG); // Updates level and returns true
+   * envLogger.shouldLog(LogLevel.DEBUG); // Updates level and returns true
    * ```
    */
-  private _shouldLog(messageLevel: LogLevel): boolean {
+  private shouldLog(messageLevel: LogLevel): boolean {
     // If using environment override, check for changes
-    if (this._useEnvOverride) {
+    if (this.useEnvOverride) {
       const envLevel = Logger.getEnvLogLevel();
-      if (envLevel !== this._currentLogLevel) {
-        const oldLevel = this._currentLogLevel;
-        this._currentLogLevel = envLevel;
+      if (envLevel !== this.currentLogLevel) {
+        const oldLevel = this.currentLogLevel;
+        this.currentLogLevel = envLevel;
         // Only log the level change if it would be visible at the new level
         if (Logger.logLevelPriority[LogLevel.INFO] >= Logger.logLevelPriority[envLevel]) {
           console.info(
-            this._formatMessage(
+            this.formatMessage(
               LogLevel.INFO,
               `Log level changed from ${oldLevel} to ${envLevel} due to environment update`,
             ),
@@ -328,7 +328,7 @@ export class Logger {
         }
       }
     }
-    return Logger.logLevelPriority[messageLevel] >= Logger.logLevelPriority[this._currentLogLevel];
+    return Logger.logLevelPriority[messageLevel] >= Logger.logLevelPriority[this.currentLogLevel];
   }
 
   /**
@@ -346,8 +346,8 @@ export class Logger {
    * ```
    */
   public debug(message: string, ...args: unknown[]): void {
-    if (!this._shouldLog(LogLevel.DEBUG)) return;
-    console.debug(this._formatMessage(LogLevel.DEBUG, message), ...args);
+    if (!this.shouldLog(LogLevel.DEBUG)) return;
+    console.debug(this.formatMessage(LogLevel.DEBUG, message), ...args);
   }
 
   /**
@@ -365,8 +365,8 @@ export class Logger {
    * ```
    */
   public info(message: string, ...args: unknown[]): void {
-    if (!this._shouldLog(LogLevel.INFO)) return;
-    console.info(this._formatMessage(LogLevel.INFO, message), ...args);
+    if (!this.shouldLog(LogLevel.INFO)) return;
+    console.info(this.formatMessage(LogLevel.INFO, message), ...args);
   }
 
   /**
@@ -384,8 +384,8 @@ export class Logger {
    * ```
    */
   public warn(message: string, ...args: unknown[]): void {
-    if (!this._shouldLog(LogLevel.WARN)) return;
-    console.warn(this._formatMessage(LogLevel.WARN, message), ...args);
+    if (!this.shouldLog(LogLevel.WARN)) return;
+    console.warn(this.formatMessage(LogLevel.WARN, message), ...args);
   }
 
   /**
@@ -416,8 +416,8 @@ export class Logger {
    * ```
    */
   public error(message: string, ...args: unknown[]): void {
-    if (!this._shouldLog(LogLevel.ERROR)) return;
-    console.error(this._formatMessage(LogLevel.ERROR, message), ...args);
+    if (!this.shouldLog(LogLevel.ERROR)) return;
+    console.error(this.formatMessage(LogLevel.ERROR, message), ...args);
   }
 
   /**
@@ -445,8 +445,8 @@ export class Logger {
    * ```
    */
   public log(message: string, ...args: unknown[]): void {
-    if (!this._shouldLog(LogLevel.INFO)) return;
-    console.log(this._formatMessage(LogLevel.INFO, message), ...args);
+    if (!this.shouldLog(LogLevel.INFO)) return;
+    console.log(this.formatMessage(LogLevel.INFO, message), ...args);
   }
 
   /**
@@ -474,7 +474,7 @@ export class Logger {
    * ```
    */
   public dir(item: unknown, options?: { depth?: number; colors?: boolean }): void {
-    if (!this._shouldLog(LogLevel.DEBUG)) return;
+    if (!this.shouldLog(LogLevel.DEBUG)) return;
     console.dir(item, options);
   }
   /**
@@ -506,9 +506,9 @@ export class Logger {
    * ```
    */
   public count(label = "default"): void {
-    if (!this._shouldLog(LogLevel.INFO)) return;
-    this._counters[label] = (this._counters[label] || 0) + 1;
-    console.log(this._formatMessage(LogLevel.INFO, `${label}: ${this._counters[label]}`));
+    if (!this.shouldLog(LogLevel.INFO)) return;
+    this.counters[label] = (this.counters[label] || 0) + 1;
+    console.log(this.formatMessage(LogLevel.INFO, `${label}: ${this.counters[label]}`));
   }
 
   /**
@@ -536,7 +536,7 @@ export class Logger {
    * ```
    */
   public countReset(label = "default"): void {
-    delete this._counters[label];
+    delete this.counters[label];
   }
 
   /**
@@ -572,11 +572,11 @@ export class Logger {
    * ```
    */
   public group(label?: string): void {
-    if (!this._shouldLog(LogLevel.INFO)) return;
+    if (!this.shouldLog(LogLevel.INFO)) return;
     if (label) {
-      console.log(this._formatMessage(LogLevel.INFO, label));
+      console.log(this.formatMessage(LogLevel.INFO, label));
     }
-    this._groupDepth++;
+    this.groupDepth++;
   }
 
   /**
@@ -608,19 +608,19 @@ export class Logger {
    * ```
    */
   public groupCollapsed(label?: string): void {
-    if (!this._shouldLog(LogLevel.INFO)) return;
+    if (!this.shouldLog(LogLevel.INFO)) return;
     if (label) {
-      console.log(this._formatMessage(LogLevel.INFO, label));
+      console.log(this.formatMessage(LogLevel.INFO, label));
     }
-    this._groupDepth++;
+    this.groupDepth++;
   }
 
   /**
    * Exits the current inline group in the console.
    */
   public groupEnd(): void {
-    if (this._groupDepth > 0) {
-      this._groupDepth--;
+    if (this.groupDepth > 0) {
+      this.groupDepth--;
     }
   }
 
@@ -655,11 +655,11 @@ export class Logger {
    * ```
    */
   public trace(message?: string): void {
-    if (!this._shouldLog(LogLevel.DEBUG)) return;
+    if (!this.shouldLog(LogLevel.DEBUG)) return;
     const err = new Error();
     const stack = err.stack?.split("\n").slice(2).join("\n") || "";
     const traceMessage = message ? `${message}\n${stack}` : stack;
-    console.debug(this._formatMessage(LogLevel.DEBUG, traceMessage));
+    console.debug(this.formatMessage(LogLevel.DEBUG, traceMessage));
   }
 
   /**
@@ -699,12 +699,12 @@ export class Logger {
    * ```
    */
   public table(tabularData: unknown, properties?: readonly string[]): void {
-    if (!this._shouldLog(LogLevel.INFO)) return;
+    if (!this.shouldLog(LogLevel.INFO)) return;
     if (typeof tabularData === "object" && tabularData !== null) {
-      console.log(this._formatMessage(LogLevel.INFO, "Table Output:"));
+      console.log(this.formatMessage(LogLevel.INFO, "Table Output:"));
       console.table(tabularData, properties);
     } else {
-      console.log(this._formatMessage(LogLevel.INFO, "Invalid data for table display"));
+      console.log(this.formatMessage(LogLevel.INFO, "Invalid data for table display"));
     }
   }
 
@@ -739,13 +739,13 @@ export class Logger {
    * ```
    */
   public time(label = "default"): void {
-    if (this._timers[label]) {
+    if (this.timers[label]) {
       this.warn(`Timer '${label}' already exists`);
       return;
     }
-    this._timers[label] = performance.now();
-    if (this._shouldLog(LogLevel.DEBUG)) {
-      console.debug(this._formatMessage(LogLevel.DEBUG, `Timer '${label}' started`));
+    this.timers[label] = performance.now();
+    if (this.shouldLog(LogLevel.DEBUG)) {
+      console.debug(this.formatMessage(LogLevel.DEBUG, `Timer '${label}' started`));
     }
   }
 
@@ -777,17 +777,17 @@ export class Logger {
    * ```
    */
   public timeEnd(label = "default"): void {
-    if (!this._timers[label]) {
+    if (!this.timers[label]) {
       this.warn(`Timer '${label}' does not exist`);
       return;
     }
 
-    const duration = performance.now() - this._timers[label];
-    delete this._timers[label];
+    const duration = performance.now() - this.timers[label];
+    delete this.timers[label];
 
-    if (this._shouldLog(LogLevel.DEBUG)) {
+    if (this.shouldLog(LogLevel.DEBUG)) {
       console.debug(
-        this._formatMessage(LogLevel.DEBUG, `Timer '${label}': ${duration.toFixed(2)}ms`),
+        this.formatMessage(LogLevel.DEBUG, `Timer '${label}': ${duration.toFixed(2)}ms`),
       );
     }
   }
@@ -820,16 +820,16 @@ export class Logger {
    * ```
    */
   public timeLog(label = "default", ...args: unknown[]): void {
-    if (!this._timers[label]) {
+    if (!this.timers[label]) {
       this.warn(`Timer '${label}' does not exist`);
       return;
     }
 
-    const duration = performance.now() - this._timers[label];
+    const duration = performance.now() - this.timers[label];
 
-    if (this._shouldLog(LogLevel.DEBUG)) {
+    if (this.shouldLog(LogLevel.DEBUG)) {
       console.debug(
-        this._formatMessage(LogLevel.DEBUG, `Timer '${label}': ${duration.toFixed(2)}ms`),
+        this.formatMessage(LogLevel.DEBUG, `Timer '${label}': ${duration.toFixed(2)}ms`),
         ...args,
       );
     }
@@ -865,7 +865,7 @@ export class Logger {
    * ```
    */
   public timeStamp(label?: string): void {
-    if (!this._shouldLog(LogLevel.DEBUG)) return;
+    if (!this.shouldLog(LogLevel.DEBUG)) return;
 
     const timestamp = new Date().toISOString();
     const message = label ? `Timestamp '${label}': ${timestamp}` : `Timestamp: ${timestamp}`;
@@ -873,10 +873,10 @@ export class Logger {
     if (typeof console.timeStamp === "function") {
       // Browser environment with timeStamp support
       console.timeStamp(label);
-      console.debug(this._formatMessage(LogLevel.DEBUG, message));
+      console.debug(this.formatMessage(LogLevel.DEBUG, message));
     } else {
       // Fallback for environments without timeStamp
-      console.debug(this._formatMessage(LogLevel.DEBUG, message));
+      console.debug(this.formatMessage(LogLevel.DEBUG, message));
     }
   }
 }

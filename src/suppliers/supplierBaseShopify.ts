@@ -28,7 +28,6 @@ import SupplierBase from "./supplierBase";
  * `/api/2024-10/graphql.json`. I can use this to query data about specific products, but I don't
  * see that its an more useful than just the searchserveapi results.
  *
- * @module SupplierBaseShopify
  * @category Suppliers
  * @example
  * ```typescript

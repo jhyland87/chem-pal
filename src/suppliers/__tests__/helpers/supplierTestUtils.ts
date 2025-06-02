@@ -19,8 +19,9 @@ import type SupplierBase from "../../supplierBase";
  * ```
  */
 export const spyOnSupplier = (supplier: Class<SupplierBase<any, any>>, fixtures: any) => {
-  const getCachedResultsSpy = vi.spyOn(supplier.prototype, "getCachedResults");
+  const getCachedResultsSpy = vi.spyOn(supplier.prototype, "getCachedResults" as any);
   const httpGetJsonMock = vi.spyOn(supplier.prototype, "httpGetJson" as any);
+  const titleSelectorSpy = vi.spyOn(supplier.prototype, "titleSelector" as any);
 
   // Set up the mock implementation
   httpGetJsonMock.mockImplementation(async (...args: unknown[]) => {
@@ -28,5 +29,5 @@ export const spyOnSupplier = (supplier: Class<SupplierBase<any, any>>, fixtures:
     return await fixtures.httpGetJson(data.path);
   });
 
-  return { getCachedResultsSpy, httpGetJsonMock };
+  return { getCachedResultsSpy, httpGetJsonMock, titleSelectorSpy };
 };

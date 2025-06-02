@@ -6,13 +6,14 @@ import { isValidSearchResponse } from "@/utils/typeGuards/chemsavers";
 import SupplierBase from "./supplierBase";
 
 /**
- * Laboratorium Discounter.nl uses a custom script to fetch product data.
+ * Module sed to retrieve products sold on the Chemsavers website.
  *
- * The script is located in the `script[nonce]` element of the product page.
+ * @remarks
  *
- * The script is a JSON object that contains the product data.
- * Duh... thanks, AI.
- * @module SupplierChemsavers
+ * Chemsavers does have an exposed GraphQL API which can be used to retrieve product data, but
+ * an even easier option is to use the Typesense search API which has all of their products
+ * listed and is easily searchable.
+ *
  * @category Suppliers
  */
 export default class SupplierChemsavers

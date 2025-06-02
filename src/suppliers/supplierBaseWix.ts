@@ -9,7 +9,6 @@ import SupplierBase from "./supplierBase";
 /**
  * SupplierBaseWix class that extends SupplierBase and implements AsyncIterable<Product>.
  * @abstract
- * @module SupplierBaseWix
  * @category Suppliers
  */
 export default abstract class SupplierBaseWix

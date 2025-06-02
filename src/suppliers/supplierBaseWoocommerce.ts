@@ -28,7 +28,6 @@ import SupplierBase from "./supplierBase";
  *
  * The first endpoint is used to search for products and returns a list of products.
  * The second endpoint is used to get the details of a single product.
- * @module SupplierBaseWoocommerce
  * @category Suppliers
  * @example
  * ```typescript

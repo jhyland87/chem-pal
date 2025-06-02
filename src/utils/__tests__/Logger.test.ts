@@ -38,6 +38,7 @@ describe("Logger", () => {
 
   describe("initialization", () => {
     it("should create logger with default INFO level when no level specified", () => {
+      delete process.env.LOG_LEVEL;
       expect(logger.getLogLevel()).toBe(LogLevel.INFO);
     });
 

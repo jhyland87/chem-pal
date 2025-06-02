@@ -15,7 +15,7 @@ vi.mock("@/helpers/currency", () => ({
 
 //Object.assign(global, { chrome: mockChromeStorage });
 
-process.env.LOG_LEVEL = "DEBUG";
+//process.env.LOG_LEVEL = "DEBUG";
 
 describe("SupplierLaboratoriumDiscounter", async () => {
   const supplierFixtures = fixtureData("laboratoriumdiscounter");

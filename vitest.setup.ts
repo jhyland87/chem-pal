@@ -11,6 +11,7 @@ vi.mock("*.sass", () => ({}));
 vi.mock("*.less", () => ({}));
 
 // Suppress console methods
+/**/
 global.console = {
   ...global.console,
   log: vi.fn(),

@@ -1,8 +1,14 @@
 import SupplierBaseWix from "./supplierBaseWix";
 
 /**
- * SupplierBioFuranChem class that extends SupplierBaseWix and implements AsyncIterable<Product>.
- * @module SupplierBioFuranChem
+ * The SupplierBioFuranChem module is meant to perform searches and retrieve product details from the
+ * US based Biofuran Chem company website which utilizes a Wix ecommerce platform.
+ *
+ * The website is https://www.biofuranchem.com/
+ * @remarks
+ *
+ * Wix has an exposed GraphQL API which can be used to retrieve product data. The queries are
+ * mostly listed in the javascript file `CartIconController.bundle.min.js`.
  * @category Suppliers
  */
 export default class SupplierBioFuranChem

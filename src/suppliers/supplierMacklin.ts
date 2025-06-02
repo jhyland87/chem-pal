@@ -33,9 +33,8 @@ class TimeoutError extends Error {
 }
 
 /**
- * Macklin API Client
- * Handles API requests with custom authentication and request signing
- * Uses native fetch API instead of axios
+ * Macklin is a Chineese based chemical supply company. This module handles API requests with
+ * custom authentication and request signing for every call.
  *
  * @remarks
  * Macklins client side code is very different from the other platforms.

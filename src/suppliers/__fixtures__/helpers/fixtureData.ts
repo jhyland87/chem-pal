@@ -4,10 +4,21 @@
  * @returns Object with methods to load fixture data
  */
 export const fixtureData = (supplierName: string) => {
-  return {
+  const fixtureController = {
+    nextFixture: undefined as string | undefined,
     httpGetJson: async (path: string) => {
       console.log("Called fixture httpGetJson");
-      const fixtureName = path.replace(/^\//, "").replaceAll("/", "__") + ".json";
+
+      let fixtureName;
+
+      if (fixtureController.nextFixture !== undefined) {
+        // If there's a specific fixture set to be used next, use it and then reset the nextFixture
+        fixtureName = fixtureController.nextFixture;
+        fixtureController.nextFixture = undefined;
+      } else {
+        fixtureName = path.replace(/^\//, "").replaceAll("/", "__") + ".json";
+      }
+
       const fixtueFile = `../${supplierName}/${fixtureName}`;
       const result = await import(fixtueFile);
       console.log("Fixture httpGetJson is returning file found at", fixtueFile);
@@ -16,15 +27,17 @@ export const fixtureData = (supplierName: string) => {
     search: (query: string) => {
       return async (fixtureName?: string) => {
         try {
-          const fixtueFile = `../${supplierName}/search-${query}-${fixtureName}.json`;
-          console.log("looking for fixture", fixtueFile);
-          const result = await import(fixtueFile);
+          const fixtureFile = `../${supplierName}/search-${query}-${fixtureName}.json`;
+          console.log("looking for fixture", fixtureFile);
+          const result = await import(fixtureFile);
           return result.default;
         } catch (error) {
           console.error("Error in search", error);
-          return null;
+          return undefined;
         }
       };
     },
   };
+
+  return fixtureController;
 };

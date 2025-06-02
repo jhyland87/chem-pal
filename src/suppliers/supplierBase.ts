@@ -15,7 +15,6 @@ import { type JsonValue } from "type-fest";
  * The base class for all suppliers.
  * @abstract
  * @category Suppliers
- * @module SupplierBase
  * @typeParam S - the partial product
  * @typeParam T - The product type
  * @example

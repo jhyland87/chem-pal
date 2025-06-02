@@ -2,7 +2,7 @@ import SupplierBaseWix from "./supplierBaseWix";
 
 /**
  * SupplierFtfScientific class that extends SupplierBaseWix and implements AsyncIterable<Product>.
- * @module SupplierFtfScientific
+ *
  * @category Suppliers
  */
 export default class SupplierFtfScientific
