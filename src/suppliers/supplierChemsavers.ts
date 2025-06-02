@@ -33,17 +33,17 @@ export default class SupplierChemsavers
 
   protected _apiURL: string = "0ul35zwtpkx14ifhp-1.a1.typesense.net";
 
-  // Override the type of _queryResults to use our specific type
-  protected _queryResults: Array<ProductObject> = [];
+  // Override the type of queryResults to use our specific type
+  protected queryResults: Array<ProductObject> = [];
 
   // Used to keep track of how many requests have been made to the supplier.
-  protected _httpRequstCount: number = 0;
+  protected httpRequstCount: number = 0;
 
   // API key for Typesense search API
   protected _apiKey: string = "iPltuzpMbSZEuxT0fjPI0Ct9R1UBETTd";
 
   // HTTP headers used as a basis for all queries.
-  protected _headers: HeadersInit = {
+  protected headers: HeadersInit = {
     /* eslint-disable */
     accept: "application/json, text/plain, */*",
     "accept-language": "en-US,en;q=0.9",
@@ -68,7 +68,7 @@ export default class SupplierChemsavers
    * @returns Promise resolving to array of product objects or void if search fails
    * @example
    * ```typescript
-   * const products = await this._queryProducts("acid");
+   * const products = await this.queryProducts("acid");
    * if (products) {
    *   products.forEach(product => {
    *     console.log(product.title, product.price);
@@ -76,28 +76,28 @@ export default class SupplierChemsavers
    * }
    * ```
    */
-  protected async _queryProducts(
+  protected async queryProducts(
     query: string,
-    limit: number = this._limit,
+    limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
     try {
       const body = this._makeRequestBody(query);
 
-      const response: unknown = await this._httpPostJson({
+      const response: unknown = await this.httpPostJson({
         path: `/multi_search`,
         host: this._apiURL,
         params: {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           "x-typesense-api-key": this._apiKey,
         },
-        //headers: this._headers,
+        //headers: this.headers,
         body,
       });
 
-      this._logger.debug("Query response:", response);
+      this.logger.debug("Query response:", response);
 
       if (!isValidSearchResponse(response)) {
-        this._logger.warn("Bad search response:", response);
+        this.logger.warn("Bad search response:", response);
         return;
       }
 
@@ -112,15 +112,15 @@ export default class SupplierChemsavers
         return hit.document as ProductObject;
       });
 
-      this._logger.debug("Mapped response objects:", products);
+      this.logger.debug("Mapped response objects:", products);
 
-      const fuzzResults = this._fuzzyFilter<ProductObject>(query, products);
+      const fuzzResults = this.fuzzyFilter<ProductObject>(query, products);
 
-      this._logger.info("fuzzResults:", fuzzResults);
+      this.logger.info("fuzzResults:", fuzzResults);
 
-      return this._initProductBuilders(fuzzResults.slice(0, limit));
+      return this.initProductBuilders(fuzzResults.slice(0, limit));
     } catch (error) {
-      this._logger.error("Error querying products:", error);
+      this.logger.error("Error querying products:", error);
       return;
     }
   }
@@ -141,9 +141,9 @@ export default class SupplierChemsavers
    * @returns Array of ProductBuilder instances initialized with product data
    * @example
    * ```typescript
-   * const results = await this._queryProducts("sodium chloride");
+   * const results = await this.queryProducts("sodium chloride");
    * if (results) {
-   *   const builders = this._initProductBuilders(results);
+   *   const builders = this.initProductBuilders(results);
    *   // Each builder contains parsed product data
    *   for (const builder of builders) {
    *     const product = await builder.build();
@@ -152,7 +152,7 @@ export default class SupplierChemsavers
    * }
    * ```
    */
-  protected _initProductBuilders(data: ProductObject[]): ProductBuilder<Product>[] {
+  protected initProductBuilders(data: ProductObject[]): ProductBuilder<Product>[] {
     return mapDefined(data, (result) => {
       const builder = new ProductBuilder<Product>(this.baseURL);
 
@@ -181,7 +181,7 @@ export default class SupplierChemsavers
    * - Uses the 'products' collection
    *
    * @param query - The search term to look for in the product database
-   * @param limit - Maximum number of results to return (defaults to this._limit)
+   * @param limit - Maximum number of results to return (defaults to this.limit)
    * @returns An object containing the search configuration for the Typesense API
    */
   protected _makeRequestBody(query: string, limit: number = 100): object {
@@ -208,16 +208,16 @@ export default class SupplierChemsavers
    * @returns Promise resolving to a partial Product object or void if invalid
    * @example
    * ```typescript
-   * const products = await this._queryProducts("acid");
+   * const products = await this.queryProducts("acid");
    * if (products) {
-   *   const product = await this._getProductData(products[0]);
+   *   const product = await this.getProductData(products[0]);
    *   if (product) {
    *     console.log(product.title, product.price, product.quantity, product.uom);
    *   }
    * }
    * ```
    */
-  protected async _getProductData(
+  protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     return product;
@@ -228,7 +228,7 @@ export default class SupplierChemsavers
    * @param data - Product object from search response
    * @returns - The title of the product
    */
-  protected _titleSelector(data: ProductObject): string {
+  protected titleSelector(data: ProductObject): string {
     return data.name;
   }
 }

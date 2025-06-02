@@ -57,19 +57,19 @@ export default class SupplierCarolina
   public readonly country: CountryCode = "US";
 
   /** Cached search results from the last query */
-  protected _queryResults: Array<CarolinaSearchResult> = [];
+  protected queryResults: Array<CarolinaSearchResult> = [];
 
   /** Maximum number of HTTP requests allowed per query */
-  protected _httpRequestHardLimit: number = 50;
+  protected httpRequestHardLimit: number = 50;
 
   /** Counter for HTTP requests made during current query */
-  protected _httpRequstCount: number = 0;
+  protected httpRequstCount: number = 0;
 
   /** Number of requests to process in parallel */
-  protected _httpRequestBatchSize: number = 5;
+  protected httpRequestBatchSize: number = 5;
 
   /** Default headers sent with every request */
-  protected _headers: HeadersInit = {
+  protected headers: HeadersInit = {
     /* eslint-disable */
     accept:
       "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
@@ -115,28 +115,28 @@ export default class SupplierCarolina
    * Executes a product search query and stores results
    * Fetches products matching the current search query and updates internal results cache
    */
-  protected async _queryProducts(
+  protected async queryProducts(
     query: string,
-    limit: number = this._limit,
+    limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
     const params = this._makeQueryParams(query);
 
-    const response: unknown = await this._httpGetJson({
+    const response: unknown = await this.httpGetJson({
       path: "/browse/product-search-results",
       params,
     });
 
     if (!isResponseOk(response)) {
-      this._logger.warn("Response status:", response);
+      this.logger.warn("Response status:", response);
       return;
     }
 
     const results = await this._extractSearchResults(response);
 
-    const fuzzResults = this._fuzzyFilter<CarolinaSearchResult>(query, results);
-    this._logger.info("fuzzResults:", fuzzResults);
+    const fuzzResults = this.fuzzyFilter<CarolinaSearchResult>(query, results);
+    this.logger.info("fuzzResults:", fuzzResults);
 
-    return this._initProductBuilders(fuzzResults.slice(0, limit));
+    return this.initProductBuilders(fuzzResults.slice(0, limit));
   }
 
   /**
@@ -155,9 +155,9 @@ export default class SupplierCarolina
    * @returns Array of ProductBuilder instances initialized with product data
    * @example
    * ```typescript
-   * const results = await this._queryProducts("sodium chloride");
+   * const results = await this.queryProducts("sodium chloride");
    * if (results) {
-   *   const builders = this._initProductBuilders(results);
+   *   const builders = this.initProductBuilders(results);
    *   // Each builder contains parsed product data
    *   for (const builder of builders) {
    *     const product = await builder.build();
@@ -166,7 +166,7 @@ export default class SupplierCarolina
    * }
    * ```
    */
-  protected _initProductBuilders(data: CarolinaSearchResult[]): ProductBuilder<Product>[] {
+  protected initProductBuilders(data: CarolinaSearchResult[]): ProductBuilder<Product>[] {
     return data.map((result) => {
       const builder = new ProductBuilder(this.baseURL)
         .setBasicInfo(result.productName, result.productUrl, this.supplierName)
@@ -189,19 +189,19 @@ export default class SupplierCarolina
   protected _extractSearchResults(response: unknown): CarolinaSearchResult[] {
     try {
       if (!isValidSearchResponse(response)) {
-        this._logger.warn("Invalid response structure");
+        this.logger.warn("Invalid response structure");
         return [];
       }
 
       const contentFolder = response.contents.ContentFolderZone[0];
       if (!contentFolder?.childRules?.[0]?.ContentRuleZone) {
-        this._logger.warn("No content rules found");
+        this.logger.warn("No content rules found");
         return [];
       }
 
       const pageContent = contentFolder.childRules[0].ContentRuleZone[0];
       if (!pageContent?.contents?.MainContent) {
-        this._logger.warn("No MainContent found");
+        this.logger.warn("No MainContent found");
         return [];
       }
 
@@ -213,7 +213,7 @@ export default class SupplierCarolina
       );
 
       if (!pluginSlotContainer?.contents?.ContentFolderZone) {
-        this._logger.warn("No Products - Search folder found");
+        this.logger.warn("No Products - Search folder found");
         return [];
       }
 
@@ -222,7 +222,7 @@ export default class SupplierCarolina
       );
 
       if (!productsFolder?.childRules?.[0]?.ContentRuleZone) {
-        this._logger.warn("No content rules in Products folder");
+        this.logger.warn("No content rules in Products folder");
         return [];
       }
 
@@ -236,13 +236,13 @@ export default class SupplierCarolina
       );
 
       if (!resultsContainer) {
-        this._logger.warn("No results container found");
+        this.logger.warn("No results container found");
         return [];
       }
 
       return resultsContainer.results.filter(isSearchResultItem);
     } catch (error) {
-      this._logger.error("Error extracting search results:", error);
+      this.logger.error("Error extracting search results:", error);
       return [];
     }
   }
@@ -254,7 +254,7 @@ export default class SupplierCarolina
    * @returns Product data from response or null if invalid/not found
    * @example
    * ```typescript
-   * const response = await this._httpGetJson({
+   * const response = await this.httpGetJson({
    *   path: `/api/rest/cb/product/product-quick-view/${productId}`
    * });
    * const productData = this._extractATGResponse(response);
@@ -277,7 +277,7 @@ export default class SupplierCarolina
 
       return atgResponse.response.response;
     } catch (error) {
-      this._logger.warn("Error extracting ATG response:", error);
+      this.logger.warn("Error extracting ATG response:", error);
       return null;
     }
   }
@@ -289,25 +289,25 @@ export default class SupplierCarolina
    * @returns Promise resolving to a partial Product object or void if invalid
    * @example
    * ```typescript
-   * const searchResults = await this._queryProducts("acid");
+   * const searchResults = await this.queryProducts("acid");
    * if (searchResults) {
-   *   const product = await this._getProductData(searchResults[0]);
+   *   const product = await this.getProductData(searchResults[0]);
    *   if (product) {
    *     console.log(product.title, product.price);
    *   }
    * }
    * ```
    */
-  protected async _getProductData(
+  protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     try {
       if (product instanceof ProductBuilder === false) {
-        this._logger.warn("Invalid product object - Expected ProductBuilder instance:", product);
+        this.logger.warn("Invalid product object - Expected ProductBuilder instance:", product);
         return;
       }
 
-      const productResponse = await this._httpGetJson({
+      const productResponse = await this.httpGetJson({
         path: product.get("url"),
         params: {
           format: "json",
@@ -316,7 +316,7 @@ export default class SupplierCarolina
       });
 
       if (!isResponseOk(productResponse)) {
-        this._logger.warn("Response status:", productResponse);
+        this.logger.warn("Response status:", productResponse);
         return;
       }
 
@@ -327,14 +327,14 @@ export default class SupplierCarolina
       console.log("familyVariyantDisplayName:", atgResponse?.familyVariyantDisplayName);
 
       if (!atgResponse) {
-        this._logger.warn("No ATG response found");
+        this.logger.warn("No ATG response found");
         return;
       }
-      this._logger.debug("atgResponse:", atgResponse);
+      this.logger.debug("atgResponse:", atgResponse);
 
       const productPrice = parsePrice(atgResponse.dataLayer.productPrice[0]);
       if (!productPrice) {
-        this._logger.warn("No product price found");
+        this.logger.warn("No product price found");
         return;
       }
 
@@ -347,7 +347,7 @@ export default class SupplierCarolina
       ]);
 
       if (!isQuantityObject(quantity)) {
-        this._logger.warn("No quantity object found");
+        this.logger.warn("No quantity object found");
         return;
       }
 
@@ -377,7 +377,7 @@ export default class SupplierCarolina
 
       return product;
     } catch (error) {
-      this._logger.error("Error getting product data:", error);
+      this.logger.error("Error getting product data:", error);
       return;
     }
   }
@@ -387,7 +387,7 @@ export default class SupplierCarolina
    * @param data - Product object from search response
    * @returns - The title of the product
    */
-  protected _titleSelector(data: CarolinaSearchResult): string {
+  protected titleSelector(data: CarolinaSearchResult): string {
     return data.productName;
   }
 }

@@ -77,33 +77,33 @@ export default abstract class SupplierBaseWoocommerce
    *
    * @example
    * ```typescript
-   * const products = await supplier._queryProducts("sodium chloride");
+   * const products = await supplier.queryProducts("sodium chloride");
    * if (products) {
    *   console.log(`Found ${products.length} matching products`);
    * }
    * ```
    * https://carolinachemical.com/wp-json/wc/store/v1/products?search=a&page=1&per_page=100
    */
-  protected async _queryProducts(
+  protected async queryProducts(
     query: string,
-    limit: number = this._limit,
+    limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    const searchRequest = await this._httpGetJson({
+    const searchRequest = await this.httpGetJson({
       path: `/wp-json/wc/store/v1/products`,
       // eslint-disable-next-line @typescript-eslint/naming-convention
       params: { search: query, per_page: 100 },
     });
 
     if (!isSearchResponse(searchRequest)) {
-      this._logger.error("Invalid search response:", searchRequest);
+      this.logger.error("Invalid search response:", searchRequest);
       return;
     }
 
     const results: WooCommerceSearchResponseItem[] = searchRequest;
-    const fuzzFiltered = this._fuzzyFilter<WooCommerceSearchResponseItem>(query, results);
-    this._logger.info("fuzzFiltered:", fuzzFiltered);
+    const fuzzFiltered = this.fuzzyFilter<WooCommerceSearchResponseItem>(query, results);
+    this.logger.info("fuzzFiltered:", fuzzFiltered);
 
-    return this._initProductBuilders(fuzzFiltered.slice(0, limit));
+    return this.initProductBuilders(fuzzFiltered.slice(0, limit));
   }
 
   /**
@@ -111,7 +111,7 @@ export default abstract class SupplierBaseWoocommerce
    * @param data - Product object from search response
    * @returns Title of the product
    */
-  protected _titleSelector(data: WooCommerceSearchResponseItem): string {
+  protected titleSelector(data: WooCommerceSearchResponseItem): string {
     return data.name;
   }
 
@@ -129,9 +129,9 @@ export default abstract class SupplierBaseWoocommerce
    * @returns Array of ProductBuilder instances initialized with WooCommerce product data
    * @example
    * ```typescript
-   * const results = await this._queryProducts("sodium chloride");
+   * const results = await this.queryProducts("sodium chloride");
    * if (results) {
-   *   const builders = this._initProductBuilders(results);
+   *   const builders = this.initProductBuilders(results);
    *   // Each builder contains parsed product data from WooCommerce
    *   for (const builder of builders) {
    *     const product = await builder.build();
@@ -140,7 +140,7 @@ export default abstract class SupplierBaseWoocommerce
    * }
    * ```
    */
-  protected _initProductBuilders(
+  protected initProductBuilders(
     results: WooCommerceSearchResponseItem[],
   ): ProductBuilder<Product>[] {
     return results.map((item) => {
@@ -196,7 +196,7 @@ export default abstract class SupplierBaseWoocommerce
         builder.setQuantity(quantity.quantity, quantity.uom);
       }
 
-      this._logger.debug("initProductBuilder product:", builder.dump());
+      this.logger.debug("initProductBuilder product:", builder.dump());
 
       return builder;
     });
@@ -217,19 +217,19 @@ export default abstract class SupplierBaseWoocommerce
    *
    * @example
    * ```typescript
-   * const searchItem = await supplier._queryProducts("sodium");
+   * const searchItem = await supplier.queryProducts("sodium");
    * if (searchItem?.[0]) {
-   *   const product = await supplier._getProductData(searchItem[0]);
+   *   const product = await supplier.getProductData(searchItem[0]);
    *   if (product) {
    *     console.log("Transformed product:", product);
    *   }
    * }
    * ```
    */
-  protected async _getProductData(
+  protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    this._logger.debug("getProductData for build item:", product.dump());
+    this.logger.debug("getProductData for build item:", product.dump());
 
     return product;
   }

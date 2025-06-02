@@ -287,7 +287,7 @@ export function isSearchResultItem(result: unknown): result is CarolinaSearchRes
  * @returns Type predicate indicating if object is a valid ProductResponse
  * @example
  * ```typescript
- * const response = await this._httpGetJson({
+ * const response = await this.httpGetJson({
  *   path: `/api/rest/cb/product/product-details/${productId}`
  * });
  * if (isValidProductResponse(response)) {
@@ -320,7 +320,7 @@ export function isValidProductResponse(obj: unknown): obj is CarolinaProductResp
  * @returns Type predicate indicating if object is a valid ATGResponse
  * @example
  * ```typescript
- * const response = await this._httpGetJson({
+ * const response = await this.httpGetJson({
  *   path: `/api/rest/cb/product/product-quick-view/${productId}`
  * });
  * if (isATGResponse(response)) {

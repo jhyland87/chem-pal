@@ -63,7 +63,7 @@ export class ProductBuilder<T extends Product> {
   private baseURL: string;
 
   /** The logger for the product builder */
-  private _logger: Logger;
+  private logger: Logger;
 
   /**
    * Creates a new ProductBuilder instance.
@@ -75,7 +75,7 @@ export class ProductBuilder<T extends Product> {
    */
   constructor(baseURL: string) {
     this.baseURL = baseURL;
-    this._logger = new Logger("ProductBuilder");
+    this.logger = new Logger("ProductBuilder");
   }
 
   /**
@@ -310,7 +310,7 @@ export class ProductBuilder<T extends Product> {
       const [qty, unit] = quantity.split(/\s(.+)/s);
 
       if (Number.isNaN(Number(qty))) {
-        this._logger.warn(`Unable to parse quantity from string: ${quantity}`);
+        this.logger.warn(`Unable to parse quantity from string: ${quantity}`);
         return this;
       }
       this._product.quantity = Number(qty);
@@ -325,7 +325,7 @@ export class ProductBuilder<T extends Product> {
       return this;
     }
 
-    this._logger.warn(
+    this.logger.warn(
       `Unknown quantity type: ${typeof quantity} - Expected number, string, or QuantityObject`,
     );
     return this;
@@ -344,7 +344,7 @@ export class ProductBuilder<T extends Product> {
       return this;
     }
 
-    this._logger.warn(`Unknown UOM: ${uom}`);
+    this.logger.warn(`Unknown UOM: ${uom}`);
     return this;
   }
 
@@ -411,7 +411,7 @@ export class ProductBuilder<T extends Product> {
    */
   setCAS(cas: string): ProductBuilder<T> {
     if (typeof cas !== "string") {
-      this._logger.warn(`setCAS| Invalid CAS number: ${cas}`);
+      this.logger.warn(`setCAS| Invalid CAS number: ${cas}`);
       return this;
     }
 
@@ -563,7 +563,7 @@ export class ProductBuilder<T extends Product> {
     const avail = this.determineAvailability(availability);
 
     if (typeof avail === "undefined") {
-      this._logger.warn(`Unknown availability: ${availability}`);
+      this.logger.warn(`Unknown availability: ${availability}`);
       return this;
     }
 
@@ -685,11 +685,11 @@ export class ProductBuilder<T extends Product> {
    * @returns The absolute URL as a string
    * @example
    * ```typescript
-   * const url = this._href('/products/123');
+   * const url = this.href('/products/123');
    * // Returns: 'https://example.com/products/123'
    * ```
    */
-  private _href(path: string | URL): string {
+  private href(path: string | URL): string {
     const urlObj = new URL(path, this.baseURL);
     return urlObj.toString();
   }
@@ -759,7 +759,7 @@ export class ProductBuilder<T extends Product> {
         }
 
         if (variant.url) {
-          variant.url = this._href(variant.url);
+          variant.url = this.href(variant.url);
         }
       }
     }
@@ -769,7 +769,7 @@ export class ProductBuilder<T extends Product> {
       return;
     }
 
-    this._product.url = this._href(this._product.url);
+    this._product.url = this.href(this._product.url);
     console.log("Built product:", this._product);
     return this._product;
   }

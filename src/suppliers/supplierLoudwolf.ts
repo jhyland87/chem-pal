@@ -39,23 +39,23 @@ export default class SupplierLoudwolf
   public readonly country: CountryCode = "US";
 
   // Cached search results from the last query execution
-  protected _queryResults: Array<Partial<Product>> = [];
+  protected queryResults: Array<Partial<Product>> = [];
 
   // Maximum number of HTTP requests allowed per search query
   // Used to prevent excessive requests to supplier
-  protected _httpRequestHardLimit: number = 50;
+  protected httpRequestHardLimit: number = 50;
 
   // Counter for HTTP requests made during current query execution
-  protected _httpRequstCount: number = 0;
+  protected httpRequstCount: number = 0;
 
   // Number of requests to process in parallel when fetching product details
-  protected _httpRequestBatchSize: number = 5;
+  protected httpRequestBatchSize: number = 5;
 
   /**
    * Sets up the supplier by setting the display to list.
    * @returns A promise that resolves when the setup is complete.
    */
-  protected async _setup(): Promise<void> {}
+  protected async setup(): Promise<void> {}
 
   /**
    * Queries Loudwolf products based on a search string.
@@ -69,21 +69,21 @@ export default class SupplierLoudwolf
    * @example
    * ```typescript
    * const supplier = new SupplierLoudwolf("acetone", 10, new AbortController());
-   * const results = await supplier._queryProducts("acetone");
+   * const results = await supplier.queryProducts("acetone");
    * if (results) {
    *   console.log(`Found ${results.length} products`);
    *   console.log("First product:", results[0].title);
    * }
    * ```
    */
-  protected async _queryProducts(
+  protected async queryProducts(
     query: string,
-    limit: number = this._limit,
+    limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    this._logger.log("queryProducts:", { query, limit });
+    this.logger.log("queryProducts:", { query, limit });
     localStorage.setItem("display", "list");
 
-    const searchResponse = await this._httpGetHtml({
+    const searchResponse = await this.httpGetHtml({
       path: "/storefront/index.php",
       params: {
         search: encodeURIComponent(query),
@@ -93,16 +93,16 @@ export default class SupplierLoudwolf
     });
 
     if (!searchResponse) {
-      this._logger.error("No search response");
+      this.logger.error("No search response");
       return;
     }
 
-    this._logger.log("searchResponse:", searchResponse);
+    this.logger.log("searchResponse:", searchResponse);
 
     const $fuzzResults = this._fuzzHtmlResponse(query, searchResponse);
-    this._logger.info("fuzzResults:", Array.from($fuzzResults));
+    this.logger.info("fuzzResults:", Array.from($fuzzResults));
 
-    return this._initProductBuilders($fuzzResults.slice(0, limit));
+    return this.initProductBuilders($fuzzResults.slice(0, limit));
 
     /*
     return $elements
@@ -111,7 +111,7 @@ export default class SupplierLoudwolf
         const href = $(element).find("div.caption h4 a").attr("href");
 
         if (href === undefined) {
-          this._logger.error("No URL for product");
+          this.logger.error("No URL for product");
           return;
         }
 
@@ -120,7 +120,7 @@ export default class SupplierLoudwolf
         const id = url.searchParams.get("product_id");
 
         if (id === null) {
-          this._logger.error("No ID for product");
+          this.logger.error("No ID for product");
           return;
         }
 
@@ -147,7 +147,7 @@ export default class SupplierLoudwolf
    *
    * @example
    * ```typescript
-   * const html = await this._httpGetHtml({ path: "/search", params: { q: "acetone" } });
+   * const html = await this.httpGetHtml({ path: "/search", params: { q: "acetone" } });
    * if (html) {
    *   const matchingElements = this._fuzzHtmlResponse("acetone", html);
    *   console.log(`Found ${matchingElements.length} matching products`);
@@ -167,8 +167,8 @@ export default class SupplierLoudwolf
     // Select all products by a known selector path
     const products = parsedHTML.querySelectorAll("div.product-layout.product-list");
 
-    // Do the fuzzy filtering using the element found when using this._titleSelector()
-    return this._fuzzyFilter<Element>(query, Array.from(products));
+    // Do the fuzzy filtering using the element found when using this.titleSelector()
+    return this.fuzzyFilter<Element>(query, Array.from(products));
   }
 
   /**
@@ -186,9 +186,9 @@ export default class SupplierLoudwolf
    * @returns Array of ProductBuilder instances initialized with product data
    * @example
    * ```typescript
-   * const results = await this._queryProducts("sodium chloride");
+   * const results = await this.queryProducts("sodium chloride");
    * if (results) {
-   *   const builders = this._initProductBuilders(results);
+   *   const builders = this.initProductBuilders(results);
    *   // Each builder contains parsed product data from HTML
    *   for (const builder of builders) {
    *     const product = await builder.build();
@@ -197,7 +197,7 @@ export default class SupplierLoudwolf
    * }
    * ```
    */
-  protected _initProductBuilders($elements: Element[]): ProductBuilder<Product>[] {
+  protected initProductBuilders($elements: Element[]): ProductBuilder<Product>[] {
     return mapDefined($elements, (element: Element) => {
       const builder = new ProductBuilder<Product>(this.baseURL);
 
@@ -206,14 +206,14 @@ export default class SupplierLoudwolf
       const price = parsePrice(priceElem?.textContent?.trim() || "");
 
       if (price === undefined) {
-        this._logger.error("No price for product", element);
+        this.logger.error("No price for product", element);
         return;
       }
 
       const href = element.querySelector("div.caption h4 a")?.getAttribute("href");
 
       if (!href) {
-        this._logger.error("No URL for product");
+        this.logger.error("No URL for product");
         return;
       }
 
@@ -222,7 +222,7 @@ export default class SupplierLoudwolf
       const id = url.searchParams.get("product_id");
 
       if (id === null) {
-        this._logger.error("No ID for product");
+        this.logger.error("No ID for product");
         return;
       }
       const title = element.querySelector("div.caption h4 a")?.textContent?.trim() || "";
@@ -252,7 +252,7 @@ export default class SupplierLoudwolf
    *   url: "/product/123",
    *   price: 19.99
    * };
-   * const fullProduct = await supplier._getProductData(partialProduct);
+   * const fullProduct = await supplier.getProductData(partialProduct);
    * if (fullProduct) {
    *   console.log("Complete product:", {
    *     title: fullProduct.title,
@@ -263,26 +263,26 @@ export default class SupplierLoudwolf
    * }
    * ```
    */
-  protected async _getProductData(
+  protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    this._logger.debug("Querying data for partialproduct:", product);
+    this.logger.debug("Querying data for partialproduct:", product);
 
     if (typeof product === "undefined") {
-      this._logger.error("No products to get data for");
+      this.logger.error("No products to get data for");
       return;
     }
 
-    const productResponse = await this._httpGetHtml({
+    const productResponse = await this.httpGetHtml({
       path: product.get("url"),
     });
 
     if (!productResponse) {
-      this._logger.warn("No product response");
+      this.logger.warn("No product response");
       return;
     }
 
-    this._logger.debug("productResponse:", productResponse);
+    this.logger.debug("productResponse:", productResponse);
 
     const parser = new DOMParser();
     const parsedHTML = parser.parseFromString(productResponse, "text/html");
@@ -324,16 +324,16 @@ export default class SupplierLoudwolf
    * ```typescript
    * const element = document.querySelector(".product-layout");
    * if (element) {
-   *   const title = this._titleSelector(element);
+   *   const title = this.titleSelector(element);
    *   console.log("Product title:", title);
    *   // Output: "Sodium Chloride, ACS Grade, 500g"
    * }
    * ```
    */
-  protected _titleSelector(data: Element): string {
+  protected titleSelector(data: Element): string {
     const title = data.querySelector("div.caption h4 a");
     if (title === null) {
-      this._logger.error("No title for product");
+      this.logger.error("No title for product");
       return "";
     }
     return title.textContent?.trim() || "";

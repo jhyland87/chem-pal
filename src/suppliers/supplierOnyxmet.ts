@@ -40,23 +40,23 @@ export default class SupplierOnyxmet
   public readonly country: CountryCode = "CA";
 
   // Cached search results from the last query execution
-  protected _queryResults: OnyxMetSearchResultResponse[] = [];
+  protected queryResults: OnyxMetSearchResultResponse[] = [];
 
   // Maximum number of HTTP requests allowed per search query
   // Used to prevent excessive requests to supplier
-  protected _httpRequestHardLimit: number = 50;
+  protected httpRequestHardLimit: number = 50;
 
   // Counter for HTTP requests made during current query execution
-  protected _httpRequstCount: number = 0;
+  protected httpRequstCount: number = 0;
 
   // Number of requests to process in parallel when fetching product details
-  protected _httpRequestBatchSize: number = 5;
+  protected httpRequestBatchSize: number = 5;
 
   /**
    * Sets up the supplier by setting the display to list.
    * @returns A promise that resolves when the setup is complete.
    */
-  protected async _setup(): Promise<void> {
+  protected async setup(): Promise<void> {
     localStorage.setItem("display", "list");
   }
 
@@ -72,20 +72,20 @@ export default class SupplierOnyxmet
    * @example
    * ```typescript
    * const supplier = new SupplierOnyxmet("acetone", 10, new AbortController());
-   * const results = await supplier._queryProducts("acetone");
+   * const results = await supplier.queryProducts("acetone");
    * if (results) {
    *   console.log(`Found ${results.length} products`);
    *   console.log("First product:", results[0].title);
    * }
    * ```
    */
-  protected async _queryProducts(
+  protected async queryProducts(
     query: string,
-    limit: number = this._limit,
+    limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    this._logger.log("query:", query);
+    this.logger.log("query:", query);
 
-    const searchResponse = await this._httpGetHtml({
+    const searchResponse = await this.httpGetHtml({
       path: "index.php",
       params: {
         term: query,
@@ -94,17 +94,17 @@ export default class SupplierOnyxmet
     });
 
     if (!searchResponse) {
-      this._logger.error("No search response");
+      this.logger.error("No search response");
       return;
     }
 
     const data = JSON.parse(searchResponse);
 
-    this._logger.debug("all search results:", data);
+    this.logger.debug("all search results:", data);
 
-    const fuzzResults = this._fuzzyFilter<OnyxMetSearchResultItem>(query, data);
+    const fuzzResults = this.fuzzyFilter<OnyxMetSearchResultItem>(query, data);
 
-    return this._initProductBuilders(fuzzResults.splice(0, limit));
+    return this.initProductBuilders(fuzzResults.splice(0, limit));
   }
 
   /**
@@ -123,9 +123,9 @@ export default class SupplierOnyxmet
    * @returns Array of ProductBuilder instances initialized with product data
    * @example
    * ```typescript
-   * const results = await this._queryProducts("sodium chloride");
+   * const results = await this.queryProducts("sodium chloride");
    * if (results) {
-   *   const builders = this._initProductBuilders(results);
+   *   const builders = this.initProductBuilders(results);
    *   // Each builder contains parsed product data
    *   for (const builder of builders) {
    *     const product = await builder.build();
@@ -134,10 +134,10 @@ export default class SupplierOnyxmet
    * }
    * ```
    */
-  protected _initProductBuilders(data: OnyxMetSearchResultItem[]): ProductBuilder<Product>[] {
+  protected initProductBuilders(data: OnyxMetSearchResultItem[]): ProductBuilder<Product>[] {
     return mapDefined(data, (item) => {
       if (!isSearchResultItem(item)) {
-        this._logger.warn("Invalid search result item:", item);
+        this.logger.warn("Invalid search result item:", item);
         return;
       }
 
@@ -164,7 +164,7 @@ export default class SupplierOnyxmet
    *   url: "/product/123",
    *   price: 19.99
    * };
-   * const fullProduct = await supplier._getProductData(partialProduct);
+   * const fullProduct = await supplier.getProductData(partialProduct);
    * if (fullProduct) {
    *   console.log("Complete product:", {
    *     title: fullProduct.title,
@@ -175,28 +175,28 @@ export default class SupplierOnyxmet
    * }
    * ```
    */
-  protected async _getProductData(
+  protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    this._logger.debug("Querying data for partialproduct:", product);
+    this.logger.debug("Querying data for partialproduct:", product);
 
-    const productResponse = await this._httpGetHtml({
+    const productResponse = await this.httpGetHtml({
       path: product.get("url"),
     });
 
     if (!productResponse) {
-      this._logger.warn("No product response");
+      this.logger.warn("No product response");
       return;
     }
 
-    this._logger.debug("productResponse:", productResponse);
+    this.logger.debug("productResponse:", productResponse);
 
     const parser = new DOMParser();
     const parsedHTML = parser.parseFromString(productResponse, "text/html");
     const content = parsedHTML.querySelector("#content");
 
     if (!content) {
-      this._logger.warn("No content for product");
+      this.logger.warn("No content for product");
       return;
     }
 
@@ -224,13 +224,13 @@ export default class SupplierOnyxmet
     const price = parsePrice(productPrice);
 
     if (!price) {
-      this._logger.warn("No price for product");
+      this.logger.warn("No price for product");
       return;
     }
     const quantity = parseQuantity(title);
 
     if (!quantity) {
-      this._logger.warn("No quantity for product");
+      this.logger.warn("No quantity for product");
       return;
     }
 
@@ -258,12 +258,12 @@ export default class SupplierOnyxmet
    *   href: "/products/nacl"
    * };
    *
-   * const title = this._titleSelector(searchResult);
+   * const title = this.titleSelector(searchResult);
    * console.log("Product title:", title);
    * // Output: "Sodium Chloride, ACS Grade"
    * ```
    */
-  protected _titleSelector(data: OnyxMetSearchResultItem): string {
+  protected titleSelector(data: OnyxMetSearchResultItem): string {
     return data.label;
   }
 }

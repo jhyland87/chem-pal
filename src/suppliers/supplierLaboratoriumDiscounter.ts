@@ -67,14 +67,14 @@ export default class SupplierLaboratoriumDiscounter
   // The country code of the supplier.
   public readonly country: CountryCode = "NL";
 
-  // Override the type of _queryResults to use our specific type
-  protected _queryResults: Array<LaboratoriumDiscounterProductObject> = [];
+  // Override the type of queryResults to use our specific type
+  protected queryResults: Array<LaboratoriumDiscounterProductObject> = [];
 
   // Used to keep track of how many requests have been made to the supplier.
-  protected _httpRequstCount: number = 0;
+  protected httpRequstCount: number = 0;
 
   // HTTP headers used as a basis for all queries.
-  protected _headers: HeadersInit = {
+  protected headers: HeadersInit = {
     /* eslint-disable */
     accept:
       "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
@@ -106,13 +106,13 @@ export default class SupplierLaboratoriumDiscounter
    * // Returns: { limit: "20", format: "json" }
    *
    * // Use in search request
-   * const response = await this._httpGetJson({
+   * const response = await this.httpGetJson({
    *   path: "/en/search/chemical",
    *   params: this._makeQueryParams(20)
    * });
    * ```
    */
-  protected _makeQueryParams(limit: number = this._limit): LaboratoriumDiscounterSearchParams {
+  protected _makeQueryParams(limit: number = this.limit): LaboratoriumDiscounterSearchParams {
     return {
       limit: limit.toString(),
       format: "json",
@@ -127,7 +127,7 @@ export default class SupplierLaboratoriumDiscounter
    * @example
    * ```typescript
    * // Search for sodium chloride with a limit of 10 results
-   * const products = await this._queryProducts("sodium chloride", 10);
+   * const products = await this.queryProducts("sodium chloride", 10);
    * if (products) {
    *   console.log(`Found ${products.length} products`);
    *   for (const product of products) {
@@ -139,32 +139,32 @@ export default class SupplierLaboratoriumDiscounter
    * }
    * ```
    */
-  protected async _queryProducts(
+  protected async queryProducts(
     query: string,
-    limit: number = this._limit,
+    limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
     const params = this._makeQueryParams();
     if (!isValidSearchParams(params)) {
-      this._logger.warn("Invalid search parameters:", params);
+      this.logger.warn("Invalid search parameters:", params);
       return;
     }
 
-    const response: unknown = await this._httpGetJson({
+    const response: unknown = await this.httpGetJson({
       path: `/en/search/${urlencode(query)}`,
       params,
     });
 
     if (!isSearchResponseOk(response)) {
-      this._logger.warn("Bad search response:", response);
+      this.logger.warn("Bad search response:", response);
       return;
     }
 
     const rawSearchResults = Object.values(response.collection.products);
 
-    const fuzzFiltered = this._fuzzyFilter<SearchResponseProduct>(query, rawSearchResults);
-    this._logger.info("fuzzFiltered:", fuzzFiltered);
+    const fuzzFiltered = this.fuzzyFilter<SearchResponseProduct>(query, rawSearchResults);
+    this.logger.info("fuzzFiltered:", fuzzFiltered);
 
-    return this._initProductBuilders(fuzzFiltered.slice(0, limit));
+    return this.initProductBuilders(fuzzFiltered.slice(0, limit));
   }
 
   /**
@@ -172,7 +172,7 @@ export default class SupplierLaboratoriumDiscounter
    * @param data - Product object from search response
    * @returns Title of the product
    */
-  protected _titleSelector(data: SearchResponseProduct): string {
+  protected titleSelector(data: SearchResponseProduct): string {
     return data.title;
   }
 
@@ -191,9 +191,9 @@ export default class SupplierLaboratoriumDiscounter
    * @returns Array of ProductBuilder instances initialized with product data
    * @example
    * ```typescript
-   * const results = await this._queryProducts("sodium chloride");
+   * const results = await this.queryProducts("sodium chloride");
    * if (results) {
-   *   const builders = this._initProductBuilders(results);
+   *   const builders = this.initProductBuilders(results);
    *   // Each builder contains parsed product data
    *   for (const builder of builders) {
    *     const product = await builder.build();
@@ -208,7 +208,7 @@ export default class SupplierLaboratoriumDiscounter
    * }
    * ```
    */
-  protected _initProductBuilders(
+  protected initProductBuilders(
     data: LaboratoriumDiscounterSearchResponseProduct[],
   ): ProductBuilder<Product>[] {
     return mapDefined(data, (product) => {
@@ -235,9 +235,9 @@ export default class SupplierLaboratoriumDiscounter
    * @returns Promise resolving to a partial Product object or void if invalid
    * @example
    * ```typescript
-   * const products = await this._queryProducts("acid");
+   * const products = await this.queryProducts("acid");
    * if (products) {
-   *   const product = await this._getProductData(products[0]);
+   *   const product = await this.getProductData(products[0]);
    *   if (product) {
    *     const builtProduct = await product.build();
    *     console.log({
@@ -251,16 +251,16 @@ export default class SupplierLaboratoriumDiscounter
    * }
    * ```
    */
-  protected async _getProductData(
+  protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     try {
       if (product instanceof ProductBuilder === false) {
-        this._logger.warn("Invalid product object - Expected ProductBuilder instance:", product);
+        this.logger.warn("Invalid product object - Expected ProductBuilder instance:", product);
         return;
       }
 
-      const productResponse = await this._httpGetJson({
+      const productResponse = await this.httpGetJson({
         path: product.get("url"),
         params: {
           format: "json",
@@ -268,7 +268,7 @@ export default class SupplierLaboratoriumDiscounter
       });
 
       if (!productResponse || !isProductObject(productResponse)) {
-        this._logger.warn("Invalid product data - did not pass typeguard:", productResponse);
+        this.logger.warn("Invalid product data - did not pass typeguard:", productResponse);
         return;
       }
 
@@ -301,7 +301,7 @@ export default class SupplierLaboratoriumDiscounter
 
       return product;
     } catch (error) {
-      this._logger.error("Error processing product data:", error);
+      this.logger.error("Error processing product data:", error);
       return;
     }
   }

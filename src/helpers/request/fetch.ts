@@ -2,7 +2,7 @@
  * Response type that extends the standard Response with additional properties
  * for data and request hash tracking.
  */
-export type FetchDecoratorResponse = Response & { data: unknown; _requestHash: string };
+export type FetchDecoratorResponse = Response & { data: unknown; requestHash: string };
 
 /**
  * Generates a simple hash from a string using the djb2 algorithm.
@@ -92,7 +92,7 @@ export async function generateRequestHash(
  * // Basic GET request
  * const response = await fetchDecorator("https://api.example.com/data");
  * console.log(response.data); // Parsed response data
- * console.log(response._requestHash); // Unique request hash
+ * console.log(response.requestHash); // Unique request hash
  *
  * // POST request with JSON body
  * const response = await fetchDecorator("https://api.example.com/data", {
@@ -159,7 +159,7 @@ export async function fetchDecorator(
   // Add our custom properties
   Object.defineProperties(enhancedResponse, {
     data: { value: data },
-    _requestHash: { value: requestHash },
+    requestHash: { value: requestHash },
   });
 
   return enhancedResponse as FetchDecoratorResponse;

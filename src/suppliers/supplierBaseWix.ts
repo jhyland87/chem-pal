@@ -26,7 +26,7 @@ export default abstract class SupplierBaseWix
   protected _accessToken: string = "";
 
   /** Default values for products */
-  protected _productDefaults = {
+  protected productDefaults = {
     uom: "ea",
     quantity: 1,
     currencyCode: "USD",
@@ -39,11 +39,11 @@ export default abstract class SupplierBaseWix
    * @returns Promise that resolves when the access token is set
    * @example
    * ```typescript
-   * await this._setup();
+   * await this.setup();
    * // Now the access token is set and API requests can be made
    * ```
    */
-  protected async _setup(): Promise<void> {
+  protected async setup(): Promise<void> {
     const accessTokenResponse = await fetch(`${this.baseURL}/_api/v1/access-tokens`, {
       headers: {
         /* eslint-disable */
@@ -61,8 +61,8 @@ export default abstract class SupplierBaseWix
 
     const data = await accessTokenResponse.json();
     this._accessToken = data.apps["1380b703-ce81-ff05-f115-39571d94dfcd"].instance;
-    this._headers = {
-      ...this._headers,
+    this.headers = {
+      ...this.headers,
       // eslint-disable-next-line @typescript-eslint/naming-convention
       Authorization: this._accessToken,
     };
@@ -76,7 +76,7 @@ export default abstract class SupplierBaseWix
    * ```typescript
    * const query = this._getGraphQLQuery();
    * // Use the query with variables to fetch products
-   * const response = await this._httpGetJson({
+   * const response = await this.httpGetJson({
    *   path: "_api/wix-ecommerce-storefront-web/api",
    *   params: { q: query, v: variables }
    * });
@@ -176,15 +176,15 @@ export default abstract class SupplierBaseWix
    * @param limit - The limit of products to return
    * @returns A promise that resolves when the products are queried
    */
-  protected async _queryProducts(
+  protected async queryProducts(
     query: string,
-    limit: number = this._limit,
+    limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
     const q = this._getGraphQLQuery();
 
     const v = this._getGraphQLVariables(query);
 
-    const queryResponse = await this._httpGetJson({
+    const queryResponse = await this.httpGetJson({
       path: "_api/wix-ecommerce-storefront-web/api",
       params: {
         o: "getFilteredProducts",
@@ -198,14 +198,14 @@ export default abstract class SupplierBaseWix
       throw new Error(`Invalid or empty Wix query response for ${query}`);
     }
 
-    const fuzzResults = this._fuzzyFilter<ProductObject>(
+    const fuzzResults = this.fuzzyFilter<ProductObject>(
       query,
       queryResponse.data.catalog.category.productsWithMetaData.list,
     );
 
-    this._logger.info("fuzzResults:", fuzzResults);
+    this.logger.info("fuzzResults:", fuzzResults);
 
-    return this._initProductBuilders(fuzzResults.slice(0, limit));
+    return this.initProductBuilders(fuzzResults.slice(0, limit));
   }
 
   /**
@@ -225,9 +225,9 @@ export default abstract class SupplierBaseWix
    * @returns Array of ProductBuilder instances initialized with Wix product data
    * @example
    * ```typescript
-   * const results = await this._queryProducts("sodium chloride");
+   * const results = await this.queryProducts("sodium chloride");
    * if (results) {
-   *   const builders = this._initProductBuilders(results);
+   *   const builders = this.initProductBuilders(results);
    *   // Each builder contains parsed product data from Wix
    *   for (const builder of builders) {
    *     const product = await builder.build();
@@ -236,7 +236,7 @@ export default abstract class SupplierBaseWix
    * }
    * ```
    */
-  protected _initProductBuilders(results: ProductObject[]): ProductBuilder<Product>[] {
+  protected initProductBuilders(results: ProductObject[]): ProductBuilder<Product>[] {
     return results
       .map((product) => {
         if (!product.price) {
@@ -321,7 +321,7 @@ export default abstract class SupplierBaseWix
    * @param product - The product to get the data for
    * @returns A promise that resolves to the product data or void if the product has no price
    */
-  protected async _getProductData(
+  protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     return product;
@@ -332,7 +332,7 @@ export default abstract class SupplierBaseWix
    * @param data - Product object from search response
    * @returns - The title of the product
    */
-  protected _titleSelector(data: ProductObject): string {
+  protected titleSelector(data: ProductObject): string {
     return data.name as string;
   }
 }

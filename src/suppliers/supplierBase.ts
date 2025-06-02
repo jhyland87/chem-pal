@@ -50,10 +50,10 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * @example
    * ```typescript
    * const supplier = new MySupplier("sodium chloride", 10);
-   * console.log(supplier._query); // "sodium chloride"
+   * console.log(supplier.query); // "sodium chloride"
    * ```
    */
-  protected _query: string;
+  protected query: string;
 
   /**
    * If the products first require a query of a search page that gets iterated over,
@@ -63,11 +63,11 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * @example
    * ```typescript
    * // After a search query
-   * await supplier._queryProducts("acetone");
-   * console.log(`Found ${supplier._queryResults.length} initial results`);
+   * await supplier.queryProducts("acetone");
+   * console.log(`Found ${supplier.queryResults.length} initial results`);
    * ```
    */
-  protected _queryResults: Array<S> = [];
+  protected queryResults: Array<S> = [];
 
   /**
    * The base search parameters that are always included in search requests.
@@ -79,7 +79,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * class MySupplier extends SupplierBase<Product> {
    *   constructor() {
    *     super();
-   *     this._baseSearchParams = {
+   *     this.baseSearchParams = {
    *       format: "json",
    *       version: "2.0"
    *     };
@@ -87,7 +87,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * }
    * ```
    */
-  protected _baseSearchParams: Record<string, string | number> = {};
+  protected baseSearchParams: Record<string, string | number> = {};
 
   /**
    * The AbortController instance used to manage and cancel ongoing requests.
@@ -103,7 +103,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * controller.abort();
    * ```
    */
-  protected _controller: AbortController;
+  protected controller: AbortController;
 
   /**
    * The maximum number of results to return for a search query.
@@ -118,7 +118,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * }
    * ```
    */
-  protected _limit: number;
+  protected limit: number;
 
   /**
    * The products that are currently being built by the supplier.
@@ -127,15 +127,15 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    *
    * @example
    * ```typescript
-   * await supplier._queryProducts("acetone");
-   * console.log(`Building ${supplier._products.length} products`);
-   * for (const builder of supplier._products) {
+   * await supplier.queryProducts("acetone");
+   * console.log(`Building ${supplier.products.length} products`);
+   * for (const builder of supplier.products) {
    *   const product = await builder.build();
    *   console.log("Built product:", product.title);
    * }
    * ```
    */
-  protected _products: ProductBuilder<T>[] = [];
+  protected products: ProductBuilder<T>[] = [];
 
   /**
    * Maximum number of HTTP requests allowed per search query.
@@ -148,29 +148,29 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * class MySupplier extends SupplierBase<Product> {
    *   constructor() {
    *     super();
-   *     this._httpRequestHardLimit = 100; // Allow more requests
+   *     this.httpRequestHardLimit = 100; // Allow more requests
    *   }
    * }
    * ```
    */
-  protected _httpRequestHardLimit: number = 50;
+  protected httpRequestHardLimit: number = 50;
 
   /**
    * Counter for HTTP requests made during the current query execution.
    * This is used to track the number of requests and ensure we don't
-   * exceed the _httpRequestHardLimit.
+   * exceed the httpRequestHardLimit.
    *
    * @defaultValue 0
    * @example
    * ```typescript
-   * await supplier._queryProducts("acetone");
-   * console.log(`Made ${supplier._requestCount} requests`);
-   * if (supplier._requestCount >= supplier._httpRequestHardLimit) {
+   * await supplier.queryProducts("acetone");
+   * console.log(`Made ${supplier.requestCount} requests`);
+   * if (supplier.requestCount >= supplier.httpRequestHardLimit) {
    *   console.log("Reached request limit");
    * }
    * ```
    */
-  protected _requestCount: number = 0;
+  protected requestCount: number = 0;
 
   /**
    * Number of requests to process in parallel when fetching product details.
@@ -184,12 +184,12 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    *   constructor() {
    *     super();
    *     // Process 5 requests at a time
-   *     this._httpRequestBatchSize = 5;
+   *     this.httpRequestBatchSize = 5;
    *   }
    * }
    * ```
    */
-  protected _httpRequestBatchSize: number = 10;
+  protected httpRequestBatchSize: number = 10;
 
   /**
    * HTTP headers used as a basis for all requests to the supplier.
@@ -201,7 +201,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * class MySupplier extends SupplierBase<Product> {
    *   constructor() {
    *     super();
-   *     this._headers = {
+   *     this.headers = {
    *       "Accept": "application/json",
    *       "User-Agent": "ChemCrawler/1.0"
    *     };
@@ -209,11 +209,11 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * }
    * ```
    */
-  protected _headers: HeadersInit = {};
+  protected headers: HeadersInit = {};
 
   // Logger for the supplier. This gets initialized in this constructor with the
   // name of the inheriting class.
-  protected _logger: Logger;
+  protected logger: Logger;
   // Cache configuration
   private static readonly cacheKey = "supplier_cache";
 
@@ -221,7 +221,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   private static readonly cacheSize = 100;
 
   // Default values for products. These will get overridden if they're found in the product data.
-  protected _productDefaults = {
+  protected productDefaults = {
     uom: "ea",
     quantity: 1,
     currencyCode: "USD",
@@ -254,14 +254,14 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * ```
    */
   constructor(query: string, limit: number = 5, controller?: AbortController) {
-    this._logger = new Logger(this.constructor.name);
-    this._query = query;
-    this._limit = limit;
+    this.logger = new Logger(this.constructor.name);
+    this.query = query;
+    this.limit = limit;
     if (controller) {
-      this._controller = controller;
+      this.controller = controller;
     } else {
-      this._logger.debug("Made a new AbortController");
-      this._controller = new AbortController();
+      this.logger.debug("Made a new AbortController");
+      this.controller = new AbortController();
     }
   }
 
@@ -269,7 +269,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * This is a placeholder for any setup that needs to be done before the query is made.
    * @returns A promise that resolves when the setup is complete.
    */
-  protected async _setup(): Promise<void> {}
+  protected async setup(): Promise<void> {}
 
   /**
    * Retrieves HTTP headers from a URL using a HEAD request.
@@ -279,18 +279,18 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * @returns Promise resolving to the response headers or void if request fails
    * @example
    * ```typescript
-   * const headers = await this._httpGetHeaders('https://example.com/product/123');
+   * const headers = await this.httpGetHeaders('https://example.com/product/123');
    * if (headers) {
    *   console.log('Content-Type:', headers['content-type']);
    *   console.log('Last-Modified:', headers['last-modified']);
    * }
    * ```
    */
-  protected async _httpGetHeaders(url: string | URL): Promise<Maybe<HeadersInit>> {
+  protected async httpGetHeaders(url: string | URL): Promise<Maybe<HeadersInit>> {
     try {
-      const requestObj = new Request(this._href(url), {
-        signal: this._controller.signal,
-        headers: new Headers(this._headers),
+      const requestObj = new Request(this.href(url), {
+        signal: this.controller.signal,
+        headers: new Headers(this.headers),
         referrer: this.baseURL,
         referrerPolicy: "strict-origin-when-cross-origin",
         body: null,
@@ -299,17 +299,17 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
         credentials: "include",
       });
 
-      const httpResponse = await this._fetch(requestObj);
+      const httpResponse = await this.fetch(requestObj);
 
       return Object.fromEntries(httpResponse.headers.entries()) satisfies HeadersInit;
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
-        this._logger.warn("Request was aborted", { error, signal: this._controller.signal });
-        this._controller.abort();
+        this.logger.warn("Request was aborted", { error, signal: this.controller.signal });
+        this.controller.abort();
       } else {
-        this._logger.error("Error received during fetch:", {
+        this.logger.error("Error received during fetch:", {
           error,
-          signal: this._controller.signal,
+          signal: this.controller.signal,
         });
       }
     }
@@ -324,13 +324,13 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * @example
    * ```typescript
    * // Basic POST request
-   * const response = await this._httpPost({
+   * const response = await this.httpPost({
    *   path: "/api/v1/products",
    *   body: { name: "Test Chemical" }
    * });
    *
    * // POST with custom host and params
-   * const response = await this._httpPost({
+   * const response = await this.httpPost({
    *   path: "/api/v1/products",
    *   host: "api.example.com",
    *   body: { name: "Test Chemical" },
@@ -339,7 +339,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * });
    * ```
    */
-  protected async _httpPost({
+  protected async httpPost({
     path,
     host,
     body,
@@ -350,13 +350,13 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     const mode = "cors";
     const referrer = this.baseURL;
     const referrerPolicy = "strict-origin-when-cross-origin";
-    const signal = this._controller.signal;
+    const signal = this.controller.signal;
     const bodyStr = typeof body === "string" ? body : (JSON.stringify(body) ?? null);
     const headersObj = new Headers({
-      ...this._headers,
+      ...this.headers,
       ...(headers as HeadersInit),
     });
-    const url = this._href(path, params, host);
+    const url = this.href(path, params, host);
 
     const requestObj = new Request(url, {
       signal,
@@ -369,11 +369,11 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     });
 
     // Fetch the goods
-    const httpRequest = await this._fetch(requestObj);
+    const httpRequest = await this.fetch(requestObj);
 
     if (!isHttpResponse(httpRequest)) {
       const badResponse = await (httpRequest as unknown as Response)?.text();
-      this._logger.error("Invalid POST response: ", badResponse);
+      this.logger.error("Invalid POST response: ", badResponse);
       throw new TypeError(`Invalid POST response: ${httpRequest}`);
     }
 
@@ -388,7 +388,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * @example
    * ```typescript
    * // Assume the baseURL is https://example.com
-   * const responseJSON = await this._httpPostJson({
+   * const responseJSON = await this.httpPostJson({
    *    path: "/api/v1/products",
    *    body: { name: "John" },
    *    headers: { "Content-Type": "application/json" }
@@ -396,7 +396,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * // Sends HTTP POST request to https://example.com/api/v1/products with `{"name":"John"}` body.
    * // Returns a JSON object.
    *
-   * const responseJSON = await this._httpPostJson({
+   * const responseJSON = await this.httpPostJson({
    *    path: "/api/v1/products",
    *    host: "api.example.com",
    *    body: { name: "John" },
@@ -407,16 +407,16 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * // Returns a JSON object.
    * ```
    */
-  protected async _httpPostJson({
+  protected async httpPostJson({
     path,
     host,
     body,
     params,
     headers,
   }: RequestOptions): Promise<Maybe<JsonValue>> {
-    const httpRequest = await this._httpPost({ path, host, body, params, headers });
+    const httpRequest = await this.httpPost({ path, host, body, params, headers });
     if (!isJsonResponse(httpRequest)) {
-      throw new TypeError(`_httpPostJson| Invalid POST response: ${httpRequest}`);
+      throw new TypeError(`httpPostJson| Invalid POST response: ${httpRequest}`);
     }
     return await httpRequest.json();
   }
@@ -430,13 +430,13 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * @example
    * ```typescript
    * // Basic GET request
-   * const response = await this._httpGet({
+   * const response = await this.httpGet({
    *   path: "/products/search",
    *   params: { query: "sodium chloride" }
    * });
    *
    * // GET with custom host and headers
-   * const response = await this._httpGet({
+   * const response = await this.httpGet({
    *   path: "/api/products",
    *   host: "api.example.com",
    *   params: { category: "chemicals" },
@@ -444,7 +444,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * });
    * ```
    */
-  protected async _httpGet({
+  protected async httpGet({
     path,
     params,
     headers,
@@ -452,14 +452,14 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   }: RequestOptions): Promise<Maybe<Response>> {
     try {
       // Check if the request has been aborted before proceeding
-      if (this._controller.signal.aborted) {
-        this._logger.warn("Request was aborted before fetch", {
-          signal: this._controller.signal,
+      if (this.controller.signal.aborted) {
+        this.logger.warn("Request was aborted before fetch", {
+          signal: this.controller.signal,
         });
         return;
       }
 
-      const headersRaw = { ...this._headers };
+      const headersRaw = { ...this.headers };
 
       Object.assign(headersRaw, {
         accept:
@@ -467,8 +467,8 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
         ...(headers ?? {}),
       });
 
-      const requestObj = new Request(this._href(path, params, host), {
-        signal: this._controller.signal,
+      const requestObj = new Request(this.href(path, params, host), {
+        signal: this.controller.signal,
         headers: new Headers(headersRaw),
         referrer: this.baseURL,
         referrerPolicy: "no-referrer",
@@ -479,18 +479,18 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
       });
 
       // Fetch the goods
-      const httpResponse = await this._fetch(requestObj.url, requestObj);
+      const httpResponse = await this.fetch(requestObj.url, requestObj);
       //const httpResponse = await fetchDecorator(requestObj.url, requestObj);
 
       return httpResponse;
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
-        this._logger.warn("Request was aborted", { error, signal: this._controller.signal });
-        this._controller.abort();
+        this.logger.warn("Request was aborted", { error, signal: this.controller.signal });
+        this.controller.abort();
       } else {
-        this._logger.error("Error received during fetch:", {
+        this.logger.error("Error received during fetch:", {
           error,
-          signal: this._controller.signal,
+          signal: this.controller.signal,
         });
       }
     }
@@ -514,7 +514,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    *   { title: "Potassium Chloride", price: 19.99 }
    * ];
    *
-   * const matches = this._fuzzyFilter("sodium chloride", products);
+   * const matches = this.fuzzyFilter("sodium chloride", products);
    * // Returns: [
    * //   {
    * //     title: "Sodium Chloride",
@@ -529,7 +529,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * // ]
    *
    * // Example with custom cutoff
-   * const strictMatches = this._fuzzyFilter("sodium chloride", products, 90);
+   * const strictMatches = this.fuzzyFilter("sodium chloride", products, 90);
    * // Returns only exact matches with score >= 90
    *
    * // Example with different data structure
@@ -538,15 +538,15 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    *   { name: "NaOH", formula: "Sodium Hydroxide" }
    * ];
    *
-   * // Override _titleSelector to use formula field
-   * this._titleSelector = (data) => data.formula;
-   * const formulaMatches = this._fuzzyFilter("sodium chloride", chemicals);
+   * // Override titleSelector to use formula field
+   * this.titleSelector = (data) => data.formula;
+   * const formulaMatches = this.fuzzyFilter("sodium chloride", chemicals);
    * ```
    */
-  protected _fuzzyFilter<X>(query: string, data: X[], cutoff: number = 40): X[] {
+  protected fuzzyFilter<X>(query: string, data: X[], cutoff: number = 40): X[] {
     const res = extract(query, data, {
       scorer: WRatio,
-      processor: this._titleSelector as (choice: unknown) => string,
+      processor: this.titleSelector as (choice: unknown) => string,
       cutoff: cutoff,
       sortBySimilarity: true,
     }).reduce(
@@ -559,7 +559,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
       [] as Array<X & { ___fuzz: { score: number; idx: number } }>,
     ) as X[];
 
-    this._logger.debug("fuzzed search results:", res);
+    this.logger.debug("fuzzed search results:", res);
 
     // Get rid of any empty items that didn't match closely enough
     return res.filter((item) => !!item);
@@ -568,7 +568,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   /**
    * Abstract method to select the title from the initial raw search data.
    * This method should be implemented by each supplier to handle their specific data structure.
-   * The selected title is used by _fuzzyFilter for string similarity matching.
+   * The selected title is used by fuzzyFilter for string similarity matching.
    *
    * @param data - The data object to extract the title from
    * @returns The title string to use for fuzzy matching
@@ -576,27 +576,27 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * @example
    * ```typescript
    * // Example implementation for a supplier with simple title field
-   * protected _titleSelector(data: Cheerio<Element>): string {
+   * protected titleSelector(data: Cheerio<Element>): string {
    *   return data.text();
    * }
    *
    * // Example implementation for a supplier with nested title
-   * protected _titleSelector(data: SupplierProduct): string {
+   * protected titleSelector(data: SupplierProduct): string {
    *   return data.productInfo.name;
    * }
    *
    * // Example implementation for a supplier with multiple possible title fields
-   * protected _titleSelector(data: SupplierProduct): string {
+   * protected titleSelector(data: SupplierProduct): string {
    *   return data.displayName || data.productName || data.name || '';
    * }
    *
    * // Example implementation for a supplier with formatted title
-   * protected _titleSelector(data: SupplierProduct): string {
+   * protected titleSelector(data: SupplierProduct): string {
    *   return `${data.name} ${data.grade} ${data.purity}`.trim();
    * }
    * ```
    */
-  protected abstract _titleSelector(data: any): string;
+  protected abstract titleSelector(data: any): string;
 
   /**
    * Makes an HTTP GET request and returns the response as a string.
@@ -609,13 +609,13 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * @example
    * ```typescript
    * // Basic GET request
-   * const html = await this._httpGetHtml({
+   * const html = await this.httpGetHtml({
    *   path: "/api/products",
    *   params: { search: "sodium" }
    * });
    *
    * // GET request with custom headers
-   * const html = await this._httpGetHtml({
+   * const html = await this.httpGetHtml({
    *   path: "/api/products",
    *   headers: {
    *     "Authorization": "Bearer token123",
@@ -624,22 +624,22 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * });
    *
    * // GET request with custom host
-   * const html = await this._httpGetHtml({
+   * const html = await this.httpGetHtml({
    *   path: "/products",
    *   host: "api.supplier.com",
    *   params: { limit: 10 }
    * });
    * ```
    */
-  protected async _httpGetHtml({
+  protected async httpGetHtml({
     path,
     params,
     headers,
     host,
   }: RequestOptions): Promise<Maybe<string>> {
-    const httpResponse = await this._httpGet({ path, params, headers, host });
+    const httpResponse = await this.httpGet({ path, params, headers, host });
     if (!isHtmlResponse(httpResponse)) {
-      throw new TypeError(`_httpGetHtml| Invalid GET response: ${httpResponse}`);
+      throw new TypeError(`httpGetHtml| Invalid GET response: ${httpResponse}`);
     }
     return await httpResponse.text();
   }
@@ -656,13 +656,13 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * @example
    * ```typescript
    * // Basic GET request
-   * const data = await this._httpGetJson({
+   * const data = await this.httpGetJson({
    *   path: "/api/products",
    *   params: { search: "sodium" }
    * });
    *
    * // GET request with custom headers
-   * const data = await this._httpGetJson({
+   * const data = await this.httpGetJson({
    *   path: "/api/products",
    *   headers: {
    *     "Authorization": "Bearer token123",
@@ -671,7 +671,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * });
    *
    * // GET request with custom host
-   * const data = await this._httpGetJson({
+   * const data = await this.httpGetJson({
    *   path: "/products",
    *   host: "api.supplier.com",
    *   params: { limit: 10 }
@@ -679,7 +679,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    *
    * // Error handling
    * try {
-   *   const data = await this._httpGetJson({
+   *   const data = await this.httpGetJson({
    *     path: "/api/products"
    *   });
    *   if (data) {
@@ -690,17 +690,17 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * }
    * ```
    */
-  protected async _httpGetJson({
+  protected async httpGetJson({
     path,
     params,
     headers,
     host,
   }: RequestOptions): Promise<Maybe<JsonValue>> {
-    const httpRequest = await this._httpGet({ path, params, headers, host });
+    const httpRequest = await this.httpGet({ path, params, headers, host });
 
     if (!isJsonResponse(httpRequest)) {
       const badResponse = await (httpRequest as unknown as Response)?.text();
-      this._logger.error("Invalid HTTP GET response: ", badResponse);
+      this.logger.error("Invalid HTTP GET response: ", badResponse);
       return;
     }
 
@@ -716,39 +716,39 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * ```typescript
    * // Example with a basic search
    * const supplier = new MySupplier("sodium chloride", 5);
-   * const key = supplier._generateCacheKey();
+   * const key = supplier.generateCacheKey();
    * // Returns: "c29kaXVtIGNobG9yaWRlOjU6TXlTdXBwbGllcg=="
    *
    * // Example with empty values
    * const supplier = new MySupplier("", 0);
-   * const key = supplier._generateCacheKey();
+   * const key = supplier.generateCacheKey();
    * // Returns: "OjA6TXlTdXBwbGllcg=="
    *
    * // Example with special characters
    * const supplier = new MySupplier("NaCl (99.9%)", 10);
-   * const key = supplier._generateCacheKey();
+   * const key = supplier.generateCacheKey();
    * // Returns: "TmFDbCAoOTkuOSUpOjEwOk15U3VwcGxpZXI="
    * ```
    */
-  private _generateCacheKey(): string {
-    const data = `${this._query || ""}:${this._limit || 0}:${this.supplierName || ""}`;
-    this._logger.debug("Generating cache key with:", {
-      query: this._query,
-      limit: this._limit,
+  private generateCacheKey(): string {
+    const data = `${this.query || ""}:${this.limit || 0}:${this.supplierName || ""}`;
+    this.logger.debug("Generating cache key with:", {
+      query: this.query,
+      limit: this.limit,
       supplierName: this.supplierName,
       data,
     });
     try {
       // Try browser's btoa first
       const key = btoa(data);
-      this._logger.debug("Generated cache key:", key);
+      this.logger.debug("Generated cache key:", key);
       return key;
     } catch {
       try {
         // Fallback to Node's Buffer if available
         if (typeof Buffer !== "undefined") {
           const key = Buffer.from(data).toString("base64");
-          this._logger.debug("Generated cache key (Buffer):", key);
+          this.logger.debug("Generated cache key (Buffer):", key);
           return key;
         }
         // If neither is available, use a simple hash function
@@ -759,13 +759,13 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
           hash = hash & hash; // Convert to 32bit integer
         }
         const key = hash.toString(36);
-        this._logger.debug("Generated cache key (hash):", key);
+        this.logger.debug("Generated cache key (hash):", key);
         return key;
       } catch (error) {
-        this._logger.error("Error generating cache key:", error);
+        this.logger.error("Error generating cache key:", error);
         // Fallback to a simple string if all else fails
         const key = data.replace(/[^a-zA-Z0-9]/g, "_");
-        this._logger.debug("Generated cache key (fallback):", key);
+        this.logger.debug("Generated cache key (fallback):", key);
         return key;
       }
     }
@@ -781,7 +781,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * ```typescript
    * // Example of retrieving cached results
    * const supplier = new MySupplier("sodium chloride", 5);
-   * const cachedResults = await supplier._getCachedResults();
+   * const cachedResults = await supplier.getCachedResults();
    * if (cachedResults) {
    *   console.log("Found cached results:", cachedResults.length);
    * } else {
@@ -790,20 +790,20 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    *
    * // Example of cache miss
    * const supplier = new MySupplier("unique query", 10);
-   * const cachedResults = await supplier._getCachedResults();
+   * const cachedResults = await supplier.getCachedResults();
    * // Returns: undefined
    * ```
    */
-  private async _getCachedResults(): Promise<Maybe<T[]>> {
+  private async getCachedResults(): Promise<Maybe<T[]>> {
     try {
-      const key = this._generateCacheKey();
-      this._logger.debug("Looking up cache with key:", key);
+      const key = this.generateCacheKey();
+      this.logger.debug("Looking up cache with key:", key);
       const result = await chrome.storage.local.get(SupplierBase.cacheKey);
       const cache =
         (result[SupplierBase.cacheKey] as Record<string, { data: T[]; timestamp: number }>) || {};
       const cached = cache[key];
 
-      this._logger.debug("Cache lookup result:", {
+      this.logger.debug("Cache lookup result:", {
         key,
         found: !!cached,
         cacheSize: Object.keys(cache).length,
@@ -812,12 +812,12 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
 
       if (cached) {
         // Update the timestamp to mark as recently used
-        await this._updateCacheTimestamp(key);
+        await this.updateCacheTimestamp(key);
         return cached.data;
       }
       return undefined;
     } catch (error) {
-      this._logger.error("Error retrieving from cache:", error);
+      this.logger.error("Error retrieving from cache:", error);
       return undefined;
     }
   }
@@ -831,18 +831,18 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * ```typescript
    * // Example of updating a cache entry timestamp
    * const supplier = new MySupplier("sodium chloride", 5);
-   * const key = supplier._generateCacheKey();
-   * await supplier._updateCacheTimestamp(key);
+   * const key = supplier.generateCacheKey();
+   * await supplier.updateCacheTimestamp(key);
    *
    * // Example with error handling
    * try {
-   *   await supplier._updateCacheTimestamp("invalid-key");
+   *   await supplier.updateCacheTimestamp("invalid-key");
    * } catch (error) {
    *   console.error("Failed to update timestamp:", error);
    * }
    * ```
    */
-  private async _updateCacheTimestamp(key: string): Promise<void> {
+  private async updateCacheTimestamp(key: string): Promise<void> {
     try {
       const result = await chrome.storage.local.get(SupplierBase.cacheKey);
       const cache =
@@ -852,7 +852,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
         await chrome.storage.local.set({ [SupplierBase.cacheKey]: cache });
       }
     } catch (error) {
-      this._logger.error("Error updating cache timestamp:", error);
+      this.logger.error("Error updating cache timestamp:", error);
     }
   }
 
@@ -870,7 +870,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    *   { title: "Sodium Chloride", price: 29.99, quantity: 500, uom: "g" },
    *   { title: "NaCl", price: 24.99, quantity: 1000, uom: "g" }
    * ];
-   * await supplier._cacheResults(results);
+   * await supplier.cacheResults(results);
    *
    * // Example of cache eviction
    * // If cache is full (100 entries), oldest entry will be removed
@@ -880,20 +880,20 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    *   quantity: 100,
    *   uom: "g"
    * });
-   * await supplier._cacheResults(manyResults);
+   * await supplier.cacheResults(manyResults);
    *
    * // Example with error handling
    * try {
-   *   await supplier._cacheResults(results);
+   *   await supplier.cacheResults(results);
    * } catch (error) {
    *   console.error("Failed to cache results:", error);
    * }
    * ```
    */
-  private async _cacheResults(results: Product[]): Promise<void> {
+  private async cacheResults(results: Product[]): Promise<void> {
     try {
-      const key = this._generateCacheKey();
-      this._logger.debug("Storing in cache with key:", key);
+      const key = this.generateCacheKey();
+      this.logger.debug("Storing in cache with key:", key);
       const result = await chrome.storage.local.get(SupplierBase.cacheKey);
       const cache =
         (result[SupplierBase.cacheKey] as Record<string, { data: Product[]; timestamp: number }>) ||
@@ -904,7 +904,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
         const oldestKey = Object.entries(cache).sort(
           ([, a], [, b]) => a.timestamp - b.timestamp,
         )[0][0];
-        this._logger.debug("Removing oldest cache entry:", oldestKey);
+        this.logger.debug("Removing oldest cache entry:", oldestKey);
         delete cache[oldestKey];
       }
 
@@ -914,7 +914,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
         timestamp: Date.now(),
       };
 
-      this._logger.debug("Cache state after update:", {
+      this.logger.debug("Cache state after update:", {
         key,
         cacheSize: Object.keys(cache).length,
         cacheKeys: Object.keys(cache),
@@ -922,7 +922,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
 
       await chrome.storage.local.set({ [SupplierBase.cacheKey]: cache });
     } catch (error) {
-      this._logger.error("Error storing in cache:", error);
+      this.logger.error("Error storing in cache:", error);
     }
   }
 
@@ -934,63 +934,63 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   async *[Symbol.asyncIterator](): AsyncGenerator<Product, void, unknown> {
     try {
       // Check cache first
-      const cachedResults = await this._getCachedResults();
+      const cachedResults = await this.getCachedResults();
       console.log("[iterator]cachedResults", cachedResults);
       if (cachedResults) {
-        this._logger.debug("Returning cached results");
+        this.logger.debug("Returning cached results");
         for (const result of cachedResults) {
           yield result;
         }
         return;
       }
 
-      await this._setup();
-      const results = await this._queryProducts(this._query, this._limit);
+      await this.setup();
+      const results = await this.queryProducts(this.query, this.limit);
 
       if (typeof results === "undefined" || results.length === 0) {
-        this._logger.debug(`No query results found`);
+        this.logger.debug(`No query results found`);
         return;
       }
-      this._products = results;
+      this.products = results;
 
       // Process results in batches to maintain controlled concurrency
       const allResults: Product[] = [];
-      for (let i = 0; i < this._products.length; i += this._httpRequestBatchSize) {
-        const batch = this._products.slice(i, i + this._httpRequestBatchSize);
+      for (let i = 0; i < this.products.length; i += this.httpRequestBatchSize) {
+        const batch = this.products.slice(i, i + this.httpRequestBatchSize);
 
         // Create promises for the current batch
         const batchPromises = batch.map((r: unknown) => {
           if (r instanceof ProductBuilder === false) {
-            this._logger.error("Invalid product builder:", r);
+            this.logger.error("Invalid product builder:", r);
             return Promise.reject(new Error("Invalid product builder"));
           }
-          return this._getProductData(r as ProductBuilder<T>);
+          return this.getProductData(r as ProductBuilder<T>);
         });
 
         // Process batch results as they complete
         const batchResults = await Promise.allSettled(batchPromises);
         for (const result of batchResults) {
-          if (this._controller.signal.aborted) throw this._controller.signal.reason;
+          if (this.controller.signal.aborted) throw this.controller.signal.reason;
 
           if (result.status === "rejected") {
-            this._logger.error("Error found when yielding a product:", { result });
+            this.logger.error("Error found when yielding a product:", { result });
             continue;
           }
 
           try {
             if (typeof result.value === "undefined") {
-              this._logger.warn("Product value was undefined", { result });
+              this.logger.warn("Product value was undefined", { result });
               continue;
             }
 
-            const finishedProduct = await this._finishProduct(result.value as ProductBuilder<T>);
+            const finishedProduct = await this.finishProduct(result.value as ProductBuilder<T>);
 
             if (finishedProduct) {
               allResults.push(finishedProduct);
               yield finishedProduct;
             }
           } catch (err) {
-            this._logger.error("Error found when yielding a product:", { err });
+            this.logger.error("Error found when yielding a product:", { err });
             continue;
           }
         }
@@ -998,14 +998,14 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
 
       // Cache the results after processing all batches
       if (allResults.length > 0) {
-        await this._cacheResults(allResults);
+        await this.cacheResults(allResults);
       }
     } catch (err) {
-      if (this._controller.signal.aborted === true) {
-        this._logger.warn("Search was aborted");
+      if (this.controller.signal.aborted === true) {
+        this.logger.warn("Search was aborted");
         return;
       }
-      this._logger.error("ERROR in generator fn:", { err });
+      this.logger.error("ERROR in generator fn:", { err });
     }
   }
 
@@ -1029,7 +1029,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    *   .setPricing(29.99, "USD", "$")
    *   .setQuantity(500, "g");
    *
-   * const finishedProduct = await this._finishProduct(builder);
+   * const finishedProduct = await this.finishProduct(builder);
    * if (finishedProduct) {
    *   console.log("Finalized product:", {
    *     title: finishedProduct.title,
@@ -1046,15 +1046,15 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * invalidBuilder.setBasicInfo("Sodium Chloride", "/products/nacl", "ChemSupplier");
    * // Missing required fields
    *
-   * const invalidProduct = await this._finishProduct(invalidBuilder);
+   * const invalidProduct = await this.finishProduct(invalidBuilder);
    * if (!invalidProduct) {
    *   console.log("Failed to finalize product - missing required fields");
    * }
    * ```
    */
-  protected async _finishProduct(product: ProductBuilder<Product>): Promise<Maybe<Product>> {
+  protected async finishProduct(product: ProductBuilder<Product>): Promise<Maybe<Product>> {
     if (!isMinimalProduct(product.dump())) {
-      this._logger.warn("Unable to finish product - Minimum data not set", { product });
+      this.logger.warn("Unable to finish product - Minimum data not set", { product });
       return;
     }
 
@@ -1066,7 +1066,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     /*
     const title = product.get("title");
     if (title) {
-      const fuzz = this._fuzzyFilter(this._query, [title], 2, 0.5);
+      const fuzz = this.fuzzyFilter(this.query, [title], 2, 0.5);
       console.log("fuzz score for", title, fuzz[0]?.[1] ?? 0);
     }
     */
@@ -1085,29 +1085,29 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * @returns absolute URL
    * @example
    * ```typescript
-   * this._href('/some/path')
+   * this.href('/some/path')
    * // https://supplier_base_url.com/some/path
    *
-   * this._href('https://supplier_base_url.com/some/path', null, 'another_host.com')
+   * this.href('https://supplier_base_url.com/some/path', null, 'another_host.com')
    * // https://another_host.com/some/path
    *
-   * this._href('/some/path', { a: 'b', c: 'd' }, 'another_host.com')
+   * this.href('/some/path', { a: 'b', c: 'd' }, 'another_host.com')
    * // http://another_host.com/some/path?a=b&c=d
    *
-   * this._href('https://supplier_base_url.com/some/path')
+   * this.href('https://supplier_base_url.com/some/path')
    * // https://supplier_base_url.com/some/path
    *
-   * this._href(new URL('https://supplier_base_url.com/some/path'))
+   * this.href(new URL('https://supplier_base_url.com/some/path'))
    * // https://supplier_base_url.com/some/path
    *
-   * this._href('/some/path', { a: 'b', c: 'd' })
+   * this.href('/some/path', { a: 'b', c: 'd' })
    * // https://supplier_base_url.com/some/path?a=b&c=d
    *
-   * this._href('https://supplier_base_url.com/some/path', new URLSearchParams({ a: 'b', c: 'd' }))
+   * this.href('https://supplier_base_url.com/some/path', new URLSearchParams({ a: 'b', c: 'd' }))
    * // https://supplier_base_url.com/some/path?a=b&c=d
    * ```
    */
-  protected _href(path: string | URL, params?: Maybe<RequestParams>, host?: string): string {
+  protected href(path: string | URL, params?: Maybe<RequestParams>, host?: string): string {
     let href: URL;
 
     if (typeof path === "string" && isFullURL(path)) {
@@ -1136,12 +1136,12 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     return href.toString();
   }
 
-  protected abstract _queryProducts(
+  protected abstract queryProducts(
     query: string,
     limit: number,
   ): Promise<ProductBuilder<T>[] | void>;
 
-  protected abstract _getProductData(product: ProductBuilder<T>): Promise<ProductBuilder<T> | void>;
+  protected abstract getProductData(product: ProductBuilder<T>): Promise<ProductBuilder<T> | void>;
 
   /**
    * Transforms an array of supplier-specific product data into ProductBuilder instances.
@@ -1153,7 +1153,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * @example
    * ```typescript
    * // Example implementation in a supplier class
-   * protected _initProductBuilders(products: SupplierProduct[]): ProductBuilder<Product>[] {
+   * protected initProductBuilders(products: SupplierProduct[]): ProductBuilder<Product>[] {
    *   return products.map(product => {
    *     const builder = new ProductBuilder<Product>(this.baseURL);
    *
@@ -1201,11 +1201,11 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    *   }
    * ];
    *
-   * const builders = this._initProductBuilders(supplierProducts);
+   * const builders = this.initProductBuilders(supplierProducts);
    * console.log("Created builders:", builders.length);
    * ```
    */
-  protected abstract _initProductBuilders(products: MaybeArray<unknown>): ProductBuilder<T>[];
+  protected abstract initProductBuilders(products: MaybeArray<unknown>): ProductBuilder<T>[];
 
   /**
    * Makes an HTTP request to the specified URL with optional configuration.
@@ -1219,7 +1219,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * ```typescript
    * // Example usage with basic GET request
    * try {
-   *   const response = await this._fetch("https://api.supplier.com/products");
+   *   const response = await this.fetch("https://api.supplier.com/products");
    *   if (isJsonResponse(response)) {
    *     const data = await response.json();
    *     console.log("Received data:", data);
@@ -1229,7 +1229,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * }
    *
    * // Example with custom headers and method
-   * const response = await this._fetch("https://api.supplier.com/products", {
+   * const response = await this.fetch("https://api.supplier.com/products", {
    *   method: "POST",
    *   headers: {
    *     "Content-Type": "application/json",
@@ -1245,7 +1245,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * let retries = 0;
    * while (retries < 3) {
    *   try {
-   *     const response = await this._fetch("https://api.supplier.com/products");
+   *     const response = await this.fetch("https://api.supplier.com/products");
    *     break; // Success, exit retry loop
    *   } catch (error) {
    *     retries++;
@@ -1257,18 +1257,18 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * }
    * ```
    */
-  protected async _fetch(...args: Parameters<typeof fetchDecorator>): Promise<Response> {
+  protected async fetch(...args: Parameters<typeof fetchDecorator>): Promise<Response> {
     const [input] = args;
     console.log(`Fetching: ${input}`);
-    this._requestCount++;
-    if (this._requestCount > this._httpRequestHardLimit) {
-      this._logger.warn("Request count exceeded hard limit", { requestCount: this._requestCount });
+    this.requestCount++;
+    if (this.requestCount > this.httpRequestHardLimit) {
+      this.logger.warn("Request count exceeded hard limit", { requestCount: this.requestCount });
       throw new Error("Request count exceeded hard limit");
     }
     const response = await fetchDecorator(...args);
     console.log(`Response Status: ${response.status}`);
 
-    console.log("response hash:", response._requestHash);
+    console.log("response hash:", response.requestHash);
     return response;
   }
 }

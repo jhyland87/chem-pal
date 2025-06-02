@@ -26,19 +26,19 @@ import SupplierBase from "./supplierBase";
  */
 export default class SupplierFactory<T extends Product> implements AsyncIterable<T> {
   // Term being queried
-  private _query: string;
+  private query: string;
 
   // Abort controller for fetch control
-  private _controller: AbortController;
+  private controller: AbortController;
 
   // List of supplier class names to include in query results
   private _suppliers: Array<string>;
 
   // Maximum number of results for each supplier
-  private _limit: number = 5;
+  private limit: number = 5;
 
   // Logger instance
-  private _logger: Logger;
+  private logger: Logger;
 
   /**
    * Factory class for querying all suppliers.
@@ -50,18 +50,18 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
    */
   constructor(
     query: string,
-    limit: number = this._limit,
+    limit: number = this.limit,
     controller: AbortController,
     suppliers: Array<string> = [],
   ) {
-    this._logger = new Logger("SupplierFactory");
-    this._logger.debug("initialized");
-    this._query = query;
-    this._logger.debug("Query:", this._query);
-    this._limit = limit;
-    this._controller = controller;
+    this.logger = new Logger("SupplierFactory");
+    this.logger.debug("initialized");
+    this.query = query;
+    this.logger.debug("Query:", this.query);
+    this.limit = limit;
+    this.controller = controller;
     this._suppliers = suppliers;
-    this._logger.debug("Suppliers:", this._suppliers);
+    this.logger.debug("Suppliers:", this._suppliers);
   }
 
   /**
@@ -103,7 +103,7 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
    */
   async *[Symbol.asyncIterator](): AsyncGenerator<T, void, unknown> {
     try {
-      this._logger.debug("Starting search");
+      this.logger.debug("Starting search");
       const supplierIterator = this._getConsolidatedGenerator();
 
       for await (const value of supplierIterator) {
@@ -111,11 +111,11 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
       }
     } catch (err) {
       // Here to catch when the overall search fails
-      if (this._controller.signal.aborted === true) {
-        this._logger.warn("Search was aborted");
+      if (this.controller.signal.aborted === true) {
+        this.logger.warn("Search was aborted");
         return;
       }
-      this._logger.error("ERROR in generator fn:", err);
+      this.logger.error("ERROR in generator fn:", err);
     }
   }
 
@@ -152,15 +152,15 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
       Object.entries(suppliers).reduce(
         (result: SupplierBase<unknown, Product>[], [supplierClassName, supplierClass]) => {
           if (this._suppliers.length == 0 || this._suppliers.includes(supplierClassName)) {
-            this._logger.debug("Initializing supplier class:", supplierClassName);
-            this._logger.debug("this._limit:", this._limit);
+            this.logger.debug("Initializing supplier class:", supplierClassName);
+            this.logger.debug("this.limit:", this.limit);
             // Cast supplierClass to the correct type to fix type error
             const SupplierClass = supplierClass as new (
               query: string,
               limit: number,
               controller: AbortController,
             ) => SupplierBase<unknown, Product>;
-            result.push(new SupplierClass(this._query, this._limit, this._controller));
+            result.push(new SupplierClass(this.query, this.limit, this.controller));
           }
           return result;
         },

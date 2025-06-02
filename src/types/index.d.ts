@@ -660,13 +660,13 @@ declare global {
    * ```typescript
    * class MySupplier implements Supplier {
    *   supplierName = "MySupplier";
-   *   _query = "";
-   *   _queryResults = [];
+   *   query = "";
+   *   queryResults = [];
    *   baseURL = "https://mysupplier.com";
-   *   _controller = new AbortController();
-   *   _limit = 10;
-   *   _httpRequestHardLimit = 50;
-   *   _headers = { "Content-Type": "application/json" };
+   *   controller = new AbortController();
+   *   limit = 10;
+   *   httpRequestHardLimit = 50;
+   *   headers = { "Content-Type": "application/json" };
    * }
    * ```
    */
@@ -681,12 +681,12 @@ declare global {
      * Current active search query
      * @example "sodium chloride"
      */
-    _query: string;
+    query: string;
 
     /**
      * Raw results from the last search query
      */
-    _queryResults: Array<Record<string, unknown>>;
+    queryResults: Array<Record<string, unknown>>;
 
     /**
      * Base URL for supplier's API endpoints
@@ -697,25 +697,25 @@ declare global {
     /**
      * AbortController for canceling in-flight requests
      */
-    _controller: AbortController;
+    controller: AbortController;
 
     /**
      * Maximum number of results to return
      * @example 10
      */
-    _limit: number;
+    limit: number;
 
     /**
      * Maximum number of concurrent HTTP requests
      * @example 50
      */
-    _httpRequestHardLimit: number;
+    httpRequestHardLimit: number;
 
     /**
      * Custom headers for API requests
      * @example \{ "Authorization": "Bearer token123" \}
      */
-    _headers: HeadersInit;
+    headers: HeadersInit;
   }
 
   /**

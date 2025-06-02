@@ -117,11 +117,11 @@ export default class SupplierMacklin
   /** The country code of the supplier. */
   public readonly country: CountryCode = "CN";
 
-  /** Override the type of _queryResults to use our specific type */
-  protected _queryResults: Array<Product> = [];
+  /** Override the type of queryResults to use our specific type */
+  protected queryResults: Array<Product> = [];
 
   /** Used to keep track of how many requests have been made to the supplier. */
-  protected _httpRequstCount: number = 0;
+  protected httpRequstCount: number = 0;
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private readonly TIMESTAMP_REFRESH_THRESHOLD: number = 800;
@@ -137,13 +137,13 @@ export default class SupplierMacklin
    * Local storage object for the Macklin API client.
    * @todo Add the timestamp to the chrome.storage.local
    */
-  private _localStorage: Record<string, unknown> = {};
+  private localStorage: Record<string, unknown> = {};
 
   /** The last signature used for the request */
-  private _lastSignature: string | null = null;
+  private lastSignature: string | null = null;
 
   /** HTTP headers used as a basis for all queries. */
-  protected _headers: MacklinRequestHeaders = {
+  protected headers: MacklinRequestHeaders = {
     /* eslint-disable @typescript-eslint/naming-convention */
     "X-Agent": "web",
     "X-User-Token": "",
@@ -162,23 +162,23 @@ export default class SupplierMacklin
    * @returns void
    * @throws MacklinApiError If the timestamp request fails or response is invalid
    */
-  protected async _setup(): Promise<void> {
-    await this._validateAndUpdateTimestamp();
+  protected async setup(): Promise<void> {
+    await this.validateAndUpdateTimestamp();
 
-    if (!this._localStorage.soleId) {
-      this._localStorage.soleId = this._generateString(16);
+    if (!this.localStorage.soleId) {
+      this.localStorage.soleId = this.generateString(16);
     }
 
-    if (!this._localStorage.MklUserToken) {
-      this._localStorage.MklUserToken = "";
+    if (!this.localStorage.MklUserToken) {
+      this.localStorage.MklUserToken = "";
     }
 
     // Update headers to match api-client.js exactly, using defensive string conversion
-    this._headers = {
+    this.headers = {
       /* eslint-disable @typescript-eslint/naming-convention */
       "X-Agent": "web",
-      "X-User-Token": this._ensureStringHeader(this._localStorage.MklUserToken),
-      "X-Device-Id": this._ensureStringHeader(this._localStorage.soleId),
+      "X-User-Token": this.ensureStringHeader(this.localStorage.MklUserToken),
+      "X-Device-Id": this.ensureStringHeader(this.localStorage.soleId),
       "X-Language": "en",
       "X-Timestamp": "",
       /* eslint-enable @typescript-eslint/naming-convention */
@@ -196,26 +196,26 @@ export default class SupplierMacklin
    * @returns Array of ProductBuilder instances or void if the request fails
    * @throws MacklinApiError if the API request fails or response is invalid
    */
-  protected async _queryProducts(
+  protected async queryProducts(
     query: string,
-    limit: number = this._limit,
+    limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    this._limit = limit;
-    const response: unknown = await this._request<MacklinSearchResultProducts>(`/api/item/search`, {
+    this.limit = limit;
+    const response: unknown = await this.request<MacklinSearchResultProducts>(`/api/item/search`, {
       params: { keyword: query, limit: 90, page: 1 },
     });
 
     if (!isMacklinSearchResult<MacklinSearchResultProducts>(response)) {
-      this._logger.warn("Invalid API response format");
+      this.logger.warn("Invalid API response format");
       return;
     }
 
     // Flatten the array of arrays into a single array of products
     const products = Object.values(response.list).map((item) => item[0]);
 
-    const fuzzFiltered = this._fuzzyFilter<MacklinProductVariant>(query, products);
-    this._logger.info("fuzzFiltered:", fuzzFiltered);
-    return this._initProductBuilders(fuzzFiltered.slice(0, limit));
+    const fuzzFiltered = this.fuzzyFilter<MacklinProductVariant>(query, products);
+    this.logger.info("fuzzFiltered:", fuzzFiltered);
+    return this.initProductBuilders(fuzzFiltered.slice(0, limit));
   }
 
   /**
@@ -225,7 +225,7 @@ export default class SupplierMacklin
    * @param data - The product variant to extract the title from
    * @returns The English name of the product
    */
-  protected _titleSelector(data: MacklinProductVariant): string {
+  protected titleSelector(data: MacklinProductVariant): string {
     return data.item_en_name;
   }
 
@@ -238,15 +238,15 @@ export default class SupplierMacklin
    * @returns The enriched ProductBuilder or void if the request fails
    * @throws MacklinApiError if the API request fails or response is invalid
    */
-  protected async _getProductData(
+  protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<void | ProductBuilder<Product>> {
-    const response: unknown = await this._request<MacklinProductDetails>("/api/product/list", {
+    const response: unknown = await this.request<MacklinProductDetails>("/api/product/list", {
       params: { code: product.get("uuid") },
     });
 
     if (!isMacklinProductDetailsResponse(response)) {
-      this._logger.warn("Invalid API response format for product:", product.get("uuid"));
+      this.logger.warn("Invalid API response format for product:", product.get("uuid"));
       return product;
     }
 
@@ -269,7 +269,7 @@ export default class SupplierMacklin
    * @param data - Array of product variants to convert
    * @returns Array of ProductBuilder instances
    */
-  protected _initProductBuilders(data: MacklinProductVariant[]): ProductBuilder<Product>[] {
+  protected initProductBuilders(data: MacklinProductVariant[]): ProductBuilder<Product>[] {
     return mapDefined(data, (product) => {
       return (
         new ProductBuilder(this.baseURL)
@@ -300,14 +300,14 @@ export default class SupplierMacklin
    * @returns A random string
    * @example
    * ```ts
-   * const string = this._generateString(20);
+   * const string = this.generateString(20);
    * // "5Wf70hQ0y1akc8rTQ8ps"
    *
-   * const uuid = this._generateString();
+   * const uuid = this.generateString();
    * // "550e8400-e29b-41d4-a716-446655440000"
    * ```
    */
-  private _generateString(length?: number, charSetSize?: number): string {
+  private generateString(length?: number, charSetSize?: number): string {
     const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     const size = charSetSize || chars.length;
 
@@ -341,7 +341,7 @@ export default class SupplierMacklin
    * @param params - Request parameters to sign
    * @returns The final request signature
    */
-  private _signRequest(headers: MacklinRequestHeaders, params: RequestParams): string {
+  private signRequest(headers: MacklinRequestHeaders, params: RequestParams): string {
     // Sort and filter headers exactly like api-client.js
     const headerString =
       Object.entries(headers)
@@ -365,18 +365,18 @@ export default class SupplierMacklin
         .join("&") + `&salt=${this.SALT}`;
 
     // Debug logging to match api-client.js
-    this._logger.debug("Headers for signing:", headers);
-    this._logger.debug("Params for signing:", params);
-    this._logger.debug("Header string:", headerString.toLowerCase());
-    this._logger.debug("Param string:", paramString.toLowerCase());
+    this.logger.debug("Headers for signing:", headers);
+    this.logger.debug("Params for signing:", params);
+    this.logger.debug("Header string:", headerString.toLowerCase());
+    this.logger.debug("Param string:", paramString.toLowerCase());
 
     const headerHash = md5(headerString.toLowerCase());
     const paramHash = md5(paramString.toLowerCase());
     const finalSignature = headerHash + paramHash;
 
-    this._logger.debug("Header hash:", headerHash);
-    this._logger.debug("Param hash:", paramHash);
-    this._logger.debug("Final signature:", finalSignature);
+    this.logger.debug("Header hash:", headerHash);
+    this.logger.debug("Param hash:", paramHash);
+    this.logger.debug("Final signature:", finalSignature);
 
     return finalSignature;
   }
@@ -396,40 +396,40 @@ export default class SupplierMacklin
    * @throws ApiError If the request fails or response is invalid
    * @throws TimeoutError If the request times out
    */
-  private async _request<T>(path: string, options: MacklinApiRequestOptions = {}): Promise<T> {
+  private async request<T>(path: string, options: MacklinApiRequestOptions = {}): Promise<T> {
     try {
-      const timestamp = (this._localStorage.MklTmKey as TimestampStorage).serverTm;
+      const timestamp = (this.localStorage.MklTmKey as TimestampStorage).serverTm;
 
       // Create a fresh headers object to avoid any potential array concatenation
       const headers: MacklinRequestHeaders = {
         /* eslint-disable @typescript-eslint/naming-convention */
         "X-Agent": "web",
-        "X-User-Token": this._ensureStringHeader(this._localStorage.MklUserToken),
-        "X-Device-Id": this._ensureStringHeader(this._localStorage.soleId),
+        "X-User-Token": this.ensureStringHeader(this.localStorage.MklUserToken),
+        "X-Device-Id": this.ensureStringHeader(this.localStorage.soleId),
         "X-Language": "en",
-        "X-Timestamp": this._ensureStringHeader(timestamp),
+        "X-Timestamp": this.ensureStringHeader(timestamp),
         /* eslint-enable @typescript-eslint/naming-convention */
       };
 
       // Handle auth headers exactly like api-client.js
       if (isAuthRequiredEndpoint(path)) {
-        headers["X-User-Token"] = this._ensureStringHeader(this._localStorage.MklUserToken);
+        headers["X-User-Token"] = this.ensureStringHeader(this.localStorage.MklUserToken);
       }
 
       // Handle language parameter exactly like api-client.js
       if (options.params?.lang) {
-        headers["X-Language"] = this._ensureStringHeader(options.params.lang);
+        headers["X-Language"] = this.ensureStringHeader(options.params.lang);
       }
 
       // Add any additional headers from options, ensuring they're strings
       if (options.headers) {
         Object.entries(options.headers).forEach(([key, value]) => {
-          headers[key] = this._ensureStringHeader(value);
+          headers[key] = this.ensureStringHeader(value);
         });
       }
 
       // Add timestamp to request exactly like api-client.js
-      const requestTimestamp = this._generateRequestTimestamp();
+      const requestTimestamp = this.generateRequestTimestamp();
       const params: RequestParams = { ...options.params };
       let body = options.body;
 
@@ -440,20 +440,20 @@ export default class SupplierMacklin
       }
 
       // Sign the request
-      const signature = this._signRequest(
+      const signature = this.signRequest(
         headers,
         options.method === "GET" || !options.method ? params : (body as RequestParams),
       );
       headers.sign = signature;
-      this._lastSignature = signature;
+      this.lastSignature = signature;
 
       // Debug logging to match api-client.js
-      this._logger.debug("Full request URL:", this._href(path, params, this.apiHost));
-      this._logger.debug("Request headers:", headers);
-      this._logger.debug("Request params:", params);
-      this._logger.debug("Request body:", body);
+      this.logger.debug("Full request URL:", this.href(path, params, this.apiHost));
+      this.logger.debug("Request headers:", headers);
+      this.logger.debug("Request params:", params);
+      this.logger.debug("Request body:", body);
 
-      const response: unknown = await this._httpGetJson({
+      const response: unknown = await this.httpGetJson({
         path,
         headers,
         params,
@@ -491,8 +491,8 @@ export default class SupplierMacklin
    * @returns The server timestamp
    * @throws MacklinApiError If the timestamp request fails or response is invalid
    */
-  private async _fetchServerTimestamp(): Promise<number> {
-    const response = await this._httpGetJson({
+  private async fetchServerTimestamp(): Promise<number> {
+    const response = await this.httpGetJson({
       path: `/api/timestamp`,
       host: this.apiHost,
     });
@@ -501,7 +501,7 @@ export default class SupplierMacklin
       throw new MacklinApiError("Invalid API response format");
     }
 
-    this._logger.log("serverTimestamp response:", response);
+    this.logger.log("serverTimestamp response:", response);
 
     const clientTime = Math.round(Date.now() / 1000);
     const timestampData: TimestampStorage = {
@@ -509,7 +509,7 @@ export default class SupplierMacklin
       clientTm: clientTime,
     };
 
-    this._localStorage.MklTmKey = timestampData;
+    this.localStorage.MklTmKey = timestampData;
 
     return timestampData.serverTm;
   }
@@ -522,9 +522,9 @@ export default class SupplierMacklin
    *
    * @returns A unique timestamp string for the request
    */
-  private _generateRequestTimestamp(): number {
-    if (this._lastSignature) {
-      const digits = this._lastSignature.match(/\d+/g);
+  private generateRequestTimestamp(): number {
+    if (this.lastSignature) {
+      const digits = this.lastSignature.match(/\d+/g);
       return Date.now() + (digits ? Number(digits.join("")) : 1);
     }
     return Date.now() + Math.floor(Math.random()) + Math.ceil(Math.random());
@@ -539,18 +539,18 @@ export default class SupplierMacklin
    *
    * @returns The current valid timestamp as a string
    */
-  private async _validateAndUpdateTimestamp(): Promise<string> {
+  private async validateAndUpdateTimestamp(): Promise<string> {
     const currentTime = Math.round(Date.now() / 1000);
-    const storedTimestamp = this._localStorage.MklTmKey
-      ? (this._localStorage.MklTmKey as TimestampStorage)
+    const storedTimestamp = this.localStorage.MklTmKey
+      ? (this.localStorage.MklTmKey as TimestampStorage)
       : null;
 
     if (
       !storedTimestamp ||
       currentTime > storedTimestamp.clientTm + this.TIMESTAMP_REFRESH_THRESHOLD
     ) {
-      delete this._localStorage.MklTmKey;
-      return String(await this._fetchServerTimestamp());
+      delete this.localStorage.MklTmKey;
+      return String(await this.fetchServerTimestamp());
     }
 
     return String(storedTimestamp.serverTm);
@@ -564,12 +564,12 @@ export default class SupplierMacklin
    * @returns A string representation of the value
    * @example
    * ```ts
-   * this._ensureStringHeader(["value"]) // "value"
-   * this._ensureStringHeader(null) // ""
-   * this._ensureStringHeader(123) // "123"
+   * this.ensureStringHeader(["value"]) // "value"
+   * this.ensureStringHeader(null) // ""
+   * this.ensureStringHeader(123) // "123"
    * ```
    */
-  private _ensureStringHeader(value: unknown): string {
+  private ensureStringHeader(value: unknown): string {
     if (Array.isArray(value)) {
       // If it's an array, take the first value
       return String(value[0] || "");

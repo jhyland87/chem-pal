@@ -8,7 +8,7 @@ import type SupplierBase from "../../supplierBase";
  *
  * @param supplier - The supplier class to spy on
  * @param fixtures - The fixture data to use for mock implementations
- * @returns An object containing the spies for _getCachedResults and _httpGetJson
+ * @returns An object containing the spies for getCachedResults and httpGetJson
  *
  * @example
  * ```typescript
@@ -19,8 +19,8 @@ import type SupplierBase from "../../supplierBase";
  * ```
  */
 export const spyOnSupplier = (supplier: Class<SupplierBase<any, any>>, fixtures: any) => {
-  const getCachedResultsSpy = vi.spyOn(supplier.prototype, "_getCachedResults");
-  const httpGetJsonMock = vi.spyOn(supplier.prototype, "_httpGetJson" as any);
+  const getCachedResultsSpy = vi.spyOn(supplier.prototype, "getCachedResults");
+  const httpGetJsonMock = vi.spyOn(supplier.prototype, "httpGetJson" as any);
 
   // Set up the mock implementation
   httpGetJsonMock.mockImplementation(async (...args: unknown[]) => {
