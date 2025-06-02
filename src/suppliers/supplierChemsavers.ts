@@ -1,7 +1,7 @@
 import { isCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
-import { ProductBuilder } from "@/utils/ProductBuilder";
+import ProductBuilder from "@/utils/ProductBuilder";
 import { isValidSearchResponse } from "@/utils/typeGuards/chemsavers";
 import SupplierBase from "./supplierBase";
 

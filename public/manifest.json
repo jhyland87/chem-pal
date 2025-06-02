@@ -13,5 +13,10 @@
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "service-worker.js"
+  },
+  "icons": {
+    "32": "static/images/logo/logo-white-blue-on-black-lg.png",
+    "48": "static/images/logo/logo-white-blue-on-black-lg.png",
+    "128": "static/images/logo/logo-white-blue-on-black-lg.png"
   }
 }

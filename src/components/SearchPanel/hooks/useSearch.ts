@@ -1,7 +1,7 @@
 import { useAppContext } from "@/context";
 import SupplierFactory from "@/suppliers/supplierFactory";
+import BadgeAnimator from "@/utils/BadgeAnimator";
 import { getColumnFilterConfig } from "../TableColumns";
-
 export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: UseSearchProps) {
   const appContext = useAppContext();
   let fetchController: AbortController = new AbortController();
@@ -21,6 +21,7 @@ export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: Us
     setIsLoading(true);
     setSearchResults([]);
     setStatusLabel("Searching...");
+    BadgeAnimator.animate("ellipsis", 300);
 
     // This stores what type of filter each column has. Well build this object
     // up as we iterate over the columns.
@@ -50,6 +51,7 @@ export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: Us
     // This is where the queries get run, when the iteration starts.
     for await (const result of productQueryResults) {
       resultCount++;
+      BadgeAnimator.setText(resultCount.toString());
 
       // Data for new row (must align with columns structure)
 
@@ -112,6 +114,8 @@ export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: Us
     const searchTime = endSearchTime - startSearchTime;
     setIsLoading(false);
     console.debug(`Found ${resultCount} products in ${searchTime} milliseconds`);
+
+    BadgeAnimator.clear("✔", 5000);
   }
 
   return {

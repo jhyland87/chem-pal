@@ -4,7 +4,7 @@ import {
   setupConsoleMock,
 } from "@/suppliers/__tests__/helpers/consoleTestUtils";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { Logger, LogLevel } from "../Logger";
+import Logger, { LogLevel } from "../Logger";
 
 // Define the extended Window interface
 interface ExtendedWindow extends Window {

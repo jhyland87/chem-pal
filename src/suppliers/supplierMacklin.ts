@@ -1,6 +1,6 @@
 import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 import { mapDefined } from "@/helpers/utils";
-import { ProductBuilder } from "@/utils/ProductBuilder";
+import ProductBuilder from "@/utils/ProductBuilder";
 import {
   isAuthCheckEndpoint,
   isAuthRequiredEndpoint,

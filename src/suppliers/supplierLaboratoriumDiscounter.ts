@@ -2,7 +2,7 @@ import { AVAILABILITY } from "@/constants/common";
 import { findCAS } from "@/helpers/cas";
 import { urlencode } from "@/helpers/request";
 import { mapDefined } from "@/helpers/utils";
-import { ProductBuilder } from "@/utils/ProductBuilder";
+import ProductBuilder from "@/utils/ProductBuilder";
 import {
   isProductObject,
   isSearchResponseOk,

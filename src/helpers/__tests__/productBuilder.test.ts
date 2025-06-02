@@ -1,4 +1,4 @@
-import { ProductBuilder } from "@/utils/ProductBuilder";
+import ProductBuilder from "@/utils/ProductBuilder";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as currencyHelpers from "../currency";
 import * as quantityHelpers from "../quantity";

@@ -3,7 +3,7 @@ import { parsePrice } from "@/helpers/currency";
 import { isQuantityObject, parseQuantity } from "@/helpers/quantity";
 import { firstMap } from "@/helpers/utils";
 
-import { ProductBuilder } from "@/utils/ProductBuilder";
+import ProductBuilder from "@/utils/ProductBuilder";
 import {
   isATGResponse,
   isResponseOk,

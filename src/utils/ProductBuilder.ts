@@ -3,7 +3,7 @@ import { findCAS, isCAS } from "@/helpers/cas";
 import { isParsedPrice, parsePrice, toUSD } from "@/helpers/currency";
 import { isQuantityObject, parseQuantity, toBaseQuantity } from "@/helpers/quantity";
 import { findFormulaInHtml } from "@/helpers/science";
-import { Logger } from "@/utils/Logger";
+import Logger from "@/utils/Logger";
 import { isMinimalProduct, isProduct, isUOM } from "@/utils/typeGuards/common";
 import { isAvailability, isValidVariant } from "@/utils/typeGuards/productbuilder";
 
@@ -15,9 +15,6 @@ import { isAvailability, isValidVariant } from "@/utils/typeGuards/productbuilde
  * It is used to build the product data up over different requests, and then return a complete
  * product object.
  * @category Utils
- * @group Utils
- * @groupDescription Core utility classes for building and managing product data, including validation, transformation, and data enrichment.
- * @module ProductBuilder
  * @example
  * ```typescript
  * const builder = new ProductBuilder<Product>('https://example.com');
@@ -31,9 +28,10 @@ import { isAvailability, isValidVariant } from "@/utils/typeGuards/productbuilde
  * and data validation.
  *
  * @category Utils
- * @group Utils
- * @groupDescription Core utility classes for building and managing product data, including validation, transformation, and data enrichment.
- * @module ProductBuilder
+ * @summary
+ * Builder class for constructing Product objects with a fluent interface.
+ * Implements the Builder pattern to handle complex product construction with optional fields
+ * and data validation.
  * @example
  * ```typescript
  * const builder = new ProductBuilder<Product>('https://example.com');
@@ -52,7 +50,7 @@ import { isAvailability, isValidVariant } from "@/utils/typeGuards/productbuilde
  * }
  * ```
  */
-export class ProductBuilder<T extends Product> {
+export default class ProductBuilder<T extends Product> {
   /** The partial product object being built */
   private _product: Partial<T> = {};
 

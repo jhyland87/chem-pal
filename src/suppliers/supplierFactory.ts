@@ -1,4 +1,4 @@
-import { Logger } from "@/utils/Logger";
+import Logger from "@/utils/Logger";
 import * as suppliers from ".";
 import SupplierBase from "./supplierBase";
 /**

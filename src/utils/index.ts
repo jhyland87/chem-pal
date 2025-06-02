@@ -1,2 +1,3 @@
-export { Logger, LogLevel } from "./Logger";
-export { ProductBuilder } from "./ProductBuilder";
+export { default as BadgeAnimator } from "./BadgeAnimator";
+export { default as Logger } from "./Logger";
+export { default as ProductBuilder } from "./ProductBuilder";

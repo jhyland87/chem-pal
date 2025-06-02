@@ -15,10 +15,9 @@
  * - Formatted output with timestamps
  * - Support for additional metadata in logs
  * - Can substitute for the console object
- * @category Logging
- * @group Utils
- * @groupDescription Core utility classes for logging, including level-based logging, timestamps, and console method compatibility.
- * @module Logger
+ * @category Utils
+ * @summary
+ * A simple logger that works on both the commandline and in the browser, and can directly replace the console object (for most cases).
  * @example
  * ```typescript
  * // Create a logger that automatically syncs with environment variables
@@ -40,10 +39,7 @@
 /**
  * Available logging levels in ascending order of severity:
  * DEBUG → INFO → WARN → ERROR
- * @category Logging
- * @group Utils
- * @module Logger
- * @groupDescription Log level definitions and their usage in the application.
+ * @category Utils
  */
 export enum LogLevel {
   /** Detailed information for debugging purposes */
@@ -59,10 +55,9 @@ export enum LogLevel {
 /**
  * The logger class.
  *
- * @category Logging
- * @group Utils
- * @module Logger
- * @groupDescription Core utility classes for logging, including level-based logging, timestamps, and console method compatibility.
+ * @summary
+ * A simple logger that works on both the commandline and in the browser, and can directly replace the console object (for most cases).
+ * @category Utils
  * @example
  * ```typescript
  * // Create a logger that automatically syncs with environment variables
@@ -80,7 +75,7 @@ export enum LogLevel {
  * envLogger.setLogLevel(LogLevel.WARN);  // Now ignores LOG_LEVEL changes
  * ```
  */
-export class Logger {
+export default class Logger {
   /**
    * Maps log levels to their priority values for comparison.
    * Higher numbers indicate higher priority levels.
