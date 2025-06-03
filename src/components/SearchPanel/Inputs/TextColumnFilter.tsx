@@ -35,7 +35,6 @@ export default function TextColumnFilter(props: FilterVariantInputProps) {
     setColumnFilterValue(value);
     column.setFilterValueDebounced(value);
   };
-
   return (
     <StyledFormControlSelector>
       <TextField

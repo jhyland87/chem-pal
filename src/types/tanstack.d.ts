@@ -89,6 +89,7 @@ declare global {
   }
 }
 
+/*
 declare module "@tanstack/react-table" {
   interface Column {
     getHeaderText?: () => string;
@@ -101,6 +102,22 @@ declare module "@tanstack/react-table" {
     setColumnVisibility?: (visible: boolean) => void;
   }
 }
-
+*/
 // This export is needed to make the file a module
+
+interface ColumnUniqueValues {
+  getHeaderText?: () => string;
+  getVisibleUniqueValues?: () => (string | number)[];
+  getAllUniqueValues?: () => (string | number)[];
+  getFullRange?: () => [number, number];
+  getVisibleRange?: () => [number, number];
+  setFilterValueDebounced?: (value: unknown) => void;
+  setFilterValueThrottled?: (value: unknown) => void;
+  setColumnVisibility?: (visible: boolean) => void;
+}
+
+declare module "@tanstack/react-table" {
+  interface Column extends ColumnUniqueValues {}
+}
+
 export {};

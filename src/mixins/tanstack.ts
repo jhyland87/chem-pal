@@ -1,6 +1,4 @@
 import { type Column, type StringOrTemplateHeader, type Table } from "@tanstack/react-table";
-import debounce from "lodash/debounce";
-import throttle from "lodash/throttle";
 
 /**
  * Gets the displayable header text for a column.
@@ -118,7 +116,6 @@ export function setColumnVisibility<TData>(column: Column<TData, unknown>, visib
     if (column.getIsVisible()) column.toggleVisibility(false);
   }
 }
-
 /**
  * Implements custom methods for Tanstack Table columns.
  *
@@ -136,7 +133,7 @@ export function setColumnVisibility<TData>(column: Column<TData, unknown>, visib
  *
  * @param TData - The type of data in the table rows
  * @param table - The table instance to extend with custom methods
- */
+
 export function implementCustomMethods<TData>(table: Table<TData>) {
   // Add custom column methods to each column
   table.getAllColumns().forEach((column: Column<TData, unknown>) => {
@@ -173,3 +170,4 @@ export function implementCustomMethods<TData>(table: Table<TData>) {
     }
   });
 }
+   */

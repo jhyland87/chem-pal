@@ -1,5 +1,4 @@
 import { useAppContext } from "@/context";
-import { implementCustomMethods } from "@/mixins/tanstack";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import { Column, flexRender, Row } from "@tanstack/react-table";
@@ -112,7 +111,7 @@ export default function ResultsTable({
   });
 
   // Extend columns with getUniqueVisibleValues method
-  implementCustomMethods(table);
+  //implementCustomMethods(table);
 
   function columnSizeVars() {
     const headers = table.getFlatHeaders();

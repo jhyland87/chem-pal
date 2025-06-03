@@ -1,4 +1,11 @@
-import { implementCustomMethods } from "@/mixins/tanstack";
+import {
+  getAllUniqueValues,
+  getFullRange,
+  getHeaderText,
+  getVisibleRange,
+  getVisibleUniqueValues,
+  setColumnVisibility,
+} from "@/mixins/tanstack";
 import {
   ColumnDef,
   getCoreRowModel,
@@ -39,10 +46,30 @@ export function useResultsTable({
     debugTable: false,
     debugHeaders: false,
     debugColumns: false,
-  });
+    _features: [
+      {
+        createColumn: (column, table) => {
+          // Just gets the header text of the column
+          column.getHeaderText = () => getHeaderText(column);
 
-  // Extend columns with getUniqueVisibleValues method
-  implementCustomMethods(table);
+          // Function to set the visibility of the column
+          column.setColumnVisibility = (visible: boolean) => setColumnVisibility(column, visible);
+
+          // Function to count the number of unique values in the visible rows of the column
+          column.getVisibleUniqueValues = () => getVisibleUniqueValues(column, table);
+
+          // Same as getVisibleUniqueValues, but for all rows
+          column.getAllUniqueValues = () => getAllUniqueValues(column, table);
+
+          // Get the minimum and maximum values from a column (for range filters)
+          column.getFullRange = () => getFullRange(column, table);
+
+          // Visible range of values in the column
+          column.getVisibleRange = () => getVisibleRange(column, table);
+        },
+      },
+    ],
+  });
 
   return table;
 }
