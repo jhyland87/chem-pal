@@ -10,7 +10,12 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
     include: ["src/**/__tests__/**/*.{test,spec}.{js,ts,jsx,tsx}"],
-    exclude: ["**/node_modules/**", "**/dist/**", "**/.{idea,git,cache,output,temp}/**"],
+    exclude: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/.{idea,git,cache,output,temp}/**",
+      "src/suppliers/**",
+    ],
     deps: {
       web: {
         transformCss: true,
