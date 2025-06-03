@@ -279,7 +279,7 @@ export default class Logger {
   private formatMessage(level: LogLevel, message: string): string {
     const timestamp = new Date().toISOString();
     const indentation = this.groupIndent.repeat(this.groupDepth);
-    return `[${timestamp}] [${level}] [${this.prefix}] ${indentation}${message}`;
+    return `[${timestamp}] [${level.toUpperCase()}] [${this.prefix}] ${indentation}${message}`;
   }
 
   /**
@@ -317,7 +317,7 @@ export default class Logger {
           console.info(
             this.formatMessage(
               LogLevel.INFO,
-              `Log level changed from ${oldLevel} to ${envLevel} due to environment update`,
+              `Log level changed from ${oldLevel.toUpperCase()} to ${envLevel.toUpperCase().toUpperCase()} due to environment update`,
             ),
           );
         }

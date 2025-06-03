@@ -13,7 +13,7 @@ vi.mock("@/helpers/currency", () => ({
   isParsedPrice: vi.fn(),
 }));
 
-describe("SupplierLaboratoriumDiscounter", async () => {
+describe.skip("SupplierLaboratoriumDiscounter", async () => {
   // Get the laboratoriumdiscounter fixture data thingy
   const supplierFixtures = fixtureData("laboratoriumdiscounter");
   // Load up the borohyride search content

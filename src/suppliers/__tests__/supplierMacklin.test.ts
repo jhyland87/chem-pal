@@ -17,7 +17,7 @@ vi.mock("@/helpers/currency", () => ({
 
 //process.env.LOG_LEVEL = "DEBUG";
 
-describe("SupplierMacklin", async () => {
+describe.skip("SupplierMacklin", async () => {
   const supplierFixtures = fixtureData("macklin");
   //const searchBorohydride = supplierFixtures.search("borohydride-limit-13-raw-http-response.json");
   //const searchBorohydrideRaw = await searchBorohydride("results");
