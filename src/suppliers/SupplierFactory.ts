@@ -1,6 +1,6 @@
 import Logger from "@/utils/Logger";
 import * as suppliers from ".";
-import SupplierBase from "./supplierBase";
+import SupplierBase from "./SupplierBase";
 /**
  * Factory class for querying multiple chemical suppliers simultaneously.
  * This class provides a unified interface to search across multiple supplier implementations.
@@ -32,7 +32,7 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
   private controller: AbortController;
 
   // List of supplier class names to include in query results
-  private _suppliers: Array<string>;
+  private suppliers: Array<string>;
 
   // Maximum number of results for each supplier
   private limit: number = 5;
@@ -60,8 +60,8 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
     this.logger.debug("Query:", this.query);
     this.limit = limit;
     this.controller = controller;
-    this._suppliers = suppliers;
-    this.logger.debug("Suppliers:", this._suppliers);
+    this.suppliers = suppliers;
+    this.logger.debug("Suppliers:", this.suppliers);
   }
 
   /**
@@ -104,7 +104,7 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
   async *[Symbol.asyncIterator](): AsyncGenerator<T, void, unknown> {
     try {
       this.logger.debug("Starting search");
-      const supplierIterator = this._getConsolidatedGenerator();
+      const supplierIterator = this.getConsolidatedGenerator();
 
       for await (const value of supplierIterator) {
         yield value as T;
@@ -130,13 +130,13 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
    * @example
    * ```typescript
    * // Internal use only
-   * const generator = this._getConsolidatedGenerator();
+   * const generator = this.getConsolidatedGenerator();
    * for await (const product of generator) {
    *   // Process each product
    * }
    * ```
    */
-  private _getConsolidatedGenerator(): AsyncGenerator<Product, void, unknown> {
+  private getConsolidatedGenerator(): AsyncGenerator<Product, void, unknown> {
     async function* combineAsyncIterators(
       asyncIterators: SupplierBase<unknown, Product>[],
     ): AsyncGenerator<Product, void, unknown> {
@@ -151,7 +151,7 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
     return combineAsyncIterators(
       Object.entries(suppliers).reduce(
         (result: SupplierBase<unknown, Product>[], [supplierClassName, supplierClass]) => {
-          if (this._suppliers.length == 0 || this._suppliers.includes(supplierClassName)) {
+          if (this.suppliers.length == 0 || this.suppliers.includes(supplierClassName)) {
             this.logger.debug("Initializing supplier class:", supplierClassName);
             this.logger.debug("this.limit:", this.limit);
             // Cast supplierClass to the correct type to fix type error

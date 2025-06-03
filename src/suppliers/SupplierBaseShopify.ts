@@ -2,7 +2,7 @@ import { parseQuantity } from "@/helpers/quantity";
 import { firstMap } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import { isShopifyVariant, isValidSearchResponse } from "@/utils/typeGuards/shopify";
-import SupplierBase from "./supplierBase";
+import SupplierBase from "./SupplierBase";
 
 /**
  * Base class for Shopify-based suppliers that provides common functionality for
@@ -39,7 +39,7 @@ import SupplierBase from "./supplierBase";
  *   // Name of supplier (for display purposes)
  *   public readonly supplierName: string = "Foobar";
  *
- *   protected _apiKey: string = "<api_key>";
+ *   protected apiKey: string = "<api_key>";
  *
  *   // Base URL for HTTP(s) requests
  *   public readonly baseURL: string = "https://www.foobar.com";
@@ -50,9 +50,9 @@ export default abstract class SupplierBaseShopify
   extends SupplierBase<ItemListing, Product>
   implements AsyncIterable<Product>
 {
-  protected _apiKey: string = "";
+  protected apiKey: string = "";
 
-  protected _apiHost: string = "searchserverapi.com";
+  protected apiHost: string = "searchserverapi.com";
 
   /**
    * Query products from the Shopify API
@@ -92,7 +92,7 @@ export default abstract class SupplierBaseShopify
       // apply to results returned from Supplier3SChem, not the rquests
       // made by it.
       /* eslint-disable */
-      api_key: this._apiKey,
+      api_key: this.apiKey,
       q: query,
       maxResults: 200,
       startIndex: 0,
@@ -108,7 +108,7 @@ export default abstract class SupplierBaseShopify
 
     const searchRequest = await this.httpGetJson({
       path: "/getresults",
-      host: this._apiHost,
+      host: this.apiHost,
       params: getParams,
     });
 

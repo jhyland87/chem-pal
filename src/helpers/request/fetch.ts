@@ -132,21 +132,21 @@ export async function fetchDecorator(
   console.log(`Request Hash: ${requestHash}`);
 
   const response = await fetch(input, init);
-  const _response = response.clone();
+  const clonedResponse = response.clone();
 
   if (!response.ok) {
-    throw new Error(`HTTP Error: ${_response.status} ${_response.statusText}`);
+    throw new Error(`HTTP Error: ${clonedResponse.status} ${clonedResponse.statusText}`);
   }
 
-  const contentType = _response.headers.get("content-type") || "";
+  const contentType = clonedResponse.headers.get("content-type") || "";
   let data: unknown;
 
   if (contentType.includes("application/json")) {
-    data = await _response.json();
+    data = await clonedResponse.json();
   } else if (contentType.includes("text/")) {
-    data = await _response.text();
+    data = await clonedResponse.text();
   } else {
-    data = await _response.blob();
+    data = await clonedResponse.blob();
   }
 
   // Create a new Response object that inherits all prototype methods

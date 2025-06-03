@@ -1,14 +1,19 @@
 {
   "recommendations": [
     "yoavbls.pretty-ts-errors",
-    "lcrystal-spider.jsdoc-generator",
     "kuscamara.remove-unused-imports",
     "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
     "henrynguyen5-vsc.vsc-nvm",
     "psulek-solo.typedoc-live-preview",
     "vitest.explorer",
-    "rluvaton.vscode-vitest"
+    "kduy5222.vscode-vitest-runner-pnpm",
+    "connorshea.vscode-test-explorer-status-bar",
+    "smarschollek.vscode-react-scripts-test-adapter"
   ],
-  "unwantedRecommendations": []
+  "unwantedRecommendations": [
+    "orta.vscode-jest",
+    "firsttris.vscode-jest-runner",
+    "kavod-io.vscode-jest-test-adapter"
+  ]
 }

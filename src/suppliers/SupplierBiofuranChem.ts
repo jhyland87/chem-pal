@@ -1,4 +1,4 @@
-import SupplierBaseWix from "./supplierBaseWix";
+import SupplierBaseWix from "./SupplierBaseWix";
 
 /**
  * The SupplierBioFuranChem module is meant to perform searches and retrieve product details from the

@@ -1,4 +1,4 @@
-import SupplierBaseWoocommerce from "./supplierBaseWoocommerce";
+import SupplierBaseWoocommerce from "./SupplierBaseWoocommerce";
 
 /**
  * Supplier class for Carolina Chemical, a chemical supplier using the WooCommerce platform.

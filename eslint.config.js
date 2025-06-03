@@ -117,6 +117,7 @@ export default tseslint.config(
             camelCase: true,
             pascalCase: true,
             kebabCase: true,
+            upperCase: true,
           },
         },
       ],

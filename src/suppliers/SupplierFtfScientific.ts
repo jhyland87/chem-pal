@@ -1,4 +1,4 @@
-import SupplierBaseWix from "./supplierBaseWix";
+import SupplierBaseWix from "./SupplierBaseWix";
 
 /**
  * SupplierFtfScientific class that extends SupplierBaseWix and implements AsyncIterable<Product>.

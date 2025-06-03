@@ -4,7 +4,7 @@ import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import chunk from "lodash/chunk";
-import SupplierBase from "./supplierBase";
+import SupplierBase from "./SupplierBase";
 /**
  * Supplier implementation for Loudwolf chemical supplier.
  * Extends the base supplier class and provides Loudwolf-specific implementation
@@ -99,7 +99,7 @@ export default class SupplierLoudwolf
 
     this.logger.log("searchResponse:", searchResponse);
 
-    const $fuzzResults = this._fuzzHtmlResponse(query, searchResponse);
+    const $fuzzResults = this.fuzzHtmlResponse(query, searchResponse);
     this.logger.info("fuzzResults:", Array.from($fuzzResults));
 
     return this.initProductBuilders($fuzzResults.slice(0, limit));
@@ -149,7 +149,7 @@ export default class SupplierLoudwolf
    * ```typescript
    * const html = await this.httpGetHtml({ path: "/search", params: { q: "acetone" } });
    * if (html) {
-   *   const matchingElements = this._fuzzHtmlResponse("acetone", html);
+   *   const matchingElements = this.fuzzHtmlResponse("acetone", html);
    *   console.log(`Found ${matchingElements.length} matching products`);
    *   // Elements can be used to extract product details
    *   for (const element of matchingElements) {
@@ -159,7 +159,7 @@ export default class SupplierLoudwolf
    * }
    * ```
    */
-  protected _fuzzHtmlResponse(query: string, response: string): Element[] {
+  protected fuzzHtmlResponse(query: string, response: string): Element[] {
     // Create a new DOM to do the travesing/parsing
     const parser = new DOMParser();
     const parsedHTML = parser.parseFromString(response, "text/html");

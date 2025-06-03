@@ -1,5 +1,5 @@
 import { useAppContext } from "@/context";
-import SupplierFactory from "@/suppliers/supplierFactory";
+import SupplierFactory from "@/suppliers/SupplierFactory";
 import BadgeAnimator from "@/utils/BadgeAnimator";
 import { getColumnFilterConfig } from "../TableColumns";
 export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: UseSearchProps) {

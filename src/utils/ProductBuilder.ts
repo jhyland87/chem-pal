@@ -52,10 +52,10 @@ import { isAvailability, isValidVariant } from "@/utils/typeGuards/productbuilde
  */
 export default class ProductBuilder<T extends Product> {
   /** The partial product object being built */
-  private _product: Partial<T> = {};
+  private product: Partial<T> = {};
 
   /** The raw data of the product */
-  private _rawData: Record<string, unknown> = {};
+  private rawData: Record<string, unknown> = {};
 
   /** The base URL of the supplier's website */
   private baseURL: string;
@@ -92,7 +92,7 @@ export default class ProductBuilder<T extends Product> {
    * ```
    */
   setData(data: Partial<T>): ProductBuilder<T> {
-    Object.assign(this._product, data);
+    Object.assign(this.product, data);
     return this;
   }
 
@@ -113,9 +113,9 @@ export default class ProductBuilder<T extends Product> {
    * ```
    */
   setBasicInfo(title: string, url: string, supplier: string): ProductBuilder<T> {
-    this._product.title = title;
-    this._product.url = url;
-    this._product.supplier = supplier;
+    this.product.title = title;
+    this.product.url = url;
+    this.product.supplier = supplier;
     return this;
   }
 
@@ -127,18 +127,18 @@ export default class ProductBuilder<T extends Product> {
    * @example
    * ```typescript
    * builder.setFormula('foobar K<sub>2</sub>Cr<sub>2</sub>O<sub>7</sub> baz');
-   * // sets this._product.formula to "K₂Cr₂O₇"
+   * // sets this.product.formula to "K₂Cr₂O₇"
    * builder.setFormula("H<sub>2</sub>SO<sub>4</sub>");
-   * // sets this._product.formula to "H₂SO ₄"
+   * // sets this.product.formula to "H₂SO ₄"
    * builder.setFormula("Just some text");
-   * // sets this._product.formula to undefined
+   * // sets this.product.formula to undefined
    * ```
    */
   setFormula(formula?: string): ProductBuilder<T> {
     if (formula && typeof formula === "string" && formula.trim().length > 0) {
       const parsedResult = findFormulaInHtml(formula);
       if (parsedResult) {
-        this._product.formula = parsedResult;
+        this.product.formula = parsedResult;
       }
     }
     return this;
@@ -158,7 +158,7 @@ export default class ProductBuilder<T extends Product> {
    */
   setGrade(grade: string): ProductBuilder<T> {
     if (grade && grade?.trim()?.length > 0) {
-      this._product.grade = grade;
+      this.product.grade = grade;
     }
     return this;
   }
@@ -171,9 +171,9 @@ export default class ProductBuilder<T extends Product> {
    * @example
    * ```typescript
    * builder.setPricing(parsePrice('$123.34'));
-   * // Sets this._product.price to 123.34
-   * // Sets this._product.currencyCode to 'USD'
-   * // Sets this._product.currencySymbol to '$'
+   * // Sets this.product.price to 123.34
+   * // Sets this.product.currencyCode to 'USD'
+   * // Sets this.product.currencySymbol to '$'
    * ```
    */
   setPricing(price: ParsedPrice): ProductBuilder<T>;
@@ -185,9 +185,9 @@ export default class ProductBuilder<T extends Product> {
    * @example
    * ```typescript
    * builder.setPricing('$123.34');
-   * // Sets this._product.price to 123.34
-   * // Sets this._product.currencyCode to 'USD'
-   * // Sets this._product.currencySymbol to '$'
+   * // Sets this.product.price to 123.34
+   * // Sets this.product.currencyCode to 'USD'
+   * // Sets this.product.currencySymbol to '$'
    * ```
    */
   setPricing(price: string): ProductBuilder<T>;
@@ -201,9 +201,9 @@ export default class ProductBuilder<T extends Product> {
    * @example
    * ```typescript
    * builder.setPricing(123.34, 'USD', '$');
-   * // Sets this._product.price to 123.34
-   * // Sets this._product.currencyCode to 'USD'
-   * // Sets this._product.currencySymbol to '$'
+   * // Sets this.product.price to 123.34
+   * // Sets this.product.currencyCode to 'USD'
+   * // Sets this.product.currencySymbol to '$'
    * ```
    */
   setPricing(
@@ -217,30 +217,30 @@ export default class ProductBuilder<T extends Product> {
     currencySymbol?: string,
   ): ProductBuilder<T> {
     if (isParsedPrice(price)) {
-      this._product.price = price.price;
-      this._product.currencyCode = price.currencyCode;
-      this._product.currencySymbol = price.currencySymbol;
+      this.product.price = price.price;
+      this.product.currencyCode = price.currencyCode;
+      this.product.currencySymbol = price.currencySymbol;
       return this;
     }
-    if (typeof currencyCode === "string") this._product.currencyCode = currencyCode;
-    if (typeof currencySymbol === "string") this._product.currencySymbol = currencySymbol;
+    if (typeof currencyCode === "string") this.product.currencyCode = currencyCode;
+    if (typeof currencySymbol === "string") this.product.currencySymbol = currencySymbol;
 
     if (typeof price === "string") {
       if (Number.isNaN(Number(price)) === false) {
-        this._product.price = Number(price);
+        this.product.price = Number(price);
         return this;
       }
 
       const parsedPrice = parsePrice(price);
       if (parsedPrice) {
-        this._product.price = parsedPrice.price;
-        this._product.currencyCode = parsedPrice.currencyCode;
-        this._product.currencySymbol = parsedPrice.currencySymbol;
+        this.product.price = parsedPrice.price;
+        this.product.currencyCode = parsedPrice.currencyCode;
+        this.product.currencySymbol = parsedPrice.currencySymbol;
         return this;
       }
     }
 
-    this._product.price = Number(price);
+    this.product.price = Number(price);
 
     return this;
   }
@@ -254,8 +254,8 @@ export default class ProductBuilder<T extends Product> {
    * ```typescript
    * // For 500 grams
    * builder.setQuantity(parseQuantity('500g'));
-   * // Sets this._product.quantity to 500
-   * // Sets this._product.uom to 'g'
+   * // Sets this.product.quantity to 500
+   * // Sets this.product.uom to 'g'
    * ```
    */
   setQuantity(quantity: QuantityObject): ProductBuilder<T>;
@@ -268,8 +268,8 @@ export default class ProductBuilder<T extends Product> {
    * ```typescript
    * // For 500 grams
    * builder.setQuantity('500g');
-   * // Sets this._product.quantity to 500
-   * // Sets this._product.uom to 'g'
+   * // Sets this.product.quantity to 500
+   * // Sets this.product.uom to 'g'
    * ```
    */
   setQuantity(quantity: string): ProductBuilder<T>;
@@ -283,8 +283,8 @@ export default class ProductBuilder<T extends Product> {
    * ```typescript
    * // For 500 grams
    * builder.setQuantity(500, 'g');
-   * // Sets this._product.quantity to 500
-   * // Sets this._product.uom to 'g'
+   * // Sets this.product.quantity to 500
+   * // Sets this.product.uom to 'g'
    * ```
    */
   setQuantity(quantity: number, uom: string): ProductBuilder<T>;
@@ -292,16 +292,16 @@ export default class ProductBuilder<T extends Product> {
     if (typeof quantity === "undefined") return this;
 
     if (isQuantityObject(quantity)) {
-      this._product.quantity = quantity.quantity;
-      this._product.uom = quantity.uom;
+      this.product.quantity = quantity.quantity;
+      this.product.uom = quantity.uom;
       return this;
     }
 
     if (typeof quantity === "string" && typeof uom === "undefined") {
       const parsedQuantity = parseQuantity(quantity);
       if (parsedQuantity) {
-        this._product.quantity = parsedQuantity.quantity;
-        this._product.uom = parsedQuantity.uom;
+        this.product.quantity = parsedQuantity.quantity;
+        this.product.uom = parsedQuantity.uom;
         return this;
       }
 
@@ -311,14 +311,14 @@ export default class ProductBuilder<T extends Product> {
         this.logger.warn(`Unable to parse quantity from string: ${quantity}`);
         return this;
       }
-      this._product.quantity = Number(qty);
-      this._product.uom = unit;
+      this.product.quantity = Number(qty);
+      this.product.uom = unit;
       return this;
     }
 
     if (typeof quantity === "number" || Number.isInteger(quantity)) {
-      this._product.quantity = Number(quantity);
-      this._product.uom = uom ?? "pieces";
+      this.product.quantity = Number(quantity);
+      this.product.uom = uom ?? "pieces";
 
       return this;
     }
@@ -338,7 +338,7 @@ export default class ProductBuilder<T extends Product> {
    */
   setUOM(uom: string): ProductBuilder<T> {
     if (typeof uom === "string" && uom.trim().length > 0) {
-      this._product.uom = uom;
+      this.product.uom = uom;
       return this;
     }
 
@@ -357,7 +357,7 @@ export default class ProductBuilder<T extends Product> {
    * ```
    */
   setSupplierCountry(country: CountryCode): ProductBuilder<T> {
-    this._product.supplierCountry = country;
+    this.product.supplierCountry = country;
     return this;
   }
 
@@ -372,7 +372,7 @@ export default class ProductBuilder<T extends Product> {
    * ```
    */
   setSupplierShipping(shipping: ShippingRange): ProductBuilder<T> {
-    this._product.supplierShipping = shipping;
+    this.product.supplierShipping = shipping;
     return this;
   }
 
@@ -389,7 +389,7 @@ export default class ProductBuilder<T extends Product> {
    * ```
    */
   setDescription(description: string): ProductBuilder<T> {
-    this._product.description = description;
+    this.product.description = description;
     return this;
   }
 
@@ -414,11 +414,11 @@ export default class ProductBuilder<T extends Product> {
     }
 
     if (isCAS(cas)) {
-      this._product.cas = cas;
+      this.product.cas = cas;
     } else {
       const parsedACAS = findCAS(cas);
       if (parsedACAS) {
-        this._product.cas = parsedACAS;
+        this.product.cas = parsedACAS;
       }
     }
     return this;
@@ -436,7 +436,7 @@ export default class ProductBuilder<T extends Product> {
    */
   setId(id?: number | string): ProductBuilder<T> {
     if (id) {
-      this._product.id = id as T["id"];
+      this.product.id = id as T["id"];
     }
     return this;
   }
@@ -453,7 +453,7 @@ export default class ProductBuilder<T extends Product> {
    */
   setUUID(uuid: string): ProductBuilder<T> {
     if (uuid && uuid.trim().length > 0) {
-      this._product.uuid = uuid;
+      this.product.uuid = uuid;
     }
     return this;
   }
@@ -470,7 +470,7 @@ export default class ProductBuilder<T extends Product> {
    */
   setSku(sku: string): ProductBuilder<T> {
     if (sku && sku.trim().length > 0) {
-      this._product.sku = sku;
+      this.product.sku = sku;
     }
     return this;
   }
@@ -487,7 +487,7 @@ export default class ProductBuilder<T extends Product> {
    */
   setVendor(vendor?: string): ProductBuilder<T> {
     if (vendor) {
-      this._product.vendor = vendor;
+      this.product.vendor = vendor;
     }
     return this;
   }
@@ -565,7 +565,7 @@ export default class ProductBuilder<T extends Product> {
       return this;
     }
 
-    this._product.availability = avail;
+    this.product.availability = avail;
     return this;
   }
 
@@ -583,7 +583,7 @@ export default class ProductBuilder<T extends Product> {
    * ```
    */
   addRawData(data?: Record<string, unknown>): ProductBuilder<T> {
-    Object.assign(this._rawData, data);
+    Object.assign(this.rawData, data);
     return this;
   }
 
@@ -604,10 +604,10 @@ export default class ProductBuilder<T extends Product> {
    * ```
    */
   addVariant(variant: Partial<Variant>): ProductBuilder<T> {
-    if (!this._product.variants) {
-      this._product.variants = [];
+    if (!this.product.variants) {
+      this.product.variants = [];
     }
-    this._product.variants.push(variant);
+    this.product.variants.push(variant);
     return this;
   }
 
@@ -653,7 +653,7 @@ export default class ProductBuilder<T extends Product> {
    * ```
    */
   setVariants(variants: Partial<Variant>[]): ProductBuilder<T> {
-    this._product.variants = variants;
+    this.product.variants = variants;
     return this;
   }
 
@@ -669,8 +669,8 @@ export default class ProductBuilder<T extends Product> {
    * ```
    */
   get(key: keyof T): T[keyof T] | Maybe<T[keyof T]> {
-    if (key in this._product && typeof this._product[key] !== "undefined") {
-      return this._product[key] as T[keyof T];
+    if (key in this.product && typeof this.product[key] !== "undefined") {
+      return this.product[key] as T[keyof T];
     }
 
     return;
@@ -718,27 +718,27 @@ export default class ProductBuilder<T extends Product> {
    * ```
    */
   async build(): Promise<Maybe<Product>> {
-    if (!isMinimalProduct(this._product)) {
+    if (!isMinimalProduct(this.product)) {
       return;
     }
 
-    this._product.usdPrice = this._product.price;
-    const baseQuantity = toBaseQuantity(this._product.quantity, this._product.uom);
+    this.product.usdPrice = this.product.price;
+    const baseQuantity = toBaseQuantity(this.product.quantity, this.product.uom);
     if (baseQuantity) {
-      this._product.baseQuantity = baseQuantity;
+      this.product.baseQuantity = baseQuantity;
     }
 
-    if (this._product.currencyCode !== "USD") {
-      this._product.usdPrice = await toUSD(this._product.price, this._product.currencyCode);
+    if (this.product.currencyCode !== "USD") {
+      this.product.usdPrice = await toUSD(this.product.price, this.product.currencyCode);
     }
 
     // Process variants if present
-    if (this._product.variants?.length) {
+    if (this.product.variants?.length) {
       // Filter out invalid variants
-      this._product.variants = this._product.variants.filter((variant) => isValidVariant(variant));
+      this.product.variants = this.product.variants.filter((variant) => isValidVariant(variant));
 
       // Process each variant
-      for (const variant of this._product.variants ?? []) {
+      for (const variant of this.product.variants ?? []) {
         if (
           "quantity" in variant &&
           "uom" in variant &&
@@ -752,8 +752,8 @@ export default class ProductBuilder<T extends Product> {
           }
         }
 
-        if (typeof variant.price === "number" && this._product.currencyCode !== "USD") {
-          variant.usdPrice = await toUSD(variant.price, this._product.currencyCode ?? "USD");
+        if (typeof variant.price === "number" && this.product.currencyCode !== "USD") {
+          variant.usdPrice = await toUSD(variant.price, this.product.currencyCode ?? "USD");
         }
 
         if (variant.url) {
@@ -762,14 +762,14 @@ export default class ProductBuilder<T extends Product> {
       }
     }
 
-    if (!isProduct(this._product)) {
-      console.error(`ProductBuilder| Invalid _product: ${JSON.stringify(this._product)}`);
+    if (!isProduct(this.product)) {
+      console.error(`ProductBuilder| Invalid product: ${JSON.stringify(this.product)}`);
       return;
     }
 
-    this._product.url = this.href(this._product.url);
-    console.log("Built product:", this._product);
-    return this._product;
+    this.product.url = this.href(this.product.url);
+    console.log("Built product:", this.product);
+    return this.product;
   }
 
   /**
@@ -786,6 +786,6 @@ export default class ProductBuilder<T extends Product> {
    * ```
    */
   dump(): Partial<T> {
-    return this._product;
+    return this.product;
   }
 }

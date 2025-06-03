@@ -11,16 +11,16 @@ const DEFAULT_CAPACITY = 100;
 
 export class HttpLru {
   static #instance: HttpLru | null = null;
-  private _capacity: number;
-  private _cache: Map<string, LruNode>;
-  private _head: LruNode | null;
-  private _tail: LruNode | null;
+  private capacity: number;
+  private cache: Map<string, LruNode>;
+  private head: LruNode | null;
+  private tail: LruNode | null;
 
   private constructor(capacity: number = DEFAULT_CAPACITY) {
-    this._capacity = capacity;
-    this._cache = new Map();
-    this._head = null;
-    this._tail = null;
+    this.capacity = capacity;
+    this.cache = new Map();
+    this.head = null;
+    this.tail = null;
   }
 
   public static async getInstance(capacity: number = DEFAULT_CAPACITY): Promise<HttpLru> {
@@ -30,9 +30,9 @@ export class HttpLru {
     const data = await chrome.storage.local.get(["httplru"]);
     if (data.httplru) {
       const httplru = new HttpLru(capacity);
-      httplru._cache = new Map(Object.entries(data.httplru.cache));
-      httplru._head = data.httplru.head;
-      httplru._tail = data.httplru.tail;
+      httplru.cache = new Map(Object.entries(data.httplru.cache));
+      httplru.head = data.httplru.head;
+      httplru.tail = data.httplru.tail;
       HttpLru.#instance = httplru;
       return httplru;
     } else {
@@ -50,8 +50,8 @@ export class HttpLru {
   }
 
   async get(key: string): Promise<FetchDecoratorResponse | null> {
-    if (this._cache.has(key)) {
-      const node = this._cache.get(key)!;
+    if (this.cache.has(key)) {
+      const node = this.cache.get(key)!;
       this.moveToHead(node);
       return node.value;
     }
@@ -59,27 +59,27 @@ export class HttpLru {
   }
 
   async put(key: string, value: FetchDecoratorResponse): Promise<void> {
-    if (this._cache.has(key)) {
-      const node = this._cache.get(key)!;
+    if (this.cache.has(key)) {
+      const node = this.cache.get(key)!;
       node.value = value;
       this.moveToHead(node);
     } else {
-      const newNode: LruNode = { key, value, prev: null, next: this._head };
-      if (this._head) {
-        this._head.prev = newNode;
+      const newNode: LruNode = { key, value, prev: null, next: this.head };
+      if (this.head) {
+        this.head.prev = newNode;
       }
-      this._head = newNode;
-      if (!this._tail) {
-        this._tail = newNode;
+      this.head = newNode;
+      if (!this.tail) {
+        this.tail = newNode;
       }
-      this._cache.set(key, newNode);
-      if (this._cache.size > this._capacity) {
-        this._cache.delete(this._tail.key);
-        this._tail = this._tail.prev;
-        if (this._tail) {
-          this._tail.next = null;
+      this.cache.set(key, newNode);
+      if (this.cache.size > this.capacity) {
+        this.cache.delete(this.tail.key);
+        this.tail = this.tail.prev;
+        if (this.tail) {
+          this.tail.next = null;
         } else {
-          this._head = null;
+          this.head = null;
         }
       }
     }
@@ -88,11 +88,11 @@ export class HttpLru {
   }
 
   private async moveToHead(node: LruNode): Promise<void> {
-    if (node === this._head) {
+    if (node === this.head) {
       return;
     }
-    if (node === this._tail) {
-      this._tail = node.prev;
+    if (node === this.tail) {
+      this.tail = node.prev;
     } else if (node.prev) {
       node.prev.next = node.next;
     }
@@ -100,22 +100,22 @@ export class HttpLru {
       node.next.prev = node.prev;
     }
     node.prev = null;
-    node.next = this._head;
-    if (this._head) {
-      this._head.prev = node;
+    node.next = this.head;
+    if (this.head) {
+      this.head.prev = node;
     }
-    this._head = node;
+    this.head = node;
     // Save to chrome.storage.local after moving node
     await this.saveToStorage();
   }
 
   private async saveToStorage(): Promise<void> {
-    const cacheData = Object.fromEntries(this._cache);
+    const cacheData = Object.fromEntries(this.cache);
     await chrome.storage.local.set({
       httplru: {
         cache: cacheData,
-        head: this._head,
-        tail: this._tail,
+        head: this.head,
+        tail: this.tail,
       },
     });
   }

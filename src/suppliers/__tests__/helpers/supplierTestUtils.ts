@@ -1,6 +1,6 @@
 import type { Class } from "type-fest";
 import { vi } from "vitest";
-import type SupplierBase from "../../supplierBase";
+import type SupplierBase from "../../SupplierBase";
 
 /**
  * Creates spies for a supplier class's methods, including setting up mock implementations.

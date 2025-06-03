@@ -4,7 +4,7 @@ import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import { isSearchResultItem } from "@/utils/typeGuards/onyxmet";
-import SupplierBase from "./supplierBase";
+import SupplierBase from "./SupplierBase";
 
 /**
  * Supplier implementation for Onyxmet chemical supplier.

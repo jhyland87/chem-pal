@@ -59,13 +59,13 @@ export function isResponseOk(response: unknown): response is CarolinaSearchRespo
   }
 
   try {
-    const _response = response as Partial<CarolinaSearchResponse>;
+    const partialResponse = response as Partial<CarolinaSearchResponse>;
 
     if (
-      _response.responseStatusCode !== 200 ||
-      !("@type" in _response) ||
-      !("contents" in _response) ||
-      typeof _response.contents !== "object"
+      partialResponse.responseStatusCode !== 200 ||
+      !("@type" in partialResponse) ||
+      !("contents" in partialResponse) ||
+      typeof partialResponse.contents !== "object"
     ) {
       return false;
     }
@@ -334,7 +334,7 @@ export function isATGResponse(obj: unknown): obj is ATGResponse {
     return false;
   }
 
-  const response = obj as Partial<ATGResponse>;
+  const response = { ...obj } as Partial<ATGResponse>;
 
   const requiredProps = {
     result: (val: unknown) => {

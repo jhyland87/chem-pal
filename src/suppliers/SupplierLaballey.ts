@@ -1,4 +1,4 @@
-import SupplierBaseShopify from "./supplierBaseShopify";
+import SupplierBaseShopify from "./SupplierBaseShopify";
 
 /**
  * SupplierLaballey class that extends SupplierBaseShopify and implements AsyncIterable<T>.
@@ -22,5 +22,5 @@ export default class SupplierLaballey
   public readonly country: CountryCode = "US";
 
   // API key for Typesense search API
-  protected _apiKey: string = "8B7o0X1o7c";
+  protected apiKey: string = "8B7o0X1o7c";
 }

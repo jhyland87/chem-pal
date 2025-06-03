@@ -1,5 +1,5 @@
 import { useAppContext } from "@/context";
-import SupplierFactory from "@/suppliers/supplierFactory";
+import SupplierFactory from "@/suppliers/SupplierFactory";
 import Avatar from "@mui/material/Avatar";
 import Checkbox from "@mui/material/Checkbox";
 import Divider from "@mui/material/Divider";

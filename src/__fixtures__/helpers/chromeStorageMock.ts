@@ -6,6 +6,7 @@ const mockChrome = {
   storage: {
     session: new Map<string, StorageValue>(),
     local: new Map<string, StorageValue>(),
+    sync: new Map<string, StorageValue>(),
   },
 };
 
@@ -22,7 +23,7 @@ Object.assign(global, { chrome: mockChrome });
  * Creates a mock implementation for Chrome storage methods that actually stores and retrieves data.
  * This allows tests to verify that data is being stored and retrieved correctly.
  */
-const createStorageMock = (area: "session" | "local") => {
+const createStorageMock = (area: "session" | "local" | "sync") => {
   const get = vi
     .fn()
     .mockImplementation(
@@ -71,11 +72,13 @@ const createStorageMock = (area: "session" | "local") => {
 export const createChromeStorageMock = () => {
   const session = createStorageMock("session");
   const local = createStorageMock("local");
+  const sync = createStorageMock("sync");
 
   return {
     storage: {
       session,
       local,
+      sync,
     },
   };
 };
@@ -99,6 +102,7 @@ export const setupChromeStorageMock = () => {
 export const resetChromeStorageMock = () => {
   mockChrome.storage.session.clear();
   mockChrome.storage.local.clear();
+  mockChrome.storage.sync.clear();
   vi.clearAllMocks();
 };
 
@@ -109,5 +113,6 @@ export const resetChromeStorageMock = () => {
 export const restoreChromeStorageMock = () => {
   mockChrome.storage.session.clear();
   mockChrome.storage.local.clear();
+  mockChrome.storage.sync.clear();
   vi.restoreAllMocks();
 };

@@ -5,7 +5,7 @@ import { ThemeProvider, useTheme } from "@mui/material/styles";
 import "./App.scss";
 //import { extensionId } from "../config.json";
 import { AppContext } from "@/context";
-import SupplierFactory from "@/suppliers/supplierFactory";
+import SupplierFactory from "@/suppliers/SupplierFactory";
 import { useEffect, useState } from "react";
 //import "./__mocks__/chromeStorageMock";
 import ErrorBoundary from "./components/ErrorBoundary";

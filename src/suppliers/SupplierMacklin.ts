@@ -9,7 +9,7 @@ import {
   isMacklinSearchResult,
 } from "@/utils/typeGuards/macklin";
 import { md5 } from "js-md5";
-import SupplierBase from "./supplierBase";
+import SupplierBase from "./SupplierBase";
 
 type RequestParams = Record<string, string | number | boolean>;
 

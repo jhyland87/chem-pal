@@ -1,4 +1,4 @@
-import SupplierBaseShopify from "./supplierBaseShopify";
+import SupplierBaseShopify from "./SupplierBaseShopify";
 
 /**
  * SupplierHbarSci class that extends SupplierBaseShopify and implements AsyncIterable<T>.
@@ -23,7 +23,7 @@ export default class SupplierHbarSci extends SupplierBaseShopify implements Asyn
   public readonly country: CountryCode = "US";
 
   // API key for Typesense search API
-  protected _apiKey: string = "2H3i9C5v0m";
+  protected apiKey: string = "2H3i9C5v0m";
 
   // Base search parameters for Typesense search API
   protected baseSearchParams: Record<string, string> = {

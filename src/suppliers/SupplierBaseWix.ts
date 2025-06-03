@@ -5,7 +5,7 @@ import { firstMap } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import { isProductItem, isProductSelection, isValidSearchResponse } from "@/utils/typeGuards/wix";
 import merge from "lodash/merge";
-import SupplierBase from "./supplierBase";
+import SupplierBase from "./SupplierBase";
 /**
  * SupplierBaseWix class that extends SupplierBase and implements AsyncIterable<Product>.
  * @abstract
@@ -22,7 +22,7 @@ export default abstract class SupplierBaseWix
   protected abstract baseURL: string;
 
   /** Access token for Wix API authentication */
-  protected _accessToken: string = "";
+  protected accessToken: string = "";
 
   /** Default values for products */
   protected productDefaults = {
@@ -59,11 +59,11 @@ export default abstract class SupplierBaseWix
     });
 
     const data = await accessTokenResponse.json();
-    this._accessToken = data.apps["1380b703-ce81-ff05-f115-39571d94dfcd"].instance;
+    this.accessToken = data.apps["1380b703-ce81-ff05-f115-39571d94dfcd"].instance;
     this.headers = {
       ...this.headers,
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      Authorization: this._accessToken,
+      Authorization: this.accessToken,
     };
   }
 
@@ -73,7 +73,7 @@ export default abstract class SupplierBaseWix
    * @returns The GraphQL query string
    * @example
    * ```typescript
-   * const query = this._getGraphQLQuery();
+   * const query = this.getGraphQLQuery();
    * // Use the query with variables to fetch products
    * const response = await this.httpGetJson({
    *   path: "_api/wix-ecommerce-storefront-web/api",
@@ -81,7 +81,7 @@ export default abstract class SupplierBaseWix
    * });
    * ```
    */
-  protected _getGraphQLQuery(): string {
+  protected getGraphQLQuery(): string {
     return `
     query,getFilteredProductsWithHasDiscount(
         $mainCollectionId: String!
@@ -150,7 +150,7 @@ export default abstract class SupplierBaseWix
    * @param query - The query to search for
    * @returns The GraphQL variables
    */
-  protected _getGraphQLVariables(query: string): GraphQLQueryVariables {
+  protected getGraphQLVariables(query: string): GraphQLQueryVariables {
     return {
       mainCollectionId: "00000000-000000-000000-000000000001",
       offset: 0,
@@ -179,9 +179,9 @@ export default abstract class SupplierBaseWix
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    const q = this._getGraphQLQuery();
+    const q = this.getGraphQLQuery();
 
-    const v = this._getGraphQLVariables(query);
+    const v = this.getGraphQLVariables(query);
 
     const queryResponse = await this.httpGetJson({
       path: "_api/wix-ecommerce-storefront-web/api",

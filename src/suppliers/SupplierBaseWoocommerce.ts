@@ -3,7 +3,7 @@ import { parseQuantity } from "@/helpers/quantity";
 import { firstMap } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import { isSearchResponse } from "@/utils/typeGuards/woocommerce";
-import SupplierBase from "./supplierBase";
+import SupplierBase from "./SupplierBase";
 
 /**
  * Base class for WooCommerce-based suppliers that provides common functionality for
@@ -59,12 +59,12 @@ export default abstract class SupplierBaseWoocommerce
    * class MySupplier extends SupplierBaseWoocommerce {
    *   constructor() {
    *     super();
-   *     this._apiKey = "wc_key_123456789";
+   *     this.apiKey = "wc_key_123456789";
    *   }
    * }
    * ```
    */
-  protected _apiKey: string = "";
+  protected apiKey: string = "";
 
   /**
    * Queries the WooCommerce API for products matching the given search term.

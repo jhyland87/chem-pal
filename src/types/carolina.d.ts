@@ -200,6 +200,8 @@ declare global {
         searchString: string;
       };
     };
+    /** Type identifier for the response */
+    "@type": string;
     /** Title of the page */
     pageTitle: string;
     /** Setting for image loading behavior */

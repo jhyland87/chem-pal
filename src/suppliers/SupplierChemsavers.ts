@@ -3,7 +3,7 @@ import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import { isValidSearchResponse } from "@/utils/typeGuards/chemsavers";
-import SupplierBase from "./supplierBase";
+import SupplierBase from "./SupplierBase";
 
 /**
  * Module sed to retrieve products sold on the Chemsavers website.
@@ -32,7 +32,7 @@ export default class SupplierChemsavers
   // The country code of the supplier.
   public readonly country: CountryCode = "US";
 
-  protected _apiURL: string = "0ul35zwtpkx14ifhp-1.a1.typesense.net";
+  protected apiURL: string = "0ul35zwtpkx14ifhp-1.a1.typesense.net";
 
   // Override the type of queryResults to use our specific type
   protected queryResults: Array<ProductObject> = [];
@@ -41,7 +41,7 @@ export default class SupplierChemsavers
   protected httpRequstCount: number = 0;
 
   // API key for Typesense search API
-  protected _apiKey: string = "iPltuzpMbSZEuxT0fjPI0Ct9R1UBETTd";
+  protected apiKey: string = "iPltuzpMbSZEuxT0fjPI0Ct9R1UBETTd";
 
   // HTTP headers used as a basis for all queries.
   protected headers: HeadersInit = {
@@ -82,14 +82,14 @@ export default class SupplierChemsavers
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
     try {
-      const body = this._makeRequestBody(query);
+      const body = this.makeRequestBody(query);
 
       const response: unknown = await this.httpPostJson({
         path: `/multi_search`,
-        host: this._apiURL,
+        host: this.apiURL,
         params: {
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          "x-typesense-api-key": this._apiKey,
+          "x-typesense-api-key": this.apiKey,
         },
         //headers: this.headers,
         body,
@@ -185,7 +185,7 @@ export default class SupplierChemsavers
    * @param limit - Maximum number of results to return (defaults to this.limit)
    * @returns An object containing the search configuration for the Typesense API
    */
-  protected _makeRequestBody(query: string, limit: number = 100): object {
+  protected makeRequestBody(query: string, limit: number = 100): object {
     /* eslint-disable */
     return {
       searches: [

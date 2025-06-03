@@ -81,12 +81,26 @@ export function isSearchResponseItem(item: unknown): item is WooCommerceSearchRe
 
   const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
     if (typeof validator === "string") {
-      return key in item && typeof item[key as keyof typeof item] === validator;
+      if (key in item === false) {
+        return false;
+      }
+      if (typeof item[key as keyof typeof item] !== validator) {
+        return false;
+      }
+      return true;
     }
-    return key in item && validator(item[key as keyof typeof item]);
+    if (key in item === false) {
+      return false;
+    }
+    if (validator(item[key as keyof typeof item]) === false) {
+      return false;
+    }
+    return true;
   });
 
-  if (!hasRequiredProps) return false;
+  if (!hasRequiredProps) {
+    return false;
+  }
 
   // Check prices object structure
   const prices = (item as WooCommerceSearchResponseItem).prices;
@@ -106,7 +120,13 @@ export function isSearchResponseItem(item: unknown): item is WooCommerceSearchRe
   };
 
   return Object.entries(requiredPriceProps).every(([key, type]) => {
-    return key in prices && typeof prices[key as keyof typeof prices] === type;
+    if (key in prices === false) {
+      return false;
+    }
+    if (typeof prices[key as keyof typeof prices] !== type) {
+      return false;
+    }
+    return true;
   });
 }
 
@@ -340,8 +360,20 @@ export function isValidProductVariant(response: unknown): response is WooCommerc
 
   return Object.entries(requiredProps).every(([key, validator]) => {
     if (typeof validator === "string") {
-      return key in response && typeof response[key as keyof typeof response] === validator;
+      if (key in response === false) {
+        return false;
+      }
+      if (typeof response[key as keyof typeof response] !== validator) {
+        return false;
+      }
+      return true;
     }
-    return key in response && validator(response[key as keyof typeof response]);
+    if (key in response === false) {
+      return false;
+    }
+    if (validator(response[key as keyof typeof response]) === false) {
+      return false;
+    }
+    return true;
   });
 }

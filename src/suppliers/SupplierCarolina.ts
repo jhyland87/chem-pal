@@ -11,7 +11,7 @@ import {
   isValidProductResponse,
   isValidSearchResponse,
 } from "@/utils/typeGuards/carolina";
-import SupplierBase from "./supplierBase";
+import SupplierBase from "./SupplierBase";
 
 /**
  * Implementation of the Carolina Biological Supply Company supplier.
@@ -98,7 +98,7 @@ export default class SupplierCarolina
    * @param query - Search term to look for
    * @returns Object containing all required search parameters
    */
-  protected _makeQueryParams(query: string): CarolinaSearchParams {
+  protected makeQueryParams(query: string): CarolinaSearchParams {
     return {
       /* eslint-disable */
       tab: "p",
@@ -121,7 +121,7 @@ export default class SupplierCarolina
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    const params = this._makeQueryParams(query);
+    const params = this.makeQueryParams(query);
 
     const response: unknown = await this.httpGetJson({
       path: "/browse/product-search-results",
@@ -133,7 +133,7 @@ export default class SupplierCarolina
       return;
     }
 
-    const results = await this._extractSearchResults(response);
+    const results = await this.extractSearchResults(response);
 
     const fuzzResults = this.fuzzyFilter<CarolinaSearchResult>(query, results);
     this.logger.info("fuzzResults:", fuzzResults);
@@ -188,7 +188,7 @@ export default class SupplierCarolina
    * @param response - Raw response object from search request
    * @returns Array of validated search result items
    */
-  protected _extractSearchResults(response: unknown): CarolinaSearchResult[] {
+  protected extractSearchResults(response: unknown): CarolinaSearchResult[] {
     try {
       if (!isValidSearchResponse(response)) {
         this.logger.warn("Invalid response structure");
@@ -259,13 +259,13 @@ export default class SupplierCarolina
    * const response = await this.httpGetJson({
    *   path: `/api/rest/cb/product/product-quick-view/${productId}`
    * });
-   * const productData = this._extractATGResponse(response);
+   * const productData = this.extractATGResponse(response);
    * if (productData) {
    *   console.log(productData.products[0]);
    * }
    * ```
    */
-  protected _extractATGResponse(productResponse: unknown): ATGResponse["response"] | null {
+  protected extractATGResponse(productResponse: unknown): ATGResponse["response"] | null {
     if (!isValidProductResponse(productResponse)) {
       return null;
     }
@@ -322,7 +322,7 @@ export default class SupplierCarolina
         return;
       }
 
-      const atgResponse = this._extractATGResponse(productResponse);
+      const atgResponse = this.extractATGResponse(productResponse);
 
       console.log("atgResponse:", atgResponse);
       console.log("familyVariyantProductDetails:", atgResponse?.familyVariyantProductDetails);

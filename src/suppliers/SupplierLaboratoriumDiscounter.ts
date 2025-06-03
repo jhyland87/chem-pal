@@ -8,7 +8,7 @@ import {
   isSearchResponseOk,
   isValidSearchParams,
 } from "@/utils/typeGuards/laboratoriumdiscounter";
-import SupplierBase from "./supplierBase";
+import SupplierBase from "./SupplierBase";
 
 /**
  * Class for retrieving search results and iterating over Laboratorium Discounter online
@@ -102,17 +102,17 @@ export default class SupplierLaboratoriumDiscounter
    * @returns Object containing all required search parameters
    * @example
    * ```typescript
-   * const params = this._makeQueryParams(20);
+   * const params = this.makeQueryParams(20);
    * // Returns: { limit: "20", format: "json" }
    *
    * // Use in search request
    * const response = await this.httpGetJson({
    *   path: "/en/search/chemical",
-   *   params: this._makeQueryParams(20)
+   *   params: this.makeQueryParams(20)
    * });
    * ```
    */
-  protected _makeQueryParams(limit: number = this.limit): LaboratoriumDiscounterSearchParams {
+  protected makeQueryParams(limit: number = this.limit): LaboratoriumDiscounterSearchParams {
     return {
       limit: limit.toString(),
       format: "json",
@@ -143,7 +143,7 @@ export default class SupplierLaboratoriumDiscounter
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    const params = this._makeQueryParams();
+    const params = this.makeQueryParams();
     if (!isValidSearchParams(params)) {
       this.logger.warn("Invalid search parameters:", params);
       return;
