@@ -807,194 +807,25 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   }
 
   /**
-   * Gets cached results for the current query if they exist.
-   * Checks the Chrome storage for previously cached results using the generated cache key.
-   * If found, updates the timestamp to mark it as recently used.
-   *
-   * @returns Promise resolving to the cached results array or undefined if not found
-   * @example
-   * ```typescript
-   * // Example of retrieving cached results
-   * const supplier = new MySupplier("sodium chloride", 5);
-   * const cachedResults = await supplier.getCachedResults();
-   * if (cachedResults) {
-   *   console.log("Found cached results:", cachedResults.length);
-   * } else {
-   *   console.log("No cached results found");
-   * }
-   *
-   * // Example of cache miss
-   * const supplier = new MySupplier("unique query", 10);
-   * const cachedResults = await supplier.getCachedResults();
-   * // Returns: undefined
-   * ```
-   */
-  private async getCachedResults(): Promise<Maybe<T[]>> {
-    try {
-      const key = this.generateCacheKey();
-      this.logger.debug("Looking up cache with key:", key);
-      const result = await chrome.storage.local.get(SupplierBase.cacheKey);
-      const cache =
-        (result[SupplierBase.cacheKey] as Record<string, { data: T[]; timestamp: number }>) || {};
-      const cached = cache[key];
-
-      this.logger.debug("Cache lookup result:", {
-        key,
-        found: !!cached,
-        cacheSize: Object.keys(cache).length,
-        cacheKeys: Object.keys(cache),
-      });
-
-      if (cached) {
-        // Update the timestamp to mark as recently used
-        await this.updateCacheTimestamp(key);
-        return cached.data;
-      }
-      return undefined;
-    } catch (error) {
-      this.logger.error("Error retrieving from cache:", error);
-      return undefined;
-    }
-  }
-
-  /**
-   * Updates the timestamp for a cache entry to mark it as recently used.
-   * This is part of the LRU (Least Recently Used) cache implementation.
-   *
-   * @param key - The cache key to update
-   * @example
-   * ```typescript
-   * // Example of updating a cache entry timestamp
-   * const supplier = new MySupplier("sodium chloride", 5);
-   * const key = supplier.generateCacheKey();
-   * await supplier.updateCacheTimestamp(key);
-   *
-   * // Example with error handling
-   * try {
-   *   await supplier.updateCacheTimestamp("invalid-key");
-   * } catch (error) {
-   *   console.error("Failed to update timestamp:", error);
-   * }
-   * ```
-   */
-  private async updateCacheTimestamp(key: string): Promise<void> {
-    try {
-      const result = await chrome.storage.local.get(SupplierBase.cacheKey);
-      const cache =
-        (result[SupplierBase.cacheKey] as Record<string, { data: T[]; timestamp: number }>) || {};
-      if (cache[key]) {
-        cache[key].timestamp = Date.now();
-        await chrome.storage.local.set({ [SupplierBase.cacheKey]: cache });
-      }
-    } catch (error) {
-      this.logger.error("Error updating cache timestamp:", error);
-    }
-  }
-
-  /**
-   * Stores results in the cache, implementing LRU behavior.
-   * If the cache is full, removes the oldest entry before adding the new one.
-   * Each cache entry includes the data and a timestamp for LRU tracking.
-   *
-   * @param results - The array of results to cache
-   * @example
-   * ```typescript
-   * // Example of caching results
-   * const supplier = new MySupplier("sodium chloride", 5);
-   * const results = [
-   *   { title: "Sodium Chloride", price: 29.99, quantity: 500, uom: "g" },
-   *   { title: "NaCl", price: 24.99, quantity: 1000, uom: "g" }
-   * ];
-   * await supplier.cacheResults(results);
-   *
-   * // Example of cache eviction
-   * // If cache is full (100 entries), oldest entry will be removed
-   * const manyResults = Array(5).fill({
-   *   title: "Test Product",
-   *   price: 19.99,
-   *   quantity: 100,
-   *   uom: "g"
-   * });
-   * await supplier.cacheResults(manyResults);
-   *
-   * // Example with error handling
-   * try {
-   *   await supplier.cacheResults(results);
-   * } catch (error) {
-   *   console.error("Failed to cache results:", error);
-   * }
-   * ```
-   */
-  private async cacheResults(results: Product[]): Promise<void> {
-    try {
-      const key = this.generateCacheKey();
-      this.logger.debug("Storing in cache with key:", key);
-      const result = await chrome.storage.local.get(SupplierBase.cacheKey);
-      const cache =
-        (result[SupplierBase.cacheKey] as Record<string, { data: Product[]; timestamp: number }>) ||
-        {};
-
-      // If cache is full, remove oldest entry
-      if (Object.keys(cache).length >= SupplierBase.cacheSize) {
-        const oldestKey = Object.entries(cache).sort(
-          ([, a], [, b]) => a.timestamp - b.timestamp,
-        )[0][0];
-        this.logger.debug("Removing oldest cache entry:", oldestKey);
-        delete cache[oldestKey];
-      }
-
-      // Add new entry
-      cache[key] = {
-        data: results,
-        timestamp: Date.now(),
-      };
-
-      this.logger.debug("Cache state after update:", {
-        key,
-        cacheSize: Object.keys(cache).length,
-        cacheKeys: Object.keys(cache),
-      });
-
-      await chrome.storage.local.set({ [SupplierBase.cacheKey]: cache });
-    } catch (error) {
-      this.logger.error("Error storing in cache:", error);
-    }
-  }
-
-  /**
-   * Generates a cache key for query results based on the query string and supplier name.
-   * The limit is intentionally excluded as it only affects how many results are returned,
-   * not the actual search results themselves.
-   * @param query - The search query
-   * @returns A string hash that uniquely identifies this search query
-   */
-  private getQueryCacheKey(query: string): string {
-    const data = `${query}:${this.supplierName}`;
-    return md5(data);
-  }
-
-  /**
    * Gets cached query results if they exist.
    * @param query - The search query
    * @returns Promise resolving to cached query results or undefined if not found
    */
-  private async getCachedQueryResults(query: string): Promise<Maybe<S[]>> {
+  private async getCachedQueryResults(query: string): Promise<Maybe<unknown[]>> {
     try {
-      const key = this.getQueryCacheKey(query);
+      const key = this.generateCacheKey();
       const result = await chrome.storage.local.get(SupplierBase.queryCacheKey);
-      const cache = (result[SupplierBase.queryCacheKey] as Record<string, CachedData<S>>) || {};
+      const cache =
+        (result[SupplierBase.queryCacheKey] as Record<string, CachedData<unknown>>) || {};
       const cached = cache[key];
 
       if (cached) {
-        // Check if cache is stale or invalid
         if (this.isCacheStale(cached.__cacheMetadata)) {
           this.logger.debug("Cache entry is stale, removing", cached.__cacheMetadata);
           delete cache[key];
           await chrome.storage.local.set({ [SupplierBase.queryCacheKey]: cache });
           return undefined;
         }
-
-        // Update timestamp to mark as recently used
         await this.updateQueryCacheTimestamp(key);
         return cached.data;
       }
@@ -1006,62 +837,16 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   }
 
   /**
-   * Determines if a cache entry is stale based on its metadata.
-   * @param metadata - The cache metadata to check
-   * @returns true if the cache entry should be considered stale
-   */
-  private isCacheStale(metadata: CacheMetadata): boolean {
-    // Check cache version
-    if (metadata.version !== SupplierBase.CACHE_VERSION) {
-      this.logger.debug("Cache version mismatch", {
-        cached: metadata.version,
-        current: SupplierBase.CACHE_VERSION,
-      });
-      return true;
-    }
-
-    // Check if cache is too old (e.g., more than 24 hours)
-    const CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-    const age = Date.now() - metadata.cachedAt;
-    if (age > CACHE_MAX_AGE) {
-      this.logger.debug("Cache entry too old", {
-        age: Math.round(age / (60 * 60 * 1000)) + " hours",
-        maxAge: CACHE_MAX_AGE / (60 * 60 * 1000) + " hours",
-      });
-      return true;
-    }
-
-    return false;
-  }
-
-  /**
-   * Updates the timestamp for a query cache entry.
-   * @param key - The cache key to update
-   */
-  private async updateQueryCacheTimestamp(key: string): Promise<void> {
-    try {
-      const result = await chrome.storage.local.get(SupplierBase.queryCacheKey);
-      const cache = (result[SupplierBase.queryCacheKey] as Record<string, CachedData<S>>) || {};
-      if (cache[key]) {
-        // Update the cachedAt timestamp
-        cache[key].__cacheMetadata.cachedAt = Date.now();
-        await chrome.storage.local.set({ [SupplierBase.queryCacheKey]: cache });
-      }
-    } catch (error) {
-      this.logger.error("Error updating query cache timestamp:", error);
-    }
-  }
-
-  /**
    * Stores query results in the cache.
    * @param query - The search query
-   * @param results - The query results to cache
+   * @param results - The processed query results to cache (array of objects for ProductBuilder)
    */
-  private async cacheQueryResults(query: string, results: S[]): Promise<void> {
+  private async cacheQueryResults(query: string, results: unknown[]): Promise<void> {
     try {
-      const key = this.getQueryCacheKey(query);
+      const key = this.generateCacheKey();
       const result = await chrome.storage.local.get(SupplierBase.queryCacheKey);
-      const cache = (result[SupplierBase.queryCacheKey] as Record<string, CachedData<S>>) || {};
+      const cache =
+        (result[SupplierBase.queryCacheKey] as Record<string, CachedData<unknown>>) || {};
 
       // If cache is full, remove oldest entry
       if (Object.keys(cache).length >= SupplierBase.cacheSize) {
@@ -1078,7 +863,6 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
         delete cache[oldestKey];
       }
 
-      // Create cache entry with metadata
       cache[key] = {
         data: results,
         __cacheMetadata: {
@@ -1113,22 +897,67 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<T>[] | void> {
-    // Check cache first
+    // Check cache first (processed product data)
     const cachedResults = await this.getCachedQueryResults(query);
     if (cachedResults) {
       this.logger.debug("Returning cached query results");
-      this.queryResults = cachedResults;
-      // Apply limit after retrieving from cache
+      // Re-initialize product builders from cached processed data
       return this.initProductBuilders(cachedResults.slice(0, limit));
     }
 
     // If not in cache, perform the actual query
     const results = await this.queryProducts(query, limit);
     if (results) {
-      // Store raw results in cache (without limit)
-      await this.cacheQueryResults(query, this.queryResults);
+      // Store processed results in cache (dumped/serialized form)
+      await this.cacheQueryResults(
+        query,
+        results.map((b) => b.dump()),
+      );
     }
     return results;
+  }
+
+  /**
+   * Determines if a cache entry is stale based on its metadata.
+   * @param metadata - The cache metadata to check
+   * @returns true if the cache entry should be considered stale
+   */
+  private isCacheStale(metadata: CacheMetadata): boolean {
+    if (metadata.version !== SupplierBase.CACHE_VERSION) {
+      this.logger.debug("Cache version mismatch", {
+        cached: metadata.version,
+        current: SupplierBase.CACHE_VERSION,
+      });
+      return true;
+    }
+    const CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours
+    const age = Date.now() - metadata.cachedAt;
+    if (age > CACHE_MAX_AGE) {
+      this.logger.debug("Cache entry too old", {
+        age: Math.round(age / (60 * 60 * 1000)) + " hours",
+        maxAge: CACHE_MAX_AGE / (60 * 60 * 1000) + " hours",
+      });
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Updates the timestamp for a query cache entry.
+   * @param key - The cache key to update
+   */
+  private async updateQueryCacheTimestamp(key: string): Promise<void> {
+    try {
+      const result = await chrome.storage.local.get(SupplierBase.queryCacheKey);
+      const cache =
+        (result[SupplierBase.queryCacheKey] as Record<string, CachedData<unknown>>) || {};
+      if (cache[key]) {
+        cache[key].__cacheMetadata.cachedAt = Date.now();
+        await chrome.storage.local.set({ [SupplierBase.queryCacheKey]: cache });
+      }
+    } catch (error) {
+      this.logger.error("Error updating query cache timestamp:", error);
+    }
   }
 
   /**
@@ -1138,21 +967,9 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    */
   async *[Symbol.asyncIterator](): AsyncGenerator<Product, void, unknown> {
     try {
-      // Check cache first
-      const cachedResults = await this.getCachedResults();
-      console.log("[iterator]cachedResults", cachedResults);
-      if (cachedResults) {
-        this.logger.debug("Returning cached results");
-        for (const result of cachedResults) {
-          yield result;
-        }
-        return;
-      }
-
       await this.setup();
-      // Use queryProductsWithCache instead of queryProducts
+      // Use queryProductsWithCache to get processed product data (from cache or fresh)
       const results = await this.queryProductsWithCache(this.query, this.limit);
-
       if (typeof results === "undefined" || results.length === 0) {
         this.logger.debug(`No query results found`);
         return;
@@ -1160,39 +977,30 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
       this.products = results;
 
       // Process results in batches to maintain controlled concurrency
-      const allResults: Product[] = [];
       for (let i = 0; i < this.products.length; i += this.httpRequestBatchSize) {
         const batch = this.products.slice(i, i + this.httpRequestBatchSize);
-
-        // Create promises for the current batch
         const batchPromises = batch.map((r: unknown) => {
           if (r instanceof ProductBuilder === false) {
             this.logger.error("Invalid product builder:", r);
             return Promise.reject(new Error("Invalid product builder"));
           }
+          // getProductData uses its own per-product detail cache
           return this.getProductData(r as ProductBuilder<T>);
         });
-
-        // Process batch results as they complete
         const batchResults = await Promise.allSettled(batchPromises);
         for (const result of batchResults) {
           if (this.controller.signal.aborted) throw this.controller.signal.reason;
-
           if (result.status === "rejected") {
             this.logger.error("Error found when yielding a product:", { result });
             continue;
           }
-
           try {
             if (typeof result.value === "undefined") {
               this.logger.warn("Product value was undefined", { result });
               continue;
             }
-
             const finishedProduct = await this.finishProduct(result.value as ProductBuilder<T>);
-
             if (finishedProduct) {
-              allResults.push(finishedProduct);
               yield finishedProduct;
             }
           } catch (err) {
@@ -1200,11 +1008,6 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
             continue;
           }
         }
-      }
-
-      // Cache the results after processing all batches
-      if (allResults.length > 0) {
-        await this.cacheResults(allResults);
       }
     } catch (err) {
       if (this.controller.signal.aborted === true) {
@@ -1478,14 +1281,23 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     return response;
   }
 
+  /**
+   * Generates a cache key for product detail data based only on the HTTP request URL and params.
+   * This ensures that identical detail requests (even from different queries) share the same cache entry.
+   * Do NOT include the original search query or any unrelated context.
+   *
+   * @param product - The ProductBuilder instance (must have the correct URL set)
+   * @param params - The params used in the actual HTTP request for product details
+   * @returns A stable cache key for the product detail fetch
+   */
   protected getProductDataCacheKey(
     product: ProductBuilder<T>,
     params?: Record<string, string>,
   ): string {
     const data = {
-      url: product.get("url"),
-      params: params || {},
-      supplier: this.supplierName,
+      url: product.get("url"), // Must match the actual HTTP request URL
+      params: params || {}, // Must match the actual HTTP request params
+      supplier: this.supplierName, // Optional: for multi-supplier safety
     };
     return md5(JSON.stringify(data));
   }
@@ -1555,14 +1367,19 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     product: ProductBuilder<T>,
     fetcher: (product: ProductBuilder<T>) => Promise<ProductBuilder<T> | void>,
     params?: Record<string, string>,
+    onCacheResult?: (wasCacheHit: boolean) => void,
   ): Promise<ProductBuilder<T> | void> {
     const cacheKey = this.getProductDataCacheKey(product, params);
+    this.logger.debug("[getProductDataWithCache] Checking cache for key:", cacheKey);
     const cachedData = await this.getCachedProductData(cacheKey);
     if (cachedData) {
-      // Cast the cached data to Partial<T> since we know it's compatible
+      this.logger.debug("[getProductDataWithCache] Cache HIT for key:", cacheKey);
       product.setData(cachedData as Partial<T>);
+      if (onCacheResult) onCacheResult(true);
       return product;
     }
+    this.logger.debug("[getProductDataWithCache] Cache MISS for key:", cacheKey);
+    if (onCacheResult) onCacheResult(false);
     const result = await fetcher(product);
     if (result) {
       await this.cacheProductData(cacheKey, product.dump());
