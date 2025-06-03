@@ -249,12 +249,7 @@ export default abstract class SupplierBaseShopify
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    if (product instanceof ProductBuilder === false) {
-      console.error("Invalid Shopify product listing:", product);
-      return;
-    }
-
-    return product;
+    return this.getProductDataWithCache(product, async (builder) => builder);
   }
 
   /**

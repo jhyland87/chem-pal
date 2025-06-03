@@ -2,6 +2,7 @@ import { isCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
+import { isValidSearchResponse } from "@/utils/typeGuards/chemsavers";
 import SupplierBase from "./SupplierBase";
 
 /**
@@ -117,14 +118,8 @@ export default class SupplierChemsavers
 
       this.logger.info("fuzzResults:", fuzzResults);
 
-      // Use queryProductsWithCache to cache the results
-      const builders = this.initProductBuilders(fuzzResults.slice(0, limit));
-      await this.cacheQueryResults(
-        query,
-        builders.map((b) => b.dump()),
-        limit,
-      );
-      return builders;
+      // Initialize product builders from filtered results
+      return this.initProductBuilders(fuzzResults.slice(0, limit));
     } catch (error) {
       this.logger.error("Error querying products:", error);
       return;
