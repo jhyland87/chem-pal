@@ -93,13 +93,15 @@ class BadgeAnimator {
 
     // If there's a final status to set, create a timeout to clear it afterwards
     if (finalText) {
+      /*
       chrome.action.setBadgeText({ text: finalText }, () => {
         setTimeout(() => {
           chrome.action.setBadgeText({ text: "" });
         }, duration);
       });
+      */
     } else {
-      chrome.action.setBadgeText({ text: "" });
+      //chrome.action.setBadgeText({ text: "" });
     }
   }
 
@@ -110,15 +112,15 @@ class BadgeAnimator {
    */
   static setColor(fgColor?: string, bgColor?: string): void {
     if (fgColor) {
-      chrome.action.setBadgeTextColor({
+      /*chrome.action.setBadgeTextColor({
         color: fgColor,
-      });
+      });*/
     }
 
     if (bgColor) {
-      chrome.action.setBadgeBackgroundColor({
+      /*chrome.action.setBadgeBackgroundColor({
         color: bgColor,
-      });
+      });*/
     }
   }
 
@@ -128,7 +130,7 @@ class BadgeAnimator {
    */
   static setText(text: string): void {
     this.clear();
-    chrome.action.setBadgeText({ text });
+    //chrome.action.setBadgeText({ text });
   }
 
   /**
@@ -136,7 +138,7 @@ class BadgeAnimator {
    */
   static #updateAnimation(): void {
     if (!this.#chars.length) return;
-
+    /*
     chrome.action.setBadgeText(
       {
         text: this.#chars[this.#charIndex],
@@ -146,6 +148,7 @@ class BadgeAnimator {
         this.#timeoutId = setTimeout(() => this.#updateAnimation(), this.#delay);
       },
     );
+    */
   }
 }
 // #endregion class

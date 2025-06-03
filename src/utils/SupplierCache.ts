@@ -61,6 +61,21 @@ export function getQueryCacheKey(query: string, supplierName: string): string {
 }
 
 /**
+ * Removes timestamp-like parameters from an object (timestamp, timestampe, _),
+ * but never removes a parameter named 'code'.
+ * Used to ensure cache keys are not affected by volatile timestamp params.
+ * Does not mutate the original object.
+ */
+export function stripTimestampParams<T extends Record<string, any>>(params: T): Partial<T> {
+  const forbidden = ["timestamp", "timestampe", "_"];
+  return Object.fromEntries(
+    Object.entries(params).filter(
+      ([key]) => key === "code" || !forbidden.includes(key.toLowerCase()),
+    ),
+  ) as Partial<T>;
+}
+
+/**
  * Generates a cache key for product detail data based only on the HTTP request URL and params.
  * This ensures that identical detail requests (even from different queries) share the same cache entry.
  * Do NOT include the original search query or any unrelated context.
@@ -75,9 +90,11 @@ export function getProductDataCacheKey(
   params: Record<string, string> | undefined,
   supplierName: string,
 ): string {
+  // Remove timestamp params for cache key only
+  const cleanParams = params ? stripTimestampParams(params) : {};
   const data = {
     url,
-    params: params || {},
+    params: cleanParams,
     supplier: supplierName,
   };
   return md5(JSON.stringify(data));
