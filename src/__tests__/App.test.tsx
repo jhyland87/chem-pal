@@ -1,17 +1,39 @@
+import {
+  resetChromeActionMock,
+  restoreChromeActionMock,
+  setupChromeActionMock,
+} from "@/__fixtures__/helpers/chromeActionMock";
+import {
+  resetChromeStorageMock,
+  restoreChromeStorageMock,
+  setupChromeStorageMock,
+} from "@/__fixtures__/helpers/chromeStorageMock";
 import "@testing-library/jest-dom";
 import { fireEvent, queryHelpers, render, screen } from "@testing-library/react";
-import { beforeAll, beforeEach, describe, expect, it } from "vitest";
-//import userEvent from '@testing-library/user-event'
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import { setupChromeStorageMock } from "@/__fixtures__/helpers/chromeStorageMock";
+// Set up chrome.action mock before any imports that might use it
+if (!global.chrome) {
+  global.chrome = {} as typeof chrome;
+}
+
 import App from "../App";
 
 describe("App", () => {
   beforeAll(() => {
+    setupChromeActionMock();
     setupChromeStorageMock();
   });
+
   beforeEach(() => {
+    resetChromeStorageMock();
+    resetChromeActionMock();
     render(<App />);
+  });
+
+  afterAll(() => {
+    restoreChromeStorageMock();
+    restoreChromeActionMock();
   });
 
   describe("Settings tab", () => {

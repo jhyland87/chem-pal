@@ -2,6 +2,7 @@
 import { fetchDecorator, isFullURL } from "@/helpers/request";
 import Logger from "@/utils/Logger";
 import ProductBuilder from "@/utils/ProductBuilder";
+import SupplierCache from "@/utils/SupplierCache";
 import {
   isHtmlResponse,
   isHttpResponse,
@@ -9,7 +10,6 @@ import {
   isMinimalProduct,
 } from "@/utils/typeGuards/common";
 import { extract, WRatio } from "fuzzball";
-import { md5 } from "js-md5";
 import { type JsonValue } from "type-fest";
 
 /**
@@ -42,6 +42,21 @@ interface CachedData<T> {
 }
 
 /**
+ * Interface defining the required properties for a supplier.
+ * This ensures all suppliers have the necessary readonly properties.
+ */
+export interface ISupplier {
+  /** The name of the supplier (used for display name, lists, etc) */
+  readonly supplierName: string;
+  /** The base URL for the supplier */
+  readonly baseURL: string;
+  /** The shipping scope of the supplier */
+  readonly shipping: ShippingRange;
+  /** The country code of the supplier */
+  readonly country: CountryCode;
+}
+
+/**
  * The base class for all suppliers.
  * @abstract
  * @category Suppliers
@@ -52,12 +67,14 @@ interface CachedData<T> {
  * const supplier = new SupplierBase<Product>();
  * ```
  */
-export default abstract class SupplierBase<S, T extends Product> implements AsyncIterable<Product> {
+export default abstract class SupplierBase<S, T extends Product>
+  implements AsyncIterable<Product>, ISupplier
+{
   // The name of the supplier (used for display name, lists, etc)
   public abstract readonly supplierName: string;
 
   // The base URL for the supplier.
-  protected abstract baseURL: string;
+  public abstract readonly baseURL: string;
 
   /**
    * The shipping scope of the supplier.
@@ -243,6 +260,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   // Logger for the supplier. This gets initialized in this constructor with the
   // name of the inheriting class.
   protected logger: Logger;
+
   // Cache configuration
   private static readonly cacheKey = "supplier_cache";
 
@@ -264,6 +282,9 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   private static readonly queryCacheKey = "supplier_query_cache";
   // Cache version - increment this when cache format changes
   private static readonly CACHE_VERSION = 1;
+
+  // Cache instance for this supplier
+  protected cache!: SupplierCache;
 
   /**
    * Creates a new instance of the supplier base class.
@@ -290,16 +311,36 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * controller.abort();
    * ```
    */
-  constructor(query: string, limit: number = 5, controller?: AbortController) {
-    this.logger = new Logger(this.constructor.name);
+  public constructor(query: string, limit: number = 5, controller?: AbortController) {
+    // Initialize required properties
     this.query = query;
     this.limit = limit;
-    if (controller) {
-      this.controller = controller;
-    } else {
-      this.logger.debug("Made a new AbortController");
-      this.controller = new AbortController();
-    }
+    this.controller = controller ?? new AbortController();
+    this.logger = new Logger(this.constructor.name);
+  }
+
+  /**
+   * Initializes the cache for the supplier.
+   * This is called after construction to ensure supplierName is set.
+   *
+   * @remarks
+   * The cache is initialized with the supplier's name and is used to store
+   * both query results and product data. This method should be called after
+   * the supplier's name is set to ensure proper cache key generation.
+   *
+   * @example
+   * ```typescript
+   * class MySupplier extends SupplierBase<Product> {
+   *   constructor() {
+   *     super("acetone", 5);
+   *     // supplierName is set here
+   *     this.initCache(); // Initialize cache after supplierName is set
+   *   }
+   * }
+   * ```
+   */
+  public initCache(): void {
+    this.cache = new SupplierCache(this.supplierName);
   }
 
   /**
@@ -829,162 +870,44 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   }
 
   /**
-   * Generates a cache key based on the query and supplier name.
-   * The limit is intentionally excluded as it only affects how many results are returned,
-   * not the actual search results themselves.
-   *
-   * @returns A string hash that uniquely identifies this search request
-   */
-  private generateCacheKey(): string {
-    const data = `${this.query || ""}:${this.supplierName || ""}`;
-    this.logger.debug("Generating cache key with:", {
-      query: this.query,
-      supplierName: this.supplierName,
-      data,
-    });
-    try {
-      // Try browser's btoa first
-      const key = btoa(data);
-      this.logger.debug("Generated cache key:", key);
-      return key;
-    } catch {
-      try {
-        // Fallback to Node's Buffer if available
-        if (typeof Buffer !== "undefined") {
-          const key = Buffer.from(data).toString("base64");
-          this.logger.debug("Generated cache key (Buffer):", key);
-          return key;
-        }
-        // If neither is available, use a simple hash function
-        let hash = 0;
-        for (let i = 0; i < data.length; i++) {
-          const char = data.charCodeAt(i);
-          hash = (hash << 5) - hash + char;
-          hash = hash & hash; // Convert to 32bit integer
-        }
-        const key = hash.toString(36);
-        this.logger.debug("Generated cache key (hash):", key);
-        return key;
-      } catch (error) {
-        this.logger.error("Error generating cache key:", error);
-        // Fallback to a simple string if all else fails
-        const key = data.replace(/[^a-zA-Z0-9]/g, "_");
-        this.logger.debug("Generated cache key (fallback):", key);
-        return key;
-      }
-    }
-  }
-
-  /**
-   * Gets cached query results if they exist.
-   * @param query - The search query
-   * @returns Promise resolving to cached query results or undefined if not found
-   */
-  private async getCachedQueryResults(query: string): Promise<Maybe<unknown[]>> {
-    try {
-      const key = this.generateCacheKey();
-      const result = await chrome.storage.local.get(SupplierBase.queryCacheKey);
-      const cache =
-        (result[SupplierBase.queryCacheKey] as Record<string, CachedData<unknown>>) || {};
-      const cached = cache[key];
-
-      if (cached) {
-        if (this.isCacheStale(cached.__cacheMetadata)) {
-          this.logger.debug("Cache entry is stale, removing", cached.__cacheMetadata);
-          delete cache[key];
-          await chrome.storage.local.set({ [SupplierBase.queryCacheKey]: cache });
-          return undefined;
-        }
-        await this.updateQueryCacheTimestamp(key);
-        return cached.data;
-      }
-      return undefined;
-    } catch (error) {
-      this.logger.error("Error retrieving query results from cache:", error);
-      return undefined;
-    }
-  }
-
-  /**
-   * Stores query results in the cache.
-   * @param query - The search query
-   * @param results - The processed query results to cache (array of objects for ProductBuilder)
-   */
-  private async cacheQueryResults(query: string, results: unknown[], limit: number): Promise<void> {
-    try {
-      const key = this.generateCacheKey();
-      const result = await chrome.storage.local.get(SupplierBase.queryCacheKey);
-      const cache =
-        (result[SupplierBase.queryCacheKey] as Record<string, CachedData<unknown>>) || {};
-
-      // If cache is full, remove oldest entry
-      if (Object.keys(cache).length >= SupplierBase.cacheSize) {
-        const oldestKey = Object.entries(cache).sort(
-          ([, a], [, b]) => a.__cacheMetadata.cachedAt - b.__cacheMetadata.cachedAt,
-        )[0][0];
-        this.logger.debug("Removing oldest cache entry", {
-          key: oldestKey,
-          age:
-            Math.round(
-              (Date.now() - cache[oldestKey].__cacheMetadata.cachedAt) / (60 * 60 * 1000),
-            ) + " hours",
-        });
-        delete cache[oldestKey];
-      }
-
-      cache[key] = {
-        data: results,
-        __cacheMetadata: {
-          cachedAt: Date.now(),
-          version: SupplierBase.CACHE_VERSION,
-          query,
-          supplier: this.supplierName,
-          resultCount: results.length,
-          limit, // Store the limit used to generate this cache
-        },
-      };
-
-      this.logger.debug("Cached query results", {
-        key,
-        metadata: cache[key].__cacheMetadata,
-      });
-
-      await chrome.storage.local.set({ [SupplierBase.queryCacheKey]: cache });
-    } catch (error) {
-      this.logger.error("Error storing query results in cache:", error);
-    }
-  }
-
-  /**
-   * Creates ProductBuilder instances from cached standardized product data.
-   * This is used to restore builders from the query-level cache.
-   * @param data - Array of cached product data (from .dump())
-   * @returns Array of ProductBuilder instances
-   */
-  protected initProductBuildersFromCache(data: unknown[]): ProductBuilder<T>[] {
-    return data.map((d) => {
-      const builder = new ProductBuilder<T>(this.baseURL);
-      builder.setData(d as Partial<T>);
-      return builder;
-    });
-  }
-
-  /**
    * Executes a product search query with caching support.
    * First checks the cache for existing results, then falls back to the actual query if needed.
    * The limit parameter is only used for the actual query and doesn't affect caching.
+   *
    * @param query - The search term to query products for
-   * @param limit - The maximum number of results to return
+   * @param limit - The maximum number of results to return (defaults to instance limit)
    * @returns Promise resolving to array of product builders or void if search fails
+   *
+   * @example
+   * ```typescript
+   * // Basic usage with default limit
+   * const results = await supplier.queryProductsWithCache("acetone");
+   * if (results) {
+   *   console.log(`Found ${results.length} products`);
+   * }
+   * ```
+   *
+   * @example
+   * ```typescript
+   * // With custom limit
+   * const results = await supplier.queryProductsWithCache("acetone", 10);
+   * if (results) {
+   *   for (const builder of results) {
+   *     const product = await builder.build();
+   *     console.log(product.title, product.price);
+   *   }
+   * }
+   * ```
    */
   protected async queryProductsWithCache(
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<T>[] | void> {
     // Check cache first (processed product data)
-    const key = this.generateCacheKey();
-    const result = await chrome.storage.local.get(SupplierBase.queryCacheKey);
-    const cache = (result[SupplierBase.queryCacheKey] as Record<string, CachedData<unknown>>) || {};
+    const key = this.cache.generateCacheKey(query, this.supplierName);
+    const result = await chrome.storage.local.get(SupplierCache.getQueryCacheKey());
+    const cache =
+      (result[SupplierCache.getQueryCacheKey()] as Record<string, CachedData<unknown>>) || {};
     const cached = cache[key];
     if (cached) {
       // If the cached limit is less than the requested limit, invalidate the cache
@@ -997,11 +920,11 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
           requestedLimit: limit,
         });
         delete cache[key];
-        await chrome.storage.local.set({ [SupplierBase.queryCacheKey]: cache });
+        await chrome.storage.local.set({ [SupplierCache.getQueryCacheKey()]: cache });
       } else {
         this.logger.debug("Returning cached query results");
         // Re-initialize product builders from cached processed data
-        return this.initProductBuildersFromCache(cached.data.slice(0, limit));
+        return ProductBuilder.createFromCache<T>(this.baseURL, cached.data.slice(0, limit));
       }
     }
 
@@ -1009,8 +932,9 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     const results = await this.queryProducts(query, limit);
     if (results) {
       // Store processed results in cache (dumped/serialized form) and the limit used
-      await this.cacheQueryResults(
+      await this.cache.cacheQueryResults(
         query,
+        this.supplierName,
         results.map((b) => b.dump()),
         limit,
       );
@@ -1019,52 +943,50 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   }
 
   /**
-   * Determines if a cache entry is stale based on its metadata.
-   * @param metadata - The cache metadata to check
-   * @returns true if the cache entry should be considered stale
-   */
-  private isCacheStale(metadata: CacheMetadata): boolean {
-    if (metadata.version !== SupplierBase.CACHE_VERSION) {
-      this.logger.debug("Cache version mismatch", {
-        cached: metadata.version,
-        current: SupplierBase.CACHE_VERSION,
-      });
-      return true;
-    }
-    const CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours
-    const age = Date.now() - metadata.cachedAt;
-    if (age > CACHE_MAX_AGE) {
-      this.logger.debug("Cache entry too old", {
-        age: Math.round(age / (60 * 60 * 1000)) + " hours",
-        maxAge: CACHE_MAX_AGE / (60 * 60 * 1000) + " hours",
-      });
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * Updates the timestamp for a query cache entry.
-   * @param key - The cache key to update
-   */
-  private async updateQueryCacheTimestamp(key: string): Promise<void> {
-    try {
-      const result = await chrome.storage.local.get(SupplierBase.queryCacheKey);
-      const cache =
-        (result[SupplierBase.queryCacheKey] as Record<string, CachedData<unknown>>) || {};
-      if (cache[key]) {
-        cache[key].__cacheMetadata.cachedAt = Date.now();
-        await chrome.storage.local.set({ [SupplierBase.queryCacheKey]: cache });
-      }
-    } catch (error) {
-      this.logger.error("Error updating query cache timestamp:", error);
-    }
-  }
-
-  /**
-   * The function asynchronously iterates over query results, retrieves product data, and yields valid
-   * results.
-   * @returns An async generator that yields valid results.
+   * Implements the AsyncIterable interface to allow for-await-of iteration over products.
+   * This method handles the entire product search and retrieval process:
+   * 1. Performs initial setup
+   * 2. Queries products with caching support
+   * 3. Processes results in batches to maintain controlled concurrency
+   * 4. Yields complete products as they become available
+   *
+   * @remarks
+   * The method uses batching to control concurrent requests and prevent overwhelming
+   * the supplier's API. It also handles request cancellation and error recovery.
+   *
+   * @returns AsyncGenerator yielding complete Product objects
+   * @throws Error if the search fails (unless due to abort)
+   *
+   * @example
+   * ```typescript
+   * // Basic usage
+   * const supplier = new MySupplier("acetone", 5);
+   * for await (const product of supplier) {
+   *   console.log(product.title, product.price);
+   * }
+   * ```
+   *
+   * @example
+   * ```typescript
+   * // With error handling and cancellation
+   * const controller = new AbortController();
+   * const supplier = new MySupplier("acetone", 5, controller);
+   *
+   * try {
+   *   for await (const product of supplier) {
+   *     if (someCondition) {
+   *       controller.abort(); // Stop the search
+   *     }
+   *     console.log(product.title);
+   *   }
+   * } catch (err) {
+   *   if (err.name === 'AbortError') {
+   *     console.log('Search was cancelled');
+   *   } else {
+   *     console.error('Search failed:', err);
+   *   }
+   * }
+   * ```
    */
   async *[Symbol.asyncIterator](): AsyncGenerator<Product, void, unknown> {
     try {
@@ -1118,6 +1040,95 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
       this.logger.error("ERROR in generator fn:", { err });
     }
   }
+
+  /**
+   * Abstract method that must be implemented by supplier classes to perform the actual product search.
+   * This is the core method that each supplier implements to query their specific API or website.
+   *
+   * @remarks
+   * The implementation should:
+   * 1. Make the necessary HTTP requests to the supplier's API/website
+   * 2. Parse the response into initial product data
+   * 3. Create ProductBuilder instances for each result
+   * 4. Set basic product information (title, URL, etc.)
+   *
+   * The method should not fetch detailed product data - that is handled by getProductData.
+   *
+   * @param query - The search term to query products for
+   * @param limit - The maximum number of results to return
+   * @returns Promise resolving to array of ProductBuilder instances or void if search fails
+   *
+   * @example
+   * ```typescript
+   * // Example implementation for a JSON API supplier
+   * protected async queryProducts(
+   *   query: string,
+   *   limit: number
+   * ): Promise<ProductBuilder<Product>[] | void> {
+   *   const response = await this.httpGetJson({
+   *     path: '/api/search',
+   *     params: {
+   *       q: query,
+   *       limit,
+   *       format: 'json'
+   *     }
+   *   });
+   *
+   *   if (!response?.items) return;
+   *
+   *   return response.items.map(item => {
+   *     const builder = new ProductBuilder<Product>(this.baseURL);
+   *     builder
+   *       .setBasicInfo(item.title, item.url, this.supplierName)
+   *       .setPricing(item.price, item.currency)
+   *       .setQuantity(item.quantity, item.uom);
+   *     return builder;
+   *   });
+   * }
+   * ```
+   *
+   * @example
+   * ```typescript
+   * // Example implementation for an HTML scraping supplier
+   * protected async queryProducts(
+   *   query: string,
+   *   limit: number
+   * ): Promise<ProductBuilder<Product>[] | void> {
+   *   const html = await this.httpGetHtml({
+   *     path: '/search',
+   *     params: { q: query }
+   *   });
+   *
+   *   if (!html) return;
+   *
+   *   const $ = cheerio.load(html);
+   *   const products: ProductBuilder<Product>[] = [];
+   *
+   *   $('.product-item').each((_, el) => {
+   *     if (products.length >= limit) return false;
+   *
+   *     const $el = $(el);
+   *     const builder = new ProductBuilder<Product>(this.baseURL);
+   *     builder
+   *       .setBasicInfo(
+   *         $el.find('.title').text(),
+   *         $el.find('a').attr('href'),
+   *         this.supplierName
+   *       )
+   *       .setPricing(
+   *         $el.find('.price').text()
+   *       );
+   *     products.push(builder);
+   *   });
+   *
+   *   return products;
+   * }
+   * ```
+   */
+  protected abstract queryProducts(
+    query: string,
+    limit: number,
+  ): Promise<ProductBuilder<T>[] | void>;
 
   /**
    * Finalizes a partial product by adding computed properties and validating the result.
@@ -1246,28 +1257,37 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     return href.toString();
   }
 
-  protected abstract queryProducts(
-    query: string,
-    limit: number,
-  ): Promise<ProductBuilder<T>[] | void>;
-
+  /**
+   * Retrieves detailed product data for a given product builder.
+   * Handles caching of product data and fetches fresh data if not cached.
+   *
+   * @param product - The ProductBuilder instance to get data for
+   * @returns Promise resolving to the updated ProductBuilder or void if fetch fails
+   *
+   * @example
+   * ```typescript
+   * const builder = new ProductBuilder<Product>(this.baseURL);
+   * builder.setBasicInfo("Acetone", "/products/acetone", "ChemSupplier");
+   *
+   * const updatedBuilder = await supplier.getProductData(builder);
+   * if (updatedBuilder) {
+   *   const product = await updatedBuilder.build();
+   *   console.log("Product details:", product);
+   * }
+   * ```
+   */
   protected async getProductData(product: ProductBuilder<T>): Promise<ProductBuilder<T> | void> {
     const url = product.get("url");
-    const cacheKey = this.getProductDataCacheKey(product);
+    if (typeof url !== "string") {
+      this.logger.error("Invalid URL in product:", { url });
+      return undefined;
+    }
+    const cacheKey = this.cache.getProductDataCacheKey(url, this.supplierName);
     console.log("[SupplierBase] Product detail cache key:", cacheKey, "for url:", url);
     try {
-      const result = await chrome.storage.local.get(SupplierBase.productDataCacheKey);
-      const cache =
-        (result[SupplierBase.productDataCacheKey] as Record<
-          string,
-          { data: Record<string, unknown>; timestamp: number }
-        >) || {};
-      const cached = cache[cacheKey];
-      if (cached) {
-        // Update timestamp for LRU
-        cached.timestamp = Date.now();
-        await chrome.storage.local.set({ [SupplierBase.productDataCacheKey]: cache });
-        product.setData(cached.data as Partial<T>);
+      const cachedData = await this.cache.getCachedProductData(cacheKey);
+      if (cachedData) {
+        product.setData(cachedData as Partial<T>);
         return product;
       }
       // Cache miss: call fetcher
@@ -1279,26 +1299,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
         return undefined;
       }
       if (resultBuilder) {
-        // Re-read the latest cache to avoid race conditions
-        const latestResult = await chrome.storage.local.get(SupplierBase.productDataCacheKey);
-        const latestCache =
-          (latestResult[SupplierBase.productDataCacheKey] as Record<
-            string,
-            { data: Record<string, unknown>; timestamp: number }
-          >) || {};
-
-        latestCache[cacheKey] = {
-          data: resultBuilder.dump(),
-          timestamp: Date.now(),
-        };
-        // If cache is full, remove oldest entry
-        if (Object.keys(latestCache).length > 100) {
-          const oldestKey = Object.entries(latestCache).sort(
-            ([, a], [, b]) => a.timestamp - b.timestamp,
-          )[0][0];
-          delete latestCache[oldestKey];
-        }
-        await chrome.storage.local.set({ [SupplierBase.productDataCacheKey]: latestCache });
+        await this.cache.cacheProductData(cacheKey, resultBuilder.dump());
       }
       return resultBuilder;
     } catch (outerErr) {
@@ -1308,108 +1309,46 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   }
 
   /**
-   * Generates a cache key for product detail data based only on the HTTP request URL and params.
-   * This ensures that identical detail requests (even from different queries) share the same cache entry.
-   * Do NOT include the original search query or any unrelated context.
+   * Retrieves product data with caching support.
+   * Similar to getProductData but allows for additional parameters to be included in the cache key.
    *
-   * @param product - The ProductBuilder instance (must have the correct URL set)
-   * @param params - The params used in the actual HTTP request for product details
-   * @returns A stable cache key for the product detail fetch
+   * @param product - The ProductBuilder instance to get data for
+   * @param fetcher - The function to use for fetching product data
+   * @param params - Optional parameters to include in the cache key
+   * @returns Promise resolving to the updated ProductBuilder or void if fetch fails
+   *
+   * @example
+   * ```typescript
+   * const builder = new ProductBuilder<Product>(this.baseURL);
+   * builder.setBasicInfo("Acetone", "/products/acetone", "ChemSupplier");
+   *
+   * // Use custom fetcher with additional params
+   * const updatedBuilder = await supplier.getProductDataWithCache(
+   *   builder,
+   *   async (b) => {
+   *     // Custom fetching logic
+   *     return b;
+   *   },
+   *   { version: "2.0" }
+   * );
+   * ```
    */
-  protected getProductDataCacheKey(
-    product: ProductBuilder<T>,
-    params?: Record<string, string>,
-  ): string {
-    const data = {
-      url: product.get("url"), // Must match the actual HTTP request URL
-      params: params || {}, // Must match the actual HTTP request params
-      supplier: this.supplierName, // Optional: for multi-supplier safety
-    };
-    return md5(JSON.stringify(data));
-  }
-
-  protected async getCachedProductData(key: string): Promise<Maybe<Record<string, unknown>>> {
-    try {
-      const result = await chrome.storage.local.get(SupplierBase.productDataCacheKey);
-      const cache =
-        (result[SupplierBase.productDataCacheKey] as Record<
-          string,
-          { data: Record<string, unknown>; timestamp: number }
-        >) || {};
-      const cached = cache[key];
-      if (cached) {
-        await this.updateProductDataCacheTimestamp(key);
-        return cached.data;
-      }
-      return undefined;
-    } catch (error) {
-      this.logger.error("Error retrieving product data from cache:", error);
-      return undefined;
-    }
-  }
-
-  protected async updateProductDataCacheTimestamp(key: string): Promise<void> {
-    try {
-      const result = await chrome.storage.local.get(SupplierBase.productDataCacheKey);
-      const cache =
-        (result[SupplierBase.productDataCacheKey] as Record<
-          string,
-          { data: Record<string, unknown>; timestamp: number }
-        >) || {};
-      if (cache[key]) {
-        cache[key].timestamp = Date.now();
-        await chrome.storage.local.set({ [SupplierBase.productDataCacheKey]: cache });
-      }
-    } catch (error) {
-      this.logger.error("Error updating product data cache timestamp:", error);
-    }
-  }
-
-  protected async cacheProductData(key: string, data: Record<string, unknown>): Promise<void> {
-    try {
-      const result = await chrome.storage.local.get(SupplierBase.productDataCacheKey);
-      const cache =
-        (result[SupplierBase.productDataCacheKey] as Record<
-          string,
-          { data: Record<string, unknown>; timestamp: number }
-        >) || {};
-      if (Object.keys(cache).length >= 100) {
-        const oldestKey = Object.entries(cache).sort(
-          ([, a], [, b]) => a.timestamp - b.timestamp,
-        )[0][0];
-        delete cache[oldestKey];
-      }
-      cache[key] = {
-        data,
-        timestamp: Date.now(),
-      };
-      await chrome.storage.local.set({ [SupplierBase.productDataCacheKey]: cache });
-    } catch (error) {
-      this.logger.error("Error storing product data in cache:", error);
-    }
-  }
-
   protected async getProductDataWithCache(
     product: ProductBuilder<T>,
     fetcher: (builder: ProductBuilder<T>) => Promise<ProductBuilder<T> | void>,
     params?: Record<string, string>,
   ): Promise<ProductBuilder<T> | void> {
     const url = product.get("url");
-    const cacheKey = this.getProductDataCacheKey(product, params);
+    if (typeof url !== "string") {
+      this.logger.error("Invalid URL in product:", { url });
+      return undefined;
+    }
+    const cacheKey = this.cache.getProductDataCacheKey(url, this.supplierName, params);
     console.log("[SupplierBase] Product detail cache key:", cacheKey, "for url:", url);
     try {
-      const result = await chrome.storage.local.get(SupplierBase.productDataCacheKey);
-      const cache =
-        (result[SupplierBase.productDataCacheKey] as Record<
-          string,
-          { data: Record<string, unknown>; timestamp: number }
-        >) || {};
-      const cached = cache[cacheKey];
-      if (cached) {
-        // Update timestamp for LRU
-        cached.timestamp = Date.now();
-        await chrome.storage.local.set({ [SupplierBase.productDataCacheKey]: cache });
-        product.setData(cached.data as Partial<T>);
+      const cachedData = await this.cache.getCachedProductData(cacheKey);
+      if (cachedData) {
+        product.setData(cachedData as Partial<T>);
         return product;
       }
       // Cache miss: call fetcher
@@ -1421,26 +1360,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
         return undefined;
       }
       if (resultBuilder) {
-        // Re-read the latest cache to avoid race conditions
-        const latestResult = await chrome.storage.local.get(SupplierBase.productDataCacheKey);
-        const latestCache =
-          (latestResult[SupplierBase.productDataCacheKey] as Record<
-            string,
-            { data: Record<string, unknown>; timestamp: number }
-          >) || {};
-
-        latestCache[cacheKey] = {
-          data: resultBuilder.dump(),
-          timestamp: Date.now(),
-        };
-        // If cache is full, remove oldest entry
-        if (Object.keys(latestCache).length > 100) {
-          const oldestKey = Object.entries(latestCache).sort(
-            ([, a], [, b]) => a.timestamp - b.timestamp,
-          )[0][0];
-          delete latestCache[oldestKey];
-        }
-        await chrome.storage.local.set({ [SupplierBase.productDataCacheKey]: latestCache });
+        await this.cache.cacheProductData(cacheKey, resultBuilder.dump());
       }
       return resultBuilder;
     } catch (outerErr) {
@@ -1451,9 +1371,11 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
 
   /**
    * Internal fetch method with request counting and decorator.
+   * Tracks request count and enforces hard limits on HTTP requests.
    *
    * @param args - Arguments to pass to fetchDecorator (usually a Request or URL and options)
    * @returns The response from the fetchDecorator
+   * @throws Error if request count exceeds hard limit
    *
    * @example
    * ```typescript
@@ -1463,6 +1385,16 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    *   const data = await response.json();
    *   console.log(data);
    * }
+   * ```
+   *
+   * @example
+   * ```typescript
+   * // With custom request options
+   * const response = await this.fetch(
+   *   new Request('https://example.com', {
+   *     headers: { 'Accept': 'application/json' }
+   *   })
+   * );
    * ```
    */
   protected async fetch(...args: Parameters<typeof fetchDecorator>): Promise<any> {

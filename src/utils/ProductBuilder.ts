@@ -329,6 +329,25 @@ export default class ProductBuilder<T extends Product> {
     return this;
   }
 
+  setCurrencySymbol(sign: CurrencySymbol): ProductBuilder<T> {
+    if (typeof sign !== "string") {
+      console.warn(`setCurrencySymbol| Invalid currency symbol: ${sign}`);
+      return this;
+    }
+    this.product.currencySymbol = sign;
+    return this;
+  }
+
+  setCurrencyCode(code: CurrencyCode): ProductBuilder<T> {
+    if (typeof code !== "string") {
+      console.warn(`setCurrencyCode| Invalid currency code: ${code}`);
+      return this;
+    }
+
+    this.product.currencyCode = code;
+    return this;
+  }
+
   /**
    * Sets the unit of measure for the product.
    *
@@ -787,5 +806,33 @@ export default class ProductBuilder<T extends Product> {
    */
   dump(): Partial<T> {
     return this.product;
+  }
+
+  /**
+   * Creates an array of ProductBuilder instances from cached product data.
+   * This is used to restore builders from cache storage.
+   *
+   * @param baseURL - The base URL of the supplier's website
+   * @param data - Array of cached product data (from .dump())
+   * @returns Array of ProductBuilder instances
+   * @example
+   * ```typescript
+   * const cachedData = await chrome.storage.local.get('cached_products');
+   * const builders = ProductBuilder.createFromCache('https://example.com', cachedData);
+   * for (const builder of builders) {
+   *   const product = await builder.build();
+   *   console.log(product.title);
+   * }
+   * ```
+   */
+  public static createFromCache<T extends Product>(
+    baseURL: string,
+    data: unknown[],
+  ): ProductBuilder<T>[] {
+    return data.map((d) => {
+      const builder = new ProductBuilder<T>(baseURL);
+      builder.setData(d as Partial<T>);
+      return builder;
+    });
   }
 }

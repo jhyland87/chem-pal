@@ -20,9 +20,6 @@ import TabPanel from "./components/TabPanel";
 import { darkTheme, lightTheme } from "./themes";
 import { BadgeAnimator } from "./utils";
 
-// The badge may have been left open from before, so just clear it on render.
-BadgeAnimator.clear();
-
 /**
  * Main application component that manages the overall layout and state.
  * The App component serves as the root component of the application, providing:
@@ -55,6 +52,11 @@ function App() {
   // own annoyance of having to reposition the cursor once it's open, but I think it's
   // better this way.
   const cornerThreshold = 30;
+
+  // Clear any existing badge animation when the component mounts
+  useEffect(() => {
+    BadgeAnimator.clear();
+  }, []);
 
   // The logic in the useEffect is to determine if the cursor is in the right position to
   // show the speed dial menu.

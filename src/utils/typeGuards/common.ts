@@ -1,4 +1,5 @@
 import { UOM } from "@/constants/common";
+import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 
 /**
  * Type guard to validate if a value is a valid HTTP Response object.
@@ -313,4 +314,53 @@ export function isProduct(product: unknown): product is Product {
   return Object.entries(requiredProps).every(([key, expectedType]) => {
     return key in product && typeof product[key as keyof typeof product] === expectedType;
   });
+}
+
+/**
+ * Type guard to validate if a value is a valid currency symbol.
+ * Checks if the value is a string and if it is in the CURRENCY_SYMBOL_MAP.
+ *
+ * @param symbol - The value to validate
+ * @returns Type predicate indicating if the value is a valid currency symbol
+ * @typeguard
+ *
+ * @example
+ * ```typescript
+ * const validSymbol = "$";
+ * if (isCurrencySymbol(validSymbol)) {
+ *   console.log("Valid currency symbol:", validSymbol);
+ * } else {
+ *   console.log("Invalid currency symbol:", validSymbol);
+ * }
+ * ```
+ */
+export function isCurrencySymbol(symbol: unknown): symbol is CurrencySymbol {
+  return (
+    typeof symbol === "string" &&
+    Object.values(CURRENCY_CODE_MAP).includes(symbol as CurrencySymbol)
+  );
+}
+
+/**
+ * Type guard to validate if a value is a valid currency code.
+ * Checks if the value is a string and if it is in the CURRENCY_SYMBOL_MAP.
+ *
+ * @param code - The value to validate
+ * @returns Type predicate indicating if the value is a valid currency code
+ * @typeguard
+ *
+ * @example
+ * ```typescript
+ * const validCode = "USD";
+ * if (isCurrencyCode(validCode)) {
+ *   console.log("Valid currency code:", validCode);
+ * } else {
+ *   console.log("Invalid currency code:", validCode);
+ * }
+ * ```
+ */
+export function isCurrencyCode(code: unknown): code is CurrencyCode {
+  return (
+    typeof code === "string" && Object.values(CURRENCY_SYMBOL_MAP).includes(code as CurrencyCode)
+  );
 }

@@ -19,7 +19,7 @@ export default abstract class SupplierBaseWix
   public abstract readonly supplierName: string;
 
   /** Base URL for all API requests */
-  protected abstract baseURL: string;
+  public abstract readonly baseURL: string;
 
   /** Access token for Wix API authentication */
   protected accessToken: string = "";

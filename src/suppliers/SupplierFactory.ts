@@ -154,13 +154,16 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
           if (this.suppliers.length == 0 || this.suppliers.includes(supplierClassName)) {
             this.logger.debug("Initializing supplier class:", supplierClassName);
             this.logger.debug("this.limit:", this.limit);
-            // Cast supplierClass to the correct type to fix type error
-            const SupplierClass = supplierClass as new (
+            // Cast to unknown first to avoid type errors with private constructors
+            const ConcreteSupplierClass = supplierClass as unknown as new (
               query: string,
               limit: number,
               controller: AbortController,
             ) => SupplierBase<unknown, Product>;
-            result.push(new SupplierClass(this.query, this.limit, this.controller));
+            const instance = new ConcreteSupplierClass(this.query, this.limit, this.controller);
+            // Initialize cache after construction
+            instance.initCache();
+            result.push(instance);
           }
           return result;
         },

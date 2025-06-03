@@ -306,7 +306,7 @@ export default class SupplierCarolina
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    const params = { format: "json", ajax: true };
+    const params = { format: "json", ajax: "true" };
     return this.getProductDataWithCache(
       product,
       async (builder) => {
