@@ -2,14 +2,6 @@ import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 import { mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import {
-  CACHE_SIZE,
-  CACHE_VERSION,
-  CachedData,
-  getProductDataCacheKey,
-  getQueryCacheKey,
-  isCacheStale,
-} from "@/utils/SupplierCache";
-import {
   isAuthCheckEndpoint,
   isAuthRequiredEndpoint,
   isMacklinApiResponse,
@@ -208,17 +200,6 @@ export default class SupplierMacklin
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
     this.limit = limit;
-    // --- QUERY-LEVEL CACHE LOGIC ---
-    const cacheKey = getQueryCacheKey(query, this.supplierName);
-    const result = await chrome.storage.local.get("supplier_query_cache");
-    const cache = (result["supplier_query_cache"] as Record<string, CachedData<any>>) || {};
-    const cached = cache[cacheKey];
-    if (cached && !isCacheStale(cached.__cacheMetadata)) {
-      this.logger.debug("Returning cached query results");
-      return this.initProductBuilders(cached.data.slice(0, limit));
-    }
-    // --- END QUERY-LEVEL CACHE LOGIC ---
-
     const response: unknown = await this.request<MacklinSearchResultProducts>(`/api/item/search`, {
       params: { keyword: query, limit: 90, page: 1 },
     });
@@ -234,40 +215,6 @@ export default class SupplierMacklin
     const fuzzFiltered = this.fuzzyFilter<MacklinProductVariant>(query, products);
     this.logger.info("fuzzFiltered:", fuzzFiltered);
     const processed = fuzzFiltered.slice(0, limit);
-
-    // --- STORE IN QUERY-LEVEL CACHE ---
-    // Store processed results (dumped/serialized form)
-    cache[cacheKey] = {
-      data: processed.map((b) =>
-        new ProductBuilder(this.baseURL)
-          .setBasicInfo(
-            b.item_en_name,
-            `${this.baseURL}/en/products/${b.item_code}`,
-            this.supplierName,
-          )
-          .setId(b.item_id)
-          .setUUID(b.item_code)
-          .setCAS(b.cas)
-          .dump(),
-      ),
-      __cacheMetadata: {
-        cachedAt: Date.now(),
-        version: CACHE_VERSION,
-        query,
-        supplier: this.supplierName,
-        resultCount: processed.length,
-      },
-    };
-    // If cache is full, remove oldest entry
-    if (Object.keys(cache).length > CACHE_SIZE) {
-      const oldestKey = Object.entries(cache).sort(
-        ([, a], [, b]) => a.__cacheMetadata.cachedAt - b.__cacheMetadata.cachedAt,
-      )[0][0];
-      delete cache[oldestKey];
-    }
-    await chrome.storage.local.set({ supplier_query_cache: cache });
-    // --- END STORE IN QUERY-LEVEL CACHE ---
-
     return this.initProductBuilders(processed);
   }
 
@@ -293,64 +240,26 @@ export default class SupplierMacklin
    */
   protected async getProductData(
     product: ProductBuilder<Product>,
-  ): Promise<void | ProductBuilder<Product>> {
-    // --- PRODUCT DETAIL CACHE LOGIC ---
-    const url = product.get("url");
+  ): Promise<ProductBuilder<Product> | void> {
     const params = { code: product.get("uuid") };
-    const cacheKey = getProductDataCacheKey(url, params, this.supplierName);
-    console.log("[Macklin] Product detail params:", params);
-    console.log("[Macklin] Product detail cacheKey:", cacheKey);
-    const result = await chrome.storage.local.get("supplier_product_data_cache");
-    const cache =
-      (result["supplier_product_data_cache"] as Record<
-        string,
-        { data: Record<string, unknown>; timestamp: number }
-      >) || {};
-    const cached = cache[cacheKey];
-    if (cached) {
-      console.log("[Macklin] Product detail cache HIT:", cacheKey);
-      // Update timestamp for LRU
-      cached.timestamp = Date.now();
-      await chrome.storage.local.set({ supplier_product_data_cache: cache });
-      product.setData(cached.data as Partial<Product>);
-      return product;
-    } else {
-      console.log("[Macklin] Product detail cache MISS:", cacheKey);
-    }
-    // --- END PRODUCT DETAIL CACHE LOGIC ---
-
-    const response: unknown = await this.request<MacklinProductDetails>("/api/product/list", {
+    return this.getProductDataWithCache(
+      product,
+      async (builder) => {
+        const response = await this.request<MacklinProductDetails>("/api/product/list", { params });
+        if (!isMacklinProductDetailsResponse(response)) {
+          this.logger.warn("Invalid API response format for product:", product.get("uuid"));
+          return builder;
+        }
+        const variant = response.list[0];
+        builder.setPricing(variant.product_price, "CNY", CURRENCY_SYMBOL_MAP.CNY);
+        builder.setQuantity(variant.product_pack);
+        builder.setUOM(variant.product_unit);
+        builder.setAvailability(variant.product_stock);
+        builder.setDescription(variant.item_en_specification);
+        return builder;
+      },
       params,
-    });
-
-    if (!isMacklinProductDetailsResponse(response)) {
-      this.logger.warn("Invalid API response format for product:", product.get("uuid"));
-      return product;
-    }
-
-    const variant = response.list[0];
-    product.setPricing(variant.product_price, "CNY", CURRENCY_SYMBOL_MAP.CNY);
-    product.setQuantity(variant.product_pack);
-    product.setUOM(variant.product_unit);
-    product.setAvailability(variant.product_stock);
-    product.setDescription(variant.item_en_specification);
-
-    // --- STORE IN PRODUCT DETAIL CACHE ---
-    cache[cacheKey] = {
-      data: product.dump(),
-      timestamp: Date.now(),
-    };
-    // If cache is full, remove oldest entry
-    if (Object.keys(cache).length > CACHE_SIZE) {
-      const oldestKey = Object.entries(cache).sort(
-        ([, a], [, b]) => a.timestamp - b.timestamp,
-      )[0][0];
-      delete cache[oldestKey];
-    }
-    await chrome.storage.local.set({ supplier_product_data_cache: cache });
-    // --- END STORE IN PRODUCT DETAIL CACHE ---
-
-    return product;
+    );
   }
 
   /**

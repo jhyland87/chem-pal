@@ -163,7 +163,6 @@ export default class SupplierLaboratoriumDiscounter
 
     const fuzzFiltered = this.fuzzyFilter<SearchResponseProduct>(query, rawSearchResults);
     this.logger.info("fuzzFiltered:", fuzzFiltered);
-
     return this.initProductBuilders(fuzzFiltered.slice(0, limit));
   }
 
@@ -231,26 +230,21 @@ export default class SupplierLaboratoriumDiscounter
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
+    const params = { format: "json" };
     return this.getProductDataWithCache(
       product,
       async (builder) => {
-        // If not in cache, make the request
         const productResponse = await this.httpGetJson({
           path: builder.get("url"),
-          params: {
-            format: "json",
-          },
+          params,
         });
-
         if (!productResponse || !isProductObject(productResponse)) {
           this.logger.warn("Invalid product data - did not pass typeguard:", productResponse);
-          return;
+          return builder;
         }
-
         const productData = productResponse.product;
         const currency = productResponse.shop.currencies[productResponse.shop.currency];
         builder.setPricing(productData.price.price, currency.code, currency.symbol);
-
         if (typeof productData.variants === "object" && productData.variants !== null) {
           for (const variant of Object.values(productData.variants) as VariantObject[]) {
             if (variant.active === false) continue;
@@ -275,7 +269,7 @@ export default class SupplierLaboratoriumDiscounter
         }
         return builder;
       },
-      { format: "json" },
+      params,
     );
   }
 }

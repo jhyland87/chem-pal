@@ -27,6 +27,8 @@ interface CacheMetadata {
   supplier: string;
   /** Number of results in the cache */
   resultCount: number;
+  /** Limit used to generate this cache */
+  limit: number;
 }
 
 /**
@@ -124,7 +126,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * @example
    * ```typescript
    * const controller = new AbortController();
-   * const supplier = new MySupplier("acetone", 10, controller);
+   * const supplier = new MySupplier("acetone", 5, controller);
    *
    * // Later, to cancel all pending requests:
    * controller.abort();
@@ -743,33 +745,16 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   }
 
   /**
-   * Generates a cache key based on the query, limit, and supplier name.
-   * Uses a combination of base64 encoding methods that work in both browser and Node environments.
+   * Generates a cache key based on the query and supplier name.
+   * The limit is intentionally excluded as it only affects how many results are returned,
+   * not the actual search results themselves.
    *
    * @returns A string hash that uniquely identifies this search request
-   * @example
-   * ```typescript
-   * // Example with a basic search
-   * const supplier = new MySupplier("sodium chloride", 5);
-   * const key = supplier.generateCacheKey();
-   * // Returns: "c29kaXVtIGNobG9yaWRlOjU6TXlTdXBwbGllcg=="
-   *
-   * // Example with empty values
-   * const supplier = new MySupplier("", 0);
-   * const key = supplier.generateCacheKey();
-   * // Returns: "OjA6TXlTdXBwbGllcg=="
-   *
-   * // Example with special characters
-   * const supplier = new MySupplier("NaCl (99.9%)", 10);
-   * const key = supplier.generateCacheKey();
-   * // Returns: "TmFDbCAoOTkuOSUpOjEwOk15U3VwcGxpZXI="
-   * ```
    */
   private generateCacheKey(): string {
-    const data = `${this.query || ""}:${this.limit || 0}:${this.supplierName || ""}`;
+    const data = `${this.query || ""}:${this.supplierName || ""}`;
     this.logger.debug("Generating cache key with:", {
       query: this.query,
-      limit: this.limit,
       supplierName: this.supplierName,
       data,
     });
@@ -841,7 +826,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * @param query - The search query
    * @param results - The processed query results to cache (array of objects for ProductBuilder)
    */
-  private async cacheQueryResults(query: string, results: unknown[]): Promise<void> {
+  private async cacheQueryResults(query: string, results: unknown[], limit: number): Promise<void> {
     try {
       const key = this.generateCacheKey();
       const result = await chrome.storage.local.get(SupplierBase.queryCacheKey);
@@ -871,6 +856,7 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
           query,
           supplier: this.supplierName,
           resultCount: results.length,
+          limit, // Store the limit used to generate this cache
         },
       };
 
@@ -886,6 +872,20 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   }
 
   /**
+   * Creates ProductBuilder instances from cached standardized product data.
+   * This is used to restore builders from the query-level cache.
+   * @param data - Array of cached product data (from .dump())
+   * @returns Array of ProductBuilder instances
+   */
+  protected initProductBuildersFromCache(data: unknown[]): ProductBuilder<T>[] {
+    return data.map((d) => {
+      const builder = new ProductBuilder<T>(this.baseURL);
+      builder.setData(d as Partial<T>);
+      return builder;
+    });
+  }
+
+  /**
    * Executes a product search query with caching support.
    * First checks the cache for existing results, then falls back to the actual query if needed.
    * The limit parameter is only used for the actual query and doesn't affect caching.
@@ -898,20 +898,37 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     limit: number = this.limit,
   ): Promise<ProductBuilder<T>[] | void> {
     // Check cache first (processed product data)
-    const cachedResults = await this.getCachedQueryResults(query);
-    if (cachedResults) {
-      this.logger.debug("Returning cached query results");
-      // Re-initialize product builders from cached processed data
-      return this.initProductBuilders(cachedResults.slice(0, limit));
+    const key = this.generateCacheKey();
+    const result = await chrome.storage.local.get(SupplierBase.queryCacheKey);
+    const cache = (result[SupplierBase.queryCacheKey] as Record<string, CachedData<unknown>>) || {};
+    const cached = cache[key];
+    if (cached) {
+      // If the cached limit is less than the requested limit, invalidate the cache
+      if (
+        typeof cached.__cacheMetadata.limit === "number" &&
+        cached.__cacheMetadata.limit < limit
+      ) {
+        this.logger.debug("Invalidating query cache due to insufficient limit", {
+          cachedLimit: cached.__cacheMetadata.limit,
+          requestedLimit: limit,
+        });
+        delete cache[key];
+        await chrome.storage.local.set({ [SupplierBase.queryCacheKey]: cache });
+      } else {
+        this.logger.debug("Returning cached query results");
+        // Re-initialize product builders from cached processed data
+        return this.initProductBuildersFromCache(cached.data.slice(0, limit));
+      }
     }
 
     // If not in cache, perform the actual query
     const results = await this.queryProducts(query, limit);
     if (results) {
-      // Store processed results in cache (dumped/serialized form)
+      // Store processed results in cache (dumped/serialized form) and the limit used
       await this.cacheQueryResults(
         query,
         results.map((b) => b.dump()),
+        limit,
       );
     }
     return results;
@@ -1365,25 +1382,42 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
 
   protected async getProductDataWithCache(
     product: ProductBuilder<T>,
-    fetcher: (product: ProductBuilder<T>) => Promise<ProductBuilder<T> | void>,
+    fetcher: (builder: ProductBuilder<T>) => Promise<ProductBuilder<T> | void>,
     params?: Record<string, string>,
-    onCacheResult?: (wasCacheHit: boolean) => void,
   ): Promise<ProductBuilder<T> | void> {
+    const url = product.get("url");
     const cacheKey = this.getProductDataCacheKey(product, params);
-    this.logger.debug("[getProductDataWithCache] Checking cache for key:", cacheKey);
-    const cachedData = await this.getCachedProductData(cacheKey);
-    if (cachedData) {
-      this.logger.debug("[getProductDataWithCache] Cache HIT for key:", cacheKey);
-      product.setData(cachedData as Partial<T>);
-      if (onCacheResult) onCacheResult(true);
+    console.log("[SupplierBase] Product detail cache key:", cacheKey, "for url:", url);
+    const result = await chrome.storage.local.get(SupplierBase.productDataCacheKey);
+    const cache =
+      (result[SupplierBase.productDataCacheKey] as Record<
+        string,
+        { data: Record<string, unknown>; timestamp: number }
+      >) || {};
+    const cached = cache[cacheKey];
+    if (cached) {
+      // Update timestamp for LRU
+      cached.timestamp = Date.now();
+      await chrome.storage.local.set({ [SupplierBase.productDataCacheKey]: cache });
+      product.setData(cached.data as Partial<T>);
       return product;
     }
-    this.logger.debug("[getProductDataWithCache] Cache MISS for key:", cacheKey);
-    if (onCacheResult) onCacheResult(false);
-    const result = await fetcher(product);
-    if (result) {
-      await this.cacheProductData(cacheKey, product.dump());
+    // Cache miss: call fetcher
+    const resultBuilder = await fetcher(product);
+    if (resultBuilder) {
+      cache[cacheKey] = {
+        data: resultBuilder.dump(),
+        timestamp: Date.now(),
+      };
+      // If cache is full, remove oldest entry
+      if (Object.keys(cache).length > 100) {
+        const oldestKey = Object.entries(cache).sort(
+          ([, a], [, b]) => a.timestamp - b.timestamp,
+        )[0][0];
+        delete cache[oldestKey];
+      }
+      await chrome.storage.local.set({ [SupplierBase.productDataCacheKey]: cache });
     }
-    return result;
+    return resultBuilder;
   }
 }
