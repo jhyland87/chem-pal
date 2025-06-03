@@ -266,50 +266,52 @@ export default class SupplierLoudwolf
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    this.logger.debug("Querying data for partialproduct:", product);
+    return this.getProductDataWithCache(product, async (builder) => {
+      this.logger.debug("Querying data for partialproduct:", builder);
 
-    if (typeof product === "undefined") {
-      this.logger.error("No products to get data for");
-      return;
-    }
-
-    const productResponse = await this.httpGetHtml({
-      path: product.get("url"),
-    });
-
-    if (!productResponse) {
-      this.logger.warn("No product response");
-      return;
-    }
-
-    this.logger.debug("productResponse:", productResponse);
-
-    const parser = new DOMParser();
-    const parsedHTML = parser.parseFromString(productResponse, "text/html");
-    const domContent = parsedHTML.querySelector("#content");
-    const dataGrid = Array.from(
-      domContent?.querySelectorAll("#content .tab-content .MsoTableGrid") || [],
-    )
-      .find((element) => element.textContent?.trim().match(/CAS/i))
-      ?.querySelectorAll("p");
-
-    const dataRows = Array.from(dataGrid || []).map((n) => n.innerText);
-
-    const datagridInfo = chunk(dataRows, 2).reduce((acc, [key, value]) => {
-      if (key.match(/CAS/i)) {
-        acc.cas = findCAS(value.trim()) ?? undefined;
-      } else if (key.match(/TOTAL [A-Z]+ OF PRODUCT/i)) {
-        const qty = parseQuantity(value);
-        if (qty) {
-          Object.assign(acc, qty);
-        }
-      } else if (key.match(/GRADE/i)) {
-        acc.grade = value;
+      if (typeof builder === "undefined") {
+        this.logger.error("No products to get data for");
+        return;
       }
-      return acc;
-    }, {} as Partial<Product>);
 
-    return product.setData(datagridInfo);
+      const productResponse = await this.httpGetHtml({
+        path: builder.get("url"),
+      });
+
+      if (!productResponse) {
+        this.logger.warn("No product response");
+        return;
+      }
+
+      this.logger.debug("productResponse:", productResponse);
+
+      const parser = new DOMParser();
+      const parsedHTML = parser.parseFromString(productResponse, "text/html");
+      const domContent = parsedHTML.querySelector("#content");
+      const dataGrid = Array.from(
+        domContent?.querySelectorAll("#content .tab-content .MsoTableGrid") || [],
+      )
+        .find((element) => element.textContent?.trim().match(/CAS/i))
+        ?.querySelectorAll("p");
+
+      const dataRows = Array.from(dataGrid || []).map((n) => n.innerText);
+
+      const datagridInfo = chunk(dataRows, 2).reduce((acc, [key, value]) => {
+        if (key.match(/CAS/i)) {
+          acc.cas = findCAS(value.trim()) ?? undefined;
+        } else if (key.match(/TOTAL [A-Z]+ OF PRODUCT/i)) {
+          const qty = parseQuantity(value);
+          if (qty) {
+            Object.assign(acc, qty);
+          }
+        } else if (key.match(/GRADE/i)) {
+          acc.grade = value;
+        }
+        return acc;
+      }, {} as Partial<Product>);
+
+      return builder.setData(datagridInfo);
+    });
   }
 
   /**

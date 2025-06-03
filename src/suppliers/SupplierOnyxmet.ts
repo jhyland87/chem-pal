@@ -178,67 +178,69 @@ export default class SupplierOnyxmet
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    this.logger.debug("Querying data for partialproduct:", product);
+    return this.getProductDataWithCache(product, async (builder) => {
+      this.logger.debug("Querying data for partialproduct:", builder);
 
-    const productResponse = await this.httpGetHtml({
-      path: product.get("url"),
+      const productResponse = await this.httpGetHtml({
+        path: builder.get("url"),
+      });
+
+      if (!productResponse) {
+        this.logger.warn("No product response");
+        return;
+      }
+
+      this.logger.debug("productResponse:", productResponse);
+
+      const parser = new DOMParser();
+      const parsedHTML = parser.parseFromString(productResponse, "text/html");
+      const content = parsedHTML.querySelector("#content");
+
+      if (!content) {
+        this.logger.warn("No content for product");
+        return;
+      }
+
+      const productData = Array.from(content.querySelectorAll(".desc"))
+        .find((element: Element) => element.textContent?.includes("Availability"))
+        ?.closest("ul")
+        ?.querySelectorAll("li");
+
+      const productInfo = Array.from(productData || []).reduce(
+        (acc, element) => {
+          const [key, value] = element.textContent?.split(": ") || [];
+          if (key && value) {
+            acc[key] = value;
+          }
+          return acc;
+        },
+        {} as Record<string, string>,
+      );
+
+      const cas = findCAS(builder.get("description"));
+      const title = content?.querySelector("h3.product-title")?.textContent?.trim() || "";
+      const statusTxt = productInfo.Availability || "";
+      const productPrice = content.querySelector(".product-price")?.textContent?.trim() || "";
+
+      const price = parsePrice(productPrice);
+
+      if (!price) {
+        this.logger.warn("No price for product");
+        return;
+      }
+      const quantity = parseQuantity(title);
+
+      if (!quantity) {
+        this.logger.warn("No quantity for product");
+        return;
+      }
+
+      return builder
+        .setPricing(price.price, price.currencyCode, price.currencySymbol)
+        .setQuantity(quantity.quantity, quantity.uom)
+        .setCAS(cas ?? "")
+        .setAvailability(statusTxt ?? "");
     });
-
-    if (!productResponse) {
-      this.logger.warn("No product response");
-      return;
-    }
-
-    this.logger.debug("productResponse:", productResponse);
-
-    const parser = new DOMParser();
-    const parsedHTML = parser.parseFromString(productResponse, "text/html");
-    const content = parsedHTML.querySelector("#content");
-
-    if (!content) {
-      this.logger.warn("No content for product");
-      return;
-    }
-
-    const productData = Array.from(content.querySelectorAll(".desc"))
-      .find((element: Element) => element.textContent?.includes("Availability"))
-      ?.closest("ul")
-      ?.querySelectorAll("li");
-
-    const productInfo = Array.from(productData || []).reduce(
-      (acc, element) => {
-        const [key, value] = element.textContent?.split(": ") || [];
-        if (key && value) {
-          acc[key] = value;
-        }
-        return acc;
-      },
-      {} as Record<string, string>,
-    );
-
-    const cas = findCAS(product.get("description"));
-    const title = content?.querySelector("h3.product-title")?.textContent?.trim() || "";
-    const statusTxt = productInfo.Availability || "";
-    const productPrice = content.querySelector(".product-price")?.textContent?.trim() || "";
-
-    const price = parsePrice(productPrice);
-
-    if (!price) {
-      this.logger.warn("No price for product");
-      return;
-    }
-    const quantity = parseQuantity(title);
-
-    if (!quantity) {
-      this.logger.warn("No quantity for product");
-      return;
-    }
-
-    return product
-      .setPricing(price.price, price.currencyCode, price.currencySymbol)
-      .setQuantity(quantity.quantity, quantity.uom)
-      .setCAS(cas ?? "")
-      .setAvailability(statusTxt ?? "");
   }
 
   /**

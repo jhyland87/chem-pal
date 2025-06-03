@@ -2,7 +2,6 @@ import { isCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
-import { isValidSearchResponse } from "@/utils/typeGuards/chemsavers";
 import SupplierBase from "./SupplierBase";
 
 /**
@@ -91,7 +90,6 @@ export default class SupplierChemsavers
           // eslint-disable-next-line @typescript-eslint/naming-convention
           "x-typesense-api-key": this.apiKey,
         },
-        //headers: this.headers,
         body,
       });
 
@@ -119,7 +117,14 @@ export default class SupplierChemsavers
 
       this.logger.info("fuzzResults:", fuzzResults);
 
-      return this.initProductBuilders(fuzzResults.slice(0, limit));
+      // Use queryProductsWithCache to cache the results
+      const builders = this.initProductBuilders(fuzzResults.slice(0, limit));
+      await this.cacheQueryResults(
+        query,
+        builders.map((b) => b.dump()),
+        limit,
+      );
+      return builders;
     } catch (error) {
       this.logger.error("Error querying products:", error);
       return;
@@ -221,7 +226,9 @@ export default class SupplierChemsavers
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    return product;
+    // Since Chemsavers includes all product data in search results,
+    // we can just return the product builder directly
+    return this.getProductDataWithCache(product, async (builder) => builder);
   }
 
   /**

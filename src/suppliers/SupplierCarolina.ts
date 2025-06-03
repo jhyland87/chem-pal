@@ -289,6 +289,9 @@ export default class SupplierCarolina
    * Makes additional API calls if needed to get complete product details
    * @param product - Carolina search result to transform
    * @returns Promise resolving to a partial Product object or void if invalid
+   * @todo Look to see if the response header is 302 and if its sending us to
+   * https://www.carolina.com/CB_500, if so, stop sending requests to them
+   * for this search.
    * @example
    * ```typescript
    * const searchResults = await this.queryProducts("acid");

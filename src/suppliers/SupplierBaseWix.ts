@@ -323,7 +323,7 @@ export default abstract class SupplierBaseWix
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    return product;
+    return this.getProductDataWithCache(product, async (builder) => builder);
   }
 
   /**

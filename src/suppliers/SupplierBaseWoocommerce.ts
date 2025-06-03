@@ -228,8 +228,6 @@ export default abstract class SupplierBaseWoocommerce
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    this.logger.debug("getProductData for build item:", product.dump());
-
-    return product;
+    return this.getProductDataWithCache(product, async (builder) => builder);
   }
 }
