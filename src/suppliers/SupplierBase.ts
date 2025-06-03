@@ -303,8 +303,15 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   }
 
   /**
-   * This is a placeholder for any setup that needs to be done before the query is made.
+   * Placeholder for any setup that needs to be done before the query is made.
+   * Override this in subclasses if you need to perform setup (e.g., authentication, token fetching).
+   *
    * @returns A promise that resolves when the setup is complete.
+   *
+   * @example
+   * ```typescript
+   * await supplier.setup();
+   * ```
    */
   protected async setup(): Promise<void> {}
 
@@ -314,12 +321,26 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    *
    * @param url - The URL to fetch headers from
    * @returns Promise resolving to the response headers or void if request fails
+   *
    * @example
    * ```typescript
-   * const headers = await this.httpGetHeaders('https://example.com/product/123');
+   * // Basic usage
+   * const headers = await supplier.httpGetHeaders('https://example.com/product/123');
    * if (headers) {
    *   console.log('Content-Type:', headers['content-type']);
-   *   console.log('Last-Modified:', headers['last-modified']);
+   * }
+   * ```
+   *
+   * @example
+   * ```typescript
+   * // With error handling
+   * try {
+   *   const headers = await supplier.httpGetHeaders('https://example.com/product/123');
+   *   if (headers) {
+   *     console.log('Headers:', headers);
+   *   }
+   * } catch (err) {
+   *   console.error('Failed to fetch headers:', err);
    * }
    * ```
    */
@@ -358,22 +379,52 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    *
    * @param options - The request configuration options
    * @returns Promise resolving to the Response object or void if request fails
+   *
    * @example
    * ```typescript
    * // Basic POST request
-   * const response = await this.httpPost({
-   *   path: "/api/v1/products",
-   *   body: { name: "Test Chemical" }
+   * const response = await supplier.httpPost({
+   *   path: '/api/v1/products',
+   *   body: { name: 'Test Chemical' }
    * });
+   * ```
    *
-   * // POST with custom host and params
-   * const response = await this.httpPost({
-   *   path: "/api/v1/products",
-   *   host: "api.example.com",
-   *   body: { name: "Test Chemical" },
-   *   params: { version: "2" },
-   *   headers: { "Content-Type": "application/json" }
+   * @example
+   * ```typescript
+   * // POST with custom headers
+   * const response = await supplier.httpPost({
+   *   path: '/api/v1/products',
+   *   body: { name: 'Test Chemical' },
+   *   headers: {
+   *     'Authorization': 'Bearer token123',
+   *     'Content-Type': 'application/json'
+   *   }
    * });
+   * ```
+   *
+   * @example
+   * ```typescript
+   * // POST with custom host and params
+   * const response = await supplier.httpPost({
+   *   path: '/api/v1/products',
+   *   host: 'api.example.com',
+   *   body: { name: 'Test Chemical' },
+   *   params: { version: '2' }
+   * });
+   * ```
+   *
+   * @example
+   * ```typescript
+   * // Error handling
+   * try {
+   *   const response = await supplier.httpPost({ path: '/api/v1/products', body: { name: 'Test' } });
+   *   if (response && response.ok) {
+   *     const data = await response.json();
+   *     console.log('Created:', data);
+   *   }
+   * } catch (err) {
+   *   console.error('POST failed:', err);
+   * }
    * ```
    */
   protected async httpPost({
@@ -418,30 +469,35 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   }
 
   /**
-   * Send a POST request to the given URL with the given body and headers and return the response as a JSON object.
+   * Sends a POST request and returns the response as a JSON object.
    *
    * @param params - The parameters for the POST request.
    * @returns The response from the POST request as a JSON object.
+   *
    * @example
    * ```typescript
-   * // Assume the baseURL is https://example.com
-   * const responseJSON = await this.httpPostJson({
-   *    path: "/api/v1/products",
-   *    body: { name: "John" },
-   *    headers: { "Content-Type": "application/json" }
+   * // Basic usage
+   * const data = await supplier.httpPostJson({
+   *   path: '/api/v1/products',
+   *   body: { name: 'John' }
    * });
-   * // Sends HTTP POST request to https://example.com/api/v1/products with `{"name":"John"}` body.
-   * // Returns a JSON object.
+   * ```
    *
-   * const responseJSON = await this.httpPostJson({
-   *    path: "/api/v1/products",
-   *    host: "api.example.com",
-   *    body: { name: "John" },
-   *    params: { a: "b", c: "d" },
-   *    headers: { "Content-Type": "application/json" }
-   * });
-   * // Sends HTTP POST request to https://api.example.com/api/v1/products?a=b&c=d with `{"name":"John"}` body.
-   * // Returns a JSON object.
+   * @example
+   * ```typescript
+   * // With custom headers and error handling
+   * try {
+   *   const data = await supplier.httpPostJson({
+   *     path: '/api/v1/products',
+   *     body: { name: 'John' },
+   *     headers: { 'Authorization': 'Bearer token123' }
+   *   });
+   *   if (data) {
+   *     console.log('Created:', data);
+   *   }
+   * } catch (err) {
+   *   console.error('POST JSON failed:', err);
+   * }
    * ```
    */
   protected async httpPostJson({
@@ -464,21 +520,47 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    *
    * @param options - The request configuration options
    * @returns Promise resolving to the Response object or void if request fails
+   *
    * @example
    * ```typescript
    * // Basic GET request
-   * const response = await this.httpGet({
-   *   path: "/products/search",
-   *   params: { query: "sodium chloride" }
+   * const response = await supplier.httpGet({
+   *   path: '/products/search',
+   *   params: { query: 'sodium chloride' }
    * });
+   * ```
    *
-   * // GET with custom host and headers
-   * const response = await this.httpGet({
-   *   path: "/api/products",
-   *   host: "api.example.com",
-   *   params: { category: "chemicals" },
-   *   headers: { "Accept": "application/json" }
+   * @example
+   * ```typescript
+   * // GET with custom headers
+   * const response = await supplier.httpGet({
+   *   path: '/products/search',
+   *   headers: { 'Accept': 'application/json' }
    * });
+   * ```
+   *
+   * @example
+   * ```typescript
+   * // GET with custom host
+   * const response = await supplier.httpGet({
+   *   path: '/products/search',
+   *   host: 'api.example.com',
+   *   params: { category: 'chemicals' }
+   * });
+   * ```
+   *
+   * @example
+   * ```typescript
+   * // Error handling
+   * try {
+   *   const response = await supplier.httpGet({ path: '/products/search' });
+   *   if (response && response.ok) {
+   *     const data = await response.json();
+   *     console.log('Products:', data);
+   *   }
+   * } catch (err) {
+   *   console.error('GET failed:', err);
+   * }
    * ```
    */
   protected async httpGet({
@@ -605,7 +687,6 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   /**
    * Abstract method to select the title from the initial raw search data.
    * This method should be implemented by each supplier to handle their specific data structure.
-   * The selected title is used by fuzzyFilter for string similarity matching.
    *
    * @param data - The data object to extract the title from
    * @returns The title string to use for fuzzy matching
@@ -684,7 +765,6 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
   /**
    * Makes an HTTP GET request and returns the response as parsed JSON.
    * Handles request configuration, error handling, and JSON parsing.
-   * Includes automatic retry logic for rate limiting and network errors.
    *
    * @param options - The request configuration options
    * @returns Promise resolving to the parsed JSON response or void if request fails
@@ -693,37 +773,41 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
    * @example
    * ```typescript
    * // Basic GET request
-   * const data = await this.httpGetJson({
-   *   path: "/api/products",
-   *   params: { search: "sodium" }
-   * });
+   * const data = await supplier.httpGetJson({ path: '/api/products', params: { search: 'sodium' } });
+   * ```
    *
+   * @example
+   * ```typescript
    * // GET request with custom headers
-   * const data = await this.httpGetJson({
-   *   path: "/api/products",
+   * const data = await supplier.httpGetJson({
+   *   path: '/api/products',
    *   headers: {
-   *     "Authorization": "Bearer token123",
-   *     "Accept": "application/json"
+   *     'Authorization': 'Bearer token123',
+   *     'Accept': 'application/json'
    *   }
    * });
+   * ```
    *
+   * @example
+   * ```typescript
    * // GET request with custom host
-   * const data = await this.httpGetJson({
-   *   path: "/products",
-   *   host: "api.supplier.com",
+   * const data = await supplier.httpGetJson({
+   *   path: '/products',
+   *   host: 'api.supplier.com',
    *   params: { limit: 10 }
    * });
+   * ```
    *
+   * @example
+   * ```typescript
    * // Error handling
    * try {
-   *   const data = await this.httpGetJson({
-   *     path: "/api/products"
-   *   });
+   *   const data = await supplier.httpGetJson({ path: '/api/products' });
    *   if (data) {
-   *     console.log("Products:", data);
+   *     console.log('Products:', data);
    *   }
    * } catch (error) {
-   *   console.error("Failed to fetch products:", error);
+   *   console.error('Failed to fetch products:', error);
    * }
    * ```
    */
@@ -1367,6 +1451,19 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
 
   /**
    * Internal fetch method with request counting and decorator.
+   *
+   * @param args - Arguments to pass to fetchDecorator (usually a Request or URL and options)
+   * @returns The response from the fetchDecorator
+   *
+   * @example
+   * ```typescript
+   * // Example usage inside a subclass:
+   * const response = await this.fetch(new Request('https://example.com'));
+   * if (response.ok) {
+   *   const data = await response.json();
+   *   console.log(data);
+   * }
+   * ```
    */
   protected async fetch(...args: Parameters<typeof fetchDecorator>): Promise<any> {
     const [input] = args;
