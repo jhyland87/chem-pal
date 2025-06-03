@@ -407,20 +407,19 @@ export default class SupplierMacklin
     if (length) {
       // Random string mode
       return Array.from({ length }, () => chars[Math.floor(Math.random() * size)]).join("");
-    } else {
-      // UUID mode
-      const uuid = new Array(36).fill("");
-      uuid[8] = uuid[13] = uuid[18] = uuid[23] = "-";
-      uuid[14] = "4";
-
-      for (let i = 0; i < 36; i++) {
-        if (!uuid[i]) {
-          const random = Math.floor(16 * Math.random());
-          uuid[i] = chars[19 === i ? (3 & random) | 8 : random];
-        }
-      }
-      return uuid.join("");
     }
+    // UUID mode
+    const uuid = new Array(36).fill("");
+    uuid[8] = uuid[13] = uuid[18] = uuid[23] = "-";
+    uuid[14] = "4";
+
+    for (let i = 0; i < 36; i++) {
+      if (!uuid[i]) {
+        const random = Math.floor(16 * Math.random());
+        uuid[i] = chars[19 === i ? (3 & random) | 8 : random];
+      }
+    }
+    return uuid.join("");
   }
 
   /**

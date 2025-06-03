@@ -43,13 +43,13 @@
  */
 export enum LogLevel {
   /** Detailed information for debugging purposes */
-  DEBUG = "DEBUG",
+  DEBUG = "debug",
   /** General information about program execution */
-  INFO = "INFO",
+  INFO = "info",
   /** Potentially harmful situations that don't affect program execution */
-  WARN = "WARN",
+  WARN = "warn",
   /** Error conditions that affect program execution */
-  ERROR = "ERROR",
+  ERROR = "error",
 }
 
 /**
