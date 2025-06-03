@@ -115,7 +115,7 @@ export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: Us
     setIsLoading(false);
     console.debug(`Found ${resultCount} products in ${searchTime} milliseconds`);
 
-    BadgeAnimator.clear("✔", 5000);
+    BadgeAnimator.clear("✓", 5000);
   }
 
   return {

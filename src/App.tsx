@@ -18,6 +18,10 @@ import SuppliersPanel from "./components/SuppliersPanel";
 import TabHeader from "./components/TabHeader";
 import TabPanel from "./components/TabPanel";
 import { darkTheme, lightTheme } from "./themes";
+import { BadgeAnimator } from "./utils";
+
+// The badge may have been left open from before, so just clear it on render.
+BadgeAnimator.clear();
 
 /**
  * Main application component that manages the overall layout and state.

@@ -48,6 +48,9 @@ class BadgeAnimator {
     ellipsis: ["․", "‥", "…"],
     /** Clock animation (🕛 🕐 🕑 🕒 🕓 🕔 🕕 🕖 🕗 🕘 🕙 🕚) */
     clock: ["🕛", "🕐", "🕑", "🕒", "🕓", "🕔", "🕕", "🕖", "🕗", "🕘", "🕙", "🕚"],
+    arch: ["◜", "◝", "◞", "◟", "◠", "◡", "○"],
+    ball_wave: ["𓃉𓃉𓃉", "𓃉𓃉∘", "𓃉∘°", "∘°∘", "°∘𓃉", "∘𓃉𓃉"],
+    //circle: ["⨀⊙⊚⌾Ⓞⓞ○◯⚬⚬○⦾⦿⨀☉⚬⚭⚮⚯⌾○◌◎⭘￮"],
   };
 
   // Private static fields for state management
@@ -148,3 +151,13 @@ class BadgeAnimator {
 // #endregion class
 // Export the class directly
 export default BadgeAnimator;
+
+/**
+ * Can do something similar with the icon iself.
+ * chrome.action.setIcon({
+  path: {
+    16: 'static/images/logo/logo-icon-128.png',
+    32: 'static/images/logo/logo-icon-128.png',
+  },
+})
+ */

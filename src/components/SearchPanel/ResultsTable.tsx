@@ -110,9 +110,6 @@ export default function ResultsTable({
     getRowCanExpand,
   });
 
-  // Extend columns with getUniqueVisibleValues method
-  //implementCustomMethods(table);
-
   function columnSizeVars() {
     const headers = table.getFlatHeaders();
     const colSizes: { [key: string]: number } = {};
