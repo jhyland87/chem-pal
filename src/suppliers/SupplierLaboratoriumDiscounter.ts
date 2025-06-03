@@ -228,81 +228,54 @@ export default class SupplierLaboratoriumDiscounter
     });
   }
 
-  /**
-   * Transforms a Laboratorium Discounter product into the common Product type
-   * Extracts quantity information from various product fields and normalizes the data
-   * @param product - Product object from Laboratorium Discounter
-   * @returns Promise resolving to a partial Product object or void if invalid
-   * @example
-   * ```typescript
-   * const products = await this.queryProducts("acid");
-   * if (products) {
-   *   const product = await this.getProductData(products[0]);
-   *   if (product) {
-   *     const builtProduct = await product.build();
-   *     console.log({
-   *       title: builtProduct.title,
-   *       price: builtProduct.price,
-   *       quantity: builtProduct.quantity,
-   *       uom: builtProduct.uom,
-   *       variants: builtProduct.variants
-   *     });
-   *   }
-   * }
-   * ```
-   */
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    try {
-      if (product instanceof ProductBuilder === false) {
-        this.logger.warn("Invalid product object - Expected ProductBuilder instance:", product);
-        return;
-      }
+    return this.getProductDataWithCache(
+      product,
+      async (builder) => {
+        // If not in cache, make the request
+        const productResponse = await this.httpGetJson({
+          path: builder.get("url"),
+          params: {
+            format: "json",
+          },
+        });
 
-      const productResponse = await this.httpGetJson({
-        path: product.get("url"),
-        params: {
-          format: "json",
-        },
-      });
-
-      if (!productResponse || !isProductObject(productResponse)) {
-        this.logger.warn("Invalid product data - did not pass typeguard:", productResponse);
-        return;
-      }
-
-      const productData = productResponse.product;
-      const currency = productResponse.shop.currencies[productResponse.shop.currency];
-      product.setPricing(productData.price.price, currency.code, currency.symbol);
-
-      if (typeof productData.variants === "object" && productData.variants !== null) {
-        for (const variant of Object.values(productData.variants) as VariantObject[]) {
-          if (variant.active === false) continue;
-          product.addVariant({
-            id: variant.id,
-            uuid: variant.code,
-            sku: variant.sku,
-            title: variant.title,
-            price: variant.price.price,
-            availability: variant.stock
-              ? typeof variant.stock === "object"
-                ? ((stock) => {
-                    if (stock.available) return AVAILABILITY.IN_STOCK;
-                    if (stock.on_stock) return AVAILABILITY.IN_STOCK;
-                    if (stock.allow_backorders) return AVAILABILITY.BACKORDER;
-                    return AVAILABILITY.OUT_OF_STOCK;
-                  })(variant.stock)
-                : undefined
-              : undefined,
-          });
+        if (!productResponse || !isProductObject(productResponse)) {
+          this.logger.warn("Invalid product data - did not pass typeguard:", productResponse);
+          return;
         }
-      }
 
-      return product;
-    } catch (error) {
-      this.logger.error("Error processing product data:", error);
-      return;
-    }
+        const productData = productResponse.product;
+        const currency = productResponse.shop.currencies[productResponse.shop.currency];
+        builder.setPricing(productData.price.price, currency.code, currency.symbol);
+
+        if (typeof productData.variants === "object" && productData.variants !== null) {
+          for (const variant of Object.values(productData.variants) as VariantObject[]) {
+            if (variant.active === false) continue;
+            builder.addVariant({
+              id: variant.id,
+              uuid: variant.code,
+              sku: variant.sku,
+              title: variant.title,
+              price: variant.price.price,
+              availability: variant.stock
+                ? typeof variant.stock === "object"
+                  ? ((stock) => {
+                      if (stock.available) return AVAILABILITY.IN_STOCK;
+                      if (stock.on_stock) return AVAILABILITY.IN_STOCK;
+                      if (stock.allow_backorders) return AVAILABILITY.BACKORDER;
+                      return AVAILABILITY.OUT_OF_STOCK;
+                    })(variant.stock)
+                  : undefined
+                : undefined,
+            });
+          }
+        }
+        return builder;
+      },
+      { format: "json" },
+    );
   }
 }
