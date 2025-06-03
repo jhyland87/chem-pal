@@ -5,7 +5,7 @@ import {
 import { beforeAll, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import eur_to_usd_rate from "../__fixtures__/common/eur-to-usd-rate.json";
 import { fixtureData } from "../__fixtures__/helpers/fixtureData";
-import { default as SupplierModule } from "../supplierLaboratoriumDiscounter";
+import { default as SupplierModule } from "../SupplierLaboratoriumDiscounter";
 import { spyOnSupplier } from "./helpers/supplierTestUtils";
 
 vi.mock("@/helpers/currency", () => ({
