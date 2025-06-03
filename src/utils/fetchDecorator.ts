@@ -8,7 +8,7 @@ function generateSimpleHash(str: string): string {
   return Math.abs(hash).toString(16);
 }
 
-async function generateRequestHash(url: string, options: any): Promise<string> {
+export async function generateRequestHash(url: string, options: any): Promise<string> {
   const data = {
     url,
     method: options.method || "GET",
