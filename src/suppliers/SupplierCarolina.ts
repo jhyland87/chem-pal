@@ -303,85 +303,99 @@ export default class SupplierCarolina
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    try {
-      if (product instanceof ProductBuilder === false) {
-        this.logger.warn("Invalid product object - Expected ProductBuilder instance:", product);
-        return;
-      }
+    const params = { format: "json", ajax: true };
+    return this.getProductDataWithCache(
+      product,
+      async (builder) => {
+        if (builder instanceof ProductBuilder === false) {
+          this.logger.warn("Invalid product object - Expected ProductBuilder instance:", builder);
+          return;
+        }
 
-      const productResponse = await this.httpGetJson({
-        path: product.get("url"),
-        params: {
-          format: "json",
-          ajax: true,
-        },
-      });
+        const productResponse = await this.httpGetJson({
+          path: builder.get("url"),
+          params,
+        });
 
-      if (!isResponseOk(productResponse)) {
-        this.logger.warn("Response status:", productResponse);
-        return;
-      }
+        if (!isResponseOk(productResponse)) {
+          this.logger.warn("Response status:", productResponse);
+          return;
+        }
 
-      const atgResponse = this.extractATGResponse(productResponse);
+        const atgResponse = this.extractATGResponse(productResponse);
 
-      console.log("atgResponse:", atgResponse);
-      console.log("familyVariyantProductDetails:", atgResponse?.familyVariyantProductDetails);
-      console.log("familyVariyantDisplayName:", atgResponse?.familyVariyantDisplayName);
+        if (!atgResponse) {
+          this.logger.warn("No ATG response found");
+          return;
+        }
+        this.logger.debug("atgResponse:", atgResponse);
 
-      if (!atgResponse) {
-        this.logger.warn("No ATG response found");
-        return;
-      }
-      this.logger.debug("atgResponse:", atgResponse);
+        const productId = atgResponse.dataLayer.productDetail.productId;
+        if (!productId) {
+          this.logger.warn("No product ID found");
+          return;
+        }
+        builder.setId(productId);
 
-      const productPrice = parsePrice(atgResponse.dataLayer.productPrice[0]);
-      if (!productPrice) {
-        this.logger.warn("No product price found");
-        return;
-      }
+        let productPrice;
 
-      product.setPricing(productPrice);
+        if (atgResponse?.dataLayer?.productPrice?.[0]) {
+          productPrice = parsePrice(atgResponse.dataLayer.productPrice?.[0]);
+        } else if (
+          atgResponse?.familyVariyantProductDetails?.schemaJson?.schemaJson?.offers?.length > 0
+        ) {
+          const productVariantEntry =
+            atgResponse.familyVariyantProductDetails.schemaJson.schemaJson.offers.find(
+              (offer) => offer.sku === productId,
+            );
+          if (productVariantEntry) {
+            productPrice = {
+              currencyCode: productVariantEntry.priceCurrency,
+              price: productVariantEntry.price,
+              currencySymbol: "$",
+            };
+          }
+        } else {
+          this.logger.warn(
+            "Unable to find the product price in the main product or any variants. contents.MainContent[0].atgResponse.response.response contents:",
+            atgResponse,
+          );
+          return;
+        }
 
-      const quantity = firstMap(parseQuantity, [
-        atgResponse.displayName,
-        atgResponse.shortDescription,
-        //atgResponse?.standardResult?.productName,
-      ]);
+        if (!productPrice) {
+          this.logger.warn("No product price found");
+          return;
+        }
 
-      if (!isQuantityObject(quantity)) {
-        this.logger.warn("No quantity object found");
-        return;
-      }
+        builder.setPricing(productPrice);
 
-      product.setQuantity(quantity);
+        const quantity = firstMap(parseQuantity, [
+          atgResponse.displayName,
+          atgResponse.shortDescription,
+        ]);
 
-      const casNo = firstMap(findCAS, [
-        atgResponse.displayName,
-        atgResponse.shortDescription,
-        atgResponse.longDescription,
-        //atgResponse?.standardResult?.productName,
-      ]);
+        if (!isQuantityObject(quantity)) {
+          this.logger.warn("No quantity object found");
+          return;
+        }
 
-      if (casNo) product.setCAS(casNo);
+        builder.setQuantity(quantity);
 
-      product.setDescription(atgResponse.shortDescription);
+        const casNo = firstMap(findCAS, [
+          atgResponse.displayName,
+          atgResponse.shortDescription,
+          atgResponse.longDescription,
+        ]);
 
-      /*
-      product.addVariants([
-        {
-          title: "100g",
-          price: productPrice.price,
-          quantity: 100,
-          uom: "g",
-        },
-      ]);
-      */
+        if (casNo) builder.setCAS(casNo);
 
-      return product;
-    } catch (error) {
-      this.logger.error("Error getting product data:", error);
-      return;
-    }
+        builder.setDescription(atgResponse.shortDescription);
+
+        return builder;
+      },
+      params,
+    );
   }
 
   /**

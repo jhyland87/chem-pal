@@ -1405,18 +1405,26 @@ export default abstract class SupplierBase<S, T extends Product> implements Asyn
     // Cache miss: call fetcher
     const resultBuilder = await fetcher(product);
     if (resultBuilder) {
-      cache[cacheKey] = {
+      // Re-read the latest cache to avoid race conditions
+      const latestResult = await chrome.storage.local.get(SupplierBase.productDataCacheKey);
+      const latestCache =
+        (latestResult[SupplierBase.productDataCacheKey] as Record<
+          string,
+          { data: Record<string, unknown>; timestamp: number }
+        >) || {};
+
+      latestCache[cacheKey] = {
         data: resultBuilder.dump(),
         timestamp: Date.now(),
       };
       // If cache is full, remove oldest entry
-      if (Object.keys(cache).length > 100) {
-        const oldestKey = Object.entries(cache).sort(
+      if (Object.keys(latestCache).length > 100) {
+        const oldestKey = Object.entries(latestCache).sort(
           ([, a], [, b]) => a.timestamp - b.timestamp,
         )[0][0];
-        delete cache[oldestKey];
+        delete latestCache[oldestKey];
       }
-      await chrome.storage.local.set({ [SupplierBase.productDataCacheKey]: cache });
+      await chrome.storage.local.set({ [SupplierBase.productDataCacheKey]: latestCache });
     }
     return resultBuilder;
   }

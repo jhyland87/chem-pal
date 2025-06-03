@@ -319,7 +319,25 @@ declare global {
       /** Type or category of the product */
       prodType: string;
       /** Details about product variants within the same family */
-      familyVariyantProductDetails: Record<string, unknown>;
+      familyVariyantProductDetails: {
+        productId: string;
+        variantUrl: string;
+        schemaJson: {
+          schemaJson: {
+            offers: {
+              image?: string;
+              priceCurrency?: string;
+              price: number;
+              name: string;
+              description?: string;
+              availability: string;
+              sku: string;
+              url: string;
+              itemCondition?: string;
+            }[];
+          };
+        };
+      };
       /** Display name for the product family variant */
       familyVariyantDisplayName: string;
       /** Details about the organization */
