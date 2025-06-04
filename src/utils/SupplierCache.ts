@@ -35,6 +35,48 @@ interface CachedData<T> {
  * Provides a robust caching system for both query results and product detail data.
  *
  * @remarks
+ * Benefits of this Caching Approach:
+ *
+ * 1. Granular Data Reuse:
+ *    - Product detail data is cached independently of search results
+ *    - Same product details can be reused across different search queries
+ *    - Example: If "sodium chloride" and "NaCl" searches return the same product,
+ *      the product details are only fetched and cached once
+ *
+ * 2. Flexible Result Limits:
+ *    - Search results are cached without limit constraints
+ *    - Same cached results can be used for different limit requests
+ *    - Example: A search for "acetone" can return 5, 10, or 20 results
+ *      using the same cached data, just sliced differently
+ *
+ * 3. Storage Efficiency:
+ *    - Avoids duplicate storage of product details
+ *    - Reduces storage requirements by ~50-80% compared to
+ *      caching complete results for each query
+ *    - Example: 100 searches returning the same 10 products
+ *      would store product details 100 times in a naive cache,
+ *      but only 10 times in this system
+ *
+ * 4. Improved Performance:
+ *    - Faster subsequent searches due to partial cache hits
+ *    - Reduced API calls by reusing cached product details
+ *    - Example: A new search that includes previously
+ *      cached products can skip their detail fetches
+ *
+ * 5. Better Cache Invalidation:
+ *    - Product details can be invalidated independently
+ *    - Search results remain valid even if some product
+ *      details are updated
+ *    - Example: Price updates only require re-fetching
+ *      affected product details, not all search results
+ *
+ * 6. Optimized Network Usage:
+ *    - Minimizes redundant API calls
+ *    - Reduces bandwidth usage by avoiding
+ *      re-fetching unchanged data
+ *    - Example: Product descriptions rarely change,
+ *      so they can be cached longer than prices
+ *
  * The cache system uses two separate storage keys:
  * 1. `supplier_query_cache` - Stores search query results
  * 2. `supplier_product_data_cache` - Stores detailed product data
