@@ -18,7 +18,7 @@ import { StyledFormControlSelector } from "../../Styles";
  */
 export default function SupplierResultLimit() {
   const appContext = useAppContext();
-  const [, setResultLimit] = useState<number>(appContext.settings.supplierResultLimit);
+  const [, setResultLimit] = useState<number>(appContext.userSettings.supplierResultLimit);
 
   /**
    * Handles changes to the text filter input.
@@ -31,8 +31,8 @@ export default function SupplierResultLimit() {
       target: { value },
     } = event;
     setResultLimit(Number(value));
-    appContext.setSettings({
-      ...appContext.settings,
+    appContext.setUserSettings({
+      ...appContext.userSettings,
       supplierResultLimit: Number(value),
     });
   };
@@ -44,7 +44,7 @@ export default function SupplierResultLimit() {
         style={{ lineHeight: "1em" }}
         id="result-limit"
         size="small"
-        value={appContext.settings.supplierResultLimit}
+        value={appContext.userSettings.supplierResultLimit}
         onChange={handleResultLimitChange}
       />
     </StyledFormControlSelector>

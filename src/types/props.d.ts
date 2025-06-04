@@ -10,7 +10,7 @@ import {
   ReactNode,
   SetStateAction,
 } from "react";
-import { CustomColumn, Product, Settings } from "./types";
+import { CustomColumn, Product } from "./types";
 
 declare global {
   /**
@@ -50,9 +50,9 @@ declare global {
    */
   interface AppContextProps {
     /** Application settings */
-    settings: Settings;
+    userSettings: UserSettings;
     /** Function to update settings */
-    setSettings: (settings: Settings) => void;
+    setUserSettings: (settings: UserSettings) => void;
   }
 
   /**

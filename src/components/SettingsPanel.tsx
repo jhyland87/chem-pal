@@ -59,8 +59,8 @@ export default function SettingsPanel() {
       checked: event.target.checked,
       value: event.target.value,
     });
-    appContext.setSettings({
-      ...appContext.settings,
+    appContext.setUserSettings({
+      ...appContext.userSettings,
       [event.target.name]: event.target.checked,
     });
   };
@@ -79,8 +79,8 @@ export default function SettingsPanel() {
     event: SelectChangeEvent | ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     console.log({ appContext, event, name: event.target.name, value: event.target.value });
-    appContext.setSettings({
-      ...appContext.settings,
+    appContext.setUserSettings({
+      ...appContext.userSettings,
       [event.target.name]: event.target.value,
     });
   };
@@ -90,8 +90,8 @@ export default function SettingsPanel() {
     const size = button.textContent?.toLowerCase();
     console.log({ appContext, event, name: button.name, size, target: button });
     if (size) {
-      appContext.setSettings({
-        ...appContext.settings,
+      appContext.setUserSettings({
+        ...appContext.userSettings,
         [button.name]: size,
       });
     }
@@ -115,7 +115,7 @@ export default function SettingsPanel() {
           <FormControlLabel
             control={
               <Switch
-                checked={appContext.settings.caching}
+                checked={appContext.userSettings.caching}
                 onChange={handleSwitchChange}
                 name="caching"
               />
@@ -130,7 +130,7 @@ export default function SettingsPanel() {
           <FormControlLabel
             control={
               <Switch
-                checked={appContext.settings.autocomplete}
+                checked={appContext.userSettings.autocomplete}
                 onChange={handleSwitchChange}
                 name="autocomplete"
               />
@@ -146,7 +146,7 @@ export default function SettingsPanel() {
             <InputLabel id="currency-select-label">Currency</InputLabel>
             <Select
               labelId="currency-select-label"
-              value={appContext.settings.currency}
+              value={appContext.userSettings.currency}
               onChange={handleInputChange}
               name="currency"
               label="currency"
@@ -168,7 +168,7 @@ export default function SettingsPanel() {
             <InputLabel id="location-select-label">Location</InputLabel>
             <Select
               labelId="location-select-label"
-              value={appContext.settings.location}
+              value={appContext.userSettings.location}
               onChange={handleInputChange}
               name="location"
               label="location"
@@ -192,8 +192,10 @@ export default function SettingsPanel() {
           <FormHelperText>Only show products that ship to your location</FormHelperText>
           <FormControl>
             <Switch
-              checked={!!appContext.settings.location && appContext.settings.shipsToMyLocation}
-              disabled={appContext.settings.location === ""}
+              checked={
+                !!appContext.userSettings.location && appContext.userSettings.shipsToMyLocation
+              }
+              disabled={appContext.userSettings.location === ""}
               onChange={handleSwitchChange}
               name="shipsToMyLocation"
             />
@@ -204,7 +206,7 @@ export default function SettingsPanel() {
           <FormHelperText>Just an input example</FormHelperText>
           <FormControl>
             <TextField
-              value={appContext.settings.foo}
+              value={appContext.userSettings.foo}
               label="Foo"
               name="foo"
               onChange={handleInputChange}
@@ -232,7 +234,7 @@ export default function SettingsPanel() {
                 name="popupSize"
                 value="small"
                 size="small"
-                variant={appContext.settings.popupSize === "small" ? "contained" : "text"}
+                variant={appContext.userSettings.popupSize === "small" ? "contained" : "text"}
               >
                 Small
               </Button>
@@ -240,7 +242,7 @@ export default function SettingsPanel() {
                 name="popupSize"
                 value="medium"
                 size="small"
-                variant={appContext.settings.popupSize === "medium" ? "contained" : "text"}
+                variant={appContext.userSettings.popupSize === "medium" ? "contained" : "text"}
               >
                 Medium
               </Button>
@@ -248,7 +250,7 @@ export default function SettingsPanel() {
                 name="popupSize"
                 value="large"
                 size="small"
-                variant={appContext.settings.popupSize === "large" ? "contained" : "text"}
+                variant={appContext.userSettings.popupSize === "large" ? "contained" : "text"}
               >
                 Large
               </Button>
@@ -259,7 +261,7 @@ export default function SettingsPanel() {
           <ListItemText primary="Auto-Resize" />
           <FormHelperText>More results = larger window</FormHelperText>
           <Switch
-            checked={appContext.settings.autoResize}
+            checked={appContext.userSettings.autoResize}
             onChange={handleSwitchChange}
             name="autoResize"
           />
@@ -268,7 +270,7 @@ export default function SettingsPanel() {
           <ListItemText primary="Some Setting" />
           <FormHelperText id="some-setting-helper-text">Disabled by default</FormHelperText>
           <Switch
-            checked={appContext.settings.someSetting}
+            checked={appContext.userSettings.someSetting}
             onChange={handleSwitchChange}
             name="someSetting"
           />
@@ -277,7 +279,7 @@ export default function SettingsPanel() {
           <ListItemText primary="Show Helpful Tips" />
           <FormHelperText id="some-setting-helper-text">Show help in tooltips</FormHelperText>
           <Switch
-            checked={appContext.settings.showHelp}
+            checked={appContext.userSettings.showHelp}
             onChange={handleSwitchChange}
             name="showHelp"
           />

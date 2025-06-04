@@ -84,7 +84,7 @@ function App() {
   }, []);
 
   // Default settings
-  const [settings, setSettings] = useState<Settings>({
+  const [userSettings, setUserSettings] = useState<UserSettings>({
     showHelp: false,
     caching: true,
     autocomplete: true,
@@ -108,21 +108,21 @@ function App() {
 
   // Load the settings from storage.local on the initial component load
   useEffect(() => {
-    chrome.storage.session.get(["settings", "panel"]).then((data) => {
-      if (data.settings) setSettings({ ...data.settings } as Settings);
+    chrome.storage.session.get(["userSettings", "panel"]).then((data) => {
+      if (data.userSettings) setUserSettings({ ...data.userSettings });
       if (data.panel) setPanel(data.panel as number);
     });
   }, []);
 
   // Save the settings to storage.local when the settings change
   useEffect(() => {
-    chrome.storage.session.set({ settings, panel });
-    setCurrentTheme(settings.theme === "light" ? lightTheme : darkTheme);
-  }, [settings, panel]);
+    chrome.storage.session.set({ userSettings, panel });
+    setCurrentTheme(userSettings.theme === "light" ? lightTheme : darkTheme);
+  }, [userSettings, panel]);
 
   return (
     <ErrorBoundary fallback={<p>Something went wrong</p>}>
-      <AppContext.Provider value={{ settings, setSettings }}>
+      <AppContext.Provider value={{ userSettings, setUserSettings }}>
         <ThemeProvider theme={currentTheme}>
           <CssBaseline />
           <Box sx={{ bgcolor: "background.default", width: "100%" }}>

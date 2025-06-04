@@ -41,7 +41,7 @@ declare global {
    *
    * @example
    * ```typescript
-   * const settings: Settings = {
+   * const userSettings: UserSettings = {
    *   showHelp: true,
    *   caching: true,
    *   currency: "USD",
@@ -51,7 +51,7 @@ declare global {
    * };
    * ```
    */
-  interface Settings {
+  interface UserSettings {
     /**
      * Controls visibility of help tooltips throughout the application.
      * Defaults to false.

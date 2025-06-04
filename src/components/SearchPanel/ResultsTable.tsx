@@ -48,9 +48,9 @@ export default function ResultsTable({
    * Initializes the table by loading saved search results and column visibility settings.
    */
   useEffect(() => {
-    if (!isEmpty(appContext.settings.hideColumns)) {
+    if (!isEmpty(appContext.userSettings.hideColumns)) {
       table.getAllLeafColumns().map((column: Column<Product>) => {
-        if (appContext.settings.hideColumns.includes(column.id)) column.toggleVisibility(false);
+        if (appContext.userSettings.hideColumns.includes(column.id)) column.toggleVisibility(false);
       });
     }
     chrome.storage.session.get(["searchResults"]).then((data) => {

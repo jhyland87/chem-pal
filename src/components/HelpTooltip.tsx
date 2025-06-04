@@ -50,11 +50,11 @@ export default function HelpTooltip({
   };
 
   useEffect(() => {
-    if (appContext.settings.showHelp === false) return;
+    if (appContext.userSettings.showHelp === false) return;
 
     delayAction(delay, () => setShowHelp(true));
     delayAction(duration, () => setShowHelp(false));
-  }, [delay, duration, appContext.settings.showHelp]);
+  }, [delay, duration, appContext.userSettings.showHelp]);
 
   return (
     <Tooltip
