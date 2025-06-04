@@ -34,9 +34,7 @@ export default function ResultsTable({
   columnFilterFns,
 }: ProductTableProps<Product>): ReactElement {
   const appContext = useAppContext();
-  const [searchInput, setSearchInput] = useState<string>("");
   const [searchResults, setSearchResults] = useState<Product[]>([]);
-  const [showSearchResults, setShowSearchResults] = useState<Product[]>([]);
   const [statusLabel, setStatusLabel] = useState<string | boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -50,12 +48,12 @@ export default function ResultsTable({
    * Initializes the table by loading saved search results and column visibility settings.
    */
   useEffect(() => {
-    if (!isEmpty(appContext.settings.hideColumns)) {
+    if (!isEmpty(appContext.userSettings.hideColumns)) {
       table.getAllLeafColumns().map((column: Column<Product>) => {
-        if (appContext.settings.hideColumns.includes(column.id)) column.toggleVisibility(false);
+        if (appContext.userSettings.hideColumns.includes(column.id)) column.toggleVisibility(false);
       });
     }
-    chrome.storage.session.get(["searchResults", "paginationModel"]).then((data) => {
+    chrome.storage.session.get(["searchResults"]).then((data) => {
       const storedSearchResults = data.searchResults || [];
 
       if (!storedSearchResults) {
@@ -69,43 +67,21 @@ export default function ResultsTable({
   }, []);
 
   /**
-   * Updates the displayed search results when the search result timestamp changes.
-   */
-  useEffect(() => {
-    chrome.storage.session.get(["searchResults"]).then((data) => {
-      if (Array.isArray(data.searchResults)) setShowSearchResults(data.searchResults);
-    });
-  }, [appContext.settings.searchResultUpdateTs]);
-
-  /**
-   * Executes the search when the search input changes.
-   */
-  useEffect(() => {
-    executeSearch(searchInput);
-  }, [searchInput]);
-
-  /**
-   * Updates the search results in storage and updates the timestamp when results change.
+   * Updates the search results in storage and displayed results when results change.
    */
   useEffect(() => {
     console.log(searchResults.length + " search results");
     chrome.storage.session.set({ searchResults }).then(() => {
       if (!searchResults.length) {
-        setStatusLabel(
-          isLoading ? `Searching for ${searchInput}...` : "Type a product name and hit enter",
-        );
+        setStatusLabel(isLoading ? "Searching..." : "Type a product name and hit enter");
         return;
       }
-
-      appContext.setSettings({
-        ...appContext.settings,
-        searchResultUpdateTs: new Date().toISOString(),
-      });
+      setStatusLabel(false);
     });
-  }, [searchResults]);
+  }, [searchResults, isLoading]);
 
   const table = useResultsTable({
-    showSearchResults,
+    showSearchResults: searchResults,
     columnFilterFns,
     getRowCanExpand,
   });
@@ -136,9 +112,9 @@ export default function ResultsTable({
           autoComplete="off"
         />
         <div className="p-2" style={{ minHeight: "369px" }}>
-          <TableOptions table={table} searchInput={searchInput} setSearchInput={setSearchInput} />
+          <TableOptions table={table} onSearch={executeSearch} />
           <div className="h-4" />
-          {Array.isArray(showSearchResults) && showSearchResults.length > 0 && (
+          {Array.isArray(searchResults) && searchResults.length > 0 && (
             <>
               <table
                 className="search-results"
@@ -181,8 +157,7 @@ export default function ResultsTable({
               <Pagination table={table} />
             </>
           )}
-          {((!isLoading && !Array.isArray(showSearchResults)) ||
-            showSearchResults.length === 0) && (
+          {((!isLoading && !Array.isArray(searchResults)) || searchResults.length === 0) && (
             <div className="text-center p-4">
               <p>{statusLabel || "No results found. Try a different search term."}</p>
             </div>

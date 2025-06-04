@@ -25,7 +25,7 @@ import "./TableOptions.scss";
  * />
  * ```
  */
-export default function TableOptions({ table, searchInput, setSearchInput }: TableOptionsProps) {
+export default function TableOptions({ table, onSearch }: TableOptionsProps) {
   const [filterModalOpen, setFilterModalOpen] = useState(false);
 
   return (
@@ -33,9 +33,10 @@ export default function TableOptions({ table, searchInput, setSearchInput }: Tab
       <Toolbar className="table-options-toolbar fullwidth">
         <Typography component="div" className="search-input">
           <SearchInput
-            searchInput={searchInput}
+            //searchInput={searchInput}
             //className="search-input"
-            setSearchInput={setSearchInput}
+            //setSearchInput={setSearchInput}
+            onSearch={onSearch}
           />
         </Typography>
         <Tooltip title="Filter list">

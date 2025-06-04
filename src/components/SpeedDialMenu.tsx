@@ -35,11 +35,11 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
    * Shows help tooltip after 500ms and hides it after 2000ms if showHelp is enabled.
    */
   useEffect(() => {
-    if (appContext.settings.showHelp === false) return;
+    if (appContext.userSettings.showHelp === false) return;
 
     delayAction(500, () => setShowHelp(true));
     delayAction(2000, () => setShowHelp(false));
-  }, [appContext.settings.showHelp]);
+  }, [appContext.userSettings.showHelp]);
 
   /**
    * Handles clearing all search results.
@@ -50,10 +50,7 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
   const handleClearResults = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     chrome.storage.session.set({ searchResults: [] });
-    appContext.setSettings({
-      ...appContext.settings,
-      searchResultUpdateTs: new Date().toISOString(),
-    });
+    appContext.setUserSettings({ ...appContext.userSettings });
   };
 
   /**
@@ -79,9 +76,9 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
   const handleToggleTheme = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
 
-    appContext.setSettings({
-      ...appContext.settings,
-      theme: appContext.settings.theme === "light" ? "dark" : "light",
+    appContext.setUserSettings({
+      ...appContext.userSettings,
+      theme: appContext.userSettings.theme === "light" ? "dark" : "light",
     });
   };
 

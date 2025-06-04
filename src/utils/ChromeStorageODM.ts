@@ -40,7 +40,7 @@
  *
  * // Subscribe to changes
  * const unsubscribe = settingsODM.subscribe((newSettings) => {
- *   console.log('Settings changed:', newSettings);
+ *   console.log('UserSettings changed:', newSettings);
  * });
  *
  * // Later, unsubscribe from changes

@@ -12,7 +12,7 @@ import { createContext, useContext } from "react";
  * </AppContext.Provider>
  *
  * // Consumer usage
- * const { settings, data } = useAppContext();
+ * const { userSettings, data } = useAppContext();
  * ```
  */
 export const AppContext = createContext<AppContextProps | undefined>(undefined);
@@ -26,8 +26,8 @@ export const AppContext = createContext<AppContextProps | undefined>(undefined);
  * @example
  * ```tsx
  * function MyComponent() {
- *   const { settings, data } = useAppContext();
- *   return <div>{settings.someSetting}</div>;
+ *   const { userSettings, data } = useAppContext();
+ *   return <div>{userSettings.someSetting}</div>;
  * }
  * ```
  */

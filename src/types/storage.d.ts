@@ -24,7 +24,6 @@ declare global {
 
   interface StorageSettings {
     hideColumns: string[];
-    searchResultUpdateTs: string;
   }
 }
 

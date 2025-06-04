@@ -15,8 +15,8 @@
     "service_worker": "service-worker.js"
   },
   "icons": {
-    "32": "static/images/logo/logo-white-blue-on-black-lg.png",
-    "48": "static/images/logo/logo-white-blue-on-black-lg.png",
-    "128": "static/images/logo/logo-white-blue-on-black-lg.png"
+    "32": "static/images/logo/Cp6.png",
+    "48": "static/images/logo/Cp6.png",
+    "128": "static/images/logo/Cp6.png"
   }
 }

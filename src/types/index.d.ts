@@ -41,7 +41,7 @@ declare global {
    *
    * @example
    * ```typescript
-   * const settings: Settings = {
+   * const userSettings: UserSettings = {
    *   showHelp: true,
    *   caching: true,
    *   currency: "USD",
@@ -51,13 +51,7 @@ declare global {
    * };
    * ```
    */
-  interface Settings {
-    /**
-     * ISO timestamp of when search results were last updated
-     * @example "2024-03-20T15:30:00Z"
-     */
-    searchResultUpdateTs?: string;
-
+  interface UserSettings {
     /**
      * Controls visibility of help tooltips throughout the application.
      * Defaults to false.

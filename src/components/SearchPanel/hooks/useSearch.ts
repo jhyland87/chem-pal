@@ -27,10 +27,10 @@ export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: Us
     // up as we iterate over the columns.
     const columnFilterConfig = getColumnFilterConfig();
 
-    if (!appContext.settings.supplierSearchLimit) {
+    if (!appContext.userSettings.supplierResultLimit) {
       console.warn("No supplier search limit set - defaulting to 5");
     }
-    const searchLimit = appContext.settings.supplierResultLimit ?? 5;
+    const searchLimit = appContext.userSettings.supplierResultLimit ?? 5;
     // Abort controller specific to this query
     fetchController = new AbortController();
     // Create the query instance
@@ -39,7 +39,7 @@ export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: Us
       query,
       searchLimit,
       fetchController,
-      appContext.settings.suppliers,
+      appContext.userSettings.suppliers,
     );
 
     // Clear the products table

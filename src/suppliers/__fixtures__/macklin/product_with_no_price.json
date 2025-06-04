@@ -1,0 +1,199 @@
+{
+  "code": 200,
+  "message": "Success",
+  "data": {
+    "item": {
+      "item_id": 875790,
+      "item_safe_level": 0,
+      "item_transport": 1,
+      "item_if_bio": 0,
+      "item_product_cate": 0,
+      "item_if_sell": 0,
+      "chem_cas": "38618-12-1",
+      "item_if_stock": 0,
+      "item_max_package": "0",
+      "item_can_pack": 1,
+      "item_delivery_days": 15,
+      "item_cate": 299,
+      "item_application": "",
+      "item_refractive": "",
+      "item_properties": "",
+      "item_melting": "",
+      "item_boiling": "",
+      "item_density": "",
+      "item_rotatory": "",
+      "item_flash": "",
+      "item_storage": "2-8\u2103",
+      "item_limited": "",
+      "item_color": "\u6db2\u4f53",
+      "item_particle": "",
+      "item_area": "",
+      "item_text_desc": "",
+      "item_cn_name": "Oleic acid",
+      "item_cn_alia": "compound with 1,1'-iminodi(propan-2-ol) (1:1)",
+      "item_code": "D875790",
+      "item_specification": "99%",
+      "item_en_specification": "99%",
+      "item_en_name": "diisopropanolamine salt",
+      "item_en_alia": "",
+      "up_img": {
+        "id": 0,
+        "filepath": "https:\/\/img.macklin.cn\/pic_sml\/12\/1\/38618-12-1.png"
+      },
+      "chem_mf": "C24H49NO4",
+      "chem_mw": "415.6",
+      "chem_einecs": "254-043-7",
+      "chem_mdl": "",
+      "product": [],
+      "cn_title": "D875790 Oleic acid,99%",
+      "en_title": "D875790 diisopropanolamine salt,99%",
+      "cn_name": "D875790 Oleic acid,99%",
+      "en_name": "D875790 diisopropanolamine salt,99%",
+      "nmr": 0,
+      "item_upfile": "",
+      "item_instruction": "",
+      "msds_id": 0,
+      "safe_level_arr": [
+        "Safe",
+        "3rd Catalogue Precursor Chemical",
+        "Easy Detonation Chemical",
+        "Highly Toxic Chemical",
+        "2nd Catalogue Precursor Chemical",
+        "Low Boiling Point Chemical"
+      ],
+      "activity": [
+        {
+          "id": "",
+          "up_img_s": "https:\/\/img.macklin.cn\/images\/2WSJ.jpg"
+        }
+      ],
+      "articles": [],
+      "nav_category": [
+        {
+          "tree_id": -1,
+          "tree_parent_id": 0,
+          "tree_name": "\u9996\u9875",
+          "tree_en_name": "Home",
+          "tree_descri": "",
+          "tree_order": 1,
+          "tree_visable": 1,
+          "tree_code": ""
+        },
+        {
+          "tree_id": 0,
+          "tree_parent_id": 0,
+          "tree_name": "\u4ea7\u54c1\u4e2d\u5fc3",
+          "tree_en_name": "products",
+          "tree_descri": "",
+          "tree_order": 1,
+          "tree_visable": 1,
+          "tree_code": ""
+        },
+        {
+          "tree_id": 204,
+          "tree_parent_id": 2,
+          "tree_name": "\u7cbe\u7ec6\u5316\u5b66",
+          "tree_en_name": "Chemistry",
+          "tree_descri": "GDHX",
+          "tree_order": 1,
+          "tree_visable": 1,
+          "tree_code": ""
+        },
+        {
+          "tree_id": 291,
+          "tree_parent_id": 204,
+          "tree_name": "\u5408\u6210\u8bd5\u5242",
+          "tree_en_name": "Synthetic Reagents",
+          "tree_descri": "HCSJ",
+          "tree_order": 29,
+          "tree_visable": 1,
+          "tree_code": ""
+        },
+        {
+          "tree_id": 299,
+          "tree_parent_id": 291,
+          "tree_name": "\u6709\u673a\u9178",
+          "tree_en_name": "Organic\u00a0Acid",
+          "tree_descri": "YJS",
+          "tree_order": 223,
+          "tree_visable": 1,
+          "tree_code": ""
+        },
+        {
+          "tree_id": 0,
+          "tree_parent_id": 0,
+          "tree_name": "D875790 Oleic acid,99%",
+          "tree_en_name": "D875790 diisopropanolamine salt,99%",
+          "tree_descri": "",
+          "tree_order": 1,
+          "tree_visable": 1,
+          "tree_code": ""
+        }
+      ],
+      "other_products": [
+        {
+          "item_code": "A800093",
+          "item_id": 800093,
+          "chem_cas": "14375-45-2",
+          "item_cn_name": "2-\u987a\u5f0f,4-\u53cd\u5f0f\u8131\u843d\u9178",
+          "item_specification": "synthetic, 98%",
+          "item_en_name": "2-|cis|,4-|trans|-Abscisic acid",
+          "item_en_specification": "synthetic, 98%",
+          "up_img": "https:\/\/img.macklin.cn\/img\/item\/000\/80\/A800093.gif"
+        },
+        {
+          "item_code": "B802564",
+          "item_id": 802564,
+          "chem_cas": "79-08-3",
+          "item_cn_name": "\u6eb4\u4e59\u9178",
+          "item_specification": "98.0%",
+          "item_en_name": "Bromoacetic acid",
+          "item_en_specification": "CP,98.0%",
+          "up_img": "https:\/\/img.macklin.cn\/img\/item\/000\/80\/B802564.gif"
+        },
+        {
+          "item_code": "B802565",
+          "item_id": 802565,
+          "chem_cas": "79-08-3",
+          "item_cn_name": "\u6eb4\u4e59\u9178",
+          "item_specification": "\u8bd5\u5242\u7ea7, 98.5%",
+          "item_en_name": "Bromoacetic acid",
+          "item_en_specification": "Reagent Grade, 98.5%",
+          "up_img": "https:\/\/img.macklin.cn\/img\/item\/000\/80\/B802565.gif"
+        },
+        {
+          "item_code": "B803435",
+          "item_id": 803435,
+          "chem_cas": "5773-80-8",
+          "item_cn_name": "6-\u6eb4-2-\u8418\u7532\u9178",
+          "item_specification": "98%",
+          "item_en_name": "6-Bromo-2-naphthoic acid",
+          "item_en_specification": "98%",
+          "up_img": "https:\/\/img.macklin.cn\/img\/item\/000\/80\/B803435.gif"
+        },
+        {
+          "item_code": "C806015",
+          "item_id": 806015,
+          "chem_cas": "4224-62-8",
+          "item_cn_name": "6-\u6c2f\u5df1\u9178",
+          "item_specification": "98%",
+          "item_en_name": "6-Chlorohexanoic acid",
+          "item_en_specification": "98%",
+          "up_img": "https:\/\/img.macklin.cn\/img\/item\/000\/80\/C806015.gif"
+        },
+        {
+          "item_code": "C806181",
+          "item_id": 806181,
+          "chem_cas": "7499-08-3",
+          "item_cn_name": "3-\u6c2f-2-\u7532\u57fa\u82ef\u7532\u9178",
+          "item_specification": "98%",
+          "item_en_name": "3-Chloro-2-methylbenzoic acid",
+          "item_en_specification": "98%",
+          "up_img": "https:\/\/img.macklin.cn\/img\/item\/000\/80\/C806181.gif"
+        }
+      ],
+      "cas": "38618-12-1"
+    },
+    "bulk_product": []
+  }
+}

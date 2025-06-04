@@ -6,10 +6,10 @@ import SupplierResultLimit from "../SupplierResultLimit";
 // Mock the app context
 const mockSetSettings = vi.fn();
 const mockAppContext = {
-  settings: {
+  userSettings: {
     supplierResultLimit: 10,
   },
-  setSettings: mockSetSettings,
+  setUserSettings: mockSetSettings,
 };
 
 // Mock the context
@@ -37,7 +37,7 @@ describe("SupplierResultLimit", () => {
     fireEvent.change(input, { target: { value: "20" } });
 
     expect(mockSetSettings).toHaveBeenCalledWith({
-      ...mockAppContext.settings,
+      ...mockAppContext.userSettings,
       supplierResultLimit: 20,
     });
   });
@@ -49,7 +49,7 @@ describe("SupplierResultLimit", () => {
     fireEvent.change(input, { target: { value: "invalid" } });
 
     expect(mockSetSettings).toHaveBeenCalledWith({
-      ...mockAppContext.settings,
+      ...mockAppContext.userSettings,
       supplierResultLimit: NaN,
     });
   });
@@ -57,8 +57,8 @@ describe("SupplierResultLimit", () => {
   it("initializes with different value from context", () => {
     const differentContext = {
       ...mockAppContext,
-      settings: {
-        ...mockAppContext.settings,
+      userSettings: {
+        ...mockAppContext.userSettings,
         supplierResultLimit: 50,
       },
     };

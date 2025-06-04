@@ -34,7 +34,7 @@ export default function SuppliersPanel() {
    * @returns A callback function that handles the toggle action
    */
   const handleToggle = (supplierName: string) => () => {
-    const selectedSuppliers = appContext.settings.suppliers;
+    const selectedSuppliers = appContext.userSettings.suppliers;
     const currentIndex = selectedSuppliers.indexOf(supplierName);
     const newChecked = [...selectedSuppliers];
 
@@ -44,8 +44,8 @@ export default function SuppliersPanel() {
       newChecked.splice(currentIndex, 1);
     }
 
-    appContext.setSettings({
-      ...appContext.settings,
+    appContext.setUserSettings({
+      ...appContext.userSettings,
       suppliers: newChecked,
     });
   };
@@ -57,8 +57,8 @@ export default function SuppliersPanel() {
       newChecked = [...SupplierFactory.supplierList()];
     }
 
-    appContext.setSettings({
-      ...appContext.settings,
+    appContext.setUserSettings({
+      ...appContext.userSettings,
       suppliers: newChecked,
     });
   };
@@ -71,7 +71,9 @@ export default function SuppliersPanel() {
           value="all"
           edge="end"
           onChange={handleToggleAll}
-          checked={appContext.settings.suppliers.length === SupplierFactory.supplierList().length}
+          checked={
+            appContext.userSettings.suppliers.length === SupplierFactory.supplierList().length
+          }
           aria-labelledby="checkbox-list-secondary-label-all"
           size="small"
         />
@@ -87,7 +89,7 @@ export default function SuppliersPanel() {
                 value={supplierName}
                 edge="end"
                 onChange={handleToggle(supplierName)}
-                checked={appContext.settings.suppliers.includes(supplierName)}
+                checked={appContext.userSettings.suppliers.includes(supplierName)}
                 aria-labelledby={labelId}
                 size="small"
               />
