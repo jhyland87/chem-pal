@@ -31,8 +31,168 @@ interface CachedData<T> {
 }
 
 /**
- * Utility class for handling supplier caching operations.
- * Provides methods for managing both query results and product detail caches.
+ * Utility class for managing supplier data caching in Chrome's local storage.
+ * Provides a robust caching system for both query results and product detail data.
+ *
+ * @remarks
+ * The cache system uses two separate storage keys:
+ * 1. `supplier_query_cache` - Stores search query results
+ * 2. `supplier_product_data_cache` - Stores detailed product data
+ *
+ * Cache Storage Format:
+ * - Query Cache:
+ *   ```typescript
+ *   {
+ *     [cacheKey: string]: {
+ *       data: T[],                    // The actual cached results
+ *       __cacheMetadata: {            // Metadata about the cache entry
+ *         cachedAt: number,           // Timestamp when cached
+ *         version: number,            // Cache format version
+ *         query: string,              // Original search query
+ *         supplier: string,           // Supplier name
+ *         resultCount: number,        // Number of results
+ *         limit: number              // Limit used for query
+ *       }
+ *     }
+ *   }
+ *   ```
+ *
+ * - Product Data Cache:
+ *   ```typescript
+ *   {
+ *     [cacheKey: string]: {
+ *       data: Record<string, unknown>, // The cached product data
+ *       timestamp: number             // When the data was cached
+ *     }
+ *   }
+ *   ```
+ *
+ * Cache Key Generation:
+ * - Query Cache Keys: Generated using base64 encoding of `${query}:${supplierName}`
+ *   Falls back to a simple hash if base64 is unavailable
+ * - Product Data Cache Keys: Generated using MD5 hash of JSON stringified object containing:
+ *   ```typescript
+ *   {
+ *     url: string,                    // Product URL
+ *     params?: Record<string, string>, // Optional request parameters
+ *     supplier: string                // Supplier name
+ *   }
+ *   ```
+ *
+ * Cache Expiration & Management:
+ * - Size Limits:
+ *   - Query Cache: Maximum 100 entries
+ *   - Product Data Cache: Maximum 100 entries
+ * - Eviction Policy: Least Recently Used (LRU)
+ *   - When cache is full, oldest entries are removed based on timestamp
+ * - Cache Invalidation:
+ *   - Query cache entries are invalidated if:
+ *     1. Cache version changes (CACHE_VERSION constant)
+ *     2. Requested limit is greater than cached limit
+ *   - Product data cache entries are refreshed on access
+ *     (timestamp updated to prevent premature eviction)
+ *
+ * Cache Triggering:
+ * The cache is automatically triggered in two main scenarios:
+ *
+ * 1. Query Results Caching (via queryProductsWithCache):
+ *    ```typescript
+ *    // Inside SupplierBase class
+ *    protected async queryProductsWithCache(query: string, limit: number) {
+ *      // 1. Check cache first
+ *      const key = this.cache.generateCacheKey(query, this.supplierName);
+ *      const cached = await this.getCachedQueryResults(key);
+ *
+ *      if (cached) {
+ *        // 2a. Return cached results if valid
+ *        return ProductBuilder.createFromCache(cached.data);
+ *      }
+ *
+ *      // 2b. If not in cache, perform actual query
+ *      const results = await this.queryProducts(query, limit);
+ *
+ *      // 3. Cache the new results
+ *      if (results) {
+ *        await this.cache.cacheQueryResults(
+ *          query,
+ *          this.supplierName,
+ *          results.map(b => b.dump()),
+ *          limit
+ *        );
+ *      }
+ *
+ *      return results;
+ *    }
+ *    ```
+ *
+ * 2. Product Data Caching (via getProductData):
+ *    ```typescript
+ *    // Inside SupplierBase class
+ *    protected async getProductData(product: ProductBuilder<T>) {
+ *      const url = product.get("url");
+ *      const cacheKey = this.cache.getProductDataCacheKey(url, this.supplierName);
+ *
+ *      // 1. Check cache first
+ *      const cachedData = await this.cache.getCachedProductData(cacheKey);
+ *      if (cachedData) {
+ *        // 2a. Return cached data if available
+ *        product.setData(cachedData);
+ *        return product;
+ *      }
+ *
+ *      // 2b. If not in cache, fetch fresh data
+ *      const resultBuilder = await this.getProductDataWithCache(product);
+ *
+ *      // 3. Cache the new data
+ *      if (resultBuilder) {
+ *        await this.cache.cacheProductData(
+ *          cacheKey,
+ *          resultBuilder.dump()
+ *        );
+ *      }
+ *
+ *      return resultBuilder;
+ *    }
+ *    ```
+ *
+ * Cache Flow:
+ * 1. Query Results:
+ *    - Triggered by supplier's search operations
+ *    - Cached after initial search results are processed
+ *    - Retrieved before making new search requests
+ *    - Invalidated when search parameters change
+ *
+ * 2. Product Data:
+ *    - Triggered when fetching detailed product information
+ *    - Cached after successful product data retrieval
+ *    - Retrieved before making new product detail requests
+ *    - Automatically refreshed on access to prevent eviction
+ *
+ * Usage Example:
+ * ```typescript
+ * // Initialize cache for a supplier
+ * const cache = new SupplierCache("ChemSupplier");
+ *
+ * // Cache query results
+ * await cache.cacheQueryResults(
+ *   "sodium chloride",
+ *   "ChemSupplier",
+ *   results,
+ *   10
+ * );
+ *
+ * // Cache product data
+ * await cache.cacheProductData(
+ *   cacheKey,
+ *   productData
+ * );
+ *
+ * // Retrieve cached data
+ * const cachedData = await cache.getCachedProductData(cacheKey);
+ * ```
+ *
+ * @category Utilities
+ * @typeParam T - The type of data being cached
  */
 export default class SupplierCache {
   private static readonly queryCacheKey = "supplier_query_cache";
