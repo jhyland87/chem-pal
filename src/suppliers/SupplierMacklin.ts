@@ -251,11 +251,11 @@ export default class SupplierMacklin
           return builder;
         }
         const variant = response.list[0];
-        builder.setPricing(variant.product_price, "CNY", CURRENCY_SYMBOL_MAP.CNY);
-        builder.setQuantity(variant.product_pack);
-        builder.setUOM(variant.product_unit);
-        builder.setAvailability(variant.product_stock);
-        builder.setDescription(variant.item_en_specification);
+        builder.setPricing(variant?.product_price, "CNY", CURRENCY_SYMBOL_MAP.CNY);
+        builder.setQuantity(variant?.product_pack);
+        builder.setUOM(variant?.product_unit);
+        builder.setAvailability(variant?.product_stock);
+        builder.setDescription(variant?.item_en_specification);
         return builder;
       },
       params,
