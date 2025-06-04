@@ -233,7 +233,6 @@ interface CachedData<T> {
  * const cachedData = await cache.getCachedProductData(cacheKey);
  * ```
  *
- * @category Utilities
  * @typeParam T - The type of data being cached
  */
 export default class SupplierCache {
