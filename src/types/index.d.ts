@@ -53,12 +53,6 @@ declare global {
    */
   interface Settings {
     /**
-     * ISO timestamp of when search results were last updated
-     * @example "2024-03-20T15:30:00Z"
-     */
-    searchResultUpdateTs?: string;
-
-    /**
      * Controls visibility of help tooltips throughout the application.
      * Defaults to false.
      */

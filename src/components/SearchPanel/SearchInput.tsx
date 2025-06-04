@@ -5,7 +5,7 @@ import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import InputBase from "@mui/material/InputBase";
 import Paper from "@mui/material/Paper";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./SearchInput.scss";
 
 /**
@@ -24,22 +24,35 @@ import "./SearchInput.scss";
  * />
  * ```
  */
-export default function SearchInput({ searchInput, setSearchInput }: SearchInputStates) {
-  const [searchInputValue, setSearchInputValue] = useState<string>(searchInput);
+export default function SearchInput({ onSearch }: SearchInputStates) {
+  const [searchInputValue, setSearchInputValue] = useState<string>("");
 
   /**
    * Handles form submission and updates the search input.
    */
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSearchInput(searchInputValue);
+    onSearch?.(searchInputValue);
   };
+
+  // When the component is loaded, check if there's a saved search input and restore if so.
+  useEffect(() => {
+    chrome.storage.session.get(["searchInput"]).then((data) => {
+      if (data.searchInput) {
+        setSearchInputValue(data.searchInput);
+      }
+    });
+  }, []);
 
   /**
    * Handles changes to the search input field.
    */
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchInputValue(e.target.value);
+    const newValue = e.target.value;
+    setSearchInputValue(newValue);
+    chrome.storage.session.set({ searchInput: newValue }).then(() => {
+      console.log("searchInput saved as:", newValue);
+    }); // Update parent state on every change
   };
 
   return (

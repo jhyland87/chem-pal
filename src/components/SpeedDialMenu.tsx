@@ -52,7 +52,6 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
     chrome.storage.session.set({ searchResults: [] });
     appContext.setSettings({
       ...appContext.settings,
-      searchResultUpdateTs: new Date().toISOString(),
     });
   };
 

@@ -132,9 +132,10 @@ declare global {
     /** Table instance */
     table: Table<Product>;
     /** Search input value */
-    searchInput: string;
+    //searchInput: string;
     /** Function to update search input */
-    setSearchInput: Dispatch<SetStateAction<string>>;
+    //setSearchInput: Dispatch<SetStateAction<string>>;
+    onSearch?: (query: string) => void;
   }
 
   /**
@@ -237,10 +238,8 @@ declare global {
    * Props for the SearchInput component
    */
   interface SearchInputStates {
-    /** Search input value */
-    searchInput: string;
     /** Function to update search input */
-    setSearchInput: (value: string) => void;
+    onSearch?: (query: string) => void;
   }
 
   /**
