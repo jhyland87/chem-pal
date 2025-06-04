@@ -2,12 +2,12 @@ import {
   resetChromeActionMock,
   restoreChromeActionMock,
   setupChromeActionMock,
-} from "@/__fixtures__/helpers/chromeActionMock";
+} from "@/__fixtures__/helpers/chrome/actionMock";
 import {
   resetChromeStorageMock,
   restoreChromeStorageMock,
   setupChromeStorageMock,
-} from "@/__fixtures__/helpers/chromeStorageMock";
+} from "@/__fixtures__/helpers/chrome/storageMock";
 import "@testing-library/jest-dom";
 import { fireEvent, queryHelpers, render, screen } from "@testing-library/react";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";

@@ -1,4 +1,4 @@
-import { FetchDecoratorResponse } from "@/helpers/request/fetch";
+import { FetchDecoratorResponse } from "@/helpers/fetch";
 
 interface LruNode {
   key: string;
