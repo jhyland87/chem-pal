@@ -55,9 +55,14 @@ const mockChromeAction = {
     return mockChromeAction._state.title;
   }),
 
-  setBadgeText: vi.fn().mockImplementation(async (details: { text: string; tabId?: number }) => {
-    mockChromeAction._state.badgeText = details.text;
-  }),
+  setBadgeText: vi
+    .fn()
+    .mockImplementation((details: { text: string; tabId?: number }, callback?: () => void) => {
+      mockChromeAction._state.badgeText = details.text;
+      if (callback) {
+        callback();
+      }
+    }),
 
   getBadgeText: vi.fn().mockImplementation(async (details?: { tabId?: number }) => {
     return mockChromeAction._state.badgeText;

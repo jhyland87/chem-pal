@@ -1,7 +1,7 @@
 import {
   resetChromeStorageMock,
   setupChromeStorageMock,
-} from "@/__fixtures__/helpers/chromeStorageMock";
+} from "@/__fixtures__/helpers/chrome/storageMock";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import SelectColumnFilter from "../SelectColumnFilter";

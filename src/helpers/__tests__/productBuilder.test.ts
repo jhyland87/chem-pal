@@ -1,15 +1,39 @@
+import { AVAILABILITY } from "@/constants/common";
 import ProductBuilder from "@/utils/ProductBuilder";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import * as currencyHelpers from "../currency";
+import { beforeEach, describe, expect, it, vi, type MockInstance } from "vitest";
 import * as quantityHelpers from "../quantity";
 
 describe("ProductBuilder", () => {
   const baseURL = "https://example.com";
   let builder: ProductBuilder<Product>;
 
+  const mockResponse = (data: unknown) =>
+    new Response(JSON.stringify(data), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+
   beforeEach(() => {
     builder = new ProductBuilder(baseURL);
-    vi.clearAllMocks();
+    // Always resolve fetch with a default USD:USD response unless overridden in a test
+    (global.fetch as any).mockImplementation(() =>
+      Promise.resolve(
+        mockResponse({
+          status_code: 200,
+          data: {
+            base: "USD",
+            target: "USD",
+            mid: 1.0,
+            unit: 1,
+            timestamp: "2024-03-14T00:00:00.000Z",
+          },
+        }),
+      ),
+    );
+  });
+
+  afterEach(() => {
+    vi.resetAllMocks();
   });
 
   describe("setBasicInfo", () => {
@@ -406,8 +430,22 @@ describe("ProductBuilder", () => {
       });
     });
 
-    it.skip("should convert non-USD prices to USD", async () => {
-      const toUSDSpy = vi.spyOn(currencyHelpers, "toUSD");
+    it("should convert non-USD prices to USD", async () => {
+      // Override the default mock for this test
+      (global.fetch as any).mockImplementationOnce(() =>
+        Promise.resolve(
+          mockResponse({
+            status_code: 200,
+            data: {
+              base: "EUR",
+              target: "USD",
+              mid: 1.1453,
+              unit: 1,
+              timestamp: "2024-03-14T00:00:00.000Z",
+            },
+          }),
+        ),
+      );
 
       const result = await builder
         .setBasicInfo("Test Product", "/product/123", "Test Supplier")
@@ -415,11 +453,13 @@ describe("ProductBuilder", () => {
         .setQuantity(500, "g")
         .build();
 
-      expect(toUSDSpy).toHaveBeenCalledWith(29.99, "EUR");
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://hexarate.paikama.co/api/rates/latest/EUR?target=USD",
+      );
       expect(result).toMatchObject({
         price: 29.99,
         currencyCode: "EUR",
-        usdPrice: 34.99,
+        usdPrice: 34.35, // 29.99 * 1.1453
       });
     });
 
@@ -459,6 +499,363 @@ describe("ProductBuilder", () => {
         .build();
 
       expect(result?.url).toBe(absoluteURL);
+    });
+  });
+
+  describe("setCurrencySymbol and setCurrencyCode", () => {
+    beforeEach(() => {
+      //(global.fetch as unknown as MockInstance).mockClear();
+    });
+
+    it("should set currency symbol correctly", async () => {
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setCurrencySymbol("€")
+        .build();
+
+      expect(result).toMatchObject({
+        currencySymbol: "€",
+      });
+    });
+
+    it.skip("should set currency code correctly", async () => {
+      // Override the default mock for this test
+      /*
+      (global.fetch as unknown as MockInstance).mockImplementationOnce(() =>
+        Promise.resolve(
+          mockResponse({
+            status_code: 200,
+            data: {
+              base: "EUR",
+              target: "USD",
+              mid: 1.1453,
+              unit: 1,
+              timestamp: "2024-03-14T00:00:00.000Z",
+            },
+          }),
+        ),
+      );
+      */
+      //(global.fetch as unknown as MockInstance).mockClear();
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "EUR", "€")
+        .setQuantity(500, "g")
+        .setCurrencyCode("EUR")
+        .build();
+
+      expect((global.fetch as unknown as MockInstance).mock.calls[0][0]).toBe(
+        "https://hexarate.paikama.co/api/rates/latest/EUR?target=USD",
+      );
+      expect(result).toMatchObject({
+        currencyCode: "EUR",
+        usdPrice: 29.99,
+      });
+    });
+
+    it.skip("should handle currency conversion errors", async () => {
+      // Override the default mock for this test
+      //(global.fetch as any).mockImplementationOnce(() => Promise.reject(new Error("API Error")));
+
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "EUR", "€")
+        .setQuantity(500, "g")
+        .setCurrencyCode("EUR")
+        .build();
+
+      expect((global.fetch as unknown as MockInstance).mock.calls).toBe(
+        "https://hexarate.paikama.co/api/rates/latest/EUR?target=USD",
+      );
+      expect(result).toMatchObject({
+        currencyCode: "EUR",
+        price: 29.99,
+      });
+      // usdPrice should be undefined when conversion fails
+      expect(result?.usdPrice).toBeUndefined();
+    });
+
+    it("should handle invalid currency symbol", async () => {
+      const consoleSpy = vi.spyOn(console, "warn");
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setCurrencySymbol(123 as unknown as CurrencySymbol)
+        .build();
+
+      expect(consoleSpy).toHaveBeenCalledWith("setCurrencySymbol| Invalid currency symbol: 123");
+      expect(result?.currencySymbol).toBe("$");
+    });
+
+    it("should handle invalid currency code", async () => {
+      const consoleSpy = vi.spyOn(console, "warn");
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setCurrencyCode(123 as unknown as CurrencyCode)
+        .build();
+
+      expect(consoleSpy).toHaveBeenCalledWith("setCurrencyCode| Invalid currency code: 123");
+      expect(result?.currencyCode).toBe("USD");
+    });
+  });
+
+  describe("setUOM", () => {
+    it("should set UOM correctly", async () => {
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setUOM("kg")
+        .build();
+
+      expect(result).toMatchObject({
+        uom: "kg",
+      });
+    });
+
+    it("should not set invalid UOM", async () => {
+      const loggerSpy = vi.spyOn(builder["logger"], "warn");
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setUOM("")
+        .build();
+
+      expect(loggerSpy).toHaveBeenCalledWith("Unknown UOM: ");
+      expect(result?.uom).toBe("g");
+    });
+  });
+
+  describe("setSupplierCountry and setSupplierShipping", () => {
+    it("should set supplier country correctly", async () => {
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setSupplierCountry("US")
+        .build();
+
+      expect(result).toMatchObject({
+        supplierCountry: "US",
+      });
+    });
+
+    it("should set supplier shipping correctly", async () => {
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setSupplierShipping("worldwide")
+        .build();
+
+      expect(result).toMatchObject({
+        supplierShipping: "worldwide",
+      });
+    });
+  });
+
+  describe("setVendor", () => {
+    it("should set vendor correctly", async () => {
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setVendor("Test Vendor")
+        .build();
+
+      expect(result).toMatchObject({
+        vendor: "Test Vendor",
+      });
+    });
+
+    it("should not set vendor when undefined", async () => {
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setVendor(undefined)
+        .build();
+
+      expect(result).not.toHaveProperty("vendor");
+    });
+  });
+
+  describe("setVariants", () => {
+    it("should replace existing variants with new ones", async () => {
+      const initialVariants = [{ title: "Small Pack", price: 29.99, quantity: 250, uom: "g" }];
+      const newVariants = [
+        { title: "Medium Pack", price: 39.99, quantity: 500, uom: "g" },
+        { title: "Large Pack", price: 49.99, quantity: 1000, uom: "g" },
+      ];
+
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .addVariants(initialVariants)
+        .setVariants(newVariants)
+        .build();
+
+      expect(result?.variants).toHaveLength(2);
+      expect(result?.variants).toMatchObject(newVariants);
+    });
+
+    it("should handle empty variants array", async () => {
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setVariants([])
+        .build();
+
+      expect(result?.variants).toHaveLength(0);
+    });
+  });
+
+  describe("determineAvailability and setAvailability", () => {
+    it("should handle AVAILABILITY enum values", async () => {
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setAvailability(AVAILABILITY.IN_STOCK)
+        .build();
+
+      expect(result).toMatchObject({
+        availability: AVAILABILITY.IN_STOCK,
+      });
+    });
+
+    it("should handle boolean values", async () => {
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setAvailability(true)
+        .build();
+
+      expect(result).toMatchObject({
+        availability: AVAILABILITY.IN_STOCK,
+      });
+
+      const result2 = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setAvailability(false)
+        .build();
+
+      expect(result2).toMatchObject({
+        availability: AVAILABILITY.OUT_OF_STOCK,
+      });
+    });
+
+    it("should handle string values", async () => {
+      const testCases = [
+        { input: "instock", expected: AVAILABILITY.IN_STOCK },
+        { input: "outofstock", expected: AVAILABILITY.OUT_OF_STOCK },
+        { input: "preorder", expected: AVAILABILITY.PRE_ORDER },
+        { input: "backorder", expected: AVAILABILITY.BACKORDER },
+        { input: "discontinued", expected: AVAILABILITY.DISCONTINUED },
+      ];
+
+      for (const { input, expected } of testCases) {
+        const result = await builder
+          .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+          .setPricing(29.99, "USD", "$")
+          .setQuantity(500, "g")
+          .setAvailability(input)
+          .build();
+
+        expect(result).toMatchObject({
+          availability: expected,
+        });
+      }
+    });
+
+    it("should handle invalid availability values", async () => {
+      const loggerSpy = vi.spyOn(builder["logger"], "warn");
+      const result = await builder
+        .setBasicInfo("Test Product", "/product/123", "Test Supplier")
+        .setPricing(29.99, "USD", "$")
+        .setQuantity(500, "g")
+        .setAvailability("invalid-status")
+        .build();
+
+      expect(loggerSpy).toHaveBeenCalledWith("Unknown availability: invalid-status");
+      expect(result).not.toHaveProperty("availability");
+    });
+  });
+
+  describe("addRawData", () => {
+    it("should merge raw data correctly", async () => {
+      const rawData1 = { customField1: "value1" };
+      const rawData2 = { customField2: "value2" };
+
+      builder.addRawData(rawData1);
+      builder.addRawData(rawData2);
+
+      expect(builder["rawData"]).toMatchObject({
+        customField1: "value1",
+        customField2: "value2",
+      });
+    });
+
+    it("should handle undefined input", async () => {
+      builder.addRawData(undefined);
+      expect(builder["rawData"]).toEqual({});
+    });
+  });
+
+  describe("get", () => {
+    it("should return property value if it exists", () => {
+      builder.setBasicInfo("Test Product", "/product/123", "Test Supplier");
+      expect(builder.get("title")).toBe("Test Product");
+    });
+
+    it("should return undefined for non-existent property", () => {
+      expect(builder.get("nonexistent" as keyof Product)).toBeUndefined();
+    });
+
+    it("should return undefined for unset property", () => {
+      builder.setBasicInfo("Test Product", "/product/123", "Test Supplier");
+      expect(builder.get("price")).toBeUndefined();
+    });
+  });
+
+  describe("createFromCache", () => {
+    it("should create builders from cached data", () => {
+      const cachedData = [
+        {
+          title: "Cached Product 1",
+          price: 29.99,
+          quantity: 500,
+          uom: "g",
+        },
+        {
+          title: "Cached Product 2",
+          price: 39.99,
+          quantity: 1000,
+          uom: "g",
+        },
+      ];
+
+      const builders = ProductBuilder.createFromCache(baseURL, cachedData);
+
+      expect(builders).toHaveLength(2);
+      expect(builders[0].dump()).toMatchObject(cachedData[0]);
+      expect(builders[1].dump()).toMatchObject(cachedData[1]);
+    });
+
+    it("should handle empty cache data", () => {
+      const builders = ProductBuilder.createFromCache(baseURL, []);
+      expect(builders).toHaveLength(0);
     });
   });
 });

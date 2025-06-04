@@ -24,9 +24,10 @@ global.console = {
   clear: vi.fn(),
 };
 
-// Ensure all fetch calls are mocked
-global.fetch = vi.fn().mockImplementation(() => {
+// Replace global.fetch with a vi.fn() that throws by default
+const fetchMock = vi.fn(() => {
   throw new Error(
-    'All fetch calls must be mocked! Use vi.spyOn(global, "fetch").mockImplementation() in your test.',
+    "All fetch calls must be mocked! Use (global.fetch as vi.Mock).mockImplementation() in your test.",
   );
 });
+global.fetch = fetchMock;

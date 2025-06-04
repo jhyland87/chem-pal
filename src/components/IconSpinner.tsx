@@ -65,7 +65,7 @@ const IconSpinner: React.FC<IconSpinnerProps> = (props: IconSpinnerProps) => {
   });
   // Clone the child element to preserve its props
   const child = cloneElement(props.children as React.ReactElement);
-  return <SpinningWrapper>{child}</SpinningWrapper>;
+  return <SpinningWrapper data-testid="spinning-wrapper">{child}</SpinningWrapper>;
 };
 
 export default IconSpinner;
