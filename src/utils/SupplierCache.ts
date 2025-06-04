@@ -129,7 +129,7 @@ interface CachedData<T> {
  *   - When cache is full, oldest entries are removed based on timestamp
  * - Cache Invalidation:
  *   - Query cache entries are invalidated if:
- *     1. Cache version changes (CACHE_VERSION constant)
+ *     1. Cache version changes (`CACHE_VERSION` constant)
  *     2. Requested limit is greater than cached limit
  *   - Product data cache entries are refreshed on access
  *     (timestamp updated to prevent premature eviction)
@@ -137,7 +137,7 @@ interface CachedData<T> {
  * Cache Triggering:
  * The cache is automatically triggered in two main scenarios:
  *
- * 1. Query Results Caching (via queryProductsWithCache):
+ * 1. Query Results Caching (via `queryProductsWithCache`):
  *    ```typescript
  *    // Inside SupplierBase class
  *    protected async queryProductsWithCache(query: string, limit: number) {
@@ -167,7 +167,7 @@ interface CachedData<T> {
  *    }
  *    ```
  *
- * 2. Product Data Caching (via getProductData):
+ * 2. Product Data Caching (via `getProductData`):
  *    ```typescript
  *    // Inside SupplierBase class
  *    protected async getProductData(product: ProductBuilder<T>) {
@@ -200,13 +200,13 @@ interface CachedData<T> {
  * Cache Flow:
  * 1. Query Results:
  *    - Triggered by supplier's search operations
- *    - Cached after initial search results are processed
+ *    - Cached after initial search results are processed (smaller cache than if the raw result was cached or the fully processed data)
  *    - Retrieved before making new search requests
- *    - Invalidated when search parameters change
+ *    - Invalidated when search parameters change (not including timestamps in the URL)
  *
  * 2. Product Data:
  *    - Triggered when fetching detailed product information
- *    - Cached after successful product data retrieval
+ *    - Cached after successful product data retrieval (output of `ProductBuilder.dump()`)
  *    - Retrieved before making new product detail requests
  *    - Automatically refreshed on access to prevent eviction
  *

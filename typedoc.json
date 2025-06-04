@@ -85,6 +85,7 @@
   "readme": "README.md",
   "navigationLinks": {
     "Reference": "https://jhyland87.github.io/chem-crawler",
+    "GitHub": "https://github.com/jhyland87/chem-crawler"
   },
   "sort": [
     "source-order"
