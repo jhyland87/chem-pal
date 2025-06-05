@@ -755,7 +755,7 @@ export default abstract class SupplierBase<S, T extends Product>
    * }
    * ```
    */
-  protected abstract titleSelector(data: any): string;
+  protected abstract titleSelector(data: any): Maybe<string>;
 
   /**
    * Makes an HTTP GET request and returns the response as a string.

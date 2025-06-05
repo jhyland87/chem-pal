@@ -1,42 +1,40 @@
 import { findCAS } from "@/helpers/cas";
-import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import chunk from "lodash/chunk";
 import SupplierBase from "./SupplierBase";
 /**
- * Supplier implementation for Loudwolf chemical supplier.
- * Extends the base supplier class and provides Loudwolf-specific implementation
- * for product searching and data extraction.
+ * Supplier implementation for Warchem, a Polish based chemical supplier.
+ *
  *
  * @typeParam S - The supplier-specific product type (Partial<Product>)
  * @typeParam T - The common Product type that all suppliers map to
  *
  * @example
  * ```typescript
- * const supplier = new SupplierLoudwolf("sodium chloride", 10, new AbortController());
+ * const supplier = new SupplierWachem("sodium chloride", 10, new AbortController());
  * for await (const product of supplier) {
  *   console.log("Found product:", product.title, product.price);
  * }
  * ```
  */
-export default class SupplierLoudwolf
+export default class SupplierWarchem
   extends SupplierBase<Partial<Product>, Product>
   implements AsyncIterable<Product>
 {
   // Display name of the supplier used for UI and logging
-  public readonly supplierName: string = "Loudwolf";
+  public readonly supplierName: string = "Warchem";
 
-  // Base URL for all API and web requests to Loudwolf
-  public readonly baseURL: string = "https://www.loudwolf.com";
+  // Base URL for all API and web requests to Warchem
+  public readonly baseURL: string = "https://warchem.pl";
 
-  // Shipping scope for Loudwolf
-  public readonly shipping: ShippingRange = "worldwide";
+  // Shipping scope for Warchem
+  public readonly shipping: ShippingRange = "domestic";
 
   // The country code of the supplier.
   // This is used to determine the currency and other country-specific information.
-  public readonly country: CountryCode = "US";
+  public readonly country: CountryCode = "PL";
 
   // Cached search results from the last query execution
   protected queryResults: Array<Partial<Product>> = [];
@@ -52,14 +50,22 @@ export default class SupplierLoudwolf
   protected httpRequestBatchSize: number = 5;
 
   /**
-   * Sets up the supplier by setting the display to list.
+   * Warchem stores the search result limit in the cookies which needs to be set
+   * in a POST call before the query.
    * @returns A promise that resolves when the setup is complete.
    */
-  protected async setup(): Promise<void> {}
+  protected async setup(): Promise<void> {
+    await this.httpPost({
+      path: "/szukaj.html",
+      body: {
+        ilosc_na_stronie: 36,
+      },
+    });
+  }
 
   /**
-   * Queries Loudwolf products based on a search string.
-   * Makes a GET request to the Loudwolf search endpoint and parses the HTML response
+   * Queries Wachem products based on a search string.
+   * Makes a GET request to the Wachem search endpoint and parses the HTML response
    * to extract basic product information.
    *
    * @param query - The search term to query products for
@@ -68,7 +74,7 @@ export default class SupplierLoudwolf
    *
    * @example
    * ```typescript
-   * const supplier = new SupplierLoudwolf("acetone", 10, new AbortController());
+   * const supplier = new SupplierWachem("acetone", 10, new AbortController());
    * const results = await supplier.queryProducts("acetone");
    * if (results) {
    *   console.log(`Found ${results.length} products`);
@@ -80,15 +86,17 @@ export default class SupplierLoudwolf
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    this.logger.log("queryProducts:", { query, limit });
-    localStorage.setItem("display", "list");
-
     const searchResponse = await this.httpGetHtml({
-      path: "/storefront/index.php",
+      path: "/szukaj.html",
       params: {
-        search: encodeURIComponent(query),
-        route: "product/search",
-        limit: 100,
+        szukaj: encodeURIComponent(query),
+        opis: "tak",
+        fraza: "nie",
+        nrkat: "nie",
+        kodprod: "nie",
+        ean: "nie",
+        kategoria: "1",
+        podkat: "tak",
       },
     });
 
@@ -99,10 +107,13 @@ export default class SupplierLoudwolf
 
     this.logger.log("searchResponse:", searchResponse);
 
-    const $fuzzResults = this.fuzzHtmlResponse(query, searchResponse);
-    this.logger.info("fuzzResults:", Array.from($fuzzResults));
+    // dataLayer.find(dl => dl?.event === 'view_item_list').ecommerce.items
 
-    return this.initProductBuilders($fuzzResults.slice(0, limit));
+    const fuzzResults = this.fuzzHtmlResponse(query, searchResponse);
+    this.logger.info("fuzzResults:", Array.from(fuzzResults));
+
+    const builders = this.initProductBuilders(fuzzResults.slice(0, limit));
+    return builders;
   }
 
   /**
@@ -132,16 +143,33 @@ export default class SupplierLoudwolf
     // Create a new DOM to do the travesing/parsing
     const parser = new DOMParser();
     const parsedHTML = parser.parseFromString(response, "text/html");
+    if (!parsedHTML || parsedHTML === null) {
+      throw new Error("No data found when loading HTML");
+    }
 
+    const productContainers = parsedHTML.querySelectorAll(
+      "div.ListingWierszeKontener > div.Wiersz.LiniaDolna",
+    );
+    if (!productContainers || productContainers.length === 0) {
+      this.logger.error("No products found");
+      return [];
+    }
+
+    //const dataLayerContent = parsedHTML.querySelector("div.CalaStrona script").innerText;
+    //const ptrn = new RegExp("gtag\('event',\s?'view_item_list',\s?(?={)(.*)(?=\);)", "ms");
+    //console.log("dataLayerContent:", dataLayerContent);
+
+    //const data = dataLayerContent.match(/gtag\('event',\s?'view_item_list',\s?(?={)(.*)(?=\);)/gi);
+    //console.log("data:", data);
+    //debugger;
     // Select all products by a known selector path
-    const products = parsedHTML.querySelectorAll("div.product-layout.product-list");
 
     // Do the fuzzy filtering using the element found when using this.titleSelector()
-    return this.fuzzyFilter<Element>(query, Array.from(products));
+    return this.fuzzyFilter<Element>(query, Array.from(productContainers));
   }
 
   /**
-   * Initialize product builders from Loudwolf HTML search response data.
+   * Initialize product builders from Wachem HTML search response data.
    * Transforms HTML product listings into ProductBuilder instances, handling:
    * - Basic product information (title, URL, supplier)
    * - Pricing information with currency details
@@ -151,7 +179,7 @@ export default class SupplierLoudwolf
    * - Price extraction from formatted strings
    * - URL and ID extraction from product links
    *
-   * @param $elements - HTML string containing product listings
+   * @param elements - Array of DOM Elements containing product listings
    * @returns Array of ProductBuilder instances initialized with product data
    * @example
    * ```typescript
@@ -166,20 +194,50 @@ export default class SupplierLoudwolf
    * }
    * ```
    */
-  protected initProductBuilders($elements: Element[]): ProductBuilder<Product>[] {
-    return mapDefined($elements, (element: Element) => {
+  protected initProductBuilders(elements: Element[]): ProductBuilder<Product>[] {
+    return mapDefined(elements, (element: Element) => {
       const builder = new ProductBuilder<Product>(this.baseURL);
 
-      const priceElem = element.querySelector("div.caption > p.price");
-      console.log("priceElem:", priceElem);
-      const price = parsePrice(priceElem?.textContent?.trim() || "");
+      const priceElem = element.querySelector(".ProdCena .Brutto");
+      if (!priceElem) {
+        this.logger.error("No price element for product", element);
+        return;
+      }
+      /*
+      const priceRaw = priceElem.textContent?.replace("brutto", "").trim();
+
+      if (!priceRaw) {
+        this.logger.error("No price raw for product", element);
+        return;
+      }
+      //
+      console.log("priceRaw:", priceRaw);
+
+      const price = priceParser.parseFirst(priceRaw);
+
+      console.log("price:", price);
+
+      //const price = parsePrice(priceElem?.textContent?.trim() || "");
 
       if (price === undefined) {
         this.logger.error("No price for product", element);
         return;
       }
+        */
+      const headerElem = element.querySelector("h3 > a");
+      if (!headerElem) {
+        this.logger.error("No header for product", element);
+        return;
+      }
 
-      const href = element.querySelector("div.caption h4 a")?.getAttribute("href");
+      const title = headerElem.textContent?.trim();
+
+      if (!title) {
+        this.logger.error("No title for product", element);
+        return;
+      }
+
+      const href = headerElem.getAttribute("href");
 
       if (!href) {
         this.logger.error("No URL for product");
@@ -188,21 +246,7 @@ export default class SupplierLoudwolf
 
       const url = new URL(href, this.baseURL);
 
-      const id = url.searchParams.get("product_id");
-
-      if (id === null) {
-        this.logger.error("No ID for product");
-        return;
-      }
-      const title = element.querySelector("div.caption h4 a")?.textContent?.trim() || "";
-
-      return builder
-        .setBasicInfo(title, url.toString(), this.supplierName)
-        .setDescription(
-          element.querySelector("div.caption > p:nth-child(2)")?.textContent?.trim() || "",
-        )
-        .setId(id)
-        .setPricing(price.price, price.currencyCode, price.currencySymbol);
+      return builder.setBasicInfo(title, url.toString(), this.supplierName);
     });
   }
 
@@ -235,6 +279,7 @@ export default class SupplierLoudwolf
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
+    // Meta tags: ['og:title', 'og:description', 'og:type', 'og:url', 'og:image', 'product:price:amount', 'product:price:currency', 'product:availability', 'product:condition', 'product:retailer_item_id']
     return this.getProductDataWithCache(product, async (builder) => {
       this.logger.debug("Querying data for partialproduct:", builder);
 
@@ -301,12 +346,17 @@ export default class SupplierLoudwolf
    * }
    * ```
    */
-  protected titleSelector(data: Element): string {
-    const title = data.querySelector("div.caption h4 a");
+  protected titleSelector(data: Element): Maybe<string> {
+    if (!data) {
+      this.logger.error("No data for product");
+      return undefined;
+    }
+    // document.querySelectorAll('div.ListingWierszeKontener > div.Wiersz')[1].querySelector('div.ProdCena > h3 > a').innerText
+    const title = data.querySelector("div.ProdCena > h3 > a")?.textContent?.trim();
     if (title === null) {
       this.logger.error("No title for product");
-      return "";
+      return undefined;
     }
-    return title.textContent?.trim() || "";
+    return title;
   }
 }

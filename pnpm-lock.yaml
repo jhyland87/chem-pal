@@ -74,6 +74,9 @@ importers:
       money:
         specifier: ^0.2.0
         version: 0.2.0
+      price-parser:
+        specifier: ^3.4.0
+        version: 3.4.0
       react:
         specifier: ^19.0.0
         version: 19.1.0
@@ -105,9 +108,6 @@ importers:
       '@babel/plugin-proposal-class-properties':
         specifier: ^7.18.6
         version: 7.18.6(@babel/core@7.27.4)
-      '@babel/plugin-proposal-private-methods':
-        specifier: ^7.18.6
-        version: 7.18.6(@babel/core@7.27.4)
       '@babel/preset-env':
         specifier: ^7.26.9
         version: 7.27.2(@babel/core@7.27.4)
@@ -129,9 +129,6 @@ importers:
       '@microsoft/tsdoc-config':
         specifier: ^0.17.1
         version: 0.17.1
-      '@mxssfd/typedoc-theme':
-        specifier: ^1.1.7
-        version: 1.1.7(typedoc@0.28.5(typescript@5.7.3))
       '@testing-library/dom':
         specifier: ^10.4.0
         version: 10.4.0
@@ -487,13 +484,6 @@ packages:
     resolution: {integrity: sha512-cumfXOF0+nzZrrN8Rf0t7M+tF6sZc7vhQwYQck9q1/5w2OExlD+b4v4RpMJFaV1Z7WcDRgO6FqvxqxGlwo+RHQ==}
     engines: {node: '>=6.9.0'}
     deprecated: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-class-properties instead.
-    peerDependencies:
-      '@babel/core': ^7.0.0-0
-
-  '@babel/plugin-proposal-private-methods@7.18.6':
-    resolution: {integrity: sha512-nutsvktDItsNn4rpGItSNV2sz1XwS+nfU0Rg8aCx3W3NOKVzdMjJRu0O5OkgDp3ZGICSTbgRpxZoWsxoKRvbeA==}
-    engines: {node: '>=6.9.0'}
-    deprecated: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-private-methods instead.
     peerDependencies:
       '@babel/core': ^7.0.0-0
 
@@ -1453,12 +1443,6 @@ packages:
     peerDependencies:
       '@mui/system': ^5.15.14 || ^6.0.0 || ^7.0.0
       react: ^17.0.0 || ^18.0.0 || ^19.0.0
-
-  '@mxssfd/typedoc-theme@1.1.7':
-    resolution: {integrity: sha512-dj4p0TjIoudD8j1u+Kf+KzcEc+je3IB/B1oohWcVJmMRfbw5uZYX6qOGHzfUzAPiU1pYe2u5Vo1IPqgLo58taA==}
-    engines: {node: '>= 14'}
-    peerDependencies:
-      typedoc: ^0.26.7
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -3166,6 +3150,9 @@ packages:
     resolution: {integrity: sha512-Qb1gy5OrP5+zDf2Bvnzdl3jsTf1qXVMazbvCoKhtKqVs4/YK4ozX4gKQJJVyNe+cajNPn0KoC0MC3FUmaHWEmQ==}
     engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
 
+  price-parser@3.4.0:
+    resolution: {integrity: sha512-r7wfXZyGExwbfZmtqoQbR0Tu1l+vccgySp2VBaIlnG7gkT0QJLTvW2cgeB5i9HGQC2EVvfTIaaQZzlWIpZ6QcQ==}
+
   prop-types@15.8.1:
     resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
 
@@ -4243,14 +4230,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/plugin-proposal-private-methods@7.18.6(@babel/core@7.27.4)':
-    dependencies:
-      '@babel/core': 7.27.4
-      '@babel/helper-create-class-features-plugin': 7.27.1(@babel/core@7.27.4)
-      '@babel/helper-plugin-utils': 7.27.1
-    transitivePeerDependencies:
-      - supports-color
-
   '@babel/plugin-proposal-private-property-in-object@7.21.0-placeholder-for-preset-env.2(@babel/core@7.27.4)':
     dependencies:
       '@babel/core': 7.27.4
@@ -5290,10 +5269,6 @@ snapshots:
       react: 19.1.0
     transitivePeerDependencies:
       - '@types/react'
-
-  '@mxssfd/typedoc-theme@1.1.7(typedoc@0.28.5(typescript@5.7.3))':
-    dependencies:
-      typedoc: 0.28.5(typescript@5.7.3)
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -7052,6 +7027,8 @@ snapshots:
       ansi-regex: 5.0.1
       ansi-styles: 5.2.0
       react-is: 17.0.2
+
+  price-parser@3.4.0: {}
 
   prop-types@15.8.1:
     dependencies:

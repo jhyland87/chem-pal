@@ -32,3 +32,4 @@ export { default as SupplierLibertySci } from "./SupplierLibertySci";
 export { default as SupplierLoudwolf } from "./SupplierLoudwolf";
 export { default as SupplierMacklin } from "./SupplierMacklin";
 export { default as SupplierOnyxmet } from "./SupplierOnyxmet";
+export { default as SupplierWarchem } from "./SupplierWarchem";
