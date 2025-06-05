@@ -303,7 +303,7 @@ export default abstract class SupplierBaseWix
           )
           .setPricing(productPrice.price, productPrice.currencyCode, productPrice.currencySymbol)
           .setQuantity(firstVariant.quantity, firstVariant.uom)
-          .setId(product.id)
+          .setID(product.id)
           .setCAS(cas ?? "")
           .setSku(product.sku)
           .setDescription(product.description)

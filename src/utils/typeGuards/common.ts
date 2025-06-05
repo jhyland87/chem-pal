@@ -252,7 +252,20 @@ export function isMinimalProduct(product: unknown): product is RequiredProductFi
   };
 
   return Object.entries(requiredProps).every(([key, expectedType]) => {
-    return key in product && typeof product[key as keyof typeof product] === expectedType;
+    if (key in product === false) {
+      console.warn(`No ${key} value found in product`, product);
+      return false;
+    }
+
+    if (typeof product[key as keyof typeof product] !== expectedType) {
+      console.warn(
+        `${key} property not the correct type (${typeof product[key as keyof typeof product]} !== ${expectedType})`,
+        product,
+      );
+      return false;
+    }
+
+    return true;
   });
 }
 

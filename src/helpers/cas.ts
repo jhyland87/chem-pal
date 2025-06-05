@@ -36,7 +36,8 @@ import { CAS_REGEX } from "@/constants/common";
  * @see https://www.cas.org/training/documentation/chemical-substances/checkdig
  * @see https://www.allcheminfo.com/chemistry/cas-number-lookup.html
  */
-export function isCAS(cas: string): cas is CAS<string> {
+export function isCAS(cas: unknown): cas is CAS<string> {
+  if (typeof cas !== "string") return false;
   const regex = RegExp(`^${CAS_REGEX.source}$`);
   const match = cas.match(regex);
   if (!match || !match.groups?.seg_a || !match.groups?.seg_b || !match.groups?.seg_checksum)

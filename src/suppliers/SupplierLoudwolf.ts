@@ -201,7 +201,7 @@ export default class SupplierLoudwolf
         .setDescription(
           element.querySelector("div.caption > p:nth-child(2)")?.textContent?.trim() || "",
         )
-        .setId(id)
+        .setID(id)
         .setPricing(price.price, price.currencyCode, price.currencySymbol);
     });
   }

@@ -280,7 +280,7 @@ export default class SupplierMacklin
             this.supplierName,
           )
           ///.setDescription(product.description)
-          .setId(product.item_id)
+          .setID(product.item_id)
           //.setAvailability(product.available)
           .setUUID(product.item_code)
           //.setPricing(product.price.price, product?.currency as string, CURRENCY_SYMBOL_MAP.EUR)

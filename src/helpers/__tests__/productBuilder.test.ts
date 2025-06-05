@@ -213,13 +213,13 @@ describe("ProductBuilder", () => {
     });
   });
 
-  describe("setId, setUUID, and setSku", () => {
+  describe("setID, setUUID, and setSku", () => {
     it("should set ID correctly", async () => {
       const result = await builder
         .setBasicInfo("Test Product", "/product/123", "Test Supplier")
         .setPricing(29.99, "USD", "$")
         .setQuantity(500, "g")
-        .setId(12345)
+        .setID(12345)
         .build();
 
       expect(result).toMatchObject({ id: 12345 });

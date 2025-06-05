@@ -1,8 +1,9 @@
-import { findCAS } from "@/helpers/cas";
+import { findCAS, isCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
-import { mapDefined } from "@/helpers/utils";
+import { createDOM } from "@/helpers/request";
+import { firstMap, mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
-import chunk from "lodash/chunk";
+import priceParser from "price-parser";
 import SupplierBase from "./SupplierBase";
 /**
  * Supplier implementation for Warchem, a Polish based chemical supplier.
@@ -107,9 +108,8 @@ export default class SupplierWarchem
 
     this.logger.log("searchResponse:", searchResponse);
 
-    // dataLayer.find(dl => dl?.event === 'view_item_list').ecommerce.items
-
     const fuzzResults = this.fuzzHtmlResponse(query, searchResponse);
+
     this.logger.info("fuzzResults:", Array.from(fuzzResults));
 
     const builders = this.initProductBuilders(fuzzResults.slice(0, limit));
@@ -141,8 +141,7 @@ export default class SupplierWarchem
    */
   protected fuzzHtmlResponse(query: string, response: string): Element[] {
     // Create a new DOM to do the travesing/parsing
-    const parser = new DOMParser();
-    const parsedHTML = parser.parseFromString(response, "text/html");
+    const parsedHTML = createDOM(response);
     if (!parsedHTML || parsedHTML === null) {
       throw new Error("No data found when loading HTML");
     }
@@ -154,15 +153,6 @@ export default class SupplierWarchem
       this.logger.error("No products found");
       return [];
     }
-
-    //const dataLayerContent = parsedHTML.querySelector("div.CalaStrona script").innerText;
-    //const ptrn = new RegExp("gtag\('event',\s?'view_item_list',\s?(?={)(.*)(?=\);)", "ms");
-    //console.log("dataLayerContent:", dataLayerContent);
-
-    //const data = dataLayerContent.match(/gtag\('event',\s?'view_item_list',\s?(?={)(.*)(?=\);)/gi);
-    //console.log("data:", data);
-    //debugger;
-    // Select all products by a known selector path
 
     // Do the fuzzy filtering using the element found when using this.titleSelector()
     return this.fuzzyFilter<Element>(query, Array.from(productContainers));
@@ -203,27 +193,7 @@ export default class SupplierWarchem
         this.logger.error("No price element for product", element);
         return;
       }
-      /*
-      const priceRaw = priceElem.textContent?.replace("brutto", "").trim();
 
-      if (!priceRaw) {
-        this.logger.error("No price raw for product", element);
-        return;
-      }
-      //
-      console.log("priceRaw:", priceRaw);
-
-      const price = priceParser.parseFirst(priceRaw);
-
-      console.log("price:", price);
-
-      //const price = parsePrice(priceElem?.textContent?.trim() || "");
-
-      if (price === undefined) {
-        this.logger.error("No price for product", element);
-        return;
-      }
-        */
       const headerElem = element.querySelector("h3 > a");
       if (!headerElem) {
         this.logger.error("No header for product", element);
@@ -282,7 +252,6 @@ export default class SupplierWarchem
     // Meta tags: ['og:title', 'og:description', 'og:type', 'og:url', 'og:image', 'product:price:amount', 'product:price:currency', 'product:availability', 'product:condition', 'product:retailer_item_id']
     return this.getProductDataWithCache(product, async (builder) => {
       this.logger.debug("Querying data for partialproduct:", builder);
-
       if (typeof builder === "undefined") {
         this.logger.error("No products to get data for");
         return;
@@ -299,32 +268,69 @@ export default class SupplierWarchem
 
       this.logger.debug("productResponse:", productResponse);
 
-      const parser = new DOMParser();
-      const parsedHTML = parser.parseFromString(productResponse, "text/html");
-      const domContent = parsedHTML.querySelector("#content");
-      const dataGrid = Array.from(
-        domContent?.querySelectorAll("#content .tab-content .MsoTableGrid") || [],
-      )
-        .find((element) => element.textContent?.trim().match(/CAS/i))
-        ?.querySelectorAll("p");
+      const parsedHTML = createDOM(productResponse);
+      const metaTags = parsedHTML.getElementsByTagName("meta");
 
-      const dataRows = Array.from(dataGrid || []).map((n) => n.innerText);
-
-      const datagridInfo = chunk(dataRows, 2).reduce((acc, [key, value]) => {
-        if (key.match(/CAS/i)) {
-          acc.cas = findCAS(value.trim()) ?? undefined;
-        } else if (key.match(/TOTAL [A-Z]+ OF PRODUCT/i)) {
-          const qty = parseQuantity(value);
-          if (qty) {
-            Object.assign(acc, qty);
+      const productMeta = Array.from(metaTags).reduce(
+        (acc, meta) => {
+          const property = meta.getAttribute("property");
+          if (typeof property === "string") {
+            acc[property] = meta.getAttribute("content") ?? "";
           }
-        } else if (key.match(/GRADE/i)) {
-          acc.grade = value;
-        }
-        return acc;
-      }, {} as Partial<Product>);
+          return acc;
+        },
+        {} as Record<string, string>,
+      );
 
-      return builder.setData(datagridInfo);
+      this.logger.debug("productMeta", productMeta);
+
+      // @todo The typing on this seems to be incorrect, will require a global type override
+      const priceParsed = priceParser.parseFirst(
+        `${productMeta["product:price:amount"]} ${productMeta["product:price:currency"]}`,
+      ) as any;
+
+      if (priceParsed?.currency) {
+        product.setCurrencySymbol(priceParsed?.currency?.symbols?.at(0));
+      }
+
+      if (productMeta["product:price:amount"]) {
+        product.setPrice(productMeta["product:price:amount"]);
+      }
+
+      if (productMeta["product:price:currency"]) {
+        product.setCurrencyCode(productMeta["product:price:currency"]);
+      }
+
+      if (productMeta["product:retailer_item_id"]) {
+        product.setID(productMeta["product:retailer_item_id"]);
+      }
+
+      if (productMeta["og:description"]) {
+        product.setDescription(productMeta["og:description"]);
+      }
+
+      if (productMeta["product:availability"]) {
+        product.setAvailability(productMeta["product:availability"]);
+      }
+
+      const cas = firstMap(
+        (p) => findCAS(p),
+        [productMeta["og:title"], productMeta["og:description"]],
+      );
+
+      if (isCAS(cas)) {
+        product.setCAS(cas);
+      }
+
+      const qtyRaw = parsedHTML.querySelector(".CechaProduktu label span")?.textContent;
+      if (qtyRaw) {
+        const qty = parseQuantity(qtyRaw);
+        if (qty) {
+          product.setQuantity(qty);
+        }
+      }
+      this.logger.debug("product", product);
+      return product;
     });
   }
 

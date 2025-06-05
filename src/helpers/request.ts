@@ -170,4 +170,24 @@ export function urlencode(str: string): string {
     .replace(/%20/g, "+");
 }
 
+/**
+ * Converts an HTML string to a DOM Document object.
+ * @param html - The HTML string to convert
+ * @returns A DOM Document object
+ * @category Helpers
+ * @example
+ * ```typescript
+ * const doc = createDOM("<html><body><h1>Hello, world!</h1></body></html>");
+ * // Returns: Document object
+ * ```
+ */
+export function createDOM(html: string): Document {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, "text/html");
+  if (!doc) {
+    throw new Error("Failed to parse HTML");
+  }
+  return doc;
+}
+
 export { fetchDecorator, generateRequestHash, generateSimpleHash } from "./fetch";

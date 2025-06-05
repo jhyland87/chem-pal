@@ -154,6 +154,65 @@ export default class ProductBuilder<T extends Product> {
   }
 
   /**
+   * Sets the price for the product. This is useful for if the price and currency are easier
+   * to add separately (eg: getting the currency code is done in a different request handler)
+   * @param price - The price to set
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setPrice(123.34);
+   * ```
+   */
+  setPrice(price: number | string): ProductBuilder<T> {
+    if (typeof price !== "number" && typeof price !== "string") {
+      this.logger.warn(`setPrice| Invalid price: ${price}`);
+      return this;
+    }
+    this.product.price = Number(price);
+    return this;
+  }
+
+  /**
+   * Sets the currency symbol for the product. This is useful for if the price and currency are easier
+   * to add separately (eg: getting the currency code is done in a different request handler).
+   * If no currency symbol is set, then it will be inferred from the currencyCode
+   * @param sign - The currency symbol to set
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setCurrencySymbol('$');
+   * ```
+   */
+  setCurrencySymbol(sign: CurrencySymbol): ProductBuilder<T> {
+    if (typeof sign !== "string") {
+      console.warn(`setCurrencySymbol| Invalid currency symbol: ${sign}`);
+      return this;
+    }
+    this.product.currencySymbol = sign;
+    return this;
+  }
+
+  /**
+   * Sets the currency code for the product. This is useful for if the price and currency are easier
+   * to add separately (eg: getting the currency code is done in a different request handler).
+   * @param code - The currency code to set
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setCurrencyCode('USD');
+   * ```
+   */
+  setCurrencyCode(code: CurrencyCode): ProductBuilder<T> {
+    if (typeof code !== "string") {
+      console.warn(`setCurrencyCode| Invalid currency code: ${code}`);
+      return this;
+    }
+
+    this.product.currencyCode = code;
+    return this;
+  }
+
+  /**
    * Sets the pricing information for the product including price and currency details when given a parsedPrice object
    * @overload
    * @param price - ParsedPrice instance
@@ -319,31 +378,15 @@ export default class ProductBuilder<T extends Product> {
     return this;
   }
 
-  setCurrencySymbol(sign: CurrencySymbol): ProductBuilder<T> {
-    if (typeof sign !== "string") {
-      console.warn(`setCurrencySymbol| Invalid currency symbol: ${sign}`);
-      return this;
-    }
-    this.product.currencySymbol = sign;
-    return this;
-  }
-
-  setCurrencyCode(code: CurrencyCode): ProductBuilder<T> {
-    if (typeof code !== "string") {
-      console.warn(`setCurrencyCode| Invalid currency code: ${code}`);
-      return this;
-    }
-
-    this.product.currencyCode = code;
-    return this;
-  }
-
   /**
    * Sets the unit of measure for the product.
    *
    * @param uom - The unit of measure for the product
    * @returns The builder instance for method chaining
    * @example
+   * ```typescript
+   * builder.setUOM('g');
+   * ```
    */
   setUOM(uom: string): ProductBuilder<T> {
     if (typeof uom === "string" && uom.trim().length > 0) {
@@ -440,10 +483,10 @@ export default class ProductBuilder<T extends Product> {
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
-   * builder.setId(12345);
+   * builder.setID(12345);
    * ```
    */
-  setId(id?: number | string): ProductBuilder<T> {
+  setID(id?: number | string): ProductBuilder<T> {
     if (id) {
       this.product.id = id as T["id"];
     }

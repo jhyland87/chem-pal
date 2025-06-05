@@ -216,7 +216,7 @@ export default class SupplierLaboratoriumDiscounter
         //.addRawData(product)
         .setBasicInfo(product.title, product.url, this.supplierName)
         .setDescription(product.description)
-        .setId(product.id)
+        .setID(product.id)
         .setAvailability(product.available)
         .setSku(product.sku)
         .setUUID(product.code)

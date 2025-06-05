@@ -338,7 +338,7 @@ export default class SupplierCarolina
           this.logger.warn("No product ID found");
           return;
         }
-        builder.setId(productId);
+        builder.setID(productId);
 
         let productPrice;
 
