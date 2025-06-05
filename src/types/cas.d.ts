@@ -55,7 +55,7 @@ declare global {
               : Trunc<SA, [0, 0, 0, 0, 0, 0, 0]>,
           Len<SB> extends 0 ? "00" : Len<SB> extends 1 ? `${SB}0` : Trunc<SB, [0, 0]>
         >
-      : `${string}-${string}-${string} `;
+      : `${string}-${string}-${string}`;
 }
 
 // This export is needed to make the file a module

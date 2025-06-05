@@ -48,6 +48,18 @@ declare global {
     headers?: Maybe<Record<string, string | number | boolean>>;
   }
 
+  /**
+   * @description Type for request parameters.
+   * @example
+   * ```typescript
+   * const params: RequestParams = {
+   *   limit: 10,
+   *   offset: 0,
+   *   sort: "name",
+   *   filter: "category:chemicals",
+   * };
+   * ```
+   */
   interface RequestParams extends Record<string, unknown> {
     [key: string]: unknown;
   }

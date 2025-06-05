@@ -8,24 +8,14 @@ import { isMinimalProduct, isProduct, isUOM } from "@/utils/typeGuards/common";
 import { isAvailability, isValidVariant } from "@/utils/typeGuards/productbuilder";
 
 /**
- * Product builder utility class for building product data up over different requests
+ * Builder class for constructing Product objects with a fluent interface.
+ * Implements the Builder pattern to handle complex product construction with optional fields
+ * and data validation.
  *
  * @remarks
  * This is a utility class for building product data up over different requests.
  * It is used to build the product data up over different requests, and then return a complete
  * product object.
- * @category Utils
- * @example
- * ```typescript
- * const builder = new ProductBuilder<Product>('https://example.com');
- * const product = await builder.build();
- * ```
- */
-
-/**
- * Builder class for constructing Product objects with a fluent interface.
- * Implements the Builder pattern to handle complex product construction with optional fields
- * and data validation.
  *
  * @category Utils
  * @summary

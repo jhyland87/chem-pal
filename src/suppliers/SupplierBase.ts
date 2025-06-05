@@ -16,7 +16,7 @@ import { type JsonValue } from "type-fest";
  * Metadata about cached results including timestamp and version information.
  * This helps determine if cached data is stale or needs to be refreshed.
  */
-interface CacheMetadata {
+export interface CacheMetadata {
   /** When the data was cached */
   cachedAt: number;
   /** Version of the cache format - useful for cache invalidation */
@@ -34,7 +34,7 @@ interface CacheMetadata {
 /**
  * Type for cached data including the results and metadata
  */
-interface CachedData<T> {
+export interface CachedData<T> {
   /** The actual cached results */
   data: T[];
   /** Metadata about the cache entry */

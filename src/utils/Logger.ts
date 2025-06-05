@@ -1,4 +1,26 @@
 /**
+ * Available logging levels in ascending order of severity:
+ * DEBUG → INFO → WARN → ERROR
+ *
+ * @category Utils
+ * @example
+ * ```typescript
+ * const logger = new Logger('App');
+ * logger.debug('This is a debug message');
+ * ```
+ */
+export enum LogLevel {
+  /** Detailed information for debugging purposes */
+  DEBUG = "debug",
+  /** General information about program execution */
+  INFO = "info",
+  /** Potentially harmful situations that don't affect program execution */
+  WARN = "warn",
+  /** Error conditions that affect program execution */
+  ERROR = "error",
+}
+
+/**
  * A flexible logging utility that supports different log levels and prefixed output.
  *
  * @remarks
@@ -18,46 +40,6 @@
  * @category Utils
  * @summary
  * A simple logger that works on both the commandline and in the browser, and can directly replace the console object (for most cases).
- * @example
- * ```typescript
- * // Create a logger that automatically syncs with environment variables
- * const envLogger = new Logger('App');
- * // LOG_LEVEL=DEBUG
- * envLogger.debug('Will show if LOG_LEVEL is DEBUG');  // Shows
- * // LOG_LEVEL=INFO
- * envLogger.debug('Will not show if LOG_LEVEL is INFO'); // Hidden
- *
- * // Create a logger with a fixed log level (ignores environment)
- * const fixedLogger = new Logger('API', LogLevel.DEBUG);
- * fixedLogger.debug('Always shows regardless of LOG_LEVEL');
- *
- * // Switch from environment sync to fixed level
- * envLogger.setLogLevel(LogLevel.WARN);  // Now ignores LOG_LEVEL changes
- * ```
- */
-
-/**
- * Available logging levels in ascending order of severity:
- * DEBUG → INFO → WARN → ERROR
- * @category Utils
- */
-export enum LogLevel {
-  /** Detailed information for debugging purposes */
-  DEBUG = "debug",
-  /** General information about program execution */
-  INFO = "info",
-  /** Potentially harmful situations that don't affect program execution */
-  WARN = "warn",
-  /** Error conditions that affect program execution */
-  ERROR = "error",
-}
-
-/**
- * The logger class.
- *
- * @summary
- * A simple logger that works on both the commandline and in the browser, and can directly replace the console object (for most cases).
- * @category Utils
  * @example
  * ```typescript
  * // Create a logger that automatically syncs with environment variables

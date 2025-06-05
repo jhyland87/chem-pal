@@ -11,8 +11,6 @@ import {
 import { md5 } from "js-md5";
 import SupplierBase from "./SupplierBase";
 
-type RequestParams = Record<string, string | number | boolean>;
-
 class MacklinApiError extends Error {
   constructor(
     message: string,
