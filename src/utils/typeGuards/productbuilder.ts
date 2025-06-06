@@ -29,7 +29,7 @@ import { AVAILABILITY } from "@/constants/common";
 export function isAvailability(availability: unknown): availability is AVAILABILITY {
   return (
     typeof availability === "string" &&
-    Object.values(AVAILABILITY).includes(availability as AVAILABILITY)
+    Object.values(AVAILABILITY).includes(availability.toLowerCase() as AVAILABILITY)
   );
 }
 

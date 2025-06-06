@@ -1,14 +1,14 @@
 {
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-    "target": "ES2021",
+    "target": "ES2024",
     "strictNullChecks": true,
     "useDefineForClassFields": true,
     "resolveJsonModule": true,
     "allowUmdGlobalAccess": true,
     "esModuleInterop": true,
     "lib": [
-      "ES2021",
+      "ES2024",
       "DOM",
       "DOM.Iterable"
     ],

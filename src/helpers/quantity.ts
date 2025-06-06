@@ -29,9 +29,10 @@ export function parseQuantity(value: string): QuantityObject | void {
   if (!value) return;
 
   const quantityPattern = new RegExp(
-    "(?<quantity>\\d[\\d.,]*)\\s?(?<uom>(?:milli|kilo|centi)?" +
-      "(?:ounce|g(?:allon|ram|al)|pound|quart|qt|piece|pc|lb|" +
-      "(?:lit)[re]{2})s?|oz|k[g]?|g|l|[cm]?[gl])s?(?![A-Za-z])",
+    "(?<quantity>[1-9][0-9]*(?:[.,\\s]\\d+)*)\\s?" +
+      "(?<uom>(?:milli|kilo|centi)?(?:ounce|g(?:allon|ram|al)" +
+      "|pound|quart|qt|piece|pc|lb|(?:met|lit)[re]{2})s?" +
+      "|oz|k[mg]?|g|l|[cm]?[glm])s?(?![A-Za-z])",
     "i",
   );
   const quantityMatch = value.match(quantityPattern);
@@ -51,6 +52,39 @@ export function parseQuantity(value: string): QuantityObject | void {
   const quantity = parseFloat(parsedQuantity.replace(/,/g, ""));
 
   if (uom && quantity) return { quantity, uom } satisfies QuantityObject;
+}
+
+/**
+ * Strips the quantity from a string. This is useful for when some suppliers don't have products
+ * listed as variants, but instead have multiple products with a quantity in the name. Using this
+ * function, we can get the name of the product without the quantity, which may be identical to
+ * the other variations. Making it easy to group the products into a single listing with multiple
+ * variants.
+ * @category Helpers
+ * @param value - The string to strip the quantity from
+ * @returns The string with the quantity removed
+ * @example
+ * ```typescript
+ * stripQuantityFromString("Some reagent - 100g") // Returns "Some reagent -"
+ * stripQuantityFromString("120 grams, of some reagent") // Returns "of some reagent"
+ * stripQuantityFromString("43.4 ounce of some reagent") // Returns "ounce of some reagent"
+ * stripQuantityFromString("1200 milliliters of some reagent") // Returns "milliliters of some reagent"
+ * stripQuantityFromString("1.2 L of some reagent") // Returns "L of some reagent"
+ * ```
+ * @see https://regex101.com/delete/7/TztEFjdT1JIZPzagNUUUI991RznPQdvbzcgI
+ */
+export function stripQuantityFromString(value: string): string {
+  if (!value || typeof value !== "string") return value;
+
+  const quantityPattern = new RegExp(
+    "(?<quantity>[1-9][0-9]*(?:[.,\\s]\\d+)*)\\s?" +
+      "(?<uom>(?:milli|kilo|centi)?(?:ounce|g(?:allon|ram|al)" +
+      "|pound|quart|qt|piece|pc|lb|(?:met|lit)[re]{2})s?" +
+      "|oz|k[mg]?|g|l|[cm]?[glm])s?(?![A-Za-z])",
+    "ig",
+  );
+
+  return value.replace(quantityPattern, "").trim();
 }
 
 /**

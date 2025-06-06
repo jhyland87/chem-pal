@@ -6,6 +6,7 @@
 
 /**
  * Represents the availability of a product
+ * Keep values as lower case strings.
  */
 export enum AVAILABILITY {
   IN_STOCK = "in stock",
@@ -13,6 +14,7 @@ export enum AVAILABILITY {
   PRE_ORDER = "preorder",
   BACKORDER = "backorder",
   DISCONTINUED = "discontinued",
+  LARGE_QUANTITY = "large quantity",
 }
 
 /**
