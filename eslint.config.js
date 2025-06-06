@@ -19,8 +19,13 @@ export default tseslint.config(
       "build",
       "coverage",
       "node_modules",
-      "src/*/__tests__/*",
-      "src/*/__mocks__/*",
+      "**/__tests__/**",
+      "**/__mocks__/**",
+      "**/__features__/**",
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "**/*.spec.ts",
+      "**/*.spec.tsx",
     ],
   },
   {
@@ -35,7 +40,7 @@ export default tseslint.config(
       globals: globals.browser,
       parser: tseslint.parser,
       parserOptions: {
-        project: ["./tsconfig.json", "./tsconfig.app.json"],
+        project: ["./tsconfig.json", "./tsconfig.app.json", "./tsconfig.test.json"],
         tsconfigRootDir: __dirname,
         ecmaVersion: 2018,
         sourceType: "module",
@@ -110,17 +115,17 @@ export default tseslint.config(
           format: ["UPPER_CASE", "camelCase", "PascalCase"],
         },
       ],
+      /*
       "unicorn/filename-case": [
         "error",
         {
-          cases: {
-            camelCase: true,
-            pascalCase: true,
-            kebabCase: true,
-            upperCase: true,
-          },
+          case: "kebabCase",
+          ignore: [
+            "^[A-Z][a-z]+(?:[A-Z][a-z]+)*$", // PascalCase
+            "^[A-Z_]+$", // UPPER_CASE
+          ],
         },
-      ],
+      ],*/
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-unused-vars": "error",
       "@typescript-eslint/no-unused-expressions": "error",
@@ -131,6 +136,12 @@ export default tseslint.config(
       //"@typescript-eslint": tseslint,
       tsdoc: tsdoc,
       unicorn: unicorn,
+    },
+  },
+  {
+    files: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx", "**/__tests__/**"],
+    rules: {
+      "@typescript-eslint/naming-convention": "off",
     },
   },
 );

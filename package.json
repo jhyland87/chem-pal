@@ -47,6 +47,7 @@
     "loglevel-plugin-prefix": "^0.8.4",
     "lru-cache": "^11.1.0",
     "money": "^0.2.0",
+    "parse-price": "^1.1.8",
     "price-parser": "^3.4.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

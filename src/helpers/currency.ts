@@ -1,7 +1,7 @@
 //import type { ExchangeRateResponse, ParsedPrice } from "types";
 import { CURRENCY_CODE_MAP } from "@/constants/currency";
 import { LRUCache } from "lru-cache";
-
+import priceParser from "price-parser";
 /**
  * @group Helpers
  * @groupDescription Currency conversion and price parsing utilities for handling different currencies and formats.
@@ -92,6 +92,15 @@ export function getCurrencySymbol(price: string): CurrencySymbol | void {
  */
 export function parsePrice(price: string): ParsedPrice | void {
   if (typeof price !== "string") return;
+  const parsed = priceParser.parseFirst(price);
+
+  if (parsed)
+    return {
+      currencyCode: parsed.currencyCode.toUpperCase(),
+      currencySymbol: parsed.symbol,
+      price: parsed.floatValue,
+    } satisfies ParsedPrice;
+
   const currencySymbol = getCurrencySymbol(price) as CurrencySymbol;
   if (!currencySymbol) return;
 

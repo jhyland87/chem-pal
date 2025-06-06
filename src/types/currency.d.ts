@@ -1,6 +1,20 @@
 import { HTTP_STATUS_CODES } from "constants/app";
 import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "constants/currency";
 
+declare module "price-parser" {
+  interface Price {
+    value: number;
+    currencyCode: string;
+    floatValue: number;
+    symbol: string;
+    currency: {
+      code: string;
+      exponent: number;
+      symbols: string[];
+    };
+  }
+}
+
 declare global {
   /**
    * Represents a currency exchange rate as a number

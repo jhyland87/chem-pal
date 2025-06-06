@@ -129,4 +129,6 @@
   "openCoverage.coverageFilePath": "coverage/index.html",
   "vitest.shellType": "terminal",
   "testing.coverageToolbarEnabled": true,
+  "npm.packageManager": "pnpm",
+  "http.proxyStrictSSL": false
 }

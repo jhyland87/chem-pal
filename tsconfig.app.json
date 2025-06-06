@@ -5,6 +5,7 @@
     "strictNullChecks": true,
     "useDefineForClassFields": true,
     "resolveJsonModule": true,
+    "allowUmdGlobalAccess": true,
     "esModuleInterop": true,
     "lib": [
       "ES2021",
