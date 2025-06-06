@@ -8,8 +8,45 @@ import SupplierBase from "./SupplierBase";
 
 /**
  * Supplier implementation for Synthetika
- * @extends SupplierBase<SynthetikaProduct, Product>
- * @implements AsyncIterable<Product>
+ *
+ * @remarks
+ * Synthetika is a chemical supplier that sells a wide range of chemicals out of Poland.
+ * Their website seems to be using Shopper, which is a CMS popular with Polish ecommerce
+ * stores.
+ *
+ * Their Shopper instance does have a public facing API (at /webapo/front). Most
+ * of the pages are limited to 50 results, which may require pagination.
+ *
+ * Additionally, they don't seem to use "variants" very much. The same product with just
+ * slightly different quantities is just a different product, which fills up the results
+ * pretty quickly. I wrote the {@link groupVariants} function to group the products that are
+ * very similar all into a single product with an array of variants. This is done by removing
+ * the quantity from the title/name, then removing all spaces and dashes to give us a
+ * temporary unique identifier for the group. Then grouping that by that identifier.
+ *
+ * Links:
+ * - {@link https://synthetikaeu.com | Synthetika Home Page}
+ *
+ * Example API Endpoints:
+ *  - {@link https://synthetikaeu.com/webapi/front/en_US/search/short-list/products?text=acid&org=acid&perPage=20 | Short list (not so useful)}
+ *  - {@link https://synthetikaeu.com/webapi/front/en_US/collections/list/ | List collections}
+ *  - {@link https://synthetikaeu.com/webapi/front/en_US/collections/4/products/usd/ | Get products in collection}
+ *  - {@link https://synthetikaeu.com/webapi/front/en_US/categories/list/ | List categories}
+ *  - {@link https://synthetikaeu.com/webapi/front/en_US/products/usd/975 | Get product}
+ *  - {@link https://synthetikaeu.com/webapi/front/en_US/products/usd/975/stock | Get product options}
+ *  - {@link https://synthetikaeu.com/webapi/front/en_US/products/usd/main/?limit=50 | List main products}
+ *  - {@link https://synthetikaeu.com/webapi/front/en_US/products/usd/search/acid?limit=50 | Product search}
+ *  - {@link https://synthetikaeu.com/webapi/front/en_US/products/usd/list/108,110 | Get specific product IDs (multiple)}
+ *  - {@link https://synthetikaeu.com/webapi/front/en_US/categories/53/products/usd/?limit=50 | Get products from category}
+ *  - {@link https://synthetikaeu.com/webapi/front/en_US/categories/129/filters/usd/?limit=50 | Get filters from category}
+ * @category Suppliers
+ * @example
+ * ```typescript
+ * const supplier = new SupplierSynthetika();
+ * for await (const product of supplier) {
+ *   console.log(product);
+ * }
+ * ```
  */
 export default class SupplierSynthetika
   extends SupplierBase<SynthetikaProduct, Product>
