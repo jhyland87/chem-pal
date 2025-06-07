@@ -14,33 +14,43 @@ declare global {
   }
 
   interface AmbeedSearchResponseProduct {
+    source: number;
+    code: number;
     lang: string;
     value: {
       product_res: AmbeedProductObject[];
     };
     time: string;
-    code: number;
-    source: number;
   }
 
   interface AmbeedSearchParams {
-    params: Base64String;
+    keyword: string;
+    country?: string;
+    one_menu_id?: number;
+    one_menu_life_id?: number;
+    menu_id?: number;
   }
 
-  export interface ProductListByKeyword {
+  type Opaque<T, K extends string> = T & { __typename: K };
+
+  type Base64 = Opaque<string, "base64">;
+
+  type EncodedSearchParams = Base64;
+
+  export interface AmbeedProductListResponse {
     source: number;
-    value: Value;
+    value: AmbeedProductListResponseValue;
     code: number;
     time: string;
     lang: string;
   }
 
-  export interface Value {
+  export interface AmbeedProductListResponseValue {
     total: number;
     pagenum: number;
     pageindex: number;
     pagesize: number;
-    result: Result[];
+    result: AmbeedProductListResponseResultItem[];
     all_purity: unknown[];
     all_size: unknown[];
     repeat_num: number;
@@ -55,27 +65,27 @@ declare global {
     submenu_list: unknown[];
   }
 
-  export interface Result {
+  export interface AmbeedProductListResponseResultItem {
     p_proimg: string;
     p_id: string;
-    priceList: PriceList[];
-    p_moleweight: string;
+    priceList: AmbeedProductListResponsePriceList[];
+    p_moleweight?: string;
     p_proper_name3: string;
-    p_wm_max_quantity: PWmMaxQuantity;
+    p_wm_max_quantity?: string;
     p_am: string;
     s_url: string;
-    sort: number;
-    p_name_en: string;
-    p_boilingpoint: string;
-    p_purity: string;
-    p_is_life_science: boolean;
-    p_inchikey2: string;
+    sort?: number;
+    p_name_en?: string;
+    p_boilingpoint?: string;
+    p_purity?: string;
+    p_is_life_science?: boolean;
+    p_inchikey2?: string;
     p_cas: string;
-    p_bd: string;
-    p_inchikey: string;
-    p_moleform: string;
-    p_storage: string;
-    p_mdl: string;
+    p_bd?: string;
+    p_inchikey?: string;
+    p_moleform?: string;
+    p_storage?: string;
+    p_mdl?: string;
   }
 
   export enum PWmMaxQuantity {
@@ -84,7 +94,7 @@ declare global {
     The30G30Ml = "30g/30ml",
   }
 
-  export interface PriceList {
+  export interface AmbeedProductListResponsePriceList {
     pr_am: string;
     pr_usd: string;
     pr_id: number;

@@ -377,3 +377,26 @@ export function isCurrencyCode(code: unknown): code is CurrencyCode {
     typeof code === "string" && Object.values(CURRENCY_SYMBOL_MAP).includes(code as CurrencyCode)
   );
 }
+
+export function checkObjectStructure(data: unknown, requiredProps: Record<string, string>) {
+  if (typeof data !== "object" || data === null) {
+    console.warn("data is not an object - ", data);
+    return false;
+  }
+
+  const hasRequiredProps = Object.entries(requiredProps).every(([key, expectedType]) => {
+    const item = data as Record<string, unknown>;
+    if (!(key in item) || typeof item[key] !== expectedType) {
+      console.warn(`Invalid type for ${key}. Expected ${expectedType} but got ${typeof item[key]}`);
+      return false;
+    }
+    return true;
+  });
+
+  if (hasRequiredProps === false) {
+    console.warn("data is not AmbeedProductObject - ", data);
+    return false;
+  }
+
+  return true;
+}

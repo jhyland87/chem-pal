@@ -1,8 +1,6 @@
-import { AVAILABILITY } from "@/constants/common";
-import { findCAS } from "@/helpers/cas";
 import { mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
-import { isProductObject, isSearchResponseOk } from "@/utils/typeGuards/ambeed";
+import { assertIsAmbeedProductListResponse } from "@/utils/typeGuards/ambeed";
 import SupplierBase from "./SupplierBase";
 
 /**
@@ -64,12 +62,8 @@ export default class SupplierAmbeed
     /* eslint-enable */
   };
 
-  protected makeQueryParams(query: string): AmbeedSearchParams {
-    const encoded = JSON.stringify({ keyword: query });
-
-    return {
-      params: btoa(JSON.stringify({ params: btoa(encoded) })),
-    };
+  private makeQueryParams(query: string): Base64 {
+    return btoa(JSON.stringify({ keyword: query })) as Base64;
   }
 
   /**
@@ -86,20 +80,17 @@ export default class SupplierAmbeed
     const response: unknown = await this.httpGetJson({
       path: `/webapi/v1/searchquery`,
       params: {
-        params: btoa(JSON.stringify({ keyword: btoa(query) })),
+        params: this.makeQueryParams(query) as Base64,
       },
     });
 
-    if (!isSearchResponseOk(response)) {
-      this.logger.warn("Bad search response:", response);
-      return;
-    }
+    assertIsAmbeedProductListResponse(response);
 
-    const rawSearchResults = Object.values(response.collection.products);
+    const products = response.value.result;
 
-    const fuzzFiltered = this.fuzzyFilter<SearchResponseProduct>(query, rawSearchResults);
-    this.logger.info("fuzzFiltered:", fuzzFiltered);
-    return this.initProductBuilders(fuzzFiltered.slice(0, limit));
+    const rawSearchResults = this.fuzzyFilter<AmbeedProductListResponseResultItem>(query, products);
+
+    return this.initProductBuilders(rawSearchResults.slice(0, limit));
   }
 
   /**
@@ -107,8 +98,8 @@ export default class SupplierAmbeed
    * @param data - Product object from search response
    * @returns Title of the product
    */
-  protected titleSelector(data: SearchResponseProduct): string {
-    return data.title;
+  protected titleSelector(data: AmbeedProductListResponseResultItem): string {
+    return data.p_proper_name3;
   }
 
   /**
@@ -144,21 +135,15 @@ export default class SupplierAmbeed
    * ```
    */
   protected initProductBuilders(
-    data: LaboratoriumDiscounterSearchResponseProduct[],
+    data: AmbeedProductListResponseResultItem[],
   ): ProductBuilder<Product>[] {
     return mapDefined(data, (product) => {
       const productBuilder = new ProductBuilder(this.baseURL);
       productBuilder
         //.addRawData(product)
-        .setBasicInfo(product.title, product.url, this.supplierName)
-        .setDescription(product.description)
-        .setID(product.id)
-        .setAvailability(product.available)
-        .setSku(product.sku)
-        .setUUID(product.code)
-        //.setPricing(product.price.price, product?.currency as string, CURRENCY_SYMBOL_MAP.EUR)
-        .setQuantity(product.variant)
-        .setCAS(typeof product.content === "string" ? (findCAS(product.content) ?? "") : "");
+        .setBasicInfo(product.p_proper_name3, product.s_url, this.supplierName)
+        .setID(product.p_id)
+        .setCAS(product.p_cas);
       return productBuilder;
     });
   }
@@ -174,36 +159,13 @@ export default class SupplierAmbeed
           path: builder.get("url"),
           params,
         });
-        if (!productResponse || !isProductObject(productResponse)) {
-          this.logger.warn("Invalid product data - did not pass typeguard:", productResponse);
-          return builder;
-        }
-        const productData = productResponse.product;
-        const currency = productResponse.shop.currencies[productResponse.shop.currency];
-        builder.setPricing(productData.price.price, currency.code, currency.symbol);
-        if (typeof productData.variants === "object" && productData.variants !== null) {
-          for (const variant of Object.values(productData.variants) as VariantObject[]) {
-            if (variant.active === false) continue;
-            builder.addVariant({
-              id: variant.id,
-              uuid: variant.code,
-              sku: variant.sku,
-              title: variant.title,
-              price: variant.price.price,
-              availability: variant.stock
-                ? typeof variant.stock === "object"
-                  ? ((stock) => {
-                      if (stock.available) return AVAILABILITY.IN_STOCK;
-                      if (stock.on_stock) return AVAILABILITY.IN_STOCK;
-                      if (stock.allow_backorders) return AVAILABILITY.BACKORDER;
-                      return AVAILABILITY.OUT_OF_STOCK;
-                    })(variant.stock)
-                  : undefined
-                : undefined,
-            });
-          }
-        }
-        return builder;
+        assertIsAmbeedProductListResponse(productResponse);
+        const productData = productResponse.value.result;
+        builder.setPricing(
+          productData.p_price,
+          productData.p_currency,
+          productData.p_currency_symbol,
+        );
       },
       params,
     );
