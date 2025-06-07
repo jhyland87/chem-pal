@@ -174,30 +174,25 @@ export default class SupplierFactory<P extends Product> {
     );
 
     const queue = new Queue(concurrency, 100);
-    // For each supplier, start a task that returns its async generator
-    const supplierIterators: AsyncGenerator<P, void, P>[] = [];
-    for (const supplier of supplierInstances) {
-      await queue.run(async () => {
-        // Start the async generator for this supplier
-        supplierIterators.push(supplier.execute() as AsyncGenerator<P, void, P>);
-      });
-    }
+    const channel: P[] = [];
+    let doneCount = 0;
 
-    // Now merge all supplier iterators, yielding products as soon as any are ready
-    const running = new Set(supplierIterators);
-    while (running.size > 0) {
-      // Wait for the next product from any supplier
-      const nexts = Array.from(running).map(async (it) => {
-        const result = await it.next();
-        return { it, result };
+    supplierInstances.forEach((supplier) => {
+      queue.run(async () => {
+        const iterator = supplier.execute() as AsyncGenerator<P, void, P>;
+        for await (const product of iterator) {
+          channel.push(product);
+        }
+        doneCount++;
       });
-      const { it, result } = await Promise.race(nexts);
-      if (result.done) {
-        running.delete(it);
+    });
+
+    // Yield results as they come in, until all suppliers are done and the channel is empty
+    while (doneCount < supplierInstances.length || channel.length > 0) {
+      if (channel.length > 0) {
+        yield channel.shift()!;
       } else {
-        yield result.value;
-        // Output queue stats after yielding each product
-        console.log("Queue stats:", queue.stat());
+        await new Promise((resolve) => setTimeout(resolve, 25));
       }
     }
   }
