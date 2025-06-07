@@ -9,7 +9,7 @@ import SupplierBaseShopify from "./SupplierBaseShopify";
  *
  * @category Suppliers
  */
-export default class SupplierHbarSci extends SupplierBaseShopify implements AsyncIterable<Product> {
+export default class SupplierHbarSci extends SupplierBaseShopify implements ISupplier {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "SupplierHbarSci";
 

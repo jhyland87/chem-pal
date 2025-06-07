@@ -729,6 +729,21 @@ export default class ProductBuilder<T extends Product> {
   }
 
   /**
+   * Gets a specific variant from the product.
+   *
+   * @param index - The index of the variant to get
+   * @returns The variant object
+   * @example
+   * ```typescript
+   * const variant = builder.getVariant(0);
+   * console.log(variant); // { id: 1, title: '500g Package', price: 49.99, quantity: 500, uom: 'g' }
+   * ```
+   */
+  getVariant(index: number): Variant | undefined {
+    return this.product.variants?.[index];
+  }
+
+  /**
    * Converts a relative or partial URL to an absolute URL using the base URL.
    *
    * @param path - The URL or path to convert

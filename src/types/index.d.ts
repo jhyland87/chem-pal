@@ -3,6 +3,30 @@ import { Column, Row, RowData } from "@tanstack/react-table";
 import { CSSProperties } from "react";
 
 declare global {
+  // Custom types for unit of measurements
+  type WeightUnit = "kg" | "g" | "mg" | "lb" | "oz";
+  type VolumeUnit = "L" | "mL" | "gal" | "qt" | "pt" | "fl oz";
+  type LengthUnit = "m" | "cm" | "mm" | "in" | "ft" | "yd";
+  type TemperatureUnit = "C" | "F" | "K";
+  type PressureUnit = "atm" | "bar" | "psi" | "mmHg" | "inHg";
+  type TimeUnit = "s" | "min" | "h" | "d";
+  type AmountUnit = "mol" | "mmol" | "mol/L" | "mmol/L";
+
+  type WeightString = `${number}${WeightUnit}`;
+  type VolumeString = `${number}${VolumeUnit}`;
+  type LengthString = `${number}${LengthUnit}`;
+  type TemperatureString = `${number}${TemperatureUnit}`;
+  type PressureString = `${number}${PressureUnit}`;
+  type TimeUnitString = `${number}${TimeUnit}`;
+  type AmountString = `${number}${AmountUnit}`;
+
+  // One custom UOM type to rule them all.
+  type QuantityString =
+    | `${number}${WeightUnit}`
+    | `${number}${VolumeUnit}`
+    | `${number}${LengthUnit}`
+    | `${number}${AmountUnit}`;
+
   /**
    * Interface defining the required properties for a supplier.
    * This ensures all suppliers have the necessary readonly properties.
@@ -224,6 +248,18 @@ declare global {
      * @example 19.99
      */
     price?: number;
+
+    /**
+     * ISO currency code for the price
+     * @example "USD"
+     */
+    currencyCode?: CurrencyCode;
+
+    /**
+     * Display symbol for the currency
+     * @example "$"
+     */
+    currencySymbol?: CurrencySymbol;
 
     /**
      * Available quantity in stock

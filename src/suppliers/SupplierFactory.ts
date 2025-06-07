@@ -125,7 +125,7 @@ export default class SupplierFactory<P extends Product> {
       queue.run(async () => {
         try {
           for await (const product of supplier.execute()) {
-            allResults.push(product as unknown as P);
+            allResults.push(product);
           }
         } catch (e) {
           this.logger.error("Error executing supplier", { error: e, supplier });
@@ -154,7 +154,7 @@ export default class SupplierFactory<P extends Product> {
    * }
    * ```
    */
-  public async *executeAllStream(concurrency: number = 3): AsyncGenerator<P, void, P> {
+  public async *executeAllStream(concurrency: number = 3): AsyncGenerator<P, void, undefined> {
     const supplierInstances: SupplierBase<unknown, P>[] = Object.entries(suppliers).reduce(
       (result: SupplierBase<unknown, P>[], [supplierClassName, supplierClass]) => {
         if (this.suppliers.length === 0 || this.suppliers.includes(supplierClassName)) {
@@ -179,7 +179,7 @@ export default class SupplierFactory<P extends Product> {
 
     supplierInstances.forEach((supplier) => {
       queue.run(async () => {
-        const iterator = supplier.execute() as AsyncGenerator<P, void, P>;
+        const iterator = supplier.execute() as AsyncGenerator<P, void, undefined>;
         for await (const product of iterator) {
           channel.push(product);
         }

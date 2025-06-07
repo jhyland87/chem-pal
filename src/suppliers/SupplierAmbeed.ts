@@ -1,3 +1,5 @@
+import { parsePrice } from "@/helpers/currency";
+import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import { assertIsAmbeedProductListResponse } from "@/utils/typeGuards/ambeed";
@@ -62,8 +64,144 @@ export default class SupplierAmbeed
     /* eslint-enable */
   };
 
-  private makeQueryParams(query: string): Base64 {
+  protected encodedPriceChars: Map<string, string> = new Map([
+    ["\u00b6", "."],
+    ["\u0142", "$"],
+    ["\u00ca", "0"],
+    ["\u00c7", "1"],
+    ["\u00cb", "2"],
+    ["\u00a7", "3"],
+    ["\u00cd", "4"],
+    ["\u00ff", "5"],
+    ["\u00f2", "6"],
+    ["\u010f", "7"],
+    ["\u00f3", "8"],
+    ["\u00ee", "9"],
+  ]);
+
+  protected makeQueryParams(query: string): Base64 {
     return btoa(JSON.stringify({ keyword: query })) as Base64;
+  }
+
+  /**
+   * Ambeed encodes all the prices in a different font (newwebfont/am-new.woff) than the rest
+   * of the page which is stored as unicode characters in the API and their weird font
+   * characters in the source, but displays just fine in the UI. For example, the API response
+   * will have the price as `\u0142\u00c7\u00cd\u00a7\u00b6\u00ca\u00ca`, which in the source
+   * is `łÇÍ§¶ÊÊ`, but in the UI is displayed as `$143.00`.
+   *
+   * This conersion is just a simple character map lookup, which I have stored at this.encodedPriceChars.
+   *
+   * @param encoded - The encoded price string
+   * @returns The decoded price string
+   * @example
+   * ```js
+   * console.log(
+   *    this.decodePrice("\u0142\u00c7\u00cd\u00a7\u00b6\u00ca\u00ca"),
+   *    this.decodePrice("\u0142\u00a7\u00f2\u00b6\u00ca\u00ca"),
+   *    this.decodePrice("\u0142\u00c7\u00ff\u00b6\u00ca\u00ca"),
+   *    this.decodePrice("\u0142\u00a7\u00cd\u010f\u00b6\u00ca\u00ca"),
+   *    this.decodePrice("\u0142\u00c7\u00ca\u00b6\u00ca\u00ca")
+   * )
+   * // $143.00 $36.00 $15.00 $347.00 $10.00
+   * ```
+   */
+  protected decodePrice(encoded: string): string {
+    return encoded
+      .split("")
+      .map((char) => this.encodedPriceChars.get(char) || "")
+      .join("");
+  }
+
+  /**
+   * Decodes the price object values, which are encoded in the same font as the prices in the UI.
+   * @param priceData - The price object to decode
+   * @returns The decoded price object
+   * @example
+   * ```js
+   * console.log(this.decodePriceObjectValues({
+   *    pr_usd: "\u0142\u00c7\u00cd\u00a7\u00b6\u00ca\u00ca",
+   *    pr_am: "A1144350",
+   *    vip_usd: "\u0142\u00a7\u00f2\u00b6\u00ca\u00ca",
+   *    discount_usd: "\u0142\u00c7\u00ff\u00b6\u00ca\u00ca",
+   *    pr_size: "1mg",
+   *    pr_id: 3255116
+   * }))
+   * // {
+   * //   pr_usd: "$143.00",
+   * //   pr_am: "A1144350",
+   * //   vip_usd: "$36.00",
+   * //   discount_usd: "$15.00",
+   * //   pr_size: "1mg",
+   * //   pr_id: 3255116
+   * // }
+   * ```
+   */
+  protected decodePriceObjectValues(
+    priceData: AmbeedProductListResponsePriceList,
+  ): AmbeedProductListResponsePriceList {
+    return {
+      ...priceData,
+      /* eslint-disable */
+      pr_usd: this.decodePrice(priceData.pr_usd),
+      vip_usd: this.decodePrice(priceData.vip_usd),
+      discount_usd: this.decodePrice(priceData.discount_usd),
+      /* eslint-enable */
+    };
+  }
+
+  /**
+   * Sanitizes the searchable fields of a product, removing the <em></em> tags and decoding the prices.
+   * @param product - The product to sanitize
+   * @returns The sanitized product
+   * @example
+   * ```js
+   * console.log(this.sanitizeSearchableFields({
+   *    p_name_en: "2-Ethoxyacetic <em>acid</em>",
+   *    p_proper_name3: "2-Ethoxyacetic <em>acid</em>",
+   *    p_cas: "108-24-7",
+   *    priceList: [
+   *      {
+   *        pr_usd: "\u0142\u00c7\u00cd\u00a7\u00b6\u00ca\u00ca",
+   *        pr_am: "A1144350",
+   *        vip_usd: "\u0142\u00a7\u00f2\u00b6\u00ca\u00ca",
+   *        discount_usd: "\u0142\u00c7\u00ff\u00b6\u00ca\u00ca",
+   *        pr_size: "1mg",
+   *        pr_id: 3255116
+   *      }
+   *    ]
+   * }))
+   * // {
+   * //   p_name_en: "2-Ethoxyacetic acid",
+   * //   p_proper_name3: "2-Ethoxyacetic acid",
+   * //   p_cas: "108-24-7",
+   * //   priceList: [
+   * //     {
+   * //       pr_usd: "$143.00",
+   * //       pr_am: "A1144350",
+   * //       vip_usd: "$36.00",
+   * //       discount_usd: "$15.00",
+   * //       pr_size: "1mg",
+   * //       pr_id: 3255116
+   * //     }
+   * //   ]
+   * // }
+   * ```
+   */
+  protected sanitizeSearchableFields(
+    product: AmbeedProductListResponseResultItem,
+  ): AmbeedProductListResponseResultItem {
+    if (product.priceList) {
+      product.priceList = product.priceList.map(this.decodePriceObjectValues.bind(this));
+    }
+    return {
+      ...product,
+      /* eslint-disable */
+      p_name_en: product.p_name_en?.replace(/<\/?em>/g, ""),
+      p_proper_name3: product.p_proper_name3?.replace(/<\/?em>/g, ""),
+      p_cas: product.p_cas?.replace(/<\/?em>/g, ""),
+      /* eslint-enable */
+    };
   }
 
   /**
@@ -78,7 +216,7 @@ export default class SupplierAmbeed
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
     const response: unknown = await this.httpGetJson({
-      path: `/webapi/v1/searchquery`,
+      path: "webapi/v1/productlistbykeyword",
       params: {
         params: this.makeQueryParams(query) as Base64,
       },
@@ -86,11 +224,12 @@ export default class SupplierAmbeed
 
     assertIsAmbeedProductListResponse(response);
 
-    const products = response.value.result;
+    // Sanitize the products, removing the <em></em> tags and decoding the prices.
+    const products = response.value.result.map(this.sanitizeSearchableFields.bind(this));
 
-    const rawSearchResults = this.fuzzyFilter<AmbeedProductListResponseResultItem>(query, products);
+    const fuzzedResults = this.fuzzyFilter<AmbeedProductListResponseResultItem>(query, products);
 
-    return this.initProductBuilders(rawSearchResults.slice(0, limit));
+    return this.initProductBuilders(fuzzedResults.slice(0, limit));
   }
 
   /**
@@ -139,35 +278,74 @@ export default class SupplierAmbeed
   ): ProductBuilder<Product>[] {
     return mapDefined(data, (product) => {
       const productBuilder = new ProductBuilder(this.baseURL);
-      productBuilder
-        //.addRawData(product)
-        .setBasicInfo(product.p_proper_name3, product.s_url, this.supplierName)
+
+      if (typeof product.priceList?.[0]?.pr_usd !== "string") {
+        this.logger.warn(`Ambeed product ${product.p_proper_name3} has no price`, product);
+        return;
+      }
+
+      if (typeof product.priceList?.[0]?.pr_size !== "string") {
+        this.logger.warn(`Ambeed product ${product.p_proper_name3} has no size`, product);
+        return;
+      }
+
+      if (typeof product.p_cas === "string") {
+        productBuilder.setCAS(product.p_cas);
+      }
+
+      for (const variant of product.priceList) {
+        const parsedPrice = parsePrice(variant.pr_usd) as ParsedPrice;
+        const quantity = parseQuantity(variant.pr_size as QuantityString);
+
+        if (!parsedPrice || !quantity) {
+          this.logger.warn(
+            `Failed to parse Ambeed product price for ${product.p_proper_name3}`,
+            product,
+            variant,
+          );
+          continue;
+        }
+
+        productBuilder.addVariant({
+          price: parsedPrice.price,
+          currencyCode: parsedPrice.currencyCode,
+          currencySymbol: parsedPrice.currencySymbol,
+          quantity: quantity.quantity,
+          uom: quantity.uom as string,
+          sku: variant.pr_am,
+          id: variant.pr_id.toString(),
+        });
+      }
+
+      // Use the first variant as the main product. The ID will be wrong, but well overwrite it later.
+      const mainVariant = productBuilder.getVariant(0);
+
+      if (!mainVariant) {
+        this.logger.warn(`Ambeed product ${product.p_proper_name3} has no main variant`, product);
+        return;
+      }
+
+      productBuilder.setData(mainVariant as Partial<Product>);
+
+      return productBuilder
+        .setBasicInfo(product.p_proper_name3, `/products/${product.s_url}`, this.supplierName)
         .setID(product.p_id)
-        .setCAS(product.p_cas);
-      return productBuilder;
+        .setUUID(product.p_am)
+        .setDescription(product.p_name_en)
+        .setSupplierCountry(this.country)
+        .setSupplierShipping(this.shipping);
     });
   }
 
+  /**
+   * No real need to get the product data on a second page, the initial product listing
+   * page has enough data.
+   * @param product - The product builder to get data for
+   * @returns The product builder
+   */
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    const params = { format: "json" };
-    return this.getProductDataWithCache(
-      product,
-      async (builder) => {
-        const productResponse = await this.httpGetJson({
-          path: builder.get("url"),
-          params,
-        });
-        assertIsAmbeedProductListResponse(productResponse);
-        const productData = productResponse.value.result;
-        builder.setPricing(
-          productData.p_price,
-          productData.p_currency,
-          productData.p_currency_symbol,
-        );
-      },
-      params,
-    );
+    return product;
   }
 }

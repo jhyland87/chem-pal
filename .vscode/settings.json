@@ -117,8 +117,6 @@
     "editor.defaultFormatter": "vscode.json-language-features"
   },
   "typescript.suggest.completeJSDocs": false,
-  "jsdoc-generator.generateDescriptionForParameters": false,
-  "jsdoc-generator.includeTypes": false,
   "javascript.suggest.completeJSDocs": true,
   "[graphql]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -129,6 +127,5 @@
   "openCoverage.coverageFilePath": "coverage/index.html",
   "vitest.shellType": "terminal",
   "testing.coverageToolbarEnabled": true,
-  "npm.packageManager": "pnpm",
-  "http.proxyStrictSSL": false
+  "npm.packageManager": "pnpm"
 }

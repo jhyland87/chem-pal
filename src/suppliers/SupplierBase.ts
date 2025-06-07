@@ -943,7 +943,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * This method is used to execute the supplier's search query and return the results.
    * @returns Promise resolving to an array of products
    */
-  public async *execute(): AsyncGenerator<T, void, T> {
+  public async *execute(): AsyncGenerator<T, void, undefined> {
     await this.setup();
     const results = await this.queryProductsWithCache(this.query, this.limit);
     if (!results || results.length === 0) {

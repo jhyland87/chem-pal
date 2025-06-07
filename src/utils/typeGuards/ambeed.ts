@@ -1,16 +1,25 @@
 import { checkObjectStructure } from "./common";
 
+/**
+ * Type guard to check if the given data is an AmbeedProductListResponse
+ * @param data - The data to check
+ * @returns True if the data matches the AmbeedProductListResponse structure
+ */
 export function isAmbeedProductListResponse(data: unknown): data is AmbeedProductListResponse {
   return checkObjectStructure(data, {
-    /* eslint-disable */
     source: "number",
     code: "number",
     lang: "string",
     value: "object",
     time: "string",
-    /* eslint-enable */
   });
 }
+
+/**
+ * Type assertion to ensure the given data is an AmbeedProductListResponse
+ * @param data - The data to assert
+ * @throws Error if the data is not an AmbeedProductListResponse
+ */
 export function assertIsAmbeedProductListResponse(
   data: unknown,
 ): asserts data is AmbeedProductListResponse {
@@ -19,20 +28,28 @@ export function assertIsAmbeedProductListResponse(
   }
 }
 
+/**
+ * Type guard to check if the given data is an AmbeedProductListResponseValue
+ * @param data - The data to check
+ * @returns True if the data matches the AmbeedProductListResponseValue structure
+ */
 export function isAmbeedProductListResponseValue(
   data: unknown,
 ): data is AmbeedProductListResponseValue {
   return checkObjectStructure(data, {
-    /* eslint-disable */
     total: "number",
     pagenum: "number",
     pageindex: "number",
     pagesize: "number",
     list: "array",
-    /* eslint-enable */
   });
 }
 
+/**
+ * Type guard to check if the given data is an AmbeedProductListResponseResultItem
+ * @param data - The data to check
+ * @returns True if the data matches the AmbeedProductListResponseResultItem structure
+ */
 export function isAmbeedProductListResponseResultItem(
   data: unknown,
 ): data is AmbeedProductListResponseResultItem {
@@ -52,6 +69,11 @@ export function isAmbeedProductListResponseResultItem(
   });
 }
 
+/**
+ * Type guard to check if the given data is an AmbeedProductListResponsePriceList
+ * @param data - The data to check
+ * @returns True if the data matches the AmbeedProductListResponsePriceList structure
+ */
 export function isAmbeedProductListResponsePriceList(
   data: unknown,
 ): data is AmbeedProductListResponsePriceList {
@@ -68,14 +90,17 @@ export function isAmbeedProductListResponsePriceList(
   });
 }
 
+/**
+ * Type guard to check if the given data is an AmbeedSearchResponseProduct
+ * @param data - The data to check
+ * @returns True if the data matches the AmbeedSearchResponseProduct structure
+ */
 export function isAmbeedSearchResponseProduct(data: unknown): data is AmbeedSearchResponseProduct {
   return checkObjectStructure(data, {
-    /* eslint-disable */
     source: "number",
     code: "number",
     lang: "string",
     value: "object",
     time: "string",
-    /* eslint-enable */
   });
 }

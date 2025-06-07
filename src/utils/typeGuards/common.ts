@@ -378,6 +378,27 @@ export function isCurrencyCode(code: unknown): code is CurrencyCode {
   );
 }
 
+/**
+ * Type guard to validate if a value has the minimal required properties of a Product.
+ * This is a less strict validation than isProduct as it only checks for the minimum required fields.
+ * Useful for validating partial product data during construction.
+ *
+ * @param product - The value to validate
+ * @param requiredProps - The required properties and their expected types
+ * @returns Type predicate indicating if the value has minimal required product properties
+ * @typeguard
+ *
+ * @example
+ * ```typescript
+ * if ( ! checkObjectStructure(data, {
+ *   title: "string",
+ *   price: "number",
+ *   quantity: "number"
+ * })) {
+ *   throw new Error("data is not complete - " + JSON.stringify(data));
+ * }
+ * ```
+ */
 export function checkObjectStructure(data: unknown, requiredProps: Record<string, string>) {
   if (typeof data !== "object" || data === null) {
     console.warn("data is not an object - ", data);

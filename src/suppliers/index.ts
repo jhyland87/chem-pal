@@ -21,6 +21,7 @@
 
 export { default as SupplierBioFuranChem } from "./SupplierBiofuranChem";
 //export { default as SupplierBunmurraLabs } from "./supplierBunmurraLabs";
+export { default as SupplierAmbeed } from "./SupplierAmbeed";
 export { default as SupplierCarolina } from "./SupplierCarolina";
 export { default as SupplierCarolinaChemical } from "./SupplierCarolinaChemical";
 export { default as SupplierChemsavers } from "./SupplierChemsavers";
