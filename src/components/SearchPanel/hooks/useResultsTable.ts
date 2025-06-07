@@ -37,6 +37,10 @@ export function useResultsTable({
       columnFilters: columnFilterFns[0],
     },
     onColumnFiltersChange: columnFilterFns[1],
+    getSubRows: (row) => {
+      console.log("getSubRows", row);
+      return row?.variants as Product[];
+    },
     getRowCanExpand: (row: Row<Product>) => getRowCanExpand(row),
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),

@@ -238,6 +238,12 @@ declare global {
     title?: string;
 
     /**
+     * Description of the variant
+     * @example "Sodium Chloride 500g"
+     */
+    description?: string;
+
+    /**
      * Unit of measurement for the variant quantity
      * @example "g"
      */
@@ -344,6 +350,12 @@ declare global {
      * @example "IN_STOCK"
      */
     availability?: AVAILABILITY;
+
+    /**
+     * Attributes of the variant
+     * @example `[{ name: "Size", value: "500g" }]`
+     */
+    attributes?: { name: string; value: string }[];
   }
 
   /**

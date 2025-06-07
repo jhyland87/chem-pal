@@ -1,7 +1,7 @@
 import { useAppContext } from "@/context";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
-import { Column, flexRender, Row } from "@tanstack/react-table";
+import { Column, flexRender } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
 import { CSSProperties, Fragment, ReactElement, useEffect, useState } from "react";
 import LoadingBackdrop from "../LoadingBackdrop";
@@ -141,13 +141,13 @@ export default function ResultsTable({
                             );
                           })}
                         </tr>
-                        {row.getIsExpanded() && (
+                        {/*row.getIsExpanded() && (
                           <tr>
                             <td colSpan={row.getVisibleCells().length}>
                               {renderVariants({ row: row as Row<Product> })}
                             </td>
                           </tr>
-                        )}
+                        )*/}
                       </Fragment>
                     );
                   })}

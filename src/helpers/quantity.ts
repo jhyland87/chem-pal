@@ -29,7 +29,7 @@ export function parseQuantity(value: string): QuantityObject | void {
   if (!value) return;
 
   const quantityPattern = new RegExp(
-    "(?<quantity>\\d{1,3}(?:[.,\\s]\\d+)*)\\s?" +
+    "(?<quantity>\\d+(?:[.,\\s]\\d+)*)\\s?" +
       "(?<uom>(?:milli|kilo|centi)?(?:ounce|g(?:allon|ram|al)" +
       "|pound|quart|qt|piece|pc|lb|(?:met|lit)[re]{2})s?" +
       "|oz|k[mg]?|g|l|[cm]?[glm])s?(?![A-Za-z])",

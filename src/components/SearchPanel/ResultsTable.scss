@@ -1,7 +1,7 @@
 @use "./SearchPanel.scss";
 
 #search-results-table-container {
-  min-height: 369px;
+  //min-height: 369px;
   width: 100%;
   //padding: 0px;
   table.search-results {
@@ -9,7 +9,7 @@
       vertical-align: top;
     }
     width: 100%;
-    min-height: 275px;
+    //min-height: 275px;
     tr {
       td,
       tr {

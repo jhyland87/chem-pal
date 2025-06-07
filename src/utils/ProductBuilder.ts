@@ -4,7 +4,7 @@ import { isParsedPrice, parsePrice, toUSD } from "@/helpers/currency";
 import { isQuantityObject, parseQuantity, toBaseQuantity } from "@/helpers/quantity";
 import { findFormulaInHtml } from "@/helpers/science";
 import Logger from "@/utils/Logger";
-import { isMinimalProduct, isProduct, isUOM } from "@/utils/typeGuards/common";
+import { isMinimalProduct, isProduct } from "@/utils/typeGuards/common";
 import { isAvailability, isValidVariant } from "@/utils/typeGuards/productbuilder";
 
 /**
@@ -806,26 +806,45 @@ export default class ProductBuilder<T extends Product> {
 
       // Process each variant
       for (const variant of this.product.variants ?? []) {
-        if (
-          "quantity" in variant &&
-          "uom" in variant &&
-          variant.quantity &&
-          isUOM(variant.uom) &&
-          typeof variant.price === "number"
-        ) {
-          const baseQuantity = toBaseQuantity(variant.quantity, variant.uom);
-          if (baseQuantity) {
-            variant.baseQuantity = baseQuantity;
-          }
+        if ("quantity" in variant === false || !variant.quantity) {
+          this.logger.warn("Skipping variant, no quantity found", variant);
+          continue;
         }
 
-        if (typeof variant.price === "number" && this.product.currencyCode !== "USD") {
-          variant.usdPrice = await toUSD(variant.price, this.product.currencyCode ?? "USD");
+        if ("price" in variant === false || !variant.price) {
+          this.logger.warn("Skipping variant, no price found", variant);
+          continue;
+        }
+
+        if ("usdPrice" in variant === false || !variant.usdPrice) {
+          variant.usdPrice = await toUSD(variant.price, this.product.currencyCode);
+        }
+
+        if ("uom" in variant === false || !variant.uom) {
+          variant.uom = this.product.uom;
+        }
+
+        // Sometimes variants don't have their own titles, they're just a dropdown on
+        // the same page, so if that's the case then we should append the quantity to
+        // the title to differentiate them.
+        if (
+          "title" in variant === false ||
+          !variant.title?.trim()?.length ||
+          variant.title === this.product.title
+        ) {
+          variant.title = `${this.product.title} - ${variant.quantity}${variant.uom}`;
         }
 
         if (variant.url) {
           variant.url = this.href(variant.url);
         }
+
+        // Re-populate the variant using the parent product properties as defaults and the current
+        // values as overrides.
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { variants: _, ...defaults } = this.product;
+
+        Object.assign(variant, defaults, { ...variant });
       }
     }
 

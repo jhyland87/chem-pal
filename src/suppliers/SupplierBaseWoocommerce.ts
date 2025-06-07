@@ -1,8 +1,8 @@
 import { findCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
-import { firstMap } from "@/helpers/utils";
+import { firstMap, mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
-import { isSearchResponse } from "@/utils/typeGuards/woocommerce";
+import { isSearchResponse, isSearchResponseItem } from "@/utils/typeGuards/woocommerce";
 import SupplierBase from "./SupplierBase";
 
 /**
@@ -162,7 +162,7 @@ export default abstract class SupplierBaseWoocommerce
       const toParseForQuantity = [item.name, item.description, item.short_description];
 
       if ("variations" in item) {
-        const variations = item.variations.map((variation) => {
+        const variations = mapDefined(item.variations, (variation: Partial<Variant>) => {
           const variant: Partial<Variant> = {
             id: variation.id,
           };
@@ -171,15 +171,18 @@ export default abstract class SupplierBaseWoocommerce
             const size = variation.attributes.find(
               (attribute) => attribute.name.toLowerCase() === "size",
             );
-            if (size && size?.value) {
-              toParseForQuantity.push(size?.value);
-              const variantQty = parseQuantity(size.value);
-
-              if (variantQty) {
-                variant.quantity = variantQty.quantity;
-                variant.uom = variantQty.uom;
-              }
+            if (!size || typeof size !== "object" || !size.value) {
+              return;
             }
+
+            toParseForQuantity.push(size.value);
+            const variantQty = parseQuantity(size.value);
+
+            if (!variantQty) {
+              return;
+            }
+            variant.quantity = variantQty.quantity;
+            variant.uom = variantQty.uom;
           }
 
           return variant;
@@ -228,6 +231,34 @@ export default abstract class SupplierBaseWoocommerce
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    return this.getProductDataWithCache(product, async (builder) => builder);
+    return this.getProductDataWithCache(product, async (builder) => {
+      const variantList = builder.get("variants");
+      if (variantList?.length === 0) return builder;
+
+      const variants = await Promise.all(
+        mapDefined(variantList, async (variant: Partial<Variant>) => {
+          const variantResponse = await this.httpGetJson({
+            path: `/wp-json/wc/store/v1/products/${variant.id}`,
+          });
+
+          if (!isSearchResponseItem(variantResponse)) {
+            this.logger.warn("No variant response");
+            return;
+          }
+
+          variant.title = variantResponse.name as string;
+          variant.price = Number(variantResponse.prices.price) / 100;
+          variant.currencyCode = variantResponse.prices.currency_code;
+          variant.currencySymbol = variantResponse.prices.currency_symbol;
+          variant.url = variantResponse.permalink;
+          variant.description = variantResponse.description;
+          variant.sku = variantResponse.sku;
+
+          return variant;
+        }),
+      );
+
+      return builder.setVariants(mapDefined(variants, (variant) => variant));
+    });
   }
 }

@@ -1,7 +1,8 @@
 import { AVAILABILITY } from "@/constants/common";
 import { findCAS } from "@/helpers/cas";
+import { isQuantityObject, parseQuantity, stripQuantityFromString } from "@/helpers/quantity";
 import { urlencode } from "@/helpers/request";
-import { mapDefined } from "@/helpers/utils";
+import { firstMap, mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import {
   isProductObject,
@@ -112,9 +113,9 @@ export default class SupplierLaboratoriumDiscounter
    * });
    * ```
    */
-  protected makeQueryParams(limit: number = this.limit): LaboratoriumDiscounterSearchParams {
+  protected makeQueryParams(limit?: number): LaboratoriumDiscounterSearchParams {
     return {
-      limit: limit.toString(),
+      limit: limit?.toString() ?? "100",
       format: "json",
     };
   }
@@ -163,7 +164,8 @@ export default class SupplierLaboratoriumDiscounter
 
     const fuzzFiltered = this.fuzzyFilter<SearchResponseProduct>(query, rawSearchResults);
     this.logger.info("fuzzFiltered:", fuzzFiltered);
-    return this.initProductBuilders(fuzzFiltered.slice(0, limit));
+    const grouped = this.groupVariants(fuzzFiltered);
+    return this.initProductBuilders(grouped.slice(0, limit));
   }
 
   /**
@@ -212,6 +214,13 @@ export default class SupplierLaboratoriumDiscounter
   ): ProductBuilder<Product>[] {
     return mapDefined(data, (product) => {
       const productBuilder = new ProductBuilder(this.baseURL);
+
+      const quantity = firstMap(parseQuantity, [product.title, product.description]);
+
+      if (isQuantityObject(quantity)) {
+        productBuilder.setQuantity(quantity.quantity, quantity.uom);
+      }
+
       productBuilder
         //.addRawData(product)
         .setBasicInfo(product.title, product.url, this.supplierName)
@@ -221,12 +230,55 @@ export default class SupplierLaboratoriumDiscounter
         .setSku(product.sku)
         .setUUID(product.code)
         //.setPricing(product.price.price, product?.currency as string, CURRENCY_SYMBOL_MAP.EUR)
-        .setQuantity(product.variant)
+        //.setQuantity(product.variant)
         .setCAS(typeof product.content === "string" ? (findCAS(product.content) ?? "") : "");
       return productBuilder;
     });
   }
 
+  /**
+   * Groups variants of a product by their title
+   * @param data - Array of product listings from search results
+   * @returns Array of product listings with grouped variants
+   * @todo Create a generic method for this, the same method is used in
+   *       Synthetika and could be of use with LoudWolf.
+   * @example
+   * ```typescript
+   * const results = await this.queryProducts("sodium chloride");
+   * const grouped = this.groupVariants(results);
+   * // grouped is an array of product listings with grouped variants
+   * ```
+   */
+  private groupVariants(
+    data: LaboratoriumDiscounterSearchResponseProduct[],
+  ): LaboratoriumDiscounterSearchResponseProduct[] {
+    type SubType = LaboratoriumDiscounterSearchResponseProduct & { groupId: string };
+    const variants: SubType[] = data.map((item) => {
+      item.title = item.title.replace(/(?<=\d{1,3})\s(?=\d{3})/g, "");
+      const groupId = stripQuantityFromString(item.title);
+      const groupIdWithoutSpaces = groupId.replace(/[\s-]/g, "");
+      return { ...item, groupId: groupIdWithoutSpaces };
+    });
+
+    const products = Object.groupBy(variants, (item) => item.groupId);
+
+    return Object.values(products)
+      .filter((product): product is SubType[] => product !== undefined)
+      .map((product) => {
+        const main = product.splice(0, 1)[0];
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { groupId, ...newObject } = main;
+        newObject.variants = product;
+
+        return newObject;
+      });
+  }
+
+  /**
+   * Fetches product data for a given product builder
+   * @param product - Product builder to fetch data for
+   * @returns Promise resolving to product builder or void if data fetch fails
+   */
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {

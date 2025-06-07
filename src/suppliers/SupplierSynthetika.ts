@@ -305,8 +305,8 @@ export default class SupplierSynthetika
   ): ProductBuilder<Product & { variants?: Variant[] }>[] {
     return mapDefined(data, (product) => {
       const productBuilder = new ProductBuilder(this.baseURL);
+
       productBuilder
-        //.addRawData(product)
         .setBasicInfo(product.name, product.url, this.supplierName)
         .setDescription(product.shortDescription)
         .setID(product.id)
