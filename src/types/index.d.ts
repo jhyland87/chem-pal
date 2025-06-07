@@ -4,6 +4,20 @@ import { CSSProperties } from "react";
 
 declare global {
   /**
+   * Interface defining the required properties for a supplier.
+   * This ensures all suppliers have the necessary readonly properties.
+   */
+  interface ISupplier {
+    /** The name of the supplier (used for display name, lists, etc) */
+    readonly supplierName: string;
+    /** The base URL for the supplier */
+    readonly baseURL: string;
+    /** The shipping scope of the supplier */
+    readonly shipping: ShippingRange;
+    /** The country code of the supplier */
+    readonly country: CountryCode;
+  }
+  /**
    * Unit of measurement type
    */
   //export type UOM = string;
@@ -1074,6 +1088,8 @@ declare global {
     supplierProductCountryCode: CountryCode;
     supplierProductShippingRange: ShippingRange;
   }
+
+  type Base64String = string;
 }
 
 // This export is needed to make the file a module

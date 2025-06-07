@@ -22,7 +22,7 @@ import SupplierBase from "./SupplierBase";
  */
 export default class SupplierWarchem
   extends SupplierBase<Partial<Product>, Product>
-  implements AsyncIterable<Product>
+  implements ISupplier
 {
   // Display name of the supplier used for UI and logging
   public readonly supplierName: string = "Warchem";
@@ -48,7 +48,7 @@ export default class SupplierWarchem
   protected httpRequstCount: number = 0;
 
   // Number of requests to process in parallel when fetching product details
-  protected httpRequestBatchSize: number = 5;
+  protected maxConcurrentRequests: number = 5;
 
   /**
    * Warchem stores the search result limit in the cookies which needs to be set

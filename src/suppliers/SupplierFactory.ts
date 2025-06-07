@@ -1,4 +1,5 @@
 import Logger from "@/utils/Logger";
+import { Queue } from "async-await-queue";
 import * as suppliers from ".";
 import SupplierBase from "./SupplierBase";
 /**
@@ -24,7 +25,7 @@ import SupplierBase from "./SupplierBase";
  * }
  * ```
  */
-export default class SupplierFactory<T extends Product> implements AsyncIterable<T> {
+export default class SupplierFactory<P extends Product> {
   // Term being queried
   private query: string;
 
@@ -83,92 +84,121 @@ export default class SupplierFactory<T extends Product> implements AsyncIterable
   }
 
   /**
-   * Implements the AsyncIterable interface to allow for-await-of iteration over products.
-   * Yields products from all selected suppliers in sequence.
+   * Executes the execute() method on all selected suppliers in parallel using async-await-queue.
+   * Results are collected and flattened into a single array.
    *
-   * @returns AsyncGenerator yielding products of type T
-   * @throws Error if a supplier query fails (unless due to abort)
+   * @param concurrency - Maximum number of suppliers to process in parallel (default: 3)
+   * @returns Promise resolving to an array of all products from all suppliers
    * @example
    * ```typescript
-   * const factory = new SupplierFactory("acid", new AbortController());
-   *
-   * try {
-   *   for await (const product of factory) {
-   *     console.log(product.title);
-   *   }
-   * } catch (err) {
-   *   console.error("Search failed:", err);
-   * }
+   * const factory = new SupplierFactory("acetone", 5, new AbortController());
+   * const allProducts = await factory.executeAll(3); // 3 suppliers in parallel
+   * console.log(allProducts);
    * ```
    */
-  async *[Symbol.asyncIterator](): AsyncGenerator<T, void, unknown> {
-    try {
-      this.logger.debug("Starting search");
-      const supplierIterator = this.getConsolidatedGenerator();
+  public async executeAll(concurrency: number = 3): Promise<P[]> {
+    // 1. Instantiate supplier classes
+    const supplierInstances: SupplierBase<unknown, P>[] = Object.entries(suppliers).reduce(
+      (result: SupplierBase<unknown, P>[], [supplierClassName, supplierClass]) => {
+        if (this.suppliers.length === 0 || this.suppliers.includes(supplierClassName)) {
+          this.logger.debug("Initializing supplier class:", supplierClassName);
+          const ConcreteSupplierClass = supplierClass as unknown as new (
+            query: string,
+            limit: number,
+            controller: AbortController,
+          ) => SupplierBase<unknown, P>;
+          const instance = new ConcreteSupplierClass(this.query, this.limit, this.controller);
+          instance.initCache();
+          result.push(instance);
+        }
+        return result;
+      },
+      [],
+    );
 
-      for await (const value of supplierIterator) {
-        yield value as T;
-      }
-    } catch (err) {
-      // Here to catch when the overall search fails
-      if (this.controller.signal.aborted === true) {
-        this.logger.warn("Search was aborted");
-        return;
-      }
-      this.logger.error("ERROR in generator fn:", err);
-    }
+    // 2. Use async-await-queue for parallel execution
+    const queue = new Queue(concurrency, 100);
+    const allResults: P[] = [];
+    const errors: Array<{ error: unknown; supplier: SupplierBase<unknown, P> }> = [];
+
+    const tasks = supplierInstances.map((supplier) =>
+      queue.run(async () => {
+        try {
+          for await (const product of supplier.execute()) {
+            allResults.push(product as unknown as P);
+          }
+        } catch (e) {
+          this.logger.error("Error executing supplier", { error: e, supplier });
+          errors.push({ error: e, supplier });
+        }
+      }),
+    );
+
+    await Promise.all(tasks);
+
+    // Optionally, you can return errors as well
+    // return { products: allResults, errors };
+    return allResults;
   }
 
   /**
-   * Creates a consolidated async generator that yields products from selected suppliers.
-   * This method:
-   * 1. Filters suppliers based on the names provided in constructor
-   * 2. Instantiates selected supplier classes
-   * 3. Combines their async iterators into a single stream
+   * Streams products from all selected suppliers as soon as each supplier's execute() resolves.
+   * Uses async-await-queue for concurrency control and yields products as they are available.
    *
-   * @returns AsyncGenerator yielding products from all selected suppliers
+   * @param concurrency - Maximum number of suppliers to process in parallel (default: 3)
+   * @returns AsyncGenerator yielding products from all suppliers as soon as they are ready
    * @example
    * ```typescript
-   * // Internal use only
-   * const generator = this.getConsolidatedGenerator();
-   * for await (const product of generator) {
-   *   // Process each product
+   * for await (const product of factory.executeAllStream(3)) {
+   *   console.log(product);
    * }
    * ```
    */
-  private getConsolidatedGenerator(): AsyncGenerator<Product, void, unknown> {
-    async function* combineAsyncIterators(
-      asyncIterators: SupplierBase<unknown, Product>[],
-    ): AsyncGenerator<Product, void, unknown> {
-      for (const iterator of asyncIterators) {
-        for await (const value of iterator) {
-          yield value;
+  public async *executeAllStream(concurrency: number = 3): AsyncGenerator<P, void, P> {
+    const supplierInstances: SupplierBase<unknown, P>[] = Object.entries(suppliers).reduce(
+      (result: SupplierBase<unknown, P>[], [supplierClassName, supplierClass]) => {
+        if (this.suppliers.length === 0 || this.suppliers.includes(supplierClassName)) {
+          this.logger.debug("Initializing supplier class:", supplierClassName);
+          const ConcreteSupplierClass = supplierClass as unknown as new (
+            query: string,
+            limit: number,
+            controller: AbortController,
+          ) => SupplierBase<unknown, P>;
+          const instance = new ConcreteSupplierClass(this.query, this.limit, this.controller);
+          instance.initCache();
+          result.push(instance);
         }
-      }
+        return result;
+      },
+      [],
+    );
+
+    const queue = new Queue(concurrency, 100);
+    // For each supplier, start a task that returns its async generator
+    const supplierIterators: AsyncGenerator<P, void, P>[] = [];
+    for (const supplier of supplierInstances) {
+      await queue.run(async () => {
+        // Start the async generator for this supplier
+        supplierIterators.push(supplier.execute() as AsyncGenerator<P, void, P>);
+      });
     }
 
-    // Only iterate over the suppliers that are selected (or all if none are selected)
-    return combineAsyncIterators(
-      Object.entries(suppliers).reduce(
-        (result: SupplierBase<unknown, Product>[], [supplierClassName, supplierClass]) => {
-          if (this.suppliers.length == 0 || this.suppliers.includes(supplierClassName)) {
-            this.logger.debug("Initializing supplier class:", supplierClassName);
-            this.logger.debug("this.limit:", this.limit);
-            // Cast to unknown first to avoid type errors with private constructors
-            const ConcreteSupplierClass = supplierClass as unknown as new (
-              query: string,
-              limit: number,
-              controller: AbortController,
-            ) => SupplierBase<unknown, Product>;
-            const instance = new ConcreteSupplierClass(this.query, this.limit, this.controller);
-            // Initialize cache after construction
-            instance.initCache();
-            result.push(instance);
-          }
-          return result;
-        },
-        [] satisfies SupplierBase<unknown, Product>[],
-      ),
-    );
+    // Now merge all supplier iterators, yielding products as soon as any are ready
+    const running = new Set(supplierIterators);
+    while (running.size > 0) {
+      // Wait for the next product from any supplier
+      const nexts = Array.from(running).map(async (it) => {
+        const result = await it.next();
+        return { it, result };
+      });
+      const { it, result } = await Promise.race(nexts);
+      if (result.done) {
+        running.delete(it);
+      } else {
+        yield result.value;
+        // Output queue stats after yielding each product
+        console.log("Queue stats:", queue.stat());
+      }
+    }
   }
 }

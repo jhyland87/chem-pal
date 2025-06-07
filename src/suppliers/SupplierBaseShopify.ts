@@ -48,7 +48,7 @@ import SupplierBase from "./SupplierBase";
  */
 export default abstract class SupplierBaseShopify
   extends SupplierBase<ItemListing, Product>
-  implements AsyncIterable<Product>
+  implements ISupplier
 {
   protected apiKey: string = "";
 

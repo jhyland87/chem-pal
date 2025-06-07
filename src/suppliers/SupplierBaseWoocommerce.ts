@@ -47,7 +47,7 @@ import SupplierBase from "./SupplierBase";
  */
 export default abstract class SupplierBaseWoocommerce
   extends SupplierBase<WooCommerceSearchResponseItem, Product>
-  implements AsyncIterable<Product>
+  implements ISupplier
 {
   /**
    * API key for WooCommerce authentication.

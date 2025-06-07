@@ -13,7 +13,7 @@ import SupplierBase from "./SupplierBase";
  */
 export default abstract class SupplierBaseWix
   extends SupplierBase<ProductObject, Product>
-  implements AsyncIterable<Product>
+  implements ISupplier
 {
   /** Display name of the supplier */
   public abstract readonly supplierName: string;

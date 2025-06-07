@@ -9,6 +9,7 @@ import {
   isJsonResponse,
   isMinimalProduct,
 } from "@/utils/typeGuards/common";
+import { Queue } from "async-await-queue";
 import { extract, WRatio } from "fuzzball";
 import { type JsonValue } from "type-fest";
 
@@ -38,22 +39,8 @@ export interface CachedData<T> {
   /** The actual cached results */
   data: T[];
   /** Metadata about the cache entry */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   __cacheMetadata: CacheMetadata;
-}
-
-/**
- * Interface defining the required properties for a supplier.
- * This ensures all suppliers have the necessary readonly properties.
- */
-export interface ISupplier {
-  /** The name of the supplier (used for display name, lists, etc) */
-  readonly supplierName: string;
-  /** The base URL for the supplier */
-  readonly baseURL: string;
-  /** The shipping scope of the supplier */
-  readonly shipping: ShippingRange;
-  /** The country code of the supplier */
-  readonly country: CountryCode;
 }
 
 /**
@@ -67,9 +54,7 @@ export interface ISupplier {
  * const supplier = new SupplierBase<Product>();
  * ```
  */
-export default abstract class SupplierBase<S, T extends Product>
-  implements AsyncIterable<Product>, ISupplier
-{
+export default abstract class SupplierBase<S, T extends Product> implements ISupplier {
   // The name of the supplier (used for display name, lists, etc)
   public abstract readonly supplierName: string;
 
@@ -230,12 +215,17 @@ export default abstract class SupplierBase<S, T extends Product>
    *   constructor() {
    *     super();
    *     // Process 5 requests at a time
-   *     this.httpRequestBatchSize = 5;
+   *     this.maxConcurrentRequests = 5;
    *   }
    * }
    * ```
    */
-  protected httpRequestBatchSize: number = 10;
+  protected maxConcurrentRequests: number = 3;
+
+  /**
+   * Minimum number of milliseconds between two consecutive tasks
+   */
+  protected minConcurrentCycle: number = 100;
 
   /**
    * HTTP headers used as a basis for all requests to the supplier.
@@ -280,7 +270,9 @@ export default abstract class SupplierBase<S, T extends Product>
 
   // Cache configuration for query results
   private static readonly queryCacheKey = "supplier_query_cache";
+
   // Cache version - increment this when cache format changes
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private static readonly CACHE_VERSION = 1;
 
   // Cache instance for this supplier
@@ -943,101 +935,54 @@ export default abstract class SupplierBase<S, T extends Product>
   }
 
   /**
-   * Implements the AsyncIterable interface to allow for-await-of iteration over products.
-   * This method handles the entire product search and retrieval process:
-   * 1. Performs initial setup
-   * 2. Queries products with caching support
-   * 3. Processes results in batches to maintain controlled concurrency
-   * 4. Yields complete products as they become available
+   * Executes the supplier's search query and returns the results.
+   * This method will execute all results concurrently (to the limits set in the supplier
+   * class), and resolve to an array of product objects.
    *
    * @remarks
-   * The method uses batching to control concurrent requests and prevent overwhelming
-   * the supplier's API. It also handles request cancellation and error recovery.
-   *
-   * @returns AsyncGenerator yielding complete Product objects
-   * @throws Error if the search fails (unless due to abort)
-   *
-   * @example
-   * ```typescript
-   * // Basic usage
-   * const supplier = new MySupplier("acetone", 5);
-   * for await (const product of supplier) {
-   *   console.log(product.title, product.price);
-   * }
-   * ```
-   *
-   * @example
-   * ```typescript
-   * // With error handling and cancellation
-   * const controller = new AbortController();
-   * const supplier = new MySupplier("acetone", 5, controller);
-   *
-   * try {
-   *   for await (const product of supplier) {
-   *     if (someCondition) {
-   *       controller.abort(); // Stop the search
-   *     }
-   *     console.log(product.title);
-   *   }
-   * } catch (err) {
-   *   if (err.name === 'AbortError') {
-   *     console.log('Search was cancelled');
-   *   } else {
-   *     console.error('Search failed:', err);
-   *   }
-   * }
-   * ```
+   * This method is used to execute the supplier's search query and return the results.
+   * @returns Promise resolving to an array of products
    */
-  async *[Symbol.asyncIterator](): AsyncGenerator<Product, void, unknown> {
-    try {
-      await this.setup();
-      // Use queryProductsWithCache to get processed product data (from cache or fresh)
-      const results = await this.queryProductsWithCache(this.query, this.limit);
-      if (typeof results === "undefined" || results.length === 0) {
-        this.logger.debug(`No query results found`);
-        return;
-      }
-      this.products = results;
+  public async *execute(): AsyncGenerator<T, void, T> {
+    await this.setup();
+    const results = await this.queryProductsWithCache(this.query, this.limit);
+    if (!results || results.length === 0) {
+      this.logger.debug(`No query results found`);
+      return;
+    }
+    this.products = results;
+    const queue = new Queue(this.maxConcurrentRequests, this.minConcurrentCycle);
 
-      // Process results in batches to maintain controlled concurrency
-      for (let i = 0; i < this.products.length; i += this.httpRequestBatchSize) {
-        const batch = this.products.slice(i, i + this.httpRequestBatchSize);
-        const batchPromises = batch.map((r: unknown) => {
-          if (r instanceof ProductBuilder === false) {
-            this.logger.error("Invalid product builder:", r);
-            return Promise.reject(new Error("Invalid product builder"));
+    // Create an array of promises, each yielding a product as soon as it's ready
+    const tasks = this.products.map((product) =>
+      queue.run(async () => {
+        try {
+          const builder = await this.getProductData(product);
+          if (!builder) return;
+          const finished = await this.finishProduct(builder);
+          if (finished) {
+            return finished;
           }
-          // getProductData uses its own per-product detail cache
-          return this.getProductData(r as ProductBuilder<T>);
-        });
-        const batchResults = await Promise.allSettled(batchPromises);
-        for (const result of batchResults) {
-          if (this.controller.signal.aborted) throw this.controller.signal.reason;
-          if (result.status === "rejected") {
-            this.logger.error("Error found when yielding a product:", { result });
-            continue;
-          }
-          try {
-            if (typeof result.value === "undefined") {
-              this.logger.warn("Product value was undefined", { result });
-              continue;
-            }
-            const finishedProduct = await this.finishProduct(result.value as ProductBuilder<T>);
-            if (finishedProduct) {
-              yield finishedProduct;
-            }
-          } catch (err) {
-            this.logger.error("Error found when yielding a product:", { err });
-            continue;
-          }
+        } catch (e) {
+          this.logger.error("Error processing product", { error: e, product });
+        }
+      }),
+    );
+
+    // As each promise resolves, yield the product
+    const resultsSet = new Set(tasks);
+    while (resultsSet.size > 0) {
+      const finished = await Promise.race(resultsSet);
+      // Remove the finished promise from the set
+      for (const t of resultsSet) {
+        if ((await Promise.resolve(t)) === finished) {
+          resultsSet.delete(t);
+          break;
         }
       }
-    } catch (err) {
-      if (this.controller.signal.aborted === true) {
-        this.logger.warn("Search was aborted");
-        return;
+      if (finished) {
+        yield finished as unknown as T;
       }
-      this.logger.error("ERROR in generator fn:", { err });
     }
   }
 

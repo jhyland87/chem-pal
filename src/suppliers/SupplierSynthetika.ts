@@ -50,7 +50,7 @@ import SupplierBase from "./SupplierBase";
  */
 export default class SupplierSynthetika
   extends SupplierBase<SynthetikaProduct, Product>
-  implements AsyncIterable<Product>
+  implements ISupplier
 {
   /** Name of supplier (for display purposes) */
   public readonly supplierName: string = "Synthetika";
@@ -329,9 +329,11 @@ export default class SupplierSynthetika
           product.variants.map((v) => {
             const price = parsePrice(v.price.gross.final);
             return {
+              title: v.name,
               price: price?.price ?? 0,
               quantity: parseQuantity(v.name)?.quantity ?? 0,
               uom: parseQuantity(v.name)?.uom ?? "",
+              url: v.url,
             };
           }),
         );

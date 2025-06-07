@@ -24,7 +24,7 @@ import SupplierBase from "./SupplierBase";
  */
 export default class SupplierOnyxmet
   extends SupplierBase<OnyxMetSearchResultResponse, Product>
-  implements AsyncIterable<Product>
+  implements ISupplier
 {
   // Display name of the supplier used for UI and logging
   public readonly supplierName: string = "Onyxmet";
@@ -50,7 +50,7 @@ export default class SupplierOnyxmet
   protected httpRequstCount: number = 0;
 
   // Number of requests to process in parallel when fetching product details
-  protected httpRequestBatchSize: number = 5;
+  protected maxConcurrentRequests: number = 5;
 
   /**
    * Sets up the supplier by setting the display to list.

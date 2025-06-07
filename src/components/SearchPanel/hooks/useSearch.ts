@@ -35,7 +35,7 @@ export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: Us
     fetchController = new AbortController();
     // Create the query instance
     // Note: This does not actually run the HTTP calls or queries...
-    const productQueryResults = new SupplierFactory(
+    const productQueryFactory = new SupplierFactory(
       query,
       searchLimit,
       fetchController,
@@ -49,6 +49,8 @@ export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: Us
     let resultCount = 0;
     // Use the async generator to iterate over the products
     // This is where the queries get run, when the iteration starts.
+    const productQueryResults = await productQueryFactory.executeAllStream(3);
+
     for await (const result of productQueryResults) {
       resultCount++;
       BadgeAnimator.setText(resultCount.toString());

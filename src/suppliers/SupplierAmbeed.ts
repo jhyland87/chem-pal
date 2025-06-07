@@ -1,74 +1,42 @@
 import { AVAILABILITY } from "@/constants/common";
 import { findCAS } from "@/helpers/cas";
-import { urlencode } from "@/helpers/request";
 import { mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
-import {
-  isProductObject,
-  isSearchResponseOk,
-  isValidSearchParams,
-} from "@/utils/typeGuards/laboratoriumdiscounter";
+import { isProductObject, isSearchResponseOk } from "@/utils/typeGuards/ambeed";
 import SupplierBase from "./SupplierBase";
 
 /**
- * Class for retrieving search results and iterating over Laboratorium Discounter online
- * web store.
+ * Ambeed is a Chinese chemical supplier.
  *
  * @remarks
- * Laboratorium Discounters seems to use Lightspeed eCom (webshopapp) as their ecommerce platform, as
- * can be determined by loking at the shop.domains.main value of a search response, or
- * looking at where some of their assets are pulled from (cdn.webshopapp.com).
+ * Ambeed seems to have a custom API located at `https://www.ambeed.com/webapi/v1`. All the
+ * GET endpoints seem to require a `params` query parameter, which is a base64 encoded JSON
+ * string.
  *
- * Laboratorium Discounters API is pretty easy to use, and the search results are in JSON format.
- * It looks like any page (including home page) can be displayed in JSON format if you append
- * `?format=json` to the URL.
- * - {@link https://www.laboratoriumdiscounter.nl/en/search/acid?format=json | Search Results for "acid" (JSON)}
- *   - With the search results being found at `collection.products` and some other useful data at
- *    `gtag.events.view_item_list.items[]`.
- *
- * But to get the variants or other product specific data, you need to fetch the product details page.
- * - {@link https://www.laboratoriumdiscounter.nl/en/nitric-acid-5.html?format=json | Nitric acid (JSON)}
- *   - With all the product specific data found at `product` and variants at `product.variants`.
- *
- * Links:
- * - {@link https://www.laboratoriumdiscounter.nl | Laboratorium Discounters Home Page}
- * - {@link https://www.laboratoriumdiscounter.nl/en/sitemap/?format=json | Sitemap (JSON)}
- * - {@link https://www.laboratoriumdiscounter.nl/en/search/acid | Search Results for "acid"}
- * - {@link https://www.laboratoriumdiscounter.nl/en/search/acid?format=json | Search Results for "acid" (JSON)}
- * - {@link https://ecom-support.lightspeedhq.com/hc/en-us/articles/115002509593-3-g-AJAX-and-JSON | Lightspeed eCom Support - AJAX and JSON}
- *
- * \> [!IMPORTANT]
- * \>  Be careful that your scripts do not produce too many XHR calls. A few (2-3) calls per page or making
- * \> calls based on user input could be acceptable, but letting users do multiple calls in a short period of time
- * \> could see them BANNED from shops. Please only use these methods as workarounds in specific instances.
- *
- * @category Suppliers
- * @example
- * ```typescript
- * const supplier = new SupplierLaboratoriumDiscounter();
- * for await (const product of supplier) {
- *   console.log(product);
- * }
+ * ```js
+ * const params = btoa(JSON.stringify({"keyword":"sodium","country":"United States","one_menu_id":0,"one_menu_life_id":0,"menu_id":0}));
+ * const url = `https://ambeed.com/webapi/v1/productlistbykeyword?params=${params}`;
  * ```
+ * @see https://www.ambeed.com/
  */
-export default class SupplierLaboratoriumDiscounter
-  extends SupplierBase<LaboratoriumDiscounterProductObject, Product>
+export default class SupplierAmbeed
+  extends SupplierBase<AmbeedProductObject, Product>
   implements ISupplier
 {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = "Laboratorium Discounter";
+  public readonly supplierName: string = "Ambeed";
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = "https://www.laboratoriumdiscounter.nl";
+  public readonly baseURL: string = "https://www.ambeed.com";
 
-  // Shipping scope for Laboratorium Discounter
-  public readonly shipping: ShippingRange = "domestic";
+  // Shipping scope for Ambeed
+  public readonly shipping: ShippingRange = "international";
 
   // The country code of the supplier.
-  public readonly country: CountryCode = "NL";
+  public readonly country: CountryCode = "CN";
 
   // Override the type of queryResults to use our specific type
-  protected queryResults: Array<LaboratoriumDiscounterProductObject> = [];
+  protected queryResults: Array<AmbeedProductObject> = [];
 
   // Used to keep track of how many requests have been made to the supplier.
   protected httpRequstCount: number = 0;
@@ -96,62 +64,30 @@ export default class SupplierLaboratoriumDiscounter
     /* eslint-enable */
   };
 
-  /**
-   * Constructs the query parameters for a product search request
-   * @param limit - The maximum number of results to query for
-   * @returns Object containing all required search parameters
-   * @example
-   * ```typescript
-   * const params = this.makeQueryParams(20);
-   * // Returns: { limit: "20", format: "json" }
-   *
-   * // Use in search request
-   * const response = await this.httpGetJson({
-   *   path: "/en/search/chemical",
-   *   params: this.makeQueryParams(20)
-   * });
-   * ```
-   */
-  protected makeQueryParams(limit: number = this.limit): LaboratoriumDiscounterSearchParams {
+  protected makeQueryParams(query: string): AmbeedSearchParams {
+    const encoded = JSON.stringify({ keyword: query });
+
     return {
-      limit: limit.toString(),
-      format: "json",
+      params: btoa(JSON.stringify({ params: btoa(encoded) })),
     };
   }
 
   /**
-   * Executes a product search query and returns matching products
-   * @param query - Search term to look for
-   * @param limit - The maximum number of results to query for
-   * @returns Promise resolving to array of product objects or void if search fails
-   * @example
-   * ```typescript
-   * // Search for sodium chloride with a limit of 10 results
-   * const products = await this.queryProducts("sodium chloride", 10);
-   * if (products) {
-   *   console.log(`Found ${products.length} products`);
-   *   for (const product of products) {
-   *     const builtProduct = await product.build();
-   *     console.log(builtProduct.title, builtProduct.price);
-   *   }
-   * } else {
-   *   console.error("No products found or search failed");
-   * }
+   * The query params are sent over in a base64 encoded JSON.stringify of
+   * ```js
+   * params=btoa(JSON.stringify({ keyword: "sodium chloride" }))
+   * params=btoa(JSON.stringify({ keyword: "acid", page:3 }))
    * ```
    */
   protected async queryProducts(
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    const params = this.makeQueryParams();
-    if (!isValidSearchParams(params)) {
-      this.logger.warn("Invalid search parameters:", params);
-      return;
-    }
-
     const response: unknown = await this.httpGetJson({
-      path: `/en/search/${urlencode(query)}`,
-      params,
+      path: `/webapi/v1/searchquery`,
+      params: {
+        params: btoa(JSON.stringify({ keyword: btoa(query) })),
+      },
     });
 
     if (!isSearchResponseOk(response)) {

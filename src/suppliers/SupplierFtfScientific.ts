@@ -5,10 +5,7 @@ import SupplierBaseWix from "./SupplierBaseWix";
  *
  * @category Suppliers
  */
-export default class SupplierFtfScientific
-  extends SupplierBaseWix
-  implements AsyncIterable<Product>
-{
+export default class SupplierFtfScientific extends SupplierBaseWix implements ISupplier {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "FTF Scientific";
 

@@ -18,7 +18,7 @@ import SupplierBase from "./SupplierBase";
  */
 export default class SupplierChemsavers
   extends SupplierBase<ProductObject, Product>
-  implements AsyncIterable<Product>
+  implements ISupplier
 {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "Chemsavers";

@@ -21,10 +21,7 @@ import SupplierBaseWoocommerce from "./SupplierBaseWoocommerce";
  * @see https://www.carolinachemical.com/
  * @see https://carolinachemical.com/wp-json/wc/store/v1/products
  */
-export default class SupplierCarolinaChemical
-  extends SupplierBaseWoocommerce
-  implements AsyncIterable<Product>
-{
+export default class SupplierCarolinaChemical extends SupplierBaseWoocommerce implements ISupplier {
   /**
    * The display name of the supplier.
    * Used for identifying the supplier in product listings and user interfaces.

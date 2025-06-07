@@ -95,10 +95,7 @@ class TimeoutError extends Error {
  *
  * ```
  */
-export default class SupplierMacklin
-  extends SupplierBase<Product, Product>
-  implements AsyncIterable<Product>
-{
+export default class SupplierMacklin extends SupplierBase<Product, Product> implements ISupplier {
   /** Name of supplier (for display purposes) */
   public readonly supplierName: string = "Macklin";
 

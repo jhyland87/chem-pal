@@ -44,7 +44,7 @@ import SupplierBase from "./SupplierBase";
  */
 export default class SupplierCarolina
   extends SupplierBase<CarolinaSearchResult, Product>
-  implements AsyncIterable<Product>
+  implements ISupplier
 {
   /** Display name of the supplier */
   public readonly supplierName: string = "Carolina";
@@ -68,7 +68,7 @@ export default class SupplierCarolina
   protected httpRequstCount: number = 0;
 
   /** Number of requests to process in parallel */
-  protected httpRequestBatchSize: number = 5;
+  protected maxConcurrentRequests: number = 5;
 
   /** Default headers sent with every request */
   protected headers: HeadersInit = {

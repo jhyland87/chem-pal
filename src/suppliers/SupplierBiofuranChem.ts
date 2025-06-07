@@ -11,10 +11,7 @@ import SupplierBaseWix from "./SupplierBaseWix";
  * mostly listed in the javascript file `CartIconController.bundle.min.js`.
  * @category Suppliers
  */
-export default class SupplierBioFuranChem
-  extends SupplierBaseWix
-  implements AsyncIterable<Product>
-{
+export default class SupplierBioFuranChem extends SupplierBaseWix implements ISupplier {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "BioFuran Chem";
 
