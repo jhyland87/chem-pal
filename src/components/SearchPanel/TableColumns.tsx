@@ -114,6 +114,15 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       },
     },
     {
+      id: "Shipping",
+      header: () => <span>Shipping</span>,
+      accessorKey: "supplierShipping",
+      cell: (info) => info.getValue(),
+      meta: {
+        filterVariant: "select",
+      },
+    },
+    {
       accessorKey: "description",
       header: "Description",
       meta: {
@@ -156,7 +165,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         return `${row.original.quantity} ${row.original.uom}`;
       },
       sortingFn: quantitySortingFn,
-      minSize: 80,
+      minSize: 50,
     },
     {
       id: "uom",
