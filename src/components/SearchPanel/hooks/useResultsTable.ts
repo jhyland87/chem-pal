@@ -27,8 +27,7 @@ export function useResultsTable({
     data: showSearchResults,
     enableColumnResizing: true,
     defaultColumn: {
-      minSize: 60,
-      maxSize: 800,
+      // Removed minSize and maxSize for more flexibility
     },
     columnResizeMode: "onChange",
     columns: TableColumns() as ColumnDef<Product, unknown>[],

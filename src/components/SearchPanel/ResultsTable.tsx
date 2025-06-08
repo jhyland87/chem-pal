@@ -3,8 +3,9 @@ import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import { Column, flexRender } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
-import { CSSProperties, Fragment, ReactElement, useEffect, useState } from "react";
+import { Fragment, ReactElement, useEffect, useState, type CSSProperties } from "react";
 import LoadingBackdrop from "../LoadingBackdrop";
+import { useAutoColumnSizing } from "./hooks/useAutoColumnSizing";
 import { useResultsTable } from "./hooks/useResultsTable";
 import { useSearch } from "./hooks/useSearch";
 import Pagination from "./Pagination";
@@ -29,7 +30,6 @@ import TableOptions from "./TableOptions";
  * ```
  */
 export default function ResultsTable({
-  renderVariants,
   getRowCanExpand,
   columnFilterFns,
 }: ProductTableProps<Product>): ReactElement {
@@ -86,6 +86,9 @@ export default function ResultsTable({
     getRowCanExpand,
   });
 
+  // Integrate auto column sizing
+  const autoSizer = useAutoColumnSizing(table, searchResults);
+
   function columnSizeVars() {
     const headers = table.getFlatHeaders();
     const colSizes: { [key: string]: number } = {};
@@ -114,6 +117,8 @@ export default function ResultsTable({
         <div className="p-2" style={{ minHeight: "369px" }}>
           <TableOptions table={table} onSearch={executeSearch} />
           <div className="h-4" />
+          {/* Render the hidden auto-sizing table */}
+          {autoSizer}
           {Array.isArray(searchResults) && searchResults.length > 0 && (
             <>
               <table
@@ -132,22 +137,18 @@ export default function ResultsTable({
                             return (
                               <td
                                 key={cell.id}
-                                style={
-                                  (cell.column.columnDef.meta as { style?: CSSProperties })?.style
-                                }
+                                style={{
+                                  width: `${cell.column.getSize()}px`,
+                                  textAlign: "left", // default align everything left
+                                  ...(cell.column.columnDef.meta as { style?: CSSProperties })
+                                    ?.style,
+                                }}
                               >
                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                               </td>
                             );
                           })}
                         </tr>
-                        {/*row.getIsExpanded() && (
-                          <tr>
-                            <td colSpan={row.getVisibleCells().length}>
-                              {renderVariants({ row: row as Row<Product> })}
-                            </td>
-                          </tr>
-                        )*/}
                       </Fragment>
                     );
                   })}

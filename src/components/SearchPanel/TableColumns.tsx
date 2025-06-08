@@ -1,30 +1,10 @@
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
-import BookmarkIcon from "@/icons/BookmarkIcon";
-import IconButton from "@mui/material/IconButton";
 import { ColumnDef, type Row, type SortingFn } from "@tanstack/react-table";
 import { hasFlag } from "country-flag-icons";
 import getUnicodeFlagIcon from "country-flag-icons/unicode";
 import { default as Link } from "../TabLink";
 import "./TableColumns.scss";
-
-/**
- * BookmarkIconButton component that renders a bookmark icon button for each row.
- * Currently only logs the row data when clicked.
- *
- * @component
- */
-const BookmarkIconButton = ({ row }: ProductRow) => {
-  return (
-    <IconButton
-      size="small"
-      onClick={() => console.log(row.original)}
-      className="boookmark-icon boookmark-button"
-    >
-      <BookmarkIcon className="boookmark-button boookmark-icon" />
-    </IconButton>
-  );
-};
 
 /**
  * Custom sorting function for price comparison between two product rows.
@@ -65,19 +45,6 @@ const quantitySortingFn: SortingFn<Product> = (rowA: Row<Product>, rowB: Row<Pro
 export default function TableColumns(): ColumnDef<Product, unknown>[] {
   return [
     {
-      id: "bookmark",
-      accessorKey: "bookmark",
-      header: () => null,
-      cell: ({ row }: ProductRow) => <BookmarkIconButton row={row} />,
-      enableHiding: false,
-      enableSorting: false,
-      enableColumnFilter: false,
-      enableResizing: false,
-      size: 3,
-      minSize: 10,
-      maxSize: 10,
-    },
-    {
       id: "expander",
       header: () => null,
       cell: ({ row }: ProductRow) => {
@@ -99,12 +66,10 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         ) : null;
       },
       enableHiding: false,
+      minSize: 20,
       enableSorting: false,
       enableColumnFilter: false,
       enableResizing: false,
-      size: 20,
-      minSize: 20,
-      maxSize: 20,
     },
     {
       id: "title",
@@ -114,7 +79,6 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         return <Link href={row.original.url}>{row.original.title}</Link>;
       },
       enableHiding: false,
-      minSize: 220,
       meta: {
         filterVariant: "text",
         style: {
@@ -133,7 +97,6 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
           textAlign: "left",
         },
       },
-      minSize: 150,
     },
     {
       id: "Country",
@@ -149,8 +112,6 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
           textAlign: "center",
         },
       },
-      minSize: 50,
-      maxSize: 60,
     },
     {
       accessorKey: "description",
@@ -161,7 +122,6 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
           textAlign: "left",
         },
       },
-      minSize: 215,
     },
     {
       id: "price",
@@ -169,17 +129,10 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       accessorKey: "price",
       cell: ({ row }: ProductRow) => {
         console.log("PRICE:", row.original.price, row.original);
-        //const price = Number(parseFloat(row.original.price.toString()).toFixed(2)).toLocaleString();
-        //return `${row.original.currencySymbol as string}${row.original.price}`;
         return new Intl.NumberFormat("USD", {
           style: "currency",
           currency: "USD",
         }).format(row.original.usdPrice as number);
-
-        return new Intl.NumberFormat((row.original?.currencyCode as string) || "USD", {
-          style: "currency",
-          currency: (row.original?.currencyCode as string) || "USD",
-        }).format(row.original.price);
       },
       sortingFn: priceSortingFn,
       meta: {
@@ -188,7 +141,6 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
           textAlign: "left",
         },
       },
-      maxSize: 80,
     },
     {
       id: "quantity",
@@ -204,7 +156,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         return `${row.original.quantity} ${row.original.uom}`;
       },
       sortingFn: quantitySortingFn,
-      maxSize: 50,
+      minSize: 80,
     },
     {
       id: "uom",
@@ -216,7 +168,6 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
           textAlign: "left",
         },
       },
-      maxSize: 50,
     },
   ];
 }

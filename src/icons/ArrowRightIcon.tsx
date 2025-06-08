@@ -26,7 +26,7 @@ const ArrowRightIcon: React.FC<SvgIconProps> = (props) => {
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <path d="M8.59 16.59L13.17 12L8.59 7.41L10 6L16 12L10 18L8.59 16.59Z" fill="currentColor" />
+        <path d="M10 17l5-5-5-5v10z" fill="currentColor" />
       </svg>
     </SvgIcon>
   );

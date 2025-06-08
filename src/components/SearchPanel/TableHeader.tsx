@@ -104,7 +104,7 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
                 colSpan={header.colSpan}
                 style={
                   {
-                    width: `calc(var(--header-${header?.id}-size) * 1px)`,
+                    width: `${header.getSize()}px`,
                     // eslint-disable-next-line @typescript-eslint/naming-convention
                     "--header-size": `${header.getSize()}px`,
                     // eslint-disable-next-line @typescript-eslint/naming-convention
