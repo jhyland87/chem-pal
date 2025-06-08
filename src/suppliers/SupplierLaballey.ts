@@ -20,4 +20,7 @@ export default class SupplierLaballey extends SupplierBaseShopify implements ISu
 
   // API key for Typesense search API
   protected apiKey: string = "8B7o0X1o7c";
+
+  // The payment methods accepted by the supplier.
+  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
 }

@@ -61,18 +61,8 @@ declare global {
     menu_id?: number;
   }
 
-  /**
-   * Creates an opaque type with a type name
-   * @param T - The base type
-   * @param K - The type name string
-   */
-  type Opaque<T, K extends string> = T & { __typename: K };
-
-  /** Represents a Base64 encoded string */
-  type Base64 = Opaque<string, "base64">;
-
   /** Represents encoded search parameters */
-  type EncodedSearchParams = Base64;
+  type EncodedSearchParams = Base64String;
 
   /**
    * Response from the Ambeed product list API

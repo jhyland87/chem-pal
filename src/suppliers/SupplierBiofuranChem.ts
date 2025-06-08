@@ -24,4 +24,7 @@ export default class SupplierBioFuranChem extends SupplierBaseWix implements ISu
   // The country code of the supplier.
   // This is used to determine the currency and other country-specific information.
   public readonly country: CountryCode = "US";
+
+  // The payment methods accepted by the supplier.
+  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
 }

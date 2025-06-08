@@ -107,6 +107,7 @@ export default function ResultsTable({
         resultCount={searchResults.length}
         onClick={handleStopSearch}
       />
+
       <Paper id="search-results-table-container">
         <Box
           className="search-input-container fullwidth"
@@ -114,6 +115,7 @@ export default function ResultsTable({
           noValidate
           autoComplete="off"
         />
+
         <div className="p-2" style={{ minHeight: "369px" }}>
           <TableOptions table={table} onSearch={executeSearch} />
           <div className="h-4" />

@@ -64,6 +64,9 @@ export default class SupplierSynthetika
   /** The country code of the supplier */
   public readonly country: CountryCode = "PL";
 
+  // The payment methods accepted by the supplier.
+  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+
   /** Override the type of queryResults to use our specific type */
   protected queryResults: Array<SynthetikaProduct> = [];
 

@@ -75,6 +75,12 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
   public abstract readonly country: CountryCode;
 
   /**
+   * The payment methods accepted by the supplier.
+   * This is used to determine the payment methods accepted by the supplier.
+   */
+  public abstract readonly paymentMethods: PaymentMethod[];
+
+  /**
    * String to query for (Product name, CAS, etc).
    * This is the search term that will be used to find products.
    * Set during construction and used throughout the supplier's lifecycle.

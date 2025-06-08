@@ -32,6 +32,10 @@ export default class SupplierChemsavers
   // The country code of the supplier.
   public readonly country: CountryCode = "US";
 
+  // The payment methods accepted by the supplier.
+  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+
+  // The API URL for the Typesense search API.
   protected apiURL: string = "0ul35zwtpkx14ifhp-1.a1.typesense.net";
 
   // Override the type of queryResults to use our specific type
@@ -40,7 +44,7 @@ export default class SupplierChemsavers
   // Used to keep track of how many requests have been made to the supplier.
   protected httpRequstCount: number = 0;
 
-  // API key for Typesense search API
+  // The API key for the Typesense search API.
   protected apiKey: string = "iPltuzpMbSZEuxT0fjPI0Ct9R1UBETTd";
 
   // HTTP headers used as a basis for all queries.

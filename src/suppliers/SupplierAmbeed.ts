@@ -35,6 +35,9 @@ export default class SupplierAmbeed
   // The country code of the supplier.
   public readonly country: CountryCode = "CN";
 
+  // The payment methods accepted by the supplier.
+  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+
   // Override the type of queryResults to use our specific type
   protected queryResults: Array<AmbeedProductObject> = [];
 
@@ -79,8 +82,8 @@ export default class SupplierAmbeed
     ["\u00ee", "9"],
   ]);
 
-  protected makeQueryParams(query: string): Base64 {
-    return btoa(JSON.stringify({ keyword: query })) as Base64;
+  protected makeQueryParams(query: string): Base64String {
+    return btoa(JSON.stringify({ keyword: query })) as Base64String;
   }
 
   /**
@@ -218,7 +221,7 @@ export default class SupplierAmbeed
     const response: unknown = await this.httpGetJson({
       path: "webapi/v1/productlistbykeyword",
       params: {
-        params: this.makeQueryParams(query) as Base64,
+        params: this.makeQueryParams(query) as Base64String,
       },
     });
 

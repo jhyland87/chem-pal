@@ -17,4 +17,7 @@ export default class SupplierFtfScientific extends SupplierBaseWix implements IS
 
   // The country code of the supplier.
   public readonly country: CountryCode = "US";
+
+  // The payment methods accepted by the supplier.
+  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
 }

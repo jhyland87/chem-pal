@@ -68,6 +68,14 @@ export default class SupplierLaboratoriumDiscounter
   // The country code of the supplier.
   public readonly country: CountryCode = "NL";
 
+  // The payment methods accepted by the supplier.
+  public readonly paymentMethods: PaymentMethod[] = [
+    "mastercard",
+    "visa",
+    "paypal",
+    "banktransfer",
+  ];
+
   // Override the type of queryResults to use our specific type
   protected queryResults: Array<LaboratoriumDiscounterProductObject> = [];
 
@@ -96,6 +104,24 @@ export default class SupplierLaboratoriumDiscounter
     "x-requested-with": "XMLHttpRequest",
     /* eslint-enable */
   };
+
+  /**
+   * Category IDs to include in the search (and including any that aren't in these
+   * categories or their sub-categories).
+   */
+  protected readonly categoryIds: number[] = [
+    // The "root" category for most of  the below is category 9319956 ("chemicals"),
+    // but that also includes categories like ion-exchangers, natural oils, etc. So
+    // well keep it to the sub-categories that were certain only store reagents (or
+    // any source or quality).)
+    9319959, // chemicals/a-z
+    11521218, // TCI chemicals (chemicals/tci-chemicals)
+    9781324, // own-brand-products/chemicals
+    11064117, // chemicals/food-grade-pharma/fine-chemicals
+    9718743, // Elements (chemicals/elements)
+    11064112, // Food grade / Pharma (chemicals/food-grade-pharma)
+    11720203, // Ultra Pure Grade Chemicals (chemicals/ultra-pure-grade-chemicals)
+  ];
 
   /**
    * Constructs the query parameters for a product search request

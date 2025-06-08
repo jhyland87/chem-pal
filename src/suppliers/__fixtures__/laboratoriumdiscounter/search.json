@@ -1,0 +1,585 @@
+{
+  "page": {
+    "search": "tester",
+    "session_id": "",
+    "key": "c538017e8bea9778efa144c5e5c0aeae",
+    "title": "Search results for tester",
+    "breadcrumbs": [
+      {
+        "url": "search\/tester",
+        "title": "Search results for tester"
+      }
+    ],
+    "back": false,
+    "cart": {
+      "quote_id": 1293101011,
+      "products": [
+        {
+          "id": 152054107,
+          "vid": 301799476,
+          "image": 459771850,
+          "brand": false,
+          "code": "CDS22.1",
+          "ean": "",
+          "sku": "CDS22.1",
+          "score": 0,
+          "price": {
+            "price": 19.8,
+            "price_incl": 23.96,
+            "price_excl": 19.8,
+            "price_old": 0,
+            "price_old_incl": 0,
+            "price_old_excl": 0
+          },
+          "price_cost": false,
+          "weight": 99999000,
+          "volume": 0,
+          "colli": 0,
+          "size": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "tax": 0.21,
+          "url": "carbon-disulfide-9999-ultra-pure.html",
+          "title": "Carbon Disulfide 99.99% Ultra Pure",
+          "fulltitle": "Carbon Disulfide 99.99% Ultra Pure",
+          "variant": "Variant,100 ml,CAS,75-15-0,ADR,UN1131 3 6.1 I",
+          "description": "",
+          "stock": {
+            "available": true,
+            "on_stock": true,
+            "track": true,
+            "allow_outofstock_sale": true,
+            "level": 94,
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "data_01": "",
+          "qid": "2129274951",
+          "quantity": "1",
+          "unit": {
+            "unit": "",
+            "price": null
+          },
+          "additional_cost": {
+            "price_incl": null,
+            "price_excl": null
+          }
+        }
+      ],
+      "total": {
+        "price": 19.8,
+        "price_incl": 19.8,
+        "price_excl": 19.8,
+        "price_old": 0,
+        "price_old_incl": 0,
+        "price_old_excl": 0
+      },
+      "additional_cost": false
+    },
+    "account": false,
+    "recent": {},
+    "compare": false,
+    "messages": false,
+    "stats": "https:\/\/www.laboratoriumdiscounter.nl\/en\/services\/stats\/pageview.js",
+    "no_index": false,
+    "status": 200
+  },
+  "collection": {
+    "filters": {
+      "page": 1,
+      "sort": "asc",
+      "limit": 1,
+      "mode": "grid",
+      "min": 766,
+      "max": 3000,
+      "brand": 0,
+      "search": false,
+      "custom": []
+    },
+    "ajax": "search\/tester\/page1.ajax?format=json&limit=1&max=3000&min=766&mode=grid&sort=asc",
+    "internal": {
+      "url": "search\/tester",
+      "page": 1,
+      "filters": {
+        "sort": ["asc", "asc"],
+        "mode": ["grid", "grid"],
+        "limit": [1, 24],
+        "min": [766, 0],
+        "max": [3000, 3000],
+        "brand": [0, 0],
+        "search": [false, false],
+        "custom": []
+      }
+    },
+    "brand": 0,
+    "brand2": false,
+    "brands": false,
+    "search": false,
+    "mode": "grid",
+    "mode2": {
+      "id": "grid",
+      "title": "Grid"
+    },
+    "modes": {
+      "grid": {
+        "id": "grid",
+        "title": "Grid"
+      },
+      "list": {
+        "id": "list",
+        "title": "List"
+      }
+    },
+    "count": 4,
+    "page_prev": false,
+    "page_next": 2,
+    "limit": 1,
+    "page": 1,
+    "pages": 4,
+    "items_from": 1,
+    "items_to": 1,
+    "price_min": 0,
+    "price_max": 3000,
+    "sort": "asc",
+    "sort2": {
+      "id": "asc",
+      "title": "Name ascending"
+    },
+    "sorts": {
+      "popular": {
+        "id": "popular",
+        "title": "Popularity"
+      },
+      "newest": {
+        "id": "newest",
+        "title": "Newest products"
+      },
+      "lowest": {
+        "id": "lowest",
+        "title": "Lowest price"
+      },
+      "highest": {
+        "id": "highest",
+        "title": "Highest price"
+      },
+      "asc": {
+        "id": "asc",
+        "title": "Name ascending"
+      },
+      "desc": {
+        "id": "desc",
+        "title": "Name descending"
+      }
+    },
+    "products": {
+      "130393592": {
+        "id": 130393592,
+        "vid": 258418821,
+        "image": 392111588,
+        "brand": false,
+        "code": "YC36.1",
+        "ean": "",
+        "sku": "YC36.1",
+        "score": 0,
+        "price": {
+          "price": 1768.305,
+          "price_incl": 2139.6491,
+          "price_excl": 1768.305,
+          "price_old": 0,
+          "price_old_incl": 0,
+          "price_old_excl": 0
+        },
+        "available": true,
+        "unit": false,
+        "url": "flake-tester-et-series-model-et-730-analog.html",
+        "title": "Flake tester ET Series Model ET 730 analog",
+        "fulltitle": "Flake tester ET Series Model ET 730 analog",
+        "variant": "1 Piece",
+        "description": "Flake tester AL30 analog 4 stirring positions For different applications, e.g. for testing the effectiveness of the flakes and precipitating agents. AL30 analog For 4 beaker glasses, low shape, up to 1000 ml Portable, for mobile deployment The rudder posi",
+        "data_01": ""
+      }
+    },
+    "title": "Search results for tester"
+  },
+  "shop": {
+    "id": 286851,
+    "theme_id": 165726,
+    "theme_version_id": 2648705,
+    "theme_active_version_id": 2648705,
+    "status": "live",
+    "show_demobar": false,
+    "domain": "https:\/\/www.laboratoriumdiscounter.nl\/",
+    "canonical": "https:\/\/www.laboratoriumdiscounter.nl\/en\/search\/tester\/",
+    "is_canonical": false,
+    "name": "Laboratorium Discounter | Affordable lab supplies",
+    "title": "Laboratorium DiscounterLaboratorium Discounter | Affordable lab supplies",
+    "description": "Order affordable lab supplies at Laboratory Discounter. From microscopes to chemicals, fast delivery in the UK. Browse our range today!",
+    "keywords": "Search, results, for, tester",
+    "languages": {
+      "en": {
+        "code": "en",
+        "url": "https:\/\/www.laboratoriumdiscounter.nl\/en\/",
+        "title": "English",
+        "active": true
+      }
+    },
+    "language": "en",
+    "language2": {
+      "code": "en",
+      "url": "https:\/\/www.laboratoriumdiscounter.nl\/en\/",
+      "title": "English",
+      "active": true
+    },
+    "locale": "en_GB",
+    "currencies": {
+      "eur": {
+        "url": "session\/currency\/eur",
+        "symbol": "\u20ac",
+        "code": "EUR",
+        "title": "eur",
+        "active": true
+      }
+    },
+    "currency": "eur",
+    "currency2": {
+      "url": "session\/currency\/eur",
+      "symbol": "\u20ac",
+      "code": "EUR",
+      "title": "eur",
+      "active": true
+    },
+    "base_currency": "eur",
+    "country": "nl",
+    "country_codes": {
+      "United States": {
+        "code": 1,
+        "countryCode": "US"
+      }
+    },
+    "b2b": true,
+    "cookies": {
+      "allow": true,
+      "toolbar": false,
+      "strict": true,
+      "message": "",
+      "analytics": true,
+      "social": true,
+      "ads": true
+    },
+    "domains": {
+      "main": "webshopapp.com",
+      "normal": "https:\/\/www.laboratoriumdiscounter.nl\/en\/",
+      "secure": "https:\/\/www.laboratoriumdiscounter.nl\/en\/",
+      "assets": "https:\/\/cdn.webshopapp.com\/shops\/286851\/themes\/165726\/assets\/",
+      "static": "https:\/\/static.webshopapp.com\/shops\/286851\/"
+    },
+    "hallmarks": [],
+    "scripts": {
+      "6756978": {
+        "id": 6756978,
+        "secure": true,
+        "src": null,
+        "body": "var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();(function(){var s1=document.createElement('script'),s0=document.getElementsByTagName('script')[0];s1.async=true;s1.src='https:\/\/embed.tawk.to\/5ed8fc3a9e5f6944228fe1ad\/default';s1.charset='UTF-8';s1.setAttribute('crossorigin','*');s0.parentNode.insertBefore(s1,s0);})();Tawk_API.onLoad = function(){ $.ajax({  url : document.location.href.split('?')[0] + '?format=json',  success : function(data) {    var tawkAttributes = {};    var language = data.shop.language2.code;    tawkAttributes.Language = language;    var loggedIn = false;    var account = data.page.account;    if (account !== undefined && account != false) {      loggedIn = true;      var email = account.email;      var fullname = account.fullname;      tawkAttributes['Fullname'] = fullname;      tawkAttributes['Emailaddress'] = email;    }    var cart = data.page.cart;    if (cart !== undefined && cart != false) {       var currency = data.shop.currency2.code;       var cartAttribute = '';       for (var i = 0; i < cart.products.length; i++) {         var product = cart.products[i];         cartAttribute += ' ' + product.quantity + 'x ' + product.fulltitle + ': ' + currency + ' ' + product.price.price + '\\n';       }       cartAttribute += 'Total: ' + cart.total.price + '\\n';        tawkAttributes['Cart'] = cartAttribute;    }    if (!loggedIn) {      Tawk_API.setAttributes(tawkAttributes, function error(err){console.log('Tawk to setAttributes callback message: ' + err)});    } else {     $.ajax({     url : '\/account\/?format=json',     success : function(data) {       var account = data.account;       if (account !== undefined) {         var accountInfo = account.information;         tawkAttributes['Phone'] = accountInfo.phone;         var orderInfo = account.orders;         if (orderInfo.length > 0) {           var orderAttribute = '';           for (var i = 0; i < orderInfo.length; i++) {             var order = orderInfo[i];             var d = new Date(order.date);             var ds = (d.getDate() < 10 ? '0' : '') + d.getDate() + '-' + (d.getMonth() < 10 ? '0' : '') + d.getMonth() + '-' + d.getFullYear();             var p = order.price.toFixed(2);             var u = 'http:\/\/www.laboratoriumdiscounter.nl\/admin\/orders\/' + order.id;             orderAttribute += ds + ': ' + p + ' (' + order.status + ') ' + u + '\\n';           }         }       }       tawkAttributes['Order-history'] = orderAttribute;       Tawk_API.setAttributes(tawkAttributes, function error(err) {          if (err !== undefined) {            console.log('Tawk to setAttributes callback message: ' + err);          }        })     },       error : function(err) {       console.log('tawk.to chat error (1): ' + JSON.stringify(err));     }     });    }  },  error : function(err) {    console.log('tawk.to chat error (2): ' + JSON.stringify(err));  } });};",
+        "location": "body"
+      }
+    },
+    "blogs": {
+      "onze-blogs": {
+        "id": 56848,
+        "url": "blogs\/onze-blogs",
+        "title": "our blogs!",
+        "articles": [
+          {
+            "id": 465283,
+            "image": 475064453,
+            "url": "blogs\/onze-blogs\/mosquito-prone-try-this",
+            "title": "Mosquito-prone? Try this!",
+            "summary": "",
+            "date": "2025-04-06 20:45:00"
+          }
+        ]
+      },
+      "experimenten": {
+        "id": 57177,
+        "url": "blogs\/experimenten",
+        "title": "Experiments!",
+        "articles": [
+          {
+            "id": 400601,
+            "image": 432958877,
+            "url": "blogs\/experimenten\/cyanotype-this-is-how",
+            "title": "Cyanotype,  This is how!",
+            "summary": "",
+            "date": "2023-06-29 10:03:00"
+          }
+        ]
+      },
+      "uitleg-over-chemicalien": {
+        "id": 59087,
+        "url": "blogs\/uitleg-over-chemicalien",
+        "title": "Explanation about chemicals",
+        "articles": [
+          {
+            "id": 416903,
+            "image": 446806365,
+            "url": "blogs\/uitleg-over-chemicalien\/hexanoic-acid-unveiling-the-chemistry-behind-the-m",
+            "title": "Hexanoic Acid: Unveiling the Chemistry Behind the Molecule",
+            "summary": "",
+            "date": "2024-01-03 12:10:00"
+          }
+        ]
+      }
+    },
+    "links": {
+      "service": [
+        {
+          "new_window": false,
+          "url": "service\/about",
+          "title": "About us"
+        },
+        {
+          "new_window": false,
+          "url": "service\/general-terms-conditions",
+          "title": "Algemene voorwaarden"
+        }
+      ],
+      "main": [
+        {
+          "new_window": false,
+          "url": "chemicals",
+          "title": "Chemicals"
+        }
+      ]
+    },
+    "categories": {
+      "9319956": {
+        "id": 9319956,
+        "parent": 0,
+        "path": ["9319956"],
+        "depth": 1,
+        "image": 429066757,
+        "type": "category",
+        "url": "chemicals",
+        "title": "chemicals",
+        "description": "chemicals",
+        "count": 50549,
+        "subs": {
+          "9319959": {
+            "id": 9319959,
+            "parent": 9319956,
+            "path": ["9319959", "9319956"],
+            "depth": 2,
+            "image": 294164370,
+            "type": "category",
+            "url": "chemicals\/a-z",
+            "title": "A-Z",
+            "description": "",
+            "count": 814
+          }
+        }
+      }
+    },
+    "brands": false,
+    "tags": {
+      "15819722": {
+        "id": 15819722,
+        "url": "tags\/sdb-nl-0-sdb-0018-de-depdf",
+        "title": "-sdb-nl-0-SDB_0018_DE_DE.pdf",
+        "count": 1,
+        "index": 0.007
+      }
+    },
+    "payments": {
+      "banktransfer": {
+        "id": "payment_method",
+        "icon": "icon-payment-banktransfer.png",
+        "title": "Bank transfer"
+      }
+    },
+    "express": [],
+    "settings": {
+      "account": {
+        "tickets": false,
+        "password_strength": 1
+      },
+      "catalog": {
+        "prices": "enabled",
+        "variants": false,
+        "collection": {
+          "mode": "grid",
+          "sort": "asc",
+          "presort": false,
+          "limit": 24
+        }
+      },
+      "checkout": {
+        "mode": "enabled",
+        "terms": "show_checkbox",
+        "minimum_amount": false,
+        "register": "enabled",
+        "register_address": "optional",
+        "combine_taxes_on_checkout": false
+      },
+      "cookielaw": 2,
+      "cookielaw_message": "",
+      "customer": {
+        "gender": "required",
+        "birthdate": "required",
+        "national_id": false,
+        "middlename": false,
+        "email": false,
+        "phone": "required",
+        "mobile": "optional",
+        "region": "optional",
+        "social": false,
+        "company": {
+          "mode": "optional",
+          "coc": "optional",
+          "vat": "required"
+        }
+      },
+      "discount_before_tax": false,
+      "discount_code_minimum_after": true,
+      "discount_rule_minimum_after": false,
+      "hybrid_tax_enabled": false,
+      "legal": {
+        "mode": "normal"
+      },
+      "paypalcp": [],
+      "price_per_unit": "enabled",
+      "service": {
+        "contact": true,
+        "returns": false
+      },
+      "show_demobar": false,
+      "sms": false,
+      "sms_optin": false,
+      "social": {
+        "facebook": false,
+        "pinterest": false,
+        "twitter": false,
+        "google": false,
+        "google_publisher": false,
+        "addthis": false,
+        "vk": false
+      },
+      "stats": {
+        "google_v4": {
+          "code": "G-39WP3L321Y"
+        },
+        "clicky": false,
+        "ga": "ga4"
+      },
+      "template_editor": true,
+      "verify": {
+        "google": [
+          "HytkR3SVIv4AB4ozTJ8LWti0yfmA6cqXuofb3upuhZs",
+          "zlVb9-klAhDC6oXD_Rx7ryGdi0CnkgzE-geBgtn1llU"
+        ]
+      },
+      "wish_list": true
+    },
+    "renderers": ["main"],
+    "admin1": false,
+    "admin2": true,
+    "core_version": "2025-02-20",
+    "assets_version": "2025052817073320201113104512",
+    "sells_gift_cards_online": false,
+    "gift_card_ecom": false,
+    "gift_card_custom_fields": true,
+    "gdpr_theme": false
+  },
+  "theme": {
+    "all_in_cart_collectionpage": 0,
+    "amount_products": "4",
+    "banner_left": {
+      "width": 668,
+      "height": 284,
+      "src": "https:\/\/cdn.webshopapp.com\/shops\/286851\/themes\/165726\/v\/686681\/assets\/banner_left.jpg?20210510164123"
+    },
+    "banner_left_content": null,
+    "banner_right": {
+      "width": 668,
+      "height": 284,
+      "src": "https:\/\/cdn.webshopapp.com\/shops\/286851\/themes\/165726\/v\/686682\/assets\/banner_right.jpg?20210510164547"
+    },
+    "banner_right_content": null,
+    "banner_url_left": "\/nl\/huismerkproducten\/microscopie-optische-instrumenten\/",
+    "banner_url_right": "https:\/\/www.laboratoriumdiscounter.nl\/nl\/huismerkproducten\/apparatuur\/",
+    "banners": 1,
+    "banners_position": "under",
+    "big_banner_home": {
+      "width": 1370,
+      "height": 350,
+      "src": "https:\/\/cdn.webshopapp.com\/shops\/286851\/themes\/165726\/v\/1389786\/assets\/bigbannerhome.jpg?20221121155321"
+    },
+    "body_font_weight": "400",
+
+    "usp_1_content": "Huismerkproducten binnen 1 dag verstuurd",
+    "usp_1_icon": "fa-check",
+    "usp_nav": "#ffffff",
+    "usp_nav_color": "#000000",
+    "usp_position": "down",
+    "wednesday": "9:00-17:00",
+    "yotpo": null
+  },
+  "request": {
+    "url": "https:\/\/www.laboratoriumdiscounter.nl\/en\/search\/tester\/?max=3000&max=3000&min=766&mode=grid&limit=1&sort=asc&format=json",
+    "method": "get",
+    "ssl": true,
+    "get": {
+      "max": "3000",
+      "min": "766",
+      "mode": "grid",
+      "limit": "1",
+      "sort": "asc",
+      "format": "json"
+    },
+    "post": [],
+    "device": {
+      "platform": "osx",
+      "type": "webkit",
+      "mobile": false
+    },
+    "country": "us"
+  },
+  "layout": "layouts\/clean.rain",
+  "template": "pages\/collection.rain",
+  "renderer": "json",
+  "datadog_browser": {
+    "is_enabled": false,
+    "app_id": "6ac09a13-ecbf-4049-baf7-978db6d54472",
+    "client_token": "pub6034cde3e43ed68b0046512a6a3ac04b",
+    "environment": "production",
+    "version": "5664cab8d30fdb3d4b30b305f8b9c11f70af6c7d"
+  },
+  "gtag": {
+    "events": {
+      "view_item_list": {
+        "items": [
+          {
+            "item_id": "YC36.1",
+            "item_name": "Flake tester ET Series Model ET 730 analog",
+            "currency": "EUR",
+            "item_brand": "",
+            "item_variant": "1 Piece",
+            "price": 1768.305,
+            "quantity": 1
+          }
+        ]
+      }
+    },
+    "enabled": true,
+    "gtag_id": "G-39WP3L321Y",
+    "consent": [
+      {
+        "ad_storage": "granted",
+        "ad_user_data": "granted",
+        "ad_personalization": "granted",
+        "analytics_storage": "granted"
+      }
+    ]
+  }
+}

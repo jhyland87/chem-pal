@@ -37,6 +37,9 @@ export default class SupplierWarchem
   // This is used to determine the currency and other country-specific information.
   public readonly country: CountryCode = "PL";
 
+  // The payment methods accepted by the supplier.
+  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+
   // Cached search results from the last query execution
   protected queryResults: Array<Partial<Product>> = [];
 
@@ -59,6 +62,7 @@ export default class SupplierWarchem
     await this.httpPost({
       path: "/szukaj.html",
       body: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         ilosc_na_stronie: 36,
       },
     });
@@ -287,7 +291,7 @@ export default class SupplierWarchem
       // @todo The typing on this seems to be incorrect, will require a global type override
       const priceParsed = priceParser.parseFirst(
         `${productMeta["product:price:amount"]} ${productMeta["product:price:currency"]}`,
-      ) as any;
+      );
 
       if (priceParsed?.currency) {
         product.setCurrencySymbol(priceParsed?.currency?.symbols?.at(0));

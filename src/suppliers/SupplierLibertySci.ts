@@ -33,4 +33,7 @@ export default class SupplierLibertySci extends SupplierBaseWoocommerce implemen
 
   // The base URL for the supplier's website.
   public readonly baseURL: string = "https://libertysci.com";
+
+  // The payment methods accepted by the supplier.
+  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
 }

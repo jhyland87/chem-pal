@@ -11,6 +11,7 @@ export { default as BenzeneBlueIcon } from "./BenzeneBlueIcon";
 export { default as BenzeneIcon } from "./BenzeneIcon";
 export { default as BookmarkIcon } from "./BookmarkIcon";
 export { default as ContrastIcon } from "./ContrastIcon";
+export { default as CryptoPaymentIcon } from "./CryptoPaymentIcon";
 export { default as GitHubIcon } from "./GitHubIcon";
 export { default as HistoryIcon } from "./HistoryIcon";
 export { default as InfoOutlineIcon } from "./InfoOutlineIcon";

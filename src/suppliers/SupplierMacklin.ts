@@ -111,6 +111,9 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
   /** The country code of the supplier. */
   public readonly country: CountryCode = "CN";
 
+  // The payment methods accepted by the supplier.
+  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+
   /** Override the type of queryResults to use our specific type */
   protected queryResults: Array<Product> = [];
 

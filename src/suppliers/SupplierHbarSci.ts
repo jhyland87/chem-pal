@@ -22,6 +22,9 @@ export default class SupplierHbarSci extends SupplierBaseShopify implements ISup
   // The country code of the supplier.
   public readonly country: CountryCode = "US";
 
+  // The payment methods accepted by the supplier.
+  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+
   // API key for Typesense search API
   protected apiKey: string = "2H3i9C5v0m";
 

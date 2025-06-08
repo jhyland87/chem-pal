@@ -43,4 +43,7 @@ export default class SupplierCarolinaChemical extends SupplierBaseWoocommerce im
 
   // The country code of the supplier.
   public readonly country: CountryCode = "US";
+
+  // The payment methods accepted by the supplier.
+  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
 }

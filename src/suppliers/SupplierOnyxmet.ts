@@ -39,6 +39,9 @@ export default class SupplierOnyxmet
   // This is used to determine the currency and other country-specific information.
   public readonly country: CountryCode = "CA";
 
+  // The payment methods accepted by the supplier.
+  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+
   // Cached search results from the last query execution
   protected queryResults: OnyxMetSearchResultResponse[] = [];
 

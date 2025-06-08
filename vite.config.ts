@@ -38,6 +38,10 @@ export default ({ mode }: { mode: string }) => {
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
+        "react-svg-credit-card-payment-icons": path.resolve(
+          __dirname,
+          "node_modules/react-svg-credit-card-payment-icons/dist/index.js",
+        ),
       },
     },
     optimizeDeps: {
@@ -93,6 +97,7 @@ export default ({ mode }: { mode: string }) => {
                   "react-form-hook",
                   "react-icons",
                   "react-virtuoso",
+                  "react-svg-credit-card-payment-icons",
                 ],
               },
         },

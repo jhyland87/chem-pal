@@ -34,6 +34,9 @@ export default class SupplierLoudwolf
   // Shipping scope for Loudwolf
   public readonly shipping: ShippingRange = "worldwide";
 
+  // The payment methods accepted by the supplier.
+  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+
   // The country code of the supplier.
   // This is used to determine the currency and other country-specific information.
   public readonly country: CountryCode = "US";
