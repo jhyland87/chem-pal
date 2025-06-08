@@ -87,11 +87,23 @@
  */
 export function isSearchResponseOk(response: unknown): response is SearchResponse {
   if (typeof response !== "object" || response === null) {
+    console.warn("Invalid search response - Response is not an object:", response);
     return false;
   }
 
   // Check for required top-level properties
-  if (!("page" in response && "request" in response && "collection" in response)) {
+  if ("page" in response === false) {
+    console.warn("Invalid search response - Response is missing page property:", response);
+    return false;
+  }
+
+  if ("request" in response === false) {
+    console.warn("Invalid search response - Response is missing request property:", response);
+    return false;
+  }
+
+  if ("collection" in response === false) {
+    console.warn("Invalid search response - Response is missing collection property:", response);
     return false;
   }
 
@@ -113,6 +125,10 @@ export function isSearchResponseOk(response: unknown): response is SearchRespons
   });
 
   if (badProps.length > 0) {
+    console.warn(
+      "Invalid search response - Response page is missing required properties:",
+      badProps,
+    );
     return false;
   }
 

@@ -9,10 +9,10 @@ declare global {
    * - Categorization and metadata
    * - Product identifiers (SKU, UPC, CAS)
    */
-  interface ProductObject {
+  interface ChemsaversProductObject {
     /* eslint-disable */
     /** Chemical Abstracts Service registry number */
-    CAS: string;
+    CAS?: string;
     /** Final calculated price after any adjustments */
     calculatedPrice: number;
     /** List of categories the product belongs to */
@@ -53,8 +53,12 @@ declare global {
     upc: string;
     /** Product page URL */
     url: string;
+    /** Array of variant products */
+    variants?: ChemsaversProductVariant[];
     /* eslint-enable */
   }
+
+  type ChemsaversProductVariant = Omit<ChemsaversProductObject, "variants">;
 
   /**
    * Represents the response structure from the Typesense search API.
@@ -66,7 +70,7 @@ declare global {
    * - Paginated product hits
    * - Search metadata and parameters
    */
-  interface SearchResponse {
+  interface ChemsaversSearchResponse {
     /* eslint-disable */
     /** Array of search result objects */
     results: {
@@ -78,7 +82,7 @@ declare global {
       hits: [
         {
           /** The matching product data */
-          document: ProductObject;
+          document: ChemsaversProductObject;
         },
       ][];
       /** Total number of records searched */

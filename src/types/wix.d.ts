@@ -94,6 +94,8 @@ declare global {
     description: string;
     /** Manufacturer or brand name of the product */
     brand: string | null;
+    /** Array of variant products */
+    variants?: ProductObject[];
   }
 
   /**

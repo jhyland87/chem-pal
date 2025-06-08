@@ -415,7 +415,7 @@ export function checkObjectStructure(data: unknown, requiredProps: Record<string
   });
 
   if (hasRequiredProps === false) {
-    console.warn("data is not AmbeedProductObject - ", data);
+    console.warn("data is not valid - ", data);
     return false;
   }
 

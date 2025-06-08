@@ -2,7 +2,7 @@ import { isCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
-import { isValidSearchResponse } from "@/utils/typeGuards/chemsavers";
+import { assertValidSearchResponse } from "@/utils/typeGuards/chemsavers";
 import SupplierBase from "./SupplierBase";
 
 /**
@@ -17,7 +17,7 @@ import SupplierBase from "./SupplierBase";
  * @category Suppliers
  */
 export default class SupplierChemsavers
-  extends SupplierBase<ProductObject, Product>
+  extends SupplierBase<ChemsaversProductObject, Product>
   implements ISupplier
 {
   // Name of supplier (for display purposes)
@@ -35,7 +35,7 @@ export default class SupplierChemsavers
   protected apiURL: string = "0ul35zwtpkx14ifhp-1.a1.typesense.net";
 
   // Override the type of queryResults to use our specific type
-  protected queryResults: Array<ProductObject> = [];
+  protected queryResults: Array<ChemsaversProductObject> = [];
 
   // Used to keep track of how many requests have been made to the supplier.
   protected httpRequstCount: number = 0;
@@ -96,10 +96,7 @@ export default class SupplierChemsavers
 
       this.logger.debug("Query response:", response);
 
-      if (!isValidSearchResponse(response)) {
-        this.logger.warn("Bad search response:", response);
-        return;
-      }
+      assertValidSearchResponse(response);
 
       const products = mapDefined(response.results[0].hits.flat(), (hit: unknown) => {
         if (
@@ -109,17 +106,17 @@ export default class SupplierChemsavers
           typeof hit.document !== "object"
         )
           return;
-        return hit.document as ProductObject;
+        return hit.document as ChemsaversProductObject;
       });
 
       this.logger.debug("Mapped response objects:", products);
 
-      const fuzzResults = this.fuzzyFilter<ProductObject>(query, products);
+      const fuzzResults = this.fuzzyFilter<ChemsaversProductObject>(query, products);
 
       this.logger.info("fuzzResults:", fuzzResults);
-
+      const grouped = this.groupVariants<ChemsaversProductObject>(fuzzResults);
       // Initialize product builders from filtered results
-      return this.initProductBuilders(fuzzResults.slice(0, limit));
+      return this.initProductBuilders(grouped.slice(0, limit));
     } catch (error) {
       this.logger.error("Error querying products:", error);
       return;
@@ -153,7 +150,7 @@ export default class SupplierChemsavers
    * }
    * ```
    */
-  protected initProductBuilders(data: ProductObject[]): ProductBuilder<Product>[] {
+  protected initProductBuilders(data: ChemsaversProductObject[]): ProductBuilder<Product>[] {
     return mapDefined(data, (result) => {
       const builder = new ProductBuilder<Product>(this.baseURL);
 
@@ -168,6 +165,24 @@ export default class SupplierChemsavers
         .setPricing(result.price, "USD", "$")
         .setQuantity(quantity.quantity, quantity.uom)
         .setCAS(isCAS(result.CAS) ? result.CAS : "");
+
+      if (result.variants) {
+        builder.setVariants(
+          mapDefined(result.variants, (variant: ChemsaversProductVariant) => {
+            const quantity = parseQuantity(variant.name);
+            if (quantity === undefined) return;
+            return {
+              id: variant.id,
+              sku: variant.sku,
+              title: variant.name,
+              price: variant.price,
+              url: variant.url,
+              ...quantity,
+            };
+          }),
+        );
+      }
+
       return builder;
     });
   }
@@ -231,7 +246,7 @@ export default class SupplierChemsavers
    * @param data - Product object from search response
    * @returns - The title of the product
    */
-  protected titleSelector(data: ProductObject): string {
+  protected titleSelector(data: ChemsaversProductObject): string {
     return data.name;
   }
 }
