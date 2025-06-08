@@ -3,6 +3,8 @@ import ArrowRightIcon from "@/icons/ArrowRightIcon";
 import BookmarkIcon from "@/icons/BookmarkIcon";
 import IconButton from "@mui/material/IconButton";
 import { ColumnDef, type Row, type SortingFn } from "@tanstack/react-table";
+import { hasFlag } from "country-flag-icons";
+import getUnicodeFlagIcon from "country-flag-icons/unicode";
 import { default as Link } from "../TabLink";
 import "./TableColumns.scss";
 
@@ -126,15 +128,38 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       accessorKey: "supplier",
       cell: (info) => info.getValue(),
       meta: {
-        filterVariant: "select",
+        filterVariant: "text",
+        style: {
+          textAlign: "left",
+        },
       },
       minSize: 150,
+    },
+    {
+      id: "Country",
+      header: () => <span>Country</span>,
+      accessorKey: "supplierCountry",
+      cell: (info) => {
+        const country = info.getValue() as string;
+        return hasFlag(country) ? getUnicodeFlagIcon(country) : country;
+      },
+      meta: {
+        filterVariant: "select",
+        style: {
+          textAlign: "center",
+        },
+      },
+      minSize: 50,
+      maxSize: 60,
     },
     {
       accessorKey: "description",
       header: "Description",
       meta: {
         filterVariant: "text",
+        style: {
+          textAlign: "left",
+        },
       },
       minSize: 215,
     },
@@ -159,6 +184,9 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       sortingFn: priceSortingFn,
       meta: {
         filterVariant: "range",
+        style: {
+          textAlign: "left",
+        },
       },
       maxSize: 80,
     },
@@ -168,6 +196,9 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       accessorKey: "quantity",
       meta: {
         filterVariant: "range",
+        style: {
+          textAlign: "left",
+        },
       },
       cell: ({ row }: ProductRow) => {
         return `${row.original.quantity} ${row.original.uom}`;
@@ -181,6 +212,9 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       accessorKey: "uom",
       meta: {
         filterVariant: "select",
+        style: {
+          textAlign: "left",
+        },
       },
       maxSize: 50,
     },

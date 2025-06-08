@@ -38,6 +38,7 @@
     "chance": "^1.1.12",
     "classnames": "^2.5.1",
     "content-type": "^1.0.5",
+    "country-flag-icons": "^1.5.19",
     "currency-parser": "^1.0.0",
     "currency.js": "^2.0.4",
     "fuzzball": "^2.2.2",

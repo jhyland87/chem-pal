@@ -18,7 +18,15 @@ declare global {
    */
   type RequiredProductFields = Pick<
     Product,
-    "title" | "price" | "currencySymbol" | "currencyCode" | "url" | "quantity" | "uom" | "supplier"
+    | "title"
+    | "price"
+    | "currencySymbol"
+    | "currencyCode"
+    | "url"
+    | "quantity"
+    | "uom"
+    | "supplier"
+    | "country"
   >;
 
   /**
