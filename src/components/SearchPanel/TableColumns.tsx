@@ -48,8 +48,6 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       id: "expander",
       header: () => null,
       cell: ({ row }: ProductRow) => {
-        console.log("ROW:", row);
-        console.log("original:", row.original);
         if (!row?.originalSubRows || row?.originalSubRows?.length === 0) {
           return;
         }
@@ -137,7 +135,6 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       header: "Price",
       accessorKey: "price",
       cell: ({ row }: ProductRow) => {
-        console.log("PRICE:", row.original.price, row.original);
         return new Intl.NumberFormat("USD", {
           style: "currency",
           currency: "USD",

@@ -1,5 +1,5 @@
 import { parsePrice } from "@/helpers/currency";
-import { parseQuantity, stripQuantityFromString } from "@/helpers/quantity";
+import { parseQuantity } from "@/helpers/quantity";
 import { urlencode } from "@/helpers/request";
 import { mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
@@ -242,39 +242,8 @@ export default class SupplierSynthetika
     }
 
     const fuzzFiltered = this.fuzzyFilter<SynthetikaProduct>(query, products);
-    const grouped = this.groupVariants(fuzzFiltered);
+    const grouped = this.groupVariants<SynthetikaProduct>(fuzzFiltered);
     return this.initProductBuilders(grouped.slice(0, limit));
-  }
-
-  /**
-   * Group the products that are very similar all into a single product that
-   * has variants.
-   * This is useful for products that are sold in different quantities, but are
-   * essentially the same product.
-   * @param data - Array of products to group
-   * @returns Array of grouped products
-   */
-  private groupVariants(data: SynthetikaProduct[]): SynthetikaProduct[] {
-    type SubType = SynthetikaProduct & { groupId: string };
-    const variants: SubType[] = data.map((item) => {
-      item.name = item.name.replace(/(?<=\d{1,3})\s(?=\d{3})/g, "");
-      const groupId = stripQuantityFromString(item.name);
-      const groupIdWithoutSpaces = groupId.replace(/[\s-]/g, "");
-      return { ...item, groupId: groupIdWithoutSpaces };
-    });
-
-    const products = Object.groupBy(variants, (item) => item.groupId);
-
-    return Object.values(products)
-      .filter((product): product is SubType[] => product !== undefined)
-      .map((product) => {
-        const main = product.splice(0, 1)[0];
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { groupId, ...newObject } = main;
-        newObject.variants = product;
-
-        return newObject;
-      });
   }
 
   /**

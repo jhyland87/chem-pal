@@ -1,6 +1,6 @@
 import { AVAILABILITY } from "@/constants/common";
 import { findCAS } from "@/helpers/cas";
-import { isQuantityObject, parseQuantity, stripQuantityFromString } from "@/helpers/quantity";
+import { isQuantityObject, parseQuantity } from "@/helpers/quantity";
 import { urlencode } from "@/helpers/request";
 import { firstMap, mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
@@ -164,7 +164,7 @@ export default class SupplierLaboratoriumDiscounter
 
     const fuzzFiltered = this.fuzzyFilter<SearchResponseProduct>(query, rawSearchResults);
     this.logger.info("fuzzFiltered:", fuzzFiltered);
-    const grouped = this.groupVariants(fuzzFiltered);
+    const grouped = this.groupVariants<SearchResponseProduct>(fuzzFiltered);
     return this.initProductBuilders(grouped.slice(0, limit));
   }
 
@@ -234,44 +234,6 @@ export default class SupplierLaboratoriumDiscounter
         .setCAS(typeof product.content === "string" ? (findCAS(product.content) ?? "") : "");
       return productBuilder;
     });
-  }
-
-  /**
-   * Groups variants of a product by their title
-   * @param data - Array of product listings from search results
-   * @returns Array of product listings with grouped variants
-   * @todo Create a generic method for this, the same method is used in
-   *       Synthetika and could be of use with LoudWolf.
-   * @example
-   * ```typescript
-   * const results = await this.queryProducts("sodium chloride");
-   * const grouped = this.groupVariants(results);
-   * // grouped is an array of product listings with grouped variants
-   * ```
-   */
-  private groupVariants(
-    data: LaboratoriumDiscounterSearchResponseProduct[],
-  ): LaboratoriumDiscounterSearchResponseProduct[] {
-    type SubType = LaboratoriumDiscounterSearchResponseProduct & { groupId: string };
-    const variants: SubType[] = data.map((item) => {
-      item.title = item.title.replace(/(?<=\d{1,3})\s(?=\d{3})/g, "");
-      const groupId = stripQuantityFromString(item.title);
-      const groupIdWithoutSpaces = groupId.replace(/[\s-]/g, "");
-      return { ...item, groupId: groupIdWithoutSpaces };
-    });
-
-    const products = Object.groupBy(variants, (item) => item.groupId);
-
-    return Object.values(products)
-      .filter((product): product is SubType[] => product !== undefined)
-      .map((product) => {
-        const main = product.splice(0, 1)[0];
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { groupId, ...newObject } = main;
-        newObject.variants = product;
-
-        return newObject;
-      });
   }
 
   /**

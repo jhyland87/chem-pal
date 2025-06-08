@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { stripQuantityFromString } from "@/helpers/quantity";
 import { fetchDecorator, isFullURL } from "@/helpers/request";
 import Logger from "@/utils/Logger";
 import ProductBuilder from "@/utils/ProductBuilder";
@@ -1312,6 +1313,49 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       this.logger.error("Error in getProductDataWithCache:", outerErr);
       return undefined;
     }
+  }
+
+  /**
+   * Groups variants of a product by their title
+   * @param data - Array of product listings from search results
+   * @returns Array of product listings with grouped variants
+   * @todo Create a generic method for this, the same method is used in
+   *       Synthetika and could be of use with LoudWolf.
+   * @example
+   * ```typescript
+   * const results = await this.queryProducts("sodium chloride");
+   * const grouped = this.groupVariants(results);
+   * // grouped is an array of product listings with grouped variants
+   * ```
+   */
+  protected groupVariants<R>(data: R[]): R[] {
+    type SubType = R & { groupId: string };
+    const variants: SubType[] = data
+      .map((item) => {
+        const title = this.titleSelector(item);
+        if (!title) {
+          this.logger.error("No title found in product:", { item });
+          return undefined;
+        }
+        const groupId = stripQuantityFromString(title.replace(/(?<=\d{1,3})\s(?=\d{3})/g, ""));
+        const groupIdWithoutSpaces = groupId.replace(/[\s-]/g, "");
+        return { ...item, groupId: groupIdWithoutSpaces };
+      })
+      .filter((item): item is SubType => item !== undefined);
+
+    const products = Object.groupBy(variants, (item) => item.groupId);
+
+    return Object.values(products)
+      .filter((product): product is SubType[] => product !== undefined)
+      .map((product) => {
+        const main = product.splice(0, 1)[0];
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { groupId, ...newObject } = main;
+        newObject.variants = product;
+
+        return newObject;
+      })
+      .filter((item): item is SubType => item !== undefined);
   }
 
   /**
