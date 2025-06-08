@@ -1329,7 +1329,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * ```
    */
   protected groupVariants<R>(data: R[]): R[] {
-    type SubType = R & { groupId: string };
+    type SubType = R & { groupId: string; variants?: R[] };
     const variants: SubType[] = data
       .map((item) => {
         const title = this.titleSelector(item);
@@ -1351,7 +1351,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
         const main = product.splice(0, 1)[0];
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { groupId, ...newObject } = main;
-        newObject.variants = product;
+        newObject.variants = product as unknown as SubType["variants"];
 
         return newObject;
       })

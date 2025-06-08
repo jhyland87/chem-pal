@@ -296,12 +296,12 @@ export default class SupplierSynthetika
       if (product.variants) {
         productBuilder.setVariants(
           product.variants.map((v) => {
-            const price = parsePrice(v.price.gross.final);
+            const price = parsePrice(v.price?.gross.final ?? "");
             return {
               title: v.name,
               price: price?.price ?? 0,
-              quantity: parseQuantity(v.name)?.quantity ?? 0,
-              uom: parseQuantity(v.name)?.uom ?? "",
+              quantity: parseQuantity(v.name ?? "")?.quantity ?? 0,
+              uom: parseQuantity(v.name ?? "")?.uom ?? "",
               url: v.url,
             };
           }),

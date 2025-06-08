@@ -25,6 +25,7 @@ declare global {
    * Contains all product details including pricing, availability, and metadata.
    */
   interface LaboratoriumDiscounterSearchResponseProduct {
+    variants?: Partial<LaboratoriumDiscounterSearchResponseProduct>[];
     /* eslint-disable */
     /** Unique identifier for the product */
     id: number;

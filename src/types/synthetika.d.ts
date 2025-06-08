@@ -20,6 +20,7 @@ declare global {
   interface SynthetikaProduct {
     /* eslint-disable */
     id: number;
+    variants?: Partial<SynthetikaProduct>[];
     name: string;
     can_buy: boolean;
     ean: string;
