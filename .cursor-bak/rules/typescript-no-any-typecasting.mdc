@@ -1,6 +1,0 @@
----
-description:
-globs: *.tsx,*.ts
-alwaysApply: false
----
-try to refrain from using `any` for variable types or typecasting using `as` in typescript files unless necessary. Instead, opt for typeguards or return type assertions.
