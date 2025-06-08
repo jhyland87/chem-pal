@@ -77,7 +77,7 @@ import { checkObjectStructure } from "./common";
  * ```
  */
 export function isValidSearchResponseItem(response: unknown): response is ChemsaversProductObject {
-  if (typeof response !== "object" || response === null) {
+  if (typeof response !== "object" || !response) {
     console.warn("Invalid search response item - Response is not an object:", response);
     return false;
   }
@@ -216,7 +216,7 @@ export function isValidSearchResponseItem(response: unknown): response is Chemsa
  */
 export function isValidSearchResponse(response: unknown): response is ChemsaversSearchResponse {
   try {
-    if (typeof response !== "object" || response === null) {
+    if (typeof response !== "object" || !response) {
       console.warn("Invalid search response item - Response is not an object:", response);
       return false;
     }

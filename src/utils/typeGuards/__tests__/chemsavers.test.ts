@@ -74,7 +74,6 @@ describe("Chemsavers TypeGuards", () => {
       const missingProps = [
         {
           document: {
-            // Missing CAS
             id: "prod_123",
             inventoryLevel: 100,
             name: "Sodium Chloride",
@@ -84,7 +83,7 @@ describe("Chemsavers TypeGuards", () => {
             price: 24.99,
             sku: "SC-500G",
             upc: "123456789012",
-            url: "/products/sodium-chloride",
+            //url: "/products/sodium-chloride",
           },
         },
         {
@@ -96,7 +95,7 @@ describe("Chemsavers TypeGuards", () => {
             product_id: 12345,
             retailPrice: 29.99,
             salePrice: 24.99,
-            price: 24.99,
+            //price: 24.99,
             sku: "SC-500G",
             upc: "123456789012",
             url: "/products/sodium-chloride",
@@ -115,7 +114,8 @@ describe("Chemsavers TypeGuards", () => {
         {
           document: {
             ...validProduct.document,
-            CAS: 7647145, // Should be string
+            //CAS: 7647145, // Should be string
+            id: undefined,
           },
         },
         {
@@ -322,7 +322,7 @@ describe("Chemsavers TypeGuards", () => {
                     id: "prod_123",
                     inventoryLevel: 100,
                     name: "Sodium Chloride",
-                    product_id: 12345,
+                    productId: 12345,
                     retailPrice: 29.99,
                     salePrice: 24.99,
                     price: 24.99,
