@@ -77,3 +77,58 @@ export function findCAS(data: string): CAS<string> | void {
   const match = data.match(regex);
   if (match && isCAS(match[0])) return match[0] as CAS<string>;
 }
+
+/**
+ * Gets the names of a CAS number from the Cactus API.
+ * @category Helpers
+ * @param cas - The CAS number to get the names of
+ * @returns The names of the CAS number
+ * @example
+ * ```typescript
+ * getNamesByCAS("79-11-8")
+ * // Returns ['2-chloroacetic acid', '2-chloroethanoic acid', 'Acide chloracetique', ...etc]
+ * getNamesByCAS("1234567890")
+ * // Returns undefined
+ * ```
+ */
+export async function getNamesByCAS(cas: CAS<string>): Promise<Maybe<string[]>> {
+  try {
+    const response = await fetch(
+      `https://cactus.nci.nih.gov/chemical/structure/${encodeURIComponent(cas)}/names`,
+    );
+    const data = await response.text();
+    return data.split("\n").map((line: string) => line.trim());
+  } catch (error) {
+    console.error(error);
+    return;
+  }
+}
+
+/**
+ * Gets the names of a CAS number from the Cactus API.
+ * @category Helpers
+ * @param cas - The CAS number to get the names of
+ * @returns The names of the CAS number
+ * @example
+ * ```typescript
+ * getCASByName("Acetic Acid")
+ * // Returns '79-11-8'
+ * getCASByName("Acide chloracetique")
+ * // Returns '79-11-8'
+ * getCASByName("adsfasfd")
+ * // Returns undefined
+ * ```
+ */
+export async function getCASByName(name: string): Promise<Maybe<CAS<string>[]>> {
+  try {
+    const response = await fetch(
+      `https://cactus.nci.nih.gov/chemical/structure/names/${encodeURIComponent(name)}`,
+    );
+    const data = await response.text();
+    if (!isCAS(data)) return;
+    return [data];
+  } catch (error) {
+    console.error(error);
+    return;
+  }
+}
