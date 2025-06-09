@@ -79,7 +79,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
           <Link
             history={{
               type: "product",
-              data: omit(row.original, "variants"),
+              data: omit(row.original, "variants") as Omit<Product, "variants">,
             }}
             href={row.original.url}
           >

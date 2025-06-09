@@ -25,9 +25,8 @@ export function omit<T extends object, K extends keyof T>(
   }
   if (typeof path === "string") {
     path = [path];
-  } else {
-    console.warn("path must be a string or an array of strings");
-    return data;
+  } else if (!Array.isArray(path)) {
+    throw new Error("path must be a string or an array of strings");
   }
 
   return Object.fromEntries(
