@@ -1,4 +1,4 @@
-import { checkObjectStructure } from "./common";
+import { checkObjectStructure } from "@/helpers/collectionUtils";
 /**
  * Type guard to validate if an object matches the Chemsavers ProductObject structure.
  * Checks for the presence and correct types of all required product properties including

@@ -1,3 +1,4 @@
+import { omit } from "@/helpers/collectionUtils";
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
 import { ColumnDef, type Row, type SortingFn } from "@tanstack/react-table";
@@ -74,7 +75,17 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       accessorKey: "title",
       header: () => <span>Title</span>,
       cell: ({ row }: ProductRow) => {
-        return <Link href={row.original.url}>{row.original.title}</Link>;
+        return (
+          <Link
+            history={{
+              type: "product",
+              data: omit(row.original, "variants"),
+            }}
+            href={row.original.url}
+          >
+            {row.original.title}
+          </Link>
+        );
       },
       enableHiding: false,
       meta: {
@@ -138,7 +149,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         return new Intl.NumberFormat("USD", {
           style: "currency",
           currency: "USD",
-        }).format(row.original.localPrice as number);
+        }).format(row.original.usdPrice as number);
       },
       sortingFn: priceSortingFn,
       meta: {

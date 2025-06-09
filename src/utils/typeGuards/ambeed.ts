@@ -1,4 +1,4 @@
-import { checkObjectStructure } from "./common";
+import { checkObjectStructure } from "@/helpers/collectionUtils";
 
 /**
  * Type guard to check if the given data is an AmbeedProductListResponse

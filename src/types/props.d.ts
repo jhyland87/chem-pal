@@ -230,6 +230,10 @@ declare global {
   interface LinkProps {
     /** Link href */
     href: IntrinsicAttributes;
+
+    /** History object */
+    history?: HistoryEntry;
+
     /** Child elements */
     children: React.ReactNode;
   }

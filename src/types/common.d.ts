@@ -163,6 +163,62 @@ declare global {
   type Base64String = Brand<string, "base64">;
 
   /**
+   * Interface defining the required properties for a history entry.
+   * Used to store the history of results that were clicked on.
+   *
+   * @example
+   * ```typescript
+   * const historyEntry: HistoryEntry = {
+   *   timestamp: Date.now(),
+   *   type: "search",
+   *   data: {
+   *     suppliers: ["supplier1", "supplier2"],
+   *     query: "sodium chloride",
+   *     resultCount: 10
+   *   }
+   * };
+   * ```
+   */
+  interface SearchHistoryEntry {
+    timestamp?: number;
+    type: "search";
+    data?: {
+      suppliers: string[];
+      query: string;
+      resultCount: number;
+    };
+  }
+
+  /**
+   * Interface defining the required properties for a product history entry.
+   * Used to store the history of products that were clicked on.
+   *
+   * @example
+   * ```typescript
+   * const productHistoryEntry: ProductHistoryEntry = {
+   *   timestamp: Date.now(),
+   *   type: "product",
+   *   data: {
+   *     title: "Sodium Chloride",
+   *     url: "https://example.com/sodium-chloride"
+   *     price: 100,
+   *     currencyCode: "USD",
+   *     currencySymbol: "$",
+   *     quantity: 1,
+   *     uom: "g"
+   *   }
+   * };
+   * ```
+   */
+  interface ProductHistoryEntry {
+    timestamp?: number;
+    type: "product";
+    data: Omit<Product, "variants">;
+  }
+
+  type HistoryEntry = SearchHistoryEntry | ProductHistoryEntry;
+
+  /**
    * Interface defining the required properties for a supplier.
    * This ensures all suppliers have the necessary readonly properties.
    */
