@@ -132,7 +132,10 @@ export async function fetchDecorator(
   console.log(`Request Hash: ${requestHash}`);
 
   const response = await fetch(input, init);
+  // So we can return the original response
   const clonedResponse = response.clone();
+  // In case processing the clonedResponse fails, we can have this one in the catch block
+  //const clonedResponse2 = response.clone();
 
   if (!response.ok) {
     throw new Error(`HTTP Error: ${clonedResponse.status} ${clonedResponse.statusText}`);
@@ -141,12 +144,17 @@ export async function fetchDecorator(
   const contentType = clonedResponse.headers.get("content-type") || "";
   let data: unknown;
 
-  if (contentType.includes("application/json")) {
-    data = await clonedResponse.json();
-  } else if (contentType.includes("text/")) {
-    data = await clonedResponse.text();
-  } else {
-    data = await clonedResponse.blob();
+  try {
+    if (contentType.includes("application/json")) {
+      data = await clonedResponse.clone().json();
+    } else if (contentType.includes("text/") || contentType.includes("json-amazonui-streaming")) {
+      data = await clonedResponse.clone().text();
+    } else {
+      data = await clonedResponse.clone().blob();
+    }
+  } catch {
+    console.log("clonedResponse:", clonedResponse);
+    data = await clonedResponse.clone().text();
   }
 
   // Create a new Response object that inherits all prototype methods

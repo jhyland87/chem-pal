@@ -236,3 +236,23 @@ export function decodeHTMLEntities(text: string) {
     .replace(/&[a-z]+;/gi, (match) => entities[match] || match)
     .replace(/&#(\d+);/gi, (match, dec) => String.fromCharCode(dec));
 }
+
+/**
+ * Tries to parse a JSON string. If it fails, it returns the original string.
+ *
+ * @param data - The data to parse
+ * @returns The parsed JSON or false if it fails
+ *
+ * @example
+ * ```typescript
+ * tryParseJson('{"name": "John", "age": 30}') // { name: 'John', age: 30 }
+ * tryParseJson('not a json string') // false
+ * ```
+ */
+export function tryParseJson(data: unknown): unknown | false {
+  try {
+    return JSON.parse(data as string);
+  } catch {
+    return false;
+  }
+}

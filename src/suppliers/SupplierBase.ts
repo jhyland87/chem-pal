@@ -555,6 +555,36 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
   }
 
   /**
+   * Sends a POST request and returns the response as a HTML string.
+   *
+   * @param options - The request configuration options
+   * @returns Promise resolving to the HTML response as a string or void if request fails
+   * @throws TypeError - If the response is not valid HTML content
+   *
+   * @example
+   * ```typescript
+   * // Basic usage
+   * const html = await supplier.httpPostHtml({
+   *   path: '/api/v1/products',
+   *   body: { name: 'John' }
+   * });
+   * ```
+   */
+  protected async httpPostHtml({
+    path,
+    host,
+    body,
+    params,
+    headers,
+  }: RequestOptions): Promise<Maybe<string>> {
+    const httpRequest = await this.httpPost({ path, host, body, params, headers });
+    if (!isHtmlResponse(httpRequest)) {
+      throw new TypeError(`httpPostHtml| Invalid POST response: ${httpRequest}`);
+    }
+    return await httpRequest.text();
+  }
+
+  /**
    * Sends a GET request to the given URL with the specified options.
    * Handles request setup, error handling, and response caching.
    *

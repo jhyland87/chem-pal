@@ -19,7 +19,9 @@
  * ```
  */
 
+export { default as SupplierAkmekem } from "./SupplierAkmekem";
 export { default as SupplierBioFuranChem } from "./SupplierBiofuranChem";
+export { default as SupplierHimedia } from "./SupplierHimedia";
 //export { default as SupplierBunmurraLabs } from "./supplierBunmurraLabs";
 export { default as SupplierAmbeed } from "./SupplierAmbeed";
 export { default as SupplierCarolina } from "./SupplierCarolina";

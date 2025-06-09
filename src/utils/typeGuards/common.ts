@@ -104,6 +104,29 @@ export function isJsonResponse(response: unknown): response is Response {
 }
 
 /**
+ * Type guard to validate if a Response object contains JSON content.
+ * Checks both the Content-Type header and ensures it's a valid Response object.
+ *
+ * @param response - The Response object to validate
+ * @returns Type predicate indicating if the response contains JSON content
+ * @typeguard
+ *
+ * @example
+ * ```typescript
+ * // Valid JSON response
+ * const jsonResponse = new Response('{"data": "test"}', {
+ *   headers: { 'Content-Type': 'application/json' }
+ * });
+ * assertJsonResponse(jsonResponse);
+ * ```
+ */
+export function assertJsonResponse(response: unknown): asserts response is Response {
+  if (!isJsonResponse(response)) {
+    throw new TypeError(`assertJsonResponse| Invalid JSON response: ${response}`);
+  }
+}
+
+/**
  * Type guard to validate if a Response object contains HTML content.
  * Checks both the Content-Type header and ensures it's a valid Response object.
  *
@@ -136,8 +159,33 @@ export function isHtmlResponse(response: unknown): response is Response {
   const contentType = (response as Response).headers.get("Content-Type");
   return (
     contentType !== null &&
-    (contentType.includes("text/html") || contentType.includes("application/xhtml+xml"))
+    (contentType.includes("text/") ||
+      contentType.includes("application/xhtml+xml") ||
+      contentType.includes("json-amazonui-streaming"))
   );
+}
+
+/**
+ * Type guard to validate if a Response object contains HTML content.
+ * Checks both the Content-Type header and ensures it's a valid Response object.
+ *
+ * @param response - The Response object to validate
+ * @returns Type predicate indicating if the response contains HTML content
+ * @typeguard
+ *
+ * @example
+ * ```typescript
+ * // Valid HTML response
+ * const htmlResponse = new Response('<html><body>Hello</body></html>', {
+ *   headers: { 'Content-Type': 'text/html' }
+ * });
+ * assertHtmlResponse(htmlResponse);
+ * ```
+ */
+export function assertHtmlResponse(response: unknown): asserts response is Response {
+  if (!isHtmlResponse(response)) {
+    throw new TypeError(`assertHtmlResponse| Invalid HTML response: ${response}`);
+  }
 }
 
 /**

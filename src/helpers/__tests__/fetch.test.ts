@@ -1,4 +1,5 @@
 import { fetchDecorator, generateRequestHash, generateSimpleHash } from "@/helpers/fetch";
+import type { Mock } from "vitest";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("generateSimpleHash", () => {
@@ -92,16 +93,10 @@ describe("fetchDecorator", () => {
       statusText: "OK",
       headers: new Headers({ "content-type": "application/json" }),
       json: () => Promise.resolve({ test: "data" }),
-      clone: () => ({
-        ok: true,
-        status: 200,
-        statusText: "OK",
-        headers: new Headers({ "content-type": "application/json" }),
-        json: () => Promise.resolve({ test: "data" }),
-      }),
+      clone: () => mockResponse,
     };
 
-    (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+    (global.fetch as Mock).mockResolvedValueOnce(mockResponse);
 
     const response = await fetchDecorator("https://api.example.com/data");
     expect(response).toBeInstanceOf(Response);
@@ -116,16 +111,10 @@ describe("fetchDecorator", () => {
       statusText: "OK",
       headers: new Headers({ "content-type": "text/plain" }),
       text: () => Promise.resolve("Hello, World!"),
-      clone: () => ({
-        ok: true,
-        status: 200,
-        statusText: "OK",
-        headers: new Headers({ "content-type": "text/plain" }),
-        text: () => Promise.resolve("Hello, World!"),
-      }),
+      clone: () => mockResponse,
     };
 
-    (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+    (global.fetch as Mock).mockResolvedValueOnce(mockResponse);
 
     const response = await fetchDecorator("https://api.example.com/data");
     expect(response).toBeInstanceOf(Response);
@@ -141,16 +130,10 @@ describe("fetchDecorator", () => {
       statusText: "OK",
       headers: new Headers({ "content-type": "application/octet-stream" }),
       blob: () => Promise.resolve(blob),
-      clone: () => ({
-        ok: true,
-        status: 200,
-        statusText: "OK",
-        headers: new Headers({ "content-type": "application/octet-stream" }),
-        blob: () => Promise.resolve(blob),
-      }),
+      clone: () => mockResponse,
     };
 
-    (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+    (global.fetch as Mock).mockResolvedValueOnce(mockResponse);
 
     const response = await fetchDecorator("https://api.example.com/data");
     expect(response).toBeInstanceOf(Response);
@@ -164,15 +147,10 @@ describe("fetchDecorator", () => {
       status: 404,
       statusText: "Not Found",
       headers: new Headers(),
-      clone: () => ({
-        ok: false,
-        status: 404,
-        statusText: "Not Found",
-        headers: new Headers(),
-      }),
+      clone: () => mockResponse,
     };
 
-    (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+    (global.fetch as Mock).mockResolvedValueOnce(mockResponse);
 
     await expect(fetchDecorator("https://api.example.com/data")).rejects.toThrow(
       "HTTP Error: 404 Not Found",
@@ -180,7 +158,7 @@ describe("fetchDecorator", () => {
   });
 
   it("should handle fetch errors", async () => {
-    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error("Network error"));
+    (global.fetch as Mock).mockRejectedValueOnce(new Error("Network error"));
 
     await expect(fetchDecorator("https://api.example.com/data")).rejects.toThrow("Network error");
   });
@@ -192,16 +170,10 @@ describe("fetchDecorator", () => {
       statusText: "OK",
       headers: new Headers({ "content-type": "application/json", "x-custom": "test" }),
       json: () => Promise.resolve({ test: "data" }),
-      clone: () => ({
-        ok: true,
-        status: 200,
-        statusText: "OK",
-        headers: new Headers({ "content-type": "application/json", "x-custom": "test" }),
-        json: () => Promise.resolve({ test: "data" }),
-      }),
+      clone: () => mockResponse,
     };
 
-    (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+    (global.fetch as Mock).mockResolvedValueOnce(mockResponse);
 
     const response = await fetchDecorator("https://api.example.com/data");
     expect(response.status).toBe(200);
