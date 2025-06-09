@@ -1,6 +1,10 @@
+import {
+  resetChromeStorageMock,
+  setupChromeStorageMock,
+} from "@/__fixtures__/helpers/chrome/storageMock";
 import { AVAILABILITY } from "@/constants/common";
 import ProductBuilder from "@/utils/ProductBuilder";
-import { beforeEach, describe, expect, it, vi, type MockInstance } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from "vitest";
 import * as quantityHelpers from "../quantity";
 
 describe("ProductBuilder", () => {
@@ -14,6 +18,8 @@ describe("ProductBuilder", () => {
     });
 
   beforeEach(() => {
+    setupChromeStorageMock();
+
     builder = new ProductBuilder(baseURL);
     // Always resolve fetch with a default USD:USD response unless overridden in a test
     (global.fetch as any).mockImplementation(() =>
@@ -33,6 +39,7 @@ describe("ProductBuilder", () => {
   });
 
   afterEach(() => {
+    resetChromeStorageMock();
     vi.resetAllMocks();
   });
 

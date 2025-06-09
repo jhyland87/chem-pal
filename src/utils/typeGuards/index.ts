@@ -1,3 +1,4 @@
+export * as Ambeed from "./ambeed";
 export * as carolina from "./carolina";
 export * as common from "./common";
 export * as laboratoriumdiscounter from "./laboratoriumdiscounter";

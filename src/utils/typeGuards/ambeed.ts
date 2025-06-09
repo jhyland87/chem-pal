@@ -41,7 +41,9 @@ export function isAmbeedProductListResponseValue(
     pagenum: "number",
     pageindex: "number",
     pagesize: "number",
-    list: "array",
+    result: "object",
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    menu_res: "object",
   });
 }
 
@@ -55,12 +57,9 @@ export function isAmbeedProductListResponseResultItem(
 ): data is AmbeedProductListResponseResultItem {
   return checkObjectStructure(data, {
     /* eslint-disable */
-    p_proimg: "string",
     p_id: "string",
-    priceList: "array",
-    p_moleweight: "string",
+    priceList: "object",
     p_proper_name3: "string",
-    p_wm_max_quantity: "string",
     p_am: "string",
     s_url: "string",
     p_name_en: "string",

@@ -1,93 +1,79 @@
 {
   "extensionId": "lddcoaehibbaonkifojgaemjngpfpheg",
   "locations": {
-    "us": {
+    "US": {
       "name": "United States",
-      "currency": "usd"
+      "currency": "USD"
     },
-    "ca": {
+    "CA": {
       "name": "Canada",
-      "currency": "cad"
+      "currency": "CAD"
     },
-    "uk": {
+    "UK": {
       "name": "United Kingdom",
-      "currency": "gbp"
+      "currency": "GBP"
     },
-    "au": {
+    "AU": {
       "name": "Australia",
-      "currency": "aud"
+      "currency": "AUD"
     },
-    "nz": {
+    "NZ": {
       "name": "New Zealand",
-      "currency": "nzd"
+      "currency": "NZD"
     },
-    "jp": {
+    "JP": {
       "name": "Japan",
-      "currency": "jpy"
+      "currency": "JPY"
     },
-    "cn": {
+    "CN": {
       "name": "China",
-      "currency": "cny"
+      "currency": "CNY"
     },
-    "in": {
+    "IN": {
       "name": "India",
-      "currency": "inr"
+      "currency": "INR"
     },
-    "ru": {
+    "RU": {
       "name": "Russia",
-      "currency": "rub"
+      "currency": "RUB"
     },
-    "fin": {
+    "FIN": {
       "name": "Finland",
-      "currency": "eur"
+      "currency": "EUR"
     },
-    "de": {
+    "DE": {
       "name": "Germany",
-      "currency": "eur"
+      "currency": "EUR"
     },
-    "other": {
+    "OTHER": {
       "name": "Other",
-      "currency": "usd"
+      "currency": "USD"
     }
   },
   "currencies": {
-    "usd": {
+    "USD": {
       "symbol": "$"
     },
-    "cad": {
-      "symbol": "$",
-      "aliases": [
-        "CA$"
-      ]
+    "CAD": {
+      "symbol": "CA$"
     },
-    "gbp": {
+    "GBP": {
       "symbol": "£"
     },
-    "aud": {
+    "AUD": {
       "symbol": "AU$"
     },
-    "nzd": {
-      "symbol": "$",
-      "aliases": [
-        "NZ$"
-      ]
-    },
-    "jpy": {
-      "symbol": "¥"
-    },
-    "cny": {
+    "CNY": {
       "symbol": "¥",
-      "aliases": [
-        "CNY"
-      ]
+      "aliases": ["CNY"]
     },
-    "inr": {
+    "INR": {
       "symbol": "₹"
     },
-    "rub": {
+    "RUB": {
       "symbol": "₽"
     },
-    "eur": {
+    "EUR": {
       "symbol": "€"
     }
   }

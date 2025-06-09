@@ -429,6 +429,26 @@ export default class ProductBuilder<T extends Product> {
   }
 
   /**
+   * Sets the payment methods accepted by the supplier.
+   *
+   * @param paymentMethods - The payment methods accepted by the supplier
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setSupplierPaymentMethods(["visa", "mastercard"]);
+   * ```
+   */
+  setSupplierPaymentMethods(paymentMethods: PaymentMethod[]): ProductBuilder<T> {
+    if (Array.isArray(paymentMethods)) {
+      this.product.paymentMethods = paymentMethods;
+    } else if (typeof paymentMethods === "string") {
+      this.product.paymentMethods = [paymentMethods];
+    }
+
+    return this;
+  }
+
+  /**
    * Sets the product description.
    *
    * @param description - The detailed description of the product
@@ -768,7 +788,6 @@ export default class ProductBuilder<T extends Product> {
    * 4. Converts relative URLs to absolute
    * 5. Processes and validates variants if present
    *
-   * @returns Promise resolving to a complete Product object or void if validation fails
    * @example
    * ```typescript
    * const product = await builder

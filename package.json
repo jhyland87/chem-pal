@@ -27,6 +27,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@extend-chrome/storage": "^1.5.0",
     "@mui/material": "^7.1.0",
     "@mui/styled-engine": "^7.0.2",
     "@mui/styles": "^6.4.11",

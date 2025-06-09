@@ -1,5 +1,5 @@
-import { HTTP_STATUS_CODES } from "constants/app";
-import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "constants/currency";
+import { HTTP_STATUS_CODES } from "@/constants/app";
+import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 
 declare module "price-parser" {
   interface Price {

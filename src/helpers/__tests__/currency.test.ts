@@ -64,7 +64,7 @@ describe("getCurrencyCodeFromSymbol", () => {
     ["$", "USD"],
     ["€", "EUR"],
     ["£", "GBP"],
-    ["¥", "JPY"],
+    ["¥", "CNY"],
     ["₹", "INR"],
   ])("should return %s for symbol: %s", (symbol, code) =>
     expect(getCurrencyCodeFromSymbol(symbol as CurrencySymbol)).toBe(code),

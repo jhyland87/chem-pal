@@ -81,7 +81,7 @@ const iconMap: Record<CryptoType, React.ReactNode> = {
   ),
 };
 
-/**
+/**q
  * Component for showing the little credit card likeicon thigs, but for crypto currency
  *
  * @example
@@ -94,7 +94,15 @@ const iconMap: Record<CryptoType, React.ReactNode> = {
  */
 const CryptoPaymentIcon: React.FC<CryptoPaymentIconProps> = ({ type, ...props }) => (
   <Tooltip title={type} placement="top" arrow>
-    <svg viewBox="0 0 780 500" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <svg
+      viewBox="0 0 780 500"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      data-testid={`crypto-icon-${type}`}
+      aria-label={type}
+      {...props}
+    >
       {iconMap[type]}
     </svg>
   </Tooltip>

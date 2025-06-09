@@ -430,6 +430,11 @@ declare global {
     usdPrice?: number;
 
     /**
+     * The price convert to the users local currency
+     */
+    localPrice?: number;
+
+    /**
      * Stock keeping unit identifier for inventory tracking
      * @example "NaCl-500"
      */
@@ -617,6 +622,12 @@ declare global {
      * @example "worldwide" | "domestic" | "international" | "local"
      */
     supplierShipping?: ShippingRange;
+
+    /**
+     * Payment methods accepted by the supplier
+     * @example ["visa", "mastercard"]
+     */
+    paymentMethods?: PaymentMethod[];
   }
 
   /**
@@ -1127,53 +1138,6 @@ declare global {
     [UOM.MG]: string[];
     /** Alternative strings representing kilometers */
     [UOM.KM]: string[];
-  }
-
-  /**
-   * Represents a product in the system.
-   * Contains all necessary information about a product including its variants.
-   */
-  interface Product {
-    id: string;
-    name: string;
-    description: string;
-    url: string;
-    imageUrl: string;
-    price: number;
-    currency: string;
-    countryCode: CountryCode;
-    shippingRange: ShippingRange;
-    variants: ProductVariant[];
-    supplier: string;
-    supplierProductId: string;
-    supplierProductUrl: string;
-    supplierProductImageUrl: string;
-    supplierProductPrice: number;
-    supplierProductCurrency: string;
-    supplierProductCountryCode: CountryCode;
-    supplierProductShippingRange: ShippingRange;
-    supplierProductVariants: ProductVariant[];
-  }
-
-  /**
-   * Represents a variant of a product.
-   * Contains specific information about a product variant.
-   */
-  interface ProductVariant {
-    id: string;
-    name: string;
-    price: number;
-    currency: string;
-    countryCode: CountryCode;
-    shippingRange: ShippingRange;
-    supplier: string;
-    supplierProductId: string;
-    supplierProductUrl: string;
-    supplierProductImageUrl: string;
-    supplierProductPrice: number;
-    supplierProductCurrency: string;
-    supplierProductCountryCode: CountryCode;
-    supplierProductShippingRange: ShippingRange;
   }
 }
 

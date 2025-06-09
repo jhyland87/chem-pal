@@ -1006,6 +1006,8 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *
    * The method should not fetch detailed product data - that is handled by getProductData.
    *
+   * @todo Whats the difference between this and the finish method? Forgot why I created the other.
+   *
    * @param query - The search term to query products for
    * @param limit - The maximum number of results to return
    * @returns Promise resolving to array of ProductBuilder instances or void if search fails
@@ -1131,18 +1133,14 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       return;
     }
 
-    // Set the country and shipping scope of the supplier. Later these may change if they
+    // Set the country and shipping scope of the supplier
     // have different restrictions on different products or countries.
     product.setSupplierCountry(this.country);
     product.setSupplierShipping(this.shipping);
 
-    /*
-    const title = product.get("title");
-    if (title) {
-      const fuzz = this.fuzzyFilter(this.query, [title], 2, 0.5);
-      console.log("fuzz score for", title, fuzz[0]?.[1] ?? 0);
+    if (this.paymentMethods.length > 0) {
+      product.setSupplierPaymentMethods(this.paymentMethods);
     }
-    */
 
     return await product.build();
   }

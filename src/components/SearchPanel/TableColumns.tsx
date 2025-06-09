@@ -13,8 +13,8 @@ import "./TableColumns.scss";
  * @returns Returns 1 if rowA -gt rowB, -1 if rowA -lt rowB, 0 if equal
  */
 const priceSortingFn: SortingFn<Product> = (rowA: Row<Product>, rowB: Row<Product>) => {
-  const a = rowA.original.usdPrice as number;
-  const b = rowB.original.usdPrice as number;
+  const a = rowA.original.localPrice as number;
+  const b = rowB.original.localPrice as number;
   return a > b ? 1 : a < b ? -1 : 0;
 };
 
@@ -138,7 +138,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         return new Intl.NumberFormat("USD", {
           style: "currency",
           currency: "USD",
-        }).format(row.original.usdPrice as number);
+        }).format(row.original.localPrice as number);
       },
       sortingFn: priceSortingFn,
       meta: {

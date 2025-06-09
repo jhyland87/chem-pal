@@ -108,15 +108,20 @@ function App() {
 
   // Load the settings from storage.local on the initial component load
   useEffect(() => {
-    chrome.storage.session.get(["userSettings", "panel"]).then((data) => {
-      if (data.userSettings) setUserSettings({ ...data.userSettings });
+    chrome.storage.session.get(["panel"]).then((data) => {
       if (data.panel) setPanel(data.panel as number);
+    });
+
+    chrome.storage.local.get(["userSettings"]).then((data) => {
+      if (data.userSettings) setUserSettings({ ...data.userSettings });
     });
   }, []);
 
   // Save the settings to storage.local when the settings change
   useEffect(() => {
-    chrome.storage.session.set({ userSettings, panel });
+    chrome.storage.session.set({ panel });
+    chrome.storage.local.set({ userSettings });
+
     setCurrentTheme(userSettings.theme === "light" ? lightTheme : darkTheme);
   }, [userSettings, panel]);
 
