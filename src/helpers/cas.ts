@@ -105,6 +105,20 @@ export async function getNamesByCAS(cas: CAS<string>): Promise<Maybe<string[]>> 
 }
 
 /**
+ * Gets the IUPAC name of a chemical from the Cactus API.
+ * @category Helpers
+ * @param name - The name of the chemical to get the IUPAC name of
+ * @returns The IUPAC name of the chemical
+ */
+export async function getIUPACName(name: string): Promise<Maybe<string>> {
+  const response = await fetch(
+    `https://cactus.nci.nih.gov/chemical/structure/${encodeURIComponent(name)}/iupac_name`,
+  );
+  const data = await response.text();
+  return data.trim();
+}
+
+/**
  * Gets the names of a CAS number from the Cactus API.
  * @category Helpers
  * @param cas - The CAS number to get the names of
