@@ -97,6 +97,7 @@ export async function getNamesByCAS(cas: CAS<string>): Promise<Maybe<string[]>> 
       `https://cactus.nci.nih.gov/chemical/structure/${encodeURIComponent(cas)}/names`,
     );
     const data = await response.text();
+    if (!data) return;
     return data.split("\n").map((line: string) => line.trim());
   } catch (error) {
     console.error(error);
@@ -115,6 +116,7 @@ export async function getIUPACName(name: string): Promise<Maybe<string>> {
     `https://cactus.nci.nih.gov/chemical/structure/${encodeURIComponent(name)}/iupac_name`,
   );
   const data = await response.text();
+  if (!data) return;
   return data.trim();
 }
 
@@ -133,14 +135,15 @@ export async function getIUPACName(name: string): Promise<Maybe<string>> {
  * // Returns undefined
  * ```
  */
-export async function getCASByName(name: string): Promise<Maybe<CAS<string>[]>> {
+export async function getCASByName(name: string): Promise<Maybe<CAS<string>>> {
   try {
     const response = await fetch(
       `https://cactus.nci.nih.gov/chemical/structure/names/${encodeURIComponent(name)}`,
     );
     const data = await response.text();
-    if (!isCAS(data)) return;
-    return [data];
+    if (typeof data === "undefined") return;
+    const casList = data.split("\n").find((cas) => isCAS(cas));
+    return casList;
   } catch (error) {
     console.error(error);
     return;
