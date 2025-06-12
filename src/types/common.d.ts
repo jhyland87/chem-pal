@@ -315,6 +315,12 @@ declare global {
     location: string;
 
     /**
+     * Currency rate for the user's currency
+     * @example 1.0
+     */
+    currencyRate?: number;
+
+    /**
      * Filter products based on shipping availability to user's location.
      * Defaults to false.
      */

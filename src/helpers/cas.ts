@@ -121,10 +121,10 @@ export async function getIUPACName(name: string): Promise<Maybe<string>> {
 }
 
 /**
- * Gets the names of a CAS number from the Cactus API.
+ * Gets the CAS of a chemical using the name from the Cactus API.
  * @category Helpers
- * @param cas - The CAS number to get the names of
- * @returns The names of the CAS number
+ * @param name - The chemical name to lookup
+ * @returns The CAS number of the chemical
  * @example
  * ```typescript
  * getCASByName("Acetic Acid")

@@ -2,7 +2,7 @@
   "name": "ChemPare Documentation",
   "entryPoints": [
     "./src/**/index.ts",
-    "./src/suppliersi/*.ts",
+    "./src/suppliers/*.ts",
     //"./src/components/SearchPanel/index.ts",
     //"./src/**/index.ts",
     "./src/helpers/*.ts",

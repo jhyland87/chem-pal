@@ -256,3 +256,29 @@ export function tryParseJson(data: unknown): unknown | false {
     return false;
   }
 }
+
+/**
+ * Gets the user's country from the browser's i18n API. This just splits the locale
+ * by the "-" character and returns the second part. This is a simple way to get the
+ * country code from the locale.
+ *
+ * @returns The user's country as a CountryCode. (defaults to "US")
+ *
+ * @example
+ * ```typescript
+ * // If the locale is "en-US"
+ * getUserCountry() // Returns "US" (United States)
+ *
+ * // If the locale is "en-GB"
+ * getUserCountry() // Returns "GB" (United Kingdom)
+ *
+ * // If the locale is "en-CA"
+ * getUserCountry() // Returns "CA" (Canada)
+ * ```
+ */
+export function getUserCountry(): CountryCode {
+  if (typeof chrome === "undefined" || typeof chrome.i18n === "undefined") {
+    return "US";
+  }
+  return chrome.i18n.getUILanguage().split("-")[1] as CountryCode;
+}

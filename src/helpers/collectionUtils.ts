@@ -35,11 +35,10 @@ export function omit<T extends object, K extends keyof T>(
 }
 
 /**
- * Type guard to validate if a value has the minimal required properties of a Product.
- * This is a less strict validation than isProduct as it only checks for the minimum required fields.
- * Useful for validating partial product data during construction.
+ * Check object structure when provided an obeject and similar structure with variable types
+ * as the values
  *
- * @param product - The value to validate
+ * @param data - The value to validate
  * @param requiredProps - The required properties and their expected types
  * @returns Type predicate indicating if the value has minimal required product properties
  * @typeguard

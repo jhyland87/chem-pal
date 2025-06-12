@@ -17,6 +17,8 @@ import SpeedDialMenu from "./components/SpeedDialMenu";
 import SuppliersPanel from "./components/SuppliersPanel";
 import TabHeader from "./components/TabHeader";
 import TabPanel from "./components/TabPanel";
+import { getCurrencyCodeFromLocation } from "./helpers/currency";
+import { getUserCountry } from "./helpers/utils";
 import { darkTheme, lightTheme } from "./themes";
 import { BadgeAnimator } from "./utils";
 
@@ -88,8 +90,8 @@ function App() {
     showHelp: false,
     caching: true,
     autocomplete: true,
-    currency: "usd",
-    location: "",
+    currency: getCurrencyCodeFromLocation(getUserCountry()),
+    location: getUserCountry(),
     shipsToMyLocation: false,
     foo: "bar",
     jason: false,

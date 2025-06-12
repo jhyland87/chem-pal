@@ -1,6 +1,7 @@
 import { getCurrencyCodeFromSymbol } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM } from "@/helpers/request";
+import { getUserCountry } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import SupplierBase from "./SupplierBase";
 
@@ -32,6 +33,44 @@ export interface SearchResult {
 
 export type AmazonListing = Pick<Product, "id" | "title" | "url" | "price" | "currencySymbol">;
 
+const amazonDomains: Record<CountryCode, string> = {
+  /* eslint-disable */
+  US: "https://www.amazon.com", // United States (default)
+  UK: "https://www.amazon.co.uk", // United Kingdom
+  DE: "https://www.amazon.de", // Germany
+  JP: "https://www.amazon.co.jp", // Japan
+  CA: "https://www.amazon.ca", // Canada
+  FR: "https://www.amazon.fr", // France
+  AU: "https://www.amazon.com.au", // Australia
+  CN: "https://www.amazon.cn", // China
+  ES: "https://www.amazon.es", // Spain
+  IT: "https://www.amazon.it", // Italy
+  IN: "https://www.amazon.in", // India
+  NL: "https://www.amazon.nl", // Netherlands
+  PL: "https://www.amazon.pl", // Poland
+  PT: "https://www.amazon.pt", // Portugal
+  SE: "https://www.amazon.se", // Sweden
+  SG: "https://www.amazon.com.sg", // Singapore
+  MX: "https://www.amazon.com.mx", // Mexico
+  AE: "https://www.amazon.ae", // United Arab Emirates
+  BR: "https://www.amazon.com.br", // Brazil
+  TR: "https://www.amazon.com.tr", // Turkey
+  SA: "https://www.amazon.sa", // Saudi Arabia
+  AR: "https://www.amazon.com.ar", // Argentina
+  BE: "https://www.amazon.com.be", // Belgium
+  EG: "https://www.amazon.eg", // Egypt
+  IE: "https://www.amazon.ie", // Ireland
+  ZA: "https://www.amazon.co.za", // South Africa
+  /* eslint-enable */
+};
+
+const userCountry = getUserCountry();
+if (!amazonDomains[userCountry]) {
+  console.warn("No Amazon domain found for user country:", userCountry);
+} else {
+  console.log("amazonDomains[getUserCountry()]:", amazonDomains[userCountry]);
+}
+
 /**
  * Base class for Amazon suppliers
  *
@@ -43,7 +82,12 @@ export default abstract class SupplierBaseAmazon
   extends SupplierBase<Product, Product>
   implements ISupplier
 {
-  public readonly baseURL: string = "https://www.amazon.com";
+  /**
+   * The base URL of Amazon - This is determined by the users locale (eg: using output of
+   * getUserCountry() from /src/helpers/utils.ts) and a lookup table. Defaults to "US" if
+   * the user's country is not found in the lookup table.
+   */
+  public readonly baseURL: string = amazonDomains[userCountry] || amazonDomains["US"];
 
   /**
    * Queries products from Amazon
@@ -67,7 +111,7 @@ export default abstract class SupplierBaseAmazon
           /* eslint-enable */
         },
         headers: {
-          referrer: `https://www.amazon.com/s?k=${query}&ref=nb_sb_noss`,
+          referrer: `${this.baseURL}/s?k=${query}&ref=nb_sb_noss`,
           referrerPolicy: "strict-origin-when-cross-origin",
         },
       });
@@ -104,11 +148,7 @@ export default abstract class SupplierBaseAmazon
         if (page.length !== 3) return [];
         if (page[0] !== "dispatch") return [];
         if (!page[1].startsWith("data-main-slot:search-result-")) return [];
-        return this.parseSearchResult({
-          raw: page[2].html,
-          amazonBase: this.baseURL,
-          amazonCountry: this.country,
-        });
+        return this.parseSearchResult(page[2].html, this.baseURL);
       })
       .filter((result): result is Product => result !== undefined);
 
@@ -121,15 +161,7 @@ export default abstract class SupplierBaseAmazon
    * @param amazonBase - The base URL of Amazon
    * @returns The parsed search result
    */
-  private parseSearchResult({
-    raw,
-    amazonBase,
-    //amazonCountry,
-  }: {
-    raw: string;
-    amazonBase: string;
-    amazonCountry: string;
-  }): Maybe<AmazonListing> {
+  private parseSearchResult(raw: string, amazonBase: string): Maybe<AmazonListing> {
     try {
       const document = createDOM(`<html><body>${raw}</body></html>`);
 

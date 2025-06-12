@@ -1,5 +1,5 @@
 //import type { ExchangeRateResponse, ParsedPrice } from "types";
-import { CURRENCY_CODE_MAP } from "@/constants/currency";
+import { CURRENCY_CODE_MAP, CURRENCY_CODE_MAP_BY_LOCATION } from "@/constants/currency";
 import { LRUCache } from "lru-cache";
 import priceParser from "price-parser";
 /**
@@ -32,6 +32,7 @@ const lruCurrencyRate = new LRUCache({
   max: 5,
   fetchMethod: async (key: string) => {
     const [from, to] = key.split(":");
+    if (from === to) return 1;
     const response = await fetch(
       `https://hexarate.paikama.co/api/rates/latest/${from}?target=${to}`,
     );
@@ -192,13 +193,32 @@ export function getCurrencyCodeFromSymbol(symbol: CurrencySymbol): CurrencyCode 
 }
 
 /**
+ * Maps a location to its corresponding currency code.
+ * Uses a predefined mapping from the CURRENCY_CODE_MAP_BY_LOCATION constant.
+ * Supports major international locations.
+ *
+ * @category Helpers
+ * @param location - The location to look up (e.g., 'US', 'GB')
+ * @returns The corresponding currency code (e.g., 'USD', 'GBP')
+ *
+ * @example
+ * ```typescript
+ * getCurrencyCodeFromLocation('US') // Returns 'USD'
+ * getCurrencyCodeFromLocation('GB') // Returns 'GBP'
+ * ```
+ */
+export function getCurrencyCodeFromLocation(location: CountryCode): CurrencyCode {
+  return CURRENCY_CODE_MAP_BY_LOCATION[location as string];
+}
+
+/**
  * Converts a given amount from any supported currency to USD.
  * Uses real-time exchange rates from the Hexarate API.
  * Results are rounded to 2 decimal places for standard currency format.
  *
  * @category Helpers
  * @param amount - The amount to convert
- * @param from - The source currency code (e.g., 'EUR', 'GBP')
+ * @param fromCurrencyCode - The source currency code (e.g., 'EUR', 'GBP')
  * @returns The converted amount in USD, formatted to 2 decimal places
  *
  * @example
@@ -218,7 +238,37 @@ export function getCurrencyCodeFromSymbol(symbol: CurrencySymbol): CurrencyCode 
  * }
  * ```
  */
-export async function toUSD(amount: number, from: CurrencyCode): Promise<number> {
-  const rate = await getCurrencyRate(from, "USD");
+export async function toUSD(amount: number, fromCurrencyCode: CurrencyCode): Promise<number> {
+  const rate = await getCurrencyRate(fromCurrencyCode, "USD");
   return parseFloat(Number(amount * rate).toFixed(2));
+}
+
+/**
+ * Converts a given amount from USD to any supported currency.
+ * Uses real-time exchange rates from the Hexarate API.
+ * Results are rounded to 2 decimal places for standard currency format.
+ *
+ * @category Helpers
+ * @param amount - The amount to convert
+ * @param toCurrencyCode - The target currency code (e.g., 'EUR', 'GBP')
+ * @returns The converted amount in the target currency, formatted to 2 decimal places
+ *
+ * @example
+ * ```typescript
+ * // Convert 100 USD to EUR
+ * await USDto(100, 'EUR')
+ * // Returns 85.32 (if rate is 0.8532)
+ *
+ * // Convert 500 USD to GBP
+ * await USDto(500, 'GBP')
+ * // Returns 387.50 (if rate is 0.775)
+ * ```
+ */
+export async function USDto(amount: number, toCurrencyCode: CurrencyCode): Promise<number> {
+  const currencyData = priceParser.currencies.find(
+    (c: { code: string }) => c.code === toCurrencyCode.toLowerCase(),
+  );
+  if (!currencyData) return 0;
+  const rate = await getCurrencyRate("USD", toCurrencyCode);
+  return parseFloat(Number(amount * rate).toFixed(currencyData.exponent));
 }

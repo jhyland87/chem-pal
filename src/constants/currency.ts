@@ -4,7 +4,7 @@
  */
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { currencies } from "../../config.json";
+import { currencies, locations } from "../../config.json";
 
 /**
  * Mapping of ISO currency codes to their corresponding currency symbols
@@ -21,6 +21,26 @@ export const CURRENCY_SYMBOL_MAP: { [key: string]: string } = Object.fromEntries
   ]),
 );
 
+/**
+ * Mapping of currency symbols to their corresponding currency codes
+ * @example
+ * ```typescript
+ * CURRENCY_CODE_MAP['$'] // returns 'USD'
+ * CURRENCY_CODE_MAP['€'] // returns 'EUR'
+ * ```
+ */
 export const CURRENCY_CODE_MAP: { [key: string]: string } = Object.fromEntries(
   Object.entries(currencies).map(([code, { symbol }]) => [symbol, code as CurrencyCode]),
+);
+
+/**
+ * Mapping of locations to their corresponding currency codes
+ * @example
+ * ```typescript
+ * CURRENCY_CODE_MAP_BY_LOCATION['US'] // returns 'USD'
+ * CURRENCY_CODE_MAP_BY_LOCATION['GB'] // returns 'GBP'
+ * ```
+ */
+export const CURRENCY_CODE_MAP_BY_LOCATION: { [key: string]: string } = Object.fromEntries(
+  Object.entries(locations).map(([code, { currency }]) => [code, currency as CurrencyCode]),
 );
