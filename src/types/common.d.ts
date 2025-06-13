@@ -303,6 +303,12 @@ declare global {
     autocomplete: boolean;
 
     /**
+     * Currency rate for the user's currency
+     * @example 1.0
+     */
+    currencyRate: number;
+
+    /**
      * Selected currency code for price display
      * @example "USD"
      */

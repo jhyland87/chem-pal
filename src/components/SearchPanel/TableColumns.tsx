@@ -1,3 +1,4 @@
+import { useAppContext } from "@/context";
 import { omit } from "@/helpers/collectionUtils";
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
@@ -44,6 +45,8 @@ const quantitySortingFn: SortingFn<Product> = (rowA: Row<Product>, rowB: Row<Pro
  * ```
  */
 export default function TableColumns(): ColumnDef<Product, unknown>[] {
+  const appContext = useAppContext();
+  console.log("TableColumns: appContext", appContext.userSettings.currencyRate);
   return [
     {
       id: "expander",
@@ -143,13 +146,13 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       id: "price",
-      header: "Price",
+      header: `Price (${appContext.userSettings.currency})`,
       accessorKey: "price",
       cell: ({ row }: ProductRow) => {
-        return new Intl.NumberFormat("USD", {
+        return new Intl.NumberFormat(appContext.userSettings.currency, {
           style: "currency",
-          currency: "USD",
-        }).format(row.original.usdPrice as number);
+          currency: appContext.userSettings.currency,
+        }).format((row.original.usdPrice ?? 0) * appContext.userSettings.currencyRate);
       },
       sortingFn: priceSortingFn,
       meta: {

@@ -17,10 +17,9 @@ import SpeedDialMenu from "./components/SpeedDialMenu";
 import SuppliersPanel from "./components/SuppliersPanel";
 import TabHeader from "./components/TabHeader";
 import TabPanel from "./components/TabPanel";
-import { getCurrencyCodeFromLocation } from "./helpers/currency";
+import { getCurrencyCodeFromLocation, getCurrencyRate } from "./helpers/currency";
 import { getUserCountry } from "./helpers/utils";
 import { darkTheme, lightTheme } from "./themes";
-import { BadgeAnimator } from "./utils";
 
 /**
  * Main application component that manages the overall layout and state.
@@ -47,6 +46,13 @@ function App() {
   const [panel, setPanel] = useState(0);
   const [currentTheme, setCurrentTheme] = useState(lightTheme);
   const [speedDialVisibility, setSpeedDialVisibility] = useState(false);
+  const [currencyRate, setCurrencyRate] = useState(1.0);
+
+  // const currencyCode = getCurrencyCodeFromLocation("CA");
+  // console.log({ currencyCode });
+  // const currencyRate = await getCurrencyRate("USD", currencyCode);
+  // console.log({ currencyRate });
+
   // 55 would be so right when their cursor gets to where the center of the speed dial menu
   // would be, it would open. But setting it to a lower value (eg: 30) makes it so it won't
   // show unless they go all the way to the bottom right corner of the screen, making it
@@ -54,11 +60,6 @@ function App() {
   // own annoyance of having to reposition the cursor once it's open, but I think it's
   // better this way.
   const cornerThreshold = 30;
-
-  // Clear any existing badge animation when the component mounts
-  useEffect(() => {
-    BadgeAnimator.clear();
-  }, []);
 
   // The logic in the useEffect is to determine if the cursor is in the right position to
   // show the speed dial menu.
@@ -91,6 +92,7 @@ function App() {
     caching: true,
     autocomplete: true,
     currency: getCurrencyCodeFromLocation(getUserCountry()),
+    currencyRate: currencyRate,
     location: getUserCountry(),
     shipsToMyLocation: false,
     foo: "bar",
@@ -121,10 +123,12 @@ function App() {
 
   // Save the settings to storage.local when the settings change
   useEffect(() => {
-    chrome.storage.session.set({ panel });
-    chrome.storage.local.set({ userSettings });
+    getCurrencyRate("USD", userSettings.currency).then((rate) => {
+      chrome.storage.session.set({ panel });
+      chrome.storage.local.set({ userSettings: { ...userSettings, currencyRate: rate } });
 
-    setCurrentTheme(userSettings.theme === "light" ? lightTheme : darkTheme);
+      setCurrentTheme(userSettings.theme === "light" ? lightTheme : darkTheme);
+    });
   }, [userSettings, panel]);
 
   return (
