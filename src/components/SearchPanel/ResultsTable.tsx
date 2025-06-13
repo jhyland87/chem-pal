@@ -53,7 +53,9 @@ export default function ResultsTable({
         if (appContext.userSettings.hideColumns.includes(column.id)) column.toggleVisibility(false);
       });
     }
+    console.log("Checking searchResults...");
     chrome.storage.session.get(["searchResults"]).then((data) => {
+      console.log("LOADED: searchResults", data.searchResults);
       const storedSearchResults = data.searchResults || [];
 
       if (!storedSearchResults) {
@@ -70,7 +72,7 @@ export default function ResultsTable({
    * Updates the search results in storage and displayed results when results change.
    */
   useEffect(() => {
-    console.log(searchResults.length + " search results");
+    console.log("CHANGE:", searchResults.length + " search results");
     chrome.storage.session.set({ searchResults }).then(() => {
       if (!searchResults.length) {
         setStatusLabel(isLoading ? "Searching..." : "Type a product name and hit enter");
@@ -84,7 +86,12 @@ export default function ResultsTable({
     showSearchResults: searchResults,
     columnFilterFns,
     getRowCanExpand,
+    userSettings: appContext.userSettings,
   });
+
+  useEffect(() => {
+    table.setUserSettings(appContext.userSettings);
+  }, [appContext.userSettings]);
 
   // Integrate auto column sizing
   const autoSizer = useAutoColumnSizing(table, searchResults);

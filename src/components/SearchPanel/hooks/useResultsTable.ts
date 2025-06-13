@@ -22,8 +22,9 @@ export function useResultsTable({
   showSearchResults,
   columnFilterFns,
   getRowCanExpand,
+  userSettings,
 }: UseResultsTableProps) {
-  const table = useReactTable({
+  const resultsTable = useReactTable({
     data: showSearchResults,
     enableColumnResizing: true,
     defaultColumn: {
@@ -49,6 +50,13 @@ export function useResultsTable({
     _features: [
       {
         createColumn: (column, table) => {
+          table.userSettings = userSettings;
+          column.userSettings = userSettings;
+
+          table.setUserSettings = (userSettings: UserSettings) => {
+            table.userSettings = userSettings;
+          };
+
           // Just gets the header text of the column
           column.getHeaderText = () => getHeaderText(column);
 
@@ -71,5 +79,5 @@ export function useResultsTable({
     ],
   });
 
-  return table;
+  return resultsTable;
 }

@@ -256,6 +256,8 @@ declare global {
     columnFilterFns: [ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>];
     /** Function to determine if a row can be expanded */
     getRowCanExpand: (row: Row<Product>) => boolean;
+    /** Currency rate */
+    userSettings?: UserSettings;
   }
 
   /**

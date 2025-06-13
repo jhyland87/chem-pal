@@ -106,6 +106,7 @@ declare module "@tanstack/react-table" {
 // This export is needed to make the file a module
 
 interface ColumnUniqueValues {
+  userSettings?: UserSettings;
   getHeaderText?: () => string;
   getVisibleUniqueValues?: () => (string | number)[];
   getAllUniqueValues?: () => (string | number)[];

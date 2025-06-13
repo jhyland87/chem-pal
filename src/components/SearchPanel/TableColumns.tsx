@@ -1,4 +1,3 @@
-import { useAppContext } from "@/context";
 import { omit } from "@/helpers/collectionUtils";
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
@@ -45,8 +44,6 @@ const quantitySortingFn: SortingFn<Product> = (rowA: Row<Product>, rowB: Row<Pro
  * ```
  */
 export default function TableColumns(): ColumnDef<Product, unknown>[] {
-  const appContext = useAppContext();
-  console.log("TableColumns: appContext", appContext.userSettings.currencyRate);
   return [
     {
       id: "expander",
@@ -146,13 +143,31 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       id: "price",
-      header: `Price (${appContext.userSettings.currency})`,
+      header: "Price",
       accessorKey: "price",
-      cell: ({ row }: ProductRow) => {
-        return new Intl.NumberFormat(appContext.userSettings.currency, {
+      cell: ({ row, table, column }: ProductRow) => {
+        console.log("row", { row, table, column });
+        const userSettings = table.userSettings;
+        let currency = userSettings?.currency;
+        let currencyRate = userSettings?.currencyRate;
+        let price = row.original?.usdPrice ?? (row.original?.price as number);
+
+        // if (row.original.currency !== "USD" && !row.original.usdPrice) {
+        //   console.error("Non-USD product is missing USD price", row.original);
+        //   return new Intl.NumberFormat(currency, {
+        //     style: "currency",
+        //     currency: currency,
+        //   }).format(row.original.price as number);
+        // }
+        // else{
+
+        // }
+
+        const formattedPrice = new Intl.NumberFormat(currency, {
           style: "currency",
-          currency: appContext.userSettings.currency,
-        }).format((row.original.usdPrice ?? 0) * appContext.userSettings.currencyRate);
+          currency: currency,
+        }).format(price * currencyRate);
+        return formattedPrice;
       },
       sortingFn: priceSortingFn,
       meta: {
