@@ -1,7 +1,7 @@
 import { omit } from "@/helpers/collectionUtils";
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
-import { ColumnDef, type Row, type SortingFn } from "@tanstack/react-table";
+import { ColumnDef, type CellContext, type Row, type SortingFn } from "@tanstack/react-table";
 import { hasFlag } from "country-flag-icons";
 import getUnicodeFlagIcon from "country-flag-icons/unicode";
 import { default as Link } from "../TabLink";
@@ -145,29 +145,34 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       id: "price",
       header: "Price",
       accessorKey: "price",
-      cell: ({ row, table, column }: ProductRow) => {
-        console.log("row", { row, table, column });
-        const userSettings = table.userSettings;
-        let currency = userSettings?.currency;
-        let currencyRate = userSettings?.currencyRate;
+      cell: ({ row, table }: CellContext<Product, unknown>) => {
+        const userSettings = table.options.meta?.userSettings;
+        const currency = userSettings?.currency ?? "USD";
+        const currencyRate = userSettings?.currencyRate ?? 1;
         let price = row.original?.usdPrice ?? (row.original?.price as number);
 
-        // if (row.original.currency !== "USD" && !row.original.usdPrice) {
-        //   console.error("Non-USD product is missing USD price", row.original);
-        //   return new Intl.NumberFormat(currency, {
-        //     style: "currency",
-        //     currency: currency,
-        //   }).format(row.original.price as number);
-        // }
-        // else{
+        // If the currency is not in USD...
+        if (row.original.currency !== "USD") {
+          // Then check if there is a USD price generated to use (this may have a different converstion
+          // rate than the users current currency)
+          if (!row.original.usdPrice) {
+            // If there isn't any, then just use the original currency
+            console.error("Non-USD product is missing USD price", row.original);
+            return new Intl.NumberFormat(row.original.currency, {
+              style: "currency",
+              currency: row.original.currency,
+            }).format(row.original.price as number);
+          }
+          // If there is a usdPrice already generatd, thens witch to that.
+          else {
+            price = row.original.usdPrice;
+          }
+        }
 
-        // }
-
-        const formattedPrice = new Intl.NumberFormat(currency, {
+        return new Intl.NumberFormat(currency, {
           style: "currency",
           currency: currency,
         }).format(price * currencyRate);
-        return formattedPrice;
       },
       sortingFn: priceSortingFn,
       meta: {
