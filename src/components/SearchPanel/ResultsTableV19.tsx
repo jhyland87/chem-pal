@@ -2,10 +2,10 @@ import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import { Column, flexRender } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
-import { Fragment, ReactElement, useEffect, type CSSProperties } from "react";
+import { Fragment, ReactElement, useEffect, useRef, type CSSProperties } from "react";
 import LoadingBackdrop from "../LoadingBackdrop";
 import ContextMenu, { useContextMenu } from "./ContextMenu";
-//import FilterMenu from "./FilterMenu";
+import FilterMenu from "./FilterMenu";
 import { useAutoColumnSizing } from "./hooks/useAutoColumnSizing";
 import { useAppContextV19 } from "./hooks/useContextV19";
 import { useResultsTable } from "./hooks/useResultsTable";
@@ -63,10 +63,10 @@ export default function ResultsTableV19({
   // No need for error handling wrapper - use() handles context errors
   const appContext = useAppContextV19();
 
-  // const filterRef = useRef<{
-  //   toggleDrawer: (open: boolean) => void;
-  //   getState: () => boolean;
-  // }>(null);
+  const filterRef = useRef<{
+    toggleDrawer: (open: boolean) => void;
+    getState: () => boolean;
+  }>(null);
   // Enhanced search hook that maintains streaming behavior
   // Results appear in the table as they're found with live counter updates
   const {
@@ -130,91 +130,91 @@ export default function ResultsTableV19({
         resultCount={optimisticResults.length}
         onClick={handleStopSearch}
       />
-      {/* <FilterMenu ref={filterRef} /> */}
-      <Paper id="search-results-table-container">
-        <Box
-          className="search-input-container fullwidth"
-          component="form"
-          noValidate
-          autoComplete="off"
-        />
-        {/* <Button onClick={() => filterRef.current?.toggleDrawer(!filterRef.current?.getState())}>
-            Open
-          </Button> */}
-        <div className="p-2" style={{ minHeight: "369px" }}>
-          <TableOptions table={table} onSearch={executeSearch} />
-          <div className="h-4" />
-          {autoSizer}
+      <FilterMenu ref={filterRef} />
+      <Box sx={{ paddingRight: "32px" }}>
+        <Paper id="search-results-table-container">
+          <Box
+            className="search-input-container fullwidth"
+            component="form"
+            noValidate
+            autoComplete="off"
+          />
+          <div className="p-2" style={{ minHeight: "369px" }}>
+            <TableOptions table={table} onSearch={executeSearch} />
+            <div className="h-4" />
+            {autoSizer}
 
-          {/* Enhanced error handling with React v19's built-in error state */}
-          {error && (
-            <div className="text-center p-4 text-red-500">
-              <p>Error: {error}</p>
-              <button
-                onClick={() => window.location.reload()}
-                className="mt-2 px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
-              >
-                Retry
-              </button>
-            </div>
-          )}
-
-          {Array.isArray(optimisticResults) && optimisticResults.length > 0 && (
-            <>
-              <table
-                className="search-results"
-                style={{
-                  ...columnSizeVars(),
-                }}
-              >
-                <TableHeader table={table} />
-                <tbody>
-                  {table.getRowModel().rows.map((row) => {
-                    return (
-                      <Fragment key={row.id}>
-                        <tr
-                          className={
-                            (row.original as Product & { isPending?: boolean }).isPending
-                              ? "opacity-70 animate-pulse"
-                              : ""
-                          }
-                          onContextMenu={(e) => handleContextMenu(e, row.original)}
-                          style={{ cursor: "context-menu" }}
-                        >
-                          {row.getVisibleCells().map((cell) => {
-                            return (
-                              <td
-                                key={cell.id}
-                                style={{
-                                  width: `${cell.column.getSize()}px`,
-                                  textAlign: "left",
-                                  ...(cell.column.columnDef.meta as { style?: CSSProperties })
-                                    ?.style,
-                                }}
-                              >
-                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      </Fragment>
-                    );
-                  })}
-                </tbody>
-              </table>
-              <div className="h-2" />
-              <Pagination table={table} />
-            </>
-          )}
-
-          {((!isLoading && !Array.isArray(optimisticResults)) || optimisticResults.length === 0) &&
-            !error && (
-              <div className="text-center p-4">
-                <p>{statusLabel || "No results found. Try a different search term."}</p>
+            {/* Enhanced error handling with React v19's built-in error state */}
+            {error && (
+              <div className="text-center p-4 text-red-500">
+                <p>Error: {error}</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="mt-2 px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
+                >
+                  Retry
+                </button>
               </div>
             )}
-        </div>
-      </Paper>
+
+            {Array.isArray(optimisticResults) && optimisticResults.length > 0 && (
+              <>
+                <table
+                  className="search-results"
+                  style={{
+                    ...columnSizeVars(),
+                  }}
+                >
+                  <TableHeader table={table} />
+                  <tbody>
+                    {table.getRowModel().rows.map((row) => {
+                      return (
+                        <Fragment key={row.id}>
+                          <tr
+                            className={
+                              (row.original as Product & { isPending?: boolean }).isPending
+                                ? "opacity-70 animate-pulse"
+                                : ""
+                            }
+                            onContextMenu={(e) => handleContextMenu(e, row.original)}
+                            style={{ cursor: "context-menu" }}
+                          >
+                            {row.getVisibleCells().map((cell) => {
+                              return (
+                                <td
+                                  key={cell.id}
+                                  style={{
+                                    width: `${cell.column.getSize()}px`,
+                                    textAlign: "left",
+                                    ...(cell.column.columnDef.meta as { style?: CSSProperties })
+                                      ?.style,
+                                  }}
+                                >
+                                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        </Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                <div className="h-2" />
+                <Pagination table={table} />
+              </>
+            )}
+
+            {((!isLoading && !Array.isArray(optimisticResults)) ||
+              optimisticResults.length === 0) &&
+              !error && (
+                <div className="text-center p-4">
+                  <p>{statusLabel || "No results found. Try a different search term."}</p>
+                </div>
+              )}
+          </div>
+        </Paper>
+      </Box>
 
       {/* Context Menu */}
       {contextMenu && (
