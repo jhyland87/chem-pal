@@ -5,6 +5,7 @@ import { isEmpty } from "lodash";
 import { Fragment, ReactElement, useEffect, type CSSProperties } from "react";
 import LoadingBackdrop from "../LoadingBackdrop";
 import ContextMenu, { useContextMenu } from "./ContextMenu";
+//import FilterMenu from "./FilterMenu";
 import { useAutoColumnSizing } from "./hooks/useAutoColumnSizing";
 import { useAppContextV19 } from "./hooks/useContextV19";
 import { useResultsTable } from "./hooks/useResultsTable";
@@ -62,6 +63,10 @@ export default function ResultsTableV19({
   // No need for error handling wrapper - use() handles context errors
   const appContext = useAppContextV19();
 
+  // const filterRef = useRef<{
+  //   toggleDrawer: (open: boolean) => void;
+  //   getState: () => boolean;
+  // }>(null);
   // Enhanced search hook that maintains streaming behavior
   // Results appear in the table as they're found with live counter updates
   const {
@@ -125,7 +130,7 @@ export default function ResultsTableV19({
         resultCount={optimisticResults.length}
         onClick={handleStopSearch}
       />
-
+      {/* <FilterMenu ref={filterRef} /> */}
       <Paper id="search-results-table-container">
         <Box
           className="search-input-container fullwidth"
@@ -133,7 +138,9 @@ export default function ResultsTableV19({
           noValidate
           autoComplete="off"
         />
-
+        {/* <Button onClick={() => filterRef.current?.toggleDrawer(!filterRef.current?.getState())}>
+            Open
+          </Button> */}
         <div className="p-2" style={{ minHeight: "369px" }}>
           <TableOptions table={table} onSearch={executeSearch} />
           <div className="h-4" />
