@@ -282,3 +282,23 @@ export function getUserCountry(): CountryCode {
   }
   return chrome.i18n.getUILanguage().split("-")[1] as CountryCode;
 }
+
+/**
+ * Strips HTML tags from a string.
+ *
+ * @param html - The HTML string to strip
+ * @returns The string with HTML tags removed
+ *
+ * @example
+ * ```typescript
+ * stripHTML("<p>Hello <b>world</b></p>") // Returns "Hello world"
+ * ```
+ */
+export function stripHTML(html: string) {
+  if (typeof document === "undefined") {
+    return html;
+  }
+  const tmp = document.createElement("DIV");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+}
