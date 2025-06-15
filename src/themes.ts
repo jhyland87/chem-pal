@@ -67,6 +67,13 @@ export const lightTheme = createTheme({
         root: {
           //borderRadius: 0,
           //padding: "1px"
+
+          // Add hover effects for table rows
+          "& tbody tr:hover": {
+            backgroundColor: "rgba(0, 0, 0, 0.08)",
+            cursor: "context-menu",
+            transition: "background-color 0.15s ease-in-out",
+          },
         },
       },
     },
@@ -164,6 +171,13 @@ export const darkTheme = createTheme({
       styleOverrides: {
         root: {
           //padding: "1px"
+
+          // Add hover effects for table rows in dark theme
+          "& tbody tr:hover": {
+            backgroundColor: "rgba(255, 255, 255, 0.08)",
+            cursor: "context-menu",
+            transition: "background-color 0.15s ease-in-out",
+          },
         },
       },
     },

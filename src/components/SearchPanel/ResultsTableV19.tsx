@@ -4,6 +4,7 @@ import { Column, flexRender } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
 import { Fragment, ReactElement, useEffect, type CSSProperties } from "react";
 import LoadingBackdrop from "../LoadingBackdrop";
+import ContextMenu, { useContextMenu } from "./ContextMenu";
 import { useAutoColumnSizing } from "./hooks/useAutoColumnSizing";
 import { useAppContextV19 } from "./hooks/useContextV19";
 import { useResultsTable } from "./hooks/useResultsTable";
@@ -22,6 +23,7 @@ import TableOptions from "./TableOptions";
  * - useOptimistic for streaming results (better UX)
  * - use() hook for context (simpler than useContext)
  * - Reduced re-renders through better state consolidation
+ * - Right-click context menu for product rows
  *
  * COMPARISON WITH ORIGINAL:
  *
@@ -50,6 +52,7 @@ import TableOptions from "./TableOptions";
  * 3. Cleaner state management without complex prop drilling
  * 4. Built-in error handling and abort functionality
  * 5. Results appear immediately in table, not all at once
+ * 6. Right-click context menu for enhanced user interaction
  */
 export default function ResultsTableV19({
   getRowCanExpand,
@@ -70,6 +73,9 @@ export default function ResultsTableV19({
     executeSearch,
     handleStopSearch,
   } = useSearchV19();
+
+  // Context menu functionality
+  const { contextMenu, handleContextMenu, handleCloseContextMenu } = useContextMenu();
 
   // Use searchResults directly - they're already streaming in real-time
   const optimisticResults = searchResults;
@@ -165,6 +171,8 @@ export default function ResultsTableV19({
                               ? "opacity-70 animate-pulse"
                               : ""
                           }
+                          onContextMenu={(e) => handleContextMenu(e, row.original)}
+                          style={{ cursor: "context-menu" }}
                         >
                           {row.getVisibleCells().map((cell) => {
                             return (
@@ -200,6 +208,16 @@ export default function ResultsTableV19({
             )}
         </div>
       </Paper>
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          product={contextMenu.product}
+          onClose={handleCloseContextMenu}
+        />
+      )}
     </>
   );
 }

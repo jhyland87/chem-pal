@@ -1,0 +1,87 @@
+/* Context Menu Styles */
+.context-menu {
+  position: fixed;
+  z-index: 9999;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  max-width: 300px;
+  overflow: hidden;
+
+  /* Chrome extension compatibility */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+
+    &:hover {
+      background-color: transparent;
+    }
+  }
+}
+
+.context-menu-icon {
+  margin-right: 12px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.context-menu-text {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.context-menu-divider {
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.12);
+  margin: 4px 0;
+}
+
+/* Table row hover effect for context menu indication */
+.search-results tbody tr {
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+    cursor: context-menu;
+  }
+}
+
+/* Chrome extension specific styles */
+@media (prefers-color-scheme: dark) {
+  .context-menu {
+    background: #2d2d2d;
+    color: white;
+
+    .context-menu-item:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .context-menu-divider {
+      background-color: rgba(255, 255, 255, 0.12);
+    }
+  }
+
+  .search-results tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+  }
+}

@@ -9,10 +9,13 @@
   "side_panel": {
     "default_path": "index.html"
   },
-  "permissions": ["scripting", "sidePanel", "activeTab", "storage", "nativeMessaging"],
+  "permissions": ["scripting", "sidePanel", "tabs", "activeTab", "storage", "nativeMessaging"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "service-worker.js"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
   },
   "icons": {
     "32": "static/images/logo/Cp6.png",
