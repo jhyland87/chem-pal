@@ -117,6 +117,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       },
       meta: {
         filterVariant: "select",
+        filterInputSize: 4,
         style: {
           textAlign: "center",
         },
@@ -129,6 +130,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       cell: (info) => info.getValue(),
       meta: {
         filterVariant: "select",
+        filterInputSize: 4,
       },
     },
     {
@@ -145,27 +147,29 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       id: "price",
       header: "Price",
       accessorKey: "price",
-      cell: ({ row, table }: CellContext<Product, unknown>) => {
+      cell: ({ row, table, getValue, cell, column }: CellContext<Product, unknown>) => {
+        //console.log("cell:", row.id, { row, table, getValue: getValue, cell, column });
         const userSettings = table.options.meta?.userSettings;
         const currency = userSettings?.currency ?? "USD";
         const currencyRate = userSettings?.currencyRate ?? 1;
-        let price = row.original?.usdPrice ?? (row.original?.price as number);
+        const thisRow = row?.original;
+        let price = thisRow?.usdPrice ?? (thisRow?.price as number);
 
         // If the currency is not in USD...
-        if (row.original.currency !== "USD") {
+        if (thisRow.currencyCode !== "USD") {
           // Then check if there is a USD price generated to use (this may have a different converstion
           // rate than the users current currency)
-          if (!row.original.usdPrice) {
+          if (!thisRow.usdPrice) {
             // If there isn't any, then just use the original currency
             console.error("Non-USD product is missing USD price", row.original);
-            return new Intl.NumberFormat(row.original.currency, {
+            return new Intl.NumberFormat(thisRow.currencyCode ?? "USD", {
               style: "currency",
-              currency: row.original.currency,
-            }).format(row.original.price as number);
+              currency: thisRow.currencyCode ?? "USD",
+            }).format(thisRow.price as number);
           }
           // If there is a usdPrice already generatd, thens witch to that.
           else {
-            price = row.original.usdPrice;
+            price = thisRow.usdPrice;
           }
         }
 
@@ -177,6 +181,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       sortingFn: priceSortingFn,
       meta: {
         filterVariant: "range",
+        filterInputSize: 4,
         style: {
           textAlign: "left",
         },
@@ -188,6 +193,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       accessorKey: "quantity",
       meta: {
         filterVariant: "range",
+        filterInputSize: 4,
         style: {
           textAlign: "left",
         },
@@ -204,6 +210,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       accessorKey: "uom",
       meta: {
         filterVariant: "select",
+        filterInputSize: 4,
         style: {
           textAlign: "left",
         },

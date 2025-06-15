@@ -19,7 +19,7 @@ export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: Us
     }
 
     setIsLoading(true);
-    setSearchResults([]);
+    //setSearchResults([]);
     setStatusLabel("Searching...");
     BadgeAnimator.animate("ellipsis", 300);
 
@@ -42,14 +42,12 @@ export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: Us
       appContext.userSettings.suppliers,
     );
 
-    // Clear the products table
-    setSearchResults([]);
-
     const startSearchTime = performance.now();
     let resultCount = 0;
     // Use the async generator to iterate over the products
     // This is where the queries get run, when the iteration starts.
     const productQueryResults = await productQueryFactory.executeAllStream(3);
+    const results: Product[] = [];
 
     for await (const result of productQueryResults) {
       resultCount++;
@@ -100,24 +98,22 @@ export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: Us
 
       // Hide the status label thing
       setStatusLabel(false);
-
-      setSearchResults((prevProducts) => [
-        ...prevProducts,
-        {
-          // Each row needs a unique ID, so use the row count at each insertion
-          // as the ID value
-          ...result,
-          id: prevProducts.length,
-        },
-      ]);
+      results.push(result);
+      setSearchResults((prevProducts) => {
+        console.log("Running new promise:", { prevProducts, results, result });
+        return results.map((r, idx) => {
+          return {
+            ...r,
+            id: idx,
+          };
+        });
+      });
     }
 
     const endSearchTime = performance.now();
     const searchTime = endSearchTime - startSearchTime;
     setIsLoading(false);
     console.debug(`Found ${resultCount} products in ${searchTime} milliseconds`);
-
-    BadgeAnimator.clear("✓", 5000);
   }
 
   return {

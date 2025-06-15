@@ -1,12 +1,12 @@
 import react from "@vitejs/plugin-react";
 import path from "path";
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig } from "vite";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 // https://vite.dev/config/
 
 export default ({ mode }: { mode: string }) => {
-  const env = loadEnv(mode, process.cwd());
-  const isDev = mode === "development" || mode === "mock";
+  const env = "development"; //loadEnv(mode, process.cwd());
+  const isDev = true; //  mode === "development" || mode === "mock";
 
   //console.log("process.env:", process.env);
   const staticCopyTargets = [
@@ -23,17 +23,18 @@ export default ({ mode }: { mode: string }) => {
       dest: "public",
     },
   ];
-
+  /*
   if (isDev) {
     staticCopyTargets.push({
       src: "src/__mocks__/mockServiceWorker.js",
       dest: "public",
     });
-  }
+  }*/
 
   return defineConfig({
     define: {
-      "process.env": env,
+      "process.env.NODE_ENV": JSON.stringify("development"),
+      //"process.env": JSON.stringify(env),
     },
     resolve: {
       alias: {
@@ -67,7 +68,7 @@ export default ({ mode }: { mode: string }) => {
       // Enable source maps for both dev and prod
       sourcemap: true,
       // Improve source map quality
-      minify: isDev ? false : "esbuild",
+      minify: false, //isDev ? false : "esbuild",
       // Preserve original file structure in source maps
       chunkSizeWarningLimit: 1000,
       outDir: "build",
@@ -77,13 +78,13 @@ export default ({ mode }: { mode: string }) => {
           main: "./index.html",
         },
         output: {
-          sourcemapExcludeSources: !isDev, // Include source content in dev
+          sourcemapExcludeSources: false, //!isDev, // Include source content in dev
           sourcemapPathTransform: (relativeSourcePath) => {
             // Make source map paths relative to project root
             return path.relative(".", relativeSourcePath);
-          },
+          } /*
           // Chunk optimization
-          manualChunks: isDev
+          manualChunks: true //isDev
             ? undefined
             : {
                 vendor_mui_style: ["@mui/styled-engine", "@mui/styles"],
@@ -99,7 +100,7 @@ export default ({ mode }: { mode: string }) => {
                   "react-virtuoso",
                   "react-svg-credit-card-payment-icons",
                 ],
-              },
+              },*/,
         },
       },
     },

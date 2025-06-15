@@ -53,6 +53,8 @@ declare global {
     userSettings: UserSettings;
     /** Function to update settings */
     setUserSettings: (settings: UserSettings) => void;
+
+    searchResults: Product[];
   }
 
   /**

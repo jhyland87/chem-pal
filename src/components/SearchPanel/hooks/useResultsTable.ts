@@ -10,6 +10,8 @@ import {
   ColumnDef,
   getCoreRowModel,
   getExpandedRowModel,
+  getFacetedMinMaxValues,
+  getFacetedUniqueValues,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
@@ -27,6 +29,7 @@ export function useResultsTable({
   const resultsTable = useReactTable({
     data: showSearchResults,
     enableColumnResizing: true,
+    columnResizeDirection: "ltr",
     defaultColumn: {
       // Removed minSize and maxSize for more flexibility
     },
@@ -44,6 +47,8 @@ export function useResultsTable({
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+    getFacetedMinMaxValues: getFacetedMinMaxValues(),
     debugTable: false,
     debugHeaders: false,
     debugColumns: false,

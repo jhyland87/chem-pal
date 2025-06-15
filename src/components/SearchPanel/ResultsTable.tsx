@@ -4,6 +4,7 @@ import Paper from "@mui/material/Paper";
 import { Column, flexRender } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
 import { Fragment, ReactElement, useEffect, useState, type CSSProperties } from "react";
+import { useChromeStorageSession } from "use-chrome-storage";
 import LoadingBackdrop from "../LoadingBackdrop";
 import { useAutoColumnSizing } from "./hooks/useAutoColumnSizing";
 import { useResultsTable } from "./hooks/useResultsTable";
@@ -34,7 +35,13 @@ export default function ResultsTable({
   columnFilterFns,
 }: ProductTableProps<Product>): ReactElement {
   const appContext = useAppContext();
-  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  console.log("appContext.searchResults:", appContext.searchResults);
+
+  const [searchResults, setSearchResults] = useChromeStorageSession(
+    "searchResults",
+    appContext.searchResults?.length > 0 ? appContext.searchResults : [],
+  );
+
   const [statusLabel, setStatusLabel] = useState<string | boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -53,34 +60,7 @@ export default function ResultsTable({
         if (appContext.userSettings.hideColumns.includes(column.id)) column.toggleVisibility(false);
       });
     }
-    console.log("Checking searchResults...");
-    chrome.storage.session.get(["searchResults"]).then((data) => {
-      console.log("LOADED: searchResults", data.searchResults);
-      const storedSearchResults = data.searchResults || [];
-
-      if (!storedSearchResults) {
-        setStatusLabel("Type a product name and hit enter");
-        return;
-      }
-
-      setSearchResults(Array.isArray(storedSearchResults) ? storedSearchResults : []);
-      setStatusLabel("");
-    });
   }, []);
-
-  /**
-   * Updates the search results in storage and displayed results when results change.
-   */
-  useEffect(() => {
-    console.log("CHANGE:", searchResults.length + " search results");
-    chrome.storage.session.set({ searchResults }).then(() => {
-      if (!searchResults.length) {
-        setStatusLabel(isLoading ? "Searching..." : "Type a product name and hit enter");
-        return;
-      }
-      setStatusLabel(false);
-    });
-  }, [searchResults, isLoading]);
 
   const table = useResultsTable({
     showSearchResults: searchResults,
@@ -90,7 +70,9 @@ export default function ResultsTable({
   });
 
   useEffect(() => {
-    table.setUserSettings(appContext.userSettings);
+    if (table && table.setUserSettings) {
+      table.setUserSettings(appContext.userSettings);
+    }
   }, [appContext.userSettings]);
 
   // Integrate auto column sizing
@@ -126,7 +108,6 @@ export default function ResultsTable({
         <div className="p-2" style={{ minHeight: "369px" }}>
           <TableOptions table={table} onSearch={executeSearch} />
           <div className="h-4" />
-          {/* Render the hidden auto-sizing table */}
           {autoSizer}
           {Array.isArray(searchResults) && searchResults.length > 0 && (
             <>

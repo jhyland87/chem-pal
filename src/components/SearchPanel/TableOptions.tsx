@@ -27,7 +27,6 @@ import "./TableOptions.scss";
  */
 export default function TableOptions({ table, onSearch }: TableOptionsProps) {
   const [filterModalOpen, setFilterModalOpen] = useState(false);
-
   return (
     <>
       <Toolbar className="table-options-toolbar fullwidth">

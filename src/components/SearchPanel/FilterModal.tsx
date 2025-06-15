@@ -70,7 +70,6 @@ export default function FilterModal({
    * Closes the filter modal.
    */
   const handleClose = () => setFilterModalOpen(false);
-
   /**
    * Gets the list of currently visible column IDs.
    * @returns Array of visible column IDs
@@ -146,7 +145,7 @@ export default function FilterModal({
             {table.getAllColumns().map((column: CustomColumn<Product, unknown>) => {
               if (!column.getCanFilter()) return;
               return (
-                <Grid size={6} key={column.id}>
+                <Grid size={column.columnDef?.meta?.filterInputSize ?? 6} key={column.id}>
                   <FilterVariantComponent column={column} />
                 </Grid>
               );

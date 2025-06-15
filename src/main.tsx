@@ -42,7 +42,14 @@ async function enableMocking() {
 }
 
 enableMocking().then(() => {
-  return createRoot(document.getElementById("root")!).render(
+  return createRoot(document.getElementById("root")!, {
+    onUncaughtError: (error, errorInfo) => {
+      console.error("Uncaught error:", error, errorInfo);
+    },
+    onCaughtError: (error, errorInfo) => {
+      console.error("Caught error:", error, errorInfo);
+    },
+  }).render(
     <StrictMode>
       <App />
     </StrictMode>,
