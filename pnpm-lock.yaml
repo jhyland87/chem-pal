@@ -115,7 +115,7 @@ importers:
         version: 4.41.0
       typedoc-plugin-markdown:
         specifier: ^4.6.3
-        version: 4.6.3(typedoc@0.28.5(typescript@5.7.3))
+        version: 4.6.3(typedoc@0.28.5(typescript@5.8.3))
       use-chrome-storage:
         specifier: ^1.3.2
         version: 1.3.2(react@19.1.0)
@@ -197,10 +197,10 @@ importers:
         version: 2023.10.6
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.32.1
-        version: 8.33.0(@typescript-eslint/parser@8.33.0(eslint@9.28.0)(typescript@5.7.3))(eslint@9.28.0)(typescript@5.7.3)
+        version: 8.33.0(@typescript-eslint/parser@8.33.0(eslint@9.28.0)(typescript@5.8.3))(eslint@9.28.0)(typescript@5.8.3)
       '@typescript-eslint/parser':
         specifier: ^8.32.1
-        version: 8.33.0(eslint@9.28.0)(typescript@5.7.3)
+        version: 8.33.0(eslint@9.28.0)(typescript@5.8.3)
       '@vitejs/plugin-react':
         specifier: ^4.3.4
         version: 4.5.0(vite@6.3.5(@types/node@22.15.29)(sass-embedded@1.89.1)(yaml@2.8.0))
@@ -257,7 +257,7 @@ importers:
         version: 15.0.12
       msw:
         specifier: ^2.8.3
-        version: 2.8.7(@types/node@22.15.29)(typescript@5.7.3)
+        version: 2.8.7(@types/node@22.15.29)(typescript@5.8.3)
       multiformats:
         specifier: ^9.9.0
         version: 9.9.0
@@ -278,64 +278,64 @@ importers:
         version: 1.0.0-rc.2
       ts-node:
         specifier: ^10.9.2
-        version: 10.9.2(@swc/core@1.11.29)(@types/node@22.15.29)(typescript@5.7.3)
+        version: 10.9.2(@swc/core@1.11.29)(@types/node@22.15.29)(typescript@5.8.3)
       typedoc:
         specifier: ^0.28.5
-        version: 0.28.5(typescript@5.7.3)
+        version: 0.28.5(typescript@5.8.3)
       typedoc-github-theme:
         specifier: ^0.3.0
-        version: 0.3.0(typedoc@0.28.5(typescript@5.7.3))
+        version: 0.3.0(typedoc@0.28.5(typescript@5.8.3))
       typedoc-light-theme:
         specifier: ^1.1.0
-        version: 1.1.0(typedoc@0.28.5(typescript@5.7.3))
+        version: 1.1.0(typedoc@0.28.5(typescript@5.8.3))
       typedoc-plugin-coverage:
         specifier: ^4.0.1
-        version: 4.0.1(typedoc@0.28.5(typescript@5.7.3))
+        version: 4.0.1(typedoc@0.28.5(typescript@5.8.3))
       typedoc-plugin-dt-links:
         specifier: ^2.0.2
-        version: 2.0.3(typedoc@0.28.5(typescript@5.7.3))
+        version: 2.0.3(typedoc@0.28.5(typescript@5.8.3))
       typedoc-plugin-expand-object-like-types:
         specifier: ^0.1.2
-        version: 0.1.2(typedoc@0.28.5(typescript@5.7.3))
+        version: 0.1.2(typedoc@0.28.5(typescript@5.8.3))
       typedoc-plugin-include-example:
         specifier: ^2.1.2
-        version: 2.1.2(typedoc@0.28.5(typescript@5.7.3))
+        version: 2.1.2(typedoc@0.28.5(typescript@5.8.3))
       typedoc-plugin-mark-react-functional-components:
         specifier: ^0.2.2
         version: 0.2.2
       typedoc-plugin-mdn-links:
         specifier: ^5.0.2
-        version: 5.0.2(typedoc@0.28.5(typescript@5.7.3))
+        version: 5.0.2(typedoc@0.28.5(typescript@5.8.3))
       typedoc-plugin-missing-exports:
         specifier: ^4.0.0
-        version: 4.0.0(typedoc@0.28.5(typescript@5.7.3))
+        version: 4.0.0(typedoc@0.28.5(typescript@5.8.3))
       typedoc-plugin-not-exported:
         specifier: ^0.1.6
-        version: 0.1.6(typedoc@0.28.5(typescript@5.7.3))
+        version: 0.1.6(typedoc@0.28.5(typescript@5.8.3))
       typedoc-plugin-pages:
         specifier: ^1.1.0
         version: 1.1.0
       typedoc-plugin-rename-defaults:
         specifier: ^0.7.3
-        version: 0.7.3(typedoc@0.28.5(typescript@5.7.3))
+        version: 0.7.3(typedoc@0.28.5(typescript@5.8.3))
       typedoc-plugin-sourcefile-url:
         specifier: ^1.0.6
-        version: 1.0.6(typedoc@0.28.5(typescript@5.7.3))
+        version: 1.0.6(typedoc@0.28.5(typescript@5.8.3))
       typedoc-theme-hierarchy:
         specifier: ^6.0.0
-        version: 6.0.0(typedoc@0.28.5(typescript@5.7.3))
+        version: 6.0.0(typedoc@0.28.5(typescript@5.8.3))
       typedoc-theme-oxide:
         specifier: ^0.2.0
-        version: 0.2.0(typedoc@0.28.5(typescript@5.7.3))
+        version: 0.2.0(typedoc@0.28.5(typescript@5.8.3))
       typedoc-unhoax-theme:
         specifier: ^0.5.3
-        version: 0.5.3(typedoc@0.28.5(typescript@5.7.3))
+        version: 0.5.3(typedoc@0.28.5(typescript@5.8.3))
       typescript:
-        specifier: ~5.7.2
-        version: 5.7.3
+        specifier: ^5.8.3
+        version: 5.8.3
       typescript-eslint:
         specifier: ^8.26.1
-        version: 8.33.0(eslint@9.28.0)(typescript@5.7.3)
+        version: 8.33.0(eslint@9.28.0)(typescript@5.8.3)
       underscore:
         specifier: ^1.13.7
         version: 1.13.7
@@ -350,7 +350,7 @@ importers:
         version: 2.3.1(vite@6.3.5(@types/node@22.15.29)(sass-embedded@1.89.1)(yaml@2.8.0))
       vitest:
         specifier: ^3.1.4
-        version: 3.1.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.1.4)(happy-dom@17.5.6)(jsdom@26.1.0)(msw@2.8.7(@types/node@22.15.29)(typescript@5.7.3))(sass-embedded@1.89.1)(yaml@2.8.0)
+        version: 3.1.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.1.4)(happy-dom@17.5.6)(jsdom@26.1.0)(msw@2.8.7(@types/node@22.15.29)(typescript@5.8.3))(sass-embedded@1.89.1)(yaml@2.8.0)
 
 packages:
 
@@ -3782,8 +3782,8 @@ packages:
       eslint: ^8.57.0 || ^9.0.0
       typescript: '>=4.8.4 <5.9.0'
 
-  typescript@5.7.3:
-    resolution: {integrity: sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==}
+  typescript@5.8.3:
+    resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -5646,38 +5646,38 @@ snapshots:
 
   '@types/wicg-file-system-access@2023.10.6': {}
 
-  '@typescript-eslint/eslint-plugin@8.33.0(@typescript-eslint/parser@8.33.0(eslint@9.28.0)(typescript@5.7.3))(eslint@9.28.0)(typescript@5.7.3)':
+  '@typescript-eslint/eslint-plugin@8.33.0(@typescript-eslint/parser@8.33.0(eslint@9.28.0)(typescript@5.8.3))(eslint@9.28.0)(typescript@5.8.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.1
-      '@typescript-eslint/parser': 8.33.0(eslint@9.28.0)(typescript@5.7.3)
+      '@typescript-eslint/parser': 8.33.0(eslint@9.28.0)(typescript@5.8.3)
       '@typescript-eslint/scope-manager': 8.33.0
-      '@typescript-eslint/type-utils': 8.33.0(eslint@9.28.0)(typescript@5.7.3)
-      '@typescript-eslint/utils': 8.33.0(eslint@9.28.0)(typescript@5.7.3)
+      '@typescript-eslint/type-utils': 8.33.0(eslint@9.28.0)(typescript@5.8.3)
+      '@typescript-eslint/utils': 8.33.0(eslint@9.28.0)(typescript@5.8.3)
       '@typescript-eslint/visitor-keys': 8.33.0
       eslint: 9.28.0
       graphemer: 1.4.0
       ignore: 7.0.5
       natural-compare: 1.4.0
-      ts-api-utils: 2.1.0(typescript@5.7.3)
-      typescript: 5.7.3
+      ts-api-utils: 2.1.0(typescript@5.8.3)
+      typescript: 5.8.3
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/parser@8.33.0(eslint@9.28.0)(typescript@5.7.3)':
+  '@typescript-eslint/parser@8.33.0(eslint@9.28.0)(typescript@5.8.3)':
     dependencies:
       '@typescript-eslint/scope-manager': 8.33.0
       '@typescript-eslint/types': 8.33.0
-      '@typescript-eslint/typescript-estree': 8.33.0(typescript@5.7.3)
+      '@typescript-eslint/typescript-estree': 8.33.0(typescript@5.8.3)
       '@typescript-eslint/visitor-keys': 8.33.0
       debug: 4.4.1
       eslint: 9.28.0
-      typescript: 5.7.3
+      typescript: 5.8.3
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/project-service@8.33.0(typescript@5.7.3)':
+  '@typescript-eslint/project-service@8.33.0(typescript@5.8.3)':
     dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.33.0(typescript@5.7.3)
+      '@typescript-eslint/tsconfig-utils': 8.33.0(typescript@5.8.3)
       '@typescript-eslint/types': 8.33.0
       debug: 4.4.1
     transitivePeerDependencies:
@@ -5689,27 +5689,27 @@ snapshots:
       '@typescript-eslint/types': 8.33.0
       '@typescript-eslint/visitor-keys': 8.33.0
 
-  '@typescript-eslint/tsconfig-utils@8.33.0(typescript@5.7.3)':
+  '@typescript-eslint/tsconfig-utils@8.33.0(typescript@5.8.3)':
     dependencies:
-      typescript: 5.7.3
+      typescript: 5.8.3
 
-  '@typescript-eslint/type-utils@8.33.0(eslint@9.28.0)(typescript@5.7.3)':
+  '@typescript-eslint/type-utils@8.33.0(eslint@9.28.0)(typescript@5.8.3)':
     dependencies:
-      '@typescript-eslint/typescript-estree': 8.33.0(typescript@5.7.3)
-      '@typescript-eslint/utils': 8.33.0(eslint@9.28.0)(typescript@5.7.3)
+      '@typescript-eslint/typescript-estree': 8.33.0(typescript@5.8.3)
+      '@typescript-eslint/utils': 8.33.0(eslint@9.28.0)(typescript@5.8.3)
       debug: 4.4.1
       eslint: 9.28.0
-      ts-api-utils: 2.1.0(typescript@5.7.3)
-      typescript: 5.7.3
+      ts-api-utils: 2.1.0(typescript@5.8.3)
+      typescript: 5.8.3
     transitivePeerDependencies:
       - supports-color
 
   '@typescript-eslint/types@8.33.0': {}
 
-  '@typescript-eslint/typescript-estree@8.33.0(typescript@5.7.3)':
+  '@typescript-eslint/typescript-estree@8.33.0(typescript@5.8.3)':
     dependencies:
-      '@typescript-eslint/project-service': 8.33.0(typescript@5.7.3)
-      '@typescript-eslint/tsconfig-utils': 8.33.0(typescript@5.7.3)
+      '@typescript-eslint/project-service': 8.33.0(typescript@5.8.3)
+      '@typescript-eslint/tsconfig-utils': 8.33.0(typescript@5.8.3)
       '@typescript-eslint/types': 8.33.0
       '@typescript-eslint/visitor-keys': 8.33.0
       debug: 4.4.1
@@ -5717,19 +5717,19 @@ snapshots:
       is-glob: 4.0.3
       minimatch: 9.0.5
       semver: 7.7.2
-      ts-api-utils: 2.1.0(typescript@5.7.3)
-      typescript: 5.7.3
+      ts-api-utils: 2.1.0(typescript@5.8.3)
+      typescript: 5.8.3
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/utils@8.33.0(eslint@9.28.0)(typescript@5.7.3)':
+  '@typescript-eslint/utils@8.33.0(eslint@9.28.0)(typescript@5.8.3)':
     dependencies:
       '@eslint-community/eslint-utils': 4.7.0(eslint@9.28.0)
       '@typescript-eslint/scope-manager': 8.33.0
       '@typescript-eslint/types': 8.33.0
-      '@typescript-eslint/typescript-estree': 8.33.0(typescript@5.7.3)
+      '@typescript-eslint/typescript-estree': 8.33.0(typescript@5.8.3)
       eslint: 9.28.0
-      typescript: 5.7.3
+      typescript: 5.8.3
     transitivePeerDependencies:
       - supports-color
 
@@ -5772,7 +5772,7 @@ snapshots:
       std-env: 3.9.0
       test-exclude: 7.0.1
       tinyrainbow: 2.0.0
-      vitest: 3.1.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.1.4)(happy-dom@17.5.6)(jsdom@26.1.0)(msw@2.8.7(@types/node@22.15.29)(typescript@5.7.3))(sass-embedded@1.89.1)(yaml@2.8.0)
+      vitest: 3.1.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.1.4)(happy-dom@17.5.6)(jsdom@26.1.0)(msw@2.8.7(@types/node@22.15.29)(typescript@5.8.3))(sass-embedded@1.89.1)(yaml@2.8.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -5783,13 +5783,13 @@ snapshots:
       chai: 5.2.0
       tinyrainbow: 2.0.0
 
-  '@vitest/mocker@3.1.4(msw@2.8.7(@types/node@22.15.29)(typescript@5.7.3))(vite@6.3.5(@types/node@22.15.29)(sass-embedded@1.89.1)(yaml@2.8.0))':
+  '@vitest/mocker@3.1.4(msw@2.8.7(@types/node@22.15.29)(typescript@5.8.3))(vite@6.3.5(@types/node@22.15.29)(sass-embedded@1.89.1)(yaml@2.8.0))':
     dependencies:
       '@vitest/spy': 3.1.4
       estree-walker: 3.0.3
       magic-string: 0.30.17
     optionalDependencies:
-      msw: 2.8.7(@types/node@22.15.29)(typescript@5.7.3)
+      msw: 2.8.7(@types/node@22.15.29)(typescript@5.8.3)
       vite: 6.3.5(@types/node@22.15.29)(sass-embedded@1.89.1)(yaml@2.8.0)
 
   '@vitest/pretty-format@3.1.4':
@@ -5820,7 +5820,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.14
       tinyrainbow: 2.0.0
-      vitest: 3.1.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.1.4)(happy-dom@17.5.6)(jsdom@26.1.0)(msw@2.8.7(@types/node@22.15.29)(typescript@5.7.3))(sass-embedded@1.89.1)(yaml@2.8.0)
+      vitest: 3.1.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.1.4)(happy-dom@17.5.6)(jsdom@26.1.0)(msw@2.8.7(@types/node@22.15.29)(typescript@5.8.3))(sass-embedded@1.89.1)(yaml@2.8.0)
 
   '@vitest/utils@3.1.4':
     dependencies:
@@ -6942,7 +6942,7 @@ snapshots:
 
   ms@2.1.3: {}
 
-  msw@2.8.7(@types/node@22.15.29)(typescript@5.7.3):
+  msw@2.8.7(@types/node@22.15.29)(typescript@5.8.3):
     dependencies:
       '@bundled-es-modules/cookie': 2.0.1
       '@bundled-es-modules/statuses': 1.0.1
@@ -6963,7 +6963,7 @@ snapshots:
       type-fest: 4.41.0
       yargs: 17.7.2
     optionalDependencies:
-      typescript: 5.7.3
+      typescript: 5.8.3
     transitivePeerDependencies:
       - '@types/node'
 
@@ -7485,13 +7485,13 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  ts-api-utils@2.1.0(typescript@5.7.3):
+  ts-api-utils@2.1.0(typescript@5.8.3):
     dependencies:
-      typescript: 5.7.3
+      typescript: 5.8.3
 
   ts-jest-mock@1.4.2: {}
 
-  ts-node@10.9.2(@swc/core@1.11.29)(@types/node@22.15.29)(typescript@5.7.3):
+  ts-node@10.9.2(@swc/core@1.11.29)(@types/node@22.15.29)(typescript@5.8.3):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       '@tsconfig/node10': 1.0.11
@@ -7505,7 +7505,7 @@ snapshots:
       create-require: 1.1.1
       diff: 4.0.2
       make-error: 1.3.6
-      typescript: 5.7.3
+      typescript: 5.8.3
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
     optionalDependencies:
@@ -7525,100 +7525,100 @@ snapshots:
     dependencies:
       lunr: 2.3.9
 
-  typedoc-github-theme@0.3.0(typedoc@0.28.5(typescript@5.7.3)):
+  typedoc-github-theme@0.3.0(typedoc@0.28.5(typescript@5.8.3)):
     dependencies:
-      typedoc: 0.28.5(typescript@5.7.3)
+      typedoc: 0.28.5(typescript@5.8.3)
 
-  typedoc-light-theme@1.1.0(typedoc@0.28.5(typescript@5.7.3)):
+  typedoc-light-theme@1.1.0(typedoc@0.28.5(typescript@5.8.3)):
     dependencies:
       handlebars: 4.7.8
       makef: 1.2.0
-      typedoc: 0.28.5(typescript@5.7.3)
+      typedoc: 0.28.5(typescript@5.8.3)
 
-  typedoc-plugin-coverage@4.0.1(typedoc@0.28.5(typescript@5.7.3)):
+  typedoc-plugin-coverage@4.0.1(typedoc@0.28.5(typescript@5.8.3)):
     dependencies:
-      typedoc: 0.28.5(typescript@5.7.3)
+      typedoc: 0.28.5(typescript@5.8.3)
 
-  typedoc-plugin-dt-links@2.0.3(typedoc@0.28.5(typescript@5.7.3)):
+  typedoc-plugin-dt-links@2.0.3(typedoc@0.28.5(typescript@5.8.3)):
     dependencies:
-      typedoc: 0.28.5(typescript@5.7.3)
+      typedoc: 0.28.5(typescript@5.8.3)
 
-  typedoc-plugin-expand-object-like-types@0.1.2(typedoc@0.28.5(typescript@5.7.3)):
+  typedoc-plugin-expand-object-like-types@0.1.2(typedoc@0.28.5(typescript@5.8.3)):
     dependencies:
-      typedoc: 0.28.5(typescript@5.7.3)
+      typedoc: 0.28.5(typescript@5.8.3)
 
-  typedoc-plugin-include-example@2.1.2(typedoc@0.28.5(typescript@5.7.3)):
+  typedoc-plugin-include-example@2.1.2(typedoc@0.28.5(typescript@5.8.3)):
     dependencies:
-      typedoc: 0.28.5(typescript@5.7.3)
+      typedoc: 0.28.5(typescript@5.8.3)
 
   typedoc-plugin-mark-react-functional-components@0.2.2: {}
 
-  typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.7.3)):
+  typedoc-plugin-markdown@4.6.3(typedoc@0.28.5(typescript@5.8.3)):
     dependencies:
-      typedoc: 0.28.5(typescript@5.7.3)
+      typedoc: 0.28.5(typescript@5.8.3)
 
-  typedoc-plugin-mdn-links@5.0.2(typedoc@0.28.5(typescript@5.7.3)):
+  typedoc-plugin-mdn-links@5.0.2(typedoc@0.28.5(typescript@5.8.3)):
     dependencies:
-      typedoc: 0.28.5(typescript@5.7.3)
+      typedoc: 0.28.5(typescript@5.8.3)
 
-  typedoc-plugin-missing-exports@4.0.0(typedoc@0.28.5(typescript@5.7.3)):
+  typedoc-plugin-missing-exports@4.0.0(typedoc@0.28.5(typescript@5.8.3)):
     dependencies:
-      typedoc: 0.28.5(typescript@5.7.3)
+      typedoc: 0.28.5(typescript@5.8.3)
 
-  typedoc-plugin-not-exported@0.1.6(typedoc@0.28.5(typescript@5.7.3)):
+  typedoc-plugin-not-exported@0.1.6(typedoc@0.28.5(typescript@5.8.3)):
     dependencies:
-      typedoc: 0.28.5(typescript@5.7.3)
+      typedoc: 0.28.5(typescript@5.8.3)
 
   typedoc-plugin-pages@1.1.0:
     dependencies:
       compare-versions: 3.6.0
       typedoc-default-themes: 0.10.2
 
-  typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.7.3)):
+  typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.5(typescript@5.8.3)):
     dependencies:
       camelcase: 8.0.0
-      typedoc: 0.28.5(typescript@5.7.3)
+      typedoc: 0.28.5(typescript@5.8.3)
 
-  typedoc-plugin-sourcefile-url@1.0.6(typedoc@0.28.5(typescript@5.7.3)):
+  typedoc-plugin-sourcefile-url@1.0.6(typedoc@0.28.5(typescript@5.8.3)):
     dependencies:
-      typedoc: 0.28.5(typescript@5.7.3)
+      typedoc: 0.28.5(typescript@5.8.3)
 
-  typedoc-theme-hierarchy@6.0.0(typedoc@0.28.5(typescript@5.7.3)):
+  typedoc-theme-hierarchy@6.0.0(typedoc@0.28.5(typescript@5.8.3)):
     dependencies:
       fs-extra: 11.1.1
-      typedoc: 0.28.5(typescript@5.7.3)
+      typedoc: 0.28.5(typescript@5.8.3)
 
-  typedoc-theme-oxide@0.2.0(typedoc@0.28.5(typescript@5.7.3)):
+  typedoc-theme-oxide@0.2.0(typedoc@0.28.5(typescript@5.8.3)):
     dependencies:
       cheerio: 1.0.0
       flexsearch: 0.8.204
       slug: 10.0.0
-      typedoc: 0.28.5(typescript@5.7.3)
+      typedoc: 0.28.5(typescript@5.8.3)
 
-  typedoc-unhoax-theme@0.5.3(typedoc@0.28.5(typescript@5.7.3)):
+  typedoc-unhoax-theme@0.5.3(typedoc@0.28.5(typescript@5.8.3)):
     dependencies:
-      typedoc: 0.28.5(typescript@5.7.3)
+      typedoc: 0.28.5(typescript@5.8.3)
 
-  typedoc@0.28.5(typescript@5.7.3):
+  typedoc@0.28.5(typescript@5.8.3):
     dependencies:
       '@gerrit0/mini-shiki': 3.4.2
       lunr: 2.3.9
       markdown-it: 14.1.0
       minimatch: 9.0.5
-      typescript: 5.7.3
+      typescript: 5.8.3
       yaml: 2.8.0
 
-  typescript-eslint@8.33.0(eslint@9.28.0)(typescript@5.7.3):
+  typescript-eslint@8.33.0(eslint@9.28.0)(typescript@5.8.3):
     dependencies:
-      '@typescript-eslint/eslint-plugin': 8.33.0(@typescript-eslint/parser@8.33.0(eslint@9.28.0)(typescript@5.7.3))(eslint@9.28.0)(typescript@5.7.3)
-      '@typescript-eslint/parser': 8.33.0(eslint@9.28.0)(typescript@5.7.3)
-      '@typescript-eslint/utils': 8.33.0(eslint@9.28.0)(typescript@5.7.3)
+      '@typescript-eslint/eslint-plugin': 8.33.0(@typescript-eslint/parser@8.33.0(eslint@9.28.0)(typescript@5.8.3))(eslint@9.28.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 8.33.0(eslint@9.28.0)(typescript@5.8.3)
+      '@typescript-eslint/utils': 8.33.0(eslint@9.28.0)(typescript@5.8.3)
       eslint: 9.28.0
-      typescript: 5.7.3
+      typescript: 5.8.3
     transitivePeerDependencies:
       - supports-color
 
-  typescript@5.7.3: {}
+  typescript@5.8.3: {}
 
   uc.micro@2.1.0: {}
 
@@ -7721,10 +7721,10 @@ snapshots:
       sass-embedded: 1.89.1
       yaml: 2.8.0
 
-  vitest@3.1.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.1.4)(happy-dom@17.5.6)(jsdom@26.1.0)(msw@2.8.7(@types/node@22.15.29)(typescript@5.7.3))(sass-embedded@1.89.1)(yaml@2.8.0):
+  vitest@3.1.4(@types/debug@4.1.12)(@types/node@22.15.29)(@vitest/ui@3.1.4)(happy-dom@17.5.6)(jsdom@26.1.0)(msw@2.8.7(@types/node@22.15.29)(typescript@5.8.3))(sass-embedded@1.89.1)(yaml@2.8.0):
     dependencies:
       '@vitest/expect': 3.1.4
-      '@vitest/mocker': 3.1.4(msw@2.8.7(@types/node@22.15.29)(typescript@5.7.3))(vite@6.3.5(@types/node@22.15.29)(sass-embedded@1.89.1)(yaml@2.8.0))
+      '@vitest/mocker': 3.1.4(msw@2.8.7(@types/node@22.15.29)(typescript@5.8.3))(vite@6.3.5(@types/node@22.15.29)(sass-embedded@1.89.1)(yaml@2.8.0))
       '@vitest/pretty-format': 3.1.4
       '@vitest/runner': 3.1.4
       '@vitest/snapshot': 3.1.4

@@ -1,122 +1,240 @@
 import { useAppContext } from "@/context";
 import SupplierFactory from "@/suppliers/SupplierFactory";
 import BadgeAnimator from "@/utils/BadgeAnimator";
+import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 import { getColumnFilterConfig } from "../TableColumns";
-export function useSearch({ setSearchResults, setStatusLabel, setIsLoading }: UseSearchProps) {
-  const appContext = useAppContext();
-  let fetchController: AbortController = new AbortController();
 
-  const handleStopSearch = () => {
-    console.debug("triggering abort..");
-    setIsLoading(false);
-    fetchController.abort();
-    setStatusLabel("Search aborted");
+interface SearchState {
+  isLoading: boolean;
+  status: string | boolean;
+  error?: string;
+  resultCount: number;
+}
+
+/**
+ * React v19 enhanced search hook that maintains streaming behavior.
+ *
+ * This version preserves the original streaming approach where results appear
+ * in the table as they're found, with live counter updates, AND restores
+ * session persistence so results are maintained across page reloads.
+ *
+ * Key improvements over original:
+ * - Uses startTransition for better performance
+ * - Better error handling
+ * - Streaming results with immediate UI updates
+ * - Live result counter that updates as results arrive
+ * - Session persistence restored (loads previous results on mount)
+ */
+export function useSearch() {
+  const appContext = useAppContext();
+  const fetchControllerRef = useRef<AbortController>(new AbortController());
+
+  const initialState: SearchState = {
+    isLoading: false,
+    status: false,
+    error: undefined,
+    resultCount: 0,
   };
 
-  async function executeSearch(query: string) {
-    if (!query.trim()) {
-      return;
-    }
+  const [state, setState] = useState<SearchState>(initialState);
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
 
-    setIsLoading(true);
-    //setSearchResults([]);
-    setStatusLabel("Searching...");
-    BadgeAnimator.animate("ellipsis", 300);
-
-    // This stores what type of filter each column has. Well build this object
-    // up as we iterate over the columns.
-    const columnFilterConfig = getColumnFilterConfig();
-
-    if (!appContext.userSettings.supplierResultLimit) {
-      console.warn("No supplier search limit set - defaulting to 5");
-    }
-    const searchLimit = appContext.userSettings.supplierResultLimit ?? 5;
-    // Abort controller specific to this query
-    fetchController = new AbortController();
-    // Create the query instance
-    // Note: This does not actually run the HTTP calls or queries...
-    const productQueryFactory = new SupplierFactory(
-      query,
-      searchLimit,
-      fetchController,
-      appContext.userSettings.suppliers,
-    );
-
-    const startSearchTime = performance.now();
-    let resultCount = 0;
-    // Use the async generator to iterate over the products
-    // This is where the queries get run, when the iteration starts.
-    const productQueryResults = await productQueryFactory.executeAllStream(3);
-    const results: Product[] = [];
-
-    for await (const result of productQueryResults) {
-      resultCount++;
-      BadgeAnimator.setText(resultCount.toString());
-
-      // Data for new row (must align with columns structure)
-
-      // Hide the status label thing
-      // Add each product to the table.
-      console.debug("newProduct:", result);
-
-      for (const [columnName, columnValue] of Object.entries(result)) {
-        if (columnName in columnFilterConfig === false) continue;
-
-        if (columnFilterConfig[columnName].filterVariant === "range") {
-          // For range filters, we only want the highest and lowest. So compare the columnValue
-          // with the first and second values in the filterData array (being lowest and highest
-          // values respectively), updating the values if they are lower or higher.
-          if (typeof columnValue !== "number") continue;
-
-          // Skip values that are less than the min value
-          if (
-            typeof columnFilterConfig[columnName].filterData[0] !== "number" ||
-            columnValue < columnFilterConfig[columnName].filterData[0]
-          ) {
-            columnFilterConfig[columnName].filterData[0] = columnValue;
-          } else if (
-            typeof columnFilterConfig[columnName].filterData[1] !== "number" ||
-            columnValue < columnFilterConfig[columnName].filterData[1]
-          ) {
-            columnFilterConfig[columnName].filterData[1] = columnValue;
-          }
-          // TODO: Implement range filter
-        } else if (columnFilterConfig[columnName].filterVariant === "select") {
-          // For select filters, we only want the unique values, so we verify  the columnValue
-          // is not already in the filterData array before adding it.
-          if (!columnFilterConfig[columnName].filterData.includes(columnValue)) {
-            columnFilterConfig[columnName].filterData.push(columnValue);
-          }
-        } else if (columnFilterConfig[columnName].filterVariant === "text") {
-          // Not sure what the best filter for text values are, but we can just add the unique
-          // values for now, maybe we cna use it for an autocomplete feature?..
-          if (!columnFilterConfig[columnName].filterData.includes(columnValue)) {
-            columnFilterConfig[columnName].filterData.push(columnValue);
-          }
+  // Load search results from Chrome storage on mount - this restores session persistence!
+  useEffect(() => {
+    chrome.storage.session
+      .get(["searchResults"])
+      .then((data) => {
+        if (
+          data.searchResults &&
+          Array.isArray(data.searchResults) &&
+          data.searchResults.length > 0
+        ) {
+          console.debug(
+            "Loading previous search results from session storage:",
+            data.searchResults.length,
+            "results",
+          );
+          setSearchResults(data.searchResults);
+          setState((prev) => ({
+            ...prev,
+            resultCount: data.searchResults.length,
+            status: false, // Don't show status when loading from storage
+          }));
         }
+      })
+      .catch((error) => {
+        console.warn("Failed to load search results from session storage:", error);
+      });
+  }, []);
+
+  const executeSearch = useCallback(
+    (query: string) => {
+      if (!query.trim()) {
+        return;
       }
 
-      // Hide the status label thing
-      setStatusLabel(false);
-      results.push(result);
-      setSearchResults((prevProducts) => {
-        console.log("Running new promise:", { prevProducts, results, result });
-        return results.map((r, idx) => {
-          return {
-            ...r,
-            id: idx,
-          };
+      // Use startTransition for better performance during search
+      startTransition(() => {
+        performSearch(query);
+      });
+    },
+    [appContext.userSettings.supplierResultLimit, appContext.userSettings.suppliers],
+  );
+
+  const performSearch = async (query: string) => {
+    // Reset state for new search
+    setState({
+      isLoading: true,
+      status: "Searching...",
+      error: undefined,
+      resultCount: 0,
+    });
+    setSearchResults([]);
+
+    // Start the loading animation
+    BadgeAnimator.animate("ellipsis", 300);
+
+    const columnFilterConfig = getColumnFilterConfig();
+    const searchLimit = appContext.userSettings.supplierResultLimit ?? 5;
+
+    // Create new abort controller for this search
+    fetchControllerRef.current = new AbortController();
+
+    try {
+      const productQueryFactory = new SupplierFactory(
+        query,
+        searchLimit,
+        fetchControllerRef.current,
+        appContext.userSettings.suppliers,
+      );
+
+      const startSearchTime = performance.now();
+      let resultCount = 0;
+      const productQueryResults = await productQueryFactory.executeAllStream(3);
+
+      // Process results as they stream in - this maintains the original behavior
+      for await (const result of productQueryResults) {
+        resultCount++;
+
+        // Update the live counter immediately - this is what was missing!
+        BadgeAnimator.setText(resultCount.toString());
+
+        // Update state with current count using startTransition for better performance
+        startTransition(() => {
+          setState((prev) => ({
+            ...prev,
+            resultCount,
+            status: `Found ${resultCount} result${resultCount !== 1 ? "s" : ""}...`,
+          }));
+        });
+
+        // Build column filter config for this result
+        for (const [columnName, columnValue] of Object.entries(result)) {
+          if (columnName in columnFilterConfig === false) continue;
+
+          if (columnFilterConfig[columnName].filterVariant === "range") {
+            if (typeof columnValue !== "number") continue;
+
+            if (
+              typeof columnFilterConfig[columnName].filterData[0] !== "number" ||
+              columnValue < columnFilterConfig[columnName].filterData[0]
+            ) {
+              columnFilterConfig[columnName].filterData[0] = columnValue;
+            } else if (
+              typeof columnFilterConfig[columnName].filterData[1] !== "number" ||
+              columnValue < columnFilterConfig[columnName].filterData[1]
+            ) {
+              columnFilterConfig[columnName].filterData[1] = columnValue;
+            }
+          } else if (columnFilterConfig[columnName].filterVariant === "select") {
+            if (!columnFilterConfig[columnName].filterData.includes(columnValue)) {
+              columnFilterConfig[columnName].filterData.push(columnValue);
+            }
+          } else if (columnFilterConfig[columnName].filterVariant === "text") {
+            if (!columnFilterConfig[columnName].filterData.includes(columnValue)) {
+              columnFilterConfig[columnName].filterData.push(columnValue);
+            }
+          }
+        }
+
+        // Add result immediately to the table - streaming behavior restored!
+        const productWithId = {
+          ...result,
+          id: resultCount - 1, // Use resultCount for consistent ID
+        };
+
+        // Update results immediately using startTransition for better performance
+        startTransition(() => {
+          setSearchResults((prevResults) => {
+            const newResults = [...prevResults, productWithId];
+
+            // Save to Chrome storage for session persistence - this maintains the original behavior
+            chrome.storage.session
+              .set({
+                searchResults: newResults.map((r, idx) => ({ ...r, id: idx })),
+              })
+              .catch((error) => {
+                console.warn("Failed to save search results to session storage:", error);
+              });
+
+            return newResults;
+          });
+        });
+      }
+
+      const endSearchTime = performance.now();
+      const searchTime = endSearchTime - startSearchTime;
+
+      console.debug(`Found ${resultCount} products in ${searchTime} milliseconds`);
+
+      // Final state - search complete
+      startTransition(() => {
+        setState({
+          isLoading: false,
+          status: false, // Hide status when complete
+          error: undefined,
+          resultCount,
         });
       });
+    } catch (error) {
+      startTransition(() => {
+        if (error instanceof Error && error.name === "AbortError") {
+          setState({
+            isLoading: false,
+            status: "Search aborted",
+            error: undefined,
+            resultCount: state.resultCount,
+          });
+        } else {
+          setState({
+            isLoading: false,
+            status: false,
+            error: error instanceof Error ? error.message : "Search failed",
+            resultCount: state.resultCount,
+          });
+        }
+      });
     }
+  };
 
-    const endSearchTime = performance.now();
-    const searchTime = endSearchTime - startSearchTime;
-    setIsLoading(false);
-    console.debug(`Found ${resultCount} products in ${searchTime} milliseconds`);
-  }
+  const handleStopSearch = useCallback(() => {
+    console.debug("triggering abort..");
+    fetchControllerRef.current.abort();
+    startTransition(() => {
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        status: "Search aborted",
+      }));
+    });
+  }, []);
 
   return {
+    searchResults,
+    isLoading: state.isLoading,
+    statusLabel: state.status,
+    error: state.error,
+    resultCount: state.resultCount,
     executeSearch,
     handleStopSearch,
   };

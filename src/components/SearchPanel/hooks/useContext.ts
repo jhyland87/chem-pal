@@ -10,7 +10,7 @@ import { use } from "react";
  * - Cleaner, more direct API
  * - Future-proof for React's direction
  */
-export function useAppContextV19() {
+export function useAppContext() {
   // No need for separate useContext - use() handles it
   // The context provider's error handling is sufficient
   return use(AppContext);
@@ -28,7 +28,7 @@ export function useAppContextV19() {
  * - Cleaner error boundaries
  * - Reduces boilerplate code
  */
-export function useChromeStorageV19<T>(key: string, defaultValue: T) {
+export function useChromeStorage<T>(key: string, defaultValue: T) {
   // The use() hook can handle promises directly
   // This will suspend the component until the promise resolves
   const storedValue = use(
@@ -47,7 +47,7 @@ export function useChromeStorageV19<T>(key: string, defaultValue: T) {
 /**
  * Enhanced version with error handling and type safety
  */
-export function useChromeStorageV19Enhanced<T>(
+export function useChromeStorageEnhanced<T>(
   key: string,
   defaultValue: T,
   options?: {
@@ -115,7 +115,7 @@ export function useChromeStorageV19Enhanced<T>(
  * Reactive Chrome storage hook that watches for changes
  * Uses React v19's use() hook with a custom promise that updates on storage changes
  */
-export function useReactiveChromeStorageV19<T>(key: string, defaultValue: T) {
+export function useReactiveChromeStorage<T>(key: string, defaultValue: T) {
   // Create a promise that resolves and updates when storage changes
   const createStoragePromise = () => {
     return new Promise<T>((resolve) => {
