@@ -1,7 +1,7 @@
 import { type ColumnFiltersState } from "@tanstack/react-table";
 import { useState } from "react";
 import DetailsContainer from "./DetailsContainer";
-import ResultsTable from "./ResultsTable";
+import ResultsTableV19 from "./ResultsTableV19";
 
 /**
  * SearchPanel component that serves as the main container for search functionality.
@@ -19,7 +19,7 @@ export default function SearchPanel() {
 
   return (
     <>
-      <ResultsTable
+      <ResultsTableV19
         columnFilterFns={columnFilterFns}
         getRowCanExpand={() => true}
         renderVariants={DetailsContainer}
