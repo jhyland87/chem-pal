@@ -20,7 +20,7 @@
 //import 'react-material-symbols/rounded';
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
+import AppV19 from "./AppV19.tsx";
 import "./main.scss";
 
 /**
@@ -51,7 +51,7 @@ enableMocking().then(() => {
     },
   }).render(
     <StrictMode>
-      <App />
+      <AppV19 />
     </StrictMode>,
   );
 });

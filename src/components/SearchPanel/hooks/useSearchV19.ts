@@ -1,7 +1,7 @@
 import { useAppContext } from "@/context";
 import SupplierFactory from "@/suppliers/SupplierFactory";
 import BadgeAnimator from "@/utils/BadgeAnimator";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 import { getColumnFilterConfig } from "../TableColumns";
 
 interface SearchState {
@@ -19,7 +19,7 @@ interface SearchState {
  * session persistence so results are maintained across page reloads.
  *
  * Key improvements over original:
- * - Cleaner state management with fewer hooks
+ * - Uses startTransition for better performance
  * - Better error handling
  * - Streaming results with immediate UI updates
  * - Live result counter that updates as results arrive
@@ -68,91 +68,103 @@ export function useSearchV19() {
   }, []);
 
   const executeSearch = useCallback(
-    async (query: string) => {
+    (query: string) => {
       if (!query.trim()) {
         return;
       }
 
-      // Reset state for new search
-      setState({
-        isLoading: true,
-        status: "Searching...",
-        error: undefined,
-        resultCount: 0,
+      // Use startTransition for better performance during search
+      startTransition(() => {
+        performSearch(query);
       });
-      setSearchResults([]);
+    },
+    [appContext.userSettings.supplierResultLimit, appContext.userSettings.suppliers],
+  );
 
-      // Start the loading animation
-      BadgeAnimator.animate("ellipsis", 300);
+  const performSearch = async (query: string) => {
+    // Reset state for new search
+    setState({
+      isLoading: true,
+      status: "Searching...",
+      error: undefined,
+      resultCount: 0,
+    });
+    setSearchResults([]);
 
-      const columnFilterConfig = getColumnFilterConfig();
-      const searchLimit = appContext.userSettings.supplierResultLimit ?? 5;
+    // Start the loading animation
+    BadgeAnimator.animate("ellipsis", 300);
 
-      // Create new abort controller for this search
-      fetchControllerRef.current = new AbortController();
+    const columnFilterConfig = getColumnFilterConfig();
+    const searchLimit = appContext.userSettings.supplierResultLimit ?? 5;
 
-      try {
-        const productQueryFactory = new SupplierFactory(
-          query,
-          searchLimit,
-          fetchControllerRef.current,
-          appContext.userSettings.suppliers,
-        );
+    // Create new abort controller for this search
+    fetchControllerRef.current = new AbortController();
 
-        const startSearchTime = performance.now();
-        let resultCount = 0;
-        const productQueryResults = await productQueryFactory.executeAllStream(3);
+    try {
+      const productQueryFactory = new SupplierFactory(
+        query,
+        searchLimit,
+        fetchControllerRef.current,
+        appContext.userSettings.suppliers,
+      );
 
-        // Process results as they stream in - this maintains the original behavior
-        for await (const result of productQueryResults) {
-          resultCount++;
+      const startSearchTime = performance.now();
+      let resultCount = 0;
+      const productQueryResults = await productQueryFactory.executeAllStream(3);
 
-          // Update the live counter immediately - this is what was missing!
-          BadgeAnimator.setText(resultCount.toString());
+      // Process results as they stream in - this maintains the original behavior
+      for await (const result of productQueryResults) {
+        resultCount++;
 
-          // Update state with current count
+        // Update the live counter immediately - this is what was missing!
+        BadgeAnimator.setText(resultCount.toString());
+
+        // Update state with current count using startTransition for better performance
+        startTransition(() => {
           setState((prev) => ({
             ...prev,
             resultCount,
             status: `Found ${resultCount} result${resultCount !== 1 ? "s" : ""}...`,
           }));
+        });
 
-          // Build column filter config for this result
-          for (const [columnName, columnValue] of Object.entries(result)) {
-            if (columnName in columnFilterConfig === false) continue;
+        // Build column filter config for this result
+        for (const [columnName, columnValue] of Object.entries(result)) {
+          if (columnName in columnFilterConfig === false) continue;
 
-            if (columnFilterConfig[columnName].filterVariant === "range") {
-              if (typeof columnValue !== "number") continue;
+          if (columnFilterConfig[columnName].filterVariant === "range") {
+            if (typeof columnValue !== "number") continue;
 
-              if (
-                typeof columnFilterConfig[columnName].filterData[0] !== "number" ||
-                columnValue < columnFilterConfig[columnName].filterData[0]
-              ) {
-                columnFilterConfig[columnName].filterData[0] = columnValue;
-              } else if (
-                typeof columnFilterConfig[columnName].filterData[1] !== "number" ||
-                columnValue < columnFilterConfig[columnName].filterData[1]
-              ) {
-                columnFilterConfig[columnName].filterData[1] = columnValue;
-              }
-            } else if (columnFilterConfig[columnName].filterVariant === "select") {
-              if (!columnFilterConfig[columnName].filterData.includes(columnValue)) {
-                columnFilterConfig[columnName].filterData.push(columnValue);
-              }
-            } else if (columnFilterConfig[columnName].filterVariant === "text") {
-              if (!columnFilterConfig[columnName].filterData.includes(columnValue)) {
-                columnFilterConfig[columnName].filterData.push(columnValue);
-              }
+            if (
+              typeof columnFilterConfig[columnName].filterData[0] !== "number" ||
+              columnValue < columnFilterConfig[columnName].filterData[0]
+            ) {
+              columnFilterConfig[columnName].filterData[0] = columnValue;
+            } else if (
+              typeof columnFilterConfig[columnName].filterData[1] !== "number" ||
+              columnValue < columnFilterConfig[columnName].filterData[1]
+            ) {
+              columnFilterConfig[columnName].filterData[1] = columnValue;
+            }
+          } else if (columnFilterConfig[columnName].filterVariant === "select") {
+            if (!columnFilterConfig[columnName].filterData.includes(columnValue)) {
+              columnFilterConfig[columnName].filterData.push(columnValue);
+            }
+          } else if (columnFilterConfig[columnName].filterVariant === "text") {
+            if (!columnFilterConfig[columnName].filterData.includes(columnValue)) {
+              columnFilterConfig[columnName].filterData.push(columnValue);
             }
           }
+        }
 
-          // Add result immediately to the table - streaming behavior restored!
-          const productWithId = {
-            ...result,
-            id: resultCount - 1, // Use resultCount for consistent ID
-          };
+        // Add result immediately to the table - streaming behavior restored!
+        const productWithId = {
+          ...result,
+          id: resultCount - 1, // Use resultCount for consistent ID
+        };
 
-          // Update results immediately - this is the key to streaming behavior
+        // Update results immediately using startTransition for better performance
+        startTransition(() => {
           setSearchResults((prevResults) => {
             const newResults = [...prevResults, productWithId];
 
@@ -167,21 +179,25 @@ export function useSearchV19() {
 
             return newResults;
           });
-        }
+        });
+      }
 
-        const endSearchTime = performance.now();
-        const searchTime = endSearchTime - startSearchTime;
+      const endSearchTime = performance.now();
+      const searchTime = endSearchTime - startSearchTime;
 
-        console.debug(`Found ${resultCount} products in ${searchTime} milliseconds`);
+      console.debug(`Found ${resultCount} products in ${searchTime} milliseconds`);
 
-        // Final state - search complete
+      // Final state - search complete
+      startTransition(() => {
         setState({
           isLoading: false,
           status: false, // Hide status when complete
           error: undefined,
           resultCount,
         });
-      } catch (error) {
+      });
+    } catch (error) {
+      startTransition(() => {
         if (error instanceof Error && error.name === "AbortError") {
           setState({
             isLoading: false,
@@ -197,23 +213,20 @@ export function useSearchV19() {
             resultCount: state.resultCount,
           });
         }
-      }
-    },
-    [
-      appContext.userSettings.supplierResultLimit,
-      appContext.userSettings.suppliers,
-      state.resultCount,
-    ],
-  );
+      });
+    }
+  };
 
   const handleStopSearch = useCallback(() => {
     console.debug("triggering abort..");
     fetchControllerRef.current.abort();
-    setState((prev) => ({
-      ...prev,
-      isLoading: false,
-      status: "Search aborted",
-    }));
+    startTransition(() => {
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        status: "Search aborted",
+      }));
+    });
   }, []);
 
   return {
