@@ -130,7 +130,7 @@ export default function ResultsTable({
         resultCount={optimisticResults.length}
         onClick={handleStopSearch}
       />
-      <FilterMenu ref={filterRef} />
+      <FilterMenu table={table} ref={filterRef} />
       <Box sx={{ paddingRight: "32px" }}>
         <Paper id="search-results-table-container">
           <Box
@@ -228,22 +228,3 @@ export default function ResultsTable({
     </>
   );
 }
-
-/**
- * MIGRATION GUIDE:
- *
- * To migrate from the original ResultsTable to this React v19 version:
- *
- * 1. Replace useSearch with useSearchV19
- * 2. Add useOptimisticResults for streaming
- * 3. Replace useAppContext with useAppContextV19
- * 4. Remove the multiple useState hooks (they're now consolidated)
- * 5. Update error handling to use the built-in error state
- * 6. Add visual indicators for pending/optimistic updates
- *
- * PERFORMANCE BENEFITS:
- * - ~40% reduction in re-renders during search operations
- * - Immediate feedback on search results (200-300ms faster perceived performance)
- * - Better handling of concurrent searches
- * - Simplified state management reduces bugs
- */

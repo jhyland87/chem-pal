@@ -1,6 +1,11 @@
 html {
-  scrollbar-width: thin;
-  scrollbar-color: #39618170 #4140405c;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+html::-webkit-scrollbar {
+  display: none;
 }
 
 #root {

@@ -35,7 +35,7 @@ export default function TableOptions({ table, onSearch }: TableOptionsProps) {
 
   return (
     <>
-      <FilterMenu ref={filterRef} />
+      <FilterMenu ref={filterRef} table={table} />
       <Toolbar className="table-options-toolbar fullwidth">
         <Typography component="div" className="search-input">
           <SearchInput
