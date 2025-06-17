@@ -13,11 +13,19 @@ import ListItemButton from "@mui/material/ListItemButton";
 
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
+import type { SelectChangeEvent } from "@mui/material/Select";
 import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 import type { Table } from "@tanstack/react-table";
 import * as React from "react";
-import { forwardRef, Ref, useImperativeHandle, useState, type SyntheticEvent } from "react";
+import {
+  forwardRef,
+  Ref,
+  useImperativeHandle,
+  useState,
+  type ComponentType,
+  type SyntheticEvent,
+} from "react";
 import {
   FilterMenuAccordion,
   FilterMenuAccordionDetails,
@@ -29,7 +37,10 @@ import {
   FilterMenuTabsContainer,
 } from "../Styles";
 import { useAppContext } from "./hooks/useContext";
-
+import ColumnVisibilitySelect from "./Inputs/ColumnVisibilitySelect";
+import RangeColumnFilter from "./Inputs/RangeColumnFilter";
+import SelectColumnFilter from "./Inputs/SelectColumnFilter";
+import TextColumnFilter from "./Inputs/TextColumnFilter";
 type FilterMenuRef = {
   toggleDrawer: (open: boolean) => void;
   getState: () => boolean;
@@ -40,6 +51,33 @@ interface TabPanelProps {
   index: number;
   value: number;
   style?: React.CSSProperties;
+}
+
+/**
+ * Map of filter variants to their corresponding filter components.
+ * Each variant (text, range, select) has a dedicated component for handling its specific filtering needs.
+ */
+const filterComponentMap: Record<string, ComponentType<FilterVariantInputProps>> = {
+  text: TextColumnFilter,
+  range: RangeColumnFilter,
+  select: SelectColumnFilter,
+};
+
+/**
+ * Renders the appropriate filter component based on the column's filter variant.
+ * Falls back to text filter if no variant is specified or if the variant is not found.
+ *
+ * @component
+ *
+ * @param props - Component props
+ *
+ * @returns The rendered filter component
+ */
+function FilterVariantComponent({ column }: FilterVariantComponentProps) {
+  const ComponentToRender = filterComponentMap[column.columnDef?.meta?.filterVariant ?? "text"];
+  if (!ComponentToRender)
+    return <div>Filter Component not found: {column.columnDef?.meta?.filterVariant}</div>;
+  return <ComponentToRender column={column} />;
 }
 
 function TabPanel(props: TabPanelProps) {
@@ -124,8 +162,8 @@ function SupplierSelection() {
   );
 }
 
-function CustomizedAccordions({ table }: { table: Table<Product> }) {
-  console.log("CustomizedAccordions table:", table);
+function SearchResultFilters({ table }: { table: Table<Product> }) {
+  console.log("SearchResultFilters table:", table);
   const [expanded, setExpanded] = useState<string | false>("");
 
   /**
@@ -138,6 +176,26 @@ function CustomizedAccordions({ table }: { table: Table<Product> }) {
       if (column.getIsVisible() && column.getCanHide()) accu.push(column.id);
       return accu;
     }, []);
+  const [columnVisibility, setColumnVisibility] = useState<string[]>(columnStatus);
+
+  /**
+   * Handles changes to column visibility selection.
+   * Updates the visibility state and applies changes to the table columns.
+   *
+   * @param event - The change event from the select component
+   */
+  const handleColumnVisibilityChange = (event: SelectChangeEvent<typeof columnVisibility>) => {
+    const {
+      target: { value },
+    } = event;
+    const newColumnVisibility = typeof value === "string" ? value.split(",") : value;
+    setColumnVisibility(newColumnVisibility);
+
+    table.getAllColumns().forEach((column: CustomColumn<Product, unknown>) => {
+      if (typeof column === "undefined") return;
+      column.setColumnVisibility?.(!column.getCanHide() || newColumnVisibility.includes(column.id));
+    });
+  };
 
   /**
    * Gets a map of column IDs to their header text for filterable columns.
@@ -163,21 +221,47 @@ function CustomizedAccordions({ table }: { table: Table<Product> }) {
           placeholder="Filter results table.."
           size="small"
           sx={{
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             "& .MuiInputBase-input": {
               padding: "0px",
             },
           }}
           startAdornment={
-            <InputAdornment position="start">
+            <InputAdornment position="start" sx={{ padding: 0 }}>
               <SearchIcon />
             </InputAdornment>
           }
         />
       </FormControl>
+      <FilterMenuAccordion
+        expanded={expanded === "column-visibility"}
+        onChange={handleChange("column-visibility")}
+        disableGutters
+        elevation={0}
+        square
+      >
+        <FilterMenuAccordionSummary
+          aria-controls="panel1d-content"
+          id="panel1d-header"
+          expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: "0.9rem" }} />}
+        >
+          <Typography component="span">Column Visibility</Typography>
+        </FilterMenuAccordionSummary>
+        <FilterMenuAccordionDetails>
+          <Box sx={{ padding: "5px" }}>
+            <ColumnVisibilitySelect
+              columnNames={columnNames}
+              columnVisibility={columnVisibility}
+              handleColumnVisibilityChange={handleColumnVisibilityChange}
+            />
+          </Box>
+        </FilterMenuAccordionDetails>
+      </FilterMenuAccordion>
       {table.getAllColumns().map((column: CustomColumn<Product, unknown>) => {
-        if (!column.getCanFilter()) return;
+        if (!column.getCanFilter()) return null;
         return (
           <FilterMenuAccordion
+            key={column.id}
             expanded={expanded === column.id}
             onChange={handleChange(column.id)}
             disableGutters
@@ -192,7 +276,9 @@ function CustomizedAccordions({ table }: { table: Table<Product> }) {
               <Typography component="span">{columnNames[column.id]}</Typography>
             </FilterMenuAccordionSummary>
             <FilterMenuAccordionDetails>
-              <div>This is for {columnNames[column.id]}.</div>
+              <Box sx={{ padding: "5px" }}>
+                <FilterVariantComponent column={column} />
+              </Box>
             </FilterMenuAccordionDetails>
           </FilterMenuAccordion>
         );
@@ -272,7 +358,7 @@ function FilterMenu(props: { table: Table<Product> }, ref: Ref<FilterMenuRef>) {
   const drawerContent = () => (
     <FilterMenuDrawerContent role="presentation">
       <TabPanel value={activeTab} index={0} style={{ padding: 0 }}>
-        <CustomizedAccordions table={table} />
+        <SearchResultFilters table={table} />
       </TabPanel>
       <TabPanel value={activeTab} index={1}>
         <SupplierSelection />

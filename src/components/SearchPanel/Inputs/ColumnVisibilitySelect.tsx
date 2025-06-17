@@ -1,44 +1,19 @@
-import { MenuItem, OutlinedInput, Select, SelectChangeEvent, Theme, useTheme } from "@mui/material";
-import InputLabel from "@mui/material/InputLabel";
-import { StyledFormControlSelector } from "../../Styles";
+import {
+  Checkbox,
+  FormControl,
+  FormLabel,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  SelectChangeEvent,
+} from "@mui/material";
 
 /**
- * Returns the appropriate styles for a menu item based on whether it's selected.
- * @component
- * @category Components
- * @subcategory SearchPanel
- * @param name - The option value
- * @param personName - Array of selected values
- * @param theme - The Material-UI theme
- * @returns  Style object with appropriate font weight
- */
-function getStyles(name: string, personName: string[], theme: Theme) {
-  return {
-    fontWeight: personName.includes(name)
-      ? theme.typography.fontWeightMedium
-      : theme.typography.fontWeightRegular,
-  };
-}
-
-/**
- * Configuration for the select menu's dimensions and behavior.
- */
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  PaperProps: {
-    style: {
-      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-      width: 250,
-    },
-  },
-};
-
-/**
- * ColumnVisibilitySelect component that provides a multi-select dropdown for controlling
+ * ColumnVisibilitySelect component that provides a scrollable list of checkboxes for controlling
  * which columns are visible in the table. It allows users to show/hide columns by
- * selecting them from a list.
+ * checking/unchecking them from a list.
  *
  * @component
  *
@@ -62,27 +37,124 @@ export default function ColumnVisibilitySelect({
   columnVisibility: string[];
   handleColumnVisibilityChange: (event: SelectChangeEvent<string[]>) => void;
 }) {
-  const theme = useTheme();
+  // Default columns to show when "defaults" is checked - these should match the actual column keys
+  const defaultColumns = ["supplier", "Country", "Shipping", "quantity", "price"];
+
+  // Get the actual column keys that exist and match our default column names
+  const availableDefaultKeys = defaultColumns.filter((defaultCol) =>
+    Object.keys(columnNames).includes(defaultCol),
+  );
+
+  // Check if current selection matches default columns (all available defaults are selected)
+  const isDefaultsChecked =
+    availableDefaultKeys.length > 0 &&
+    availableDefaultKeys.every((col) => columnVisibility.includes(col));
+
+  const handleColumnSelect = (columnName: string) => {
+    const newChecked = [...columnVisibility];
+    const currentIndex = newChecked.indexOf(columnName);
+
+    if (currentIndex === -1) {
+      newChecked.push(columnName);
+    } else {
+      newChecked.splice(currentIndex, 1);
+    }
+
+    // Create a synthetic event to maintain compatibility with existing handler
+    const syntheticEvent = {
+      target: { value: newChecked },
+    } as SelectChangeEvent<string[]>;
+
+    handleColumnVisibilityChange(syntheticEvent);
+  };
+
+  const handleDefaultsSelect = () => {
+    let newChecked: string[];
+
+    if (isDefaultsChecked) {
+      // If defaults are currently checked, unchecking should hide all (except title which is always visible)
+      newChecked = [];
+    } else {
+      // If defaults are not checked, checking should show default columns
+      newChecked = availableDefaultKeys;
+    }
+
+    // Create a synthetic event to maintain compatibility with existing handler
+    const syntheticEvent = {
+      target: { value: newChecked },
+    } as SelectChangeEvent<string[]>;
+
+    handleColumnVisibilityChange(syntheticEvent);
+  };
+
   return (
-    <StyledFormControlSelector>
-      <InputLabel id="search-result-column-visibility-label">Column Visibility</InputLabel>
-      <Select
-        //style={{ lineHeight: "1em" }}
-        labelId="search-result-column-visibility-label"
-        id="search-result-column-visibility"
-        size="small"
-        multiple
-        value={columnVisibility}
-        onChange={handleColumnVisibilityChange}
-        input={<OutlinedInput label="Column Visibility" />}
-        MenuProps={MenuProps}
+    <FormControl component="fieldset" variant="standard" sx={{ width: "100%" }}>
+      <FormLabel component="legend">Column Visibility</FormLabel>
+      <List
+        sx={{
+          width: "100%",
+          maxWidth: 360,
+          bgcolor: "background.paper",
+          paddingLeft: "20px",
+          maxHeight: 200, // Limit height to make it scrollable
+          overflow: "auto", // Enable scrolling
+        }}
       >
-        {Object.entries(columnNames).map(([key, name]) => (
-          <MenuItem key={key} value={name} style={getStyles(name, columnVisibility, theme)}>
-            {name}
-          </MenuItem>
-        ))}
-      </Select>
-    </StyledFormControlSelector>
+        {/* Defaults checkbox */}
+        <ListItem key="defaults" disablePadding>
+          <ListItemButton sx={{ padding: 0 }} role={undefined} onClick={handleDefaultsSelect} dense>
+            <ListItemIcon sx={{ padding: 0 }}>
+              <Checkbox
+                size="small"
+                edge="start"
+                sx={{ padding: 0, minWidth: 20 }}
+                checked={isDefaultsChecked}
+                tabIndex={-1}
+                disableRipple
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                inputProps={{ "aria-labelledby": "checkbox-list-label-defaults" }}
+              />
+            </ListItemIcon>
+            <ListItemText
+              id="checkbox-list-label-defaults"
+              primary="Defaults"
+              primaryTypographyProps={{ variant: "body2", fontWeight: "medium" }}
+            />
+          </ListItemButton>
+        </ListItem>
+
+        {/* Regular column checkboxes */}
+        {Object.entries(columnNames)
+          .filter(([key]) => key !== "title") // Filter out title column
+          .map(([key, name]) => {
+            const labelId = `checkbox-list-label-${key}`;
+
+            return (
+              <ListItem key={key} disablePadding>
+                <ListItemButton
+                  sx={{ padding: 0 }}
+                  role={undefined}
+                  onClick={() => handleColumnSelect(key)}
+                  dense
+                >
+                  <ListItemIcon sx={{ padding: 0 }}>
+                    <Checkbox
+                      size="small"
+                      edge="start"
+                      sx={{ padding: 0, minWidth: 20 }}
+                      checked={columnVisibility.includes(key)}
+                      tabIndex={-1}
+                      disableRipple
+                      // eslint-disable-next-line @typescript-eslint/naming-convention
+                      inputProps={{ "aria-labelledby": labelId }}
+                    />
+                  </ListItemIcon>
+                  <ListItemText id={labelId} primary={name} />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
+      </List>
+    </FormControl>
   );
 }
