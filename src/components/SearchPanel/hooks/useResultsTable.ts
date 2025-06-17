@@ -18,6 +18,8 @@ import {
   Row,
   useReactTable,
 } from "@tanstack/react-table";
+import { throttle } from "lodash";
+import debounce from "lodash/debounce";
 import TableColumns from "../TableColumns";
 
 export function useResultsTable({
@@ -79,6 +81,12 @@ export function useResultsTable({
 
           // Visible range of values in the column
           column.getVisibleRange = () => getVisibleRange(column, table);
+
+          // Debounced filter value setter
+          column.setFilterValueDebounced = debounce(column.setFilterValue, 500);
+
+          // Throttled filter value setter
+          column.setFilterValueThrottled = throttle(column.setFilterValue, 500);
         },
       },
     ],

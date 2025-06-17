@@ -101,14 +101,14 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       accessorKey: "supplier",
       cell: (info) => info.getValue(),
       meta: {
-        filterVariant: "text",
+        filterVariant: "select",
         style: {
           textAlign: "left",
         },
       },
     },
     {
-      id: "Country",
+      id: "country",
       header: () => <span>Country</span>,
       accessorKey: "supplierCountry",
       cell: (info) => {
@@ -117,20 +117,18 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       },
       meta: {
         filterVariant: "select",
-        filterInputSize: 4,
         style: {
           textAlign: "center",
         },
       },
     },
     {
-      id: "Shipping",
+      id: "shipping",
       header: () => <span>Shipping</span>,
       accessorKey: "supplierShipping",
       cell: (info) => info.getValue(),
       meta: {
         filterVariant: "select",
-        filterInputSize: 4,
       },
     },
     {
@@ -181,7 +179,6 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       sortingFn: priceSortingFn,
       meta: {
         filterVariant: "range",
-        filterInputSize: 4,
         style: {
           textAlign: "left",
         },
@@ -193,7 +190,6 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       accessorKey: "quantity",
       meta: {
         filterVariant: "range",
-        filterInputSize: 4,
         style: {
           textAlign: "left",
         },
@@ -210,7 +206,6 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       accessorKey: "uom",
       meta: {
         filterVariant: "select",
-        filterInputSize: 4,
         style: {
           textAlign: "left",
         },

@@ -38,7 +38,7 @@ export default function ColumnVisibilitySelect({
   handleColumnVisibilityChange: (event: SelectChangeEvent<string[]>) => void;
 }) {
   // Default columns to show when "defaults" is checked - these should match the actual column keys
-  const defaultColumns = ["supplier", "Country", "Shipping", "quantity", "price"];
+  const defaultColumns = ["supplier", "country", "shipping", "quantity", "price"];
 
   // Get the actual column keys that exist and match our default column names
   const availableDefaultKeys = defaultColumns.filter((defaultCol) =>
@@ -107,7 +107,7 @@ export default function ColumnVisibilitySelect({
               <Checkbox
                 size="small"
                 edge="start"
-                sx={{ padding: 0, minWidth: 20 }}
+                sx={{ padding: 0, minWidth: 10 }}
                 checked={isDefaultsChecked}
                 tabIndex={-1}
                 disableRipple
@@ -141,7 +141,7 @@ export default function ColumnVisibilitySelect({
                     <Checkbox
                       size="small"
                       edge="start"
-                      sx={{ padding: 0, minWidth: 20 }}
+                      sx={{ padding: 0, minWidth: 10 }}
                       checked={columnVisibility.includes(key)}
                       tabIndex={-1}
                       disableRipple

@@ -1,14 +1,18 @@
-import { useTheme, type SelectChangeEvent, type Theme } from "@mui/material";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import Select from "@mui/material/Select";
-import { ChangeEvent, useState } from "react";
-import { StyledFormControlSelector } from "../../Styles";
+import {
+  Checkbox,
+  FormControl,
+  FormLabel,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+} from "@mui/material";
+import { useState } from "react";
 
 /**
- * SelectColumnFilter component that provides a multi-select filter for columns with discrete values.
- * It allows users to filter data by selecting multiple values from a dropdown menu.
+ * SelectColumnFilter component that provides a scrollable list of checkboxes for columns with discrete values.
+ * It allows users to filter data by selecting multiple values from a checkbox list.
  *
  * @component
  * @category Components
@@ -20,88 +24,81 @@ import { StyledFormControlSelector } from "../../Styles";
  * ```
  */
 export default function SelectColumnFilter({ column }: FilterVariantInputProps) {
-  const theme = useTheme();
   const [columnFilterValue, setColumnFilterValue] = useState<string[]>(
     (column.getFilterValue() as string[]) || [],
   );
 
   /**
-   * Handles changes to the select filter value.
+   * Handles individual option selection/deselection.
    * Updates the local state and triggers the column filter update with debouncing.
    *
-   * @param event - The change event
+   * @param optionValue - The value to toggle
    */
-  const handleColumnFilterValueChange = (
-    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string[]>,
-  ) => {
-    const {
-      target: { value },
-    } = event;
-    setColumnFilterValue(value as string[]);
-    column.setFilterValueDebounced(value as string[]);
-  };
+  const handleOptionSelect = (optionValue: string) => {
+    const newChecked = [...columnFilterValue];
+    const currentIndex = newChecked.indexOf(optionValue);
 
-  /**
-   * Configuration for the select menu's dimensions and behavior.
-   */
-  const ITEM_HEIGHT = 48;
-  const ITEM_PADDING_TOP = 8;
-  const MenuProps = {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    PaperProps: {
-      style: {
-        maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-        width: 250,
-      },
-    },
-  };
+    if (currentIndex === -1) {
+      newChecked.push(optionValue);
+    } else {
+      newChecked.splice(currentIndex, 1);
+    }
 
-  /**
-   * Returns the appropriate styles for a menu item based on whether it's selected.
-   *
-   * @param name - The option value
-   * @param personName - Array of selected values
-   * @param theme - The Material-UI theme
-   * @returns Style object with appropriate font weight
-   */
-  function getStyles(name: string, personName: string[], theme: Theme) {
-    return {
-      fontWeight: personName.includes(name)
-        ? theme.typography.fontWeightMedium
-        : theme.typography.fontWeightRegular,
-    };
-  }
+    setColumnFilterValue(newChecked);
+    column.setFilterValueDebounced(newChecked);
+  };
 
   const columnFilterOptions = column.getAllUniqueValues();
   const columnHeader = column.getHeaderText();
 
   return (
-    <StyledFormControlSelector>
-      <InputLabel id={`search-result-${column.id}-filter-label`}>{columnHeader}</InputLabel>
-      <Select
-        labelId={`search-result-${column.id}-filter-label`}
-        id={`search-result-${column.id}-filter`}
-        size="small"
-        multiple
-        value={columnFilterValue}
-        onChange={handleColumnFilterValueChange}
-        input={<OutlinedInput label={columnHeader} />}
-        MenuProps={MenuProps}
+    <FormControl component="fieldset" variant="standard" sx={{ width: "100%" }}>
+      <FormLabel component="legend">{columnHeader}</FormLabel>
+      <List
+        sx={{
+          width: "100%",
+          maxWidth: 360,
+          bgcolor: "background.paper",
+          paddingLeft: "20px",
+          maxHeight: 200, // Limit height to make it scrollable
+          overflow: "auto", // Enable scrolling
+        }}
       >
         {columnFilterOptions.length === 0 ? (
-          <MenuItem>No Options Available</MenuItem>
+          <ListItem>
+            <ListItemText primary="No Options Available" />
+          </ListItem>
         ) : (
-          columnFilterOptions.map((option: string) => (
-            <MenuItem
-              key={option}
-              value={option}
-              style={getStyles(option as string, columnFilterOptions as string[], theme)}
-            >
-              {option}
-            </MenuItem>
-          ))
+          columnFilterOptions.map((option: string) => {
+            const labelId = `checkbox-list-label-${column.id}-${option}`;
+
+            return (
+              <ListItem key={option} disablePadding>
+                <ListItemButton
+                  sx={{ padding: 0 }}
+                  role={undefined}
+                  onClick={() => handleOptionSelect(option)}
+                  dense
+                >
+                  <ListItemIcon sx={{ padding: 0 }}>
+                    <Checkbox
+                      size="small"
+                      edge="start"
+                      sx={{ padding: 0, minWidth: 10 }}
+                      checked={columnFilterValue.includes(option)}
+                      tabIndex={-1}
+                      disableRipple
+                      // eslint-disable-next-line @typescript-eslint/naming-convention
+                      inputProps={{ "aria-labelledby": labelId }}
+                    />
+                  </ListItemIcon>
+                  <ListItemText id={labelId} primary={option} />
+                </ListItemButton>
+              </ListItem>
+            );
+          })
         )}
-      </Select>
-    </StyledFormControlSelector>
+      </List>
+    </FormControl>
   );
 }
