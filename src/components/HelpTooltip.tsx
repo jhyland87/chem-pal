@@ -1,7 +1,6 @@
-import { useAppContext } from "@/context";
-import { delayAction } from "@/helpers/utils";
+import { useHelpTooltip } from "@/shared/hooks/useHelpTooltip.hook";
 import Tooltip from "@mui/material/Tooltip";
-import { MouseEvent, useEffect, useState } from "react";
+import { MouseEvent } from "react";
 
 /**
  * A tooltip component that displays help text with customizable timing and styling.
@@ -28,17 +27,7 @@ export default function HelpTooltip({
   delay = 500,
   duration = 2000,
 }: HelpTooltipProps) {
-  const appContext = useAppContext();
-
-  const [showHelp, setShowHelp] = useState(false);
-
-  const handleTooltipClose = () => {
-    setShowHelp(false);
-  };
-
-  const handleTooltipOpen = () => {
-    setShowHelp(true);
-  };
+  const { showHelp, handleTooltipClose, handleTooltipOpen } = useHelpTooltip(delay, duration);
 
   // @todo: Fix this. The onClick is actually triggering a click on the
   // child element instead. the preventDefault and stopPropagation are not
@@ -46,15 +35,8 @@ export default function HelpTooltip({
   const handleTooltipClick = (event: MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    setShowHelp(false);
+    handleTooltipClose();
   };
-
-  useEffect(() => {
-    if (appContext.userSettings.showHelp === false) return;
-
-    delayAction(delay, () => setShowHelp(true));
-    delayAction(duration, () => setShowHelp(false));
-  }, [delay, duration, appContext.userSettings.showHelp]);
 
   return (
     <Tooltip

@@ -1,5 +1,4 @@
 import { useAppContext } from "@/context";
-import { delayAction } from "@/helpers/utils";
 import AutoDeleteIcon from "@/icons/AutoDeleteIcon";
 import ClearIcon from "@/icons/ClearIcon";
 import ContrastIcon from "@/icons/ContrastIcon";
@@ -7,7 +6,7 @@ import InfoOutlineIcon from "@/icons/InfoOutlineIcon";
 import SpeedDial from "@mui/material/SpeedDial";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
 import SpeedDialIcon from "@mui/material/SpeedDialIcon";
-import { MouseEvent, useEffect, useState } from "react";
+import { MouseEvent, useState } from "react";
 import AboutModal from "./AboutModal";
 import HelpTooltip from "./HelpTooltip";
 
@@ -27,19 +26,7 @@ import HelpTooltip from "./HelpTooltip";
  */
 export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProps) {
   const appContext = useAppContext();
-
-  const [, setShowHelp] = useState(false);
-
-  /**
-   * Effect hook to show and hide help tooltip based on settings.
-   * Shows help tooltip after 500ms and hides it after 2000ms if showHelp is enabled.
-   */
-  useEffect(() => {
-    if (appContext.userSettings.showHelp === false) return;
-
-    delayAction(500, () => setShowHelp(true));
-    delayAction(2000, () => setShowHelp(false));
-  }, [appContext.userSettings.showHelp]);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   /**
    * Handles clearing all search results.
@@ -81,8 +68,6 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
       theme: appContext.userSettings.theme === "light" ? "dark" : "light",
     });
   };
-
-  const [aboutOpen, setAboutOpen] = useState(false);
 
   /**
    * Handles opening the about modal.

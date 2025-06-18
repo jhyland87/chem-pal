@@ -13,15 +13,27 @@ import Paper from "@mui/material/Paper";
 import { useEffect, useRef, useState } from "react";
 import "./ContextMenu.scss";
 
+/**
+ * Props for the ContextMenu component.
+ */
 interface ContextMenuProps {
+  /** X coordinate for menu positioning (pixels from left edge) */
   x: number;
+  /** Y coordinate for menu positioning (pixels from top edge) */
   y: number;
+  /** Function to call when the menu should be closed */
   onClose: () => void;
+  /** Product data to display actions for */
   product: Product;
 }
 
+/**
+ * Position coordinates for the context menu.
+ */
 interface ContextMenuPosition {
+  /** X coordinate in pixels */
   x: number;
+  /** Y coordinate in pixels */
   y: number;
 }
 
@@ -34,6 +46,19 @@ interface ContextMenuPosition {
  * - Keyboard navigation support
  * - Auto-positioning to stay within viewport
  * - Click-outside-to-close functionality
+ *
+ * @param props - Component props
+ * @returns Context menu component
+ *
+ * @example
+ * ```tsx
+ * <ContextMenu
+ *   x={100}
+ *   y={200}
+ *   product={productData}
+ *   onClose={() => setMenuOpen(false)}
+ * />
+ * ```
  */
 export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
@@ -65,12 +90,20 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
 
   // Handle click outside to close
   useEffect(() => {
+    /**
+     * Handles clicks outside the menu to close it.
+     * @param event - The mouse event
+     */
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         onClose();
       }
     };
 
+    /**
+     * Handles escape key to close the menu.
+     * @param event - The keyboard event
+     */
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         onClose();
@@ -86,6 +119,10 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
     };
   }, [onClose]);
 
+  /**
+   * Handles copying the product title to clipboard.
+   * Shows console feedback on success/failure.
+   */
   const handleCopyTitle = () => {
     navigator.clipboard
       .writeText(product.title || "Unknown Product")
@@ -98,6 +135,10 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
     onClose();
   };
 
+  /**
+   * Handles copying the product URL to clipboard.
+   * Shows console feedback on success/failure.
+   */
   const handleCopyUrl = () => {
     if (product.url) {
       navigator.clipboard
@@ -112,6 +153,10 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
     onClose();
   };
 
+  /**
+   * Handles opening the product URL in a new tab.
+   * Uses Chrome extension API when available, falls back to window.open.
+   */
   const handleOpenInNewTab = () => {
     if (product.url) {
       // Chrome extension compatible way to open new tab
@@ -128,6 +173,10 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
     onClose();
   };
 
+  /**
+   * Handles adding the product to favorites.
+   * Currently logs to console - needs integration with favorites system.
+   */
   const handleAddToFavorites = () => {
     // TODO: Implement favorites functionality
     console.log("Adding to favorites:", product.title);
@@ -135,6 +184,10 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
     onClose();
   };
 
+  /**
+   * Handles sharing the product.
+   * Uses native Web Share API when available, falls back to copying URL.
+   */
   const handleShare = () => {
     if (navigator.share && product.url) {
       navigator
@@ -154,18 +207,30 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
     onClose();
   };
 
+  /**
+   * Handles viewing detailed product information.
+   * Currently logs to console - needs integration with details modal/panel.
+   */
   const handleViewDetails = () => {
     // TODO: Implement product details modal/panel
     console.log("Viewing details for:", product.title);
     onClose();
   };
 
+  /**
+   * Handles quick search for similar products.
+   * Currently logs to console - needs integration with search system.
+   */
   const handleQuickSearch = () => {
     // TODO: Implement quick search for similar products
     console.log("Quick search for:", product.title);
     onClose();
   };
 
+  /**
+   * Handles copying formatted product information to clipboard.
+   * Includes title, price, supplier, and URL in a readable format.
+   */
   const handleCopyProductInfo = () => {
     const productInfo = `${product.title}\nPrice: ${product.currencySymbol}${product.price}\nSupplier: ${product.supplier}\nURL: ${product.url}`;
     navigator.clipboard
@@ -257,34 +322,5 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
   );
 }
 
-/**
- * Hook to manage context menu state and positioning
- */
-export function useContextMenu() {
-  const [contextMenu, setContextMenu] = useState<{
-    x: number;
-    y: number;
-    product: Product;
-  } | null>(null);
-
-  const handleContextMenu = (event: React.MouseEvent, product: Product) => {
-    event.preventDefault();
-    event.stopPropagation();
-
-    setContextMenu({
-      x: event.clientX,
-      y: event.clientY,
-      product,
-    });
-  };
-
-  const handleCloseContextMenu = () => {
-    setContextMenu(null);
-  };
-
-  return {
-    contextMenu,
-    handleContextMenu,
-    handleCloseContextMenu,
-  };
-}
+// Hook moved to be co-located with component for better organization
+export { useContextMenu } from "./useContextMenu.hook";

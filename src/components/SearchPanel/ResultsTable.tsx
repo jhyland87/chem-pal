@@ -4,16 +4,17 @@ import { Column, flexRender } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
 import { Fragment, ReactElement, useEffect, useRef, type CSSProperties } from "react";
 import LoadingBackdrop from "../LoadingBackdrop";
-import ContextMenu, { useContextMenu } from "./ContextMenu";
+import ContextMenu from "./ContextMenu";
 import FilterMenu from "./FilterMenu";
-import { useAutoColumnSizing } from "./hooks/useAutoColumnSizing";
 import { useAppContext } from "./hooks/useContext";
-import { useResultsTable } from "./hooks/useResultsTable";
 import { useSearch } from "./hooks/useSearch";
 import Pagination from "./Pagination";
 import "./ResultsTable.scss";
 import TableHeader from "./TableHeader";
 import TableOptions from "./TableOptions";
+import { useAutoColumnSizing } from "./useAutoColumnSizing.hook";
+import { useContextMenu } from "./useContextMenu.hook";
+import { useResultsTable } from "./useResultsTable.hook";
 
 /**
  * Enhanced ResultsTable component using React v19 hooks for improved performance
@@ -110,7 +111,7 @@ export default function ResultsTable({
   }, [appContext?.userSettings.hideColumns, table]);
 
   // Auto column sizing
-  const autoSizer = useAutoColumnSizing(table, optimisticResults);
+  const { getMeasurementTableProps } = useAutoColumnSizing(table, optimisticResults);
 
   function columnSizeVars() {
     const headers = table.getFlatHeaders();
@@ -142,7 +143,37 @@ export default function ResultsTable({
           <div className="p-2" style={{ minHeight: "369px" }}>
             <TableOptions table={table} onSearch={executeSearch} />
             <div className="h-4" />
-            {autoSizer}
+
+            {/* Hidden measurement table for auto-sizing */}
+            <table {...getMeasurementTableProps()}>
+              <thead>
+                <tr>
+                  {table.getAllLeafColumns().map((col) => (
+                    <th key={col.id}>
+                      {typeof col.columnDef.header === "function"
+                        ? col.id
+                        : (col.columnDef.header ?? col.id)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {table
+                  .getRowModel()
+                  .rows.slice(0, 5)
+                  .map((row) => (
+                    <tr key={row.id}>
+                      {row.getVisibleCells().map((cell) => (
+                        <td key={cell.id}>
+                          {typeof cell.column.columnDef.cell === "function"
+                            ? cell.column.columnDef.cell(cell.getContext())
+                            : ""}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
 
             {/* Enhanced error handling with React v19's built-in error state */}
             {error && (

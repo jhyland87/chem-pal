@@ -8,6 +8,7 @@ import {
 } from "@/mixins/tanstack";
 import {
   ColumnDef,
+  ColumnFiltersState,
   getCoreRowModel,
   getExpandedRowModel,
   getFacetedMinMaxValues,
@@ -15,13 +16,56 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  OnChangeFn,
   Row,
   useReactTable,
 } from "@tanstack/react-table";
 import { throttle } from "lodash";
 import debounce from "lodash/debounce";
-import TableColumns from "../TableColumns";
+import TableColumns from "./TableColumns";
 
+/**
+ * Configuration options for the useResultsTable hook.
+ */
+interface UseResultsTableProps {
+  /** Array of product data to display in the table */
+  showSearchResults: Product[];
+  /** Tuple containing column filter state and setter function from useState */
+  columnFilterFns: [ColumnFiltersState, OnChangeFn<ColumnFiltersState>];
+  /** Function to determine if a row can be expanded to show sub-rows */
+  getRowCanExpand: (row: Row<Product>) => boolean;
+  /** User preferences and settings object containing display options */
+  userSettings: UserSettings;
+}
+
+/**
+ * Hook for managing the results table with TanStack Table configuration.
+ * Co-located with ResultsTable.tsx since it's primarily used by that component.
+ *
+ * This hook configures and initializes a TanStack Table instance with:
+ * - Column resizing capabilities
+ * - Filtering and sorting functionality
+ * - Pagination support
+ * - Row expansion for product variants
+ * - Custom column methods for filtering and data access
+ * - Debounced and throttled filter updates
+ *
+ * @param props - Configuration options for the table setup
+ * @returns Configured TanStack Table instance with all features enabled
+ *
+ * @example
+ * ```tsx
+ * const table = useResultsTable({
+ *   showSearchResults: products,
+ *   columnFilterFns: [filters, setFilters],
+ *   getRowCanExpand: (row) => row.original.variants?.length > 0,
+ *   userSettings: { currency: 'USD', ... }
+ * });
+ *
+ * // Use table instance for rendering
+ * table.getHeaderGroups().map(headerGroup => ...)
+ * ```
+ */
 export function useResultsTable({
   showSearchResults,
   columnFilterFns,
@@ -56,10 +100,21 @@ export function useResultsTable({
     debugColumns: false,
     _features: [
       {
+        /**
+         * Custom feature that extends table and column instances with additional methods.
+         * Adds utility functions for filtering, data access, and user settings management.
+         *
+         * @param column - The column instance to extend
+         * @param table - The table instance to extend
+         */
         createColumn: (column, table) => {
           table.userSettings = userSettings;
           column.userSettings = userSettings;
 
+          /**
+           * Updates the user settings on the table instance.
+           * @param userSettings - New user settings to apply
+           */
           table.setUserSettings = (userSettings: UserSettings) => {
             table.userSettings = userSettings;
           };

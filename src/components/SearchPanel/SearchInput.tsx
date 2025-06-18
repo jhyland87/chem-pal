@@ -5,14 +5,14 @@ import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import InputBase from "@mui/material/InputBase";
 import Paper from "@mui/material/Paper";
-import { useEffect, useState } from "react";
 import "./SearchInput.scss";
+import { useSearchInput } from "./useSearchInput.hook";
 
 /**
  * SearchInput component that provides a search interface with a text input and action buttons.
  * It includes a menu button, search input field, and search action buttons.
  *
- * Fixed version that properly handles Chrome storage without using use() hook incorrectly.
+ * Refactored version that uses the useSearchInput hook for better code organization.
  *
  * @component
  *
@@ -26,53 +26,7 @@ import "./SearchInput.scss";
  * ```
  */
 export default function SearchInput({ onSearch }: SearchInputStates) {
-  const [searchInputValue, setSearchInputValue] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  /**
-   * Handles form submission and triggers search
-   */
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (searchInputValue.trim()) {
-      setIsLoading(true);
-      onSearch?.(searchInputValue.trim());
-      // Reset loading state after a short delay
-      setTimeout(() => setIsLoading(false), 500);
-    }
-  };
-
-  // Load the search input from Chrome storage on component mount
-  useEffect(() => {
-    chrome.storage.session
-      .get(["searchInput"])
-      .then((data) => {
-        if (data.searchInput) {
-          setSearchInputValue(data.searchInput);
-        }
-      })
-      .catch((error) => {
-        console.warn("Failed to load search input from Chrome storage:", error);
-      });
-  }, []);
-
-  /**
-   * Handles changes to the search input field and saves to Chrome storage
-   */
-  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setSearchInputValue(newValue);
-
-    // Save to Chrome storage
-    chrome.storage.session
-      .set({ searchInput: newValue })
-      .then(() => {
-        console.log("searchInput saved as:", newValue);
-      })
-      .catch((error) => {
-        console.error("Failed to save search input:", error);
-      });
-  };
+  const { searchInputValue, isLoading, handleSearchInputChange, handleSubmit } = useSearchInput();
 
   return (
     <>
@@ -80,7 +34,7 @@ export default function SearchInput({ onSearch }: SearchInputStates) {
         <Paper
           className="fullwidth search-query-input-form"
           component="form"
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmit(onSearch)}
           sx={{
             opacity: isLoading ? 0.7 : 1,
             transition: "opacity 0.2s ease",
@@ -92,7 +46,7 @@ export default function SearchInput({ onSearch }: SearchInputStates) {
 
           <InputBase
             value={searchInputValue}
-            onChange={handleSearchInputChange}
+            onChange={(e) => handleSearchInputChange(e.target.value)}
             className="search-query-input fullwidth"
             placeholder={isLoading ? "Searching..." : "Search..."}
             disabled={isLoading}
