@@ -49,7 +49,7 @@ type FilterMenuRef = {
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
-  value: number;
+  value: number | false;
   style?: React.CSSProperties;
 }
 
@@ -334,7 +334,7 @@ function FilterMenu(props: { table: Table<Product> }, ref: Ref<FilterMenuRef>) {
   const { table } = props;
   console.log("FilterMenu props:", table);
   const [drawerState, setDrawerState] = useState(false);
-  const [activeTab, setActiveTab] = useState(-1);
+  const [activeTab, setActiveTab] = useState<number | false>(false);
 
   const toggleDrawer = (newState: boolean) => {
     setDrawerState(newState);
@@ -344,7 +344,7 @@ function FilterMenu(props: { table: Table<Product> }, ref: Ref<FilterMenuRef>) {
     // If clicking the same tab that's already active and drawer is open, close the drawer
     if (tabIndex === activeTab && drawerState) {
       toggleDrawer(false);
-      setActiveTab(-1); // Reset active tab when closing
+      setActiveTab(false); // Reset active tab when closing
     } else {
       // Switch to the new tab and open drawer
       setActiveTab(tabIndex);
@@ -389,7 +389,7 @@ function FilterMenu(props: { table: Table<Product> }, ref: Ref<FilterMenuRef>) {
         open={drawerState}
         onClose={() => {
           toggleDrawer(false);
-          setActiveTab(-1); // Reset active tab when closing via outside click
+          setActiveTab(false); // Reset active tab when closing via outside click
         }}
       >
         {drawerContent()}

@@ -84,12 +84,4 @@ declare module "@tanstack/react-table" {
   }
 }
 
-declare global {
-  interface Product {
-    currency?: string;
-    usdPrice?: number;
-    localPrice?: number;
-  }
-}
-
 export {};

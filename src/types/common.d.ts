@@ -696,6 +696,18 @@ declare global {
      * @example ["visa", "mastercard"]
      */
     paymentMethods?: PaymentMethod[];
+
+    /**
+     * Levenshtein result of the product title and the search string
+     * @example 95
+     */
+    _fuzz?: { score: number; idx: number };
+
+    /**
+     * Match percentage of the product title and the search string
+     * @example 95
+     */
+    matchPercentage?: number;
   }
 
   /**

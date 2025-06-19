@@ -708,12 +708,12 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * //   {
    * //     title: "Sodium Chloride",
    * //     price: 29.99,
-   * //     ___fuzz: { score: 100, idx: 0 }
+   * //     _fuzz: { score: 100, idx: 0 }
    * //   },
    * //   {
    * //     title: "Sodium Hydroxide",
    * //     price: 39.99,
-   * //     ___fuzz: { score: 85, idx: 1 }
+   * //     _fuzz: { score: 85, idx: 1 }
    * //   }
    * // ]
    *
@@ -741,11 +741,11 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     }).reduce(
       (acc, [obj, score, idx]) => {
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        acc[idx] = Object.assign(obj, { ___fuzz: { score, idx } });
+        acc[idx] = Object.assign(obj, { _fuzz: { score, idx }, matchPercentage: score });
         return acc;
       },
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      [] as Array<X & { ___fuzz: { score: number; idx: number } }>,
+      [] as Array<X & { _fuzz: { score: number; idx: number }; matchPercentage: number }>,
     ) as X[];
 
     this.logger.debug("fuzzed search results:", res);

@@ -749,6 +749,24 @@ export default class ProductBuilder<T extends Product> {
   }
 
   /**
+   * Sets the match percentage (Levenshtein result) for the product title
+   * compared to the search string.
+   *
+   * @param matchPercentage - The match percentage to set
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setMatchPercentage(95);
+   * ```
+   */
+  setMatchPercentage(matchPercentage: number): ProductBuilder<T> {
+    if (typeof matchPercentage === "number") {
+      this.product.matchPercentage = matchPercentage;
+    }
+    return this;
+  }
+
+  /**
    * Gets a specific variant from the product.
    *
    * @param index - The index of the variant to get
@@ -865,6 +883,10 @@ export default class ProductBuilder<T extends Product> {
 
         Object.assign(variant, defaults, { ...variant });
       }
+    }
+
+    if (this.product._fuzz) {
+      this.product.matchPercentage = this.product._fuzz.score;
     }
 
     if (!isProduct(this.product)) {

@@ -19,6 +19,7 @@ import {
   OnChangeFn,
   Row,
   useReactTable,
+  type Table,
 } from "@tanstack/react-table";
 import { throttle } from "lodash";
 import debounce from "lodash/debounce";
@@ -100,6 +101,16 @@ export function useResultsTable({
     debugColumns: false,
     _features: [
       {
+        createTable: (table: Table<Product>) => {
+          table.userSettings = userSettings;
+          /**
+           * Updates the user settings on the table instance.
+           * @param userSettings - New user settings to apply
+           */
+          table.setUserSettings = (userSettings: UserSettings) => {
+            table.userSettings = userSettings;
+          };
+        },
         /**
          * Custom feature that extends table and column instances with additional methods.
          * Adds utility functions for filtering, data access, and user settings management.
@@ -108,17 +119,6 @@ export function useResultsTable({
          * @param table - The table instance to extend
          */
         createColumn: (column, table) => {
-          table.userSettings = userSettings;
-          column.userSettings = userSettings;
-
-          /**
-           * Updates the user settings on the table instance.
-           * @param userSettings - New user settings to apply
-           */
-          table.setUserSettings = (userSettings: UserSettings) => {
-            table.userSettings = userSettings;
-          };
-
           // Just gets the header text of the column
           column.getHeaderText = () => getHeaderText(column);
 
