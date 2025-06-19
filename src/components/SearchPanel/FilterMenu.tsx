@@ -334,24 +334,23 @@ function FilterMenu(props: { table: Table<Product> }, ref: Ref<FilterMenuRef>) {
   const { table } = props;
   console.log("FilterMenu props:", table);
   const [drawerState, setDrawerState] = useState(false);
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(-1);
 
   const toggleDrawer = (newState: boolean) => {
     setDrawerState(newState);
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue);
-    // Auto-open drawer when tab is clicked
-    if (!drawerState) {
-      toggleDrawer(true);
-    }
-  };
-
-  const handleTabClick = () => {
-    // Always open drawer when any tab is clicked
-    if (!drawerState) {
-      toggleDrawer(true);
+  const handleTabClick = (tabIndex: number) => {
+    // If clicking the same tab that's already active and drawer is open, close the drawer
+    if (tabIndex === activeTab && drawerState) {
+      toggleDrawer(false);
+      setActiveTab(-1); // Reset active tab when closing
+    } else {
+      // Switch to the new tab and open drawer
+      setActiveTab(tabIndex);
+      if (!drawerState) {
+        toggleDrawer(true);
+      }
     }
   };
 
@@ -378,19 +377,21 @@ function FilterMenu(props: { table: Table<Product> }, ref: Ref<FilterMenuRef>) {
 
       {/* Fixed tabs on the right side */}
       <FilterMenuTabsContainer>
-        <FilterMenuTabs
-          orientation="vertical"
-          value={activeTab}
-          onChange={handleTabChange}
-          aria-label="Filter menu tabs"
-        >
-          <Tab label="Filters" {...a11yProps(0)} onClick={handleTabClick} />
-          <Tab label="Suppliers" {...a11yProps(1)} onClick={handleTabClick} />
+        <FilterMenuTabs orientation="vertical" value={activeTab} aria-label="Filter menu tabs">
+          <Tab label="Filters" {...a11yProps(0)} onClick={() => handleTabClick(0)} />
+          <Tab label="Suppliers" {...a11yProps(1)} onClick={() => handleTabClick(1)} />
         </FilterMenuTabs>
       </FilterMenuTabsContainer>
 
       {/* Drawer that slides out from the tabs */}
-      <FilterMenuDrawer anchor="right" open={drawerState} onClose={() => toggleDrawer(false)}>
+      <FilterMenuDrawer
+        anchor="right"
+        open={drawerState}
+        onClose={() => {
+          toggleDrawer(false);
+          setActiveTab(-1); // Reset active tab when closing via outside click
+        }}
+      >
         {drawerContent()}
       </FilterMenuDrawer>
     </>
