@@ -152,7 +152,9 @@ export default abstract class SupplierBaseAmazon
       })
       .filter((result): result is Product => result !== undefined);
 
-    return this.initProductBuilders(results as AmazonListing[]);
+    const r = this.initProductBuilders(results as AmazonListing[]);
+    console.log("r:", r);
+    return r;
   }
 
   /**

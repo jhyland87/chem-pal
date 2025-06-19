@@ -23,6 +23,7 @@ import {
 } from "@tanstack/react-table";
 import { throttle } from "lodash";
 import debounce from "lodash/debounce";
+import { useMemo, useState } from "react";
 import TableColumns from "./TableColumns";
 
 /**
@@ -73,8 +74,49 @@ export function useResultsTable({
   getRowCanExpand,
   userSettings,
 }: UseResultsTableProps) {
+  // State to track custom sorting
+  const [customSort, setCustomSort] = useState<{ type: string; order: "asc" | "desc" } | null>(
+    null,
+  );
+
+  // Apply custom sorting to data if needed
+  const sortedData = useMemo(() => {
+    if (customSort?.type === "matchPercentage") {
+      console.log("🔄 Applying match percentage sort:", customSort.order);
+      console.log(
+        "📊 Before sorting - first 5 products:",
+        showSearchResults.slice(0, 5).map((item) => ({
+          title: item.title?.substring(0, 30) + "...",
+          matchPercentage: item.matchPercentage,
+        })),
+      );
+
+      const sorted = [...showSearchResults].sort((a, b) => {
+        const aVal = a.matchPercentage ?? 0;
+        const bVal = b.matchPercentage ?? 0;
+
+        if (customSort.order === "desc") {
+          return bVal - aVal;
+        } else {
+          return aVal - bVal;
+        }
+      });
+
+      console.log(
+        "📈 After sorting - first 5 products:",
+        sorted.slice(0, 5).map((item) => ({
+          title: item.title?.substring(0, 30) + "...",
+          matchPercentage: item.matchPercentage,
+        })),
+      );
+
+      return sorted;
+    }
+    return showSearchResults;
+  }, [showSearchResults, customSort]);
+
   const resultsTable = useReactTable({
-    data: showSearchResults,
+    data: sortedData,
     enableColumnResizing: true,
     columnResizeDirection: "ltr",
     defaultColumn: {
@@ -83,6 +125,13 @@ export function useResultsTable({
     columnResizeMode: "onChange",
     columns: TableColumns() as ColumnDef<Product, unknown>[],
     filterFns: {},
+    sortingFns: {
+      matchPercentage: (rowA: Row<Product>, rowB: Row<Product>) => {
+        const a = rowA.original.matchPercentage ?? 0;
+        const b = rowB.original.matchPercentage ?? 0;
+        return a > b ? 1 : a < b ? -1 : 0;
+      },
+    },
     state: {
       columnFilters: columnFilterFns[0],
     },
@@ -102,6 +151,7 @@ export function useResultsTable({
     _features: [
       {
         createTable: (table: Table<Product>) => {
+          window.resultsTable = table;
           table.userSettings = userSettings;
           /**
            * Updates the user settings on the table instance.
@@ -109,6 +159,46 @@ export function useResultsTable({
            */
           table.setUserSettings = (userSettings: UserSettings) => {
             table.userSettings = userSettings;
+          };
+
+          /**
+           * Sorts the table rows by match percentage.
+           * @param order - Sort order: 'asc' for ascending, 'desc' for descending
+           */
+          table.sortByMatchPercentage = (order: "asc" | "desc" = "desc") => {
+            console.log("🔍 Initiating match percentage sort:", order);
+
+            // Clear existing table sorting first
+            table.resetSorting();
+
+            // Set custom sort state which will trigger re-render via useMemo
+            setCustomSort({
+              type: "matchPercentage",
+              order: order,
+            });
+
+            // Store state on table for API compatibility
+            table._customSort = {
+              type: "matchPercentage",
+              order: order,
+            };
+          };
+
+          /**
+           * Checks if the table is currently sorted by match percentage.
+           * @returns boolean indicating if match percentage sorting is active
+           */
+          table.isSortedByMatchPercentage = () => {
+            return table._customSort?.type === "matchPercentage";
+          };
+
+          /**
+           * Gets the current match percentage sort order.
+           * @returns 'asc', 'desc', or null if not sorted by match percentage
+           */
+          table.getMatchPercentageSortOrder = () => {
+            if (!table.isSortedByMatchPercentage?.()) return null;
+            return table._customSort?.order || null;
           };
         },
         /**

@@ -147,6 +147,7 @@ export default abstract class SupplierBaseWoocommerce
 
       builder
         .setBasicInfo(item.name, item.permalink, this.supplierName)
+        .setMatchPercentage(item.matchPercentage)
         .setID(item.id)
         .setSku(item.sku)
         .setPricing(

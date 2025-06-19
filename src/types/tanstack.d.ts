@@ -11,6 +11,14 @@ declare module "@tanstack/react-table" {
     userSettings?: UserSettings;
     /** Function to update user settings */
     setUserSettings?: (settings: UserSettings) => void;
+    /** Function to sort table rows by match percentage */
+    sortByMatchPercentage?: (order?: "asc" | "desc") => void;
+    /** Function to check if table is currently sorted by match percentage */
+    isSortedByMatchPercentage?: () => boolean;
+    /** Function to get current match percentage sort order */
+    getMatchPercentageSortOrder?: () => "asc" | "desc" | null;
+    /** Internal state for custom sorting */
+    _customSort?: { type: string; order: "asc" | "desc" };
   }
 
   interface Column<TValue> {
@@ -81,6 +89,12 @@ declare module "@tanstack/react-table" {
     rangeValues?: number[];
     /** CSS properties to apply to the column */
     style?: CSSProperties;
+  }
+}
+
+declare global {
+  interface Window {
+    resultsTable?: object;
   }
 }
 

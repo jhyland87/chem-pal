@@ -17,7 +17,7 @@ declare global {
   /**
    * Represents a product item from the WooCommerce API search response
    */
-  interface WooCommerceSearchResponseItem {
+  interface WooCommerceSearchResponseItem extends InternalProductColumns {
     /* eslint-disable */
     /** Unique identifier for the product */
     id: number;

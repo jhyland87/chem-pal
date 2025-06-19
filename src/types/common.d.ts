@@ -570,6 +570,13 @@ declare global {
   }
 
   /**
+   * Internal product columns that are not part of the WooCommerce API response
+   */
+  type InternalProductColumns = {
+    matchPercentage: number;
+  };
+
+  /**
    * Represents a chemical product with its complete details, extending the Variant interface.
    * This is the main product type used throughout the application.
    *
