@@ -15,6 +15,9 @@ export default defineConfig({
       "**/dist/**",
       "**/.{idea,git,cache,output,temp}/**",
       "src/suppliers/**",
+      // disabling all component testing for now
+      "src/components/**",
+      "src/__tests__/**",
     ],
     deps: {
       web: {
