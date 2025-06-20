@@ -1,7 +1,7 @@
-import { getCurrencyCodeFromSymbol } from "@/helpers/currency";
+import { getCurrencyCodeFromSymbol, parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM } from "@/helpers/request";
-import { getUserCountry } from "@/helpers/utils";
+import { getUserCountry, mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import SupplierBase from "./SupplierBase";
 
@@ -68,7 +68,7 @@ const userCountry = getUserCountry();
 if (!amazonDomains[userCountry]) {
   console.warn("No Amazon domain found for user country:", userCountry);
 } else {
-  console.log("amazonDomains[getUserCountry()]:", amazonDomains[userCountry]);
+  console.debug("amazonDomains[getUserCountry()]:", amazonDomains[userCountry]);
 }
 
 /**
@@ -90,6 +90,12 @@ export default abstract class SupplierBaseAmazon
   public readonly baseURL: string = amazonDomains[userCountry] || amazonDomains["US"];
 
   /**
+   * Terms found in the listing - An array of strings, at least one of which must be
+   * foud in the initial listing on the product search results page.
+   */
+  protected termsFoundInListing: string[] = [];
+
+  /**
    * Queries products from Amazon
    * @param query - The query to search for
    * @param limit - The maximum number of products to return
@@ -100,9 +106,9 @@ export default abstract class SupplierBaseAmazon
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
     limit = 10;
-    const queryPagination = async (query: string, page: number = 1) => {
+    const queryPagination = async (paginationQuery: string, page: number = 1) => {
       const response = await this.httpPost({
-        path: `/s/query?k=${query}&page=${page}`,
+        path: `/s/query?k=${paginationQuery}&page=${page}`,
         body: {
           /* eslint-disable */
           "page-content-type": "atf",
@@ -111,7 +117,7 @@ export default abstract class SupplierBaseAmazon
           /* eslint-enable */
         },
         headers: {
-          referrer: `${this.baseURL}/s?k=${query}&ref=nb_sb_noss`,
+          referrer: `${this.baseURL}/s?k=${paginationQuery}&ref=nb_sb_noss`,
           referrerPolicy: "strict-origin-when-cross-origin",
         },
       });
@@ -121,7 +127,14 @@ export default abstract class SupplierBaseAmazon
       }
 
       const responseText = await response.text();
-      return this.parseResponse(responseText as string);
+      console.debug("responseText BEFORE length:", responseText.length, responseText);
+      const responseTextWithoutSearchTerm = responseText.replaceAll(paginationQuery, "");
+      console.debug(
+        "responseText AFTER length:",
+        responseTextWithoutSearchTerm.length,
+        responseTextWithoutSearchTerm,
+      );
+      return this.parseResponse(responseTextWithoutSearchTerm as string);
     };
 
     const resultPages = await Promise.all(
@@ -130,7 +143,7 @@ export default abstract class SupplierBaseAmazon
       ),
     );
 
-    console.log("resultPages:", resultPages);
+    console.debug("resultPages:", resultPages);
 
     if (
       !resultPages ||
@@ -141,20 +154,58 @@ export default abstract class SupplierBaseAmazon
       throw new Error("Result pages either not found or invalid");
     }
 
-    const results = resultPages[0]
-      .flatMap((page: unknown) => {
-        if (!page) return [];
-        if (!Array.isArray(page)) return [];
-        if (page.length !== 3) return [];
-        if (page[0] !== "dispatch") return [];
-        if (!page[1].startsWith("data-main-slot:search-result-")) return [];
-        return this.parseSearchResult(page[2].html, this.baseURL);
-      })
-      .filter((result): result is Product => result !== undefined);
+    const results = mapDefined(resultPages[0], (page: unknown) => {
+      if (!page) return [];
+      if (!Array.isArray(page)) return [];
+      if (page.length !== 3) return [];
+      if (page[0] !== "dispatch") return [];
+      if (!page[1].startsWith("data-main-slot:search-result-")) return [];
+      return this.parseSearchResult(
+        page[2].html.replaceAll(`${this.supplierName}+${query}`, ""),
+        this.baseURL,
+      );
+    });
 
-    const r = this.initProductBuilders(results as AmazonListing[]);
-    console.log("r:", r);
-    return r;
+    console.debug("Parsed results:", results);
+
+    const fuzzedResults = this.fuzzyFilter(query, results, 40);
+    console.debug("fuzzedResults:", fuzzedResults);
+
+    return this.initProductBuilders(fuzzedResults as AmazonListing[]);
+  }
+
+  /**
+   * Checks if the listing meets the requirements
+   * @param result - The listing to check
+   * @returns True if the listing meets the requirements, false otherwise
+   */
+  protected checkRequirementsForListing(result: HTMLElement): boolean {
+    if (this.termsFoundInListing.length === 0) {
+      return true;
+    }
+
+    if (!result.innerHTML.toLowerCase().includes(this.supplierName.toLowerCase())) {
+      console.log("This item does not contain the suppliers name anywhere, removing", {
+        result,
+        supplierName: this.supplierName,
+      });
+      return false;
+    }
+
+    return true;
+
+    const resultText = result.innerText;
+
+    return this.termsFoundInListing.some((term) => {
+      const found = resultText.toLowerCase().includes(term.toLowerCase());
+      if (!found) {
+        console.debug(`Term "${term}" not found in listing`, {
+          term,
+          resultText,
+        });
+      }
+      return found;
+    });
   }
 
   /**
@@ -165,9 +216,39 @@ export default abstract class SupplierBaseAmazon
    */
   private parseSearchResult(raw: string, amazonBase: string): Maybe<AmazonListing> {
     try {
-      const document = createDOM(`<html><body>${raw}</body></html>`);
+      // To help ensure the products are from the requested supplier, run a quick check for the suppliers name.
+      // That's usually included in the listing somewhere.
+      // Note: To exclude any false positives from matching with any hyperlinks that have the current search
+      // term (which would include the suppliers name), the exact search term (supplier+query) is removed from
+      // the raw HTML before this method is called.
+      if (!raw.toLowerCase().includes(this.supplierName.toLowerCase())) {
+        console.debug("This item does not contain the suppliers name anywhere, removing", {
+          raw,
+        });
+        return;
+      }
 
-      const documentBody = document.body;
+      // Sometimes those sponsored listings can sneak through... Just outright delete anything that has the
+      // word "sponsored" in the raw HTML.
+      if (raw.toLowerCase().includes("sponsored")) {
+        console.debug("This item is a sponsored listing, removing", {
+          raw,
+        });
+        return;
+      }
+
+      const listingDocument = createDOM(`<html><body>${raw}</body></html>`);
+      console.debug({ listingDocument });
+
+      const documentBody = listingDocument.body;
+
+      console.debug({ documentBody });
+
+      // Check if the listing meets the requirements. Use innerText because many of the hyperlinks
+      // will have the search term saved in the href attribute.
+      // if (!this.checkRequirementsForListing(documentBody)) {
+      //   return;
+      // }
 
       if (!documentBody) {
         throw new Error("Document body not found");
@@ -179,21 +260,37 @@ export default abstract class SupplierBaseAmazon
 
       // Extracting the price
       const priceElement = documentBody.querySelector("span.a-price span.a-price-whole");
-      const price = priceElement ? priceElement.textContent?.trim() : null;
+      let price = priceElement ? priceElement.textContent?.trim() : null;
 
       // Extracting the currency
       const currencyElement = documentBody.querySelector("span.a-price-symbol");
-      const currency = currencyElement ? currencyElement.textContent?.trim() : null;
+      let currency = currencyElement ? currencyElement.textContent?.trim() : null;
+
+      // Array.from(documentBody.querySelectorAll('span, div')).map(e => e.innerText).find(e => /^\$\d+\.\d+$/.test(e))
 
       // Extracting the original price
       const originalPriceElement = documentBody.querySelector("span.a-text-price span.a-offscreen");
-      const originalPrice = originalPriceElement ? originalPriceElement.textContent?.trim() : null;
+      let originalPrice = originalPriceElement ? originalPriceElement.textContent?.trim() : null;
+
+      // This is a fallback for when the price and currency are not found in the expected locations.
+      if (!price || !currency) {
+        const priceAndCurrency = Array.from(documentBody.querySelectorAll("span, div"))
+          .map((element) => element.textContent)
+          .find((text) => !!text && /^\$\d+\.\d+$/.test(text));
+
+        if (priceAndCurrency) {
+          const parsedPrice = parsePrice(priceAndCurrency);
+          if (!price) price = parsedPrice?.price?.toString();
+          if (!currency) currency = parsedPrice?.currencySymbol;
+          if (!originalPrice) originalPrice = priceAndCurrency;
+        }
+      }
 
       // Extracting the product ID (ASIN)
       const productElement = documentBody.querySelector("[data-asin]");
       const productId = productElement ? productElement.getAttribute("data-asin") : null;
 
-      console.log("matches:", { productId, title, originalPrice, price });
+      console.debug("matches:", { productId, title, originalPrice, price });
 
       if (!productId || !title || !price || !currency) {
         console.warn("Missing required fields:", { productId, title, price, currency });
@@ -292,7 +389,7 @@ export default abstract class SupplierBaseAmazon
    * @param data - Product object from search response
    * @returns - The title of the product
    */
-  protected titleSelector(data: ItemListing): string {
+  protected titleSelector(data: AmazonListing): string {
     return data.title;
   }
 }

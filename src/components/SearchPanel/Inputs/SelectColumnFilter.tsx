@@ -5,10 +5,10 @@ import {
   List,
   ListItem,
   ListItemButton,
-  ListItemIcon,
   ListItemText,
 } from "@mui/material";
 import { useState } from "react";
+import { FilterListItemIcon } from "../../Styles";
 
 /**
  * SelectColumnFilter component that provides a scrollable list of checkboxes for columns with discrete values.
@@ -80,7 +80,7 @@ export default function SelectColumnFilter({ column }: FilterVariantInputProps) 
                   onClick={() => handleOptionSelect(option)}
                   dense
                 >
-                  <ListItemIcon sx={{ padding: 0 }}>
+                  <FilterListItemIcon>
                     <Checkbox
                       size="small"
                       edge="start"
@@ -91,7 +91,7 @@ export default function SelectColumnFilter({ column }: FilterVariantInputProps) 
                       // eslint-disable-next-line @typescript-eslint/naming-convention
                       inputProps={{ "aria-labelledby": labelId }}
                     />
-                  </ListItemIcon>
+                  </FilterListItemIcon>
                   <ListItemText id={labelId} primary={option} />
                 </ListItemButton>
               </ListItem>

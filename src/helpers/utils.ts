@@ -197,7 +197,25 @@ export function firstMap<T, R>(fn: (arg: T) => R | void, properties: T[]): R | v
  * ```
  */
 export function mapDefined<T, R>(items: T[], fn: (arg: T) => R | null | undefined): R[] {
-  return items.map(fn).filter((result): result is R => result !== undefined && result !== null);
+  return items.map(fn).filter((result): result is R => {
+    if (result === undefined || result === null) {
+      return false;
+    }
+
+    if (Array.isArray(result)) {
+      return result.length > 0;
+    }
+
+    if (typeof result === "object") {
+      return Object.keys(result).length > 0;
+    }
+
+    if (typeof result === "string") {
+      return result.trim().length > 0;
+    }
+
+    return true;
+  });
 }
 
 /**

@@ -20,4 +20,7 @@ export default class SupplierAkmekem extends SupplierBaseAmazon implements ISupp
 
   // The payment methods accepted by the supplier.
   public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+
+  // Terms found in the listing
+  protected termsFoundInListing: string[] = ["macklin", "akmekem"];
 }

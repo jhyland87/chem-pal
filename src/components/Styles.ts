@@ -97,7 +97,7 @@ export const FilterMenuDrawer = styled(Drawer)(() => ({
 }));
 
 export const FilterMenuDrawerContent = styled(Box)(() => ({
-  width: 300,
+  width: 200,
   padding: "0px",
 }));
 
@@ -134,6 +134,16 @@ export const FilterMenuAccordionSummary = styled(MuiAccordionSummary)(({ theme }
 export const FilterMenuAccordionDetails = styled(MuiAccordionDetails)(() => ({
   padding: 0,
   borderTop: "1px solid rgba(0, 0, 0, .125)",
+}));
+
+// Styled ListItemIcon for consistent checkbox styling across filter components
+export const FilterListItemIcon = styled("div")(() => ({
+  padding: 0,
+  minWidth: 20,
+  maxWidth: 25,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
 }));
 
 //MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined css-enqxln-MuiFormLabel-root-MuiInputLabel-root

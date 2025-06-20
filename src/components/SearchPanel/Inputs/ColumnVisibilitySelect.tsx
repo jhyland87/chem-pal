@@ -5,10 +5,10 @@ import {
   List,
   ListItem,
   ListItemButton,
-  ListItemIcon,
   ListItemText,
   SelectChangeEvent,
 } from "@mui/material";
+import { FilterListItemIcon } from "../../Styles";
 
 /**
  * ColumnVisibilitySelect component that provides a scrollable list of checkboxes for controlling
@@ -103,7 +103,7 @@ export default function ColumnVisibilitySelect({
         {/* Defaults checkbox */}
         <ListItem key="defaults" disablePadding>
           <ListItemButton sx={{ padding: 0 }} role={undefined} onClick={handleDefaultsSelect} dense>
-            <ListItemIcon sx={{ padding: 0 }}>
+            <FilterListItemIcon>
               <Checkbox
                 size="small"
                 edge="start"
@@ -114,7 +114,7 @@ export default function ColumnVisibilitySelect({
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 inputProps={{ "aria-labelledby": "checkbox-list-label-defaults" }}
               />
-            </ListItemIcon>
+            </FilterListItemIcon>
             <ListItemText
               id="checkbox-list-label-defaults"
               primary="Defaults"
@@ -137,7 +137,7 @@ export default function ColumnVisibilitySelect({
                   onClick={() => handleColumnSelect(key)}
                   dense
                 >
-                  <ListItemIcon sx={{ padding: 0 }}>
+                  <FilterListItemIcon>
                     <Checkbox
                       size="small"
                       edge="start"
@@ -148,7 +148,7 @@ export default function ColumnVisibilitySelect({
                       // eslint-disable-next-line @typescript-eslint/naming-convention
                       inputProps={{ "aria-labelledby": labelId }}
                     />
-                  </ListItemIcon>
+                  </FilterListItemIcon>
                   <ListItemText id={labelId} primary={name} />
                 </ListItemButton>
               </ListItem>

@@ -17,4 +17,7 @@ export default class SupplierInnovatingScience extends SupplierBaseAmazon implem
 
   // The payment methods accepted by the supplier.
   public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+
+  // Terms that much be found in the listing (one of these terms must be found)
+  protected termsFoundInListing: string[] = ["innovating science", "aldon"];
 }

@@ -570,9 +570,13 @@ declare global {
   }
 
   /**
-   * Internal product columns that are not part of the WooCommerce API response
+   * Synthetic columns - stuff that I add to the response body during processing.
    */
-  type InternalProductColumns = {
+  type SyntheticFields = {
+    /**
+     * Match percentage of the product title and the search string
+     * @example 95
+     */
     matchPercentage: number;
   };
 
@@ -596,7 +600,7 @@ declare global {
    * };
    * ```
    */
-  interface Product extends Variant {
+  interface Product extends Variant, SyntheticFields {
     /**
      * Name of the supplier providing the product
      * @example "Loudwolf"

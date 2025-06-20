@@ -11,7 +11,6 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 
-import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import type { SelectChangeEvent } from "@mui/material/Select";
 import Tab from "@mui/material/Tab";
@@ -27,6 +26,7 @@ import {
   type SyntheticEvent,
 } from "react";
 import {
+  FilterListItemIcon,
   FilterMenuAccordion,
   FilterMenuAccordionDetails,
   FilterMenuAccordionSummary,
@@ -128,30 +128,30 @@ function SupplierSelection() {
   return (
     <FormControl component="fieldset" variant="standard">
       <FormLabel component="legend">Supplier Selection</FormLabel>
-      <List sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper", paddingLeft: "20px" }}>
+      <List sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper", paddingLeft: "1px" }}>
         {SupplierFactory.supplierList().map((supplierName) => {
           const labelId = `checkbox-list-label-${supplierName}`;
 
           return (
             <ListItem key={supplierName} disablePadding>
               <ListItemButton
-                sx={{ padding: 0 }}
+                sx={{ padding: "0px 0px 0px 20px" }}
                 role={undefined}
                 onClick={() => handleSupplierSelect(supplierName)}
                 dense
               >
-                <ListItemIcon sx={{ padding: 0 }}>
+                <FilterListItemIcon>
                   <Checkbox
                     size="small"
                     edge="start"
-                    sx={{ padding: 0, minWidth: 20 }}
+                    sx={{ padding: 0, maxWidth: 10 }}
                     checked={selectedSuppliers.includes(supplierName)}
                     tabIndex={-1}
                     disableRipple
                     // eslint-disable-next-line @typescript-eslint/naming-convention
                     inputProps={{ "aria-labelledby": labelId }}
                   />
-                </ListItemIcon>
+                </FilterListItemIcon>
                 <ListItemText id={labelId} primary={`${supplierName.replace("Supplier", "")}`} />
               </ListItemButton>
             </ListItem>

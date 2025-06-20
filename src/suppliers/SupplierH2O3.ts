@@ -1,3 +1,4 @@
+import { mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import SupplierBase from "./SupplierBase";
 
@@ -111,7 +112,97 @@ export default class SupplierH2O3 extends SupplierBase<Product, Product> impleme
     }
 
     console.log("results:", results);
+
     return this.initProductBuilders(results);
+  }
+
+  private listingElementToObject(element: Element): Record<string, string | undefined> | undefined {
+    const titleElem = element.querySelector("div a.a2");
+    if (!titleElem) {
+      this.logger.error("No title element found");
+      return;
+    }
+
+    const result = {
+      href: titleElem.getAttribute("href") || "",
+      title: titleElem.textContent?.trim() || "",
+      id: element.querySelector("div > div > div:nth-child(2) > span")?.textContent || "",
+      cas: undefined as string | undefined,
+      quantity: undefined as string | undefined,
+      grade: undefined as string | undefined,
+      price: undefined as string | undefined,
+      uom: undefined as string | undefined,
+      currencyCode: undefined as string | undefined,
+      currencySymbol: undefined as string | undefined,
+    };
+
+    for (const a of element.querySelectorAll("div > div > div:nth-child(2) > div > a")) {
+      const [dataKey, dataValue] = a.textContent?.split(":") || [];
+      if (dataKey === "CAS") {
+        result.cas = dataValue || undefined;
+      }
+    }
+
+    for (const tr of element.querySelectorAll("table.table_param2 > tbody > tr")) {
+      let match = undefined;
+      const attrKey = tr.querySelector("th");
+      switch (attrKey?.textContent?.toLowerCase()) {
+        case "quantity":
+          match = (tr.querySelector("td")?.textContent?.trim() as string).match(
+            /(?<quantity>\d+) \[(?<uom>\w+)\]/,
+          );
+          if (match) {
+            result.quantity = match.groups?.quantity || undefined;
+            result.uom = match.groups?.uom || undefined;
+          }
+          break;
+        case "grade":
+          result.grade = (tr.querySelector("td")?.textContent?.trim() as string) || undefined;
+          break;
+        default:
+          break;
+      }
+    }
+
+    // const qtyPriceRows = element.querySelectorAll("table:not(.table_param2) > tbody > tr");
+
+    // // First tr is the quantity, the second is the price. So check that there are at leat two rows
+    // if (qtyPriceRows.length >= 2) {
+    //   const qtyPriceRow = qtyPriceRows[0];
+    //   const qtyPrice = qtyPriceRow.querySelector("td");
+    //   if (qtyPrice && qtyPrice.textContent?.toLowerCase().includes("quantity")) {
+    //     const uomMatch = qtyPrice.textContent?.match(/Quantity \[(?<uom>.*)\]/);
+    //     if (uomMatch) {
+    //       result.uom = uomMatch.groups?.uom || undefined;
+    //     }
+    //   }
+    //   const grossPrice = qtyPriceRows[1].querySelector("td");
+    //   if (grossPrice) {
+    //     const priceMatch = grossPrice.textContent
+    //       ?.trim()
+    //       .match(/Gross price \[(?<currencyCode>[A-Z]{3})\/(?<uom>\w+)\]/, "i");
+    //     console.log("priceMatch:", priceMatch);
+    //     if (priceMatch) {
+    //       result.currencyCode = priceMatch.groups?.currencyCode || undefined;
+    //       if (!result.uom && priceMatch.groups?.uom) {
+    //         result.uom = priceMatch.groups?.uom;
+    //       }
+    //     }
+    //   }
+    // }
+
+    // const priceOnes = element.querySelector(`#przel_cena_brut1_${result.id}`)?.textContent;
+    // const priceTens = element.querySelector(`#przel_cena_brut2_${result.id}`)?.textContent;
+    const priceFull = element.querySelector(`#przel_cena_${result.id}`)?.textContent;
+
+    if (priceFull) {
+      result.price = priceFull;
+      result.currencyCode = "PLN";
+      result.currencySymbol = "zł";
+    }
+
+    console.log("result:", result);
+    return result;
   }
 
   protected fuzzHtmlResponse(query: string, response: string): Element[] {
@@ -172,8 +263,27 @@ export default class SupplierH2O3 extends SupplierBase<Product, Product> impleme
    * }
    * ```
    */
-  protected initProductBuilders(data: Product[]): ProductBuilder<Product>[] {
-    return [];
+  protected initProductBuilders(data: Element[]): ProductBuilder<Product>[] {
+    const parsedResults = mapDefined(data, (element) => {
+      const item = this.listingElementToObject(element);
+      if (!item) return;
+      const product = new ProductBuilder(this.baseURL);
+      product.setBasicInfo(item.title, item.href, this.supplierName);
+      if (item.price) product.setPrice(item.price);
+      if (item.quantity) product.setQuantity(item.quantity);
+      if (item.uom) product.setUOM(item.uom);
+      if (item.currencyCode) product.setCurrencyCode(item.currencyCode);
+      if (item.currencySymbol) product.setCurrencySymbol(item.currencySymbol);
+      //if (item.currency) product.setCurrency(item.currency);
+      if (item.cas) product.setCAS(item.cas);
+      if (item.grade) product.setGrade(item.grade);
+
+      return product;
+    });
+
+    console.log("parsedResults:", parsedResults);
+
+    return parsedResults;
   }
 
   /**
@@ -184,6 +294,6 @@ export default class SupplierH2O3 extends SupplierBase<Product, Product> impleme
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    return undefined;
+    return product;
   }
 }
