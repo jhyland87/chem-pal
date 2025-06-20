@@ -268,7 +268,7 @@ export default class SupplierH2O3 extends SupplierBase<Product, Product> impleme
       const item = this.listingElementToObject(element);
       if (!item) return;
       const product = new ProductBuilder(this.baseURL);
-      product.setBasicInfo(item.title, item.href, this.supplierName);
+      product.setBasicInfo(item.title as string, item.href as string, this.supplierName);
       if (item.price) product.setPrice(item.price);
       if (item.quantity) product.setQuantity(item.quantity);
       if (item.uom) product.setUOM(item.uom);
