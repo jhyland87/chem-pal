@@ -140,18 +140,33 @@ export const FilterMenuAccordionSummary = styled(MuiAccordionSummary)(({ theme }
   overflowY: "scroll",
   minWidth: "40px",
   backgroundColor: "rgba(0, 0, 0, .03)",
-  //color: "#ffffff",
+  color: "#ffffff",
   flexDirection: "row-reverse",
-  "& .MuiAccordionSummary-expandIconWrapper.Mui-expanded": {
-    transform: "rotate(90deg)",
+  "&:hover": {
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    borderBottom: "1px solid rgba(255, 255, 255, 0.3)",
+  },
+  "&.Mui-expanded": {
+    minHeight: "28px",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+  },
+  "& .MuiAccordionSummary-expandIconWrapper": {
+    color: "#ffffff",
+    "&.Mui-expanded": {
+      transform: "rotate(90deg)",
+    },
   },
   "& .MuiAccordionSummary-content": {
     margin: "1px 0px 1px 0px",
     marginLeft: theme.spacing(1),
+    color: "#ffffff",
   },
 
   ...theme.applyStyles("dark", {
     backgroundColor: "rgba(255, 255, 255, .05)",
+    "&:hover": {
+      backgroundColor: "rgba(255, 255, 255, 0.12)",
+    },
   }),
 }));
 
@@ -177,6 +192,18 @@ export const FilterMenuAccordionDetails = styled(MuiAccordionDetails)(() => ({
   },
   "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
     borderColor: "#ffffff",
+  },
+  "& .MuiCheckbox-root": {
+    color: "#ffffff",
+    "&.Mui-checked": {
+      color: "#ffffff",
+    },
+    "&:hover": {
+      backgroundColor: "rgba(255, 255, 255, 0.08)",
+    },
+  },
+  "& .MuiListItemText-primary": {
+    color: "#ffffff",
   },
 }));
 

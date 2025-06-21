@@ -58,14 +58,14 @@ export const lightTheme = createTheme({
         },
       },
     },
-    MuiFormControl: {
-      styleOverrides: {
-        root: {
-          backgroundColor: "#19222b",
-          color: "#f3f7fa",
-        },
-      },
-    },
+    // MuiFormControl: {
+    //   styleOverrides: {
+    //     root: {
+    //       backgroundColor: "#19222b",
+    //       color: "#f3f7fa",
+    //     },
+    //   },
+    // },
     MuiDrawer: {
       styleOverrides: {
         paper: {
