@@ -1,35 +1,11 @@
 import { omit } from "@/helpers/collectionUtils";
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
-import { ColumnDef, type CellContext, type Row, type SortingFn } from "@tanstack/react-table";
+import { ColumnDef, type CellContext, type SortingFnOption } from "@tanstack/react-table";
 import { hasFlag } from "country-flag-icons";
 import getUnicodeFlagIcon from "country-flag-icons/unicode";
 import { default as Link } from "../TabLink";
 import "./TableColumns.scss";
-
-/**
- * Custom sorting function for price comparison between two product rows.
- * Compares the USD prices of products and returns a sort order value.
- *
- * @returns Returns 1 if rowA -gt rowB, -1 if rowA -lt rowB, 0 if equal
- */
-const priceSortingFn: SortingFn<Product> = (rowA: Row<Product>, rowB: Row<Product>) => {
-  const a = rowA.original.localPrice as number;
-  const b = rowB.original.localPrice as number;
-  return a > b ? 1 : a < b ? -1 : 0;
-};
-
-/**
- * Custom sorting function for quantity comparison between two product rows.
- * Compares the base quantity or regular quantity of products and returns a sort order value.
- *
- * @returns Returns 1 if rowA -gt rowB, -1 if rowA -lt rowB, 0 if equal
- */
-const quantitySortingFn: SortingFn<Product> = (rowA: Row<Product>, rowB: Row<Product>) => {
-  const a = (rowA.original.baseQuantity ?? rowA.original.quantity) as number;
-  const b = (rowB.original.baseQuantity ?? rowB.original.quantity) as number;
-  return a > b ? 1 : a < b ? -1 : 0;
-};
 
 /**
  * Defines the column configuration for the product results table.
@@ -145,8 +121,8 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       id: "price",
       header: "Price",
       accessorKey: "price",
-      cell: ({ row, table, getValue, cell, column }: CellContext<Product, unknown>) => {
-        //console.log("cell:", row.id, { row, table, getValue: getValue, cell, column });
+      cell: ({ row, table }: CellContext<Product, unknown>) => {
+        //console.log("cell:", row.id, { row, table });
         const userSettings = table.options.meta?.userSettings;
         const currency = userSettings?.currency ?? "USD";
         const currencyRate = userSettings?.currencyRate ?? 1;
@@ -176,7 +152,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
           currency: currency,
         }).format(price * currencyRate);
       },
-      sortingFn: priceSortingFn,
+      sortingFn: "priceSortingFn" as SortingFnOption<Product>,
       meta: {
         filterVariant: "range",
         style: {
@@ -197,7 +173,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       cell: ({ row }: ProductRow) => {
         return `${row.original.quantity} ${row.original.uom}`;
       },
-      sortingFn: quantitySortingFn,
+      sortingFn: "quantitySortingFn" as SortingFnOption<Product>,
       minSize: 50,
     },
     {

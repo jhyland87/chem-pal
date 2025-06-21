@@ -154,28 +154,40 @@ export function toBaseQuantity(quantity: number, unit: UOM): number | void {
   if (typeof quantity !== "number") return;
 
   switch (unit) {
-    // Solids (by weight)
-    case UOM.G:
+    // Solids, convert all to milligrams
+    case UOM.MG:
+      console.debug(`${quantity} ${UOM.MG} -> ${quantity} ${UOM.MG} (no conversion needed)`);
       return quantity;
+    case UOM.G:
+      console.debug(`${quantity} ${UOM.G} -> ${quantity * 1000} ${UOM.MG}`);
+      return quantity * 1000;
     case UOM.KG:
-      return quantity / 1000;
+      console.debug(`${quantity} ${UOM.KG} -> ${quantity * 1000000} ${UOM.MG}`);
+      return quantity * 1000000;
     case UOM.LB:
-      return quantity / 0.0022046;
+      console.debug(`${quantity} ${UOM.LB} -> ${quantity * 453592} ${UOM.MG}`);
+      return quantity * 453592;
     case UOM.OZ:
-      return quantity / 0.035274;
+      console.debug(`${quantity} ${UOM.OZ} -> ${quantity * 28349.5} ${UOM.MG}`);
+      return quantity * 28349.5;
 
-    // Liquids (by volume)
+    // Liquids, convert all to milliliters
     case UOM.ML:
+      console.debug(`${quantity} ${UOM.ML} -> ${quantity} ${UOM.ML}`);
       return quantity;
     case UOM.L:
-      return quantity / 1000;
+      console.debug(`${quantity} ${UOM.L} -> ${quantity * 1000} ${UOM.ML}`);
+      return quantity * 1000;
     case UOM.QT:
-      return quantity / 946.353;
+      console.debug(`${quantity} ${UOM.QT} -> ${quantity * 946.353} ${UOM.ML}`);
+      return quantity * 946.353;
     case UOM.GAL:
-      return quantity / 3785.41;
+      console.debug(`${quantity} ${UOM.GAL} -> ${quantity * 3785.41} ${UOM.ML}`);
+      return quantity * 3785.41;
 
     // Unsupported units
     default:
+      console.debug(`${quantity} ${unit} -> ${quantity} ${unit} (no conversion found)`);
       return quantity;
   }
 }

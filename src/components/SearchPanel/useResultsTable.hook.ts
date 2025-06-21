@@ -1,3 +1,4 @@
+import { matchPercentageSortingFn, priceSortingFn, quantitySortingFn } from "@/helpers/sorting";
 import {
   getAllUniqueValues,
   getFullRange,
@@ -126,11 +127,9 @@ export function useResultsTable({
     columns: TableColumns() as ColumnDef<Product, unknown>[],
     filterFns: {},
     sortingFns: {
-      matchPercentage: (rowA: Row<Product>, rowB: Row<Product>) => {
-        const a = rowA.original.matchPercentage ?? 0;
-        const b = rowB.original.matchPercentage ?? 0;
-        return a > b ? 1 : a < b ? -1 : 0;
-      },
+      matchPercentage: matchPercentageSortingFn,
+      priceSortingFn: priceSortingFn,
+      quantitySortingFn: quantitySortingFn,
     },
     state: {
       columnFilters: columnFilterFns[0],

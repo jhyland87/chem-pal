@@ -70,8 +70,7 @@ declare module "@tanstack/react-table" {
     setFilterValueThrottled: (value: TValue) => void;
 
     /**
-     * Explicitly sets the visibility state of the column.
-     * Only works if the column is configured to be hideable.
+     * Sets the visibility of the column.
      * @param visible - Whether the column should be visible
      */
     setColumnVisibility: (visible: boolean) => void;
@@ -90,6 +89,20 @@ declare module "@tanstack/react-table" {
     /** CSS properties to apply to the column */
     style?: CSSProperties;
   }
+
+  // Extend the SortingFnOption type to include our custom sorting functions
+  type SortingFnOption<TData> =
+    | "alphanumeric"
+    | "alphanumericCaseSensitive"
+    | "basic"
+    | "datetime"
+    | "matchPercentage"
+    | "priceSortingFn"
+    | "quantitySortingFn"
+    | "quantityStringSortingFn"
+    | "weightSortingFn"
+    | "volumeSortingFn"
+    | SortingFn<TData>;
 }
 
 declare global {
