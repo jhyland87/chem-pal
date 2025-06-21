@@ -44,6 +44,7 @@ export default function SelectColumnFilter({ column }: FilterVariantInputProps) 
       newChecked.splice(currentIndex, 1);
     }
 
+    console.debug("handleOptionSelect", { optionValue, newChecked });
     setColumnFilterValue(newChecked);
     column.setFilterValueDebounced(newChecked);
   };
