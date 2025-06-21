@@ -3,6 +3,7 @@ import SupplierFactory from "@/suppliers/SupplierFactory";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
+import Paper from "@mui/material/Paper";
 import { ThemeProvider, useTheme } from "@mui/material/styles";
 import { startTransition, useActionState, useEffect, useState } from "react";
 import "./App.scss";
@@ -261,8 +262,10 @@ function App() {
               />
             )}
 
-            <AppBar position="static" sx={{ borderRadius: 1 }}>
-              <TabHeader page={appState.panel} setPage={handleSetPanel} />
+            <AppBar position="relative" sx={{ borderRadius: 0, position: "relative" }}>
+              <Paper sx={{ borderRadius: 0, position: "relative" }}>
+                <TabHeader page={appState.panel} setPage={handleSetPanel} />
+              </Paper>
               <TabPanel value={appState.panel} name="search-panel" index={0} dir={theme.direction}>
                 <SearchPanel />
               </TabPanel>

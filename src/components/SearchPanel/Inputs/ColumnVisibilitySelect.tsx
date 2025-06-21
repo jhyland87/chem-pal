@@ -1,7 +1,6 @@
 import {
   Checkbox,
   FormControl,
-  FormLabel,
   List,
   ListItem,
   ListItemButton,
@@ -89,12 +88,12 @@ export default function ColumnVisibilitySelect({
 
   return (
     <FormControl component="fieldset" variant="standard" sx={{ width: "100%" }}>
-      <FormLabel component="legend">Column Visibility</FormLabel>
+      {/*<FormLabel component="legend">Column Visibility</FormLabel>*/}
       <List
         sx={{
           width: "100%",
           maxWidth: 360,
-          bgcolor: "background.paper",
+          //bgcolor: "background.paper",
           paddingLeft: "20px",
           maxHeight: 200, // Limit height to make it scrollable
           overflow: "auto", // Enable scrolling

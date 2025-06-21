@@ -5,6 +5,8 @@ import MuiAccordionSummary from "@mui/material/AccordionSummary";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
 import FormControl, { FormControlProps } from "@mui/material/FormControl";
+import Input from "@mui/material/Input";
+import InputAdornment from "@mui/material/InputAdornment";
 import { styled } from "@mui/material/styles";
 import Tabs from "@mui/material/Tabs";
 
@@ -19,11 +21,20 @@ export const StyledFormControlSelector = styled(FormControl)<FormControlProps>((
   //transform: "translate(14px, 10px) scale(1)",
   "& .MuiInputBase-root": {
     maxHeight: "36.13px",
+    color: "#ffffff",
+  },
+  "& .MuiInputBase-input": {
+    color: "#ffffff",
+    "&::placeholder": {
+      color: "#ffffff",
+      opacity: 0.7,
+    },
   },
   "& .MuiInputLabel-root": {
     fontSize: 14,
     maxHeight: "36.13px",
     transform: "translate(14px, 10px) scale(1)",
+    color: "#ffffff",
   },
 
   "& .MuiInputBase-inputSizeSmall": {
@@ -34,14 +45,25 @@ export const StyledFormControlSelector = styled(FormControl)<FormControlProps>((
     {
       transform: "translate(13.5px, -8px) scale(0.75)",
       fontSize: 17,
+      color: "#ffffff",
     },
   "& .MuiInputLabel-root:not(.MuiInputLabel-shrink), & .MuiInputLabel-root:not(.Mui-focused), & .MuiInputLabel-root:not(.MuiFormLabel-filled":
     {
       //transform: "translate(14px, 12px) scale(1)",
       transform: "translate(14px, 10px) scale(1)",
       fontSize: 14,
+      color: "#ffffff",
       //marginTop: "-7px",
     },
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: "rgba(255, 255, 255, 0.5)",
+  },
+  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "#ffffff",
+  },
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: "#ffffff",
+  },
 }));
 
 // FilterMenu Styled Components
@@ -118,6 +140,7 @@ export const FilterMenuAccordionSummary = styled(MuiAccordionSummary)(({ theme }
   overflowY: "scroll",
   minWidth: "40px",
   backgroundColor: "rgba(0, 0, 0, .03)",
+  //color: "#ffffff",
   flexDirection: "row-reverse",
   "& .MuiAccordionSummary-expandIconWrapper.Mui-expanded": {
     transform: "rotate(90deg)",
@@ -126,14 +149,35 @@ export const FilterMenuAccordionSummary = styled(MuiAccordionSummary)(({ theme }
     margin: "1px 0px 1px 0px",
     marginLeft: theme.spacing(1),
   },
+
   ...theme.applyStyles("dark", {
     backgroundColor: "rgba(255, 255, 255, .05)",
   }),
 }));
 
 export const FilterMenuAccordionDetails = styled(MuiAccordionDetails)(() => ({
+  color: "#ffffff",
   padding: 0,
   borderTop: "1px solid rgba(0, 0, 0, .125)",
+  "& .MuiInputBase-input": {
+    color: "#ffffff",
+    "&::placeholder": {
+      color: "#ffffff",
+      opacity: 0.7,
+    },
+  },
+  "& .MuiInputLabel-root": {
+    color: "#ffffff",
+  },
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: "rgba(255, 255, 255, 0.5)",
+  },
+  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "#ffffff",
+  },
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: "#ffffff",
+  },
 }));
 
 // Styled ListItemIcon for consistent checkbox styling across filter components
@@ -144,6 +188,34 @@ export const FilterListItemIcon = styled("div")(() => ({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
+}));
+
+// Styled Input for the filter search in FilterMenu
+export const FilterMenuInput = styled(Input)(() => ({
+  color: "#ffffff",
+  "& .MuiInputBase-input": {
+    padding: "0px",
+    color: "#ffffff",
+    "&::placeholder": {
+      color: "#ffffff",
+      opacity: 0.7,
+    },
+  },
+  "& .MuiInput-underline:before": {
+    borderBottomColor: "rgba(255, 255, 255, 0.5)",
+  },
+  "& .MuiInput-underline:hover:before": {
+    borderBottomColor: "#ffffff",
+  },
+  "& .MuiInput-underline:after": {
+    borderBottomColor: "#ffffff",
+  },
+}));
+
+// Styled InputAdornment for the filter search icon
+export const FilterMenuInputAdornment = styled(InputAdornment)(() => ({
+  padding: 0,
+  color: "#ffffff",
 }));
 
 //MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined css-enqxln-MuiFormLabel-root-MuiInputLabel-root

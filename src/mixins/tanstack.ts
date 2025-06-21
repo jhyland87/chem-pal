@@ -1,5 +1,7 @@
 import { type Column, type StringOrTemplateHeader, type Table } from "@tanstack/react-table";
 
+type ColumnDefWithAccessor<TData> = { accessorKey?: keyof TData };
+
 /**
  * Gets the displayable header text for a column.
  * This is needed because the header text is not always a string.
@@ -57,9 +59,14 @@ export function getAllUniqueValues<TData>(
   column: Column<TData, unknown>,
   table: Table<TData>,
 ): (string | number)[] {
-  const uniqueValues = table.options.data.reduce<string[]>((accu: string[], row: TData) => {
-    const value = row[column.id as keyof TData] as string;
-    if (value !== undefined && accu.indexOf(value) === -1) accu.push(value);
+  const accessorKey = (column.columnDef as ColumnDefWithAccessor<TData>).accessorKey;
+  if (!accessorKey) return [];
+
+  const uniqueValues = table.options.data.reduce<(string | number)[]>((accu, row) => {
+    const value = row[accessorKey as keyof TData] as string | number;
+    if (value !== undefined && value !== null && !accu.includes(value)) {
+      accu.push(value);
+    }
     return accu;
   }, []);
 

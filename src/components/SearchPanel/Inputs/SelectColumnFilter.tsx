@@ -1,12 +1,4 @@
-import {
-  Checkbox,
-  FormControl,
-  FormLabel,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-} from "@mui/material";
+import { Checkbox, FormControl, List, ListItem, ListItemButton, ListItemText } from "@mui/material";
 import { useState } from "react";
 import { FilterListItemIcon } from "../../Styles";
 
@@ -54,12 +46,15 @@ export default function SelectColumnFilter({ column }: FilterVariantInputProps) 
 
   return (
     <FormControl component="fieldset" variant="standard" sx={{ width: "100%" }}>
-      <FormLabel component="legend">{columnHeader}</FormLabel>
+      {/*<ListSubheader component="legend" sx={{ padding: 0 }}>
+        {columnHeader}
+      </ListSubheader>
+      <FormLabel component="legend">{columnHeader}</FormLabel>*/}
       <List
         sx={{
           width: "100%",
           maxWidth: 360,
-          bgcolor: "background.paper",
+          //bgcolor: "background.paper",
           paddingLeft: "20px",
           maxHeight: 200, // Limit height to make it scrollable
           overflow: "auto", // Enable scrolling

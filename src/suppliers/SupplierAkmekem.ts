@@ -28,5 +28,6 @@ export default class SupplierAkmekem extends SupplierBaseAmazon implements ISupp
   protected termsFoundInListing: string[] = ["macklin", "akmekem"];
 
   // Extra parameters to add to the query. THis should select Akmekem as the "Seller" in the search.
-  protected extraParams: string = "rh=n:21585100011,p_6:A2U29M5MZ6QCNA";
+  //protected extraParams: string = "rh=n:21585100011,p_6:A2U29M5MZ6QCNA";
+  protected extraParams: string = "me=A2U29M5MZ6QCNA";
 }

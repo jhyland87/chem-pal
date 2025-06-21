@@ -4,9 +4,6 @@ import SupplierFactory from "@/suppliers/SupplierFactory";
 import Box from "@mui/material/Box";
 import Checkbox from "@mui/material/Checkbox";
 import FormControl from "@mui/material/FormControl";
-import FormLabel from "@mui/material/FormLabel";
-import Input from "@mui/material/Input";
-import InputAdornment from "@mui/material/InputAdornment";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
@@ -33,6 +30,8 @@ import {
   FilterMenuBorder,
   FilterMenuDrawer,
   FilterMenuDrawerContent,
+  FilterMenuInput,
+  FilterMenuInputAdornment,
   FilterMenuTabs,
   FilterMenuTabsContainer,
 } from "../Styles";
@@ -127,8 +126,8 @@ function SupplierSelection() {
 
   return (
     <FormControl component="fieldset" variant="standard">
-      <FormLabel component="legend">Supplier Selection</FormLabel>
-      <List sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper", paddingLeft: "1px" }}>
+      {/*<FormLabel component="legend">Supplier Selection</FormLabel>*/}
+      <List sx={{ width: "100%", maxWidth: 360, paddingLeft: "1px" }}>
         {SupplierFactory.supplierList().map((supplierName) => {
           const labelId = `checkbox-list-label-${supplierName}`;
 
@@ -216,20 +215,14 @@ function SearchResultFilters({ table }: { table: Table<Product> }) {
   return (
     <div>
       <FormControl variant="standard" sx={{ width: "100%", padding: "5px" }}>
-        <Input
+        <FilterMenuInput
           id="input-with-icon-adornment"
           placeholder="Filter results table.."
           size="small"
-          sx={{
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            "& .MuiInputBase-input": {
-              padding: "0px",
-            },
-          }}
           startAdornment={
-            <InputAdornment position="start" sx={{ padding: 0 }}>
+            <FilterMenuInputAdornment position="start">
               <SearchIcon />
-            </InputAdornment>
+            </FilterMenuInputAdornment>
           }
         />
       </FormControl>

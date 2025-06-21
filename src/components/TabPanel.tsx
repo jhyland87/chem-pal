@@ -28,7 +28,7 @@ export default function TabPanel(props: TabPanelProps) {
       {...other}
     >
       {value === index && (
-        <Box sx={{ p: 1 }}>
+        <Box sx={{ p: 0 }}>
           <Typography component={"span"} variant={"body2"}>
             {children}
           </Typography>

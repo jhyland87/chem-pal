@@ -14,7 +14,7 @@ export const lightTheme = createTheme({
       dark: "#4f636e",
     },
     background: {
-      default: "#f3f3f3",
+      default: "#f3f7fa",
       paper: "#ffffff",
     },
   },
@@ -24,6 +24,56 @@ export const lightTheme = createTheme({
   spacing: 8,
   components: {
     /* eslint-disable */
+    MuiAccordion: {
+      styleOverrides: {
+        root: {
+          borderBottom: "1px solid #404854",
+          color: "#f3f7fa",
+          backgroundColor: "#272e3d",
+          "&:hover": {
+            backgroundColor: "#515864",
+            transition: "none",
+          },
+        },
+      },
+    },
+
+    MuiAccordionDetails: {
+      styleOverrides: {
+        root: {
+          backgroundColor: "#272e3d",
+          color: "#f3f7fa",
+        },
+      },
+    },
+    MuiAccordionSummary: {
+      styleOverrides: {
+        root: {
+          borderBottom: "1px solid #404854",
+          color: "#f3f7fa",
+          backgroundColor: "#272e3d",
+          "&:hover": {
+            backgroundColor: "#272e3d",
+          },
+        },
+      },
+    },
+    MuiFormControl: {
+      styleOverrides: {
+        root: {
+          backgroundColor: "#19222b",
+          color: "#f3f7fa",
+        },
+      },
+    },
+    MuiDrawer: {
+      styleOverrides: {
+        paper: {
+          borderRadius: 4,
+          backgroundColor: "#29303b",
+        },
+      },
+    },
     MuiLink: {
       styleOverrides: {
         root: {
@@ -43,7 +93,9 @@ export const lightTheme = createTheme({
       },
       styleOverrides: {
         root: {
-          borderRadius: 4,
+          borderRadius: 2,
+          backgroundColor: "#19212a",
+          color: "#f3f7fa",
         },
       },
     },
@@ -196,7 +248,7 @@ export const lightThemeOld = createTheme({
     },
     background: {
       default: "#f3f3f3",
-      paper: "#ffffff",
+      paper: "#f3f7fa",
     },
   },
 });
