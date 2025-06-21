@@ -93,7 +93,17 @@ export default abstract class SupplierBaseAmazon
    * Terms found in the listing - An array of strings, at least one of which must be
    * foud in the initial listing on the product search results page.
    */
-  protected termsFoundInListing: string[] = [];
+  protected termsFoundInListing?: string[];
+
+  /**
+   * Extra parameters to add to the query.url
+   */
+  protected extraParams?: string;
+
+  /**
+   * Prefix to add to the query (ie: brand name or seller name)
+   */
+  protected readonly queryPrefix?: string;
 
   /**
    * Queries products from Amazon
@@ -108,7 +118,13 @@ export default abstract class SupplierBaseAmazon
     limit = 10;
     const queryPagination = async (paginationQuery: string, page: number = 1) => {
       const response = await this.httpPost({
-        path: `/s/query?k=${paginationQuery}&page=${page}`,
+        path: `/s/query?k=${paginationQuery}&page=${page}&${this.extraParams || ""}`,
+        // path: `/s/query`, //?i=industrial&k=${paginationQuery}&page=${page}`,
+        // params: {
+        //   i: "industrial",
+        //   k: paginationQuery,
+        //   page: page,
+        // },
         body: {
           /* eslint-disable */
           "page-content-type": "atf",
@@ -117,8 +133,9 @@ export default abstract class SupplierBaseAmazon
           /* eslint-enable */
         },
         headers: {
-          referrer: `${this.baseURL}/s?k=${paginationQuery}&ref=nb_sb_noss`,
+          //referrer: `${this.baseURL}/s?k=${urlencode(paginationQuery)}&ref=nb_sb_noss`,
           referrerPolicy: "strict-origin-when-cross-origin",
+          //redirect: "follow",
         },
       });
       if (!response) {
@@ -139,7 +156,7 @@ export default abstract class SupplierBaseAmazon
 
     const resultPages = await Promise.all(
       Array.from({ length: Math.ceil(limit / 16) }, (_, i) =>
-        queryPagination(`${this.supplierName}+${query}`, i + 1),
+        queryPagination(`${this.queryPrefix ?? this.supplierName}+${query}`, i + 1),
       ),
     );
 
@@ -180,32 +197,29 @@ export default abstract class SupplierBaseAmazon
    * @returns True if the listing meets the requirements, false otherwise
    */
   protected checkRequirementsForListing(result: HTMLElement): boolean {
-    if (this.termsFoundInListing.length === 0) {
-      return true;
-    }
+    const resultText = result.innerText.toLowerCase();
+    const searchList = [...(this.termsFoundInListing ?? []), this.supplierName];
 
-    if (!result.innerHTML.toLowerCase().includes(this.supplierName.toLowerCase())) {
-      console.log("This item does not contain the suppliers name anywhere, removing", {
-        result,
-        supplierName: this.supplierName,
-      });
-      return false;
-    }
-
-    return true;
-
-    const resultText = result.innerText;
-
-    return this.termsFoundInListing.some((term) => {
+    const matchedString = searchList.some((term) => {
       const found = resultText.toLowerCase().includes(term.toLowerCase());
-      if (!found) {
-        console.debug(`Term "${term}" not found in listing`, {
+      if (found) {
+        console.debug(`Term "${term}" FOUND in listing`, {
           term,
           resultText,
         });
       }
       return found;
     });
+
+    if (!matchedString) {
+      console.debug("Did not find any of the specified strings in the product listing", {
+        matchedString,
+        searchList,
+        resultText,
+      });
+    }
+
+    return matchedString;
   }
 
   /**
@@ -246,9 +260,9 @@ export default abstract class SupplierBaseAmazon
 
       // Check if the listing meets the requirements. Use innerText because many of the hyperlinks
       // will have the search term saved in the href attribute.
-      // if (!this.checkRequirementsForListing(documentBody)) {
-      //   return;
-      // }
+      if (!this.checkRequirementsForListing(documentBody)) {
+        return;
+      }
 
       if (!documentBody) {
         throw new Error("Document body not found");

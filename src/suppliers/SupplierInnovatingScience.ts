@@ -15,9 +15,15 @@ export default class SupplierInnovatingScience extends SupplierBaseAmazon implem
   // The country code of the supplier.
   public readonly country: CountryCode = "US";
 
+  // Prefix to add to the query (ie: brand name or seller name)
+  protected readonly queryPrefix: string = "Aldon";
+
   // The payment methods accepted by the supplier.
   public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
 
   // Terms that much be found in the listing (one of these terms must be found)
   protected termsFoundInListing: string[] = ["innovating science", "aldon"];
+
+  // This should select Innovating Science as the "Brand" in the search query
+  protected extraParams: string = "rh=p_123:157164";
 }

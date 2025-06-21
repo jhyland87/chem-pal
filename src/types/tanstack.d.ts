@@ -103,6 +103,21 @@ declare module "@tanstack/react-table" {
     | "weightSortingFn"
     | "volumeSortingFn"
     | SortingFn<TData>;
+
+  // Extend the FilterFnOption type to include our custom filter functions
+  type FilterFnOption<TData> =
+    | "includesString"
+    | "includesStringSensitive"
+    | "equalsString"
+    | "equalsStringSensitive"
+    | "arrIncludes"
+    | "arrIncludesAll"
+    | "arrIncludesSome"
+    | "between"
+    | "betweenInclusive"
+    | "inNumberRange"
+    | "multiSelect"
+    | FilterFn<TData>;
 }
 
 declare global {

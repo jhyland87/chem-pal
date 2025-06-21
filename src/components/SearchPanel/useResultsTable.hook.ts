@@ -28,6 +28,35 @@ import { useMemo, useState } from "react";
 import TableColumns from "./TableColumns";
 
 /**
+ * Custom filter function for multi-select columns.
+ * Implements OR logic - shows rows that match ANY of the selected filter values.
+ *
+ * @param row - The table row being filtered
+ * @param columnId - The ID of the column being filtered
+ * @param filterValue - Array of selected filter values
+ * @returns true if the row should be shown, false otherwise
+ */
+function multiSelectFilter(row: Row<Product>, columnId: string, filterValue: string[]): boolean {
+  // If no filter values are selected, show all rows
+  if (!Array.isArray(filterValue) || filterValue.length === 0) {
+    return true;
+  }
+
+  const cellValue = row.getValue(columnId);
+
+  // If cell value is null/undefined, don't show the row
+  if (cellValue == null) {
+    return false;
+  }
+
+  // Convert cell value to string for comparison
+  const cellValueStr = String(cellValue);
+
+  // Show row if cell value matches ANY of the selected filter values (OR logic)
+  return filterValue.includes(cellValueStr);
+}
+
+/**
  * Configuration options for the useResultsTable hook.
  */
 interface UseResultsTableProps {
@@ -125,7 +154,9 @@ export function useResultsTable({
     },
     columnResizeMode: "onChange",
     columns: TableColumns() as ColumnDef<Product, unknown>[],
-    filterFns: {},
+    filterFns: {
+      multiSelect: multiSelectFilter,
+    },
     sortingFns: {
       matchPercentage: matchPercentageSortingFn,
       priceSortingFn: priceSortingFn,

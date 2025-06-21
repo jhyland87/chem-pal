@@ -1,7 +1,12 @@
 import { omit } from "@/helpers/collectionUtils";
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
-import { ColumnDef, type CellContext, type SortingFnOption } from "@tanstack/react-table";
+import {
+  ColumnDef,
+  type CellContext,
+  type FilterFnOption,
+  type SortingFnOption,
+} from "@tanstack/react-table";
 import { hasFlag } from "country-flag-icons";
 import getUnicodeFlagIcon from "country-flag-icons/unicode";
 import { default as Link } from "../TabLink";
@@ -76,6 +81,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       header: () => <span>Supplier</span>,
       accessorKey: "supplier",
       cell: (info) => info.getValue(),
+      filterFn: "multiSelect" as FilterFnOption<Product>,
       meta: {
         filterVariant: "select",
         style: {
@@ -91,6 +97,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         const country = info.getValue() as string;
         return hasFlag(country) ? getUnicodeFlagIcon(country) : country;
       },
+      filterFn: "multiSelect" as FilterFnOption<Product>,
       meta: {
         filterVariant: "select",
         style: {
@@ -103,6 +110,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       header: () => <span>Shipping</span>,
       accessorKey: "supplierShipping",
       cell: (info) => info.getValue(),
+      filterFn: "multiSelect" as FilterFnOption<Product>,
       meta: {
         filterVariant: "select",
       },
@@ -180,6 +188,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       id: "uom",
       header: "Unit",
       accessorKey: "uom",
+      filterFn: "multiSelect" as FilterFnOption<Product>,
       meta: {
         filterVariant: "select",
         style: {

@@ -15,6 +15,12 @@ export default class SupplierHimedia extends SupplierBaseAmazon implements ISupp
   // The country code of the supplier.
   public readonly country: CountryCode = "IN";
 
+  // Prefix to add to the query (ie: brand name or seller name)
+  protected readonly queryPrefix: string = "himedia";
+
   // The payment methods accepted by the supplier.
   public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+
+  // This should select Himedia as the "Brand" in the search query
+  protected extraParams: string = "rh=p_123:569363";
 }
