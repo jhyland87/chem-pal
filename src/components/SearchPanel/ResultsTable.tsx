@@ -132,120 +132,118 @@ export default function ResultsTable({
         onClick={handleStopSearch}
       />
       <FilterMenu table={table} ref={filterRef} />
-      <Box sx={{ paddingRight: "32px" }}>
-        <Paper id="search-results-table-container">
-          <Box
-            className="search-input-container fullwidth"
-            component="form"
-            noValidate
-            autoComplete="off"
-          />
-          <div className="p-2" style={{ minHeight: "369px" }}>
-            <TableOptions table={table} onSearch={executeSearch} />
-            <div className="h-4" />
 
-            {/* Hidden measurement table for auto-sizing */}
-            <table {...getMeasurementTableProps()}>
-              <thead>
-                <tr>
-                  {table.getAllLeafColumns().map((col) => (
-                    <th key={col.id}>
-                      {typeof col.columnDef.header === "function"
-                        ? col.id
-                        : (col.columnDef.header ?? col.id)}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {table
-                  .getRowModel()
-                  .rows.slice(0, 5)
-                  .map((row) => (
-                    <tr key={row.id}>
-                      {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id}>
-                          {typeof cell.column.columnDef.cell === "function"
-                            ? cell.column.columnDef.cell(cell.getContext())
-                            : ""}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
+      <Paper id="search-results-table-container">
+        <Box
+          className="search-input-container fullwidth"
+          component="form"
+          noValidate
+          autoComplete="off"
+        />
+        <div className="p-2" style={{ minHeight: "369px" }}>
+          <TableOptions table={table} onSearch={executeSearch} />
+          <div className="h-4" />
 
-            {/* Enhanced error handling with React v19's built-in error state */}
-            {error && (
-              <div className="text-center p-4 text-red-500">
-                <p>Error: {error}</p>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="mt-2 px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
-                >
-                  Retry
-                </button>
+          {/* Hidden measurement table for auto-sizing */}
+          <table {...getMeasurementTableProps()}>
+            <thead>
+              <tr>
+                {table.getAllLeafColumns().map((col) => (
+                  <th key={col.id}>
+                    {typeof col.columnDef.header === "function"
+                      ? col.id
+                      : (col.columnDef.header ?? col.id)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {table
+                .getRowModel()
+                .rows.slice(0, 5)
+                .map((row) => (
+                  <tr key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id}>
+                        {typeof cell.column.columnDef.cell === "function"
+                          ? cell.column.columnDef.cell(cell.getContext())
+                          : ""}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+
+          {/* Enhanced error handling with React v19's built-in error state */}
+          {error && (
+            <div className="text-center p-4 text-red-500">
+              <p>Error: {error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="mt-2 px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
+          {Array.isArray(optimisticResults) && optimisticResults.length > 0 && (
+            <>
+              <table
+                className="search-results"
+                style={{
+                  ...columnSizeVars(),
+                }}
+              >
+                <TableHeader table={table} />
+                <tbody>
+                  {table.getRowModel().rows.map((row) => {
+                    return (
+                      <Fragment key={row.id}>
+                        <tr
+                          className={
+                            (row.original as Product & { isPending?: boolean }).isPending
+                              ? "opacity-70 animate-pulse"
+                              : ""
+                          }
+                          onContextMenu={(e) => handleContextMenu(e, row.original)}
+                          style={{ cursor: "context-menu" }}
+                        >
+                          {row.getVisibleCells().map((cell) => {
+                            return (
+                              <td
+                                key={cell.id}
+                                style={{
+                                  width: `${cell.column.getSize()}px`,
+                                  textAlign: "left",
+                                  ...(cell.column.columnDef.meta as { style?: CSSProperties })
+                                    ?.style,
+                                }}
+                              >
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      </Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <div className="h-2" />
+              <Pagination table={table} />
+            </>
+          )}
+
+          {((!isLoading && !Array.isArray(optimisticResults)) || optimisticResults.length === 0) &&
+            !error && (
+              <div className="text-center p-4">
+                <p>{statusLabel || "No results found. Try a different search term."}</p>
               </div>
             )}
-
-            {Array.isArray(optimisticResults) && optimisticResults.length > 0 && (
-              <>
-                <table
-                  className="search-results"
-                  style={{
-                    ...columnSizeVars(),
-                  }}
-                >
-                  <TableHeader table={table} />
-                  <tbody>
-                    {table.getRowModel().rows.map((row) => {
-                      return (
-                        <Fragment key={row.id}>
-                          <tr
-                            className={
-                              (row.original as Product & { isPending?: boolean }).isPending
-                                ? "opacity-70 animate-pulse"
-                                : ""
-                            }
-                            onContextMenu={(e) => handleContextMenu(e, row.original)}
-                            style={{ cursor: "context-menu" }}
-                          >
-                            {row.getVisibleCells().map((cell) => {
-                              return (
-                                <td
-                                  key={cell.id}
-                                  style={{
-                                    width: `${cell.column.getSize()}px`,
-                                    textAlign: "left",
-                                    ...(cell.column.columnDef.meta as { style?: CSSProperties })
-                                      ?.style,
-                                  }}
-                                >
-                                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        </Fragment>
-                      );
-                    })}
-                  </tbody>
-                </table>
-                <div className="h-2" />
-                <Pagination table={table} />
-              </>
-            )}
-
-            {((!isLoading && !Array.isArray(optimisticResults)) ||
-              optimisticResults.length === 0) &&
-              !error && (
-                <div className="text-center p-4">
-                  <p>{statusLabel || "No results found. Try a different search term."}</p>
-                </div>
-              )}
-          </div>
-        </Paper>
-      </Box>
+        </div>
+      </Paper>
 
       {/* Context Menu */}
       {contextMenu && (

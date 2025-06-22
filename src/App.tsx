@@ -1,9 +1,7 @@
 import { AppContext } from "@/context";
 import SupplierFactory from "@/suppliers/SupplierFactory";
-import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
-import Paper from "@mui/material/Paper";
 import { ThemeProvider, useTheme } from "@mui/material/styles";
 import { startTransition, useActionState, useEffect, useState } from "react";
 import "./App.scss";
@@ -13,6 +11,7 @@ import HistoryPanel from "./components/HistoryPanel";
 import SearchPanel from "./components/SearchPanel/SearchPanel";
 import SettingsPanel from "./components/SettingsPanel";
 import SpeedDialMenu from "./components/SpeedDialMenu";
+import { StyledAppBar, StyledAppBarPaper } from "./components/Styles";
 import SuppliersPanel from "./components/SuppliersPanel";
 import TabHeader from "./components/TabHeader";
 import TabPanel from "./components/TabPanel";
@@ -262,10 +261,10 @@ function App() {
               />
             )}
 
-            <AppBar position="relative" sx={{ borderRadius: 0, position: "relative" }}>
-              <Paper sx={{ borderRadius: 0, position: "relative" }}>
+            <StyledAppBar position="relative" elevation={0}>
+              <StyledAppBarPaper>
                 <TabHeader page={appState.panel} setPage={handleSetPanel} />
-              </Paper>
+              </StyledAppBarPaper>
               <TabPanel value={appState.panel} name="search-panel" index={0} dir={theme.direction}>
                 <SearchPanel />
               </TabPanel>
@@ -296,7 +295,7 @@ function App() {
               >
                 <SettingsPanel />
               </TabPanel>
-            </AppBar>
+            </StyledAppBar>
             <SpeedDialMenu speedDialVisibility={appState.speedDialVisibility} />
           </Box>
         </ThemeProvider>

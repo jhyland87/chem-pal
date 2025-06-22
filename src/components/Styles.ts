@@ -2,13 +2,33 @@
 import MuiAccordion from "@mui/material/Accordion";
 import MuiAccordionDetails from "@mui/material/AccordionDetails";
 import MuiAccordionSummary from "@mui/material/AccordionSummary";
+import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
 import FormControl, { FormControlProps } from "@mui/material/FormControl";
 import Input from "@mui/material/Input";
 import InputAdornment from "@mui/material/InputAdornment";
+import Paper from "@mui/material/Paper";
 import { styled } from "@mui/material/styles";
-import Tabs from "@mui/material/Tabs";
+
+// Navigation Styled Components
+export const StyledAppBar = styled(AppBar)(() => ({
+  borderRadius: 0,
+  position: "relative",
+  backgroundColor: "#ffffff",
+  color: "#000000",
+  boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2) !important",
+  borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+  zIndex: 10,
+}));
+
+export const StyledAppBarPaper = styled(Paper)(() => ({
+  borderRadius: 0,
+  position: "relative",
+  backgroundColor: "#ffffff",
+  boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2) !important",
+  borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+}));
 
 export const StyledFormControlSelector = styled(FormControl)<FormControlProps>(({ theme }) => ({
   color: theme.palette.primary.dark,
@@ -67,60 +87,81 @@ export const StyledFormControlSelector = styled(FormControl)<FormControlProps>((
 }));
 
 // FilterMenu Styled Components
-export const FilterMenuBorder = styled(Box)(({ theme }) => ({
+export const FilterMenuDrawerTriggers = styled(Box)(() => ({
   position: "fixed",
   right: 0,
-  top: 0,
-  bottom: 0,
-  width: "33px",
-  backgroundColor: theme.palette.background.paper,
-  borderLeft: "1px solid #e0e0e0",
-  zIndex: 1400,
-}));
-
-export const FilterMenuTabsContainer = styled(Box)(({ theme }) => ({
-  position: "fixed",
-  right: 0,
-  top: "17%",
-  transform: "translateY(-20%)",
+  top: "20%",
   zIndex: 1500,
-  backgroundColor: theme.palette.background.paper,
-  borderTop: "1px solid #e0e0e0",
-  borderBottom: "1px solid #e0e0e0",
+  display: "flex",
+  flexDirection: "column",
 }));
 
-export const FilterMenuTabs = styled(Tabs)(({ theme }) => ({
-  minWidth: "32px",
-  width: "32px",
-  backgroundColor: theme.palette.background.paper,
-  "& .MuiTab-root": {
-    minWidth: "33px",
-    minHeight: "60px",
-    padding: "8px 4px",
-    writingMode: "vertical-rl",
-    //textOrientation: "upright",
-    transform: "rotate(180deg)",
-    fontSize: "0.75rem",
-    backgroundColor: theme.palette.background.paper,
-    borderBottom: "1px solid #e0e0e0",
-    "&:last-child": {
-      borderBottom: "none",
-    },
-    "&.Mui-selected": {
-      backgroundColor: theme.palette.action.selected,
-    },
+export const FilterMenuDrawerTrigger = styled(Box)(() => ({
+  backgroundColor: "rgba(255, 255, 255, 0.9)",
+  color: "#333333",
+  padding: "8px",
+  marginBottom: "2px",
+  cursor: "pointer",
+  borderTopLeftRadius: "6px",
+  borderBottomLeftRadius: "6px",
+  border: "1px solid rgba(0, 0, 0, 0.08)",
+  borderRight: "none",
+  minHeight: "44px",
+  minWidth: "36px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  transition: "background-color 0.2s ease",
+  "& svg": {
+    fontSize: "1.1rem",
+    color: "inherit",
+    transition: "none",
+  },
+  "&:hover": {
+    backgroundColor: "rgba(255, 255, 255, 1)",
+  },
+  "&.active": {
+    backgroundColor: "rgba(200, 200, 200, 0.95)",
+    color: "#222222",
   },
 }));
 
 export const FilterMenuDrawer = styled(Drawer)(() => ({
+  zIndex: 1600,
   "& .MuiDrawer-paper": {
-    marginRight: "33px",
+    width: 220,
+    backgroundColor: "rgba(30, 30, 30, 0.95)",
+    backdropFilter: "blur(8px)",
+    borderLeft: "1px solid rgba(255, 255, 255, 0.1)",
+    margin: 0,
+    padding: 0,
+    right: 0,
+    top: 0,
+    position: "fixed",
+    zIndex: 1600,
+  },
+  "& .MuiBackdrop-root": {
+    backgroundColor: "transparent",
+  },
+  "& .MuiModal-root": {
+    position: "fixed",
+    right: 0,
+    zIndex: 1600,
   },
 }));
 
 export const FilterMenuDrawerContent = styled(Box)(() => ({
-  width: 200,
+  width: "100%",
   padding: "0px",
+  height: "100%",
+  display: "flex",
+  flexDirection: "column",
+}));
+
+export const FilterMenuTabContent = styled(Box)(() => ({
+  flex: 1,
+  overflow: "auto",
+  padding: "8px 0",
 }));
 
 export const FilterMenuAccordion = styled(MuiAccordion)(({ theme }) => ({

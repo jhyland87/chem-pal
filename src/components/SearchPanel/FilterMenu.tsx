@@ -1,16 +1,15 @@
 import ArrowForwardIosSharpIcon from "@/icons/ArrowDropDownIcon";
 import SearchIcon from "@/icons/SearchIcon";
 import SupplierFactory from "@/suppliers/SupplierFactory";
+import ManageSearchIcon from "@mui/icons-material/ManageSearch";
 import Box from "@mui/material/Box";
 import Checkbox from "@mui/material/Checkbox";
 import FormControl from "@mui/material/FormControl";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
-
 import ListItemText from "@mui/material/ListItemText";
 import type { SelectChangeEvent } from "@mui/material/Select";
-import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 import type { Table } from "@tanstack/react-table";
 import * as React from "react";
@@ -27,19 +26,20 @@ import {
   FilterMenuAccordion,
   FilterMenuAccordionDetails,
   FilterMenuAccordionSummary,
-  FilterMenuBorder,
   FilterMenuDrawer,
   FilterMenuDrawerContent,
+  FilterMenuDrawerTrigger,
+  FilterMenuDrawerTriggers,
   FilterMenuInput,
   FilterMenuInputAdornment,
-  FilterMenuTabs,
-  FilterMenuTabsContainer,
+  FilterMenuTabContent,
 } from "../Styles";
 import { useAppContext } from "./hooks/useContext";
 import ColumnVisibilitySelect from "./Inputs/ColumnVisibilitySelect";
 import RangeColumnFilter from "./Inputs/RangeColumnFilter";
 import SelectColumnFilter from "./Inputs/SelectColumnFilter";
 import TextColumnFilter from "./Inputs/TextColumnFilter";
+
 type FilterMenuRef = {
   toggleDrawer: (open: boolean) => void;
   getState: () => boolean;
@@ -96,14 +96,6 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-function a11yProps(index: number) {
-  return {
-    id: `vertical-tab-${index}`,
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    "aria-controls": `vertical-tabpanel-${index}`,
-  };
-}
-
 function SupplierSelection() {
   const appContext = useAppContext();
   const [selectedSuppliers, setSelectedSuppliers] = useState<string[]>(
@@ -134,7 +126,7 @@ function SupplierSelection() {
           return (
             <ListItem key={supplierName} disablePadding>
               <ListItemButton
-                sx={{ padding: "0px 0px 0px 20px" }}
+                sx={{ padding: "0px 0px 0px 15px" }}
                 role={undefined}
                 onClick={() => handleSupplierSelect(supplierName)}
                 dense
@@ -339,9 +331,17 @@ function FilterMenu(props: { table: Table<Product> }, ref: Ref<FilterMenuRef>) {
       toggleDrawer(false);
       setActiveTab(false); // Reset active tab when closing
     } else {
-      // Switch to the new tab and open drawer
-      setActiveTab(tabIndex);
-      if (!drawerState) {
+      // Always close any open drawer first, then open the new one
+      if (drawerState) {
+        toggleDrawer(false);
+        // Small delay to allow drawer to close before opening new one
+        setTimeout(() => {
+          setActiveTab(tabIndex);
+          toggleDrawer(true);
+        }, 150);
+      } else {
+        // If drawer is closed, simply open the selected tab
+        setActiveTab(tabIndex);
         toggleDrawer(true);
       }
     }
@@ -349,12 +349,14 @@ function FilterMenu(props: { table: Table<Product> }, ref: Ref<FilterMenuRef>) {
 
   const drawerContent = () => (
     <FilterMenuDrawerContent role="presentation">
-      <TabPanel value={activeTab} index={0} style={{ padding: 0 }}>
-        <SearchResultFilters table={table} />
-      </TabPanel>
-      <TabPanel value={activeTab} index={1}>
-        <SupplierSelection />
-      </TabPanel>
+      <FilterMenuTabContent>
+        <TabPanel value={activeTab} index={0} style={{ padding: 0 }}>
+          <SearchResultFilters table={table} />
+        </TabPanel>
+        <TabPanel value={activeTab} index={1}>
+          <SupplierSelection />
+        </TabPanel>
+      </FilterMenuTabContent>
     </FilterMenuDrawerContent>
   );
 
@@ -365,18 +367,25 @@ function FilterMenu(props: { table: Table<Product> }, ref: Ref<FilterMenuRef>) {
 
   return (
     <>
-      {/* Continuous right border/frame */}
-      <FilterMenuBorder />
+      {/* Drawer trigger buttons that stick out from the right side - hidden when drawer is open */}
+      {!drawerState && (
+        <FilterMenuDrawerTriggers>
+          <FilterMenuDrawerTrigger
+            onClick={() => handleTabClick(0)}
+            className={activeTab === 0 ? "active" : ""}
+          >
+            <ManageSearchIcon />
+          </FilterMenuDrawerTrigger>
+          <FilterMenuDrawerTrigger
+            onClick={() => handleTabClick(1)}
+            className={activeTab === 1 ? "active" : ""}
+          >
+            <SearchIcon />
+          </FilterMenuDrawerTrigger>
+        </FilterMenuDrawerTriggers>
+      )}
 
-      {/* Fixed tabs on the right side */}
-      <FilterMenuTabsContainer>
-        <FilterMenuTabs orientation="vertical" value={activeTab} aria-label="Filter menu tabs">
-          <Tab label="Filters" {...a11yProps(0)} onClick={() => handleTabClick(0)} />
-          <Tab label="Suppliers" {...a11yProps(1)} onClick={() => handleTabClick(1)} />
-        </FilterMenuTabs>
-      </FilterMenuTabsContainer>
-
-      {/* Drawer that slides out from the tabs */}
+      {/* Drawer that slides out */}
       <FilterMenuDrawer
         anchor="right"
         open={drawerState}
