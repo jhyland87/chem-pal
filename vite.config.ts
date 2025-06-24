@@ -46,13 +46,13 @@ export default ({ mode }: { mode: string }) => {
       },
     },
     optimizeDeps: {
-      exclude: [
-        "**/__tests__/**",
-        "**/*.test.ts",
-        "**/*.test.tsx",
-        "**/*.spec.ts",
-        "**/*.spec.tsx",
-      ],
+      // exclude: [
+      //   "**/__tests__/**",
+      //   "**/*.test.ts",
+      //   "**/*.test.tsx",
+      //   "**/*.spec.ts",
+      //   "**/*.spec.tsx",
+      // ],
     },
     plugins: [
       react(),
