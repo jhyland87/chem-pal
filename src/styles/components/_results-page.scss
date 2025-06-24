@@ -1,0 +1,92 @@
+@use '../variables' as vars;
+
+// Static layout styles for ResultsPage
+.results-page {
+  &__container {
+    height: 100%;
+    padding: vars.$spacing-lg;
+    overflow: auto;
+
+    &--dev {
+      min-height: 400px;
+    }
+
+    &--production {
+      min-height: 400px;
+    }
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: vars.$spacing-xl;
+    padding: 0 vars.$spacing-xs;
+  }
+
+  &__header-left {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-md;
+  }
+
+  &__search-field {
+    border-radius: vars.$border-radius-md;
+
+    &--dev {
+      min-width: 400px;
+    }
+
+    &--production {
+      min-width: 300px;
+    }
+  }
+
+  &__header-button {
+    transition: vars.$transition-standard;
+
+    &:hover {
+      transform: translateY(-1px);
+    }
+  }
+
+  &__title {
+    margin-bottom: vars.$spacing-lg;
+    font-weight: vars.$font-weight-medium;
+  }
+
+  &__table-container {
+    border-radius: vars.$border-radius-md;
+    overflow: hidden;
+  }
+
+  &__table-header-cell {
+    font-weight: vars.$font-weight-semibold;
+    cursor: pointer;
+    transition: vars.$transition-standard;
+  }
+
+  &__table-row {
+    transition: vars.$transition-standard;
+    cursor: pointer;
+  }
+
+  &__table-cell {
+    padding: vars.$table-cell-padding;
+  }
+
+  &__product-text {
+    font-weight: vars.$font-weight-medium;
+  }
+
+  &__price-text {
+    font-weight: vars.$font-weight-semibold;
+  }
+
+  &__description-text {
+    max-width: vars.$table-description-max-width;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Supplier Product Search",
+  "version": "1.0.0",
+  "description": "Search external supplier websites for specific products",
+  "permissions": [
+    "storage",
+    "tabs",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Supplier Product Search"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+} 

@@ -1,0 +1,75 @@
+// Main SCSS file - uses all component styles and global styles
+
+// All @use rules must come first
+@use 'variables' as vars;
+@use 'components/search-page';
+@use 'components/results-page';
+@use 'components/drawer-system';
+
+// Global styles
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  padding: 0;
+  text-align: center;
+  vertical-align: top;
+  min-width: 800px;
+  max-height: 400px;
+  min-height: 300px;
+}
+
+// Apply min dimensions only in development mode (browser preview)
+@media (min-width: 1px) {
+  body:not(.chrome-extension) #root {
+    min-width: vars.$dev-min-width;
+    min-height: vars.$dev-min-height;
+  }
+}
+
+// Utility classes
+.u-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.u-text-center {
+  text-align: center;
+}
+
+.u-full-width {
+  width: 100%;
+}
+
+.u-relative {
+  position: relative;
+}
+
+.u-absolute {
+  position: absolute;
+}
+
+// Responsive utilities
+@media (max-width: 768px) {
+  #root {
+    min-width: vars.$extension-width;
+    min-height: vars.$extension-height;
+  }
+}

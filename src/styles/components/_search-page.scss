@@ -1,0 +1,86 @@
+@use '../variables' as vars;
+
+// Static layout styles for SearchPage
+.search-page {
+  &__container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: vars.$spacing-xl;
+    position: relative;
+
+    // Development mode specific
+    &--dev {
+      min-height: 400px;
+    }
+
+    &--production {
+      min-height: 400px;
+    }
+  }
+
+  &__logo-container {
+    margin-bottom: vars.$spacing-xxl;
+    text-align: center;
+  }
+
+  &__logo {
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15))
+            drop-shadow(0 -1px 2px rgba(0, 0, 0, 0.05))
+            drop-shadow(-1px 0 2px rgba(0, 0, 0, 0.05))
+            drop-shadow(1px 0 2px rgba(0, 0, 0, 0.05));
+
+    &--dev {
+      max-width: vars.$logo-max-width-dev;
+    }
+
+    &--production {
+      max-width: vars.$logo-max-width-prod;
+    }
+  }
+
+  &__search-wrapper {
+    width: 100%;
+    position: relative;
+
+    &--dev {
+      max-width: 500px;
+    }
+
+    &--production {
+      max-width: 500px;
+    }
+  }
+
+  &__menu-button {
+    // Positioning handled by styled component
+  }
+
+  &__dev-badge {
+    position: fixed;
+    bottom: vars.$spacing-xs;
+    left: vars.$spacing-xs;
+    padding: vars.$spacing-xs vars.$spacing-sm;
+    border-radius: vars.$border-radius-sm;
+    font-size: vars.$font-size-xs;
+    font-weight: vars.$font-weight-medium;
+    z-index: 9999;
+  }
+
+  &__search-button {
+    margin-right: vars.$spacing-xs;
+    transition: vars.$transition-standard;
+
+    &:hover {
+      opacity: 0.9;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+    }
+  }
+}

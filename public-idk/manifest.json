@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "ChemPal",
+  "version": "1.0.0",
+  "description": "Chemical reagent search utility for hobby chemists",
+  "permissions": ["scripting", "sidePanel", "tabs", "activeTab", "storage", "nativeMessaging"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Supplier Product Search"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}

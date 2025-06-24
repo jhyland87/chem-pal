@@ -1,0 +1,11 @@
+// Chrome Extension specific styles - minimal and functional
+
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+// Remove all the template styling as it's not needed for our extension
+// The extension styling is handled by the component-specific SCSS files

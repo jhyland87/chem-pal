@@ -1,0 +1,19 @@
+{
+  "recommendations": [
+    "yoavbls.pretty-ts-errors",
+    "kuscamara.remove-unused-imports",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "henrynguyen5-vsc.vsc-nvm",
+    "psulek-solo.typedoc-live-preview",
+    "vitest.explorer",
+    "kduy5222.vscode-vitest-runner-pnpm",
+    "connorshea.vscode-test-explorer-status-bar",
+    "smarschollek.vscode-react-scripts-test-adapter"
+  ],
+  "unwantedRecommendations": [
+    "orta.vscode-jest",
+    "firsttris.vscode-jest-runner",
+    "kavod-io.vscode-jest-test-adapter"
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json",
+  "extends": ["typedoc/tsdoc.json"],
+  "tagDefinitions": [
+    {
+      "tagName": "@component",
+      "syntaxKind": "block"
+    },
+    {
+      "tagName": "@todo",
+      "syntaxKind": "block"
+    },
+    {
+      "tagName": "@typeguard",
+      "syntaxKind": "block"
+    },
+    {
+      "tagName": "@subcategory",
+      "syntaxKind": "block"
+    }
+  ],
+  "supportForTags": {
+    "@component": true,
+    "@example": true,
+    "@param": true,
+    "@returns": true,
+    "@throws": true,
+    "@todo": true,
+    "@module": true,
+    "@type": true,
+    "@abstract": true,
+    "@see": true,
+    "@category": true,
+    "@typeparam": true,
+    "@readonly": true,
+    "@defaultValue": true,
+    "@typeguard": true,
+    "@overload": true,
+    "@remarks": true,
+    "@packageDocumentation": true,
+    "@link": true,
+    "@mergeModuleWith": true,
+    "@group": true,
+    "@groupDescription": true,
+    "@showGroups": true,
+    "@summary": true,
+    "@internal": true,
+    "@includeCode": true,
+    "@subcategory": true,
+    "@class": true
+  }
+}

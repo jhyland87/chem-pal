@@ -1,0 +1,80 @@
+{
+  "extensionId": "lddcoaehibbaonkifojgaemjngpfpheg",
+  "locations": {
+    "US": {
+      "name": "United States",
+      "currency": "USD"
+    },
+    "CA": {
+      "name": "Canada",
+      "currency": "CAD"
+    },
+    "UK": {
+      "name": "United Kingdom",
+      "currency": "GBP"
+    },
+    "AU": {
+      "name": "Australia",
+      "currency": "AUD"
+    },
+    "NZ": {
+      "name": "New Zealand",
+      "currency": "NZD"
+    },
+    "JP": {
+      "name": "Japan",
+      "currency": "JPY"
+    },
+    "CN": {
+      "name": "China",
+      "currency": "CNY"
+    },
+    "IN": {
+      "name": "India",
+      "currency": "INR"
+    },
+    "RU": {
+      "name": "Russia",
+      "currency": "RUB"
+    },
+    "FIN": {
+      "name": "Finland",
+      "currency": "EUR"
+    },
+    "DE": {
+      "name": "Germany",
+      "currency": "EUR"
+    },
+    "OTHER": {
+      "name": "Other",
+      "currency": "USD"
+    }
+  },
+  "currencies": {
+    "USD": {
+      "symbol": "$"
+    },
+    "CAD": {
+      "symbol": "CA$"
+    },
+    "GBP": {
+      "symbol": "£"
+    },
+    "AUD": {
+      "symbol": "AU$"
+    },
+    "CNY": {
+      "symbol": "¥",
+      "aliases": ["CNY"]
+    },
+    "INR": {
+      "symbol": "₹"
+    },
+    "RUB": {
+      "symbol": "₽"
+    },
+    "EUR": {
+      "symbol": "€"
+    }
+  }
+}

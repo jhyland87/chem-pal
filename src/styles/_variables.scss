@@ -1,0 +1,60 @@
+// Static design variables that don't change based on theme
+
+// Layout dimensions
+$extension-width: 400px;
+$extension-height: 400px;
+$dev-min-width: 800px;
+$dev-min-height: 300px;
+
+// Spacing
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 12px;
+$spacing-lg: 16px;
+$spacing-xl: 20px;
+$spacing-xxl: 40px;
+
+// Border radius (static values)
+$border-radius-sm: 4px;
+$border-radius-md: 8px;
+$border-radius-lg: 12px;
+
+// Transitions (static durations and easing)
+$transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-standard: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+// Z-index layers
+$z-index-drawer: 1300;
+$z-index-modal: 1400;
+$z-index-tooltip: 1500;
+
+// Font weights
+$font-weight-light: 300;
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+
+// Font sizes
+$font-size-xs: 0.65rem;
+$font-size-sm: 0.875rem;
+$font-size-md: 1rem;
+$font-size-lg: 1.125rem;
+$font-size-xl: 1.25rem;
+$font-size-xxl: 2.5rem;
+
+// Line heights
+$line-height-tight: 1.2;
+$line-height-normal: 1.5;
+$line-height-relaxed: 1.6;
+
+// Component specific static values
+$search-input-padding: 16px 60px 16px 20px;
+$logo-max-width-dev: 90px;
+$logo-max-width-prod: 75px;
+$drawer-width: 400px;
+$drawer-width-dev: 450px;
+
+// Table specific
+$table-cell-padding: 12px 16px;
+$table-description-max-width: 200px;
