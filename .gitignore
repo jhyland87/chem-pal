@@ -1,1 +1,9 @@
 node_modules
+
+# Build directories
+build/
+dist/
+
+# Service worker compiled output
+build/sw/
+dist/sw/

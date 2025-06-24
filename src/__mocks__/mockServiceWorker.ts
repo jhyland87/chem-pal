@@ -1,3 +1,5 @@
+/// <reference lib="webworker" />
+
 /**
  * Mock Service Worker.
  * @see https://github.com/mswjs/msw
@@ -5,33 +7,48 @@
  * - Please do NOT serve this file on production.
  */
 
+// @ts-ignore: Service worker global scope has additional properties
+const swSelf = self as any;
+
+interface MessagePayload {
+  type: string;
+  payload?: any;
+  data?: any;
+}
+
+interface MockResponse {
+  status: number;
+  body: any;
+  [key: string]: any;
+}
+
 const PACKAGE_VERSION = "2.8.3";
 const INTEGRITY_CHECKSUM = "00729d72e3b82faf54ca8b9621dbb96f";
 const IS_MOCKED_RESPONSE = Symbol("isMockedResponse");
-const activeClientIds = new Set();
+const activeClientIds = new Set<string>();
 
-self.addEventListener("install", function () {
-  self.skipWaiting();
+swSelf.addEventListener("install", function () {
+  swSelf.skipWaiting();
 });
 
-self.addEventListener("activate", function (event) {
-  event.waitUntil(self.clients.claim());
+swSelf.addEventListener("activate", function (event: any) {
+  event.waitUntil(swSelf.clients.claim());
 });
 
-self.addEventListener("message", async function (event) {
-  const clientId = event.source.id;
+swSelf.addEventListener("message", async function (event: any) {
+  const clientId = (event.source as any)?.id;
 
-  if (!clientId || !self.clients) {
+  if (!clientId || !swSelf.clients) {
     return;
   }
 
-  const client = await self.clients.get(clientId);
+  const client = await swSelf.clients.get(clientId);
 
   if (!client) {
     return;
   }
 
-  const allClients = await self.clients.matchAll({
+  const allClients = await swSelf.clients.matchAll({
     type: "window",
   });
 
@@ -77,13 +94,13 @@ self.addEventListener("message", async function (event) {
     case "CLIENT_CLOSED": {
       activeClientIds.delete(clientId);
 
-      const remainingClients = allClients.filter((client) => {
+      const remainingClients = allClients.filter((client: Client) => {
         return client.id !== clientId;
       });
 
       // Unregister itself when there are no more clients
       if (remainingClients.length === 0) {
-        self.registration.unregister();
+        swSelf.registration.unregister();
       }
 
       break;
@@ -91,7 +108,7 @@ self.addEventListener("message", async function (event) {
   }
 });
 
-self.addEventListener("fetch", function (event) {
+swSelf.addEventListener("fetch", function (event: any) {
   const { request } = event;
 
   // Bypass navigation requests.
@@ -117,7 +134,7 @@ self.addEventListener("fetch", function (event) {
   event.respondWith(handleRequest(event, requestId));
 });
 
-async function handleRequest(event, requestId) {
+async function handleRequest(event: any, requestId: string): Promise<Response> {
   const client = await resolveMainClient(event);
   const response = await getResponse(event, client, requestId);
 
@@ -139,10 +156,10 @@ async function handleRequest(event, requestId) {
             status: responseClone.status,
             statusText: responseClone.statusText,
             body: responseClone.body,
-            headers: Object.fromEntries(responseClone.headers.entries()),
+            headers: Object.fromEntries((responseClone.headers as any).entries()),
           },
         },
-        [responseClone.body],
+        responseClone.body ? [responseClone.body] : [],
       );
     })();
   }
@@ -154,10 +171,10 @@ async function handleRequest(event, requestId) {
 // Client that issues a request doesn't necessarily equal the client
 // that registered the worker. It's with the latter the worker should
 // communicate with during the response resolving phase.
-async function resolveMainClient(event) {
-  const client = await self.clients.get(event.clientId);
+async function resolveMainClient(event: any): Promise<any> {
+  const client = await swSelf.clients.get(event.clientId);
 
-  if (activeClientIds.has(event.clientId)) {
+  if (client && activeClientIds.has(event.clientId)) {
     return client;
   }
 
@@ -165,30 +182,30 @@ async function resolveMainClient(event) {
     return client;
   }
 
-  const allClients = await self.clients.matchAll({
+  const allClients = await swSelf.clients.matchAll({
     type: "window",
   });
 
   return allClients
-    .filter((client) => {
+    .filter((client: any) => {
       // Get only those clients that are currently visible.
       return client.visibilityState === "visible";
     })
-    .find((client) => {
+    .find((client: any) => {
       // Find the client ID that's recorded in the
       // set of clients that have registered the worker.
       return activeClientIds.has(client.id);
     });
 }
 
-async function getResponse(event, client, requestId) {
+async function getResponse(event: any, client: any, requestId: string): Promise<Response> {
   const { request } = event;
 
   // Clone the request because it might've been already used
   // (i.e. its body has been read and sent to the client).
   const requestClone = request.clone();
 
-  function passthrough() {
+  function passthrough(): Promise<Response> {
     // Cast the request headers to a new Headers instance
     // so the headers can be manipulated with.
     const headers = new Headers(requestClone.headers);
@@ -198,8 +215,8 @@ async function getResponse(event, client, requestId) {
     // user-defined CORS policies.
     const acceptHeader = headers.get("accept");
     if (acceptHeader) {
-      const values = acceptHeader.split(",").map((value) => value.trim());
-      const filteredValues = values.filter((value) => value !== "msw/passthrough");
+      const values = acceptHeader.split(",").map((value: string) => value.trim());
+      const filteredValues = values.filter((value: string) => value !== "msw/passthrough");
 
       if (filteredValues.length > 0) {
         headers.set("accept", filteredValues.join(", "));
@@ -235,7 +252,7 @@ async function getResponse(event, client, requestId) {
         url: request.url,
         mode: request.mode,
         method: request.method,
-        headers: Object.fromEntries(request.headers.entries()),
+        headers: Object.fromEntries((request.headers as any).entries()),
         cache: request.cache,
         credentials: request.credentials,
         destination: request.destination,
@@ -263,11 +280,15 @@ async function getResponse(event, client, requestId) {
   return passthrough();
 }
 
-function sendToClient(client, message, transferrables = []) {
+function sendToClient(
+  client: any,
+  message: MessagePayload,
+  transferrables: any[] = [],
+): Promise<any> {
   return new Promise((resolve, reject) => {
     const channel = new MessageChannel();
 
-    channel.port1.onmessage = (event) => {
+    channel.port1.onmessage = (event: MessageEvent) => {
       if (event.data && event.data.error) {
         return reject(event.data.error);
       }
@@ -275,11 +296,11 @@ function sendToClient(client, message, transferrables = []) {
       resolve(event.data);
     };
 
-    client.postMessage(message, [channel.port2].concat(transferrables.filter(Boolean)));
+    client.postMessage(message, [channel.port2, ...transferrables]);
   });
 }
 
-async function respondWithMock(response) {
+async function respondWithMock(response: MockResponse): Promise<Response> {
   // Setting response status code to 0 is a no-op.
   // However, when responding with a "Response.error()", the produced Response
   // instance will have status code set to 0. Since it's not possible to create

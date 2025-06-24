@@ -15,11 +15,11 @@ export default ({ mode }: { mode: string }) => {
       dest: ".",
     },
     {
-      src: "src/service-worker.js",
+      src: "dist/sw/service-worker.js",
       dest: ".",
     },
     {
-      src: "src/__mocks__/mockServiceWorker.js",
+      src: "dist/sw/__mocks__/mockServiceWorker.js",
       dest: "public",
     },
   ];
