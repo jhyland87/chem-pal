@@ -9,6 +9,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import FavoritesPanel from "./components/FavoritesPanel";
 import HistoryPanel from "./components/HistoryPanel";
 import SearchPanel from "./components/SearchPanel/SearchPanel";
+import SearchPanelHome from "./components/SearchPanelHome";
 import SettingsPanel from "./components/SettingsPanel";
 import SpeedDialMenu from "./components/SpeedDialMenu";
 import { StyledAppBar, StyledAppBarPaper } from "./components/Styles";
@@ -237,6 +238,7 @@ function App() {
     setUserSettings: handleSetUserSettings,
     searchResults, // This fixes the missing property linter error
     setSearchResults, // Expose setter for child components to use
+    setPanel: handleSetPanel, // Add setPanel to context for tab switching
   };
 
   return (
@@ -260,18 +262,20 @@ function App() {
                 }}
               />
             )}
-
             <StyledAppBar position="relative" elevation={0}>
               <StyledAppBarPaper>
                 <TabHeader page={appState.panel} setPage={handleSetPanel} />
               </StyledAppBarPaper>
-              <TabPanel value={appState.panel} name="search-panel" index={0} dir={theme.direction}>
+              <TabPanel value={appState.panel} name="home-panel" index={0} dir={theme.direction}>
+                <SearchPanelHome />
+              </TabPanel>
+              <TabPanel value={appState.panel} name="search-panel" index={1} dir={theme.direction}>
                 <SearchPanel />
               </TabPanel>
               <TabPanel
                 value={appState.panel}
                 name="suppliers-panel"
-                index={1}
+                index={2}
                 dir={theme.direction}
               >
                 <SuppliersPanel />
@@ -279,18 +283,18 @@ function App() {
               <TabPanel
                 value={appState.panel}
                 name="favorites-panel"
-                index={2}
+                index={3}
                 dir={theme.direction}
               >
                 <FavoritesPanel />
               </TabPanel>
-              <TabPanel value={appState.panel} name="history-panel" index={3} dir={theme.direction}>
+              <TabPanel value={appState.panel} name="history-panel" index={4} dir={theme.direction}>
                 <HistoryPanel />
               </TabPanel>
               <TabPanel
                 value={appState.panel}
                 name="settings-panel"
-                index={4}
+                index={5}
                 dir={theme.direction}
               >
                 <SettingsPanel />

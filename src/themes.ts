@@ -311,3 +311,17 @@ export const blueTheme = createTheme({
   },
   /* eslint-enable */
 });
+
+// Custom useTheme hook for compatibility with chem-pal components
+export function useTheme() {
+  // This is a placeholder. You may want to connect this to your actual theme context or logic.
+  // For now, it returns 'light' mode and a no-op toggleTheme.
+  return {
+    mode: "light",
+    toggleTheme: () => {},
+    currentPalette: {
+      text: "#000",
+      notificationBg: "#fff",
+    },
+  };
+}

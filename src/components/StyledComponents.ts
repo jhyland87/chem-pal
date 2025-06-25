@@ -434,3 +434,66 @@ export const SubRowTableRow = styled(StyledTableRow, {
 })<{ isSubRow: boolean }>(({ theme, isSubRow }) => ({
   backgroundColor: isSubRow ? theme.palette.action.hover : "transparent",
 }));
+
+// === SEARCH FORM COMPONENTS ===
+
+export const SearchFormContainer = styled(Box)(() => ({
+  position: "relative",
+  width: "100%",
+  maxWidth: 600,
+}));
+
+export const SearchFormPaper = styled("form")(({ theme }) => ({
+  padding: "2px 4px",
+  display: "flex",
+  alignItems: "center",
+  width: "100%",
+  boxShadow: theme.shadows[2],
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: theme.spacing(1),
+}));
+
+export const SearchFormInput = styled(TextField)(({ theme }) => ({
+  marginLeft: theme.spacing(2),
+  flex: 1,
+}));
+
+export const SearchFormIconButton = styled(IconButton)(() => ({
+  padding: "10px",
+}));
+
+export const SearchFormDivider = styled(Box)(({ theme }) => ({
+  height: 28,
+  margin: theme.spacing(0.5),
+  borderLeft: `1px solid ${theme.palette.divider}`,
+}));
+
+// === SEARCH PAGE COMPONENTS ===
+
+export const SearchPageSettingsButton = styled(IconButton)(() => ({
+  position: "absolute",
+  top: 8,
+  right: 8,
+  zIndex: 1000,
+}));
+
+export const SearchPageThemeSwitcher = styled(Box)(() => ({
+  position: "fixed",
+  bottom: 16,
+  right: 16,
+  zIndex: 1000,
+}));
+
+// === THEME SWITCHER COMPONENTS ===
+
+export const ThemeSwitcherButton = styled(IconButton, {
+  shouldForwardProp: (prop) => prop !== "currentPalette" && prop !== "mode",
+})<{ currentPalette: { text: string; notificationBg: string }; mode: string }>(
+  ({ currentPalette, mode }) => ({
+    color: currentPalette.text,
+    "&:hover": {
+      backgroundColor:
+        mode === "light" ? `${currentPalette.notificationBg}15` : `${currentPalette.text}15`,
+    },
+  }),
+);

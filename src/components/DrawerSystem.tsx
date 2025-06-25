@@ -1,21 +1,7 @@
-import {
-  Accordion,
-  Box,
-  Button,
-  Checkbox,
-  Chip,
-  Drawer,
-  FormControlLabel,
-  Slider,
-  Switch,
-  Tab,
-  Tabs,
-  Typography,
-} from "@mui/material";
+import { Accordion, Box, Checkbox, Chip, Drawer, Tab, Tabs, Typography } from "@mui/material";
 import React, { useState } from "react";
 
 import {
-  Clear as ClearIcon,
   ExpandMore as ExpandMoreIcon,
   Search as SearchIcon,
   Settings as SettingsIcon,
@@ -24,7 +10,6 @@ import {
 import {
   ChipContainer,
   DrawerContainer,
-  SettingsTypography,
   StyledAccordionDetails,
   StyledAccordionDetailsNoPadding,
   StyledAccordionSummary,
@@ -32,6 +17,8 @@ import {
   SupplierList,
   SupplierListItem,
 } from "./StyledComponents";
+
+import SettingsPanelFull from "./SettingsPanelFull";
 
 interface DrawerSystemProps {
   isOpen: boolean;
@@ -60,73 +47,6 @@ function TabPanel(props: TabPanelProps) {
     </div>
   );
 }
-
-const SettingsPanel: React.FC<{
-  expandedAccordion: string | false;
-  onAccordionChange: (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => void;
-}> = ({ expandedAccordion, onAccordionChange }) => {
-  const [notifications, setNotifications] = useState(true);
-  const [autoSearch, setAutoSearch] = useState(false);
-  const [searchDelay, setSearchDelay] = useState(500);
-
-  return (
-    <Box>
-      <Accordion
-        expanded={expandedAccordion === "settings-general"}
-        onChange={onAccordionChange("settings-general")}
-      >
-        <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>General Settings</Typography>
-        </StyledAccordionSummary>
-        <StyledAccordionDetails>
-          <FormControlLabel
-            control={
-              <Switch
-                size="small"
-                checked={notifications}
-                onChange={(e) => setNotifications(e.target.checked)}
-              />
-            }
-            label="Enable notifications"
-          />
-          <FormControlLabel
-            control={
-              <Switch
-                size="small"
-                checked={autoSearch}
-                onChange={(e) => setAutoSearch(e.target.checked)}
-              />
-            }
-            label="Auto-search suggestions"
-          />
-        </StyledAccordionDetails>
-      </Accordion>
-
-      <Accordion
-        expanded={expandedAccordion === "settings-search"}
-        onChange={onAccordionChange("settings-search")}
-      >
-        <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>Search Preferences</Typography>
-        </StyledAccordionSummary>
-        <StyledAccordionDetails>
-          <SettingsTypography variant="body2">Search delay (ms): {searchDelay}</SettingsTypography>
-          <Slider
-            size="small"
-            value={searchDelay}
-            onChange={(_event, newValue) => setSearchDelay(newValue as number)}
-            min={100}
-            max={2000}
-            step={100}
-          />
-          <Button size="small" startIcon={<ClearIcon />} variant="outlined">
-            Clear All Data
-          </Button>
-        </StyledAccordionDetails>
-      </Accordion>
-    </Box>
-  );
-};
 
 const SearchPanel: React.FC<{
   expandedAccordion: string | false;
@@ -256,10 +176,7 @@ const DrawerSystem: React.FC<DrawerSystemProps> = ({ isOpen, onClose }) => {
         </TabPanel>
 
         <TabPanel value={selectedTab} index={1}>
-          <SettingsPanel
-            expandedAccordion={expandedAccordion}
-            onAccordionChange={handleAccordionChange}
-          />
+          <SettingsPanelFull />
         </TabPanel>
       </DrawerContainer>
     </Drawer>
