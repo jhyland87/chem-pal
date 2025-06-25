@@ -72,7 +72,6 @@ export function useSearch() {
       if (!query.trim()) {
         return;
       }
-      debugger;
 
       // Use startTransition for better performance during search
       startTransition(() => {

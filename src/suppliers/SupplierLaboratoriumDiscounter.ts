@@ -241,7 +241,11 @@ export default class SupplierLaboratoriumDiscounter
     return mapDefined(data, (product) => {
       const productBuilder = new ProductBuilder(this.baseURL);
 
-      const quantity = firstMap(parseQuantity, [product.title, product.description]);
+      const quantity = firstMap(parseQuantity, [
+        product.title,
+        product.description,
+        product.variant,
+      ]);
 
       if (isQuantityObject(quantity)) {
         productBuilder.setQuantity(quantity.quantity, quantity.uom);
@@ -288,12 +292,15 @@ export default class SupplierLaboratoriumDiscounter
         if (typeof productData.variants === "object" && productData.variants !== null) {
           for (const variant of Object.values(productData.variants) as VariantObject[]) {
             if (variant.active === false) continue;
+            const quantity = parseQuantity(variant.title);
             builder.addVariant({
               id: variant.id,
               uuid: variant.code,
               sku: variant.sku,
               title: variant.title,
               price: variant.price.price,
+              quantity: quantity?.quantity,
+              uom: quantity?.uom,
               availability: variant.stock
                 ? typeof variant.stock === "object"
                   ? ((stock) => {
