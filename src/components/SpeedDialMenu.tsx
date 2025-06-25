@@ -7,6 +7,7 @@ import SpeedDial from "@mui/material/SpeedDial";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
 import SpeedDialIcon from "@mui/material/SpeedDialIcon";
 import { MouseEvent, useState } from "react";
+import { useTheme } from "../themes";
 import AboutModal from "./AboutModal";
 import HelpTooltip from "./HelpTooltip";
 
@@ -26,6 +27,7 @@ import HelpTooltip from "./HelpTooltip";
  */
 export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProps) {
   const appContext = useAppContext();
+  const { toggleTheme } = useTheme();
   const [aboutOpen, setAboutOpen] = useState(false);
 
   /**
@@ -55,18 +57,13 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
   };
 
   /**
-   * Handles toggling between light and dark themes.
-   * Updates the application settings with the new theme.
+   * Handles toggling between light and dark themes using the new theme system.
    *
    * @param event - The click event
    */
   const handleToggleTheme = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
-
-    appContext.setUserSettings({
-      ...appContext.userSettings,
-      theme: appContext.userSettings.theme === "light" ? "dark" : "light",
-    });
+    toggleTheme();
   };
 
   /**

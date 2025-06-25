@@ -2,7 +2,6 @@ import { AppContext } from "@/context";
 import SupplierFactory from "@/suppliers/SupplierFactory";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
-import { ThemeProvider } from "@mui/material/styles";
 import { startTransition, useActionState, useEffect, useState } from "react";
 import "./App.scss";
 import DrawerSystem from "./components/DrawerSystem";
@@ -10,9 +9,9 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import SearchPanel from "./components/SearchPanel/SearchPanel";
 import SearchPanelHome from "./components/SearchPanelHome";
 import SpeedDialMenu from "./components/SpeedDialMenu";
+import { ThemeProvider } from "./components/ThemeProvider";
 import { getCurrencyCodeFromLocation, getCurrencyRate } from "./helpers/currency";
 import { getUserCountry } from "./helpers/utils";
-import { darkTheme, lightTheme } from "./themes";
 
 /**
  * Enhanced App component using React v19 features for improved performance
@@ -59,7 +58,6 @@ import { darkTheme, lightTheme } from "./themes";
 interface AppState {
   userSettings: UserSettings;
   panel: number;
-  currentTheme: typeof lightTheme | typeof darkTheme;
   speedDialVisibility: boolean;
   drawerTab: number;
 }
@@ -88,7 +86,6 @@ const initialAppState: AppState = {
     columnFilterConfig: {},
   },
   panel: 0,
-  currentTheme: lightTheme,
   speedDialVisibility: false,
   drawerTab: -1,
 };
@@ -131,13 +128,9 @@ function App() {
               });
           });
 
-          // Update theme immediately
-          const newTheme = newSettings.theme === "light" ? lightTheme : darkTheme;
-
           return {
             ...currentState,
             userSettings: newSettings,
-            currentTheme: newTheme,
           };
         }
 
@@ -193,8 +186,6 @@ function App() {
 
         if (localData.userSettings) {
           loadedData.userSettings = { ...localData.userSettings };
-          loadedData.currentTheme =
-            localData.userSettings.theme === "light" ? lightTheme : darkTheme;
         }
 
         if (Object.keys(loadedData).length > 0) {
@@ -249,8 +240,8 @@ function App() {
 
   return (
     <ErrorBoundary fallback={<p>Something went wrong</p>}>
-      <AppContext.Provider value={appContextValue}>
-        <ThemeProvider theme={appState.currentTheme}>
+      <ThemeProvider>
+        <AppContext.Provider value={appContextValue}>
           <CssBaseline />
           <Box sx={{ bgcolor: "background.default", width: "100%" }}>
             {/* Show loading indicator when settings are updating */}
@@ -278,8 +269,8 @@ function App() {
             <DrawerSystem />
             <SpeedDialMenu speedDialVisibility={appState.speedDialVisibility} />
           </Box>
-        </ThemeProvider>
-      </AppContext.Provider>
+        </AppContext.Provider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

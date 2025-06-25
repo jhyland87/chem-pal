@@ -14,27 +14,25 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { designTokens, isDevelopment } from "../themes";
+import { darkPalette, designTokens, lightPalette } from "../themes";
 
 // === APP COMPONENTS ===
 
 // Main app container with dynamic sizing and background
 export const AppContainer = styled(Box)(({ theme }) => ({
-  width: isDevelopment ? "100vw" : "100%",
+  width: process.env.NODE_ENV !== "production" ? "100vw" : "100%",
   backgroundColor: theme.palette.background.default,
   position: "relative",
   overflow: "hidden",
-  ...(isDevelopment && {
-    minHeight: "400px",
-    display: "flex",
-    flexDirection: "column",
-  }),
+  minHeight: "100vh",
+  display: "flex",
+  flexDirection: "column",
 }));
 
 // Main content area
 export const MainContent = styled(Box)(() => ({
   height: "100%",
-  ...(isDevelopment && {
+  ...(process.env.NODE_ENV !== "production" && {
     flex: 1,
   }),
 }));
@@ -43,7 +41,15 @@ export const MainContent = styled(Box)(() => ({
 
 // Main container with dynamic background gradient
 export const SearchContainer = styled(Box)(({ theme }) => ({
-  background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 100%)`,
+  flex: 1,
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: theme.spacing(2),
+  width: process.env.NODE_ENV !== "production" ? "100vw" : "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
 }));
 
 // Search field with dynamic theming and colors
@@ -134,18 +140,21 @@ export const MenuButton = styled(IconButton)(({ theme }) => ({
 
 export const ResultsContainer = styled(Box)(({ theme }) => ({
   height: "100%",
-  minHeight: isDevelopment ? "400px" : "400px",
+  minHeight: process.env.NODE_ENV !== "production" ? "400px" : "400px",
   backgroundColor: theme.palette.background.default,
   padding: "12px",
-  overflow: "auto",
+  display: "flex",
+  flexDirection: "column",
+  overflow: "hidden",
 }));
 
-export const ResultsHeader = styled(Box)(() => ({
+export const ResultsHeader = styled(Box)(({ theme }) => ({
   display: "flex",
-  alignItems: "center",
   justifyContent: "space-between",
-  marginBottom: "12px",
-  padding: "0 2px",
+  alignItems: "center",
+  padding: theme.spacing(1, 0),
+  marginBottom: theme.spacing(2),
+  borderBottom: `1px solid ${theme.palette.divider}`,
 }));
 
 export const HeaderLeft = styled(Box)(() => ({
@@ -155,7 +164,7 @@ export const HeaderLeft = styled(Box)(() => ({
 }));
 
 export const HeaderSearchField = styled(TextField)(({ theme }) => ({
-  minWidth: isDevelopment ? "400px" : "300px",
+  minWidth: process.env.NODE_ENV !== "production" ? "400px" : "300px",
   backgroundColor: theme.palette.background.paper,
   borderRadius: designTokens.borderRadius.medium,
   boxShadow: designTokens.shadows.low,
@@ -488,7 +497,7 @@ export const SearchPageThemeSwitcher = styled(Box)(() => ({
 
 export const ThemeSwitcherButton = styled(IconButton, {
   shouldForwardProp: (prop) => prop !== "currentPalette" && prop !== "mode",
-})<{ currentPalette: { text: string; notificationBg: string }; mode: string }>(
+})<{ currentPalette: typeof lightPalette | typeof darkPalette; mode: string }>(
   ({ currentPalette, mode }) => ({
     color: currentPalette.text,
     "&:hover": {
