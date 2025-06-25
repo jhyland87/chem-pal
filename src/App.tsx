@@ -1,18 +1,29 @@
-import { useState } from 'react';
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import SearchPage from './components/SearchPage';
-import ResultsPage from './components/ResultsPage';
-import DrawerSystem from './components/DrawerSystem';
-import ErrorBoundary from './components/ErrorBoundary';
-import { AppContainer, MainContent } from './components/StyledComponents';
-import { generateRandomProductData, type ProductResult } from './utils/mockData';
-import './styles/main.scss';
-import './App.scss';
+import { useState } from "react";
+import { Route, HashRouter as Router, Routes } from "react-router-dom";
+import DrawerSystem from "./components/DrawerSystem";
+import ErrorBoundary from "./components/ErrorBoundary";
+import ResultsPage from "./components/ResultsPage";
+import SearchPage from "./components/SearchPage";
+import { AppContainer, MainContent } from "./components/StyledComponents";
+import { createPropertySetter, useSmartStorage } from "./useSmartStorage";
+import { generateRandomProductData, type ProductResult } from "./utils/mockData";
+
+import "./App.scss";
+import "./styles/main.scss";
+
+const defaultAppState = {
+  theme: "light" as "light" | "dark",
+  drawerState: false,
+};
 
 function App() {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ProductResult[]>([]);
+
+  const [appState, setAppState] = useSmartStorage("appState", defaultAppState, { area: "local" });
+
+  // Create setters for individual properties
+  const setDrawerState = createPropertySetter(setAppState, "drawerState");
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -32,7 +43,7 @@ function App() {
                 element={
                   <SearchPage
                     onSearch={handleSearch}
-                    onDrawerToggle={() => setIsDrawerOpen(!isDrawerOpen)}
+                    onDrawerToggle={() => setDrawerState(!appState.drawerState)}
                   />
                 }
               />
@@ -43,16 +54,13 @@ function App() {
                     results={searchResults}
                     searchQuery={searchQuery}
                     onNewSearch={handleSearch}
-                    onDrawerToggle={() => setIsDrawerOpen(!isDrawerOpen)}
+                    onDrawerToggle={() => setDrawerState(!appState.drawerState)}
                   />
                 }
               />
             </Routes>
           </MainContent>
-          <DrawerSystem
-            isOpen={isDrawerOpen}
-            onClose={() => setIsDrawerOpen(false)}
-          />
+          <DrawerSystem isOpen={appState.drawerState} onClose={() => setDrawerState(false)} />
         </AppContainer>
       </Router>
     </ErrorBoundary>

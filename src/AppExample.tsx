@@ -1,4 +1,4 @@
-import { useSmartStorage } from "./useSmartStorage";
+import { createInputSetter, useSmartStorage } from "./useSmartStorage";
 
 const defaultUser = {
   username: "",
@@ -8,6 +8,10 @@ const defaultUser = {
 export default function AppExample() {
   // Persist user data in storage (local or chrome)
   const [user, setUser, resetUser] = useSmartStorage("userProfile", defaultUser, { area: "local" });
+
+  // Create setters for individual properties
+  const setUsername = createInputSetter(setUser, "username");
+  const setTheme = createInputSetter(setUser, "theme");
 
   return (
     <div
@@ -26,7 +30,7 @@ export default function AppExample() {
           <input
             type="text"
             value={user.username}
-            onChange={(e) => setUser((u) => ({ ...u, username: e.target.value }))}
+            onChange={setUsername}
             style={{ marginLeft: 8 }}
           />
         </label>
@@ -34,11 +38,7 @@ export default function AppExample() {
       <div style={{ marginBottom: 16 }}>
         <label>
           Theme:
-          <select
-            value={user.theme}
-            onChange={(e) => setUser((u) => ({ ...u, theme: e.target.value as "light" | "dark" }))}
-            style={{ marginLeft: 8 }}
-          >
+          <select value={user.theme} onChange={setTheme} style={{ marginLeft: 8 }}>
             <option value="light">Light</option>
             <option value="dark">Dark</option>
           </select>
