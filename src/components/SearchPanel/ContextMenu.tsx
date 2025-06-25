@@ -61,6 +61,7 @@ interface ContextMenuPosition {
  * ```
  */
 export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps) {
+  if (!product) return null;
   const menuRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<ContextMenuPosition>({ x, y });
 

@@ -1,75 +1,89 @@
-import Box from "@mui/material/Box";
-import Paper from "@mui/material/Paper";
+import {
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
+  FilterList as FilterListIcon,
+  FirstPage as FirstPageIcon,
+  LastPage as LastPageIcon,
+  Search as SearchIcon,
+  Settings as SettingsIcon,
+  ViewColumn as ViewColumnIcon,
+} from "@mui/icons-material";
+import {
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  IconButton,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Table,
+  TableBody,
+  TableHead,
+  TableRow,
+  Typography,
+} from "@mui/material";
 import { Column, flexRender } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
-import { Fragment, ReactElement, useEffect, useRef, type CSSProperties } from "react";
+import React, { ReactElement, useEffect, useState } from "react";
+
+import DrawerSystem from "../DrawerSystem";
 import LoadingBackdrop from "../LoadingBackdrop";
+import {
+  ColoredIconButton,
+  ColumnMenuItemContainer,
+  EmptyStateCell,
+  FilterIconButton,
+  FilterTableCell,
+  FilterTextField,
+  HeaderLeft,
+  HeaderRight,
+  HeaderSearchField,
+  NavigationContainer,
+  PageSizeContainer,
+  PageSizeSelect,
+  PaginationContainer,
+  ResultsContainer,
+  ResultsHeader,
+  ResultsPaper,
+  ResultsTitle,
+  SortableTableHeaderCell,
+  StyledTableCell,
+  StyledTableRow,
+  SubRowTableRow,
+} from "../StyledComponents";
 import ContextMenu from "./ContextMenu";
-import FilterMenu from "./FilterMenu";
 import { useAppContext } from "./hooks/useContext";
 import { useSearch } from "./hooks/useSearch";
-import Pagination from "./Pagination";
-import "./ResultsTable.scss";
-import TableHeader from "./TableHeader";
-import TableOptions from "./TableOptions";
 import { useAutoColumnSizing } from "./useAutoColumnSizing.hook";
 import { useContextMenu } from "./useContextMenu.hook";
 import { useResultsTable } from "./useResultsTable.hook";
 
+interface ResultsTableProps {
+  getRowCanExpand: (row: any) => boolean;
+  columnFilterFns: any;
+}
+
 /**
- * Enhanced ResultsTable component using React v19 hooks for improved performance
- * and simpler state management.
+ * Enhanced ResultsTable component using chem-pal styling with local functionality
  *
- * Key improvements:
- * - useActionState for search operations (eliminates multiple useState/useEffect)
- * - useOptimistic for streaming results (better UX)
- * - use() hook for context (simpler than useContext)
- * - Reduced re-renders through better state consolidation
- * - Right-click context menu for product rows
- *
- * COMPARISON WITH ORIGINAL:
- *
- * Original ResultsTable.tsx (lines 35-52):
- * ```typescript
- * const [searchResults, setSearchResults] = useChromeStorageSession(/* ... *\/);
- * const [statusLabel, setStatusLabel] = useState<string | boolean>(false);
- * const [isLoading, setIsLoading] = useState<boolean>(false);
- *
- * const { executeSearch, handleStopSearch } = useSearch({
- *   setSearchResults,
- *   setStatusLabel,
- *   setIsLoading,
- * });
- * ```
- *
- * React v19 Version:
- * ```typescript
- * const { searchResults, isLoading, statusLabel, error, resultCount, executeSearch, handleStopSearch } = useSearchV19();
- * // searchResults updates in real-time as results stream in - no need for useOptimistic
- * ```
- *
- * BENEFITS:
- * 1. Maintains streaming behavior - results appear as they're found
- * 2. Live counter updates ("Found ## results...")
- * 3. Cleaner state management without complex prop drilling
- * 4. Built-in error handling and abort functionality
- * 5. Results appear immediately in table, not all at once
- * 6. Right-click context menu for enhanced user interaction
+ * Features:
+ * - Modern table styling from chem-pal
+ * - Local search functionality and streaming results
+ * - Context menu for product rows
+ * - Auto column sizing
+ * - Pagination and filtering
+ * - Drawer system integration
  */
 export default function ResultsTable({
   getRowCanExpand,
   columnFilterFns,
-}: ProductTableProps<Product>): ReactElement {
-  // React v19's use() hook simplifies context access
-  // No need for error handling wrapper - use() handles context errors
+}: ResultsTableProps): ReactElement {
   const appContext = useAppContext();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [columnMenuAnchor, setColumnMenuAnchor] = useState<null | HTMLElement>(null);
 
-  const filterRef = useRef<{
-    toggleDrawer: (open: boolean) => void;
-    getState: () => boolean;
-  }>(null);
   // Enhanced search hook that maintains streaming behavior
-  // Results appear in the table as they're found with live counter updates
   const {
     searchResults,
     isLoading,
@@ -99,7 +113,6 @@ export default function ResultsTable({
   });
 
   // Initialize column visibility - this effect is still needed
-  // Some patterns still require useEffect for side effects
   useEffect(() => {
     if (appContext && !isEmpty(appContext.userSettings.hideColumns)) {
       table.getAllLeafColumns().map((column: Column<Product>) => {
@@ -124,6 +137,31 @@ export default function ResultsTable({
     return colSizes;
   }
 
+  const handleDrawerClose = () => {
+    setIsDrawerOpen(false);
+  };
+
+  const handleDrawerToggle = () => {
+    setIsDrawerOpen(!isDrawerOpen);
+  };
+
+  const handleSearch = (query: string) => {
+    if (query.trim()) {
+      executeSearch(query.trim());
+    }
+  };
+
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === "Enter") {
+      const target = event.target as HTMLInputElement;
+      handleSearch(target.value);
+    }
+  };
+
+  const toggleFilters = () => {
+    setShowFilters(!showFilters);
+  };
+
   return (
     <>
       <LoadingBackdrop
@@ -131,21 +169,53 @@ export default function ResultsTable({
         resultCount={optimisticResults.length}
         onClick={handleStopSearch}
       />
-      <FilterMenu table={table} ref={filterRef} />
+      <DrawerSystem isOpen={isDrawerOpen} onClose={handleDrawerClose} />
 
-      <Paper id="search-results-table-container">
-        <Box
-          className="search-input-container fullwidth"
-          component="form"
-          noValidate
-          autoComplete="off"
-        />
-        <div className="p-2" style={{ minHeight: "369px" }}>
-          <TableOptions table={table} onSearch={executeSearch} />
-          <div className="h-4" />
+      <ResultsContainer>
+        <ResultsHeader>
+          <HeaderLeft>
+            <HeaderSearchField
+              size="small"
+              variant="outlined"
+              placeholder="Search for products..."
+              onKeyPress={handleKeyPress}
+              InputProps={{
+                endAdornment: (
+                  <IconButton onClick={() => handleSearch("")} size="small">
+                    <SearchIcon />
+                  </IconButton>
+                ),
+              }}
+            />
+          </HeaderLeft>
+          <HeaderRight>
+            <FilterIconButton
+              onClick={toggleFilters}
+              size="small"
+              isActive={showFilters}
+              activeColor="#007bff"
+              textColor="#666"
+            >
+              <FilterListIcon />
+            </FilterIconButton>
+            <ColoredIconButton
+              onClick={(e) => setColumnMenuAnchor(e.currentTarget)}
+              size="small"
+              iconColor="#666"
+            >
+              <ViewColumnIcon />
+            </ColoredIconButton>
+            <ColoredIconButton onClick={handleDrawerToggle} size="small" iconColor="#666">
+              <SettingsIcon />
+            </ColoredIconButton>
+          </HeaderRight>
+        </ResultsHeader>
 
+        <ResultsTitle variant="h6">Search Results ({optimisticResults.length} found)</ResultsTitle>
+
+        <ResultsPaper>
           {/* Hidden measurement table for auto-sizing */}
-          <table {...getMeasurementTableProps()}>
+          <table {...getMeasurementTableProps()} style={{ display: "none" }}>
             <thead>
               <tr>
                 {table.getAllLeafColumns().map((col) => (
@@ -175,7 +245,74 @@ export default function ResultsTable({
             </tbody>
           </table>
 
-          {/* Enhanced error handling with React v19's built-in error state */}
+          <Table style={columnSizeVars()}>
+            <TableHead>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <SortableTableHeaderCell
+                      key={header.id}
+                      canSort={header.column.getCanSort()}
+                      cellWidth={header.getSize()}
+                      onClick={header.column.getToggleSortingHandler()}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                    </SortableTableHeaderCell>
+                  ))}
+                </TableRow>
+              ))}
+              {/* Filter Row */}
+              {showFilters &&
+                table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={`${headerGroup.id}-filters`}>
+                    {headerGroup.headers.map((header) => (
+                      <FilterTableCell key={`${header.id}-filter`} cellWidth={header.getSize()}>
+                        {header.column.getCanFilter() ? (
+                          <FilterTextField
+                            size="small"
+                            variant="outlined"
+                            placeholder={`Search...`}
+                            value={(header.column.getFilterValue() as string) ?? ""}
+                            onChange={(e) => header.column.setFilterValue(e.target.value)}
+                          />
+                        ) : null}
+                      </FilterTableCell>
+                    ))}
+                  </TableRow>
+                ))}
+            </TableHead>
+            <TableBody>
+              {table.getRowModel().rows.length > 0 ? (
+                table.getRowModel().rows.map((row) => (
+                  <SubRowTableRow
+                    key={row.id}
+                    isSubRow={row.depth > 0}
+                    onContextMenu={(e) => handleContextMenu(e, row.original)}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <StyledTableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </StyledTableCell>
+                    ))}
+                  </SubRowTableRow>
+                ))
+              ) : (
+                <StyledTableRow>
+                  <EmptyStateCell colSpan={table.getAllColumns().length}>
+                    {optimisticResults.length === 0
+                      ? "No search query"
+                      : table.getState().columnFilters.length > 0
+                        ? "No results matching your filter values"
+                        : "No results found"}
+                  </EmptyStateCell>
+                </StyledTableRow>
+              )}
+            </TableBody>
+          </Table>
+
+          {/* Enhanced error handling */}
           {error && (
             <div className="text-center p-4 text-red-500">
               <p>Error: {error}</p>
@@ -188,72 +325,104 @@ export default function ResultsTable({
             </div>
           )}
 
-          {Array.isArray(optimisticResults) && optimisticResults.length > 0 && (
-            <>
-              <table
-                className="search-results"
-                style={{
-                  ...columnSizeVars(),
-                }}
-              >
-                <TableHeader table={table} />
-                <tbody>
-                  {table.getRowModel().rows.map((row) => {
-                    return (
-                      <Fragment key={row.id}>
-                        <tr
-                          className={
-                            (row.original as Product & { isPending?: boolean }).isPending
-                              ? "opacity-70 animate-pulse"
-                              : ""
-                          }
-                          onContextMenu={(e) => handleContextMenu(e, row.original)}
-                          style={{ cursor: "context-menu" }}
-                        >
-                          {row.getVisibleCells().map((cell) => {
-                            return (
-                              <td
-                                key={cell.id}
-                                style={{
-                                  width: `${cell.column.getSize()}px`,
-                                  textAlign: "left",
-                                  ...(cell.column.columnDef.meta as { style?: CSSProperties })
-                                    ?.style,
-                                }}
-                              >
-                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      </Fragment>
-                    );
-                  })}
-                </tbody>
-              </table>
-              <div className="h-2" />
-              <Pagination table={table} />
-            </>
+          {/* Pagination Controls - Only show if more than 1 page */}
+          {table.getPageCount() > 1 && (
+            <PaginationContainer>
+              {/* Page Size Selector */}
+              <PageSizeContainer>
+                <Typography variant="body2">Show:</Typography>
+                <FormControl size="small">
+                  <PageSizeSelect
+                    value={table.getState().pagination.pageSize}
+                    onChange={(e) => table.setPageSize(Number(e.target.value))}
+                  >
+                    {[5, 10, 20, 50].map((pageSize) => (
+                      <MenuItem key={pageSize} value={pageSize}>
+                        {pageSize}
+                      </MenuItem>
+                    ))}
+                  </PageSizeSelect>
+                </FormControl>
+                <Typography variant="body2">rows</Typography>
+              </PageSizeContainer>
+
+              {/* Page Info */}
+              <Typography variant="body2">
+                Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}(
+                {table.getFilteredRowModel().rows.length} total results)
+              </Typography>
+
+              {/* Navigation Buttons */}
+              <NavigationContainer>
+                <IconButton
+                  onClick={() => table.setPageIndex(0)}
+                  disabled={!table.getCanPreviousPage()}
+                  size="small"
+                >
+                  <FirstPageIcon />
+                </IconButton>
+                <IconButton
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                  size="small"
+                >
+                  <ChevronLeftIcon />
+                </IconButton>
+                <IconButton
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                  size="small"
+                >
+                  <ChevronRightIcon />
+                </IconButton>
+                <IconButton
+                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                  disabled={!table.getCanNextPage()}
+                  size="small"
+                >
+                  <LastPageIcon />
+                </IconButton>
+              </NavigationContainer>
+            </PaginationContainer>
           )}
+        </ResultsPaper>
 
-          {((!isLoading && !Array.isArray(optimisticResults)) || optimisticResults.length === 0) &&
-            !error && (
-              <div className="text-center p-4">
-                <p>{statusLabel || "No results found. Try a different search term."}</p>
-              </div>
-            )}
-        </div>
-      </Paper>
+        {/* Column Visibility Menu */}
+        <Menu
+          anchorEl={columnMenuAnchor}
+          open={Boolean(columnMenuAnchor)}
+          onClose={() => setColumnMenuAnchor(null)}
+        >
+          {table
+            .getAllLeafColumns()
+            .filter((column) => column.getCanHide())
+            .map((column) => (
+              <ColumnMenuItemContainer key={column.id}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={column.getIsVisible()}
+                      onChange={column.getToggleVisibilityHandler()}
+                    />
+                  }
+                  label={
+                    <ListItemText primary={(column.columnDef.header as string) || column.id} />
+                  }
+                />
+              </ColumnMenuItemContainer>
+            ))}
+        </Menu>
 
-      {/* Context Menu */}
-      {contextMenu && (
-        <ContextMenu
-          x={contextMenu.x}
-          y={contextMenu.y}
-          product={contextMenu.product}
-          onClose={handleCloseContextMenu}
-        />
-      )}
+        {/* Context Menu */}
+        {contextMenu && contextMenu.product && (
+          <ContextMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            product={contextMenu.product}
+            onClose={handleCloseContextMenu}
+          />
+        )}
+      </ResultsContainer>
     </>
   );
 }

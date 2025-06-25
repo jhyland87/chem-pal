@@ -1,5 +1,30 @@
 import { createTheme } from "@mui/material/styles";
 
+export const designTokens = {
+  spacing: {
+    drawerWidth: 280,
+    drawerWidthDev: 320,
+  },
+  borderRadius: {
+    small: 4,
+    medium: 8,
+    large: 16,
+  },
+  shadows: {
+    low: "0 1px 3px rgba(0, 0, 0, 0.12)",
+    medium: "0 4px 6px rgba(0, 0, 0, 0.1)",
+    high: "0 10px 20px rgba(0, 0, 0, 0.15)",
+    dark: "0 4px 20px rgba(0, 0, 0, 0.3)",
+  },
+  transitions: {
+    fast: "150ms",
+    standard: "300ms",
+    slow: "500ms",
+  },
+};
+
+export const isDevelopment = process.env.NODE_ENV !== "production";
+
 export const lightTheme = createTheme({
   palette: {
     mode: "light",

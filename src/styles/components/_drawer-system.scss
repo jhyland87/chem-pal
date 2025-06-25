@@ -1,0 +1,92 @@
+@use "../variables" as vars;
+
+// Static layout styles for DrawerSystem
+.drawer-system {
+  &__drawer {
+    flex-shrink: 0;
+
+    &--dev {
+      width: vars.$drawer-width-dev;
+    }
+
+    &--production {
+      width: vars.$drawer-width;
+    }
+  }
+
+  &__tabs-container {
+    height: 48px; // Fixed MUI tabs height
+  }
+
+  &__tab {
+    min-width: 133px; // Split width for 3 tabs in 400px drawer
+    transition: vars.$transition-standard;
+    text-transform: none;
+  }
+
+  &__content {
+    padding: vars.$spacing-lg;
+    height: calc(100vh - 48px);
+    overflow: auto;
+  }
+
+  &__section-title {
+    margin-bottom: vars.$spacing-lg;
+    font-weight: vars.$font-weight-medium;
+  }
+
+  &__accordion {
+    border-radius: vars.$border-radius-md;
+    margin-bottom: vars.$spacing-sm;
+    transition: vars.$transition-standard;
+  }
+
+  &__input {
+    margin-bottom: vars.$spacing-lg;
+  }
+
+  &__slider-container {
+    margin-bottom: vars.$spacing-sm;
+  }
+
+  &__chip-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: vars.$spacing-sm;
+    margin-bottom: vars.$spacing-lg;
+  }
+
+  &__filter-chips {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-sm;
+  }
+
+  &__button {
+    margin-top: vars.$spacing-lg;
+    text-transform: none;
+    border-radius: vars.$border-radius-md;
+    transition: vars.$transition-standard;
+  }
+
+  &__form-control {
+    margin-bottom: vars.$spacing-md;
+  }
+
+  &__price-display {
+    margin-bottom: vars.$spacing-sm;
+  }
+}
+
+// Supplier list accordion specific styling
+.supplier-list-accordion {
+  button {
+    border-radius: 0px !important;
+    padding: 0 0 0 15px !important;
+  }
+
+  .MuiCheckbox-root {
+    padding: 0px !important;
+    margin: 0px !important;
+  }
+}
