@@ -22,9 +22,9 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { Column, flexRender } from "@tanstack/react-table";
+import { Column, ColumnFiltersState, flexRender, Row } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
-import React, { ReactElement, useEffect, useState } from "react";
+import React, { Dispatch, ReactElement, SetStateAction, useEffect, useState } from "react";
 
 import DrawerSystem from "../DrawerSystem";
 import LoadingBackdrop from "../LoadingBackdrop";
@@ -59,8 +59,8 @@ import { useContextMenu } from "./useContextMenu.hook";
 import { useResultsTable } from "./useResultsTable.hook";
 
 interface ResultsTableProps {
-  getRowCanExpand: (row: any) => boolean;
-  columnFilterFns: any;
+  getRowCanExpand: (row: Row<Product>) => boolean;
+  columnFilterFns: [ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>];
 }
 
 /**
@@ -79,20 +79,12 @@ export default function ResultsTable({
   columnFilterFns,
 }: ResultsTableProps): ReactElement {
   const appContext = useAppContext();
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [columnMenuAnchor, setColumnMenuAnchor] = useState<null | HTMLElement>(null);
 
   // Enhanced search hook that maintains streaming behavior
-  const {
-    searchResults,
-    isLoading,
-    statusLabel,
-    error,
-    resultCount,
-    executeSearch,
-    handleStopSearch,
-  } = useSearch();
+  const { searchResults, isLoading, error, resultCount, executeSearch, handleStopSearch } =
+    useSearch();
 
   // Context menu functionality
   const { contextMenu, handleContextMenu, handleCloseContextMenu } = useContextMenu();
@@ -109,7 +101,28 @@ export default function ResultsTable({
     showSearchResults: optimisticResults,
     columnFilterFns,
     getRowCanExpand,
-    userSettings: appContext?.userSettings,
+    userSettings: appContext?.userSettings || {
+      showHelp: false,
+      caching: true,
+      autocomplete: true,
+      currency: "USD",
+      currencyRate: 1.0,
+      location: "US",
+      shipsToMyLocation: false,
+      foo: "bar",
+      jason: false,
+      antoine: true,
+      popupSize: "small",
+      supplierResultLimit: 20,
+      autoResize: true,
+      someSetting: false,
+      suppliers: [],
+      theme: "light",
+      showColumnFilters: true,
+      showAllColumns: false,
+      hideColumns: ["description", "uom"],
+      columnFilterConfig: {},
+    },
   });
 
   // Initialize column visibility - this effect is still needed
@@ -137,14 +150,6 @@ export default function ResultsTable({
     return colSizes;
   }
 
-  const handleDrawerClose = () => {
-    setIsDrawerOpen(false);
-  };
-
-  const handleDrawerToggle = () => {
-    setIsDrawerOpen(!isDrawerOpen);
-  };
-
   const handleSearch = (query: string) => {
     if (query.trim()) {
       executeSearch(query.trim());
@@ -169,7 +174,7 @@ export default function ResultsTable({
         resultCount={optimisticResults.length}
         onClick={handleStopSearch}
       />
-      <DrawerSystem isOpen={isDrawerOpen} onClose={handleDrawerClose} />
+      <DrawerSystem />
 
       <ResultsContainer>
         <ResultsHeader>
@@ -178,12 +183,22 @@ export default function ResultsTable({
               size="small"
               variant="outlined"
               placeholder="Search for products..."
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
+              slotProps={{
+                input: {
+                  onKeyDown: handleKeyPress,
+                },
+              }}
               InputProps={{
                 endAdornment: (
-                  <IconButton onClick={() => handleSearch("")} size="small">
-                    <SearchIcon />
-                  </IconButton>
+                  <>
+                    <IconButton onClick={() => handleSearch("")} size="small">
+                      <SearchIcon />
+                    </IconButton>
+                    <IconButton onClick={() => handleSearch("")} size="small">
+                      <SearchIcon />
+                    </IconButton>
+                  </>
                 ),
               }}
             />
@@ -205,7 +220,11 @@ export default function ResultsTable({
             >
               <ViewColumnIcon />
             </ColoredIconButton>
-            <ColoredIconButton onClick={handleDrawerToggle} size="small" iconColor="#666">
+            <ColoredIconButton
+              onClick={() => appContext?.toggleDrawer()}
+              size="small"
+              iconColor="#666"
+            >
               <SettingsIcon />
             </ColoredIconButton>
           </HeaderRight>

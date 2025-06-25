@@ -5,14 +5,11 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider } from "@mui/material/styles";
 import { startTransition, useActionState, useEffect, useState } from "react";
 import "./App.scss";
+import DrawerSystem from "./components/DrawerSystem";
 import ErrorBoundary from "./components/ErrorBoundary";
-import FavoritesPanel from "./components/FavoritesPanel";
-import HistoryPanel from "./components/HistoryPanel";
 import SearchPanel from "./components/SearchPanel/SearchPanel";
 import SearchPanelHome from "./components/SearchPanelHome";
-import SettingsPanel from "./components/SettingsPanel";
 import SpeedDialMenu from "./components/SpeedDialMenu";
-import SuppliersPanel from "./components/SuppliersPanel";
 import { getCurrencyCodeFromLocation, getCurrencyRate } from "./helpers/currency";
 import { getUserCountry } from "./helpers/utils";
 import { darkTheme, lightTheme } from "./themes";
@@ -64,6 +61,7 @@ interface AppState {
   panel: number;
   currentTheme: typeof lightTheme | typeof darkTheme;
   speedDialVisibility: boolean;
+  drawerTab: number;
 }
 
 const initialAppState: AppState = {
@@ -92,13 +90,15 @@ const initialAppState: AppState = {
   panel: 0,
   currentTheme: lightTheme,
   speedDialVisibility: false,
+  drawerTab: -1,
 };
 
 type AppAction =
   | { type: "UPDATE_SETTINGS"; settings: UserSettings }
   | { type: "SET_PANEL"; panel: number }
   | { type: "SET_SPEED_DIAL_VISIBILITY"; visible: boolean }
-  | { type: "LOAD_FROM_STORAGE"; data: Partial<AppState> };
+  | { type: "LOAD_FROM_STORAGE"; data: Partial<AppState> }
+  | { type: "SET_DRAWER_TAB"; tab: number };
 
 /**
  * React v19 App component with enhanced state management
@@ -165,6 +165,12 @@ function App() {
           return {
             ...currentState,
             ...action.data,
+          };
+
+        case "SET_DRAWER_TAB":
+          return {
+            ...currentState,
+            drawerTab: action.tab,
           };
 
         default:
@@ -235,6 +241,10 @@ function App() {
     searchResults, // This fixes the missing property linter error
     setSearchResults, // Expose setter for child components to use
     setPanel: handleSetPanel, // Add setPanel to context for tab switching
+    drawerTab: appState.drawerTab,
+    setDrawerTab: (tab: number) => dispatch({ type: "SET_DRAWER_TAB", tab }),
+    toggleDrawer: () =>
+      dispatch({ type: "SET_DRAWER_TAB", tab: appState.drawerTab === -1 ? 0 : -1 }),
   };
 
   return (
@@ -261,10 +271,11 @@ function App() {
             {/* Render only the active panel, no app bar or tab navigation */}
             {appState.panel === 0 && <SearchPanelHome />}
             {appState.panel === 1 && <SearchPanel />}
-            {appState.panel === 2 && <SuppliersPanel />}
+            {/* {appState.panel === 2 && <SuppliersPanel />}
             {appState.panel === 3 && <FavoritesPanel />}
             {appState.panel === 4 && <HistoryPanel />}
-            {appState.panel === 5 && <SettingsPanel />}
+            {appState.panel === 5 && <SettingsPanel />} */}
+            <DrawerSystem />
             <SpeedDialMenu speedDialVisibility={appState.speedDialVisibility} />
           </Box>
         </ThemeProvider>

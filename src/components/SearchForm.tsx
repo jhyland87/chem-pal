@@ -1,5 +1,6 @@
 import { Science as ScienceIcon, Search as SearchIcon } from "@mui/icons-material";
 import React, { useState } from "react";
+import { useAppContext } from "../context";
 import {
   SearchFormContainer,
   SearchFormDivider,
@@ -22,6 +23,8 @@ export const SearchForm: React.FC<SearchFormProps> = ({
   showAdvancedButton = true,
 }) => {
   const [query, setQuery] = useState("");
+  const appContext = useAppContext();
+  console.log("showAdvancedButton", showAdvancedButton);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +39,14 @@ export const SearchForm: React.FC<SearchFormProps> = ({
     }
   };
 
+  const handleDrawerToggle = () => {
+    if (onDrawerToggle) {
+      onDrawerToggle();
+    } else {
+      appContext.toggleDrawer();
+    }
+  };
+
   return (
     <SearchFormContainer>
       <SearchFormPaper onSubmit={handleSubmit}>
@@ -43,13 +54,15 @@ export const SearchForm: React.FC<SearchFormProps> = ({
           placeholder={placeholder}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onKeyPress={handleKeyPress}
-          inputProps={{
-            "aria-label": "search for products",
-            autoComplete: "off",
-            autoCorrect: "off",
-            autoCapitalize: "off",
-            spellCheck: "false",
+          onKeyDown={handleKeyPress}
+          slotProps={{
+            input: {
+              "aria-label": "search for products",
+              autoComplete: "off",
+              autoCorrect: "off",
+              autoCapitalize: "off",
+              spellCheck: "false",
+            },
           }}
         />
 
@@ -57,19 +70,15 @@ export const SearchForm: React.FC<SearchFormProps> = ({
           <SearchIcon />
         </SearchFormIconButton>
 
-        {showAdvancedButton && (
-          <>
-            <SearchFormDivider orientation="vertical" />
-            <SearchFormIconButton
-              type="button"
-              color="primary"
-              aria-label="advanced options"
-              onClick={onDrawerToggle}
-            >
-              <ScienceIcon />
-            </SearchFormIconButton>
-          </>
-        )}
+        <SearchFormDivider />
+        <SearchFormIconButton
+          type="button"
+          color="primary"
+          aria-label="advanced options"
+          onClick={handleDrawerToggle}
+        >
+          <ScienceIcon />
+        </SearchFormIconButton>
       </SearchFormPaper>
     </SearchFormContainer>
   );

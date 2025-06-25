@@ -293,14 +293,24 @@ export default class SupplierLaboratoriumDiscounter
           for (const variant of Object.values(productData.variants) as VariantObject[]) {
             if (variant.active === false) continue;
             const quantity = parseQuantity(variant.title);
+            if (!isQuantityObject(quantity)) {
+              this.logger.warn("Invalid quantity - skipping", variant.title);
+              continue;
+            }
+
+            if (quantity.quantity === builder.get("quantity")) {
+              this.logger.warn("Quantity already exists - skipping", quantity.quantity);
+              continue;
+            }
+
             builder.addVariant({
               id: variant.id,
               uuid: variant.code,
               sku: variant.sku,
               title: variant.title,
               price: variant.price.price,
-              quantity: quantity?.quantity,
-              uom: quantity?.uom,
+              quantity: quantity.quantity,
+              uom: quantity.uom,
               availability: variant.stock
                 ? typeof variant.stock === "object"
                   ? ((stock) => {

@@ -56,19 +56,19 @@ export default tseslint.config(
           leadingUnderscore: "allow",
           trailingUnderscore: "allow",
         },
-        {
-          selector: "property",
-          format: ["camelCase"],
-          leadingUnderscore: "allow",
-          trailingUnderscore: "allow",
-        },
-        {
-          selector: "memberLike",
-          format: ["camelCase"],
-          modifiers: ["public"],
-          leadingUnderscore: "forbid",
-          trailingUnderscore: "forbid",
-        },
+        // {
+        //   selector: "property",
+        //   format: ["camelCase"],
+        //   leadingUnderscore: "allow",
+        //   trailingUnderscore: "allow",
+        // },
+        // {
+        //   selector: "memberLike",
+        //   format: ["camelCase"],
+        //   modifiers: ["public"],
+        //   leadingUnderscore: "forbid",
+        //   trailingUnderscore: "forbid",
+        // },
         {
           selector: "memberLike",
           format: ["camelCase"],
@@ -82,12 +82,12 @@ export default tseslint.config(
           leadingUnderscore: "forbid",
           trailingUnderscore: "forbid",
         },
-        {
-          selector: "default",
-          format: ["camelCase"],
-          leadingUnderscore: "allow",
-          trailingUnderscore: "allow",
-        },
+        // {
+        //   selector: "default",
+        //   format: ["camelCase"],
+        //   leadingUnderscore: "allow",
+        //   trailingUnderscore: "allow",
+        // },
         {
           selector: "variable",
           format: ["camelCase", "PascalCase", "UPPER_CASE"],

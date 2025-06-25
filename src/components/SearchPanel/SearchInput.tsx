@@ -50,7 +50,6 @@ export default function SearchInput({ onSearch }: SearchInputStates) {
             className="search-query-input fullwidth"
             placeholder={isLoading ? "Searching..." : "Search..."}
             disabled={isLoading}
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             inputProps={{ "aria-label": "Search for chemicals" }}
           />
 
@@ -83,7 +82,9 @@ export default function SearchInput({ onSearch }: SearchInputStates) {
               animation: "pulse 1s infinite",
               zIndex: 1000,
             }}
-          />
+          >
+            Loading...
+          </div>
         )}
       </div>
     </>

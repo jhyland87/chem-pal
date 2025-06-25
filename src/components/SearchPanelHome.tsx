@@ -29,7 +29,7 @@ const SearchPanelHome: React.FC = () => {
         <SearchForm
           onSearch={handleSearch}
           placeholder="Search for products..."
-          showAdvancedButton={false}
+          showAdvancedButton={true}
         />
       </div>
     </SearchContainer>

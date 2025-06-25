@@ -53,9 +53,18 @@ declare global {
     userSettings: UserSettings;
     /** Function to update settings */
     setUserSettings: (settings: UserSettings) => void;
-
+    /** Search results */
     searchResults: Product[];
+    /** Function to update search results */
+    setSearchResults: (results: Product[]) => void;
+    /** Function to update panel */
     setPanel?: (panel: number) => void;
+    /** Function to update drawer tab */
+    setDrawerTab: (tab: number) => void;
+    /** Function to toggle drawer */
+    toggleDrawer: () => void;
+    /** Drawer state management - -1 = closed, 0 = search tab, 1 = settings tab */
+    drawerTab: number;
   }
 
   /**

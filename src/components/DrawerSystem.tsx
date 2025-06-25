@@ -18,12 +18,8 @@ import {
   SupplierListItem,
 } from "./StyledComponents";
 
+import { useAppContext } from "../context";
 import SettingsPanelFull from "./SettingsPanelFull";
-
-interface DrawerSystemProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -139,12 +135,12 @@ const SearchPanel: React.FC<{
   );
 };
 
-const DrawerSystem: React.FC<DrawerSystemProps> = ({ isOpen, onClose }) => {
-  const [selectedTab, setSelectedTab] = useState(0);
+const DrawerSystem: React.FC = () => {
+  const appContext = useAppContext();
   const [expandedAccordion, setExpandedAccordion] = useState<string | false>("search-availability");
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setSelectedTab(newValue);
+    appContext.setDrawerTab(newValue);
     // Reset accordion when switching tabs
     if (newValue === 0) {
       setExpandedAccordion("search-availability");
@@ -161,21 +157,26 @@ const DrawerSystem: React.FC<DrawerSystemProps> = ({ isOpen, onClose }) => {
     };
 
   return (
-    <Drawer anchor="right" open={isOpen} onClose={onClose} variant="temporary">
+    <Drawer
+      anchor="right"
+      open={appContext.drawerTab !== -1}
+      onClose={() => appContext.setDrawerTab(-1)}
+      variant="temporary"
+    >
       <DrawerContainer>
-        <Tabs value={selectedTab} onChange={handleTabChange} variant="fullWidth">
+        <Tabs value={appContext.drawerTab} onChange={handleTabChange} variant="fullWidth">
           <Tab icon={<SearchIcon />} label="SEARCH" iconPosition="start" />
           <Tab icon={<SettingsIcon />} label="SETTINGS" iconPosition="start" />
         </Tabs>
 
-        <TabPanel value={selectedTab} index={0}>
+        <TabPanel value={appContext.drawerTab} index={0}>
           <SearchPanel
             expandedAccordion={expandedAccordion}
             onAccordionChange={handleAccordionChange}
           />
         </TabPanel>
 
-        <TabPanel value={selectedTab} index={1}>
+        <TabPanel value={appContext.drawerTab} index={1}>
           <SettingsPanelFull />
         </TabPanel>
       </DrawerContainer>
