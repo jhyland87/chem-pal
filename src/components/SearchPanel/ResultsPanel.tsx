@@ -1,6 +1,5 @@
 import { type ColumnFiltersState } from "@tanstack/react-table";
 import { useState } from "react";
-import DetailsContainer from "./DetailsContainer";
 import ResultsTable from "./ResultsTable";
 
 /**
@@ -19,11 +18,8 @@ export default function ResultsPanel() {
 
   return (
     <>
-      <ResultsTable
-        columnFilterFns={columnFilterFns}
-        getRowCanExpand={() => true}
-        renderVariants={DetailsContainer}
-      />
+      Tester
+      <ResultsTable columnFilterFns={columnFilterFns} getRowCanExpand={() => true} />
     </>
   );
 }

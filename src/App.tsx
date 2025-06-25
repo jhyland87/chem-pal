@@ -2,7 +2,7 @@ import { AppContext } from "@/context";
 import SupplierFactory from "@/suppliers/SupplierFactory";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
-import { ThemeProvider, useTheme } from "@mui/material/styles";
+import { ThemeProvider } from "@mui/material/styles";
 import { startTransition, useActionState, useEffect, useState } from "react";
 import "./App.scss";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -12,10 +12,7 @@ import SearchPanel from "./components/SearchPanel/SearchPanel";
 import SearchPanelHome from "./components/SearchPanelHome";
 import SettingsPanel from "./components/SettingsPanel";
 import SpeedDialMenu from "./components/SpeedDialMenu";
-import { StyledAppBar, StyledAppBarPaper } from "./components/Styles";
 import SuppliersPanel from "./components/SuppliersPanel";
-import TabHeader from "./components/TabHeader";
-import TabPanel from "./components/TabPanel";
 import { getCurrencyCodeFromLocation, getCurrencyRate } from "./helpers/currency";
 import { getUserCountry } from "./helpers/utils";
 import { darkTheme, lightTheme } from "./themes";
@@ -107,8 +104,6 @@ type AppAction =
  * React v19 App component with enhanced state management
  */
 function App() {
-  const theme = useTheme();
-
   // Search results state - separate from main app state for better performance
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   // Note: setSearchResults will be used by child components via context in the future
@@ -181,6 +176,7 @@ function App() {
 
   // Load initial data from Chrome storage on mount
   useEffect(() => {
+    console.log("SET_PANEL", appState.panel);
     Promise.all([chrome.storage.session.get(["panel"]), chrome.storage.local.get(["userSettings"])])
       .then(([sessionData, localData]) => {
         const loadedData: Partial<AppState> = {};
@@ -262,44 +258,13 @@ function App() {
                 }}
               />
             )}
-            <StyledAppBar position="relative" elevation={0}>
-              <StyledAppBarPaper>
-                <TabHeader page={appState.panel} setPage={handleSetPanel} />
-              </StyledAppBarPaper>
-              <TabPanel value={appState.panel} name="home-panel" index={0} dir={theme.direction}>
-                <SearchPanelHome />
-              </TabPanel>
-              <TabPanel value={appState.panel} name="search-panel" index={1} dir={theme.direction}>
-                <SearchPanel />
-              </TabPanel>
-              <TabPanel
-                value={appState.panel}
-                name="suppliers-panel"
-                index={2}
-                dir={theme.direction}
-              >
-                <SuppliersPanel />
-              </TabPanel>
-              <TabPanel
-                value={appState.panel}
-                name="favorites-panel"
-                index={3}
-                dir={theme.direction}
-              >
-                <FavoritesPanel />
-              </TabPanel>
-              <TabPanel value={appState.panel} name="history-panel" index={4} dir={theme.direction}>
-                <HistoryPanel />
-              </TabPanel>
-              <TabPanel
-                value={appState.panel}
-                name="settings-panel"
-                index={5}
-                dir={theme.direction}
-              >
-                <SettingsPanel />
-              </TabPanel>
-            </StyledAppBar>
+            {/* Render only the active panel, no app bar or tab navigation */}
+            {appState.panel === 0 && <SearchPanelHome />}
+            {appState.panel === 1 && <SearchPanel />}
+            {appState.panel === 2 && <SuppliersPanel />}
+            {appState.panel === 3 && <FavoritesPanel />}
+            {appState.panel === 4 && <HistoryPanel />}
+            {appState.panel === 5 && <SettingsPanel />}
             <SpeedDialMenu speedDialVisibility={appState.speedDialVisibility} />
           </Box>
         </ThemeProvider>

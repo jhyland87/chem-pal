@@ -665,6 +665,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
         method: "GET",
         mode: "cors",
         credentials: "include",
+        redirect: "follow",
       });
 
       // Fetch the goods

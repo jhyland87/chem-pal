@@ -72,16 +72,35 @@ export function useSearch() {
       if (!query.trim()) {
         return;
       }
+      debugger;
 
       // Use startTransition for better performance during search
       startTransition(() => {
-        performSearch(query);
+        performSearch({
+          query,
+          supplierResultLimit: appContext.userSettings.supplierResultLimit,
+          suppliers: appContext.userSettings.suppliers.slice(0, 2),
+        });
       });
     },
     [appContext.userSettings.supplierResultLimit, appContext.userSettings.suppliers],
   );
 
-  const performSearch = async (query: string) => {
+  const performSearch = async ({
+    query,
+    supplierResultLimit = appContext.userSettings.supplierResultLimit ?? 3,
+    suppliers = appContext.userSettings.suppliers ?? [],
+  }: {
+    query: string;
+    supplierResultLimit?: number;
+    suppliers?: string[];
+  }) => {
+    console.log("performSearch", {
+      query,
+      supplierResultLimit,
+      suppliers,
+      userSettings: appContext.userSettings,
+    });
     // Reset state for new search
     setState({
       isLoading: true,
@@ -105,7 +124,7 @@ export function useSearch() {
         query,
         searchLimit,
         fetchControllerRef.current,
-        appContext.userSettings.suppliers,
+        ["SupplierLaboratoriumDiscounter"],
       );
 
       const startSearchTime = performance.now();

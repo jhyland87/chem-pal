@@ -55,6 +55,7 @@ declare global {
     setUserSettings: (settings: UserSettings) => void;
 
     searchResults: Product[];
+    setPanel?: (panel: number) => void;
   }
 
   /**
