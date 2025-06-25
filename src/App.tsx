@@ -14,16 +14,18 @@ import "./styles/main.scss";
 const defaultAppState = {
   theme: "light" as "light" | "dark",
   drawerState: false,
+  query: "",
 };
 
 function App() {
-  const [searchQuery, setSearchQuery] = useState("");
+  //const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ProductResult[]>([]);
 
   const [appState, setAppState] = useSmartStorage("appState", defaultAppState, { area: "local" });
 
   // Create setters for individual properties
   const setDrawerState = createPropertySetter(setAppState, "drawerState");
+  const setSearchQuery = createPropertySetter(setAppState, "query");
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -52,7 +54,7 @@ function App() {
                 element={
                   <ResultsPage
                     results={searchResults}
-                    searchQuery={searchQuery}
+                    searchQuery={appState.query}
                     onNewSearch={handleSearch}
                     onDrawerToggle={() => setDrawerState(!appState.drawerState)}
                   />

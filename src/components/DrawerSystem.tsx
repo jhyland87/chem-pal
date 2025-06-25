@@ -1,38 +1,37 @@
-import React, { useState } from 'react';
 import {
-  Box,
-  Drawer,
-  Tabs,
-  Tab,
-  Typography,
-  Switch,
-  FormControlLabel,
-  Button,
   Accordion,
-  Chip,
-  Slider,
-
+  Box,
+  Button,
   Checkbox,
-} from '@mui/material';
+  Chip,
+  Drawer,
+  FormControlLabel,
+  Slider,
+  Switch,
+  Tab,
+  Tabs,
+  Typography,
+} from "@mui/material";
+import React, { useState } from "react";
 
 import {
-  Settings as SettingsIcon,
-  Search as SearchIcon,
-  ExpandMore as ExpandMoreIcon,
   Clear as ClearIcon,
-} from '@mui/icons-material';
+  ExpandMore as ExpandMoreIcon,
+  Search as SearchIcon,
+  Settings as SettingsIcon,
+} from "@mui/icons-material";
 
-import { 
-  StyledAccordionSummary, 
-  StyledAccordionDetails, 
-  StyledAccordionDetailsNoPadding,
+import {
   ChipContainer,
+  DrawerContainer,
+  SettingsTypography,
+  StyledAccordionDetails,
+  StyledAccordionDetailsNoPadding,
+  StyledAccordionSummary,
+  StyledListItemText,
   SupplierList,
   SupplierListItem,
-  StyledListItemText,
-  SettingsTypography,
-  DrawerContainer
-} from './StyledComponents';
+} from "./StyledComponents";
 
 interface DrawerSystemProps {
   isOpen: boolean;
@@ -54,7 +53,7 @@ function TabPanel(props: TabPanelProps) {
       hidden={value !== index}
       id={`drawer-tabpanel-${index}`}
       aria-labelledby={`drawer-tab-${index}`}
-      style={{ flex: 1, overflow: 'auto', padding: '8px 0' }}
+      style={{ flex: 1, overflow: "auto", padding: "8px 0" }}
       {...other}
     >
       {value === index && children}
@@ -73,8 +72,8 @@ const SettingsPanel: React.FC<{
   return (
     <Box>
       <Accordion
-        expanded={expandedAccordion === 'settings-general'}
-        onChange={onAccordionChange('settings-general')}
+        expanded={expandedAccordion === "settings-general"}
+        onChange={onAccordionChange("settings-general")}
       >
         <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography>General Settings</Typography>
@@ -104,16 +103,14 @@ const SettingsPanel: React.FC<{
       </Accordion>
 
       <Accordion
-        expanded={expandedAccordion === 'settings-search'}
-        onChange={onAccordionChange('settings-search')}
+        expanded={expandedAccordion === "settings-search"}
+        onChange={onAccordionChange("settings-search")}
       >
         <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography>Search Preferences</Typography>
         </StyledAccordionSummary>
         <StyledAccordionDetails>
-          <SettingsTypography variant="body2">
-            Search delay (ms): {searchDelay}
-          </SettingsTypography>
+          <SettingsTypography variant="body2">Search delay (ms): {searchDelay}</SettingsTypography>
           <Slider
             size="small"
             value={searchDelay}
@@ -122,11 +119,7 @@ const SettingsPanel: React.FC<{
             max={2000}
             step={100}
           />
-          <Button
-            size="small"
-            startIcon={<ClearIcon />}
-            variant="outlined"
-          >
+          <Button size="small" startIcon={<ClearIcon />} variant="outlined">
             Clear All Data
           </Button>
         </StyledAccordionDetails>
@@ -139,49 +132,45 @@ const SearchPanel: React.FC<{
   expandedAccordion: string | false;
   onAccordionChange: (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => void;
 }> = ({ expandedAccordion, onAccordionChange }) => {
-  const [selectedAvailability, setSelectedAvailability] = useState<string[]>(['In Stock']);
-  const [selectedSuppliers, setSelectedSuppliers] = useState<string[]>(['Akmekem']);
+  const [selectedAvailability, setSelectedAvailability] = useState<string[]>(["In Stock"]);
+  const [selectedSuppliers, setSelectedSuppliers] = useState<string[]>(["Akmekem"]);
 
-  const availability = ['In Stock', 'Limited Stock', 'Out of Stock', 'Pre-order'];
+  const availability = ["In Stock", "Limited Stock", "Out of Stock", "Pre-order"];
   const suppliers = [
-    'Akmekem',
-    'Ambeed',
-    'BioFuran Chem',
-    'Carolina',
-    'Carolina Chemical',
-    'Chemsavers',
-    'FTF Scientific',
-    'Sigma-Aldrich',
-    'Fisher Scientific',
-    'VWR International',
-    'Merck KGaA',
-    'Thermo Fisher',
-    'Bio-Rad',
-    'Qiagen',
-    'Promega'
+    "Akmekem",
+    "Ambeed",
+    "BioFuran Chem",
+    "Carolina",
+    "Carolina Chemical",
+    "Chemsavers",
+    "FTF Scientific",
+    "Sigma-Aldrich",
+    "Fisher Scientific",
+    "VWR International",
+    "Merck KGaA",
+    "Thermo Fisher",
+    "Bio-Rad",
+    "Qiagen",
+    "Promega",
   ];
 
   const toggleAvailability = (option: string) => {
-    setSelectedAvailability(prev =>
-      prev.includes(option)
-        ? prev.filter(item => item !== option)
-        : [...prev, option]
+    setSelectedAvailability((prev) =>
+      prev.includes(option) ? prev.filter((item) => item !== option) : [...prev, option],
     );
   };
 
   const toggleSupplier = (supplier: string) => {
-    setSelectedSuppliers(prev =>
-      prev.includes(supplier)
-        ? prev.filter(s => s !== supplier)
-        : [...prev, supplier]
+    setSelectedSuppliers((prev) =>
+      prev.includes(supplier) ? prev.filter((s) => s !== supplier) : [...prev, supplier],
     );
   };
 
   return (
     <Box>
       <Accordion
-        expanded={expandedAccordion === 'search-availability'}
-        onChange={onAccordionChange('search-availability')}
+        expanded={expandedAccordion === "search-availability"}
+        onChange={onAccordionChange("search-availability")}
       >
         <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography>Availability</Typography>
@@ -194,8 +183,8 @@ const SearchPanel: React.FC<{
                 label={option}
                 size="small"
                 onClick={() => toggleAvailability(option)}
-                color={selectedAvailability.includes(option) ? 'primary' : 'default'}
-                variant={selectedAvailability.includes(option) ? 'filled' : 'outlined'}
+                color={selectedAvailability.includes(option) ? "primary" : "default"}
+                variant={selectedAvailability.includes(option) ? "filled" : "outlined"}
               />
             ))}
           </ChipContainer>
@@ -203,21 +192,16 @@ const SearchPanel: React.FC<{
       </Accordion>
 
       <Accordion
-        expanded={expandedAccordion === 'search-supplier'}
-        onChange={onAccordionChange('search-supplier')}
+        expanded={expandedAccordion === "search-supplier"}
+        onChange={onAccordionChange("search-supplier")}
       >
         <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography>Supplier</Typography>
         </StyledAccordionSummary>
         <StyledAccordionDetailsNoPadding className="supplier-list-accordion">
-          <SupplierList
-            dense
-          >
+          <SupplierList dense>
             {suppliers.map((supplier) => (
-                              <SupplierListItem
-                key={supplier}
-                onClick={() => toggleSupplier(supplier)}
-              >
+              <SupplierListItem key={supplier} onClick={() => toggleSupplier(supplier)}>
                 <Checkbox
                   edge="start"
                   checked={selectedSuppliers.includes(supplier)}
@@ -225,9 +209,7 @@ const SearchPanel: React.FC<{
                   disableRipple
                   size="small"
                 />
-                <StyledListItemText
-                  primary={supplier}
-                />
+                <StyledListItemText primary={supplier} />
               </SupplierListItem>
             ))}
           </SupplierList>
@@ -239,55 +221,45 @@ const SearchPanel: React.FC<{
 
 const DrawerSystem: React.FC<DrawerSystemProps> = ({ isOpen, onClose }) => {
   const [selectedTab, setSelectedTab] = useState(0);
-  const [expandedAccordion, setExpandedAccordion] = useState<string | false>('search-availability');
+  const [expandedAccordion, setExpandedAccordion] = useState<string | false>("search-availability");
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
     // Reset accordion when switching tabs
     if (newValue === 0) {
-      setExpandedAccordion('search-availability');
+      setExpandedAccordion("search-availability");
     } else if (newValue === 1) {
-      setExpandedAccordion('settings-general');
+      setExpandedAccordion("settings-general");
     } else {
       setExpandedAccordion(false);
     }
   };
 
-  const handleAccordionChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
-    setExpandedAccordion(isExpanded ? panel : false);
-  };
+  const handleAccordionChange =
+    (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
+      setExpandedAccordion(isExpanded ? panel : false);
+    };
 
   return (
-    <Drawer
-      anchor="right"
-      open={isOpen}
-      onClose={onClose}
-      variant="temporary"
-    >
+    <Drawer anchor="right" open={isOpen} onClose={onClose} variant="temporary">
       <DrawerContainer>
-        <Tabs
-          value={selectedTab}
-          onChange={handleTabChange}
-          variant="fullWidth"
-        >
-          <Tab
-            icon={<SearchIcon />}
-            label="SEARCH"
-            iconPosition="start"
-          />
-          <Tab
-            icon={<SettingsIcon />}
-            label="SETTINGS"
-            iconPosition="start"
-          />
+        <Tabs value={selectedTab} onChange={handleTabChange} variant="fullWidth">
+          <Tab icon={<SearchIcon />} label="SEARCH" iconPosition="start" />
+          <Tab icon={<SettingsIcon />} label="SETTINGS" iconPosition="start" />
         </Tabs>
 
         <TabPanel value={selectedTab} index={0}>
-          <SearchPanel expandedAccordion={expandedAccordion} onAccordionChange={handleAccordionChange} />
+          <SearchPanel
+            expandedAccordion={expandedAccordion}
+            onAccordionChange={handleAccordionChange}
+          />
         </TabPanel>
 
         <TabPanel value={selectedTab} index={1}>
-          <SettingsPanel expandedAccordion={expandedAccordion} onAccordionChange={handleAccordionChange} />
+          <SettingsPanel
+            expandedAccordion={expandedAccordion}
+            onAccordionChange={handleAccordionChange}
+          />
         </TabPanel>
       </DrawerContainer>
     </Drawer>
