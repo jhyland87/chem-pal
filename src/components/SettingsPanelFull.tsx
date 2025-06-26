@@ -21,28 +21,7 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import React, { ChangeEvent, MouseEvent, startTransition, useActionState, useState } from "react";
 import { currencies, locations } from "../../config.json";
-
-const inputStyle = {
-  width: 120,
-  size: "small",
-};
-
-const displayHelperOnHover = {
-  "& > .MuiFormHelperText-root": {
-    transition: "visibility 0s, opacity 0.5s linear",
-    visibility: "hidden",
-    paddingRight: 3,
-    opacity: 0,
-  },
-  "&:hover > .MuiFormHelperText-root": {
-    visibility: "visible",
-    opacity: 1,
-  },
-  "&:focus > .MuiFormHelperText-root": {
-    visibility: "visible",
-    opacity: 1,
-  },
-};
+import "./SettingsPanelFull.scss";
 
 type SettingAction =
   | { type: "SWITCH_CHANGE"; name: string; checked: boolean }
@@ -150,7 +129,7 @@ export default function SettingsPanelFull() {
         <AccordionDetails>
           <List component="nav" aria-labelledby="behavior-list-subheader">
             {/* Caching */}
-            <ListItem sx={displayHelperOnHover}>
+            <ListItem className="settings-panel__helper-on-hover">
               <ListItemText primary="Cache Search Results" />
               <FormHelperText>Improves performance</FormHelperText>
               <FormControlLabel
@@ -167,7 +146,7 @@ export default function SettingsPanelFull() {
               />
             </ListItem>
             {/* Autocomplete */}
-            <ListItem sx={displayHelperOnHover}>
+            <ListItem className="settings-panel__helper-on-hover">
               <ListItemText primary="AutoComplete" />
               <FormHelperText>Autocomplete search input</FormHelperText>
               <FormControlLabel
@@ -184,7 +163,7 @@ export default function SettingsPanelFull() {
               />
             </ListItem>
             {/* Currency */}
-            <ListItem sx={displayHelperOnHover}>
+            <ListItem className="settings-panel__helper-on-hover">
               <ListItemText primary="Currency" />
               <FormHelperText>Convert all currency to this</FormHelperText>
               <FormControl>
@@ -196,7 +175,7 @@ export default function SettingsPanelFull() {
                   name="currency"
                   label="currency"
                   size="small"
-                  sx={{ ...inputStyle }}
+                  className="settings-panel__input"
                   disabled={isPending}
                 >
                   {Object.entries(currencies).map(([currencyId, { symbol }]) => (
@@ -208,7 +187,7 @@ export default function SettingsPanelFull() {
               </FormControl>
             </ListItem>
             {/* Location */}
-            <ListItem sx={displayHelperOnHover}>
+            <ListItem className="settings-panel__helper-on-hover">
               <ListItemText primary="Location" />
               <FormHelperText>Your country</FormHelperText>
               <FormControl>
@@ -220,7 +199,7 @@ export default function SettingsPanelFull() {
                   name="location"
                   label="location"
                   size="small"
-                  sx={{ ...inputStyle }}
+                  className="settings-panel__input"
                   disabled={isPending}
                 >
                   <MenuItem value="">
@@ -235,7 +214,7 @@ export default function SettingsPanelFull() {
               </FormControl>
             </ListItem>
             {/* Ships to Location */}
-            <ListItem sx={displayHelperOnHover}>
+            <ListItem className="settings-panel__helper-on-hover">
               <ListItemText primary="Ships to Location" />
               <FormHelperText>Only show products that ship to your location</FormHelperText>
               <FormControl>
@@ -248,7 +227,7 @@ export default function SettingsPanelFull() {
               </FormControl>
             </ListItem>
             {/* Foo Example */}
-            <ListItem sx={displayHelperOnHover}>
+            <ListItem className="settings-panel__helper-on-hover">
               <ListItemText primary="Foo" />
               <FormHelperText>Just an input example</FormHelperText>
               <FormControl>
@@ -259,7 +238,7 @@ export default function SettingsPanelFull() {
                   onChange={handleInputChange}
                   variant="filled"
                   size="small"
-                  sx={{ ...inputStyle }}
+                  className="settings-panel__input"
                   disabled={isPending}
                 />
               </FormControl>
@@ -274,7 +253,7 @@ export default function SettingsPanelFull() {
         <AccordionDetails>
           <List component="nav" aria-labelledby="display-list-subheader">
             {/* Popup Size */}
-            <ListItem sx={displayHelperOnHover}>
+            <ListItem className="settings-panel__helper-on-hover">
               <ListItemText primary="Popup Size" />
               <FormHelperText>Popup size</FormHelperText>
               <FormControl>
@@ -315,7 +294,7 @@ export default function SettingsPanelFull() {
               </FormControl>
             </ListItem>
             {/* Auto-Resize */}
-            <ListItem sx={displayHelperOnHover}>
+            <ListItem className="settings-panel__helper-on-hover">
               <ListItemText primary="Auto-Resize" />
               <FormHelperText>More results = larger window</FormHelperText>
               <Switch

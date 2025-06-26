@@ -59,6 +59,7 @@ export const StyledFormControlSelector = styled(FormControl)<FormControlProps>((
 
   "& .MuiInputBase-inputSizeSmall": {
     //padding: [7, 14],
+    padding: "2px 0 0 0",
     fontSize: 14,
   },
   "& .MuiInputLabel-root.MuiInputLabel-shrink, & .MuiInputLabel-root.Mui-focused, &  .MuiInputLabel-root.MuiFormLabel-filled":

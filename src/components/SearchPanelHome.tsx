@@ -2,6 +2,7 @@ import React from "react";
 import { useAppContext } from "../context";
 import { useTheme } from "../themes";
 import { SearchForm } from "./SearchForm";
+import "./SearchPanelHome.scss";
 import { SearchContainer } from "./StyledComponents";
 
 const RESULTS_TAB_INDEX = 1;
@@ -26,26 +27,10 @@ const SearchPanelHome: React.FC = () => {
   };
 
   return (
-    <SearchContainer
-      style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}
-    >
-      <div style={{ width: "100%", maxWidth: 480 }}>
-        <div style={{ marginBottom: 40, textAlign: "center" }}>
-          <img
-            src={logoSrc}
-            alt="Supplier Search Logo"
-            style={{
-              maxWidth: 75,
-              width: "100%",
-              height: "auto",
-              objectFit: "contain",
-              filter:
-                "drop-shadow(0 2px 4px rgba(0,0,0,0.15)) " +
-                "drop-shadow(0 -1px 2px rgba(0,0,0,0.05)) " +
-                "drop-shadow(-1px 0 2px rgba(0,0,0,0.05)) " +
-                "drop-shadow(1px 0 2px rgba(0,0,0,0.05))",
-            }}
-          />
+    <SearchContainer className="search-panel-home__container">
+      <div className="search-panel-home__inner">
+        <div className="search-panel-home__logo-container">
+          <img src={logoSrc} alt="Supplier Search Logo" className="search-panel-home__logo" />
         </div>
         <SearchForm
           onSearch={handleSearch}

@@ -1,6 +1,5 @@
 import { AppContext } from "@/context";
 import SupplierFactory from "@/suppliers/SupplierFactory";
-import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
 import { startTransition, useActionState, useEffect, useState } from "react";
 import "./App.scss";
@@ -9,6 +8,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import SearchPanel from "./components/SearchPanel/SearchPanel";
 import SearchPanelHome from "./components/SearchPanelHome";
 import SpeedDialMenu from "./components/SpeedDialMenu";
+import { LoadingIndicatorBox } from "./components/StyledComponents";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { getCurrencyCodeFromLocation, getCurrencyRate } from "./helpers/currency";
 import { getUserCountry } from "./helpers/utils";
@@ -243,22 +243,9 @@ function App() {
       <ThemeProvider>
         <AppContext.Provider value={appContextValue}>
           <CssBaseline />
-          <Box sx={{ bgcolor: "background.default", width: "100%" }}>
+          <div className="app-container">
             {/* Show loading indicator when settings are updating */}
-            {isPending && (
-              <Box
-                sx={{
-                  position: "fixed",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 2,
-                  bgcolor: "primary.main",
-                  zIndex: 9999,
-                  animation: "pulse 1s infinite",
-                }}
-              />
-            )}
+            {isPending && <LoadingIndicatorBox />}
             {/* Render only the active panel, no app bar or tab navigation */}
             {appState.panel === 0 && <SearchPanelHome />}
             {appState.panel === 1 && <SearchPanel />}
@@ -266,9 +253,11 @@ function App() {
             {appState.panel === 3 && <FavoritesPanel />}
             {appState.panel === 4 && <HistoryPanel />}
             {appState.panel === 5 && <SettingsPanel />} */}
-            <DrawerSystem />
-            <SpeedDialMenu speedDialVisibility={appState.speedDialVisibility} />
-          </Box>
+            <div className="main-content">
+              <DrawerSystem />
+              <SpeedDialMenu speedDialVisibility={appState.speedDialVisibility} />
+            </div>
+          </div>
         </AppContext.Provider>
       </ThemeProvider>
     </ErrorBoundary>

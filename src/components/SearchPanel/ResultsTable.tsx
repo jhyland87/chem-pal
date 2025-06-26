@@ -20,6 +20,7 @@ import {
   TableBody,
   TableHead,
   TableRow,
+  TextField,
   Typography,
 } from "@mui/material";
 import { Column, ColumnFiltersState, flexRender, Row } from "@tanstack/react-table";
@@ -28,6 +29,7 @@ import React, { Dispatch, ReactElement, SetStateAction, useEffect, useState } fr
 
 import DrawerSystem from "../DrawerSystem";
 import LoadingBackdrop from "../LoadingBackdrop";
+import "../ResultsPanel.scss";
 import {
   ColoredIconButton,
   ColumnMenuItemContainer,
@@ -35,20 +37,13 @@ import {
   FilterIconButton,
   FilterTableCell,
   FilterTextField,
-  HeaderLeft,
   HeaderRight,
-  HeaderSearchField,
   NavigationContainer,
   PageSizeContainer,
   PageSizeSelect,
   PaginationContainer,
-  ResultsContainer,
-  ResultsHeader,
-  ResultsPaper,
-  ResultsTitle,
   SortableTableHeaderCell,
   StyledTableCell,
-  StyledTableRow,
   SubRowTableRow,
 } from "../StyledComponents";
 import ContextMenu from "./ContextMenu";
@@ -176,10 +171,10 @@ export default function ResultsTable({
       />
       <DrawerSystem />
 
-      <ResultsContainer>
-        <ResultsHeader>
-          <HeaderLeft>
-            <HeaderSearchField
+      <div className="results-container">
+        <div className="results-header">
+          <div className="header-left">
+            <TextField
               size="small"
               variant="outlined"
               placeholder="Search for products..."
@@ -202,7 +197,7 @@ export default function ResultsTable({
                 ),
               }}
             />
-          </HeaderLeft>
+          </div>
           <HeaderRight>
             <FilterIconButton
               onClick={toggleFilters}
@@ -228,11 +223,11 @@ export default function ResultsTable({
               <SettingsIcon />
             </ColoredIconButton>
           </HeaderRight>
-        </ResultsHeader>
+        </div>
 
-        <ResultsTitle variant="h6">Search Results ({optimisticResults.length} found)</ResultsTitle>
+        <div className="results-title">Search Results ({optimisticResults.length} found)</div>
 
-        <ResultsPaper>
+        <div className="results-paper">
           {/* Hidden measurement table for auto-sizing */}
           <table {...getMeasurementTableProps()} style={{ display: "none" }}>
             <thead>
@@ -311,14 +306,14 @@ export default function ResultsTable({
                     onContextMenu={(e) => handleContextMenu(e, row.original)}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <StyledTableCell key={cell.id}>
+                      <StyledTableCell key={cell.id} className="styled-table-cell">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </StyledTableCell>
                     ))}
                   </SubRowTableRow>
                 ))
               ) : (
-                <StyledTableRow>
+                <TableRow className="styled-table-row">
                   <EmptyStateCell colSpan={table.getAllColumns().length}>
                     {optimisticResults.length === 0
                       ? "No search query"
@@ -326,7 +321,7 @@ export default function ResultsTable({
                         ? "No results matching your filter values"
                         : "No results found"}
                   </EmptyStateCell>
-                </StyledTableRow>
+                </TableRow>
               )}
             </TableBody>
           </Table>
@@ -404,7 +399,7 @@ export default function ResultsTable({
               </NavigationContainer>
             </PaginationContainer>
           )}
-        </ResultsPaper>
+        </div>
 
         {/* Column Visibility Menu */}
         <Menu
@@ -441,7 +436,7 @@ export default function ResultsTable({
             onClose={handleCloseContextMenu}
           />
         )}
-      </ResultsContainer>
+      </div>
     </>
   );
 }

@@ -6,36 +6,16 @@ import {
   List,
   ListItem,
   ListItemText,
-  Paper,
   Select,
-  TableCell,
-  TableRow,
   TextField,
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import TableCell from "@mui/material/TableCell";
+import TableRow from "@mui/material/TableRow";
 import { darkPalette, designTokens, lightPalette } from "../themes";
 
 // === APP COMPONENTS ===
-
-// Main app container with dynamic sizing and background
-export const AppContainer = styled(Box)(({ theme }) => ({
-  width: process.env.NODE_ENV !== "production" ? "100vw" : "100%",
-  backgroundColor: theme.palette.background.default,
-  position: "relative",
-  overflow: "hidden",
-  minHeight: "100vh",
-  display: "flex",
-  flexDirection: "column",
-}));
-
-// Main content area
-export const MainContent = styled(Box)(() => ({
-  height: "100%",
-  ...(process.env.NODE_ENV !== "production" && {
-    flex: 1,
-  }),
-}));
 
 // === SEARCH PAGE COMPONENTS ===
 
@@ -137,99 +117,6 @@ export const MenuButton = styled(IconButton)(({ theme }) => ({
 }));
 
 // === RESULTS PAGE COMPONENTS ===
-
-export const ResultsContainer = styled(Box)(({ theme }) => ({
-  height: "100%",
-  minHeight: process.env.NODE_ENV !== "production" ? "400px" : "400px",
-  backgroundColor: theme.palette.background.default,
-  padding: "12px",
-  display: "flex",
-  flexDirection: "column",
-  overflow: "hidden",
-}));
-
-export const ResultsHeader = styled(Box)(({ theme }) => ({
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: theme.spacing(1, 0),
-  marginBottom: theme.spacing(2),
-  borderBottom: `1px solid ${theme.palette.divider}`,
-}));
-
-export const HeaderLeft = styled(Box)(() => ({
-  display: "flex",
-  alignItems: "center",
-  gap: "8px",
-}));
-
-export const HeaderSearchField = styled(TextField)(({ theme }) => ({
-  minWidth: process.env.NODE_ENV !== "production" ? "400px" : "300px",
-  backgroundColor: theme.palette.background.paper,
-  borderRadius: designTokens.borderRadius.medium,
-  boxShadow: designTokens.shadows.low,
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: theme.palette.background.paper,
-    "& fieldset": {
-      borderColor: theme.palette.grey[300],
-    },
-    "&:hover fieldset": {
-      borderColor: theme.palette.primary.main,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: theme.palette.primary.main,
-    },
-  },
-}));
-
-export const ResultsPaper = styled(Paper)(({ theme }) => ({
-  backgroundColor: theme.palette.background.paper,
-  borderRadius: designTokens.borderRadius.medium,
-  boxShadow: designTokens.shadows.medium,
-  overflow: "hidden",
-}));
-
-export const ResultsTitle = styled(Typography)(({ theme }) => ({
-  color: theme.palette.text.primary,
-  marginBottom: "16px",
-  fontWeight: 500,
-}));
-
-export const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  borderBottom: `1px solid ${theme.palette.divider}`,
-  transition: theme.transitions.create("background-color"),
-  cursor: "pointer",
-  "&:hover": {
-    backgroundColor: theme.palette.action.hover,
-  },
-}));
-
-export const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  color: theme.palette.text.primary,
-  padding: "4px 8px",
-  fontSize: "0.85rem",
-  lineHeight: 1.2,
-}));
-
-export const DescriptionText = styled(Typography)(({ theme }) => ({
-  color: theme.palette.text.secondary,
-  maxWidth: "200px",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  whiteSpace: "nowrap",
-}));
-
-export const CompactExpandButton = styled(IconButton)(({ theme }) => ({
-  padding: "2px",
-  minWidth: "20px",
-  width: "20px",
-  height: "20px",
-  color: theme.palette.text.secondary,
-  "&:hover": {
-    backgroundColor: theme.palette.action.hover,
-    color: theme.palette.text.primary,
-  },
-}));
 
 // === DRAWER COMPONENTS ===
 
@@ -383,6 +270,11 @@ export const BackIconButton = styled(IconButton, {
   },
 }));
 
+// === TABLE CELL COMPONENTS ===
+export const StyledTableCell = styled(TableCell)(() => ({
+  padding: "2px 0 0 0",
+}));
+
 // Empty state cell
 export const EmptyStateCell = styled(StyledTableCell)(({ theme }) => ({
   textAlign: "center",
@@ -435,13 +327,6 @@ export const FilterTextField = styled(TextField)(() => ({
   "& .MuiOutlinedInput-input": {
     padding: "4px 8px",
   },
-}));
-
-// Sub-row styling
-export const SubRowTableRow = styled(StyledTableRow, {
-  shouldForwardProp: (prop) => prop !== "isSubRow",
-})<{ isSubRow: boolean }>(({ theme, isSubRow }) => ({
-  backgroundColor: isSubRow ? theme.palette.action.hover : "transparent",
 }));
 
 // === SEARCH FORM COMPONENTS ===
@@ -506,3 +391,30 @@ export const ThemeSwitcherButton = styled(IconButton, {
     },
   }),
 );
+
+export const AppMainBox = styled(Box)(({ theme }) => ({
+  backgroundColor: theme.palette.background.default,
+  width: "100%",
+}));
+
+export const LoadingIndicatorBox = styled(Box)(() => ({
+  position: "fixed",
+  top: 0,
+  left: 0,
+  right: 0,
+  height: 2,
+  backgroundColor: "#1976d2", // fallback color if theme is not used
+  zIndex: 9999,
+  animation: "pulse 1s infinite",
+}));
+
+export const StyledTableRow = styled(TableRow)(() => ({
+  // You can add default styles for all table rows here if needed
+}));
+
+// Sub-row styling
+export const SubRowTableRow = styled(StyledTableRow, {
+  shouldForwardProp: (prop) => prop !== "isSubRow",
+})<{ isSubRow: boolean }>(({ theme, isSubRow }) => ({
+  backgroundColor: isSubRow ? theme.palette.action.hover : "transparent",
+}));

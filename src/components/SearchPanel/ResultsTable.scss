@@ -42,3 +42,23 @@
     }
   }
 }
+
+.search-results,
+#search-results-table-container {
+  td,
+  th {
+    padding: 2px 0 0 0 !important;
+  }
+}
+
+.MuiTable-root {
+  thead,
+  tbody {
+    tr {
+      th,
+      td {
+        padding: 2px 0 0 0 !important;
+      }
+    }
+  }
+}

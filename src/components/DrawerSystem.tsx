@@ -1,5 +1,6 @@
 import { Accordion, Box, Checkbox, Chip, Drawer, Tab, Tabs, Typography } from "@mui/material";
 import React, { useState } from "react";
+import "./DrawerSystem.scss";
 
 import {
   ExpandMore as ExpandMoreIcon,
@@ -9,7 +10,6 @@ import {
 
 import {
   ChipContainer,
-  DrawerContainer,
   StyledAccordionDetails,
   StyledAccordionDetailsNoPadding,
   StyledAccordionSummary,
@@ -36,7 +36,7 @@ function TabPanel(props: TabPanelProps) {
       hidden={value !== index}
       id={`drawer-tabpanel-${index}`}
       aria-labelledby={`drawer-tab-${index}`}
-      style={{ flex: 1, overflow: "auto", padding: "8px 0" }}
+      className="drawer-system__tabpanel"
       {...other}
     >
       {value === index && children}
@@ -163,7 +163,7 @@ const DrawerSystem: React.FC = () => {
       onClose={() => appContext.setDrawerTab(-1)}
       variant="temporary"
     >
-      <DrawerContainer>
+      <div className="drawer-container">
         <Tabs value={appContext.drawerTab} onChange={handleTabChange} variant="fullWidth">
           <Tab icon={<SearchIcon />} label="SEARCH" iconPosition="start" />
           <Tab icon={<SettingsIcon />} label="SETTINGS" iconPosition="start" />
@@ -179,7 +179,7 @@ const DrawerSystem: React.FC = () => {
         <TabPanel value={appContext.drawerTab} index={1}>
           <SettingsPanelFull />
         </TabPanel>
-      </DrawerContainer>
+      </div>
     </Drawer>
   );
 };

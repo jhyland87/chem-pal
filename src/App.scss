@@ -15,7 +15,7 @@ html::-webkit-scrollbar {
   vertical-align: top;
   min-width: 800px;
   max-height: 600px;
-  min-height: 300px;
+  min-height: 400px;
   header.MuiAppBar-root {
     border-radius: 0;
   }
@@ -135,4 +135,19 @@ td,
   background: none;
   color: #444242;
   padding: 0;
+}
+
+.app-container {
+  width: 100vw;
+  background-color: var(--background-default, #f3f7fa);
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  height: 100%;
+  flex: 1;
 }

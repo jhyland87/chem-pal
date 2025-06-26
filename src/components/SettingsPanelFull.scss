@@ -1,0 +1,19 @@
+.settings-panel__helper-on-hover {
+  & > .MuiFormHelperText-root {
+    transition:
+      visibility 0s,
+      opacity 0.5s linear;
+    visibility: hidden;
+    padding-right: 3px;
+    opacity: 0;
+  }
+  &:hover > .MuiFormHelperText-root,
+  &:focus > .MuiFormHelperText-root {
+    visibility: visible;
+    opacity: 1;
+  }
+}
+
+.settings-panel__input {
+  width: 120px;
+}
