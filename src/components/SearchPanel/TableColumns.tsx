@@ -46,7 +46,9 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         ) : null;
       },
       enableHiding: false,
-      minSize: 20,
+      minSize: 10,
+      maxSize: 10,
+      size: 10,
       enableSorting: false,
       enableColumnFilter: false,
       enableResizing: false,

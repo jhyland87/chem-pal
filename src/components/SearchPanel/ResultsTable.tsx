@@ -23,6 +23,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import { Column, ColumnFiltersState, flexRender, Row } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
 import React, { Dispatch, ReactElement, SetStateAction, useEffect, useState } from "react";
@@ -74,8 +75,10 @@ export default function ResultsTable({
   columnFilterFns,
 }: ResultsTableProps): ReactElement {
   const appContext = useAppContext();
+  const theme = useTheme();
   const [showFilters, setShowFilters] = useState(false);
   const [columnMenuAnchor, setColumnMenuAnchor] = useState<null | HTMLElement>(null);
+  const [globalFilter, setGlobalFilter] = useState("");
 
   // Enhanced search hook that maintains streaming behavior
   const { searchResults, isLoading, error, resultCount, executeSearch, handleStopSearch } =
@@ -84,8 +87,15 @@ export default function ResultsTable({
   // Context menu functionality
   const { contextMenu, handleContextMenu, handleCloseContextMenu } = useContextMenu();
 
-  // Use searchResults directly - they're already streaming in real-time
-  const optimisticResults = searchResults;
+  // Global filter logic
+  const filteredResults = globalFilter.trim()
+    ? searchResults.filter((row) =>
+        Object.values(row).join(" ").toLowerCase().includes(globalFilter.trim().toLowerCase()),
+      )
+    : searchResults;
+
+  // Use filteredResults instead of searchResults for optimisticResults
+  const optimisticResults = filteredResults;
 
   // Optional: Log current result count for debugging
   if (resultCount > 0) {
@@ -134,17 +144,6 @@ export default function ResultsTable({
   // Auto column sizing
   const { getMeasurementTableProps } = useAutoColumnSizing(table, optimisticResults);
 
-  function columnSizeVars() {
-    const headers = table.getFlatHeaders();
-    const colSizes: { [key: string]: number } = {};
-    for (let i = 0; i < headers.length; i++) {
-      const header = headers[i]!;
-      colSizes[`--header-${header.id}-size`] = header.getSize();
-      colSizes[`--col-${header.column.id}-size`] = header.column.getSize();
-    }
-    return colSizes;
-  }
-
   const handleSearch = (query: string) => {
     if (query.trim()) {
       executeSearch(query.trim());
@@ -186,14 +185,9 @@ export default function ResultsTable({
               }}
               InputProps={{
                 endAdornment: (
-                  <>
-                    <IconButton onClick={() => handleSearch("")} size="small">
-                      <SearchIcon />
-                    </IconButton>
-                    <IconButton onClick={() => handleSearch("")} size="small">
-                      <SearchIcon />
-                    </IconButton>
-                  </>
+                  <IconButton onClick={() => handleSearch("")} size="small">
+                    <SearchIcon />
+                  </IconButton>
                 ),
               }}
             />
@@ -227,9 +221,52 @@ export default function ResultsTable({
 
         <div className="results-title">Search Results ({optimisticResults.length} found)</div>
 
-        <div className="results-paper">
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "8px 16px 0 16px",
+            background: theme.palette.background.paper,
+            borderTopLeftRadius: theme.shape?.borderRadius ?? 0,
+            borderTopRightRadius: theme.shape?.borderRadius ?? 0,
+          }}
+        >
+          <div style={{ fontWeight: 600, color: theme.palette.text.primary }}>
+            Results: {optimisticResults.length}
+          </div>
+          <TextField
+            size="small"
+            variant="outlined"
+            placeholder="Filter results..."
+            value={globalFilter}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            slotProps={{
+              input: {
+                onKeyDown: handleKeyPress,
+                "aria-label": "Filter results",
+              },
+            }}
+            sx={{
+              background: theme.palette.background.default,
+              color: theme.palette.text.primary,
+              minWidth: 180,
+            }}
+          />
+        </div>
+
+        <div className="results-paper" style={{ overflowX: "auto", width: "100%" }}>
           {/* Hidden measurement table for auto-sizing */}
-          <table {...getMeasurementTableProps()} style={{ display: "none" }}>
+          <table
+            {...getMeasurementTableProps()}
+            style={{
+              visibility: "hidden",
+              position: "absolute",
+              left: "-9999px",
+              height: 0,
+              overflow: "hidden",
+            }}
+          >
             <thead>
               <tr>
                 {table.getAllLeafColumns().map((col) => (
@@ -259,7 +296,7 @@ export default function ResultsTable({
             </tbody>
           </table>
 
-          <Table style={columnSizeVars()}>
+          <Table style={{ minWidth: 650 /* allow table to grow as needed, remove width: 100% */ }}>
             <TableHead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
@@ -269,6 +306,12 @@ export default function ResultsTable({
                       canSort={header.column.getCanSort()}
                       cellWidth={header.getSize()}
                       onClick={header.column.getToggleSortingHandler()}
+                      sx={{
+                        position: "sticky",
+                        top: 0,
+                        background: theme.palette.background.paper,
+                        zIndex: 2,
+                      }}
                     >
                       {header.isPlaceholder
                         ? null
