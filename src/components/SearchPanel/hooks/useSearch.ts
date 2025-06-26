@@ -42,7 +42,7 @@ export function useSearch() {
   // Load search results from Chrome storage on mount - this restores session persistence!
   useEffect(() => {
     chrome.storage.session
-      .get(["searchResults"])
+      .get(["searchResults", "searchInput", "isNewSearch"])
       .then((data) => {
         if (
           data.searchResults &&
@@ -61,11 +61,27 @@ export function useSearch() {
             status: false, // Don't show status when loading from storage
           }));
         }
+
+        // Only execute search if this is a new search submission
+        if (data.isNewSearch && data.searchInput && data.searchInput.trim()) {
+          console.debug("Found new search submission, executing search:", data.searchInput);
+          // Clear the new search flag first
+          chrome.storage.session.remove(["isNewSearch"]).catch((error) => {
+            console.warn("Failed to clear isNewSearch flag:", error);
+          });
+
+          // Execute the search
+          performSearch({
+            query: data.searchInput,
+            supplierResultLimit: appContext.userSettings.supplierResultLimit,
+            suppliers: appContext.userSettings.suppliers.slice(0, 2),
+          });
+        }
       })
       .catch((error) => {
-        console.warn("Failed to load search results from session storage:", error);
+        console.warn("Failed to load search data from session storage:", error);
       });
-  }, []);
+  }, [appContext.userSettings.supplierResultLimit, appContext.userSettings.suppliers]);
 
   const executeSearch = useCallback(
     (query: string) => {

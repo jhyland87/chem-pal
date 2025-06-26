@@ -38,7 +38,10 @@ const SearchPanelHome: React.FC = () => {
 
   const handleSearch = async (query: string) => {
     // Save the query to Chrome session storage (same as SearchInput)
-    await chrome.storage.session.set({ searchInput: query });
+    await chrome.storage.session.set({
+      searchInput: query,
+      isNewSearch: true, // Flag to indicate this is a new search submission
+    });
     // Switch to the results panel
     if (typeof appContext.setPanel === "function") {
       appContext.setPanel(RESULTS_TAB_INDEX);

@@ -211,7 +211,7 @@ export default function ResultsTable({
           </HeaderRight>
         </div>
 
-        <div className="results-title">Search Results ({optimisticResults.length} found)</div>
+        {/* <div className="results-title">Search Results ({optimisticResults.length} found)</div> */}
 
         <div
           style={{
