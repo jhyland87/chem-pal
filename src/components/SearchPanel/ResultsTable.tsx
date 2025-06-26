@@ -4,10 +4,10 @@ import {
   FilterList as FilterListIcon,
   FirstPage as FirstPageIcon,
   LastPage as LastPageIcon,
-  Search as SearchIcon,
   Settings as SettingsIcon,
   ViewColumn as ViewColumnIcon,
 } from "@mui/icons-material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
   Checkbox,
   FormControl,
@@ -16,9 +16,6 @@ import {
   ListItemText,
   Menu,
   MenuItem,
-  Table,
-  TableBody,
-  TableHead,
   TableRow,
   TextField,
   Typography,
@@ -44,7 +41,10 @@ import {
   PageSizeSelect,
   PaginationContainer,
   SortableTableHeaderCell,
+  StyledTable,
+  StyledTableBody,
   StyledTableCell,
+  StyledTableHead,
   SubRowTableRow,
 } from "../StyledComponents";
 import ContextMenu from "./ContextMenu";
@@ -173,24 +173,16 @@ export default function ResultsTable({
       <div className="results-container">
         <div className="results-header">
           <div className="header-left">
-            <TextField
-              size="small"
-              variant="outlined"
-              placeholder="Search for products..."
-              onKeyDown={handleKeyPress}
-              slotProps={{
-                input: {
-                  onKeyDown: handleKeyPress,
-                },
-              }}
-              InputProps={{
-                endAdornment: (
-                  <IconButton onClick={() => handleSearch("")} size="small">
-                    <SearchIcon />
-                  </IconButton>
-                ),
-              }}
-            />
+            {appContext?.setPanel && (
+              <IconButton
+                onClick={() => appContext.setPanel!(0)}
+                size="small"
+                sx={{ color: theme.palette.text.primary }}
+                aria-label="Back to search home"
+              >
+                <ArrowBackIcon />
+              </IconButton>
+            )}
           </div>
           <HeaderRight>
             <FilterIconButton
@@ -296,8 +288,10 @@ export default function ResultsTable({
             </tbody>
           </table>
 
-          <Table style={{ minWidth: 650 /* allow table to grow as needed, remove width: 100% */ }}>
-            <TableHead>
+          <StyledTable
+            style={{ minWidth: 650 /* allow table to grow as needed, remove width: 100% */ }}
+          >
+            <StyledTableHead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
@@ -339,8 +333,8 @@ export default function ResultsTable({
                     ))}
                   </TableRow>
                 ))}
-            </TableHead>
-            <TableBody>
+            </StyledTableHead>
+            <StyledTableBody>
               {table.getRowModel().rows.length > 0 ? (
                 table.getRowModel().rows.map((row) => (
                   <SubRowTableRow
@@ -366,8 +360,8 @@ export default function ResultsTable({
                   </EmptyStateCell>
                 </TableRow>
               )}
-            </TableBody>
-          </Table>
+            </StyledTableBody>
+          </StyledTable>
 
           {/* Enhanced error handling */}
           {error && (

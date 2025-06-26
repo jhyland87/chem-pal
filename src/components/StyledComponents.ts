@@ -11,7 +11,10 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
+import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { darkPalette, designTokens, lightPalette } from "../themes";
 
@@ -417,4 +420,88 @@ export const SubRowTableRow = styled(StyledTableRow, {
   shouldForwardProp: (prop) => prop !== "isSubRow",
 })<{ isSubRow: boolean }>(({ theme, isSubRow }) => ({
   backgroundColor: isSubRow ? theme.palette.action.hover : "transparent",
+}));
+
+// === SEARCH PANEL HOME COMPONENTS ===
+
+export const SearchPanelHomeContainer = styled(SearchContainer)(() => ({
+  minHeight: "60vh",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  position: "relative",
+}));
+
+export const SearchPanelHomeContent = styled(Box)(() => ({
+  width: "100%",
+  maxWidth: 480,
+  position: "relative",
+}));
+
+export const SearchPanelHomeLogoContainer = styled(Box)(() => ({
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  marginBottom: 32,
+}));
+
+export const SearchPanelHomeLogo = styled("img")(() => ({
+  maxWidth: 120,
+  maxHeight: 120,
+  display: "block",
+  margin: "0 auto",
+}));
+
+export const SearchPanelHomeForwardButton = styled(IconButton, {
+  shouldForwardProp: (prop) => prop !== "isDarkTheme",
+})<{ isDarkTheme?: boolean }>(({ theme, isDarkTheme }) => ({
+  position: "absolute",
+  top: 16,
+  right: 16,
+  color: theme.palette.text.primary,
+  background: theme.palette.background.paper,
+  boxShadow: theme.shadows[1],
+  zIndex: 2,
+  "& .MuiBadge-badge": {
+    backgroundColor: isDarkTheme ? "#ffffff" : "#1976d2", // Light for dark theme, dark blue for light theme
+    color: isDarkTheme ? "#000000" : "#ffffff", // Dark text for light badge, white text for dark badge
+    fontSize: "0.65rem",
+    minWidth: "16px",
+    height: "16px",
+    padding: "0 4px",
+  },
+}));
+
+export const SearchPanelHomeSettingsButton = styled(IconButton)(({ theme }) => ({
+  position: "absolute",
+  top: 16,
+  right: 56, // Position to the left of the forward button
+  color: theme.palette.text.primary,
+  background: theme.palette.background.paper,
+  boxShadow: theme.shadows[1],
+  zIndex: 2,
+}));
+
+export const StyledTable = styled(Table)(({ theme }) => ({
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: `0 0 8px 8px`, // Only bottom corners rounded
+  "& .MuiTableBody-root": {
+    backgroundColor: theme.palette.background.paper,
+  },
+  "& .MuiTableRow-root": {
+    backgroundColor: theme.palette.background.paper,
+    "&:hover": {
+      backgroundColor: theme.palette.action.hover,
+    },
+  },
+}));
+
+export const StyledTableHead = styled(TableHead)(({ theme }) => ({
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: 0,
+}));
+
+export const StyledTableBody = styled(TableBody)(({ theme }) => ({
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: 0,
 }));

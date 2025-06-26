@@ -54,7 +54,7 @@ html::-webkit-scrollbar {
 }
 
 .read-the-docs {
-  color: #2f68ae;
+  color: inherit;
 }
 
 .tr {
@@ -133,13 +133,12 @@ td,
 .svg-button-icon {
   border: none;
   background: none;
-  color: #444242;
+  color: inherit;
   padding: 0;
 }
 
 .app-container {
   width: 100vw;
-  background-color: var(--background-default, #f3f7fa);
   position: relative;
   overflow: hidden;
   min-height: 100vh;

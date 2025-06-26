@@ -47,11 +47,12 @@ export default ({ mode }: { mode: string }) => {
     },
     optimizeDeps: {
       exclude: [
-        "**/__tests__/**",
-        "**/*.test.ts",
-        "**/*.test.tsx",
-        "**/*.spec.ts",
-        "**/*.spec.tsx",
+        // Remove problematic test file patterns that cause esbuild errors
+        // "**/__tests__/**",
+        // "**/*.test.ts",
+        // "**/*.test.tsx",
+        // "**/*.spec.ts",
+        // "**/*.spec.tsx",
       ],
     },
     plugins: [
