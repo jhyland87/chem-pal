@@ -60,6 +60,7 @@ interface AppState {
   panel: number;
   speedDialVisibility: boolean;
   drawerTab: number;
+  selectedSuppliers: string[];
 }
 
 const initialAppState: AppState = {
@@ -88,6 +89,7 @@ const initialAppState: AppState = {
   panel: 0,
   speedDialVisibility: false,
   drawerTab: -1,
+  selectedSuppliers: [],
 };
 
 type AppAction =
@@ -95,7 +97,8 @@ type AppAction =
   | { type: "SET_PANEL"; panel: number }
   | { type: "SET_SPEED_DIAL_VISIBILITY"; visible: boolean }
   | { type: "LOAD_FROM_STORAGE"; data: Partial<AppState> }
-  | { type: "SET_DRAWER_TAB"; tab: number };
+  | { type: "SET_DRAWER_TAB"; tab: number }
+  | { type: "SET_SELECTED_SUPPLIERS"; suppliers: string[] };
 
 /**
  * React v19 App component with enhanced state management
@@ -166,6 +169,20 @@ function App() {
             drawerTab: action.tab,
           };
 
+        case "SET_SELECTED_SUPPLIERS": {
+          // Handle async Chrome storage in useEffect
+          startTransition(() => {
+            chrome.storage.local.set({ selectedSuppliers: action.suppliers }).catch((error) => {
+              console.error("Failed to save selectedSuppliers:", error);
+            });
+          });
+
+          return {
+            ...currentState,
+            selectedSuppliers: action.suppliers,
+          };
+        }
+
         default:
           return currentState;
       }
@@ -176,7 +193,10 @@ function App() {
   // Load initial data from Chrome storage on mount
   useEffect(() => {
     console.log("SET_PANEL", appState.panel);
-    Promise.all([chrome.storage.session.get(["panel"]), chrome.storage.local.get(["userSettings"])])
+    Promise.all([
+      chrome.storage.session.get(["panel"]),
+      chrome.storage.local.get(["userSettings", "selectedSuppliers"]),
+    ])
       .then(([sessionData, localData]) => {
         const loadedData: Partial<AppState> = {};
 
@@ -188,6 +208,10 @@ function App() {
           loadedData.userSettings = { ...localData.userSettings };
         }
 
+        if (localData.selectedSuppliers) {
+          loadedData.selectedSuppliers = localData.selectedSuppliers as string[];
+        }
+
         if (Object.keys(loadedData).length > 0) {
           dispatch({ type: "LOAD_FROM_STORAGE", data: loadedData });
         }
@@ -197,7 +221,7 @@ function App() {
       });
   }, [dispatch]);
 
-  // Speed dial visibility logic
+  // Speed dial visibility logicc
   useEffect(() => {
     const cornerThreshold = 30;
 
@@ -236,6 +260,9 @@ function App() {
     setDrawerTab: (tab: number) => dispatch({ type: "SET_DRAWER_TAB", tab }),
     toggleDrawer: () =>
       dispatch({ type: "SET_DRAWER_TAB", tab: appState.drawerTab === -1 ? 0 : -1 }),
+    selectedSuppliers: appState.selectedSuppliers,
+    setSelectedSuppliers: (suppliers: string[]) =>
+      dispatch({ type: "SET_SELECTED_SUPPLIERS", suppliers }),
   };
 
   return (

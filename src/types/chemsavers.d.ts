@@ -9,7 +9,7 @@ declare global {
    * - Categorization and metadata
    * - Product identifiers (SKU, UPC, CAS)
    */
-  interface ChemsaversProductObject {
+  interface ChemsaversProductObject extends SyntheticFields {
     /* eslint-disable */
     /** Chemical Abstracts Service registry number */
     CAS?: string;

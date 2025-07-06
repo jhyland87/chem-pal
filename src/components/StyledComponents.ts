@@ -7,6 +7,7 @@ import {
   List,
   ListItem,
   ListItemText,
+  MenuItem,
   Paper,
   Select,
   TextField,
@@ -668,4 +669,73 @@ export const ErrorBoundaryButton = styled(Button)(() => ({
 export const ErrorIdText = styled(Typography)(({ theme }) => ({
   marginTop: theme.spacing(3),
   display: "block",
+}));
+
+// === CONTEXT MENU COMPONENTS ===
+
+// Context menu paper container
+export const ContextMenuPaper = styled(Paper)(() => ({
+  position: "fixed",
+  zIndex: 9999,
+  minWidth: 200,
+  maxWidth: 300,
+}));
+
+// Context menu option text
+export const ContextMenuOptionText = styled(ListItemText)(() => ({
+  textAlign: "left",
+}));
+
+// Context menu item with left-aligned text
+export const ContextMenuItem = styled(MenuItem)(() => ({
+  justifyContent: "flex-start",
+  textAlign: "left",
+}));
+
+// === TABLE HEADER COMPONENTS ===
+
+// Table header cell with dynamic sizing
+export const TableHeaderCell = styled("th", {
+  shouldForwardProp: (prop) => prop !== "headerSize" && prop !== "colSize",
+})<{
+  headerSize: number;
+  colSize: number;
+}>(({ headerSize, colSize }) => ({
+  width: `${headerSize}px`,
+  "--header-size": `${headerSize}px`,
+  "--col-size": `${colSize}px`,
+}));
+
+// Column resizer handle
+export const ColumnResizer = styled("div", {
+  shouldForwardProp: (prop) => prop !== "isResizing",
+})<{ isResizing: boolean }>(({ isResizing }) => ({
+  cursor: "col-resize",
+  "&.resizer": {
+    position: "absolute",
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: "4px",
+    backgroundColor: isResizing ? "#1976d2" : "transparent",
+    "&:hover": {
+      backgroundColor: "#1976d2",
+    },
+  },
+  "&.isResizing": {
+    backgroundColor: "#1976d2",
+  },
+}));
+
+// Sortable header content container
+export const SortableHeaderContent = styled("div", {
+  shouldForwardProp: (prop) => prop !== "canSort",
+})<{ canSort: boolean }>(({ canSort }) => ({
+  cursor: canSort ? "pointer" : "default",
+  userSelect: canSort ? "none" : "auto",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "8px",
+  position: "relative",
 }));

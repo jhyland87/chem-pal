@@ -1,11 +1,10 @@
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowDropUpIcon from "@/icons/ArrowDropUpIcon";
+import type { ColumnMeta } from "@tanstack/react-table";
 import { ColumnDef, flexRender, Header, HeaderGroup, Table } from "@tanstack/react-table";
-import { CSSProperties, useMemo } from "react";
+import { useMemo } from "react";
+import { ColumnResizer, SortableHeaderContent, TableHeaderCell } from "../StyledComponents";
 import "./TableHeader.scss";
-
-// Add type alias for the global ColumnMeta
-type ColumnMeta = TanStackTable.ColumnMeta;
 
 /**
  * TableHeader component that renders the header row of the product results table.
@@ -26,9 +25,9 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
    * @returns Object mapping column IDs to their filter configurations
    */
   const filterableColumns = useMemo(() => {
-    return table.options.columns.reduce<Record<string, ColumnMeta>>(
+    return table.options.columns.reduce<Record<string, ColumnMeta<Product, unknown>>>(
       (accu, column: ColumnDef<Product, unknown>) => {
-        const meta = column.meta as ColumnMeta | undefined;
+        const meta = column.meta as ColumnMeta<Product, unknown> | undefined;
         if (meta?.filterVariant === undefined || !column.id) return accu;
 
         accu[column.id] = {
@@ -91,7 +90,7 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
           {headerGroup.headers.map((header: Header<Product, unknown>) => {
             // If the column has filterable values, populate the unique values for the column
             if (filterableColumns[header.id] !== undefined) {
-              const meta = header.column.columnDef.meta as ColumnMeta;
+              const meta = header.column.columnDef.meta as ColumnMeta<Product, unknown>;
               header.column.columnDef.meta = {
                 ...meta,
                 ...filterableColumns[header.id],
@@ -99,43 +98,34 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
             }
 
             return (
-              <th
+              <TableHeaderCell
                 key={header.id}
                 colSpan={header.colSpan}
-                style={
-                  {
-                    width: `${header.getSize()}px`,
-                    // eslint-disable-next-line @typescript-eslint/naming-convention
-                    "--header-size": `${header.getSize()}px`,
-                    // eslint-disable-next-line @typescript-eslint/naming-convention
-                    "--col-size": `${header.column.getSize()}px`,
-                  } as CSSProperties
-                }
+                headerSize={header.getSize()}
+                colSize={header.column.getSize()}
               >
                 {header.isPlaceholder ? null : (
                   <>
-                    <div
-                      style={{ cursor: "col-resize" }}
+                    <ColumnResizer
+                      isResizing={header.column.getIsResizing()}
                       onDoubleClick={header.column.resetSize}
                       onMouseDown={header.getResizeHandler()}
                       onTouchStart={header.getResizeHandler()}
                       className={`resizer ${header.column.getIsResizing() ? "isResizing" : ""}`}
                     />
-                    <div
-                      {...{
-                        className: header.column.getCanSort() ? "cursor-pointer select-none" : "",
-                        onClick: header.column.getToggleSortingHandler(),
-                      }}
+                    <SortableHeaderContent
+                      canSort={header.column.getCanSort()}
+                      onClick={header.column.getToggleSortingHandler()}
                     >
                       {flexRender(header.column.columnDef.header, header.getContext())}
                       {{
                         asc: <ArrowDropUpIcon className="sort-icon" />,
                         desc: <ArrowDropDownIcon className="sort-icon" />,
                       }[header.column.getIsSorted() as string] ?? null}
-                    </div>
+                    </SortableHeaderContent>
                   </>
                 )}
-              </th>
+              </TableHeaderCell>
             );
           })}
         </tr>

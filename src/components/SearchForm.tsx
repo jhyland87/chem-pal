@@ -20,11 +20,9 @@ export const SearchForm: React.FC<SearchFormProps> = ({
   onSearch,
   onDrawerToggle,
   placeholder = "Search for products...",
-  showAdvancedButton = true,
 }) => {
   const [query, setQuery] = useState("");
   const appContext = useAppContext();
-  console.log("showAdvancedButton", showAdvancedButton);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +71,7 @@ export const SearchForm: React.FC<SearchFormProps> = ({
         <SearchFormDivider />
         <SearchFormIconButton
           type="button"
-          color="primary"
+          //color="primary"
           aria-label="advanced options"
           onClick={handleDrawerToggle}
         >

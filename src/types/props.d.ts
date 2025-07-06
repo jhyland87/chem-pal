@@ -65,6 +65,10 @@ declare global {
     toggleDrawer: () => void;
     /** Drawer state management - -1 = closed, 0 = search tab, 1 = settings tab */
     drawerTab: number;
+    /** Selected Suppliers */
+    selectedSuppliers: string[];
+    /** Function to update selected suppliers */
+    setSelectedSuppliers: (suppliers: string[]) => void;
   }
 
   /**

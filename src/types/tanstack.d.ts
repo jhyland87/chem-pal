@@ -81,15 +81,62 @@ declare module "@tanstack/react-table" {
     userSettings?: UserSettings;
   }
 
+  // interface ColumnMeta {
+  //   /** The type of filter to use for this column */
+  //   filterVariant?: "text" | "range" | "select";
+  //   /** Array of unique values for select-type filters */
+  //   uniqueValues?: string[];
+  //   /** Array of range values for range-type filters */
+  //   rangeValues?: number[];
+  //   /** CSS properties to apply to the column */
+  //   style?: CSSProperties;
+
+  // }
+
+  /**
+   * Configuration metadata for table columns.
+   * Used to customize column behavior and appearance.
+   *
+   * @example
+   * ```typescript
+   * const columnMeta: ColumnMeta = {
+   *   filterVariant: "range",
+   *   uniqueValues: ["ACS", "Technical", "USP"],
+   *   rangeValues: [0, 1000],
+   *   style: { width: "200px" }
+   * };
+   * ```
+   */
   interface ColumnMeta {
-    /** The type of filter to use for this column */
-    filterVariant?: "text" | "range" | "select";
-    /** Array of unique values for select-type filters */
+    /**
+     * Type of filter to use for this column
+     * @example "range"
+     */
+    filterVariant?: "range" | "select" | "text";
+
+    /**
+     * List of all possible unique values for select filters
+     * @example ["ACS", "Technical", "USP"]
+     */
     uniqueValues?: string[];
-    /** Array of range values for range-type filters */
+
+    /**
+     * Minimum and maximum values for range filters
+     * @example [0, 1000]
+     */
     rangeValues?: number[];
-    /** CSS properties to apply to the column */
+
+    /**
+     * Custom CSS styles to apply to the column
+     * @example \{ width: "200px" \}
+     */
     style?: CSSProperties;
+
+    /**
+     * Size of the filter input
+     * @example 6
+     */
+    filterInputSize?: number;
   }
 
   // Extend the SortingFnOption type to include our custom sorting functions

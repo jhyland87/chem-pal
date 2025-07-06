@@ -164,6 +164,7 @@ export default class SupplierChemsavers
       builder
         .setBasicInfo(result.name, result.url, this.supplierName)
         .setDescription(result.description)
+        .setMatchPercentage(result.matchPercentage)
         .setID(result.id)
         .setSku(result.sku)
         .setPricing(result.price, "USD", "$")

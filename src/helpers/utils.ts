@@ -1,10 +1,10 @@
 import { md5 } from "js-md5";
+import TurndownService from "turndown";
 
 /**
  * MD5 hash function that handles various input types.
  * Converts input to string representation before hashing.
  *
- * @category Helpers
  * @param input - The input to hash. Can be string, number, object, or null/undefined.
  * @returns The MD5 hash of the input as a string, or the input itself if null/undefined
  * @throws Error if input type is not supported (e.g., Symbol)
@@ -259,9 +259,9 @@ export function decodeHTMLEntities(text: string) {
 /**
  * Tries to parse a JSON string. If it fails, it returns the original string.
  *
+ * @category Helpers
  * @param data - The data to parse
  * @returns The parsed JSON or false if it fails
- *
  * @example
  * ```typescript
  * tryParseJson('{"name": "John", "age": 30}') // { name: 'John', age: 30 }
@@ -281,8 +281,8 @@ export function tryParseJson(data: unknown): unknown | false {
  * by the "-" character and returns the second part. This is a simple way to get the
  * country code from the locale.
  *
+ * @category Helpers
  * @returns The user's country as a CountryCode. (defaults to "US")
- *
  * @example
  * ```typescript
  * // If the locale is "en-US"
@@ -305,19 +305,73 @@ export function getUserCountry(): CountryCode {
 /**
  * Strips HTML tags from a string.
  *
+ * @category Helpers
  * @param html - The HTML string to strip
  * @returns The string with HTML tags removed
- *
  * @example
  * ```typescript
  * stripHTML("<p>Hello <b>world</b></p>") // Returns "Hello world"
  * ```
  */
-export function stripHTML(html: string) {
+export function stripHTML(html: string): string {
   if (typeof document === "undefined") {
     return html;
   }
-  const tmp = document.createElement("DIV");
-  tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || "";
+  const tempDiv = document.createElement("DIV");
+  tempDiv.innerHTML = html;
+  return tempDiv.textContent || "";
+}
+
+/**
+ * Converts HTML to Markdown using TurndownService.
+ *
+ * @category Helpers
+ * @param html - The HTML string to convert
+ * @returns The Markdown string
+ * @example
+ * ```typescript
+ * formatFromHtmlTurndown("<b>Bold</b>") // Returns "**Bold**"
+ * ```
+ */
+export function formatFromHtmlTurndown(html: string): string {
+  const turndownService = new TurndownService();
+  return turndownService.turndown(html);
+}
+
+/**
+ * Formats HTML into a readable plain text string, handling paragraphs, lists, and links.
+ *
+ * @category Helpers
+ * @param html - The HTML string to format
+ * @returns The formatted plain text string
+ * @example
+ * ```typescript
+ * formatFromHtml("<ul><li>Item 1</li><li>Item 2</li></ul>") // Returns "- Item 1\n- Item 2"
+ * ```
+ */
+export function formatFromHtml(html: string): string {
+  const tempDiv = document.createElement("DIV");
+  tempDiv.innerHTML = html;
+
+  if (tempDiv.children.length === 0) {
+    return tempDiv.textContent || "";
+  }
+
+  const result = Array.from(tempDiv.children).flatMap((child) => {
+    switch (child.nodeName) {
+      // Paragraphs just get their own lines.
+      case "P":
+        return child.textContent;
+      case "UL":
+        return Array.from(child.children).map((e) => `- ${e.textContent}`);
+      case "OL":
+        return Array.from(child.children).map((e, idx) => `${idx + 1}) ${e.textContent}`);
+      case "A":
+        return `${child.textContent} (${child.getAttribute("href")})`;
+      default:
+        return child.textContent;
+    }
+  });
+
+  return result.filter((x) => x !== undefined).join("\n");
 }

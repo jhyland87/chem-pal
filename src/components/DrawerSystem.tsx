@@ -1,3 +1,4 @@
+import SupplierFactory from "@/suppliers/SupplierFactory";
 import { Accordion, Box, Checkbox, Chip, Drawer, Tab, Tabs, Typography } from "@mui/material";
 import React, { useState } from "react";
 import "./DrawerSystem.scss";
@@ -49,26 +50,10 @@ const SearchPanel: React.FC<{
   onAccordionChange: (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => void;
 }> = ({ expandedAccordion, onAccordionChange }) => {
   const [selectedAvailability, setSelectedAvailability] = useState<string[]>(["In Stock"]);
-  const [selectedSuppliers, setSelectedSuppliers] = useState<string[]>(["Akmekem"]);
+  const { selectedSuppliers, setSelectedSuppliers } = useAppContext();
 
   const availability = ["In Stock", "Limited Stock", "Out of Stock", "Pre-order"];
-  const suppliers = [
-    "Akmekem",
-    "Ambeed",
-    "BioFuran Chem",
-    "Carolina",
-    "Carolina Chemical",
-    "Chemsavers",
-    "FTF Scientific",
-    "Sigma-Aldrich",
-    "Fisher Scientific",
-    "VWR International",
-    "Merck KGaA",
-    "Thermo Fisher",
-    "Bio-Rad",
-    "Qiagen",
-    "Promega",
-  ];
+  const suppliers = SupplierFactory.supplierList();
 
   const toggleAvailability = (option: string) => {
     setSelectedAvailability((prev) =>
@@ -77,9 +62,13 @@ const SearchPanel: React.FC<{
   };
 
   const toggleSupplier = (supplier: string) => {
-    setSelectedSuppliers((prev) =>
-      prev.includes(supplier) ? prev.filter((s) => s !== supplier) : [...prev, supplier],
-    );
+    console.log("toggleSupplier", supplier);
+    const newSelectedSuppliers = selectedSuppliers.includes(supplier)
+      ? selectedSuppliers.filter((s) => s !== supplier)
+      : [...selectedSuppliers, supplier];
+
+    setSelectedSuppliers(newSelectedSuppliers);
+    console.log("selectedSuppliers", newSelectedSuppliers);
   };
 
   return (
@@ -164,10 +153,12 @@ const DrawerSystem: React.FC = () => {
       variant="temporary"
     >
       <div className="drawer-container">
-        <Tabs value={appContext.drawerTab} onChange={handleTabChange} variant="fullWidth">
-          <Tab icon={<SearchIcon />} label="SEARCH" iconPosition="start" />
-          <Tab icon={<SettingsIcon />} label="SETTINGS" iconPosition="start" />
-        </Tabs>
+        {appContext.drawerTab !== -1 && (
+          <Tabs value={appContext.drawerTab} onChange={handleTabChange} variant="fullWidth">
+            <Tab icon={<SearchIcon />} label="SEARCH" iconPosition="start" />
+            <Tab icon={<SettingsIcon />} label="SETTINGS" iconPosition="start" />
+          </Tabs>
+        )}
 
         <TabPanel value={appContext.drawerTab} index={0}>
           <SearchPanel

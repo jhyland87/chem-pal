@@ -71,6 +71,11 @@ export function useSearch() {
             console.warn("Failed to clear isNewSearch flag:", error);
           });
 
+          console.log("executing search FROM USEFFECT", {
+            query: data.searchInput,
+            supplierResultLimit: appContext.userSettings.supplierResultLimit,
+            suppliers: appContext.userSettings.suppliers.slice(0, 2),
+          });
           // Execute the search
           performSearch({
             query: data.searchInput,
@@ -90,22 +95,27 @@ export function useSearch() {
         return;
       }
 
+      console.log("executing search FROM EXECUTESEARCH", {
+        query,
+        supplierResultLimit: appContext.userSettings.supplierResultLimit,
+        suppliers: appContext.selectedSuppliers.slice(0, 2),
+      });
       // Use startTransition for better performance during search
       startTransition(() => {
         performSearch({
           query,
           supplierResultLimit: appContext.userSettings.supplierResultLimit,
-          suppliers: appContext.userSettings.suppliers.slice(0, 2),
+          suppliers: appContext.selectedSuppliers.slice(0, 2),
         });
       });
     },
-    [appContext.userSettings.supplierResultLimit, appContext.userSettings.suppliers],
+    [appContext.userSettings.supplierResultLimit, appContext.selectedSuppliers],
   );
 
   const performSearch = async ({
     query,
     supplierResultLimit = appContext.userSettings.supplierResultLimit ?? 3,
-    suppliers = appContext.userSettings.suppliers ?? [],
+    suppliers = appContext.selectedSuppliers ?? [],
   }: {
     query: string;
     supplierResultLimit?: number;
@@ -142,7 +152,7 @@ export function useSearch() {
         query,
         searchLimit,
         fetchControllerRef.current,
-        appContext.userSettings.suppliers,
+        appContext.selectedSuppliers,
       );
 
       const startSearchTime = performance.now();

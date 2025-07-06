@@ -44,10 +44,11 @@ export function useFilterMenu(table?: any) {
   // Accordion state for filters
   const [expanded, setExpanded] = useState<string | false>("");
 
-  // Supplier selection state
-  const [selectedSuppliers, setSelectedSuppliers] = useState<string[]>(
-    appContext?.userSettings.suppliers ?? [],
-  );
+  // Supplier selection state - use context instead of local state
+  const { selectedSuppliers, setSelectedSuppliers } = appContext ?? {
+    selectedSuppliers: [] as string[],
+    setSelectedSuppliers: (() => {}) as (suppliers: string[]) => void,
+  };
 
   // Column visibility state
   const columnStatus =
@@ -92,20 +93,12 @@ export function useFilterMenu(table?: any) {
   // Supplier selection handlers
   const handleSupplierSelect = useCallback(
     (supplierName: string) => {
-      const newChecked = [...selectedSuppliers];
-      const currentIndex = newChecked.indexOf(supplierName);
-      if (currentIndex === -1) {
-        newChecked.push(supplierName);
-      } else {
-        newChecked.splice(currentIndex, 1);
-      }
+      const newChecked = selectedSuppliers.includes(supplierName)
+        ? selectedSuppliers.filter((s) => s !== supplierName)
+        : [...selectedSuppliers, supplierName];
       setSelectedSuppliers(newChecked);
-      appContext?.setUserSettings({
-        ...appContext.userSettings,
-        suppliers: newChecked,
-      });
     },
-    [selectedSuppliers, appContext],
+    [selectedSuppliers, setSelectedSuppliers],
   );
 
   // Column visibility handlers

@@ -98,22 +98,14 @@ function TabPanel(props: TabPanelProps) {
 
 function SupplierSelection() {
   const appContext = useAppContext();
-  const [selectedSuppliers, setSelectedSuppliers] = useState<string[]>(
-    appContext?.userSettings.suppliers ?? [],
-  );
+  const { selectedSuppliers, setSelectedSuppliers } = appContext;
+
   const handleSupplierSelect = (supplierName: string) => {
-    const newChecked = [...selectedSuppliers];
-    const currentIndex = newChecked.indexOf(supplierName);
-    if (currentIndex === -1) {
-      newChecked.push(supplierName);
-    } else {
-      newChecked.splice(currentIndex, 1);
-    }
+    const newChecked = selectedSuppliers.includes(supplierName)
+      ? selectedSuppliers.filter((s) => s !== supplierName)
+      : [...selectedSuppliers, supplierName];
+
     setSelectedSuppliers(newChecked);
-    appContext?.setUserSettings({
-      ...appContext.userSettings,
-      suppliers: newChecked,
-    });
   };
 
   return (
