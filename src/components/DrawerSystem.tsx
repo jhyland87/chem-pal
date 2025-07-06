@@ -1,5 +1,15 @@
 import SupplierFactory from "@/suppliers/SupplierFactory";
-import { Accordion, Box, Checkbox, Chip, Drawer, Tab, Tabs, Typography } from "@mui/material";
+import {
+  Accordion,
+  Box,
+  Checkbox,
+  Chip,
+  Drawer,
+  Tab,
+  Tabs,
+  TextField,
+  Typography,
+} from "@mui/material";
 import React, { useState } from "react";
 import "./DrawerSystem.scss";
 
@@ -50,7 +60,8 @@ const SearchPanel: React.FC<{
   onAccordionChange: (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => void;
 }> = ({ expandedAccordion, onAccordionChange }) => {
   const [selectedAvailability, setSelectedAvailability] = useState<string[]>(["In Stock"]);
-  const { selectedSuppliers, setSelectedSuppliers } = useAppContext();
+  const { selectedSuppliers, setSelectedSuppliers, userSettings, setUserSettings } =
+    useAppContext();
 
   const availability = ["In Stock", "Limited Stock", "Out of Stock", "Pre-order"];
   const suppliers = SupplierFactory.supplierList();
@@ -101,7 +112,7 @@ const SearchPanel: React.FC<{
         onChange={onAccordionChange("search-supplier")}
       >
         <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>Supplier</Typography>
+          <Typography>Search Suppliers</Typography>
         </StyledAccordionSummary>
         <StyledAccordionDetailsNoPadding className="supplier-list-accordion">
           <SupplierList dense>
@@ -119,6 +130,28 @@ const SearchPanel: React.FC<{
             ))}
           </SupplierList>
         </StyledAccordionDetailsNoPadding>
+      </Accordion>
+
+      <Accordion
+        expanded={expandedAccordion === "per-supplier-limit"}
+        onChange={onAccordionChange("per-supplier-limit")}
+      >
+        <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography>Results Limit</Typography>
+        </StyledAccordionSummary>
+        <StyledAccordionDetails>
+          <TextField
+            style={{ width: "100%" }}
+            label="Results Limit (per Supplier)"
+            value={userSettings.supplierResultLimit}
+            onChange={(e) =>
+              setUserSettings({
+                ...userSettings,
+                supplierResultLimit: parseInt(e.target.value) || undefined,
+              })
+            }
+          />
+        </StyledAccordionDetails>
       </Accordion>
     </Box>
   );

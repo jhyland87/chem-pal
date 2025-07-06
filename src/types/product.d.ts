@@ -241,7 +241,7 @@ declare global {
      * Number of results to display per supplier
      * @example 20
      */
-    supplierResultLimit: number;
+    supplierResultLimit?: number;
   }
 
   /**
