@@ -62,3 +62,55 @@
     }
   }
 }
+
+// Results table specific styles
+.results-container {
+  .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+  }
+
+  .results-paper {
+    overflow-x: auto;
+    width: 100%;
+  }
+
+  .styled-table-cell {
+    padding: 2px 0 0 0;
+  }
+
+  .styled-table-row {
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+  }
+}
+
+// Error styles
+.error-container {
+  text-align: center;
+  padding: 16px;
+  color: #ef4444;
+}
+
+.error-retry-button {
+  margin-top: 8px;
+  padding: 8px 16px;
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #fee2e2;
+  }
+}

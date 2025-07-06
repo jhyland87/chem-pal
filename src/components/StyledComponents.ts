@@ -275,6 +275,11 @@ export const BackIconButton = styled(IconButton, {
   },
 }));
 
+// Back button with theme color
+export const BackButton = styled(IconButton)(({ theme }) => ({
+  color: theme.palette.text.primary,
+}));
+
 // === TABLE CELL COMPONENTS ===
 export const StyledTableCell = styled(TableCell)(() => ({
   padding: "2px 0 0 0",
@@ -487,7 +492,6 @@ export const SearchPanelHomeForwardButton = styled(IconButton, {
     fontSize: "0.65rem",
     minWidth: "16px",
     height: "16px",
-    padding: "0 4px",
   },
 }));
 
@@ -499,6 +503,7 @@ export const SearchPanelHomeSettingsButton = styled(IconButton)(({ theme }) => (
   background: theme.palette.background.paper,
   boxShadow: theme.shadows[1],
   zIndex: 2,
+  marginRight: "5px",
 }));
 
 export const StyledTable = styled(Table)(({ theme }) => ({
@@ -523,6 +528,78 @@ export const StyledTableHead = styled(TableHead)(({ theme }) => ({
 export const StyledTableBody = styled(TableBody)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
   borderRadius: 0,
+}));
+
+// === RESULTS TABLE COMPONENTS ===
+
+// Results header container
+export const ResultsHeaderContainer = styled(Box)(({ theme }) => ({
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: "8px 16px 0 16px",
+  background: theme.palette.background.paper,
+  borderTopLeftRadius: theme.shape?.borderRadius ?? 0,
+  borderTopRightRadius: theme.shape?.borderRadius ?? 0,
+}));
+
+// Results count display
+export const ResultsCountDisplay = styled(Typography)(({ theme }) => ({
+  fontWeight: 600,
+  color: theme.palette.text.primary,
+}));
+
+// Global filter text field
+export const GlobalFilterTextField = styled(TextField)(({ theme }) => ({
+  background: theme.palette.background.default,
+  color: theme.palette.text.primary,
+  minWidth: 180,
+}));
+
+// Results paper container
+export const ResultsPaperContainer = styled(Box)(() => ({
+  overflowX: "auto",
+  width: "100%",
+}));
+
+// Hidden measurement table
+export const HiddenMeasurementTable = styled("table")(() => ({
+  visibility: "hidden",
+  position: "absolute",
+  left: "-9999px",
+  height: 0,
+  overflow: "hidden",
+}));
+
+// Styled table with minimum width
+export const StyledTableWithMinWidth = styled(StyledTable)(() => ({
+  minWidth: 650, // allow table to grow as needed
+}));
+
+// Sticky header cell
+export const StickyHeaderCell = styled(SortableTableHeaderCell)(({ theme }) => ({
+  position: "sticky",
+  top: 0,
+  background: theme.palette.background.paper,
+}));
+
+// Error container
+export const ErrorContainer = styled(Box)(() => ({
+  textAlign: "center",
+  padding: "16px",
+  color: "#ef4444", // text-red-500 equivalent
+}));
+
+// Error retry button
+export const ErrorRetryButton = styled(Button)(() => ({
+  marginTop: "8px",
+  padding: "8px 16px",
+  backgroundColor: "#fef2f2", // bg-red-100 equivalent
+  color: "#b91c1c", // text-red-700 equivalent
+  borderRadius: "4px",
+  "&:hover": {
+    backgroundColor: "#fee2e2", // hover:bg-red-200 equivalent
+  },
 }));
 
 // === ERROR BOUNDARY COMPONENTS ===

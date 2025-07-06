@@ -17,10 +17,9 @@ import {
   Menu,
   MenuItem,
   TableRow,
-  TextField,
   Typography,
 } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+
 import { Column, ColumnFiltersState, flexRender, Row } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
 import React, { Dispatch, ReactElement, SetStateAction, useEffect, useState } from "react";
@@ -29,22 +28,30 @@ import DrawerSystem from "../DrawerSystem";
 import LoadingBackdrop from "../LoadingBackdrop";
 import "../ResultsPanel.scss";
 import {
+  BackButton,
   ColoredIconButton,
   ColumnMenuItemContainer,
   EmptyStateCell,
+  ErrorContainer,
+  ErrorRetryButton,
   FilterIconButton,
   FilterTableCell,
   FilterTextField,
+  GlobalFilterTextField,
   HeaderRight,
+  HiddenMeasurementTable,
   NavigationContainer,
   PageSizeContainer,
   PageSizeSelect,
   PaginationContainer,
-  SortableTableHeaderCell,
-  StyledTable,
+  ResultsCountDisplay,
+  ResultsHeaderContainer,
+  ResultsPaperContainer,
+  StickyHeaderCell,
   StyledTableBody,
   StyledTableCell,
   StyledTableHead,
+  StyledTableWithMinWidth,
   SubRowTableRow,
 } from "../StyledComponents";
 import ContextMenu from "./ContextMenu";
@@ -75,14 +82,12 @@ export default function ResultsTable({
   columnFilterFns,
 }: ResultsTableProps): ReactElement {
   const appContext = useAppContext();
-  const theme = useTheme();
   const [showFilters, setShowFilters] = useState(false);
   const [columnMenuAnchor, setColumnMenuAnchor] = useState<null | HTMLElement>(null);
   const [globalFilter, setGlobalFilter] = useState("");
 
   // Enhanced search hook that maintains streaming behavior
-  const { searchResults, isLoading, error, resultCount, executeSearch, handleStopSearch } =
-    useSearch();
+  const { searchResults, isLoading, error, executeSearch, handleStopSearch } = useSearch();
 
   // Context menu functionality
   const { contextMenu, handleContextMenu, handleCloseContextMenu } = useContextMenu();
@@ -174,14 +179,13 @@ export default function ResultsTable({
         <div className="results-header">
           <div className="header-left">
             {appContext?.setPanel && (
-              <IconButton
+              <BackButton
                 onClick={() => appContext.setPanel!(0)}
                 size="small"
-                sx={{ color: theme.palette.text.primary }}
                 aria-label="Back to search home"
               >
                 <ArrowBackIcon />
-              </IconButton>
+              </BackButton>
             )}
           </div>
           <HeaderRight>
@@ -213,21 +217,9 @@ export default function ResultsTable({
 
         {/* <div className="results-title">Search Results ({optimisticResults.length} found)</div> */}
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "8px 16px 0 16px",
-            background: theme.palette.background.paper,
-            borderTopLeftRadius: theme.shape?.borderRadius ?? 0,
-            borderTopRightRadius: theme.shape?.borderRadius ?? 0,
-          }}
-        >
-          <div style={{ fontWeight: 600, color: theme.palette.text.primary }}>
-            Results: {optimisticResults.length}
-          </div>
-          <TextField
+        <ResultsHeaderContainer>
+          <ResultsCountDisplay>Results: {optimisticResults.length}</ResultsCountDisplay>
+          <GlobalFilterTextField
             size="small"
             variant="outlined"
             placeholder="Filter results..."
@@ -239,26 +231,12 @@ export default function ResultsTable({
                 "aria-label": "Filter results",
               },
             }}
-            sx={{
-              background: theme.palette.background.default,
-              color: theme.palette.text.primary,
-              minWidth: 180,
-            }}
           />
-        </div>
+        </ResultsHeaderContainer>
 
-        <div className="results-paper" style={{ overflowX: "auto", width: "100%" }}>
+        <ResultsPaperContainer className="results-paper">
           {/* Hidden measurement table for auto-sizing */}
-          <table
-            {...getMeasurementTableProps()}
-            style={{
-              visibility: "hidden",
-              position: "absolute",
-              left: "-9999px",
-              height: 0,
-              overflow: "hidden",
-            }}
-          >
+          <HiddenMeasurementTable {...getMeasurementTableProps()}>
             <thead>
               <tr>
                 {table.getAllLeafColumns().map((col) => (
@@ -286,31 +264,23 @@ export default function ResultsTable({
                   </tr>
                 ))}
             </tbody>
-          </table>
+          </HiddenMeasurementTable>
 
-          <StyledTable
-            style={{ minWidth: 650 /* allow table to grow as needed, remove width: 100% */ }}
-          >
+          <StyledTableWithMinWidth>
             <StyledTableHead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <SortableTableHeaderCell
+                    <StickyHeaderCell
                       key={header.id}
                       canSort={header.column.getCanSort()}
                       cellWidth={header.getSize()}
                       onClick={header.column.getToggleSortingHandler()}
-                      sx={{
-                        position: "sticky",
-                        top: 0,
-                        background: theme.palette.background.paper,
-                        //zIndex: 2,
-                      }}
                     >
                       {header.isPlaceholder
                         ? null
                         : flexRender(header.column.columnDef.header, header.getContext())}
-                    </SortableTableHeaderCell>
+                    </StickyHeaderCell>
                   ))}
                 </TableRow>
               ))}
@@ -361,19 +331,19 @@ export default function ResultsTable({
                 </TableRow>
               )}
             </StyledTableBody>
-          </StyledTable>
+          </StyledTableWithMinWidth>
 
           {/* Enhanced error handling */}
           {error && (
-            <div className="text-center p-4 text-red-500">
+            <ErrorContainer className="error-container">
               <p>Error: {error}</p>
-              <button
+              <ErrorRetryButton
                 onClick={() => window.location.reload()}
-                className="mt-2 px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
+                className="error-retry-button"
               >
                 Retry
-              </button>
-            </div>
+              </ErrorRetryButton>
+            </ErrorContainer>
           )}
 
           {/* Pagination Controls - Only show if more than 1 page */}
@@ -436,7 +406,7 @@ export default function ResultsTable({
               </NavigationContainer>
             </PaginationContainer>
           )}
-        </div>
+        </ResultsPaperContainer>
 
         {/* Column Visibility Menu */}
         <Menu
