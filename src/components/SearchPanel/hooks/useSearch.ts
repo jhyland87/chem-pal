@@ -139,7 +139,7 @@ export function useSearch() {
         query,
         searchLimit,
         fetchControllerRef.current,
-        ["SupplierLaboratoriumDiscounter"],
+        appContext.userSettings.suppliers,
       );
 
       const startSearchTime = performance.now();

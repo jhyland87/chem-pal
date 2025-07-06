@@ -118,7 +118,7 @@ export default function ResultsTable({
       jason: false,
       antoine: true,
       popupSize: "small",
-      supplierResultLimit: 20,
+      supplierResultLimit: 5,
       autoResize: true,
       someSetting: false,
       suppliers: [],
@@ -304,7 +304,7 @@ export default function ResultsTable({
                         position: "sticky",
                         top: 0,
                         background: theme.palette.background.paper,
-                        zIndex: 2,
+                        //zIndex: 2,
                       }}
                     >
                       {header.isPlaceholder

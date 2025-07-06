@@ -75,7 +75,7 @@ const initialAppState: AppState = {
     jason: false,
     antoine: true,
     popupSize: "small",
-    supplierResultLimit: 20,
+    supplierResultLimit: 5,
     autoResize: true,
     someSetting: false,
     suppliers: SupplierFactory.supplierList(),

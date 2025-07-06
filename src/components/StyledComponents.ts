@@ -2,10 +2,12 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
+  Button,
   IconButton,
   List,
   ListItem,
   ListItemText,
+  Paper,
   Select,
   TextField,
   Typography,
@@ -353,6 +355,20 @@ export const SearchFormPaper = styled("form")(({ theme }) => ({
 export const SearchFormInput = styled(TextField)(({ theme }) => ({
   marginLeft: theme.spacing(2),
   flex: 1,
+  "& .MuiOutlinedInput-root": {
+    "& fieldset": {
+      border: "none",
+    },
+    "&:hover fieldset": {
+      border: "none",
+    },
+    "&.Mui-focused fieldset": {
+      border: "none",
+    },
+  },
+  "& .MuiInputBase-input": {
+    fontSize: "1.15rem",
+  },
 }));
 
 export const SearchFormIconButton = styled(IconButton)(() => ({
@@ -425,17 +441,19 @@ export const SubRowTableRow = styled(StyledTableRow, {
 // === SEARCH PANEL HOME COMPONENTS ===
 
 export const SearchPanelHomeContainer = styled(SearchContainer)(() => ({
-  minHeight: "60vh",
+  minHeight: "75vh",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   position: "relative",
+  paddingTop: "4vh",
 }));
 
 export const SearchPanelHomeContent = styled(Box)(() => ({
   width: "100%",
   maxWidth: 480,
   position: "relative",
+  marginTop: "6vh",
 }));
 
 export const SearchPanelHomeLogoContainer = styled(Box)(() => ({
@@ -446,10 +464,11 @@ export const SearchPanelHomeLogoContainer = styled(Box)(() => ({
 }));
 
 export const SearchPanelHomeLogo = styled("img")(() => ({
-  maxWidth: 120,
-  maxHeight: 120,
+  maxWidth: 100,
+  maxHeight: 100,
   display: "block",
   margin: "0 auto",
+  filter: "drop-shadow(rgba(0, 0, 0, 0.3) 0px 2px 5px)",
 }));
 
 export const SearchPanelHomeForwardButton = styled(IconButton, {
@@ -504,4 +523,72 @@ export const StyledTableHead = styled(TableHead)(({ theme }) => ({
 export const StyledTableBody = styled(TableBody)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
   borderRadius: 0,
+}));
+
+// === ERROR BOUNDARY COMPONENTS ===
+
+export const ErrorBoundaryContainer = styled(Box)(({ theme }) => ({
+  height: "100vh",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: theme.palette.background.default,
+  padding: theme.spacing(3),
+}));
+
+export const ErrorBoundaryPaper = styled(Paper)(({ theme }) => ({
+  maxWidth: 600,
+  width: "100%",
+  padding: theme.spacing(4),
+  textAlign: "center",
+  backgroundColor: theme.palette.background.paper,
+}));
+
+export const ErrorBoundaryIcon = styled(Box)(({ theme }) => ({
+  marginBottom: theme.spacing(2),
+  "& .MuiSvgIcon-root": {
+    fontSize: 64,
+    color: theme.palette.error.main,
+  },
+}));
+
+export const ErrorBoundaryMessage = styled(Typography)(({ theme }) => ({
+  marginBottom: theme.spacing(3),
+}));
+
+export const ErrorDetailsContainer = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  marginBottom: theme.spacing(3),
+  backgroundColor: theme.palette.grey[50],
+  textAlign: "left",
+  maxHeight: 200,
+  overflow: "auto",
+}));
+
+export const ErrorDetailsText = styled(Typography)(() => ({
+  fontSize: "0.75rem",
+  fontFamily: "monospace",
+  whiteSpace: "pre-wrap",
+}));
+
+export const ErrorDetailsTextWithMargin = styled(Typography)(({ theme }) => ({
+  fontSize: "0.75rem",
+  marginTop: theme.spacing(1),
+  fontFamily: "monospace",
+  whiteSpace: "pre-wrap",
+}));
+
+export const ErrorBoundaryActions = styled(Box)(({ theme }) => ({
+  display: "flex",
+  gap: theme.spacing(2),
+  justifyContent: "center",
+}));
+
+export const ErrorBoundaryButton = styled(Button)(() => ({
+  minWidth: 120,
+}));
+
+export const ErrorIdText = styled(Typography)(({ theme }) => ({
+  marginTop: theme.spacing(3),
+  display: "block",
 }));
