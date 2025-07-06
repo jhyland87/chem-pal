@@ -1,6 +1,7 @@
 import { useAppContext } from "@/context";
 import SupplierFactory from "@/suppliers/SupplierFactory";
 import BadgeAnimator from "@/utils/BadgeAnimator";
+import { type Table } from "@tanstack/react-table";
 import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 import { getColumnFilterConfig } from "../TableColumns";
 
@@ -135,6 +136,8 @@ export function useSearch() {
     fetchControllerRef.current = new AbortController();
 
     try {
+      // Create the search factory object, which sets the query, supplier search limits,
+      // and the abort controller for the search.
       const productQueryFactory = new SupplierFactory(
         query,
         searchLimit,
@@ -143,22 +146,23 @@ export function useSearch() {
       );
 
       const startSearchTime = performance.now();
-      let resultCount = 0;
+
+      const resultsTable = window.resultsTable as Table<Product>;
+
+      // Execute the search for all suppliers.
       const productQueryResults = await productQueryFactory.executeAllStream(3);
 
-      // Process results as they stream in - this maintains the original behavior
+      // Process results as they stream in.
       for await (const result of productQueryResults) {
-        resultCount++;
-
         // Update the live counter immediately - this is what was missing!
-        BadgeAnimator.setText(resultCount.toString());
+        resultsTable?.updateBadgeCount?.();
 
         // Update state with current count using startTransition for better performance
         startTransition(() => {
           setState((prev) => ({
             ...prev,
-            resultCount,
-            status: `Found ${resultCount} result${resultCount !== 1 ? "s" : ""}...`,
+            resultCount: resultsTable.getRowCount(),
+            status: `Found ${resultsTable.getRowCount()} result${resultsTable.getRowCount() !== 1 ? "s" : ""}...`,
           }));
         });
 
@@ -194,7 +198,7 @@ export function useSearch() {
         // Add result immediately to the table - streaming behavior restored!
         const productWithId = {
           ...result,
-          id: resultCount - 1, // Use resultCount for consistent ID
+          id: resultsTable.getRowCount() - 1, // Use resultCount for consistent ID
         };
 
         // Update results immediately using startTransition for better performance
@@ -218,8 +222,9 @@ export function useSearch() {
 
       const endSearchTime = performance.now();
       const searchTime = endSearchTime - startSearchTime;
+      (window.resultsTable as Table<Product>)?.updateBadgeCount?.();
 
-      console.debug(`Found ${resultCount} products in ${searchTime} milliseconds`);
+      console.debug(`Found ${resultsTable.getRowCount()} products in ${searchTime} milliseconds`);
 
       // Final state - search complete
       startTransition(() => {
@@ -227,7 +232,7 @@ export function useSearch() {
           isLoading: false,
           status: false, // Hide status when complete
           error: undefined,
-          resultCount,
+          resultCount: resultsTable.getRowCount(),
         });
       });
     } catch (error) {

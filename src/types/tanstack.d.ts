@@ -19,6 +19,8 @@ declare module "@tanstack/react-table" {
     getMatchPercentageSortOrder?: () => "asc" | "desc" | null;
     /** Internal state for custom sorting */
     _customSort?: { type: string; order: "asc" | "desc" };
+    /** Function to update the badge with current row count */
+    updateBadgeCount?: () => void;
   }
 
   interface Column<TValue> {

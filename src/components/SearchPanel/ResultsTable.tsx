@@ -97,10 +97,10 @@ export default function ResultsTable({
   // Use filteredResults instead of searchResults for optimisticResults
   const optimisticResults = filteredResults;
 
-  // Optional: Log current result count for debugging
-  if (resultCount > 0) {
-    console.debug(`Currently showing ${resultCount} results`);
-  }
+  // // Optional: Log current result count for debugging
+  // if (resultCount > 0) {
+  //   console.debug(`Currently showing ${resultCount} results`);
+  // }
 
   const table = useResultsTable({
     showSearchResults: optimisticResults,

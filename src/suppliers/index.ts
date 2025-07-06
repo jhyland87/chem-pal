@@ -19,17 +19,19 @@
  * ```
  */
 
-export { default as SupplierAkmekem } from "./SupplierAkmekem";
-export { default as SupplierBioFuranChem } from "./SupplierBiofuranChem";
-export { default as SupplierHimedia } from "./SupplierHimedia";
+// Akmekem got booted from Amazon
+//export { default as SupplierAkmekem } from "./SupplierAkmekem";
+// BunmurraLabs is under construction, new website only has default shopping cart items.
 //export { default as SupplierBunmurraLabs } from "./supplierBunmurraLabs";
 export { default as SupplierAmbeed } from "./SupplierAmbeed";
+export { default as SupplierBioFuranChem } from "./SupplierBiofuranChem";
 export { default as SupplierCarolina } from "./SupplierCarolina";
 export { default as SupplierCarolinaChemical } from "./SupplierCarolinaChemical";
 export { default as SupplierChemsavers } from "./SupplierChemsavers";
 export { default as SupplierFtfScientific } from "./SupplierFtfScientific";
 export { default as SupplierH2O3 } from "./SupplierH2O3";
 export { default as SupplierHbarSci } from "./SupplierHbarSci";
+export { default as SupplierHimedia } from "./SupplierHimedia";
 export { default as SupplierInnovatingScience } from "./SupplierInnovatingScience";
 export { default as SupplierLaballey } from "./SupplierLaballey";
 export { default as SupplierLaboratoriumDiscounter } from "./SupplierLaboratoriumDiscounter";
