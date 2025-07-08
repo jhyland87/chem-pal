@@ -190,18 +190,18 @@ export default class Cactus {
    * const aspirin = new Cactus("aspirin");
    * await aspirin.getNames();
    * const stats = aspirin.getCacheStats();
-   * console.log(stats); // { size: 1, hits: 1, misses: 0 }
+   * console.log(stats); // { size: 1 }
    * ```
    */
-  public getCacheStats(): { size: number; hits: number; misses: number } {
+  public getCacheStats(): { size: number } {
     if (!this.cache) {
-      return { size: 0, hits: 0, misses: 0 };
+      return {
+        size: 0,
+      };
     }
 
     return {
       size: this.cache.size,
-      hits: 0, // LRUCache doesn't expose hits/misses in the public API
-      misses: 0,
     };
   }
 

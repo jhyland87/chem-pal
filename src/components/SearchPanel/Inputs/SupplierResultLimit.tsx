@@ -1,28 +1,25 @@
 import { useAppContext } from "@/context";
 import TextField from "@mui/material/TextField";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent } from "react";
 import { StyledFormControlSelector } from "../../Styles";
 
 /**
- * TextColumnFilter component that provides a text input filter for columns.
- * It allows users to filter data by entering text that matches column values.
+ * SupplierResultLimit component that provides a text input for setting the result limit per supplier.
+ * It allows users to specify how many results to display per supplier.
  *
  * @component
  *
- * @param props - Component props
- *
  * @example
  * ```tsx
- * <TextColumnFilter column={column} />
+ * <SupplierResultLimit />
  * ```
  */
 export default function SupplierResultLimit() {
   const appContext = useAppContext();
-  const [, setResultLimit] = useState<number>(appContext.userSettings.supplierResultLimit);
 
   /**
-   * Handles changes to the text filter input.
-   * Updates the local state and triggers the column filter update with debouncing.
+   * Handles changes to the result limit input.
+   * Updates the user settings with the new result limit value.
    *
    * @param event - The change event
    */
@@ -30,7 +27,6 @@ export default function SupplierResultLimit() {
     const {
       target: { value },
     } = event;
-    setResultLimit(Number(value));
     appContext.setUserSettings({
       ...appContext.userSettings,
       supplierResultLimit: Number(value),
@@ -44,7 +40,7 @@ export default function SupplierResultLimit() {
         style={{ lineHeight: "1em" }}
         id="result-limit"
         size="small"
-        value={appContext.userSettings.supplierResultLimit}
+        value={appContext.userSettings.supplierResultLimit ?? 5}
         onChange={handleResultLimitChange}
       />
     </StyledFormControlSelector>

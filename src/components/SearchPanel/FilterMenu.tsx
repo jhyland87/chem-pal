@@ -98,6 +98,11 @@ function TabPanel(props: TabPanelProps) {
 
 function SupplierSelection() {
   const appContext = useAppContext();
+
+  if (!appContext) {
+    return <div>Context not available</div>;
+  }
+
   const { selectedSuppliers, setSelectedSuppliers } = appContext;
 
   const handleSupplierSelect = (supplierName: string) => {
