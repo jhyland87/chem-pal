@@ -1,5 +1,5 @@
 /**
- * Main entry point for the ChemPare application.
+ * Main entry point for the ChemPal application.
  * This file initializes the React application and renders the root component.
  *
  * The application is wrapped in React's StrictMode for additional development checks

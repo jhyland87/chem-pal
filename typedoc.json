@@ -1,5 +1,5 @@
 {
-  "name": "ChemPare Documentation",
+  "name": "ChemPal Documentation",
   "entryPoints": [
     "./src/**/index.ts",
     "./src/suppliers/*.ts",

@@ -64,7 +64,7 @@ export default function AboutModal({
       >
         <Box className="about-box">
           <Typography id="application-title" variant="h6" component="h2">
-            About ChemPare
+            About ChemPal
             <IconButton
               data-testid="github-button"
               href="https://github.com/justinhyland/chem-pal"
@@ -79,7 +79,7 @@ export default function AboutModal({
             Open source project aimed at helping amateur chemistry hobbyists find the best deals on
             chemical reagents. There are plenty of similar services out there for businesses,
             universities and research institutions, but none are available for individuals and
-            hobbyists. ChemPare only searches suppliers that sell to individuals and ship to
+            hobbyists. ChemPal only searches suppliers that sell to individuals and ship to
             residences.
           </Typography>
           <Divider sx={{ color: "secondary.light" }}>

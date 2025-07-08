@@ -12,7 +12,7 @@ describe("AboutModal", () => {
   it("renders modal when aboutOpen is true", () => {
     render(<AboutModal aboutOpen={true} setAboutOpen={mockSetAboutOpen} />);
 
-    expect(screen.getByText("About ChemPare")).toBeInTheDocument();
+    expect(screen.getByText("About ChemPal")).toBeInTheDocument();
     expect(
       screen.getByText(/Open source project aimed at helping amateur chemistry hobbyists/),
     ).toBeInTheDocument();
@@ -22,7 +22,7 @@ describe("AboutModal", () => {
   it("does not render modal when aboutOpen is false", () => {
     render(<AboutModal aboutOpen={false} setAboutOpen={mockSetAboutOpen} />);
 
-    expect(screen.queryByText("About ChemPare")).not.toBeInTheDocument();
+    expect(screen.queryByText("About ChemPal")).not.toBeInTheDocument();
   });
 
   it("calls setAboutOpen when clicking outside the modal", () => {
