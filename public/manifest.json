@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Chem Crawler",
+  "name": "Chem Pal",
   "version": "0.0.12",
   "description": "A simple React app as a Chrome extension",
   "action": {

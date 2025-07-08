@@ -2,7 +2,7 @@ Just a simple React/Typescript plugin for Chrome - Proof of concept
 
 Example output:
 
-<img src="./assets/images/chem-crawler-demo.gif" alt="chem-crawler example" width="600"/>
+<img src="./assets/images/chem-pal-demo.gif" alt="chem-pal example" width="600"/>
 
 ## Node version
 
@@ -27,8 +27,8 @@ npm install -g pnpm
 ## Building the extension
 
 ```bash
-git clone https://github.com/jhyland87/chem-crawler.git
-cd chem-crawler
+git clone https://github.com/jhyland87/chem-pal.git
+cd chem-pal
 pnpm run setup
 pnpm run build
 ```

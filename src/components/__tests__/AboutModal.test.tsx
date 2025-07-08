@@ -1,5 +1,4 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import AboutModal from "../AboutModal";
 
@@ -51,7 +50,7 @@ describe("AboutModal", () => {
     render(<AboutModal aboutOpen={true} setAboutOpen={mockSetAboutOpen} />);
 
     const githubButton = screen.getByTestId("github-button");
-    expect(githubButton).toHaveAttribute("href", "https://github.com/justinhyland/chem-crawler");
+    expect(githubButton).toHaveAttribute("href", "https://github.com/justinhyland/chem-pal");
     expect(githubButton).toHaveAttribute("target", "_blank");
     expect(githubButton).toHaveAttribute("rel", "noopener noreferrer");
   });

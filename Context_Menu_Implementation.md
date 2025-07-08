@@ -2,7 +2,7 @@
 
 ## 🎯 Overview
 
-I've successfully added a right-click context menu to the table rows in your chem-crawler Chrome extension. This implementation is specifically designed to work within Chrome extension security constraints while providing a rich user experience.
+I've successfully added a right-click context menu to the table rows in your chem-pal Chrome extension. This implementation is specifically designed to work within Chrome extension security constraints while providing a rich user experience.
 
 ## 📁 Files Created/Modified
 

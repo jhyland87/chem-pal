@@ -85,8 +85,8 @@
   "hideGenerator": false,
   "readme": "README.md",
   "navigationLinks": {
-    "Reference": "https://jhyland87.github.io/chem-crawler",
-    "GitHub": "https://github.com/jhyland87/chem-crawler"
+    "Reference": "https://jhyland87.github.io/chem-pal",
+    "GitHub": "https://github.com/jhyland87/chem-pal"
   },
   "sort": [
     "source-order"
@@ -104,7 +104,7 @@
     "inherited": false,
     "external": true
   },
-  "sourceLinkTemplate": "https://github.com/jhyland87/chem-crawler/blob/main/{path}#L{line}",
+  "sourceLinkTemplate": "https://github.com/jhyland87/chem-pal/blob/main/{path}#L{line}",
   "disableSources": false,
   "categorizeByGroup": true,
   "defaultCategory": "Suppliers",

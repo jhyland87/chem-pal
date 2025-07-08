@@ -2,7 +2,7 @@
 
 ## Overview
 
-This analysis identified and implemented React v19 features to modernize three key components in your chem-crawler Chrome extension:
+This analysis identified and implemented React v19 features to modernize three key components in your chem-pal Chrome extension:
 
 1. **App.tsx** → **AppV19.tsx**
 2. **SettingsPanel.tsx** → **SettingsPanelV19.tsx**

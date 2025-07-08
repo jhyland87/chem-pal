@@ -246,7 +246,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *     super();
    *     this.headers = {
    *       "Accept": "application/json",
-   *       "User-Agent": "ChemCrawler/1.0"
+   *       "User-Agent": "ChemPal/1.0"
    *     };
    *   }
    * }

@@ -67,7 +67,7 @@ export default function AboutModal({
             About ChemPare
             <IconButton
               data-testid="github-button"
-              href="https://github.com/justinhyland/chem-crawler"
+              href="https://github.com/justinhyland/chem-pal"
               target="_blank"
               rel="noopener noreferrer"
               className="github-button"
