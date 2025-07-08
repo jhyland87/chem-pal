@@ -102,7 +102,7 @@ function SupplierSelection() {
 
   const handleSupplierSelect = (supplierName: string) => {
     const newChecked = selectedSuppliers.includes(supplierName)
-      ? selectedSuppliers.filter((s) => s !== supplierName)
+      ? selectedSuppliers.filter((s: string) => s !== supplierName)
       : [...selectedSuppliers, supplierName];
 
     setSelectedSuppliers(newChecked);
