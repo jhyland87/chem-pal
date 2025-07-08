@@ -52,8 +52,8 @@ jobs:
         run: pnpm run test
 
   docs:
-    #needs: test
-    needs: build
+    needs: test
+    #needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Download workspace

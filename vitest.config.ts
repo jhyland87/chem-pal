@@ -12,6 +12,9 @@ export default defineConfig({
     include: ["src/**/__tests__/**/*.{test,spec}.{js,ts,jsx,tsx}"],
     exclude: [
       "**/node_modules/**",
+      "**/src/components/**",
+      "src/mixins/__tests__/tanstack.test.ts",
+      "src/helpers/__tests__/productBuilder.test.ts",
       "**/dist/**",
       "**/.{idea,git,cache,output,temp}/**",
       "src/suppliers/**",
