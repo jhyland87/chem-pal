@@ -265,13 +265,8 @@ export default class Cactus {
 
     // Cache the result
     if (this.cacheEnabled && result !== undefined) {
-      if (typeof result === "string") {
-        this.cache?.set(url, result);
-        Cactus.globalCache.set(url, result);
-      } else {
-        this.cache?.set(url, result.toString());
-        Cactus.globalCache.set(url, result.toString());
-      }
+      this.cache?.set(url, result as string);
+      Cactus.globalCache.set(url, result as string);
     }
 
     return result ?? "";
