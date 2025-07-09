@@ -2,6 +2,7 @@ import { useAppContext } from "@/context";
 import SupplierFactory from "@/suppliers/SupplierFactory";
 import BadgeAnimator from "@/utils/BadgeAnimator";
 import Cactus from "@/utils/Cactus";
+import Pubchem from "@/utils/Pubchem";
 import { type Table } from "@tanstack/react-table";
 import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 import { getColumnFilterConfig } from "../TableColumns";
@@ -241,15 +242,18 @@ export function useSearch() {
       // If no results were found, then try to suggest alternative search terms using cactus.nci.nih.gov API.
       if (resultsTable.getRowCount() === 0) {
         const queryCactus = new Cactus(query);
+        const pubchem = new Pubchem(query);
         const queryIUPACName = await queryCactus.getIUPACName();
         const querySimpleNames = await queryCactus.getSimpleNames(3);
+        const pubchemSimpleName = await pubchem.getSimpleName();
 
         console.log(`Cactus(${query}).getSimpleNames()`, querySimpleNames);
         console.log(`Cactus(${query}).getIUPACName()`, queryIUPACName);
+        console.log(`Pubchem(${query}).getSimpleName()`, pubchemSimpleName);
 
         const tableTextLines = [`No results found for "${query}"`];
 
-        if (!queryIUPACName && !querySimpleNames) {
+        if (!queryIUPACName && !querySimpleNames && !pubchemSimpleName) {
           tableTextLines.push("No alternative names or IUPAC name found either.");
         } else {
           // If a IUPAC name was found, then recommend that as a search term.
@@ -262,6 +266,10 @@ export function useSearch() {
               (queryIUPACName ? `Or` : `Perhaps`) +
                 ` try one of the following names: ${querySimpleNames.join(", ")}`,
             );
+          }
+          // If a pubchem simple name was found, then recommend that as a search term.
+          if (pubchemSimpleName && query.toLowerCase() !== pubchemSimpleName.toLowerCase()) {
+            tableTextLines.push(`Perhaps try the PubChem name instead: ${pubchemSimpleName}`);
           }
         }
         setTableText(tableTextLines.join("\n"));
