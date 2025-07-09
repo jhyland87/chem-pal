@@ -225,7 +225,7 @@ function assertIsSdqAgentResponse(data: unknown): asserts data is SDQResponse {
  */
 export default class Pubchem {
   /** Base URL for PubChem API endpoints */
-  private readonly baseUrl = "https://pubchem.ncbi.nlm.nih.gov";
+  private readonly baseURL = "https://pubchem.ncbi.nlm.nih.gov";
 
   /**
    * Creates a new Pubchem instance for querying compound information
@@ -248,7 +248,7 @@ export default class Pubchem {
   async getCompound(): Promise<string | undefined> {
     try {
       const response = await fetch(
-        `${this.baseUrl}/rest/autocomplete/compound/${encodeURIComponent(this.query)}`,
+        `${this.baseURL}/rest/autocomplete/compound/${encodeURIComponent(this.query)}`,
       );
       const data = await response.json();
       assertIsCompoundResponseResponse(data);
@@ -274,7 +274,7 @@ export default class Pubchem {
       const compound = await this.getCompound();
       if (!compound) return undefined;
       const response = await fetch(
-        `${this.baseUrl}/rest/pug/concepts/name/JSON?name=${encodeURIComponent(compound)}`,
+        `${this.baseURL}/rest/pug/concepts/name/JSON?name=${encodeURIComponent(compound)}`,
       );
       const data = await response.json();
       assertIsCIDResponse(data);
@@ -311,7 +311,7 @@ export default class Pubchem {
       const queryURL = JSON.stringify(query).replace(/"/g, "%22").replace(/ /g, "%20");
 
       const response = await fetch(
-        `${this.baseUrl}/sdq/sdqagent.cgi?infmt=json&outfmt=json&query=${queryURL}`,
+        `${this.baseURL}/sdq/sdqagent.cgi?infmt=json&outfmt=json&query=${queryURL}`,
       );
       const data = await response.json();
       assertIsSdqAgentResponse(data);

@@ -86,7 +86,7 @@ export default class Cactus {
   private cacheEnabled: boolean = true;
 
   /** Base URL */
-  private readonly baseUrl: string = "https://cactus.nci.nih.gov/chemical/structure";
+  private readonly baseURL: string = "https://cactus.nci.nih.gov/chemical/structure";
 
   /** Whether to return responses in XML format */
   private formatXML: boolean = false;
@@ -236,7 +236,7 @@ export default class Cactus {
    * ```
    */
   private async queryEndpoint(endpoint: CactusEndpoint): Promise<string | Blob> {
-    let url = `${this.baseUrl}/${this.name}/${endpoint}`;
+    let url = `${this.baseURL}/${this.name}/${endpoint}`;
     if (this.formatXML) url += `/xml`;
 
     // Check cache first
@@ -485,7 +485,7 @@ export default class Cactus {
    * ```
    */
   async getFile(format: string, removeHydrogens: boolean = false): Promise<string> {
-    let url = `${this.baseUrl}/${this.name}/file?format=${format}`;
+    let url = `${this.baseURL}/${this.name}/file?format=${format}`;
 
     if (removeHydrogens) {
       url += `&operator=remove_hydrogens`;
