@@ -9,6 +9,8 @@ import {
 } from "@tanstack/react-table";
 import { hasFlag } from "country-flag-icons";
 import getUnicodeFlagIcon from "country-flag-icons/unicode";
+import { locations } from "../../../config.json";
+import { CountryFlagTooltip } from "../StyledComponents";
 import { default as Link } from "../TabLink";
 import "./TableColumns.scss";
 
@@ -97,7 +99,14 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       accessorKey: "supplierCountry",
       cell: (info) => {
         const country = info.getValue() as string;
-        return hasFlag(country) ? getUnicodeFlagIcon(country) : country;
+        const countryName = locations[country as keyof typeof locations]?.name;
+        return hasFlag(country) ? (
+          <CountryFlagTooltip title={countryName ?? country} placement="top">
+            <span>{getUnicodeFlagIcon(country)}</span>
+          </CountryFlagTooltip>
+        ) : (
+          country
+        );
       },
       filterFn: "multiSelect" as FilterFnOption<Product>,
       meta: {

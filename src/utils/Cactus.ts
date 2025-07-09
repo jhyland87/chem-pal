@@ -291,10 +291,38 @@ export default class Cactus {
    * // ]
    * ```
    */
-  async getNames(): Promise<string[]> {
+  async getNames(): Promise<string[] | undefined> {
     const result = await this.queryEndpoint("names");
     assertIsStringResponse(result);
-    return result.split("\n");
+    const results = result.split("\n");
+    if (results.length === 0 || (results.length === 1 && results[0] === "")) {
+      return undefined;
+    }
+    return results;
+  }
+
+  /**
+   * Filters the names from output of this.getNames() to those that are most likely to
+   * be used in common chemical nomenclature. This is done by just filtering for names
+   * that contain alpha characters only and spaces (no dashes, brackets, paretheses, etc.)
+   *
+   * @param limit - The maximum number of names to return (default: 4)
+   * @returns Promise resolving to an array of chemical names
+   *
+   * @example
+   * ```typescript
+   * const aspirin = new Cactus("2-Acetoxybenzenecarboxylic acid");
+   * const simpleNames = await aspirin.getSimpleNames();
+   * // Returns: ["aspirin", "acetylsalicylic acid", "Acetylin", "Acetylsal"]
+   * ```
+   */
+  async getSimpleNames(limit: number = 4): Promise<string[] | undefined> {
+    const names = await this.getNames();
+    if (names === undefined) {
+      return undefined;
+    }
+    const simpleNames = names.filter((name) => /^([a-zA-Z\s]*)$/.test(name));
+    return simpleNames.length > 0 ? simpleNames.slice(0, limit) : undefined;
   }
 
   /**
@@ -517,10 +545,10 @@ export default class Cactus {
    * // Returns: "2-acetyloxybenzoic acid"
    * ```
    */
-  async getIUPACName(): Promise<string> {
+  async getIUPACName(): Promise<string | undefined> {
     const result = await this.queryEndpoint("iupac_name");
     assertIsStringResponse(result);
-    return result;
+    return result === "" ? undefined : result;
   }
 
   /**

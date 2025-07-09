@@ -1,6 +1,7 @@
 import { useAppContext } from "@/context";
 import SupplierFactory from "@/suppliers/SupplierFactory";
 import BadgeAnimator from "@/utils/BadgeAnimator";
+import Cactus from "@/utils/Cactus";
 import { type Table } from "@tanstack/react-table";
 import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 import { getColumnFilterConfig } from "../TableColumns";
@@ -38,6 +39,7 @@ export function useSearch() {
   };
 
   const [state, setState] = useState<SearchState>(initialState);
+  const [tableText, setTableText] = useState<string>("");
   const [searchResults, setSearchResults] = useState<Product[]>([]);
 
   // Load search results from Chrome storage on mount - this restores session persistence!
@@ -236,6 +238,34 @@ export function useSearch() {
 
       console.debug(`Found ${resultsTable.getRowCount()} products in ${searchTime} milliseconds`);
 
+      // If no results were found, then try to suggest alternative search terms using cactus.nci.nih.gov API.
+      if (resultsTable.getRowCount() === 0) {
+        const queryCactus = new Cactus(query);
+        const queryIUPACName = await queryCactus.getIUPACName();
+        const querySimpleNames = await queryCactus.getSimpleNames();
+
+        console.log(`Cactus(${query}).getSimpleNames()`, querySimpleNames);
+        console.log(`Cactus(${query}).getIUPACName()`, queryIUPACName);
+
+        // If the query is not the same as the IUPAC name, then recommend that as a search term.
+        if (queryIUPACName && query.toLowerCase() !== queryIUPACName.toLowerCase()) {
+          setTableText(
+            `No results found for "${query}"\nPerhaps try the IUPAC name instead:\n${queryIUPACName}`,
+          );
+        } else if (querySimpleNames && querySimpleNames.length > 0) {
+          setTableText(
+            `No results found for "${query}"\nPerhaps try one of the following names instead:\n${querySimpleNames.join(", ")}`,
+          );
+        } else {
+          setTableText(
+            `No results found for "${query}"\nNo alternative names or IUPAC name found either.\nAre you sure this is a valid search term?`,
+          );
+        }
+      } else {
+        // Clear any status text from a previous search.
+        setTableText("");
+      }
+
       // Final state - search complete
       startTransition(() => {
         setState({
@@ -286,5 +316,6 @@ export function useSearch() {
     resultCount: state.resultCount,
     executeSearch,
     handleStopSearch,
+    tableText,
   };
 }

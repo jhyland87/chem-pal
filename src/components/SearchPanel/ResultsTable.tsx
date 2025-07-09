@@ -47,11 +47,11 @@ import {
   ResultsCountDisplay,
   ResultsHeaderContainer,
   ResultsPaperContainer,
+  SearchResultsTable,
   StickyHeaderCell,
   StyledTableBody,
   StyledTableCell,
   StyledTableHead,
-  StyledTableWithMinWidth,
   SubRowTableRow,
 } from "../StyledComponents";
 import ContextMenu from "./ContextMenu";
@@ -87,7 +87,8 @@ export default function ResultsTable({
   const [globalFilter, setGlobalFilter] = useState("");
 
   // Enhanced search hook that maintains streaming behavior
-  const { searchResults, isLoading, error, executeSearch, handleStopSearch } = useSearch();
+  const { searchResults, isLoading, error, executeSearch, handleStopSearch, tableText } =
+    useSearch();
 
   // Context menu functionality
   const { contextMenu, handleContextMenu, handleCloseContextMenu } = useContextMenu();
@@ -219,19 +220,22 @@ export default function ResultsTable({
 
         <ResultsHeaderContainer>
           <ResultsCountDisplay>Results: {optimisticResults.length}</ResultsCountDisplay>
-          <GlobalFilterTextField
-            size="small"
-            variant="outlined"
-            placeholder="Filter results..."
-            value={globalFilter}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-            slotProps={{
-              input: {
-                onKeyDown: handleKeyPress,
-                "aria-label": "Filter results",
-              },
-            }}
-          />
+          {/* Only show the global filter if there are results */}
+          {table.getRowModel().rows.length > 0 && (
+            <GlobalFilterTextField
+              size="small"
+              variant="outlined"
+              placeholder="Filter results..."
+              value={globalFilter}
+              onChange={(e) => setGlobalFilter(e.target.value)}
+              slotProps={{
+                input: {
+                  onKeyDown: handleKeyPress,
+                  "aria-label": "Filter results",
+                },
+              }}
+            />
+          )}
         </ResultsHeaderContainer>
 
         <ResultsPaperContainer className="results-paper">
@@ -266,7 +270,8 @@ export default function ResultsTable({
             </tbody>
           </HiddenMeasurementTable>
 
-          <StyledTableWithMinWidth>
+          <SearchResultsTable>
+            {/* Table Head */}
             <StyledTableHead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
@@ -276,6 +281,9 @@ export default function ResultsTable({
                       canSort={header.column.getCanSort()}
                       cellWidth={header.getSize()}
                       onClick={header.column.getToggleSortingHandler()}
+                      style={{
+                        textAlign: header.column.columnDef.meta?.style?.textAlign,
+                      }}
                     >
                       {header.isPlaceholder
                         ? null
@@ -284,8 +292,10 @@ export default function ResultsTable({
                   ))}
                 </TableRow>
               ))}
+
               {/* Filter Row */}
               {showFilters &&
+                table.getRowModel().rows.length > 0 &&
                 table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={`${headerGroup.id}-filters`}>
                     {headerGroup.headers.map((header) => (
@@ -304,6 +314,8 @@ export default function ResultsTable({
                   </TableRow>
                 ))}
             </StyledTableHead>
+
+            {/* Table Body */}
             <StyledTableBody>
               {table.getRowModel().rows.length > 0 ? (
                 table.getRowModel().rows.map((row) => (
@@ -313,7 +325,13 @@ export default function ResultsTable({
                     onContextMenu={(e) => handleContextMenu(e, row.original)}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <StyledTableCell key={cell.id} className="styled-table-cell">
+                      <StyledTableCell
+                        key={cell.id}
+                        className="styled-table-cell"
+                        style={{
+                          textAlign: cell.column.columnDef.meta?.style?.textAlign,
+                        }}
+                      >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </StyledTableCell>
                     ))}
@@ -323,7 +341,7 @@ export default function ResultsTable({
                 <TableRow className="styled-table-row">
                   <EmptyStateCell colSpan={table.getAllColumns().length}>
                     {optimisticResults.length === 0
-                      ? "No search query"
+                      ? tableText || "No search query"
                       : table.getState().columnFilters.length > 0
                         ? "No results matching your filter values"
                         : "No results found"}
@@ -331,7 +349,7 @@ export default function ResultsTable({
                 </TableRow>
               )}
             </StyledTableBody>
-          </StyledTableWithMinWidth>
+          </SearchResultsTable>
 
           {/* Enhanced error handling */}
           {error && (

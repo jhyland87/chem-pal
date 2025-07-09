@@ -11,6 +11,7 @@ import {
   Paper,
   Select,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
@@ -288,6 +289,8 @@ export const StyledTableCell = styled(TableCell)(() => ({
 
 // Empty state cell
 export const EmptyStateCell = styled(StyledTableCell)(({ theme }) => ({
+  whiteSpace: "pre-wrap",
+  fontFamily: "monospace",
   textAlign: "center",
   paddingTop: theme.spacing(4),
   paddingBottom: theme.spacing(4),
@@ -573,7 +576,7 @@ export const HiddenMeasurementTable = styled("table")(() => ({
 }));
 
 // Styled table with minimum width
-export const StyledTableWithMinWidth = styled(StyledTable)(() => ({
+export const SearchResultsTable = styled(StyledTable)(() => ({
   minWidth: 650, // allow table to grow as needed
 }));
 
@@ -738,4 +741,14 @@ export const SortableHeaderContent = styled("div", {
   justifyContent: "space-between",
   padding: "8px",
   position: "relative",
+}));
+
+// === COUNTRY FLAG TOOLTIP COMPONENTS ===
+
+// Country flag tooltip with consistent styling
+export const CountryFlagTooltip = styled(Tooltip)(() => ({
+  "& .MuiTooltip-tooltip": {
+    margin: "0px",
+    fontSize: "0.7em",
+  },
 }));
