@@ -308,12 +308,23 @@ export default class Cactus {
    *
    * @param limit - The maximum number of names to return (default: 4)
    * @returns Promise resolving to an array of chemical names
+   * @remarks This method is not guaranteed to return the most simple names. It is a best effort to filter out
+   * names that are not likely to be used in common chemical nomenclature. The results are also not sorted in
+   * any meaningful way.
+   *
+   * For example, "aspirin" would be the obvious desired result when searching for other names for Aspirin (eg:
+   * "2-Acetoxybenzenecarboxylic acid"), but CACTUS returns it as the [12th result](https://cactus.nci.nih.gov/chemical/structure/2-Acetoxybenzenecarboxylic%20acid/names)
+   * (as "Aspirin (JP15/USP)"). I'm not sure what the best way to sort these and return only the values that
+   * are most likely to yield search results.
+   *
+   * @todo Implement a better way to sort these and return only the values that are most likely to yield search
+   * results.
    *
    * @example
    * ```typescript
    * const aspirin = new Cactus("2-Acetoxybenzenecarboxylic acid");
    * const simpleNames = await aspirin.getSimpleNames();
-   * // Returns: ["aspirin", "acetylsalicylic acid", "Acetylin", "Acetylsal"]
+   * // Returns: ["acetylsalicylic acid", "Acetylin", "Acetylsal", "aspirin"]
    * ```
    */
   async getSimpleNames(limit: number = 4): Promise<string[] | undefined> {

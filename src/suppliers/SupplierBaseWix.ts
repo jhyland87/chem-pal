@@ -45,7 +45,6 @@ export default abstract class SupplierBaseWix
   protected async setup(): Promise<void> {
     const accessTokenResponse = await fetch(`${this.baseURL}/_api/v1/access-tokens`, {
       headers: {
-        /* eslint-disable */
         accept: "*/*",
         "accept-language": "en-US,en;q=0.5",
         "cache-control": "no-cache",
@@ -54,7 +53,6 @@ export default abstract class SupplierBaseWix
         referer: this.baseURL,
         "user-agent":
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
-        /* eslint-enable */
       },
     });
 
