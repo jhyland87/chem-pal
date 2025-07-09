@@ -323,8 +323,8 @@ export default class Cactus {
    * @example
    * ```typescript
    * const aspirin = new Cactus("2-Acetoxybenzenecarboxylic acid");
-   * const simpleNames = await aspirin.getSimpleNames();
-   * // Returns: ["acetylsalicylic acid", "Acetylin", "Acetylsal", "aspirin"]
+   * const simpleNames = await aspirin.getSimpleNames(3);
+   * // Returns: ["Adiro", "Aspec", "Aspro"]
    * ```
    */
   async getSimpleNames(limit: number = 4): Promise<string[] | undefined> {
@@ -332,8 +332,10 @@ export default class Cactus {
     if (!names || names.length === 0) {
       return undefined;
     }
-    const simpleNames = names.filter((name) => /^([a-zA-Z\s]*)$/.test(name));
-    return simpleNames.length > 0 ? simpleNames.slice(0, limit) : undefined;
+    const simpleNames = names.filter((name) => /^([a-zA-Z][a-z\s]*)$/.test(name));
+    return simpleNames.length > 0
+      ? simpleNames.sort((a, b) => a.length - b.length).slice(0, limit)
+      : undefined;
   }
 
   /**

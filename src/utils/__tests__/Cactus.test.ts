@@ -182,7 +182,7 @@ describe("Cactus", () => {
         });
 
         const result = await cactus.getSimpleNames(2);
-        expect(result).toEqual(["aspirin", "acetylsalicylic acid"]);
+        expect(result).toEqual(["aspirin", "benzoic acid"]);
       });
 
       it("should return undefined when no simple names found", async () => {

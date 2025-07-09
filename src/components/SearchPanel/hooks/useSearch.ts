@@ -242,25 +242,29 @@ export function useSearch() {
       if (resultsTable.getRowCount() === 0) {
         const queryCactus = new Cactus(query);
         const queryIUPACName = await queryCactus.getIUPACName();
-        const querySimpleNames = await queryCactus.getSimpleNames();
+        const querySimpleNames = await queryCactus.getSimpleNames(3);
 
         console.log(`Cactus(${query}).getSimpleNames()`, querySimpleNames);
         console.log(`Cactus(${query}).getIUPACName()`, queryIUPACName);
 
-        // If the query is not the same as the IUPAC name, then recommend that as a search term.
-        if (queryIUPACName && query.toLowerCase() !== queryIUPACName.toLowerCase()) {
-          setTableText(
-            `No results found for "${query}"\nPerhaps try the IUPAC name instead:\n${queryIUPACName}`,
-          );
-        } else if (querySimpleNames && querySimpleNames.length > 0) {
-          setTableText(
-            `No results found for "${query}"\nPerhaps try one of the following names instead:\n${querySimpleNames.join(", ")}`,
-          );
+        const tableTextLines = [`No results found for "${query}"`];
+
+        if (!queryIUPACName && !querySimpleNames) {
+          tableTextLines.push("No alternative names or IUPAC name found either.");
         } else {
-          setTableText(
-            `No results found for "${query}"\nNo alternative names or IUPAC name found either.\nAre you sure this is a valid search term?`,
-          );
+          // If a IUPAC name was found, then recommend that as a search term.
+          if (queryIUPACName && query.toLowerCase() !== queryIUPACName.toLowerCase()) {
+            tableTextLines.push(`Perhaps try the IUPAC name instead: ${queryIUPACName}`);
+          }
+          // If simple names were found, then recommend that as a search term.
+          if (querySimpleNames && querySimpleNames.length > 0) {
+            tableTextLines.push(
+              (queryIUPACName ? `Or` : `Perhaps`) +
+                ` try one of the following names: ${querySimpleNames.join(", ")}`,
+            );
+          }
         }
+        setTableText(tableTextLines.join("\n"));
       } else {
         // Clear any status text from a previous search.
         setTableText("");
