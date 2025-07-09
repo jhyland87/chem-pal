@@ -294,8 +294,8 @@ export default class Cactus {
   async getNames(): Promise<string[] | undefined> {
     const result = await this.queryEndpoint("names");
     assertIsStringResponse(result);
-    const results = result.split("\n");
-    if (results.length === 0 || (results.length === 1 && results[0] === "")) {
+    const results = result.split("\n").filter((name) => !!name);
+    if (results.length === 0) {
       return undefined;
     }
     return results;
@@ -318,7 +318,7 @@ export default class Cactus {
    */
   async getSimpleNames(limit: number = 4): Promise<string[] | undefined> {
     const names = await this.getNames();
-    if (names === undefined) {
+    if (!names || names.length === 0) {
       return undefined;
     }
     const simpleNames = names.filter((name) => /^([a-zA-Z\s]*)$/.test(name));
