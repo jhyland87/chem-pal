@@ -1,8 +1,8 @@
 import { useAppContext } from "@/context";
+import { getCompoundNameFromAlias } from "@/helpers/pubchem";
 import SupplierFactory from "@/suppliers/SupplierFactory";
 import BadgeAnimator from "@/utils/BadgeAnimator";
 import Cactus from "@/utils/Cactus";
-import Pubchem from "@/utils/Pubchem";
 import { type Table } from "@tanstack/react-table";
 import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 import { getColumnFilterConfig } from "../TableColumns";
@@ -242,14 +242,13 @@ export function useSearch() {
       // If no results were found, then try to suggest alternative search terms using cactus.nci.nih.gov API.
       if (resultsTable.getRowCount() === 0) {
         const queryCactus = new Cactus(query);
-        const pubchem = new Pubchem(query);
         const queryIUPACName = await queryCactus.getIUPACName();
         const querySimpleNames = await queryCactus.getSimpleNames(3);
-        const pubchemSimpleName = await pubchem.getSimpleName();
+        const pubchemSimpleName = await getCompoundNameFromAlias(query);
 
         console.log(`Cactus(${query}).getSimpleNames()`, querySimpleNames);
         console.log(`Cactus(${query}).getIUPACName()`, queryIUPACName);
-        console.log(`Pubchem(${query}).getSimpleName()`, pubchemSimpleName);
+        console.log(`pubchemSimpleName`, pubchemSimpleName);
 
         const tableTextLines = [`No results found for "${query}"`];
 

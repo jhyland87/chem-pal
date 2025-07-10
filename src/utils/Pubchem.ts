@@ -27,6 +27,17 @@ interface CIDResponse {
   };
 }
 
+interface SDQQuery {
+  cid?: number;
+  name?: string;
+  cmpdname?: string;
+  smiles?: string;
+  inchi?: string;
+  inchikey?: string;
+  formula?: string;
+  cmpdsynonym?: string;
+}
+
 /**
  * Response structure for SDQ (Structure Data Query) agent results from PubChem API
  */
@@ -294,22 +305,24 @@ export default class Pubchem {
    * console.log(sdqData.SDQOutputSet[0].rows[0].mw); // Molecular weight
    * ```
    */
-  async querySdqAgent(): Promise<SDQResponse | undefined> {
+  async querySdqAgent(sdqQuery: SDQQuery): Promise<SDQResponse | undefined> {
     try {
-      const cid = await this.getCID();
-      if (!cid) return undefined;
-      const query = {
+      const sdqAgentQuery = {
         select: "*",
         collection: "compound",
         order: ["cid,asc"],
         start: 1,
         limit: 10,
-        where: { ands: [{ cid: cid }] },
+        where: { ands: [sdqQuery] },
         width: 1000000,
         listids: 0,
       };
-      const queryURL = JSON.stringify(query).replace(/"/g, "%22").replace(/ /g, "%20");
+      console.debug({ sdqAgentQuery });
+      const queryURL = JSON.stringify(sdqAgentQuery).replace(/"/g, "%22").replace(/ /g, "%20");
 
+      console.debug(
+        `Querying URL: ${this.baseURL}/sdq/sdqagent.cgi?infmt=json&outfmt=json&query=${queryURL}`,
+      );
       const response = await fetch(
         `${this.baseURL}/sdq/sdqagent.cgi?infmt=json&outfmt=json&query=${queryURL}`,
       );
@@ -333,11 +346,23 @@ export default class Pubchem {
    */
   async getSimpleName(): Promise<string | undefined> {
     try {
-      const data = await this.querySdqAgent();
+      const cid = await this.getCID();
+      if (!cid) return undefined;
+      const data = await this.querySdqAgent({ cid });
       if (!data) return undefined;
       return data.SDQOutputSet[0].rows[0].cmpdname;
     } catch (error) {
       console.error("Error fetching simple name:", error);
+    }
+  }
+
+  async getCompoundNameFromAlias(cmpdsynonym: string): Promise<string | undefined> {
+    try {
+      const data = await this.querySdqAgent({ cmpdsynonym });
+      if (!data) return undefined;
+      return data.SDQOutputSet[0].rows[0].cmpdname;
+    } catch (error) {
+      console.error("Error fetching compound name from alias:", error);
     }
   }
 }
