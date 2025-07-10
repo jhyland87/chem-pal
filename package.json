@@ -8,7 +8,8 @@
     "node": ">=22.15.0"
   },
   "scripts": {
-    "dev": "vite",
+    "prebuild": "pnpm run generate-logo-files",
+    "dev": "pnpm run generate-logo-files && vite",
     "dev-mock": "vite --mode=mock",
     "type-check": "tsc --noEmit",
     "build": "vite build --mode=development",
@@ -22,7 +23,8 @@
     "test:run": "vitest run",
     "docs": "typedoc --options typedoc.json",
     "validate-docs": "tsc --noEmit",
-    "wwwdocs": "npx http-server -p 8080 docs"
+    "wwwdocs": "npx http-server -p 8080 docs",
+    "generate-logo-files": "node tools/generate-logo-files.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

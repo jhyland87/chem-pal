@@ -1,16 +1,16 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#ffffff" flood-opacity="0.28"/>
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#2C4060" flood-opacity="0.28"/>
     </filter>
   </defs>
-  <rect x="24" y="24" width="464" height="464" rx="25" fill="#ffffff" stroke="#2C4060" stroke-width="8" filter="url(#shadow)"/>
+  <rect x="24" y="24" width="464" height="464" rx="25" fill="#2C4060" stroke="#ffffff" stroke-width="8" filter="url(#shadow)"/>
   <!-- Top left number -->
-  <text x="50" y="80" font-family="Arial, Helvetica, sans-serif" font-size="40" fill="#3f5270" font-weight="normal">25</text>
+  <text x="50" y="80" font-family="Arial, Helvetica, sans-serif" font-size="40" fill="#D6E3F3" font-weight="normal">25</text>
   <!-- Center Cp -->
-  <text x="50%" y="42%" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="240" fill="#2C4060" font-weight="bold" dominant-baseline="middle">Cp</text>
+  <text x="50%" y="42%" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="240" fill="#ffffff" font-weight="bold" dominant-baseline="middle">Cp</text>
   <!-- ChemPal label -->
-  <text x="50%" y="75%" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="52" fill="#2C4060" font-weight="bold" dominant-baseline="middle">ChemPal</text>
+  <text x="50%" y="75%" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="52" fill="#ffffff" font-weight="bold" dominant-baseline="middle">ChemPal</text>
   <!-- Utilities label -->
-  <text x="50%" y="87%" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" fill="#3f5270" font-weight="normal" dominant-baseline="middle">Price Comparison</text>
+  <text x="50%" y="87%" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" fill="#D6E3F3" font-weight="normal" dominant-baseline="middle">Price Comparison</text>
 </svg>

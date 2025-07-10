@@ -7,18 +7,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const __rootDir = path.resolve(__dirname, "..");
 
-const logoTemplate = "./public/static/images/logo/ChemPal-logo-v2-template.xml";
+const logoTemplate = "public/static/images/logo/ChemPal-logo-v2-template.xml";
 
 const numberOfSuppliers = 25;
 
 const svgFilesToConvert = {
-  "./public/static/images/logo/ChemPal-logo-v2-inverted.svg": {
+  "public/static/images/logo/ChemPal-logo-v2.svg": {
     backgroundColor: "#2C4060",
     primaryColor: "#ffffff",
     secondaryColor: "#D6E3F3",
     atomicNumber: numberOfSuppliers,
   },
-  "./public/static/images/logo/ChemPal-logo-v2.svg": {
+  "public/static/images/logo/ChemPal-logo-v2-inverted.svg": {
     backgroundColor: "#ffffff",
     primaryColor: "#2C4060",
     secondaryColor: "#3f5270",
@@ -62,5 +62,5 @@ function createPngFile(svgFile) {
 for (const [svgFile, svgFileData] of Object.entries(svgFilesToConvert)) {
   createSvgFile(svgFile, svgFileData);
   createPngFile(svgFile);
-  console.log(`--------------------------------`);
+  console.log("");
 }
