@@ -18,8 +18,8 @@
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
   "icons": {
-    "32": "static/images/logo/Cp6.png",
-    "48": "static/images/logo/Cp6.png",
-    "128": "static/images/logo/Cp6.png"
+    "32": "static/images/logo/ChemPal-logo-v2-inverted.png",
+    "48": "static/images/logo/ChemPal-logo-v2-inverted.png",
+    "128": "static/images/logo/ChemPal-logo-v2-inverted.png"
   }
 }

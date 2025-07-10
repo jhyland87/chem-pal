@@ -275,7 +275,7 @@ export const lightTheme: Theme = createTheme({
         root: {
           "& tbody tr:hover": {
             backgroundColor: lightPalette.hoverBackground,
-            cursor: "context-menu",
+            cursor: "default",
             transition: "background-color 0.15s ease-in-out",
           },
         },
@@ -418,7 +418,7 @@ export const darkTheme: Theme = createTheme({
         root: {
           "& tbody tr:hover": {
             backgroundColor: darkPalette.hoverBackground,
-            cursor: "context-menu",
+            cursor: "default",
             transition: "background-color 0.15s ease-in-out",
           },
         },

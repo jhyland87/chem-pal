@@ -356,6 +356,15 @@ export default class Pubchem {
     }
   }
 
+  /**
+   * Retrieves the compound name from the SDQ agent query results
+   * @returns Promise resolving to the compound name
+   *
+   * @example
+   * ```typescript
+   * const name = await pubchem.getCompoundNameFromAlias("aspirin");
+   * ```
+   */
   async getCompoundNameFromAlias(cmpdsynonym: string): Promise<string | undefined> {
     try {
       const data = await this.querySdqAgent({ cmpdsynonym });
