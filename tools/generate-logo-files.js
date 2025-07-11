@@ -32,12 +32,12 @@ const logoTemplate = "public/static/images/logo/ChemPal-logo-v2-template.xml";
  * Get the number of suppliers from the ../src/suppliers/*.ts files. This will
  * be used in the atomic weight of the logos that are generated.
  *
- * Right now it's just hardcoded to 25.
+ * Right now it's just hardcoded to whatever the count is.
  * @todo Implement this function.
  * @returns {number} The number of suppliers
  */
 function getNumberOfSuppliers() {
-  const numberOfSuppliers = 25;
+  const numberOfSuppliers = 26;
   return numberOfSuppliers;
 }
 
