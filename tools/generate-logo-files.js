@@ -8,10 +8,30 @@
  * The script uses the fs library to read and write the files.
  * The script uses the path library to resolve the paths to the files.
  */
-import fs from "fs";
+import fs from "fs/promises";
 import path, { dirname } from "path";
 import svg2img from "svg2img";
 import { fileURLToPath } from "url";
+import util from "util";
+
+/**
+ * Environment variables
+ */
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const __rootDir = path.resolve(__dirname, "..");
+
+/**
+ * Constants (specific to this script)
+ */
+const logoTemplate = "public/static/images/logo/ChemPal-logo-v2-template.xml";
+
+/**
+ * Helper functions
+ */
+const _realpath = (filename) => path.resolve(__rootDir, filename);
+const _basename = (filename) => path.basename(filename);
+const svg2imgPromisified = util.promisify(svg2img);
 
 // Using ASCII color codes instead of chalk because these show up in github actions output.
 const _r = (text) => `\x1b[31m${text}\x1b[0m`; // red
@@ -21,12 +41,6 @@ const _b = (text) => `\x1b[34m${text}\x1b[0m`; // blue
 const _m = (text) => `\x1b[35m${text}\x1b[0m`; // magenta
 const _c = (text) => `\x1b[36m${text}\x1b[0m`; // cyan
 const _w = (text) => `\x1b[37m${text}\x1b[0m`; // white
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const __rootDir = path.resolve(__dirname, "..");
-
-const logoTemplate = "public/static/images/logo/ChemPal-logo-v2-template.xml";
 
 /**
  * Get the number of suppliers from the ../src/suppliers/*.ts files. This will
@@ -64,42 +78,53 @@ const svgFilesToConvert = {
   },
 };
 
-const templateRaw = fs.readFileSync(path.resolve(__rootDir, logoTemplate), "utf8");
+const logoTemplatePath = _realpath(logoTemplate);
+
+if (!(await fs.stat(logoTemplatePath))) {
+  console.error(`${_r(logoTemplate)} does not exist`);
+  process.exit(1);
+}
+
+const templateRaw = await fs.readFile(logoTemplatePath, "utf8");
 
 /**
  * Create an SVG file from the template and the data
+ * @todo Instead of hardcoding the replacement strings, maybe match for /%foo%/g
+ * and then use the foo key from the svgFileData object.
  * @param {string} svgFile - The path to the SVG file to create
  * @param {Object} svgFileData - The data to use to create the SVG file
  */
-function createSvgFile(svgFile, svgFileData) {
+async function createSvgFile(svgFile, svgFileData) {
   const templateProcessed = templateRaw
     .replace(/%backgroundColor%/g, svgFileData.backgroundColor)
     .replace(/%primaryColor%/g, svgFileData.primaryColor)
     .replace(/%secondaryColor%/g, svgFileData.secondaryColor)
     .replace(/%atomicNumber%/g, svgFileData.atomicNumber);
 
-  fs.writeFileSync(path.resolve(__rootDir, svgFile), templateProcessed);
-  console.log(`  ${_y(path.basename(svgFile))} created successfully`);
+  await fs.writeFile(_realpath(svgFile), templateProcessed);
+  console.log(`  ${_y(_basename(svgFile))} created successfully`);
 }
 
 /**
  * Create a PNG file from the SVG file
  * @param {string} svgFile - The path to the SVG file to convert
  */
-function createPngFile(svgFile) {
-  const pngFilename = svgFile.replace(".svg", ".png");
-  svg2img(path.resolve(__rootDir, svgFile), (error, buffer) => {
-    fs.writeFileSync(path.resolve(__rootDir, pngFilename), buffer);
-  });
-  console.log(`  ${_y(path.basename(pngFilename))} created from ${_y(path.basename(svgFile))}`);
+async function createPngFile(svgFile) {
+  try {
+    const pngFilename = svgFile.replace(".svg", ".png");
+
+    const buffer = await svg2imgPromisified(_realpath(svgFile));
+    await fs.writeFile(_realpath(pngFilename), buffer);
+    console.log(`  ${_y(_basename(pngFilename))} created from ${_y(_basename(svgFile))}`);
+  } catch (error) {
+    console.error(`  ${_r(_basename(svgFile))} failed to convert to PNG: ${error}`);
+    process.exit(1);
+  }
 }
 
-/**
- * Create the SVG and PNG files
- */
 for (const [svgFile, svgFileData] of Object.entries(svgFilesToConvert)) {
   console.log("");
   console.log(`Generating ${_c(svgFile)}...`);
-  createSvgFile(svgFile, svgFileData);
-  createPngFile(svgFile);
+  await createSvgFile(svgFile, svgFileData);
+  await createPngFile(svgFile);
 }
