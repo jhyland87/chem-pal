@@ -8,14 +8,20 @@
  * The script uses the fs library to read and write the files.
  * The script uses the path library to resolve the paths to the files.
  */
-import chalk from "chalk";
 import fs from "fs";
 import path, { dirname } from "path";
 import svg2img from "svg2img";
 import { fileURLToPath } from "url";
 
-const _c = chalk.cyan;
-const _y = chalk.yellowBright;
+// Using ASCII color codes instead of chalk because these show up in github actions output.
+const _r = (text) => `\x1b[31m${text}\x1b[0m`; // red
+const _g = (text) => `\x1b[32m${text}\x1b[0m`; // green
+const _y = (text) => `\x1b[33m${text}\x1b[0m`; // yellow
+const _b = (text) => `\x1b[34m${text}\x1b[0m`; // blue
+const _m = (text) => `\x1b[35m${text}\x1b[0m`; // magenta
+const _c = (text) => `\x1b[36m${text}\x1b[0m`; // cyan
+const _w = (text) => `\x1b[37m${text}\x1b[0m`; // white
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const __rootDir = path.resolve(__dirname, "..");
@@ -88,15 +94,6 @@ function createPngFile(svgFile) {
   console.log(`  ${_y(path.basename(pngFilename))} created from ${_y(path.basename(svgFile))}`);
 }
 
-console.log("");
-console.log("\x1b[31mThis is red\x1b[0m");
-console.log("\x1b[32mThis is green\x1b[0m");
-console.log("\x1b[33mThis is yellow\x1b[0m");
-console.log("\x1b[34mThis is blue\x1b[0m");
-console.log("\x1b[35mThis is magenta\x1b[0m");
-console.log("\x1b[36mThis is cyan\x1b[0m");
-console.log("\x1b[37mThis is white\x1b[0m");
-console.log("");
 /**
  * Create the SVG and PNG files
  */
