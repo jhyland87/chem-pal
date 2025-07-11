@@ -88,6 +88,15 @@ function createPngFile(svgFile) {
   console.log(`  ${_y(path.basename(pngFilename))} created from ${_y(path.basename(svgFile))}`);
 }
 
+console.log("");
+console.log("\x1b[31mThis is red\x1b[0m");
+console.log("\x1b[32mThis is green\x1b[0m");
+console.log("\x1b[33mThis is yellow\x1b[0m");
+console.log("\x1b[34mThis is blue\x1b[0m");
+console.log("\x1b[35mThis is magenta\x1b[0m");
+console.log("\x1b[36mThis is cyan\x1b[0m");
+console.log("\x1b[37mThis is white\x1b[0m");
+console.log("");
 /**
  * Create the SVG and PNG files
  */
