@@ -15,3 +15,7 @@
 2) Allow users to to blacklist products from search results via the context menu (eg: "Remove from results" and/or "Exclude from future results").
 3) Add the ability to group results by CAS, this will allow for easier comparison between different suppliers.
 4) Either fix or disable "Dark mode" - AI totally fucked it up when I had it implement the new template/theme.
+
+
+# Suppliers to add
+- aladdinsci.com
