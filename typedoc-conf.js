@@ -7,7 +7,7 @@ module.exports = {
   links: [
     {
       text: "GitHub repo",
-      href: "https://github.com/gamtiq/wrapme",
+      href: "https://github.com/jhyland87/chem-pal",
       normal: true,
       style: "font-size: 12px; color: #cdc;",
       target: "_top",

@@ -31,12 +31,6 @@ export const SearchForm: React.FC<SearchFormProps> = ({
     }
   };
 
-  const handleKeyPress = (event: React.KeyboardEvent) => {
-    if (event.key === "Enter") {
-      handleSubmit(event);
-    }
-  };
-
   const handleDrawerToggle = () => {
     if (onDrawerToggle) {
       onDrawerToggle();
@@ -52,7 +46,6 @@ export const SearchForm: React.FC<SearchFormProps> = ({
           placeholder={placeholder}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyPress}
           slotProps={{
             input: {
               "aria-label": "search for products",

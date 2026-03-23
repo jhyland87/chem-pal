@@ -8,26 +8,29 @@
     "./src/helpers/*.ts",
     "./src/constants/*.ts",
     "./src/types/*.ts",
-    "./src/mixins/*.ts",
-    "./pages/*.md"
+    "./src/mixins/*.ts"
   ],
   "plugin": [
     "typedoc-plugin-mark-react-functional-components",
-    "typedoc-plugin-expand-object-like-types",
-    "typedoc-theme-hierarchy",
+    //"typedoc-plugin-expand-object-like-types",
+    //"typedoc-theme-category-nav",
+    //"typedoc-theme-hierarchy",
     "typedoc-plugin-rename-defaults",
     "typedoc-plugin-coverage",
-    "typedoc-plugin-include-example",
+    //"typedoc-plugin-include-example",
     "typedoc-plugin-dt-links",
     "typedoc-plugin-mdn-links",
     "typedoc-plugin-missing-exports",
-    "typedoc-plugin-not-exported"
+    "typedoc-plugin-not-exported",
     //"typedoc-theme-oxide",
-    //"typedoc-unhoax-theme"
-    //"typedoc-theme-category-nav"
+    //"typedoc-unhoax-theme",,
+    //"typedoc-plugin-mermaid",
+    "./plugins/typedoc-plugin-mermaid-28/src/index.mjs"
   ],
-  "theme": "hierarchy",
-  "entryPointStrategy": "expand",
+  "ignoredHighlightLanguages": ["mermaid"],
+  "logLevel": "Info",
+  "theme": "default",
+  //"entryPointStrategy": "expand",
   "reactReturnType": [
     "ReactElement",
     "JSX.Element",
@@ -39,15 +42,17 @@
     "linkify": true
   },
   "projectDocuments": [
-    "./pages/**/*.md"
+    "./pages/diagrams/search-flow.md",
+    "./pages/diagrams/search-cache-flow.md"
   ],
+  //"includes": "./pages/diagrams",
   "lightHighlightTheme": "github-light-high-contrast",
   "darkHighlightTheme": "github-dark-dimmed",
-  "collapseInternalModule": true,
+  //"collapseInternalModule": true,
   "additionalModuleSources": [],
   "warnOnUnstableDtLink": false,
   "cleanOutputDir": true,
-  "pretty": true,
+  //"pretty": true,
   "groupReferencesByType": true,
   "alwaysCreateEntryPointModule": true,
   "searchCategoryBoosts": {
@@ -61,8 +66,7 @@
     "Interfaces": 3.0,
     "Functions": 2.0
   },
-  "jsDocCompatibility": false,
-  "logLevel": "Info",
+  "jsDocCompatibility": true,
   "placeInternalsInOwningModule": false,
   "useTsLinkResolution": true,
   "out": "docs",
@@ -73,7 +77,10 @@
     "**/__mocks__/**"
   ],
   "useFirstParagraphOfCommentAsSummary": true,
-  "includeHierarchySummary": true,
+  //"includeHierarchySummary": true,
+  "navigation": {
+    "includeGroups": true
+  },
   "searchInDocuments": true,
   "searchInComments": true,
   "excludeTags": [
@@ -118,6 +125,8 @@
     "*"
   ],
   "groupOrder": [
+    "Diagrams",
+    "Documents",
     "Logging",
     "Utils",
     "Components",
@@ -125,5 +134,5 @@
     "Types",
     "*"
   ],
-  "options": "./typedoc-conf.js",
+  "options": "./typedoc-conf.js"
 }

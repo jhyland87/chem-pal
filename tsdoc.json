@@ -1,7 +1,11 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json",
-  "extends": ["typedoc/tsdoc.json"],
+  "extends": ["typedoc/tsdoc.json", "typedoc-plugin-mermaid/tsdoc.json"],
   "tagDefinitions": [
+    {
+      "tagName": "@mermaid",
+      "syntaxKind": "block"
+    },
     {
       "tagName": "@component",
       "syntaxKind": "block"
@@ -46,6 +50,7 @@
     "@summary": true,
     "@internal": true,
     "@includeCode": true,
+    "@include": true,
     "@subcategory": true,
     "@class": true
   }
