@@ -12,12 +12,12 @@
   ],
   "plugin": [
     "typedoc-plugin-mark-react-functional-components",
-    //"typedoc-plugin-expand-object-like-types",
+    "typedoc-plugin-expand-object-like-types",
     //"typedoc-theme-category-nav",
     //"typedoc-theme-hierarchy",
     "typedoc-plugin-rename-defaults",
     "typedoc-plugin-coverage",
-    //"typedoc-plugin-include-example",
+    "typedoc-plugin-include-example",
     "typedoc-plugin-dt-links",
     "typedoc-plugin-mdn-links",
     "typedoc-plugin-missing-exports",
@@ -27,10 +27,12 @@
     //"typedoc-plugin-mermaid",
     "./plugins/typedoc-plugin-mermaid-28/src/index.mjs"
   ],
-  "ignoredHighlightLanguages": ["mermaid"],
-  "logLevel": "Info",
+  "ignoredHighlightLanguages": [
+    "mermaid"
+  ],
+  "logLevel": "Verbose",
   "theme": "default",
-  //"entryPointStrategy": "expand",
+  "entryPointStrategy": "expand",
   "reactReturnType": [
     "ReactElement",
     "JSX.Element",
@@ -48,11 +50,11 @@
   //"includes": "./pages/diagrams",
   "lightHighlightTheme": "github-light-high-contrast",
   "darkHighlightTheme": "github-dark-dimmed",
-  //"collapseInternalModule": true,
+  "collapseInternalModule": true,
   "additionalModuleSources": [],
   "warnOnUnstableDtLink": false,
   "cleanOutputDir": true,
-  //"pretty": true,
+  "pretty": true,
   "groupReferencesByType": true,
   "alwaysCreateEntryPointModule": true,
   "searchCategoryBoosts": {
@@ -77,7 +79,7 @@
     "**/__mocks__/**"
   ],
   "useFirstParagraphOfCommentAsSummary": true,
-  //"includeHierarchySummary": true,
+  "includeHierarchySummary": true,
   "navigation": {
     "includeGroups": true
   },
