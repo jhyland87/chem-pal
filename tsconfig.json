@@ -19,5 +19,12 @@
       "node",
       "chrome"
     ]
-  }
+  },
+  "sourceMap": true,
+  "declaration": true,
+  "declarationMap": true,
+  "esModuleInterop": true,
+  "includedFiles": [
+    "pages/**/*.ts"
+  ]
 }
