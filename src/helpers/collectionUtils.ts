@@ -43,7 +43,7 @@ export function omit<T extends object, K extends keyof T>(
  * @returns Type predicate indicating if the value has minimal required product properties
  * @typeguard
  *
- * @example
+ * @example Basic usage
  * ```typescript
  * if ( ! checkObjectStructure(data, {
  *   title: "string",
@@ -51,6 +51,28 @@ export function omit<T extends object, K extends keyof T>(
  *   quantity: "number"
  * })) {
  *   throw new Error("data is not complete - " + JSON.stringify(data));
+ * }
+ * ```
+ * @example Type guard usage
+ * ```typescript
+ * function isValidProduct(product: unknown): product is SomeProduct {
+ *   return  checkObjectStructure(product, {
+ *     title: "string",
+ *     price: "number",
+ *     quantity: "number"
+ *   });
+ * }
+ * ```
+ * @example Assert usage
+ * ```typescript
+ * function assertIsValidProduct(product: unknown): asserts product is SomeProduct {
+ *    if ( ! checkObjectStructure(product, {
+ *      title: "string",
+ *      price: "number",
+ *      quantity: "number"
+ *    })) {
+ *      throw new Error("product is not complete - " + JSON.stringify(product));
+ *    }
  * }
  * ```
  */
