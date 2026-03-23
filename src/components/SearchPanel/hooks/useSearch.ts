@@ -30,6 +30,10 @@ interface SearchState {
 export function useSearch() {
   const appContext = useAppContext();
   const fetchControllerRef = useRef<AbortController>(new AbortController());
+  // Guard to prevent the mount useEffect from triggering duplicate searches
+  // when dependencies change (e.g. suppliers array getting a new reference
+  // after LOAD_FROM_STORAGE dispatches in App.tsx).
+  const isSearchInitiatedRef = useRef<boolean>(false);
 
   const initialState: SearchState = {
     isLoading: false,
@@ -46,7 +50,7 @@ export function useSearch() {
   useEffect(() => {
     chrome.storage.session
       .get(["searchResults", "searchInput", "isNewSearch"])
-      .then((data) => {
+      .then(async (data) => {
         if (
           data.searchResults &&
           Array.isArray(data.searchResults) &&
@@ -66,12 +70,21 @@ export function useSearch() {
         }
 
         // Only execute search if this is a new search submission
+        // and we haven't already initiated a search from a previous effect run
         if (data.isNewSearch && data.searchInput && data.searchInput.trim()) {
+          if (isSearchInitiatedRef.current) {
+            console.debug("Search already initiated, skipping duplicate execution");
+            return;
+          }
+          isSearchInitiatedRef.current = true;
+
           console.debug("Found new search submission, executing search:", data.searchInput);
-          // Clear the new search flag first
-          chrome.storage.session.remove(["isNewSearch"]).catch((error) => {
+          // Await the flag removal to prevent race conditions with re-runs
+          try {
+            await chrome.storage.session.remove(["isNewSearch"]);
+          } catch (error) {
             console.warn("Failed to clear isNewSearch flag:", error);
-          });
+          }
 
           console.log("executing search FROM USEFFECT", {
             query: data.searchInput,
@@ -215,8 +228,8 @@ export function useSearch() {
 
         // Update results immediately using startTransition for better performance
         startTransition(() => {
-          setSearchResults((prevResults) => {
-            const newResults = [...prevResults, productWithId];
+          setSearchResults((prevSearchResults) => {
+            const newResults = [...prevSearchResults, productWithId];
 
             // Save to Chrome storage for session persistence - this maintains the original behavior
             chrome.storage.session
@@ -248,6 +261,7 @@ export function useSearch() {
         }
 
         setTableText(tableTextLines.join("\n"));
+        console.log("setting table text", tableTextLines.join("\n"));
       } else {
         // Clear any status text from a previous search.
         setTableText("");
@@ -255,6 +269,12 @@ export function useSearch() {
 
       // Final state - search complete
       startTransition(() => {
+        console.log("setting state to false", {
+          isLoading: false,
+          status: false, // Hide status when complete
+          error: undefined,
+          resultCount: resultsTable.getRowCount(),
+        });
         setState({
           isLoading: false,
           status: false, // Hide status when complete
