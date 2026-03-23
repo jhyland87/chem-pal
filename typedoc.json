@@ -25,7 +25,7 @@
     //"typedoc-theme-oxide",
     //"typedoc-unhoax-theme",,
     //"typedoc-plugin-mermaid",
-    "./plugins/typedoc-plugin-mermaid-28/src/index.mjs"
+    "./plugins/typedoc-mermaid-plugin.mjs"
   ],
   "ignoredHighlightLanguages": [
     "mermaid"
