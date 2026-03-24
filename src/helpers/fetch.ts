@@ -1,8 +1,17 @@
+import { addCapturedResponse, initConsoleApi } from "@/helpers/responseAggregate";
+
+declare const __RESPONSE_AGGREGATE__: boolean;
+
 /**
  * Response type that extends the standard Response with additional properties
  * for data and request hash tracking.
  */
 export type FetchDecoratorResponse = Response & { data: unknown; requestHash: string };
+
+// Initialize the console API when in aggregate mode
+if (typeof __RESPONSE_AGGREGATE__ !== "undefined" && __RESPONSE_AGGREGATE__) {
+  initConsoleApi();
+}
 
 /**
  * Generates a simple hash from a string using the djb2 algorithm.
@@ -131,13 +140,33 @@ export async function fetchDecorator(
   const requestHash = await generateRequestHash(input, init);
   console.log(`Request Hash: ${requestHash}`);
 
+  // Clone the request for aggregate capture BEFORE fetch() consumes it.
+  // For POST requests, fetch() reads the request body, making it impossible
+  // to clone afterward.
+  let aggregateRequestClone: Request | undefined;
+  if (typeof __RESPONSE_AGGREGATE__ !== "undefined" && __RESPONSE_AGGREGATE__) {
+    aggregateRequestClone = input instanceof Request
+      ? input.clone()
+      : new Request(input.toString(), init);
+  }
+
   const response = await fetch(input, init);
   // So we can return the original response
   const clonedResponse = response.clone();
-  // In case processing the clonedResponse fails, we can have this one in the catch block
-  //const clonedResponse2 = response.clone();
+
+  // Clone the response for aggregate capture BEFORE the body is transferred
+  // to enhancedResponse (which makes the original response disturbed).
+  // Done before the !response.ok check so error responses (4xx, 5xx) are also captured.
+  let aggregateResponseClone: Response | undefined;
+  if (typeof __RESPONSE_AGGREGATE__ !== "undefined" && __RESPONSE_AGGREGATE__) {
+    aggregateResponseClone = response.clone();
+  }
 
   if (!response.ok) {
+    // Still capture error responses for mocking in tests
+    if (aggregateRequestClone && aggregateResponseClone) {
+      await addCapturedResponse(aggregateRequestClone, aggregateResponseClone);
+    }
     throw new Error(`HTTP Error: ${clonedResponse.status} ${clonedResponse.statusText}`);
   }
 
@@ -169,6 +198,12 @@ export async function fetchDecorator(
     data: { value: data },
     requestHash: { value: requestHash },
   });
+
+  // Capture response when in aggregate mode.
+  // Awaited to ensure the capture completes before the clones are GC'd.
+  if (aggregateRequestClone && aggregateResponseClone) {
+    await addCapturedResponse(aggregateRequestClone, aggregateResponseClone);
+  }
 
   return enhancedResponse as FetchDecoratorResponse;
 }

@@ -31,10 +31,13 @@ export default ({ mode }: { mode: string }) => {
     });
   }*/
 
+  const isAggregate = mode === "aggregate";
+
   return defineConfig({
     define: {
       "process.env.NODE_ENV": JSON.stringify("development"),
       //"process.env": JSON.stringify(env),
+      __RESPONSE_AGGREGATE__: JSON.stringify(isAggregate),
     },
     resolve: {
       alias: {

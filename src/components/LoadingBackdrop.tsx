@@ -27,7 +27,7 @@ import "./LoadingBackdrop.scss";
 export default function LoadingBackdrop(props: LoadingBackdropProps) {
   return (
     <>
-      <Backdrop open={props.open} id="loading-backdrop">
+      <Backdrop open={props.open} id="loading-backdrop" role="status" aria-label="search loading">
         <Box className="loading-backdrop-box">
           {/*<Box className="spinner-box">
             <IconSpinner>

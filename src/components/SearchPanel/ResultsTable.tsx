@@ -375,6 +375,7 @@ export default function ResultsTable({
                   <PageSizeSelect
                     value={table.getState().pagination.pageSize}
                     onChange={(e) => table.setPageSize(Number(e.target.value))}
+                    aria-label="rows per page"
                   >
                     {[5, 10, 20, 50].map((pageSize) => (
                       <MenuItem key={pageSize} value={pageSize}>
