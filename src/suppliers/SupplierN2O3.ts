@@ -2,14 +2,14 @@ import { mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import SupplierBase from "./SupplierBase";
 
-export default class SupplierH2O3 extends SupplierBase<Product, Product> implements ISupplier {
+export default class SupplierN2O3 extends SupplierBase<Product, Product> implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = "H2O3";
+  public readonly supplierName: string = "N2O3";
 
   // Base URL for HTTP(s) requests
   public readonly baseURL: string = "https://n2o3.com/";
 
-  // Shipping scope for H2O3
+  // Shipping scope for N2O3
   public readonly shipping: ShippingRange = "international";
 
   // The country code of the supplier.
