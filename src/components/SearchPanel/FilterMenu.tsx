@@ -45,12 +45,7 @@ type FilterMenuRef = {
   getState: () => boolean;
 };
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number | false;
-  style?: React.CSSProperties;
-}
+// TabPanelProps is declared globally in types/props.d.ts
 
 /**
  * Map of filter variants to their corresponding filter components.

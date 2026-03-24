@@ -32,11 +32,7 @@ import {
 import { useAppContext } from "../context";
 import SettingsPanelFull from "./SettingsPanelFull";
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
+// TabPanelProps is declared globally in types/props.d.ts
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;

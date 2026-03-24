@@ -23,11 +23,7 @@ import React, { ChangeEvent, MouseEvent, startTransition, useActionState, useSta
 import { currencies, locations } from "../../config.json";
 import "./SettingsPanelFull.scss";
 
-type SettingAction =
-  | { type: "SWITCH_CHANGE"; name: string; checked: boolean }
-  | { type: "INPUT_CHANGE"; name: string; value: string }
-  | { type: "BUTTON_CLICK"; name: string; value: string }
-  | { type: "RESTORE_DEFAULTS" };
+// SettingAction type is declared globally in types/settings.d.ts
 
 export default function SettingsPanelFull() {
   const appContext = useAppContext();

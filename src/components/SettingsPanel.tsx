@@ -78,11 +78,7 @@ const displayHelperOnHover = {
  * 5. Simpler context access with use() hook
  */
 
-type SettingAction =
-  | { type: "SWITCH_CHANGE"; name: string; checked: boolean }
-  | { type: "INPUT_CHANGE"; name: string; value: string }
-  | { type: "BUTTON_CLICK"; name: string; value: string }
-  | { type: "RESTORE_DEFAULTS" };
+// SettingAction type is declared globally in types/settings.d.ts
 
 export default function SettingsPanel() {
   // React v19's use() hook simplifies context access
