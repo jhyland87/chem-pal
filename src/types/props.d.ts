@@ -38,11 +38,11 @@ declare global {
     /** Tab index */
     index: number;
     /** Current value */
-    value: number | string;
+    value: number | string | false;
     /** Custom styles */
-    style?: object;
+    style?: React.CSSProperties | object;
     /** Panel name */
-    name: string;
+    name?: string;
   }
 
   /**

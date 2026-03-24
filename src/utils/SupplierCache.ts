@@ -1,34 +1,6 @@
 import Logger from "@/utils/Logger";
 import { md5 } from "js-md5";
-
-/**
- * Metadata about cached results including timestamp and version information.
- * This helps determine if cached data is stale or needs to be refreshed.
- */
-interface CacheMetadata {
-  /** When the data was cached */
-  cachedAt: number;
-  /** Version of the cache format - useful for cache invalidation */
-  version: number;
-  /** Original query that produced these results */
-  query: string;
-  /** Supplier that provided these results */
-  supplier: string;
-  /** Number of results in the cache */
-  resultCount: number;
-  /** Limit used to generate this cache */
-  limit: number;
-}
-
-/**
- * Type for cached data including the results and metadata
- */
-interface CachedData<T> {
-  /** The actual cached results */
-  data: T[];
-  /** Metadata about the cache entry */
-  __cacheMetadata: CacheMetadata;
-}
+import type { CacheMetadata, CachedData } from "@/suppliers/SupplierBase";
 
 /**
  * Utility class for managing supplier data caching in Chrome's local storage.
