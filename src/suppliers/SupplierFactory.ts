@@ -179,11 +179,16 @@ export default class SupplierFactory<P extends Product> {
 
     supplierInstances.forEach((supplier) => {
       queue.run(async () => {
-        const iterator = supplier.execute() as AsyncGenerator<P, void, undefined>;
-        for await (const product of iterator) {
-          channel.push(product);
+        try {
+          const iterator = supplier.execute() as AsyncGenerator<P, void, undefined>;
+          for await (const product of iterator) {
+            channel.push(product);
+          }
+        } catch (e) {
+          this.logger.error("Error executing supplier", { error: e, supplier });
+        } finally {
+          doneCount++;
         }
-        doneCount++;
       });
     });
 

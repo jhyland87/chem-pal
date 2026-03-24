@@ -268,38 +268,31 @@ export function useSearch() {
       }
 
       // Final state - search complete
-      startTransition(() => {
-        console.log("setting state to false", {
-          isLoading: false,
-          status: false, // Hide status when complete
-          error: undefined,
-          resultCount: resultsTable.getRowCount(),
-        });
-        setState({
-          isLoading: false,
-          status: false, // Hide status when complete
-          error: undefined,
-          resultCount: resultsTable.getRowCount(),
-        });
+      // NOTE: Do NOT wrap in startTransition — the isLoading:false update must be
+      // high priority so the LoadingBackdrop closes immediately. startTransition
+      // would let React defer it behind the queued streaming updates indefinitely.
+      setState({
+        isLoading: false,
+        status: false, // Hide status when complete
+        error: undefined,
+        resultCount: resultsTable.getRowCount(),
       });
     } catch (error) {
-      startTransition(() => {
-        if (error instanceof Error && error.name === "AbortError") {
-          setState({
-            isLoading: false,
-            status: "Search aborted",
-            error: undefined,
-            resultCount: state.resultCount,
-          });
-        } else {
-          setState({
-            isLoading: false,
-            status: false,
-            error: error instanceof Error ? error.message : "Search failed",
-            resultCount: state.resultCount,
-          });
-        }
-      });
+      if (error instanceof Error && error.name === "AbortError") {
+        setState({
+          isLoading: false,
+          status: "Search aborted",
+          error: undefined,
+          resultCount: state.resultCount,
+        });
+      } else {
+        setState({
+          isLoading: false,
+          status: false,
+          error: error instanceof Error ? error.message : "Search failed",
+          resultCount: state.resultCount,
+        });
+      }
     }
   };
 
