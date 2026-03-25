@@ -22,6 +22,7 @@ import { useEffect, useRef } from "react";
  *   // table content for measurement
  * </table>
  * ```
+ * @source
  */
 export function useAutoColumnSizing(table: Table<Product>, data: Product[]) {
   const measureRef = useRef<HTMLTableElement>(null);

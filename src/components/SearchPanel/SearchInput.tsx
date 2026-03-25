@@ -24,6 +24,7 @@ import { useSearchInput } from "./useSearchInput.hook";
  *   onSearch={handleSearchChange}
  * />
  * ```
+ * @source
  */
 export default function SearchInput({ onSearch }: SearchInputStates) {
   const { searchInputValue, isLoading, handleSearchInputChange, handleSubmit } = useSearchInput();

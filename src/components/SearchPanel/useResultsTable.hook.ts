@@ -98,6 +98,7 @@ interface UseResultsTableProps {
  * // Use table instance for rendering
  * table.getHeaderGroups().map(headerGroup => ...)
  * ```
+ * @source
  */
 export function useResultsTable({
   showSearchResults,

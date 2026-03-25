@@ -16,6 +16,7 @@ import TextColumnFilter from "./Inputs/TextColumnFilter";
 /**
  * Map of filter variants to their corresponding filter components.
  * Each variant (text, range, select) has a dedicated component for handling its specific filtering needs.
+ * @source
  */
 const filterComponentMap: Record<string, ComponentType<FilterVariantInputProps>> = {
   text: TextColumnFilter,
@@ -28,10 +29,9 @@ const filterComponentMap: Record<string, ComponentType<FilterVariantInputProps>>
  * Falls back to text filter if no variant is specified or if the variant is not found.
  *
  * @component
- *
  * @param props - Component props
- *
  * @returns The rendered filter component
+ * @source
  */
 function FilterVariantComponent({ column }: FilterVariantComponentProps) {
   const ComponentToRender = filterComponentMap[column.columnDef?.meta?.filterVariant ?? "text"];
@@ -45,9 +45,7 @@ function FilterVariantComponent({ column }: FilterVariantComponentProps) {
  * It includes column visibility selection and various filter types (text, range, select) based on column configuration.
  *
  * @component
- *
  * @param props - Component props
- *
  * @example
  * ```tsx
  * <FilterModal
@@ -56,6 +54,7 @@ function FilterVariantComponent({ column }: FilterVariantComponentProps) {
  *   table={table}
  * />
  * ```
+ * @source
  */
 export default function FilterModal({
   filterModalOpen,

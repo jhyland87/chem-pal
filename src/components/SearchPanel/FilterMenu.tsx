@@ -12,7 +12,6 @@ import ListItemText from "@mui/material/ListItemText";
 import type { SelectChangeEvent } from "@mui/material/Select";
 import Typography from "@mui/material/Typography";
 import type { Table } from "@tanstack/react-table";
-import * as React from "react";
 import {
   forwardRef,
   Ref,
@@ -50,6 +49,7 @@ type FilterMenuRef = {
 /**
  * Map of filter variants to their corresponding filter components.
  * Each variant (text, range, select) has a dedicated component for handling its specific filtering needs.
+ * @source
  */
 const filterComponentMap: Record<string, ComponentType<FilterVariantInputProps>> = {
   text: TextColumnFilter,
@@ -62,10 +62,9 @@ const filterComponentMap: Record<string, ComponentType<FilterVariantInputProps>>
  * Falls back to text filter if no variant is specified or if the variant is not found.
  *
  * @component
- *
  * @param props - Component props
- *
  * @returns The rendered filter component
+ * @source
  */
 function FilterVariantComponent({ column }: FilterVariantComponentProps) {
   const ComponentToRender = filterComponentMap[column.columnDef?.meta?.filterVariant ?? "text"];
@@ -74,6 +73,15 @@ function FilterVariantComponent({ column }: FilterVariantComponentProps) {
   return <ComponentToRender column={column} />;
 }
 
+/**
+ * Renders the appropriate filter component based on the column's filter variant.
+ * Falls back to text filter if no variant is specified or if the variant is not found.
+ *
+ * @component
+ * @param props - Component props
+ * @returns The rendered filter component
+ * @source
+ */
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, style, ...other } = props;
 
@@ -91,6 +99,13 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
+/**
+ * Renders the supplier selection component.
+ * @source
+ * @component
+ * @param props - Component props
+ * @returns The rendered supplier selection component
+ */
 function SupplierSelection() {
   const appContext = useAppContext();
 
@@ -145,6 +160,14 @@ function SupplierSelection() {
   );
 }
 
+/**
+ * Renders the search result filters component.
+ * @source
+ * @component
+ * @param props - Component props
+ * @returns The rendered search result filters component
+ * @source
+ */
 function SearchResultFilters({ table }: { table: Table<Product> }) {
   console.log("SearchResultFilters table:", table);
   const [expanded, setExpanded] = useState<string | false>("");
@@ -263,50 +286,15 @@ function SearchResultFilters({ table }: { table: Table<Product> }) {
     </div>
   );
 }
-/*
-  return (
-    <div>
-      <FilterMenuAccordion
-        expanded={expanded === "panel2"}
-        onChange={handleChange("panel2")}
-        disableGutters
-        elevation={0}
-        square
-      >
-        <FilterMenuAccordionSummary
-          aria-controls="panel2d-content"
-          id="panel2d-header"
-          expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: "0.9rem" }} />}
-        >
-          <Typography component="span">Country</Typography>
-        </FilterMenuAccordionSummary>
-        <FilterMenuAccordionDetails>
-          <div>Search and filter options for countries will go here.</div>
-        </FilterMenuAccordionDetails>
-      </FilterMenuAccordion>
-      <FilterMenuAccordion
-        expanded={expanded === "panel3"}
-        onChange={handleChange("panel3")}
-        disableGutters
-        elevation={0}
-        square
-      >
-        <FilterMenuAccordionSummary
-          aria-controls="panel3d-content"
-          id="panel3d-header"
-          expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: "0.9rem" }} />}
-        >
-          <Typography component="span">Sport</Typography>
-        </FilterMenuAccordionSummary>
-        <FilterMenuAccordionDetails>
-          <div>Search and filter options for sports will go here.</div>
-        </FilterMenuAccordionDetails>
-      </FilterMenuAccordion>
-    </div>
-  );
-}
-*/
 
+/**
+ * Renders the filter menu component.
+ * @source
+ * @component
+ * @param props - Component props
+ * @returns The rendered filter menu component
+ * @source
+ */
 function FilterMenu(props: { table: Table<Product> }, ref: Ref<FilterMenuRef>) {
   const { table } = props;
   console.log("FilterMenu props:", table);

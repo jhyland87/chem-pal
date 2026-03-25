@@ -20,9 +20,7 @@ interface TableOptionsProps {
  * the search input and filter icon.
  *
  * @component
- *
  * @param props - Component props
- *
  * @example
  * ```tsx
  * <TableOptions
@@ -31,6 +29,7 @@ interface TableOptionsProps {
  *   setSearchInput={setSearchInput}
  * />
  * ```
+ * @source
  */
 export default function TableOptions({ onSearch, onToggleDrawer }: TableOptionsProps) {
   //const [filterModalOpen, setFilterModalOpen] = useState(false);

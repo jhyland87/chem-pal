@@ -16,6 +16,7 @@ import "./TableHeader.scss";
  * ```tsx
  * <TableHeader table={table} />
  * ```
+ * @source
  */
 export default function TableHeader({ table }: { table: Table<Product> }) {
   /**

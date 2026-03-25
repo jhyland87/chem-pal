@@ -26,6 +26,7 @@ interface SearchState {
  * - Streaming results with immediate UI updates
  * - Live result counter that updates as results arrive
  * - Session persistence restored (loads previous results on mount)
+ * @source
  */
 export function useSearch() {
   const appContext = useAppContext();

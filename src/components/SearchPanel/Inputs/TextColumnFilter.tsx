@@ -14,6 +14,7 @@ import { StyledFormControlSelector } from "../../Styles";
  * ```tsx
  * <TextColumnFilter column={column} />
  * ```
+ * @source
  */
 export default function TextColumnFilter(props: FilterVariantInputProps) {
   const { column } = props;

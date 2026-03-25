@@ -12,6 +12,7 @@ import ResultsTable from "./ResultsTable";
  * ```tsx
  * <SearchPanel />
  * ```
+ * @source
  */
 export default function ResultsPanel() {
   const columnFilterFns = useState<ColumnFiltersState>([]);

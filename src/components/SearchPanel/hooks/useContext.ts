@@ -9,6 +9,7 @@ import { use } from "react";
  * - Works with Suspense boundaries
  * - Cleaner, more direct API
  * - Future-proof for React's direction
+ * @source
  */
 export function useAppContext() {
   // No need for separate useContext - use() handles it
@@ -27,6 +28,7 @@ export function useAppContext() {
  * - Automatic Suspense integration
  * - Cleaner error boundaries
  * - Reduces boilerplate code
+ * @source
  */
 export function useChromeStorage<T>(key: string, defaultValue: T) {
   // The use() hook can handle promises directly
@@ -46,6 +48,7 @@ export function useChromeStorage<T>(key: string, defaultValue: T) {
 
 /**
  * Enhanced version with error handling and type safety
+ * @source
  */
 export function useChromeStorageEnhanced<T>(
   key: string,
@@ -114,6 +117,7 @@ export function useChromeStorageEnhanced<T>(
 /**
  * Reactive Chrome storage hook that watches for changes
  * Uses React v19's use() hook with a custom promise that updates on storage changes
+ * @source
  */
 export function useReactiveChromeStorage<T>(key: string, defaultValue: T) {
   // Create a promise that resolves and updates when storage changes
