@@ -24,7 +24,7 @@
     }
   ],
   "supportForTags": {
-    "interface": true,
+    "@interface": true,
     "@source": true,
     "@component": true,
     "@example": true,
