@@ -25,6 +25,7 @@ import "./TableColumns.scss";
  * ```tsx
  * const columns = TableColumns();
  * ```
+ * @source
  */
 export default function TableColumns(): ColumnDef<Product, unknown>[] {
   return [
@@ -220,6 +221,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
  * const filterConfig = getColumnFilterConfig();
  * // Returns: { title: { filterVariant: "text", filterData: [] }, ... }
  * ```
+ * @source
  */
 export function getColumnFilterConfig() {
   const filterableColumns = TableColumns().reduce<

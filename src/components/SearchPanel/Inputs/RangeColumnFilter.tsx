@@ -20,6 +20,7 @@ import "./RangeColumnFilter.scss";
  * ```tsx
  * <RangeColumnFilter column={column} />
  * ```
+ * @source
  */
 export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
   /**

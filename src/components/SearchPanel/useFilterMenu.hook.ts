@@ -31,6 +31,7 @@ import { useAppContext } from "./hooks/useContext";
  *   handleColumnVisibilityChange
  * } = useFilterMenu(table);
  * ```
+ * @source
  */
 export function useFilterMenu(table?: any) {
   const appContext = useAppContext();

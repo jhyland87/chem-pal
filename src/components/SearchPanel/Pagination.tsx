@@ -19,6 +19,7 @@ import "./Pagination.scss";
  * ```tsx
  * <Pagination table={table} />
  * ```
+ * @source
  */
 export default function Pagination({ table }: { table: Table<Product> }) {
   return (

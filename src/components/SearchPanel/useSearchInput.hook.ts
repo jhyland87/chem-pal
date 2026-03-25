@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 /**
  * Return type for the useSearchInput hook.
  * Contains search input state and handler functions.
+ * @source
  */
 interface UseSearchInputReturn {
   /** Current value of the search input field */
@@ -28,7 +29,6 @@ interface UseSearchInputReturn {
  * state management for search operations.
  *
  * @returns Search input state and handlers
- *
  * @example
  * ```tsx
  * const {
@@ -46,6 +46,7 @@ interface UseSearchInputReturn {
  *   />
  * </form>
  * ```
+ * @source
  */
 export function useSearchInput(): UseSearchInputReturn {
   const [searchInputValue, setSearchInputValue] = useState<string>("");

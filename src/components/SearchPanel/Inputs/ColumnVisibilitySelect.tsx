@@ -15,9 +15,7 @@ import { FilterListItemIcon } from "../../Styles";
  * checking/unchecking them from a list.
  *
  * @component
- *
  * @param props - Component props
- *
  * @example
  * ```tsx
  * <ColumnVisibilitySelect
@@ -26,6 +24,7 @@ import { FilterListItemIcon } from "../../Styles";
  *   handleColumnVisibilityChange={handleChange}
  * />
  * ```
+ * @source
  */
 export default function ColumnVisibilitySelect({
   columnNames,

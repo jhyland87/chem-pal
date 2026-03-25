@@ -47,7 +47,6 @@ interface ContextMenuPosition {
  *
  * @param props - Component props
  * @returns Context menu component
- *
  * @example
  * ```tsx
  * <ContextMenu
@@ -57,6 +56,7 @@ interface ContextMenuPosition {
  *   onClose={() => setMenuOpen(false)}
  * />
  * ```
+ * @source
  */
 export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps) {
   if (!product) return null;

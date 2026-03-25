@@ -77,6 +77,7 @@ interface ResultsTableProps {
  * - Auto column sizing
  * - Pagination and filtering
  * - Drawer system integration
+ * @source
  */
 export default function ResultsTable({
   getRowCanExpand,

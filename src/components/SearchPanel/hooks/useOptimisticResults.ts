@@ -11,6 +11,7 @@ import { useOptimistic } from "react";
  * - Automatic rollback on errors
  * - Better perceived performance
  * - Reduced complex state synchronization
+ * @source
  */
 export function useOptimisticResults(confirmedResults: Product[]) {
   const [optimisticResults, addOptimisticResult] = useOptimistic(
@@ -42,6 +43,7 @@ export function useOptimisticResults(confirmedResults: Product[]) {
 
 /**
  * Enhanced version that includes pending state indicators
+ * @source
  */
 export function useOptimisticResultsWithPending(confirmedResults: Product[]) {
   const [optimisticResults, addOptimisticResult] = useOptimistic(
