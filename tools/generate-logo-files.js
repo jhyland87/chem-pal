@@ -13,6 +13,8 @@ import path, { dirname } from "path";
 import svg2img from "svg2img";
 import { fileURLToPath } from "url";
 import util from "util";
+//import p from "../package.json" with { type: "json" };
+import manifest from "../public/manifest.json" with { type: "json" };
 
 /**
  * Environment variables
@@ -43,16 +45,24 @@ const _c = (text) => `\x1b[36m${text}\x1b[0m`; // cyan
 const _w = (text) => `\x1b[37m${text}\x1b[0m`; // white
 
 /**
- * Get the number of suppliers from the ../src/suppliers/*.ts files. This will
- * be used in the atomic weight of the logos that are generated.
+ * Get the number of suppliers by counting uncommented export lines
+ * in src/suppliers/index.ts.
  *
- * Right now it's just hardcoded to whatever the count is.
- * @todo Implement this function.
- * @returns {number} The number of suppliers
+ * @returns {number} The number of active suppliers
  */
-function getNumberOfSuppliers() {
-  const numberOfSuppliers = 26;
-  return numberOfSuppliers;
+async function getNumberOfSuppliers() {
+  const indexPath = path.resolve(__dirname, "../src/suppliers/index.ts");
+  const content = await fs.readFile(indexPath, "utf8");
+  return content.split("\n").filter((line) => /^export\s/.test(line.trim())).length;
+}
+
+/**
+ * Get the plugin version from the manifest.json file.
+ *
+ * @returns {string} The plugin version
+ */
+function getPluginVersion() {
+  return manifest.version;
 }
 
 /**
@@ -63,18 +73,21 @@ function getNumberOfSuppliers() {
  * @todo Try to grab the color themes from the existing theme files (eg: pull
  * from src/theme/colors.ts)
  */
+const numberOfSuppliers = await getNumberOfSuppliers();
 const svgFilesToConvert = {
   "public/static/images/logo/ChemPal-logo-v2.svg": {
     backgroundColor: "#2C4060",
     primaryColor: "#ffffff",
     secondaryColor: "#D6E3F3",
-    atomicNumber: getNumberOfSuppliers(),
+    atomicNumber: numberOfSuppliers,
+    pluginVersion: getPluginVersion(),
   },
   "public/static/images/logo/ChemPal-logo-v2-inverted.svg": {
     backgroundColor: "#ffffff",
     primaryColor: "#2C4060",
     secondaryColor: "#3f5270",
-    atomicNumber: getNumberOfSuppliers(),
+    atomicNumber: numberOfSuppliers,
+    pluginVersion: getPluginVersion(),
   },
 };
 
@@ -95,11 +108,9 @@ const templateRaw = await fs.readFile(logoTemplatePath, "utf8");
  * @param {Object} svgFileData - The data to use to create the SVG file
  */
 async function createSvgFile(svgFile, svgFileData) {
-  const templateProcessed = templateRaw
-    .replace(/%backgroundColor%/g, svgFileData.backgroundColor)
-    .replace(/%primaryColor%/g, svgFileData.primaryColor)
-    .replace(/%secondaryColor%/g, svgFileData.secondaryColor)
-    .replace(/%atomicNumber%/g, svgFileData.atomicNumber);
+  const templateProcessed = templateRaw.replace(/%(.*?)%/g, (match, key) => {
+    return svgFileData?.hasOwnProperty(key.trim()) ? svgFileData[key.trim()] : match; // Use the object value or keep the original match if key not found
+  });
 
   await fs.writeFile(_realpath(svgFile), templateProcessed);
   console.log(`  ${_y(_basename(svgFile))} created successfully`);

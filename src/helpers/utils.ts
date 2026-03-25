@@ -16,6 +16,7 @@ import TurndownService from "turndown";
  * md5sum({ foo: "bar" }) // Returns hash of stringified object
  * md5sum(null) // Returns null
  * ```
+ * @source
  */
 export function md5sum<T>(input: NonNullable<T>): string | T {
   if (input === null || input === undefined) {
@@ -52,6 +53,7 @@ export function md5sum<T>(input: NonNullable<T>): string | T {
  * serialize("Special chars: !@#$") // Returns safely encoded string
  * serialize("Unicode: 你好") // Handles unicode characters
  * ```
+ * @source
  */
 export function serialize(data: string): string {
   return btoa(encodeURIComponent(data));
@@ -72,6 +74,7 @@ export function serialize(data: string): string {
  * deserialize(serialize("Special!")) // Returns "Special!"
  * deserialize(serialize("你好")) // Returns "你好"
  * ```
+ * @source
  */
 export function deserialize(data: string): string {
   return decodeURIComponent(atob(data));
@@ -99,6 +102,7 @@ export function deserialize(data: string): string {
  *   await sleep(100); // Wait 100ms between items
  * }
  * ```
+ * @source
  */
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -128,6 +132,7 @@ export function sleep(ms: number) {
  * await delayAction(100, step1);
  * await delayAction(200, step2);
  * ```
+ * @source
  */
 export async function delayAction(ms: number, action: () => void) {
   await sleep(ms);
@@ -161,6 +166,7 @@ export async function delayAction(ms: number, action: () => void) {
  * };
  * firstMap(parseDate, ["invalid", "2023-01-01", "also invalid"])
  * ```
+ * @source
  */
 export function firstMap<T, R>(fn: (arg: T) => R | void, properties: T[]): R | void {
   try {
@@ -195,6 +201,7 @@ export function firstMap<T, R>(fn: (arg: T) => R | void, properties: T[]): R | v
  * const getName = (user: any) => user?.name;
  * mapDefined(users, getName) // Returns ["Alice", "Bob"]
  * ```
+ * @source
  */
 export function mapDefined<T, R>(items: T[], fn: (arg: T) => R | null | undefined): R[] {
   return items.map(fn).filter((result): result is R => result !== undefined && result !== null);
@@ -231,6 +238,7 @@ export function mapDefined<T, R>(items: T[], fn: (arg: T) => R | null | undefine
  * decodeHTMLEntities("&lt;div&gt;Hello &amp; World&lt;/div&gt;") // Returns "<div>Hello & World</div>"
  * decodeHTMLEntities("&#39;Hello&#39;") // Returns "'Hello'"
  * ```
+ * @source
  */
 export function decodeHTMLEntities(text: string) {
   const entities: Record<string, string> = {
@@ -267,6 +275,7 @@ export function decodeHTMLEntities(text: string) {
  * tryParseJson('{"name": "John", "age": 30}') // { name: 'John', age: 30 }
  * tryParseJson('not a json string') // false
  * ```
+ * @source
  */
 export function tryParseJson(data: unknown): unknown | false {
   try {
@@ -294,6 +303,7 @@ export function tryParseJson(data: unknown): unknown | false {
  * // If the locale is "en-CA"
  * getUserCountry() // Returns "CA" (Canada)
  * ```
+ * @source
  */
 export function getUserCountry(): CountryCode {
   if (typeof chrome === "undefined" || typeof chrome.i18n === "undefined") {
@@ -312,6 +322,7 @@ export function getUserCountry(): CountryCode {
  * ```typescript
  * stripHTML("<p>Hello <b>world</b></p>") // Returns "Hello world"
  * ```
+ * @source
  */
 export function stripHTML(html: string): string {
   if (typeof document === "undefined") {
@@ -332,6 +343,7 @@ export function stripHTML(html: string): string {
  * ```typescript
  * formatFromHtmlTurndown("<b>Bold</b>") // Returns "**Bold**"
  * ```
+ * @source
  */
 export function formatFromHtmlTurndown(html: string): string {
   const turndownService = new TurndownService();
@@ -348,6 +360,7 @@ export function formatFromHtmlTurndown(html: string): string {
  * ```typescript
  * formatFromHtml("<ul><li>Item 1</li><li>Item 2</li></ul>") // Returns "- Item 1\n- Item 2"
  * ```
+ * @source
  */
 export function formatFromHtml(html: string): string {
   const tempDiv = document.createElement("DIV");

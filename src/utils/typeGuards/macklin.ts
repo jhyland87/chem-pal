@@ -30,6 +30,7 @@ export enum AuthRequiredEndpoints {
  * ```json
  * {"code":200,"message":"","data":{"timestamp":1748793383}}
  * ```
+ * @source
  */
 export function isTimestampResponse(data: unknown): data is TimestampResponse {
   return (
@@ -54,6 +55,7 @@ export function isTimestampResponse(data: unknown): data is TimestampResponse {
  *   console.log(response.data);
  * }
  * ```
+ * @source
  */
 export function isMacklinApiResponse<T>(data: unknown): data is MacklinApiResponse<T> {
   return (
@@ -79,6 +81,7 @@ export function isMacklinApiResponse<T>(data: unknown): data is MacklinApiRespon
  *   // Add authentication headers
  * }
  * ```
+ * @source
  */
 export function isAuthRequiredEndpoint(url: string): boolean {
   return Object.values(AuthRequiredEndpoints).includes(url as AuthRequiredEndpoints);
@@ -91,6 +94,7 @@ export function isAuthRequiredEndpoint(url: string): boolean {
  *
  * @param url - The API endpoint URL to check
  * @returns True if the endpoint is used for auth checks
+ * @source
  */
 export function isAuthCheckEndpoint(url: string): boolean {
   return [
@@ -116,6 +120,7 @@ export function isAuthCheckEndpoint(url: string): boolean {
  *   console.log(response.data.total);
  * }
  * ```
+ * @source
  */
 export function isMacklinSearchResult<T>(data: unknown): data is MacklinSearchResult<T> {
   return (
@@ -134,6 +139,7 @@ export function isMacklinSearchResult<T>(data: unknown): data is MacklinSearchRe
  *
  * @param data - The data to validate
  * @returns True if the data matches the product details response format
+ * @source
  */
 export function isMacklinProductDetailsResponse(
   data: unknown,
@@ -164,6 +170,7 @@ export function isMacklinProductDetailsResponse(
  *   console.log(details.product_price);
  * }
  * ```
+ * @source
  */
 export function isMacklinProductDetails(data: unknown): data is MacklinProductDetails {
   if (typeof data !== "object" || data === null) {

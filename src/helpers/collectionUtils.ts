@@ -15,6 +15,7 @@
  * omit(data, "age"); // { name: "John", city: "New York" }
  * omit(data, ["age", "city"]); // { name: "John" }
  * ```
+ * @source
  */
 export function omit<T extends object, K extends keyof T>(
   data: T,
@@ -75,6 +76,7 @@ export function omit<T extends object, K extends keyof T>(
  *    }
  * }
  * ```
+ * @source
  */
 export function checkObjectStructure(data: unknown, requiredProps: Record<string, string>) {
   if (typeof data !== "object" || data === null) {

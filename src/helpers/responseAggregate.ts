@@ -32,6 +32,7 @@ const DYNAMIC_PARAMS = [
 /**
  * Strips dynamic query parameters from a URL so mock files can be
  * matched across sessions regardless of timestamps, nonces, etc.
+ * @source
  */
 function stripDynamicParams(url: string): string {
   try {
@@ -57,6 +58,7 @@ const captured = new Map<string, CapturedEntry>();
  *
  * @param request - The original Request object
  * @param response - A **cloned** Response (body must not be consumed)
+ * @source
  */
 export async function addCapturedResponse(request: Request, response: Response): Promise<void> {
   try {
@@ -87,6 +89,7 @@ export async function addCapturedResponse(request: Request, response: Response):
 /**
  * Download all captured responses as a zip file.
  * The zip structure mirrors `src/__mocks__/responses/{hostname}/{hash}.json`.
+ * @source
  */
 export async function downloadAsZip(): Promise<void> {
   if (captured.size === 0) {
@@ -129,6 +132,7 @@ export async function downloadAsZip(): Promise<void> {
 
 /**
  * List all captured response paths in the console.
+ * @source
  */
 export function list(): string[] {
   const paths = Array.from(captured.keys());
@@ -145,6 +149,7 @@ export function list(): string[] {
 
 /**
  * Clear all captured responses.
+ * @source
  */
 export function clear(): void {
   const count = captured.size;
@@ -154,6 +159,7 @@ export function clear(): void {
 
 /**
  * Get the number of captured responses.
+ * @source
  */
 export function count(): number {
   return captured.size;
@@ -161,6 +167,7 @@ export function count(): number {
 
 /**
  * Expose console API on `window.__responseAggregate` when in aggregate mode.
+ * @source
  */
 export function initConsoleApi(): void {
   if (typeof __RESPONSE_AGGREGATE__ !== "undefined" && __RESPONSE_AGGREGATE__) {

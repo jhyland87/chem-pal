@@ -114,6 +114,7 @@ export default class Cactus {
    * const ethanol = new Cactus("C2H5OH", false, { max: 500, ttl: 1800000 });
    * const caffeine = new Cactus("58-08-2", false, { enabled: false }); // Disable caching
    * ```
+   * @source
    */
   constructor(name: string, formatXML: boolean = false, cacheOptions: CactusCacheOptions = {}) {
     if (!name) {
@@ -143,6 +144,7 @@ export default class Cactus {
    * const names = await aspirin.getNames();
    * // Returns: XML response
    * ```
+   * @source
    */
   public setFormatXML(formatXML: boolean): void {
     this.formatXML = formatXML;
@@ -158,6 +160,7 @@ export default class Cactus {
    * aspirin.clearCache(); // Clear the cache
    * await aspirin.getNames(); // This will make a new request
    * ```
+   * @source
    */
   public clearCache(): void {
     this.cache?.clear();
@@ -175,6 +178,7 @@ export default class Cactus {
    * Cactus.clearGlobalCache(); // Clear global cache
    * await aspirin2.getNames(); // Makes new request
    * ```
+   * @source
    */
   public static clearGlobalCache(): void {
     Cactus.globalCache.clear();
@@ -192,6 +196,7 @@ export default class Cactus {
    * const stats = aspirin.getCacheStats();
    * console.log(stats); // { size: 1 }
    * ```
+   * @source
    */
   public getCacheStats(): { size: number } {
     if (!this.cache) {
@@ -234,6 +239,7 @@ export default class Cactus {
    *  </data>
    * </request>
    * ```
+   * @source
    */
   private async queryEndpoint(endpoint: CactusEndpoint): Promise<string | Blob> {
     let url = `${this.baseURL}/${this.name}/${endpoint}`;
@@ -290,6 +296,7 @@ export default class Cactus {
    * //   ...
    * // ]
    * ```
+   * @source
    */
   async getNames(): Promise<string[] | undefined> {
     const result = await this.queryEndpoint("names");
@@ -326,6 +333,7 @@ export default class Cactus {
    * const simpleNames = await aspirin.getSimpleNames(3);
    * // Returns: ["Adiro", "Aspec", "Aspro"]
    * ```
+   * @source
    */
   async getSimpleNames(limit: number = 4): Promise<string[] | undefined> {
     const names = await this.getNames();
@@ -349,6 +357,7 @@ export default class Cactus {
    * const smiles = await aspirin.getSmiles();
    * // Returns: "CC(=O)Oc1ccccc1C(O)=O"
    * ```
+   * @source
    */
   async getSmiles(): Promise<string> {
     const result = await this.queryEndpoint("smiles");
@@ -367,6 +376,7 @@ export default class Cactus {
    * const inchi = await aspirin.getInchi();
    * // Returns: "InChI=1/C9H8O4/c1-6(10)13-8-5-3-2-4-7(8)9(11)12/h2-5H,1H3,(H,11,12)/f/h11H"
    * ```
+   * @source
    */
   async getInchi(): Promise<string> {
     const result = await this.queryEndpoint("inchi");
@@ -385,6 +395,7 @@ export default class Cactus {
    * const inchiKey = await aspirin.getInchiKey();
    * // Returns: "BSYNRYMUTXBXSQ-UHFFFAOYSA-N"
    * ```
+   * @source
    */
   async getInchiKey(): Promise<string> {
     const result = await this.queryEndpoint("inchikey");
@@ -403,6 +414,7 @@ export default class Cactus {
    * const ficts = await aspirin.getFicts();
    * // Returns: "FICTS identifier string"
    * ```
+   * @source
    */
   async getFicts(): Promise<string> {
     const result = await this.queryEndpoint("ficts");
@@ -421,6 +433,7 @@ export default class Cactus {
    * const ficus = await aspirin.getFicus();
    * // Returns: "FICUS identifier string"
    * ```
+   * @source
    */
   async getFicus(): Promise<string> {
     const result = await this.queryEndpoint("ficus");
@@ -442,6 +455,7 @@ export default class Cactus {
    * const uuuuu = await aspirin.getUuuuu();
    * // Returns: "UUUUU identifier string"
    * ```
+   * @source
    */
   async getUuuuu(): Promise<string> {
     const result = await this.queryEndpoint("uuuuu");
@@ -463,6 +477,7 @@ export default class Cactus {
    * const hashisy = await aspirin.getHASHISY();
    * // Returns: "Cactvs HASHISY identifier string"
    * ```
+   * @source
    */
   async getHASHISY(): Promise<string> {
     const result = await this.queryEndpoint("hashisy");
@@ -483,6 +498,7 @@ export default class Cactus {
    * const sdfFile = await aspirin.getFile("sdf");
    * const molFile = await aspirin.getFile("mol", true); // Remove hydrogens
    * ```
+   * @source
    */
   async getFile(format: string, removeHydrogens: boolean = false): Promise<string> {
     let url = `${this.baseURL}/${this.name}/file?format=${format}`;
@@ -525,6 +541,7 @@ export default class Cactus {
    * const sdf = await aspirin.getFileSDF();
    * // Returns SDF format structure data
    * ```
+   * @source
    */
   async getFileSDF(): Promise<string> {
     return this.getFile("sdf");
@@ -541,6 +558,7 @@ export default class Cactus {
    * const jme = await aspirin.getFileJME();
    * // Returns JME format structure data
    * ```
+   * @source
    */
   async getFileJME(): Promise<string> {
     return this.getFile("jme");
@@ -557,6 +575,7 @@ export default class Cactus {
    * const iupacName = await aspirin.getIUPACName();
    * // Returns: "2-acetyloxybenzoic acid"
    * ```
+   * @source
    */
   async getIUPACName(): Promise<string | undefined> {
     const result = await this.queryEndpoint("iupac_name");
@@ -582,6 +601,7 @@ export default class Cactus {
    * //   '98201-60-6'
    * // ]
    * ```
+   * @source
    */
   async getCAS(): Promise<string[]> {
     const result = await this.queryEndpoint("cas");
@@ -600,6 +620,7 @@ export default class Cactus {
    * const chemspiderId = await aspirin.getChemspiderID();
    * // Returns: "2157"
    * ```
+   * @source
    */
   async getChemspiderID(): Promise<string> {
     const result = await this.queryEndpoint("chemspider_id");
@@ -618,6 +639,7 @@ export default class Cactus {
    * const stdInchiKey = await aspirin.getStdinchiKey();
    * // Returns: "BSYNRYMUTXBXSQ-UHFFFAOYSA-N"
    * ```
+   * @source
    */
   async getStdinchiKey(): Promise<string> {
     const result = await this.queryEndpoint("stdinchikey");
@@ -636,6 +658,7 @@ export default class Cactus {
    * const stdInchi = await aspirin.getStdinchi();
    * // Returns: "InChI=1S/C9H8O4/c1-6(10)13-8-5-3-2-4-7(8)9(11)12/h2-5H,1H3,(H,11,12)"
    * ```
+   * @source
    */
   async getStdinchi(): Promise<string> {
     const result = await this.queryEndpoint("stdinchi");
@@ -654,6 +677,7 @@ export default class Cactus {
    * const image = await aspirin.getImage();
    * // Returns image data (typically PNG format)
    * ```
+   * @source
    */
   async getImage(): Promise<Blob | undefined> {
     const result = await this.queryEndpoint("image");
@@ -674,6 +698,7 @@ export default class Cactus {
    * const twirl = await aspirin.getTwirl();
    * // Returns the embedable HTML for a TwirlyMol (3D) model of the chemical
    * ```
+   * @source
    */
   async getTwirl(): Promise<string> {
     const result = await this.queryEndpoint("twirl");
@@ -692,6 +717,7 @@ export default class Cactus {
    * const mw = await aspirin.getMW();
    * // Returns: "180.1598"
    * ```
+   * @source
    */
   async getMW(): Promise<string> {
     const result = await this.queryEndpoint("mw");
@@ -710,6 +736,7 @@ export default class Cactus {
    * const formula = await aspirin.getFormula();
    * // Returns: "C9H8O4"
    * ```
+   * @source
    */
   async getFormula(): Promise<string> {
     const result = await this.queryEndpoint("formula");
@@ -728,6 +755,7 @@ export default class Cactus {
    * const hbondDonors = await aspirin.getHbondDonorCount();
    * // Returns: "1"
    * ```
+   * @source
    */
   async getHbondDonorCount(): Promise<string> {
     const result = await this.queryEndpoint("h_bond_donor_count");
@@ -746,6 +774,7 @@ export default class Cactus {
    * const hbondAcceptors = await aspirin.getHbondAcceptorCount();
    * // Returns: "4"
    * ```
+   * @source
    */
   async getHbondAcceptorCount(): Promise<string> {
     const result = await this.queryEndpoint("h_bond_acceptor_count");
@@ -764,6 +793,7 @@ export default class Cactus {
    * const hbondCenters = await aspirin.getHbondCenterCount();
    * // Returns: "4"
    * ```
+   * @source
    */
   async getHbondCenterCount(): Promise<string> {
     const result = await this.queryEndpoint("h_bond_center_count");
@@ -782,6 +812,7 @@ export default class Cactus {
    * const ruleOf5Violations = await aspirin.getRuleOf5ViolationCount();
    * // Returns: "0" (aspirin follows all rules)
    * ```
+   * @source
    */
   async getRuleOf5ViolationCount(): Promise<string> {
     const result = await this.queryEndpoint("rule_of_5_violation_count");
@@ -800,6 +831,7 @@ export default class Cactus {
    * const rotors = await aspirin.getRotorCount();
    * // Returns: "3"
    * ```
+   * @source
    */
   async getRotorCount(): Promise<string> {
     const result = await this.queryEndpoint("rotor_count");
@@ -818,6 +850,7 @@ export default class Cactus {
    * const effectiveRotors = await aspirin.getEffectiveRotorCount();
    * // Returns: "3.0"
    * ```
+   * @source
    */
   async getEffectiveRotorCount(): Promise<string> {
     const result = await this.queryEndpoint("effective_rotor_count");
@@ -836,6 +869,7 @@ export default class Cactus {
    * const rings = await aspirin.getRingCount();
    * // Returns: "1" (benzene ring)
    * ```
+   * @source
    */
   async getRingCount(): Promise<string> {
     const result = await this.queryEndpoint("ring_count");
@@ -854,6 +888,7 @@ export default class Cactus {
    * const ringSystems = await aspirin.getRingsysCount();
    * // Returns: "1" (single ring system)
    * ```
+   * @source
    */
   async getRingsysCount(): Promise<string> {
     const result = await this.queryEndpoint("ringsys_count");

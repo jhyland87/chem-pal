@@ -324,6 +324,9 @@ importers:
       typedoc-plugin-include-example:
         specifier: ^2.1.2
         version: 2.1.2(typedoc@0.28.5(typescript@5.8.3))
+      typedoc-plugin-inline-sources:
+        specifier: ^1.3.0
+        version: 1.3.0(typedoc@0.28.5(typescript@5.8.3))
       typedoc-plugin-mark-react-functional-components:
         specifier: ^0.2.2
         version: 0.2.2
@@ -4258,6 +4261,11 @@ packages:
     resolution: {integrity: sha512-12z74b98SRus4NjyQo5fY6tYt8SYeRanIteivfXKAvYujbb94rRPDVETtTTWnwNLHOxOaP/DekfQknRhMb5c6Q==}
     peerDependencies:
       typedoc: 0.26.x || 0.27.x || 0.28.x
+
+  typedoc-plugin-inline-sources@1.3.0:
+    resolution: {integrity: sha512-WUv9+u6KzGNwfdxBo8ATgU5ZkbfreAoup+kmd8JMcDQtS0A8kDqosb+XGypFgiq/BcrnJJJS/oC/StDb4vx0IQ==}
+    peerDependencies:
+      typedoc: 0.28.x
 
   typedoc-plugin-mark-react-functional-components@0.2.2:
     resolution: {integrity: sha512-4nk3NPD35bfd4cPRylqk/SjkOruU46tG8tJ+IDnpgidzDwf5yEyr1XL9gxCX5dZblCMExPbMhNweIY/kzSL+Nw==}
@@ -8697,6 +8705,10 @@ snapshots:
       typedoc: 0.28.5(typescript@5.8.3)
 
   typedoc-plugin-include-example@2.1.2(typedoc@0.28.5(typescript@5.8.3)):
+    dependencies:
+      typedoc: 0.28.5(typescript@5.8.3)
+
+  typedoc-plugin-inline-sources@1.3.0(typedoc@0.28.5(typescript@5.8.3)):
     dependencies:
       typedoc: 0.28.5(typescript@5.8.3)
 

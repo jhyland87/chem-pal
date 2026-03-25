@@ -40,6 +40,7 @@
  *   console.log("Invalid item - not an object");
  * }
  * ```
+ * @source
  */
 export function isSearchResultItem(product: unknown): product is OnyxMetSearchResultItem {
   return (

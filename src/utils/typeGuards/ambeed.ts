@@ -4,6 +4,7 @@ import { checkObjectStructure } from "@/helpers/collectionUtils";
  * Type guard to check if the given data is an AmbeedProductListResponse
  * @param data - The data to check
  * @returns True if the data matches the AmbeedProductListResponse structure
+ * @source
  */
 export function isAmbeedProductListResponse(data: unknown): data is AmbeedProductListResponse {
   return checkObjectStructure(data, {
@@ -19,6 +20,7 @@ export function isAmbeedProductListResponse(data: unknown): data is AmbeedProduc
  * Type assertion to ensure the given data is an AmbeedProductListResponse
  * @param data - The data to assert
  * @throws Error if the data is not an AmbeedProductListResponse
+ * @source
  */
 export function assertIsAmbeedProductListResponse(
   data: unknown,
@@ -32,6 +34,7 @@ export function assertIsAmbeedProductListResponse(
  * Type guard to check if the given data is an AmbeedProductListResponseValue
  * @param data - The data to check
  * @returns True if the data matches the AmbeedProductListResponseValue structure
+ * @source
  */
 export function isAmbeedProductListResponseValue(
   data: unknown,
@@ -51,6 +54,7 @@ export function isAmbeedProductListResponseValue(
  * Type guard to check if the given data is an AmbeedProductListResponseResultItem
  * @param data - The data to check
  * @returns True if the data matches the AmbeedProductListResponseResultItem structure
+ * @source
  */
 export function isAmbeedProductListResponseResultItem(
   data: unknown,
@@ -72,6 +76,7 @@ export function isAmbeedProductListResponseResultItem(
  * Type guard to check if the given data is an AmbeedProductListResponsePriceList
  * @param data - The data to check
  * @returns True if the data matches the AmbeedProductListResponsePriceList structure
+ * @source
  */
 export function isAmbeedProductListResponsePriceList(
   data: unknown,
@@ -93,6 +98,7 @@ export function isAmbeedProductListResponsePriceList(
  * Type guard to check if the given data is an AmbeedSearchResponseProduct
  * @param data - The data to check
  * @returns True if the data matches the AmbeedSearchResponseProduct structure
+ * @source
  */
 export function isAmbeedSearchResponseProduct(data: unknown): data is AmbeedSearchResponseProduct {
   return checkObjectStructure(data, {

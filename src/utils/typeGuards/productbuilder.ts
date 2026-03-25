@@ -25,6 +25,7 @@ import { AVAILABILITY } from "@/constants/common";
  *   console.log('Availability must be a string');
  * }
  * ```
+ * @source
  */
 export function isAvailability(availability: unknown): availability is AVAILABILITY {
   return (
@@ -80,6 +81,7 @@ export function isAvailability(availability: unknown): availability is AVAILABIL
  *   console.log('Invalid variant - null value');
  * }
  * ```
+ * @source
  */
 export function isValidVariant(variant: unknown): variant is Partial<Variant> {
   if (!variant || typeof variant !== "object") return false;

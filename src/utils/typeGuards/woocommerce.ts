@@ -58,6 +58,7 @@
  *   console.log('Invalid item - wrong property types');
  * }
  * ```
+ * @source
  */
 export function isSearchResponseItem(item: unknown): item is WooCommerceSearchResponseItem {
   if (typeof item !== "object" || item === null) {
@@ -200,6 +201,7 @@ export function isSearchResponseItem(item: unknown): item is WooCommerceSearchRe
  *   console.log('Invalid response - contains invalid items');
  * }
  * ```
+ * @source
  */
 export function isSearchResponse(response: unknown): response is WooCommerceSearchResponse {
   if (!Array.isArray(response)) {
@@ -266,6 +268,7 @@ export function isSearchResponse(response: unknown): response is WooCommerceSear
  *   console.log('Invalid variant - wrong variation type');
  * }
  * ```
+ * @source
  */
 export function isProductVariant(product: unknown): product is WooCommerceProductVariant {
   if (!isSearchResponseItem(product)) {
@@ -345,6 +348,7 @@ export function isProductVariant(product: unknown): product is WooCommerceProduc
  *   console.log('Invalid complete variant - wrong property types');
  * }
  * ```
+ * @source
  */
 export function isValidProductVariant(response: unknown): response is WooCommerceProductVariant {
   if (!isProductVariant(response)) {

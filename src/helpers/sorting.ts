@@ -11,6 +11,7 @@ export function quantitySortingFn(rowA: Row<Product>, rowB: Row<Product>) {
  * Compares the match percentage of products and returns a sort order value.
  *
  * @returns Returns 1 if rowA -gt rowB, -1 if rowA -lt rowB, 0 if equal
+ * @source
  */
 export function matchPercentageSortingFn(rowA: Row<Product>, rowB: Row<Product>) {
   const a = rowA.original.matchPercentage ?? 0;
@@ -23,6 +24,7 @@ export function matchPercentageSortingFn(rowA: Row<Product>, rowB: Row<Product>)
  * Compares the USD prices of products and returns a sort order value.
  *
  * @returns Returns 1 if rowA -gt rowB, -1 if rowA -lt rowB, 0 if equal
+ * @source
  */
 export function priceSortingFn(rowA: Row<Product>, rowB: Row<Product>) {
   const a = (rowA.original.usdPrice ?? rowA.original.price) as number;

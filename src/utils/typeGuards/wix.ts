@@ -103,6 +103,7 @@
  *   console.error("Invalid response - empty product list");
  * }
  * ```
+ * @source
  */
 export function isValidSearchResponse(response: unknown): response is QueryResponse {
   if (typeof response !== "object" || response === null) {
@@ -249,6 +250,7 @@ export function isValidSearchResponse(response: unknown): response is QueryRespo
  *   console.error("Invalid product - invalid product items");
  * }
  * ```
+ * @source
  */
 export function isWixProduct(product: unknown): product is ProductObject {
   if (typeof product !== "object" || product === null) {
@@ -358,6 +360,7 @@ export function isWixProduct(product: unknown): product is ProductObject {
  *   console.error("Invalid item - empty options selections");
  * }
  * ```
+ * @source
  */
 export function isProductItem(item: unknown): item is ProductItem {
   if (typeof item !== "object" || item === null) {
@@ -458,6 +461,7 @@ export function isProductItem(item: unknown): item is ProductItem {
  *   console.error("Invalid selection - wrong property types");
  * }
  * ```
+ * @source
  */
 export function isProductSelection(selection: unknown): selection is ProductSelection {
   if (typeof selection !== "object" || selection === null) {

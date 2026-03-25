@@ -64,6 +64,7 @@ class BadgeAnimator {
    * @param chars - Either an array of characters to cycle through or a key from the predefined charsets
    * @param delay - Delay between updates in milliseconds (default: 500)
    * @throws Error If chars is empty or invalid
+   * @source
    */
   static animate(chars: string[] | keyof typeof BadgeAnimator.charsets, delay: number = 500): void {
     const characterSet = typeof chars === "string" ? this.charsets[chars] : chars;
@@ -84,6 +85,7 @@ class BadgeAnimator {
    * Stop the badge animation and optionally show a final message
    * @param finalText - Optional text to display before clearing the badge
    * @param duration - How long to show the final text before clearing (in milliseconds)
+   * @source
    */
   static clear(finalText: string = "", duration: number = 5000): void {
     if (this.#timeoutId) {
@@ -107,6 +109,7 @@ class BadgeAnimator {
    * Set the colors of the badge
    * @param fgColor - The foreground (text) color of the badge (hex color code)
    * @param bgColor - The background color of the badge (hex color code)
+   * @source
    */
   static setColor(fgColor?: string, bgColor?: string): void {
     if (fgColor) {
@@ -125,6 +128,7 @@ class BadgeAnimator {
   /**
    * Set the text of the badge. This also clears the animation
    * @param text - The text to display on the badge
+   * @source
    */
   static setText(text: string): void {
     this.clear();
@@ -133,6 +137,7 @@ class BadgeAnimator {
 
   /**
    * Update the badge to the next character in the sequence
+   * @source
    */
   static #updateAnimation(): void {
     if (!this.#chars.length) return;

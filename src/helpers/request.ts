@@ -51,6 +51,7 @@ import * as contentType from "content-type";
  * // }
  * ```
  * @category Helpers
+ * @source
  */
 export function getRequestHash(request: Request): RequestHashObject {
   const url = new URL(request.url);
@@ -94,6 +95,7 @@ export function getRequestHash(request: Request): RequestHashObject {
  * // }
  * ```
  * @category Helpers
+ * @source
  */
 export async function getCachableResponse(
   request: Request,
@@ -134,6 +136,7 @@ export async function getCachableResponse(
  * const isUrl = isFullURL("https://www.google.com");
  * // Returns: true
  * ```
+ * @source
  */
 export function isFullURL(val: unknown): val is URL {
   try {
@@ -159,6 +162,7 @@ export function isRequest(req: unknown): req is Request {
  * // Returns a value with only safe characters:
  * //    "Hello%2C+world%21+-+95%25+ethanol"
  * ```
+ * @source
  */
 export function urlencode(str: string): string {
   return encodeURIComponent(str)
@@ -180,6 +184,7 @@ export function urlencode(str: string): string {
  * const doc = createDOM("<html><body><h1>Hello, world!</h1></body></html>");
  * // Returns: Document object
  * ```
+ * @source
  */
 export function createDOM(html: string): Document {
   const parser = new DOMParser();

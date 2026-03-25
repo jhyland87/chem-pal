@@ -52,6 +52,7 @@
  *   console.error("Invalid response - missing required properties");
  * }
  * ```
+ * @source
  */
 export function isResponseOk(response: unknown): response is CarolinaSearchResponse {
   if (!response || typeof response !== "object") {
@@ -147,6 +148,7 @@ export function isResponseOk(response: unknown): response is CarolinaSearchRespo
  *   console.error("Invalid response - missing child rules");
  * }
  * ```
+ * @source
  */
 export function isValidSearchResponse(response: unknown): response is CarolinaSearchResponse {
   if (typeof response !== "object" || response === null) {
@@ -250,6 +252,7 @@ export function isValidSearchResponse(response: unknown): response is CarolinaSe
  *   console.error("Invalid result - wrong property types");
  * }
  * ```
+ * @source
  */
 export function isSearchResultItem(result: unknown): result is CarolinaSearchResult {
   if (typeof result !== "object" || result === null) {
@@ -295,6 +298,7 @@ export function isSearchResultItem(result: unknown): result is CarolinaSearchRes
  *   console.log(response.product.name);
  * }
  * ```
+ * @source
  */
 export function isValidProductResponse(obj: unknown): obj is CarolinaProductResponse {
   if (typeof obj !== "object" || obj === null) {
@@ -328,6 +332,7 @@ export function isValidProductResponse(obj: unknown): obj is CarolinaProductResp
  *   console.log(response.response.response.products[0]);
  * }
  * ```
+ * @source
  */
 export function isATGResponse(obj: unknown): obj is ATGResponse {
   if (typeof obj !== "object" || obj === null) {

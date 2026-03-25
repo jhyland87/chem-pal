@@ -10,6 +10,7 @@
  *   console.log(response.count);
  * }
  * ```
+ * @source
  */
 export function isSynthetikaSearchResponse(data: unknown): data is SynthetikaSearchResponse {
   if (!data || typeof data !== "object") {
@@ -70,6 +71,7 @@ export function isSynthetikaSearchResponse(data: unknown): data is SynthetikaSea
  *   console.log(data.count);
  * }
  * ```
+ * @source
  */
 export function assertIsSynthetikaSearchResponse(
   data: unknown,
@@ -95,6 +97,7 @@ export function assertIsSynthetikaSearchResponse(
  *   console.log(product.name);
  * }
  * ```
+ * @source
  */
 export function isSynthetikaProduct(data: unknown): data is SynthetikaProduct {
   if (!data || typeof data !== "object") {
@@ -152,6 +155,7 @@ export function isSynthetikaProduct(data: unknown): data is SynthetikaProduct {
  *   console.log(product.price.gross.final);
  * }
  * ```
+ * @source
  */
 export function isSynthetikaProductPrice(data: unknown): data is SynthetikaProductPrice {
   if (!data || typeof data !== "object") {
@@ -179,6 +183,7 @@ export function isSynthetikaProductPrice(data: unknown): data is SynthetikaProdu
  * assertIsSynthetikaProductPrice(product.price.net);
  * console.log(product.price.gross.final);
  * ```
+ * @source
  */
 export function assertIsSynthetikaProductPrice(
   data: unknown,

@@ -20,7 +20,6 @@ import { CAS_REGEX } from "@/constants/common";
  * @category Helpers
  * @param cas - The CAS number to validate
  * @returns True if the CAS number is valid, false otherwise
- *
  * @example
  * ```typescript
  * isCAS('1234-56-6') // Returns true
@@ -35,6 +34,7 @@ import { CAS_REGEX } from "@/constants/common";
  * @see https://regex101.com/r/xPF1Yp/2
  * @see https://www.cas.org/training/documentation/chemical-substances/checkdig
  * @see https://www.allcheminfo.com/chemistry/cas-number-lookup.html
+ * @source
  */
 export function isCAS(cas: unknown): cas is CAS<string> {
   if (typeof cas !== "string") return false;
@@ -71,6 +71,7 @@ export function isCAS(cas: unknown): cas is CAS<string> {
  * findCAS('Example of an invalid cas: 1232-56-6..') // Returns undefined
  * findCAS('and 50-00-1 is another valid cas #') // Returns undefined
  * ```
+ * @source
  */
 export function findCAS(data: string): CAS<string> | void {
   const regex = RegExp(CAS_REGEX.source, "g");
@@ -90,6 +91,7 @@ export function findCAS(data: string): CAS<string> | void {
  * getNamesByCAS("1234567890")
  * // Returns undefined
  * ```
+ * @source
  */
 export async function getNamesByCAS(cas: CAS<string>): Promise<Maybe<string[]>> {
   try {
@@ -110,6 +112,7 @@ export async function getNamesByCAS(cas: CAS<string>): Promise<Maybe<string[]>> 
  * @category Helpers
  * @param name - The name of the chemical to get the IUPAC name of
  * @returns The IUPAC name of the chemical
+ * @source
  */
 export async function getIUPACName(name: string): Promise<Maybe<string>> {
   const response = await fetch(
@@ -134,6 +137,7 @@ export async function getIUPACName(name: string): Promise<Maybe<string>> {
  * getCASByName("adsfasfd")
  * // Returns undefined
  * ```
+ * @source
  */
 export async function getCASByName(name: string): Promise<Maybe<CAS<string>>> {
   try {
