@@ -72,6 +72,7 @@
  *   console.error("Invalid response - wrong property types");
  * }
  * ```
+ * @source
  */
 export function isValidSearchResponse(response: unknown): response is SearchResponse {
   try {
@@ -189,6 +190,7 @@ export function isValidSearchResponse(response: unknown): response is SearchResp
  *   console.error("Invalid variant - wrong property types");
  * }
  * ```
+ * @source
  */
 export function isShopifyVariant(variant: unknown): variant is ShopifyVariant {
   if (typeof variant !== "object" || variant === null) {
@@ -355,6 +357,7 @@ export function isShopifyVariant(variant: unknown): variant is ShopifyVariant {
  *   console.error("Invalid item - contains invalid variants");
  * }
  * ```
+ * @source
  */
 export function isItemListing(item: unknown): item is ItemListing {
   if (typeof item !== "object" || item === null) {

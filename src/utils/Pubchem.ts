@@ -4,6 +4,7 @@
 /**
  * Type guard to assert that data is a valid CIDResponse
  * @param data - The data to validate
+ * @source
  */
 function assertIsCIDResponse(data: unknown): asserts data is CIDResponse {
   if (typeof data !== "object" || data === null) {
@@ -34,6 +35,7 @@ function assertIsCIDResponse(data: unknown): asserts data is CIDResponse {
 /**
  * Type guard to assert that data is a valid CompoundResponse
  * @param data - The data to validate
+ * @source
  */
 function assertIsCompoundResponseResponse(data: unknown): asserts data is CompoundResponse {
   if (typeof data !== "object" || data === null) {
@@ -66,6 +68,7 @@ function assertIsCompoundResponseResponse(data: unknown): asserts data is Compou
 /**
  * Type guard to assert that data is a valid SDQResponse
  * @param data - The data to validate
+ * @source
  */
 function assertIsSdqAgentResponse(data: unknown): asserts data is SDQResponse {
   if (typeof data !== "object" || data === null) {
@@ -96,6 +99,7 @@ export default class Pubchem {
   /**
    * Creates a new Pubchem instance for querying compound information
    * @param query - The chemical compound name or identifier to search for
+   * @source
    */
   constructor(private readonly query: string) {
     this.query = query;
@@ -110,6 +114,7 @@ export default class Pubchem {
    * const compound = await pubchem.getCompound();
    * console.log(compound); // "aspirin"
    * ```
+   * @source
    */
   async getCompound(): Promise<string | undefined> {
     try {
@@ -134,6 +139,7 @@ export default class Pubchem {
    * const cid = await pubchem.getCID();
    * console.log(cid); // 2244
    * ```
+   * @source
    */
   async getCID(): Promise<number | undefined> {
     try {
@@ -159,6 +165,7 @@ export default class Pubchem {
    * const sdqData = await pubchem.querySdqAgent();
    * console.log(sdqData.SDQOutputSet[0].rows[0].mw); // Molecular weight
    * ```
+   * @source
    */
   async querySdqAgent(sdqQuery: SDQQuery): Promise<SDQResponse | undefined> {
     try {
@@ -198,6 +205,7 @@ export default class Pubchem {
    * const name = await pubchem.getSimpleName();
    * console.log(name); // "2-acetyloxybenzoic acid"
    * ```
+   * @source
    */
   async getSimpleName(): Promise<string | undefined> {
     try {
@@ -219,6 +227,7 @@ export default class Pubchem {
    * ```typescript
    * const name = await pubchem.getCompoundNameFromAlias("aspirin");
    * ```
+   * @source
    */
   async getCompoundNameFromAlias(cmpdsynonym: string): Promise<string | undefined> {
     try {

@@ -22,6 +22,7 @@
     "typedoc-plugin-mdn-links",
     "typedoc-plugin-missing-exports",
     "typedoc-plugin-not-exported",
+    "typedoc-plugin-inline-sources",
     //"typedoc-theme-oxide",
     //"typedoc-unhoax-theme",,
     //"typedoc-plugin-mermaid",
@@ -30,7 +31,7 @@
   "ignoredHighlightLanguages": [
     "mermaid"
   ],
-  "logLevel": "Verbose",
+  "logLevel": "Error",
   "theme": "default",
   "entryPointStrategy": "expand",
   "reactReturnType": [
@@ -44,8 +45,7 @@
     "linkify": true
   },
   "projectDocuments": [
-    "./pages/diagrams/search-flow.md",
-    "./pages/diagrams/search-cache-flow.md"
+    "./pages/**/*.md"
   ],
   //"includes": "./pages/diagrams",
   "lightHighlightTheme": "github-light-high-contrast",

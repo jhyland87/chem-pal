@@ -9,6 +9,7 @@
 /**
  * Type guard to assert that data is a valid SDQResponse
  * @param data - The data to validate
+ * @source
  */
 function assertIsSDQResponse(data: unknown): asserts data is SDQResponse {
   if (typeof data !== "object" || data === null) {
@@ -22,6 +23,7 @@ function assertIsSDQResponse(data: unknown): asserts data is SDQResponse {
 /**
  * Type guard to assert that data is a valid SDQQueryWhere
  * @param data - The data to validate
+ * @source
  */
 function assertIsSDQWhere(where: unknown): asserts where is SDQWhere {
   if (typeof where !== "object" || where === null) {
@@ -43,6 +45,7 @@ function assertIsSDQWhere(where: unknown): asserts where is SDQWhere {
  * console.log(cmpd);
  * // Outputs: Aspirin
  * ```
+ * @source
  */
 export async function executeSDQSearch({
   where,
@@ -112,6 +115,7 @@ export async function executeSDQSearch({
  * console.log(cmpd);
  * // Outputs: Aspirin
  * ```
+ * @source
  */
 export async function getCompoundNameFromAlias(cmpdsynonym: string): Promise<string | undefined> {
   const searchResult = await executeSDQSearch({

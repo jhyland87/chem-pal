@@ -24,6 +24,7 @@ import { UOM, UOM_ALIASES } from "@/constants/common";
  * ```
  *
  * @see https://regex101.com/r/Ruid54/5
+ * @source
  */
 export function parseQuantity(value: string): QuantityObject | void {
   if (!value) return;
@@ -72,6 +73,7 @@ export function parseQuantity(value: string): QuantityObject | void {
  * stripQuantityFromString("1.2 L of some reagent") // Returns "L of some reagent"
  * ```
  * @see https://regex101.com/delete/7/TztEFjdT1JIZPzagNUUUI991RznPQdvbzcgI
+ * @source
  */
 export function stripQuantityFromString(value: string): string {
   if (!value || typeof value !== "string") return value;
@@ -93,6 +95,7 @@ export function stripQuantityFromString(value: string): string {
  * @category Helpers
  * @param value - The value to check
  * @returns True if the value is a QuantityObject, false otherwise
+ * @source
  */
 export function isQuantityObject(value: unknown): value is QuantityObject {
   return (
@@ -120,6 +123,7 @@ export function isQuantityObject(value: unknown): value is QuantityObject {
  * standardizeUom('lb') // Returns 'pound'
  * standardizeUom('Grams') // Returns 'gram'
  * ```
+ * @source
  */
 export function standardizeUom(uom: string): UOM | void {
   const uomMap = Object.entries(UOM_ALIASES).reduce(
@@ -149,6 +153,7 @@ export function standardizeUom(uom: string): UOM | void {
  * toBaseQuantity(1, UOM.LB) // Returns 453.592 (grams)
  * toBaseQuantity(1, UOM.G) // Returns 1 (no conversion needed)
  * ```
+ * @source
  */
 export function toBaseQuantity(quantity: number, unit: UOM): number | void {
   if (typeof quantity !== "number") return;

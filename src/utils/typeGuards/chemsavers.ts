@@ -75,6 +75,7 @@ import { checkObjectStructure } from "@/helpers/collectionUtils";
  *   console.error("Invalid product - wrong property types");
  * }
  * ```
+ * @source
  */
 export function isValidSearchResponseItem(response: unknown): response is ChemsaversProductObject {
   if (typeof response !== "object" || !response) {
@@ -213,6 +214,7 @@ export function isValidSearchResponseItem(response: unknown): response is Chemsa
  *   console.error("Invalid response - invalid hit");
  * }
  * ```
+ * @source
  */
 export function isValidSearchResponse(response: unknown): response is ChemsaversSearchResponse {
   try {
@@ -271,6 +273,7 @@ export function isValidSearchResponse(response: unknown): response is Chemsavers
  * Throws an error if the response is not a valid SearchResponse.
  * @param response - Response object to validate
  * @throws Error if response is not a valid SearchResponse
+ * @source
  */
 export function assertValidSearchResponse(
   response: unknown,

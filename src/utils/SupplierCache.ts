@@ -224,6 +224,7 @@ export default class SupplierCache {
    * Generates a cache key based on the query and supplier name.
    * The limit is intentionally excluded as it only affects how many results are returned,
    * not the actual search results themselves.
+   * @source
    */
   generateCacheKey(query: string, supplierName: string): string {
     const data = `${query || ""}:${supplierName || ""}`;
@@ -268,6 +269,7 @@ export default class SupplierCache {
   /**
    * Generates a cache key for product detail data based only on the HTTP request URL and params.
    * This ensures that identical detail requests (even from different queries) share the same cache entry.
+   * @source
    */
   getProductDataCacheKey(
     url: string,
@@ -284,6 +286,7 @@ export default class SupplierCache {
 
   /**
    * Stores query results in the cache.
+   * @source
    */
   async cacheQueryResults(
     query: string,
@@ -337,6 +340,7 @@ export default class SupplierCache {
 
   /**
    * Retrieves cached product data for a given key.
+   * @source
    */
   async getCachedProductData(key: string): Promise<Maybe<Record<string, unknown>>> {
     try {
@@ -360,6 +364,7 @@ export default class SupplierCache {
 
   /**
    * Updates the timestamp for a cached product data entry.
+   * @source
    */
   async updateProductDataCacheTimestamp(key: string): Promise<void> {
     try {
@@ -380,6 +385,7 @@ export default class SupplierCache {
 
   /**
    * Stores product data in the cache.
+   * @source
    */
   async cacheProductData(key: string, data: Record<string, unknown>): Promise<void> {
     try {
@@ -407,6 +413,7 @@ export default class SupplierCache {
 
   /**
    * Gets the query cache key used in storage.
+   * @source
    */
   static getQueryCacheKey(): string {
     return SupplierCache.queryCacheKey;
@@ -414,6 +421,7 @@ export default class SupplierCache {
 
   /**
    * Gets the product data cache key used in storage.
+   * @source
    */
   static getProductDataCacheKey(): string {
     return SupplierCache.productDataCacheKey;

@@ -1,4 +1,7 @@
-Just a simple React/Typescript plugin for Chrome - Proof of concept
+> [!NOTE]
+> WORK IN PROGRESS - Plenty of bugs exist and were working on them as time permits.
+
+Just a simple React/Typescript plugin for Chrome
 
 Example output:
 

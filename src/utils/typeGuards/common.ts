@@ -25,6 +25,7 @@ import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "@/constants/currency";
  *   console.log('Not a valid HTTP response');
  * }
  * ```
+ * @source
  */
 export function isHttpResponse(value: unknown): value is Response {
   return (
@@ -62,6 +63,7 @@ export function isHttpResponse(value: unknown): value is Response {
  *   console.log('Invalid UOM:', invalidUOM);
  * }
  * ```
+ * @source
  */
 export function isUOM(uom: unknown): uom is UOM {
   return typeof uom === "string" && Object.values(UOM).includes(uom as UOM);
@@ -94,6 +96,7 @@ export function isUOM(uom: unknown): uom is UOM {
  *   console.log('Not a JSON response');
  * }
  * ```
+ * @source
  */
 export function isJsonResponse(response: unknown): response is Response {
   if (!isHttpResponse(response)) return false;
@@ -119,6 +122,7 @@ export function isJsonResponse(response: unknown): response is Response {
  * });
  * assertJsonResponse(jsonResponse);
  * ```
+ * @source
  */
 export function assertJsonResponse(response: unknown): asserts response is Response {
   if (!isJsonResponse(response)) {
@@ -153,6 +157,7 @@ export function assertJsonResponse(response: unknown): asserts response is Respo
  *   console.log('Not an HTML response');
  * }
  * ```
+ * @source
  */
 export function isHtmlResponse(response: unknown): response is Response {
   if (!isHttpResponse(response)) return false;
@@ -181,6 +186,7 @@ export function isHtmlResponse(response: unknown): response is Response {
  * });
  * assertHtmlResponse(htmlResponse);
  * ```
+ * @source
  */
 export function assertHtmlResponse(response: unknown): asserts response is Response {
   if (!isHtmlResponse(response)) {
@@ -225,6 +231,7 @@ export function assertHtmlResponse(response: unknown): asserts response is Respo
  *   console.log('Invalid search result');
  * }
  * ```
+ * @source
  */
 export function isValidResult(value: unknown): value is RequiredProductFields {
   if (!value || typeof value !== "object") return false;
@@ -284,6 +291,7 @@ export function isValidResult(value: unknown): value is RequiredProductFields {
  *   console.log('Invalid minimal product - missing required fields');
  * }
  * ```
+ * @source
  */
 export function isMinimalProduct(product: unknown): product is RequiredProductFields {
   if (!product || typeof product !== "object") return false;
@@ -357,6 +365,7 @@ export function isMinimalProduct(product: unknown): product is RequiredProductFi
  *   console.log('Invalid product - missing required fields');
  * }
  * ```
+ * @source
  */
 export function isProduct(product: unknown): product is Product {
   if (typeof product !== "object" || product === null) return false;
@@ -394,6 +403,7 @@ export function isProduct(product: unknown): product is Product {
  *   console.log("Invalid currency symbol:", validSymbol);
  * }
  * ```
+ * @source
  */
 export function isCurrencySymbol(symbol: unknown): symbol is CurrencySymbol {
   return (
@@ -419,6 +429,7 @@ export function isCurrencySymbol(symbol: unknown): symbol is CurrencySymbol {
  *   console.log("Invalid currency code:", validCode);
  * }
  * ```
+ * @source
  */
 export function isCurrencyCode(code: unknown): code is CurrencyCode {
   return (

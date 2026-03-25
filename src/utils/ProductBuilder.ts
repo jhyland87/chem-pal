@@ -60,6 +60,7 @@ export default class ProductBuilder<T extends Product> {
    * ```typescript
    * const builder = new ProductBuilder('https://example.com');
    * ```
+   * @source
    */
   constructor(baseURL: string) {
     this.baseURL = baseURL;
@@ -80,6 +81,7 @@ export default class ProductBuilder<T extends Product> {
    *   uom: "g"
    * });
    * ```
+   * @source
    */
   setData(data: Partial<T>): ProductBuilder<T> {
     Object.assign(this.product, data);
@@ -101,6 +103,7 @@ export default class ProductBuilder<T extends Product> {
    *   'ChemSupplier'
    * );
    * ```
+   * @source
    */
   setBasicInfo(title: string, url: string, supplier: string): ProductBuilder<T> {
     this.product.title = title;
@@ -123,6 +126,7 @@ export default class ProductBuilder<T extends Product> {
    * builder.setFormula("Just some text");
    * // sets this.product.formula to undefined
    * ```
+   * @source
    */
   setFormula(formula?: string): ProductBuilder<T> {
     if (formula && typeof formula === "string" && formula.trim().length > 0) {
@@ -145,6 +149,7 @@ export default class ProductBuilder<T extends Product> {
    * builder.setGrade("ACS Grade");
    * builder.setGrade("Reagent Grade");
    * ```
+   * @source
    */
   setGrade(grade: string): ProductBuilder<T> {
     if (grade && grade?.trim()?.length > 0) {
@@ -162,6 +167,7 @@ export default class ProductBuilder<T extends Product> {
    * ```typescript
    * builder.setPrice(123.34);
    * ```
+   * @source
    */
   setPrice(price: number | string): ProductBuilder<T> {
     if (typeof price !== "number" && typeof price !== "string") {
@@ -182,6 +188,7 @@ export default class ProductBuilder<T extends Product> {
    * ```typescript
    * builder.setCurrencySymbol('$');
    * ```
+   * @source
    */
   setCurrencySymbol(sign: CurrencySymbol): ProductBuilder<T> {
     if (typeof sign !== "string") {
@@ -201,6 +208,7 @@ export default class ProductBuilder<T extends Product> {
    * ```typescript
    * builder.setCurrencyCode('USD');
    * ```
+   * @source
    */
   setCurrencyCode(code: CurrencyCode): ProductBuilder<T> {
     if (typeof code !== "string") {
@@ -224,6 +232,7 @@ export default class ProductBuilder<T extends Product> {
    * // Sets this.product.currencyCode to 'USD'
    * // Sets this.product.currencySymbol to '$'
    * ```
+   * @source
    */
   setPricing(price: ParsedPrice): ProductBuilder<T>;
   /**
@@ -238,6 +247,7 @@ export default class ProductBuilder<T extends Product> {
    * // Sets this.product.currencyCode to 'USD'
    * // Sets this.product.currencySymbol to '$'
    * ```
+   * @source
    */
   setPricing(price: string): ProductBuilder<T>;
   /**
@@ -254,6 +264,7 @@ export default class ProductBuilder<T extends Product> {
    * // Sets this.product.currencyCode to 'USD'
    * // Sets this.product.currencySymbol to '$'
    * ```
+   * @source
    */
   setPricing(
     price: number | string,
@@ -306,6 +317,7 @@ export default class ProductBuilder<T extends Product> {
    * // Sets this.product.quantity to 500
    * // Sets this.product.uom to 'g'
    * ```
+   * @source
    */
   setQuantity(quantity: QuantityObject): ProductBuilder<T>;
   /**
@@ -320,6 +332,7 @@ export default class ProductBuilder<T extends Product> {
    * // Sets this.product.quantity to 500
    * // Sets this.product.uom to 'g'
    * ```
+   * @source
    */
   setQuantity(quantity: string): ProductBuilder<T>;
   /**
@@ -335,6 +348,7 @@ export default class ProductBuilder<T extends Product> {
    * // Sets this.product.quantity to 500
    * // Sets this.product.uom to 'g'
    * ```
+   * @source
    */
   setQuantity(quantity: number, uom: string): ProductBuilder<T>;
   setQuantity(quantity: QuantityObject | string | number, uom?: string): ProductBuilder<T> {
@@ -387,6 +401,7 @@ export default class ProductBuilder<T extends Product> {
    * ```typescript
    * builder.setUOM('g');
    * ```
+   * @source
    */
   setUOM(uom: string): ProductBuilder<T> {
     if (typeof uom === "string" && uom.trim().length > 0) {
@@ -407,6 +422,7 @@ export default class ProductBuilder<T extends Product> {
    * ```typescript
    * builder.setSupplierCountry("US");
    * ```
+   * @source
    */
   setSupplierCountry(country: CountryCode): ProductBuilder<T> {
     this.product.supplierCountry = country;
@@ -422,6 +438,7 @@ export default class ProductBuilder<T extends Product> {
    * ```typescript
    * builder.setSupplierShipping("worldwide");
    * ```
+   * @source
    */
   setSupplierShipping(shipping: ShippingRange): ProductBuilder<T> {
     this.product.supplierShipping = shipping;
@@ -437,6 +454,7 @@ export default class ProductBuilder<T extends Product> {
    * ```typescript
    * builder.setSupplierPaymentMethods(["visa", "mastercard"]);
    * ```
+   * @source
    */
   setSupplierPaymentMethods(paymentMethods: PaymentMethod[]): ProductBuilder<T> {
     if (Array.isArray(paymentMethods)) {
@@ -459,6 +477,7 @@ export default class ProductBuilder<T extends Product> {
    *   'High purity sodium chloride, 99.9% pure, suitable for laboratory use'
    * );
    * ```
+   * @source
    */
   setDescription(description: string): ProductBuilder<T> {
     this.product.description = description;
@@ -478,6 +497,7 @@ export default class ProductBuilder<T extends Product> {
    * // For invalid CAS number (will not set)
    * builder.setCAS('invalid-cas');
    * ```
+   * @source
    */
   setCAS(cas: string): ProductBuilder<T> {
     if (typeof cas !== "string") {
@@ -505,6 +525,7 @@ export default class ProductBuilder<T extends Product> {
    * ```typescript
    * builder.setID(12345);
    * ```
+   * @source
    */
   setID(id?: number | string): ProductBuilder<T> {
     if (id) {
@@ -522,6 +543,7 @@ export default class ProductBuilder<T extends Product> {
    * ```typescript
    * builder.setUUID('550e8400-e29b-41d4-a716-446655440000');
    * ```
+   * @source
    */
   setUUID(uuid: string): ProductBuilder<T> {
     if (uuid && uuid.trim().length > 0) {
@@ -539,6 +561,7 @@ export default class ProductBuilder<T extends Product> {
    * ```typescript
    * builder.setSku('CHEM-NaCl-500G');
    * ```
+   * @source
    */
   setSku(sku: string): ProductBuilder<T> {
     if (sku && sku.trim().length > 0) {
@@ -556,6 +579,7 @@ export default class ProductBuilder<T extends Product> {
    * ```typescript
    * builder.setVendor('Vendor Name');
    * ```
+   * @source
    */
   setVendor(vendor?: string): ProductBuilder<T> {
     if (vendor) {
@@ -581,6 +605,7 @@ export default class ProductBuilder<T extends Product> {
    * builder.determineAvailability("backorder");
    * builder.determineAvailability("discontinued");
    * ```
+   * @source
    */
   determineAvailability(availability?: AVAILABILITY | boolean | string): Maybe<AVAILABILITY> {
     if (typeof availability === "undefined") return;
@@ -625,6 +650,7 @@ export default class ProductBuilder<T extends Product> {
    * // Out of stock
    * // etc
    * ```
+   * @source
    */
   setAvailability(availability: AVAILABILITY): ProductBuilder<T>;
   setAvailability(availability: boolean): ProductBuilder<T>;
@@ -653,6 +679,7 @@ export default class ProductBuilder<T extends Product> {
    *   price: 29.99,
    * });
    * ```
+   * @source
    */
   addRawData(data?: Record<string, unknown>): ProductBuilder<T> {
     Object.assign(this.rawData, data);
@@ -674,6 +701,7 @@ export default class ProductBuilder<T extends Product> {
    *   sku: 'CHEM-500G'
    * });
    * ```
+   * @source
    */
   addVariant(variant: Partial<Variant>): ProductBuilder<T> {
     if (!this.product.variants) {
@@ -705,6 +733,7 @@ export default class ProductBuilder<T extends Product> {
    *   }
    * ]);
    * ```
+   * @source
    */
   addVariants(variants: Partial<Variant>[]): ProductBuilder<T> {
     for (const variant of variants) {
@@ -723,6 +752,7 @@ export default class ProductBuilder<T extends Product> {
    * ```typescript
    * builder.setVariants([{ id: 1, title: '500g Package', price: 49.99, quantity: 500, uom: 'g' }]);
    * ```
+   * @source
    */
   setVariants(variants: Partial<Variant>[]): ProductBuilder<T> {
     this.product.variants = variants;
@@ -739,6 +769,7 @@ export default class ProductBuilder<T extends Product> {
    * const title = builder.get("title");
    * console.log(title); // "Sodium Chloride"
    * ```
+   * @source
    */
   get(key: keyof T): T[keyof T] | Maybe<T[keyof T]> {
     if (key in this.product && typeof this.product[key] !== "undefined") {
@@ -758,6 +789,7 @@ export default class ProductBuilder<T extends Product> {
    * ```typescript
    * builder.setMatchPercentage(95);
    * ```
+   * @source
    */
   setMatchPercentage(matchPercentage: number): ProductBuilder<T> {
     if (typeof matchPercentage === "number") {
@@ -776,6 +808,7 @@ export default class ProductBuilder<T extends Product> {
    * const variant = builder.getVariant(0);
    * console.log(variant); // { id: 1, title: '500g Package', price: 49.99, quantity: 500, uom: 'g' }
    * ```
+   * @source
    */
   getVariant(index: number): Variant | undefined {
     return this.product.variants?.[index];
@@ -791,6 +824,7 @@ export default class ProductBuilder<T extends Product> {
    * const url = this.href('/products/123');
    * // Returns: 'https://example.com/products/123'
    * ```
+   * @source
    */
   private href(path: string | URL): string {
     const urlObj = new URL(path, this.baseURL);
@@ -820,6 +854,7 @@ export default class ProductBuilder<T extends Product> {
    *   })
    *   .build();
    * ```
+   * @source
    */
   async build(): Promise<Maybe<Product>> {
     if (!isMinimalProduct(this.product)) {
@@ -911,6 +946,7 @@ export default class ProductBuilder<T extends Product> {
    *   .dump();
    * console.log(partialProduct);
    * ```
+   * @source
    */
   dump(): Partial<T> {
     return this.product;
@@ -932,6 +968,7 @@ export default class ProductBuilder<T extends Product> {
    *   console.log(product.title);
    * }
    * ```
+   * @source
    */
   public static createFromCache<T extends Product>(
     baseURL: string,

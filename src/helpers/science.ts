@@ -14,6 +14,7 @@ import { SUBSCRIPTS, SUPERSCRIPTS } from "../constants/science";
  * subscript("H2O") // Returns "H₂O"
  * subscript("CO2") // Returns "CO₂"
  * ```
+ * @source
  */
 export const subscript = (str: string) => {
   return str.replace(/[0-9]/g, (match) => SUBSCRIPTS[match] || match);
@@ -28,6 +29,7 @@ export const subscript = (str: string) => {
  * superscript("10^2") // Returns "10²"
  * superscript("2^3") // Returns "2³"
  * ```
+ * @source
  */
 export const superscript = (str: string) => {
   return str.replace(/[0-9]/g, (match) => SUPERSCRIPTS[match]);
@@ -54,6 +56,7 @@ export const superscript = (str: string) => {
  * // Returns undefined
  * ```
  * @see https://regex101.com/r/H6DXwK/6 - Regex pattern explanation
+ * @source
  */
 export const findFormulaInHtml = (html: string): string | undefined => {
   const pattern = new RegExp(

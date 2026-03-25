@@ -24,6 +24,7 @@ if (typeof __RESPONSE_AGGREGATE__ !== "undefined" && __RESPONSE_AGGREGATE__) {
  * const hash = generateSimpleHash("test string");
  * console.log(hash); // "a5d7d2a9"
  * ```
+ * @source
  */
 export function generateSimpleHash(str: string): string {
   let hash = 0;
@@ -59,6 +60,7 @@ export function generateSimpleHash(str: string): string {
  * });
  * const hash2 = await generateRequestHash(request);
  * ```
+ * @source
  */
 export async function generateRequestHash(
   input: RequestInfo | URL,
@@ -132,6 +134,7 @@ export async function generateRequestHash(
  *   // Handle blob data
  * }
  * ```
+ * @source
  */
 export async function fetchDecorator(
   input: RequestInfo | URL,

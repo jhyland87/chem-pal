@@ -3,7 +3,7 @@
   "extends": ["typedoc/tsdoc.json", "typedoc-plugin-mermaid/tsdoc.json"],
   "tagDefinitions": [
     {
-      "tagName": "@mermaid",
+      "tagName": "@source",
       "syntaxKind": "block"
     },
     {
@@ -24,6 +24,8 @@
     }
   ],
   "supportForTags": {
+    "interface": true,
+    "@source": true,
     "@component": true,
     "@example": true,
     "@param": true,

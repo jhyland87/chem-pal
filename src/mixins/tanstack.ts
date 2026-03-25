@@ -9,6 +9,7 @@ type ColumnDefWithAccessor<TData> = { accessorKey?: keyof TData };
  *
  * @param column - The column to get the header text from
  * @returns The displayable header text as a string
+ * @source
  */
 export function getHeaderText<TData>(column: Column<TData, unknown>): string {
   const header = column.columnDef.header as StringOrTemplateHeader<TData, unknown>;
@@ -29,6 +30,7 @@ export function getHeaderText<TData>(column: Column<TData, unknown>): string {
  * @param column - The column to get values from
  * @param table - The table instance
  * @returns A sorted array of unique values
+ * @source
  */
 export function getVisibleUniqueValues<TData>(
   column: Column<TData, unknown>,
@@ -54,6 +56,7 @@ export function getVisibleUniqueValues<TData>(
  * @param column - The column to get values from
  * @param table - The table instance
  * @returns A sorted array of unique values
+ * @source
  */
 export function getAllUniqueValues<TData>(
   column: Column<TData, unknown>,
@@ -83,6 +86,7 @@ export function getAllUniqueValues<TData>(
  * @param column - The column to get the range from
  * @param table - The table instance
  * @returns A tuple containing the minimum and maximum values
+ * @source
  */
 export function getFullRange<TData>(
   column: Column<TData, unknown>,
@@ -100,6 +104,7 @@ export function getFullRange<TData>(
  * @param column - The column to get the range from
  * @param table - The table instance
  * @returns A tuple containing the minimum and maximum values
+ * @source
  */
 export function getVisibleRange<TData>(
   column: Column<TData, unknown>,
@@ -114,6 +119,7 @@ export function getVisibleRange<TData>(
  *
  * @param column - The column to set visibility for
  * @param visible - Whether the column should be visible
+ * @source
  */
 export function setColumnVisibility<TData>(column: Column<TData, unknown>, visible: boolean): void {
   if (column.getCanHide() === false) return;

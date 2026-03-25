@@ -117,6 +117,7 @@ export default class Logger {
    * ```
    *
    * @returns The environment-specified log level or LogLevel.INFO if not set
+   * @source
    */
   private static getEnvLogLevel(): LogLevel {
     try {
@@ -187,6 +188,7 @@ export default class Logger {
    * const debugLogger = new Logger('API', LogLevel.DEBUG);
    * const errorLogger = new Logger('DB', LogLevel.ERROR);
    * ```
+   * @source
    */
   constructor(prefix: string, initialLogLevel?: LogLevel) {
     this.prefix = prefix;
@@ -206,6 +208,7 @@ export default class Logger {
    * const logger = new Logger('App'); // Initially syncs with environment
    * logger.setLogLevel(LogLevel.WARN); // Now fixed at WARN, ignores environment
    * ```
+   * @source
    */
   public setLogLevel(level: LogLevel): void {
     this.useEnvOverride = false;
@@ -236,6 +239,7 @@ export default class Logger {
    * envLogger.setLogLevel(LogLevel.ERROR);
    * envLogger.getLogLevel(); // Returns: LogLevel.ERROR (now fixed)
    * ```
+   * @source
    */
   public getLogLevel(): LogLevel {
     return this.currentLogLevel;
@@ -257,6 +261,7 @@ export default class Logger {
    * this.formatMessage(LogLevel.ERROR, "Database connection failed");
    * // Returns: "[2024-01-01T00:00:00.000Z] [ERROR] [MyApp] Database connection failed"
    * ```
+   * @source
    */
   private formatMessage(level: LogLevel, message: string): string {
     const timestamp = new Date().toISOString();
@@ -286,6 +291,7 @@ export default class Logger {
    * window.LOG_LEVEL = 'DEBUG';
    * envLogger.shouldLog(LogLevel.DEBUG); // Updates level and returns true
    * ```
+   * @source
    */
   private shouldLog(messageLevel: LogLevel): boolean {
     // If using environment override, check for changes
@@ -321,6 +327,7 @@ export default class Logger {
    * logger.debug('Processing payload', { userId: 123, action: 'login' });
    * // [2024-03-19T10:30:15.123Z] [DEBUG] [App] Processing payload { userId: 123, action: 'login' }
    * ```
+   * @source
    */
   public debug(message: string, ...args: unknown[]): void {
     if (!this.shouldLog(LogLevel.DEBUG)) return;
@@ -340,6 +347,7 @@ export default class Logger {
    * logger.info('User logged in', { userId: 123 });
    * // [2024-03-19T10:30:15.124Z] [INFO] [App] User logged in { userId: 123 }
    * ```
+   * @source
    */
   public info(message: string, ...args: unknown[]): void {
     if (!this.shouldLog(LogLevel.INFO)) return;
@@ -359,6 +367,7 @@ export default class Logger {
    * logger.warn('High memory usage', { memoryUsed: '85%' });
    * // [2024-03-19T10:30:15.125Z] [WARN] [App] High memory usage { memoryUsed: '85%' }
    * ```
+   * @source
    */
   public warn(message: string, ...args: unknown[]): void {
     if (!this.shouldLog(LogLevel.WARN)) return;
@@ -391,6 +400,7 @@ export default class Logger {
    * // Multiple arguments
    * logger.error('Operation failed', { code: 500, reason: 'Timeout' }, 'at endpoint: /api/data');
    * ```
+   * @source
    */
   public error(message: string, ...args: unknown[]): void {
     if (!this.shouldLog(LogLevel.ERROR)) return;
@@ -420,6 +430,7 @@ export default class Logger {
    * logger.log('Process completed', 'Duration:', 1234, 'ms');
    * // Output: [2024-01-01T00:00:00.000Z] [INFO] [MyApp] Process completed Duration: 1234 ms
    * ```
+   * @source
    */
   public log(message: string, ...args: unknown[]): void {
     if (!this.shouldLog(LogLevel.INFO)) return;
@@ -449,6 +460,7 @@ export default class Logger {
    * const data = await response.json();
    * logger.dir(data, { depth: null }); // Show all levels
    * ```
+   * @source
    */
   public dir(item: unknown, options?: { depth?: number; colors?: boolean }): void {
     if (!this.shouldLog(LogLevel.DEBUG)) return;
@@ -481,6 +493,7 @@ export default class Logger {
    * // Output: [2024-01-01T00:00:00.000Z] [INFO] [MyApp] errors: 1
    * // Output: [2024-01-01T00:00:00.000Z] [INFO] [MyApp] api-requests: 3
    * ```
+   * @source
    */
   public count(label = "default"): void {
     if (!this.shouldLog(LogLevel.INFO)) return;
@@ -511,6 +524,7 @@ export default class Logger {
    * // Reset non-existent counter (silent operation)
    * logger.countReset('unknown');
    * ```
+   * @source
    */
   public countReset(label = "default"): void {
     delete this.counters[label];
@@ -547,6 +561,7 @@ export default class Logger {
    * logger.log('Grouped message');
    * logger.groupEnd();
    * ```
+   * @source
    */
   public group(label?: string): void {
     if (!this.shouldLog(LogLevel.INFO)) return;
@@ -583,6 +598,7 @@ export default class Logger {
    * logger.log('Body:', request.body);
    * logger.groupEnd();
    * ```
+   * @source
    */
   public groupCollapsed(label?: string): void {
     if (!this.shouldLog(LogLevel.INFO)) return;
@@ -594,6 +610,7 @@ export default class Logger {
 
   /**
    * Exits the current inline group in the console.
+   * @source
    */
   public groupEnd(): void {
     if (this.groupDepth > 0) {
@@ -630,6 +647,7 @@ export default class Logger {
    *   logger.trace('Error caught:');
    * }
    * ```
+   * @source
    */
   public trace(message?: string): void {
     if (!this.shouldLog(LogLevel.DEBUG)) return;
@@ -674,6 +692,7 @@ export default class Logger {
    * };
    * logger.table(data);
    * ```
+   * @source
    */
   public table(tabularData: unknown, properties?: readonly string[]): void {
     if (!this.shouldLog(LogLevel.INFO)) return;
@@ -687,6 +706,7 @@ export default class Logger {
 
   /**
    * Clears the console if possible.
+   * @source
    */
   public clear(): void {
     console.clear();
@@ -714,6 +734,7 @@ export default class Logger {
    * logger.time('database-query');
    * // Output: [2024-01-01T00:00:00.000Z] [WARN] [Performance] Timer 'database-query' already exists
    * ```
+   * @source
    */
   public time(label = "default"): void {
     if (this.timers[label]) {
@@ -752,6 +773,7 @@ export default class Logger {
    * logger.timeEnd();
    * // Output: [2024-01-01T00:00:00.000Z] [DEBUG] [Performance] Timer 'default': 1234.56ms
    * ```
+   * @source
    */
   public timeEnd(label = "default"): void {
     if (!this.timers[label]) {
@@ -795,6 +817,7 @@ export default class Logger {
    * logger.timeLog('invalid-timer');
    * // Output: [2024-01-01T00:00:00.000Z] [WARN] [Performance] Timer 'invalid-timer' does not exist
    * ```
+   * @source
    */
   public timeLog(label = "default", ...args: unknown[]): void {
     if (!this.timers[label]) {
@@ -840,6 +863,7 @@ export default class Logger {
    *   logger.timeStamp('Action Completed');
    * }
    * ```
+   * @source
    */
   public timeStamp(label?: string): void {
     if (!this.shouldLog(LogLevel.DEBUG)) return;

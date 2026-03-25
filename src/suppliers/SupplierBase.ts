@@ -309,6 +309,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * // Later, to cancel all pending requests:
    * controller.abort();
    * ```
+   * @source
    */
   public constructor(query: string, limit: number = 5, controller?: AbortController) {
     // Initialize required properties
@@ -337,6 +338,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   }
    * }
    * ```
+   * @source
    */
   public initCache(): void {
     this.cache = new SupplierCache(this.supplierName);
@@ -352,6 +354,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * ```typescript
    * await supplier.setup();
    * ```
+   * @source
    */
   protected async setup(): Promise<void> {}
 
@@ -383,6 +386,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   console.error('Failed to fetch headers:', err);
    * }
    * ```
+   * @source
    */
   protected async httpGetHeaders(url: string | URL): Promise<Maybe<HeadersInit>> {
     try {
@@ -466,6 +470,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   console.error('POST failed:', err);
    * }
    * ```
+   * @source
    */
   protected async httpPost({
     path,
@@ -539,6 +544,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   console.error('POST JSON failed:', err);
    * }
    * ```
+   * @source
    */
   protected async httpPostJson({
     path,
@@ -569,6 +575,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   body: { name: 'John' }
    * });
    * ```
+   * @source
    */
   protected async httpPostHtml({
     path,
@@ -632,6 +639,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   console.error('GET failed:', err);
    * }
    * ```
+   * @source
    */
   protected async httpGet({
     path,
@@ -732,6 +740,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * this.titleSelector = (data) => data.formula;
    * const formulaMatches = this.fuzzyFilter("sodium chloride", chemicals);
    * ```
+   * @source
    */
   protected fuzzyFilter<X>(query: string, data: X[], cutoff: number = 40): X[] {
     const res = extract(query, data, {
@@ -784,6 +793,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   return `${data.name} ${data.grade} ${data.purity}`.trim();
    * }
    * ```
+   * @source
    */
   protected abstract titleSelector(data: any): Maybe<string>;
 
@@ -819,6 +829,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   params: { limit: 10 }
    * });
    * ```
+   * @source
    */
   protected async httpGetHtml({
     path,
@@ -881,6 +892,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   console.error('Failed to fetch products:', error);
    * }
    * ```
+   * @source
    */
   protected async httpGetJson({
     path,
@@ -928,6 +940,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   }
    * }
    * ```
+   * @source
    */
   protected async queryProductsWithCache(
     query: string,
@@ -980,6 +993,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * @remarks
    * This method is used to execute the supplier's search query and return the results.
    * @returns Promise resolving to an array of products
+   * @source
    */
   public async *execute(): AsyncGenerator<T, void, undefined> {
     await this.setup();
@@ -1109,6 +1123,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   return products;
    * }
    * ```
+   * @source
    */
   protected abstract queryProducts(
     query: string,
@@ -1157,6 +1172,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   console.log("Failed to finalize product - missing required fields");
    * }
    * ```
+   * @source
    */
   protected async finishProduct(product: ProductBuilder<Product>): Promise<Maybe<Product>> {
     if (!isMinimalProduct(product.dump())) {
@@ -1208,6 +1224,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * this.href('https://supplier_base_url.com/some/path', new URLSearchParams({ a: 'b', c: 'd' }))
    * // https://supplier_base_url.com/some/path?a=b&c=d
    * ```
+   * @source
    */
   protected href(path: string | URL, params?: Maybe<RequestParams>, host?: string): string {
     let href: URL;
@@ -1256,6 +1273,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   console.log("Product details:", product);
    * }
    * ```
+   * @source
    */
   protected async getProductData(product: ProductBuilder<T>): Promise<ProductBuilder<T> | void> {
     const url = product.get("url");
@@ -1313,6 +1331,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   { version: "2.0" }
    * );
    * ```
+   * @source
    */
   protected async getProductDataWithCache(
     product: ProductBuilder<T>,
@@ -1362,6 +1381,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * const grouped = this.groupVariants(results);
    * // grouped is an array of product listings with grouped variants
    * ```
+   * @source
    */
   protected groupVariants<R>(data: R[]): R[] {
     type SubType = R & { groupId: string; variants?: R[] };
@@ -1420,6 +1440,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   })
    * );
    * ```
+   * @source
    */
   protected async fetch(...args: Parameters<typeof fetchDecorator>): Promise<any> {
     const [input] = args;

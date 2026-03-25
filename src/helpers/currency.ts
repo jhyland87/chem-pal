@@ -59,6 +59,7 @@ const lruCurrencyRate = new LRUCache({
  * getCurrencySymbol('₹1500') // Returns '₹'
  * getCurrencySymbol('1000') // Returns undefined (no symbol)
  * ```
+ * @source
  */
 export function getCurrencySymbol(price: string): CurrencySymbol | void {
   const match = price.match(/\p{Sc}/u);
@@ -90,6 +91,7 @@ export function getCurrencySymbol(price: string): CurrencySymbol | void {
  *
  * parsePrice('invalid') // Returns undefined
  * ```
+ * @source
  */
 export function parsePrice(price: string): ParsedPrice | void {
   if (typeof price !== "string") return;
@@ -155,6 +157,7 @@ export function isParsedPrice(data: unknown): data is ParsedPrice {
  * // Rates are cached for subsequent calls
  * await getCurrencyRate('EUR', 'USD') // Uses cached value
  * ```
+ * @source
  */
 export async function getCurrencyRate(from: CurrencyCode, to: CurrencyCode): Promise<number> {
   try {
@@ -187,6 +190,7 @@ export async function getCurrencyRate(from: CurrencyCode, to: CurrencyCode): Pro
  * const symbol = getCurrencySymbol('$100');
  * const code = getCurrencyCodeFromSymbol(symbol); // 'USD'
  * ```
+ * @source
  */
 export function getCurrencyCodeFromSymbol(symbol: CurrencySymbol): CurrencyCode {
   return CURRENCY_CODE_MAP[symbol as string];
@@ -206,6 +210,7 @@ export function getCurrencyCodeFromSymbol(symbol: CurrencySymbol): CurrencyCode 
  * getCurrencyCodeFromLocation('US') // Returns 'USD'
  * getCurrencyCodeFromLocation('GB') // Returns 'GBP'
  * ```
+ * @source
  */
 export function getCurrencyCodeFromLocation(location: CountryCode): CurrencyCode {
   return CURRENCY_CODE_MAP_BY_LOCATION[location as string];
@@ -237,6 +242,7 @@ export function getCurrencyCodeFromLocation(location: CountryCode): CurrencyCode
  *   const usdAmount = await toUSD(price.price, price.currencyCode);
  * }
  * ```
+ * @source
  */
 export async function toUSD(amount: number, fromCurrencyCode: CurrencyCode): Promise<number> {
   const rate = await getCurrencyRate(fromCurrencyCode, "USD");
@@ -263,6 +269,7 @@ export async function toUSD(amount: number, fromCurrencyCode: CurrencyCode): Pro
  * await USDto(500, 'GBP')
  * // Returns 387.50 (if rate is 0.775)
  * ```
+ * @source
  */
 export async function USDto(amount: number, toCurrencyCode: CurrencyCode): Promise<number> {
   const currencyData = priceParser.currencies.find(

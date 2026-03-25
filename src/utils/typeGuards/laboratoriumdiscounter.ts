@@ -84,6 +84,7 @@
  *   console.error("Invalid response - wrong property types");
  * }
  * ```
+ * @source
  */
 export function isSearchResponseOk(response: unknown): response is SearchResponse {
   if (typeof response !== "object" || response === null) {
@@ -218,6 +219,7 @@ export function isSearchResponseOk(response: unknown): response is SearchRespons
  *   console.error("Invalid price - wrong property types");
  * }
  * ```
+ * @source
  */
 export function isPriceObject(price: unknown): price is PriceObject {
   if (typeof price !== "object" || price === null) return false;
@@ -351,6 +353,7 @@ export function isPriceObject(price: unknown): price is PriceObject {
  *   console.error("Invalid product - invalid price object");
  * }
  * ```
+ * @source
  */
 export function isSearchResponseProduct(product: unknown): product is SearchResponseProduct {
   if (typeof product !== "object" || product === null) return false;
@@ -459,6 +462,7 @@ export function isSearchResponseProduct(product: unknown): product is SearchResp
  *   console.error("Invalid product object - wrong property types");
  * }
  * ```
+ * @source
  */
 export function isProductObject(data: unknown): data is LaboratoriumDiscounterProductObject {
   if (typeof data !== "object" || data === null) return false;
@@ -536,6 +540,7 @@ export function isProductObject(data: unknown): data is LaboratoriumDiscounterPr
  *   console.error("Invalid parameters - wrong format value");
  * }
  * ```
+ * @source
  */
 export function isValidSearchParams(params: unknown): params is LaboratoriumDiscounterSearchParams {
   if (typeof params !== "object" || params === null) return false;
