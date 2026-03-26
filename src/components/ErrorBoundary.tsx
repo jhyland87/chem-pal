@@ -14,6 +14,7 @@ import { captureOwnerStack, Component, ReactNode } from "react";
  *   <MyComponent />
  * </ErrorBoundary>
  * ```
+ * @source
  */
 class ErrorBoundary extends Component<
   { children: ReactNode; fallback: ReactNode },
@@ -22,6 +23,7 @@ class ErrorBoundary extends Component<
   /**
    * Creates an instance of ErrorBoundary.
    * @param props - Component props
+   * @source
    */
   constructor(props: { children: ReactNode; fallback: ReactNode }) {
     super(props);
@@ -32,6 +34,7 @@ class ErrorBoundary extends Component<
    * Static lifecycle method that is called when a descendant component throws an error.
    * Updates the state to show the fallback UI on the next render.
    * @returns New state object with hasError set to true
+   * @source
    */
   static getDerivedStateFromError() {
     // Update state so the next render will show the fallback UI.
@@ -42,6 +45,7 @@ class ErrorBoundary extends Component<
    * Lifecycle method that is called after an error has been thrown in a descendant component.
    * Logs the error and component stack trace.
    * @param error - The error that was thrown
+   * @source
    */
   componentDidCatch(error: Error, info: { componentStack: string }) {
     console.error(
@@ -60,6 +64,7 @@ class ErrorBoundary extends Component<
   /**
    * Renders either the children or the fallback UI based on whether an error has occurred.
    * @returns The rendered component
+   * @source
    */
   render() {
     if (this.state.hasError) {

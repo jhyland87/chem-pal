@@ -17,6 +17,7 @@
  * // Search BioFuranChem supplier for Acetic Acid
  * const bioFuran = new SupplierBioFuranChem('Acetic Acid');
  * ```
+ * @source
  */
 
 // Akmekem got booted from Amazon

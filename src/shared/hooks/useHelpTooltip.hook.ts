@@ -22,6 +22,7 @@ import { useEffect, useState } from "react";
  *   <Button>Help Button</Button>
  * </Tooltip>
  * ```
+ * @source
  */
 export function useHelpTooltip(delay = 500, duration = 2000) {
   const appContext = useAppContext();
@@ -30,6 +31,7 @@ export function useHelpTooltip(delay = 500, duration = 2000) {
   /**
    * Effect hook to show and hide help tooltip based on settings.
    * Shows help tooltip after delay and hides it after duration if showHelp is enabled.
+   * @source
    */
   useEffect(() => {
     if (appContext.userSettings.showHelp === false) return;

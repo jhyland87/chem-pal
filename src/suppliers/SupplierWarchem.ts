@@ -19,6 +19,7 @@ import SupplierBase from "./SupplierBase";
  *   console.log("Found product:", product.title, product.price);
  * }
  * ```
+ * @source
  */
 export default class SupplierWarchem
   extends SupplierBase<Partial<Product>, Product>
@@ -57,6 +58,7 @@ export default class SupplierWarchem
    * Warchem stores the search result limit in the cookies which needs to be set
    * in a POST call before the query.
    * @returns A promise that resolves when the setup is complete.
+   * @source
    */
   protected async setup(): Promise<void> {
     await this.httpPost({
@@ -86,6 +88,7 @@ export default class SupplierWarchem
    *   console.log("First product:", results[0].title);
    * }
    * ```
+   * @source
    */
   protected async queryProducts(
     query: string,
@@ -142,6 +145,7 @@ export default class SupplierWarchem
    *   }
    * }
    * ```
+   * @source
    */
   protected fuzzHtmlResponse(query: string, response: string): Element[] {
     // Create a new DOM to do the travesing/parsing
@@ -187,6 +191,7 @@ export default class SupplierWarchem
    *   }
    * }
    * ```
+   * @source
    */
   protected initProductBuilders(elements: Element[]): ProductBuilder<Product>[] {
     return mapDefined(elements, (element: Element) => {
@@ -249,6 +254,7 @@ export default class SupplierWarchem
    *   });
    * }
    * ```
+   * @source
    */
   protected async getProductData(
     product: ProductBuilder<Product>,
@@ -355,6 +361,7 @@ export default class SupplierWarchem
    *   // Output: "Sodium Chloride, ACS Grade, 500g"
    * }
    * ```
+   * @source
    */
   protected titleSelector(data: Element): Maybe<string> {
     if (!data) {

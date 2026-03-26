@@ -176,6 +176,7 @@ function SearchResultFilters({ table }: { table: Table<Product> }) {
   /**
    * Gets the list of currently visible column IDs.
    * @returns Array of visible column IDs
+   * @source
    */
   const columnStatus = table
     .getAllColumns()
@@ -190,6 +191,7 @@ function SearchResultFilters({ table }: { table: Table<Product> }) {
    * Updates the visibility state and applies changes to the table columns.
    *
    * @param event - The change event from the select component
+   * @source
    */
   const handleColumnVisibilityChange = (event: SelectChangeEvent<typeof columnVisibility>) => {
     const {
@@ -207,6 +209,7 @@ function SearchResultFilters({ table }: { table: Table<Product> }) {
   /**
    * Gets a map of column IDs to their header text for filterable columns.
    * @returns Object mapping column IDs to their header text
+   * @source
    */
   const columnNames = table
     .getAllColumns()

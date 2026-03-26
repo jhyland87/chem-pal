@@ -8,6 +8,7 @@ import SupplierBaseShopify from "./SupplierBaseShopify";
  * Example search URL: https://www.hbarsci.com/pages/search-results-page?q=acid&tab=products&page=2&rb_filter_ptag_bf51a4bd1f5efe4002b3d50737306113=Chemicals
  *
  * @category Suppliers
+ * @source
  */
 export default class SupplierHbarSci extends SupplierBaseShopify implements ISupplier {
   // Name of supplier (for display purposes)

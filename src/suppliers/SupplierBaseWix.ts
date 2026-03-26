@@ -10,6 +10,7 @@ import SupplierBase from "./SupplierBase";
  * SupplierBaseWix class that extends SupplierBase and implements AsyncIterable<Product>.
  * @abstract
  * @category Suppliers
+ * @source
  */
 export default abstract class SupplierBaseWix
   extends SupplierBase<ProductObject, Product>
@@ -41,6 +42,7 @@ export default abstract class SupplierBaseWix
    * await this.setup();
    * // Now the access token is set and API requests can be made
    * ```
+   * @source
    */
   protected async setup(): Promise<void> {
     const accessTokenResponse = await fetch(`${this.baseURL}/_api/v1/access-tokens`, {
@@ -78,6 +80,7 @@ export default abstract class SupplierBaseWix
    *   params: { q: query, v: variables }
    * });
    * ```
+   * @source
    */
   protected getGraphQLQuery(): string {
     return `
@@ -147,6 +150,7 @@ export default abstract class SupplierBaseWix
    *
    * @param query - The query to search for
    * @returns The GraphQL variables
+   * @source
    */
   protected getGraphQLVariables(query: string): GraphQLQueryVariables {
     return {
@@ -172,6 +176,7 @@ export default abstract class SupplierBaseWix
    * @param query - The query to search for
    * @param limit - The limit of products to return
    * @returns A promise that resolves when the products are queried
+   * @source
    */
   protected async queryProducts(
     query: string,
@@ -232,6 +237,7 @@ export default abstract class SupplierBaseWix
    *   }
    * }
    * ```
+   * @source
    */
   protected initProductBuilders(results: ProductObject[]): ProductBuilder<Product>[] {
     return results
@@ -317,6 +323,7 @@ export default abstract class SupplierBaseWix
    *
    * @param product - The product to get the data for
    * @returns A promise that resolves to the product data or void if the product has no price
+   * @source
    */
   protected async getProductData(
     product: ProductBuilder<Product>,
@@ -328,6 +335,7 @@ export default abstract class SupplierBaseWix
    * Selects the title of a product from the search response
    * @param data - Product object from search response
    * @returns - The title of the product
+   * @source
    */
   protected titleSelector(data: ProductObject): string {
     return data.name as string;

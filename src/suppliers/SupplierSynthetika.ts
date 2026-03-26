@@ -47,6 +47,7 @@ import SupplierBase from "./SupplierBase";
  *   console.log(product);
  * }
  * ```
+ * @source
  */
 export default class SupplierSynthetika
   extends SupplierBase<SynthetikaProduct, Product>
@@ -99,6 +100,7 @@ export default class SupplierSynthetika
   /**
    * List of categories to include when filtering through the search results.
    * This list made by sorting through https://synthetikaeu.com/webapi/front/en_US/categories/list/?limit=50
+   * @source
    */
   private readonly includeCategories: number[] = [
     16, // Hydrides
@@ -212,6 +214,7 @@ export default class SupplierSynthetika
    *   console.error("No products found or search failed");
    * }
    * ```
+   * @source
    */
   protected async queryProducts(
     query: string,
@@ -253,6 +256,7 @@ export default class SupplierSynthetika
    * Selects the title/name of a product from the search response
    * @param data - Product object from search response
    * @returns Title or name of the product
+   * @source
    */
   protected titleSelector(data: SynthetikaProduct): string {
     return data.name;
@@ -271,6 +275,7 @@ export default class SupplierSynthetika
    *
    * @param data - Array of product listings from search results
    * @returns Array of ProductBuilder instances initialized with product data
+   * @source
    */
   protected initProductBuilders(
     data: SynthetikaProduct[],
@@ -319,6 +324,7 @@ export default class SupplierSynthetika
    * Process the product data and return a ProductBuilder instance
    * @param product - The ProductBuilder instance to process
    * @returns Promise resolving to a ProductBuilder instance or void
+   * @source
    */
   protected async getProductData(
     product: ProductBuilder<Product & { variants?: Variant[] }>,

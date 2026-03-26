@@ -1,36 +1,56 @@
 import { useOptimistic } from "react";
 
 /**
- * React v19 useOptimistic hook for streaming search results.
+ * React v19 `useOptimistic` wrapper for streaming search results.
+ * Provides optimistic updates so the UI reflects new products the
+ * instant they arrive, before the full search has completed.
+ * React automatically rolls back the optimistic state if a
+ * transition that produced it is interrupted or errors.
+ * @param confirmedResults - The server-confirmed product list (source of truth)
+ * @returns An object with the current `results` array, an `addResult`
+ *   function for single products, and `addResultsBatch` for bulk inserts.
+ * @example
+ * ```tsx
+ * const { results, addResult } = useOptimisticResults(searchResults);
  *
- * This hook provides optimistic updates for search results as they stream in,
- * giving users immediate feedback while the search is still running.
- *
- * Benefits:
- * - Immediate UI updates as results arrive
- * - Automatic rollback on errors
- * - Better perceived performance
- * - Reduced complex state synchronization
+ * for await (const product of stream) {
+ *   addResult(product);   // UI updates immediately
+ * }
+ * // results => [{ ...product, id: 0 }, { ...product, id: 1 }, ...]
+ * ```
  * @source
  */
 export function useOptimisticResults(confirmedResults: Product[]) {
   const [optimisticResults, addOptimisticResult] = useOptimistic(
     confirmedResults,
     (state: Product[], newProduct: Product) => {
-      // Add the new result optimistically while it's being processed
-      // This gives immediate feedback to the user
       return [...state, { ...newProduct, id: state.length }];
     },
   );
 
+  /**
+   * Optimistically append a single product to the results list.
+   * The entry appears in the UI instantly and is later reconciled
+   * when `confirmedResults` updates.
+   * @param product - The product to add
+   * @source
+   */
   const addResult = (product: Product) => {
-    // Optimistically add the result immediately for better UX
-    // The UI will update instantly, then be confirmed/rolled back later
     addOptimisticResult(product);
   };
 
+  /**
+   * Optimistically append multiple products at once.
+   * Useful when several results arrive in the same tick.
+   * @param products - Array of products to add
+   * @example
+   * ```ts
+   * addResultsBatch([productA, productB]);
+   * // results => [...existing, productA, productB]
+   * ```
+   * @source
+   */
   const addResultsBatch = (products: Product[]) => {
-    // For batch updates (useful when multiple results arrive simultaneously)
     products.forEach((product) => addOptimisticResult(product));
   };
 
@@ -42,7 +62,23 @@ export function useOptimisticResults(confirmedResults: Product[]) {
 }
 
 /**
- * Enhanced version that includes pending state indicators
+ * Extended optimistic-results hook that tracks a per-item pending state.
+ * Each product passes through three lifecycle stages:
+ * `add` (pending) → `confirm` (persisted) or `error` (removed).
+ * This lets the UI render a loading indicator on rows that are not
+ * yet confirmed.
+ * @param confirmedResults - The server-confirmed product list (source of truth)
+ * @returns An object with `results`, `addPendingResult`, `confirmResult`,
+ *   and `removeFailedResult` functions.
+ * @example
+ * ```tsx
+ * const { results, addPendingResult, confirmResult, removeFailedResult } =
+ *   useOptimisticResultsWithPending(searchResults);
+ *
+ * addPendingResult(product);   // row appears with isPending: true
+ * confirmResult(product);      // isPending flips to false
+ * removeFailedResult(product); // row is removed from the list
+ * ```
  * @source
  */
 export function useOptimisticResultsWithPending(confirmedResults: Product[]) {
@@ -54,17 +90,14 @@ export function useOptimisticResultsWithPending(confirmedResults: Product[]) {
     ) => {
       switch (action.type) {
         case "add":
-          // Add with pending indicator
           return [...state, { ...action.product, id: state.length, isPending: true }];
 
         case "confirm":
-          // Remove pending indicator when confirmed
           return state.map((item) =>
             item.id === action.product.id ? { ...action.product, isPending: false } : item,
           );
 
         case "error":
-          // Remove failed items
           return state.filter((item) => item.id !== action.product.id);
 
         default:
@@ -73,14 +106,29 @@ export function useOptimisticResultsWithPending(confirmedResults: Product[]) {
     },
   );
 
+  /**
+   * Add a product in the pending state (`isPending: true`).
+   * @param product - The product to insert optimistically
+   * @source
+   */
   const addPendingResult = (product: Product) => {
     addOptimisticResult({ type: "add", product });
   };
 
+  /**
+   * Mark a previously pending product as confirmed (`isPending: false`).
+   * @param product - The confirmed product (must have a matching `id`)
+   * @source
+   */
   const confirmResult = (product: Product) => {
     addOptimisticResult({ type: "confirm", product });
   };
 
+  /**
+   * Remove a product that failed processing from the optimistic list.
+   * @param product - The failed product (must have a matching `id`)
+   * @source
+   */
   const removeFailedResult = (product: Product) => {
     addOptimisticResult({ type: "error", product });
   };

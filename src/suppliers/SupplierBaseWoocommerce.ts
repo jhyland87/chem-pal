@@ -44,6 +44,7 @@ import SupplierBase from "./SupplierBase";
  *
  * @see https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/products.md
  * @see https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/products.md#list-products
+ * @source
  */
 export default abstract class SupplierBaseWoocommerce
   extends SupplierBase<WooCommerceSearchResponseItem, Product>
@@ -63,6 +64,7 @@ export default abstract class SupplierBaseWoocommerce
    *   }
    * }
    * ```
+   * @source
    */
   protected apiKey: string = "";
 
@@ -82,6 +84,7 @@ export default abstract class SupplierBaseWoocommerce
    * }
    * ```
    * https://carolinachemical.com/wp-json/wc/store/v1/products?search=a&page=1&per_page=100
+   * @source
    */
   protected async queryProducts(
     query: string,
@@ -109,6 +112,7 @@ export default abstract class SupplierBaseWoocommerce
    * Selects the title of a product from the search response
    * @param data - Product object from search response
    * @returns Title of the product
+   * @source
    */
   protected titleSelector(data: WooCommerceSearchResponseItem): string {
     return data.name;
@@ -138,6 +142,7 @@ export default abstract class SupplierBaseWoocommerce
    *   }
    * }
    * ```
+   * @source
    */
   protected initProductBuilders(
     results: WooCommerceSearchResponseItem[],
@@ -228,6 +233,7 @@ export default abstract class SupplierBaseWoocommerce
    *   }
    * }
    * ```
+   * @source
    */
   protected async getProductData(
     product: ProductBuilder<Product>,

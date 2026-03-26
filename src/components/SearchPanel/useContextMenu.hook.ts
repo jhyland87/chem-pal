@@ -2,6 +2,7 @@ import { useState } from "react";
 
 /**
  * Context menu state object containing position and product data.
+ * @source
  */
 interface ContextMenuState {
   /** X coordinate for menu positioning (in pixels from left edge) */
@@ -15,6 +16,7 @@ interface ContextMenuState {
 /**
  * Return type for the useContextMenu hook.
  * Contains context menu state and handler functions.
+ * @source
  */
 interface UseContextMenuReturn {
   /** Current context menu state, null when menu is closed */
@@ -64,6 +66,7 @@ export function useContextMenu(): UseContextMenuReturn {
    *
    * @param event - The mouse event from the right-click
    * @param product - The product data associated with the clicked row
+   * @source
    */
   const handleContextMenu = (event: React.MouseEvent, product: Product) => {
     event.preventDefault();
@@ -79,6 +82,7 @@ export function useContextMenu(): UseContextMenuReturn {
   /**
    * Closes the context menu by setting the state to null.
    * This hides the context menu from the UI.
+   * @source
    */
   const handleCloseContextMenu = () => {
     setContextMenu(null);

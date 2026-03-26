@@ -13,6 +13,7 @@ import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
  * <ArrowDropUpIcon />
  * ```
  * {@includeCode ./ArrowDropUpIcon.tsx}
+ * @source
  */
 const ArrowDropUpIcon: React.FC<SvgIconProps> = (props) => {
   return (

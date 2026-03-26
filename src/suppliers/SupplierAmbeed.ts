@@ -18,6 +18,7 @@ import SupplierBase from "./SupplierBase";
  * const url = `https://ambeed.com/webapi/v1/productlistbykeyword?params=${params}`;
  * ```
  * @see https://www.ambeed.com/
+ * @source
  */
 export default class SupplierAmbeed
   extends SupplierBase<AmbeedProductObject, Product>
@@ -108,6 +109,7 @@ export default class SupplierAmbeed
    * )
    * // $143.00 $36.00 $15.00 $347.00 $10.00
    * ```
+   * @source
    */
   protected decodePrice(encoded: string): string {
     return encoded
@@ -139,6 +141,7 @@ export default class SupplierAmbeed
    * //   pr_id: 3255116
    * // }
    * ```
+   * @source
    */
   protected decodePriceObjectValues(
     priceData: AmbeedProductListResponsePriceList,
@@ -190,6 +193,7 @@ export default class SupplierAmbeed
    * //   ]
    * // }
    * ```
+   * @source
    */
   protected sanitizeSearchableFields(
     product: AmbeedProductListResponseResultItem,
@@ -213,6 +217,7 @@ export default class SupplierAmbeed
    * params=btoa(JSON.stringify({ keyword: "sodium chloride" }))
    * params=btoa(JSON.stringify({ keyword: "acid", page:3 }))
    * ```
+   * @source
    */
   protected async queryProducts(
     query: string,
@@ -239,6 +244,7 @@ export default class SupplierAmbeed
    * Selects the title of a product from the search response
    * @param data - Product object from search response
    * @returns Title of the product
+   * @source
    */
   protected titleSelector(data: AmbeedProductListResponseResultItem): string {
     return data.p_proper_name3;
@@ -275,6 +281,7 @@ export default class SupplierAmbeed
    *   }
    * }
    * ```
+   * @source
    */
   protected initProductBuilders(
     data: AmbeedProductListResponseResultItem[],
@@ -345,6 +352,7 @@ export default class SupplierAmbeed
    * page has enough data.
    * @param product - The product builder to get data for
    * @returns The product builder
+   * @source
    */
   protected async getProductData(
     product: ProductBuilder<Product>,

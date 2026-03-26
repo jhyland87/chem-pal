@@ -14,6 +14,7 @@ import React from "react";
  * <ArrowRightIcon />
  * ```
  * {@includeCode ./ArrowRightIcon.tsx}
+ * @source
  */
 const ArrowRightIcon: React.FC<SvgIconProps> = (props) => {
   return (

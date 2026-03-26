@@ -8,6 +8,7 @@ import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
  * @component
  * @param props - The props passed to the underlying SvgIcon component
  * @returns A React component that renders the right arrow icon
+ * @source
  */
 const KeyboardArrowRightIcon: React.FC<SvgIconProps> = (props) => {
   return (

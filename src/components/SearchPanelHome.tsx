@@ -27,12 +27,18 @@ const SearchPanelHome: React.FC = () => {
       setHasStoredResults(true);
       setResultCount(appContext.searchResults.length);
     } else {
-      chrome.storage.session.get(["searchResults"]).then((data) => {
-        if (data.searchResults && data.searchResults.length > 0) {
-          setHasStoredResults(true);
-          setResultCount(data.searchResults.length);
+      const loadStoredResults = async () => {
+        try {
+          const data = await chrome.storage.session.get(["searchResults"]);
+          if (data.searchResults && data.searchResults.length > 0) {
+            setHasStoredResults(true);
+            setResultCount(data.searchResults.length);
+          }
+        } catch (error) {
+          console.warn("Failed to load search results from session storage:", error);
         }
-      });
+      };
+      loadStoredResults();
     }
   }, [appContext.searchResults]);
 

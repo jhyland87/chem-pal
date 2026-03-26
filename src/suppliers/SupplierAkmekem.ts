@@ -7,6 +7,7 @@ import SupplierBaseAmazon from "./SupplierBaseAmazon";
  * I'm like 90% sure that Akmekem on Amazon is actually just Macklin, but if not, it's
  * an intermediate supplier who makes it easier to purchase from Macklin.
  * {@link https://www.amazon.com/s?k=Akmekem | Akmechem Amazon Listings}
+ * @source
  */
 export default class SupplierAkmekem extends SupplierBaseAmazon implements ISupplier {
   // Name of supplier (for display purposes)

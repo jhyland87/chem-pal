@@ -34,9 +34,10 @@ export function useChromeStorage<T>(key: string, defaultValue: T) {
   // The use() hook can handle promises directly
   // This will suspend the component until the promise resolves
   const storedValue = use(
-    chrome.storage.session.get([key]).then((data) => {
+    (async () => {
+      const data = await chrome.storage.session.get([key]);
       return data[key] !== undefined ? (data[key] as T) : defaultValue;
-    }),
+    })(),
   );
 
   const setValue = (value: T) => {
@@ -65,9 +66,9 @@ export function useChromeStorageEnhanced<T>(
   const { serializer } = options || {};
 
   const storedValue = use(
-    storage
-      .get([key])
-      .then((data) => {
+    (async () => {
+      try {
+        const data = await storage.get([key]);
         const rawValue = data[key];
         if (rawValue === undefined) return defaultValue;
 
@@ -81,11 +82,11 @@ export function useChromeStorageEnhanced<T>(
         }
 
         return rawValue as T;
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error(`Failed to load ${key} from Chrome storage:`, error);
         return defaultValue;
-      }),
+      }
+    })(),
   );
 
   const setValue = async (value: T) => {
@@ -122,11 +123,10 @@ export function useChromeStorageEnhanced<T>(
 export function useReactiveChromeStorage<T>(key: string, defaultValue: T) {
   // Create a promise that resolves and updates when storage changes
   const createStoragePromise = () => {
-    return new Promise<T>((resolve) => {
+    return new Promise<T>(async (resolve) => {
       // Initial load
-      chrome.storage.session.get([key]).then((data) => {
-        resolve(data[key] !== undefined ? (data[key] as T) : defaultValue);
-      });
+      const data = await chrome.storage.session.get([key]);
+      resolve(data[key] !== undefined ? (data[key] as T) : defaultValue);
 
       // Listen for changes
       const listener = (changes: { [key: string]: chrome.storage.StorageChange }) => {

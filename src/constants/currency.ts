@@ -1,6 +1,7 @@
 /**
  * @group Constants
  * @groupDescription Application-wide constants and enumerations used throughout the codebase.
+ * @source
  */
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -13,6 +14,7 @@ import { currencies, locations } from "../../config.json";
  * CURRENCY_SYMBOL_MAP['USD'] // returns '$'
  * CURRENCY_SYMBOL_MAP['EUR'] // returns '€'
  * ```
+ * @source
  */
 export const CURRENCY_SYMBOL_MAP: { [key: string]: string } = Object.fromEntries(
   Object.entries(currencies).map(([code, { symbol }]) => [
@@ -28,6 +30,7 @@ export const CURRENCY_SYMBOL_MAP: { [key: string]: string } = Object.fromEntries
  * CURRENCY_CODE_MAP['$'] // returns 'USD'
  * CURRENCY_CODE_MAP['€'] // returns 'EUR'
  * ```
+ * @source
  */
 export const CURRENCY_CODE_MAP: { [key: string]: string } = Object.fromEntries(
   Object.entries(currencies).map(([code, { symbol }]) => [symbol, code as CurrencyCode]),
@@ -40,6 +43,7 @@ export const CURRENCY_CODE_MAP: { [key: string]: string } = Object.fromEntries(
  * CURRENCY_CODE_MAP_BY_LOCATION['US'] // returns 'USD'
  * CURRENCY_CODE_MAP_BY_LOCATION['GB'] // returns 'GBP'
  * ```
+ * @source
  */
 export const CURRENCY_CODE_MAP_BY_LOCATION: { [key: string]: string } = Object.fromEntries(
   Object.entries(locations).map(([code, { currency }]) => [code, currency as CurrencyCode]),

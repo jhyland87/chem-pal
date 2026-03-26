@@ -21,6 +21,7 @@ import SupplierBase from "./SupplierBase";
  *   console.log("Found product:", product.title, product.price);
  * }
  * ```
+ * @source
  */
 export default class SupplierOnyxmet
   extends SupplierBase<OnyxMetSearchResultResponse, Product>
@@ -58,6 +59,7 @@ export default class SupplierOnyxmet
   /**
    * Sets up the supplier by setting the display to list.
    * @returns A promise that resolves when the setup is complete.
+   * @source
    */
   protected async setup(): Promise<void> {
     localStorage.setItem("display", "list");
@@ -81,6 +83,7 @@ export default class SupplierOnyxmet
    *   console.log("First product:", results[0].title);
    * }
    * ```
+   * @source
    */
   protected async queryProducts(
     query: string,
@@ -136,6 +139,7 @@ export default class SupplierOnyxmet
    *   }
    * }
    * ```
+   * @source
    */
   protected initProductBuilders(data: OnyxMetSearchResultItem[]): ProductBuilder<Product>[] {
     return mapDefined(data, (item) => {
@@ -177,6 +181,7 @@ export default class SupplierOnyxmet
    *   });
    * }
    * ```
+   * @source
    */
   protected async getProductData(
     product: ProductBuilder<Product>,
@@ -267,6 +272,7 @@ export default class SupplierOnyxmet
    * console.log("Product title:", title);
    * // Output: "Sodium Chloride, ACS Grade"
    * ```
+   * @source
    */
   protected titleSelector(data: OnyxMetSearchResultItem): string {
     return data.label;

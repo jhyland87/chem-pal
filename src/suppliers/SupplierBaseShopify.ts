@@ -45,6 +45,7 @@ import SupplierBase from "./SupplierBase";
  *   public readonly baseURL: string = "https://www.foobar.com";
  * }
  * ```
+ * @source
  */
 export default abstract class SupplierBaseShopify
   extends SupplierBase<ItemListing, Product>
@@ -77,6 +78,7 @@ export default abstract class SupplierBaseShopify
    *   }
    * }
    * ```
+   * @source
    */
   protected async queryProducts(
     query: string,
@@ -172,6 +174,7 @@ export default abstract class SupplierBaseShopify
    *   }
    * }
    * ```
+   * @source
    */
   protected initProductBuilders(results: ItemListing[]): ProductBuilder<Product>[] {
     return results
@@ -245,6 +248,7 @@ export default abstract class SupplierBaseShopify
    *   }
    * }
    * ```
+   * @source
    */
   protected async getProductData(
     product: ProductBuilder<Product>,
@@ -256,6 +260,7 @@ export default abstract class SupplierBaseShopify
    * Selects the title of a product from the search response
    * @param data - Product object from search response
    * @returns - The title of the product
+   * @source
    */
   protected titleSelector(data: ItemListing): string {
     return data.title;

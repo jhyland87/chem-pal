@@ -39,6 +39,7 @@ import { isAvailability, isValidVariant } from "@/utils/typeGuards/productbuilde
  *   console.log(product.uom);   // "g"
  * }
  * ```
+ * @source
  */
 export default class ProductBuilder<T extends Product> {
   /** The partial product object being built */

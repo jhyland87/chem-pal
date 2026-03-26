@@ -15,6 +15,7 @@ import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
  * // With custom props
  * <BenzeneIcon fontSize="large" color="primary" />
  * ```
+ * @source
  */
 export default function BenzeneIcon(props: SvgIconProps) {
   return (

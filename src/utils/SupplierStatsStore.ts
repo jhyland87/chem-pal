@@ -15,6 +15,7 @@
  * Auto-prunes entries older than 30 days on each flush.
  *
  * @category Utils
+ * @source
  */
 
 const STORAGE_PREFIX = "supplier_stats_";
@@ -66,6 +67,7 @@ const EMPTY_STATS: SupplierDayStats = {
 
 /**
  * Buffer an increment in memory and schedule a debounced flush to storage.
+ * @source
  */
 function bufferIncrement(supplier: string, field: keyof SupplierDayStats): void {
   const key = `${todayDateKey()}:${supplier}:${field}`;
@@ -91,8 +93,9 @@ function dateKeyToStorageKey(dateKey: string): string {
 /**
  * Apply all pending increments to storage. Groups by date so each day's
  * data goes to its own storage key (supplier_stats_MMDDYYYY).
+ * @source
  */
-function flushToStorage(): void {
+async function flushToStorage(): Promise<void> {
   if (pendingIncrements.size === 0) return;
 
   const batch = new Map(pendingIncrements);
@@ -110,43 +113,40 @@ function flushToStorage(): void {
   const dateKeys = Object.keys(byDate);
   const storageKeys = dateKeys.map(dateKeyToStorageKey);
 
-  chrome.storage.local
-    .get(storageKeys)
-    .then((data) => {
-      const updates: Record<string, Record<string, SupplierDayStats>> = {};
+  try {
+    const data = await chrome.storage.local.get(storageKeys);
+    const updates: Record<string, Record<string, SupplierDayStats>> = {};
 
-      for (const dateKey of dateKeys) {
-        const sKey = dateKeyToStorageKey(dateKey);
-        const existing: Record<string, SupplierDayStats> =
-          data[sKey] && typeof data[sKey] === "object" ? data[sKey] : {};
+    for (const dateKey of dateKeys) {
+      const sKey = dateKeyToStorageKey(dateKey);
+      const existing: Record<string, SupplierDayStats> =
+        data[sKey] && typeof data[sKey] === "object" ? data[sKey] : {};
 
-        for (const [, supplier, field, delta] of byDate[dateKey]) {
-          if (!existing[supplier]) existing[supplier] = { ...EMPTY_STATS };
-          (existing[supplier][field] as number) += delta;
-        }
-
-        updates[sKey] = existing;
+      for (const [, supplier, field, delta] of byDate[dateKey]) {
+        if (!existing[supplier]) existing[supplier] = { ...EMPTY_STATS };
+        (existing[supplier][field] as number) += delta;
       }
 
-      return chrome.storage.local.set(updates);
-    })
-    .then(() => {
-      // Prune old entries
-      pruneOldStorageKeys();
-    })
-    .catch((error) => {
-      console.warn("Failed to flush supplier stats:", error);
-      for (const [key, delta] of batch) {
-        pendingIncrements.set(key, (pendingIncrements.get(key) ?? 0) + delta);
-      }
-      scheduleFlush();
-    });
+      updates[sKey] = existing;
+    }
+
+    await chrome.storage.local.set(updates);
+    // Prune old entries
+    await pruneOldStorageKeys();
+  } catch (error) {
+    console.warn("Failed to flush supplier stats:", error);
+    for (const [key, delta] of batch) {
+      pendingIncrements.set(key, (pendingIncrements.get(key) ?? 0) + delta);
+    }
+    scheduleFlush();
+  }
 }
 
 /** Remove storage keys older than RETENTION_DAYS */
-function pruneOldStorageKeys(): void {
+async function pruneOldStorageKeys(): Promise<void> {
   const cutoff = getCutoffDateKey();
-  chrome.storage.local.get(null).then((allData) => {
+  try {
+    const allData = await chrome.storage.local.get(null);
     const keysToRemove: string[] = [];
     for (const key of Object.keys(allData)) {
       if (!key.startsWith(STORAGE_PREFIX)) continue;
@@ -156,11 +156,11 @@ function pruneOldStorageKeys(): void {
       }
     }
     if (keysToRemove.length > 0) {
-      chrome.storage.local.remove(keysToRemove).catch((err) => {
-        console.warn("Failed to prune old supplier stats:", err);
-      });
+      await chrome.storage.local.remove(keysToRemove);
     }
-  });
+  } catch (err) {
+    console.warn("Failed to prune old supplier stats:", err);
+  }
 }
 
 /** Increment search query count (called once per supplier at start of execute()) */
@@ -191,6 +191,7 @@ export function incrementParseError(supplier: string): void {
 /**
  * Migrate legacy `supplierStats` single-object storage to per-day keys.
  * Runs once; deletes the old key after migration.
+ * @source
  */
 async function migrateLegacyStats(): Promise<void> {
   try {
@@ -218,6 +219,7 @@ async function migrateLegacyStats(): Promise<void> {
 /**
  * Read all stats from storage, reassembling from per-day keys into
  * the SupplierStatsData shape: { [dateKey]: { [supplier]: SupplierDayStats } }
+ * @source
  */
 export async function getStats(): Promise<SupplierStatsData> {
   // Migrate old format if it exists

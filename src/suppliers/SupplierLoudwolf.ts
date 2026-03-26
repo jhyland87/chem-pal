@@ -20,6 +20,7 @@ import SupplierBase from "./SupplierBase";
  *   console.log("Found product:", product.title, product.price);
  * }
  * ```
+ * @source
  */
 export default class SupplierLoudwolf
   extends SupplierBase<Partial<Product>, Product>
@@ -57,6 +58,7 @@ export default class SupplierLoudwolf
   /**
    * Sets up the supplier by setting the display to list.
    * @returns A promise that resolves when the setup is complete.
+   * @source
    */
   protected async setup(): Promise<void> {}
 
@@ -78,6 +80,7 @@ export default class SupplierLoudwolf
    *   console.log("First product:", results[0].title);
    * }
    * ```
+   * @source
    */
   protected async queryProducts(
     query: string,
@@ -130,6 +133,7 @@ export default class SupplierLoudwolf
    *   }
    * }
    * ```
+   * @source
    */
   protected fuzzHtmlResponse(query: string, response: string): Element[] {
     // Create a new DOM to do the travesing/parsing
@@ -168,6 +172,7 @@ export default class SupplierLoudwolf
    *   }
    * }
    * ```
+   * @source
    */
   protected initProductBuilders($elements: Element[]): ProductBuilder<Product>[] {
     return mapDefined($elements, (element: Element) => {
@@ -234,6 +239,7 @@ export default class SupplierLoudwolf
    *   });
    * }
    * ```
+   * @source
    */
   protected async getProductData(
     product: ProductBuilder<Product>,
@@ -303,6 +309,7 @@ export default class SupplierLoudwolf
    *   // Output: "Sodium Chloride, ACS Grade, 500g"
    * }
    * ```
+   * @source
    */
   protected titleSelector(data: Element): string {
     const title = data.querySelector("div.caption h4 a");

@@ -8,6 +8,7 @@
  * const logger = new Logger('App');
  * logger.debug('This is a debug message');
  * ```
+ * @source
  */
 export enum LogLevel {
   /** Detailed information for debugging purposes */
@@ -56,6 +57,7 @@ export enum LogLevel {
  * // Switch from environment sync to fixed level
  * envLogger.setLogLevel(LogLevel.WARN);  // Now ignores LOG_LEVEL changes
  * ```
+ * @source
  */
 export default class Logger {
   /**
@@ -64,6 +66,7 @@ export default class Logger {
    * Used internally to determine if a message should be logged based on the current log level.
    *
    * Priority: DEBUG=0, INFO=1, WARN=2, ERROR=3
+   * @source
    */
   private static readonly logLevelPriority: Record<LogLevel, number> = {
     [LogLevel.DEBUG]: 0,
@@ -75,12 +78,14 @@ export default class Logger {
   /**
    * Stores named counters for the `count()` and `countReset()` methods.
    * Keys are counter labels, values are the current count.
+   * @source
    */
   private counters: Record<string, number> = {};
 
   /**
    * Stores active timers for the `time()`, `timeEnd()`, and `timeLog()` methods.
    * Keys are timer labels, values are the start timestamps in milliseconds.
+   * @source
    */
   private timers: Record<string, number> = {};
 
@@ -88,6 +93,7 @@ export default class Logger {
    * Tracks the current nesting level for the `group()` and `groupCollapsed()` methods.
    * Incremented by group/groupCollapsed, decremented by groupEnd.
    * Used to determine the indentation level of log messages.
+   * @source
    */
   private groupDepth = 0;
 
@@ -95,6 +101,7 @@ export default class Logger {
    * The indentation string used for each group level.
    * Each nested group will add this string to the message prefix.
    * Default is two spaces per level of nesting.
+   * @source
    */
   private readonly groupIndent = "  ";
 
@@ -151,6 +158,7 @@ export default class Logger {
   /**
    * The identifier prefix that will be included in all log messages from this instance.
    * Used to distinguish logs from different parts of the application.
+   * @source
    */
   private prefix: string;
 
@@ -158,6 +166,7 @@ export default class Logger {
    * The current minimum log level for this logger instance.
    * Messages with a level lower than this will not be logged.
    * Can be changed at runtime using `setLogLevel()`.
+   * @source
    */
   private currentLogLevel: LogLevel;
 
@@ -166,6 +175,7 @@ export default class Logger {
    * with environment variables. When true, the logger checks environment variables
    * before each log operation to detect changes. When false, the logger maintains
    * a fixed log level regardless of environment changes.
+   * @source
    */
   private useEnvOverride: boolean;
 

@@ -12,6 +12,7 @@ import IconTextFader from "./IconTextFader";
  * @param index - The index of the tab
  * @param name - The name of the tab panel
  * @returns Tab props including id, panel, and aria-controls
+ * @source
  */
 function tabProps(index: number, name: string) {
   return {
@@ -34,6 +35,7 @@ function tabProps(index: number, name: string) {
  * ```tsx
  * <TabHeader page={currentPage} setPage={setCurrentPage} />
  * ```
+ * @source
  */
 export default function TabHeader({ page, setPage }: TabHeaderProps) {
   const handleChange = (e: SyntheticEvent, newValue: number) => setPage(newValue);

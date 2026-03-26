@@ -37,16 +37,17 @@ const HistoryPanel: React.FC = () => {
   const { setPendingSearchQuery, setDrawerTab } = useAppContext();
 
   useEffect(() => {
-    chrome.storage.local
-      .get(["search_history"])
-      .then((data) => {
+    const loadHistory = async () => {
+      try {
+        const data = await chrome.storage.local.get(["search_history"]);
         if (Array.isArray(data.search_history)) {
           setHistory(data.search_history);
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.warn("Failed to load search history:", error);
-      });
+      }
+    };
+    loadHistory();
   }, []);
 
   /**
@@ -60,13 +61,13 @@ const HistoryPanel: React.FC = () => {
    * ```
    * @source
    */
-  const handleClearHistory = () => {
-    chrome.storage.local
-      .set({ search_history: [] })
-      .then(() => setHistory([]))
-      .catch((error) => {
-        console.warn("Failed to clear search history:", error);
-      });
+  const handleClearHistory = async () => {
+    try {
+      await chrome.storage.local.set({ search_history: [] });
+      setHistory([]);
+    } catch (error) {
+      console.warn("Failed to clear search history:", error);
+    }
   };
 
   /**

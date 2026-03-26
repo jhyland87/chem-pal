@@ -15,6 +15,7 @@ import "./AboutModal.scss";
  * Provides consistent styling for contributor links with theme-aware colors and spacing.
  *
  * @param props - Component props
+ * @source
  */
 const Item = styled(Paper)(({ theme }: { theme: Theme }) => ({
   backgroundColor: "#fff",
@@ -43,6 +44,7 @@ const Item = styled(Paper)(({ theme }: { theme: Theme }) => ({
  *   setAboutOpen={setIsOpen}
  * />
  * ```
+ * @source
  */
 export default function AboutModal({
   aboutOpen,

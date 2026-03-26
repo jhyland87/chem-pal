@@ -54,6 +54,7 @@ import { getUserCountry } from "./helpers/utils";
  * 3. Built-in loading states for settings changes
  * 4. Fixes AppContext missing searchResults property
  * 5. Cleaner theme and currency rate management
+ * @source
  */
 
 interface AppState {
@@ -103,6 +104,7 @@ type AppAction =
 
 /**
  * React v19 App component with enhanced state management
+ * @source
  */
 function App() {
   // Search results state - separate from main app state for better performance
@@ -120,18 +122,19 @@ function App() {
 
           // Handle async operations in useEffect instead of action handler
           startTransition(() => {
-            getCurrencyRate("USD", newSettings.currency)
-              .then((currencyRate) => {
+            (async () => {
+              try {
+                const currencyRate = await getCurrencyRate("USD", newSettings.currency);
                 const updatedSettings = { ...newSettings, currencyRate };
-
-                // Save to Chrome storage
-                chrome.storage.local.set({ userSettings: updatedSettings }).catch((error) => {
+                try {
+                  await chrome.storage.local.set({ userSettings: updatedSettings });
+                } catch (error) {
                   console.error("Failed to update settings:", error);
-                });
-              })
-              .catch((error) => {
+                }
+              } catch (error) {
                 console.error("Failed to get currency rate:", error);
-              });
+              }
+            })();
           });
 
           return {
@@ -143,9 +146,13 @@ function App() {
         case "SET_PANEL": {
           // Handle async Chrome storage in useEffect
           startTransition(() => {
-            chrome.storage.session.set({ panel: action.panel }).catch((error) => {
-              console.error("Failed to save panel:", error);
-            });
+            (async () => {
+              try {
+                await chrome.storage.session.set({ panel: action.panel });
+              } catch (error) {
+                console.error("Failed to save panel:", error);
+              }
+            })();
           });
 
           return {
@@ -175,9 +182,13 @@ function App() {
         case "SET_SELECTED_SUPPLIERS": {
           // Handle async Chrome storage in useEffect
           startTransition(() => {
-            chrome.storage.local.set({ selectedSuppliers: action.suppliers }).catch((error) => {
-              console.error("Failed to save selectedSuppliers:", error);
-            });
+            (async () => {
+              try {
+                await chrome.storage.local.set({ selectedSuppliers: action.suppliers });
+              } catch (error) {
+                console.error("Failed to save selectedSuppliers:", error);
+              }
+            })();
           });
 
           return {
@@ -196,11 +207,12 @@ function App() {
   // Load initial data from Chrome storage on mount
   useEffect(() => {
     console.log("SET_PANEL", appState.panel);
-    Promise.all([
-      chrome.storage.session.get(["panel"]),
-      chrome.storage.local.get(["userSettings", "selectedSuppliers"]),
-    ])
-      .then(([sessionData, localData]) => {
+    const loadFromStorage = async () => {
+      try {
+        const [sessionData, localData] = await Promise.all([
+          chrome.storage.session.get(["panel"]),
+          chrome.storage.local.get(["userSettings", "selectedSuppliers"]),
+        ]);
         const loadedData: Partial<AppState> = {};
 
         if (sessionData.panel) {
@@ -218,10 +230,11 @@ function App() {
         if (Object.keys(loadedData).length > 0) {
           dispatch({ type: "LOAD_FROM_STORAGE", data: loadedData });
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Failed to load from Chrome storage:", error);
-      });
+      }
+    };
+    loadFromStorage();
   }, [dispatch]);
 
   // Speed dial visibility logicc
@@ -314,6 +327,7 @@ function App() {
  * - Better error handling for Chrome storage operations
  * - Cleaner separation of concerns
  * - Built-in loading states for async operations
+ * @source
  */
 
 export default App;

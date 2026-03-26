@@ -20,6 +20,7 @@ import SupplierBaseWoocommerce from "./SupplierBaseWoocommerce";
  *
  * @see https://www.carolinachemical.com/
  * @see https://carolinachemical.com/wp-json/wc/store/v1/products
+ * @source
  */
 export default class SupplierCarolinaChemical extends SupplierBaseWoocommerce implements ISupplier {
   /**
@@ -32,6 +33,7 @@ export default class SupplierCarolinaChemical extends SupplierBaseWoocommerce im
    * console.log(`Products from ${supplier.supplierName}`);
    * // Output: "Products from Carolina Chemical"
    * ```
+   * @source
    */
   public readonly supplierName: string = "Carolina Chemical";
 

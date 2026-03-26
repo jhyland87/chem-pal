@@ -41,6 +41,7 @@ import SupplierBase from "./SupplierBase";
  * Append `&format=json&ajax=true` to any URL to get JSON response
  *
  * @category Suppliers
+ * @source
  */
 export default class SupplierCarolina
   extends SupplierBase<CarolinaSearchResult, Product>
@@ -100,6 +101,7 @@ export default class SupplierCarolina
    * Constructs the query parameters for a product search request
    * @param query - Search term to look for
    * @returns Object containing all required search parameters
+   * @source
    */
   protected makeQueryParams(query: string): CarolinaSearchParams {
     return {
@@ -119,6 +121,7 @@ export default class SupplierCarolina
   /**
    * Executes a product search query and stores results
    * Fetches products matching the current search query and updates internal results cache
+   * @source
    */
   protected async queryProducts(
     query: string,
@@ -170,6 +173,7 @@ export default class SupplierCarolina
    *   }
    * }
    * ```
+   * @source
    */
   protected initProductBuilders(data: CarolinaSearchResult[]): ProductBuilder<Product>[] {
     return data.map((result) => {
@@ -190,6 +194,7 @@ export default class SupplierCarolina
    * Navigates through nested response structure to find product listings
    * @param response - Raw response object from search request
    * @returns Array of validated search result items
+   * @source
    */
   protected extractSearchResults(response: unknown): CarolinaSearchResult[] {
     try {
@@ -267,6 +272,7 @@ export default class SupplierCarolina
    *   console.log(productData.products[0]);
    * }
    * ```
+   * @source
    */
   protected extractATGResponse(productResponse: unknown): ATGResponse["response"] | null {
     if (!isValidProductResponse(productResponse)) {
@@ -305,6 +311,7 @@ export default class SupplierCarolina
    *   }
    * }
    * ```
+   * @source
    */
   protected async getProductData(
     product: ProductBuilder<Product>,
@@ -408,6 +415,7 @@ export default class SupplierCarolina
    * Selects the title of a product from the search response
    * @param data - Product object from search response
    * @returns - The title of the product
+   * @source
    */
   protected titleSelector(data: CarolinaSearchResult): string {
     return data.productName;

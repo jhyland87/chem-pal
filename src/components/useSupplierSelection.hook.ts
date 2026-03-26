@@ -25,6 +25,7 @@ import { ChangeEvent, useCallback } from "react";
  *   />
  * ))}
  * ```
+ * @source
  */
 export function useSupplierSelection() {
   const appContext = useAppContext();
@@ -39,6 +40,7 @@ export function useSupplierSelection() {
   /**
    * Handles toggling a supplier's selection state.
    * Updates the application settings with the new list of selected suppliers.
+   * @source
    */
   const handleToggle = useCallback(
     (supplierName: string) => {
@@ -63,6 +65,7 @@ export function useSupplierSelection() {
 
   /**
    * Handles toggling all suppliers at once.
+   * @source
    */
   const handleToggleAll = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {

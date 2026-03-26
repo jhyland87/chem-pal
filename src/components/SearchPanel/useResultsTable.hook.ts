@@ -36,6 +36,7 @@ import TableColumns from "./TableColumns";
  * @param columnId - The ID of the column being filtered
  * @param filterValue - Array of selected filter values
  * @returns true if the row should be shown, false otherwise
+ * @source
  */
 function multiSelectFilter(row: Row<Product>, columnId: string, filterValue: string[]): boolean {
   // If no filter values are selected, show all rows
@@ -59,6 +60,7 @@ function multiSelectFilter(row: Row<Product>, columnId: string, filterValue: str
 
 /**
  * Configuration options for the useResultsTable hook.
+ * @source
  */
 interface UseResultsTableProps {
   /** Array of product data to display in the table */
@@ -188,6 +190,7 @@ export function useResultsTable({
           /**
            * Updates the user settings on the table instance.
            * @param userSettings - New user settings to apply
+           * @source
            */
           table.setUserSettings = (userSettings: UserSettings) => {
             table.userSettings = userSettings;
@@ -196,6 +199,7 @@ export function useResultsTable({
           /**
            * Sorts the table rows by match percentage.
            * @param order - Sort order: 'asc' for ascending, 'desc' for descending
+           * @source
            */
           table.sortByMatchPercentage = (order: "asc" | "desc" = "desc") => {
             console.log("🔍 Initiating match percentage sort:", order);
@@ -219,6 +223,7 @@ export function useResultsTable({
           /**
            * Checks if the table is currently sorted by match percentage.
            * @returns boolean indicating if match percentage sorting is active
+           * @source
            */
           table.isSortedByMatchPercentage = () => {
             return table._customSort?.type === "matchPercentage";
@@ -227,6 +232,7 @@ export function useResultsTable({
           /**
            * Gets the current match percentage sort order.
            * @returns 'asc', 'desc', or null if not sorted by match percentage
+           * @source
            */
           table.getMatchPercentageSortOrder = () => {
             if (!table.isSortedByMatchPercentage?.()) return null;
@@ -235,6 +241,7 @@ export function useResultsTable({
 
           /**
            * Updates the badge with the current row count from the table.
+           * @source
            */
           table.updateBadgeCount = () => {
             const rowCount = table.getRowCount();
@@ -247,6 +254,7 @@ export function useResultsTable({
          *
          * @param column - The column instance to extend
          * @param table - The table instance to extend
+         * @source
          */
         createColumn: (column, table) => {
           // Just gets the header text of the column

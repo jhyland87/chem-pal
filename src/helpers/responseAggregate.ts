@@ -15,6 +15,7 @@ interface CapturedEntry {
  * Query parameter names that contain dynamic/session-specific data.
  * These are stripped from stored URLs so that mock matching works
  * across different sessions and timestamps.
+ * @source
  */
 const DYNAMIC_PARAMS = [
   "timestampe", // Macklin API (their typo for "timestamp")
@@ -49,6 +50,7 @@ function stripDynamicParams(url: string): string {
 /**
  * In-memory store for captured HTTP request/response pairs.
  * Only active when built with `--mode=aggregate`.
+ * @source
  */
 const captured = new Map<string, CapturedEntry>();
 

@@ -5,6 +5,7 @@ import priceParser from "price-parser";
 /**
  * @group Helpers
  * @groupDescription Currency conversion and price parsing utilities for handling different currencies and formats.
+ * @source
  */
 
 /**
@@ -27,6 +28,7 @@ import priceParser from "price-parser";
  *
  * // After 5 different currency pairs, least recently used pair is evicted
  * ```
+ * @source
  */
 const lruCurrencyRate = new LRUCache({
   max: 5,

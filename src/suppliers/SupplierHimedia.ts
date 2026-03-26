@@ -4,6 +4,7 @@ import SupplierBaseAmazon from "./SupplierBaseAmazon";
  * Supplier for Himedia (via Amazon marketplace)
  *
  * {@link https://www.amazon.com/s?k=Himedia | Himedias Amazon Listings}
+ * @source
  */
 export default class SupplierHimedia extends SupplierBaseAmazon implements ISupplier {
   // Name of supplier (for display purposes)

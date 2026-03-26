@@ -14,6 +14,7 @@ import { createContext, useContext } from "react";
  * // Consumer usage
  * const { userSettings, data } = useAppContext();
  * ```
+ * @source
  */
 export const AppContext = createContext<AppContextProps | undefined>(undefined);
 
@@ -30,6 +31,7 @@ export const AppContext = createContext<AppContextProps | undefined>(undefined);
  *   return <div>{userSettings.someSetting}</div>;
  * }
  * ```
+ * @source
  */
 export function useAppContext() {
   const context = useContext(AppContext);

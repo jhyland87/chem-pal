@@ -2,6 +2,7 @@ import { LRUCache } from "lru-cache";
 
 /**
  * Configuration options for the Cactus client cache.
+ * @source
  */
 interface CactusCacheOptions {
   /** Maximum number of items to store in the cache */
@@ -16,6 +17,7 @@ interface CactusCacheOptions {
  * The endpoints available in the Cactus API.
  *
  * @see https://cactus.nci.nih.gov/chemical/structure
+ * @source
  */
 type CactusEndpoint =
   | "inchi"
@@ -77,6 +79,7 @@ function assertIsStringResponse(response: unknown): asserts response is string {
  * const names = await cactus.getNames();
  * console.log(names); // ["aspirin", "acetylsalicylic acid", ...]
  * ```
+ * @source
  */
 export default class Cactus {
   /** Chemical name */
