@@ -5,6 +5,7 @@ declare const __RESPONSE_AGGREGATE__: boolean;
 /**
  * Response type that extends the standard Response with additional properties
  * for data and request hash tracking.
+ * @source
  */
 export type FetchDecoratorResponse = Response & { data: unknown; requestHash: string };
 

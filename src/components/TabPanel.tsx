@@ -15,6 +15,7 @@ import Typography from "@mui/material/Typography";
  *   <div>First panel content</div>
  * </TabPanel>
  * ```
+ * @source
  */
 export default function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;

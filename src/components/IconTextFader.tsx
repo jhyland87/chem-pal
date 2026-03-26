@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
  *   <SearchIcon />
  * </IconTextFader>
  * ```
+ * @source
  */
 export default function IconTextFader({ children, text, active }: IconTextFaderProps) {
   const [isHovered, setIsHovered] = useState(active);

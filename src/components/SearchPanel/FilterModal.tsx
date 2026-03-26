@@ -67,11 +67,13 @@ export default function FilterModal({
 }) {
   /**
    * Closes the filter modal.
+   * @source
    */
   const handleClose = () => setFilterModalOpen(false);
   /**
    * Gets the list of currently visible column IDs.
    * @returns Array of visible column IDs
+   * @source
    */
   const columnStatus = table
     .getAllColumns()
@@ -87,6 +89,7 @@ export default function FilterModal({
    * Updates the visibility state and applies changes to the table columns.
    *
    * @param event - The change event from the select component
+   * @source
    */
   const handleColumnVisibilityChange = (event: SelectChangeEvent<typeof columnVisibility>) => {
     const {
@@ -106,6 +109,7 @@ export default function FilterModal({
   /**
    * Gets a map of column IDs to their header text for filterable columns.
    * @returns Object mapping column IDs to their header text
+   * @source
    */
   const columnNames = table
     .getAllColumns()

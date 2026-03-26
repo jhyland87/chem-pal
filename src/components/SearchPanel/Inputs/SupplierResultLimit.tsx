@@ -23,6 +23,7 @@ export default function SupplierResultLimit() {
    * Updates the user settings with the new result limit value.
    *
    * @param event - The change event
+   * @source
    */
   const handleResultLimitChange = (event: ChangeEvent<HTMLInputElement>) => {
     const {

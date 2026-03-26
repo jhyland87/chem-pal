@@ -77,6 +77,7 @@ if (!amazonDomains[userCountry]) {
  * @remarks
  * This class is used to query products from Amazon.
  *
+ * @source
  */
 export default abstract class SupplierBaseAmazon
   extends SupplierBase<Product, Product>
@@ -86,22 +87,26 @@ export default abstract class SupplierBaseAmazon
    * The base URL of Amazon - This is determined by the users locale (eg: using output of
    * getUserCountry() from /src/helpers/utils.ts) and a lookup table. Defaults to "US" if
    * the user's country is not found in the lookup table.
+   * @source
    */
   public readonly baseURL: string = amazonDomains[userCountry] || amazonDomains["US"];
 
   /**
    * Terms found in the listing - An array of strings, at least one of which must be
    * foud in the initial listing on the product search results page.
+   * @source
    */
   protected termsFoundInListing?: string[];
 
   /**
    * Extra parameters to add to the query.url
+   * @source
    */
   protected extraParams?: string;
 
   /**
    * Prefix to add to the query (ie: brand name or seller name)
+   * @source
    */
   protected readonly queryPrefix?: string;
 
@@ -110,6 +115,7 @@ export default abstract class SupplierBaseAmazon
    * @param query - The query to search for
    * @param limit - The maximum number of products to return
    * @returns The products from Amazon
+   * @source
    */
   protected async queryProducts(
     query: string,
@@ -195,6 +201,7 @@ export default abstract class SupplierBaseAmazon
    * Checks if the listing meets the requirements
    * @param result - The listing to check
    * @returns True if the listing meets the requirements, false otherwise
+   * @source
    */
   protected checkRequirementsForListing(result: HTMLElement): boolean {
     const resultText = result.innerText.toLowerCase();
@@ -227,6 +234,7 @@ export default abstract class SupplierBaseAmazon
    * @param raw - The raw HTML of the search result
    * @param amazonBase - The base URL of Amazon
    * @returns The parsed search result
+   * @source
    */
   private parseSearchResult(raw: string, amazonBase: string): Maybe<AmazonListing> {
     try {
@@ -336,6 +344,7 @@ export default abstract class SupplierBaseAmazon
    * Parses the response from Amazon
    * @param response - The response from Amazon
    * @returns The parsed response
+   * @source
    */
   protected parseResponse(response: string): unknown {
     try {
@@ -364,6 +373,7 @@ export default abstract class SupplierBaseAmazon
    * Initializes product builders from Amazon listings
    * @param results - The Amazon listings to initialize product builders from
    * @returns An array of product builders
+   * @source
    */
   protected initProductBuilders(results: AmazonListing[]): ProductBuilder<Product>[] {
     return results
@@ -402,6 +412,7 @@ export default abstract class SupplierBaseAmazon
    * Selects the title of a product from the search response
    * @param data - Product object from search response
    * @returns - The title of the product
+   * @source
    */
   protected titleSelector(data: AmazonListing): string {
     return data.title;

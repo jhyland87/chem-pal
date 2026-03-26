@@ -37,6 +37,7 @@
  * ```
  *
  * {@includeCode ./BadgeAnimator.ts#class}
+ * @source
  */
 // #region class
 class BadgeAnimator {
@@ -165,4 +166,5 @@ export default BadgeAnimator;
     32: 'static/images/logo/logo-icon-128.png',
   },
 })
+ * @source
  */

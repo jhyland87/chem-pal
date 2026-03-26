@@ -28,6 +28,7 @@ export default function TextColumnFilter(props: FilterVariantInputProps) {
    * Updates the local state and triggers the column filter update with debouncing.
    *
    * @param event - The change event
+   * @source
    */
   const handleColumnTextFilterChange = (event: ChangeEvent<HTMLInputElement>) => {
     const {

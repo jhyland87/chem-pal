@@ -13,6 +13,7 @@ import { useCallback, useState } from "react";
  * <Button onClick={handleAboutOpen}>About</Button>
  * <AboutModal aboutOpen={aboutOpen} setAboutOpen={handleAboutClose} />
  * ```
+ * @source
  */
 export function useAboutModal() {
   const [aboutOpen, setAboutOpen] = useState(false);

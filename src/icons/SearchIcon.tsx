@@ -9,6 +9,7 @@ import React from "react";
  * @component
  * @param props - The props passed to the underlying SvgIcon component
  * @returns A React component that renders the search icon
+ * @source
  */
 const SearchIcon: React.FC<SvgIconProps> = (props) => {
   return (

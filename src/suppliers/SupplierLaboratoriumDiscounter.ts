@@ -51,6 +51,7 @@ import SupplierBase from "./SupplierBase";
  *   console.log(product);
  * }
  * ```
+ * @source
  */
 export default class SupplierLaboratoriumDiscounter
   extends SupplierBase<LaboratoriumDiscounterProductObject, Product>
@@ -108,6 +109,7 @@ export default class SupplierLaboratoriumDiscounter
   /**
    * Category IDs to include in the search (and including any that aren't in these
    * categories or their sub-categories).
+   * @source
    */
   protected readonly categoryIds: number[] = [
     // The "root" category for most of  the below is category 9319956 ("chemicals"),
@@ -138,6 +140,7 @@ export default class SupplierLaboratoriumDiscounter
    *   params: this.makeQueryParams(20)
    * });
    * ```
+   * @source
    */
   protected makeQueryParams(limit?: number): LaboratoriumDiscounterSearchParams {
     return {
@@ -165,6 +168,7 @@ export default class SupplierLaboratoriumDiscounter
    *   console.error("No products found or search failed");
    * }
    * ```
+   * @source
    */
   protected async queryProducts(
     query: string,
@@ -198,6 +202,7 @@ export default class SupplierLaboratoriumDiscounter
    * Selects the title of a product from the search response
    * @param data - Product object from search response
    * @returns Title of the product
+   * @source
    */
   protected titleSelector(data: SearchResponseProduct): string {
     return data.title;
@@ -234,6 +239,7 @@ export default class SupplierLaboratoriumDiscounter
    *   }
    * }
    * ```
+   * @source
    */
   protected initProductBuilders(
     data: LaboratoriumDiscounterSearchResponseProduct[],
@@ -270,6 +276,7 @@ export default class SupplierLaboratoriumDiscounter
    * Fetches product data for a given product builder
    * @param product - Product builder to fetch data for
    * @returns Promise resolving to product builder or void if data fetch fails
+   * @source
    */
   protected async getProductData(
     product: ProductBuilder<Product>,

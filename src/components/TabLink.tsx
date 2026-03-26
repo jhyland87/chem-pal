@@ -32,6 +32,7 @@ const handleResultClick = (event: MouseEvent<HTMLAnchorElement>, history?: Histo
  * @category Components
  * @param props - The component props
  * @returns The TabLink component
+ * @source
  */
 export default function TabLink({ href, history, children, ...props }: TabLinkProps) {
   return (

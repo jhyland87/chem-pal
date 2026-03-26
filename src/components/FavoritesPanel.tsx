@@ -39,6 +39,7 @@ const paginationModel = { page: 0, pageSize: 5 };
 /**
  * FavoritesPanel component that displays a list of favorites.
  * @category Components
+ * @source
  */
 export default function FavoritesPanel() {
   return (

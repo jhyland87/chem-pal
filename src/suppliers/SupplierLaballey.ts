@@ -4,6 +4,7 @@ import SupplierBaseShopify from "./SupplierBaseShopify";
  * SupplierLaballey class that extends SupplierBaseShopify and implements AsyncIterable<T>.
  *
  * @category Suppliers
+ * @source
  */
 export default class SupplierLaballey extends SupplierBaseShopify implements ISupplier {
   // Name of supplier (for display purposes)

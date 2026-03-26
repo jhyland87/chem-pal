@@ -29,6 +29,7 @@ export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
    * @component
    * @param  props - Props for the value label component
    * @returns Tooltip-wrapped value label
+   * @source
    */
   function ValueLabelComponent(props: SliderValueLabelProps) {
     const { children, value } = props;
@@ -57,6 +58,7 @@ export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
    *
    * @param  event - The change event
    * @param newValue - The new range values [min, max]
+   * @source
    */
   const handleColumnFilterChange = (event: Event, newValue: number[]) => {
     setColumnFilterRange(newValue);
@@ -66,6 +68,7 @@ export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
   /**
    * Resets the range filter to the full range.
    * Updates both local state and triggers the column filter update.
+   * @source
    */
   const handleResetRange = () => {
     const fullRange = [MIN, MAX];

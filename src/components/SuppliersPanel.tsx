@@ -22,6 +22,7 @@ import { ChangeEvent } from "react";
  * ```tsx
  * <SuppliersPanel />
  * ```
+ * @source
  */
 export default function SuppliersPanel() {
   const appContext = useAppContext();
@@ -32,6 +33,7 @@ export default function SuppliersPanel() {
    *
    * @param supplierName - The name of the supplier to toggle
    * @returns A callback function that handles the toggle action
+   * @source
    */
   const handleToggle = (supplierName: string) => () => {
     const selectedSuppliers = appContext.userSettings.suppliers;

@@ -2,6 +2,7 @@
  * @group Icons
  * @groupDescription A collection of Material-UI based icon components used throughout the application.
  * @showGroups
+ * @source
  */
 export { default as ArrowDropDownIcon } from "./ArrowDropDownIcon";
 export { default as ArrowDropUpIcon } from "./ArrowDropUpIcon";

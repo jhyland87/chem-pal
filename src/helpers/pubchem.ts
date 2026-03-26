@@ -4,6 +4,7 @@
  * @see https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest#section=Operation
  *
  * SDQ types are declared globally in types/pubchem.d.ts
+ * @source
  */
 
 /**

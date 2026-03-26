@@ -23,6 +23,7 @@ import "./LoadingBackdrop.scss";
  * Future improvements:
  * - Implement a Suspense component instead of manual loading state
  * - Add a timer to show the Stop Search button after a delay
+ * @source
  */
 export default function LoadingBackdrop(props: LoadingBackdropProps) {
   return (

@@ -94,6 +94,7 @@ class TimeoutError extends Error {
  * // Final Signature: headerHash + paramHash
  *
  * ```
+ * @source
  */
 export default class SupplierMacklin extends SupplierBase<Product, Product> implements ISupplier {
   /** Name of supplier (for display purposes) */
@@ -133,6 +134,7 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
   /**
    * Local storage object for the Macklin API client.
    * @todo Add the timestamp to the chrome.storage.local
+   * @source
    */
   private localStorage: Record<string, unknown> = {};
 
@@ -158,6 +160,7 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
    *
    * @returns void
    * @throws MacklinApiError If the timestamp request fails or response is invalid
+   * @source
    */
   protected async setup(): Promise<void> {
     await this.validateAndUpdateTimestamp();
@@ -192,6 +195,7 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
    * limited to 90 results))
    * @returns Array of ProductBuilder instances or void if the request fails
    * @throws MacklinApiError if the API request fails or response is invalid
+   * @source
    */
   protected async queryProducts(
     query: string,
@@ -222,6 +226,7 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
    *
    * @param data - The product variant to extract the title from
    * @returns The English name of the product
+   * @source
    */
   protected titleSelector(data: MacklinProductVariant): string {
     return data.item_en_name;
@@ -235,6 +240,7 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
    * @param product - The ProductBuilder instance to enrich with details
    * @returns The enriched ProductBuilder or void if the request fails
    * @throws MacklinApiError if the API request fails or response is invalid
+   * @source
    */
   protected async getProductData(
     product: ProductBuilder<Product>,
@@ -268,6 +274,7 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
    *
    * @param data - Array of product variants to convert
    * @returns Array of ProductBuilder instances
+   * @source
    */
   protected initProductBuilders(data: MacklinProductVariant[]): ProductBuilder<Product>[] {
     return mapDefined(data, (product) => {
@@ -306,6 +313,7 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
    * const uuid = this.generateString();
    * // "550e8400-e29b-41d4-a716-446655440000"
    * ```
+   * @source
    */
   private generateString(length?: number, charSetSize?: number): string {
     const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -339,6 +347,7 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
    * @param headers - Request headers to sign
    * @param params - Request parameters to sign
    * @returns The final request signature
+   * @source
    */
   private signRequest(headers: MacklinRequestHeaders, params: RequestParams): string {
     // Sort and filter headers exactly like api-client.js
@@ -394,6 +403,7 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
    * @returns The API response
    * @throws ApiError If the request fails or response is invalid
    * @throws TimeoutError If the request times out
+   * @source
    */
   private async request<T>(path: string, options: MacklinApiRequestOptions = {}): Promise<T> {
     try {
@@ -489,6 +499,7 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
    * @todo Add the timestamp to the chrome.storage.local
    * @returns The server timestamp
    * @throws MacklinApiError If the timestamp request fails or response is invalid
+   * @source
    */
   private async fetchServerTimestamp(): Promise<number> {
     const response = await this.httpGetJson({
@@ -520,6 +531,7 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
    * - Current time + digits from previous signature (subsequent requests)
    *
    * @returns A unique timestamp string for the request
+   * @source
    */
   private generateRequestTimestamp(): number {
     if (this.lastSignature) {
@@ -537,6 +549,7 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
    * - Converts timestamp to string format for headers
    *
    * @returns The current valid timestamp as a string
+   * @source
    */
   private async validateAndUpdateTimestamp(): Promise<string> {
     const currentTime = Math.round(Date.now() / 1000);
@@ -567,6 +580,7 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
    * this.ensureStringHeader(null) // ""
    * this.ensureStringHeader(123) // "123"
    * ```
+   * @source
    */
   private ensureStringHeader(value: unknown): string {
     if (Array.isArray(value)) {

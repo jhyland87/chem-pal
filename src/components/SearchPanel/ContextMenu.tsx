@@ -13,6 +13,7 @@ import "./ContextMenu.scss";
 
 /**
  * Props for the ContextMenu component.
+ * @source
  */
 interface ContextMenuProps {
   /** X coordinate for menu positioning (pixels from left edge) */
@@ -27,6 +28,7 @@ interface ContextMenuProps {
 
 /**
  * Position coordinates for the context menu.
+ * @source
  */
 interface ContextMenuPosition {
   /** X coordinate in pixels */
@@ -92,6 +94,7 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
     /**
      * Handles clicks outside the menu to close it.
      * @param event - The mouse event
+     * @source
      */
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -102,6 +105,7 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
     /**
      * Handles escape key to close the menu.
      * @param event - The keyboard event
+     * @source
      */
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -121,33 +125,31 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
   /**
    * Handles copying the product title to clipboard.
    * Shows console feedback on success/failure.
+   * @source
    */
-  const handleCopyTitle = () => {
-    navigator.clipboard
-      .writeText(product.title || "Unknown Product")
-      .then(() => {
-        console.log("Product title copied to clipboard");
-      })
-      .catch((err) => {
-        console.error("Failed to copy product title:", err);
-      });
+  const handleCopyTitle = async () => {
+    try {
+      await navigator.clipboard.writeText(product.title || "Unknown Product");
+      console.log("Product title copied to clipboard");
+    } catch (err) {
+      console.error("Failed to copy product title:", err);
+    }
     onClose();
   };
 
   /**
    * Handles copying the product URL to clipboard.
    * Shows console feedback on success/failure.
+   * @source
    */
-  const handleCopyUrl = () => {
+  const handleCopyUrl = async () => {
     if (product.url) {
-      navigator.clipboard
-        .writeText(product.url)
-        .then(() => {
-          console.log("Product URL copied to clipboard");
-        })
-        .catch((err) => {
-          console.error("Failed to copy product URL:", err);
-        });
+      try {
+        await navigator.clipboard.writeText(product.url);
+        console.log("Product URL copied to clipboard");
+      } catch (err) {
+        console.error("Failed to copy product URL:", err);
+      }
     }
     onClose();
   };
@@ -155,15 +157,18 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
   /**
    * Handles opening the product URL in a new tab.
    * Uses Chrome extension API when available, falls back to window.open.
+   * @source
    */
-  const handleOpenInNewTab = () => {
+  const handleOpenInNewTab = async () => {
     if (product.url) {
       // Chrome extension compatible way to open new tab
       if (typeof chrome !== "undefined" && chrome.tabs) {
-        chrome.tabs.create({ url: product.url }).catch(() => {
+        try {
+          await chrome.tabs.create({ url: product.url });
+        } catch {
           // Fallback for non-extension environments
           window.open(product.url, "_blank", "noopener,noreferrer");
-        });
+        }
       } else {
         // Fallback for non-extension environments
         window.open(product.url, "_blank", "noopener,noreferrer");
@@ -175,6 +180,7 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
   /**
    * Handles adding the product to favorites.
    * Currently logs to console - needs integration with favorites system.
+   * @source
    */
   const handleAddToFavorites = () => {
     // TODO: Implement favorites functionality
@@ -186,22 +192,23 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
   /**
    * Handles sharing the product.
    * Uses native Web Share API when available, falls back to copying URL.
+   * @source
    */
-  const handleShare = () => {
+  const handleShare = async () => {
     if (navigator.share && product.url) {
-      navigator
-        .share({
+      try {
+        await navigator.share({
           title: product.title || "Chemical Product",
           text: `Check out this chemical product: ${product.title}`,
           url: product.url,
-        })
-        .catch((err) => {
-          console.log("Share failed, falling back to clipboard:", err);
-          handleCopyUrl();
         });
+      } catch (err) {
+        console.log("Share failed, falling back to clipboard:", err);
+        await handleCopyUrl();
+      }
     } else {
       // Fallback to copying URL
-      handleCopyUrl();
+      await handleCopyUrl();
     }
     onClose();
   };
@@ -209,6 +216,7 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
   /**
    * Handles viewing detailed product information.
    * Currently logs to console - needs integration with details modal/panel.
+   * @source
    */
   const handleViewDetails = () => {
     // TODO: Implement product details modal/panel
@@ -219,6 +227,7 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
   /**
    * Handles quick search for similar products.
    * Currently logs to console - needs integration with search system.
+   * @source
    */
   const handleQuickSearch = () => {
     // TODO: Implement quick search for similar products
@@ -229,8 +238,9 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
   /**
    * Handles copying formatted product information to clipboard.
    * Includes title, price, supplier, and URL in a readable format.
+   * @source
    */
-  const handleCopyProductInfo = () => {
+  const handleCopyProductInfo = async () => {
     const productInfo = [
       product.title,
       `Price: ${product.currencySymbol}${product.price}`,
@@ -242,14 +252,12 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
       productInfo.push(`Description: ${product.description}`);
     }
 
-    navigator.clipboard
-      .writeText(productInfo.join("\n"))
-      .then(() => {
-        console.log("Product info copied to clipboard");
-      })
-      .catch((err) => {
-        console.error("Failed to copy product info:", err);
-      });
+    try {
+      await navigator.clipboard.writeText(productInfo.join("\n"));
+      console.log("Product info copied to clipboard");
+    } catch (err) {
+      console.error("Failed to copy product info:", err);
+    }
     onClose();
   };
 

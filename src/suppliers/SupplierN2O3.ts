@@ -71,6 +71,7 @@ export default class SupplierN2O3 extends SupplierBase<Product, Product> impleme
    *   console.error("No products found or search failed");
    * }
    * ```
+   * @source
    */
   protected async queryProducts(
     query: string,
@@ -221,6 +222,7 @@ export default class SupplierN2O3 extends SupplierBase<Product, Product> impleme
    * Selects the title of a product from the search response
    * @param data - Product object from search response
    * @returns Title of the product
+   * @source
    */
   protected titleSelector(data: Element): string {
     const title = data.querySelector("a.a2");
@@ -262,6 +264,7 @@ export default class SupplierN2O3 extends SupplierBase<Product, Product> impleme
    *   }
    * }
    * ```
+   * @source
    */
   protected initProductBuilders(data: Element[]): ProductBuilder<Product>[] {
     const parsedResults = mapDefined(data, (element) => {
@@ -290,6 +293,7 @@ export default class SupplierN2O3 extends SupplierBase<Product, Product> impleme
    * Fetches product data for a given product builder
    * @param product - Product builder to fetch data for
    * @returns Promise resolving to product builder or void if data fetch fails
+   * @source
    */
   protected async getProductData(
     product: ProductBuilder<Product>,

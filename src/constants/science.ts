@@ -1,6 +1,7 @@
 /**
  * @group Constants
  * @groupDescription Application-wide constants and enumerations used throughout the codebase.
+ * @source
  */
 
 /**
@@ -15,6 +16,7 @@
  * // Usage in strings
  * const formula = "H" + SUBSCRIPTS["2"] + "O" // Returns "H₂O"
  * ```
+ * @source
  */
 export const SUBSCRIPTS: { [key: string]: string } = {
   /* eslint-disable */
@@ -47,6 +49,7 @@ export const SUBSCRIPTS: { [key: string]: string } = {
  * const squared = "x" + SUPERSCRIPTS["2"] // Returns "x²"
  * const scientific = "1.2 × 10" + SUPERSCRIPTS["3"] // Returns "1.2 × 10³"
  * ```
+ * @source
  */
 export const SUPERSCRIPTS: { [key: string]: string } = {
   /* eslint-disable */

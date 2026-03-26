@@ -54,16 +54,17 @@ export function useSearchInput(): UseSearchInputReturn {
 
   // Load the search input from Chrome storage on component mount
   useEffect(() => {
-    chrome.storage.session
-      .get(["searchInput"])
-      .then((data) => {
+    const loadSearchInput = async () => {
+      try {
+        const data = await chrome.storage.session.get(["searchInput"]);
         if (data.searchInput) {
           setSearchInputValue(data.searchInput);
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.warn("Failed to load search input from Chrome storage:", error);
-      });
+      }
+    };
+    loadSearchInput();
   }, []);
 
   /**
@@ -71,19 +72,18 @@ export function useSearchInput(): UseSearchInputReturn {
    * Updates both local state and Chrome session storage.
    *
    * @param value - The new search input value
+   * @source
    */
-  const handleSearchInputChange = useCallback((value: string) => {
+  const handleSearchInputChange = useCallback(async (value: string) => {
     setSearchInputValue(value);
 
     // Save to Chrome storage
-    chrome.storage.session
-      .set({ searchInput: value })
-      .then(() => {
-        console.log("searchInput saved as:", value);
-      })
-      .catch((error) => {
-        console.error("Failed to save search input:", error);
-      });
+    try {
+      await chrome.storage.session.set({ searchInput: value });
+      console.log("searchInput saved as:", value);
+    } catch (error) {
+      console.error("Failed to save search input:", error);
+    }
   }, []);
 
   /**
@@ -93,6 +93,7 @@ export function useSearchInput(): UseSearchInputReturn {
    *
    * @param onSearch - Optional callback function to execute the search
    * @returns Form event handler function
+   * @source
    */
   const handleSubmit = useCallback(
     (onSearch?: (query: string) => void) => {

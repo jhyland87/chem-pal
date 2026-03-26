@@ -9,6 +9,7 @@ import React from "react";
  * @component
  * @param props - The props passed to the underlying SvgIcon component
  * @returns A React component that renders the settings icon
+ * @source
  */
 const SettingsIcon: React.FC<SvgIconProps> = (props) => {
   return (

@@ -38,6 +38,7 @@ import "./IconSpinner.scss";
  *   <MyIcon style={{ width: 100, height: 100 }} />
  * </IconSpinner>
  * ```
+ * @source
  */
 const IconSpinner: React.FC<IconSpinnerProps> = (props: IconSpinnerProps) => {
   let { speed = 2 } = props;

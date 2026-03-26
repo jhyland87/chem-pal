@@ -91,6 +91,7 @@ function assertIsSdqAgentResponse(data: unknown): asserts data is SDQResponse {
  * console.log("Result:", await pubchem.getSimpleName());
  * // Result: Aspirin
  * ```
+ * @source
  */
 export default class Pubchem {
   /** Base URL for PubChem API endpoints */

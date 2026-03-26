@@ -75,6 +75,7 @@ const displayHelperOnHover = {
  * 3. Better error handling for failed updates
  * 4. Automatic batching of rapid setting changes
  * 5. Simpler context access with use() hook
+ * @source
  */
 
 // SettingAction type is declared globally in types/settings.d.ts
@@ -452,4 +453,5 @@ export default function SettingsPanel() {
  * - Better error handling for failed updates
  * - Automatic batching of rapid changes
  * - Optimistic updates with rollback capability
+ * @source
  */

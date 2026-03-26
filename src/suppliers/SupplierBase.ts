@@ -24,6 +24,7 @@ import { type JsonValue } from "type-fest";
 /**
  * Metadata about cached results including timestamp and version information.
  * This helps determine if cached data is stale or needs to be refreshed.
+ * @source
  */
 export interface CacheMetadata {
   /** When the data was cached */
@@ -42,6 +43,7 @@ export interface CacheMetadata {
 
 /**
  * Type for cached data including the results and metadata
+ * @source
  */
 export interface CachedData<T> {
   /** The actual cached results */
@@ -61,6 +63,7 @@ export interface CachedData<T> {
  * ```typescript
  * const supplier = new SupplierBase<Product>();
  * ```
+ * @source
  */
 export default abstract class SupplierBase<S, T extends Product> implements ISupplier {
   // The name of the supplier (used for display name, lists, etc)
@@ -72,18 +75,21 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
   /**
    * The shipping scope of the supplier.
    * This is used to determine the shipping scope of the supplier.
+   * @source
    */
   public abstract readonly shipping: ShippingRange;
 
   /**
    * The country code of the supplier.
    * This is used to determine the currency and other country-specific information.
+   * @source
    */
   public abstract readonly country: CountryCode;
 
   /**
    * The payment methods accepted by the supplier.
    * This is used to determine the payment methods accepted by the supplier.
+   * @source
    */
   public abstract readonly paymentMethods: PaymentMethod[];
 
@@ -97,6 +103,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * const supplier = new MySupplier("sodium chloride", 10);
    * console.log(supplier.query); // "sodium chloride"
    * ```
+   * @source
    */
   protected query: string;
 
@@ -111,6 +118,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * await supplier.queryProducts("acetone");
    * console.log(`Found ${supplier.queryResults.length} initial results`);
    * ```
+   * @source
    */
   protected queryResults: Array<S> = [];
 
@@ -131,6 +139,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   }
    * }
    * ```
+   * @source
    */
   protected baseSearchParams: Record<string, string | number> = {};
 
@@ -147,6 +156,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * // Later, to cancel all pending requests:
    * controller.abort();
    * ```
+   * @source
    */
   protected controller: AbortController;
 
@@ -162,6 +172,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   // Will yield at most 5 products
    * }
    * ```
+   * @source
    */
   protected limit: number;
 
@@ -179,6 +190,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   console.log("Built product:", product.title);
    * }
    * ```
+   * @source
    */
   protected products: ProductBuilder<T>[] = [];
 
@@ -197,6 +209,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   }
    * }
    * ```
+   * @source
    */
   protected httpRequestHardLimit: number = 50;
 
@@ -214,6 +227,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   console.log("Reached request limit");
    * }
    * ```
+   * @source
    */
   protected requestCount: number = 0;
 
@@ -233,11 +247,13 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   }
    * }
    * ```
+   * @source
    */
   protected maxConcurrentRequests: number = 3;
 
   /**
    * Minimum number of milliseconds between two consecutive tasks
+   * @source
    */
   protected minConcurrentCycle: number = 100;
 
@@ -258,6 +274,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    *   }
    * }
    * ```
+   * @source
    */
   protected headers: HeadersInit = {};
 

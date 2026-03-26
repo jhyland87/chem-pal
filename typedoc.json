@@ -8,7 +8,10 @@
     "./src/helpers/*.ts",
     "./src/constants/*.ts",
     "./src/types/*.ts",
-    "./src/mixins/*.ts"
+    "./src/mixins/*.ts",
+    //"./src/components/SearchPanel/Inputs/index.ts",
+    //"./src/components/SearchPanel/Inputs/*.tsx",
+    "./src/components/**/*.tsx"
   ],
   "plugin": [
     "typedoc-plugin-mark-react-functional-components",

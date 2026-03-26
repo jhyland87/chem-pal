@@ -25,6 +25,7 @@ import SupplierBase from "./SupplierBase";
  *   console.log(product.supplier, product.title, product.price);
  * }
  * ```
+ * @source
  */
 export default class SupplierFactory<P extends Product> {
   // Term being queried
@@ -49,6 +50,7 @@ export default class SupplierFactory<P extends Product> {
    * @param limit - Maximum number of results for each supplier
    * @param controller - Fetch controller (can be used to terminate the query)
    * @param suppliers - Array of suppliers to query (empty is the same as querying all)
+   * @source
    */
   constructor(
     query: string,
@@ -79,6 +81,7 @@ export default class SupplierFactory<P extends Product> {
    * // Use these names to create a targeted factory
    * const factory = new SupplierFactory("acid", controller, suppliers.slice(0, 2));
    * ```
+   * @source
    */
   public static supplierList(): Array<string> {
     return Object.keys(suppliers);
@@ -96,6 +99,7 @@ export default class SupplierFactory<P extends Product> {
    * const allProducts = await factory.executeAll(3); // 3 suppliers in parallel
    * console.log(allProducts);
    * ```
+   * @source
    */
   public async executeAll(concurrency: number = 3): Promise<P[]> {
     // 1. Instantiate supplier classes
@@ -155,6 +159,7 @@ export default class SupplierFactory<P extends Product> {
    *   console.log(product);
    * }
    * ```
+   * @source
    */
   public async *executeAllStream(concurrency: number = 3): AsyncGenerator<P, void, undefined> {
     const supplierInstances: SupplierBase<unknown, P>[] = Object.entries(suppliers).reduce(

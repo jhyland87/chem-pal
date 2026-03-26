@@ -6,6 +6,7 @@ import { FetchDecoratorResponse } from "@/helpers/fetch";
  * pointers to the previous and next nodes for O(1) reordering.
  *
  * @interface LruNode
+ * @source
  */
 interface LruNode {
   /** The request hash used as the cache lookup key */
@@ -43,6 +44,7 @@ const DEFAULT_CAPACITY = 100;
  * ```
  *
  * @class HttpLru
+ * @source
  */
 export class HttpLru {
   /** The singleton instance, lazily initialized via {@link HttpLru.getInstance} */

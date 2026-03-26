@@ -4,6 +4,7 @@ import SupplierBaseAmazon from "./SupplierBaseAmazon";
  * Supplier for Aldon Innovating Science (via Amazon marketplace)
  *
  * {@link https://www.amazon.com/stores/InnovatingScience/page/7D52B12B-90B5-4526-9355-D3F6B80B2E9D| Aldon Innovating Science Amazon Listings}
+ * @source
  */
 export default class SupplierInnovatingScience extends SupplierBaseAmazon implements ISupplier {
   // Name of supplier (for display purposes)

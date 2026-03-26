@@ -3,6 +3,7 @@ import { SUBSCRIPTS, SUPERSCRIPTS } from "../constants/science";
 /**
  * @group Helpers
  * @groupDescription Scientific formula parsing and chemical notation utilities.
+ * @source
  */
 
 /**

@@ -206,6 +206,7 @@ import type { CacheMetadata, CachedData } from "@/suppliers/SupplierBase";
  * ```
  * @category Utils
  * @typeParam T - The type of data being cached
+ * @source
  */
 export default class SupplierCache {
   private static readonly queryCacheKey = "supplier_query_cache";

@@ -10,6 +10,7 @@ import SupplierBaseWix from "./SupplierBaseWix";
  * Wix has an exposed GraphQL API which can be used to retrieve product data. The queries are
  * mostly listed in the javascript file `CartIconController.bundle.min.js`.
  * @category Suppliers
+ * @source
  */
 export default class SupplierBioFuranChem extends SupplierBaseWix implements ISupplier {
   // Name of supplier (for display purposes)

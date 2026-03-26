@@ -27,6 +27,7 @@ const STATS_PANEL_INDEX = 2;
  * ```tsx
  * <SpeedDialMenu speedDialVisibility={true} />
  * ```
+ * @source
  */
 export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProps) {
   const appContext = useAppContext();
@@ -38,6 +39,7 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
    * Updates the session storage and triggers a settings update.
    *
    * @param event - The click event
+   * @source
    */
   const handleClearResults = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
@@ -50,19 +52,24 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
    * Deletes all cache entries for the application.
    *
    * @param event - The click event
+   * @source
    */
-  const handleClearCache = (event: MouseEvent<HTMLAnchorElement>) => {
+  const handleClearCache = async (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
 
-    caches.keys().then((cacheNames) => {
-      return Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
-    });
+    try {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+    } catch (error) {
+      console.warn("Failed to clear cache:", error);
+    }
   };
 
   /**
    * Handles toggling between light and dark themes using the new theme system.
    *
    * @param event - The click event
+   * @source
    */
   const handleToggleTheme = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
@@ -71,11 +78,13 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
 
   /**
    * Handles opening the about modal.
+   * @source
    */
   const handleAboutOpen = () => setAboutOpen(true);
 
   /**
    * Handles navigating to the stats panel.
+   * @source
    */
   const handleStatsOpen = () => {
     appContext.setPanel?.(STATS_PANEL_INDEX);
@@ -84,6 +93,7 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
   /**
    * Array of action configurations for the speed dial menu.
    * Each action includes an icon, name, and click handler.
+   * @source
    */
   const actions = [
     { icon: <ClearIcon />, name: "Clear Results", onClick: handleClearResults },

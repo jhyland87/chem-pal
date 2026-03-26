@@ -49,9 +49,9 @@ export function useSearch() {
 
   // Load search results from Chrome storage on mount - this restores session persistence!
   useEffect(() => {
-    chrome.storage.session
-      .get(["searchResults", "searchInput", "isNewSearch"])
-      .then(async (data) => {
+    const loadSearchData = async () => {
+      try {
+        const data = await chrome.storage.session.get(["searchResults", "searchInput", "isNewSearch"]);
         if (
           data.searchResults &&
           Array.isArray(data.searchResults) &&
@@ -99,10 +99,11 @@ export function useSearch() {
             suppliers: appContext.userSettings.suppliers.slice(0, 2),
           });
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.warn("Failed to load search data from session storage:", error);
-      });
+      }
+    };
+    loadSearchData();
   }, [appContext.userSettings.supplierResultLimit, appContext.userSettings.suppliers]);
 
   const executeSearch = useCallback(
@@ -155,19 +156,19 @@ export function useSearch() {
     // Create a history entry immediately so it's recorded even if the search is cancelled or hangs.
     // The resultCount will be updated live as results stream in.
     const historyTimestamp = Date.now();
-    chrome.storage.local
-      .get(["search_history"])
-      .then((data) => {
+    (async () => {
+      try {
+        const data = await chrome.storage.local.get(["search_history"]);
         const history: SearchHistoryEntry[] = Array.isArray(data.search_history)
           ? data.search_history
           : [];
         history.unshift({ query, timestamp: historyTimestamp, resultCount: 0, type: "search" });
         // Keep last 100 entries
-        return chrome.storage.local.set({ search_history: history.slice(0, 100) });
-      })
-      .catch((error) => {
+        await chrome.storage.local.set({ search_history: history.slice(0, 100) });
+      } catch (error) {
         console.warn("Failed to save search history:", error);
-      });
+      }
+    })();
 
     // Start the loading animation
     BadgeAnimator.animate("ellipsis", 300);
@@ -250,30 +251,30 @@ export function useSearch() {
             const newResults = [...prevSearchResults, productWithId];
 
             // Save to Chrome storage for session persistence - this maintains the original behavior
-            chrome.storage.session
-              .set({
-                searchResults: newResults.map((r, idx) => ({ ...r, id: idx })),
-              })
-              .catch((error) => {
+            (async () => {
+              try {
+                await chrome.storage.session.set({
+                  searchResults: newResults.map((r, idx) => ({ ...r, id: idx })),
+                });
+              } catch (error) {
                 console.warn("Failed to save search results to session storage:", error);
-              });
+              }
 
-            // Update the search history entry's resultCount live
-            chrome.storage.local
-              .get(["search_history"])
-              .then((data) => {
+              // Update the search history entry's resultCount live
+              try {
+                const data = await chrome.storage.local.get(["search_history"]);
                 const history: SearchHistoryEntry[] = Array.isArray(data.search_history)
                   ? data.search_history
                   : [];
                 const entry = history.find((h) => h.timestamp === historyTimestamp);
                 if (entry) {
                   entry.resultCount = newResults.length;
-                  return chrome.storage.local.set({ search_history: history });
+                  await chrome.storage.local.set({ search_history: history });
                 }
-              })
-              .catch((error) => {
+              } catch (error) {
                 console.warn("Failed to update search history result count:", error);
-              });
+              }
+            })();
 
             return newResults;
           });

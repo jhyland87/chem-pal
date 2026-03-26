@@ -14,6 +14,7 @@ import React from "react";
  * <AutoDeleteIcon />
  * ```
  * {@includeCode ./AutoDeleteIcon.tsx}
+ * @source
  */
 const AutoDeleteIcon: React.FC<SvgIconProps> = (props) => {
   return (

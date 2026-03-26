@@ -24,6 +24,7 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
    * Each filterable column gets an entry with its filter variant and empty arrays for range and unique values.
    *
    * @returns Object mapping column IDs to their filter configurations
+   * @source
    */
   const filterableColumns = useMemo(() => {
     return table.options.columns.reduce<Record<string, ColumnMeta<Product, unknown>>>(
@@ -52,6 +53,7 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
         /**
          * Calculates the range values (min and max) for numeric columns.
          * @returns Array containing [min, max] values
+         * @source
          */
         const rangeValues = table.options.data.reduce(
           (accu, row: Product) => {
@@ -72,6 +74,7 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
       /**
        * Collects unique values for non-range columns.
        * @returns Array of unique values
+       * @source
        */
       const uniqueValues = table.options.data.reduce<string[]>((accu, row: Product) => {
         const value = row[colName as keyof Product] as string;

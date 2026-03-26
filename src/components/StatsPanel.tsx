@@ -62,6 +62,7 @@ type PieView = "http" | "parsed";
  * - "HTTP Calls": inner = supplier totals, outer = success vs failure
  * - "Parsed Data": inner = supplier totals, outer = products vs parse errors
  * @category Components
+ * @source
  */
 const StatsPanel: React.FC = () => {
   const appContext = useAppContext();
@@ -70,20 +71,33 @@ const StatsPanel: React.FC = () => {
   const [pieView, setPieView] = useState<PieView>("http");
 
   useEffect(() => {
-    getStats().then(setStats).catch(console.warn);
+    const loadStats = async () => {
+      try {
+        const data = await getStats();
+        setStats(data);
+      } catch (error) {
+        console.warn(error);
+      }
+    };
+    loadStats();
     // Re-read stats when any supplier_stats_* key changes (live updates during search)
     const listener = (changes: { [key: string]: chrome.storage.StorageChange }) => {
       const hasStatsChange = Object.keys(changes).some((k) => k.startsWith("supplier_stats_"));
       if (hasStatsChange) {
-        getStats().then(setStats).catch(console.warn);
+        loadStats();
       }
     };
     chrome.storage.onChanged.addListener(listener);
     return () => chrome.storage.onChanged.removeListener(listener);
   }, []);
 
-  const handleClear = () => {
-    clearStats().then(() => setStats({})).catch(console.warn);
+  const handleClear = async () => {
+    try {
+      await clearStats();
+      setStats({});
+    } catch (error) {
+      console.warn(error);
+    }
   };
 
   // Aggregate stats across all days

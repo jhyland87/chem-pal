@@ -9,6 +9,7 @@ import React from "react";
  * @group Icons
  * @param props - The props passed to the underlying SvgIcon component
  * @returns A React component that renders the menu icon
+ * @source
  */
 const MenuIcon: React.FC<SvgIconProps> = (props) => {
   return (

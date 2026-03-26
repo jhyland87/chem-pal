@@ -66,6 +66,7 @@ export function useAutoColumnSizing(table: Table<Product>, data: Product[]) {
      * and positioned for measurement without affecting layout.
      *
      * @returns Props object with ref and style properties for the measurement table
+     * @source
      */
     getMeasurementTableProps: () => ({
       ref: measureRef,

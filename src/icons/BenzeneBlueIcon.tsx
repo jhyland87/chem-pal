@@ -13,6 +13,7 @@ import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
  * ```typescript
  * <BenzeneBlueIcon />
  * ```
+ * @source
  */
 const BenzeneBlueIcon: React.FC<SvgIconProps> = (props) => {
   return (

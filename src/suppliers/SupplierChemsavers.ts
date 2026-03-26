@@ -15,6 +15,7 @@ import SupplierBase from "./SupplierBase";
  * listed and is easily searchable.
  *
  * @category Suppliers
+ * @source
  */
 export default class SupplierChemsavers
   extends SupplierBase<ChemsaversProductObject, Product>
@@ -80,6 +81,7 @@ export default class SupplierChemsavers
    *   });
    * }
    * ```
+   * @source
    */
   protected async queryProducts(
     query: string,
@@ -153,6 +155,7 @@ export default class SupplierChemsavers
    *   }
    * }
    * ```
+   * @source
    */
   protected initProductBuilders(data: ChemsaversProductObject[]): ProductBuilder<Product>[] {
     return mapDefined(data, (result) => {
@@ -204,6 +207,7 @@ export default class SupplierChemsavers
    * @param query - The search term to look for in the product database
    * @param limit - Maximum number of results to return (defaults to this.limit)
    * @returns An object containing the search configuration for the Typesense API
+   * @source
    */
   protected makeRequestBody(query: string, limit: number = 100): object {
     /* eslint-disable */
@@ -237,6 +241,7 @@ export default class SupplierChemsavers
    *   }
    * }
    * ```
+   * @source
    */
   protected async getProductData(
     product: ProductBuilder<Product>,
@@ -250,6 +255,7 @@ export default class SupplierChemsavers
    * Selects the title of a product from the search response
    * @param data - Product object from search response
    * @returns - The title of the product
+   * @source
    */
   protected titleSelector(data: ChemsaversProductObject): string {
     return data.name;
