@@ -94,11 +94,11 @@ export default function ResultsTable({
 
   // Watch for pending search queries triggered from HistoryPanel
   useEffect(() => {
-    if (appContext.pendingSearchQuery) {
+    if (appContext?.pendingSearchQuery) {
       executeSearch(appContext.pendingSearchQuery);
       appContext.setPendingSearchQuery(null);
     }
-  }, [appContext.pendingSearchQuery, executeSearch, appContext]);
+  }, [appContext?.pendingSearchQuery, executeSearch, appContext]);
 
   // Context menu functionality
   const { contextMenu, handleContextMenu, handleCloseContextMenu } = useContextMenu();
