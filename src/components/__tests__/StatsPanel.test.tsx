@@ -1,3 +1,13 @@
+/**
+ * Unit tests for the {@link StatsPanel} component.
+ *
+ * Validates the empty-state message, header rendering (back button, title,
+ * call count), tab visibility (By Supplier / Daily / Totals), pie-chart
+ * rendering with inner/outer rings, supplier legend display, clear-stats
+ * button visibility, and singular/plural "call"/"calls" label formatting.
+ *
+ * @source
+ */
 import { render, screen, waitFor } from "@testing-library/react";
 import { beforeAll, beforeEach, afterAll, describe, expect, it, vi } from "vitest";
 import {
@@ -6,7 +16,12 @@ import {
   restoreChromeStorageMock,
 } from "../../__fixtures__/helpers/chrome/storageMock";
 
-// Mock the context
+/**
+ * Mock spy for {@link useAppContext().setPanel}, used to verify
+ * navigation triggered by the back button.
+ *
+ * @source
+ */
 const mockSetPanel = vi.fn();
 vi.mock("@/context", () => ({
   useAppContext: () => ({
@@ -14,12 +29,27 @@ vi.mock("@/context", () => ({
   }),
 }));
 
-// Mock @mui/icons-material to avoid ENFILE from barrel import
+/**
+ * Lightweight mock for the MUI Delete icon to avoid file-descriptor
+ * exhaustion caused by the `@mui/icons-material` barrel import.
+ *
+ * @source
+ */
 vi.mock("@mui/icons-material", () => ({
   Delete: vi.fn((props: any) => <span data-testid="DeleteIcon" {...props} />),
 }));
 
-// Mock MUI X Charts — complex SVG components that don't render well in jsdom
+/**
+ * Mock replacement for `@mui/x-charts/PieChart`. Renders a plain `<div>`
+ * that exposes the number of chart series via a `data-testid` attribute.
+ *
+ * @example
+ * ```tsx
+ * screen.getByTestId("pie-series-count"); // "2" for inner + outer ring
+ * ```
+ *
+ * @source
+ */
 vi.mock("@mui/x-charts/PieChart", () => ({
   PieChart: vi.fn(({ series, children }: any) => (
     <div data-testid="mock-pie-chart">
@@ -29,6 +59,12 @@ vi.mock("@mui/x-charts/PieChart", () => ({
   )),
 }));
 
+/**
+ * Mock replacement for `@mui/x-charts/LineChart`. Renders a plain `<div>`
+ * that exposes the number of line series via a `data-testid` attribute.
+ *
+ * @source
+ */
 vi.mock("@mui/x-charts/LineChart", () => ({
   LineChart: vi.fn(({ series }: any) => (
     <div data-testid="mock-line-chart">
@@ -37,11 +73,22 @@ vi.mock("@mui/x-charts/LineChart", () => ({
   )),
 }));
 
+/**
+ * Mock for `@mui/x-charts/hooks` returning a fixed drawing area so that
+ * chart-dependent layout calculations do not throw in jsdom.
+ *
+ * @source
+ */
 vi.mock("@mui/x-charts/hooks", () => ({
   useDrawingArea: () => ({ width: 400, height: 300, left: 0, top: 0 }),
 }));
 
-// Mock DataGrid
+/**
+ * Mock replacement for `@mui/x-data-grid` DataGrid, exposing row and
+ * column counts through `data-testid` attributes.
+ *
+ * @source
+ */
 vi.mock("@mui/x-data-grid", () => ({
   DataGrid: vi.fn(({ rows, columns }: any) => (
     <div data-testid="mock-data-grid">
@@ -51,7 +98,12 @@ vi.mock("@mui/x-data-grid", () => ({
   )),
 }));
 
-// Mock the stats store
+/**
+ * Mock for the {@link SupplierStatsStore} module, providing spies for
+ * `getStats` and `clearStats` so tests can control resolved data.
+ *
+ * @source
+ */
 vi.mock("@/utils/SupplierStatsStore", () => ({
   getStats: vi.fn(),
   clearStats: vi.fn(),
@@ -60,7 +112,20 @@ vi.mock("@/utils/SupplierStatsStore", () => ({
 import { getStats, clearStats } from "@/utils/SupplierStatsStore";
 import StatsPanel from "../StatsPanel";
 
+/**
+ * Typed reference to the mocked `getStats` function, allowing
+ * `mockResolvedValue` calls in individual tests.
+ *
+ * @source
+ */
 const mockGetStats = getStats as ReturnType<typeof vi.fn>;
+
+/**
+ * Typed reference to the mocked `clearStats` function, allowing
+ * `mockResolvedValue` calls in individual tests.
+ *
+ * @source
+ */
 const mockClearStats = clearStats as ReturnType<typeof vi.fn>;
 
 describe("StatsPanel", () => {
