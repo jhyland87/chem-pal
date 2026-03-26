@@ -6,20 +6,27 @@ export default defineConfig({
   test: {
     //reporters: ["html", "text","c"],
     pool: "vmThreads",
+    poolOptions: {
+      vmThreads: {
+        maxThreads: 4,
+        minThreads: 1,
+      },
+    },
     environment: "jsdom",
     globals: true,
+    fileParallelism: false,
     setupFiles: ["./vitest.setup.ts"],
     include: ["src/**/__tests__/**/*.{test,spec}.{js,ts,jsx,tsx}"],
     exclude: [
       "**/node_modules/**",
-      "**/src/components/**",
+      //"**/src/components/**",
       "src/mixins/__tests__/tanstack.test.ts",
       "src/helpers/__tests__/productBuilder.test.ts",
       "**/dist/**",
       "**/.{idea,git,cache,output,temp}/**",
       "src/suppliers/**",
       // disabling all component testing for now
-      "src/components/**",
+      //"src/components/**",
       "src/__tests__/**",
     ],
     deps: {
@@ -28,7 +35,7 @@ export default defineConfig({
       },
     },
     coverage: {
-      enabled: true,
+      enabled: false,
       include: ["src/**/*.{ts,tsx}"],
       exclude: [
         "**/*.d.ts",

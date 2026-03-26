@@ -49,7 +49,7 @@ jobs:
       - name: Setup dependencies
         run: pnpm install
       - name: Run tests
-        run: pnpm run test
+        run: ulimit -n 65536 && pnpm run test
 
   docs:
     needs: test
