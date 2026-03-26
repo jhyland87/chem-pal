@@ -169,18 +169,19 @@ export async function delayAction(ms: number, action: () => void) {
  * @source
  */
 export function firstMap<T, R>(fn: (arg: T) => R | void, properties: T[]): R | void {
-  try {
-    for (const prop of properties) {
-      const result = fn(prop);
-      if (result !== undefined && result !== null) {
-        return result;
-      }
+  //try {
+  for (const prop of properties) {
+    const result = fn(prop);
+    if (result !== undefined && result !== null) {
+      return result;
     }
-    return undefined;
-  } catch (error) {
-    console.error("ERROR in firstMap:", error);
-    return undefined;
   }
+  return undefined;
+  // } catch (error) {
+  //   //console.error("ERROR in firstMap:", error);
+  //   throw
+  //   return undefined;
+  // }
 }
 
 /**
@@ -204,26 +205,39 @@ export function firstMap<T, R>(fn: (arg: T) => R | void, properties: T[]): R | v
  * @source
  */
 export function mapDefined<T, R>(items: T[], fn: (arg: T) => R | null | undefined): R[] {
-  return items.map(fn).filter((result): result is R => result !== undefined && result !== null);
-  return items.map(fn).filter((result): result is R => {
-    if (result === undefined || result === null) {
-      return false;
-    }
+  /* The commented code block you provided is a conditional check within the `mapDefined` function. It
+ is checking the type and value of the `items` parameter to ensure that it is an array before
+ proceeding with the mapping and filtering operations. */
+  // if (typeof items !== "object" || items === null || !Array.isArray(items)) {
+  //   console.warn(`mapDefined: items provided was a ${typeof items}, expected an array - `, items);
+  //   return [];
+  // }
+  try {
+    return items.map(fn).filter((result): result is R => result !== undefined && result !== null);
+  } catch (error) {
+    console.error("ERROR in mapDefined:", error);
+    throw error;
+    return [];
+  }
+  // return items.map(fn).filter((result): result is R => {
+  //   if (result === undefined || result === null) {
+  //     return false;
+  //   }
 
-    if (Array.isArray(result)) {
-      return result.length > 0;
-    }
+  //   if (Array.isArray(result)) {
+  //     return result.length > 0;
+  //   }
 
-    if (typeof result === "object") {
-      return Object.keys(result).length > 0;
-    }
+  //   if (typeof result === "object") {
+  //     return Object.keys(result).length > 0;
+  //   }
 
-    if (typeof result === "string") {
-      return result.trim().length > 0;
-    }
+  //   if (typeof result === "string") {
+  //     return result.trim().length > 0;
+  //   }
 
-    return true;
-  });
+  //   return true;
+  // });
 }
 
 /**
