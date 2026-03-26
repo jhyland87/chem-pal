@@ -17,9 +17,22 @@ import "./HistoryPanel.scss";
  * HistoryPanel component that displays past search queries,
  * when they were executed, and how many results were returned.
  *
- * History is persisted in chrome.storage.local (same mechanism as user settings / cache).
- * Clicking a query re-triggers the search via the app context's pendingSearchQuery.
+ * History is persisted in `chrome.storage.local` (same mechanism as user settings / cache).
+ * Clicking a query re-triggers the search via the app context's `pendingSearchQuery`.
+ *
+ * @example
+ * ```tsx
+ * // Rendered inside the drawer's tab panel:
+ * <HistoryPanel />
+ * // Displays:
+ * //   3 searches
+ * //   acetone        Mar 26, 2:15 PM — 12 results
+ * //   sodium chloride Mar 25, 9:00 AM — 8 results
+ * //   benzene        Mar 24, 4:30 PM — 5 results
+ * ```
+ *
  * @category Components
+ * @source
  */
 const HistoryPanel: React.FC = () => {
   const [history, setHistory] = useState<SearchHistoryEntry[]>([]);
@@ -38,6 +51,19 @@ const HistoryPanel: React.FC = () => {
       });
   }, []);
 
+  /**
+   * Clears all search history entries from both local state and
+   * `chrome.storage.local`, resetting the panel to its empty state.
+   *
+   * @example
+   * ```ts
+   * handleClearHistory();
+   * // chrome.storage.local.search_history => []
+   * // UI shows "No search history yet."
+   * ```
+   *
+   * @source
+   */
   const handleClearHistory = () => {
     chrome.storage.local
       .set({ search_history: [] })
@@ -47,11 +73,41 @@ const HistoryPanel: React.FC = () => {
       });
   };
 
+  /**
+   * Re-executes a previous search by setting the pending search query
+   * in the app context and closing the drawer.
+   *
+   * @param query - The search term to re-run (e.g. `"sodium chloride"`)
+   *
+   * @example
+   * ```ts
+   * handleReSearch("acetone");
+   * // Sets pendingSearchQuery to "acetone"
+   * // Sets drawerTab to -1 (closes drawer)
+   * ```
+   *
+   * @source
+   */
   const handleReSearch = (query: string) => {
     setPendingSearchQuery(query);
     setDrawerTab(-1); // Close the drawer
   };
 
+  /**
+   * Formats a Unix epoch timestamp (in milliseconds) into a short,
+   * human-readable date string using the user's locale.
+   *
+   * @param epochMs - Timestamp in milliseconds since Unix epoch
+   * @returns A locale-formatted string like `"Mar 26, 2:15 PM"`
+   *
+   * @example
+   * ```ts
+   * formatTimestamp(1711468500000);
+   * // => "Mar 26, 2:15 PM"
+   * ```
+   *
+   * @source
+   */
   const formatTimestamp = (epochMs: number) => {
     const date = new Date(epochMs);
     return date.toLocaleString(undefined, {

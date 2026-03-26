@@ -1,8 +1,28 @@
+/**
+ * Unit tests for the {@link ColumnVisibilitySelect} component.
+ *
+ * Validates rendering of column checkboxes, checked/unchecked state based on
+ * the `columnVisibility` prop, callback invocation on toggle, and edge cases
+ * such as empty column names or empty visibility arrays.
+ *
+ * @source
+ */
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ColumnVisibilitySelect from "../ColumnVisibilitySelect";
 
 describe("ColumnVisibilitySelect", () => {
+  /**
+   * Mock mapping of column IDs to their human-readable display names.
+   *
+   * @example
+   * ```ts
+   * // Used as the `columnNames` prop
+   * <ColumnVisibilitySelect columnNames={mockColumnNames} ... />
+   * ```
+   *
+   * @source
+   */
   const mockColumnNames = {
     id: "ID",
     name: "Name",
@@ -10,7 +30,20 @@ describe("ColumnVisibilitySelect", () => {
     quantity: "Quantity",
   };
 
+  /**
+   * Array of column IDs that are currently visible, used as the
+   * `columnVisibility` prop.
+   *
+   * @source
+   */
   const mockColumnVisibility = ["id", "name"];
+
+  /**
+   * Mock callback for column visibility changes, passed as the
+   * `handleColumnVisibilityChange` prop.
+   *
+   * @source
+   */
   const mockHandleColumnVisibilityChange = vi.fn();
 
   beforeEach(() => {

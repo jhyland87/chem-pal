@@ -1,3 +1,14 @@
+/**
+ * Unit tests for the {@link SupplierStatsStore} utility module.
+ *
+ * Validates each increment function (searchQueryCount, success, failure,
+ * uniqueProductCount, parseError), multi-supplier independence, zero-init
+ * for new entries, clearStats, rapid-batch correctness, per-day storage
+ * key format (`supplier_stats_MMDDYYYY`), and migration from the legacy
+ * `supplierStats` Chrome storage key.
+ *
+ * @source
+ */
 import { beforeAll, beforeEach, afterAll, afterEach, describe, expect, it, vi } from "vitest";
 import {
   setupChromeStorageMock,
@@ -32,7 +43,20 @@ describe("SupplierStatsStore", () => {
     restoreChromeStorageMock();
   });
 
-  /** Helper: advance timers and flush microtasks to let the debounced flush complete */
+  /**
+   * Advances fake timers past the internal `FLUSH_DELAY_MS` (500 ms) and
+   * drains all pending microtasks so that the debounced write to Chrome
+   * storage completes before assertions run.
+   *
+   * @example
+   * ```ts
+   * incrementSuccess("Carolina");
+   * await flushStore();
+   * // Storage now contains the incremented value
+   * ```
+   *
+   * @source
+   */
   const flushStore = async () => {
     vi.advanceTimersByTime(600); // past the 500ms FLUSH_DELAY_MS
     // Allow promises in the flush chain to resolve
