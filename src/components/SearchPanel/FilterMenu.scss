@@ -1,0 +1,33 @@
+.filter-menu {
+  &__tab-panel-box {
+    padding: 0;
+  }
+
+  &__supplier-list {
+    width: 100%;
+    max-width: 360px;
+    padding-left: 1px;
+  }
+
+  &__supplier-list-item-btn {
+    padding: 0 0 0 15px;
+  }
+
+  &__supplier-checkbox {
+    padding: 0;
+    max-width: 10px;
+  }
+
+  &__search-form-control {
+    width: 100%;
+    padding: 5px;
+  }
+
+  &__accordion-icon {
+    font-size: 0.9rem;
+  }
+
+  &__accordion-content {
+    padding: 5px;
+  }
+}

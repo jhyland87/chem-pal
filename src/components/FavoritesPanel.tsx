@@ -1,5 +1,6 @@
 import Paper from "@mui/material/Paper";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import "./FavoritesPanel.scss";
 
 const columns: GridColDef[] = [
   { field: "id", headerName: "ID", width: 70 },
@@ -41,14 +42,14 @@ const paginationModel = { page: 0, pageSize: 5 };
  */
 export default function FavoritesPanel() {
   return (
-    <Paper sx={{ height: 400, width: "100%" }}>
+    <Paper className="favorites-panel">
       <DataGrid
         rows={rows}
         columns={columns}
         initialState={{ pagination: { paginationModel } }}
         pageSizeOptions={[5, 10]}
         checkboxSelection
-        sx={{ border: 0 }}
+        className="favorites-panel__grid"
       />
     </Paper>
   );

@@ -5,7 +5,6 @@ import Divider from "@mui/material/Divider";
 import FormControl from "@mui/material/FormControl";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormGroup from "@mui/material/FormGroup";
-import FormHelperText from "@mui/material/FormHelperText";
 import InputLabel from "@mui/material/InputLabel";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
@@ -226,7 +225,7 @@ export default function SettingsPanel() {
       >
         <ListItem sx={displayHelperOnHover}>
           <ListItemText primary="Cache Search Results" />
-          <FormHelperText>Improves performance</FormHelperText>
+          {/* <FormHelperText>Improves performance</FormHelperText> */}
           <FormControlLabel
             control={
               <Switch
@@ -243,7 +242,7 @@ export default function SettingsPanel() {
 
         <ListItem sx={displayHelperOnHover}>
           <ListItemText primary="AutoComplete" />
-          <FormHelperText>Autocomplete search input</FormHelperText>
+          {/* <FormHelperText>Autocomplete search input</FormHelperText> */}
           <FormControlLabel
             control={
               <Switch
@@ -260,7 +259,7 @@ export default function SettingsPanel() {
 
         <ListItem sx={displayHelperOnHover}>
           <ListItemText primary="Currency" />
-          <FormHelperText>Convert all currency to this</FormHelperText>
+          {/*<FormHelperText>Convert all currency to this</FormHelperText>*/}
           <FormControl>
             <InputLabel id="currency-select-label">Currency</InputLabel>
             <Select
@@ -284,7 +283,7 @@ export default function SettingsPanel() {
 
         <ListItem sx={displayHelperOnHover}>
           <ListItemText primary="Location" />
-          <FormHelperText>Your country</FormHelperText>
+          {/*<FormHelperText>Your country</FormHelperText>*/}
           <FormControl>
             <InputLabel id="location-select-label">Location</InputLabel>
             <Select
@@ -311,7 +310,7 @@ export default function SettingsPanel() {
 
         <ListItem sx={displayHelperOnHover}>
           <ListItemText primary="Ships to Location" />
-          <FormHelperText>Only show products that ship to your location</FormHelperText>
+          {/*<FormHelperText>Only show products that ship to your location</FormHelperText>*/}
           <FormControl>
             <Switch
               checked={!!currentSettings.location && currentSettings.shipsToMyLocation}
@@ -324,7 +323,7 @@ export default function SettingsPanel() {
 
         <ListItem sx={displayHelperOnHover}>
           <ListItemText primary="Foo" />
-          <FormHelperText>Just an input example</FormHelperText>
+          {/*<FormHelperText>Just an input example</FormHelperText>*/}
           <FormControl>
             <TextField
               value={currentSettings.foo}
@@ -346,7 +345,7 @@ export default function SettingsPanel() {
 
         <ListItem sx={displayHelperOnHover}>
           <ListItemText primary="Popup Size" />
-          <FormHelperText>Popup size</FormHelperText>
+          {/*<FormHelperText>Popup size</FormHelperText>*/}
           <FormControl>
             <ButtonGroup
               variant="contained"
@@ -387,7 +386,7 @@ export default function SettingsPanel() {
 
         <ListItem sx={displayHelperOnHover}>
           <ListItemText primary="Auto-Resize" />
-          <FormHelperText>More results = larger window</FormHelperText>
+          {/*<FormHelperText>More results = larger window</FormHelperText>*/}
           <Switch
             checked={currentSettings.autoResize}
             onChange={handleSwitchChange}
@@ -398,7 +397,7 @@ export default function SettingsPanel() {
 
         <ListItem sx={displayHelperOnHover}>
           <ListItemText primary="Some Setting" />
-          <FormHelperText id="some-setting-helper-text">Disabled by default</FormHelperText>
+          {/*<FormHelperText id="some-setting-helper-text">Disabled by default</FormHelperText>*/}
           <Switch
             checked={currentSettings.someSetting}
             onChange={handleSwitchChange}
@@ -409,7 +408,7 @@ export default function SettingsPanel() {
 
         <ListItem sx={displayHelperOnHover}>
           <ListItemText primary="Show Helpful Tips" />
-          <FormHelperText id="some-setting-helper-text">Show help in tooltips</FormHelperText>
+          {/*<FormHelperText id="some-setting-helper-text">Show help in tooltips</FormHelperText>*/}
           <Switch
             checked={currentSettings.showHelp}
             onChange={handleSwitchChange}
