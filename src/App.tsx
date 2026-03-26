@@ -106,6 +106,8 @@ type AppAction =
 function App() {
   // Search results state - separate from main app state for better performance
   const [searchResults, setSearchResults] = useState<Product[]>([]);
+  // Pending search query - set by HistoryPanel, consumed by ResultsTable
+  const [pendingSearchQuery, setPendingSearchQuery] = useState<string | null>(null);
   // Note: setSearchResults will be used by child components via context in the future
 
   // React v19's useActionState consolidates app state management
@@ -263,6 +265,8 @@ function App() {
     selectedSuppliers: appState.selectedSuppliers,
     setSelectedSuppliers: (suppliers: string[]) =>
       dispatch({ type: "SET_SELECTED_SUPPLIERS", suppliers }),
+    pendingSearchQuery,
+    setPendingSearchQuery,
   };
 
   return (

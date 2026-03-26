@@ -152,6 +152,23 @@ export function useSearch() {
     });
     setSearchResults([]);
 
+    // Create a history entry immediately so it's recorded even if the search is cancelled or hangs.
+    // The resultCount will be updated live as results stream in.
+    const historyTimestamp = Date.now();
+    chrome.storage.local
+      .get(["searchHistory"])
+      .then((data) => {
+        const history: SearchHistoryEntry[] = Array.isArray(data.searchHistory)
+          ? data.searchHistory
+          : [];
+        history.unshift({ query, timestamp: historyTimestamp, resultCount: 0, type: "search" });
+        // Keep last 100 entries
+        return chrome.storage.local.set({ searchHistory: history.slice(0, 100) });
+      })
+      .catch((error) => {
+        console.warn("Failed to save search history:", error);
+      });
+
     // Start the loading animation
     BadgeAnimator.animate("ellipsis", 300);
 
@@ -239,6 +256,23 @@ export function useSearch() {
               })
               .catch((error) => {
                 console.warn("Failed to save search results to session storage:", error);
+              });
+
+            // Update the search history entry's resultCount live
+            chrome.storage.local
+              .get(["searchHistory"])
+              .then((data) => {
+                const history: SearchHistoryEntry[] = Array.isArray(data.searchHistory)
+                  ? data.searchHistory
+                  : [];
+                const entry = history.find((h) => h.timestamp === historyTimestamp);
+                if (entry) {
+                  entry.resultCount = newResults.length;
+                  return chrome.storage.local.set({ searchHistory: history });
+                }
+              })
+              .catch((error) => {
+                console.warn("Failed to update search history result count:", error);
               });
 
             return newResults;

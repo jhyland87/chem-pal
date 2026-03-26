@@ -8,6 +8,7 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { FilterListItemIcon } from "../../Styles";
+import "./ColumnVisibilitySelect.scss";
 
 /**
  * ColumnVisibilitySelect component that provides a scrollable list of checkboxes for controlling
@@ -86,26 +87,17 @@ export default function ColumnVisibilitySelect({
   };
 
   return (
-    <FormControl component="fieldset" variant="standard" sx={{ width: "100%" }}>
+    <FormControl component="fieldset" variant="standard" className="column-visibility-select">
       {/*<FormLabel component="legend">Column Visibility</FormLabel>*/}
-      <List
-        sx={{
-          width: "100%",
-          maxWidth: 360,
-          //bgcolor: "background.paper",
-          paddingLeft: "20px",
-          maxHeight: 200, // Limit height to make it scrollable
-          overflow: "auto", // Enable scrolling
-        }}
-      >
+      <List className="column-visibility-select__list">
         {/* Defaults checkbox */}
         <ListItem key="defaults" disablePadding>
-          <ListItemButton sx={{ padding: 0 }} role={undefined} onClick={handleDefaultsSelect} dense>
+          <ListItemButton className="column-visibility-select__list-item-btn" role={undefined} onClick={handleDefaultsSelect} dense>
             <FilterListItemIcon>
               <Checkbox
                 size="small"
                 edge="start"
-                sx={{ padding: 0, minWidth: 10 }}
+                className="column-visibility-select__checkbox"
                 checked={isDefaultsChecked}
                 tabIndex={-1}
                 disableRipple
@@ -139,7 +131,7 @@ export default function ColumnVisibilitySelect({
                     <Checkbox
                       size="small"
                       edge="start"
-                      sx={{ padding: 0, minWidth: 10 }}
+                      className="column-visibility-select__checkbox"
                       checked={columnVisibility.includes(key)}
                       tabIndex={-1}
                       disableRipple
