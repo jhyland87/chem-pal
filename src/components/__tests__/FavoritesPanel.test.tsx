@@ -55,13 +55,10 @@ describe("FavoritesPanel", () => {
     expect(screen.getByTestId("page-size-options")).toHaveTextContent("5,10");
   });
 
-  it("renders Paper component with correct styles", () => {
+  it("renders Paper component with correct class", () => {
     render(<FavoritesPanel />);
     const paper = screen.getByTestId("mock-data-grid").parentElement;
     expect(paper).toHaveClass("MuiPaper-root");
-    expect(paper).toHaveStyle({
-      height: "400px",
-      width: "100%",
-    });
+    expect(paper).toHaveClass("favorites-panel");
   });
 });
