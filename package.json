@@ -17,7 +17,7 @@
     "build:full": "pnpm type-check && pnpm build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest --coverage",
+    "test": "vitest",
     "test:ui": "vitest --ui --coverage --open=true",
     "test:ui:open": "vitest --ui --coverage --open=true",
     "test:coverage": "vitest run --coverage --open=true",
