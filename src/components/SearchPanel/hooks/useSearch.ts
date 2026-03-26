@@ -156,14 +156,14 @@ export function useSearch() {
     // The resultCount will be updated live as results stream in.
     const historyTimestamp = Date.now();
     chrome.storage.local
-      .get(["searchHistory"])
+      .get(["search_history"])
       .then((data) => {
-        const history: SearchHistoryEntry[] = Array.isArray(data.searchHistory)
-          ? data.searchHistory
+        const history: SearchHistoryEntry[] = Array.isArray(data.search_history)
+          ? data.search_history
           : [];
         history.unshift({ query, timestamp: historyTimestamp, resultCount: 0, type: "search" });
         // Keep last 100 entries
-        return chrome.storage.local.set({ searchHistory: history.slice(0, 100) });
+        return chrome.storage.local.set({ search_history: history.slice(0, 100) });
       })
       .catch((error) => {
         console.warn("Failed to save search history:", error);
@@ -260,15 +260,15 @@ export function useSearch() {
 
             // Update the search history entry's resultCount live
             chrome.storage.local
-              .get(["searchHistory"])
+              .get(["search_history"])
               .then((data) => {
-                const history: SearchHistoryEntry[] = Array.isArray(data.searchHistory)
-                  ? data.searchHistory
+                const history: SearchHistoryEntry[] = Array.isArray(data.search_history)
+                  ? data.search_history
                   : [];
                 const entry = history.find((h) => h.timestamp === historyTimestamp);
                 if (entry) {
                   entry.resultCount = newResults.length;
-                  return chrome.storage.local.set({ searchHistory: history });
+                  return chrome.storage.local.set({ search_history: history });
                 }
               })
               .catch((error) => {

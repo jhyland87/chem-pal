@@ -27,10 +27,10 @@ const HistoryPanel: React.FC = () => {
 
   useEffect(() => {
     chrome.storage.local
-      .get(["searchHistory"])
+      .get(["search_history"])
       .then((data) => {
-        if (Array.isArray(data.searchHistory)) {
-          setHistory(data.searchHistory);
+        if (Array.isArray(data.search_history)) {
+          setHistory(data.search_history);
         }
       })
       .catch((error) => {
@@ -40,7 +40,7 @@ const HistoryPanel: React.FC = () => {
 
   const handleClearHistory = () => {
     chrome.storage.local
-      .set({ searchHistory: [] })
+      .set({ search_history: [] })
       .then(() => setHistory([]))
       .catch((error) => {
         console.warn("Failed to clear search history:", error);

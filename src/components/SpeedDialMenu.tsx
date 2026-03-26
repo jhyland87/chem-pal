@@ -1,5 +1,6 @@
 import { useAppContext } from "@/context";
 import AutoDeleteIcon from "@/icons/AutoDeleteIcon";
+import BarChartIcon from "@mui/icons-material/BarChart";
 import ClearIcon from "@/icons/ClearIcon";
 import ContrastIcon from "@/icons/ContrastIcon";
 import InfoOutlineIcon from "@/icons/InfoOutlineIcon";
@@ -11,10 +12,12 @@ import { useTheme } from "../themes";
 import AboutModal from "./AboutModal";
 import HelpTooltip from "./HelpTooltip";
 
+const STATS_PANEL_INDEX = 2;
+
 /**
  * SpeedDialMenu component that provides quick access to various application actions.
  * Displays a floating action button that expands to show multiple action buttons when clicked.
- * Includes actions for clearing results, clearing cache, toggling theme, and showing about information.
+ * Includes actions for clearing results, clearing cache, toggling theme, stats, and about.
  *
  * @component
  * @category Components
@@ -72,6 +75,13 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
   const handleAboutOpen = () => setAboutOpen(true);
 
   /**
+   * Handles navigating to the stats panel.
+   */
+  const handleStatsOpen = () => {
+    appContext.setPanel?.(STATS_PANEL_INDEX);
+  };
+
+  /**
    * Array of action configurations for the speed dial menu.
    * Each action includes an icon, name, and click handler.
    */
@@ -79,6 +89,7 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
     { icon: <ClearIcon />, name: "Clear Results", onClick: handleClearResults },
     { icon: <AutoDeleteIcon />, name: "Clear Cache", onClick: handleClearCache },
     { icon: <ContrastIcon />, name: "Toggle Theme", onClick: handleToggleTheme },
+    { icon: <BarChartIcon />, name: "Stats", onClick: handleStatsOpen },
     { icon: <InfoOutlineIcon />, name: "About", onClick: handleAboutOpen },
   ];
 
