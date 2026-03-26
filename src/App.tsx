@@ -8,6 +8,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import SearchPanel from "./components/SearchPanel/SearchPanel";
 import SearchPanelHome from "./components/SearchPanelHome";
 import SpeedDialMenu from "./components/SpeedDialMenu";
+import StatsPanel from "./components/StatsPanel";
 import { LoadingIndicatorBox } from "./components/StyledComponents";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { getCurrencyCodeFromLocation, getCurrencyRate } from "./helpers/currency";
@@ -280,8 +281,8 @@ function App() {
             {/* Render only the active panel, no app bar or tab navigation */}
             {appState.panel === 0 && <SearchPanelHome />}
             {appState.panel === 1 && <SearchPanel />}
-            {/* {appState.panel === 2 && <SuppliersPanel />}
-            {appState.panel === 3 && <FavoritesPanel />}
+            {appState.panel === 2 && <StatsPanel />}
+            {/* {appState.panel === 3 && <FavoritesPanel />}
             {appState.panel === 4 && <HistoryPanel />}
             {appState.panel === 5 && <SettingsPanel />} */}
             <div className="main-content">

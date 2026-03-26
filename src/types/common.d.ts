@@ -224,6 +224,39 @@ declare global {
   type HistoryEntry = SearchHistoryEntry | ProductHistoryEntry;
 
   /**
+   * Statistics for a single supplier on a single day.
+   * Tracks HTTP call outcomes and product counts.
+   * Cached responses do not increment HTTP counts.
+   */
+  interface SupplierDayStats {
+    /** Number of product search queries made to this supplier */
+    searchQueryCount: number;
+    /** Number of successful HTTP connections (2xx responses, non-cached) */
+    successCount: number;
+    /** Number of failed HTTP connections (4xx, 5xx, network errors, non-cached) */
+    failureCount: number;
+    /** Number of unique products returned that required a non-cached HTTP call */
+    uniqueProductCount: number;
+    /** Number of exceptions thrown while parsing/processing results */
+    parseErrorCount: number;
+  }
+
+  /**
+   * Full stats data structure, grouped by date then supplier.
+   * @example
+   * ```typescript
+   * const stats: SupplierStatsData = {
+   *   "2026-03-25": {
+   *     "SupplierCarolina": { queryCount: 3, successCount: 45, failureCount: 2, uniqueProductCount: 12 }
+   *   }
+   * };
+   * ```
+   */
+  interface SupplierStatsData {
+    [dateKey: string]: { [supplierName: string]: SupplierDayStats };
+  }
+
+  /**
    * Represents a faceted search option with text values.
    * Used for filtering and categorizing search results.
    *

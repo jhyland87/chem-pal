@@ -10,6 +10,13 @@ import {
   isJsonResponse,
   isMinimalProduct,
 } from "@/utils/typeGuards/common";
+import {
+  incrementFailure,
+  incrementParseError,
+  incrementProductCount,
+  incrementSearchQueryCount,
+  incrementSuccess,
+} from "@/utils/SupplierStatsStore";
 import { Queue } from "async-await-queue";
 import { extract, WRatio } from "fuzzball";
 import { type JsonValue } from "type-fest";
@@ -997,6 +1004,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    */
   public async *execute(): AsyncGenerator<T, void, undefined> {
     await this.setup();
+    incrementSearchQueryCount(this.supplierName);
     const results = await this.queryProductsWithCache(this.query, this.limit);
     if (!results || results.length === 0) {
       this.logger.debug(`No query results found`);
@@ -1017,6 +1025,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
           }
         } catch (e) {
           this.logger.error("Error processing product", { error: e, product });
+          incrementParseError(this.supplierName);
         }
       }),
     );
@@ -1295,6 +1304,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
         resultBuilder = await this.getProductDataWithCache(product, this.getProductData, {});
       } catch (err) {
         this.logger.error("Error in product detail fetcher:", err);
+        incrementParseError(this.supplierName);
         return undefined;
       }
       if (resultBuilder) {
@@ -1303,6 +1313,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       return resultBuilder;
     } catch (outerErr) {
       this.logger.error("Error in getProductDataWithCache:", outerErr);
+      incrementParseError(this.supplierName);
       return undefined;
     }
   }
@@ -1357,14 +1368,17 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
         resultBuilder = await fetcher(product);
       } catch (err) {
         this.logger.error("Error in product detail fetcher:", err);
+        incrementParseError(this.supplierName);
         return undefined;
       }
       if (resultBuilder) {
+        incrementProductCount(this.supplierName);
         await this.cache.cacheProductData(cacheKey, resultBuilder.dump());
       }
       return resultBuilder;
     } catch (outerErr) {
       this.logger.error("Error in getProductDataWithCache:", outerErr);
+      incrementParseError(this.supplierName);
       return undefined;
     }
   }
@@ -1448,11 +1462,18 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     this.requestCount++;
     if (this.requestCount > this.httpRequestHardLimit) {
       this.logger.warn("Request count exceeded hard limit", { requestCount: this.requestCount });
+      incrementFailure(this.supplierName);
       throw new Error("Request count exceeded hard limit");
     }
-    const response = await fetchDecorator(...args);
-    console.log(`Response Status: ${response.status}`);
-    console.log("response hash:", response.requestHash);
-    return response;
+    try {
+      const response = await fetchDecorator(...args);
+      console.log(`Response Status: ${response.status}`);
+      console.log("response hash:", response.requestHash);
+      incrementSuccess(this.supplierName);
+      return response;
+    } catch (error) {
+      incrementFailure(this.supplierName);
+      throw error;
+    }
   }
 }

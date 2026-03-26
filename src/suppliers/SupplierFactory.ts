@@ -1,4 +1,5 @@
 import Logger from "@/utils/Logger";
+import { incrementParseError } from "@/utils/SupplierStatsStore";
 import { Queue } from "async-await-queue";
 import * as suppliers from ".";
 import SupplierBase from "./SupplierBase";
@@ -129,6 +130,7 @@ export default class SupplierFactory<P extends Product> {
           }
         } catch (e) {
           this.logger.error("Error executing supplier", { error: e, supplier });
+          incrementParseError(supplier.supplierName);
           errors.push({ error: e, supplier });
         }
       }),
@@ -186,6 +188,7 @@ export default class SupplierFactory<P extends Product> {
           }
         } catch (e) {
           this.logger.error("Error executing supplier", { error: e, supplier });
+          incrementParseError(supplier.supplierName);
         } finally {
           doneCount++;
         }
