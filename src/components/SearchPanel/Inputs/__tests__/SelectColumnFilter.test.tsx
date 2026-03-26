@@ -27,33 +27,27 @@ describe("SelectColumnFilter", () => {
     vi.clearAllMocks();
   });
 
-  it("renders with correct label", () => {
+  it("renders with correct options", () => {
     render(<SelectColumnFilter column={mockColumn} />);
 
-    const select = screen.getByLabelText("Test Column");
-    expect(select).toBeInTheDocument();
-  });
-
-  it("shows options when clicked", () => {
-    render(<SelectColumnFilter column={mockColumn} />);
-
-    const select = screen.getByLabelText("Test Column");
-    fireEvent.mouseDown(select);
-
-    // Now the options should be visible
     expect(screen.getByText("Option 1")).toBeInTheDocument();
     expect(screen.getByText("Option 2")).toBeInTheDocument();
     expect(screen.getByText("Option 3")).toBeInTheDocument();
   });
 
-  it("updates filter value when options are selected", () => {
+  it("shows all options as checkboxes", () => {
     render(<SelectColumnFilter column={mockColumn} />);
 
-    const select = screen.getByLabelText("Test Column");
-    fireEvent.mouseDown(select);
+    const checkboxes = screen.getAllByRole("checkbox");
+    expect(checkboxes).toHaveLength(3);
+    // All should be unchecked initially
+    checkboxes.forEach((cb) => expect(cb).not.toBeChecked());
+  });
 
-    const option1 = screen.getByText("Option 1");
-    fireEvent.click(option1);
+  it("updates filter value when an option is clicked", () => {
+    render(<SelectColumnFilter column={mockColumn} />);
+
+    fireEvent.click(screen.getByText("Option 1"));
 
     expect(mockColumn.setFilterValueDebounced).toHaveBeenCalledWith(["Option 1"]);
   });
@@ -61,13 +55,8 @@ describe("SelectColumnFilter", () => {
   it("handles multiple selections", () => {
     render(<SelectColumnFilter column={mockColumn} />);
 
-    const select = screen.getByLabelText("Test Column");
-    fireEvent.mouseDown(select);
-
-    const option1 = screen.getByText("Option 1");
-    const option2 = screen.getByText("Option 2");
-    fireEvent.click(option1);
-    fireEvent.click(option2);
+    fireEvent.click(screen.getByText("Option 1"));
+    fireEvent.click(screen.getByText("Option 2"));
 
     expect(mockColumn.setFilterValueDebounced).toHaveBeenCalledWith(["Option 1", "Option 2"]);
   });
@@ -75,24 +64,17 @@ describe("SelectColumnFilter", () => {
   it("initializes with existing filter value", () => {
     const columnWithValue = {
       ...mockColumn,
-      getFilterValue: () => {
-        return ["Option 1", "Option 2"];
-      },
+      getFilterValue: () => ["Option 1", "Option 2"],
     };
 
     render(<SelectColumnFilter column={columnWithValue} />);
 
-    const select = screen.getByLabelText("Test Column");
-    // Open the select to see the selected values
-    fireEvent.mouseDown(select);
-
-    // Check that the options are selected by their style
-    const option1 = screen.getByText("Option 1");
-    const option2 = screen.getByText("Option 2");
-
-    // Material-UI uses fontWeight to indicate selection
-    expect(option1).toHaveStyle({ fontWeight: "500" }); // Medium weight for selected
-    expect(option2).toHaveStyle({ fontWeight: "500" }); // Medium weight for selected
+    // Checkboxes for pre-selected options should be checked
+    const checkboxes = screen.getAllByRole("checkbox");
+    expect(checkboxes).toHaveLength(3);
+    expect(checkboxes[0]).toBeChecked(); // Option 1
+    expect(checkboxes[1]).toBeChecked(); // Option 2
+    expect(checkboxes[2]).not.toBeChecked(); // Option 3
   });
 
   it("shows 'No Options Available' when there are no options", () => {
@@ -102,9 +84,6 @@ describe("SelectColumnFilter", () => {
     };
 
     render(<SelectColumnFilter column={columnWithNoOptions} />);
-
-    const select = screen.getByLabelText("Test Column");
-    fireEvent.mouseDown(select);
 
     expect(screen.getByText("No Options Available")).toBeInTheDocument();
   });
