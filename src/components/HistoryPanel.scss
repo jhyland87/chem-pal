@@ -1,0 +1,45 @@
+.history-panel {
+  padding: 4px; // p: 0.5
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px; // px: 0.5
+    margin-bottom: 2px; // mb: 0.25
+  }
+
+  &__clear-btn {
+    padding: 2px; // p: 0.25
+  }
+
+  &__clear-icon {
+    font-size: 1rem;
+  }
+
+  &__empty {
+    padding: 12px; // p: 1.5
+    text-align: center;
+    display: block;
+  }
+
+  &__list-item {
+    padding: 2px 4px; // py: 0.25, px: 0.5
+    min-height: unset;
+  }
+
+  &__list-item-text {
+    margin: 2px 0; // my: 0.25
+  }
+
+  &__link {
+    font-size: 0.8rem;
+    line-height: 1.3;
+    text-align: left;
+  }
+
+  &__secondary-text {
+    font-size: 0.7rem;
+    line-height: 1.2;
+  }
+}

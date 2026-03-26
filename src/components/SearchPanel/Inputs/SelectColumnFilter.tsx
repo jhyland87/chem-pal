@@ -1,6 +1,7 @@
 import { Checkbox, FormControl, List, ListItem, ListItemButton, ListItemText } from "@mui/material";
 import { useState } from "react";
 import { FilterListItemIcon } from "../../Styles";
+import "./SelectColumnFilter.scss";
 
 /**
  * SelectColumnFilter component that provides a scrollable list of checkboxes for columns with discrete values.
@@ -46,21 +47,12 @@ export default function SelectColumnFilter({ column }: FilterVariantInputProps) 
   const columnHeader = column.getHeaderText();
 
   return (
-    <FormControl component="fieldset" variant="standard" sx={{ width: "100%" }}>
+    <FormControl component="fieldset" variant="standard" className="select-column-filter">
       {/*<ListSubheader component="legend" sx={{ padding: 0 }}>
         {columnHeader}
       </ListSubheader>
       <FormLabel component="legend">{columnHeader}</FormLabel>*/}
-      <List
-        sx={{
-          width: "100%",
-          maxWidth: 360,
-          //bgcolor: "background.paper",
-          paddingLeft: "20px",
-          maxHeight: 200, // Limit height to make it scrollable
-          overflow: "auto", // Enable scrolling
-        }}
-      >
+      <List className="select-column-filter__list">
         {columnFilterOptions.length === 0 ? (
           <ListItem>
             <ListItemText primary="No Options Available" />
@@ -72,7 +64,7 @@ export default function SelectColumnFilter({ column }: FilterVariantInputProps) 
             return (
               <ListItem key={option} disablePadding>
                 <ListItemButton
-                  sx={{ padding: 0 }}
+                  className="select-column-filter__list-item-btn"
                   role={undefined}
                   onClick={() => handleOptionSelect(option)}
                   dense
@@ -81,7 +73,7 @@ export default function SelectColumnFilter({ column }: FilterVariantInputProps) 
                     <Checkbox
                       size="small"
                       edge="start"
-                      sx={{ padding: 0, minWidth: 10 }}
+                      className="select-column-filter__checkbox"
                       checked={columnFilterValue.includes(option)}
                       tabIndex={-1}
                       disableRipple

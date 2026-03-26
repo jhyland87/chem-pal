@@ -15,6 +15,7 @@ import "./DrawerSystem.scss";
 
 import {
   ExpandMore as ExpandMoreIcon,
+  History as HistoryIcon,
   Search as SearchIcon,
   Settings as SettingsIcon,
 } from "@mui/icons-material";
@@ -30,6 +31,7 @@ import {
 } from "./StyledComponents";
 
 import { useAppContext } from "../context";
+import HistoryPanel from "./HistoryPanel";
 import SettingsPanelFull from "./SettingsPanelFull";
 
 // TabPanelProps is declared globally in types/props.d.ts
@@ -162,7 +164,7 @@ const DrawerSystem: React.FC = () => {
     // Reset accordion when switching tabs
     if (newValue === 0) {
       setExpandedAccordion("search-availability");
-    } else if (newValue === 1) {
+    } else if (newValue === 2) {
       setExpandedAccordion("settings-general");
     } else {
       setExpandedAccordion(false);
@@ -183,8 +185,14 @@ const DrawerSystem: React.FC = () => {
     >
       <div className="drawer-container">
         {appContext.drawerTab !== -1 && (
-          <Tabs value={appContext.drawerTab} onChange={handleTabChange} variant="fullWidth">
+          <Tabs
+            value={appContext.drawerTab}
+            onChange={handleTabChange}
+            variant="fullWidth"
+            className="drawer-tabs"
+          >
             <Tab icon={<SearchIcon />} label="SEARCH" iconPosition="start" />
+            <Tab icon={<HistoryIcon />} label="HISTORY" iconPosition="start" />
             <Tab icon={<SettingsIcon />} label="SETTINGS" iconPosition="start" />
           </Tabs>
         )}
@@ -197,6 +205,10 @@ const DrawerSystem: React.FC = () => {
         </TabPanel>
 
         <TabPanel value={appContext.drawerTab} index={1}>
+          <HistoryPanel />
+        </TabPanel>
+
+        <TabPanel value={appContext.drawerTab} index={2}>
           <SettingsPanelFull />
         </TabPanel>
       </div>

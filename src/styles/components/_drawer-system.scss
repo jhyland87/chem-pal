@@ -15,18 +15,20 @@
   }
 
   &__tabs-container {
-    height: 48px; // Fixed MUI tabs height
+    height: 40px; // Compact MUI tabs height
   }
 
   &__tab {
-    min-width: 133px; // Split width for 3 tabs in 400px drawer
+    min-width: 120px; // Split width for 3 tabs in 400px drawer
+    min-height: 40px;
+    font-size: vars.$font-size-xs;
     transition: vars.$transition-standard;
     text-transform: none;
   }
 
   &__content {
-    padding: vars.$spacing-lg;
-    height: calc(100vh - 48px);
+    padding: vars.$spacing-sm;
+    height: calc(100vh - 40px);
     overflow: auto;
   }
 
@@ -37,12 +39,12 @@
 
   &__accordion {
     border-radius: vars.$border-radius-md;
-    margin-bottom: vars.$spacing-sm;
+    margin-bottom: vars.$spacing-xs;
     transition: vars.$transition-standard;
   }
 
   &__input {
-    margin-bottom: vars.$spacing-lg;
+    margin-bottom: vars.$spacing-sm;
   }
 
   &__slider-container {
