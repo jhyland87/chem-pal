@@ -63,12 +63,16 @@ declare global {
     setDrawerTab: (tab: number) => void;
     /** Function to toggle drawer */
     toggleDrawer: () => void;
-    /** Drawer state management - -1 = closed, 0 = search tab, 1 = settings tab */
+    /** Drawer state management - -1 = closed, 0 = search tab, 1 = history tab, 2 = settings tab */
     drawerTab: number;
     /** Selected Suppliers */
     selectedSuppliers: string[];
     /** Function to update selected suppliers */
     setSelectedSuppliers: (suppliers: string[]) => void;
+    /** Pending search query set from history panel (consumed by ResultsTable) */
+    pendingSearchQuery: string | null;
+    /** Function to set a pending search query */
+    setPendingSearchQuery: (query: string | null) => void;
   }
 
   /**

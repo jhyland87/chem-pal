@@ -38,6 +38,7 @@ import ColumnVisibilitySelect from "./Inputs/ColumnVisibilitySelect";
 import RangeColumnFilter from "./Inputs/RangeColumnFilter";
 import SelectColumnFilter from "./Inputs/SelectColumnFilter";
 import TextColumnFilter from "./Inputs/TextColumnFilter";
+import "./FilterMenu.scss";
 
 type FilterMenuRef = {
   toggleDrawer: (open: boolean) => void;
@@ -94,7 +95,7 @@ function TabPanel(props: TabPanelProps) {
       style={style}
       {...other}
     >
-      {value === index && <Box sx={{ p: 0 }}>{children}</Box>}
+      {value === index && <Box className="filter-menu__tab-panel-box">{children}</Box>}
     </div>
   );
 }
@@ -126,14 +127,14 @@ function SupplierSelection() {
   return (
     <FormControl component="fieldset" variant="standard">
       {/*<FormLabel component="legend">Supplier Selection</FormLabel>*/}
-      <List sx={{ width: "100%", maxWidth: 360, paddingLeft: "1px" }}>
+      <List className="filter-menu__supplier-list">
         {SupplierFactory.supplierList().map((supplierName) => {
           const labelId = `checkbox-list-label-${supplierName}`;
 
           return (
             <ListItem key={supplierName} disablePadding>
               <ListItemButton
-                sx={{ padding: "0px 0px 0px 15px" }}
+                className="filter-menu__supplier-list-item-btn"
                 role={undefined}
                 onClick={() => handleSupplierSelect(supplierName)}
                 dense
@@ -142,7 +143,7 @@ function SupplierSelection() {
                   <Checkbox
                     size="small"
                     edge="start"
-                    sx={{ padding: 0, maxWidth: 10 }}
+                    className="filter-menu__supplier-checkbox"
                     checked={selectedSuppliers.includes(supplierName)}
                     tabIndex={-1}
                     disableRipple
@@ -221,7 +222,7 @@ function SearchResultFilters({ table }: { table: Table<Product> }) {
 
   return (
     <div>
-      <FormControl variant="standard" sx={{ width: "100%", padding: "5px" }}>
+      <FormControl variant="standard" className="filter-menu__search-form-control">
         <FilterMenuInput
           id="input-with-icon-adornment"
           placeholder="Filter results table.."
@@ -243,7 +244,7 @@ function SearchResultFilters({ table }: { table: Table<Product> }) {
         <FilterMenuAccordionSummary
           aria-controls="panel1d-content"
           id="panel1d-header"
-          expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: "0.9rem" }} />}
+          expandIcon={<ArrowForwardIosSharpIcon className="filter-menu__accordion-icon" />}
         >
           <Typography component="span">Column Visibility</Typography>
         </FilterMenuAccordionSummary>
@@ -271,12 +272,12 @@ function SearchResultFilters({ table }: { table: Table<Product> }) {
             <FilterMenuAccordionSummary
               aria-controls="panel1d-content"
               id="panel1d-header"
-              expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: "0.9rem" }} />}
+              expandIcon={<ArrowForwardIosSharpIcon className="filter-menu__accordion-icon" />}
             >
               <Typography component="span">{columnNames[column.id]}</Typography>
             </FilterMenuAccordionSummary>
             <FilterMenuAccordionDetails>
-              <Box sx={{ padding: "5px" }}>
+              <Box className="filter-menu__accordion-content">
                 <FilterVariantComponent column={column} />
               </Box>
             </FilterMenuAccordionDetails>

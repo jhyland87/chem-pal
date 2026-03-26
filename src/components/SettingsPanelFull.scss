@@ -1,4 +1,28 @@
+.settings-panel__accordion-summary {
+  min-height: 36px;
+
+  &.Mui-expanded {
+    min-height: 36px;
+  }
+
+  .MuiAccordionSummary-content {
+    margin-top: 4px;
+    margin-bottom: 4px;
+  }
+}
+
+.settings-panel__accordion-details {
+  padding: 0 4px 4px; // p: 0.5, pt: 0
+}
+
+.settings-panel__accordion-details--actions {
+  padding: 8px;
+}
+
 .settings-panel__helper-on-hover {
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+
   & > .MuiFormHelperText-root {
     transition:
       visibility 0s,
@@ -12,8 +36,24 @@
     visibility: visible;
     opacity: 1;
   }
+
+  .MuiListItemText-primary {
+    font-size: 0.8rem;
+  }
 }
 
 .settings-panel__input {
-  width: 120px;
+  width: 110px;
+
+  .MuiInputBase-root {
+    font-size: 0.8rem;
+  }
+
+  .MuiSelect-select {
+    font-size: 0.8rem;
+  }
+
+  .MuiMenuItem-root {
+    font-size: 0.8rem;
+  }
 }

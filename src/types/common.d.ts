@@ -180,8 +180,13 @@ declare global {
    * ```
    */
   interface SearchHistoryEntry {
-    timestamp?: number;
+    /** Epoch ms timestamp of when the search was executed */
+    timestamp: number;
     type: "search";
+    /** The search query string */
+    query: string;
+    /** Number of results returned (updated live as results stream in) */
+    resultCount: number;
     data?: {
       suppliers: string[];
       query: string;

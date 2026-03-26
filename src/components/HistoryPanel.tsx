@@ -1,55 +1,110 @@
-import Paper from "@mui/material/Paper";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-
-const columns: GridColDef[] = [
-  { field: "id", headerName: "ID", width: 70 },
-  { field: "firstName", headerName: "First name", width: 130 },
-  { field: "lastName", headerName: "Last name", width: 130 },
-  {
-    field: "age",
-    headerName: "Age",
-    type: "number",
-    width: 90,
-  },
-  {
-    field: "fullName",
-    headerName: "Full name",
-    description: "This column has a value getter and is not sortable.",
-    sortable: false,
-    width: 160,
-    valueGetter: (value, row) => `${row.firstName || ""} ${row.lastName || ""}`,
-  },
-];
-
-const rows = [
-  { id: 1, lastName: "Snow", firstName: "Jon", age: 35 },
-  { id: 2, lastName: "Lannister", firstName: "Cersei", age: 42 },
-  { id: 3, lastName: "Lannister", firstName: "Jaime", age: 45 },
-  { id: 4, lastName: "Stark", firstName: "Arya", age: 16 },
-  { id: 5, lastName: "Targaryen", firstName: "Daenerys", age: null },
-  { id: 6, lastName: "Melisandre", firstName: null, age: 150 },
-  { id: 7, lastName: "Clifford", firstName: "Ferrara", age: 44 },
-  { id: 8, lastName: "Frances", firstName: "Rossini", age: 36 },
-  { id: 9, lastName: "Roxie", firstName: "Harvey", age: 65 },
-];
-
-const paginationModel = { page: 0, pageSize: 5 };
+import {
+  Box,
+  IconButton,
+  Link,
+  List,
+  ListItem,
+  ListItemText,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import { Delete as DeleteIcon } from "@mui/icons-material";
+import { useEffect, useState } from "react";
+import { useAppContext } from "@/context";
+import "./HistoryPanel.scss";
 
 /**
- * HistoryPanel component that displays a list of history.
+ * HistoryPanel component that displays past search queries,
+ * when they were executed, and how many results were returned.
+ *
+ * History is persisted in chrome.storage.local (same mechanism as user settings / cache).
+ * Clicking a query re-triggers the search via the app context's pendingSearchQuery.
  * @category Components
  */
-export default function HistoryPanel() {
+const HistoryPanel: React.FC = () => {
+  const [history, setHistory] = useState<SearchHistoryEntry[]>([]);
+  const { setPendingSearchQuery, setDrawerTab } = useAppContext();
+
+  useEffect(() => {
+    chrome.storage.local
+      .get(["searchHistory"])
+      .then((data) => {
+        if (Array.isArray(data.searchHistory)) {
+          setHistory(data.searchHistory);
+        }
+      })
+      .catch((error) => {
+        console.warn("Failed to load search history:", error);
+      });
+  }, []);
+
+  const handleClearHistory = () => {
+    chrome.storage.local
+      .set({ searchHistory: [] })
+      .then(() => setHistory([]))
+      .catch((error) => {
+        console.warn("Failed to clear search history:", error);
+      });
+  };
+
+  const handleReSearch = (query: string) => {
+    setPendingSearchQuery(query);
+    setDrawerTab(-1); // Close the drawer
+  };
+
+  const formatTimestamp = (epochMs: number) => {
+    const date = new Date(epochMs);
+    return date.toLocaleString(undefined, {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  };
+
   return (
-    <Paper sx={{ height: 400, width: "100%" }}>
-      <DataGrid
-        rows={rows}
-        columns={columns}
-        initialState={{ pagination: { paginationModel } }}
-        pageSizeOptions={[5, 10]}
-        checkboxSelection
-        sx={{ border: 0 }}
-      />
-    </Paper>
+    <Box className="history-panel">
+      <Box className="history-panel__header">
+        <Typography variant="caption" color="text.secondary">
+          {history.length} {history.length === 1 ? "search" : "searches"}
+        </Typography>
+        {history.length > 0 && (
+          <Tooltip title="Clear history">
+            <IconButton size="small" onClick={handleClearHistory} className="history-panel__clear-btn">
+              <DeleteIcon className="history-panel__clear-icon" />
+            </IconButton>
+          </Tooltip>
+        )}
+      </Box>
+      {history.length === 0 ? (
+        <Typography variant="caption" color="text.secondary" className="history-panel__empty">
+          No search history yet.
+        </Typography>
+      ) : (
+        <List dense disablePadding>
+          {history.map((entry, idx) => (
+            <ListItem key={`${entry.timestamp}-${idx}`} divider className="history-panel__list-item">
+              <ListItemText
+                primary={
+                  <Link
+                    component="button"
+                    variant="body2"
+                    onClick={() => handleReSearch(entry.query)}
+                    className="history-panel__link"
+                  >
+                    {entry.query}
+                  </Link>
+                }
+                secondary={`${formatTimestamp(entry.timestamp)} — ${entry.resultCount} result${entry.resultCount !== 1 ? "s" : ""}`}
+                secondaryTypographyProps={{ variant: "caption", className: "history-panel__secondary-text" }}
+                className="history-panel__list-item-text"
+              />
+            </ListItem>
+          ))}
+        </List>
+      )}
+    </Box>
   );
-}
+};
+
+export default HistoryPanel;

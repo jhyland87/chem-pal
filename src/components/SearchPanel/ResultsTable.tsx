@@ -92,6 +92,14 @@ export default function ResultsTable({
   const { searchResults, isLoading, error, executeSearch, handleStopSearch, tableText } =
     useSearch();
 
+  // Watch for pending search queries triggered from HistoryPanel
+  useEffect(() => {
+    if (appContext.pendingSearchQuery) {
+      executeSearch(appContext.pendingSearchQuery);
+      appContext.setPendingSearchQuery(null);
+    }
+  }, [appContext.pendingSearchQuery, executeSearch, appContext]);
+
   // Context menu functionality
   const { contextMenu, handleContextMenu, handleCloseContextMenu } = useContextMenu();
 
