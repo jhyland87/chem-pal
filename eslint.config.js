@@ -90,6 +90,13 @@ export default tseslint.config(
         // },
         {
           selector: "variable",
+          format: ["UPPER_CASE"],
+          leadingUnderscore: "allow",
+          trailingUnderscore: "allow",
+          allow: ["^__", "__$"],
+        },
+        {
+          selector: "variable",
           format: ["camelCase", "PascalCase", "UPPER_CASE"],
           leadingUnderscore: "allow",
           trailingUnderscore: "allow",

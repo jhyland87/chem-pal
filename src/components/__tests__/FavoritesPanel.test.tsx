@@ -1,32 +1,9 @@
-/**
- * Unit tests for the {@link FavoritesPanel} component.
- *
- * Verifies that the panel renders without crashing, passes the correct props
- * (row count, column count, page size, checkbox selection, page size options)
- * to the underlying MUI DataGrid, and applies the expected CSS class to its
- * Paper wrapper.
- *
- * @source
- */
 import { GridColDef } from "@mui/x-data-grid";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import FavoritesPanel from "../FavoritesPanel";
 
-/**
- * Mock replacement for the MUI {@link DataGrid} component. Renders a plain
- * `<div>` that exposes key props via `data-testid` attributes so assertions
- * can inspect them without mounting the full grid.
- *
- * @example
- * ```tsx
- * // After rendering <FavoritesPanel />:
- * screen.getByTestId("row-count");   // "9"
- * screen.getByTestId("column-count"); // "5"
- * ```
- *
- * @source
- */
+// Mock the DataGrid component since it's complex and we don't need to test its internals
 vi.mock("@mui/x-data-grid", () => ({
   DataGrid: vi.fn(
     ({

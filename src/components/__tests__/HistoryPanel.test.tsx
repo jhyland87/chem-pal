@@ -1,13 +1,3 @@
-/**
- * Unit tests for the {@link HistoryPanel} component.
- *
- * Covers empty-state rendering, populating entries from Chrome storage,
- * singular/plural label formatting (search/searches, result/results),
- * clearing history, re-triggering a search by clicking an entry,
- * timestamp formatting, and correct ordering of multiple entries.
- *
- * @source
- */
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeAll, beforeEach, afterAll, describe, expect, it, vi } from "vitest";
 import {
@@ -16,30 +6,13 @@ import {
   restoreChromeStorageMock,
 } from "../../__fixtures__/helpers/chrome/storageMock";
 
-/**
- * Lightweight mock for the MUI Delete icon to avoid file-descriptor
- * exhaustion caused by the `@mui/icons-material` barrel import.
- *
- * @source
- */
+// Mock @mui/icons-material to avoid ENFILE from barrel import
 vi.mock("@mui/icons-material", () => ({
   Delete: vi.fn((props: any) => <span data-testid="DeleteIcon" {...props} />),
 }));
 
-/**
- * Mock spy for {@link useAppContext().setPendingSearchQuery}, used to
- * verify that clicking a history entry triggers a new search.
- *
- * @source
- */
+// Mock the context — HistoryPanel uses useAppContext
 const mockSetPendingSearchQuery = vi.fn();
-
-/**
- * Mock spy for {@link useAppContext().setDrawerTab}, used to verify
- * the drawer is closed after re-triggering a search.
- *
- * @source
- */
 const mockSetDrawerTab = vi.fn();
 vi.mock("@/context", () => ({
   useAppContext: () => ({
