@@ -1,12 +1,3 @@
-/**
- * Unit tests for the {@link SelectColumnFilter} component.
- *
- * Covers rendering of filter options as checkboxes, single and multi-select
- * behavior, initialization from an existing filter value, and the empty-options
- * placeholder state.
- *
- * @source
- */
 import {
   resetChromeStorageMock,
   setupChromeStorageMock,
@@ -15,18 +6,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import SelectColumnFilter from "../SelectColumnFilter";
 
-/**
- * Mock column object simulating the TanStack column API surface used by
- * {@link SelectColumnFilter}. Provides stub implementations for header text,
- * filter value, unique values, and a spy for debounced filter updates.
- *
- * @example
- * ```tsx
- * render(<SelectColumnFilter column={mockColumn} />);
- * ```
- *
- * @source
- */
+// Mock the column object that would be passed as props
 const mockColumn = {
   id: "testColumn",
   getHeaderText: () => "Test Column",
