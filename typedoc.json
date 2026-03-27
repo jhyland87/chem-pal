@@ -32,7 +32,7 @@
     "mermaid"
   ],
   "logLevel": "Error",
-  //"theme": "hierarchy",
+  "theme": "hierarchy",
   "entryPointStrategy": "expand",
   "reactReturnType": [
     "ReactElement",
