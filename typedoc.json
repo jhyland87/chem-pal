@@ -3,14 +3,10 @@
   "entryPoints": [
     "./src/**/index.ts",
     "./src/suppliers/*.ts",
-    //"./src/components/SearchPanel/index.ts",
-    //"./src/**/index.ts",
     "./src/helpers/*.ts",
     "./src/constants/*.ts",
     "./src/types/*.ts",
     "./src/mixins/*.ts",
-    //"./src/components/SearchPanel/Inputs/index.ts",
-    //"./src/components/SearchPanel/Inputs/*.tsx",
     "./src/components/**/*.tsx"
   ],
   "plugin": [
@@ -29,13 +25,14 @@
     //"typedoc-theme-oxide",
     //"typedoc-unhoax-theme",,
     //"typedoc-plugin-mermaid",
-    "./plugins/typedoc-mermaid-plugin.mjs"
+    "./plugins/typedoc-mermaid-plugin.mjs",
+    "typedoc-theme-hierarchy"
   ],
   "ignoredHighlightLanguages": [
     "mermaid"
   ],
   "logLevel": "Error",
-  "theme": "default",
+  //"theme": "hierarchy",
   "entryPointStrategy": "expand",
   "reactReturnType": [
     "ReactElement",
@@ -84,7 +81,10 @@
   "useFirstParagraphOfCommentAsSummary": true,
   "includeHierarchySummary": true,
   "navigation": {
-    "includeGroups": true
+    "includeFolders": true,
+    "compactFolders": false,
+    "includeGroups": true,
+    "includeCategories": true
   },
   "searchInDocuments": true,
   "searchInComments": true,

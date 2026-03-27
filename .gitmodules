@@ -1,0 +1,3 @@
+[submodule "themes/typedoc-theme-hierarchy"]
+	path = themes/typedoc-theme-hierarchy
+	url = https://github.com/jhyland87/typedoc-theme-hierarchy
