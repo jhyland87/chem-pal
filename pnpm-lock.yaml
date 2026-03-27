@@ -68,6 +68,9 @@ importers:
       currency.js:
         specifier: ^2.0.4
         version: 2.0.4
+      fs-extra:
+        specifier: ^11.3.4
+        version: 11.3.4
       fuzzball:
         specifier: ^2.2.2
         version: 2.2.2
@@ -358,8 +361,8 @@ importers:
         specifier: ^0.0.3
         version: 0.0.3(typedoc@0.28.5(typescript@5.8.3))
       typedoc-theme-hierarchy:
-        specifier: ^6.0.0
-        version: 6.0.0(typedoc@0.28.5(typescript@5.8.3))
+        specifier: link:themes/typedoc-theme-hierarchy/packages/plugin
+        version: link:themes/typedoc-theme-hierarchy/packages/plugin
       typedoc-theme-oxide:
         specifier: ^0.2.0
         version: 0.2.0(typedoc@0.28.5(typescript@5.8.3))
@@ -3053,12 +3056,8 @@ packages:
     resolution: {integrity: sha512-oRXApq54ETRj4eMiFzGnHWGy+zo5raudjuxN0b8H7s/RU2oW0Wvsx9O0ACRN/kRq9E8Vu/ReskGB5o3ji+FzHQ==}
     engines: {node: '>=12'}
 
-  fs-extra@11.1.1:
-    resolution: {integrity: sha512-MGIE4HOvQCeUCzmlHs0vXpih4ysz4wg9qiSAu6cd42lVwPbTM1TjV7RusoyQqMmk/95gdQZX72u+YW+c3eEpFQ==}
-    engines: {node: '>=14.14'}
-
-  fs-extra@11.3.0:
-    resolution: {integrity: sha512-Z4XaCL6dUDHfP/jT25jJKMmtxvuwbkrD1vNSMFlo9lNLY2c5FHYSQgHPRZUjAB26TpDEoW9HCOgplrdbaPV/ew==}
+  fs-extra@11.3.4:
+    resolution: {integrity: sha512-CTXd6rk/M3/ULNQj8FBqBWHYBVYybQ3VPBw0xGKFe3tuH7ytT6ACnvzpIQ3UZtB8yvUKC2cXn1a+x+5EVQLovA==}
     engines: {node: '>=14.14'}
 
   fsevents@2.3.2:
@@ -4455,11 +4454,6 @@ packages:
     engines: {node: '>= 18'}
     peerDependencies:
       typedoc: ^0.25.6
-
-  typedoc-theme-hierarchy@6.0.0:
-    resolution: {integrity: sha512-SSPqM0HnFyyYoNexmH8FHIkoKvd3Xg6KZsutrDCcYgm2mtVGGHLFKuqAaVKtKWbPq7xW61OIxvVrTQQi6dtXTw==}
-    peerDependencies:
-      typedoc: ^0.28.0
 
   typedoc-theme-oxide@0.2.0:
     resolution: {integrity: sha512-pFas2nzt0hIW5cywU4X7dKCd/9g6sCyM8nyZkzuWusfdJBWMfG8arwaziUYCqUugFcTMKwrZvirp8UqBlR1VXA==}
@@ -7705,13 +7699,7 @@ snapshots:
       jsonfile: 6.1.0
       universalify: 2.0.1
 
-  fs-extra@11.1.1:
-    dependencies:
-      graceful-fs: 4.2.11
-      jsonfile: 6.1.0
-      universalify: 2.0.1
-
-  fs-extra@11.3.0:
+  fs-extra@11.3.4:
     dependencies:
       graceful-fs: 4.2.11
       jsonfile: 6.1.0
@@ -9051,11 +9039,6 @@ snapshots:
     dependencies:
       typedoc: 0.28.5(typescript@5.8.3)
 
-  typedoc-theme-hierarchy@6.0.0(typedoc@0.28.5(typescript@5.8.3)):
-    dependencies:
-      fs-extra: 11.1.1
-      typedoc: 0.28.5(typescript@5.8.3)
-
   typedoc-theme-oxide@0.2.0(typedoc@0.28.5(typescript@5.8.3)):
     dependencies:
       cheerio: 1.0.0
@@ -9180,7 +9163,7 @@ snapshots:
     dependencies:
       chokidar: 3.6.0
       fast-glob: 3.3.3
-      fs-extra: 11.3.0
+      fs-extra: 11.3.4
       p-map: 7.0.3
       picocolors: 1.1.1
       vite: 6.3.5(@types/node@22.15.29)(sass-embedded@1.89.1)(yaml@2.8.0)

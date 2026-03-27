@@ -168,13 +168,23 @@ const offscreen = document.createElement("div");
 offscreen.style.cssText = "position:fixed;left:-9999px;top:-9999px;width:4000px;height:4000px;visibility:hidden;";
 document.body.appendChild(offscreen);
 
-async function renderDiagrams() {
-  const elements = document.querySelectorAll(".mermaid-block .mermaid");
-  for (const el of elements) {
-    const code = el.textContent;
+async function renderOneDiagram(el, code, maxRetries = 3) {
+  const diagramLabel = code.substring(0, 60).replace(/\\n/g, " ").trim() + "...";
+  console.log("%c[Mermaid] Starting render for: " + diagramLabel, "color: #2196F3; font-weight: bold");
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
     const id = "mermaid-" + Math.random().toString(36).slice(2, 10);
+    const t0 = performance.now();
     try {
+      // Re-initialize mermaid before each retry to reset internal state
+      if (attempt > 1) {
+        console.log("%c[Mermaid] Attempt " + attempt + "/" + maxRetries + " (re-initializing mermaid...)", "color: #FF9800");
+        mermaid.initialize({ startOnLoad: false, securityLevel: "loose" });
+      } else {
+        console.log("%c[Mermaid] Attempt " + attempt + "/" + maxRetries, "color: #607D8B");
+      }
       const { svg } = await mermaid.render(id, code, offscreen);
+      const elapsed = (performance.now() - t0).toFixed(1);
+      console.log("%c[Mermaid] ✓ Rendered successfully on attempt " + attempt + " (" + elapsed + "ms)", "color: #4CAF50; font-weight: bold");
       el.innerHTML = svg;
       const svgEl = el.querySelector("svg");
       if (svgEl) {
@@ -183,11 +193,31 @@ async function renderDiagrams() {
         svgEl.removeAttribute("height");
         ${panZoomInit}
       }
+      return; // success
     } catch (e) {
-      console.error("Mermaid render error:", e);
-      el.innerHTML = "<pre style='color:red'>Mermaid syntax error: " + e.message + "<\\/pre>";
+      const elapsed = (performance.now() - t0).toFixed(1);
+      console.warn("%c[Mermaid] ✗ Attempt " + attempt + "/" + maxRetries + " failed (" + elapsed + "ms): " + e.message, "color: #F44336; font-weight: bold");
+      // Clean up any leftover SVG from failed render
+      const stale = offscreen.querySelector("#d" + id);
+      if (stale) stale.remove();
+      if (attempt === maxRetries) {
+        console.error("%c[Mermaid] ✗ All " + maxRetries + " attempts failed", "color: #F44336; font-weight: bold");
+        el.innerHTML = "<pre style='color:red'>Mermaid syntax error: " + e.message + "<\\/pre>";
+      }
     }
   }
+}
+
+async function renderDiagrams() {
+  const elements = document.querySelectorAll(".mermaid-block .mermaid");
+  console.log("%c[Mermaid] Found " + elements.length + " diagram(s) to render", "color: #2196F3; font-weight: bold");
+  const t0 = performance.now();
+  for (const el of elements) {
+    const code = el.textContent;
+    await renderOneDiagram(el, code);
+  }
+  const elapsed = (performance.now() - t0).toFixed(1);
+  console.log("%c[Mermaid] All diagrams processed in " + elapsed + "ms", "color: #2196F3; font-weight: bold");
 }
 
 if (document.readyState === "loading") {
