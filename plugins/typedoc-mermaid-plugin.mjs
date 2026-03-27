@@ -220,11 +220,20 @@ async function renderDiagrams() {
   console.log("%c[Mermaid] All diagrams processed in " + elapsed + "ms", "color: #2196F3; font-weight: bold");
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", renderDiagrams);
-} else {
-  renderDiagrams();
+// Wait for fonts to load before rendering — dagre measures text via getBBox()
+// and wrong font metrics cause "Could not find a suitable point" layout errors.
+async function waitAndRender() {
+  if (document.readyState === "loading") {
+    await new Promise(resolve => document.addEventListener("DOMContentLoaded", resolve));
+  }
+  if (document.fonts && document.fonts.ready) {
+    await document.fonts.ready;
+    console.log("%c[Mermaid] Fonts loaded, starting render", "color: #2196F3");
+  }
+  await renderDiagrams();
 }
+waitAndRender();
+
 <\/script>`;
   }
 
