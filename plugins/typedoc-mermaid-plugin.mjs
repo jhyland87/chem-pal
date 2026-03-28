@@ -159,8 +159,10 @@ body.dark .mermaid-controls button:hover {
     return `${panZoomScript}
 <script type="module">
 import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@${opts.mermaidVersion}/dist/mermaid.esm.min.mjs";
+import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk/dist/mermaid-layout-elk.esm.min.mjs";
 
-mermaid.initialize({ startOnLoad: false, securityLevel: "loose" });
+mermaid.registerLayoutLoaders(elkLayouts);
+mermaid.initialize({ startOnLoad: false, securityLevel: "loose", flowchart: { defaultRenderer: "elk" } });
 
 // Create an off-screen container for mermaid to render in.
 // This avoids layout issues caused by theme CSS constraining the content area.
