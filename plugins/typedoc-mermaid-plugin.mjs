@@ -159,10 +159,8 @@ body.dark .mermaid-controls button:hover {
     return `${panZoomScript}
 <script type="module">
 import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@${opts.mermaidVersion}/dist/mermaid.esm.min.mjs";
-import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk/dist/mermaid-layout-elk.esm.min.mjs";
 
-mermaid.registerLayoutLoaders(elkLayouts);
-mermaid.initialize({ startOnLoad: false, securityLevel: "loose", flowchart: { defaultRenderer: "elk" } });
+mermaid.initialize({ startOnLoad: false, securityLevel: "loose" });
 
 // Create an off-screen container for mermaid to render in.
 // This avoids layout issues caused by theme CSS constraining the content area.
@@ -170,16 +168,15 @@ const offscreen = document.createElement("div");
 offscreen.style.cssText = "position:fixed;left:-9999px;top:-9999px;width:4000px;height:4000px;visibility:hidden;";
 document.body.appendChild(offscreen);
 
-async function renderOneDiagram(el, code, maxRetries = 3) {
+async function renderOneDiagram(el, code, maxRetries = 5) {
   const diagramLabel = code.substring(0, 60).replace(/\\n/g, " ").trim() + "...";
   console.log("%c[Mermaid] Starting render for: " + diagramLabel, "color: #2196F3; font-weight: bold");
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     const id = "mermaid-" + Math.random().toString(36).slice(2, 10);
     const t0 = performance.now();
     try {
-      // Re-initialize mermaid before each retry to reset internal state
       if (attempt > 1) {
-        console.log("%c[Mermaid] Attempt " + attempt + "/" + maxRetries + " (re-initializing mermaid...)", "color: #FF9800");
+        console.log("%c[Mermaid] Attempt " + attempt + "/" + maxRetries + " (re-initializing...)", "color: #FF9800");
         mermaid.initialize({ startOnLoad: false, securityLevel: "loose" });
       } else {
         console.log("%c[Mermaid] Attempt " + attempt + "/" + maxRetries, "color: #607D8B");
@@ -195,16 +192,15 @@ async function renderOneDiagram(el, code, maxRetries = 3) {
         svgEl.removeAttribute("height");
         ${panZoomInit}
       }
-      return; // success
+      return;
     } catch (e) {
       const elapsed = (performance.now() - t0).toFixed(1);
       console.warn("%c[Mermaid] ✗ Attempt " + attempt + "/" + maxRetries + " failed (" + elapsed + "ms): " + e.message, "color: #F44336; font-weight: bold");
-      // Clean up any leftover SVG from failed render
       const stale = offscreen.querySelector("#d" + id);
       if (stale) stale.remove();
       if (attempt === maxRetries) {
-        console.error("%c[Mermaid] ✗ All " + maxRetries + " attempts failed", "color: #F44336; font-weight: bold");
-        el.innerHTML = "<pre style='color:red'>Mermaid syntax error: " + e.message + "<\\/pre>";
+        console.error("%c[Mermaid] ✗ All " + maxRetries + " attempts failed — refresh the page to retry", "color: #F44336; font-weight: bold");
+        el.innerHTML = "<pre style='color:red'>Diagram failed to render. Please refresh the page.<\\/pre>";
       }
     }
   }
