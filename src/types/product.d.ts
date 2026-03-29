@@ -242,6 +242,8 @@ declare global {
      * @example 20
      */
     supplierResultLimit?: number;
+    priceMin?: number;
+    priceMax?: number;
   }
 
   /**

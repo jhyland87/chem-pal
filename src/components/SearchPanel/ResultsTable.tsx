@@ -21,10 +21,11 @@ import {
   Typography,
 } from "@mui/material";
 
-import { Column, ColumnFiltersState, flexRender, Row } from "@tanstack/react-table";
+import { Column, ColumnFiltersState, flexRender, Header, Row } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
 import React, { Dispatch, ReactElement, SetStateAction, useEffect, useState } from "react";
 
+import { useDebouncedCallback } from "../../shared/hooks";
 import DrawerSystem from "../DrawerSystem";
 import LoadingBackdrop from "../LoadingBackdrop";
 import "../ResultsPanel.scss";
@@ -61,6 +62,51 @@ import { useSearch } from "./hooks/useSearch";
 import { useAutoColumnSizing } from "./useAutoColumnSizing.hook";
 import { useContextMenu } from "./useContextMenu.hook";
 import { useResultsTable } from "./useResultsTable.hook";
+
+const FILTER_DEBOUNCE_MS = 250;
+
+/**
+ * Filter input that debounces column filter updates.
+ * Maintains local state for responsive typing while delaying
+ * the actual table filter application by {@link FILTER_DEBOUNCE_MS}.
+ * @param header - The TanStack table header containing the column to filter
+ * @source
+ */
+function DebouncedFilterInput({ header }: { header: Header<Product, unknown> }) {
+  const [localValue, setLocalValue] = useState((header.column.getFilterValue() as string) ?? "");
+
+  const applyFilter = useDebouncedCallback((value: string) => {
+    let filterValue: unknown = value;
+    if (
+      (typeof header.column.columnDef?.filterFn === "string" &&
+        header.column.columnDef.filterFn === "inNumberRange") ||
+      header.column.columnDef.meta?.filterVariant === "range"
+    ) {
+      filterValue = value.split(/[-\s]+/).map(Number) as unknown as [number, number];
+    } else if (header.column.columnDef.meta?.filterVariant === "select") {
+      filterValue = value
+        .split(/[\s,;]+/)
+        .filter(Boolean)
+        .map(String);
+    }
+    console.info("Filter applied (debounced):", filterValue);
+    header.column.setFilterValue(filterValue);
+  }, FILTER_DEBOUNCE_MS);
+
+  return (
+    <FilterTextField
+      size="small"
+      variant="outlined"
+      placeholder="Search..."
+      value={localValue}
+      onChange={(e) => {
+        console.debug("Filter keystroke:", e.target.value);
+        setLocalValue(e.target.value);
+        applyFilter(e.target.value);
+      }}
+    />
+  );
+}
 
 interface ResultsTableProps {
   getRowCanExpand: (row: Row<Product>) => boolean;
@@ -112,11 +158,6 @@ export default function ResultsTable({
 
   // Use filteredResults instead of searchResults for optimisticResults
   const optimisticResults = filteredResults;
-
-  // // Optional: Log current result count for debugging
-  // if (resultCount > 0) {
-  //   console.debug(`Currently showing ${resultCount} results`);
-  // }
 
   const table = useResultsTable({
     showSearchResults: optimisticResults,
@@ -291,9 +332,7 @@ export default function ResultsTable({
                       canSort={header.column.getCanSort()}
                       cellWidth={header.getSize()}
                       onClick={header.column.getToggleSortingHandler()}
-                      style={{
-                        textAlign: header.column.columnDef.meta?.style?.textAlign,
-                      }}
+                      style={header.column.columnDef.meta?.style}
                     >
                       {header.isPlaceholder
                         ? null
@@ -305,19 +344,12 @@ export default function ResultsTable({
 
               {/* Filter Row */}
               {showFilters &&
-                table.getRowModel().rows.length > 0 &&
                 table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={`${headerGroup.id}-filters`}>
                     {headerGroup.headers.map((header) => (
                       <FilterTableCell key={`${header.id}-filter`} cellWidth={header.getSize()}>
                         {header.column.getCanFilter() ? (
-                          <FilterTextField
-                            size="small"
-                            variant="outlined"
-                            placeholder={`Search...`}
-                            value={(header.column.getFilterValue() as string) ?? ""}
-                            onChange={(e) => header.column.setFilterValue(e.target.value)}
-                          />
+                          <DebouncedFilterInput header={header} />
                         ) : null}
                       </FilterTableCell>
                     ))}
@@ -386,7 +418,7 @@ export default function ResultsTable({
                     onChange={(e) => table.setPageSize(Number(e.target.value))}
                     aria-label="rows per page"
                   >
-                    {[5, 10, 20, 50].map((pageSize) => (
+                    {[5, 10, 20, 50, 100, 150, 200].map((pageSize) => (
                       <MenuItem key={pageSize} value={pageSize}>
                         {pageSize}
                       </MenuItem>
