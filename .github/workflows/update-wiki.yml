@@ -18,9 +18,6 @@ jobs:
     - name: Push to wiki
       uses: andrew-chen-wang/github-wiki-action@v5
       with:
-        # Use the PAT secret you created
-        ACCESS_TOKEN: ${{ secrets.WIKI_ACCESS_TOKEN }}
-        # The directory in your repo containing the wiki files (default is 'wiki/')
-        PATH: 'wiki_files'
-        # Customize commit message if needed
-        COMMIT_MESSAGE: 'Docs: Auto-sync wiki from repo content'
+        token: ${{ secrets.WIKI_ACCESS_TOKEN }}
+        path: 'wiki_files'
+        commit-message: 'Docs: Auto-sync wiki from repo content'
