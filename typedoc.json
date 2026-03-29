@@ -98,7 +98,8 @@
   "readme": "README.md",
   "navigationLinks": {
     "Reference": "https://jhyland87.github.io/chem-pal",
-    "GitHub": "https://github.com/jhyland87/chem-pal"
+    "GitHub": "https://github.com/jhyland87/chem-pal",
+    "Wiki": "https://github.com/jhyland87/chem-pal/wiki"
   },
   "sort": [
     "source-order"
