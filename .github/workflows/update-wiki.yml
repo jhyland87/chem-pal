@@ -16,7 +16,6 @@ jobs:
     # (Optional) Add steps here to generate your wiki content/filegits in a specific directory
 
     - name: Push to wiki
-      uses: actions/checkout@v4 # It's good practice to use a recent version for checkout too
       uses: andrew-chen-wang/github-wiki-action@v5
       with:
         # Use the PAT secret you created
