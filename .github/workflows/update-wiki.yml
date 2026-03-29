@@ -1,0 +1,26 @@
+name: Update Wiki
+
+on:
+  push:
+    branches:
+      - main # Trigger on pushes to your main branch
+
+jobs:
+  update-wiki-job:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # (Optional) Add steps here to generate your wiki content/files in a specific directory
+
+    - name: Push to wiki
+      uses: Andrew-Chen-Wang/github-wiki-action@v3.5
+      with:
+        # Use the PAT secret you created
+        ACCESS_TOKEN: ${{ secrets.WIKI_ACCESS_TOKEN }}
+        # The directory in your repo containing the wiki files (default is 'wiki/')
+        PATH: 'wiki_files'
+        # Customize commit message if needed
+        COMMIT_MESSAGE: 'Docs: Auto-sync wiki from repo content'
