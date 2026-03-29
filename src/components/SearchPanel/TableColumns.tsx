@@ -173,6 +173,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         }).format(price * currencyRate);
       },
       sortingFn: "priceSortingFn" as SortingFnOption<Product>,
+      filterFn: "inNumberRange" as FilterFnOption<Product>,
       meta: {
         filterVariant: "range",
         style: {
@@ -194,6 +195,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         return `${row.original.quantity} ${row.original.uom}`;
       },
       sortingFn: "quantitySortingFn" as SortingFnOption<Product>,
+      filterFn: "inNumberRange" as FilterFnOption<Product>,
       minSize: 50,
     },
     {
@@ -228,6 +230,11 @@ export function getColumnFilterConfig() {
     Record<string, { filterVariant: string; filterData: unknown[] }>
   >((accu, column: ColumnDef<Product, unknown>) => {
     const meta = column.meta as { filterVariant?: string };
+    console.log("meta:", meta);
+    console.log("accu", accu);
+    console.log("column", column);
+    console.log("column.id:", column.id);
+    console.log("filterVariant", meta?.filterVariant);
     if (meta?.filterVariant === undefined || !column.id) return accu;
 
     accu[column.id] = {

@@ -1,5 +1,4 @@
 export * from "./DetailsContainer";
-export * from "./FilterModal";
 export * from "./Inputs";
 export * from "./Pagination";
 export * from "./ResultsTable";

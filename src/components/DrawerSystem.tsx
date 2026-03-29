@@ -2,9 +2,11 @@ import SupplierFactory from "@/suppliers/SupplierFactory";
 import {
   Accordion,
   Box,
+  Button,
   Checkbox,
   Chip,
   Drawer,
+  InputAdornment,
   Tab,
   Tabs,
   TextField,
@@ -58,7 +60,7 @@ const SearchPanel: React.FC<{
   onAccordionChange: (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => void;
 }> = ({ expandedAccordion, onAccordionChange }) => {
   const [selectedAvailability, setSelectedAvailability] = useState<string[]>(["In Stock"]);
-  const { selectedSuppliers, setSelectedSuppliers, userSettings, setUserSettings } =
+  const { selectedSuppliers, setSelectedSuppliers, userSettings, setUserSettings, setDrawerTab } =
     useAppContext();
 
   const availability = ["In Stock", "Limited Stock", "Out of Stock", "Pre-order"];
@@ -151,6 +153,62 @@ const SearchPanel: React.FC<{
           />
         </StyledAccordionDetails>
       </Accordion>
+
+      <Accordion
+        expanded={expandedAccordion === "search-price"}
+        onChange={onAccordionChange("search-price")}
+      >
+        <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography>Price Range</Typography>
+        </StyledAccordionSummary>
+        <StyledAccordionDetails>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <TextField
+              label="Min"
+              type="number"
+              size="small"
+              value={userSettings.priceMin ?? ""}
+              onChange={(e) =>
+                setUserSettings({
+                  ...userSettings,
+                  priceMin: e.target.value ? parseFloat(e.target.value) : undefined,
+                })
+              }
+              InputProps={{
+                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+              }}
+              inputProps={{ min: 0 }}
+            />
+            <TextField
+              label="Max"
+              type="number"
+              size="small"
+              value={userSettings.priceMax ?? ""}
+              onChange={(e) =>
+                setUserSettings({
+                  ...userSettings,
+                  priceMax: e.target.value ? parseFloat(e.target.value) : undefined,
+                })
+              }
+              InputProps={{
+                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+              }}
+              inputProps={{ min: 0 }}
+            />
+          </Box>
+        </StyledAccordionDetails>
+      </Accordion>
+
+      <Box sx={{ p: 2 }}>
+        <Button
+          variant="contained"
+          fullWidth
+          startIcon={<SearchIcon />}
+          onClick={() => setDrawerTab(-1)}
+        >
+          Search
+        </Button>
+      </Box>
     </Box>
   );
 };

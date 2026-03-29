@@ -55,7 +55,7 @@ function multiSelectFilter(row: Row<Product>, columnId: string, filterValue: str
   const cellValueStr = String(cellValue);
 
   // Show row if cell value matches ANY of the selected filter values (OR logic)
-  return filterValue.includes(cellValueStr);
+  return filterValue.some((value) => value.toLowerCase() === cellValueStr.toLowerCase());
 }
 
 /**
