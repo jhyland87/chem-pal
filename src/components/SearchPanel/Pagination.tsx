@@ -4,7 +4,7 @@ import KeyboardDoubleArrowLeftIcon from "@/icons/KeyboardDoubleArrowLeftIcon";
 import KeyboardDoubleArrowRightIcon from "@/icons/KeyboardDoubleArrowRightIcon";
 import IconButton from "@mui/material/IconButton";
 import { Table } from "@tanstack/react-table";
-import "./Pagination.scss";
+import styles from "./Pagination.module.scss";
 
 /**
  * Pagination component that provides navigation controls for the product results table.
@@ -27,7 +27,7 @@ export default function Pagination({ table }: { table: Table<Product> }) {
       <span className="flex items-center gap-1">
         <IconButton
           size="small"
-          className="border rounded p-1 pagination-button"
+          className={`border rounded p-1 ${styles['pagination-button']}`}
           onClick={() => table.setPageIndex(0)}
           disabled={!table.getCanPreviousPage()}
         >
@@ -35,7 +35,7 @@ export default function Pagination({ table }: { table: Table<Product> }) {
         </IconButton>
         <IconButton
           size="small"
-          className="pagination-button"
+          className={styles['pagination-button']}
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
@@ -50,7 +50,7 @@ export default function Pagination({ table }: { table: Table<Product> }) {
             const page = e.target.value ? Number(e.target.value) - 1 : 0;
             table.setPageIndex(page);
           }}
-          className="border p-1 rounded w-16 pagination-button"
+          className={`border p-1 rounded w-16 ${styles['pagination-button']}`}
         />
       </span>
       <select
@@ -67,7 +67,7 @@ export default function Pagination({ table }: { table: Table<Product> }) {
       </select>
       <IconButton
         size="small"
-        className="pagination-button"
+        className={styles['pagination-button']}
         onClick={() => table.nextPage()}
         disabled={!table.getCanNextPage()}
       >
@@ -75,7 +75,7 @@ export default function Pagination({ table }: { table: Table<Product> }) {
       </IconButton>
       <IconButton
         size="small"
-        className="border rounded p-1 pagination-button"
+        className={`border rounded p-1 ${styles['pagination-button']}`}
         onClick={() => table.setPageIndex(table.getPageCount() - 1)}
         disabled={!table.getCanNextPage()}
       >

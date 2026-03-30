@@ -1,7 +1,7 @@
 import { SPIN_SPEED } from "@/constants/common";
 import { keyframes, styled } from "@mui/material/styles";
 import { cloneElement } from "react";
-import "./IconSpinner.scss";
+import styles from "./IconSpinner.module.scss";
 
 /**
  * A component that adds a spinning animation to any icon component passed as a child.

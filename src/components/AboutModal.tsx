@@ -8,7 +8,7 @@ import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { styled, type Theme } from "@mui/material/styles";
-import "./AboutModal.scss";
+import styles from "./AboutModal.module.scss";
 
 /**
  * Styled Paper component for contributor items.
@@ -64,7 +64,7 @@ export default function AboutModal({
         aria-labelledby="application-title"
         aria-describedby="application-description"
       >
-        <Box className="about-box">
+        <Box className={styles['about-box']}>
           <Typography id="application-title" variant="h6" component="h2">
             About ChemPal
             <IconButton
@@ -72,9 +72,9 @@ export default function AboutModal({
               href="https://github.com/justinhyland/chem-pal"
               target="_blank"
               rel="noopener noreferrer"
-              className="github-button"
+              className={styles['github-button']}
             >
-              <GitHubIcon className="github-icon" />
+              <GitHubIcon className={styles['github-icon']} />
             </IconButton>
           </Typography>
           <Typography id="application-description" variant="subtitle2" gutterBottom>
@@ -93,21 +93,21 @@ export default function AboutModal({
           <Stack direction="row" useFlexGap>
             <Item>
               <Link data-testid="contributor-justin" href="https://github.com/jhyland87">
-                <Typography className="application-contributors" sx={{ color: "text.secondary" }}>
+                <Typography className={styles['application-contributors']} sx={{ color: "text.secondary" }}>
                   Justin Hyland
                 </Typography>
               </Link>
             </Item>
             <Item>
               <Link data-testid="contributor-maui" href="https://github.com/YourHeatingMantle">
-                <Typography className="application-contributors" sx={{ color: "text.secondary" }}>
+                <Typography className={styles['application-contributors']} sx={{ color: "text.secondary" }}>
                   Maui3
                 </Typography>
               </Link>
             </Item>
             <Item>
               <Link data-testid="contributor-spous" href="https://github.com/spous">
-                <Typography className="application-contributors" sx={{ color: "text.secondary" }}>
+                <Typography className={styles['application-contributors']} sx={{ color: "text.secondary" }}>
                   Spous
                 </Typography>
               </Link>

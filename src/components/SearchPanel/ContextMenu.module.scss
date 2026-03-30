@@ -85,3 +85,19 @@
     background-color: rgba(255, 255, 255, 0.02);
   }
 }
+
+.context-menu-paper {
+  position: fixed;
+  z-index: 9999;
+  min-width: 200px;
+  max-width: 300px;
+}
+
+.context-menu-option-text {
+  text-align: left;
+}
+
+.context-menu-item {
+  justify-content: flex-start;
+  text-align: left;
+}

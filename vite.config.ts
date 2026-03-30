@@ -58,6 +58,11 @@ export default ({ mode }: { mode: string }) => {
         // "**/*.spec.tsx",
       ],
     },
+    css: {
+      modules: {
+        localsConvention: "camelCase",
+      },
+    },
     plugins: [
       react(),
       viteStaticCopy({

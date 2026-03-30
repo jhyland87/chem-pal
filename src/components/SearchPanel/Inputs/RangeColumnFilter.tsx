@@ -5,7 +5,7 @@ import Slider from "@mui/material/Slider";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
-import "./RangeColumnFilter.scss";
+import styles from "./RangeColumnFilter.module.scss";
 
 /**
  * RangeColumnFilter component that provides a slider-based range filter for numeric columns.
@@ -39,7 +39,7 @@ export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
         enterTouchDelay={0}
         placement="top"
         title={value}
-        className="range-column-filter-tooltip no-padding"
+        className={`${styles['range-column-filter-tooltip']} no-padding`}
       >
         {children}
       </Tooltip>
@@ -88,13 +88,13 @@ export default function RangeColumnFilter({ column }: FilterVariantInputProps) {
   ];
 
   return (
-    <FormControl className="range-column-filter fullwidth">
+    <FormControl className={`${styles['range-column-filter']} fullwidth`}>
       <Box className="flex-row">
-        <Typography variant="body2" onClick={handleResetRange} className="filter-minmax">
+        <Typography variant="body2" onClick={handleResetRange} className={styles['filter-minmax']}>
           {MIN}
         </Typography>
         <Typography gutterBottom>{column.getHeaderText()}</Typography>
-        <Typography variant="body2" onClick={handleResetRange} className="filter-minmax">
+        <Typography variant="body2" onClick={handleResetRange} className={styles['filter-minmax']}>
           {MAX}
         </Typography>
       </Box>

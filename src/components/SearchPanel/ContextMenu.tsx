@@ -6,10 +6,12 @@ import SearchIcon from "@/icons/SearchIcon";
 import SettingsIcon from "@/icons/SettingsIcon";
 import Divider from "@mui/material/Divider";
 import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import MenuItem from "@mui/material/MenuItem";
 import MenuList from "@mui/material/MenuList";
+import Paper from "@mui/material/Paper";
 import { useEffect, useRef, useState } from "react";
-import { ContextMenuItem, ContextMenuOptionText, ContextMenuPaper } from "../StyledComponents";
-import "./ContextMenu.scss";
+import styles from "./ContextMenu.module.scss";
 
 /**
  * Props for the ContextMenu component.
@@ -262,7 +264,7 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
   };
 
   return (
-    <ContextMenuPaper
+    <Paper className={styles['context-menu-paper']}
       ref={menuRef}
       elevation={8}
       style={{
@@ -271,67 +273,67 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
       }}
     >
       <MenuList dense>
-        <ContextMenuItem onClick={handleCopyTitle}>
+        <MenuItem className={styles['context-menu-item']} onClick={handleCopyTitle}>
           <ListItemIcon>
             <ClearIcon fontSize="small" />
           </ListItemIcon>
-          <ContextMenuOptionText primary="Copy Title" />
-        </ContextMenuItem>
+          <ListItemText className={styles['context-menu-option-text']} primary="Copy Title" />
+        </MenuItem>
 
-        <ContextMenuItem onClick={handleCopyUrl} disabled={!product.url}>
+        <MenuItem className={styles['context-menu-item']} onClick={handleCopyUrl} disabled={!product.url}>
           <ListItemIcon>
             <ClearIcon fontSize="small" />
           </ListItemIcon>
-          <ContextMenuOptionText primary="Copy URL" />
-        </ContextMenuItem>
+          <ListItemText className={styles['context-menu-option-text']} primary="Copy URL" />
+        </MenuItem>
 
-        <ContextMenuItem onClick={handleCopyProductInfo}>
+        <MenuItem className={styles['context-menu-item']} onClick={handleCopyProductInfo}>
           <ListItemIcon>
             <ClearIcon fontSize="small" />
           </ListItemIcon>
-          <ContextMenuOptionText primary="Copy Product Info" />
-        </ContextMenuItem>
+          <ListItemText className={styles['context-menu-option-text']} primary="Copy Product Info" />
+        </MenuItem>
 
         <Divider />
 
-        <ContextMenuItem onClick={handleOpenInNewTab} disabled={!product.url}>
+        <MenuItem className={styles['context-menu-item']} onClick={handleOpenInNewTab} disabled={!product.url}>
           <ListItemIcon>
             <ArrowRightIcon fontSize="small" />
           </ListItemIcon>
-          <ContextMenuOptionText primary="Open in New Tab" />
-        </ContextMenuItem>
+          <ListItemText className={styles['context-menu-option-text']} primary="Open in New Tab" />
+        </MenuItem>
 
-        <ContextMenuItem onClick={handleViewDetails}>
+        <MenuItem className={styles['context-menu-item']} onClick={handleViewDetails}>
           <ListItemIcon>
             <InfoOutlineIcon fontSize="small" />
           </ListItemIcon>
-          <ContextMenuOptionText primary="View Details" />
-        </ContextMenuItem>
+          <ListItemText className={styles['context-menu-option-text']} primary="View Details" />
+        </MenuItem>
 
         <Divider />
 
-        <ContextMenuItem onClick={handleAddToFavorites}>
+        <MenuItem className={styles['context-menu-item']} onClick={handleAddToFavorites}>
           <ListItemIcon>
             <BookmarkIcon fontSize="small" />
           </ListItemIcon>
-          <ContextMenuOptionText primary="Add to Favorites" />
-        </ContextMenuItem>
+          <ListItemText className={styles['context-menu-option-text']} primary="Add to Favorites" />
+        </MenuItem>
 
-        <ContextMenuItem onClick={handleQuickSearch}>
+        <MenuItem className={styles['context-menu-item']} onClick={handleQuickSearch}>
           <ListItemIcon>
             <SearchIcon fontSize="small" />
           </ListItemIcon>
-          <ContextMenuOptionText primary="Search Similar" />
-        </ContextMenuItem>
+          <ListItemText className={styles['context-menu-option-text']} primary="Search Similar" />
+        </MenuItem>
 
-        <ContextMenuItem onClick={handleShare} disabled={!product.url}>
+        <MenuItem className={styles['context-menu-item']} onClick={handleShare} disabled={!product.url}>
           <ListItemIcon>
             <SettingsIcon fontSize="small" />
           </ListItemIcon>
-          <ContextMenuOptionText primary="Share" />
-        </ContextMenuItem>
+          <ListItemText className={styles['context-menu-option-text']} primary="Share" />
+        </MenuItem>
       </MenuList>
-    </ContextMenuPaper>
+    </Paper>
   );
 }
 

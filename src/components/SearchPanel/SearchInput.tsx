@@ -5,7 +5,7 @@ import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import InputBase from "@mui/material/InputBase";
 import Paper from "@mui/material/Paper";
-import "./SearchInput.scss";
+import styles from "./SearchInput.module.scss";
 import { useSearchInput } from "./useSearchInput.hook";
 
 /**
@@ -31,9 +31,9 @@ export default function SearchInput({ onSearch }: SearchInputStates) {
 
   return (
     <>
-      <div className="search-input-container fullwidth">
+      <div className={`${styles['search-input-container']} ${styles.fullwidth}`}>
         <Paper
-          className="fullwidth search-query-input-form"
+          className={`${styles.fullwidth} ${styles['search-query-input-form']}`}
           component="form"
           onSubmit={handleSubmit(onSearch)}
           sx={{
@@ -48,7 +48,7 @@ export default function SearchInput({ onSearch }: SearchInputStates) {
           <InputBase
             value={searchInputValue}
             onChange={(e) => handleSearchInputChange(e.target.value)}
-            className="search-query-input fullwidth"
+            className={`${styles['search-query-input']} ${styles.fullwidth}`}
             placeholder={isLoading ? "Searching..." : "Search..."}
             disabled={isLoading}
             inputProps={{ "aria-label": "Search for chemicals" }}

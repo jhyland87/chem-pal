@@ -12,7 +12,7 @@ import getUnicodeFlagIcon from "country-flag-icons/unicode";
 import { locations } from "../../../config.json";
 import { CountryFlagTooltip } from "../StyledComponents";
 import { default as Link } from "../TabLink";
-import "./TableColumns.scss";
+import styles from "./TableColumns.module.scss";
 
 /**
  * Defines the column configuration for the product results table.
@@ -42,9 +42,9 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
               onClick: row.getToggleExpandedHandler(),
               style: { cursor: "pointer" },
             }}
-            className="svg-button-icon"
+            className={styles['svg-button-icon']}
           >
-            {row.getIsExpanded() ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
+            {row.getIsExpanded() ? <ArrowDropDownIcon fontSize="small" /> : <ArrowRightIcon fontSize="small" />}
           </button>
         ) : null;
       },

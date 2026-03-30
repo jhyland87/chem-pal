@@ -1,10 +1,10 @@
 import { Science as ScienceIcon, Search as SearchIcon } from "@mui/icons-material";
+import { Box, IconButton } from "@mui/material";
 import React, { useState } from "react";
 import { useAppContext } from "../context";
+import styles from "./SearchForm.module.scss";
 import {
-  SearchFormContainer,
   SearchFormDivider,
-  SearchFormIconButton,
   SearchFormInput,
   SearchFormPaper,
 } from "./StyledComponents";
@@ -40,7 +40,7 @@ export const SearchForm: React.FC<SearchFormProps> = ({
   };
 
   return (
-    <SearchFormContainer>
+    <Box className={styles['search-form-container']}>
       <SearchFormPaper onSubmit={handleSubmit}>
         <SearchFormInput
           placeholder={placeholder}
@@ -57,20 +57,21 @@ export const SearchForm: React.FC<SearchFormProps> = ({
           }}
         />
 
-        <SearchFormIconButton type="submit" aria-label="search" disabled={!query.trim()}>
+        <IconButton className={styles['search-form-icon-button']} type="submit" aria-label="search" disabled={!query.trim()}>
           <SearchIcon />
-        </SearchFormIconButton>
+        </IconButton>
 
         <SearchFormDivider />
-        <SearchFormIconButton
+        <IconButton
+          className={styles['search-form-icon-button']}
           type="button"
           //color="primary"
           aria-label="advanced options"
           onClick={handleDrawerToggle}
         >
           <ScienceIcon />
-        </SearchFormIconButton>
+        </IconButton>
       </SearchFormPaper>
-    </SearchFormContainer>
+    </Box>
   );
 };

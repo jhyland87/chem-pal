@@ -6,7 +6,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { gen, sample } from "testcheck";
-import "./DetailsContainer.scss";
+import styles from "./DetailsContainer.module.scss";
 
 /**
  * Generator for creating sample product details with random values.
@@ -45,8 +45,8 @@ const details = sample(detailsGen);
 export default function DetailsContainer({ row }: ProductRow) {
   console.log("row", { row });
   return (
-    <TableContainer component={Paper} className="fullwidth search-result-details-container">
-      <Table size="small" aria-label="a dense table" className="fullwidth result-details-table">
+    <TableContainer component={Paper} className={`${styles.fullwidth} ${styles['search-result-details-container']}`}>
+      <Table size="small" aria-label="a dense table" className={`${styles.fullwidth} ${styles['result-details-table']}`}>
         <TableHead sx={{ bgcolor: "background.default" }}>
           <TableRow>
             <TableCell>Title</TableCell>
@@ -58,12 +58,12 @@ export default function DetailsContainer({ row }: ProductRow) {
         <TableBody sx={{ bgcolor: "background.paper" }}>
           {details.map((detail) => (
             <TableRow key={detail.title}>
-              <TableCell component="th" scope="row" className="title">
+              <TableCell component="th" scope="row" className={styles.title}>
                 {detail.title}
               </TableCell>
-              <TableCell className="description">{detail.description}</TableCell>
-              <TableCell className="price">{detail.price}</TableCell>
-              <TableCell className="quantity">{detail.quantity}</TableCell>
+              <TableCell className={styles.description}>{detail.description}</TableCell>
+              <TableCell className={styles.price}>{detail.price}</TableCell>
+              <TableCell className={styles.quantity}>{detail.quantity}</TableCell>
             </TableRow>
           ))}
         </TableBody>

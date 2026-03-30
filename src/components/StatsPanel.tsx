@@ -9,8 +9,8 @@ import { useDrawingArea } from "@mui/x-charts/hooks";
 import { useEffect, useMemo, useState } from "react";
 import { useAppContext } from "@/context";
 import { clearStats, getStats } from "@/utils/SupplierStatsStore";
-import { BackButton, HeaderRight } from "./StyledComponents";
-import "./StatsPanel.scss";
+import { BackButton } from "./StyledComponents";
+import styles from "./StatsPanel.module.scss";
 
 /** Color palette for suppliers */
 const SUPPLIER_COLORS = [
@@ -279,10 +279,10 @@ const StatsPanel: React.FC = () => {
   const activeTotalForTooltip = pieView === "http" ? httpPieData.totalCalls : parsedPieData.totalParsed;
 
   return (
-    <div className="stats-panel">
+    <div className={styles['stats-panel']}>
       {/* Header */}
-      <div className="stats-panel__top-header">
-        <div className="header-left">
+      <div className={styles['stats-panel__top-header']}>
+        <div className={styles['header-left']}>
           {appContext?.setPanel && (
             <BackButton
               onClick={() => appContext.setPanel!(0)}
@@ -294,22 +294,22 @@ const StatsPanel: React.FC = () => {
           )}
           <Typography variant="subtitle2">Supplier Stats</Typography>
         </div>
-        <HeaderRight>
+        <div className={styles['header-right']}>
           <Typography variant="caption" color="text.secondary">
             {totalCalls} call{totalCalls !== 1 ? "s" : ""}
           </Typography>
           {hasData && (
             <Tooltip title="Clear stats">
-              <IconButton size="small" onClick={handleClear} className="stats-panel__clear-btn">
-                <DeleteIcon className="stats-panel__clear-icon" />
+              <IconButton size="small" onClick={handleClear} className={styles['stats-panel__clear-btn']}>
+                <DeleteIcon className={styles['stats-panel__clear-icon']} />
               </IconButton>
             </Tooltip>
           )}
-        </HeaderRight>
+        </div>
       </div>
 
       {!hasData ? (
-        <Typography variant="body2" color="text.secondary" className="stats-panel__empty">
+        <Typography variant="body2" color="text.secondary" className={styles['stats-panel__empty']}>
           No stats yet. Run a search to start tracking.
         </Typography>
       ) : (
@@ -318,18 +318,18 @@ const StatsPanel: React.FC = () => {
             value={activeTab}
             onChange={(_e, v) => setActiveTab(v)}
             variant="fullWidth"
-            className="stats-panel__tabs"
+            className={styles['stats-panel__tabs']}
           >
             <Tab label="By Supplier" />
             <Tab label="Daily" />
             <Tab label="Totals" />
           </Tabs>
 
-          <Paper className="stats-panel__content" elevation={2}>
+          <Paper className={styles['stats-panel__content']} elevation={2}>
             {/* Tab 0: Sunburst pie with toggle */}
             {activeTab === 0 && (
               <>
-                <Box className="stats-panel__toggle-container">
+                <Box className={styles['stats-panel__toggle-container']}>
                   <ToggleButtonGroup
                     color="primary"
                     size="small"
@@ -341,7 +341,7 @@ const StatsPanel: React.FC = () => {
                     <ToggleButton value="parsed">Parsed Data</ToggleButton>
                   </ToggleButtonGroup>
                 </Box>
-                <Box className="stats-panel__chart-container">
+                <Box className={styles['stats-panel__chart-container']}>
                   <PieChart
                     series={[
                       {
@@ -375,10 +375,10 @@ const StatsPanel: React.FC = () => {
                   </PieChart>
                 </Box>
                 {/* Custom legend for supplier colors only */}
-                <Box className="stats-panel__legend">
+                <Box className={styles['stats-panel__legend']}>
                   {activePie.inner.map((d) => (
-                    <Box key={d.id} className="stats-panel__legend-item">
-                      <Box className="stats-panel__legend-dot" style={{ backgroundColor: d.color }} />
+                    <Box key={d.id} className={styles['stats-panel__legend-item']}>
+                      <Box className={styles['stats-panel__legend-dot']} style={{ backgroundColor: d.color }} />
                       <span>{d.id}</span>
                     </Box>
                   ))}
@@ -388,7 +388,7 @@ const StatsPanel: React.FC = () => {
 
             {/* Tab 1: Line chart — daily calls per supplier */}
             {activeTab === 1 && (
-              <Box className="stats-panel__chart-container">
+              <Box className={styles['stats-panel__chart-container']}>
                 {lineDates.length > 0 && lineSeries.length > 0 && (
                   <LineChart
                     xAxis={[{ scaleType: "point", data: lineDates }]}
@@ -399,10 +399,10 @@ const StatsPanel: React.FC = () => {
                   />
                 )}
                 {/* Custom legend */}
-                <Box className="stats-panel__legend">
+                <Box className={styles['stats-panel__legend']}>
                   {lineSeries.map((s) => (
-                    <Box key={s.label} className="stats-panel__legend-item">
-                      <Box className="stats-panel__legend-dot" style={{ backgroundColor: s.color }} />
+                    <Box key={s.label} className={styles['stats-panel__legend-item']}>
+                      <Box className={styles['stats-panel__legend-dot']} style={{ backgroundColor: s.color }} />
                       <span>{s.label}</span>
                     </Box>
                   ))}
@@ -412,7 +412,7 @@ const StatsPanel: React.FC = () => {
 
             {/* Tab 2: Totals table */}
             {activeTab === 2 && (
-              <div className="stats-panel__table-container">
+              <div className={styles['stats-panel__table-container']}>
                 <DataGrid
                   rows={totalsRows}
                   columns={totalsColumns}
@@ -422,7 +422,7 @@ const StatsPanel: React.FC = () => {
                   initialState={{
                     sorting: { sortModel: [{ field: "success", sort: "desc" }] },
                   }}
-                  className="stats-panel__table"
+                  className={styles['stats-panel__table']}
                 />
               </div>
             )}

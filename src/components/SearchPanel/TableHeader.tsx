@@ -4,7 +4,7 @@ import type { ColumnMeta } from "@tanstack/react-table";
 import { ColumnDef, flexRender, Header, HeaderGroup, Table } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { ColumnResizer, SortableHeaderContent, TableHeaderCell } from "../StyledComponents";
-import "./TableHeader.scss";
+import styles from "./TableHeader.module.scss";
 
 /**
  * TableHeader component that renders the header row of the product results table.
@@ -115,7 +115,7 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
                       onDoubleClick={header.column.resetSize}
                       onMouseDown={header.getResizeHandler()}
                       onTouchStart={header.getResizeHandler()}
-                      className={`resizer ${header.column.getIsResizing() ? "isResizing" : ""}`}
+                      className={`${styles.resizer} ${header.column.getIsResizing() ? styles.isResizing : ""}`}
                     />
                     <SortableHeaderContent
                       canSort={header.column.getCanSort()}
@@ -123,8 +123,8 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
                     >
                       {flexRender(header.column.columnDef.header, header.getContext())}
                       {{
-                        asc: <ArrowDropUpIcon className="sort-icon" />,
-                        desc: <ArrowDropDownIcon className="sort-icon" />,
+                        asc: <ArrowDropUpIcon className={styles['sort-icon']} />,
+                        desc: <ArrowDropDownIcon className={styles['sort-icon']} />,
                       }[header.column.getIsSorted() as string] ?? null}
                     </SortableHeaderContent>
                   </>

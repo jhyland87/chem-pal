@@ -10,6 +10,7 @@ import {
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
+  Box,
   Checkbox,
   FormControl,
   FormControlLabel,
@@ -24,11 +25,12 @@ import {
 import { Column, ColumnFiltersState, flexRender, Header, Row } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
 import React, { Dispatch, ReactElement, SetStateAction, useEffect, useState } from "react";
+import { generatePageSizes } from "../../helpers/utils";
 
 import { useDebouncedCallback } from "../../shared/hooks";
 import DrawerSystem from "../DrawerSystem";
 import LoadingBackdrop from "../LoadingBackdrop";
-import "../ResultsPanel.scss";
+import resultStyles from "../ResultsPanel.module.scss";
 import {
   BackButton,
   ColoredIconButton,
@@ -40,15 +42,12 @@ import {
   FilterTableCell,
   FilterTextField,
   GlobalFilterTextField,
-  HeaderRight,
-  HiddenMeasurementTable,
   NavigationContainer,
   PageSizeContainer,
   PageSizeSelect,
   PaginationContainer,
   ResultsCountDisplay,
   ResultsHeaderContainer,
-  ResultsPaperContainer,
   SearchResultsTable,
   StickyHeaderCell,
   StyledTableBody,
@@ -227,9 +226,9 @@ export default function ResultsTable({
       />
       <DrawerSystem />
 
-      <div className="results-container">
-        <div className="results-header">
-          <div className="header-left">
+      <div className={resultStyles['results-container']}>
+        <div className={resultStyles['results-header']}>
+          <div className={resultStyles['header-left']}>
             {appContext?.setPanel && (
               <BackButton
                 onClick={() => appContext.setPanel!(0)}
@@ -240,7 +239,7 @@ export default function ResultsTable({
               </BackButton>
             )}
           </div>
-          <HeaderRight>
+          <div className={resultStyles['header-right']}>
             <FilterIconButton
               onClick={toggleFilters}
               size="small"
@@ -264,7 +263,7 @@ export default function ResultsTable({
             >
               <SettingsIcon />
             </ColoredIconButton>
-          </HeaderRight>
+          </div>
         </div>
 
         {/* <div className="results-title">Search Results ({optimisticResults.length} found)</div> */}
@@ -289,9 +288,9 @@ export default function ResultsTable({
           )}
         </ResultsHeaderContainer>
 
-        <ResultsPaperContainer className="results-paper">
+        <Box className={`${resultStyles['results-paper']} ${resultStyles['results-paper-container']}`}>
           {/* Hidden measurement table for auto-sizing */}
-          <HiddenMeasurementTable {...getMeasurementTableProps()}>
+          <table className={resultStyles['hidden-measurement-table']} {...getMeasurementTableProps()}>
             <thead>
               <tr>
                 {table.getAllLeafColumns().map((col) => (
@@ -319,7 +318,7 @@ export default function ResultsTable({
                   </tr>
                 ))}
             </tbody>
-          </HiddenMeasurementTable>
+          </table>
 
           <SearchResultsTable>
             {/* Table Head */}
@@ -369,7 +368,7 @@ export default function ResultsTable({
                     {row.getVisibleCells().map((cell) => (
                       <StyledTableCell
                         key={cell.id}
-                        className="styled-table-cell"
+                        className={resultStyles['styled-table-cell']}
                         style={{
                           textAlign: cell.column.columnDef.meta?.style?.textAlign,
                         }}
@@ -380,7 +379,7 @@ export default function ResultsTable({
                   </SubRowTableRow>
                 ))
               ) : (
-                <TableRow className="styled-table-row">
+                <TableRow className={resultStyles['styled-table-row']}>
                   <EmptyStateCell colSpan={table.getAllColumns().length}>
                     {optimisticResults.length === 0
                       ? tableText || "No search query"
@@ -395,11 +394,11 @@ export default function ResultsTable({
 
           {/* Enhanced error handling */}
           {error && (
-            <ErrorContainer className="error-container">
+            <ErrorContainer className={resultStyles['error-container']}>
               <p>Error: {error}</p>
               <ErrorRetryButton
                 onClick={() => window.location.reload()}
-                className="error-retry-button"
+                className={resultStyles['error-retry-button']}
               >
                 Retry
               </ErrorRetryButton>
@@ -418,11 +417,13 @@ export default function ResultsTable({
                     onChange={(e) => table.setPageSize(Number(e.target.value))}
                     aria-label="rows per page"
                   >
-                    {[5, 10, 20, 50, 100, 150, 200].map((pageSize) => (
-                      <MenuItem key={pageSize} value={pageSize}>
-                        {pageSize}
-                      </MenuItem>
-                    ))}
+                    {generatePageSizes(table.getFilteredRowModel().rows.length, 10, 5).map(
+                      (pageSize) => (
+                        <MenuItem key={pageSize} value={pageSize}>
+                          {pageSize === table.getFilteredRowModel().rows.length ? "All" : pageSize}
+                        </MenuItem>
+                      ),
+                    )}
                   </PageSizeSelect>
                 </FormControl>
                 <Typography variant="body2">rows</Typography>
@@ -430,7 +431,7 @@ export default function ResultsTable({
 
               {/* Page Info */}
               <Typography variant="body2">
-                Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}(
+                Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()} (
                 {table.getFilteredRowModel().rows.length} total results)
               </Typography>
 
@@ -467,7 +468,7 @@ export default function ResultsTable({
               </NavigationContainer>
             </PaginationContainer>
           )}
-        </ResultsPaperContainer>
+        </Box>
 
         {/* Column Visibility Menu */}
         <Menu

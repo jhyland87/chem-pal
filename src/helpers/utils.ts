@@ -39,6 +39,30 @@ export function md5sum<T>(input: NonNullable<T>): string | T {
 }
 
 /**
+ * Generates an array of page sizes based on the total number of rows.
+ * The array starts with the base size and doubles each time until it reaches the total.
+ * @param total - The total number of rows
+ * @param base - The base size
+ * @returns An array of page sizes
+ * @example
+ * ```typescript
+ * generatePageSizes(123);           // [10, 20, 40, 80, 123]
+ * generatePageSizes(500, 10, 4);    // [10, 20, 40, 500]
+ * generatePageSizes(1000, 10, 3);   // [10, 20, 1000]
+ * generatePageSizes(1000, 10, 1);   // [1000]
+ * generatePageSizes(1000, 10, 0);   // [1000]
+ * ```
+ * @source
+ */
+export function generatePageSizes(total: number, base: number = 10, limit: number = 5): number[] {
+  const sizes: number[] = [];
+
+  for (let n = base; n < total; n *= 2) sizes.push(n);
+
+  return [...sizes.slice(0, limit - 1), total];
+}
+
+/**
  * Serializes a string to a base64 encoded string.
  * Useful for safely storing strings that may contain special characters.
  * First URI encodes the string, then base64 encodes it.

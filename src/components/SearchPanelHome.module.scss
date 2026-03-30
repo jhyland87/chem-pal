@@ -1,0 +1,21 @@
+.search-panel-home-content {
+  width: 100%;
+  max-width: 480px;
+  position: relative;
+  margin-top: 6vh;
+}
+
+.search-panel-home-logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.search-panel-home-logo {
+  max-width: 100px;
+  max-height: 100px;
+  display: block;
+  margin: 0 auto;
+  filter: drop-shadow(rgba(0, 0, 0, 0.3) 0px 2px 5px);
+}

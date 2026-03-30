@@ -8,7 +8,7 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { FilterListItemIcon } from "../../Styles";
-import "./ColumnVisibilitySelect.scss";
+import styles from "./ColumnVisibilitySelect.module.scss";
 
 /**
  * ColumnVisibilitySelect component that provides a scrollable list of checkboxes for controlling
@@ -87,17 +87,17 @@ export default function ColumnVisibilitySelect({
   };
 
   return (
-    <FormControl component="fieldset" variant="standard" className="column-visibility-select">
+    <FormControl component="fieldset" variant="standard" className={styles['column-visibility-select']}>
       {/*<FormLabel component="legend">Column Visibility</FormLabel>*/}
-      <List className="column-visibility-select__list">
+      <List className={styles['column-visibility-select__list']}>
         {/* Defaults checkbox */}
         <ListItem key="defaults" disablePadding>
-          <ListItemButton className="column-visibility-select__list-item-btn" role={undefined} onClick={handleDefaultsSelect} dense>
+          <ListItemButton className={styles['column-visibility-select__list-item-btn']} role={undefined} onClick={handleDefaultsSelect} dense>
             <FilterListItemIcon>
               <Checkbox
                 size="small"
                 edge="start"
-                className="column-visibility-select__checkbox"
+                className={styles['column-visibility-select__checkbox']}
                 checked={isDefaultsChecked}
                 tabIndex={-1}
                 disableRipple
@@ -131,7 +131,7 @@ export default function ColumnVisibilitySelect({
                     <Checkbox
                       size="small"
                       edge="start"
-                      className="column-visibility-select__checkbox"
+                      className={styles['column-visibility-select__checkbox']}
                       checked={columnVisibility.includes(key)}
                       tabIndex={-1}
                       disableRipple
