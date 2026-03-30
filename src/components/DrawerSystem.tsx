@@ -7,13 +7,14 @@ import {
   Chip,
   Drawer,
   InputAdornment,
+  List,
   Tab,
   Tabs,
   TextField,
   Typography,
 } from "@mui/material";
 import React, { useState } from "react";
-import "./DrawerSystem.scss";
+import styles from "./DrawerSystem.module.scss";
 
 import {
   ExpandMore as ExpandMoreIcon,
@@ -23,12 +24,10 @@ import {
 } from "@mui/icons-material";
 
 import {
-  ChipContainer,
   StyledAccordionDetails,
   StyledAccordionDetailsNoPadding,
   StyledAccordionSummary,
   StyledListItemText,
-  SupplierList,
   SupplierListItem,
 } from "./StyledComponents";
 
@@ -47,7 +46,7 @@ function TabPanel(props: TabPanelProps) {
       hidden={value !== index}
       id={`drawer-tabpanel-${index}`}
       aria-labelledby={`drawer-tab-${index}`}
-      className="drawer-system__tabpanel"
+      className={styles['drawer-system__tabpanel']}
       {...other}
     >
       {value === index && children}
@@ -92,7 +91,7 @@ const SearchPanel: React.FC<{
           <Typography>Availability</Typography>
         </StyledAccordionSummary>
         <StyledAccordionDetails>
-          <ChipContainer>
+          <Box className={styles['chip-container']}>
             {availability.map((option) => (
               <Chip
                 key={option}
@@ -103,7 +102,7 @@ const SearchPanel: React.FC<{
                 variant={selectedAvailability.includes(option) ? "filled" : "outlined"}
               />
             ))}
-          </ChipContainer>
+          </Box>
         </StyledAccordionDetails>
       </Accordion>
 
@@ -114,8 +113,8 @@ const SearchPanel: React.FC<{
         <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography>Search Suppliers</Typography>
         </StyledAccordionSummary>
-        <StyledAccordionDetailsNoPadding className="supplier-list-accordion">
-          <SupplierList dense>
+        <StyledAccordionDetailsNoPadding className={styles['supplier-list-accordion']}>
+          <List dense className={styles['supplier-list']}>
             {suppliers.map((supplier) => (
               <SupplierListItem key={supplier} onClick={() => toggleSupplier(supplier)}>
                 <Checkbox
@@ -128,7 +127,7 @@ const SearchPanel: React.FC<{
                 <StyledListItemText primary={supplier} />
               </SupplierListItem>
             ))}
-          </SupplierList>
+          </List>
         </StyledAccordionDetailsNoPadding>
       </Accordion>
 
@@ -241,13 +240,13 @@ const DrawerSystem: React.FC = () => {
       onClose={() => appContext.setDrawerTab(-1)}
       variant="temporary"
     >
-      <div className="drawer-container">
+      <div className={styles['drawer-container']}>
         {appContext.drawerTab !== -1 && (
           <Tabs
             value={appContext.drawerTab}
             onChange={handleTabChange}
             variant="fullWidth"
-            className="drawer-tabs"
+            className={styles['drawer-tabs']}
           >
             <Tab icon={<SearchIcon />} label="SEARCH" iconPosition="start" />
             <Tab icon={<HistoryIcon />} label="HISTORY" iconPosition="start" />

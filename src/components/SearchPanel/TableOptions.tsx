@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography";
 import { Table } from "@tanstack/react-table";
 //import FilterModal from "./FilterModal";
 import SearchInput from "./SearchInput";
-import "./TableOptions.scss";
+import styles from "./TableOptions.module.scss";
 
 interface TableOptionsProps {
   table: Table<Product>;
@@ -36,8 +36,8 @@ export default function TableOptions({ onSearch, onToggleDrawer }: TableOptionsP
 
   return (
     <>
-      <Toolbar className="table-options-toolbar fullwidth">
-        <Typography component="div" className="search-input">
+      <Toolbar className={`${styles['table-options-toolbar']} ${styles.fullwidth}`}>
+        <Typography component="div" className={styles['search-input']}>
           <SearchInput
             //searchInput={searchInput}
             //className="search-input"
@@ -46,8 +46,8 @@ export default function TableOptions({ onSearch, onToggleDrawer }: TableOptionsP
           />
         </Typography>
         <Tooltip title="Filter list">
-          <button className="svg-button-icon" onClick={onToggleDrawer}>
-            <TuneIcon className="table-options-icon" />
+          <button className={styles['svg-button-icon']} onClick={onToggleDrawer}>
+            <TuneIcon className={styles['table-options-icon']} />
           </button>
         </Tooltip>
       </Toolbar>

@@ -2,13 +2,9 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
-  Button,
   IconButton,
-  List,
   ListItem,
   ListItemText,
-  MenuItem,
-  Paper,
   Select,
   TextField,
   Tooltip,
@@ -21,8 +17,6 @@ import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { darkPalette, designTokens, lightPalette } from "../themes";
-
-// === APP COMPONENTS ===
 
 // === SEARCH PAGE COMPONENTS ===
 
@@ -123,17 +117,7 @@ export const MenuButton = styled(IconButton)(({ theme }) => ({
   },
 }));
 
-// === RESULTS PAGE COMPONENTS ===
-
 // === DRAWER COMPONENTS ===
-
-// Main drawer container
-export const DrawerContainer = styled(Box)(() => ({
-  height: "100%",
-  display: "flex",
-  flexDirection: "column",
-  overflow: "hidden",
-}));
 
 // Accordion summary with reduced font size
 export const StyledAccordionSummary = styled(AccordionSummary)(() => ({
@@ -164,20 +148,6 @@ export const StyledAccordionDetailsNoPadding = styled(AccordionDetails)(() => ({
   "& .MuiFormControlLabel-label": {
     fontSize: "0.8rem",
   },
-}));
-
-// Chip container for availability options
-export const ChipContainer = styled(Box)(() => ({
-  display: "flex",
-  flexWrap: "wrap",
-  gap: "6px",
-}));
-
-// Supplier list with scrolling
-export const SupplierList = styled(List)(() => ({
-  maxHeight: 200,
-  overflow: "auto",
-  width: "100%",
 }));
 
 // Supplier list item with hover effects
@@ -298,13 +268,6 @@ export const EmptyStateCell = styled(StyledTableCell)(({ theme }) => ({
   fontStyle: "italic",
 }));
 
-// Header right section with controls
-export const HeaderRight = styled(Box)(() => ({
-  display: "flex",
-  alignItems: "center",
-  gap: "8px",
-}));
-
 // Table header cell with sorting
 export const SortableTableHeaderCell = styled(StyledTableCell, {
   shouldForwardProp: (prop) => prop !== "canSort" && prop !== "cellWidth",
@@ -324,7 +287,7 @@ export const SortableTableHeaderCell = styled(StyledTableCell, {
 export const FilterTableCell = styled(StyledTableCell, {
   shouldForwardProp: (prop) => prop !== "cellWidth",
 })<{ cellWidth: number }>(({ theme, cellWidth }) => ({
-  padding: "4px 8px",
+  padding: "4px 4px 4px 0",
   width: `${cellWidth}px`,
   minWidth: `${cellWidth}px`,
   maxWidth: `${cellWidth}px`,
@@ -344,12 +307,6 @@ export const FilterTextField = styled(TextField)(() => ({
 }));
 
 // === SEARCH FORM COMPONENTS ===
-
-export const SearchFormContainer = styled(Box)(() => ({
-  position: "relative",
-  width: "100%",
-  maxWidth: 600,
-}));
 
 export const SearchFormPaper = styled("form")(({ theme }) => ({
   padding: "2px 4px",
@@ -380,30 +337,10 @@ export const SearchFormInput = styled(TextField)(({ theme }) => ({
   },
 }));
 
-export const SearchFormIconButton = styled(IconButton)(() => ({
-  padding: "10px",
-}));
-
 export const SearchFormDivider = styled(Box)(({ theme }) => ({
   height: 28,
   margin: theme.spacing(0.5),
   borderLeft: `1px solid ${theme.palette.divider}`,
-}));
-
-// === SEARCH PAGE COMPONENTS ===
-
-export const SearchPageSettingsButton = styled(IconButton)(() => ({
-  position: "absolute",
-  top: 8,
-  right: 8,
-  zIndex: 1000,
-}));
-
-export const SearchPageThemeSwitcher = styled(Box)(() => ({
-  position: "fixed",
-  bottom: 16,
-  right: 16,
-  zIndex: 1000,
 }));
 
 // === THEME SWITCHER COMPONENTS ===
@@ -425,19 +362,8 @@ export const AppMainBox = styled(Box)(({ theme }) => ({
   width: "100%",
 }));
 
-export const LoadingIndicatorBox = styled(Box)(() => ({
-  position: "fixed",
-  top: 0,
-  left: 0,
-  right: 0,
-  height: 2,
-  backgroundColor: "#1976d2", // fallback color if theme is not used
-  zIndex: 9999,
-  animation: "pulse 1s infinite",
-}));
-
 export const StyledTableRow = styled(TableRow)(() => ({
-  // You can add default styles for all table rows here if needed
+  // default styles for all table rows
 }));
 
 // Sub-row styling
@@ -458,28 +384,6 @@ export const SearchPanelHomeContainer = styled(SearchContainer)(() => ({
   paddingTop: "4vh",
 }));
 
-export const SearchPanelHomeContent = styled(Box)(() => ({
-  width: "100%",
-  maxWidth: 480,
-  position: "relative",
-  marginTop: "6vh",
-}));
-
-export const SearchPanelHomeLogoContainer = styled(Box)(() => ({
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  marginBottom: 32,
-}));
-
-export const SearchPanelHomeLogo = styled("img")(() => ({
-  maxWidth: 100,
-  maxHeight: 100,
-  display: "block",
-  margin: "0 auto",
-  filter: "drop-shadow(rgba(0, 0, 0, 0.3) 0px 2px 5px)",
-}));
-
 export const SearchPanelHomeForwardButton = styled(IconButton, {
   shouldForwardProp: (prop) => prop !== "isDarkTheme",
 })<{ isDarkTheme?: boolean }>(({ theme, isDarkTheme }) => ({
@@ -491,8 +395,8 @@ export const SearchPanelHomeForwardButton = styled(IconButton, {
   boxShadow: theme.shadows[1],
   zIndex: 2,
   "& .MuiBadge-badge": {
-    backgroundColor: isDarkTheme ? "#ffffff" : "#1976d2", // Light for dark theme, dark blue for light theme
-    color: isDarkTheme ? "#000000" : "#ffffff", // Dark text for light badge, white text for dark badge
+    backgroundColor: isDarkTheme ? "#ffffff" : "#1976d2",
+    color: isDarkTheme ? "#000000" : "#ffffff",
     fontSize: "0.65rem",
     minWidth: "16px",
     height: "16px",
@@ -502,7 +406,7 @@ export const SearchPanelHomeForwardButton = styled(IconButton, {
 export const SearchPanelHomeSettingsButton = styled(IconButton)(({ theme }) => ({
   position: "absolute",
   top: 16,
-  right: 56, // Position to the left of the forward button
+  right: 56,
   color: theme.palette.text.primary,
   background: theme.palette.background.paper,
   boxShadow: theme.shadows[1],
@@ -512,7 +416,7 @@ export const SearchPanelHomeSettingsButton = styled(IconButton)(({ theme }) => (
 
 export const StyledTable = styled(Table)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
-  borderRadius: `0 0 8px 8px`, // Only bottom corners rounded
+  borderRadius: `0 0 8px 8px`,
   "& .MuiTableBody-root": {
     backgroundColor: theme.palette.background.paper,
   },
@@ -560,24 +464,9 @@ export const GlobalFilterTextField = styled(TextField)(({ theme }) => ({
   minWidth: 180,
 }));
 
-// Results paper container
-export const ResultsPaperContainer = styled(Box)(() => ({
-  overflowX: "auto",
-  width: "100%",
-}));
-
-// Hidden measurement table
-export const HiddenMeasurementTable = styled("table")(() => ({
-  visibility: "hidden",
-  position: "absolute",
-  left: "-9999px",
-  height: 0,
-  overflow: "hidden",
-}));
-
 // Styled table with minimum width
 export const SearchResultsTable = styled(StyledTable)(() => ({
-  minWidth: 650, // allow table to grow as needed
+  minWidth: 650,
 }));
 
 // Sticky header cell
@@ -591,108 +480,19 @@ export const StickyHeaderCell = styled(SortableTableHeaderCell)(({ theme }) => (
 export const ErrorContainer = styled(Box)(() => ({
   textAlign: "center",
   padding: "16px",
-  color: "#ef4444", // text-red-500 equivalent
+  color: "#ef4444",
 }));
 
 // Error retry button
-export const ErrorRetryButton = styled(Button)(() => ({
+export const ErrorRetryButton = styled("button")(() => ({
   marginTop: "8px",
   padding: "8px 16px",
-  backgroundColor: "#fef2f2", // bg-red-100 equivalent
-  color: "#b91c1c", // text-red-700 equivalent
+  backgroundColor: "#fef2f2",
+  color: "#b91c1c",
   borderRadius: "4px",
   "&:hover": {
-    backgroundColor: "#fee2e2", // hover:bg-red-200 equivalent
+    backgroundColor: "#fee2e2",
   },
-}));
-
-// === ERROR BOUNDARY COMPONENTS ===
-
-export const ErrorBoundaryContainer = styled(Box)(({ theme }) => ({
-  height: "100vh",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  backgroundColor: theme.palette.background.default,
-  padding: theme.spacing(3),
-}));
-
-export const ErrorBoundaryPaper = styled(Paper)(({ theme }) => ({
-  maxWidth: 600,
-  width: "100%",
-  padding: theme.spacing(4),
-  textAlign: "center",
-  backgroundColor: theme.palette.background.paper,
-}));
-
-export const ErrorBoundaryIcon = styled(Box)(({ theme }) => ({
-  marginBottom: theme.spacing(2),
-  "& .MuiSvgIcon-root": {
-    fontSize: 64,
-    color: theme.palette.error.main,
-  },
-}));
-
-export const ErrorBoundaryMessage = styled(Typography)(({ theme }) => ({
-  marginBottom: theme.spacing(3),
-}));
-
-export const ErrorDetailsContainer = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
-  marginBottom: theme.spacing(3),
-  backgroundColor: theme.palette.grey[50],
-  textAlign: "left",
-  maxHeight: 200,
-  overflow: "auto",
-}));
-
-export const ErrorDetailsText = styled(Typography)(() => ({
-  fontSize: "0.75rem",
-  fontFamily: "monospace",
-  whiteSpace: "pre-wrap",
-}));
-
-export const ErrorDetailsTextWithMargin = styled(Typography)(({ theme }) => ({
-  fontSize: "0.75rem",
-  marginTop: theme.spacing(1),
-  fontFamily: "monospace",
-  whiteSpace: "pre-wrap",
-}));
-
-export const ErrorBoundaryActions = styled(Box)(({ theme }) => ({
-  display: "flex",
-  gap: theme.spacing(2),
-  justifyContent: "center",
-}));
-
-export const ErrorBoundaryButton = styled(Button)(() => ({
-  minWidth: 120,
-}));
-
-export const ErrorIdText = styled(Typography)(({ theme }) => ({
-  marginTop: theme.spacing(3),
-  display: "block",
-}));
-
-// === CONTEXT MENU COMPONENTS ===
-
-// Context menu paper container
-export const ContextMenuPaper = styled(Paper)(() => ({
-  position: "fixed",
-  zIndex: 9999,
-  minWidth: 200,
-  maxWidth: 300,
-}));
-
-// Context menu option text
-export const ContextMenuOptionText = styled(ListItemText)(() => ({
-  textAlign: "left",
-}));
-
-// Context menu item with left-aligned text
-export const ContextMenuItem = styled(MenuItem)(() => ({
-  justifyContent: "flex-start",
-  textAlign: "left",
 }));
 
 // === TABLE HEADER COMPONENTS ===
@@ -742,8 +542,6 @@ export const SortableHeaderContent = styled("div", {
   padding: "8px",
   position: "relative",
 }));
-
-// === COUNTRY FLAG TOOLTIP COMPONENTS ===
 
 // Country flag tooltip with consistent styling
 export const CountryFlagTooltip = styled(Tooltip)(() => ({

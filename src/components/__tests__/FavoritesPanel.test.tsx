@@ -59,6 +59,6 @@ describe("FavoritesPanel", () => {
     render(<FavoritesPanel />);
     const paper = screen.getByTestId("mock-data-grid").parentElement;
     expect(paper).toHaveClass("MuiPaper-root");
-    expect(paper).toHaveClass("favorites-panel");
+    expect(paper?.className).toMatch(/favorites-panel/);
   });
 });

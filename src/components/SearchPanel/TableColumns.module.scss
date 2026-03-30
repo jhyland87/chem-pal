@@ -4,6 +4,25 @@ button.expand-row-details {
   cursor: pointer;
 }
 
+.svg-button-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: inherit;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  cursor: pointer;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
 .boookmark-icon {
   cursor: pointer;
   &:not(.bookmark-saved) {

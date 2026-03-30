@@ -11,7 +11,7 @@ import {
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { useAppContext } from "@/context";
-import "./HistoryPanel.scss";
+import styles from "./HistoryPanel.module.scss";
 
 /**
  * HistoryPanel component that displays past search queries,
@@ -110,41 +110,41 @@ const HistoryPanel: React.FC = () => {
   };
 
   return (
-    <Box className="history-panel">
-      <Box className="history-panel__header">
+    <Box className={styles['history-panel']}>
+      <Box className={styles['history-panel__header']}>
         <Typography variant="caption" color="text.secondary">
           {history.length} {history.length === 1 ? "search" : "searches"}
         </Typography>
         {history.length > 0 && (
           <Tooltip title="Clear history">
-            <IconButton size="small" onClick={handleClearHistory} className="history-panel__clear-btn">
-              <DeleteIcon className="history-panel__clear-icon" />
+            <IconButton size="small" onClick={handleClearHistory} className={styles['history-panel__clear-btn']}>
+              <DeleteIcon className={styles['history-panel__clear-icon']} />
             </IconButton>
           </Tooltip>
         )}
       </Box>
       {history.length === 0 ? (
-        <Typography variant="caption" color="text.secondary" className="history-panel__empty">
+        <Typography variant="caption" color="text.secondary" className={styles['history-panel__empty']}>
           No search history yet.
         </Typography>
       ) : (
         <List dense disablePadding>
           {history.map((entry, idx) => (
-            <ListItem key={`${entry.timestamp}-${idx}`} divider className="history-panel__list-item">
+            <ListItem key={`${entry.timestamp}-${idx}`} divider className={styles['history-panel__list-item']}>
               <ListItemText
                 primary={
                   <Link
                     component="button"
                     variant="body2"
                     onClick={() => handleReSearch(entry.query)}
-                    className="history-panel__link"
+                    className={styles['history-panel__link']}
                   >
                     {entry.query}
                   </Link>
                 }
                 secondary={`${formatTimestamp(entry.timestamp)} — ${entry.resultCount} result${entry.resultCount !== 1 ? "s" : ""}`}
-                secondaryTypographyProps={{ variant: "caption", className: "history-panel__secondary-text" }}
-                className="history-panel__list-item-text"
+                secondaryTypographyProps={{ variant: "caption", className: styles['history-panel__secondary-text'] }}
+                className={styles['history-panel__list-item-text']}
               />
             </ListItem>
           ))}

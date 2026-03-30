@@ -1,7 +1,7 @@
 import Backdrop from "@mui/material/Backdrop";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import "./LoadingBackdrop.scss";
+import styles from "./LoadingBackdrop.module.scss";
 
 /**
  * A full-screen loading overlay component with a spinning benzene molecule and stop button.
@@ -29,13 +29,13 @@ export default function LoadingBackdrop(props: LoadingBackdropProps) {
   return (
     <>
       <Backdrop open={props.open} id="loading-backdrop" role="status" aria-label="search loading">
-        <Box className="loading-backdrop-box">
-          {/*<Box className="spinner-box">
+        <Box className={styles['loading-backdrop-box']}>
+          {/*<Box className={styles['spinner-box']}>
             <IconSpinner>
               <BlueBenzeneIcon sx={{ width: 100, height: 100 }} />
             </IconSpinner>
           </Box>*/}
-          <Button className="status-button" onClick={props.onClick}>
+          <Button className={styles['status-button']} onClick={props.onClick}>
             {props.resultCount === 0 ? "Loading..." : `Found ${props.resultCount} results..`}
           </Button>
         </Box>

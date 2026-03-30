@@ -7,12 +7,10 @@ import { useTheme as useCustomTheme } from "../themes";
 import { SearchForm } from "./SearchForm";
 import {
   SearchPanelHomeContainer,
-  SearchPanelHomeContent,
   SearchPanelHomeForwardButton,
-  SearchPanelHomeLogo,
-  SearchPanelHomeLogoContainer,
   SearchPanelHomeSettingsButton,
 } from "./StyledComponents";
+import styles from "./SearchPanelHome.module.scss";
 
 const RESULTS_TAB_INDEX = 1;
 
@@ -86,17 +84,17 @@ const SearchPanelHome: React.FC = () => {
           </Badge>
         </SearchPanelHomeForwardButton>
       )}
-      <SearchPanelHomeContent>
+      <div className={styles['search-panel-home-content']}>
         {/* Logo always visible at the top */}
-        <SearchPanelHomeLogoContainer>
-          <SearchPanelHomeLogo src={logoSrc} alt="Supplier Search Logo" />
-        </SearchPanelHomeLogoContainer>
+        <div className={styles['search-panel-home-logo-container']}>
+          <img className={styles['search-panel-home-logo']} src={logoSrc} alt="Supplier Search Logo" />
+        </div>
         <SearchForm
           onSearch={handleSearch}
           placeholder="Search for products..."
           showAdvancedButton={false}
         />
-      </SearchPanelHomeContent>
+      </div>
     </SearchPanelHomeContainer>
   );
 };

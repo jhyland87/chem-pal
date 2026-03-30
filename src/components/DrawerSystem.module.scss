@@ -31,3 +31,21 @@
   align-items: center;
   gap: 8px;
 }
+
+.chip-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.supplier-list {
+  max-height: 200px;
+  overflow: auto;
+  width: 100%;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

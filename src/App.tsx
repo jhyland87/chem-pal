@@ -9,7 +9,6 @@ import SearchPanel from "./components/SearchPanel/SearchPanel";
 import SearchPanelHome from "./components/SearchPanelHome";
 import SpeedDialMenu from "./components/SpeedDialMenu";
 import StatsPanel from "./components/StatsPanel";
-import { LoadingIndicatorBox } from "./components/StyledComponents";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { getCurrencyCodeFromLocation, getCurrencyRate } from "./helpers/currency";
 import { getUserCountry } from "./helpers/utils";
@@ -290,7 +289,7 @@ function App() {
           <CssBaseline />
           <div className="app-container">
             {/* Show loading indicator when settings are updating */}
-            {isPending && <LoadingIndicatorBox />}
+            {isPending && <div className="loading-indicator-box" />}
             {/* Render only the active panel, no app bar or tab navigation */}
             {appState.panel === 0 && <SearchPanelHome />}
             {appState.panel === 1 && <SearchPanel />}

@@ -1,14 +1,14 @@
 import { Settings as SettingsIcon } from "@mui/icons-material";
+import { Box, IconButton } from "@mui/material";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../main.scss";
 import { useTheme } from "../themes";
 import { SearchForm } from "./SearchForm";
+import styles from "./SearchPage.module.scss";
 import {
   DevBadge,
   SearchContainer,
-  SearchPageSettingsButton,
-  SearchPageThemeSwitcher,
 } from "./StyledComponents";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 
@@ -40,14 +40,14 @@ const SearchPage: React.FC<SearchPageProps> = ({ onSearch, onDrawerToggle }) => 
   return (
     <SearchContainer className={containerClass}>
       {/* Settings Gear - Top Right */}
-      <SearchPageSettingsButton onClick={onDrawerToggle} size="medium">
+      <IconButton className={styles['search-page-settings-button']} onClick={onDrawerToggle} size="medium">
         <SettingsIcon />
-      </SearchPageSettingsButton>
+      </IconButton>
 
       {/* Theme Switcher - Bottom Right */}
-      <SearchPageThemeSwitcher>
+      <Box className={styles['search-page-theme-switcher']}>
         <ThemeSwitcher />
-      </SearchPageThemeSwitcher>
+      </Box>
 
       {isDevelopment && <DevBadge className="search-page__dev-badge">DEV MODE</DevBadge>}
 

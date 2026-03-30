@@ -36,7 +36,7 @@ const handleResultClick = (event: MouseEvent<HTMLAnchorElement>, history?: Histo
  */
 export default function TabLink({ href, history, children, ...props }: TabLinkProps) {
   return (
-    <Link href={href} onClick={(e) => handleResultClick(e, history)} {...props}>
+    <Link href={href} onClick={(e) => handleResultClick(e, history)} sx={{ textDecoration: "none", "&:hover": { textDecoration: "underline" } }} {...props}>
       {children}
     </Link>
   );
