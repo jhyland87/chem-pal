@@ -124,7 +124,7 @@ export default abstract class SupplierBaseAmazon
     limit = 10;
     const queryPagination = async (paginationQuery: string, page: number = 1) => {
       const response = await this.httpPost({
-        path: `/s/query?k=${paginationQuery}&page=${page}&${this.extraParams || ""}`,
+        path: `/s?k=${paginationQuery}&page=${page}&${this.extraParams || ""}`,
         // path: `/s/query`, //?i=industrial&k=${paginationQuery}&page=${page}`,
         // params: {
         //   i: "industrial",
@@ -167,26 +167,44 @@ export default abstract class SupplierBaseAmazon
     );
 
     console.debug("resultPages:", resultPages);
-
-    if (
-      !resultPages ||
-      !Array.isArray(resultPages) ||
-      resultPages.length === 0 ||
-      !Array.isArray(resultPages[0])
-    ) {
-      throw new Error("Result pages either not found or invalid");
+    if (!resultPages || !Array.isArray(resultPages) || resultPages.length === 0) {
+      throw new Error("Result pages not found");
     }
 
-    const results = mapDefined(resultPages[0], (page: unknown) => {
-      if (!page) return [];
-      if (!Array.isArray(page)) return [];
-      if (page.length !== 3) return [];
-      if (page[0] !== "dispatch") return [];
-      if (!page[1].startsWith("data-main-slot:search-result-")) return [];
-      return this.parseSearchResult(
-        page[2].html.replaceAll(`${this.supplierName}+${query}`, ""),
-        this.baseURL,
-      );
+    const searchTerm = `${this.queryPrefix ?? this.supplierName}+${query}`;
+
+    const results = resultPages.flatMap((resultPage) => {
+      if (!resultPage) return [];
+
+      // New format: response is an HTML string
+      if (typeof resultPage === "string") {
+        const htmlWithoutSearchTerm = resultPage.replaceAll(searchTerm, "");
+        const doc = createDOM(htmlWithoutSearchTerm);
+        const resultElements = doc.querySelectorAll(
+          '[data-component-type="s-search-result"][data-asin]',
+        );
+        return mapDefined(Array.from(resultElements), (el) => {
+          if (!el.getAttribute("data-asin")) return;
+          return this.parseSearchResult(el.outerHTML, this.baseURL);
+        });
+      }
+
+      // Old format: response is an array of ["dispatch", "data-main-slot:search-result-N", {html}]
+      if (Array.isArray(resultPage)) {
+        return mapDefined(resultPage, (page: unknown) => {
+          if (!page) return;
+          if (!Array.isArray(page)) return;
+          if (page.length !== 3) return;
+          if (page[0] !== "dispatch") return;
+          if (!page[1].startsWith("data-main-slot:search-result-")) return;
+          return this.parseSearchResult(
+            page[2].html.replaceAll(searchTerm, ""),
+            this.baseURL,
+          );
+        });
+      }
+
+      return [];
     });
 
     console.debug("Parsed results:", results);

@@ -89,7 +89,7 @@ The zip file will be downloaded with the directory structure ready to extract.
 
 ```bash
 # Extract the downloaded zip into this directory
-unzip ~/Downloads/response-aggregate-*.zip -d tests/mock-requests/responses/
+unzip ~/Downloads/response-aggregate-*.zip -d e2e/mock-requests/responses/
 ```
 
 ### Step 5: Use in Tests
@@ -103,7 +103,7 @@ import { setupMockRoutes } from "../helpers/mockRoutes";
 
 test("search for acid returns mocked results", async ({ page }) => {
   await setupMockRoutes(page, {
-    responsesDir: "tests/mock-requests/responses",
+    responsesDir: "e2e/mock-requests/responses",
     fallback: "abort", // fail if no mock found (default)
   });
 
@@ -116,7 +116,7 @@ test("search for acid returns mocked results", async ({ page }) => {
 - **Multiple queries:** Run multiple searches in aggregate mode before downloading — all responses accumulate in a single session.
 - **Updating mocks:** Re-run the aggregate flow to capture fresh responses. The hash-based naming means unchanged requests produce the same filenames.
 - **Debugging:** If a test fails with a missing mock, check the test output for the expected hash and verify the file exists in the correct hostname directory.
-- **Copying to MSW:** To use captured responses with unit tests, copy them from `tests/mock-requests/responses/` to `src/__mocks__/responses/`:
+- **Copying to MSW:** To use captured responses with unit tests, copy them from `e2e/mock-requests/responses/` to `src/__mocks__/responses/`:
   ```bash
-  cp -r tests/mock-requests/responses/* src/__mocks__/responses/
+  cp -r e2e/mock-requests/responses/* src/__mocks__/responses/
   ```

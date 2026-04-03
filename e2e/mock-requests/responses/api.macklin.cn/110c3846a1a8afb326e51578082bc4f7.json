@@ -1,0 +1,8 @@
+{
+  "contentType": "application/json",
+  "content": "JTdCJTIyY29kZSUyMiUzQTIwMCUyQyUyMm1lc3NhZ2UlMjIlM0ElMjJzdWNjZXNzJTIyJTJDJTIyZGF0YSUyMiUzQSU3QiUyMnRpbWVzdGFtcCUyMiUzQTE3NzUxOTgyMjglN0QlN0Q=",
+  "_request": {
+    "url": "https://api.macklin.cn/api/timestamp",
+    "method": "GET"
+  }
+}

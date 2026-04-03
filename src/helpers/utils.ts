@@ -221,7 +221,9 @@ export function firstMap<T, R>(fn: (arg: T) => R | void, properties: T[]): R | v
  * const nums = ["1", "a", "2", "b", "3"];
  * const parseNum = (s: string) => isNaN(Number(s)) ? undefined : Number(s);
  * mapDefined(nums, parseNum) // Returns [1, 2, 3]
- *
+ * ```
+ * @example
+ * ```typescript
  * const users = [{name: "Alice"}, null, {name: "Bob"}];
  * const getName = (user: any) => user?.name;
  * mapDefined(users, getName) // Returns ["Alice", "Bob"]
@@ -321,6 +323,55 @@ export function tryParseJson(data: unknown): unknown | false {
   } catch {
     return false;
   }
+}
+
+/**
+ * Extracts and parses the first top-level JSON array or object from a string
+ * that may contain trailing non-JSON content (e.g. delimiters like "&&&").
+ * @param data - The string containing JSON with possible trailing junk
+ * @returns The parsed JSON value
+ * @throws Error if no JSON array/object is found or if the JSON is malformed
+ * @example
+ * ```typescript
+ * parseJsonFromDirtyString('[ "a", "b" ]\n&&&\n') // Returns ["a", "b"]
+ * parseJsonFromDirtyString('{"key": "val"} some junk') // Returns {key: "val"}
+ * ```
+ * @source
+ */
+export function parseJsonFromDirtyString(data: string): unknown {
+  const trimmed = data.trim();
+  const openBracket = trimmed.search(/[\[{]/);
+  if (openBracket === -1) throw new Error("No JSON array or object found in string");
+
+  const openChar = trimmed[openBracket];
+  const closeChar = openChar === "[" ? "]" : "}";
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let i = openBracket; i < trimmed.length; i++) {
+    const ch = trimmed[i];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (ch === "\\") {
+      escaped = true;
+      continue;
+    }
+    if (ch === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+    if (ch === openChar) depth++;
+    else if (ch === closeChar) depth--;
+    if (depth === 0) {
+      return JSON.parse(trimmed.slice(openBracket, i + 1));
+    }
+  }
+
+  throw new Error("Unterminated JSON in string");
 }
 
 /**

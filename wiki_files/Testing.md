@@ -105,7 +105,7 @@ C["DevTools Console:\nwindow.__responseAggregate.download()"]
 end
 
 subgraph Step4["4. Extract"]
-E["unzip to\ntests/mock-requests/responses/"]
+E["unzip to\ne2e/mock-requests/responses/"]
 end
 
 Step1 --> Step2 --> Step3 --> Step4
@@ -126,7 +126,7 @@ class B,L,S,C,E step
    window.__responseAggregate.download() // Download as zip
    window.__responseAggregate.clear()   // Reset
    ```
-5. **Extract**: `unzip ~/Downloads/response-aggregate-*.zip -d tests/mock-requests/responses/`
+5. **Extract**: `unzip ~/Downloads/response-aggregate-*.zip -d e2e/mock-requests/responses/`
 
 ### Using Mocks in Tests
 
@@ -136,7 +136,7 @@ Mock files in `src/__mocks__/responses/` are automatically loaded by the MSW han
 
 ```bash
 # Copy captured responses for unit tests
-cp -r tests/mock-requests/responses/* src/__mocks__/responses/
+cp -r e2e/mock-requests/responses/* src/__mocks__/responses/
 ```
 
 **E2E tests (Playwright):**
@@ -146,7 +146,7 @@ import { setupMockRoutes } from "../helpers/mockRoutes";
 
 test("search for acid returns mocked results", async ({ page }) => {
   await setupMockRoutes(page, {
-    responsesDir: "tests/mock-requests/responses",
+    responsesDir: "e2e/mock-requests/responses",
     fallback: "abort", // fail if no mock found (default)
   });
 
