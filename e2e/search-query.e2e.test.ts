@@ -8,7 +8,7 @@ import { setupMockRoutes } from "@e2e/helpers/mockRoutes";
 const buildDir = path.resolve(__dirname, "..", "build");
 const mockResponsesDir = path.resolve(__dirname, "mock-requests/responses");
 
-describe("Chem Pal Extension E2E", () => {
+describe("Chem-Pal search query", () => {
   let context: BrowserContext;
   let extensionId: string;
 

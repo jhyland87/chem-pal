@@ -12,6 +12,9 @@ This diagram details how ChemPal caches search results and product data using `c
 
 ## Diagram
 
+> [!TIP]
+> If the below graphs fail to load, try refreshing without cache (`shift`+`command`+`r` on OSX, `Ctrl`+`F5` on Windows virus)
+
 ```mermaid
 flowchart TB
 
