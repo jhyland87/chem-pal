@@ -1,6 +1,12 @@
+import path from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@e2e": path.resolve(__dirname, "e2e"),
+    },
+  },
   test: {
     include: ["e2e/**/*.e2e.test.ts"],
     testTimeout: 60_000,

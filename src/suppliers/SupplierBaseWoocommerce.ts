@@ -240,7 +240,9 @@ export default abstract class SupplierBaseWoocommerce
   ): Promise<ProductBuilder<Product> | void> {
     return this.getProductDataWithCache(product, async (builder) => {
       const variantList = builder.get("variants");
-      if (variantList?.length === 0) return builder;
+      if (!variantList?.length) {
+        return builder;
+      }
 
       const variants = await Promise.all(
         mapDefined(variantList, async (variant: Partial<Variant>) => {

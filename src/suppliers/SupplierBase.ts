@@ -5,18 +5,18 @@ import Logger from "@/utils/Logger";
 import ProductBuilder from "@/utils/ProductBuilder";
 import SupplierCache from "@/utils/SupplierCache";
 import {
-  isHtmlResponse,
-  isHttpResponse,
-  isJsonResponse,
-  isMinimalProduct,
-} from "@/utils/typeGuards/common";
-import {
   incrementFailure,
   incrementParseError,
   incrementProductCount,
   incrementSearchQueryCount,
   incrementSuccess,
 } from "@/utils/SupplierStatsStore";
+import {
+  isHtmlResponse,
+  isHttpResponse,
+  isJsonResponse,
+  isMinimalProduct,
+} from "@/utils/typeGuards/common";
 import { Queue } from "async-await-queue";
 import { extract, WRatio } from "fuzzball";
 import { type JsonValue } from "type-fest";
@@ -971,11 +971,13 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     limit: number = this.limit,
   ): Promise<ProductBuilder<T>[] | void> {
     // Check cache first (processed product data)
+    console.debug("queryProductsWithCache: called for", this.supplierName, "query:", query, "limit:", limit);
     const key = this.cache.generateCacheKey(query, this.supplierName);
     const result = await chrome.storage.local.get(SupplierCache.getQueryCacheKey());
     const cache =
       (result[SupplierCache.getQueryCacheKey()] as Record<string, CachedData<unknown>>) || {};
     const cached = cache[key];
+    console.debug("queryProductsWithCache: cache hit:", !!cached, "key:", key);
     if (cached) {
       // If the cached limit is less than the requested limit, invalidate the cache
       if (
@@ -1034,9 +1036,13 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     const tasks = this.products.map((product) =>
       queue.run(async () => {
         try {
+          console.log(`Product data for ${this.supplierName}:`, product);
           const builder = await this.getProductData(product);
           if (!builder) return;
+
+          console.log(`Builder data for ${this.supplierName}:`, builder);
           const finished = await this.finishProduct(builder);
+          console.log(`Finished product data for ${this.supplierName}:`, finished);
           if (finished) {
             return finished;
           }

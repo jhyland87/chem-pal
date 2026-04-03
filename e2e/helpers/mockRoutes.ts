@@ -107,7 +107,7 @@ function normalizeUrl(urlStr: string): string {
 }
 
 interface SetupOptions {
-  /** Path to directory containing mock response files. Defaults to `tests/mock-requests/responses` */
+  /** Path to directory containing mock response files. Defaults to `e2e/mock-requests/responses` */
   responsesDir?: string;
   /** What to do when no mock is found: "abort" (default) or "passthrough" */
   fallback?: "abort" | "passthrough";
@@ -129,7 +129,7 @@ interface SetupOptions {
  */
 export async function setupMockRoutes(page: Page, options: SetupOptions = {}): Promise<void> {
   const {
-    responsesDir = join(process.cwd(), "tests/mock-requests/responses"),
+    responsesDir = join(process.cwd(), "e2e/mock-requests/responses"),
     fallback = "abort",
     verbose = false,
   } = options;

@@ -24,6 +24,10 @@
 //export { default as SupplierAkmekem } from "./SupplierAkmekem";
 // BunmurraLabs is under construction, new website only has default shopping cart items.
 //export { default as SupplierBunmurraLabs } from "./supplierBunmurraLabs";
+//export { default as SupplierN2O3 } from "./SupplierN2O3";
+
+export { default as SupplierHimedia } from "./SupplierHimedia";
+
 export { default as SupplierAmbeed } from "./SupplierAmbeed";
 export { default as SupplierBioFuranChem } from "./SupplierBiofuranChem";
 export { default as SupplierCarolina } from "./SupplierCarolina";
@@ -31,14 +35,12 @@ export { default as SupplierCarolinaChemical } from "./SupplierCarolinaChemical"
 export { default as SupplierChemsavers } from "./SupplierChemsavers";
 export { default as SupplierFtfScientific } from "./SupplierFtfScientific";
 export { default as SupplierHbarSci } from "./SupplierHbarSci";
-export { default as SupplierHimedia } from "./SupplierHimedia";
 export { default as SupplierInnovatingScience } from "./SupplierInnovatingScience";
 export { default as SupplierLaballey } from "./SupplierLaballey";
 export { default as SupplierLaboratoriumDiscounter } from "./SupplierLaboratoriumDiscounter";
 export { default as SupplierLibertySci } from "./SupplierLibertySci";
 export { default as SupplierLoudwolf } from "./SupplierLoudwolf";
 export { default as SupplierMacklin } from "./SupplierMacklin";
-//export { default as SupplierN2O3 } from "./SupplierN2O3";
 export { default as SupplierOnyxmet } from "./SupplierOnyxmet";
 export { default as SupplierSynthetika } from "./SupplierSynthetika";
 export { default as SupplierWarchem } from "./SupplierWarchem";

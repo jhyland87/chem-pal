@@ -28,7 +28,7 @@ import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "@/constants/currency";
  * @source
  */
 export function isHttpResponse(value: unknown): value is Response {
-  return (
+  const result =
     value !== null &&
     typeof value === "object" &&
     "ok" in value &&
@@ -37,8 +37,9 @@ export function isHttpResponse(value: unknown): value is Response {
     "json" in value &&
     "text" in value &&
     typeof (value as Response).json === "function" &&
-    typeof (value as Response).text === "function"
-  );
+    typeof (value as Response).text === "function";
+  console.log(`isHttpResponse for ${value}:`, result);
+  return result;
 }
 
 /**
@@ -99,11 +100,15 @@ export function isUOM(uom: unknown): uom is UOM {
  * @source
  */
 export function isJsonResponse(response: unknown): response is Response {
-  if (!isHttpResponse(response)) return false;
+  if (!isHttpResponse(response)) {
+    console.log(`isJsonResponse for ${response}:`, false);
+    return false;
+  }
   const contentType = (response as Response).headers.get("Content-Type");
-  return (
-    contentType !== null && (contentType.includes("/json") || contentType.includes("/javascript"))
-  );
+  const result =
+    contentType !== null && (contentType.includes("/json") || contentType.includes("/javascript"));
+  console.log(`isJsonResponse for ${response}:`, result);
+  return result;
 }
 
 /**
@@ -294,7 +299,10 @@ export function isValidResult(value: unknown): value is RequiredProductFields {
  * @source
  */
 export function isMinimalProduct(product: unknown): product is RequiredProductFields {
-  if (!product || typeof product !== "object") return false;
+  if (!product || typeof product !== "object") {
+    console.log(`isMinimalProduct for ${product}:`, false);
+    return false;
+  }
 
   const requiredProps: Record<keyof RequiredProductFields, string> = {
     title: "string",
@@ -307,7 +315,7 @@ export function isMinimalProduct(product: unknown): product is RequiredProductFi
     currencySymbol: "string",
   };
 
-  return Object.entries(requiredProps).every(([key, expectedType]) => {
+  const result = Object.entries(requiredProps).every(([key, expectedType]) => {
     if (key in product === false) {
       console.warn(`No ${key} value found in product`, product);
       return false;
@@ -323,6 +331,8 @@ export function isMinimalProduct(product: unknown): product is RequiredProductFi
 
     return true;
   });
+  console.log(`isMinimalProduct for ${product}:`, result);
+  return result;
 }
 
 /**

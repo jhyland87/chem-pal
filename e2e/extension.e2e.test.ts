@@ -3,9 +3,10 @@ import { execSync } from "node:child_process";
 import path from "node:path";
 import { type BrowserContext, type Page, chromium } from "playwright";
 import { afterAll, beforeAll, describe, it, expect as vitestExpect } from "vitest";
-import { setupMockRoutes } from "./helpers/mockRoutes";
+import { setupMockRoutes } from "@e2e/helpers/mockRoutes";
 
 const buildDir = path.resolve(__dirname, "..", "build");
+const mockResponsesDir = path.resolve(__dirname, "mock-requests/responses");
 
 describe("Chem Pal Extension E2E", () => {
   let context: BrowserContext;
@@ -72,12 +73,12 @@ describe("Chem Pal Extension E2E", () => {
     await page.close();
   }, 30_000);
 
-  it("should search for 'borohydride' and display results from mock data", async () => {
+  it("should query for 'potassium' and display 78 results from mock data", async () => {
     const page = await openExtension();
 
     // Set up mock routes to intercept all HTTPS requests
     await setupMockRoutes(page, {
-      responsesDir: path.resolve(__dirname, "..", "tests/mock-requests/responses"),
+      responsesDir: mockResponsesDir,
       fallback: "passthrough",
       verbose: false,
     });
@@ -86,37 +87,31 @@ describe("Chem Pal Extension E2E", () => {
     const searchInput = page.getByRole("textbox", {
       name: "search for products",
     });
-    await searchInput.fill("borohydride");
+    await searchInput.fill("potassium");
     await page.getByRole("button", { name: "search" }).click();
 
-    // Wait for search to complete: the status button shows "Loading..." or
-    // "Found N results.." while searching. Wait for it to appear (search started),
-    // then wait for it to disappear (search finished, backdrop closed).
-    const statusButton = page.locator("#loading-backdrop .status-button");
-    await statusButton.waitFor({ state: "visible", timeout: 10_000 });
-    await statusButton.waitFor({ state: "hidden", timeout: 120_000 });
-
-    // Verify results appeared — check the results count display
+    // Wait for search to complete: the backdrop appears while searching, then
+    // disappears when done. The results count text confirms data has loaded.
+    // Use the results count as the primary signal since the backdrop can
+    // appear and disappear faster than the polling interval.
     const resultsCount = page.locator("text=Results:");
-    await playwrightExpect(resultsCount).toContainText(/Results: [1-9]\d*/, {
-      timeout: 10_000,
+    await playwrightExpect(resultsCount).toContainText("Results: 78", {
+      timeout: 120_000,
     });
 
-    // Change the page size to 50 so all rows are visible
+    // Change the page size to "All" so all rows are visible
     // MUI Select renders a custom dropdown — target the trigger div by aria-label
     const pageSizeSelect = page.locator('[aria-label="rows per page"]');
     await pageSizeSelect.click();
-    await page.getByRole("option", { name: "50" }).click();
+    await page.getByRole("option", { name: "All" }).click();
 
-    // Verify table rows are visible (skip the hidden measurement table)
-    const rows = page.locator(".styled-table-cell").first();
-    await playwrightExpect(rows).toBeVisible({ timeout: 5_000 });
+    // Verify table rows are visible (skip the hidden measurement table which is first in DOM)
+    const resultsTable = page.locator("table").nth(1);
+    const firstCell = resultsTable.locator("tbody tr td").first();
+    await playwrightExpect(firstCell).toBeVisible({ timeout: 5_000 });
 
-    const rowCount = await page
-      .locator("tbody tr")
-      .filter({ has: page.locator(".styled-table-cell") })
-      .count();
-    vitestExpect(rowCount).toBeGreaterThan(0);
+    const rowCount = await resultsTable.locator("tbody tr").filter({ has: page.locator("td") }).count();
+    vitestExpect(rowCount).toBe(78);
 
     // Pause so you can inspect DevTools (Network tab, console, etc.)
     // The test will wait here until you call `playwright.resume()` in the
