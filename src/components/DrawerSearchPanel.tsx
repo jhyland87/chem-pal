@@ -1,0 +1,189 @@
+import SupplierFactory from "@/suppliers/SupplierFactory";
+import {
+  Accordion,
+  Box,
+  Button,
+  Checkbox,
+  Chip,
+  InputAdornment,
+  List,
+  TextField,
+  Typography,
+} from "@mui/material";
+import React, { useState } from "react";
+import styles from "./DrawerSearchPanel.module.scss";
+
+import {
+  ExpandMore as ExpandMoreIcon,
+  Search as SearchIcon,
+} from "@mui/icons-material";
+
+import {
+  StyledAccordionDetails,
+  StyledAccordionDetailsNoPadding,
+  StyledAccordionSummary,
+  StyledListItemText,
+  SupplierListItem,
+} from "./StyledComponents";
+
+import { useAppContext } from "../context";
+
+const DrawerSearchPanel: React.FC<{
+  expandedAccordion: string | false;
+  onAccordionChange: (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => void;
+}> = ({ expandedAccordion, onAccordionChange }) => {
+  const [selectedAvailability, setSelectedAvailability] = useState<string[]>(["In Stock"]);
+  const { selectedSuppliers, setSelectedSuppliers, userSettings, setUserSettings, setDrawerTab } =
+    useAppContext();
+
+  const availability = ["In Stock", "Limited Stock", "Out of Stock", "Pre-order"];
+  const suppliers = SupplierFactory.supplierList();
+
+  const toggleAvailability = (option: string) => {
+    setSelectedAvailability((prev) =>
+      prev.includes(option) ? prev.filter((item) => item !== option) : [...prev, option],
+    );
+  };
+
+  const toggleSupplier = (supplier: string) => {
+    console.log("toggleSupplier", supplier);
+    const newSelectedSuppliers = selectedSuppliers.includes(supplier)
+      ? selectedSuppliers.filter((s) => s !== supplier)
+      : [...selectedSuppliers, supplier];
+
+    setSelectedSuppliers(newSelectedSuppliers);
+    console.log("selectedSuppliers", newSelectedSuppliers);
+  };
+
+  return (
+    <Box>
+      <Accordion
+        expanded={expandedAccordion === "search-availability"}
+        onChange={onAccordionChange("search-availability")}
+      >
+        <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography>Availability</Typography>
+        </StyledAccordionSummary>
+        <StyledAccordionDetails>
+          <Box className={styles['chip-container']}>
+            {availability.map((option) => (
+              <Chip
+                key={option}
+                label={option}
+                size="small"
+                onClick={() => toggleAvailability(option)}
+                color={selectedAvailability.includes(option) ? "primary" : "default"}
+                variant={selectedAvailability.includes(option) ? "filled" : "outlined"}
+              />
+            ))}
+          </Box>
+        </StyledAccordionDetails>
+      </Accordion>
+
+      <Accordion
+        expanded={expandedAccordion === "search-supplier"}
+        onChange={onAccordionChange("search-supplier")}
+      >
+        <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography>Search Suppliers</Typography>
+        </StyledAccordionSummary>
+        <StyledAccordionDetailsNoPadding className={styles['supplier-list-accordion']}>
+          <List dense className={styles['supplier-list']}>
+            {suppliers.map((supplier) => (
+              <SupplierListItem key={supplier} onClick={() => toggleSupplier(supplier)}>
+                <Checkbox
+                  edge="start"
+                  checked={selectedSuppliers.includes(supplier)}
+                  tabIndex={-1}
+                  disableRipple
+                  size="small"
+                />
+                <StyledListItemText primary={supplier} />
+              </SupplierListItem>
+            ))}
+          </List>
+        </StyledAccordionDetailsNoPadding>
+      </Accordion>
+
+      <Accordion
+        expanded={expandedAccordion === "per-supplier-limit"}
+        onChange={onAccordionChange("per-supplier-limit")}
+      >
+        <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography>Results Limit</Typography>
+        </StyledAccordionSummary>
+        <StyledAccordionDetails>
+          <TextField
+            style={{ width: "100%" }}
+            label="Results Limit (per Supplier)"
+            value={userSettings.supplierResultLimit}
+            onChange={(e) =>
+              setUserSettings({
+                ...userSettings,
+                supplierResultLimit: parseInt(e.target.value) || undefined,
+              })
+            }
+          />
+        </StyledAccordionDetails>
+      </Accordion>
+
+      <Accordion
+        expanded={expandedAccordion === "search-price"}
+        onChange={onAccordionChange("search-price")}
+      >
+        <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography>Price Range</Typography>
+        </StyledAccordionSummary>
+        <StyledAccordionDetails>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <TextField
+              label="Min"
+              type="number"
+              size="small"
+              value={userSettings.priceMin ?? ""}
+              onChange={(e) =>
+                setUserSettings({
+                  ...userSettings,
+                  priceMin: e.target.value ? parseFloat(e.target.value) : undefined,
+                })
+              }
+              InputProps={{
+                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+              }}
+              inputProps={{ min: 0 }}
+            />
+            <TextField
+              label="Max"
+              type="number"
+              size="small"
+              value={userSettings.priceMax ?? ""}
+              onChange={(e) =>
+                setUserSettings({
+                  ...userSettings,
+                  priceMax: e.target.value ? parseFloat(e.target.value) : undefined,
+                })
+              }
+              InputProps={{
+                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+              }}
+              inputProps={{ min: 0 }}
+            />
+          </Box>
+        </StyledAccordionDetails>
+      </Accordion>
+
+      <Box sx={{ p: 2 }}>
+        <Button
+          variant="contained"
+          fullWidth
+          startIcon={<SearchIcon />}
+          onClick={() => setDrawerTab(-1)}
+        >
+          Search
+        </Button>
+      </Box>
+    </Box>
+  );
+};
+
+export default DrawerSearchPanel;

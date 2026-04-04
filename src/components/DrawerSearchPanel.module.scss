@@ -1,0 +1,11 @@
+.chip-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.supplier-list {
+  max-height: 200px;
+  overflow: auto;
+  width: 100%;
+}

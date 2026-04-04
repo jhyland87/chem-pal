@@ -1,3 +1,6 @@
+import { locations } from "@/../config.json";
+import { CountryFlagTooltip } from "@/components/StyledComponents";
+import { default as Link } from "@/components/TabLink";
 import { omit } from "@/helpers/collectionUtils";
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
@@ -9,9 +12,6 @@ import {
 } from "@tanstack/react-table";
 import { hasFlag } from "country-flag-icons";
 import getUnicodeFlagIcon from "country-flag-icons/unicode";
-import { locations } from "../../../config.json";
-import { CountryFlagTooltip } from "../StyledComponents";
-import { default as Link } from "../TabLink";
 import styles from "./TableColumns.module.scss";
 
 /**
@@ -42,9 +42,13 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
               onClick: row.getToggleExpandedHandler(),
               style: { cursor: "pointer" },
             }}
-            className={styles['svg-button-icon']}
+            className={styles["svg-button-icon"]}
           >
-            {row.getIsExpanded() ? <ArrowDropDownIcon fontSize="small" /> : <ArrowRightIcon fontSize="small" />}
+            {row.getIsExpanded() ? (
+              <ArrowDropDownIcon fontSize="small" />
+            ) : (
+              <ArrowRightIcon fontSize="small" />
+            )}
           </button>
         ) : null;
       },

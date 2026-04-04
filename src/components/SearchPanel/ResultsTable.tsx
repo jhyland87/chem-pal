@@ -22,15 +22,14 @@ import {
   Typography,
 } from "@mui/material";
 
+import DrawerSystem from "@/components/DrawerSystem";
+import LoadingBackdrop from "@/components/LoadingBackdrop";
+import resultStyles from "@/components/ResultsPanel.module.scss";
+import { generatePageSizes } from "@/helpers/utils";
+import { useDebouncedCallback } from "@/shared/hooks";
 import { Column, ColumnFiltersState, flexRender, Header, Row } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
 import React, { Dispatch, ReactElement, SetStateAction, useEffect, useState } from "react";
-import { generatePageSizes } from "../../helpers/utils";
-
-import { useDebouncedCallback } from "../../shared/hooks";
-import DrawerSystem from "../DrawerSystem";
-import LoadingBackdrop from "../LoadingBackdrop";
-import resultStyles from "../ResultsPanel.module.scss";
 import {
   BackButton,
   ColoredIconButton,
@@ -226,9 +225,9 @@ export default function ResultsTable({
       />
       <DrawerSystem />
 
-      <div className={resultStyles['results-container']}>
-        <div className={resultStyles['results-header']}>
-          <div className={resultStyles['header-left']}>
+      <div className={resultStyles["results-container"]}>
+        <div className={resultStyles["results-header"]}>
+          <div className={resultStyles["header-left"]}>
             {appContext?.setPanel && (
               <BackButton
                 onClick={() => appContext.setPanel!(0)}
@@ -239,7 +238,7 @@ export default function ResultsTable({
               </BackButton>
             )}
           </div>
-          <div className={resultStyles['header-right']}>
+          <div className={resultStyles["header-right"]}>
             <FilterIconButton
               onClick={toggleFilters}
               size="small"
@@ -288,9 +287,14 @@ export default function ResultsTable({
           )}
         </ResultsHeaderContainer>
 
-        <Box className={`${resultStyles['results-paper']} ${resultStyles['results-paper-container']}`}>
+        <Box
+          className={`${resultStyles["results-paper"]} ${resultStyles["results-paper-container"]}`}
+        >
           {/* Hidden measurement table for auto-sizing */}
-          <table className={resultStyles['hidden-measurement-table']} {...getMeasurementTableProps()}>
+          <table
+            className={resultStyles["hidden-measurement-table"]}
+            {...getMeasurementTableProps()}
+          >
             <thead>
               <tr>
                 {table.getAllLeafColumns().map((col) => (
@@ -368,7 +372,7 @@ export default function ResultsTable({
                     {row.getVisibleCells().map((cell) => (
                       <StyledTableCell
                         key={cell.id}
-                        className={resultStyles['styled-table-cell']}
+                        className={resultStyles["styled-table-cell"]}
                         style={{
                           textAlign: cell.column.columnDef.meta?.style?.textAlign,
                         }}
@@ -379,7 +383,7 @@ export default function ResultsTable({
                   </SubRowTableRow>
                 ))
               ) : (
-                <TableRow className={resultStyles['styled-table-row']}>
+                <TableRow className={resultStyles["styled-table-row"]}>
                   <EmptyStateCell colSpan={table.getAllColumns().length}>
                     {optimisticResults.length === 0
                       ? tableText || "No search query"
@@ -394,11 +398,11 @@ export default function ResultsTable({
 
           {/* Enhanced error handling */}
           {error && (
-            <ErrorContainer className={resultStyles['error-container']}>
+            <ErrorContainer className={resultStyles["error-container"]}>
               <p>Error: {error}</p>
               <ErrorRetryButton
                 onClick={() => window.location.reload()}
-                className={resultStyles['error-retry-button']}
+                className={resultStyles["error-retry-button"]}
               >
                 Retry
               </ErrorRetryButton>
