@@ -30,7 +30,7 @@ export const lightPalette = {
   text: "#1a1a1a",
   primaryInterface: "#ffffff",
   paperBackground: "#f8f9fa",
-  notificationBg: "#007bff",
+  notificationBg: "#2C4060",
   lightGray: "#f0f0f0",
   borderLight: "#e0e0e0",
   drawerBackground: "#ffffff",
@@ -177,7 +177,7 @@ export const lightTheme: Theme = createTheme({
     mode: "light",
     primary: {
       main: lightPalette.notificationBg,
-      contrastText: lightPalette.text,
+      contrastText: "#ffffff",
     },
     background: {
       default: lightPalette.paperBackground,

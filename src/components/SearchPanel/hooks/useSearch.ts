@@ -1,10 +1,10 @@
+import { getColumnFilterConfig } from "@/components/SearchPanel/TableColumns";
 import { useAppContext } from "@/context";
 import { getCompoundNameFromAlias } from "@/helpers/pubchem";
 import SupplierFactory from "@/suppliers/SupplierFactory";
 import BadgeAnimator from "@/utils/BadgeAnimator";
 import { type Table } from "@tanstack/react-table";
 import { startTransition, useCallback, useEffect, useRef, useState } from "react";
-import { getColumnFilterConfig } from "../TableColumns";
 
 interface SearchState {
   isLoading: boolean;
@@ -51,7 +51,11 @@ export function useSearch() {
   useEffect(() => {
     const loadSearchData = async () => {
       try {
-        const data = await chrome.storage.session.get(["searchResults", "searchInput", "isNewSearch"]);
+        const data = await chrome.storage.session.get([
+          "searchResults",
+          "searchInput",
+          "isNewSearch",
+        ]);
         if (
           data.searchResults &&
           Array.isArray(data.searchResults) &&
