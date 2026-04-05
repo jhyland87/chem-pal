@@ -88,6 +88,27 @@ export default class SupplierFactory<P extends Product> {
   }
 
   /**
+   * Get a map of supplier module names to their display names.
+   *
+   * @returns Record mapping supplier class names to their supplierName property
+   * @source
+   */
+  public static supplierDisplayNames(): Record<string, string> {
+    const controller = new AbortController();
+    const names: Record<string, string> = {};
+    for (const [key, SupplierClass] of Object.entries(suppliers)) {
+      const ConcreteClass = SupplierClass as unknown as new (
+        query: string,
+        limit: number,
+        controller: AbortController,
+      ) => SupplierBase<unknown, Product>;
+      const instance = new ConcreteClass("", 1, controller);
+      names[key] = instance.supplierName;
+    }
+    return names;
+  }
+
+  /**
    * Executes the execute() method on all selected suppliers in parallel using async-await-queue.
    * Results are collected and flattened into a single array.
    *

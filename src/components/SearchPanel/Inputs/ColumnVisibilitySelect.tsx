@@ -1,3 +1,4 @@
+import { FilterListItemIcon } from "@/components/Styles";
 import {
   Checkbox,
   FormControl,
@@ -7,7 +8,6 @@ import {
   ListItemText,
   SelectChangeEvent,
 } from "@mui/material";
-import { FilterListItemIcon } from "../../Styles";
 import styles from "./ColumnVisibilitySelect.module.scss";
 
 /**
@@ -87,28 +87,30 @@ export default function ColumnVisibilitySelect({
   };
 
   return (
-    <FormControl component="fieldset" variant="standard" className={styles['column-visibility-select']}>
+    <FormControl
+      component="fieldset"
+      variant="standard"
+      className={styles["column-visibility-select"]}
+    >
       {/*<FormLabel component="legend">Column Visibility</FormLabel>*/}
-      <List className={styles['column-visibility-select__list']}>
+      <List dense className={styles["column-visibility-select__list"]}>
         {/* Defaults checkbox */}
         <ListItem key="defaults" disablePadding>
-          <ListItemButton className={styles['column-visibility-select__list-item-btn']} role={undefined} onClick={handleDefaultsSelect} dense>
+          <ListItemButton role={undefined} onClick={handleDefaultsSelect} dense>
             <FilterListItemIcon>
               <Checkbox
                 size="small"
                 edge="start"
-                className={styles['column-visibility-select__checkbox']}
                 checked={isDefaultsChecked}
                 tabIndex={-1}
                 disableRipple
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                inputProps={{ "aria-labelledby": "checkbox-list-label-defaults" }}
+                slotProps={{ input: { "aria-labelledby": "checkbox-list-label-defaults" } }}
               />
             </FilterListItemIcon>
             <ListItemText
               id="checkbox-list-label-defaults"
               primary="Defaults"
-              primaryTypographyProps={{ variant: "body2", fontWeight: "medium" }}
+              slotProps={{ primary: { variant: "body2", fontWeight: "medium" } }}
             />
           </ListItemButton>
         </ListItem>
@@ -121,25 +123,22 @@ export default function ColumnVisibilitySelect({
 
             return (
               <ListItem key={key} disablePadding>
-                <ListItemButton
-                  sx={{ padding: 0 }}
-                  role={undefined}
-                  onClick={() => handleColumnSelect(key)}
-                  dense
-                >
+                <ListItemButton role={undefined} onClick={() => handleColumnSelect(key)} dense>
                   <FilterListItemIcon>
                     <Checkbox
                       size="small"
                       edge="start"
-                      className={styles['column-visibility-select__checkbox']}
                       checked={columnVisibility.includes(key)}
                       tabIndex={-1}
                       disableRipple
-                      // eslint-disable-next-line @typescript-eslint/naming-convention
-                      inputProps={{ "aria-labelledby": labelId }}
+                      slotProps={{ input: { "aria-labelledby": labelId } }}
                     />
                   </FilterListItemIcon>
-                  <ListItemText id={labelId} primary={name} />
+                  <ListItemText
+                    id={labelId}
+                    primary={name}
+                    slotProps={{ primary: { variant: "body2" } }}
+                  />
                 </ListItemButton>
               </ListItem>
             );

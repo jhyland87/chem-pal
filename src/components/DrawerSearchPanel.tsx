@@ -1,62 +1,81 @@
+import {
+  AVAILABILITY_OPTIONS,
+  SHIPPING_OPTIONS,
+  SUPPLIER_COUNTRY_OPTIONS,
+} from "@/constants/common";
 import SupplierFactory from "@/suppliers/SupplierFactory";
 import {
   Accordion,
+  Autocomplete,
   Box,
   Button,
-  Checkbox,
   Chip,
   InputAdornment,
-  List,
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React from "react";
 import styles from "./DrawerSearchPanel.module.scss";
 
-import {
-  ExpandMore as ExpandMoreIcon,
-  Search as SearchIcon,
-} from "@mui/icons-material";
+import { ExpandMore as ExpandMoreIcon, Search as SearchIcon } from "@mui/icons-material";
 
-import {
-  StyledAccordionDetails,
-  StyledAccordionDetailsNoPadding,
-  StyledAccordionSummary,
-  StyledListItemText,
-  SupplierListItem,
-} from "./StyledComponents";
+import { StyledAccordionDetails, StyledAccordionSummary } from "./StyledComponents";
 
-import { useAppContext } from "../context";
-
+import { useAppContext } from "@/context";
 const DrawerSearchPanel: React.FC<{
   expandedAccordion: string | false;
   onAccordionChange: (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => void;
 }> = ({ expandedAccordion, onAccordionChange }) => {
-  const [selectedAvailability, setSelectedAvailability] = useState<string[]>(["In Stock"]);
-  const { selectedSuppliers, setSelectedSuppliers, userSettings, setUserSettings, setDrawerTab } =
-    useAppContext();
+  const {
+    selectedSuppliers,
+    setSelectedSuppliers,
+    userSettings,
+    setUserSettings,
+    setDrawerTab,
+    setPendingSearchQuery,
+    searchFilters,
+    setSearchFilters,
+  } = useAppContext();
 
-  const availability = ["In Stock", "Limited Stock", "Out of Stock", "Pre-order"];
   const suppliers = SupplierFactory.supplierList();
+  const supplierNames = SupplierFactory.supplierDisplayNames();
 
-  const toggleAvailability = (option: string) => {
-    setSelectedAvailability((prev) =>
-      prev.includes(option) ? prev.filter((item) => item !== option) : [...prev, option],
-    );
+  const toggleChip = (field: "availability" | "country" | "shippingType", value: string) => {
+    const current = searchFilters[field];
+    const updated = current.includes(value)
+      ? current.filter((item) => item !== value)
+      : [...current, value];
+    setSearchFilters({ ...searchFilters, [field]: updated });
   };
 
-  const toggleSupplier = (supplier: string) => {
-    console.log("toggleSupplier", supplier);
-    const newSelectedSuppliers = selectedSuppliers.includes(supplier)
-      ? selectedSuppliers.filter((s) => s !== supplier)
-      : [...selectedSuppliers, supplier];
+  const handleSearch = () => {
+    const query = searchFilters.titleQuery.trim();
+    if (!query) return;
+    setPendingSearchQuery(query);
+    setDrawerTab(-1);
+  };
 
-    setSelectedSuppliers(newSelectedSuppliers);
-    console.log("selectedSuppliers", newSelectedSuppliers);
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
   };
 
   return (
     <Box>
+      {/* Title / Search Query */}
+      <Box sx={{ p: "12px 16px" }}>
+        <TextField
+          fullWidth
+          label="Product name or keyword"
+          size="small"
+          value={searchFilters.titleQuery}
+          onChange={(e) => setSearchFilters({ ...searchFilters, titleQuery: e.target.value })}
+          onKeyDown={handleKeyDown}
+        />
+      </Box>
+
+      {/* Availability */}
       <Accordion
         expanded={expandedAccordion === "search-availability"}
         onChange={onAccordionChange("search-availability")}
@@ -65,21 +84,22 @@ const DrawerSearchPanel: React.FC<{
           <Typography>Availability</Typography>
         </StyledAccordionSummary>
         <StyledAccordionDetails>
-          <Box className={styles['chip-container']}>
-            {availability.map((option) => (
+          <Box className={styles["chip-container"]}>
+            {AVAILABILITY_OPTIONS.map((option) => (
               <Chip
                 key={option}
                 label={option}
                 size="small"
-                onClick={() => toggleAvailability(option)}
-                color={selectedAvailability.includes(option) ? "primary" : "default"}
-                variant={selectedAvailability.includes(option) ? "filled" : "outlined"}
+                onClick={() => toggleChip("availability", option)}
+                color={searchFilters.availability.includes(option) ? "primary" : "default"}
+                variant={searchFilters.availability.includes(option) ? "filled" : "outlined"}
               />
             ))}
           </Box>
         </StyledAccordionDetails>
       </Accordion>
 
+      {/* Search Suppliers */}
       <Accordion
         expanded={expandedAccordion === "search-supplier"}
         onChange={onAccordionChange("search-supplier")}
@@ -87,24 +107,110 @@ const DrawerSearchPanel: React.FC<{
         <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography>Search Suppliers</Typography>
         </StyledAccordionSummary>
-        <StyledAccordionDetailsNoPadding className={styles['supplier-list-accordion']}>
-          <List dense className={styles['supplier-list']}>
-            {suppliers.map((supplier) => (
-              <SupplierListItem key={supplier} onClick={() => toggleSupplier(supplier)}>
-                <Checkbox
-                  edge="start"
-                  checked={selectedSuppliers.includes(supplier)}
-                  tabIndex={-1}
-                  disableRipple
-                  size="small"
-                />
-                <StyledListItemText primary={supplier} />
-              </SupplierListItem>
-            ))}
-          </List>
-        </StyledAccordionDetailsNoPadding>
+        <StyledAccordionDetails>
+          <Autocomplete
+            multiple
+            size="small"
+            options={suppliers}
+            getOptionLabel={(option) => supplierNames[option] ?? option}
+            filterOptions={(options, { inputValue }) => {
+              const term = inputValue.toLowerCase();
+              return options.filter((opt) =>
+                (supplierNames[opt] ?? opt).toLowerCase().includes(term),
+              );
+            }}
+            value={selectedSuppliers}
+            onChange={(_event, newValue) => {
+              setSelectedSuppliers(newValue);
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Filter by supplier"
+                placeholder="Type supplier name"
+                helperText={
+                  selectedSuppliers.length === 0 ? "All suppliers included by default" : undefined
+                }
+                slotProps={{ formHelperText: { sx: { fontStyle: "italic" } } }}
+              />
+            )}
+          />
+        </StyledAccordionDetails>
       </Accordion>
 
+      {/* Country */}
+      <Accordion
+        expanded={expandedAccordion === "search-country"}
+        onChange={onAccordionChange("search-country")}
+      >
+        <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography>Country</Typography>
+        </StyledAccordionSummary>
+        <StyledAccordionDetails>
+          <Autocomplete
+            multiple
+            size="small"
+            options={[...SUPPLIER_COUNTRY_OPTIONS]}
+            getOptionLabel={(option) => option.label}
+            filterOptions={(options, { inputValue }) => {
+              const term = inputValue.toLowerCase();
+              return options.filter(
+                (opt) =>
+                  opt.label.toLowerCase().includes(term) || opt.code.toLowerCase().includes(term),
+              );
+            }}
+            value={SUPPLIER_COUNTRY_OPTIONS.filter((opt) =>
+              searchFilters.country.includes(opt.code),
+            )}
+            onChange={(_event, newValue) => {
+              setSearchFilters({
+                ...searchFilters,
+                country: newValue.map((opt) => opt.code),
+              });
+            }}
+            isOptionEqualToValue={(option, value) => option.code === value.code}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Filter by country"
+                placeholder="Type country or code"
+                helperText={
+                  searchFilters.country.length === 0
+                    ? "All countries included by default"
+                    : undefined
+                }
+                slotProps={{ formHelperText: { sx: { fontStyle: "italic" } } }}
+              />
+            )}
+          />
+        </StyledAccordionDetails>
+      </Accordion>
+
+      {/* Shipping Type */}
+      <Accordion
+        expanded={expandedAccordion === "search-shipping"}
+        onChange={onAccordionChange("search-shipping")}
+      >
+        <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography>Shipping Type</Typography>
+        </StyledAccordionSummary>
+        <StyledAccordionDetails>
+          <Box className={styles["chip-container"]}>
+            {SHIPPING_OPTIONS.map((option) => (
+              <Chip
+                key={option}
+                label={option.charAt(0).toUpperCase() + option.slice(1)}
+                size="small"
+                onClick={() => toggleChip("shippingType", option)}
+                color={searchFilters.shippingType.includes(option) ? "primary" : "default"}
+                variant={searchFilters.shippingType.includes(option) ? "filled" : "outlined"}
+              />
+            ))}
+          </Box>
+        </StyledAccordionDetails>
+      </Accordion>
+
+      {/* Results Limit */}
       <Accordion
         expanded={expandedAccordion === "per-supplier-limit"}
         onChange={onAccordionChange("per-supplier-limit")}
@@ -127,6 +233,7 @@ const DrawerSearchPanel: React.FC<{
         </StyledAccordionDetails>
       </Accordion>
 
+      {/* Price Range */}
       <Accordion
         expanded={expandedAccordion === "search-price"}
         onChange={onAccordionChange("search-price")}
@@ -150,7 +257,7 @@ const DrawerSearchPanel: React.FC<{
               InputProps={{
                 startAdornment: <InputAdornment position="start">$</InputAdornment>,
               }}
-              inputProps={{ min: 0 }}
+              slotProps={{ htmlInput: { min: 0 } }}
             />
             <TextField
               label="Max"
@@ -166,7 +273,7 @@ const DrawerSearchPanel: React.FC<{
               InputProps={{
                 startAdornment: <InputAdornment position="start">$</InputAdornment>,
               }}
-              inputProps={{ min: 0 }}
+              slotProps={{ htmlInput: { min: 0 } }}
             />
           </Box>
         </StyledAccordionDetails>
@@ -177,7 +284,8 @@ const DrawerSearchPanel: React.FC<{
           variant="contained"
           fullWidth
           startIcon={<SearchIcon />}
-          onClick={() => setDrawerTab(-1)}
+          onClick={handleSearch}
+          disabled={!searchFilters.titleQuery.trim()}
         >
           Search
         </Button>

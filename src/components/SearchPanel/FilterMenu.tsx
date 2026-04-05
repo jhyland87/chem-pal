@@ -147,8 +147,7 @@ function SupplierSelection() {
                     checked={selectedSuppliers.includes(supplierName)}
                     tabIndex={-1}
                     disableRipple
-                    // eslint-disable-next-line @typescript-eslint/naming-convention
-                    inputProps={{ "aria-labelledby": labelId }}
+                    slotProps={{ input: { "aria-labelledby": labelId } }}
                   />
                 </FilterListItemIcon>
                 <ListItemText id={labelId} primary={`${supplierName.replace("Supplier", "")}`} />

@@ -16,5 +16,11 @@
   &__checkbox {
     padding: 0;
     min-width: 10px;
+    border-width: "thick";
+    border-style: "dashed";
+  }
+
+  &__list-item {
+    padding: 0 !important;
   }
 }

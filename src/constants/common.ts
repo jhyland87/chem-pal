@@ -597,3 +597,54 @@ export const COUNTRIES = [
   { name: "Germany", code: "DE" },
   { name: "France", code: "FR" },
 ] as const;
+
+/**
+ * User-facing availability filter options for the drawer search panel.
+ * Each label maps to one or more {@link AVAILABILITY} enum values.
+ * @source
+ */
+export const AVAILABILITY_OPTIONS = ["In Stock", "Limited Stock", "Out of Stock", "Pre-order"];
+
+/**
+ * Maps user-facing availability labels to product availability values
+ * used in the {@link AVAILABILITY} enum.
+ * @source
+ */
+export const AVAILABILITY_LABEL_MAP: Record<string, string[]> = {
+  "In Stock": [AVAILABILITY.IN_STOCK],
+  "Limited Stock": [AVAILABILITY.BACKORDER, AVAILABILITY.LARGE_QUANTITY],
+  "Out of Stock": [AVAILABILITY.OUT_OF_STOCK, AVAILABILITY.DISCONTINUED],
+  "Pre-order": [AVAILABILITY.PRE_ORDER],
+};
+
+/**
+ * Supplier country options available for filtering in the drawer search panel.
+ * Derived from the countries that actual suppliers operate in.
+ * @source
+ */
+export const SUPPLIER_COUNTRY_OPTIONS = [
+  { code: "AU", label: "Australia" },
+  { code: "BE", label: "Belgium" },
+  { code: "CA", label: "Canada" },
+  { code: "CN", label: "China" },
+  { code: "CZ", label: "Czech Republic" },
+  { code: "FI", label: "Finland" },
+  { code: "FR", label: "France" },
+  { code: "DE", label: "Germany" },
+  { code: "IN", label: "India" },
+  { code: "IL", label: "Israel" },
+  { code: "JP", label: "Japan" },
+  { code: "KR", label: "South Korea" },
+  { code: "NL", label: "Netherlands" },
+  { code: "PL", label: "Poland" },
+  { code: "CH", label: "Switzerland" },
+  { code: "GB", label: "United Kingdom" },
+  { code: "US", label: "United States" },
+] as const;
+
+/**
+ * Shipping range options available for filtering in the drawer search panel.
+ * Values correspond to the {@link ShippingRange} type.
+ * @source
+ */
+export const SHIPPING_OPTIONS: ShippingRange[] = ["worldwide", "international", "domestic", "local"];

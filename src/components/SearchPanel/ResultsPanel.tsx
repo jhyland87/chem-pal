@@ -19,7 +19,6 @@ export default function ResultsPanel() {
 
   return (
     <>
-      Tester
       <ResultsTable columnFilterFns={columnFilterFns} getRowCanExpand={() => true} />
     </>
   );

@@ -110,6 +110,13 @@ function App() {
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   // Pending search query - set by HistoryPanel, consumed by ResultsTable
   const [pendingSearchQuery, setPendingSearchQuery] = useState<string | null>(null);
+  // Pre-search filters - set by DrawerSearchPanel, consumed by useSearch
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    titleQuery: "",
+    availability: [],
+    country: [],
+    shippingType: [],
+  });
   // Note: setSearchResults will be used by child components via context in the future
 
   // React v19's useActionState consolidates app state management
@@ -280,6 +287,8 @@ function App() {
       dispatch({ type: "SET_SELECTED_SUPPLIERS", suppliers }),
     pendingSearchQuery,
     setPendingSearchQuery,
+    searchFilters,
+    setSearchFilters,
   };
 
   return (

@@ -1,4 +1,4 @@
-@use "./SearchPanel.scss";
+@use "./SearchPanel.module.scss";
 
 #search-results-table-container {
   //min-height: 369px;
@@ -91,6 +91,17 @@
     &:hover {
       background-color: rgba(0, 0, 0, 0.04);
     }
+  }
+}
+
+// Column visibility menu
+.column-visibility-menu {
+  :global(.MuiFormControlLabel-root) {
+    margin-bottom: 0;
+  }
+
+  :global(.MuiCheckbox-root) {
+    padding: 2px 9px;
   }
 }
 
