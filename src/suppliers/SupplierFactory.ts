@@ -79,7 +79,7 @@ export default class SupplierFactory<P extends Product> {
    * // Returns: ["SupplierCarolina", "SupplierLaballey", "SupplierBioFuranChem", ...]
    *
    * // Use these names to create a targeted factory
-   * const factory = new SupplierFactory("acid", controller, suppliers.slice(0, 2));
+   * const factory = new SupplierFactory("acid", controller, suppliers);
    * ```
    * @source
    */

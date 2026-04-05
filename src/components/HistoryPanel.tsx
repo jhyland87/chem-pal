@@ -95,7 +95,7 @@ const HistoryPanel: React.FC = () => {
     }
     setPendingSearchQuery(entry.query);
     setDrawerTab(-1); // Close the drawer
-    setPanel(1); // Navigate to results panel
+    setPanel?.(1); // Navigate to results panel
   };
 
   /**
