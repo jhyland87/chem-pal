@@ -18,7 +18,11 @@ interface SearchState {
  * Checks whether a product passes the pre-search filters set via the drawer.
  * Returns true if the product should be included in the results.
  */
-function passesSearchFilters(product: Product, filters: SearchFilters, userSettings: UserSettings): boolean {
+function passesSearchFilters(
+  product: Product,
+  filters: SearchFilters,
+  userSettings: UserSettings,
+): boolean {
   // Availability filter
   if (filters.availability.length > 0) {
     const allowedStatuses = filters.availability.flatMap(
@@ -166,13 +170,13 @@ export function useSearch() {
           console.log("executing search FROM USEFFECT", {
             query: data.searchInput,
             supplierResultLimit: appContext.userSettings.supplierResultLimit,
-            suppliers: appContext.userSettings.suppliers.slice(0, 2),
+            suppliers: appContext.userSettings.suppliers,
           });
           // Execute the search
           performSearch({
             query: data.searchInput,
             supplierResultLimit: appContext.userSettings.supplierResultLimit,
-            suppliers: appContext.userSettings.suppliers.slice(0, 2),
+            suppliers: appContext.userSettings.suppliers,
           });
         }
       } catch (error) {
@@ -196,14 +200,14 @@ export function useSearch() {
       console.log("executing search FROM EXECUTESEARCH", {
         query,
         supplierResultLimit: appContext.userSettings.supplierResultLimit,
-        suppliers: appContext.selectedSuppliers.slice(0, 2),
+        suppliers: appContext.selectedSuppliers,
       });
       // Use startTransition for better performance during search
       startTransition(() => {
         performSearch({
           query,
           supplierResultLimit: appContext.userSettings.supplierResultLimit,
-          suppliers: appContext.selectedSuppliers.slice(0, 2),
+          suppliers: appContext.selectedSuppliers,
         });
       });
     },
