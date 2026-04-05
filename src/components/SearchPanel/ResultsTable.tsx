@@ -25,6 +25,7 @@ import {
 import DrawerSystem from "@/components/DrawerSystem";
 import LoadingBackdrop from "@/components/LoadingBackdrop";
 import resultStyles from "@/components/ResultsPanel.module.scss";
+import styles from "./ResultsTable.module.scss";
 import { generatePageSizes } from "@/helpers/utils";
 import { useDebouncedCallback } from "@/shared/hooks";
 import { Column, ColumnFiltersState, flexRender, Header, Row } from "@tanstack/react-table";
@@ -479,6 +480,7 @@ export default function ResultsTable({
           anchorEl={columnMenuAnchor}
           open={Boolean(columnMenuAnchor)}
           onClose={() => setColumnMenuAnchor(null)}
+          className={styles["column-visibility-menu"]}
         >
           {table
             .getAllLeafColumns()

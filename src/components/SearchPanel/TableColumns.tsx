@@ -63,7 +63,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     {
       id: "title",
       accessorKey: "title",
-      header: () => <span>Title</span>,
+      header: "Title",
       cell: ({ row }: ProductRow) => {
         return (
           <Link
@@ -87,7 +87,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       id: "supplier",
-      header: () => <span>Supplier</span>,
+      header: "Supplier",
       accessorKey: "supplier",
       cell: (info) => info.getValue(),
       filterFn: "multiSelect" as FilterFnOption<Product>,
@@ -100,7 +100,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       id: "country",
-      header: () => <span>Country</span>,
+      header: "Country",
       accessorKey: "supplierCountry",
       cell: (info) => {
         const country = info.getValue() as string;
@@ -123,7 +123,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       id: "shipping",
-      header: () => <span>Shipping</span>,
+      header: "Shipping",
       accessorKey: "supplierShipping",
       cell: (info) => info.getValue(),
       filterFn: "multiSelect" as FilterFnOption<Product>,

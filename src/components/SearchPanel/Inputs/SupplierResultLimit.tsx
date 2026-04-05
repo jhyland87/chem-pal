@@ -1,7 +1,7 @@
+import { StyledFormControlSelector } from "@/components/Styles";
 import { useAppContext } from "@/context";
 import TextField from "@mui/material/TextField";
 import { ChangeEvent } from "react";
-import { StyledFormControlSelector } from "../../Styles";
 
 /**
  * SupplierResultLimit component that provides a text input for setting the result limit per supplier.

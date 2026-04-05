@@ -8,7 +8,10 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { Delete as DeleteIcon } from "@mui/icons-material";
+import {
+  Delete as DeleteIcon,
+  FilterList as FilterListIcon,
+} from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { useAppContext } from "@/context";
 import styles from "./HistoryPanel.module.scss";
@@ -34,7 +37,7 @@ import styles from "./HistoryPanel.module.scss";
  */
 const HistoryPanel: React.FC = () => {
   const [history, setHistory] = useState<SearchHistoryEntry[]>([]);
-  const { setPendingSearchQuery, setDrawerTab } = useAppContext();
+  const { setPendingSearchQuery, setDrawerTab, setSearchFilters, setSelectedSuppliers, setPanel } = useAppContext();
 
   useEffect(() => {
     const loadHistory = async () => {
@@ -82,9 +85,17 @@ const HistoryPanel: React.FC = () => {
    * ```
    * @source
    */
-  const handleReSearch = (query: string) => {
-    setPendingSearchQuery(query);
+  const handleReSearch = (entry: SearchHistoryEntry) => {
+    // Restore filters that were active when this search was originally executed
+    if (entry.filters) {
+      setSearchFilters(entry.filters);
+    }
+    if (entry.selectedSuppliers) {
+      setSelectedSuppliers(entry.selectedSuppliers);
+    }
+    setPendingSearchQuery(entry.query);
     setDrawerTab(-1); // Close the drawer
+    setPanel(1); // Navigate to results panel
   };
 
   /**
@@ -99,6 +110,19 @@ const HistoryPanel: React.FC = () => {
    * ```
    * @source
    */
+  const getFilterSummary = (entry: SearchHistoryEntry): string | null => {
+    const parts: string[] = [];
+    if (entry.filters) {
+      if (entry.filters.availability.length > 0) parts.push(`Availability: ${entry.filters.availability.join(", ")}`);
+      if (entry.filters.country.length > 0) parts.push(`Country: ${entry.filters.country.join(", ")}`);
+      if (entry.filters.shippingType.length > 0) parts.push(`Shipping: ${entry.filters.shippingType.join(", ")}`);
+    }
+    if (entry.selectedSuppliers && entry.selectedSuppliers.length > 0) {
+      parts.push(`Suppliers: ${entry.selectedSuppliers.length} selected`);
+    }
+    return parts.length > 0 ? parts.join("\n") : null;
+  };
+
   const formatTimestamp = (epochMs: number) => {
     const date = new Date(epochMs);
     return date.toLocaleString(undefined, {
@@ -133,14 +157,22 @@ const HistoryPanel: React.FC = () => {
             <ListItem key={`${entry.timestamp}-${idx}`} divider className={styles['history-panel__list-item']}>
               <ListItemText
                 primary={
-                  <Link
-                    component="button"
-                    variant="body2"
-                    onClick={() => handleReSearch(entry.query)}
-                    className={styles['history-panel__link']}
-                  >
-                    {entry.query}
-                  </Link>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                    <Link
+                      component="button"
+                      variant="body2"
+                      onClick={() => handleReSearch(entry)}
+                      sx={{ fontWeight: "bold" }}
+                      className={styles['history-panel__link']}
+                    >
+                      {entry.query}
+                    </Link>
+                    {getFilterSummary(entry) && (
+                      <Tooltip title={getFilterSummary(entry)!} sx={{ whiteSpace: "pre-line" }}>
+                        <FilterListIcon sx={{ fontSize: 14, color: "text.secondary" }} />
+                      </Tooltip>
+                    )}
+                  </Box>
                 }
                 secondary={`${formatTimestamp(entry.timestamp)} — ${entry.resultCount} result${entry.resultCount !== 1 ? "s" : ""}`}
                 secondaryTypographyProps={{ variant: "caption", className: styles['history-panel__secondary-text'] }}

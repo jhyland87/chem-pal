@@ -1,6 +1,6 @@
+import { FilterListItemIcon } from "@/components/Styles";
 import { Checkbox, FormControl, List, ListItem, ListItemButton, ListItemText } from "@mui/material";
 import { useState } from "react";
-import { FilterListItemIcon } from "../../Styles";
 import styles from "./SelectColumnFilter.module.scss";
 
 /**
@@ -48,12 +48,12 @@ export default function SelectColumnFilter({ column }: FilterVariantInputProps) 
   const columnHeader = column.getHeaderText();
 
   return (
-    <FormControl component="fieldset" variant="standard" className={styles['select-column-filter']}>
+    <FormControl component="fieldset" variant="standard" className={styles["select-column-filter"]}>
       {/*<ListSubheader component="legend" sx={{ padding: 0 }}>
         {columnHeader}
       </ListSubheader>
       <FormLabel component="legend">{columnHeader}</FormLabel>*/}
-      <List className={styles['select-column-filter__list']}>
+      <List className={styles["select-column-filter__list"]}>
         {columnFilterOptions.length === 0 ? (
           <ListItem>
             <ListItemText primary="No Options Available" />
@@ -65,7 +65,7 @@ export default function SelectColumnFilter({ column }: FilterVariantInputProps) 
             return (
               <ListItem key={option} disablePadding>
                 <ListItemButton
-                  className={styles['select-column-filter__list-item-btn']}
+                  className={styles["select-column-filter__list-item-btn"]}
                   role={undefined}
                   onClick={() => handleOptionSelect(option)}
                   dense
@@ -74,12 +74,11 @@ export default function SelectColumnFilter({ column }: FilterVariantInputProps) 
                     <Checkbox
                       size="small"
                       edge="start"
-                      className={styles['select-column-filter__checkbox']}
+                      className={styles["select-column-filter__checkbox"]}
                       checked={columnFilterValue.includes(option)}
                       tabIndex={-1}
                       disableRipple
-                      // eslint-disable-next-line @typescript-eslint/naming-convention
-                      inputProps={{ "aria-labelledby": labelId }}
+                      slotProps={{ input: { "aria-labelledby": labelId } }}
                     />
                   </FilterListItemIcon>
                   <ListItemText id={labelId} primary={option} />

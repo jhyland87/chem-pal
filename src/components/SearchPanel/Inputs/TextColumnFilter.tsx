@@ -1,6 +1,6 @@
+import { StyledFormControlSelector } from "@/components/Styles";
 import TextField from "@mui/material/TextField";
 import { ChangeEvent, useState } from "react";
-import { StyledFormControlSelector } from "../../Styles";
 
 /**
  * TextColumnFilter component that provides a text input filter for columns.

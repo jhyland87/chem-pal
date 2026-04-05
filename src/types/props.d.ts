@@ -46,6 +46,21 @@ declare global {
   }
 
   /**
+   * Pre-search filters applied via the drawer before results are displayed.
+   * These are distinct from column filters which operate on already-displayed results.
+   */
+  interface SearchFilters {
+    /** Product title / search query */
+    titleQuery: string;
+    /** Availability statuses to include */
+    availability: string[];
+    /** Supplier country codes to include */
+    country: string[];
+    /** Shipping range types to include */
+    shippingType: string[];
+  }
+
+  /**
    * AppContextProps interface for application context
    */
   interface AppContextProps {
@@ -73,6 +88,10 @@ declare global {
     pendingSearchQuery: string | null;
     /** Function to set a pending search query */
     setPendingSearchQuery: (query: string | null) => void;
+    /** Pre-search filters from the drawer */
+    searchFilters: SearchFilters;
+    /** Function to update pre-search filters */
+    setSearchFilters: (filters: SearchFilters) => void;
   }
 
   /**

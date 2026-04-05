@@ -51,7 +51,7 @@ export default function SearchInput({ onSearch }: SearchInputStates) {
             className={`${styles['search-query-input']} ${styles.fullwidth}`}
             placeholder={isLoading ? "Searching..." : "Search..."}
             disabled={isLoading}
-            inputProps={{ "aria-label": "Search for chemicals" }}
+            slotProps={{ htmlInput: { "aria-label": "Search for chemicals" } }}
           />
 
           <IconButton type="button" disabled={isLoading} aria-label="search">

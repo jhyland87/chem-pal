@@ -187,6 +187,10 @@ declare global {
     query: string;
     /** Number of results returned (updated live as results stream in) */
     resultCount: number;
+    /** Pre-search filters that were active when this search was executed */
+    filters?: SearchFilters;
+    /** Supplier keys that were selected when this search was executed */
+    selectedSuppliers?: string[];
     data?: {
       suppliers: string[];
       query: string;

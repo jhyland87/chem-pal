@@ -14,10 +14,16 @@ vi.mock("@mui/icons-material", () => ({
 // Mock the context — HistoryPanel uses useAppContext
 const mockSetPendingSearchQuery = vi.fn();
 const mockSetDrawerTab = vi.fn();
+const mockSetSearchFilters = vi.fn();
+const mockSetSelectedSuppliers = vi.fn();
+const mockSetPanel = vi.fn();
 vi.mock("@/context", () => ({
   useAppContext: () => ({
     setPendingSearchQuery: mockSetPendingSearchQuery,
     setDrawerTab: mockSetDrawerTab,
+    setSearchFilters: mockSetSearchFilters,
+    setSelectedSuppliers: mockSetSelectedSuppliers,
+    setPanel: mockSetPanel,
   }),
 }));
 
@@ -32,6 +38,9 @@ describe("HistoryPanel", () => {
     resetChromeStorageMock();
     mockSetPendingSearchQuery.mockClear();
     mockSetDrawerTab.mockClear();
+    mockSetSearchFilters.mockClear();
+    mockSetSelectedSuppliers.mockClear();
+    mockSetPanel.mockClear();
   });
 
   afterAll(() => {
@@ -148,6 +157,7 @@ describe("HistoryPanel", () => {
 
     expect(mockSetPendingSearchQuery).toHaveBeenCalledWith("potassium nitrate");
     expect(mockSetDrawerTab).toHaveBeenCalledWith(-1);
+    expect(mockSetPanel).toHaveBeenCalledWith(1);
   });
 
   it("formats timestamps correctly", async () => {

@@ -212,8 +212,8 @@ export const NavigationContainer = styled(Box)(({ theme }) => ({
 export const ColumnMenuItemContainer = styled(Box)(({ theme }) => ({
   paddingLeft: theme.spacing(2),
   paddingRight: theme.spacing(2),
-  paddingTop: theme.spacing(1),
-  paddingBottom: theme.spacing(1),
+  paddingTop: 0,
+  paddingBottom: 0,
 }));
 
 // Filter icon button with conditional styling

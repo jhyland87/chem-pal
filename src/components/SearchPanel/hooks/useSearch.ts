@@ -1,4 +1,5 @@
 import { getColumnFilterConfig } from "@/components/SearchPanel/TableColumns";
+import { AVAILABILITY_LABEL_MAP } from "@/constants/common";
 import { useAppContext } from "@/context";
 import { getCompoundNameFromAlias } from "@/helpers/pubchem";
 import SupplierFactory from "@/suppliers/SupplierFactory";
@@ -14,18 +15,89 @@ interface SearchState {
 }
 
 /**
+ * Checks whether a product passes the pre-search filters set via the drawer.
+ * Returns true if the product should be included in the results.
+ */
+function passesSearchFilters(product: Product, filters: SearchFilters, userSettings: UserSettings): boolean {
+  // Availability filter
+  if (filters.availability.length > 0) {
+    const allowedStatuses = filters.availability.flatMap(
+      (label) => AVAILABILITY_LABEL_MAP[label] ?? [],
+    );
+    const productAvailability = (
+      product.variants?.[0]?.availability ??
+      product.variants?.[0]?.status ??
+      product.variants?.[0]?.statusTxt ??
+      ""
+    ).toLowerCase();
+
+    if (productAvailability && !allowedStatuses.includes(productAvailability)) {
+      return false;
+    }
+  }
+
+  // Country filter
+  if (filters.country.length > 0 && product.supplierCountry) {
+    if (!filters.country.includes(product.supplierCountry)) {
+      return false;
+    }
+  }
+
+  // Shipping type filter
+  if (filters.shippingType.length > 0 && product.supplierShipping) {
+    if (!filters.shippingType.includes(product.supplierShipping)) {
+      return false;
+    }
+  }
+
+  // Price range filter
+  if (userSettings.priceMin != null && product.price < userSettings.priceMin) {
+    return false;
+  }
+  if (userSettings.priceMax != null && product.price > userSettings.priceMax) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Applies the per-supplier result limit after filtering.
+ * Groups products by supplier and takes the first N from each.
+ */
+function applyPerSupplierLimit(products: Product[], limit: number): Product[] {
+  const supplierCounts: Record<string, number> = {};
+  return products.filter((product) => {
+    const supplier = product.supplier;
+    supplierCounts[supplier] = (supplierCounts[supplier] ?? 0) + 1;
+    return supplierCounts[supplier] <= limit;
+  });
+}
+
+/**
+ * Determines whether any pre-search filters are active.
+ */
+function hasActiveFilters(filters: SearchFilters, userSettings: UserSettings): boolean {
+  return (
+    filters.availability.length > 0 ||
+    filters.country.length > 0 ||
+    filters.shippingType.length > 0 ||
+    userSettings.priceMin != null ||
+    userSettings.priceMax != null
+  );
+}
+
+/**
  * React v19 enhanced search hook that maintains streaming behavior.
  *
  * This version preserves the original streaming approach where results appear
  * in the table as they're found, with live counter updates, AND restores
  * session persistence so results are maintained across page reloads.
  *
- * Key improvements over original:
- * - Uses startTransition for better performance
- * - Better error handling
- * - Streaming results with immediate UI updates
- * - Live result counter that updates as results arrive
- * - Session persistence restored (loads previous results on mount)
+ * When pre-search filters are active (set via the drawer), the hook:
+ * 1. Fetches results with a higher limit to account for filtering
+ * 2. Applies drawer filters (availability, country, shipping, price)
+ * 3. Applies the per-supplier limit on the filtered set
  * @source
  */
 export function useSearch() {
@@ -116,6 +188,11 @@ export function useSearch() {
         return;
       }
 
+      // Keep the drawer's search term in sync with whatever query is being executed
+      if (appContext.searchFilters.titleQuery !== query.trim()) {
+        appContext.setSearchFilters({ ...appContext.searchFilters, titleQuery: query.trim() });
+      }
+
       console.log("executing search FROM EXECUTESEARCH", {
         query,
         supplierResultLimit: appContext.userSettings.supplierResultLimit,
@@ -142,11 +219,16 @@ export function useSearch() {
     supplierResultLimit?: number;
     suppliers?: string[];
   }) => {
+    const { searchFilters } = appContext;
+    const filtersActive = hasActiveFilters(searchFilters, appContext.userSettings);
+
     console.log("performSearch", {
       query,
       supplierResultLimit,
       suppliers,
       userSettings: appContext.userSettings,
+      filtersActive,
+      searchFilters,
     });
     // Reset state for new search
     setState({
@@ -166,7 +248,14 @@ export function useSearch() {
         const history: SearchHistoryEntry[] = Array.isArray(data.search_history)
           ? data.search_history
           : [];
-        history.unshift({ query, timestamp: historyTimestamp, resultCount: 0, type: "search" });
+        history.unshift({
+          query,
+          timestamp: historyTimestamp,
+          resultCount: 0,
+          type: "search",
+          filters: { ...searchFilters },
+          selectedSuppliers: [...appContext.selectedSuppliers],
+        });
         // Keep last 100 entries
         await chrome.storage.local.set({ search_history: history.slice(0, 100) });
       } catch (error) {
@@ -178,7 +267,11 @@ export function useSearch() {
     BadgeAnimator.animate("ellipsis", 300);
 
     const columnFilterConfig = getColumnFilterConfig();
-    const searchLimit = appContext.userSettings.supplierResultLimit ?? 5;
+    const userLimit = appContext.userSettings.supplierResultLimit ?? 5;
+
+    // When filters are active, fetch more results so there's enough after filtering.
+    // The per-supplier limit is applied post-filter, so we ask each supplier for more.
+    const fetchLimit = filtersActive ? userLimit * 5 : userLimit;
 
     // Create new abort controller for this search
     fetchControllerRef.current = new AbortController();
@@ -188,7 +281,7 @@ export function useSearch() {
       // and the abort controller for the search.
       const productQueryFactory = new SupplierFactory(
         query,
-        searchLimit,
+        fetchLimit,
         fetchControllerRef.current,
         appContext.selectedSuppliers,
       );
@@ -200,89 +293,177 @@ export function useSearch() {
       // Execute the search for all suppliers.
       const productQueryResults = await productQueryFactory.executeAllStream(3);
 
-      // Process results as they stream in.
-      for await (const result of productQueryResults) {
-        // Update the live counter immediately - this is what was missing!
-        resultsTable?.updateBadgeCount?.();
+      // When filters are active, collect all results first, then filter and limit.
+      // When no filters are active, stream results directly for immediate UI feedback.
+      if (filtersActive) {
+        const allResults: Product[] = [];
 
-        // Update state with current count using startTransition for better performance
-        startTransition(() => {
-          setState((prev) => ({
-            ...prev,
-            resultCount: resultsTable.getRowCount(),
-            status: `Found ${resultsTable.getRowCount()} result${resultsTable.getRowCount() !== 1 ? "s" : ""}...`,
-          }));
-        });
+        // Collect all streamed results
+        for await (const result of productQueryResults) {
+          allResults.push(result);
 
-        // Build column filter config for this result
-        for (const [columnName, columnValue] of Object.entries(result)) {
-          if (columnName in columnFilterConfig === false) continue;
+          // Show progress while collecting
+          startTransition(() => {
+            setState((prev) => ({
+              ...prev,
+              status: `Fetching results... (${allResults.length} found)`,
+            }));
+          });
+        }
 
-          if (columnFilterConfig[columnName].filterVariant === "range") {
-            if (typeof columnValue !== "number") continue;
+        // Apply pre-search filters
+        const filtered = allResults.filter((product) =>
+          passesSearchFilters(product, searchFilters, appContext.userSettings),
+        );
 
-            if (
-              typeof columnFilterConfig[columnName].filterData[0] !== "number" ||
-              columnValue < columnFilterConfig[columnName].filterData[0]
-            ) {
-              columnFilterConfig[columnName].filterData[0] = columnValue;
-            } else if (
-              typeof columnFilterConfig[columnName].filterData[1] !== "number" ||
-              columnValue < columnFilterConfig[columnName].filterData[1]
-            ) {
-              columnFilterConfig[columnName].filterData[1] = columnValue;
-            }
-          } else if (columnFilterConfig[columnName].filterVariant === "select") {
-            if (!columnFilterConfig[columnName].filterData.includes(columnValue)) {
-              columnFilterConfig[columnName].filterData.push(columnValue);
-            }
-          } else if (columnFilterConfig[columnName].filterVariant === "text") {
-            if (!columnFilterConfig[columnName].filterData.includes(columnValue)) {
-              columnFilterConfig[columnName].filterData.push(columnValue);
+        // Apply per-supplier limit on the filtered set
+        const limited = applyPerSupplierLimit(filtered, userLimit);
+
+        // Build column filter config for final results
+        for (const result of limited) {
+          for (const [columnName, columnValue] of Object.entries(result)) {
+            if (columnName in columnFilterConfig === false) continue;
+
+            if (columnFilterConfig[columnName].filterVariant === "range") {
+              if (typeof columnValue !== "number") continue;
+              if (
+                typeof columnFilterConfig[columnName].filterData[0] !== "number" ||
+                columnValue < columnFilterConfig[columnName].filterData[0]
+              ) {
+                columnFilterConfig[columnName].filterData[0] = columnValue;
+              } else if (
+                typeof columnFilterConfig[columnName].filterData[1] !== "number" ||
+                columnValue < columnFilterConfig[columnName].filterData[1]
+              ) {
+                columnFilterConfig[columnName].filterData[1] = columnValue;
+              }
+            } else if (columnFilterConfig[columnName].filterVariant === "select") {
+              if (!columnFilterConfig[columnName].filterData.includes(columnValue)) {
+                columnFilterConfig[columnName].filterData.push(columnValue);
+              }
+            } else if (columnFilterConfig[columnName].filterVariant === "text") {
+              if (!columnFilterConfig[columnName].filterData.includes(columnValue)) {
+                columnFilterConfig[columnName].filterData.push(columnValue);
+              }
             }
           }
         }
 
-        // Add result immediately to the table - streaming behavior restored!
-        const productWithId = {
-          ...result,
-          id: resultsTable.getRowCount() - 1, // Use resultCount for consistent ID
-        };
+        // Set all filtered+limited results at once
+        const finalResults = limited.map((r, idx) => ({ ...r, id: idx }));
+        setSearchResults(finalResults);
+        resultsTable?.updateBadgeCount?.();
 
-        // Update results immediately using startTransition for better performance
-        startTransition(() => {
-          setSearchResults((prevSearchResults) => {
-            const newResults = [...prevSearchResults, productWithId];
+        // Save to Chrome storage
+        try {
+          await chrome.storage.session.set({ searchResults: finalResults });
+        } catch (error) {
+          console.warn("Failed to save search results to session storage:", error);
+        }
 
-            // Save to Chrome storage for session persistence - this maintains the original behavior
-            (async () => {
-              try {
-                await chrome.storage.session.set({
-                  searchResults: newResults.map((r, idx) => ({ ...r, id: idx })),
-                });
-              } catch (error) {
-                console.warn("Failed to save search results to session storage:", error);
-              }
+        // Update history with final count
+        try {
+          const data = await chrome.storage.local.get(["search_history"]);
+          const history: SearchHistoryEntry[] = Array.isArray(data.search_history)
+            ? data.search_history
+            : [];
+          const entry = history.find((h) => h.timestamp === historyTimestamp);
+          if (entry) {
+            entry.resultCount = finalResults.length;
+            await chrome.storage.local.set({ search_history: history });
+          }
+        } catch (error) {
+          console.warn("Failed to update search history result count:", error);
+        }
 
-              // Update the search history entry's resultCount live
-              try {
-                const data = await chrome.storage.local.get(["search_history"]);
-                const history: SearchHistoryEntry[] = Array.isArray(data.search_history)
-                  ? data.search_history
-                  : [];
-                const entry = history.find((h) => h.timestamp === historyTimestamp);
-                if (entry) {
-                  entry.resultCount = newResults.length;
-                  await chrome.storage.local.set({ search_history: history });
-                }
-              } catch (error) {
-                console.warn("Failed to update search history result count:", error);
-              }
-            })();
+        console.debug(
+          `Fetched ${allResults.length}, filtered to ${filtered.length}, limited to ${finalResults.length}`,
+        );
+      } else {
+        // No filters active — stream results directly (original behavior)
+        for await (const result of productQueryResults) {
+          // Update the live counter immediately
+          resultsTable?.updateBadgeCount?.();
 
-            return newResults;
+          // Update state with current count using startTransition for better performance
+          startTransition(() => {
+            setState((prev) => ({
+              ...prev,
+              resultCount: resultsTable.getRowCount(),
+              status: `Found ${resultsTable.getRowCount()} result${resultsTable.getRowCount() !== 1 ? "s" : ""}...`,
+            }));
           });
-        });
+
+          // Build column filter config for this result
+          for (const [columnName, columnValue] of Object.entries(result)) {
+            if (columnName in columnFilterConfig === false) continue;
+
+            if (columnFilterConfig[columnName].filterVariant === "range") {
+              if (typeof columnValue !== "number") continue;
+
+              if (
+                typeof columnFilterConfig[columnName].filterData[0] !== "number" ||
+                columnValue < columnFilterConfig[columnName].filterData[0]
+              ) {
+                columnFilterConfig[columnName].filterData[0] = columnValue;
+              } else if (
+                typeof columnFilterConfig[columnName].filterData[1] !== "number" ||
+                columnValue < columnFilterConfig[columnName].filterData[1]
+              ) {
+                columnFilterConfig[columnName].filterData[1] = columnValue;
+              }
+            } else if (columnFilterConfig[columnName].filterVariant === "select") {
+              if (!columnFilterConfig[columnName].filterData.includes(columnValue)) {
+                columnFilterConfig[columnName].filterData.push(columnValue);
+              }
+            } else if (columnFilterConfig[columnName].filterVariant === "text") {
+              if (!columnFilterConfig[columnName].filterData.includes(columnValue)) {
+                columnFilterConfig[columnName].filterData.push(columnValue);
+              }
+            }
+          }
+
+          // Add result immediately to the table - streaming behavior restored!
+          const productWithId = {
+            ...result,
+            id: resultsTable.getRowCount() - 1,
+          };
+
+          // Update results immediately using startTransition for better performance
+          startTransition(() => {
+            setSearchResults((prevSearchResults) => {
+              const newResults = [...prevSearchResults, productWithId];
+
+              // Save to Chrome storage for session persistence
+              (async () => {
+                try {
+                  await chrome.storage.session.set({
+                    searchResults: newResults.map((r, idx) => ({ ...r, id: idx })),
+                  });
+                } catch (error) {
+                  console.warn("Failed to save search results to session storage:", error);
+                }
+
+                // Update the search history entry's resultCount live
+                try {
+                  const data = await chrome.storage.local.get(["search_history"]);
+                  const history: SearchHistoryEntry[] = Array.isArray(data.search_history)
+                    ? data.search_history
+                    : [];
+                  const entry = history.find((h) => h.timestamp === historyTimestamp);
+                  if (entry) {
+                    entry.resultCount = newResults.length;
+                    await chrome.storage.local.set({ search_history: history });
+                  }
+                } catch (error) {
+                  console.warn("Failed to update search history result count:", error);
+                }
+              })();
+
+              return newResults;
+            });
+          });
+        }
       }
 
       const endSearchTime = performance.now();
@@ -294,6 +475,10 @@ export function useSearch() {
       // If no results were found, then try to suggest alternative search terms using cactus.nci.nih.gov API.
       if (resultsTable.getRowCount() === 0) {
         const tableTextLines = [`No results found for "${query}"`];
+
+        if (filtersActive) {
+          tableTextLines.push("Try broadening your search filters in the drawer.");
+        }
 
         const pubchemSimpleName = await getCompoundNameFromAlias(query);
         if (pubchemSimpleName && pubchemSimpleName.toLowerCase() !== query.toLowerCase()) {
