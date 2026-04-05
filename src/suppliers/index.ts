@@ -28,6 +28,7 @@
 
 export { default as SupplierHimedia } from "./SupplierHimedia";
 
+export { default as SupplierAladdinSci } from "./SupplierAladdinSci";
 export { default as SupplierAmbeed } from "./SupplierAmbeed";
 export { default as SupplierBioFuranChem } from "./SupplierBiofuranChem";
 export { default as SupplierCarolina } from "./SupplierCarolina";

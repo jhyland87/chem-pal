@@ -149,6 +149,10 @@ declare global {
     | "banktransfer"
     | "cash"
     | "crypto"
+    | "purchaseorder"
+    | "check"
+    | "moneyorder"
+    | "storecredit"
     | "other";
 
   /**
