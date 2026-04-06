@@ -187,14 +187,14 @@ export default class SupplierOnyxmet
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     return this.getProductDataWithCache(product, async (builder) => {
-      this.logger.debug("Querying data for partialproduct:", builder);
+      this.logger.debug("Querying data for partialproduct:", { builder, product });
 
       const productResponse = await this.httpGetHtml({
         path: builder.get("url"),
       });
 
       if (!productResponse) {
-        this.logger.warn("No product response");
+        this.logger.warn("No product response", { builder });
         return;
       }
 
@@ -205,7 +205,7 @@ export default class SupplierOnyxmet
       const content = parsedHTML.querySelector("#content");
 
       if (!content) {
-        this.logger.warn("No content for product");
+        this.logger.warn("No content for product", { builder });
         return;
       }
 
@@ -233,13 +233,18 @@ export default class SupplierOnyxmet
       const price = parsePrice(productPrice);
 
       if (!price) {
-        this.logger.warn("No price for product");
+        // @todo If this fails, the price can be retrieved from the product page via:
+        /// document.querySelectorAll('#product > .form-group > div > div > label')
+        //    .forEach(e => console.log(e.textContent.trim().replace(/\s+/, ' ')))
+        this.logger.warn("No price for product", { builder, parsed: productPrice });
         return;
       }
       const quantity = parseQuantity(title);
 
       if (!quantity) {
-        this.logger.warn("No quantity for product");
+        // @todo if this fails, retrieve the quantity the from the product page via same
+        // JS used for price.
+        this.logger.warn("No quantity for product", { builder, parsed: title });
         return;
       }
 

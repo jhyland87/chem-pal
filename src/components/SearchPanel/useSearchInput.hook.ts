@@ -1,3 +1,4 @@
+import { CACHE_KEYS } from "@/constants/common";
 import { useCallback, useEffect, useState } from "react";
 
 /**
@@ -56,9 +57,9 @@ export function useSearchInput(): UseSearchInputReturn {
   useEffect(() => {
     const loadSearchInput = async () => {
       try {
-        const data = await chrome.storage.session.get(["searchInput"]);
-        if (data.searchInput) {
-          setSearchInputValue(data.searchInput);
+        const data = await chrome.storage.session.get([CACHE_KEYS.SEARCH_INPUT]);
+        if (data[CACHE_KEYS.SEARCH_INPUT]) {
+          setSearchInputValue(data[CACHE_KEYS.SEARCH_INPUT]);
         }
       } catch (error) {
         console.warn("Failed to load search input from Chrome storage:", error);
@@ -79,7 +80,7 @@ export function useSearchInput(): UseSearchInputReturn {
 
     // Save to Chrome storage
     try {
-      await chrome.storage.session.set({ searchInput: value });
+      await chrome.storage.session.set({ [CACHE_KEYS.SEARCH_INPUT]: value });
       console.log("searchInput saved as:", value);
     } catch (error) {
       console.error("Failed to save search input:", error);

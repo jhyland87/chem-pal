@@ -89,7 +89,7 @@ export default abstract class SupplierBaseShopify
     //   --data-urlencode "q=sulf" \
     //   --data-urlencode "maxResults=6" \
     //   --data-urlencode "items=true" | jq
-    const getParams: QueryParams = {
+    const getParams: RequestParams = {
       // Setting the limit here to 1000, since the limit parameter should
       // apply to results returned from Supplier3SChem, not the rquests
       // made by it.

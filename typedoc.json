@@ -127,6 +127,7 @@
     "Utils",
     "Hooks",
     "Types",
+    "Typeguards",
     "Context",
     "*"
   ],
@@ -138,6 +139,7 @@
     "Components",
     "Hooks",
     "Types",
+    "Typeguards",
     "*"
   ],
   "options": "./typedoc-conf.js"

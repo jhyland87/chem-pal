@@ -1,3 +1,4 @@
+import { AVAILABILITY } from "@/constants/common";
 import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 import { mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
@@ -258,7 +259,10 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
         builder.setPricing(variant?.product_price, "CNY", CURRENCY_SYMBOL_MAP.CNY);
         builder.setQuantity(variant?.product_pack);
         builder.setUOM(variant?.product_unit);
-        builder.setAvailability(variant?.product_stock);
+        // I think Macklin uses the variant?.product_stock property to determine availability,
+        // But every one of them say "0.00", even if they have it in stock on their website.
+        // Defaulting to IN_STOCK for now.
+        builder.setAvailability(AVAILABILITY.IN_STOCK);
         builder.setDescription(variant?.item_en_specification);
         return builder;
       },

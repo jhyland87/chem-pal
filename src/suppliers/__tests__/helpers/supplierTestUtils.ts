@@ -25,7 +25,7 @@ export const spyOnSupplier = (supplier: Class<SupplierBase<any, any>>, fixtures:
 
   // Set up the mock implementation
   httpGetJsonMock.mockImplementation(async (...args: unknown[]) => {
-    const data = args[0] as { path: string; params?: Record<string, string> };
+    const data = args[0] as { path: string; params?: QueryParams };
     return await fixtures.httpGetJson(data.path);
   });
 

@@ -1,12 +1,11 @@
 import { getColumnFilterConfig } from "@/components/SearchPanel/TableColumns";
-import { AVAILABILITY_LABEL_MAP } from "@/constants/common";
+import { AVAILABILITY_LABEL_MAP, CACHE_KEYS } from "@/constants/common";
 import { useAppContext } from "@/context";
 import { getCompoundNameFromAlias } from "@/helpers/pubchem";
 import SupplierFactory from "@/suppliers/SupplierFactory";
 import BadgeAnimator from "@/utils/BadgeAnimator";
 import { type Table } from "@tanstack/react-table";
 import { startTransition, useCallback, useEffect, useRef, useState } from "react";
-
 interface SearchState {
   isLoading: boolean;
   status: string | boolean;
@@ -128,53 +127,61 @@ export function useSearch() {
     const loadSearchData = async () => {
       try {
         const data = await chrome.storage.session.get([
-          "searchResults",
-          "searchInput",
-          "isNewSearch",
+          CACHE_KEYS.SEARCH_INPUT,
+          CACHE_KEYS.SEARCH_RESULTS,
+          CACHE_KEYS.SEARCH_IS_NEW_SEARCH,
         ]);
+
         if (
-          data.searchResults &&
-          Array.isArray(data.searchResults) &&
-          data.searchResults.length > 0
+          data[CACHE_KEYS.SEARCH_RESULTS] &&
+          Array.isArray(data[CACHE_KEYS.SEARCH_RESULTS]) &&
+          data[CACHE_KEYS.SEARCH_RESULTS].length > 0
         ) {
           console.debug(
             "Loading previous search results from session storage:",
-            data.searchResults.length,
+            data[CACHE_KEYS.SEARCH_RESULTS]?.length,
             "results",
           );
-          setSearchResults(data.searchResults);
+          setSearchResults(data[CACHE_KEYS.SEARCH_RESULTS]);
           setState((prev) => ({
             ...prev,
-            resultCount: data.searchResults.length,
+            resultCount: data[CACHE_KEYS.SEARCH_RESULTS].length,
             status: false, // Don't show status when loading from storage
           }));
         }
 
         // Only execute search if this is a new search submission
         // and we haven't already initiated a search from a previous effect run
-        if (data.isNewSearch && data.searchInput && data.searchInput.trim()) {
+        if (
+          data[CACHE_KEYS.SEARCH_IS_NEW_SEARCH] &&
+          data[CACHE_KEYS.SEARCH_INPUT] &&
+          data[CACHE_KEYS.SEARCH_INPUT].trim()
+        ) {
           if (isSearchInitiatedRef.current) {
             console.debug("Search already initiated, skipping duplicate execution");
             return;
           }
           isSearchInitiatedRef.current = true;
 
-          console.debug("Found new search submission, executing search:", data.searchInput);
+          console.debug(
+            "Found new search submission, executing search:",
+            data[CACHE_KEYS.SEARCH_INPUT],
+          );
           // Await the flag removal to prevent race conditions with re-runs
           try {
-            await chrome.storage.session.remove(["isNewSearch"]);
+            await chrome.storage.session.remove([CACHE_KEYS.SEARCH_IS_NEW_SEARCH as string]);
           } catch (error) {
-            console.warn("Failed to clear isNewSearch flag:", error);
+            console.warn(`Failed to clear ${CACHE_KEYS.SEARCH_IS_NEW_SEARCH} flag:`, error);
           }
 
           console.log("executing search FROM USEFFECT", {
-            query: data.searchInput,
+            query: data[CACHE_KEYS.SEARCH_INPUT],
             supplierResultLimit: appContext.userSettings.supplierResultLimit,
             suppliers: appContext.userSettings.suppliers,
           });
           // Execute the search
           performSearch({
-            query: data.searchInput,
+            query: data[CACHE_KEYS.SEARCH_INPUT],
             supplierResultLimit: appContext.userSettings.supplierResultLimit,
             suppliers: appContext.userSettings.suppliers,
           });
@@ -185,6 +192,23 @@ export function useSearch() {
     };
     loadSearchData();
   }, [appContext.userSettings.supplierResultLimit, appContext.userSettings.suppliers]);
+
+  // Listen for external clears of search results (e.g. SpeedDial "Clear Results")
+  useEffect(() => {
+    const listener = (
+      changes: Record<string, chrome.storage.StorageChange>,
+      areaName: string,
+    ) => {
+      if (areaName !== "session") return;
+      const change = changes[CACHE_KEYS.SEARCH_RESULTS];
+      if (change && Array.isArray(change.newValue) && change.newValue.length === 0) {
+        setSearchResults([]);
+        setState((prev) => ({ ...prev, resultCount: 0, status: false }));
+      }
+    };
+    chrome.storage.onChanged.addListener(listener);
+    return () => chrome.storage.onChanged.removeListener(listener);
+  }, []);
 
   const executeSearch = useCallback(
     (query: string) => {
@@ -197,11 +221,7 @@ export function useSearch() {
         appContext.setSearchFilters({ ...appContext.searchFilters, titleQuery: query.trim() });
       }
 
-      console.log("executing search FROM EXECUTESEARCH", {
-        query,
-        supplierResultLimit: appContext.userSettings.supplierResultLimit,
-        suppliers: appContext.selectedSuppliers,
-      });
+      console.log(`executing search FROM EXECUTESEARCH, query: ${query}`);
       // Use startTransition for better performance during search
       startTransition(() => {
         performSearch({
@@ -248,9 +268,9 @@ export function useSearch() {
     const historyTimestamp = Date.now();
     (async () => {
       try {
-        const data = await chrome.storage.local.get(["search_history"]);
-        const history: SearchHistoryEntry[] = Array.isArray(data.search_history)
-          ? data.search_history
+        const data = await chrome.storage.local.get([CACHE_KEYS.SEARCH_HISTORY]);
+        const history: SearchHistoryEntry[] = Array.isArray(data[CACHE_KEYS.SEARCH_HISTORY])
+          ? data[CACHE_KEYS.SEARCH_HISTORY]
           : [];
         history.unshift({
           query,
@@ -261,7 +281,7 @@ export function useSearch() {
           selectedSuppliers: [...appContext.selectedSuppliers],
         });
         // Keep last 100 entries
-        await chrome.storage.local.set({ search_history: history.slice(0, 100) });
+        await chrome.storage.local.set({ [CACHE_KEYS.SEARCH_HISTORY]: history.slice(0, 100) });
       } catch (error) {
         console.warn("Failed to save search history:", error);
       }
@@ -360,21 +380,21 @@ export function useSearch() {
 
         // Save to Chrome storage
         try {
-          await chrome.storage.session.set({ searchResults: finalResults });
+          await chrome.storage.session.set({ [CACHE_KEYS.SEARCH_RESULTS]: finalResults });
         } catch (error) {
           console.warn("Failed to save search results to session storage:", error);
         }
 
         // Update history with final count
         try {
-          const data = await chrome.storage.local.get(["search_history"]);
-          const history: SearchHistoryEntry[] = Array.isArray(data.search_history)
-            ? data.search_history
+          const data = await chrome.storage.local.get([CACHE_KEYS.SEARCH_HISTORY]);
+          const history: SearchHistoryEntry[] = Array.isArray(data[CACHE_KEYS.SEARCH_HISTORY])
+            ? data[CACHE_KEYS.SEARCH_HISTORY]
             : [];
           const entry = history.find((h) => h.timestamp === historyTimestamp);
           if (entry) {
             entry.resultCount = finalResults.length;
-            await chrome.storage.local.set({ search_history: history });
+            await chrome.storage.local.set({ [CACHE_KEYS.SEARCH_HISTORY]: history });
           }
         } catch (error) {
           console.warn("Failed to update search history result count:", error);
@@ -442,7 +462,10 @@ export function useSearch() {
               (async () => {
                 try {
                   await chrome.storage.session.set({
-                    searchResults: newResults.map((r, idx) => ({ ...r, id: idx })),
+                    [CACHE_KEYS.SEARCH_RESULTS]: newResults.map((r, idx) => ({
+                      ...r,
+                      id: idx,
+                    })),
                   });
                 } catch (error) {
                   console.warn("Failed to save search results to session storage:", error);
@@ -450,14 +473,16 @@ export function useSearch() {
 
                 // Update the search history entry's resultCount live
                 try {
-                  const data = await chrome.storage.local.get(["search_history"]);
-                  const history: SearchHistoryEntry[] = Array.isArray(data.search_history)
-                    ? data.search_history
+                  const data = await chrome.storage.local.get([CACHE_KEYS.SEARCH_HISTORY]);
+                  const history: SearchHistoryEntry[] = Array.isArray(
+                    data[CACHE_KEYS.SEARCH_HISTORY],
+                  )
+                    ? data[CACHE_KEYS.SEARCH_HISTORY]
                     : [];
                   const entry = history.find((h) => h.timestamp === historyTimestamp);
                   if (entry) {
                     entry.resultCount = newResults.length;
-                    await chrome.storage.local.set({ search_history: history });
+                    await chrome.storage.local.set({ [CACHE_KEYS.SEARCH_HISTORY]: history });
                   }
                 } catch (error) {
                   console.warn("Failed to update search history result count:", error);

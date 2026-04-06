@@ -2,12 +2,19 @@ import { UOM } from "@/constants/common";
 import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 
 /**
+ * @categoryDescription Typeguards
+ * These functions are available for common typeguards that are used throughout the application.
+ * @showCategories
+ * @module
+ */
+
+/**
  * Type guard to validate if a value is a valid HTTP Response object.
  * Checks for the presence of essential Response properties and methods.
  *
+ * @category Typeguards
  * @param value - The value to validate
  * @returns Type predicate indicating if the value is a Response object
- * @typeguard
  *
  * @example
  * ```typescript
@@ -38,7 +45,7 @@ export function isHttpResponse(value: unknown): value is Response {
     "text" in value &&
     typeof (value as Response).json === "function" &&
     typeof (value as Response).text === "function";
-  console.log(`isHttpResponse for ${value}:`, result);
+  console.log(`isHttpResponse for`, value, `is:`, result);
   return result;
 }
 
@@ -46,9 +53,9 @@ export function isHttpResponse(value: unknown): value is Response {
  * Type guard to validate if a value is a valid UOM.
  * Checks if the value is a string and if it is in the UOM array.
  *
+ * @category Typeguards
  * @param uom - The value to validate
  * @returns Type predicate indicating if the value is a valid UOM
- * @typeguard
  *
  * @example
  * ```typescript
@@ -74,9 +81,9 @@ export function isUOM(uom: unknown): uom is UOM {
  * Type guard to validate if a Response object contains JSON content.
  * Checks both the Content-Type header and ensures it's a valid Response object.
  *
+ * @category Typeguards
  * @param response - The Response object to validate
  * @returns Type predicate indicating if the response contains JSON content
- * @typeguard
  *
  * @example
  * ```typescript
@@ -101,13 +108,13 @@ export function isUOM(uom: unknown): uom is UOM {
  */
 export function isJsonResponse(response: unknown): response is Response {
   if (!isHttpResponse(response)) {
-    console.log(`isJsonResponse for ${response}:`, false);
+    console.log(`isJsonResponse for`, response, `is:`, false);
     return false;
   }
   const contentType = (response as Response).headers.get("Content-Type");
   const result =
     contentType !== null && (contentType.includes("/json") || contentType.includes("/javascript"));
-  console.log(`isJsonResponse for ${response}:`, result);
+  console.log(`isJsonResponse for`, response, `is:`, result);
   return result;
 }
 
@@ -115,9 +122,9 @@ export function isJsonResponse(response: unknown): response is Response {
  * Type guard to validate if a Response object contains JSON content.
  * Checks both the Content-Type header and ensures it's a valid Response object.
  *
+ * @category Typeguards
  * @param response - The Response object to validate
  * @returns Type predicate indicating if the response contains JSON content
- * @typeguard
  *
  * @example
  * ```typescript
@@ -131,6 +138,7 @@ export function isJsonResponse(response: unknown): response is Response {
  */
 export function assertJsonResponse(response: unknown): asserts response is Response {
   if (!isJsonResponse(response)) {
+    console.error(`assertJsonResponse| Invalid JSON response:`, response);
     throw new TypeError(`assertJsonResponse| Invalid JSON response: ${response}`);
   }
 }
@@ -139,9 +147,9 @@ export function assertJsonResponse(response: unknown): asserts response is Respo
  * Type guard to validate if a Response object contains HTML content.
  * Checks both the Content-Type header and ensures it's a valid Response object.
  *
+ * @category Typeguards
  * @param response - The Response object to validate
  * @returns Type predicate indicating if the response contains HTML content
- * @typeguard
  *
  * @example
  * ```typescript
@@ -181,7 +189,6 @@ export function isHtmlResponse(response: unknown): response is Response {
  *
  * @param response - The Response object to validate
  * @returns Type predicate indicating if the response contains HTML content
- * @typeguard
  *
  * @example
  * ```typescript
@@ -195,6 +202,7 @@ export function isHtmlResponse(response: unknown): response is Response {
  */
 export function assertHtmlResponse(response: unknown): asserts response is Response {
   if (!isHtmlResponse(response)) {
+    console.error(`assertHtmlResponse| Invalid HTML response:`, response);
     throw new TypeError(`assertHtmlResponse| Invalid HTML response: ${response}`);
   }
 }
@@ -203,9 +211,9 @@ export function assertHtmlResponse(response: unknown): asserts response is Respo
  * Type guard to validate if a value has the minimal required properties of a search result.
  * Checks for the presence and correct types of all required fields for a search result.
  *
+ * @category Typeguards
  * @param value - The value to validate
  * @returns Type predicate indicating if the value has required search result properties
- * @typeguard
  *
  * @example
  * ```typescript
@@ -262,9 +270,9 @@ export function isValidResult(value: unknown): value is RequiredProductFields {
  * This is a less strict validation than isProduct as it only checks for the minimum required fields.
  * Useful for validating partial product data during construction.
  *
+ * @category Typeguards
  * @param product - The value to validate
  * @returns Type predicate indicating if the value has minimal required product properties
- * @typeguard
  *
  * @example
  * ```typescript
@@ -300,7 +308,7 @@ export function isValidResult(value: unknown): value is RequiredProductFields {
  */
 export function isMinimalProduct(product: unknown): product is RequiredProductFields {
   if (!product || typeof product !== "object") {
-    console.log(`isMinimalProduct for ${product}:`, false);
+    console.log(`isMinimalProduct for`, product, `is:`, false);
     return false;
   }
 
@@ -331,7 +339,7 @@ export function isMinimalProduct(product: unknown): product is RequiredProductFi
 
     return true;
   });
-  console.log(`isMinimalProduct for ${product}:`, result);
+  console.log(`isMinimalProduct for`, product, `is:`, result);
   return result;
 }
 
@@ -340,9 +348,9 @@ export function isMinimalProduct(product: unknown): product is RequiredProductFi
  * Checks for the presence and correct types of all required product fields.
  * This is a stricter validation than isMinimalProduct as it ensures all required fields are present.
  *
+ * @category Typeguards
  * @param product - The value to validate
  * @returns Type predicate indicating if the value is a complete Product object
- * @typeguard
  *
  * @example
  * ```typescript
@@ -400,9 +408,9 @@ export function isProduct(product: unknown): product is Product {
  * Type guard to validate if a value is a valid currency symbol.
  * Checks if the value is a string and if it is in the CURRENCY_SYMBOL_MAP.
  *
+ * @category Typeguards
  * @param symbol - The value to validate
  * @returns Type predicate indicating if the value is a valid currency symbol
- * @typeguard
  *
  * @example
  * ```typescript
@@ -426,9 +434,9 @@ export function isCurrencySymbol(symbol: unknown): symbol is CurrencySymbol {
  * Type guard to validate if a value is a valid currency code.
  * Checks if the value is a string and if it is in the CURRENCY_SYMBOL_MAP.
  *
+ * @category Typeguards
  * @param code - The value to validate
  * @returns Type predicate indicating if the value is a valid currency code
- * @typeguard
  *
  * @example
  * ```typescript
@@ -445,4 +453,53 @@ export function isCurrencyCode(code: unknown): code is CurrencyCode {
   return (
     typeof code === "string" && Object.values(CURRENCY_SYMBOL_MAP).includes(code as CurrencyCode)
   );
+}
+
+/**
+ * Checks if an object is empty.
+ *
+ * @category Typeguards
+ * @param obj - The object to check
+ * @returns True if the object is empty, false otherwise
+ * @example Empty object
+ * ```typescript
+ * isPopulatedObject({}) // Returns false
+ * ```
+ * @example Populated object
+ * ```typescript
+ * isPopulatedObject({ a: 1 }) // Returns true
+ * ```
+ * @example Null (which is considered an 'object' in JavaScript)
+ * ```typescript
+ * isPopulatedObject(null) // Returns false
+ * ```
+ * @source
+ */
+export function isPopulatedObject(obj: unknown): obj is Record<string, unknown> {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    Array.isArray(obj) === false &&
+    Object.entries(obj).length > 0
+  );
+}
+
+/**
+ * Checks if an array is populated.
+ *
+ * @category Typeguards
+ * @param arr - The array to check
+ * @returns True if the array is populated, false otherwise
+ * @example Populated array
+ * ```typescript
+ * isPopulatedArray([1, 2, 3]) // Returns true
+ * ```
+ * @example Empty array
+ * ```typescript
+ * isPopulatedArray([]) // Returns false
+ * ```
+ * @source
+ */
+export function isPopulatedArray(arr: unknown): arr is unknown[] {
+  return Array.isArray(arr) === true && arr.length > 0;
 }

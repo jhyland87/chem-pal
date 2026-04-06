@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { EmptyResponseError } from "@/helpers/exceptions";
 import { stripQuantityFromString } from "@/helpers/quantity";
 import { fetchDecorator, isFullURL } from "@/helpers/request";
 import Logger from "@/utils/Logger";
@@ -526,15 +527,15 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     });
 
     // Fetch the goods
-    const httpRequest = await this.fetch(requestObj);
+    const httpResponse = await this.fetch(requestObj);
 
-    if (!isHttpResponse(httpRequest)) {
-      const badResponse = await (httpRequest as unknown as Response)?.text();
+    if (!isHttpResponse(httpResponse) || !httpResponse.ok) {
+      const badResponse = await httpResponse.text();
       this.logger.error("Invalid POST response: ", badResponse);
-      throw new TypeError(`Invalid POST response: ${httpRequest}`);
+      throw new TypeError(`Invalid POST response: ${httpResponse?.toString()}`);
     }
 
-    return httpRequest;
+    return httpResponse;
   }
 
   /**
@@ -577,11 +578,11 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     params,
     headers,
   }: RequestOptions): Promise<Maybe<JsonValue>> {
-    const httpRequest = await this.httpPost({ path, host, body, params, headers });
-    if (!isJsonResponse(httpRequest)) {
-      throw new TypeError(`httpPostJson| Invalid POST response: ${httpRequest}`);
+    const httpResponse = await this.httpPost({ path, host, body, params, headers });
+    if (!isJsonResponse(httpResponse) || !httpResponse.ok) {
+      throw new TypeError(`httpPostJson| Invalid POST response: ${httpResponse}`);
     }
-    return await httpRequest.json();
+    return await httpResponse.json();
   }
 
   /**
@@ -608,11 +609,11 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     params,
     headers,
   }: RequestOptions): Promise<Maybe<string>> {
-    const httpRequest = await this.httpPost({ path, host, body, params, headers });
-    if (!isHtmlResponse(httpRequest)) {
-      throw new TypeError(`httpPostHtml| Invalid POST response: ${httpRequest}`);
+    const httpResponse = await this.httpPost({ path, host, body, params, headers });
+    if (!isHtmlResponse(httpResponse)) {
+      throw new TypeError(`httpPostHtml| Invalid POST response: ${httpResponse}`);
     }
-    return await httpRequest.text();
+    return await httpResponse.text();
   }
 
   /**
@@ -683,8 +684,15 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       const headersRaw = { ...this.headers };
 
       Object.assign(headersRaw, {
-        accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        accept: [
+          "text/html",
+          "application/xhtml+xml",
+          "application/xml;q=0.9",
+          "image/avif",
+          "image/webp",
+          "image/apng",
+          "*/*;q=0.8",
+        ].join(","),
         ...(headers ?? {}),
       });
 
@@ -702,6 +710,13 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
 
       // Fetch the goods
       const httpResponse = await this.fetch(requestObj.url, requestObj);
+
+      const resoponseHeaders = Object.fromEntries(
+        httpResponse.headers.entries(),
+      ) satisfies HeadersInit;
+      console.log("resoponseHeaders:", resoponseHeaders);
+      console.log("resoponseHeaders.location:", resoponseHeaders.location);
+
       //const httpResponse = await fetchDecorator(requestObj.url, requestObj);
 
       return httpResponse;
@@ -776,6 +791,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       (acc, [obj, score, idx]) => {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         acc[idx] = Object.assign(obj, { _fuzz: { score, idx }, matchPercentage: score });
+        //acc[idx] = { ...obj, _fuzz: { score, idx }, matchPercentage: score };
         return acc;
       },
       // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -971,7 +987,14 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     limit: number = this.limit,
   ): Promise<ProductBuilder<T>[] | void> {
     // Check cache first (processed product data)
-    console.debug("queryProductsWithCache: called for", this.supplierName, "query:", query, "limit:", limit);
+    console.debug(
+      "queryProductsWithCache: called for",
+      this.supplierName,
+      "query:",
+      query,
+      "limit:",
+      limit,
+    );
     const key = this.cache.generateCacheKey(query, this.supplierName);
     const result = await chrome.storage.local.get(SupplierCache.getQueryCacheKey());
     const cache =
@@ -1278,10 +1301,10 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
             acc[key] = String(value);
             return acc;
           },
-          {} as Record<string, string>,
+          {} as QueryParams,
         ),
       ).toString();
-      //href.search = new URLSearchParams(params as Record<string, string>).toString();
+      //href.search = new URLSearchParams(params as QueryParams).toString();
     }
 
     return href.toString();
@@ -1370,7 +1393,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
   protected async getProductDataWithCache(
     product: ProductBuilder<T>,
     fetcher: (builder: ProductBuilder<T>) => Promise<ProductBuilder<T> | void>,
-    params?: Record<string, string>,
+    params?: QueryParams,
   ): Promise<ProductBuilder<T> | void> {
     const url = product.get("url");
     if (typeof url !== "string") {
@@ -1492,6 +1515,9 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       const response = await fetchDecorator(...args);
       console.log(`Response Status: ${response.status}`);
       console.log("response hash:", response.requestHash);
+      if (typeof response.data === "string" && response.data?.length === 0) {
+        throw new EmptyResponseError(`Invalid response: ${response.data}`);
+      }
       incrementSuccess(this.supplierName);
       return response;
     } catch (error) {
