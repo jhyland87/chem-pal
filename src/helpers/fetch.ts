@@ -74,7 +74,7 @@ export async function generateRequestHash(
   const contentType =
     input instanceof Request
       ? input.headers.get("content-type") || ""
-      : (headers as Record<string, string>)?.["content-type"] || "";
+      : (headers as HttpHeaders)?.["content-type"] || "";
 
   const data = {
     url,

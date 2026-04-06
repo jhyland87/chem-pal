@@ -51,7 +51,7 @@ export default class SupplierChemsavers
   // HTTP headers used as a basis for all queries.
   protected headers: HeadersInit = {
     /* eslint-disable */
-    accept: "application/json, text/plain, */*",
+    accept: ["application/json", "text/plain", "*/*"].join(","),
     "accept-language": "en-US,en;q=0.9",
     "cache-control": "no-cache",
     "content-type": "text/plain",

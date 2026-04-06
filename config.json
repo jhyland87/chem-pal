@@ -1,49 +1,73 @@
 {
   "extensionId": "lddcoaehibbaonkifojgaemjngpfpheg",
   "locations": {
-    "US": {
-      "name": "United States",
-      "currency": "USD"
+    "AU": {
+      "name": "Australia",
+      "currency": "AUD"
+    },
+    "BE": {
+      "name": "Belgium",
+      "currency": "EUR"
     },
     "CA": {
       "name": "Canada",
       "currency": "CAD"
     },
-    "UK": {
-      "name": "United Kingdom",
-      "currency": "GBP"
-    },
-    "AU": {
-      "name": "Australia",
-      "currency": "AUD"
-    },
-    "NZ": {
-      "name": "New Zealand",
-      "currency": "NZD"
-    },
-    "JP": {
-      "name": "Japan",
-      "currency": "JPY"
-    },
     "CN": {
       "name": "China",
       "currency": "CNY"
     },
-    "IN": {
-      "name": "India",
-      "currency": "INR"
+    "CZ": {
+      "name": "Czech Republic",
+      "currency": "CZK"
     },
-    "RU": {
-      "name": "Russia",
-      "currency": "RUB"
-    },
-    "FIN": {
+    "FI": {
       "name": "Finland",
+      "currency": "EUR"
+    },
+    "FR": {
+      "name": "France",
       "currency": "EUR"
     },
     "DE": {
       "name": "Germany",
       "currency": "EUR"
+    },
+    "IN": {
+      "name": "India",
+      "currency": "INR"
+    },
+    "IL": {
+      "name": "Israel",
+      "currency": "ILS"
+    },
+    "JP": {
+      "name": "Japan",
+      "currency": "JPY"
+    },
+    "KR": {
+      "name": "South Korea",
+      "currency": "KRW"
+    },
+    "NL": {
+      "name": "Netherlands",
+      "currency": "EUR"
+    },
+    "PL": {
+      "name": "Poland",
+      "currency": "PLN"
+    },
+    "CH": {
+      "name": "Switzerland",
+      "currency": "CHF"
+    },
+    "GB": {
+      "name": "United Kingdom",
+      "currency": "GBP"
+    },
+    "US": {
+      "name": "United States",
+      "currency": "USD"
     },
     "OTHER": {
       "name": "Other",
@@ -70,11 +94,26 @@
     "INR": {
       "symbol": "₹"
     },
-    "RUB": {
-      "symbol": "₽"
-    },
     "EUR": {
       "symbol": "€"
+    },
+    "CZK": {
+      "symbol": "Kč"
+    },
+    "ILS": {
+      "symbol": "₪"
+    },
+    "KRW": {
+      "symbol": "₩"
+    },
+    "PLN": {
+      "symbol": "zł"
+    },
+    "CHF": {
+      "symbol": "CHF"
+    },
+    "JPY": {
+      "symbol": "JP¥"
     }
   }
 }

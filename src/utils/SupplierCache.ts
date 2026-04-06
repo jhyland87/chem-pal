@@ -1,6 +1,6 @@
+import type { CachedData } from "@/suppliers/SupplierBase";
 import Logger from "@/utils/Logger";
 import { md5 } from "js-md5";
-import type { CacheMetadata, CachedData } from "@/suppliers/SupplierBase";
 
 /**
  * Utility class for managing supplier data caching in Chrome's local storage.
@@ -275,7 +275,7 @@ export default class SupplierCache {
   getProductDataCacheKey(
     url: string,
     supplierName: string,
-    params?: Record<string, string>,
+    params?: QueryParams,
   ): string {
     const data = {
       url, // Must match the actual HTTP request URL
@@ -426,5 +426,22 @@ export default class SupplierCache {
    */
   static getProductDataCacheKey(): string {
     return SupplierCache.productDataCacheKey;
+  }
+
+  /**
+   * Clears both the query cache and product data cache from local storage.
+   * @source
+   */
+  static async clearAll(): Promise<void> {
+    console.debug("Clearing supplier cache");
+    try {
+      await chrome.storage.local.remove([
+        SupplierCache.queryCacheKey,
+        SupplierCache.productDataCacheKey,
+      ]);
+      console.debug("Supplier cache cleared");
+    } catch (error) {
+      console.error("Error clearing supplier cache:", error);
+    }
   }
 }

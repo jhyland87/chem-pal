@@ -194,7 +194,9 @@ export default class SupplierWarchem
    * @source
    */
   protected initProductBuilders(elements: Element[]): ProductBuilder<Product>[] {
+    this.logger.info("initProductBuilders elements:", elements);
     return mapDefined(elements, (element: Element) => {
+      this.logger.info("initProductBuilders mapping element:", element);
       const builder = new ProductBuilder<Product>(this.baseURL);
 
       const priceElem = element.querySelector(".ProdCena .Brutto");

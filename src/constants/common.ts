@@ -6,6 +6,41 @@
  */
 
 /**
+ * Action types dispatched to the App component's useActionState reducer.
+ * Each action corresponds to a specific state transition in the application.
+ * @source
+ */
+export enum APP_ACTION {
+  /** Applies new user settings and persists them to chrome.storage.local */
+  UPDATE_SETTINGS = "UPDATE_SETTINGS",
+  /** Switches the active panel (0 = SearchHome, 1 = Results, 2 = Stats) */
+  SET_PANEL = "SET_PANEL",
+  /** Toggles the SpeedDial FAB visibility based on mouse proximity */
+  SET_SPEED_DIAL_VISIBILITY = "SET_SPEED_DIAL_VISIBILITY",
+  /** Hydrates app state from chrome.storage on initial mount */
+  LOAD_FROM_STORAGE = "LOAD_FROM_STORAGE",
+  /** Opens a specific drawer tab or closes the drawer (tab = -1) */
+  SET_DRAWER_TAB = "SET_DRAWER_TAB",
+  /** Updates the selected suppliers list for search filtering */
+  SET_SELECTED_SUPPLIERS = "SET_SELECTED_SUPPLIERS",
+}
+
+/**
+ * Keys used for storing and retrieving data in chrome.storage.session.
+ * @source
+ */
+export enum CACHE_KEYS {
+  /** The current search input text */
+  SEARCH_INPUT = "search_input",
+  /** Array of product results from the most recent search */
+  SEARCH_RESULTS = "search_results",
+  /** Flag indicating a new search was submitted from the search home panel */
+  SEARCH_IS_NEW_SEARCH = "is_new_search",
+  /** Persisted search history entries stored in chrome.storage.local */
+  SEARCH_HISTORY = "search_history",
+}
+
+/**
  * Represents the availability of a product
  * Keep values as lower case strings.
  * @source
@@ -17,6 +52,7 @@ export enum AVAILABILITY {
   BACKORDER = "backorder",
   DISCONTINUED = "discontinued",
   LARGE_QUANTITY = "large quantity",
+  UNKNOWN = "unknown",
 }
 
 /**
@@ -590,12 +626,28 @@ export enum HTTP_STATUS_CODES {
  */
 export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_checksum>\d)/;
 
+/**
+ * Supported countries for location-based features such as currency and shipping filters.
+ * @source
+ */
 export const COUNTRIES = [
-  { name: "United States", code: "US" },
+  { name: "Australia", code: "AU" },
+  { name: "Belgium", code: "BE" },
   { name: "Canada", code: "CA" },
-  { name: "United Kingdom", code: "GB" },
-  { name: "Germany", code: "DE" },
+  { name: "China", code: "CN" },
+  { name: "Czech Republic", code: "CZ" },
+  { name: "Finland", code: "FI" },
   { name: "France", code: "FR" },
+  { name: "Germany", code: "DE" },
+  { name: "India", code: "IN" },
+  { name: "Israel", code: "IL" },
+  { name: "Japan", code: "JP" },
+  { name: "Netherlands", code: "NL" },
+  { name: "Poland", code: "PL" },
+  { name: "South Korea", code: "KR" },
+  { name: "Switzerland", code: "CH" },
+  { name: "United Kingdom", code: "GB" },
+  { name: "United States", code: "US" },
 ] as const;
 
 /**
@@ -647,4 +699,9 @@ export const SUPPLIER_COUNTRY_OPTIONS = [
  * Values correspond to the {@link ShippingRange} type.
  * @source
  */
-export const SHIPPING_OPTIONS: ShippingRange[] = ["worldwide", "international", "domestic", "local"];
+export const SHIPPING_OPTIONS: ShippingRange[] = [
+  "worldwide",
+  "international",
+  "domestic",
+  "local",
+];

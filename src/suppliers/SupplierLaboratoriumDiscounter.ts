@@ -4,6 +4,7 @@ import { isQuantityObject, parseQuantity } from "@/helpers/quantity";
 import { urlencode } from "@/helpers/request";
 import { firstMap, mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
+import { isPopulatedObject } from "@/utils/typeGuards/common";
 import {
   isProductObject,
   isSearchResponseOk,
@@ -86,8 +87,15 @@ export default class SupplierLaboratoriumDiscounter
   // HTTP headers used as a basis for all queries.
   protected headers: HeadersInit = {
     /* eslint-disable */
-    accept:
-      "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+    accept: [
+      "text/html",
+      "application/xhtml+xml",
+      "application/xml;q=0.9",
+      "image/avif",
+      "image/webp",
+      "image/apng",
+      "*/*;q=0.8",
+    ].join(","),
     "accept-language": "en-US,en;q=0.6",
     "cache-control": "no-cache",
     pragma: "no-cache",
@@ -136,7 +144,7 @@ export default class SupplierLaboratoriumDiscounter
    *
    * // Use in search request
    * const response = await this.httpGetJson({
-   *   path: "/en/search/chemical",
+   *   path: "/search/chemical",
    *   params: this.makeQueryParams(20)
    * });
    * ```
@@ -144,8 +152,8 @@ export default class SupplierLaboratoriumDiscounter
    */
   protected makeQueryParams(limit?: number): LaboratoriumDiscounterSearchParams {
     return {
-      limit: limit?.toString() ?? "100",
       format: "json",
+      limit: limit?.toString() ?? "100",
     };
   }
 
@@ -181,7 +189,7 @@ export default class SupplierLaboratoriumDiscounter
     }
 
     const response: unknown = await this.httpGetJson({
-      path: `/en/search/${urlencode(query)}`,
+      path: `/en/search/${urlencode(query)}/`, // Leave trailing slash, otherwise will 301
       params,
     });
 
@@ -244,7 +252,9 @@ export default class SupplierLaboratoriumDiscounter
   protected initProductBuilders(
     data: LaboratoriumDiscounterSearchResponseProduct[],
   ): ProductBuilder<Product>[] {
+    this.logger.info("initProductBuilders data:", data);
     return mapDefined(data, (product) => {
+      this.logger.info("initProductBuilders product:", product);
       const productBuilder = new ProductBuilder(this.baseURL);
 
       const quantity = firstMap(parseQuantity, [
@@ -285,19 +295,27 @@ export default class SupplierLaboratoriumDiscounter
     return this.getProductDataWithCache(
       product,
       async (builder) => {
+        const path = builder.get("url").startsWith("en/")
+          ? builder.get("url")
+          : `en/${builder.get("url")}`;
+
         const productResponse = await this.httpGetJson({
-          path: builder.get("url"),
+          path,
           params,
         });
+
         if (!productResponse || !isProductObject(productResponse)) {
-          this.logger.warn("Invalid product data - did not pass typeguard:", productResponse);
+          this.logger.warn(`Invalid product data - did not pass typeguard:`, {
+            path,
+            productResponse,
+          });
           return builder;
         }
         const productData = productResponse.product;
         const currency = productResponse.shop.currencies[productResponse.shop.currency];
         builder.setPricing(productData.price.price, currency.code, currency.symbol);
-        if (typeof productData.variants === "object" && productData.variants !== null) {
-          for (const variant of Object.values(productData.variants) as VariantObject[]) {
+        if (isPopulatedObject(productData.variants)) {
+          for (const variant of Object.values(productData.variants)) {
             if (variant.active === false) continue;
             const quantity = parseQuantity(variant.title);
             if (!isQuantityObject(quantity)) {
@@ -306,7 +324,7 @@ export default class SupplierLaboratoriumDiscounter
             }
 
             if (quantity.quantity === builder.get("quantity")) {
-              this.logger.warn("Quantity already exists - skipping", quantity.quantity);
+              this.logger.debug("Quantity already exists - skipping", quantity.quantity);
               continue;
             }
 
@@ -324,7 +342,12 @@ export default class SupplierLaboratoriumDiscounter
                       if (stock.available) return AVAILABILITY.IN_STOCK;
                       if (stock.on_stock) return AVAILABILITY.IN_STOCK;
                       if (stock.allow_backorders) return AVAILABILITY.BACKORDER;
-                      return AVAILABILITY.OUT_OF_STOCK;
+                      this.logger.warn("Unknown availability stock - Defaulting to UNKNOWN", {
+                        path,
+                        stock: variant.stock,
+                        variant,
+                      });
+                      return AVAILABILITY.UNKNOWN;
                     })(variant.stock)
                   : undefined
                 : undefined,

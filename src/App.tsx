@@ -1,3 +1,4 @@
+import { APP_ACTION, CACHE_KEYS } from "@/constants/common";
 import { AppContext } from "@/context";
 import SupplierFactory from "@/suppliers/SupplierFactory";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -94,12 +95,12 @@ const initialAppState: AppState = {
 };
 
 type AppAction =
-  | { type: "UPDATE_SETTINGS"; settings: UserSettings }
-  | { type: "SET_PANEL"; panel: number }
-  | { type: "SET_SPEED_DIAL_VISIBILITY"; visible: boolean }
-  | { type: "LOAD_FROM_STORAGE"; data: Partial<AppState> }
-  | { type: "SET_DRAWER_TAB"; tab: number }
-  | { type: "SET_SELECTED_SUPPLIERS"; suppliers: string[] };
+  | { type: APP_ACTION.UPDATE_SETTINGS; settings: UserSettings }
+  | { type: APP_ACTION.SET_PANEL; panel: number }
+  | { type: APP_ACTION.SET_SPEED_DIAL_VISIBILITY; visible: boolean }
+  | { type: APP_ACTION.LOAD_FROM_STORAGE; data: Partial<AppState> }
+  | { type: APP_ACTION.SET_DRAWER_TAB; tab: number }
+  | { type: APP_ACTION.SET_SELECTED_SUPPLIERS; suppliers: string[] };
 
 /**
  * React v19 App component with enhanced state management
@@ -123,10 +124,12 @@ function App() {
   const [appState, dispatch, isPending] = useActionState(
     (currentState: AppState, action: AppAction): AppState => {
       switch (action.type) {
-        case "UPDATE_SETTINGS": {
+        // Applies new user settings (theme, currency, caching, suppliers, etc.) and
+        // persists them to chrome.storage.local. Also fetches the updated currency rate.
+        // Dispatched by child components via appContext.setUserSettings().
+        case APP_ACTION.UPDATE_SETTINGS: {
           const newSettings = action.settings;
 
-          // Handle async operations in useEffect instead of action handler
           startTransition(() => {
             (async () => {
               try {
@@ -149,8 +152,10 @@ function App() {
           };
         }
 
-        case "SET_PANEL": {
-          // Handle async Chrome storage in useEffect
+        // Switches the active panel (0 = SearchHome, 1 = Results, 2 = Stats) and
+        // persists the selection to chrome.storage.session so it survives popup re-opens.
+        // Dispatched by child components via appContext.setPanel().
+        case APP_ACTION.SET_PANEL: {
           startTransition(() => {
             (async () => {
               try {
@@ -167,26 +172,35 @@ function App() {
           };
         }
 
-        case "SET_SPEED_DIAL_VISIBILITY":
+        // Toggles the SpeedDial FAB visibility based on mouse proximity to the
+        // bottom-right corner of the popup. Dispatched by the mousemove listener.
+        case APP_ACTION.SET_SPEED_DIAL_VISIBILITY:
           return {
             ...currentState,
             speedDialVisibility: action.visible,
           };
 
-        case "LOAD_FROM_STORAGE":
+        // Hydrates app state from chrome.storage on initial mount. Merges saved
+        // panel, userSettings, and selectedSuppliers into the current state.
+        // Dispatched once by the mount useEffect.
+        case APP_ACTION.LOAD_FROM_STORAGE:
           return {
             ...currentState,
             ...action.data,
           };
 
-        case "SET_DRAWER_TAB":
+        // Opens a specific drawer tab or closes the drawer (tab = -1).
+        // Used by setDrawerTab() for direct tab selection and toggleDrawer()
+        // for open/close toggling.
+        case APP_ACTION.SET_DRAWER_TAB:
           return {
             ...currentState,
             drawerTab: action.tab,
           };
 
-        case "SET_SELECTED_SUPPLIERS": {
-          // Handle async Chrome storage in useEffect
+        // Updates the list of selected suppliers for search filtering and persists
+        // the selection to chrome.storage.local. Dispatched via appContext.setSelectedSuppliers().
+        case APP_ACTION.SET_SELECTED_SUPPLIERS: {
           startTransition(() => {
             (async () => {
               try {
@@ -216,13 +230,18 @@ function App() {
     const loadFromStorage = async () => {
       try {
         const [sessionData, localData] = await Promise.all([
-          chrome.storage.session.get(["panel"]),
+          chrome.storage.session.get(["panel", CACHE_KEYS.SEARCH_RESULTS]),
           chrome.storage.local.get(["userSettings", "selectedSuppliers"]),
         ]);
         const loadedData: Partial<AppState> = {};
 
         if (sessionData.panel) {
-          loadedData.panel = sessionData.panel as number;
+          const savedPanel = sessionData.panel as number;
+          const results = sessionData[CACHE_KEYS.SEARCH_RESULTS];
+          const hasResults = Array.isArray(results) && results.length > 0;
+
+          // If restoring to results panel but there are no results, go to search instead
+          loadedData.panel = savedPanel === 1 && !hasResults ? 0 : savedPanel;
         }
 
         if (localData.userSettings) {
@@ -234,7 +253,7 @@ function App() {
         }
 
         if (Object.keys(loadedData).length > 0) {
-          dispatch({ type: "LOAD_FROM_STORAGE", data: loadedData });
+          dispatch({ type: APP_ACTION.LOAD_FROM_STORAGE, data: loadedData });
         }
       } catch (error) {
         console.error("Failed to load from Chrome storage:", error);
@@ -254,7 +273,7 @@ function App() {
           event.y >= window.innerHeight - cornerThreshold);
 
       if (shouldShow !== appState.speedDialVisibility) {
-        dispatch({ type: "SET_SPEED_DIAL_VISIBILITY", visible: shouldShow });
+        dispatch({ type: APP_ACTION.SET_SPEED_DIAL_VISIBILITY, visible: shouldShow });
       }
     };
 
@@ -264,11 +283,11 @@ function App() {
 
   // Handlers for child components
   const handleSetUserSettings = (settings: UserSettings) => {
-    dispatch({ type: "UPDATE_SETTINGS", settings });
+    dispatch({ type: APP_ACTION.UPDATE_SETTINGS, settings });
   };
 
   const handleSetPanel = (panel: number) => {
-    dispatch({ type: "SET_PANEL", panel });
+    dispatch({ type: APP_ACTION.SET_PANEL, panel });
   };
 
   // AppContext value with fixed searchResults property
@@ -279,12 +298,12 @@ function App() {
     setSearchResults, // Expose setter for child components to use
     setPanel: handleSetPanel, // Add setPanel to context for tab switching
     drawerTab: appState.drawerTab,
-    setDrawerTab: (tab: number) => dispatch({ type: "SET_DRAWER_TAB", tab }),
+    setDrawerTab: (tab: number) => dispatch({ type: APP_ACTION.SET_DRAWER_TAB, tab }),
     toggleDrawer: () =>
-      dispatch({ type: "SET_DRAWER_TAB", tab: appState.drawerTab === -1 ? 0 : -1 }),
+      dispatch({ type: APP_ACTION.SET_DRAWER_TAB, tab: appState.drawerTab === -1 ? 0 : -1 }),
     selectedSuppliers: appState.selectedSuppliers,
     setSelectedSuppliers: (suppliers: string[]) =>
-      dispatch({ type: "SET_SELECTED_SUPPLIERS", suppliers }),
+      dispatch({ type: APP_ACTION.SET_SELECTED_SUPPLIERS, suppliers }),
     pendingSearchQuery,
     setPendingSearchQuery,
     searchFilters,

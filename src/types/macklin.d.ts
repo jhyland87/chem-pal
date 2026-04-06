@@ -80,7 +80,7 @@ declare global {
    * and request signing. The sign header is added automatically
    * by the client.
    */
-  interface MacklinRequestHeaders extends Record<string, string> {
+  interface MacklinRequestHeaders extends HttpHeaders {
     /* eslint-disable */
     /** Server-synchronized timestamp */
     "X-Timestamp"?: string;

@@ -37,6 +37,18 @@ declare global {
   }
 
   /**
+   * A string-keyed map of HTTP header values.
+   * Used for request and response headers throughout the supplier layer.
+   */
+  type HttpHeaders = Record<string, string>;
+
+  /**
+   * A string-keyed map of URL query parameter values.
+   * Used when building URLSearchParams for supplier API requests.
+   */
+  type QueryParams = Record<string, string>;
+
+  /**
    * Represents the options for a request.
    * This type is used to standardize the format of request options across different supplier implementations.
    */

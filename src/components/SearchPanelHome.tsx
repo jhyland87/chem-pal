@@ -5,13 +5,14 @@ import React, { useEffect, useState } from "react";
 import { useAppContext } from "../context";
 import { useTheme as useCustomTheme } from "../themes";
 import { SearchForm } from "./SearchForm";
+import styles from "./SearchPanelHome.module.scss";
 import {
   SearchPanelHomeContainer,
   SearchPanelHomeForwardButton,
   SearchPanelHomeSettingsButton,
 } from "./StyledComponents";
-import styles from "./SearchPanelHome.module.scss";
 
+import { CACHE_KEYS } from "@/constants/common";
 const RESULTS_TAB_INDEX = 1;
 
 const SearchPanelHome: React.FC = () => {
@@ -27,10 +28,10 @@ const SearchPanelHome: React.FC = () => {
     } else {
       const loadStoredResults = async () => {
         try {
-          const data = await chrome.storage.session.get(["searchResults"]);
-          if (data.searchResults && data.searchResults.length > 0) {
+          const data = await chrome.storage.session.get([CACHE_KEYS.SEARCH_RESULTS]);
+          if (data[CACHE_KEYS.SEARCH_RESULTS] && data[CACHE_KEYS.SEARCH_RESULTS].length > 0) {
             setHasStoredResults(true);
-            setResultCount(data.searchResults.length);
+            setResultCount(data[CACHE_KEYS.SEARCH_RESULTS].length);
           }
         } catch (error) {
           console.warn("Failed to load search results from session storage:", error);
@@ -43,8 +44,8 @@ const SearchPanelHome: React.FC = () => {
   const handleSearch = async (query: string) => {
     // Save the query to Chrome session storage (same as SearchInput)
     await chrome.storage.session.set({
-      searchInput: query,
-      isNewSearch: true, // Flag to indicate this is a new search submission
+      [CACHE_KEYS.SEARCH_INPUT]: query,
+      [CACHE_KEYS.SEARCH_IS_NEW_SEARCH]: true, // Flag to indicate this is a new search submission
     });
     // Switch to the results panel
     if (typeof appContext.setPanel === "function") {
@@ -84,10 +85,14 @@ const SearchPanelHome: React.FC = () => {
           </Badge>
         </SearchPanelHomeForwardButton>
       )}
-      <div className={styles['search-panel-home-content']}>
+      <div className={styles["search-panel-home-content"]}>
         {/* Logo always visible at the top */}
-        <div className={styles['search-panel-home-logo-container']}>
-          <img className={styles['search-panel-home-logo']} src={logoSrc} alt="Supplier Search Logo" />
+        <div className={styles["search-panel-home-logo-container"]}>
+          <img
+            className={styles["search-panel-home-logo"]}
+            src={logoSrc}
+            alt="Supplier Search Logo"
+          />
         </div>
         <SearchForm
           onSearch={handleSearch}

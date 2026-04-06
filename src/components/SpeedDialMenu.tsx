@@ -1,9 +1,11 @@
+import { CACHE_KEYS } from "@/constants/common";
 import { useAppContext } from "@/context";
 import AutoDeleteIcon from "@/icons/AutoDeleteIcon";
-import BarChartIcon from "@mui/icons-material/BarChart";
 import ClearIcon from "@/icons/ClearIcon";
 import ContrastIcon from "@/icons/ContrastIcon";
 import InfoOutlineIcon from "@/icons/InfoOutlineIcon";
+import SupplierCache from "@/utils/SupplierCache";
+import BarChartIcon from "@mui/icons-material/BarChart";
 import SpeedDial from "@mui/material/SpeedDial";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
 import SpeedDialIcon from "@mui/material/SpeedDialIcon";
@@ -41,10 +43,31 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
    * @param event - The click event
    * @source
    */
-  const handleClearResults = (event: MouseEvent<HTMLAnchorElement>) => {
+  const handleClearResults = async (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
-    chrome.storage.session.set({ searchResults: [] });
+    try {
+      await chrome.storage.session.set({ [CACHE_KEYS.SEARCH_RESULTS]: [] });
+    } catch (error) {
+      console.warn(
+        `Failed to clear ${CACHE_KEYS.SEARCH_RESULTS} results from session storage:`,
+        error,
+      );
+    }
+
+    console.debug("[handleClearResults] Setting userSettings to:", { ...appContext.userSettings });
     appContext.setUserSettings({ ...appContext.userSettings });
+
+    const badgeText = await chrome.action.getBadgeText({});
+    if (badgeText !== "" && badgeText !== null) {
+      await chrome.action.setBadgeText({ text: "0" });
+      setTimeout(async () => {
+        console.debug("[handleClearResults] Cleared results from session storage");
+        await chrome.action.setBadgeText({ text: "" });
+      }, 1000);
+      console.debug("[handleClearResults] Cleared results from session storage");
+    }
+
+    appContext.setSearchResults([]);
   };
 
   /**
@@ -58,10 +81,10 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
     event.preventDefault();
 
     try {
-      const cacheNames = await caches.keys();
-      await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+      await SupplierCache.clearAll();
+      console.debug("Supplier cache cleared");
     } catch (error) {
-      console.warn("Failed to clear cache:", error);
+      console.warn("Failed to clear supplier cache:", error);
     }
   };
 

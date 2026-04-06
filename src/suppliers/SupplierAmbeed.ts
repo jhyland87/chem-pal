@@ -48,8 +48,15 @@ export default class SupplierAmbeed
   // HTTP headers used as a basis for all queries.
   protected headers: HeadersInit = {
     /* eslint-disable */
-    accept:
-      "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+    accept: [
+      "text/html",
+      "application/xhtml+xml",
+      "application/xml;q=0.9",
+      "image/avif",
+      "image/webp",
+      "image/apng",
+      "*/*;q=0.8",
+    ].join(","),
     "accept-language": "en-US,en;q=0.6",
     "cache-control": "no-cache",
     pragma: "no-cache",

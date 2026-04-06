@@ -5,7 +5,7 @@
  */
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { currencies, locations } from "../../config.json";
+import { currencies, locations } from "@/../config.json";
 
 /**
  * Mapping of ISO currency codes to their corresponding currency symbols
