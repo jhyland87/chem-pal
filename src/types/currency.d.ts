@@ -1,4 +1,4 @@
-import { HTTP_STATUS_CODES } from "@/constants/app";
+import { StatusCodes } from "http-status-codes";
 import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 
 declare global {
@@ -13,7 +13,7 @@ declare global {
   interface ExchangeRateResponse {
     /** HTTP status code of the response */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    status_code: HTTP_STATUS_CODES;
+    status_code: StatusCodes;
     /** Exchange rate data */
     data: {
       /** Base currency code */

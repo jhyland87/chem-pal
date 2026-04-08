@@ -347,10 +347,7 @@ export default class SupplierCache {
     try {
       const result = await chrome.storage.local.get(SupplierCache.productDataCacheKey);
       const cache =
-        (result[SupplierCache.productDataCacheKey] as Record<
-          string,
-          { data: Record<string, unknown>; timestamp: number }
-        >) || {};
+        (result[SupplierCache.productDataCacheKey] as Record<string, CachedProductEntry>) || {};
       const cached = cache[key];
       if (cached) {
         await this.updateProductDataCacheTimestamp(key);
@@ -371,10 +368,7 @@ export default class SupplierCache {
     try {
       const result = await chrome.storage.local.get(SupplierCache.productDataCacheKey);
       const cache =
-        (result[SupplierCache.productDataCacheKey] as Record<
-          string,
-          { data: Record<string, unknown>; timestamp: number }
-        >) || {};
+        (result[SupplierCache.productDataCacheKey] as Record<string, CachedProductEntry>) || {};
       if (cache[key]) {
         cache[key].timestamp = Date.now();
         await chrome.storage.local.set({ [SupplierCache.productDataCacheKey]: cache });
@@ -392,10 +386,7 @@ export default class SupplierCache {
     try {
       const result = await chrome.storage.local.get(SupplierCache.productDataCacheKey);
       const cache =
-        (result[SupplierCache.productDataCacheKey] as Record<
-          string,
-          { data: Record<string, unknown>; timestamp: number }
-        >) || {};
+        (result[SupplierCache.productDataCacheKey] as Record<string, CachedProductEntry>) || {};
       if (Object.keys(cache).length >= SupplierCache.productDataCacheSize) {
         const oldestKey = Object.entries(cache).sort(
           ([, a], [, b]) => a.timestamp - b.timestamp,

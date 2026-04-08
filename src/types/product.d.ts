@@ -887,6 +887,46 @@ declare global {
      */
     textOptionsFacets?: TextOptionFacet[];
   }
+  /**
+   * Result of a fuzzy match operation, extending the original item with match scoring metadata.
+   * Used by {@link SupplierBase.fuzzyFilter} to annotate search results with relevance scores.
+   * @typeParam T - The type of the original item being matched
+   */
+  type FuzzyMatchResult<T> = T & {
+    /** Fuzzy matching metadata */
+    _fuzz: { score: number; idx: number };
+    /** Normalized match score as a percentage (0–100) */
+    matchPercentage: number;
+  };
+
+  /**
+   * A product item extended with a group identifier and optional variant children.
+   * Used by {@link SupplierBase.groupVariants} to cluster product variants under a common listing.
+   * @typeParam T - The base product/item type
+   */
+  type GroupedItem<T> = T & {
+    /** Identifier derived from the product title (with quantity stripped) for grouping variants */
+    groupId: string;
+    /** Child variants that share the same groupId */
+    variants?: T[];
+  };
+
+  /**
+   * Error captured during parallel supplier execution in {@link SupplierFactory.executeAll}.
+   * @typeParam P - The product type produced by the supplier
+   */
+  interface SupplierExecutionError<P> {
+    /** The error thrown during execution */
+    error: unknown;
+    /** The supplier instance that failed */
+    supplier: SupplierBase<unknown, P>;
+  }
+
+  /**
+   * Mapping of ISO 3166-1 alpha-2 country codes to domain URLs.
+   * Used by Amazon supplier classes to resolve the correct regional storefront.
+   */
+  type CountryDomainMap = Record<CountryCode, string>;
 }
 
 // This export is needed to make the file a module

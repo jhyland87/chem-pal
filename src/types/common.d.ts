@@ -287,6 +287,18 @@ declare global {
   }
 
   /**
+   * A cached product data entry stored in chrome.storage.local.
+   * Wraps the raw product data with a timestamp for LRU eviction.
+   * Used by {@link SupplierCache} for the product data cache.
+   */
+  interface CachedProductEntry {
+    /** The cached product data */
+    data: Record<string, unknown>;
+    /** Epoch ms timestamp of when the entry was last accessed or created */
+    timestamp: number;
+  }
+
+  /**
    * Extended column interface with additional metadata support.
    * Used to enhance TanStack Table columns with custom metadata.
    *

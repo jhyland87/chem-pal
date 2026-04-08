@@ -84,7 +84,8 @@
     "includeFolders": true,
     "compactFolders": false,
     "includeGroups": true,
-    "includeCategories": true
+    "includeCategories": true,
+    "excludeReferences": true
   },
   "searchInDocuments": true,
   "searchInComments": true,
@@ -110,12 +111,13 @@
   "excludeNotDocumented": false,
   "excludeInternal": true,
   "resolveUtilityTypes": true,
-  "excludeExternals": false,
+  "externalPattern": ["**/node_modules/**"],
+  "excludeExternals": true,
   "visibilityFilters": {
     "protected": true,
     "private": true,
     "inherited": false,
-    "external": true
+    "external": false
   },
   "sourceLinkTemplate": "https://github.com/jhyland87/chem-pal/blob/main/{path}#L{line}",
   "disableSources": false,

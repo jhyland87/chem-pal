@@ -142,16 +142,15 @@ export async function fetchDecorator(
   init?: RequestInit,
 ): Promise<FetchDecoratorResponse> {
   const requestHash = await generateRequestHash(input, init);
-  console.log(`Request Hash: ${requestHash}`);
+  console.debug(`Request Hash: ${requestHash}`);
 
   // Clone the request for aggregate capture BEFORE fetch() consumes it.
   // For POST requests, fetch() reads the request body, making it impossible
   // to clone afterward.
   let aggregateRequestClone: Request | undefined;
   if (typeof __RESPONSE_AGGREGATE__ !== "undefined" && __RESPONSE_AGGREGATE__) {
-    aggregateRequestClone = input instanceof Request
-      ? input.clone()
-      : new Request(input.toString(), init);
+    aggregateRequestClone =
+      input instanceof Request ? input.clone() : new Request(input.toString(), init);
   }
 
   const response = await fetch(input, init);
@@ -186,7 +185,7 @@ export async function fetchDecorator(
       data = await clonedResponse.clone().blob();
     }
   } catch {
-    console.log("clonedResponse:", clonedResponse);
+    console.debug("clonedResponse:", clonedResponse);
     data = await clonedResponse.clone().text();
   }
 
