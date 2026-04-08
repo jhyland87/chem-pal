@@ -25,6 +25,7 @@
   ],
   "supportForTags": {
     "@interface": true,
+    "@deprecated": true,
     "@source": true,
     "@component": true,
     "@example": true,

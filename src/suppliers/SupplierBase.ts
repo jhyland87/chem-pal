@@ -1031,6 +1031,9 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
   public async *execute(): AsyncGenerator<T, void, undefined> {
     await this.setup();
     incrementSearchQueryCount(this.supplierName);
+    this.logger.log(
+      `Executing query '${this.query}' for supplier ${this.supplierName} (limit: ${this.limit})`,
+    );
     const results = await this.queryProductsWithCache(this.query, this.limit);
     if (!results || results.length === 0) {
       this.logger.log(`No query results found`);
@@ -1043,13 +1046,13 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     const tasks = this.products.map((product) =>
       queue.run(async () => {
         try {
-          this.logger.log(`Product data for ${this.supplierName}:`, product);
+          this.logger.debug(`Product data for ${this.supplierName}:`, product);
           const builder = await this.getProductData(product);
           if (!builder) return;
 
-          this.logger.log(`Builder data for ${this.supplierName}:`, builder);
+          this.logger.debug(`Builder data for ${this.supplierName}:`, builder);
           const finished = await this.finishProduct(builder);
-          this.logger.log(`Finished product data for ${this.supplierName}:`, finished);
+          this.logger.debug(`Finished product data for ${this.supplierName}:`, finished);
           if (finished) {
             return finished;
           }
