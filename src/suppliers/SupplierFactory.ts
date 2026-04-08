@@ -145,7 +145,7 @@ export default class SupplierFactory<P extends Product> {
     // 2. Use async-await-queue for parallel execution
     const queue = new Queue(concurrency, 100);
     const allResults: P[] = [];
-    const errors: Array<{ error: unknown; supplier: SupplierBase<unknown, P> }> = [];
+    const errors: SupplierExecutionError<P>[] = [];
 
     const tasks = supplierInstances.map((supplier) =>
       queue.run(async () => {

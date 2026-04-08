@@ -108,7 +108,7 @@ export default class SupplierN2O3 extends SupplierBase<Product, Product> impleme
       const $fuzzResults = await queryProductPage(query, offset);
 
       if (!$fuzzResults) {
-        console.log("No results for page:", offset);
+        this.logger.log("No results for page:", offset);
         break;
       }
 
@@ -119,7 +119,7 @@ export default class SupplierN2O3 extends SupplierBase<Product, Product> impleme
       }
     }
 
-    console.log("results:", results);
+    this.logger.log("results:", results);
 
     return this.initProductBuilders(results);
   }
@@ -209,7 +209,7 @@ export default class SupplierN2O3 extends SupplierBase<Product, Product> impleme
       result.currencySymbol = "zł";
     }
 
-    console.log("result:", result);
+    this.logger.log("result:", result);
     return result;
   }
 
@@ -291,7 +291,7 @@ export default class SupplierN2O3 extends SupplierBase<Product, Product> impleme
       return product;
     });
 
-    console.log("parsedResults:", parsedResults);
+    this.logger.log("parsedResults:", parsedResults);
 
     return parsedResults;
   }

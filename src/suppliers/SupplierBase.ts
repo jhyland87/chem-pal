@@ -283,12 +283,6 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
   // name of the inheriting class.
   protected logger: Logger;
 
-  // Cache configuration
-  private static readonly cacheKey = "supplier_cache";
-
-  // Maximum number of cached results
-  private static readonly cacheSize = 100;
-
   // Default values for products. These will get overridden if they're found in the product data.
   protected productDefaults = {
     uom: "ea",
@@ -296,16 +290,6 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     currencyCode: "USD",
     currencySymbol: "$",
   };
-
-  // --- Product Data Cache Logic ---
-  protected static readonly productDataCacheKey = "supplier_product_data_cache";
-
-  // Cache configuration for query results
-  private static readonly queryCacheKey = "supplier_query_cache";
-
-  // Cache version - increment this when cache format changes
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  private static readonly CACHE_VERSION = 1;
 
   // Cache instance for this supplier
   protected cache!: SupplierCache;
@@ -714,8 +698,8 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       const resoponseHeaders = Object.fromEntries(
         httpResponse.headers.entries(),
       ) satisfies HeadersInit;
-      console.log("resoponseHeaders:", resoponseHeaders);
-      console.log("resoponseHeaders.location:", resoponseHeaders.location);
+      this.logger.debug("resoponseHeaders:", resoponseHeaders);
+      this.logger.debug("resoponseHeaders.location:", resoponseHeaders.location);
 
       //const httpResponse = await fetchDecorator(requestObj.url, requestObj);
 
@@ -795,7 +779,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
         return acc;
       },
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      [] as Array<X & { _fuzz: { score: number; idx: number }; matchPercentage: number }>,
+      [] as FuzzyMatchResult<X>[],
     ) as X[];
 
     this.logger.debug("fuzzed search results:", res);
@@ -987,7 +971,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     limit: number = this.limit,
   ): Promise<ProductBuilder<T>[] | void> {
     // Check cache first (processed product data)
-    console.debug(
+    this.logger.debug(
       "queryProductsWithCache: called for",
       this.supplierName,
       "query:",
@@ -1000,7 +984,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     const cache =
       (result[SupplierCache.getQueryCacheKey()] as Record<string, CachedData<unknown>>) || {};
     const cached = cache[key];
-    console.debug("queryProductsWithCache: cache hit:", !!cached, "key:", key);
+    this.logger.debug("queryProductsWithCache: cache hit:", !!cached, "key:", key);
     if (cached) {
       // If the cached limit is less than the requested limit, invalidate the cache
       if (
@@ -1049,7 +1033,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     incrementSearchQueryCount(this.supplierName);
     const results = await this.queryProductsWithCache(this.query, this.limit);
     if (!results || results.length === 0) {
-      this.logger.debug(`No query results found`);
+      this.logger.log(`No query results found`);
       return;
     }
     this.products = results;
@@ -1059,13 +1043,13 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     const tasks = this.products.map((product) =>
       queue.run(async () => {
         try {
-          console.log(`Product data for ${this.supplierName}:`, product);
+          this.logger.log(`Product data for ${this.supplierName}:`, product);
           const builder = await this.getProductData(product);
           if (!builder) return;
 
-          console.log(`Builder data for ${this.supplierName}:`, builder);
+          this.logger.log(`Builder data for ${this.supplierName}:`, builder);
           const finished = await this.finishProduct(builder);
-          console.log(`Finished product data for ${this.supplierName}:`, finished);
+          this.logger.log(`Finished product data for ${this.supplierName}:`, finished);
           if (finished) {
             return finished;
           }
@@ -1296,13 +1280,10 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
 
     if (params && Object.keys(params).length > 0) {
       href.search = new URLSearchParams(
-        Object.entries(params).reduce(
-          (acc, [key, value]) => {
-            acc[key] = String(value);
-            return acc;
-          },
-          {} as QueryParams,
-        ),
+        Object.entries(params).reduce((acc, [key, value]) => {
+          acc[key] = String(value);
+          return acc;
+        }, {} as QueryParams),
       ).toString();
       //href.search = new URLSearchParams(params as QueryParams).toString();
     }
@@ -1337,7 +1318,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       return undefined;
     }
     const cacheKey = this.cache.getProductDataCacheKey(url, this.supplierName);
-    console.log("[SupplierBase] Product detail cache key:", cacheKey, "for url:", url);
+    this.logger.debug("[SupplierBase] Product detail cache key:", cacheKey, "for url:", url);
     try {
       const cachedData = await this.cache.getCachedProductData(cacheKey);
       if (cachedData) {
@@ -1401,7 +1382,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       return undefined;
     }
     const cacheKey = this.cache.getProductDataCacheKey(url, this.supplierName, params);
-    console.log("[SupplierBase] Product detail cache key:", cacheKey, "for url:", url);
+    this.logger.log("[SupplierBase] Product detail cache key:", cacheKey, "for url:", url);
     try {
       const cachedData = await this.cache.getCachedProductData(cacheKey);
       if (cachedData) {
@@ -1444,8 +1425,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * @source
    */
   protected groupVariants<R>(data: R[]): R[] {
-    type SubType = R & { groupId: string; variants?: R[] };
-    const variants: SubType[] = data
+    const variants: GroupedItem<R>[] = data
       .map((item) => {
         const title = this.titleSelector(item);
         if (!title) {
@@ -1456,21 +1436,21 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
         const groupIdWithoutSpaces = groupId.replace(/[\s-]/g, "");
         return { ...item, groupId: groupIdWithoutSpaces };
       })
-      .filter((item): item is SubType => item !== undefined);
+      .filter((item): item is GroupedItem<R> => item !== undefined);
 
     const products = Object.groupBy(variants, (item) => item.groupId);
 
     return Object.values(products)
-      .filter((product): product is SubType[] => product !== undefined)
+      .filter((product): product is GroupedItem<R>[] => product !== undefined)
       .map((product) => {
         const main = product.splice(0, 1)[0];
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { groupId, ...newObject } = main;
-        newObject.variants = product as unknown as SubType["variants"];
+        newObject.variants = product as unknown as GroupedItem<R>["variants"];
 
         return newObject;
       })
-      .filter((item): item is SubType => item !== undefined);
+      .filter((item): item is GroupedItem<R> => item !== undefined);
   }
 
   /**
@@ -1504,7 +1484,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    */
   protected async fetch(...args: Parameters<typeof fetchDecorator>): Promise<any> {
     const [input] = args;
-    console.log(`Fetching: ${input}`);
+    this.logger.debug(`Fetching: ${input}`);
     this.requestCount++;
     if (this.requestCount > this.httpRequestHardLimit) {
       this.logger.warn("Request count exceeded hard limit", { requestCount: this.requestCount });
@@ -1513,8 +1493,8 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     }
     try {
       const response = await fetchDecorator(...args);
-      console.log(`Response Status: ${response.status}`);
-      console.log("response hash:", response.requestHash);
+      this.logger.debug(`Response Status: ${response.status}`);
+      this.logger.debug("response hash:", response.requestHash);
       if (typeof response.data === "string" && response.data?.length === 0) {
         throw new EmptyResponseError(`Invalid response: ${response.data}`);
       }

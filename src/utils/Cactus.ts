@@ -1,3 +1,4 @@
+import { StatusCodes } from "http-status-codes";
 import { LRUCache } from "lru-cache";
 
 /**
@@ -262,7 +263,7 @@ export default class Cactus {
     const headers = resp.headers;
     const contentType = headers.get("content-type") || "text/plain";
 
-    if (response.status !== 200) return "";
+    if (response.status !== StatusCodes.OK) return "";
 
     let result: string | Blob | undefined;
 
@@ -520,7 +521,7 @@ export default class Cactus {
 
     const response = await fetch(url);
 
-    if (response.status !== 200) return "";
+    if (response.status !== StatusCodes.OK) return "";
 
     const result = await response.text();
 

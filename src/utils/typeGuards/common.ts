@@ -43,9 +43,9 @@ export function isHttpResponse(value: unknown): value is Response {
     "statusText" in value &&
     "json" in value &&
     "text" in value &&
-    typeof (value as Response).json === "function" &&
-    typeof (value as Response).text === "function";
-  console.log(`isHttpResponse for`, value, `is:`, result);
+    typeof value.json === "function" &&
+    typeof value.text === "function";
+  console.debug(`isHttpResponse for`, value, `is:`, result);
   return result;
 }
 
@@ -108,13 +108,13 @@ export function isUOM(uom: unknown): uom is UOM {
  */
 export function isJsonResponse(response: unknown): response is Response {
   if (!isHttpResponse(response)) {
-    console.log(`isJsonResponse for`, response, `is:`, false);
+    console.debug(`isJsonResponse for`, response, `is:`, false);
     return false;
   }
   const contentType = (response as Response).headers.get("Content-Type");
   const result =
     contentType !== null && (contentType.includes("/json") || contentType.includes("/javascript"));
-  console.log(`isJsonResponse for`, response, `is:`, result);
+  console.debug(`isJsonResponse for`, response, `is:`, result);
   return result;
 }
 
@@ -138,7 +138,6 @@ export function isJsonResponse(response: unknown): response is Response {
  */
 export function assertJsonResponse(response: unknown): asserts response is Response {
   if (!isJsonResponse(response)) {
-    console.error(`assertJsonResponse| Invalid JSON response:`, response);
     throw new TypeError(`assertJsonResponse| Invalid JSON response: ${response}`);
   }
 }
@@ -202,7 +201,6 @@ export function isHtmlResponse(response: unknown): response is Response {
  */
 export function assertHtmlResponse(response: unknown): asserts response is Response {
   if (!isHtmlResponse(response)) {
-    console.error(`assertHtmlResponse| Invalid HTML response:`, response);
     throw new TypeError(`assertHtmlResponse| Invalid HTML response: ${response}`);
   }
 }
@@ -308,7 +306,7 @@ export function isValidResult(value: unknown): value is RequiredProductFields {
  */
 export function isMinimalProduct(product: unknown): product is RequiredProductFields {
   if (!product || typeof product !== "object") {
-    console.log(`isMinimalProduct for`, product, `is:`, false);
+    console.debug(`isMinimalProduct for`, product, `is:`, false);
     return false;
   }
 
@@ -325,12 +323,12 @@ export function isMinimalProduct(product: unknown): product is RequiredProductFi
 
   const result = Object.entries(requiredProps).every(([key, expectedType]) => {
     if (key in product === false) {
-      console.warn(`No ${key} value found in product`, product);
+      console.debug(`No ${key} value found in product`, product);
       return false;
     }
 
     if (typeof product[key as keyof typeof product] !== expectedType) {
-      console.warn(
+      console.debug(
         `${key} property not the correct type (${typeof product[key as keyof typeof product]} !== ${expectedType})`,
         product,
       );
@@ -339,7 +337,7 @@ export function isMinimalProduct(product: unknown): product is RequiredProductFi
 
     return true;
   });
-  console.log(`isMinimalProduct for`, product, `is:`, result);
+  console.debug(`isMinimalProduct for`, product, `is:`, result);
   return result;
 }
 

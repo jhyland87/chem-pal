@@ -33,7 +33,7 @@ export interface SearchResult {
 
 export type AmazonListing = Pick<Product, "id" | "title" | "url" | "price" | "currencySymbol">;
 
-const amazonDomains: Record<CountryCode, string> = {
+const amazonDomains: CountryDomainMap = {
   /* eslint-disable */
   US: "https://www.amazon.com", // United States (default)
   UK: "https://www.amazon.co.uk", // United Kingdom

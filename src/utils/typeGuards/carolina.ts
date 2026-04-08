@@ -54,6 +54,7 @@
  * ```
  * @source
  */
+import { StatusCodes } from "http-status-codes";
 export function isResponseOk(response: unknown): response is CarolinaSearchResponse {
   if (!response || typeof response !== "object") {
     return false;
@@ -63,7 +64,7 @@ export function isResponseOk(response: unknown): response is CarolinaSearchRespo
     const partialResponse = response as Partial<CarolinaSearchResponse>;
 
     if (
-      partialResponse.responseStatusCode !== 200 ||
+      partialResponse.responseStatusCode !== StatusCodes.OK ||
       !("@type" in partialResponse) ||
       !("contents" in partialResponse) ||
       typeof partialResponse.contents !== "object"
@@ -90,7 +91,7 @@ export function isResponseOk(response: unknown): response is CarolinaSearchRespo
  * ```typescript
  * // Valid search response
  * const validResponse = {
- *   responseStatusCode: 200,
+ *   responseStatusCode: StatusCodes.OK,
  *   "@type": "SearchResponse",
  *   contents: {
  *     ContentFolderZone: [
@@ -180,7 +181,7 @@ export function isValidSearchResponse(response: unknown): response is CarolinaSe
     // eslint-disable-next-line @typescript-eslint/naming-convention
     "@type": "string",
     responseStatusCode: (val: unknown) => {
-      const isValid = val === 200;
+      const isValid = val === StatusCodes.OK;
       return isValid;
     },
   };
