@@ -263,6 +263,50 @@ export function isValidResult(value: unknown): value is RequiredProductFields {
   });
 }
 
+export function checkMissingMinimalProductFields(product: unknown): string[] {
+  if (!product || typeof product !== "object") {
+    throw new TypeError(`checkMissingMinimalProductFields| Invalid product: ${product}`);
+  }
+
+  const requiredProps: Record<keyof RequiredProductFields, string> = {
+    title: "string",
+    price: "number",
+    quantity: "number",
+    uom: "string",
+    supplier: "string",
+    url: "string",
+    currencyCode: "string",
+    currencySymbol: "string",
+  };
+
+  const result = Object.entries(requiredProps).reduce(
+    (acc: string[], [key, expectedType]: [string, string]) => {
+      if (key in product === false) {
+        console.debug(
+          `checkMissingMinimalProductFields| No ${key} value found in product`,
+          product,
+        );
+        return [...acc, key];
+      }
+
+      if (typeof product[key as keyof typeof product] !== expectedType) {
+        console.debug(
+          `checkMissingMinimalProductFields| ${key} property not the correct type (${typeof product[key as keyof typeof product]} !== ${expectedType})`,
+          product,
+        );
+        return [...acc, key];
+      }
+
+      return acc;
+    },
+    [],
+  );
+  if (result.length > 0) {
+    console.warn(`checkMissingMinimalProductFields| Results for`, product, `is:`, result);
+  }
+  return result;
+}
+
 /**
  * Type guard to validate if a value has the minimal required properties of a Product.
  * This is a less strict validation than isProduct as it only checks for the minimum required fields.
@@ -305,9 +349,27 @@ export function isValidResult(value: unknown): value is RequiredProductFields {
  * @source
  */
 export function isMinimalProduct(product: unknown): product is RequiredProductFields {
-  if (!product || typeof product !== "object") {
-    console.debug(`isMinimalProduct for`, product, `is:`, false);
+  try {
+    const missingFields = checkMissingMinimalProductFields(product);
+    if (missingFields.length > 0) {
+      console.debug(
+        `isMinimalProduct| The product`,
+        product,
+        `is missing the following fields:`,
+        missingFields,
+      );
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.warn(`isMinimalProduct| The product`, product, `is invalid:`, error);
     return false;
+  }
+}
+
+export function checkCompleteProductFields(product: unknown): string[] {
+  if (!product || typeof product !== "object") {
+    throw new TypeError(`checkCompleteProductFields| Invalid product: ${product}`);
   }
 
   const requiredProps: Record<keyof RequiredProductFields, string> = {
@@ -321,24 +383,40 @@ export function isMinimalProduct(product: unknown): product is RequiredProductFi
     currencySymbol: "string",
   };
 
-  const result = Object.entries(requiredProps).every(([key, expectedType]) => {
-    if (key in product === false) {
-      console.debug(`No ${key} value found in product`, product);
-      return false;
-    }
+  const result = Object.entries(requiredProps).reduce(
+    (acc: string[], [key, expectedType]: [string, string]) => {
+      if (key in product === false) {
+        console.debug(`checkCompleteProductFields| No ${key} value found in product`, product);
+        return [...acc, key];
+      }
 
-    if (typeof product[key as keyof typeof product] !== expectedType) {
-      console.debug(
-        `${key} property not the correct type (${typeof product[key as keyof typeof product]} !== ${expectedType})`,
-        product,
-      );
-      return false;
-    }
+      if (typeof product[key as keyof typeof product] !== expectedType) {
+        console.debug(
+          `checkCompleteProductFields| ${key} property not the correct type (${typeof product[key as keyof typeof product]} !== ${expectedType})`,
+          product,
+        );
+        return [...acc, key];
+      }
 
-    return true;
-  });
-  console.debug(`isMinimalProduct for`, product, `is:`, result);
+      return acc;
+    },
+    [],
+  );
+  if (result.length > 0) {
+    console.warn(`checkCompleteProductFields| Results for`, product, `is:`, result);
+  }
   return result;
+}
+
+export function assertCompleteProductFields(
+  product: unknown,
+): asserts product is RequiredProductFields {
+  const missingFields = checkCompleteProductFields(product);
+  if (missingFields.length > 0) {
+    throw new TypeError(
+      `Product does not contain or has invalid data for the following required fields: ${missingFields.join(", ")}`,
+    );
+  }
 }
 
 /**
@@ -384,22 +462,13 @@ export function isMinimalProduct(product: unknown): product is RequiredProductFi
  * @source
  */
 export function isProduct(product: unknown): product is Product {
-  if (typeof product !== "object" || product === null) return false;
-
-  const requiredProps: Record<keyof RequiredProductFields, string> = {
-    title: "string",
-    price: "number",
-    quantity: "number",
-    uom: "string",
-    supplier: "string",
-    url: "string",
-    currencyCode: "string",
-    currencySymbol: "string",
-  };
-
-  return Object.entries(requiredProps).every(([key, expectedType]) => {
-    return key in product && typeof product[key as keyof typeof product] === expectedType;
-  });
+  try {
+    assertCompleteProductFields(product);
+    return true;
+  } catch (error) {
+    console.warn(`isProduct| The product`, product, `is invalid:`, error);
+    return false;
+  }
 }
 
 /**

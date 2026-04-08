@@ -158,7 +158,7 @@ export default class SupplierWarchem
       "div.ListingWierszeKontener > div.Wiersz.LiniaDolna",
     );
     if (!productContainers || productContainers.length === 0) {
-      this.logger.error("No products found");
+      this.logger.log("No products found");
       return [];
     }
 

@@ -31,7 +31,7 @@
   "ignoredHighlightLanguages": [
     "mermaid"
   ],
-  "logLevel": "Error",
+  "logLevel": "Info",
   "theme": "hierarchy",
   "entryPointStrategy": "expand",
   "reactReturnType": [
@@ -111,7 +111,9 @@
   "excludeNotDocumented": false,
   "excludeInternal": true,
   "resolveUtilityTypes": true,
-  "externalPattern": ["**/node_modules/**"],
+  "externalPattern": [
+    "**/node_modules/**"
+  ],
   "excludeExternals": true,
   "visibilityFilters": {
     "protected": true,

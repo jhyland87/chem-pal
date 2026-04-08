@@ -218,7 +218,7 @@ export default class SupplierSynthetika
    *     console.log(builtProduct.title, builtProduct.price);
    *   }
    * } else {
-   *   console.error("No products found or search failed");
+   *   console.log("No products found or search failed");
    * }
    * ```
    * @source

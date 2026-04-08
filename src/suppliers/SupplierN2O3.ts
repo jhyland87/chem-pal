@@ -1,7 +1,31 @@
 import { mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import SupplierBase from "./SupplierBase";
-
+/* @hideconstructor */
+/* @hideden */
+/**
+ * Supplier implementation for N2O3, a Polish based chemical supplier.
+ *
+ * @typeParam S - The supplier-specific product type (Partial<Product>)
+ * @typeParam T - The common Product type that all suppliers map to
+ *
+ * @example
+ * ```typescript
+ * const supplier = new SupplierN2O3("sodium chloride", 10, new AbortController());
+ * for await (const product of supplier) {
+ *   console.log("Found product:", product.title, product.price);
+ * }
+ * ```
+ * @remarks
+ * This supplier seems to be offline. The last valid result in InternetArchive is
+ * on [01/20/2026](https://web.archive.org/web/20260120154402/https://www.n2o3.com/en/),
+ * and it had an alert on the home page saying "Service work in progress. It is currently
+ * impossible to place an order.". But now the website fails to load because of an invalid
+ * SSL cert, and even when that's ignored. When that's overridden, it just returns the
+ * DirectAdmin default page of "webserver is functioning normally".
+ * @deprecated Supplier website is offline.
+ * @source
+ */
 export default class SupplierN2O3 extends SupplierBase<Product, Product> implements ISupplier {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "N2O3";
@@ -75,7 +99,7 @@ export default class SupplierN2O3 extends SupplierBase<Product, Product> impleme
    *     console.log(builtProduct.title, builtProduct.price);
    *   }
    * } else {
-   *   console.error("No products found or search failed");
+   *   console.log("No products found or search failed");
    * }
    * ```
    * @source

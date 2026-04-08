@@ -6,23 +6,23 @@ ChemPal aggregates results from 17 active chemical supplier websites. Each suppl
 
 | Supplier | Platform | Country | Data Strategy |
 |----------|----------|---------|---------------|
-| Ambeed | Custom | US | Hybrid (JSON search + HTML detail) |
+| Ambeed | Custom | CN | JSON Only |
 | BioFuranChem | Wix | US | JSON Only |
-| Carolina | Oracle ATG | US | JSON Only |
-| Carolina Chemical | Custom | US | HTML Only |
-| ChemSavers | Shopify | US | Hybrid |
-| FTF Scientific | WooCommerce | US | Hybrid |
-| H-Bar Scientific | Wix | US | JSON Only |
-| HiMedia | Custom | IN | Hybrid |
-| Innovating Science | Wix | US | JSON Only |
-| Lab Alley | Shopify | US | Hybrid |
-| Laboratorium Discounter | Custom | NL | Hybrid |
-| Liberty Science | Custom | US | HTML Only |
+| Carolina | Custom | US | Hybrid (JSON search + HTML detail) |
+| Carolina Chemical | WooCommerce | US | JSON Only |
+| ChemSavers | Custom | US | JSON Only |
+| FTF Scientific | Wix | US | JSON Only |
+| H-Bar Scientific | Shopify | US | JSON Only |
+| HiMedia | Amazon | IN | JSON Only |
+| Innovating Science | Amazon | US | JSON Only |
+| Lab Alley | Shopify | US | JSON Only |
+| Laboratorium Discounter | Custom | NL | Hybrid (JSON search + HTML/JSON detail) |
+| Liberty Science | WooCommerce | US | JSON Only |
 | Loudwolf | Custom | US | HTML Only |
 | Macklin | Custom | CN | JSON Only |
-| Onyxmet | Custom | PL | Hybrid (JSON search + HTML detail) |
-| Synthetika | Custom | EU | Hybrid |
-| Warchem | Custom | PL | Hybrid |
+| Onyxmet | Custom | CA | HTML Only |
+| Synthetika | Custom | PL | JSON Only |
+| Warchem | Custom | PL | HTML Only |
 
 ## Data Strategies
 
@@ -30,15 +30,15 @@ Suppliers follow one of three patterns depending on what the vendor exposes:
 
 ### JSON Only
 The search API returns all product data (title, price, quantity, CAS, etc.) in a single response. No detail page fetch is required.
-- Examples: Wix-based suppliers, Carolina, Macklin
+- Examples: Wix-based suppliers, Shopify-based suppliers, WooCommerce-based suppliers, Amazon-based suppliers, Ambeed, Carolina Chemical, Macklin
 
 ### HTML Only
 Both search results and product details are scraped from HTML pages using `DOMParser`.
-- Examples: Loudwolf, Carolina Chemical, Liberty Science
+- Examples: Loudwolf, Onyxmet, Warchem
 
 ### Hybrid (JSON + HTML)
 Search results come from a JSON/API endpoint, but full product details require fetching and scraping the individual product page.
-- Examples: Onyxmet, Ambeed, ChemSavers, Lab Alley
+- Examples: Carolina, Laboratorium Discounter
 
 ## Supplier Lifecycle
 
@@ -53,22 +53,18 @@ queryProductsWithCache(query, limit)
   ▼
 queryProducts(query, limit)
   │   Fetch search results from the supplier's website
+  │   Apply fuzzyFilter() using titleSelector() to filter irrelevant results
+  │   Return ProductBuilder[] instances
   ▼
-fuzzyFilter()
-  │   Apply fuzzball WRatio scoring via titleSelector() to filter irrelevant results
-  ▼
-initProductBuilders()
-  │   Parse raw results into ProductBuilder instances
-  ▼
-┌─ for each ProductBuilder ──────────────────┐
-│  getProductDataWithCache(product)           │
-│    │   Check cache → fallback to           │
-│    ▼   getProductData(product)             │
-│  finishProduct()                           │
-│    │   Validate, set country/shipping,     │
-│    ▼   call product.build()                │
-│  yield product  ◄── back to caller         │
-└────────────────────────────────────────────┘
+┌─ for each ProductBuilder (via async-await-queue) ─┐
+│  getProductData(product)                          │
+│    │   Check cache → fallback to                  │
+│    ▼   getProductDataWithCache(product)            │
+│  finishProduct()                                  │
+│    │   Validate, set country/shipping,            │
+│    ▼   call product.build()                       │
+│  yield product  ◄── back to caller                │
+└───────────────────────────────────────────────────┘
 ```
 
 ## Platform Base Classes
@@ -78,9 +74,9 @@ Common e-commerce platforms have shared base classes that handle platform-specif
 | Base Class | File | Handles |
 |------------|------|---------|
 | `SupplierBaseWix` | `SupplierBaseWix.ts` | Wix access token flow, GraphQL product queries |
-| `SupplierBaseShopify` | `SupplierBaseShopify.ts` | Shopify storefront API, product JSON parsing |
+| `SupplierBaseShopify` | `SupplierBaseShopify.ts` | Shopify Searchanise API, product JSON parsing |
 | `SupplierBaseWoocommerce` | `SupplierBaseWoocommerce.ts` | WooCommerce REST API product queries |
-| `SupplierBaseAmazon` | `SupplierBaseAmazon.ts` | Amazon product page scraping (currently unused) |
+| `SupplierBaseAmazon` | `SupplierBaseAmazon.ts` | Amazon product page scraping (used by HiMedia, Innovating Science) |
 
 ## SupplierFactory
 
@@ -105,8 +101,7 @@ for await (const product of factory) {
 2. Extend the appropriate base class (`SupplierBase`, or a platform base like `SupplierBaseShopify`)
 3. Implement required abstract members:
    - `supplierName`, `baseURL`, `shipping`, `country`, `paymentMethods`
-   - `queryProducts()` — fetch and return raw search results
-   - `initProductBuilders()` — convert raw results to `ProductBuilder` instances
+   - `queryProducts()` — fetch search results, apply fuzzy filtering, and return `ProductBuilder[]` instances
    - `getProductData()` — fetch individual product details (can be a no-op for JSON Only)
    - `titleSelector()` — return the product title for fuzzy matching
 4. Export from `src/suppliers/index.ts`

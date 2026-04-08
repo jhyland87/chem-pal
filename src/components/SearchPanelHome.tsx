@@ -32,6 +32,9 @@ const SearchPanelHome: React.FC = () => {
           if (data[CACHE_KEYS.SEARCH_RESULTS] && data[CACHE_KEYS.SEARCH_RESULTS].length > 0) {
             setHasStoredResults(true);
             setResultCount(data[CACHE_KEYS.SEARCH_RESULTS].length);
+          } else {
+            setHasStoredResults(false);
+            setResultCount(0);
           }
         } catch (error) {
           console.warn("Failed to load search results from session storage:", error);

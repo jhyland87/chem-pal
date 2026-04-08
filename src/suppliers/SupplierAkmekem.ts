@@ -1,5 +1,6 @@
 import SupplierBaseAmazon from "./SupplierBaseAmazon";
-
+/* @hideconstructor */
+/* @hideden */
 /**
  * Supplier for Akmekem (via Amazon marketplace)
  *
@@ -7,6 +8,7 @@ import SupplierBaseAmazon from "./SupplierBaseAmazon";
  * I'm like 90% sure that Akmekem on Amazon is actually just Macklin, but if not, it's
  * an intermediate supplier who makes it easier to purchase from Macklin.
  * {@link https://www.amazon.com/s?k=Akmekem | Akmechem Amazon Listings}
+ * @deprecated Supplier got the boot from Amazon.
  * @source
  */
 export default class SupplierAkmekem extends SupplierBaseAmazon implements ISupplier {

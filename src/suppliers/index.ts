@@ -24,9 +24,8 @@
 //export { default as SupplierAkmekem } from "./SupplierAkmekem";
 // BunmurraLabs is under construction, new website only has default shopping cart items.
 //export { default as SupplierBunmurraLabs } from "./supplierBunmurraLabs";
+// N2O3 is offline since 01/20/2026
 //export { default as SupplierN2O3 } from "./SupplierN2O3";
-
-export { default as SupplierHimedia } from "./SupplierHimedia";
 
 export { default as SupplierAmbeed } from "./SupplierAmbeed";
 export { default as SupplierBioFuranChem } from "./SupplierBiofuranChem";
@@ -35,6 +34,7 @@ export { default as SupplierCarolinaChemical } from "./SupplierCarolinaChemical"
 export { default as SupplierChemsavers } from "./SupplierChemsavers";
 export { default as SupplierFtfScientific } from "./SupplierFtfScientific";
 export { default as SupplierHbarSci } from "./SupplierHbarSci";
+export { default as SupplierHimedia } from "./SupplierHimedia";
 export { default as SupplierInnovatingScience } from "./SupplierInnovatingScience";
 export { default as SupplierLaballey } from "./SupplierLaballey";
 export { default as SupplierLaboratoriumDiscounter } from "./SupplierLaboratoriumDiscounter";
