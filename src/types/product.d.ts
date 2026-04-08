@@ -1,3 +1,5 @@
+import type SupplierBase from "@/suppliers/SupplierBase";
+import type SupplierFactory from "@/suppliers/SupplierFactory";
 import type { ColumnMeta } from "@tanstack/react-table";
 
 declare global {
