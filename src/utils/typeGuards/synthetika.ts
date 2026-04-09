@@ -1,3 +1,5 @@
+import { checkObjectStructure } from "@/helpers/collectionUtils";
+
 /**
  * This can be used to check if a SynthetikaSearchResponse is valid
  * @category Type Guards
@@ -13,48 +15,12 @@
  * @source
  */
 export function isSynthetikaSearchResponse(data: unknown): data is SynthetikaSearchResponse {
-  if (!data || typeof data !== "object") {
-    console.log("isSynthetikaSearchResponse: data is falsey or not an object");
-    return false;
-  }
-
-  const requiredFields = {
+  return checkObjectStructure(data, {
     count: "number",
     pages: "number",
     page: "number",
     list: Array.isArray,
-  };
-
-  if (
-    !Object.entries(requiredFields).every(([field, type]) => {
-      const isPresent = field in data;
-      if (!isPresent) {
-        console.log(`isSynthetikaSearchResponse: data is missing required field: ${field}`);
-        return false;
-      }
-
-      if (typeof type === "string") {
-        if (typeof data[field as keyof typeof data] !== type) {
-          console.log(`isSynthetikaSearchResponse: data[${field}] is not a ${type}`);
-          return false;
-        }
-      }
-
-      if (typeof type === "function") {
-        if (!type(data[field as keyof typeof data])) {
-          console.log(`isSynthetikaSearchResponse: data[${field}] is not an array`);
-          return false;
-        }
-      }
-
-      return true;
-    })
-  ) {
-    console.log("isSynthetikaSearchResponse: data is missing required fields");
-    return false;
-  }
-
-  return true;
+  });
 }
 
 /**
@@ -100,12 +66,7 @@ export function assertIsSynthetikaSearchResponse(
  * @source
  */
 export function isSynthetikaProduct(data: unknown): data is SynthetikaProduct {
-  if (!data || typeof data !== "object") {
-    console.log("isSynthetikaProduct: data is falsey or not an object");
-    return false;
-  }
-
-  const requiredFields = {
+  return checkObjectStructure(data, {
     /* eslint-disable */
     id: "number",
     name: "string",
@@ -118,29 +79,7 @@ export function isSynthetikaProduct(data: unknown): data is SynthetikaProduct {
     shortDescription: "string",
     producer: "object",
     /* eslint-enable */
-  };
-
-  if (
-    !Object.entries(requiredFields).every(([field, type]) => {
-      const isPresent = field in data;
-      if (!isPresent) {
-        console.log(`isSynthetikaProduct: data is missing required field: ${field}`);
-        return false;
-      }
-
-      if (typeof data[field as keyof typeof data] !== type) {
-        console.log(`isSynthetikaProduct: data[${field}] is not a ${type}`);
-        return false;
-      }
-
-      return true;
-    })
-  ) {
-    console.log("isSynthetikaProduct: data is missing required fields");
-    return false;
-  }
-
-  return true;
+  });
 }
 
 /**
@@ -158,17 +97,10 @@ export function isSynthetikaProduct(data: unknown): data is SynthetikaProduct {
  * @source
  */
 export function isSynthetikaProductPrice(data: unknown): data is SynthetikaProductPrice {
-  if (!data || typeof data !== "object") {
-    console.log("isSynthetikaProductPrice: data is falsey or not an object");
-    return false;
-  }
-
-  if (!("base" in data) || !("final" in data)) {
-    console.log("isSynthetikaProductPrice: data is missing base or final");
-    return false;
-  }
-
-  return true;
+  return checkObjectStructure(data, {
+    base: "string",
+    final: "string",
+  });
 }
 
 /**

@@ -86,74 +86,30 @@
  * ```
  * @source
  */
+import { checkObjectStructure } from "@/helpers/collectionUtils";
+
 export function isSearchResponseOk(response: unknown): response is SearchResponse {
-  if (typeof response !== "object" || response === null) {
-    console.warn("Invalid search response - Response is not an object:", response);
-    return false;
-  }
-
-  // Check for required top-level properties
-  if ("page" in response === false) {
-    console.warn("Invalid search response - Response is missing page property:", response);
-    return false;
-  }
-
-  if ("request" in response === false) {
-    console.warn("Invalid search response - Response is missing request property:", response);
-    return false;
-  }
-
-  if ("collection" in response === false) {
-    console.warn("Invalid search response - Response is missing collection property:", response);
-    return false;
-  }
-
-  const { page, request, collection } = response as Partial<SearchResponse>;
-
-  if (
-    typeof page !== "object" ||
-    !page ||
-    typeof request !== "object" ||
-    !request ||
-    typeof collection !== "object" ||
-    !collection
-  ) {
-    return false;
-  }
-
-  const badProps = ["search", "session_id", "key", "title", "status"].filter((prop) => {
-    return prop in page === false;
+  return checkObjectStructure(response, {
+    page: {
+      search: "string",
+      session_id: "string",
+      key: "string",
+      title: "string",
+      status: "string",
+    },
+    request: {
+      url: "string",
+      method: "string",
+      get: "object",
+      device: "string",
+    },
+    collection: (val: unknown) => {
+      if (typeof val !== "object" || val === null || !("products" in val) || typeof val.products !== "object" || val.products === null) {
+        return false;
+      }
+      return Object.values(val.products).every((product) => isSearchResponseProduct(product));
+    },
   });
-
-  if (badProps.length > 0) {
-    console.warn(
-      "Invalid search response - Response page is missing required properties:",
-      badProps,
-    );
-    return false;
-  }
-
-  // Validate request object
-  if (
-    typeof request !== "object" ||
-    !request ||
-    !("url" in request && "method" in request && "get" in request && "device" in request)
-  ) {
-    return false;
-  }
-
-  // Validate collection and products
-  if (
-    typeof collection !== "object" ||
-    !collection ||
-    !("products" in collection) ||
-    typeof collection.products !== "object"
-  ) {
-    return false;
-  }
-
-  // Validate each product in the collection
-  return Object.values(collection.products).every((product) => isSearchResponseProduct(product));
 }
 
 /**
@@ -222,9 +178,7 @@ export function isSearchResponseOk(response: unknown): response is SearchRespons
  * @source
  */
 export function isPriceObject(price: unknown): price is PriceObject {
-  if (typeof price !== "object" || price === null) return false;
-
-  const requiredProps = {
+  return checkObjectStructure(price, {
     /* eslint-disable */
     price: "number",
     price_incl: "number",
@@ -233,10 +187,6 @@ export function isPriceObject(price: unknown): price is PriceObject {
     price_old_incl: "number",
     price_old_excl: "number",
     /* eslint-enable */
-  };
-
-  return Object.entries(requiredProps).every(([key, type]) => {
-    return key in price && typeof price[key as keyof typeof price] === type;
   });
 }
 
@@ -356,34 +306,30 @@ export function isPriceObject(price: unknown): price is PriceObject {
  * @source
  */
 export function isSearchResponseProduct(product: unknown): product is SearchResponseProduct {
-  if (typeof product !== "object" || product === null) return false;
-
-  const requiredProps = {
-    /* eslint-disable */
-    id: "number",
-    vid: "number",
-    image: "number",
-    brand: "boolean",
-    code: "string",
-    ean: "string",
-    sku: "string",
-    score: "number",
-    available: "boolean",
-    unit: "boolean",
-    url: "string",
-    title: "string",
-    fulltitle: "string",
-    variant: "string",
-    description: "string",
-    data_01: "string",
-    /* eslint-enable */
-  };
-
-  const hasRequiredProps = Object.entries(requiredProps).every(([key, type]) => {
-    return key in product && typeof product[key as keyof typeof product] === type;
-  });
-
-  if (!hasRequiredProps) return false;
+  if (
+    !checkObjectStructure(product, {
+      /* eslint-disable */
+      id: "number",
+      vid: "number",
+      image: "number",
+      brand: "boolean",
+      code: "string",
+      ean: "string",
+      sku: "string",
+      score: "number",
+      available: "boolean",
+      unit: "boolean",
+      url: "string",
+      title: "string",
+      fulltitle: "string",
+      variant: "string",
+      description: "string",
+      data_01: "string",
+      /* eslint-enable */
+    })
+  ) {
+    return false;
+  }
 
   // Validate price object separately
   return "price" in product && isPriceObject(product.price);
@@ -465,21 +411,18 @@ export function isSearchResponseProduct(product: unknown): product is SearchResp
  * @source
  */
 export function isProductObject(data: unknown): data is LaboratoriumDiscounterProductObject {
-  if (typeof data !== "object" || data === null) return false;
-  if ("product" in data === false || typeof data.product !== "object" || data.product === null)
-    return false;
-  return (
-    "variants" in data.product &&
-    (typeof data.product.variants === "object" || data.product.variants === false) &&
-    "shop" in data &&
-    typeof data.shop === "object" &&
-    data.shop !== null &&
-    "currencies" in data.shop &&
-    typeof data.shop.currencies === "object" &&
-    data.shop.currencies !== null &&
-    "currency" in data.shop &&
-    typeof data.shop.currency === "string"
-  );
+  return checkObjectStructure(data, {
+    product: (val: unknown) => {
+      if (typeof val !== "object" || val === null) return false;
+      return "variants" in val && (typeof val.variants === "object" || val.variants === false);
+    },
+    shop: (val: unknown) => {
+      return checkObjectStructure(val, {
+        currencies: "object",
+        currency: "string",
+      });
+    },
+  });
 }
 
 /**
@@ -543,11 +486,8 @@ export function isProductObject(data: unknown): data is LaboratoriumDiscounterPr
  * @source
  */
 export function isValidSearchParams(params: unknown): params is LaboratoriumDiscounterSearchParams {
-  if (typeof params !== "object" || params === null) return false;
-  return (
-    "limit" in params &&
-    typeof params.limit === "string" &&
-    "format" in params &&
-    typeof params.format === "string"
-  );
+  return checkObjectStructure(params, {
+    limit: "string",
+    format: "string",
+  });
 }

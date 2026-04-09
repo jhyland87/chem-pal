@@ -326,5 +326,19 @@ describe("Wix TypeGuards", () => {
       };
       expect(isProductSelection(wrongTypes)).toBe(false);
     });
+
+    it("should accept id as either string or number", () => {
+      expect(isProductSelection({ ...validSelection, id: "opt_1" })).toBe(true);
+      expect(isProductSelection({ ...validSelection, id: 1 })).toBe(true);
+      expect(isProductSelection({ ...validSelection, id: true })).toBe(false);
+    });
+
+    it("should accept inStock as boolean or null", () => {
+      expect(isProductSelection({ ...validSelection, inStock: true })).toBe(true);
+      expect(isProductSelection({ ...validSelection, inStock: false })).toBe(true);
+      expect(isProductSelection({ ...validSelection, inStock: null })).toBe(true);
+      expect(isProductSelection({ ...validSelection, inStock: "true" })).toBe(false);
+      expect(isProductSelection({ ...validSelection, inStock: 1 })).toBe(false);
+    });
   });
 });

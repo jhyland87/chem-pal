@@ -11,17 +11,17 @@ const storageMock = {
         if (Array.isArray(keys)) {
           keys.forEach((key) => {
             result[key] = localStorage.getItem(key)
-              ? JSON.parse(localStorage.getItem(key) as string)
+              ? JSON.parse(String(localStorage.getItem(key)))
               : null;
           });
         } else if (typeof keys === "string") {
           result[keys] = localStorage.getItem(keys)
-            ? JSON.parse(localStorage.getItem(keys) as string)
+            ? JSON.parse(String(localStorage.getItem(keys)))
             : null;
         } else if (typeof keys === "object" && keys !== null) {
           Object.keys(keys).forEach((key) => {
             result[key] = localStorage.getItem(key)
-              ? JSON.parse(localStorage.getItem(key) as string)
+              ? JSON.parse(String(localStorage.getItem(key)))
               : keys[key];
           });
         }
@@ -54,17 +54,17 @@ const storageMock = {
         if (Array.isArray(keys)) {
           keys.forEach((key) => {
             result[key] = localStorage.getItem(key)
-              ? JSON.parse(localStorage.getItem(key) as string)
+              ? JSON.parse(String(localStorage.getItem(key)))
               : null;
           });
         } else if (typeof keys === "string") {
           result[keys] = localStorage.getItem(keys)
-            ? JSON.parse(localStorage.getItem(keys) as string)
+            ? JSON.parse(String(localStorage.getItem(keys)))
             : null;
         } else if (typeof keys === "object" && keys !== null) {
           Object.keys(keys).forEach((key) => {
             result[key] = localStorage.getItem(key)
-              ? JSON.parse(localStorage.getItem(key) as string)
+              ? JSON.parse(String(localStorage.getItem(key)))
               : keys[key];
           });
         }

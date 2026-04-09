@@ -1,3 +1,5 @@
+import { checkObjectStructure } from "@/helpers/collectionUtils";
+
 // Enums
 export enum ApiEndpoints {
   /* eslint-disable */
@@ -33,12 +35,9 @@ export enum AuthRequiredEndpoints {
  * @source
  */
 export function isTimestampResponse(data: unknown): data is TimestampResponse {
-  return (
-    typeof data === "object" &&
-    data !== null &&
-    "timestamp" in data &&
-    typeof (data as TimestampResponse).timestamp === "number"
-  );
+  return checkObjectStructure(data, {
+    timestamp: "number",
+  });
 }
 
 /**
@@ -58,15 +57,11 @@ export function isTimestampResponse(data: unknown): data is TimestampResponse {
  * @source
  */
 export function isMacklinApiResponse<T>(data: unknown): data is MacklinApiResponse<T> {
-  return (
-    typeof data === "object" &&
-    data !== null &&
-    "code" in data &&
-    "message" in data &&
-    "data" in data &&
-    typeof (data as MacklinApiResponse).code === "number" &&
-    typeof (data as MacklinApiResponse).message === "string"
-  );
+  return checkObjectStructure(data, {
+    code: "number",
+    message: "string",
+    data: (val: unknown) => val !== undefined,
+  });
 }
 
 /**
@@ -84,7 +79,7 @@ export function isMacklinApiResponse<T>(data: unknown): data is MacklinApiRespon
  * @source
  */
 export function isAuthRequiredEndpoint(url: string): boolean {
-  return Object.values(AuthRequiredEndpoints).includes(url as AuthRequiredEndpoints);
+  return (Object.values(AuthRequiredEndpoints) as string[]).includes(url);
 }
 
 /**
@@ -97,12 +92,14 @@ export function isAuthRequiredEndpoint(url: string): boolean {
  * @source
  */
 export function isAuthCheckEndpoint(url: string): boolean {
-  return [
-    ApiEndpoints.USER_INFO,
-    ApiEndpoints.FRUIT_HEAD,
-    ApiEndpoints.FAVOURITE_ADD,
-    ApiEndpoints.FRUIT_ADD,
-  ].includes(url as ApiEndpoints);
+  return (
+    [
+      ApiEndpoints.USER_INFO,
+      ApiEndpoints.FRUIT_HEAD,
+      ApiEndpoints.FAVOURITE_ADD,
+      ApiEndpoints.FRUIT_ADD,
+    ] as string[]
+  ).includes(url);
 }
 
 /**
@@ -123,14 +120,9 @@ export function isAuthCheckEndpoint(url: string): boolean {
  * @source
  */
 export function isMacklinSearchResult<T>(data: unknown): data is MacklinSearchResult<T> {
-  return (
-    typeof data === "object" &&
-    data !== null &&
-    "list" in data &&
-    data.list !== null &&
-    typeof data.list === "object" &&
-    data.list !== null
-  );
+  return checkObjectStructure(data, {
+    list: (val: unknown) => typeof val === "object" && val !== null,
+  });
 }
 
 /**
@@ -144,15 +136,9 @@ export function isMacklinSearchResult<T>(data: unknown): data is MacklinSearchRe
 export function isMacklinProductDetailsResponse(
   data: unknown,
 ): data is MacklinProductDetailsResponse {
-  return (
-    typeof data === "object" &&
-    data !== null &&
-    "list" in data &&
-    data.list !== null &&
-    typeof data.list === "object" &&
-    Array.isArray(data.list) &&
-    data.list.every(isMacklinProductDetails)
-  );
+  return checkObjectStructure(data, {
+    list: (val: unknown) => Array.isArray(val) && val.every(isMacklinProductDetails),
+  });
 }
 
 /**
@@ -173,11 +159,7 @@ export function isMacklinProductDetailsResponse(
  * @source
  */
 export function isMacklinProductDetails(data: unknown): data is MacklinProductDetails {
-  if (typeof data !== "object" || data === null) {
-    return false;
-  }
-
-  const requiredProps = {
+  return checkObjectStructure(data, {
     /* eslint-disable */
     item_id: "number",
     item_code: "string",
@@ -218,14 +200,5 @@ export function isMacklinProductDetails(data: unknown): data is MacklinProductDe
     item_en_specification: "string",
     */
     /* eslint-enable */
-  };
-
-  return Object.entries(requiredProps).every(([key, type]) => {
-    return (
-      key in data &&
-      data[key as keyof typeof data] !== null &&
-      data[key as keyof typeof data] !== undefined &&
-      typeof data[key as keyof typeof data] === type
-    );
   });
 }

@@ -1,3 +1,5 @@
+import { checkObjectStructure } from "@/helpers/collectionUtils";
+
 /**
  * Type guard to validate if a response from the Shopify search API is a valid SearchResponse object.
  * Checks for the presence and correct types of all required properties including pagination info,
@@ -76,46 +78,20 @@
  */
 export function isValidSearchResponse(response: unknown): response is SearchResponse {
   try {
-    if (typeof response !== "object" || response === null) return false;
-
-    const requiredProps = {
-      totalItems: "number",
-      startIndex: "number",
-      itemsPerPage: "number",
-      currentItemCount: "number",
-    };
-
-    const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
-      if (key in response === false) {
-        console.log("key not in response:", key);
-
-        return false;
-      }
-
-      if (typeof response[key as keyof typeof response] !== validator) {
-        console.log(
-          "type mismatch:",
-          key,
-          typeof response[key as keyof typeof response],
-          validator,
-        );
-
-        return false;
-      }
-
-      return true;
-    });
-
-    if (!hasRequiredProps) {
-      return false;
-    }
-
-    if (!("items" in response) || !Array.isArray(response.items)) {
+    if (
+      !checkObjectStructure(response, {
+        totalItems: "number",
+        startIndex: "number",
+        itemsPerPage: "number",
+        currentItemCount: "number",
+        items: Array.isArray,
+      })
+    ) {
       return false;
     }
 
     // Check that items array contains valid listings
-    return response.items.every((item) => isItemListing(item));
+    return (response as { items: unknown[] }).items.every((item) => isItemListing(item));
   } catch {
     return false;
   }
@@ -193,11 +169,7 @@ export function isValidSearchResponse(response: unknown): response is SearchResp
  * @source
  */
 export function isShopifyVariant(variant: unknown): variant is ShopifyVariant {
-  if (typeof variant !== "object" || variant === null) {
-    return false;
-  }
-
-  const requiredProps = {
+  return checkObjectStructure(variant, {
     /* eslint-disable */
     sku: "string",
     price: "string",
@@ -206,29 +178,7 @@ export function isShopifyVariant(variant: unknown): variant is ShopifyVariant {
     quantity_total: (val: unknown) => typeof val === "string" || typeof val === "number",
     options: (val: unknown) => typeof val === "object" && val !== null,
     /* eslint-enable */
-  };
-
-  const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
-    if (typeof validator === "string") {
-      return key in variant && typeof variant[key as keyof typeof variant] === validator;
-    }
-    return key in variant && validator(variant[key as keyof typeof variant]);
   });
-
-  if (!hasRequiredProps) return false;
-
-  // Check options object if it exists
-  const options = (variant as ShopifyVariant).options;
-  if (typeof options === "undefined") return false;
-  /*
-    if (options && typeof options === "object") {
-      if ("Model" in options && typeof options.Model !== "string") {
-        return false;
-      }
-    }
-    */
-
-  return true;
 }
 
 /**
@@ -360,35 +310,27 @@ export function isShopifyVariant(variant: unknown): variant is ShopifyVariant {
  * @source
  */
 export function isItemListing(item: unknown): item is ItemListing {
-  if (typeof item !== "object" || item === null) {
+  if (
+    !checkObjectStructure(item, {
+      /* eslint-disable */
+      title: "string",
+      price: (val: unknown) => typeof val === "string" || typeof val === "number",
+      link: "string",
+      product_id: "string",
+      product_code: "string",
+      quantity: "string",
+      shopify_variants: Array.isArray,
+      vendor: "string",
+      original_product_id: "string",
+      list_price: "string",
+      /* eslint-enable */
+    })
+  ) {
     return false;
   }
 
-  const requiredProps = {
-    /* eslint-disable */
-    title: "string",
-    price: (val: unknown) => typeof val === "string" || typeof val === "number",
-    link: "string",
-    product_id: "string",
-    product_code: "string",
-    quantity: "string",
-    shopify_variants: Array.isArray,
-    vendor: "string",
-    original_product_id: "string",
-    list_price: "string",
-    /* eslint-enable */
-  };
-
-  const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
-    if (typeof validator === "string") {
-      return key in item && typeof item[key as keyof typeof item] === validator;
-    }
-    return key in item && validator(item[key as keyof typeof item]);
-  });
-
-  if (!hasRequiredProps) return false;
-
   // Check that shopify_variants array contains valid variants
-  const variants = (item as ItemListing).shopify_variants;
-  return variants.every((variant) => isShopifyVariant(variant));
+  return (item as { shopify_variants: unknown[] }).shopify_variants.every((variant) =>
+    isShopifyVariant(variant),
+  );
 }

@@ -46,6 +46,17 @@ describe("Carolina TypeGuards", () => {
       delete (missingContents as any).contents;
       expect(isResponseOk(missingContents)).toBe(false);
     });
+
+    it("should return false when responseStatusCode is missing", () => {
+      const missingStatusCode = { ...validResponse };
+      delete (missingStatusCode as any).responseStatusCode;
+      expect(isResponseOk(missingStatusCode)).toBe(false);
+    });
+
+    it("should return false when contents is not an object", () => {
+      const nonObjectContents = { ...validResponse, contents: "not an object" };
+      expect(isResponseOk(nonObjectContents)).toBe(false);
+    });
   });
 
   describe("isValidSearchResponse", () => {
@@ -136,6 +147,21 @@ describe("Carolina TypeGuards", () => {
       delete (missingProductName as any)["product.productName"];
       expect(isSearchResultItem(missingProductName)).toBe(false);
     });
+
+    it("should return false for wrong property types", () => {
+      const wrongTypes = {
+        ...validSearchResult,
+        "product.productId": 12345, // Should be string
+        qtyDiscountAvailable: "false", // Should be boolean
+      };
+      expect(isSearchResultItem(wrongTypes)).toBe(false);
+    });
+
+    it("should return false for missing itemPrice", () => {
+      const missingPrice = { ...validSearchResult };
+      delete (missingPrice as any).itemPrice;
+      expect(isSearchResultItem(missingPrice)).toBe(false);
+    });
   });
 
   describe("isValidProductResponse", () => {
@@ -206,6 +232,51 @@ describe("Carolina TypeGuards", () => {
       const missingResponse = { ...validATGResponse };
       delete (missingResponse as any).response;
       expect(isATGResponse(missingResponse)).toBe(false);
+    });
+
+    it("should return false when result is not 'success'", () => {
+      const failedResult = { ...validATGResponse, result: "error" };
+      expect(isATGResponse(failedResult)).toBe(false);
+    });
+
+    it("should return false when inner response is missing required fields", () => {
+      const missingInner = {
+        result: "success",
+        response: {
+          response: {
+            displayName: "Test",
+            // Missing other required fields
+          },
+        },
+      };
+      expect(isATGResponse(missingInner)).toBe(false);
+    });
+
+    it("should return false when inner response has wrong types", () => {
+      const wrongInnerTypes = {
+        result: "success",
+        response: {
+          response: {
+            displayName: 123, // Should be string
+            longDescription: "Test",
+            shortDescription: "Test",
+            product: "{}",
+            dataLayer: {},
+            canonicalUrl: "/test",
+          },
+        },
+      };
+      expect(isATGResponse(wrongInnerTypes)).toBe(false);
+    });
+
+    it("should return false when response.response is not an object", () => {
+      const nonObjectInner = {
+        result: "success",
+        response: {
+          response: "not an object",
+        },
+      };
+      expect(isATGResponse(nonObjectInner)).toBe(false);
     });
   });
 });

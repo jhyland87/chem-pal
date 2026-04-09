@@ -255,7 +255,7 @@ export default abstract class SupplierBaseWoocommerce
             return;
           }
 
-          variant.title = variantResponse.name as string;
+          variant.title = String(variantResponse.name ?? "");
           variant.price = Number(variantResponse.prices.price) / 100;
           variant.currencyCode = variantResponse.prices.currency_code;
           variant.currencySymbol = variantResponse.prices.currency_symbol;
