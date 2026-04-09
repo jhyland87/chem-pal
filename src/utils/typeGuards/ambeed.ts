@@ -1,4 +1,4 @@
-import { checkObjectStructure } from "@/helpers/collectionUtils";
+import { z } from "zod";
 
 /**
  * Type guard to check if the given data is an AmbeedProductListResponse
@@ -6,14 +6,16 @@ import { checkObjectStructure } from "@/helpers/collectionUtils";
  * @returns True if the data matches the AmbeedProductListResponse structure
  * @source
  */
+const ambeedProductListResponseSchema = z.object({
+  source: z.number(),
+  code: z.number(),
+  lang: z.string(),
+  value: z.record(z.string(), z.unknown()),
+  time: z.string(),
+});
+
 export function isAmbeedProductListResponse(data: unknown): data is AmbeedProductListResponse {
-  return checkObjectStructure(data, {
-    source: "number",
-    code: "number",
-    lang: "string",
-    value: "object",
-    time: "string",
-  });
+  return ambeedProductListResponseSchema.safeParse(data).success;
 }
 
 /**
@@ -36,18 +38,21 @@ export function assertIsAmbeedProductListResponse(
  * @returns True if the data matches the AmbeedProductListResponseValue structure
  * @source
  */
+/* eslint-disable @typescript-eslint/naming-convention */
+const ambeedProductListResponseValueSchema = z.object({
+  total: z.number(),
+  pagenum: z.number(),
+  pageindex: z.number(),
+  pagesize: z.number(),
+  result: z.custom<object>((val) => typeof val === "object" && val !== null),
+  menu_res: z.custom<object>((val) => typeof val === "object" && val !== null),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
+
 export function isAmbeedProductListResponseValue(
   data: unknown,
 ): data is AmbeedProductListResponseValue {
-  return checkObjectStructure(data, {
-    total: "number",
-    pagenum: "number",
-    pageindex: "number",
-    pagesize: "number",
-    result: "object",
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    menu_res: "object",
-  });
+  return ambeedProductListResponseValueSchema.safeParse(data).success;
 }
 
 /**
@@ -56,20 +61,22 @@ export function isAmbeedProductListResponseValue(
  * @returns True if the data matches the AmbeedProductListResponseResultItem structure
  * @source
  */
+/* eslint-disable @typescript-eslint/naming-convention */
+const ambeedProductListResponseResultItemSchema = z.object({
+  p_id: z.string(),
+  priceList: z.custom<object>((val) => typeof val === "object" && val !== null),
+  p_proper_name3: z.string(),
+  p_am: z.string(),
+  s_url: z.string(),
+  p_name_en: z.string(),
+  p_cas: z.string(),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
+
 export function isAmbeedProductListResponseResultItem(
   data: unknown,
 ): data is AmbeedProductListResponseResultItem {
-  return checkObjectStructure(data, {
-    /* eslint-disable */
-    p_id: "string",
-    priceList: "object",
-    p_proper_name3: "string",
-    p_am: "string",
-    s_url: "string",
-    p_name_en: "string",
-    p_cas: "string",
-    /* eslint-enable */
-  });
+  return ambeedProductListResponseResultItemSchema.safeParse(data).success;
 }
 
 /**
@@ -78,20 +85,22 @@ export function isAmbeedProductListResponseResultItem(
  * @returns True if the data matches the AmbeedProductListResponsePriceList structure
  * @source
  */
+/* eslint-disable @typescript-eslint/naming-convention */
+const ambeedProductListResponsePriceListSchema = z.object({
+  pr_am: z.string(),
+  pr_usd: z.string(),
+  pr_id: z.number(),
+  discount_usd: z.string(),
+  pr_size: z.string(),
+  vip_usd: z.string(),
+  pr_rate: z.number(),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
+
 export function isAmbeedProductListResponsePriceList(
   data: unknown,
 ): data is AmbeedProductListResponsePriceList {
-  return checkObjectStructure(data, {
-    /* eslint-disable */
-    pr_am: "string",
-    pr_usd: "string",
-    pr_id: "number",
-    discount_usd: "string",
-    pr_size: "string",
-    vip_usd: "string",
-    pr_rate: "number",
-    /* eslint-enable */
-  });
+  return ambeedProductListResponsePriceListSchema.safeParse(data).success;
 }
 
 /**
@@ -101,11 +110,5 @@ export function isAmbeedProductListResponsePriceList(
  * @source
  */
 export function isAmbeedSearchResponseProduct(data: unknown): data is AmbeedSearchResponseProduct {
-  return checkObjectStructure(data, {
-    source: "number",
-    code: "number",
-    lang: "string",
-    value: "object",
-    time: "string",
-  });
+  return ambeedProductListResponseSchema.safeParse(data).success;
 }

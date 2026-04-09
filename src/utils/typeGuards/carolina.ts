@@ -54,14 +54,17 @@
  * ```
  * @source
  */
+import { z } from "zod";
 import { StatusCodes } from "http-status-codes";
-import { checkObjectStructure } from "@/helpers/collectionUtils";
+
+const responseOkSchema = z.object({
+  responseStatusCode: z.literal(StatusCodes.OK),
+  "@type": z.string(),
+  contents: z.record(z.string(), z.unknown()),
+});
+
 export function isResponseOk(response: unknown): response is CarolinaSearchResponse {
-  return checkObjectStructure(response, {
-    responseStatusCode: (val: unknown) => val === StatusCodes.OK,
-    "@type": "string",
-    contents: "object",
-  });
+  return responseOkSchema.safeParse(response).success;
 }
 
 /**
@@ -137,34 +140,23 @@ export function isResponseOk(response: unknown): response is CarolinaSearchRespo
  * ```
  * @source
  */
+const validSearchResponseSchema = z.object({
+  responseStatusCode: z.literal(StatusCodes.OK),
+  "@type": z.string(),
+  contents: z.object({
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    ContentFolderZone: z
+      .array(
+        z.object({
+          childRules: z.array(z.record(z.string(), z.unknown())).min(1),
+        }),
+      )
+      .min(1),
+  }),
+});
+
 export function isValidSearchResponse(response: unknown): response is CarolinaSearchResponse {
-  return checkObjectStructure(response, {
-    responseStatusCode: (val: unknown) => val === StatusCodes.OK,
-    "@type": "string",
-    contents: (val: unknown) => {
-      if (typeof val !== "object" || val === null) {
-        return false;
-      }
-
-      if (
-        !("ContentFolderZone" in val) ||
-        !Array.isArray(val.ContentFolderZone) ||
-        val.ContentFolderZone.length === 0
-      ) {
-        return false;
-      }
-
-      const folder = val.ContentFolderZone[0];
-      return (
-        typeof folder === "object" &&
-        folder !== null &&
-        "childRules" in folder &&
-        Array.isArray(folder.childRules) &&
-        folder.childRules.length > 0 &&
-        typeof folder.childRules[0] === "object"
-      );
-    },
-  });
+  return validSearchResponseSchema.safeParse(response).success;
 }
 
 /**
@@ -223,19 +215,21 @@ export function isValidSearchResponse(response: unknown): response is CarolinaSe
  * ```
  * @source
  */
+/* eslint-disable @typescript-eslint/naming-convention */
+const searchResultItemSchema = z.object({
+  "product.productId": z.string(),
+  "product.productName": z.string(),
+  "product.shortDescription": z.string(),
+  itemPrice: z.string(),
+  "product.seoName": z.string(),
+  productUrl: z.string(),
+  productName: z.string(),
+  qtyDiscountAvailable: z.boolean(),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
+
 export function isSearchResultItem(result: unknown): result is CarolinaSearchResult {
-  return checkObjectStructure(result, {
-    /* eslint-disable */
-    "product.productId": "string",
-    "product.productName": "string",
-    "product.shortDescription": "string",
-    itemPrice: "string",
-    "product.seoName": "string",
-    productUrl: "string",
-    productName: "string",
-    qtyDiscountAvailable: "boolean",
-    /* eslint-enable */
-  });
+  return searchResultItemSchema.safeParse(result).success;
 }
 
 /**
@@ -254,15 +248,21 @@ export function isSearchResultItem(result: unknown): result is CarolinaSearchRes
  * ```
  * @source
  */
+const validProductResponseSchema = z.object({
+  contents: z.object({
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    MainContent: z
+      .array(
+        z.object({
+          atgResponse: z.record(z.string(), z.unknown()),
+        }),
+      )
+      .min(1),
+  }),
+});
+
 export function isValidProductResponse(obj: unknown): obj is CarolinaProductResponse {
-  return checkObjectStructure(obj, {
-    contents: (val: unknown) => {
-      if (typeof val !== "object" || val === null) return false;
-      if (!("MainContent" in val) || !Array.isArray(val.MainContent) || val.MainContent.length === 0) return false;
-      const first = val.MainContent[0];
-      return typeof first === "object" && first !== null && "atgResponse" in first && typeof first.atgResponse === "object";
-    },
-  });
+  return validProductResponseSchema.safeParse(obj).success;
 }
 
 /**
@@ -281,21 +281,20 @@ export function isValidProductResponse(obj: unknown): obj is CarolinaProductResp
  * ```
  * @source
  */
+const atgResponseSchema = z.object({
+  result: z.literal("success"),
+  response: z.object({
+    response: z.object({
+      displayName: z.string(),
+      longDescription: z.string(),
+      shortDescription: z.string(),
+      product: z.string(),
+      dataLayer: z.record(z.string(), z.unknown()),
+      canonicalUrl: z.string(),
+    }),
+  }),
+});
+
 export function isATGResponse(obj: unknown): obj is ATGResponse {
-  return checkObjectStructure(obj, {
-    result: (val: unknown) => val === "success",
-    response: (val: unknown) => {
-      if (typeof val !== "object" || val === null || !("response" in val)) {
-        return false;
-      }
-      return checkObjectStructure(val.response, {
-        displayName: "string",
-        longDescription: "string",
-        shortDescription: "string",
-        product: "string",
-        dataLayer: "object",
-        canonicalUrl: "string",
-      });
-    },
-  });
+  return atgResponseSchema.safeParse(obj).success;
 }

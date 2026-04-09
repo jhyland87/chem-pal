@@ -126,15 +126,6 @@ export function parsePrice(price: string): ParsedPrice | void {
   } satisfies ParsedPrice;
 }
 
-export function isParsedPrice(data: unknown): data is ParsedPrice {
-  return (
-    typeof data === "object" &&
-    data !== null &&
-    "currencyCode" in data &&
-    "currencySymbol" in data &&
-    "price" in data
-  );
-}
 /**
  * Fetches the current exchange rate between two currencies.
  * Uses the Hexarate API to get real-time exchange rates.

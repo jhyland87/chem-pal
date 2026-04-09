@@ -1,4 +1,4 @@
-import { checkObjectStructure } from "@/helpers/collectionUtils";
+import { z } from "zod";
 
 // Enums
 export enum ApiEndpoints {
@@ -34,10 +34,12 @@ export enum AuthRequiredEndpoints {
  * ```
  * @source
  */
+const timestampResponseSchema = z.object({
+  timestamp: z.number(),
+});
+
 export function isTimestampResponse(data: unknown): data is TimestampResponse {
-  return checkObjectStructure(data, {
-    timestamp: "number",
-  });
+  return timestampResponseSchema.safeParse(data).success;
 }
 
 /**
@@ -56,12 +58,14 @@ export function isTimestampResponse(data: unknown): data is TimestampResponse {
  * ```
  * @source
  */
+const macklinApiResponseSchema = z.object({
+  code: z.number(),
+  message: z.string(),
+  data: z.custom((val) => val !== undefined),
+});
+
 export function isMacklinApiResponse<T>(data: unknown): data is MacklinApiResponse<T> {
-  return checkObjectStructure(data, {
-    code: "number",
-    message: "string",
-    data: (val: unknown) => val !== undefined,
-  });
+  return macklinApiResponseSchema.safeParse(data).success;
 }
 
 /**
@@ -119,10 +123,12 @@ export function isAuthCheckEndpoint(url: string): boolean {
  * ```
  * @source
  */
+const macklinSearchResultSchema = z.object({
+  list: z.custom<object>((val) => typeof val === "object" && val !== null),
+});
+
 export function isMacklinSearchResult<T>(data: unknown): data is MacklinSearchResult<T> {
-  return checkObjectStructure(data, {
-    list: (val: unknown) => typeof val === "object" && val !== null,
-  });
+  return macklinSearchResultSchema.safeParse(data).success;
 }
 
 /**
@@ -136,9 +142,9 @@ export function isMacklinSearchResult<T>(data: unknown): data is MacklinSearchRe
 export function isMacklinProductDetailsResponse(
   data: unknown,
 ): data is MacklinProductDetailsResponse {
-  return checkObjectStructure(data, {
-    list: (val: unknown) => Array.isArray(val) && val.every(isMacklinProductDetails),
-  });
+  if (typeof data !== "object" || data === null) return false;
+  if (!("list" in data) || !Array.isArray(data.list)) return false;
+  return data.list.every(isMacklinProductDetails);
 }
 
 /**
@@ -158,47 +164,23 @@ export function isMacklinProductDetailsResponse(
  * ```
  * @source
  */
+/* eslint-disable @typescript-eslint/naming-convention */
+const macklinProductDetailsSchema = z.object({
+  item_id: z.number(),
+  item_code: z.string(),
+  product_id: z.number(),
+  product_code: z.string(),
+  product_price: z.string(),
+  product_unit: z.string(),
+  product_locked_stock: z.string(),
+  product_pack: z.string(),
+  item_en_name: z.string(),
+  product_stock: z.string(),
+  chem_cas: z.string(),
+  delivery_desc_show: z.string(),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
+
 export function isMacklinProductDetails(data: unknown): data is MacklinProductDetails {
-  return checkObjectStructure(data, {
-    /* eslint-disable */
-    item_id: "number",
-    item_code: "string",
-    product_id: "number",
-    product_code: "string",
-    product_price: "string",
-    product_unit: "string",
-    product_locked_stock: "string",
-    product_pack: "string",
-    item_en_name: "string",
-    product_stock: "string",
-    chem_cas: "string",
-    delivery_desc_show: "string",
-    /*
-    product_delivery_days: "number",
-    product_stock_sh: "string",
-    product_stock_sd: "string",
-    product_stock_nf: "string",
-    product_stock_cq: "string",
-    product_stock_wh: "string",
-    product_stock_hb: "string",
-    product_if_production: "number",
-    product_weight: "string",
-    product_cate: "number",
-    item_safe_level: "number",
-    item_transport: "number",
-    item_if_bio: "number",
-    item_product_cate: "number",
-    item_if_sell: "number",
-    chem_cas: "string",
-    item_if_stock: "number",
-    item_max_package: "string",
-    item_can_pack: "number",
-    item_delivery_days: "number",
-    item_cn_name: "string",
-    item_weihuaxuhao: "string",
-    item_specification: "string",
-    item_en_specification: "string",
-    */
-    /* eslint-enable */
-  });
+  return macklinProductDetailsSchema.safeParse(data).success;
 }

@@ -1,4 +1,4 @@
-import { checkObjectStructure } from "@/helpers/collectionUtils";
+import { z } from "zod";
 
 /**
  * Type guard to validate if a response from the Shopify search API is a valid SearchResponse object.
@@ -76,25 +76,19 @@ import { checkObjectStructure } from "@/helpers/collectionUtils";
  * ```
  * @source
  */
-export function isValidSearchResponse(response: unknown): response is SearchResponse {
-  try {
-    if (
-      !checkObjectStructure(response, {
-        totalItems: "number",
-        startIndex: "number",
-        itemsPerPage: "number",
-        currentItemCount: "number",
-        items: Array.isArray,
-      })
-    ) {
-      return false;
-    }
+const validSearchResponseSchema = z.object({
+  totalItems: z.number(),
+  startIndex: z.number(),
+  itemsPerPage: z.number(),
+  currentItemCount: z.number(),
+  items: z.array(z.unknown()),
+});
 
-    // Check that items array contains valid listings
-    return (response as { items: unknown[] }).items.every((item) => isItemListing(item));
-  } catch {
+export function isValidSearchResponse(response: unknown): response is SearchResponse {
+  if (!validSearchResponseSchema.safeParse(response).success) {
     return false;
   }
+  return (response as { items: unknown[] }).items.every((item) => isItemListing(item));
 }
 
 /**
@@ -168,17 +162,19 @@ export function isValidSearchResponse(response: unknown): response is SearchResp
  * ```
  * @source
  */
+/* eslint-disable @typescript-eslint/naming-convention */
+const shopifyVariantSchema = z.object({
+  sku: z.string(),
+  price: z.string(),
+  link: z.string(),
+  variant_id: z.string(),
+  quantity_total: z.union([z.string(), z.number()]),
+  options: z.record(z.string(), z.unknown()),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
+
 export function isShopifyVariant(variant: unknown): variant is ShopifyVariant {
-  return checkObjectStructure(variant, {
-    /* eslint-disable */
-    sku: "string",
-    price: "string",
-    link: "string",
-    variant_id: "string",
-    quantity_total: (val: unknown) => typeof val === "string" || typeof val === "number",
-    options: (val: unknown) => typeof val === "object" && val !== null,
-    /* eslint-enable */
-  });
+  return shopifyVariantSchema.safeParse(variant).success;
 }
 
 /**
@@ -309,28 +305,21 @@ export function isShopifyVariant(variant: unknown): variant is ShopifyVariant {
  * ```
  * @source
  */
-export function isItemListing(item: unknown): item is ItemListing {
-  if (
-    !checkObjectStructure(item, {
-      /* eslint-disable */
-      title: "string",
-      price: (val: unknown) => typeof val === "string" || typeof val === "number",
-      link: "string",
-      product_id: "string",
-      product_code: "string",
-      quantity: "string",
-      shopify_variants: Array.isArray,
-      vendor: "string",
-      original_product_id: "string",
-      list_price: "string",
-      /* eslint-enable */
-    })
-  ) {
-    return false;
-  }
+/* eslint-disable @typescript-eslint/naming-convention */
+const itemListingSchema = z.object({
+  title: z.string(),
+  price: z.union([z.string(), z.number()]),
+  link: z.string(),
+  product_id: z.string(),
+  product_code: z.string(),
+  quantity: z.string(),
+  shopify_variants: z.array(shopifyVariantSchema),
+  vendor: z.string(),
+  original_product_id: z.string(),
+  list_price: z.string(),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
 
-  // Check that shopify_variants array contains valid variants
-  return (item as { shopify_variants: unknown[] }).shopify_variants.every((variant) =>
-    isShopifyVariant(variant),
-  );
+export function isItemListing(item: unknown): item is ItemListing {
+  return itemListingSchema.safeParse(item).success;
 }

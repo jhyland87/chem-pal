@@ -16,13 +16,13 @@
  *     session_id: "abc123",
  *     key: "search_key",
  *     title: "Search Results",
- *     status: "success"
+ *     status: 200
  *   },
  *   request: {
  *     url: "/en/search/sodium-chloride",
  *     method: "GET",
  *     get: { q: "sodium chloride" },
- *     device: "desktop"
+ *     device: { platform: "osx", type: "webkit", mobile: false }
  *   },
  *   collection: {
  *     products: {
@@ -86,30 +86,35 @@
  * ```
  * @source
  */
-import { checkObjectStructure } from "@/helpers/collectionUtils";
+import { z } from "zod";
+
+/* eslint-disable @typescript-eslint/naming-convention */
+const searchResponseOkSchema = z.object({
+  page: z.object({
+    search: z.string(),
+    session_id: z.string(),
+    key: z.string(),
+    title: z.string(),
+    status: z.number(),
+  }),
+  request: z.object({
+    url: z.string(),
+    method: z.string(),
+    get: z.record(z.string(), z.unknown()),
+    device: z.record(z.string(), z.unknown()),
+  }),
+  collection: z.object({
+    products: z.record(z.string(), z.unknown()),
+  }),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
 
 export function isSearchResponseOk(response: unknown): response is SearchResponse {
-  return checkObjectStructure(response, {
-    page: {
-      search: "string",
-      session_id: "string",
-      key: "string",
-      title: "string",
-      status: "string",
-    },
-    request: {
-      url: "string",
-      method: "string",
-      get: "object",
-      device: "string",
-    },
-    collection: (val: unknown) => {
-      if (typeof val !== "object" || val === null || !("products" in val) || typeof val.products !== "object" || val.products === null) {
-        return false;
-      }
-      return Object.values(val.products).every((product) => isSearchResponseProduct(product));
-    },
-  });
+  if (!searchResponseOkSchema.safeParse(response).success) {
+    return false;
+  }
+  const { collection } = response as { collection: { products: Record<string, unknown> } };
+  return Object.values(collection.products).every((product) => isSearchResponseProduct(product));
 }
 
 /**
@@ -177,17 +182,19 @@ export function isSearchResponseOk(response: unknown): response is SearchRespons
  * ```
  * @source
  */
+/* eslint-disable @typescript-eslint/naming-convention */
+const priceObjectSchema = z.object({
+  price: z.number(),
+  price_incl: z.number(),
+  price_excl: z.number(),
+  price_old: z.number(),
+  price_old_incl: z.number(),
+  price_old_excl: z.number(),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
+
 export function isPriceObject(price: unknown): price is PriceObject {
-  return checkObjectStructure(price, {
-    /* eslint-disable */
-    price: "number",
-    price_incl: "number",
-    price_excl: "number",
-    price_old: "number",
-    price_old_incl: "number",
-    price_old_excl: "number",
-    /* eslint-enable */
-  });
+  return priceObjectSchema.safeParse(price).success;
 }
 
 /**
@@ -305,34 +312,30 @@ export function isPriceObject(price: unknown): price is PriceObject {
  * ```
  * @source
  */
-export function isSearchResponseProduct(product: unknown): product is SearchResponseProduct {
-  if (
-    !checkObjectStructure(product, {
-      /* eslint-disable */
-      id: "number",
-      vid: "number",
-      image: "number",
-      brand: "boolean",
-      code: "string",
-      ean: "string",
-      sku: "string",
-      score: "number",
-      available: "boolean",
-      unit: "boolean",
-      url: "string",
-      title: "string",
-      fulltitle: "string",
-      variant: "string",
-      description: "string",
-      data_01: "string",
-      /* eslint-enable */
-    })
-  ) {
-    return false;
-  }
+/* eslint-disable @typescript-eslint/naming-convention */
+const searchResponseProductSchema = z.object({
+  id: z.number(),
+  vid: z.number(),
+  image: z.number(),
+  brand: z.boolean(),
+  code: z.string(),
+  ean: z.string(),
+  sku: z.string(),
+  score: z.number(),
+  available: z.boolean(),
+  unit: z.boolean(),
+  url: z.string(),
+  title: z.string(),
+  fulltitle: z.string(),
+  variant: z.string(),
+  description: z.string(),
+  data_01: z.string(),
+  price: priceObjectSchema,
+});
+/* eslint-enable @typescript-eslint/naming-convention */
 
-  // Validate price object separately
-  return "price" in product && isPriceObject(product.price);
+export function isSearchResponseProduct(product: unknown): product is SearchResponseProduct {
+  return searchResponseProductSchema.safeParse(product).success;
 }
 
 /**
@@ -410,19 +413,18 @@ export function isSearchResponseProduct(product: unknown): product is SearchResp
  * ```
  * @source
  */
+const productObjectSchema = z.object({
+  product: z
+    .record(z.string(), z.unknown())
+    .refine((val) => "variants" in val && (typeof val.variants === "object" || val.variants === false)),
+  shop: z.object({
+    currencies: z.record(z.string(), z.unknown()),
+    currency: z.string(),
+  }),
+});
+
 export function isProductObject(data: unknown): data is LaboratoriumDiscounterProductObject {
-  return checkObjectStructure(data, {
-    product: (val: unknown) => {
-      if (typeof val !== "object" || val === null) return false;
-      return "variants" in val && (typeof val.variants === "object" || val.variants === false);
-    },
-    shop: (val: unknown) => {
-      return checkObjectStructure(val, {
-        currencies: "object",
-        currency: "string",
-      });
-    },
-  });
+  return productObjectSchema.safeParse(data).success;
 }
 
 /**
@@ -485,9 +487,11 @@ export function isProductObject(data: unknown): data is LaboratoriumDiscounterPr
  * ```
  * @source
  */
+const validSearchParamsSchema = z.object({
+  limit: z.string(),
+  format: z.string(),
+});
+
 export function isValidSearchParams(params: unknown): params is LaboratoriumDiscounterSearchParams {
-  return checkObjectStructure(params, {
-    limit: "string",
-    format: "string",
-  });
+  return validSearchParamsSchema.safeParse(params).success;
 }

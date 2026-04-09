@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { UOM } from "@/constants/common";
 import { EmptyResponseError } from "@/helpers/exceptions";
 import { stripQuantityFromString } from "@/helpers/quantity";
-import { fetchDecorator, isFullURL } from "@/helpers/request";
+import { fetchDecorator } from "@/helpers/request";
+import { isFullURL } from "@/utils/typeGuards/common";
 import Logger from "@/utils/Logger";
 import ProductBuilder from "@/utils/ProductBuilder";
 import SupplierCache from "@/utils/SupplierCache";
@@ -285,7 +287,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
 
   // Default values for products. These will get overridden if they're found in the product data.
   protected productDefaults = {
-    uom: "ea",
+    uom: UOM.EA,
     quantity: 1,
     currencyCode: "USD",
     currencySymbol: "$",

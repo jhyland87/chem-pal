@@ -1,4 +1,4 @@
-import { checkObjectStructure } from "@/helpers/collectionUtils";
+import { z } from "zod";
 /**
  * Type guard to validate if an object matches the Chemsavers ProductObject structure.
  * Checks for the presence and correct types of all required product properties including
@@ -77,24 +77,26 @@ import { checkObjectStructure } from "@/helpers/collectionUtils";
  * ```
  * @source
  */
+/* eslint-disable @typescript-eslint/naming-convention */
+const searchResponseItemSchema = z.object({
+  document: z.object({
+    //CAS: z.string(),
+    id: z.string(),
+    inventoryLevel: z.number(),
+    name: z.string(),
+    product_id: z.number(),
+    retailPrice: z.number(),
+    salePrice: z.number(),
+    price: z.number(),
+    sku: z.string(),
+    upc: z.string(),
+    url: z.string(),
+  }),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
+
 export function isValidSearchResponseItem(response: unknown): response is ChemsaversProductObject {
-  return checkObjectStructure(response, {
-    document: {
-      /* eslint-disable */
-      //CAS: "string",
-      id: "string",
-      inventoryLevel: "number",
-      name: "string",
-      product_id: "number",
-      retailPrice: "number",
-      salePrice: "number",
-      price: "number",
-      sku: "string",
-      upc: "string",
-      url: "string",
-      /* eslint-enable */
-    },
-  });
+  return searchResponseItemSchema.safeParse(response).success;
 }
 
 /**
@@ -191,14 +193,18 @@ export function isValidSearchResponseItem(response: unknown): response is Chemsa
  * ```
  * @source
  */
+const searchResponseSchema = z.object({
+  results: z
+    .array(
+      z.object({
+        hits: z.array(searchResponseItemSchema),
+      }),
+    )
+    .min(1),
+});
+
 export function isValidSearchResponse(response: unknown): response is ChemsaversSearchResponse {
-  return checkObjectStructure(response, {
-    results: (val: unknown) => {
-      if (!Array.isArray(val) || val.length === 0) return false;
-      if (typeof val[0] !== "object" || val[0] === null || !("hits" in val[0]) || !Array.isArray(val[0].hits)) return false;
-      return val[0].hits.every((hit: unknown) => isValidSearchResponseItem(hit));
-    },
-  });
+  return searchResponseSchema.safeParse(response).success;
 }
 
 /**

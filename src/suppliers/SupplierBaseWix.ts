@@ -1,3 +1,4 @@
+import { UOM } from "@/constants/common";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { findFormulaInHtml } from "@/helpers/science";
@@ -27,7 +28,7 @@ export default abstract class SupplierBaseWix
 
   /** Default values for products */
   protected productDefaults = {
-    uom: "ea",
+    uom: UOM.EA,
     quantity: 1,
     currencyCode: "USD",
     currencySymbol: "$",

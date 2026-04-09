@@ -32,9 +32,10 @@ export function parseQuantity(value: string): QuantityObject | void {
 
   const quantityPattern = new RegExp(
     "(?<quantity>\\d+(?:[.,\\s]\\d+)*)\\s?" +
-      "(?<uom>(?:milli|kilo|centi)?(?:ounce|g(?:allon|ram|al)" +
-      "|pound|quart|qt|piece|pc|lb|(?:met|lit)[re]{2})s?" +
-      "|oz|k[mg]?|g|l|[cm]?[glm])s?(?![A-Za-z])",
+      "(?<uom>(?:milli|kilo|centi)?(?:ml|ounce|g(?:allon|ram|al)" +
+      "|each|ea?" +
+      "|pound|quart|q(?:uar)?t|piece|pc|lb|(?:met|lit)[re]{2})s?" +
+      "|oz|k[mg]?|g|l|[cm]?[gl])s?(?![A-Za-z])",
     "i",
   );
   const quantityMatch = value.match(quantityPattern);
@@ -88,25 +89,6 @@ export function stripQuantityFromString(value: string): string {
   );
 
   return value.replace(quantityPattern, "").trim();
-}
-
-/**
- * Checks if a value is a QuantityObject.
- *
- * @category Helpers
- * @param value - The value to check
- * @returns True if the value is a QuantityObject, false otherwise
- * @source
- */
-export function isQuantityObject(value: unknown): value is QuantityObject {
-  return (
-    value !== null &&
-    typeof value === "object" &&
-    "quantity" in value &&
-    "uom" in value &&
-    typeof value.quantity === "number" &&
-    typeof value.uom === "string"
-  );
 }
 
 /**

@@ -1,4 +1,4 @@
-import { checkObjectStructure } from "@/helpers/collectionUtils";
+import { z } from "zod";
 
 /**
  * Type guard to validate if a response matches the Wix QueryResponse structure.
@@ -107,28 +107,30 @@ import { checkObjectStructure } from "@/helpers/collectionUtils";
  * ```
  * @source
  */
+const validSearchResponseSchema = z.object({
+  data: z.object({
+    catalog: z.object({
+      category: z.object({
+        productsWithMetaData: z.object({
+          totalCount: z.number(),
+          list: z.array(
+            z.object({
+              price: z.number(),
+              formattedPrice: z.string(),
+              name: z.string(),
+              urlPart: z.string(),
+              productItems: z.array(z.unknown()),
+              options: z.array(z.unknown()),
+            }),
+          ),
+        }),
+      }),
+    }),
+  }),
+});
+
 export function isValidSearchResponse(response: unknown): response is QueryResponse {
-  return checkObjectStructure(response, {
-    data: {
-      catalog: {
-        category: {
-          productsWithMetaData: {
-            totalCount: "number",
-            list: [
-              {
-                price: "number",
-                formattedPrice: "string",
-                name: "string",
-                urlPart: "string",
-                productItems: Array.isArray,
-                options: Array.isArray,
-              },
-            ],
-          },
-        },
-      },
-    },
-  });
+  return validSearchResponseSchema.safeParse(response).success;
 }
 
 /**
@@ -230,33 +232,27 @@ export function isValidSearchResponse(response: unknown): response is QueryRespo
  * ```
  * @source
  */
+const wixProductSchema = z.object({
+  price: z.number(),
+  formattedPrice: z.string(),
+  name: z.string(),
+  urlPart: z.string(),
+  productItems: z.array(z.unknown()),
+  options: z.array(z.unknown()),
+});
+
 export function isWixProduct(product: unknown): product is ProductObject {
-  if (
-    !checkObjectStructure(product, {
-      price: "number",
-      formattedPrice: "string",
-      name: "string",
-      urlPart: "string",
-      productItems: Array.isArray,
-      options: Array.isArray,
-    })
-  ) {
+  if (!wixProductSchema.safeParse(product).success) {
     return false;
   }
 
-  // Check product items
-  const productRecord = product as Record<string, unknown>;
-  const productItems = productRecord.productItems as unknown[];
-  if (!productItems.every((item) => isProductItem(item))) {
+  const p = product as { productItems: unknown[]; options: Array<{ selections?: unknown[] }> };
+
+  if (!p.productItems.every((item) => isProductItem(item))) {
     return false;
   }
 
-  // Check options and selections if they exist
-  const options = productRecord.options as Array<{ selections?: unknown[] }>;
-  if (
-    options.length > 0 &&
-    !options[0]?.selections?.every((selection) => isProductSelection(selection))
-  ) {
+  if (p.options.length > 0 && !p.options[0]?.selections?.every((s) => isProductSelection(s))) {
     return false;
   }
 
@@ -332,20 +328,15 @@ export function isWixProduct(product: unknown): product is ProductObject {
  * ```
  * @source
  */
-export function isProductItem(item: unknown): item is ProductItem {
-  if (
-    !checkObjectStructure(item, {
-      id: "string",
-      formattedPrice: "string",
-      price: "number",
-      optionsSelections: Array.isArray,
-    })
-  ) {
-    return false;
-  }
+const productItemSchema = z.object({
+  id: z.string(),
+  formattedPrice: z.string(),
+  price: z.number(),
+  optionsSelections: z.array(z.unknown()).min(1),
+});
 
-  // Check that optionsSelections is a non-empty array
-  return ((item as Record<string, unknown>).optionsSelections as unknown[]).length > 0;
+export function isProductItem(item: unknown): item is ProductItem {
+  return productItemSchema.safeParse(item).success;
 }
 
 /**
@@ -424,12 +415,14 @@ export function isProductItem(item: unknown): item is ProductItem {
  * ```
  * @source
  */
+const productSelectionSchema = z.object({
+  id: z.union([z.string(), z.number()]),
+  value: z.string(),
+  description: z.string(),
+  key: z.string(),
+  inStock: z.union([z.boolean(), z.null()]),
+});
+
 export function isProductSelection(selection: unknown): selection is ProductSelection {
-  return checkObjectStructure(selection, {
-    id: (val: unknown) => typeof val === "string" || typeof val === "number",
-    value: "string",
-    description: "string",
-    key: "string",
-    inStock: (val: unknown) => typeof val === "boolean" || val === null,
-  });
+  return productSelectionSchema.safeParse(selection).success;
 }

@@ -46,6 +46,7 @@ describe("parseQuantity", () => {
     "100 MESH 100G": { quantity: 100, uom: "g" },
     "1.3M": undefined,
     foobar: undefined,
+    "Hydrochloric Acid, 0.05 M, Laboratory Grade, 500 mL": { quantity: 500, uom: "ml" },
     /* eslint-enable */
   };
 

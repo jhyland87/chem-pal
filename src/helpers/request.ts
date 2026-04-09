@@ -128,31 +128,6 @@ export async function getCachableResponse(
 }
 
 /**
- * Checks if a value is a full URL.
- * @param val - The value to check
- * @returns True if the value is a full URL, false otherwise
- * @category Helpers
- * @example
- * ```typescript
- * const isUrl = isFullURL("https://www.google.com");
- * // Returns: true
- * ```
- * @source
- */
-export function isFullURL(val: unknown): val is URL {
-  try {
-    new URL(val as string);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-export function isRequest(req: unknown): req is Request {
-  return req instanceof Request;
-}
-
-/**
  * Encodes a string to be used in a URL.
  * @param str - The string to encode
  * @returns The encoded string

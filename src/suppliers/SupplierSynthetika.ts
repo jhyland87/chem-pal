@@ -1,3 +1,4 @@
+import { AVAILABILITY } from "@/constants/common";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { urlencode } from "@/helpers/request";
@@ -270,6 +271,32 @@ export default class SupplierSynthetika
   }
 
   /**
+   * Converts the availability string from Synthetika to an AVAILABILITY enum value
+   * @param availability - Availability string from Synthetika
+   * @returns AVAILABILITY enum value
+   * @source
+   * ```typescript
+   * const availability = "na wyczerpaniu";
+   * const availabilityEnum = availabilityConverter(availability);
+   * console.log(availabilityEnum);
+   * ```
+   */
+  protected availabilityConverter(availability: string): AVAILABILITY {
+    switch (availability.toLowerCase().trim()) {
+      case "na wyczerpaniu":
+        return AVAILABILITY.LIMITED_STOCK;
+      case "large quantity":
+        return AVAILABILITY.IN_STOCK;
+      case "tymczasowo niedostępny":
+        return AVAILABILITY.UNAVAILABLE;
+      case "nie ma w sprzedaży":
+        return AVAILABILITY.OUT_OF_STOCK;
+      default:
+        this.logger.warn("Unknown availability - Defaulting to UNKNOWN", { availability });
+        return AVAILABILITY.UNKNOWN;
+    }
+  }
+  /**
    * Initialize product builders from Synthetika search response data.
    * Transforms product listings into ProductBuilder instances, handling:
    * - Basic product information (name, URL, supplier)
@@ -294,7 +321,7 @@ export default class SupplierSynthetika
         .setBasicInfo(product.name, product.url, this.supplierName)
         .setDescription(product.shortDescription)
         .setID(product.id)
-        .setAvailability(product.availability.name)
+        .setAvailability(this.availabilityConverter(product.availability.name))
         .setSku(product.code)
         .setUUID(product.code);
 
