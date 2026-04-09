@@ -99,14 +99,14 @@ export default class SupplierLoudwolf
     });
 
     if (!searchResponse) {
-      this.logger.error("No search response");
+      this.logger.error("No search response", { query, limit });
       return;
     }
 
-    this.logger.log("searchResponse:", searchResponse);
+    this.logger.log("searchResponse:", { searchResponse });
 
     const $fuzzResults = this.fuzzHtmlResponse(query, searchResponse);
-    this.logger.info("fuzzResults:", Array.from($fuzzResults));
+    this.logger.info("fuzzResults:", { fuzzResults: Array.from($fuzzResults) });
 
     return this.initProductBuilders($fuzzResults.slice(0, limit));
   }
@@ -179,7 +179,7 @@ export default class SupplierLoudwolf
       const builder = new ProductBuilder<Product>(this.baseURL);
 
       const priceElem = element.querySelector("div.caption > p.price");
-      console.log("priceElem:", priceElem);
+      console.log("priceElem:", { priceElem });
       const price = parsePrice(priceElem?.textContent?.trim() || "");
 
       if (price === undefined) {
@@ -190,7 +190,7 @@ export default class SupplierLoudwolf
       const href = element.querySelector("div.caption h4 a")?.getAttribute("href");
 
       if (!href) {
-        this.logger.error("No URL for product");
+        this.logger.error("No URL for product", { element });
         return;
       }
 
@@ -199,7 +199,7 @@ export default class SupplierLoudwolf
       const id = url.searchParams.get("product_id");
 
       if (id === null) {
-        this.logger.error("No ID for product");
+        this.logger.error("No ID for product", { element, url });
         return;
       }
       const title = element.querySelector("div.caption h4 a")?.textContent?.trim() || "";
@@ -257,11 +257,11 @@ export default class SupplierLoudwolf
       });
 
       if (!productResponse) {
-        this.logger.warn("No product response");
+        this.logger.warn("No product response", { builder });
         return;
       }
 
-      this.logger.debug("productResponse:", productResponse);
+      this.logger.debug("productResponse:", { productResponse });
 
       const parser = new DOMParser();
       const parsedHTML = parser.parseFromString(productResponse, "text/html");
@@ -274,7 +274,7 @@ export default class SupplierLoudwolf
 
       const dataRows = Array.from(dataGrid || []).map((n) => n.innerText);
 
-      const datagridInfo = chunk(dataRows, 2).reduce((acc, [key, value]) => {
+      const datagridInfo = chunk(dataRows, 2).reduce<Partial<Product>>((acc, [key, value]) => {
         if (key.match(/CAS/i)) {
           acc.cas = findCAS(value.trim()) ?? undefined;
         } else if (key.match(/TOTAL [A-Z]+ OF PRODUCT/i)) {
@@ -286,7 +286,7 @@ export default class SupplierLoudwolf
           acc.grade = value;
         }
         return acc;
-      }, {} as Partial<Product>);
+      }, {});
 
       return builder.setData(datagridInfo);
     });
@@ -314,7 +314,7 @@ export default class SupplierLoudwolf
   protected titleSelector(data: Element): string {
     const title = data.querySelector("div.caption h4 a");
     if (title === null) {
-      this.logger.error("No title for product");
+      this.logger.error("No title for product", { data });
       return "";
     }
     return title.textContent?.trim() || "";

@@ -93,7 +93,7 @@ export function getFullRange<TData>(
   table: Table<TData>,
 ): [number, number] {
   const values = getAllUniqueValues(column, table);
-  return [values[0] as number, values[values.length - 1] as number];
+  return [values[0] as number, values.at(-1) as number];
 }
 
 /**
@@ -111,7 +111,7 @@ export function getVisibleRange<TData>(
   table: Table<TData>,
 ): [number, number] {
   const values = getVisibleUniqueValues(column, table);
-  return [values[0] as number, values[values.length - 1] as number];
+  return [values[0] as number, values.at(-1) as number];
 }
 
 /**

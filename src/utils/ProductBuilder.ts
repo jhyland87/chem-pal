@@ -91,8 +91,7 @@ export default class ProductBuilder<T extends Product> {
    * @source
    */
   setData(data: Partial<T>): ProductBuilder<T> {
-    //Object.assign(this.product, data);
-    this.product = { ...this.product, ...data };
+    Object.assign(this.product, data);
     return this;
   }
 
@@ -715,8 +714,7 @@ export default class ProductBuilder<T extends Product> {
    * @source
    */
   addRawData(data?: Record<string, unknown>): ProductBuilder<T> {
-    //Object.assign(this.rawData, data);
-    this.rawData = { ...this.rawData, ...data };
+    Object.assign(this.rawData, data);
     return this;
   }
 

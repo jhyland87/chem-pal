@@ -286,7 +286,7 @@ export default class SupplierWarchem
       const parsedHTML = createDOM(productResponse);
       const metaTags = parsedHTML.getElementsByTagName("meta");
 
-      const productMeta = Array.from(metaTags).reduce(
+      const productMeta = Array.from(metaTags).reduce<Record<string, string>>(
         (acc, meta) => {
           const property = meta.getAttribute("property");
           if (typeof property === "string") {
@@ -294,7 +294,7 @@ export default class SupplierWarchem
           }
           return acc;
         },
-        {} as Record<string, string>,
+        {},
       );
 
       this.logger.debug("productMeta", { builder, productMeta });

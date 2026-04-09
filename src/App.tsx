@@ -138,10 +138,10 @@ function App() {
                 try {
                   await chrome.storage.local.set({ userSettings: updatedSettings });
                 } catch (error) {
-                  console.error("Failed to update settings:", error);
+                  console.error("Failed to update settings:", { error });
                 }
               } catch (error) {
-                console.error("Failed to get currency rate:", error);
+                console.error("Failed to get currency rate:", { error });
               }
             })();
           });
@@ -161,7 +161,7 @@ function App() {
               try {
                 await chrome.storage.session.set({ panel: action.panel });
               } catch (error) {
-                console.error("Failed to save panel:", error);
+                console.error("Failed to save panel:", { error });
               }
             })();
           });
@@ -206,7 +206,7 @@ function App() {
               try {
                 await chrome.storage.local.set({ selectedSuppliers: action.suppliers });
               } catch (error) {
-                console.error("Failed to save selectedSuppliers:", error);
+                console.error("Failed to save selectedSuppliers:", { error });
               }
             })();
           });
@@ -236,7 +236,7 @@ function App() {
         const loadedData: Partial<AppState> = {};
 
         if (sessionData.panel) {
-          const savedPanel = sessionData.panel as number;
+          const savedPanel = Number(sessionData.panel);
           const results = sessionData[CACHE_KEYS.SEARCH_RESULTS];
           const hasResults = Array.isArray(results) && results.length > 0;
 
@@ -256,7 +256,7 @@ function App() {
           dispatch({ type: APP_ACTION.LOAD_FROM_STORAGE, data: loadedData });
         }
       } catch (error) {
-        console.error("Failed to load from Chrome storage:", error);
+        console.error("Failed to load from Chrome storage:", { error });
       }
     };
     loadFromStorage();

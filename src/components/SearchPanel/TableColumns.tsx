@@ -151,7 +151,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         const currency = userSettings?.currency ?? "USD";
         const currencyRate = userSettings?.currencyRate ?? 1;
         const thisRow = row?.original;
-        let price = thisRow?.usdPrice ?? (thisRow?.price as number);
+        let price = Number(thisRow?.usdPrice ?? thisRow?.price);
 
         // If the currency is not in USD...
         if (thisRow.currencyCode !== "USD") {
@@ -159,7 +159,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
           // rate than the users current currency)
           if (!thisRow.usdPrice) {
             // If there isn't any, then just use the original currency
-            console.error("Non-USD product is missing USD price", { row: row.original });
+            console.error("Non-USD product is missing USD price", { row });
             return new Intl.NumberFormat(thisRow.currencyCode ?? "USD", {
               style: "currency",
               currency: thisRow.currencyCode ?? "USD",

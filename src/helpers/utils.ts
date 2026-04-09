@@ -319,7 +319,7 @@ export function decodeHTMLEntities(text: string) {
  */
 export function tryParseJson(data: unknown): unknown | false {
   try {
-    return JSON.parse(data as string);
+    return JSON.parse(String(data));
   } catch {
     return false;
   }
