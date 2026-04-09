@@ -9,6 +9,14 @@ import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "@/constants/currency";
  * @module
  */
 
+const httpResponseSchema = z.object({
+  ok: z.boolean(),
+  status: z.number(),
+  statusText: z.string(),
+  json: z.custom<Function>((val) => typeof val === "function"),
+  text: z.custom<Function>((val) => typeof val === "function"),
+});
+
 /**
  * Type guard to validate if a value is a valid HTTP Response object.
  * Checks for the presence of essential Response properties and methods.
@@ -16,7 +24,6 @@ import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "@/constants/currency";
  * @category Typeguards
  * @param value - The value to validate
  * @returns Type predicate indicating if the value is a Response object
- *
  * @example
  * ```typescript
  * // Valid Response object
@@ -35,14 +42,6 @@ import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "@/constants/currency";
  * ```
  * @source
  */
-const httpResponseSchema = z.object({
-  ok: z.boolean(),
-  status: z.number(),
-  statusText: z.string(),
-  json: z.custom<Function>((val) => typeof val === "function"),
-  text: z.custom<Function>((val) => typeof val === "function"),
-});
-
 export function isHttpResponse(value: unknown): value is Response {
   const result = httpResponseSchema.safeParse(value).success;
   console.debug(`isHttpResponse for`, value, `is:`, result);
@@ -183,15 +182,14 @@ export function isHtmlResponse(response: unknown): response is Response {
 }
 
 /**
- * Type guard to validate if a Response object contains HTML content.
- * Checks both the Content-Type header and ensures it's a valid Response object.
+ * Asserts that a Response object contains HTML content.
+ * Throws a TypeError if the response is not a valid HTML response.
  *
+ * @category Typeguards
  * @param response - The Response object to validate
- * @returns Type predicate indicating if the response contains HTML content
- *
+ * @throws TypeError if the response is not a valid HTML response
  * @example
  * ```typescript
- * // Valid HTML response
  * const htmlResponse = new Response('<html><body>Hello</body></html>', {
  *   headers: { 'Content-Type': 'text/html' }
  * });
@@ -205,6 +203,17 @@ export function assertHtmlResponse(response: unknown): asserts response is Respo
   }
 }
 
+const validResultSchema = z.object({
+  title: z.string(),
+  price: z.number(),
+  quantity: z.number(),
+  uom: z.string(),
+  supplier: z.string(),
+  url: z.string(),
+  currencyCode: z.string(),
+  currencySymbol: z.string(),
+});
+
 /**
  * Type guard to validate if a value has the minimal required properties of a search result.
  * Checks for the presence and correct types of all required fields for a search result.
@@ -212,7 +221,6 @@ export function assertHtmlResponse(response: unknown): asserts response is Respo
  * @category Typeguards
  * @param value - The value to validate
  * @returns Type predicate indicating if the value has required search result properties
- *
  * @example
  * ```typescript
  * // Valid search result
@@ -244,21 +252,26 @@ export function assertHtmlResponse(response: unknown): asserts response is Respo
  * ```
  * @source
  */
-const validResultSchema = z.object({
-  title: z.string(),
-  price: z.number(),
-  quantity: z.number(),
-  uom: z.string(),
-  supplier: z.string(),
-  url: z.string(),
-  currencyCode: z.string(),
-  currencySymbol: z.string(),
-});
-
 export function isValidResult(value: unknown): value is RequiredProductFields {
   return validResultSchema.safeParse(value).success;
 }
 
+/**
+ * Checks a product object for missing or incorrectly typed minimal required fields.
+ * Returns an array of field names that are missing or have the wrong type.
+ *
+ * @category Typeguards
+ * @param product - The product object to validate
+ * @returns Array of missing or invalid field names (empty if all fields are valid)
+ * @throws TypeError if product is null or not an object
+ * @example
+ * ```typescript
+ * const product = { title: "NaCl", price: 29.99 };
+ * const missing = checkMissingMinimalProductFields(product);
+ * // ["quantity", "uom", "supplier", "url", "currencyCode", "currencySymbol"]
+ * ```
+ * @source
+ */
 export function checkMissingMinimalProductFields(product: unknown): string[] {
   if (!product || typeof product !== "object") {
     throw new TypeError(`checkMissingMinimalProductFields| Invalid product: ${product}`);
@@ -364,6 +377,22 @@ export function isMinimalProduct(product: unknown): product is RequiredProductFi
   }
 }
 
+/**
+ * Checks a product object for missing or incorrectly typed complete required fields.
+ * Returns an array of field names that are missing or have the wrong type.
+ *
+ * @category Typeguards
+ * @param product - The product object to validate
+ * @returns Array of missing or invalid field names (empty if all fields are valid)
+ * @throws TypeError if product is null or not an object
+ * @example
+ * ```typescript
+ * const product = { title: "NaCl", price: 29.99, quantity: 500, uom: "g" };
+ * const missing = checkCompleteProductFields(product);
+ * // ["supplier", "url", "currencyCode", "currencySymbol"]
+ * ```
+ * @source
+ */
 export function checkCompleteProductFields(product: unknown): string[] {
   if (!product || typeof product !== "object") {
     throw new TypeError(`checkCompleteProductFields| Invalid product: ${product}`);
@@ -406,6 +435,24 @@ export function checkCompleteProductFields(product: unknown): string[] {
   return result;
 }
 
+/**
+ * Asserts that a product object contains all required fields with correct types.
+ * Throws a TypeError listing any missing or invalid fields.
+ *
+ * @category Typeguards
+ * @param product - The product object to assert
+ * @throws TypeError if any required fields are missing or have incorrect types
+ * @example
+ * ```typescript
+ * try {
+ *   assertCompleteProductFields(product);
+ *   // product is now typed as RequiredProductFields
+ * } catch (error) {
+ *   console.error("Invalid product:", error.message);
+ * }
+ * ```
+ * @source
+ */
 export function assertCompleteProductFields(
   product: unknown,
 ): asserts product is RequiredProductFields {
@@ -569,6 +616,12 @@ export function isPopulatedArray(arr: unknown): arr is unknown[] {
   return Array.isArray(arr) === true && arr.length > 0;
 }
 
+const parsedPriceSchema = z.object({
+  currencyCode: z.string(),
+  currencySymbol: z.string(),
+  price: z.number(),
+});
+
 /**
  * Type guard to validate if a value is a valid ParsedPrice object.
  * Checks for the presence and correct types of currencyCode, currencySymbol, and price.
@@ -585,15 +638,14 @@ export function isPopulatedArray(arr: unknown): arr is unknown[] {
  * ```
  * @source
  */
-const parsedPriceSchema = z.object({
-  currencyCode: z.string(),
-  currencySymbol: z.string(),
-  price: z.number(),
-});
-
 export function isParsedPrice(data: unknown): data is ParsedPrice {
   return parsedPriceSchema.safeParse(data).success;
 }
+
+const quantityObjectSchema = z.object({
+  quantity: z.number(),
+  uom: z.string(),
+});
 
 /**
  * Type guard to validate if a value is a valid QuantityObject.
@@ -611,11 +663,6 @@ export function isParsedPrice(data: unknown): data is ParsedPrice {
  * ```
  * @source
  */
-const quantityObjectSchema = z.object({
-  quantity: z.number(),
-  uom: z.string(),
-});
-
 export function isQuantityObject(value: unknown): value is QuantityObject {
   return quantityObjectSchema.safeParse(value).success;
 }

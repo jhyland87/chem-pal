@@ -1,12 +1,34 @@
+import { z } from "zod";
+
+/* eslint-disable @typescript-eslint/naming-convention */
+const searchResponseOkSchema = z.object({
+  page: z.object({
+    search: z.string(),
+    session_id: z.string(),
+    key: z.string(),
+    title: z.string(),
+    status: z.number(),
+  }),
+  request: z.object({
+    url: z.string(),
+    method: z.string(),
+    get: z.record(z.string(), z.unknown()),
+    device: z.record(z.string(), z.unknown()),
+  }),
+  collection: z.object({
+    products: z.record(z.string(), z.unknown()),
+  }),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
+
 /**
  * Type guard to validate if a response from the Laboratorium Discounter search API is valid.
  * Checks for the presence and correct types of all required properties including page info,
  * request details, and a valid collection of products.
  *
+ * @category Typeguards
  * @param response - Response object to validate
  * @returns Type predicate indicating if response is a valid SearchResponse
- * @typeguard
- *
  * @example
  * ```typescript
  * // Valid search response
@@ -86,29 +108,6 @@
  * ```
  * @source
  */
-import { z } from "zod";
-
-/* eslint-disable @typescript-eslint/naming-convention */
-const searchResponseOkSchema = z.object({
-  page: z.object({
-    search: z.string(),
-    session_id: z.string(),
-    key: z.string(),
-    title: z.string(),
-    status: z.number(),
-  }),
-  request: z.object({
-    url: z.string(),
-    method: z.string(),
-    get: z.record(z.string(), z.unknown()),
-    device: z.record(z.string(), z.unknown()),
-  }),
-  collection: z.object({
-    products: z.record(z.string(), z.unknown()),
-  }),
-});
-/* eslint-enable @typescript-eslint/naming-convention */
-
 export function isSearchResponseOk(response: unknown): response is SearchResponse {
   if (!searchResponseOkSchema.safeParse(response).success) {
     return false;
@@ -117,15 +116,25 @@ export function isSearchResponseOk(response: unknown): response is SearchRespons
   return Object.values(collection.products).every((product) => isSearchResponseProduct(product));
 }
 
+/* eslint-disable @typescript-eslint/naming-convention */
+const priceObjectSchema = z.object({
+  price: z.number(),
+  price_incl: z.number(),
+  price_excl: z.number(),
+  price_old: z.number(),
+  price_old_incl: z.number(),
+  price_old_excl: z.number(),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
+
 /**
  * Type guard to validate if an object has the correct structure for a Laboratorium Discounter price object.
  * Checks for the presence and correct types of all required price properties including
  * regular prices and old prices (for items on sale).
  *
+ * @category Typeguards
  * @param price - Object to validate as PriceObject
  * @returns Type predicate indicating if price is a valid PriceObject
- * @typeguard
- *
  * @example
  * ```typescript
  * // Valid price object (regular price)
@@ -182,30 +191,40 @@ export function isSearchResponseOk(response: unknown): response is SearchRespons
  * ```
  * @source
  */
-/* eslint-disable @typescript-eslint/naming-convention */
-const priceObjectSchema = z.object({
-  price: z.number(),
-  price_incl: z.number(),
-  price_excl: z.number(),
-  price_old: z.number(),
-  price_old_incl: z.number(),
-  price_old_excl: z.number(),
-});
-/* eslint-enable @typescript-eslint/naming-convention */
-
 export function isPriceObject(price: unknown): price is PriceObject {
   return priceObjectSchema.safeParse(price).success;
 }
+
+/* eslint-disable @typescript-eslint/naming-convention */
+const searchResponseProductSchema = z.object({
+  id: z.number(),
+  vid: z.number(),
+  image: z.number(),
+  brand: z.boolean(),
+  code: z.string(),
+  ean: z.string(),
+  sku: z.string(),
+  score: z.number(),
+  available: z.boolean(),
+  unit: z.boolean(),
+  url: z.string(),
+  title: z.string(),
+  fulltitle: z.string(),
+  variant: z.string(),
+  description: z.string(),
+  data_01: z.string(),
+  price: priceObjectSchema,
+});
+/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard to validate if an object has the correct structure for a Laboratorium Discounter search response product.
  * Checks for the presence and correct types of all required product properties including
  * basic info, availability, and a valid price object.
  *
+ * @category Typeguards
  * @param product - Object to validate as SearchResponseProduct
  * @returns Type predicate indicating if product is a valid SearchResponseProduct
- * @typeguard
- *
  * @example
  * ```typescript
  * // Valid search response product
@@ -241,178 +260,13 @@ export function isPriceObject(price: unknown): price is PriceObject {
  *   console.log("Price:", validProduct.price.price);
  *   console.log("Available:", validProduct.available);
  * }
- *
- * // Invalid product (missing required properties)
- * const missingProps = {
- *   id: 12345,
- *   title: "Sodium Chloride",
- *   price: {
- *     price: 29.99,
- *     price_incl: 29.99,
- *     price_excl: 24.79,
- *     price_old: 39.99,
- *     price_old_incl: 39.99,
- *     price_old_excl: 33.05
- *   }
- *   // Missing other required properties
- * };
- * if (!isSearchResponseProduct(missingProps)) {
- *   console.error("Invalid product - missing required properties");
- * }
- *
- * // Invalid product (wrong types)
- * const wrongTypes = {
- *   id: "12345", // Should be number
- *   vid: "67890", // Should be number
- *   image: "1", // Should be number
- *   brand: "false", // Should be boolean
- *   code: 123, // Should be string
- *   ean: 1234567890123, // Should be string
- *   sku: 123, // Should be string
- *   score: "1.0", // Should be number
- *   available: "true", // Should be boolean
- *   unit: "true", // Should be boolean
- *   url: 123, // Should be string
- *   title: 123, // Should be string
- *   fulltitle: 123, // Should be string
- *   variant: 500, // Should be string
- *   description: 123, // Should be string
- *   data_01: 123, // Should be string
- *   price: "29.99" // Should be PriceObject
- * };
- * if (!isSearchResponseProduct(wrongTypes)) {
- *   console.error("Invalid product - wrong property types");
- * }
- *
- * // Invalid product (invalid price object)
- * const invalidPrice = {
- *   id: 12345,
- *   vid: 67890,
- *   image: 1,
- *   brand: false,
- *   code: "CHEM-001",
- *   ean: "1234567890123",
- *   sku: "SKU-001",
- *   score: 1.0,
- *   available: true,
- *   unit: true,
- *   url: "/products/chemical-1",
- *   title: "Sodium Chloride",
- *   fulltitle: "Sodium Chloride 500g",
- *   variant: "500g",
- *   description: "High purity sodium chloride",
- *   data_01: "Additional info",
- *   price: {
- *     price: "29.99" // Invalid price object
- *   }
- * };
- * if (!isSearchResponseProduct(invalidPrice)) {
- *   console.error("Invalid product - invalid price object");
- * }
  * ```
  * @source
  */
-/* eslint-disable @typescript-eslint/naming-convention */
-const searchResponseProductSchema = z.object({
-  id: z.number(),
-  vid: z.number(),
-  image: z.number(),
-  brand: z.boolean(),
-  code: z.string(),
-  ean: z.string(),
-  sku: z.string(),
-  score: z.number(),
-  available: z.boolean(),
-  unit: z.boolean(),
-  url: z.string(),
-  title: z.string(),
-  fulltitle: z.string(),
-  variant: z.string(),
-  description: z.string(),
-  data_01: z.string(),
-  price: priceObjectSchema,
-});
-/* eslint-enable @typescript-eslint/naming-convention */
-
 export function isSearchResponseProduct(product: unknown): product is SearchResponseProduct {
   return searchResponseProductSchema.safeParse(product).success;
 }
 
-/**
- * Type guard to validate if an object has the correct structure for a Laboratorium Discounter product object.
- * Checks for the presence of a product object with a variants property that is either
- * an object containing variant information or false.
- *
- * @param data - Object to validate as ProductObject
- * @returns Type predicate indicating if product is a valid ProductObject
- * @typeguard
- *
- * @example
- * ```typescript
- * // Valid product object with variants
- * const validProduct = {
- *   product: {
- *     variants: {
- *       "1": {
- *         id: 1,
- *         title: "500g",
- *         price: 29.99
- *       },
- *       "2": {
- *         id: 2,
- *         title: "1kg",
- *         price: 49.99
- *       }
- *     }
- *   }
- * };
- *
- * if (isProductObject(validProduct)) {
- *   console.log("Valid product object with variants");
- *   console.log("Number of variants:", Object.keys(validProduct.product.variants).length);
- * }
- *
- * // Valid product object without variants
- * const noVariants = {
- *   product: {
- *     variants: false
- *   }
- * };
- *
- * if (isProductObject(noVariants)) {
- *   console.log("Valid product object without variants");
- * }
- *
- * // Invalid product object (missing product property)
- * const missingProduct = {
- *   variants: {
- *     "1": { id: 1, title: "500g", price: 29.99 }
- *   }
- * };
- * if (!isProductObject(missingProduct)) {
- *   console.error("Invalid product object - missing product property");
- * }
- *
- * // Invalid product object (missing variants)
- * const missingVariants = {
- *   product: {
- *     title: "Sodium Chloride"
- *   }
- * };
- * if (!isProductObject(missingVariants)) {
- *   console.error("Invalid product object - missing variants");
- * }
- *
- * // Invalid product object (wrong types)
- * const wrongTypes = {
- *   product: "not an object"
- * };
- * if (!isProductObject(wrongTypes)) {
- *   console.error("Invalid product object - wrong property types");
- * }
- * ```
- * @source
- */
 const productObjectSchema = z.object({
   product: z
     .record(z.string(), z.unknown())
@@ -423,19 +277,61 @@ const productObjectSchema = z.object({
   }),
 });
 
+/**
+ * Type guard to validate if an object has the correct structure for a Laboratorium Discounter product object.
+ * Checks for the presence of a product object with a variants property that is either
+ * an object containing variant information or false.
+ *
+ * @category Typeguards
+ * @param data - Object to validate as ProductObject
+ * @returns Type predicate indicating if product is a valid ProductObject
+ * @example
+ * ```typescript
+ * // Valid product object with variants
+ * const validProduct = {
+ *   product: {
+ *     variants: {
+ *       "1": { id: 1, title: "500g", price: 29.99 },
+ *       "2": { id: 2, title: "1kg", price: 49.99 }
+ *     }
+ *   },
+ *   shop: { currencies: { EUR: {} }, currency: "EUR" }
+ * };
+ *
+ * if (isProductObject(validProduct)) {
+ *   console.log("Valid product object with variants");
+ *   console.log("Number of variants:", Object.keys(validProduct.product.variants).length);
+ * }
+ *
+ * // Valid product object without variants
+ * const noVariants = {
+ *   product: { variants: false },
+ *   shop: { currencies: { EUR: {} }, currency: "EUR" }
+ * };
+ *
+ * if (isProductObject(noVariants)) {
+ *   console.log("Valid product object without variants");
+ * }
+ * ```
+ * @source
+ */
 export function isProductObject(data: unknown): data is LaboratoriumDiscounterProductObject {
   return productObjectSchema.safeParse(data).success;
 }
+
+const validSearchParamsSchema = z.object({
+  limit: z.string(),
+  format: z.string(),
+});
 
 /**
  * Type guard to validate if an object has the correct structure for Laboratorium Discounter search parameters.
  * Checks for the presence and correct types of required parameters including
  * limit (must be a valid number string) and format (must be "json").
  *
+ * @category Typeguards
  * @param params - Parameters to validate
  * @returns Type predicate indicating if params are valid SearchParams
- * @typeguard
- *
  * @example
  * ```typescript
  * // Valid search parameters
@@ -449,15 +345,6 @@ export function isProductObject(data: unknown): data is LaboratoriumDiscounterPr
  *   console.log("Limit:", validParams.limit);
  * }
  *
- * // Invalid search parameters (missing required properties)
- * const missingProps = {
- *   limit: "10"
- *   // Missing format
- * };
- * if (!isValidSearchParams(missingProps)) {
- *   console.error("Invalid parameters - missing required properties");
- * }
- *
  * // Invalid search parameters (wrong types)
  * const wrongTypes = {
  *   limit: 10, // Should be string
@@ -466,32 +353,9 @@ export function isProductObject(data: unknown): data is LaboratoriumDiscounterPr
  * if (!isValidSearchParams(wrongTypes)) {
  *   console.error("Invalid parameters - wrong property types");
  * }
- *
- * // Invalid search parameters (invalid limit)
- * const invalidLimit = {
- *   limit: "not a number",
- *   format: "json"
- * };
- * if (!isValidSearchParams(invalidLimit)) {
- *   console.error("Invalid parameters - invalid limit value");
- * }
- *
- * // Invalid search parameters (wrong format)
- * const wrongFormat = {
- *   limit: "10",
- *   format: "xml"
- * };
- * if (!isValidSearchParams(wrongFormat)) {
- *   console.error("Invalid parameters - wrong format value");
- * }
  * ```
  * @source
  */
-const validSearchParamsSchema = z.object({
-  limit: z.string(),
-  format: z.string(),
-});
-
 export function isValidSearchParams(params: unknown): params is LaboratoriumDiscounterSearchParams {
   return validSearchParamsSchema.safeParse(params).success;
 }

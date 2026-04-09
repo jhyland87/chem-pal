@@ -159,11 +159,11 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
           // rate than the users current currency)
           if (!thisRow.usdPrice) {
             // If there isn't any, then just use the original currency
-            console.error("Non-USD product is missing USD price", row.original);
+            console.error("Non-USD product is missing USD price", { row: row.original });
             return new Intl.NumberFormat(thisRow.currencyCode ?? "USD", {
               style: "currency",
               currency: thisRow.currencyCode ?? "USD",
-            }).format(thisRow.price as number);
+            }).format(Number(thisRow.price));
           }
           // If there is a usdPrice already generatd, thens witch to that.
           else {
@@ -234,11 +234,11 @@ export function getColumnFilterConfig() {
     Record<string, { filterVariant: string; filterData: unknown[] }>
   >((accu, column: ColumnDef<Product, unknown>) => {
     const meta = column.meta as { filterVariant?: string };
-    console.log("meta:", meta);
-    console.log("accu", accu);
-    console.log("column", column);
-    console.log("column.id:", column.id);
-    console.log("filterVariant", meta?.filterVariant);
+    console.debug("meta:", meta);
+    console.debug("accu", accu);
+    console.debug("column", column);
+    console.debug("column.id:", column.id);
+    console.debug("filterVariant", meta?.filterVariant);
     if (meta?.filterVariant === undefined || !column.id) return accu;
 
     accu[column.id] = {

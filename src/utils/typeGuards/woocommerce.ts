@@ -1,13 +1,38 @@
 import { z } from "zod";
 
+/* eslint-disable @typescript-eslint/naming-convention */
+const searchResponseItemSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  type: z.string(),
+  description: z.string(),
+  short_description: z.string(),
+  permalink: z.string(),
+  is_in_stock: z.boolean(),
+  sold_individually: z.boolean(),
+  sku: z.string(),
+  prices: z.object({
+    price: z.string(),
+    regular_price: z.string(),
+    sale_price: z.string(),
+    currency_code: z.string(),
+    currency_symbol: z.string(),
+    currency_minor_unit: z.number(),
+    currency_decimal_separator: z.string(),
+    currency_thousand_separator: z.string(),
+    currency_prefix: z.string(),
+    currency_suffix: z.string(),
+  }),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
+
 /**
  * Type guard to validate if an unknown object is a valid SearchResponseItem from WooCommerce.
  * Checks for the presence and correct types of all required properties including nested price information.
  *
+ * @category Typeguards
  * @param item - Object to validate
  * @returns Type predicate indicating if the object is a valid SearchResponseItem
- * @typeguard
- *
  * @example
  * ```typescript
  * // Valid search response item
@@ -39,55 +64,9 @@ import { z } from "zod";
  *   console.log('Valid item:', validItem.name);
  *   console.log('Price:', validItem.prices.price);
  * }
- *
- * // Invalid search response item (missing properties)
- * const invalidItem = {
- *   id: 123,
- *   name: "Sodium Chloride"
- *   // Missing required properties
- * };
- * if (!isSearchResponseItem(invalidItem)) {
- *   console.log('Invalid item - missing required properties');
- * }
- *
- * // Invalid search response item (wrong types)
- * const wrongTypes = {
- *   id: "123", // Should be number
- *   name: 456, // Should be string
- *   prices: "invalid" // Should be object
- * };
- * if (!isSearchResponseItem(wrongTypes)) {
- *   console.log('Invalid item - wrong property types');
- * }
  * ```
  * @source
  */
-/* eslint-disable @typescript-eslint/naming-convention */
-const searchResponseItemSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  type: z.string(),
-  description: z.string(),
-  short_description: z.string(),
-  permalink: z.string(),
-  is_in_stock: z.boolean(),
-  sold_individually: z.boolean(),
-  sku: z.string(),
-  prices: z.object({
-    price: z.string(),
-    regular_price: z.string(),
-    sale_price: z.string(),
-    currency_code: z.string(),
-    currency_symbol: z.string(),
-    currency_minor_unit: z.number(),
-    currency_decimal_separator: z.string(),
-    currency_thousand_separator: z.string(),
-    currency_prefix: z.string(),
-    currency_suffix: z.string(),
-  }),
-});
-/* eslint-enable @typescript-eslint/naming-convention */
-
 export function isSearchResponseItem(item: unknown): item is WooCommerceSearchResponseItem {
   return searchResponseItemSchema.safeParse(item).success;
 }
@@ -96,10 +75,9 @@ export function isSearchResponseItem(item: unknown): item is WooCommerceSearchRe
  * Type guard to validate if an unknown value is a valid WooCommerce SearchResponse.
  * Checks if the value is an array and all items are valid SearchResponseItems.
  *
+ * @category Typeguards
  * @param response - Value to validate
  * @returns Type predicate indicating if the value is a valid SearchResponse
- * @typeguard
- *
  * @example
  * ```typescript
  * // Valid search response
@@ -108,58 +86,13 @@ export function isSearchResponseItem(item: unknown): item is WooCommerceSearchRe
  *     id: 123,
  *     name: "Sodium Chloride",
  *     type: "simple",
- *     // Other required SearchResponseItem properties would go here
- *     prices: {
- *       price: "29.99",
- *       regular_price: "34.99",
- *       sale_price: "29.99",
- *       currency_code: "USD",
- *       currency_symbol: "$",
- *       currency_minor_unit: 2,
- *       currency_decimal_separator: ".",
- *       currency_thousand_separator: ",",
- *       currency_prefix: "$",
- *       currency_suffix: ""
- *     }
- *   },
- *   {
- *     id: 124,
- *     name: "Potassium Chloride",
- *     type: "simple",
- *     // Other required SearchResponseItem properties would go here
- *     prices: {
- *       price: "39.99",
- *       regular_price: "44.99",
- *       sale_price: "39.99",
- *       currency_code: "USD",
- *       currency_symbol: "$",
- *       currency_minor_unit: 2,
- *       currency_decimal_separator: ".",
- *       currency_thousand_separator: ",",
- *       currency_prefix: "$",
- *       currency_suffix: ""
- *     }
+ *     // ... other required properties
+ *     prices: { price: "29.99", currency_code: "USD" }
  *   }
  * ];
  *
  * if (isSearchResponse(validResponse)) {
  *   console.log('Valid search response with', validResponse.length, 'items');
- *   validResponse.forEach(item => console.log(item.name));
- * }
- *
- * // Invalid search response (not an array)
- * const notArray = { items: [] };
- * if (!isSearchResponse(notArray)) {
- *   console.log('Invalid response - not an array');
- * }
- *
- * // Invalid search response (array with invalid items)
- * const invalidItems = [
- *   { id: 123, name: "Sodium Chloride" }, // Missing required properties
- *   { id: 124, name: "Potassium Chloride" } // Missing required properties
- * ];
- * if (!isSearchResponse(invalidItems)) {
- *   console.log('Invalid response - contains invalid items');
  * }
  * ```
  * @source
@@ -176,10 +109,9 @@ export function isSearchResponse(response: unknown): response is WooCommerceSear
  * Type guard to validate if an unknown object is a valid WooCommerce WooCommerceProductVariant.
  * Checks if the object is a valid SearchResponseItem and has the required variant properties.
  *
+ * @category Typeguards
  * @param product - Object to validate
  * @returns Type predicate indicating if the object is a valid WooCommerceProductVariant
- * @typeguard
- *
  * @example
  * ```typescript
  * // Valid product variant
@@ -188,45 +120,11 @@ export function isSearchResponse(response: unknown): response is WooCommerceSear
  *   name: "Sodium Chloride 500g",
  *   type: "variation",
  *   variation: "500g",
- *   // Other required SearchResponseItem properties would go here
- *   prices: {
- *     price: "29.99",
- *     regular_price: "34.99",
- *     sale_price: "29.99",
- *     currency_code: "USD",
- *     currency_symbol: "$",
- *     currency_minor_unit: 2,
- *     currency_decimal_separator: ".",
- *     currency_thousand_separator: ",",
- *     currency_prefix: "$",
- *     currency_suffix: ""
- *   }
+ *   // ... other required SearchResponseItem properties
  * };
  *
  * if (isProductVariant(validVariant)) {
  *   console.log('Valid variant:', validVariant.variation);
- * }
- *
- * // Invalid product variant (missing variation)
- * const invalidVariant = {
- *   id: 123,
- *   name: "Sodium Chloride",
- *   type: "variation"
- *   // Missing variation property
- * };
- * if (!isProductVariant(invalidVariant)) {
- *   console.log('Invalid variant - missing variation property');
- * }
- *
- * // Invalid product variant (wrong type)
- * const wrongType = {
- *   id: 123,
- *   name: "Sodium Chloride",
- *   type: "variation",
- *   variation: 500 // Should be string
- * };
- * if (!isProductVariant(wrongType)) {
- *   console.log('Invalid variant - wrong variation type');
  * }
  * ```
  * @source
@@ -239,14 +137,20 @@ export function isProductVariant(product: unknown): product is WooCommerceProduc
   return !("variation" in product === false || typeof product.variation !== "string");
 }
 
+const validProductVariantSchema = z.object({
+  variation: z.string(),
+  sku: z.string(),
+  description: z.string(),
+  variations: z.array(z.unknown()),
+});
+
 /**
  * Type guard to validate if a product response contains all required variant information.
  * Extends the basic WooCommerceProductVariant validation with additional required properties for complete variant data.
  *
+ * @category Typeguards
  * @param response - Object to validate
  * @returns Type predicate indicating if the response is a valid and complete WooCommerceProductVariant
- * @typeguard
- *
  * @example
  * ```typescript
  * // Valid complete product variant
@@ -258,62 +162,16 @@ export function isProductVariant(product: unknown): product is WooCommerceProduc
  *   sku: "NACL-500",
  *   description: "High purity sodium chloride, 500g",
  *   variations: ["250g", "500g", "1000g"],
- *   // Other required SearchResponseItem properties would go here
- *   prices: {
- *     price: "29.99",
- *     regular_price: "34.99",
- *     sale_price: "29.99",
- *     currency_code: "USD",
- *     currency_symbol: "$",
- *     currency_minor_unit: 2,
- *     currency_decimal_separator: ".",
- *     currency_thousand_separator: ",",
- *     currency_prefix: "$",
- *     currency_suffix: ""
- *   }
+ *   // ... other required SearchResponseItem properties
  * };
  *
  * if (isValidProductVariant(completeVariant)) {
  *   console.log('Valid complete variant:', completeVariant.variation);
  *   console.log('Available variations:', completeVariant.variations);
  * }
- *
- * // Invalid complete variant (missing required properties)
- * const incompleteVariant = {
- *   id: 123,
- *   name: "Sodium Chloride 500g",
- *   type: "variation",
- *   variation: "500g",
- *   sku: "NACL-500"
- *   // Missing description and variations
- * };
- * if (!isValidProductVariant(incompleteVariant)) {
- *   console.log('Invalid complete variant - missing required properties');
- * }
- *
- * // Invalid complete variant (wrong types)
- * const wrongTypes = {
- *   id: 123,
- *   name: "Sodium Chloride 500g",
- *   type: "variation",
- *   variation: "500g",
- *   sku: "NACL-500",
- *   description: 123, // Should be string
- *   variations: "250g,500g,1000g" // Should be array
- * };
- * if (!isValidProductVariant(wrongTypes)) {
- *   console.log('Invalid complete variant - wrong property types');
- * }
  * ```
  * @source
  */
-const validProductVariantSchema = z.object({
-  variation: z.string(),
-  sku: z.string(),
-  description: z.string(),
-  variations: z.array(z.unknown()),
-});
-
 export function isValidProductVariant(response: unknown): response is WooCommerceProductVariant {
   if (!isProductVariant(response)) {
     return false;
