@@ -1,12 +1,20 @@
+import { z } from "zod";
+import { StatusCodes } from "http-status-codes";
+
+const responseOkSchema = z.object({
+  responseStatusCode: z.literal(StatusCodes.OK),
+  "@type": z.string(),
+  contents: z.record(z.string(), z.unknown()),
+});
+
 /**
  * Type guard to validate if a response has a valid basic structure for a Carolina search response.
  * Checks for the presence of required properties and correct response status code.
  * This is a basic validation that should be followed by more detailed validation.
  *
+ * @category Typeguards
  * @param response - Response object to validate
  * @returns Type predicate indicating if response has valid basic structure
- * @typeguard
- *
  * @example
  * ```typescript
  * // Valid basic response structure
@@ -54,28 +62,33 @@
  * ```
  * @source
  */
-import { z } from "zod";
-import { StatusCodes } from "http-status-codes";
-
-const responseOkSchema = z.object({
-  responseStatusCode: z.literal(StatusCodes.OK),
-  "@type": z.string(),
-  contents: z.record(z.string(), z.unknown()),
-});
-
 export function isResponseOk(response: unknown): response is CarolinaSearchResponse {
   return responseOkSchema.safeParse(response).success;
 }
+
+const validSearchResponseSchema = z.object({
+  responseStatusCode: z.literal(StatusCodes.OK),
+  "@type": z.string(),
+  contents: z.object({
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    ContentFolderZone: z
+      .array(
+        z.object({
+          childRules: z.array(z.record(z.string(), z.unknown())).min(1),
+        }),
+      )
+      .min(1),
+  }),
+});
 
 /**
  * Type guard to validate if a response has the complete structure of a Carolina search response.
  * Performs deep validation of the response object including contents, content folder zones,
  * and child rules. This is a more thorough validation than isResponseOk.
  *
+ * @category Typeguards
  * @param response - Response object to validate
  * @returns Type predicate indicating if response is a valid SearchResponse
- * @typeguard
- *
  * @example
  * ```typescript
  * // Valid search response
@@ -140,34 +153,31 @@ export function isResponseOk(response: unknown): response is CarolinaSearchRespo
  * ```
  * @source
  */
-const validSearchResponseSchema = z.object({
-  responseStatusCode: z.literal(StatusCodes.OK),
-  "@type": z.string(),
-  contents: z.object({
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    ContentFolderZone: z
-      .array(
-        z.object({
-          childRules: z.array(z.record(z.string(), z.unknown())).min(1),
-        }),
-      )
-      .min(1),
-  }),
-});
-
 export function isValidSearchResponse(response: unknown): response is CarolinaSearchResponse {
   return validSearchResponseSchema.safeParse(response).success;
 }
+
+/* eslint-disable @typescript-eslint/naming-convention */
+const searchResultItemSchema = z.object({
+  "product.productId": z.string(),
+  "product.productName": z.string(),
+  "product.shortDescription": z.string(),
+  itemPrice: z.string(),
+  "product.seoName": z.string(),
+  productUrl: z.string(),
+  productName: z.string(),
+  qtyDiscountAvailable: z.boolean(),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard to validate if an object is a valid Carolina search result item.
  * Checks for the presence and correct types of all required product properties
  * including product ID, name, description, price, and URL.
  *
+ * @category Typeguards
  * @param result - Object to validate as SearchResult
  * @returns Type predicate indicating if result is a valid SearchResult
- * @typeguard
- *
  * @example
  * ```typescript
  * // Valid search result item
@@ -215,25 +225,27 @@ export function isValidSearchResponse(response: unknown): response is CarolinaSe
  * ```
  * @source
  */
-/* eslint-disable @typescript-eslint/naming-convention */
-const searchResultItemSchema = z.object({
-  "product.productId": z.string(),
-  "product.productName": z.string(),
-  "product.shortDescription": z.string(),
-  itemPrice: z.string(),
-  "product.seoName": z.string(),
-  productUrl: z.string(),
-  productName: z.string(),
-  qtyDiscountAvailable: z.boolean(),
-});
-/* eslint-enable @typescript-eslint/naming-convention */
-
 export function isSearchResultItem(result: unknown): result is CarolinaSearchResult {
   return searchResultItemSchema.safeParse(result).success;
 }
 
+const validProductResponseSchema = z.object({
+  contents: z.object({
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    MainContent: z
+      .array(
+        z.object({
+          atgResponse: z.record(z.string(), z.unknown()),
+        }),
+      )
+      .min(1),
+  }),
+});
+
 /**
- * Validates that a response matches the ProductResponse interface structure
+ * Validates that a response matches the ProductResponse interface structure.
+ *
+ * @category Typeguards
  * @param obj - Response object to validate
  * @returns Type predicate indicating if object is a valid ProductResponse
  * @example
@@ -248,39 +260,10 @@ export function isSearchResultItem(result: unknown): result is CarolinaSearchRes
  * ```
  * @source
  */
-const validProductResponseSchema = z.object({
-  contents: z.object({
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    MainContent: z
-      .array(
-        z.object({
-          atgResponse: z.record(z.string(), z.unknown()),
-        }),
-      )
-      .min(1),
-  }),
-});
-
 export function isValidProductResponse(obj: unknown): obj is CarolinaProductResponse {
   return validProductResponseSchema.safeParse(obj).success;
 }
 
-/**
- * Validates that a response matches the ATGResponse interface structure
- * @param obj - Response object to validate
- * @returns Type predicate indicating if object is a valid ATGResponse
- * @example
- * ```typescript
- * const response = await this.httpGetJson({
- *   path: `/api/rest/cb/product/product-quick-view/${productId}`
- * });
- * if (isATGResponse(response)) {
- *   // Process valid ATG response
- *   console.log(response.response.response.products[0]);
- * }
- * ```
- * @source
- */
 const atgResponseSchema = z.object({
   result: z.literal("success"),
   response: z.object({
@@ -295,6 +278,24 @@ const atgResponseSchema = z.object({
   }),
 });
 
+/**
+ * Validates that a response matches the ATGResponse interface structure.
+ *
+ * @category Typeguards
+ * @param obj - Response object to validate
+ * @returns Type predicate indicating if object is a valid ATGResponse
+ * @example
+ * ```typescript
+ * const response = await this.httpGetJson({
+ *   path: `/api/rest/cb/product/product-quick-view/${productId}`
+ * });
+ * if (isATGResponse(response)) {
+ *   // Process valid ATG response
+ *   console.log(response.response.response.products[0]);
+ * }
+ * ```
+ * @source
+ */
 export function isATGResponse(obj: unknown): obj is ATGResponse {
   return atgResponseSchema.safeParse(obj).success;
 }

@@ -1,13 +1,31 @@
 import { z } from "zod";
+
+/* eslint-disable @typescript-eslint/naming-convention */
+const searchResponseItemSchema = z.object({
+  document: z.object({
+    //CAS: z.string(),
+    id: z.string(),
+    inventoryLevel: z.number(),
+    name: z.string(),
+    product_id: z.number(),
+    retailPrice: z.number(),
+    salePrice: z.number(),
+    price: z.number(),
+    sku: z.string(),
+    upc: z.string(),
+    url: z.string(),
+  }),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
+
 /**
  * Type guard to validate if an object matches the Chemsavers ProductObject structure.
  * Checks for the presence and correct types of all required product properties including
  * CAS number, inventory level, pricing information, and product identifiers.
  *
+ * @category Typeguards
  * @param response - Object to validate as ProductObject
  * @returns Type predicate indicating if response is a valid ProductObject
- * @typeguard
- *
  * @example
  * ```typescript
  * // Valid product object
@@ -77,27 +95,19 @@ import { z } from "zod";
  * ```
  * @source
  */
-/* eslint-disable @typescript-eslint/naming-convention */
-const searchResponseItemSchema = z.object({
-  document: z.object({
-    //CAS: z.string(),
-    id: z.string(),
-    inventoryLevel: z.number(),
-    name: z.string(),
-    product_id: z.number(),
-    retailPrice: z.number(),
-    salePrice: z.number(),
-    price: z.number(),
-    sku: z.string(),
-    upc: z.string(),
-    url: z.string(),
-  }),
-});
-/* eslint-enable @typescript-eslint/naming-convention */
-
 export function isValidSearchResponseItem(response: unknown): response is ChemsaversProductObject {
   return searchResponseItemSchema.safeParse(response).success;
 }
+
+const searchResponseSchema = z.object({
+  results: z
+    .array(
+      z.object({
+        hits: z.array(searchResponseItemSchema),
+      }),
+    )
+    .min(1),
+});
 
 /**
  * Type guard to validate if a response matches the Chemsavers SearchResponse structure.
@@ -105,10 +115,9 @@ export function isValidSearchResponseItem(response: unknown): response is Chemsa
  * ensuring each hit is a valid ProductObject. This is a comprehensive validation that
  * checks the entire response structure.
  *
+ * @category Typeguards
  * @param response - Response object to validate
  * @returns Type predicate indicating if response is a valid SearchResponse
- * @typeguard
- *
  * @example
  * ```typescript
  * // Valid search response
@@ -193,16 +202,6 @@ export function isValidSearchResponseItem(response: unknown): response is Chemsa
  * ```
  * @source
  */
-const searchResponseSchema = z.object({
-  results: z
-    .array(
-      z.object({
-        hits: z.array(searchResponseItemSchema),
-      }),
-    )
-    .min(1),
-});
-
 export function isValidSearchResponse(response: unknown): response is ChemsaversSearchResponse {
   return searchResponseSchema.safeParse(response).success;
 }
@@ -210,8 +209,20 @@ export function isValidSearchResponse(response: unknown): response is Chemsavers
 /**
  * Asserts that a response is a valid Chemsavers SearchResponse.
  * Throws an error if the response is not a valid SearchResponse.
+ *
+ * @category Typeguards
  * @param response - Response object to validate
  * @throws Error if response is not a valid SearchResponse
+ * @example
+ * ```typescript
+ * try {
+ *   assertValidSearchResponse(data);
+ *   // data is now typed as ChemsaversSearchResponse
+ *   console.log(data.results[0].hits.length);
+ * } catch (error) {
+ *   console.error("Invalid Chemsavers response:", error.message);
+ * }
+ * ```
  * @source
  */
 export function assertValidSearchResponse(

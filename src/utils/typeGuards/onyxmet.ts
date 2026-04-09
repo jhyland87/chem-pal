@@ -9,7 +9,7 @@
  *
  * @param product - The object to validate
  * @returns Type predicate indicating if the object is a valid SearchResultItem
- * @typeguard
+ * @category Typeguards
  *
  * @example
  * ```typescript

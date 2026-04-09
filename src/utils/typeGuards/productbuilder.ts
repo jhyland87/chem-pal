@@ -5,7 +5,7 @@ import { AVAILABILITY } from "@/constants/common";
  *
  * @param availability - The value to check
  * @returns Type predicate indicating if the value is a valid AVAILABILITY enum value
- * @typeguard
+ * @category Typeguards
  *
  * @example
  * ```typescript
@@ -42,7 +42,7 @@ export function isAvailability(availability: unknown): availability is AVAILABIL
  *
  * @param variant - The variant object to validate
  * @returns Type predicate indicating if the value is a valid partial Variant
- * @typeguard
+ * @category Typeguards
  *
  * @example
  * ```typescript
