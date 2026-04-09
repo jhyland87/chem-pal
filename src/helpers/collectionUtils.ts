@@ -78,16 +78,51 @@ export function omit<T extends object, K extends keyof T>(
  * ```
  * @source
  */
-export function checkObjectStructure(data: unknown, requiredProps: Record<string, string>) {
+interface NestedProps {
+  [key: string]: PropValidator;
+}
+type ArrayValidator = [NestedProps];
+type PropValidator = string | ((val: unknown) => boolean) | NestedProps | ArrayValidator;
+
+export function checkObjectStructure(
+  data: unknown,
+  requiredProps: Record<string, PropValidator>,
+): boolean {
   if (typeof data !== "object" || data === null) {
     console.warn("data is not an object - ", data);
     return false;
   }
 
-  const hasRequiredProps = Object.entries(requiredProps).every(([key, expectedType]) => {
-    const item = data as Record<string, unknown>;
-    if (!(key in item) || typeof item[key] !== expectedType) {
-      console.warn(`Invalid type for ${key}. Expected ${expectedType} but got ${typeof item[key]}`);
+  const record = data as Record<string, unknown>;
+  const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
+    if (!(key in record)) {
+      console.warn(`Missing required property: ${key}`);
+      return false;
+    }
+    if (typeof validator === "function") {
+      if (!validator(record[key])) {
+        console.warn(`Validation failed for ${key}`);
+        return false;
+      }
+    } else if (Array.isArray(validator)) {
+      // Array validator — check value is an array and every element matches the schema
+      if (!Array.isArray(record[key])) {
+        console.warn(`Expected array for ${key} but got ${typeof record[key]}`);
+        return false;
+      }
+      const elementSchema = validator[0];
+      if (!record[key].every((element: unknown) => checkObjectStructure(element, elementSchema))) {
+        console.warn(`Array element validation failed for ${key}`);
+        return false;
+      }
+    } else if (typeof validator === "object") {
+      // Nested object validation — recurse
+      if (!checkObjectStructure(record[key], validator)) {
+        console.warn(`Nested validation failed for ${key}`);
+        return false;
+      }
+    } else if (typeof record[key] !== validator) {
+      console.warn(`Invalid type for ${key}. Expected ${validator} but got ${typeof record[key]}`);
       return false;
     }
     return true;

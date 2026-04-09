@@ -55,27 +55,13 @@
  * @source
  */
 import { StatusCodes } from "http-status-codes";
+import { checkObjectStructure } from "@/helpers/collectionUtils";
 export function isResponseOk(response: unknown): response is CarolinaSearchResponse {
-  if (!response || typeof response !== "object") {
-    return false;
-  }
-
-  try {
-    const partialResponse = response as Partial<CarolinaSearchResponse>;
-
-    if (
-      partialResponse.responseStatusCode !== StatusCodes.OK ||
-      !("@type" in partialResponse) ||
-      !("contents" in partialResponse) ||
-      typeof partialResponse.contents !== "object"
-    ) {
-      return false;
-    }
-
-    return true;
-  } catch {
-    return false;
-  }
+  return checkObjectStructure(response, {
+    responseStatusCode: (val: unknown) => val === StatusCodes.OK,
+    "@type": "string",
+    contents: "object",
+  });
 }
 
 /**
@@ -152,50 +138,32 @@ export function isResponseOk(response: unknown): response is CarolinaSearchRespo
  * @source
  */
 export function isValidSearchResponse(response: unknown): response is CarolinaSearchResponse {
-  if (typeof response !== "object" || response === null) {
-    return false;
-  }
-
-  const requiredProps = {
+  return checkObjectStructure(response, {
+    responseStatusCode: (val: unknown) => val === StatusCodes.OK,
+    "@type": "string",
     contents: (val: unknown) => {
       if (typeof val !== "object" || val === null) {
         return false;
       }
-      const contents = val as Record<string, unknown>;
 
-      if (!Array.isArray(contents.ContentFolderZone) || contents.ContentFolderZone.length === 0) {
-        return false;
-      }
-
-      const folder = contents.ContentFolderZone[0] as Record<string, unknown>;
       if (
-        !Array.isArray(folder.childRules) ||
-        folder.childRules.length === 0 ||
-        typeof folder.childRules[0] !== "object"
+        !("ContentFolderZone" in val) ||
+        !Array.isArray(val.ContentFolderZone) ||
+        val.ContentFolderZone.length === 0
       ) {
         return false;
       }
 
-      return true;
+      const folder = val.ContentFolderZone[0];
+      return (
+        typeof folder === "object" &&
+        folder !== null &&
+        "childRules" in folder &&
+        Array.isArray(folder.childRules) &&
+        folder.childRules.length > 0 &&
+        typeof folder.childRules[0] === "object"
+      );
     },
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    "@type": "string",
-    responseStatusCode: (val: unknown) => {
-      const isValid = val === StatusCodes.OK;
-      return isValid;
-    },
-  };
-
-  return Object.entries(requiredProps).every(([key, validator]) => {
-    const value = (response as Record<string, unknown>)[key];
-    if (value === undefined) {
-      return false;
-    }
-    if (typeof validator === "string") {
-      const isValid = typeof value === validator;
-      return isValid;
-    }
-    return validator(value);
   });
 }
 
@@ -256,11 +224,7 @@ export function isValidSearchResponse(response: unknown): response is CarolinaSe
  * @source
  */
 export function isSearchResultItem(result: unknown): result is CarolinaSearchResult {
-  if (typeof result !== "object" || result === null) {
-    return false;
-  }
-
-  const requiredProps = {
+  return checkObjectStructure(result, {
     /* eslint-disable */
     "product.productId": "string",
     "product.productName": "string",
@@ -271,18 +235,7 @@ export function isSearchResultItem(result: unknown): result is CarolinaSearchRes
     productName: "string",
     qtyDiscountAvailable: "boolean",
     /* eslint-enable */
-  };
-
-  const hasRequiredProps = Object.entries(requiredProps).every(([key, expectedType]) => {
-    const item = result as Record<string, unknown>;
-    if (!(key in item)) {
-      return false;
-    }
-    const actualType = typeof item[key];
-    return actualType === expectedType;
   });
-
-  return hasRequiredProps;
 }
 
 /**
@@ -302,21 +255,14 @@ export function isSearchResultItem(result: unknown): result is CarolinaSearchRes
  * @source
  */
 export function isValidProductResponse(obj: unknown): obj is CarolinaProductResponse {
-  if (typeof obj !== "object" || obj === null) {
-    return false;
-  }
-
-  const response = obj as Partial<CarolinaProductResponse>;
-
-  return !(
-    !response.contents?.MainContent ||
-    !Array.isArray(response.contents.MainContent) ||
-    response.contents.MainContent.length === 0 ||
-    typeof response.contents.MainContent[0] !== "object" ||
-    response.contents.MainContent[0] === null ||
-    !("atgResponse" in response.contents.MainContent[0]) ||
-    typeof response.contents.MainContent[0].atgResponse !== "object"
-  );
+  return checkObjectStructure(obj, {
+    contents: (val: unknown) => {
+      if (typeof val !== "object" || val === null) return false;
+      if (!("MainContent" in val) || !Array.isArray(val.MainContent) || val.MainContent.length === 0) return false;
+      const first = val.MainContent[0];
+      return typeof first === "object" && first !== null && "atgResponse" in first && typeof first.atgResponse === "object";
+    },
+  });
 }
 
 /**
@@ -336,56 +282,20 @@ export function isValidProductResponse(obj: unknown): obj is CarolinaProductResp
  * @source
  */
 export function isATGResponse(obj: unknown): obj is ATGResponse {
-  if (typeof obj !== "object" || obj === null) {
-    return false;
-  }
-
-  const response = { ...obj } as Partial<ATGResponse>;
-
-  const requiredProps = {
-    result: (val: unknown) => {
-      const isValid = val === "success";
-      return isValid;
-    },
+  return checkObjectStructure(obj, {
+    result: (val: unknown) => val === "success",
     response: (val: unknown) => {
-      if (typeof val !== "object" || val === null) {
+      if (typeof val !== "object" || val === null || !("response" in val)) {
         return false;
       }
-      const innerResponse = (val as { response?: unknown }).response;
-      if (typeof innerResponse !== "object" || innerResponse === null) {
-        return false;
-      }
-
-      const requiredInnerProps = {
+      return checkObjectStructure(val.response, {
         displayName: "string",
         longDescription: "string",
         shortDescription: "string",
         product: "string",
         dataLayer: "object",
         canonicalUrl: "string",
-      };
-
-      return Object.entries(requiredInnerProps).every(([key, expectedType]) => {
-        const value = (innerResponse as Record<string, unknown>)[key];
-        if (value === undefined) {
-          return false;
-        }
-        if (expectedType === "object") {
-          if (typeof value !== "object" || value === null) {
-            return false;
-          }
-        } else if (typeof value !== expectedType) {
-          return false;
-        }
-        return true;
       });
     },
-  };
-
-  return Object.entries(requiredProps).every(([key, validator]) => {
-    if (!(key in response)) {
-      return false;
-    }
-    return validator((response as Record<string, unknown>)[key]);
   });
 }

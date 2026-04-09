@@ -207,7 +207,7 @@ export default abstract class SupplierBaseShopify
 
             const variantQuantity = firstMap(parseQuantity, [
               variant.sku,
-              (variant?.options?.Model as string) ?? "",
+              String(variant?.options?.Model ?? ""),
             ]);
 
             builder.addVariant({
@@ -215,7 +215,7 @@ export default abstract class SupplierBaseShopify
               sku: variant.sku,
               //title: variant.title,
               price: variant.price,
-              title: (variant?.options?.Model as string) ?? "",
+              title: String(variant?.options?.Model ?? ""),
               url: variant.link,
               ...variantQuantity,
             });

@@ -78,26 +78,8 @@ import { checkObjectStructure } from "@/helpers/collectionUtils";
  * @source
  */
 export function isValidSearchResponseItem(response: unknown): response is ChemsaversProductObject {
-  if (typeof response !== "object" || !response) {
-    console.warn("Invalid search response item - Response is not an object:", response);
-    return false;
-  }
-  if ("document" in response === false) {
-    console.warn("Invalid search response item - Response is missing document property:", response);
-    return false;
-  }
-  if (typeof response.document === "undefined") {
-    console.warn("Invalid search response item - Response document is undefined:", response);
-    return false;
-  }
-
-  if (typeof response.document !== "object") {
-    console.warn("Invalid search response item - Response document is not an object:", response);
-    return false;
-  }
-
-  if (
-    !checkObjectStructure(response.document, {
+  return checkObjectStructure(response, {
+    document: {
       /* eslint-disable */
       //CAS: "string",
       id: "string",
@@ -110,16 +92,9 @@ export function isValidSearchResponseItem(response: unknown): response is Chemsa
       sku: "string",
       upc: "string",
       url: "string",
-    })
-  ) {
-    console.warn(
-      "Invalid search response item - Response document is missing required properties:",
-      response,
-    );
-    return false;
-  }
-
-  return true;
+      /* eslint-enable */
+    },
+  });
 }
 
 /**
@@ -217,55 +192,13 @@ export function isValidSearchResponseItem(response: unknown): response is Chemsa
  * @source
  */
 export function isValidSearchResponse(response: unknown): response is ChemsaversSearchResponse {
-  try {
-    if (typeof response !== "object" || !response) {
-      console.warn("Invalid search response item - Response is not an object:", response);
-      return false;
-    }
-    if ("results" in response === false) {
-      console.warn(
-        "Invalid search response item - Response is missing results property:",
-        response,
-      );
-      return false;
-    }
-
-    const { results } = response as { results: unknown };
-
-    if (!Array.isArray(results) || results.length === 0) {
-      console.warn(
-        "Invalid search response item - Response results is not an array (or its empty):",
-        response,
-      );
-      return false;
-    }
-
-    if (!("hits" in results[0]) || !Array.isArray(results[0].hits)) {
-      console.warn(
-        "Invalid search response item - Response results[0] is missing hits property or is not an array:",
-        response,
-      );
-      return false;
-    }
-
-    // Validate each hit in the nested array structure
-    return results[0].hits.every((hit: unknown) => {
-      if (!isValidSearchResponseItem(hit)) {
-        console.warn(
-          "Invalid search response item - Response hits is not a valid ProductObject:",
-          hit,
-        );
-        return false;
-      }
-      return true;
-    });
-  } catch {
-    console.warn(
-      "Invalid search response item - Response is not a valid SearchResponse:",
-      response,
-    );
-    return false;
-  }
+  return checkObjectStructure(response, {
+    results: (val: unknown) => {
+      if (!Array.isArray(val) || val.length === 0) return false;
+      if (typeof val[0] !== "object" || val[0] === null || !("hits" in val[0]) || !Array.isArray(val[0].hits)) return false;
+      return val[0].hits.every((hit: unknown) => isValidSearchResponseItem(hit));
+    },
+  });
 }
 
 /**

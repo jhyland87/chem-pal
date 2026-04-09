@@ -1,6 +1,7 @@
 import { SPIN_SPEED } from "@/constants/common";
 import { SvgIcon, SvgIconProps } from "@mui/material";
 import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
 import IconSpinner from "../IconSpinner";
 
 // Mock child component for testing
@@ -15,7 +16,7 @@ describe("IconSpinner", () => {
     render(
       <IconSpinner>
         <MockIcon />
-      </IconSpinner>
+      </IconSpinner>,
     );
 
     const wrapper = screen.getByTestId("spinning-wrapper");
@@ -28,7 +29,7 @@ describe("IconSpinner", () => {
     render(
       <IconSpinner speed="FAST">
         <MockIcon />
-      </IconSpinner>
+      </IconSpinner>,
     );
 
     const wrapper = screen.getByTestId("spinning-wrapper");
@@ -42,7 +43,7 @@ describe("IconSpinner", () => {
     render(
       <IconSpinner speed={customSpeed}>
         <MockIcon />
-      </IconSpinner>
+      </IconSpinner>,
     );
 
     const wrapper = screen.getByTestId("spinning-wrapper");
@@ -55,7 +56,7 @@ describe("IconSpinner", () => {
     render(
       <IconSpinner speed={SPIN_SPEED.MEDIUM}>
         <MockIcon />
-      </IconSpinner>
+      </IconSpinner>,
     );
 
     const wrapper = screen.getByTestId("spinning-wrapper");
@@ -68,7 +69,7 @@ describe("IconSpinner", () => {
     render(
       <IconSpinner speed="INVALID_SPEED">
         <MockIcon />
-      </IconSpinner>
+      </IconSpinner>,
     );
 
     const wrapper = screen.getByTestId("spinning-wrapper");
@@ -82,7 +83,7 @@ describe("IconSpinner", () => {
     render(
       <IconSpinner>
         <MockIcon style={customStyle} />
-      </IconSpinner>
+      </IconSpinner>,
     );
 
     // Verify wrapper contains the icon
@@ -94,7 +95,7 @@ describe("IconSpinner", () => {
     expect(icon).toHaveStyle({
       width: "48px",
       height: "48px",
-      color: "rgb(255, 0, 0)"
+      color: "rgb(255, 0, 0)",
     });
   });
 
@@ -102,21 +103,21 @@ describe("IconSpinner", () => {
     const { rerender } = render(
       <IconSpinner speed={2}>
         <MockIcon />
-      </IconSpinner>
+      </IconSpinner>,
     );
     expect(screen.getByTestId("spinning-wrapper")).toBeInTheDocument();
 
     rerender(
       <IconSpinner speed="FAST">
         <MockIcon />
-      </IconSpinner>
+      </IconSpinner>,
     );
     expect(screen.getByTestId("spinning-wrapper")).toBeInTheDocument();
 
     rerender(
       <IconSpinner speed={SPIN_SPEED.MEDIUM}>
         <MockIcon />
-      </IconSpinner>
+      </IconSpinner>,
     );
     expect(screen.getByTestId("spinning-wrapper")).toBeInTheDocument();
   });

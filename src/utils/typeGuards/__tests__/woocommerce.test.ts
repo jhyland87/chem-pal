@@ -84,6 +84,35 @@ describe("WooCommerce TypeGuards", () => {
       };
       expect(isSearchResponseItem(invalidPrices)).toBe(false);
     });
+
+    it("should return false when nested prices is missing a required property", () => {
+      const missingCurrencyCode = {
+        ...validItem,
+        prices: {
+          price: "29.99",
+          regular_price: "34.99",
+          sale_price: "29.99",
+          // currency_code missing
+          currency_symbol: "$",
+          currency_minor_unit: 2,
+          currency_decimal_separator: ".",
+          currency_thousand_separator: ",",
+          currency_prefix: "$",
+          currency_suffix: "",
+        },
+      };
+      expect(isSearchResponseItem(missingCurrencyCode)).toBe(false);
+    });
+
+    it("should return false when prices is null", () => {
+      const nullPrices = { ...validItem, prices: null };
+      expect(isSearchResponseItem(nullPrices)).toBe(false);
+    });
+
+    it("should return false when prices is a non-object", () => {
+      const stringPrices = { ...validItem, prices: "invalid" };
+      expect(isSearchResponseItem(stringPrices)).toBe(false);
+    });
   });
 
   describe("isSearchResponse", () => {

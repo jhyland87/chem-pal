@@ -1,5 +1,6 @@
 import { UOM } from "@/constants/common";
 import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "@/constants/currency";
+import { checkObjectStructure } from "@/helpers/collectionUtils";
 
 /**
  * @categoryDescription Typeguards
@@ -35,16 +36,13 @@ import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "@/constants/currency";
  * @source
  */
 export function isHttpResponse(value: unknown): value is Response {
-  const result =
-    value !== null &&
-    typeof value === "object" &&
-    "ok" in value &&
-    "status" in value &&
-    "statusText" in value &&
-    "json" in value &&
-    "text" in value &&
-    typeof value.json === "function" &&
-    typeof value.text === "function";
+  const result = checkObjectStructure(value, {
+    ok: (val: unknown) => typeof val === "boolean",
+    status: "number",
+    statusText: "string",
+    json: (val: unknown) => typeof val === "function",
+    text: (val: unknown) => typeof val === "function",
+  });
   console.debug(`isHttpResponse for`, value, `is:`, result);
   return result;
 }
@@ -74,7 +72,7 @@ export function isHttpResponse(value: unknown): value is Response {
  * @source
  */
 export function isUOM(uom: unknown): uom is UOM {
-  return typeof uom === "string" && Object.values(UOM).includes(uom as UOM);
+  return typeof uom === "string" && (Object.values(UOM) as string[]).includes(uom);
 }
 
 /**
@@ -111,7 +109,7 @@ export function isJsonResponse(response: unknown): response is Response {
     console.debug(`isJsonResponse for`, response, `is:`, false);
     return false;
   }
-  const contentType = (response as Response).headers.get("Content-Type");
+  const contentType = response.headers.get("Content-Type");
   const result =
     contentType !== null && (contentType.includes("/json") || contentType.includes("/javascript"));
   console.debug(`isJsonResponse for`, response, `is:`, result);
@@ -173,7 +171,7 @@ export function assertJsonResponse(response: unknown): asserts response is Respo
  */
 export function isHtmlResponse(response: unknown): response is Response {
   if (!isHttpResponse(response)) return false;
-  const contentType = (response as Response).headers.get("Content-Type");
+  const contentType = response.headers.get("Content-Type");
   return (
     contentType !== null &&
     (contentType.includes("text/") ||
@@ -245,9 +243,7 @@ export function assertHtmlResponse(response: unknown): asserts response is Respo
  * @source
  */
 export function isValidResult(value: unknown): value is RequiredProductFields {
-  if (!value || typeof value !== "object") return false;
-
-  const requiredProps: Record<keyof RequiredProductFields, string> = {
+  return checkObjectStructure(value, {
     title: "string",
     price: "number",
     quantity: "number",
@@ -256,10 +252,6 @@ export function isValidResult(value: unknown): value is RequiredProductFields {
     url: "string",
     currencyCode: "string",
     currencySymbol: "string",
-  };
-
-  return Object.entries(requiredProps).every(([key, expectedType]) => {
-    return key in value && typeof value[key as keyof typeof value] === expectedType;
   });
 }
 
@@ -279,9 +271,10 @@ export function checkMissingMinimalProductFields(product: unknown): string[] {
     currencySymbol: "string",
   };
 
+  const record = product as Record<string, unknown>;
   const result = Object.entries(requiredProps).reduce(
     (acc: string[], [key, expectedType]: [string, string]) => {
-      if (key in product === false) {
+      if (key in record === false) {
         console.debug(
           `checkMissingMinimalProductFields| No ${key} value found in product`,
           product,
@@ -289,9 +282,9 @@ export function checkMissingMinimalProductFields(product: unknown): string[] {
         return [...acc, key];
       }
 
-      if (typeof product[key as keyof typeof product] !== expectedType) {
+      if (typeof record[key] !== expectedType) {
         console.debug(
-          `checkMissingMinimalProductFields| ${key} property not the correct type (${typeof product[key as keyof typeof product]} !== ${expectedType})`,
+          `checkMissingMinimalProductFields| ${key} property not the correct type (${typeof record[key]} !== ${expectedType})`,
           product,
         );
         return [...acc, key];
@@ -383,16 +376,17 @@ export function checkCompleteProductFields(product: unknown): string[] {
     currencySymbol: "string",
   };
 
+  const record = product as Record<string, unknown>;
   const result = Object.entries(requiredProps).reduce(
     (acc: string[], [key, expectedType]: [string, string]) => {
-      if (key in product === false) {
+      if (key in record === false) {
         console.debug(`checkCompleteProductFields| No ${key} value found in product`, product);
         return [...acc, key];
       }
 
-      if (typeof product[key as keyof typeof product] !== expectedType) {
+      if (typeof record[key] !== expectedType) {
         console.debug(
-          `checkCompleteProductFields| ${key} property not the correct type (${typeof product[key as keyof typeof product]} !== ${expectedType})`,
+          `checkCompleteProductFields| ${key} property not the correct type (${typeof record[key]} !== ${expectedType})`,
           product,
         );
         return [...acc, key];
@@ -493,7 +487,7 @@ export function isProduct(product: unknown): product is Product {
 export function isCurrencySymbol(symbol: unknown): symbol is CurrencySymbol {
   return (
     typeof symbol === "string" &&
-    Object.values(CURRENCY_CODE_MAP).includes(symbol as CurrencySymbol)
+    (Object.values(CURRENCY_CODE_MAP) as string[]).includes(symbol)
   );
 }
 
@@ -518,7 +512,7 @@ export function isCurrencySymbol(symbol: unknown): symbol is CurrencySymbol {
  */
 export function isCurrencyCode(code: unknown): code is CurrencyCode {
   return (
-    typeof code === "string" && Object.values(CURRENCY_SYMBOL_MAP).includes(code as CurrencyCode)
+    typeof code === "string" && (Object.values(CURRENCY_SYMBOL_MAP) as string[]).includes(code)
   );
 }
 

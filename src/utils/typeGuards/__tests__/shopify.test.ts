@@ -139,6 +139,18 @@ describe("Shopify TypeGuards", () => {
       };
       expect(isShopifyVariant(wrongTypes)).toBe(false);
     });
+
+    it("should return false when options is null", () => {
+      const nullOptions = { ...validVariant, options: null };
+      expect(isShopifyVariant(nullOptions)).toBe(false);
+    });
+
+    it("should accept quantity_total as either string or number", () => {
+      expect(isShopifyVariant({ ...validVariant, quantity_total: "50" })).toBe(true);
+      expect(isShopifyVariant({ ...validVariant, quantity_total: 50 })).toBe(true);
+      expect(isShopifyVariant({ ...validVariant, quantity_total: true })).toBe(false);
+      expect(isShopifyVariant({ ...validVariant, quantity_total: null })).toBe(false);
+    });
   });
 
   describe("isItemListing", () => {
@@ -197,6 +209,12 @@ describe("Shopify TypeGuards", () => {
         shopify_variants: "invalid", // Should be array
       };
       expect(isItemListing(wrongTypes)).toBe(false);
+    });
+
+    it("should accept price as either string or number", () => {
+      expect(isItemListing({ ...validItem, price: "29.99" })).toBe(true);
+      expect(isItemListing({ ...validItem, price: 29.99 })).toBe(true);
+      expect(isItemListing({ ...validItem, price: true })).toBe(false);
     });
 
     it("should return false for invalid variants array", () => {

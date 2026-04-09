@@ -42,13 +42,13 @@
  * ```
  * @source
  */
+import { checkObjectStructure } from "@/helpers/collectionUtils";
+
 export function isSearchResultItem(product: unknown): product is OnyxMetSearchResultItem {
-  return (
-    typeof product === "object" &&
-    product !== null &&
-    "label" in product &&
-    "image" in product &&
-    "description" in product &&
-    "href" in product
-  );
+  return checkObjectStructure(product, {
+    label: () => true,
+    image: () => true,
+    description: () => true,
+    href: () => true,
+  });
 }

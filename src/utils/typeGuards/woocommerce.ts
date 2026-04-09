@@ -1,3 +1,5 @@
+import { checkObjectStructure } from "@/helpers/collectionUtils";
+
 /**
  * Type guard to validate if an unknown object is a valid SearchResponseItem from WooCommerce.
  * Checks for the presence and correct types of all required properties including nested price information.
@@ -61,11 +63,7 @@
  * @source
  */
 export function isSearchResponseItem(item: unknown): item is WooCommerceSearchResponseItem {
-  if (typeof item !== "object" || item === null) {
-    return false;
-  }
-
-  const requiredProps = {
+  return checkObjectStructure(item, {
     /* eslint-disable */
     id: "number",
     name: "string",
@@ -76,58 +74,19 @@ export function isSearchResponseItem(item: unknown): item is WooCommerceSearchRe
     is_in_stock: "boolean",
     sold_individually: "boolean",
     sku: "string",
+    prices: {
+      price: "string",
+      regular_price: "string",
+      sale_price: "string",
+      currency_code: "string",
+      currency_symbol: "string",
+      currency_minor_unit: "number",
+      currency_decimal_separator: "string",
+      currency_thousand_separator: "string",
+      currency_prefix: "string",
+      currency_suffix: "string",
+    },
     /* eslint-enable */
-    prices: (val: unknown) => typeof val === "object" && val !== null,
-  };
-
-  const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
-    if (typeof validator === "string") {
-      if (key in item === false) {
-        return false;
-      }
-      if (typeof item[key as keyof typeof item] !== validator) {
-        return false;
-      }
-      return true;
-    }
-    if (key in item === false) {
-      return false;
-    }
-    if (validator(item[key as keyof typeof item]) === false) {
-      return false;
-    }
-    return true;
-  });
-
-  if (!hasRequiredProps) {
-    return false;
-  }
-
-  // Check prices object structure
-  const prices = (item as WooCommerceSearchResponseItem).prices;
-  const requiredPriceProps = {
-    /* eslint-disable */
-    price: "string",
-    regular_price: "string",
-    sale_price: "string",
-    currency_code: "string",
-    currency_symbol: "string",
-    currency_minor_unit: "number",
-    currency_decimal_separator: "string",
-    currency_thousand_separator: "string",
-    currency_prefix: "string",
-    currency_suffix: "string",
-    /* eslint-enable */
-  };
-
-  return Object.entries(requiredPriceProps).every(([key, type]) => {
-    if (key in prices === false) {
-      return false;
-    }
-    if (typeof prices[key as keyof typeof prices] !== type) {
-      return false;
-    }
-    return true;
   });
 }
 
@@ -275,11 +234,7 @@ export function isProductVariant(product: unknown): product is WooCommerceProduc
     return false;
   }
 
-  if (typeof (product as WooCommerceProductVariant).variation !== "string") {
-    return false;
-  }
-
-  return true;
+  return !("variation" in product === false || typeof product.variation !== "string");
 }
 
 /**
@@ -355,29 +310,10 @@ export function isValidProductVariant(response: unknown): response is WooCommerc
     return false;
   }
 
-  const requiredProps = {
+  return checkObjectStructure(response, {
     variation: "string",
     sku: "string",
     description: "string",
     variations: Array.isArray,
-  };
-
-  return Object.entries(requiredProps).every(([key, validator]) => {
-    if (typeof validator === "string") {
-      if (key in response === false) {
-        return false;
-      }
-      if (typeof response[key as keyof typeof response] !== validator) {
-        return false;
-      }
-      return true;
-    }
-    if (key in response === false) {
-      return false;
-    }
-    if (validator(response[key as keyof typeof response]) === false) {
-      return false;
-    }
-    return true;
   });
 }

@@ -25,7 +25,6 @@ import {
 import DrawerSystem from "@/components/DrawerSystem";
 import LoadingBackdrop from "@/components/LoadingBackdrop";
 import resultStyles from "@/components/ResultsPanel.module.scss";
-import styles from "./ResultsTable.module.scss";
 import { generatePageSizes } from "@/helpers/utils";
 import { useDebouncedCallback } from "@/shared/hooks";
 import { Column, ColumnFiltersState, flexRender, Header, Row } from "@tanstack/react-table";
@@ -58,6 +57,7 @@ import {
 import ContextMenu from "./ContextMenu";
 import { useAppContext } from "./hooks/useContext";
 import { useSearch } from "./hooks/useSearch";
+import styles from "./ResultsTable.module.scss";
 import { useAutoColumnSizing } from "./useAutoColumnSizing.hook";
 import { useContextMenu } from "./useContextMenu.hook";
 import { useResultsTable } from "./useResultsTable.hook";
@@ -494,9 +494,7 @@ export default function ResultsTable({
                       onChange={column.getToggleVisibilityHandler()}
                     />
                   }
-                  label={
-                    <ListItemText primary={(column.columnDef.header as string) || column.id} />
-                  }
+                  label={<ListItemText primary={String(column.columnDef.header || column.id)} />}
                 />
               </ColumnMenuItemContainer>
             ))}

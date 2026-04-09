@@ -1,3 +1,5 @@
+import { checkObjectStructure } from "@/helpers/collectionUtils";
+
 /**
  * Type guard to validate if a response matches the Wix QueryResponse structure.
  * Performs deep validation of the response object including the nested catalog structure,
@@ -106,51 +108,27 @@
  * @source
  */
 export function isValidSearchResponse(response: unknown): response is QueryResponse {
-  if (typeof response !== "object" || response === null) {
-    return false;
-  }
-
-  // Check for nested structure existence
-  if (
-    !("data" in response) ||
-    typeof response.data !== "object" ||
-    response.data === null ||
-    !("catalog" in response.data) ||
-    typeof response.data.catalog !== "object" ||
-    response.data.catalog === null ||
-    !("category" in response.data.catalog) ||
-    typeof response.data.catalog.category !== "object" ||
-    response.data.catalog.category === null ||
-    !("productsWithMetaData" in response.data.catalog.category) ||
-    typeof response.data.catalog.category.productsWithMetaData !== "object" ||
-    response.data.catalog.category.productsWithMetaData === null
-  ) {
-    return false;
-  }
-
-  const productsData = response.data.catalog.category.productsWithMetaData;
-
-  // Check required properties and their types
-  const requiredProps = {
-    totalCount: "number",
-    list: Array.isArray,
-  };
-
-  const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
-    if (typeof validator === "string") {
-      return (
-        key in productsData && typeof productsData[key as keyof typeof productsData] === validator
-      );
-    }
-    return key in productsData && validator((productsData as Record<string, unknown>)[key]);
+  return checkObjectStructure(response, {
+    data: {
+      catalog: {
+        category: {
+          productsWithMetaData: {
+            totalCount: "number",
+            list: [
+              {
+                price: "number",
+                formattedPrice: "string",
+                name: "string",
+                urlPart: "string",
+                productItems: Array.isArray,
+                options: Array.isArray,
+              },
+            ],
+          },
+        },
+      },
+    },
   });
-
-  if (!hasRequiredProps) return false;
-
-  // Check that list contains valid products
-  return (productsData as { list: unknown[] }).list.every((product: unknown) =>
-    isWixProduct(product),
-  );
 }
 
 /**
@@ -253,36 +231,28 @@ export function isValidSearchResponse(response: unknown): response is QueryRespo
  * @source
  */
 export function isWixProduct(product: unknown): product is ProductObject {
-  if (typeof product !== "object" || product === null) {
+  if (
+    !checkObjectStructure(product, {
+      price: "number",
+      formattedPrice: "string",
+      name: "string",
+      urlPart: "string",
+      productItems: Array.isArray,
+      options: Array.isArray,
+    })
+  ) {
     return false;
   }
 
-  const requiredProps = {
-    price: "number",
-    formattedPrice: "string",
-    name: "string",
-    urlPart: "string",
-    productItems: Array.isArray,
-    options: Array.isArray,
-  };
-
-  const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
-    if (typeof validator === "string") {
-      return key in product && typeof product[key as keyof typeof product] === validator;
-    }
-    return key in product && validator(product[key as keyof typeof product]);
-  });
-
-  if (!hasRequiredProps) return false;
-
   // Check product items
-  const productItems = (product as ProductObject).productItems;
+  const productRecord = product as Record<string, unknown>;
+  const productItems = productRecord.productItems as unknown[];
   if (!productItems.every((item) => isProductItem(item))) {
     return false;
   }
 
   // Check options and selections if they exist
-  const options = (product as ProductObject).options;
+  const options = productRecord.options as Array<{ selections?: unknown[] }>;
   if (
     options.length > 0 &&
     !options[0]?.selections?.every((selection) => isProductSelection(selection))
@@ -363,28 +333,19 @@ export function isWixProduct(product: unknown): product is ProductObject {
  * @source
  */
 export function isProductItem(item: unknown): item is ProductItem {
-  if (typeof item !== "object" || item === null) {
+  if (
+    !checkObjectStructure(item, {
+      id: "string",
+      formattedPrice: "string",
+      price: "number",
+      optionsSelections: Array.isArray,
+    })
+  ) {
     return false;
   }
 
-  const requiredProps = {
-    id: "string",
-    formattedPrice: "string",
-    price: "number",
-    optionsSelections: Array.isArray,
-  };
-
-  const hasRequiredProps = Object.entries(requiredProps).every(([key, validator]) => {
-    if (typeof validator === "string") {
-      return key in item && typeof item[key as keyof typeof item] === validator;
-    }
-    return key in item && validator(item[key as keyof typeof item]);
-  });
-
-  if (!hasRequiredProps) return false;
-
   // Check that optionsSelections is a non-empty array
-  return (item as ProductItem).optionsSelections.length > 0;
+  return ((item as Record<string, unknown>).optionsSelections as unknown[]).length > 0;
 }
 
 /**
@@ -464,22 +425,11 @@ export function isProductItem(item: unknown): item is ProductItem {
  * @source
  */
 export function isProductSelection(selection: unknown): selection is ProductSelection {
-  if (typeof selection !== "object" || selection === null) {
-    return false;
-  }
-
-  const requiredProps = {
+  return checkObjectStructure(selection, {
     id: (val: unknown) => typeof val === "string" || typeof val === "number",
     value: "string",
     description: "string",
     key: "string",
     inStock: (val: unknown) => typeof val === "boolean" || val === null,
-  };
-
-  return Object.entries(requiredProps).every(([key, validator]) => {
-    if (typeof validator === "string") {
-      return key in selection && typeof selection[key as keyof typeof selection] === validator;
-    }
-    return key in selection && validator(selection[key as keyof typeof selection]);
   });
 }

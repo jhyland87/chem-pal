@@ -157,7 +157,7 @@ export default abstract class SupplierBaseAmazon
         responseTextWithoutSearchTerm.length,
         responseTextWithoutSearchTerm,
       );
-      return this.parseResponse(responseTextWithoutSearchTerm as string);
+      return this.parseResponse(String(responseTextWithoutSearchTerm));
     };
 
     const resultPages = await Promise.all(
@@ -197,10 +197,7 @@ export default abstract class SupplierBaseAmazon
           if (page.length !== 3) return;
           if (page[0] !== "dispatch") return;
           if (!page[1].startsWith("data-main-slot:search-result-")) return;
-          return this.parseSearchResult(
-            page[2].html.replaceAll(searchTerm, ""),
-            this.baseURL,
-          );
+          return this.parseSearchResult(page[2].html.replaceAll(searchTerm, ""), this.baseURL);
         });
       }
 
@@ -320,7 +317,7 @@ export default abstract class SupplierBaseAmazon
 
         if (priceAndCurrency) {
           const parsedPrice = parsePrice(priceAndCurrency);
-          if (!price) price = parsedPrice?.price?.toString();
+          if (!price) price = String(parsedPrice?.price ?? "");
           if (!currency) currency = parsedPrice?.currencySymbol;
           if (!originalPrice) originalPrice = priceAndCurrency;
         }
@@ -382,7 +379,7 @@ export default abstract class SupplierBaseAmazon
           })
           .filter((s) => s);
       } catch {
-        return response as string;
+        return String(response ?? "");
       }
     }
   }
