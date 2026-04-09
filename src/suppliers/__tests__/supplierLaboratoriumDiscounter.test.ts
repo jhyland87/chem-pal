@@ -10,7 +10,6 @@ import { spyOnSupplier } from "./helpers/supplierTestUtils";
 
 vi.mock("@/helpers/currency", () => ({
   toUSD: vi.fn(() => Promise.resolve(eur_to_usd_rate)),
-  isParsedPrice: vi.fn(),
 }));
 
 describe.skip("SupplierLaboratoriumDiscounter", async () => {

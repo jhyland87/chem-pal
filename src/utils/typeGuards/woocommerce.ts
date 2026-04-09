@@ -1,4 +1,4 @@
-import { checkObjectStructure } from "@/helpers/collectionUtils";
+import { z } from "zod";
 
 /**
  * Type guard to validate if an unknown object is a valid SearchResponseItem from WooCommerce.
@@ -62,32 +62,34 @@ import { checkObjectStructure } from "@/helpers/collectionUtils";
  * ```
  * @source
  */
+/* eslint-disable @typescript-eslint/naming-convention */
+const searchResponseItemSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  type: z.string(),
+  description: z.string(),
+  short_description: z.string(),
+  permalink: z.string(),
+  is_in_stock: z.boolean(),
+  sold_individually: z.boolean(),
+  sku: z.string(),
+  prices: z.object({
+    price: z.string(),
+    regular_price: z.string(),
+    sale_price: z.string(),
+    currency_code: z.string(),
+    currency_symbol: z.string(),
+    currency_minor_unit: z.number(),
+    currency_decimal_separator: z.string(),
+    currency_thousand_separator: z.string(),
+    currency_prefix: z.string(),
+    currency_suffix: z.string(),
+  }),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
+
 export function isSearchResponseItem(item: unknown): item is WooCommerceSearchResponseItem {
-  return checkObjectStructure(item, {
-    /* eslint-disable */
-    id: "number",
-    name: "string",
-    type: "string",
-    description: "string",
-    short_description: "string",
-    permalink: "string",
-    is_in_stock: "boolean",
-    sold_individually: "boolean",
-    sku: "string",
-    prices: {
-      price: "string",
-      regular_price: "string",
-      sale_price: "string",
-      currency_code: "string",
-      currency_symbol: "string",
-      currency_minor_unit: "number",
-      currency_decimal_separator: "string",
-      currency_thousand_separator: "string",
-      currency_prefix: "string",
-      currency_suffix: "string",
-    },
-    /* eslint-enable */
-  });
+  return searchResponseItemSchema.safeParse(item).success;
 }
 
 /**
@@ -305,15 +307,16 @@ export function isProductVariant(product: unknown): product is WooCommerceProduc
  * ```
  * @source
  */
+const validProductVariantSchema = z.object({
+  variation: z.string(),
+  sku: z.string(),
+  description: z.string(),
+  variations: z.array(z.unknown()),
+});
+
 export function isValidProductVariant(response: unknown): response is WooCommerceProductVariant {
   if (!isProductVariant(response)) {
     return false;
   }
-
-  return checkObjectStructure(response, {
-    variation: "string",
-    sku: "string",
-    description: "string",
-    variations: Array.isArray,
-  });
+  return validProductVariantSchema.safeParse(response).success;
 }

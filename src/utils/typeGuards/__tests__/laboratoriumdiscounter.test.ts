@@ -15,13 +15,13 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
         session_id: "abc123",
         key: "search_key",
         title: "Search Results",
-        status: "success",
+        status: 200,
       },
       request: {
         url: "/en/search/sodium-chloride",
         method: "GET",
         get: { q: "sodium chloride" },
-        device: "desktop",
+        device: { platform: "osx", type: "webkit", mobile: false },
       },
       collection: {
         products: {
@@ -139,7 +139,7 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
             session_id: "abc123",
             key: "search_key",
             title: "Search Results",
-            status: "success",
+            status: 200,
           },
           request: validResponse.request,
           collection: validResponse.collection,
@@ -150,7 +150,7 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
             // Missing session_id
             key: "search_key",
             title: "Search Results",
-            status: "success",
+            status: 200,
           },
           request: validResponse.request,
           collection: validResponse.collection,
@@ -171,7 +171,7 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
             // Missing url
             method: "GET",
             get: { q: "sodium chloride" },
-            device: "desktop",
+            device: { platform: "osx", type: "webkit", mobile: false },
           },
           collection: validResponse.collection,
         },
@@ -181,7 +181,7 @@ describe("LaboratoriumDiscounter TypeGuards", () => {
             url: "/en/search/sodium-chloride",
             // Missing method
             get: { q: "sodium chloride" },
-            device: "desktop",
+            device: { platform: "osx", type: "webkit", mobile: false },
           },
           collection: validResponse.collection,
         },

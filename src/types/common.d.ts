@@ -374,6 +374,8 @@ declare global {
   interface UOMAliases {
     /** Alternative strings representing pieces/units */
     [UOM.PCS]: string[];
+    /** Alternative strings representing each */
+    [UOM.EA]: string[];
     /** Alternative strings representing kilograms */
     [UOM.KG]: string[];
     /** Alternative strings representing pounds */

@@ -1,4 +1,4 @@
-import { isCAS } from "@/helpers/cas";
+import { isCAS } from "@/utils/typeGuards/common";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";

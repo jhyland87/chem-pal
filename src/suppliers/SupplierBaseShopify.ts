@@ -115,22 +115,22 @@ export default abstract class SupplierBaseShopify
     });
 
     if (!isValidSearchResponse(searchRequest)) {
-      this.logger.error("Invalid search response:", searchRequest);
+      this.logger.error("Invalid search response", { response: searchRequest });
       return;
     }
 
     if (!("items" in searchRequest)) {
-      this.logger.error("Invalid search response:", searchRequest);
+      this.logger.error("Invalid search response", { response: searchRequest });
       return;
     }
 
     if ("items" in searchRequest === false || !Array.isArray(searchRequest.items)) {
-      this.logger.error("Search response items is not an array:", searchRequest.items);
+      this.logger.error("Search response items is not an array", { items: searchRequest.items });
       return;
     }
 
     if (searchRequest.items.length === 0) {
-      this.logger.error("Search response items is empty:", searchRequest.items);
+      this.logger.error("Search response items is empty", { items: searchRequest.items });
       return;
     }
 
@@ -138,7 +138,7 @@ export default abstract class SupplierBaseShopify
       (item): item is ItemListing => item !== null,
     );
     const fuzzResults = this.fuzzyFilter<ItemListing>(query, validItems);
-    this.logger.info("fuzzResults:", fuzzResults);
+    this.logger.info("fuzzResults", { fuzzResults });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));
   }
@@ -195,7 +195,11 @@ export default abstract class SupplierBaseShopify
         ]);
 
         if (!quantity) {
-          this.logger.warn("Failed to get quantity from retrieved product data:", item);
+          this.logger.warn("Failed to get quantity from retrieved product data", {
+            item,
+            parsedValues: [item.product_code, item.quantity, item.title, item.description],
+            builder,
+          });
           return;
         }
 

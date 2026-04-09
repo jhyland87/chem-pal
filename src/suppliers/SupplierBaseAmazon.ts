@@ -66,9 +66,9 @@ const amazonDomains: CountryDomainMap = {
 
 const userCountry = getUserCountry();
 if (!amazonDomains[userCountry]) {
-  console.warn("No Amazon domain found for user country:", userCountry);
+  console.warn("No Amazon domain found for user country", { userCountry });
 } else {
-  console.debug("amazonDomains[getUserCountry()]:", amazonDomains[userCountry]);
+  console.debug("amazonDomains[getUserCountry()]", { domain: amazonDomains[userCountry] });
 }
 
 /**
@@ -145,18 +145,20 @@ export default abstract class SupplierBaseAmazon
         },
       });
       if (!response) {
-        this.logger.error("Invalid response:", response);
+        this.logger.error("Invalid response:", { response });
         return;
       }
 
       const responseText = await response.text();
-      console.debug("responseText BEFORE length:", responseText.length, responseText);
+      this.logger.debug("responseText BEFORE length:", {
+        length: responseText.length,
+        responseText,
+      });
       const responseTextWithoutSearchTerm = responseText.replaceAll(paginationQuery, "");
-      console.debug(
-        "responseText AFTER length:",
-        responseTextWithoutSearchTerm.length,
+      this.logger.debug("responseText AFTER length:", {
+        length: responseTextWithoutSearchTerm.length,
         responseTextWithoutSearchTerm,
-      );
+      });
       return this.parseResponse(String(responseTextWithoutSearchTerm));
     };
 
@@ -166,7 +168,7 @@ export default abstract class SupplierBaseAmazon
       ),
     );
 
-    console.debug("resultPages:", resultPages);
+    this.logger.debug("resultPages:", { query, resultPages });
     if (!resultPages || !Array.isArray(resultPages) || resultPages.length === 0) {
       throw new Error("Result pages not found");
     }
@@ -204,10 +206,10 @@ export default abstract class SupplierBaseAmazon
       return [];
     });
 
-    console.debug("Parsed results:", results);
+    this.logger.debug("Parsed results", { query, results });
 
     const fuzzedResults = this.fuzzyFilter(query, results, 40);
-    console.debug("fuzzedResults:", fuzzedResults);
+    this.logger.debug("fuzzedResults", { query, results, fuzzedResults });
 
     return this.initProductBuilders(fuzzedResults as AmazonListing[]);
   }
@@ -225,7 +227,7 @@ export default abstract class SupplierBaseAmazon
     const matchedString = searchList.some((term) => {
       const found = resultText.toLowerCase().includes(term.toLowerCase());
       if (found) {
-        console.debug(`Term "${term}" FOUND in listing`, {
+        this.logger.debug(`Term "${term}" FOUND in listing`, {
           term,
           resultText,
         });
@@ -234,16 +236,27 @@ export default abstract class SupplierBaseAmazon
     });
 
     if (!matchedString) {
-      console.debug("Did not find any of the specified strings in the product listing", {
+      this.logger.debug("Did not find any of the specified strings in the product listing", {
         matchedString,
         searchList,
         resultText,
+        result,
       });
     }
 
     return matchedString;
   }
 
+  private findQID(doc: Document): Maybe<string> {
+    const link = Array.from(doc.querySelectorAll("a")).find((a: HTMLAnchorElement) =>
+      a.href.includes("qid="),
+    );
+    if (!link) {
+      this.logger.warn("No QID found", { doc });
+      return;
+    }
+    return link.href.split("qid=")[1];
+  }
   /**
    * Parses the search result from Amazon
    * @param raw - The raw HTML of the search result
@@ -259,7 +272,7 @@ export default abstract class SupplierBaseAmazon
       // term (which would include the suppliers name), the exact search term (supplier+query) is removed from
       // the raw HTML before this method is called.
       if (!raw.toLowerCase().includes(this.supplierName.toLowerCase())) {
-        console.debug("This item does not contain the suppliers name anywhere, removing", {
+        this.logger.debug("This item does not contain the suppliers name anywhere, removing", {
           raw,
         });
         return;
@@ -268,18 +281,32 @@ export default abstract class SupplierBaseAmazon
       // Sometimes those sponsored listings can sneak through... Just outright delete anything that has the
       // word "sponsored" in the raw HTML.
       if (raw.toLowerCase().includes("sponsored")) {
-        console.debug("This item is a sponsored listing, removing", {
+        this.logger.debug("This item is a sponsored listing, removing", {
           raw,
         });
         return;
       }
 
       const listingDocument = createDOM(`<html><body>${raw}</body></html>`);
-      console.debug({ listingDocument });
+      this.logger.debug("listingDocument", { raw, listingDocument });
 
       const documentBody = listingDocument.body;
 
-      console.debug({ documentBody });
+      this.logger.debug("documentBody", { raw, documentBody });
+
+      const asin = documentBody.querySelector("[data-asin]")?.getAttribute("data-asin");
+      if (!asin) {
+        this.logger.warn("No ASIN found", { raw, documentBody });
+      } else {
+        this.logger.debug("asin", { raw, documentBody, asin });
+      }
+
+      const qid = this.findQID(listingDocument);
+      if (!qid) {
+        this.logger.warn("No QID found", { raw, listingDocument });
+      } else {
+        this.logger.debug("qid", { raw, listingDocument, qid });
+      }
 
       // Check if the listing meets the requirements. Use innerText because many of the hyperlinks
       // will have the search term saved in the href attribute.
@@ -327,10 +354,23 @@ export default abstract class SupplierBaseAmazon
       const productElement = documentBody.querySelector("[data-asin]");
       const productId = productElement ? productElement.getAttribute("data-asin") : null;
 
-      console.debug("matches:", { productId, title, originalPrice, price });
+      this.logger.debug("matches", {
+        productElement,
+        productId,
+        title,
+        originalPrice,
+        price,
+        currency,
+      });
 
       if (!productId || !title || !price || !currency) {
-        console.warn("Missing required fields:", { productId, title, price, currency });
+        this.logger.warn("Missing required fields", {
+          productElement,
+          productId,
+          title,
+          price,
+          currency,
+        });
         return;
       }
 
@@ -350,7 +390,7 @@ export default abstract class SupplierBaseAmazon
         price: Number(price),
       };
     } catch (error) {
-      console.error("Error parsing search result:", error);
+      this.logger.error("Error parsing search result", { error, raw, amazonBase });
       return;
     }
   }
@@ -406,7 +446,11 @@ export default abstract class SupplierBaseAmazon
         const quantity = parseQuantity(item.title);
 
         if (!quantity) {
-          this.logger.warn("Failed to get quantity from retrieved product data:", item);
+          this.logger.warn("Failed to get quantity from retrieved product title", {
+            title: item.title,
+            builder,
+            item,
+          });
           return;
         }
 

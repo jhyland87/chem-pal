@@ -1,10 +1,16 @@
 import { AVAILABILITY } from "@/constants/common";
-import { findCAS, isCAS } from "@/helpers/cas";
-import { isParsedPrice, parsePrice, toUSD } from "@/helpers/currency";
-import { isQuantityObject, parseQuantity, toBaseQuantity } from "@/helpers/quantity";
+import { findCAS } from "@/helpers/cas";
+import { parsePrice, toUSD } from "@/helpers/currency";
+import { parseQuantity, toBaseQuantity } from "@/helpers/quantity";
 import { findFormulaInHtml } from "@/helpers/science";
 import Logger from "@/utils/Logger";
-import { isMinimalProduct, isProduct } from "@/utils/typeGuards/common";
+import {
+  isCAS,
+  isMinimalProduct,
+  isParsedPrice,
+  isProduct,
+  isQuantityObject,
+} from "@/utils/typeGuards/common";
 import { isAvailability, isValidVariant } from "@/utils/typeGuards/productbuilder";
 
 /**
@@ -173,7 +179,11 @@ export default class ProductBuilder<T extends Product> {
    */
   setPrice(price: number | string): ProductBuilder<T> {
     if (typeof price !== "number" && typeof price !== "string") {
-      this.logger.warn(`setPrice| Invalid price: ${price}`);
+      this.logger.warn(`setPrice| Invalid price: ${price}`, {
+        price,
+        builder: this,
+        product: this.product,
+      });
       return this;
     }
     this.product.price = Number(price);
@@ -194,7 +204,11 @@ export default class ProductBuilder<T extends Product> {
    */
   setCurrencySymbol(sign: CurrencySymbol): ProductBuilder<T> {
     if (typeof sign !== "string") {
-      console.warn(`setCurrencySymbol| Invalid currency symbol: ${sign}`);
+      this.logger.warn(`setCurrencySymbol| Invalid currency symbol: ${sign}`, {
+        sign,
+        builder: this,
+        product: this.product,
+      });
       return this;
     }
     this.product.currencySymbol = sign;
@@ -214,7 +228,11 @@ export default class ProductBuilder<T extends Product> {
    */
   setCurrencyCode(code: CurrencyCode): ProductBuilder<T> {
     if (typeof code !== "string") {
-      console.warn(`setCurrencyCode| Invalid currency code: ${code}`);
+      this.logger.warn(`setCurrencyCode| Invalid currency code: ${code}`, {
+        code,
+        builder: this,
+        product: this.product,
+      });
       return this;
     }
 
@@ -373,7 +391,11 @@ export default class ProductBuilder<T extends Product> {
       const [qty, unit] = quantity.split(/\s(.+)/s);
 
       if (Number.isNaN(Number(qty))) {
-        this.logger.warn(`Unable to parse quantity from string: ${quantity}`);
+        this.logger.warn(`Unable to parse quantity from string: ${quantity}`, {
+          quantity,
+          builder: this,
+          product: this.product,
+        });
         return this;
       }
       this.product.quantity = Number(qty);
@@ -390,6 +412,11 @@ export default class ProductBuilder<T extends Product> {
 
     this.logger.warn(
       `Unknown quantity type: ${typeof quantity} - Expected number, string, or QuantityObject`,
+      {
+        quantity,
+        builder: this,
+        product: this.product,
+      },
     );
     return this;
   }
@@ -503,7 +530,11 @@ export default class ProductBuilder<T extends Product> {
    */
   setCAS(cas: string): ProductBuilder<T> {
     if (typeof cas !== "string") {
-      this.logger.warn(`setCAS| Invalid CAS number: ${cas}`);
+      this.logger.warn(`setCAS| Invalid CAS number`, {
+        cas,
+        builder: this,
+        product: this.product,
+      });
       return this;
     }
 
@@ -882,12 +913,20 @@ export default class ProductBuilder<T extends Product> {
       // Process each variant
       for (const variant of this.product.variants ?? []) {
         if ("quantity" in variant === false || !variant.quantity) {
-          this.logger.warn("Skipping variant, no quantity found", variant);
+          this.logger.warn("Skipping variant, no quantity found", {
+            variant,
+            product: this.product,
+            builder: this,
+          });
           continue;
         }
 
         if ("price" in variant === false || !variant.price) {
-          this.logger.warn("Skipping variant, no price found", variant);
+          this.logger.warn("Skipping variant, no price found", {
+            variant,
+            product: this.product,
+            builder: this,
+          });
           continue;
         }
 
@@ -928,12 +967,15 @@ export default class ProductBuilder<T extends Product> {
     }
 
     if (!isProduct(this.product)) {
-      console.error(`ProductBuilder| Invalid product: ${JSON.stringify(this.product)}`);
+      this.logger.error(`ProductBuilder| Invalid product:`, {
+        product: this.product,
+        builder: this,
+      });
       return;
     }
 
     this.product.url = this.href(this.product.url);
-    console.log("Built product:", this.product);
+    this.logger.debug("ProductBuilder| Built product:", { product: this.product, builder: this });
     return this.product;
   }
 

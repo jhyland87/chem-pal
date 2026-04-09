@@ -1,7 +1,8 @@
 import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
-import { isQuantityObject, parseQuantity } from "@/helpers/quantity";
+import { parseQuantity } from "@/helpers/quantity";
 import { firstMap } from "@/helpers/utils";
+import { isQuantityObject } from "@/utils/typeGuards/common";
 
 import ProductBuilder from "@/utils/ProductBuilder";
 import {
@@ -328,7 +329,10 @@ export default class SupplierCarolina
       product,
       async (builder) => {
         if (builder instanceof ProductBuilder === false) {
-          this.logger.warn("Invalid product object - Expected ProductBuilder instance:", builder);
+          this.logger.warn("Invalid product object - Expected ProductBuilder instance:", {
+            builder,
+            product,
+          });
           return;
         }
 
@@ -338,21 +342,35 @@ export default class SupplierCarolina
         });
 
         if (!isResponseOk(productResponse)) {
-          this.logger.warn("Response status:", productResponse);
+          this.logger.warn("Product Response status NOT OK:", {
+            productResponse,
+            builder,
+            product,
+          });
           return;
         }
 
         const atgResponse = this.extractATGResponse(productResponse);
 
         if (!atgResponse) {
-          this.logger.warn("No ATG response found");
+          this.logger.warn("No ATG response found", {
+            productResponse,
+            atgResponse,
+            builder,
+            product,
+          });
           return;
         }
-        this.logger.debug("atgResponse:", atgResponse);
+        this.logger.debug("atgResponse:", { atgResponse, productResponse, builder, product });
 
         const productId = atgResponse.dataLayer.productDetail.productId;
         if (!productId) {
-          this.logger.warn("No product ID found");
+          this.logger.warn("No product ID found", {
+            atgResponse,
+            productResponse,
+            builder,
+            product,
+          });
           return;
         }
         builder.setID(productId);
@@ -379,12 +397,19 @@ export default class SupplierCarolina
           this.logger.warn(
             "Unable to find the product price in the main product or any variants. contents.MainContent[0].atgResponse.response.response contents:",
             atgResponse,
+            productResponse,
+            builder,
+            product,
           );
           return;
         }
 
         if (!productPrice) {
-          this.logger.warn("No product price found");
+          this.logger.warn("No product price found", {
+            atgResponse,
+            product,
+            builder,
+          });
           return;
         }
 
@@ -396,7 +421,13 @@ export default class SupplierCarolina
         ]);
 
         if (!isQuantityObject(quantity)) {
-          this.logger.warn("No quantity object found");
+          this.logger.warn("No quantity object found", {
+            quantity,
+            builder,
+            product,
+            parsedValues: [atgResponse.displayName, atgResponse.shortDescription],
+            atgResponse,
+          });
           return;
         }
 

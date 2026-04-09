@@ -1,10 +1,10 @@
 import { AVAILABILITY } from "@/constants/common";
 import { findCAS } from "@/helpers/cas";
-import { isQuantityObject, parseQuantity } from "@/helpers/quantity";
+import { parseQuantity } from "@/helpers/quantity";
 import { urlencode } from "@/helpers/request";
 import { firstMap, mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
-import { isPopulatedObject } from "@/utils/typeGuards/common";
+import { isPopulatedObject, isQuantityObject } from "@/utils/typeGuards/common";
 import {
   isProductObject,
   isSearchResponseOk,

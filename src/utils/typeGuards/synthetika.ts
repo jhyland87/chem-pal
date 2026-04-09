@@ -1,4 +1,4 @@
-import { checkObjectStructure } from "@/helpers/collectionUtils";
+import { z } from "zod";
 
 /**
  * This can be used to check if a SynthetikaSearchResponse is valid
@@ -14,13 +14,15 @@ import { checkObjectStructure } from "@/helpers/collectionUtils";
  * ```
  * @source
  */
+const synthetikaSearchResponseSchema = z.object({
+  count: z.number(),
+  pages: z.number(),
+  page: z.number(),
+  list: z.array(z.unknown()),
+});
+
 export function isSynthetikaSearchResponse(data: unknown): data is SynthetikaSearchResponse {
-  return checkObjectStructure(data, {
-    count: "number",
-    pages: "number",
-    page: "number",
-    list: Array.isArray,
-  });
+  return synthetikaSearchResponseSchema.safeParse(data).success;
 }
 
 /**
@@ -65,21 +67,23 @@ export function assertIsSynthetikaSearchResponse(
  * ```
  * @source
  */
+/* eslint-disable @typescript-eslint/naming-convention */
+const synthetikaProductSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  url: z.string(),
+  category: z.record(z.string(), z.unknown()),
+  code: z.string(),
+  can_buy: z.boolean(),
+  availability: z.record(z.string(), z.unknown()),
+  price: z.record(z.string(), z.unknown()),
+  shortDescription: z.string(),
+  producer: z.record(z.string(), z.unknown()).nullable(),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
+
 export function isSynthetikaProduct(data: unknown): data is SynthetikaProduct {
-  return checkObjectStructure(data, {
-    /* eslint-disable */
-    id: "number",
-    name: "string",
-    url: "string",
-    category: "object",
-    code: "string",
-    can_buy: "boolean",
-    availability: "object",
-    price: "object",
-    shortDescription: "string",
-    producer: "object",
-    /* eslint-enable */
-  });
+  return synthetikaProductSchema.safeParse(data).success;
 }
 
 /**
@@ -96,11 +100,13 @@ export function isSynthetikaProduct(data: unknown): data is SynthetikaProduct {
  * ```
  * @source
  */
+const synthetikaProductPriceSchema = z.object({
+  base: z.string(),
+  final: z.string(),
+});
+
 export function isSynthetikaProductPrice(data: unknown): data is SynthetikaProductPrice {
-  return checkObjectStructure(data, {
-    base: "string",
-    final: "string",
-  });
+  return synthetikaProductPriceSchema.safeParse(data).success;
 }
 
 /**
@@ -125,7 +131,7 @@ export function assertIsSynthetikaProductPrice(
     throw new Error("isSynthetikaProductPrice: data is falsey or not an object");
   }
 
-  if (!("base" in data) || !("final" in data)) {
+  if (!isSynthetikaProductPrice(data)) {
     console.log("isSynthetikaProductPrice: data is missing base or final");
     throw new Error("isSynthetikaProductPrice: data is missing base or final");
   }

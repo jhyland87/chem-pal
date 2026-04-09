@@ -52,11 +52,12 @@ export enum CACHE_KEYS {
  */
 export enum AVAILABILITY {
   IN_STOCK = "in stock",
+  LIMITED_STOCK = "limited stock",
   OUT_OF_STOCK = "out of stock",
   PRE_ORDER = "preorder",
   BACKORDER = "backorder",
   DISCONTINUED = "discontinued",
-  LARGE_QUANTITY = "large quantity",
+  UNAVAILABLE = "unavailable",
   UNKNOWN = "unknown",
 }
 
@@ -127,6 +128,8 @@ export enum UOM {
   MG = "mg",
   /** Abbreviated form of piece */
   PCS = "pcs",
+  /** Abbreviated form of each */
+  EA = "ea",
 }
 
 /**
@@ -169,6 +172,8 @@ export const UOM_ALIASES: UOMAliases = {
   [UOM.OZ]: ["ounce", "ounces", "oz"],
   /** Milligram aliases */
   [UOM.MG]: ["milligram", "milligrams", "mg", "mgs"],
+  /** Each aliases */
+  [UOM.EA]: ["each", "ea"],
 } as const;
 
 /**
@@ -208,9 +213,10 @@ export const COUNTRIES = Object.entries(locations)
  */
 export const AVAILABILITY_LABEL_MAP: Record<string, string[]> = {
   "In Stock": [AVAILABILITY.IN_STOCK],
-  "Limited Stock": [AVAILABILITY.BACKORDER, AVAILABILITY.LARGE_QUANTITY],
-  "Out of Stock": [AVAILABILITY.OUT_OF_STOCK, AVAILABILITY.DISCONTINUED],
+  "Limited Stock": [AVAILABILITY.LIMITED_STOCK],
+  "Out of Stock": [AVAILABILITY.OUT_OF_STOCK, AVAILABILITY.BACKORDER],
   "Pre-order": [AVAILABILITY.PRE_ORDER],
+  Unavailable: [AVAILABILITY.UNAVAILABLE, AVAILABILITY.DISCONTINUED],
 };
 
 /**

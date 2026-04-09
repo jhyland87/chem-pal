@@ -1,8 +1,9 @@
-import { findCAS, isCAS } from "@/helpers/cas";
+import { findCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM } from "@/helpers/request";
 import { firstMap, mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
+import { isCAS } from "@/utils/typeGuards/common";
 import priceParser from "price-parser";
 import SupplierBase from "./SupplierBase";
 /**
@@ -32,14 +33,14 @@ export default class SupplierWarchem
   public readonly baseURL: string = "https://warchem.pl";
 
   // Shipping scope for Warchem
-  public readonly shipping: ShippingRange = "domestic";
+  public readonly shipping: ShippingRange = "international";
 
   // The country code of the supplier.
   // This is used to determine the currency and other country-specific information.
   public readonly country: CountryCode = "PL";
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa", "banktransfer", "cash"];
 
   // Cached search results from the last query execution
   protected queryResults: Array<Partial<Product>> = [];
@@ -109,17 +110,18 @@ export default class SupplierWarchem
     });
 
     if (!searchResponse) {
-      this.logger.error("No search response");
+      this.logger.error("No search response", { query });
       return;
     }
 
-    this.logger.log("searchResponse:", searchResponse);
+    this.logger.log("Received search response", { query, searchResponse });
 
     const fuzzResults = this.fuzzHtmlResponse(query, searchResponse);
 
-    this.logger.info("fuzzResults:", Array.from(fuzzResults));
+    this.logger.info("fuzzResults:", { query, searchResponse, fuzzResults });
 
     const builders = this.initProductBuilders(fuzzResults.slice(0, limit));
+    this.logger.info("builders:", { query, searchResponse, fuzzResults, builders });
     return builders;
   }
 
@@ -158,7 +160,7 @@ export default class SupplierWarchem
       "div.ListingWierszeKontener > div.Wiersz.LiniaDolna",
     );
     if (!productContainers || productContainers.length === 0) {
-      this.logger.log("No products found");
+      this.logger.log("No products found", { query, response, parsedHTML, productContainers });
       return [];
     }
 
@@ -194,39 +196,40 @@ export default class SupplierWarchem
    * @source
    */
   protected initProductBuilders(elements: Element[]): ProductBuilder<Product>[] {
-    this.logger.info("initProductBuilders elements:", elements);
+    this.logger.info("initProductBuilders elements:", { elements });
     return mapDefined(elements, (element: Element) => {
-      this.logger.info("initProductBuilders mapping element:", element);
+      this.logger.info("initProductBuilders mapping element:", { element });
       const builder = new ProductBuilder<Product>(this.baseURL);
 
       const priceElem = element.querySelector(".ProdCena .Brutto");
       if (!priceElem) {
-        this.logger.error("No price element for product", element);
+        this.logger.error("No price element for product", { element });
         return;
       }
 
       const headerElem = element.querySelector("h3 > a");
       if (!headerElem) {
-        this.logger.error("No header for product", element);
+        this.logger.error("No header for product", { element });
         return;
       }
 
       const title = headerElem.textContent?.trim();
 
       if (!title) {
-        this.logger.error("No title for product", element);
+        this.logger.error("No title for product", { element });
         return;
       }
 
       const href = headerElem.getAttribute("href");
 
       if (!href) {
-        this.logger.error("No URL for product");
+        this.logger.error("No URL for product", { element });
         return;
       }
 
       const url = new URL(href, this.baseURL);
 
+      this.logger.info("initProductBuilders setting basic info", { title, url, builder });
       return builder.setBasicInfo(title, url.toString(), this.supplierName);
     });
   }
@@ -263,9 +266,9 @@ export default class SupplierWarchem
   ): Promise<ProductBuilder<Product> | void> {
     // Meta tags: ['og:title', 'og:description', 'og:type', 'og:url', 'og:image', 'product:price:amount', 'product:price:currency', 'product:availability', 'product:condition', 'product:retailer_item_id']
     return this.getProductDataWithCache(product, async (builder) => {
-      this.logger.debug("Querying data for partialproduct:", builder);
+      this.logger.debug("Querying data for partialproduct", { builder });
       if (typeof builder === "undefined") {
-        this.logger.error("No products to get data for");
+        this.logger.error("No products to get data for", { builder });
         return;
       }
 
@@ -274,11 +277,11 @@ export default class SupplierWarchem
       });
 
       if (!productResponse) {
-        this.logger.warn("No product response");
+        this.logger.warn("No product response", { builder });
         return;
       }
 
-      this.logger.debug("productResponse:", productResponse);
+      this.logger.debug("productResponse", { builder, productResponse });
 
       const parsedHTML = createDOM(productResponse);
       const metaTags = parsedHTML.getElementsByTagName("meta");
@@ -294,7 +297,7 @@ export default class SupplierWarchem
         {} as Record<string, string>,
       );
 
-      this.logger.debug("productMeta", productMeta);
+      this.logger.debug("productMeta", { builder, productMeta });
 
       // @todo The typing on this seems to be incorrect, will require a global type override
       const priceParsed = priceParser.parseFirst(
@@ -367,13 +370,13 @@ export default class SupplierWarchem
    */
   protected titleSelector(data: Element): Maybe<string> {
     if (!data) {
-      this.logger.error("No data for product");
+      this.logger.error("No data for product", { data });
       return undefined;
     }
     // document.querySelectorAll('div.ListingWierszeKontener > div.Wiersz')[1].querySelector('div.ProdCena > h3 > a').innerText
     const title = data.querySelector("div.ProdCena > h3 > a")?.textContent?.trim();
     if (title === null) {
-      this.logger.error("No title for product");
+      this.logger.error("No title for product", { data });
       return undefined;
     }
     return title;

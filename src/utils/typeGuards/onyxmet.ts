@@ -1,6 +1,6 @@
 /**
  * Type guard to validate if an object matches the SearchResultItem structure.
- * Checks for the presence and correct types of required properties in Onyxmet search results.
+ * Checks for the presence of required properties in Onyxmet search results.
  * Required properties:
  * - label: Product name/title
  * - image: Product image URL or identifier
@@ -42,13 +42,13 @@
  * ```
  * @source
  */
-import { checkObjectStructure } from "@/helpers/collectionUtils";
-
 export function isSearchResultItem(product: unknown): product is OnyxMetSearchResultItem {
-  return checkObjectStructure(product, {
-    label: () => true,
-    image: () => true,
-    description: () => true,
-    href: () => true,
-  });
+  return (
+    typeof product === "object" &&
+    product !== null &&
+    "label" in product &&
+    "image" in product &&
+    "description" in product &&
+    "href" in product
+  );
 }

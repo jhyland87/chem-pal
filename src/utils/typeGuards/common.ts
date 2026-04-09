@@ -1,6 +1,6 @@
-import { UOM } from "@/constants/common";
+import { z } from "zod";
+import { CAS_REGEX, UOM } from "@/constants/common";
 import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "@/constants/currency";
-import { checkObjectStructure } from "@/helpers/collectionUtils";
 
 /**
  * @categoryDescription Typeguards
@@ -35,14 +35,16 @@ import { checkObjectStructure } from "@/helpers/collectionUtils";
  * ```
  * @source
  */
+const httpResponseSchema = z.object({
+  ok: z.boolean(),
+  status: z.number(),
+  statusText: z.string(),
+  json: z.custom<Function>((val) => typeof val === "function"),
+  text: z.custom<Function>((val) => typeof val === "function"),
+});
+
 export function isHttpResponse(value: unknown): value is Response {
-  const result = checkObjectStructure(value, {
-    ok: (val: unknown) => typeof val === "boolean",
-    status: "number",
-    statusText: "string",
-    json: (val: unknown) => typeof val === "function",
-    text: (val: unknown) => typeof val === "function",
-  });
+  const result = httpResponseSchema.safeParse(value).success;
   console.debug(`isHttpResponse for`, value, `is:`, result);
   return result;
 }
@@ -242,17 +244,19 @@ export function assertHtmlResponse(response: unknown): asserts response is Respo
  * ```
  * @source
  */
+const validResultSchema = z.object({
+  title: z.string(),
+  price: z.number(),
+  quantity: z.number(),
+  uom: z.string(),
+  supplier: z.string(),
+  url: z.string(),
+  currencyCode: z.string(),
+  currencySymbol: z.string(),
+});
+
 export function isValidResult(value: unknown): value is RequiredProductFields {
-  return checkObjectStructure(value, {
-    title: "string",
-    price: "number",
-    quantity: "number",
-    uom: "string",
-    supplier: "string",
-    url: "string",
-    currencyCode: "string",
-    currencySymbol: "string",
-  });
+  return validResultSchema.safeParse(value).success;
 }
 
 export function checkMissingMinimalProductFields(product: unknown): string[] {
@@ -563,4 +567,127 @@ export function isPopulatedObject(obj: unknown): obj is Record<string, unknown> 
  */
 export function isPopulatedArray(arr: unknown): arr is unknown[] {
   return Array.isArray(arr) === true && arr.length > 0;
+}
+
+/**
+ * Type guard to validate if a value is a valid ParsedPrice object.
+ * Checks for the presence and correct types of currencyCode, currencySymbol, and price.
+ *
+ * @category Typeguards
+ * @param data - The value to validate
+ * @returns Type predicate indicating if the value is a valid ParsedPrice
+ * @example
+ * ```typescript
+ * const parsed = parsePrice('$1,234.56');
+ * if (isParsedPrice(parsed)) {
+ *   console.log(parsed.currencyCode); // 'USD'
+ * }
+ * ```
+ * @source
+ */
+const parsedPriceSchema = z.object({
+  currencyCode: z.string(),
+  currencySymbol: z.string(),
+  price: z.number(),
+});
+
+export function isParsedPrice(data: unknown): data is ParsedPrice {
+  return parsedPriceSchema.safeParse(data).success;
+}
+
+/**
+ * Type guard to validate if a value is a valid QuantityObject.
+ * Checks for the presence and correct types of quantity (number) and uom (string).
+ *
+ * @category Typeguards
+ * @param value - The value to validate
+ * @returns Type predicate indicating if the value is a valid QuantityObject
+ * @example
+ * ```typescript
+ * const qty = parseQuantity('100g');
+ * if (isQuantityObject(qty)) {
+ *   console.log(`${qty.quantity}${qty.uom}`);
+ * }
+ * ```
+ * @source
+ */
+const quantityObjectSchema = z.object({
+  quantity: z.number(),
+  uom: z.string(),
+});
+
+export function isQuantityObject(value: unknown): value is QuantityObject {
+  return quantityObjectSchema.safeParse(value).success;
+}
+
+/**
+ * Type guard to validate a CAS (Chemical Abstracts Service) number.
+ * CAS numbers follow a specific format (XXXXXXX-XX-X) and include a checksum digit.
+ *
+ * @category Typeguards
+ * @param cas - The CAS number to validate
+ * @returns Type predicate indicating if the value is a valid CAS number
+ * @example
+ * ```typescript
+ * isCAS('1234-56-6') // Returns true
+ * isCAS('50-00-0') // Returns true
+ * isCAS('1234-56-999') // Returns false
+ * ```
+ * @see https://www.cas.org/training/documentation/chemical-substances/checkdig
+ * @source
+ */
+export function isCAS(cas: unknown): cas is CAS<string> {
+  if (typeof cas !== "string") return false;
+  const regex = RegExp(`^${CAS_REGEX.source}$`);
+  const match = cas.match(regex);
+  if (!match || !match.groups?.seg_a || !match.groups?.seg_b || !match.groups?.seg_checksum)
+    return false;
+
+  const segA = match.groups.seg_a;
+  const segB = match.groups.seg_b;
+  const segChecksum = match.groups.seg_checksum;
+
+  if (parseInt(segA) === 0 && parseInt(segB) === 0) return false;
+
+  const segABCalc = Array.from(segA + segB)
+    .map(Number)
+    .reverse()
+    .reduce((acc, curr, idx) => acc + (idx + 1) * curr, 0);
+
+  return segABCalc % 10 === Number(segChecksum);
+}
+
+/**
+ * Type guard to validate if a value is a full URL.
+ * Attempts to construct a URL object from the value.
+ *
+ * @category Typeguards
+ * @param val - The value to validate
+ * @returns Type predicate indicating if the value is a valid URL
+ * @example
+ * ```typescript
+ * isFullURL("https://www.google.com") // Returns true
+ * isFullURL("not a url") // Returns false
+ * ```
+ * @source
+ */
+export function isFullURL(val: unknown): val is URL {
+  try {
+    new URL(val as string);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Type guard to validate if a value is a Request instance.
+ *
+ * @category Typeguards
+ * @param req - The value to validate
+ * @returns Type predicate indicating if the value is a Request
+ * @source
+ */
+export function isRequest(req: unknown): req is Request {
+  return req instanceof Request;
 }
