@@ -211,7 +211,7 @@ export default abstract class SupplierBaseAmazon
     const fuzzedResults = this.fuzzyFilter(query, results, 40);
     this.logger.debug("fuzzedResults", { query, results, fuzzedResults });
 
-    return this.initProductBuilders(fuzzedResults as AmazonListing[]);
+    return this.initProductBuilders(fuzzedResults);
   }
 
   /**

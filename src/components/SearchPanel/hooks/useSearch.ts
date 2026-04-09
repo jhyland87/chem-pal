@@ -163,15 +163,14 @@ export function useSearch() {
           }
           isSearchInitiatedRef.current = true;
 
-          console.debug(
-            "Found new search submission, executing search:",
-            data[CACHE_KEYS.SEARCH_INPUT],
-          );
+          console.debug("Found new search submission, executing search:", {
+            query: data[CACHE_KEYS.SEARCH_INPUT],
+          });
           // Await the flag removal to prevent race conditions with re-runs
           try {
-            await chrome.storage.session.remove([CACHE_KEYS.SEARCH_IS_NEW_SEARCH as string]);
+            await chrome.storage.session.remove([String(CACHE_KEYS.SEARCH_IS_NEW_SEARCH)]);
           } catch (error) {
-            console.warn(`Failed to clear ${CACHE_KEYS.SEARCH_IS_NEW_SEARCH} flag:`, error);
+            console.warn(`Failed to clear ${CACHE_KEYS.SEARCH_IS_NEW_SEARCH} flag:`, { error });
           }
 
           console.log("executing search FROM USEFFECT", {
@@ -187,7 +186,7 @@ export function useSearch() {
           });
         }
       } catch (error) {
-        console.warn("Failed to load search data from session storage:", error);
+        console.warn("Failed to load search data from session storage:", { error });
       }
     };
     loadSearchData();
@@ -195,10 +194,7 @@ export function useSearch() {
 
   // Listen for external clears of search results (e.g. SpeedDial "Clear Results")
   useEffect(() => {
-    const listener = (
-      changes: Record<string, chrome.storage.StorageChange>,
-      areaName: string,
-    ) => {
+    const listener = (changes: Record<string, chrome.storage.StorageChange>, areaName: string) => {
       if (areaName !== "session") return;
       const change = changes[CACHE_KEYS.SEARCH_RESULTS];
       if (change && Array.isArray(change.newValue) && change.newValue.length === 0) {
@@ -221,7 +217,7 @@ export function useSearch() {
         appContext.setSearchFilters({ ...appContext.searchFilters, titleQuery: query.trim() });
       }
 
-      console.log(`executing search FROM EXECUTESEARCH, query: ${query}`);
+      console.debug(`executing search FROM EXECUTESEARCH`, { query });
       // Use startTransition for better performance during search
       startTransition(() => {
         performSearch({
@@ -283,7 +279,7 @@ export function useSearch() {
         // Keep last 100 entries
         await chrome.storage.local.set({ [CACHE_KEYS.SEARCH_HISTORY]: history.slice(0, 100) });
       } catch (error) {
-        console.warn("Failed to save search history:", error);
+        console.warn("Failed to save search history:", { error });
       }
     })();
 
@@ -382,7 +378,7 @@ export function useSearch() {
         try {
           await chrome.storage.session.set({ [CACHE_KEYS.SEARCH_RESULTS]: finalResults });
         } catch (error) {
-          console.warn("Failed to save search results to session storage:", error);
+          console.warn("Failed to save search results to session storage:", { error });
         }
 
         // Update history with final count
@@ -397,7 +393,7 @@ export function useSearch() {
             await chrome.storage.local.set({ [CACHE_KEYS.SEARCH_HISTORY]: history });
           }
         } catch (error) {
-          console.warn("Failed to update search history result count:", error);
+          console.warn("Failed to update search history result count:", { error });
         }
 
         console.debug(
@@ -468,7 +464,7 @@ export function useSearch() {
                     })),
                   });
                 } catch (error) {
-                  console.warn("Failed to save search results to session storage:", error);
+                  console.warn("Failed to save search results to session storage:", { error });
                 }
 
                 // Update the search history entry's resultCount live
@@ -485,7 +481,7 @@ export function useSearch() {
                     await chrome.storage.local.set({ [CACHE_KEYS.SEARCH_HISTORY]: history });
                   }
                 } catch (error) {
-                  console.warn("Failed to update search history result count:", error);
+                  console.warn("Failed to update search history result count:", { error });
                 }
               })();
 
@@ -515,7 +511,7 @@ export function useSearch() {
         }
 
         setTableText(tableTextLines.join("\n"));
-        console.log("setting table text", tableTextLines.join("\n"));
+        console.debug("setting table text", { tableText: tableTextLines.join("\n") });
       } else {
         // Clear any status text from a previous search.
         setTableText("");

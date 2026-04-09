@@ -184,7 +184,7 @@ export default class SupplierLaboratoriumDiscounter
   ): Promise<ProductBuilder<Product>[] | void> {
     const params = this.makeQueryParams();
     if (!isValidSearchParams(params)) {
-      this.logger.warn("Invalid search parameters:", params);
+      this.logger.warn("Invalid search parameters:", { params });
       return;
     }
 
@@ -194,7 +194,7 @@ export default class SupplierLaboratoriumDiscounter
     });
 
     if (!isSearchResponseOk(response)) {
-      this.logger.warn("Bad search response:", response);
+      this.logger.warn("Bad search response:", { response });
       return;
     }
 
@@ -252,9 +252,9 @@ export default class SupplierLaboratoriumDiscounter
   protected initProductBuilders(
     data: LaboratoriumDiscounterSearchResponseProduct[],
   ): ProductBuilder<Product>[] {
-    this.logger.info("initProductBuilders data:", data);
+    this.logger.info("initProductBuilders data:", { data });
     return mapDefined(data, (product) => {
-      this.logger.info("initProductBuilders product:", product);
+      this.logger.info("initProductBuilders product:", { product });
       const productBuilder = new ProductBuilder(this.baseURL);
 
       const quantity = firstMap(parseQuantity, [
@@ -305,7 +305,7 @@ export default class SupplierLaboratoriumDiscounter
         });
 
         if (!productResponse || !isProductObject(productResponse)) {
-          this.logger.warn(`Invalid product data - did not pass typeguard:`, {
+          this.logger.warn("Invalid product data - did not pass typeguard:", {
             path,
             productResponse,
           });
@@ -319,12 +319,23 @@ export default class SupplierLaboratoriumDiscounter
             if (variant.active === false) continue;
             const quantity = parseQuantity(variant.title);
             if (!isQuantityObject(quantity)) {
-              this.logger.warn("Invalid quantity - skipping", variant.title);
+              this.logger.warn("Invalid quantity - skipping", {
+                parsedValue: variant.title,
+                variant,
+                builder,
+                product,
+                productResponse,
+              });
               continue;
             }
 
             if (quantity.quantity === builder.get("quantity")) {
-              this.logger.debug("Quantity already exists - skipping", quantity.quantity);
+              this.logger.debug("Quantity already exists - skipping", {
+                quantity: quantity.quantity,
+                builder,
+                product,
+                productResponse,
+              });
               continue;
             }
 

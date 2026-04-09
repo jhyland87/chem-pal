@@ -1,8 +1,8 @@
 import type { Row } from "@tanstack/react-table";
 
 export function quantitySortingFn(rowA: Row<Product>, rowB: Row<Product>) {
-  const a = rowA.original.baseQuantity as number;
-  const b = rowB.original.baseQuantity as number;
+  const a = rowA.original.baseQuantity ?? 0;
+  const b = rowB.original.baseQuantity ?? 0;
   return a > b ? 1 : a < b ? -1 : 0;
 }
 
@@ -27,7 +27,7 @@ export function matchPercentageSortingFn(rowA: Row<Product>, rowB: Row<Product>)
  * @source
  */
 export function priceSortingFn(rowA: Row<Product>, rowB: Row<Product>) {
-  const a = (rowA.original.usdPrice ?? rowA.original.price) as number;
-  const b = (rowB.original.usdPrice ?? rowB.original.price) as number;
+  const a = rowA.original.usdPrice ?? rowA.original.price ?? 0;
+  const b = rowB.original.usdPrice ?? rowB.original.price ?? 0;
   return a > b ? 1 : a < b ? -1 : 0;
 }

@@ -339,6 +339,6 @@ export default abstract class SupplierBaseWix
    * @source
    */
   protected titleSelector(data: ProductObject): string {
-    return data.name as string;
+    return data.name;
   }
 }

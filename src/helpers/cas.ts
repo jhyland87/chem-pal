@@ -28,7 +28,7 @@ export { isCAS };
 export function findCAS(data: string): CAS<string> | void {
   const regex = RegExp(CAS_REGEX.source, "g");
   const match = data.match(regex);
-  if (match && isCAS(match[0])) return match[0] as CAS<string>;
+  if (match && isCAS(match[0])) return match[0];
 }
 
 /**

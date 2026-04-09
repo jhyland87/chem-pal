@@ -63,7 +63,7 @@ const lruCurrencyRate = new LRUCache({
  * ```
  * @source
  */
-export function getCurrencySymbol(price: string): CurrencySymbol | void {
+export function getCurrencySymbol(price: string): CurrencySymbol {
   const match = price.match(/\p{Sc}/u);
   if (!match) return;
   return match[0] satisfies CurrencySymbol;
@@ -106,11 +106,11 @@ export function parsePrice(price: string): ParsedPrice | void {
       price: parsed.floatValue,
     } satisfies ParsedPrice;
 
-  const currencySymbol = getCurrencySymbol(price) as CurrencySymbol;
+  const currencySymbol = getCurrencySymbol(price);
   if (!currencySymbol) return;
 
   const currencyCode = getCurrencyCodeFromSymbol(currencySymbol);
-  let bareAmount = price.replace(currencySymbol as string, "").trim();
+  let bareAmount = price.replace(currencySymbol, "").trim();
 
   // Handle foreign number formats where commas and decimals are swapped
   if (bareAmount.match(/^(\d+\.\d+,\d{1,2}|\d{1,3},\d{1,2}|\d{1,3},\d{1,2})$/))
@@ -154,10 +154,10 @@ export function parsePrice(price: string): ParsedPrice | void {
  */
 export async function getCurrencyRate(from: CurrencyCode, to: CurrencyCode): Promise<number> {
   try {
-    return await lruCurrencyRate.fetch(`${from as string}:${to as string}`);
+    return await lruCurrencyRate.fetch(`${from}:${to}`);
   } catch (error) {
     throw new Error(
-      `Failed to get currency rate for ${from as string} to ${to as string} - ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to get currency rate for ${from} to ${to} - ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 }
@@ -186,7 +186,7 @@ export async function getCurrencyRate(from: CurrencyCode, to: CurrencyCode): Pro
  * @source
  */
 export function getCurrencyCodeFromSymbol(symbol: CurrencySymbol): CurrencyCode {
-  return CURRENCY_CODE_MAP[symbol as string];
+  return CURRENCY_CODE_MAP[String(symbol)];
 }
 
 /**
@@ -206,7 +206,7 @@ export function getCurrencyCodeFromSymbol(symbol: CurrencySymbol): CurrencyCode 
  * @source
  */
 export function getCurrencyCodeFromLocation(location: CountryCode): CurrencyCode {
-  return CURRENCY_CODE_MAP_BY_LOCATION[location as string];
+  return CURRENCY_CODE_MAP_BY_LOCATION[String(location)];
 }
 
 /**

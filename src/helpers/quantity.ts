@@ -109,17 +109,15 @@ export function stripQuantityFromString(value: string): string {
  * @source
  */
 export function standardizeUom(uom: string): UOM | void {
-  const uomMap = Object.entries(UOM_ALIASES).reduce(
-    (acc, [uom, aliases]) => {
-      aliases.forEach((alias: string) => {
-        acc[alias] = uom;
-      });
-      return acc;
-    },
-    { [uom]: uom } as Record<string, string>,
-  );
+  const uomMap: Record<string, string> = { [uom]: uom };
+  for (const [canonical, aliases] of Object.entries(UOM_ALIASES)) {
+    for (const alias of aliases) {
+      uomMap[alias] = canonical;
+    }
+  }
 
-  if (uom.toLowerCase() in uomMap) return uomMap[uom.toLowerCase()] as UOM;
+  const normalized = uom.toLowerCase();
+  if (normalized in uomMap) return uomMap[normalized] satisfies string as UOM;
 }
 
 /**

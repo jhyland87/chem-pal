@@ -186,8 +186,9 @@ export default class SupplierCarolina
   protected initProductBuilders(data: CarolinaSearchResult[]): ProductBuilder<Product>[] {
     return data.map((result) => {
       const builder = new ProductBuilder(this.baseURL)
-        .setBasicInfo(result.productName, result.productUrl, this.supplierName)
-        .setPricing(parsePrice(result.itemPrice) as ParsedPrice);
+        .setBasicInfo(result.productName, result.productUrl, this.supplierName);
+      const parsedPrice = parsePrice(result.itemPrice);
+      if (parsedPrice) builder.setPricing(parsedPrice);
       const casNo = findCAS(result["product.shortDescription"]);
       if (typeof casNo === "string") builder.setCAS(casNo);
       return builder;
@@ -248,7 +249,8 @@ export default class SupplierCarolina
         (zone: ContentRuleZoneItem): zone is ResultsContainer => {
           return (
             zone["@type"] === "ResultsContainer" &&
-            Array.isArray((zone as Partial<ResultsContainer>).results)
+            "results" in zone &&
+            Array.isArray(zone.results)
           );
         },
       );

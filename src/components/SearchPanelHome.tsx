@@ -37,7 +37,7 @@ const SearchPanelHome: React.FC = () => {
             setResultCount(0);
           }
         } catch (error) {
-          console.warn("Failed to load search results from session storage:", error);
+          console.warn("Failed to load search results from session storage:", { error });
         }
       };
       loadStoredResults();

@@ -57,7 +57,7 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
          */
         const rangeValues = table.options.data.reduce(
           (accu, row: Product) => {
-            const value = row[colName as keyof Product] as number;
+            const value = Number(row[colName as keyof Product]);
             if (value < accu[0]) {
               accu[0] = value;
             } else if (value > accu[1]) {
@@ -77,7 +77,7 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
        * @source
        */
       const uniqueValues = table.options.data.reduce<string[]>((accu, row: Product) => {
-        const value = row[colName as keyof Product] as string;
+        const value = String(row[colName as keyof Product]);
         if (value !== undefined && accu.indexOf(value) === -1) {
           accu.push(value);
         }
@@ -123,9 +123,9 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
                     >
                       {flexRender(header.column.columnDef.header, header.getContext())}
                       {{
-                        asc: <ArrowDropUpIcon className={styles['sort-icon']} />,
-                        desc: <ArrowDropDownIcon className={styles['sort-icon']} />,
-                      }[header.column.getIsSorted() as string] ?? null}
+                        asc: <ArrowDropUpIcon className={styles["sort-icon"]} />,
+                        desc: <ArrowDropDownIcon className={styles["sort-icon"]} />,
+                      }[String(header.column.getIsSorted())] ?? null}
                     </SortableHeaderContent>
                   </>
                 )}

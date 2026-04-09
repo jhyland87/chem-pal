@@ -233,7 +233,7 @@ export default class SupplierAmbeed
     const response: unknown = await this.httpGetJson({
       path: "webapi/v1/productlistbykeyword",
       params: {
-        params: this.makeQueryParams(query) as Base64String,
+        params: this.makeQueryParams(query),
       },
     });
 
@@ -311,8 +311,8 @@ export default class SupplierAmbeed
       }
 
       for (const variant of product.priceList) {
-        const parsedPrice = parsePrice(variant.pr_usd) as ParsedPrice;
-        const quantity = parseQuantity(variant.pr_size as QuantityString);
+        const parsedPrice = parsePrice(variant.pr_usd);
+        const quantity = parseQuantity(variant.pr_size);
 
         if (!parsedPrice || !quantity) {
           this.logger.warn(
@@ -328,7 +328,7 @@ export default class SupplierAmbeed
           currencyCode: parsedPrice.currencyCode,
           currencySymbol: parsedPrice.currencySymbol,
           quantity: quantity.quantity,
-          uom: quantity.uom as string,
+          uom: quantity.uom,
           sku: variant.pr_am,
           id: variant.pr_id.toString(),
         });

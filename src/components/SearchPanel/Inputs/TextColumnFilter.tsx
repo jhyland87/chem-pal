@@ -20,7 +20,7 @@ export default function TextColumnFilter(props: FilterVariantInputProps) {
   const { column } = props;
 
   const [columnFilterValue, setColumnFilterValue] = useState<string>(
-    column.getFilterValue() as string,
+    String(column.getFilterValue() ?? ""),
   );
 
   /**
