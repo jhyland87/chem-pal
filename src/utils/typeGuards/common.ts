@@ -1,6 +1,6 @@
-import { z } from "zod";
 import { CAS_REGEX, UOM } from "@/constants/common";
 import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "@/constants/currency";
+import { z } from "zod";
 
 /**
  * @categoryDescription Typeguards
@@ -43,9 +43,7 @@ const httpResponseSchema = z.object({
  * @source
  */
 export function isHttpResponse(value: unknown): value is Response {
-  const result = httpResponseSchema.safeParse(value).success;
-  console.debug(`isHttpResponse for`, value, `is:`, result);
-  return result;
+  return httpResponseSchema.safeParse(value).success;
 }
 
 /**
@@ -107,14 +105,12 @@ export function isUOM(uom: unknown): uom is UOM {
  */
 export function isJsonResponse(response: unknown): response is Response {
   if (!isHttpResponse(response)) {
-    console.debug(`isJsonResponse for`, response, `is:`, false);
     return false;
   }
   const contentType = response.headers.get("Content-Type");
-  const result =
-    contentType !== null && (contentType.includes("/json") || contentType.includes("/javascript"));
-  console.debug(`isJsonResponse for`, response, `is:`, result);
-  return result;
+  return (
+    contentType !== null && (contentType.includes("/json") || contentType.includes("/javascript"))
+  );
 }
 
 /**
@@ -137,7 +133,7 @@ export function isJsonResponse(response: unknown): response is Response {
  */
 export function assertJsonResponse(response: unknown): asserts response is Response {
   if (!isJsonResponse(response)) {
-    throw new TypeError(`assertJsonResponse| Invalid JSON response: ${response}`);
+    throw new TypeError("assertJsonResponse| Invalid JSON response", { cause: response });
   }
 }
 
@@ -199,7 +195,7 @@ export function isHtmlResponse(response: unknown): response is Response {
  */
 export function assertHtmlResponse(response: unknown): asserts response is Response {
   if (!isHtmlResponse(response)) {
-    throw new TypeError(`assertHtmlResponse| Invalid HTML response: ${response}`);
+    throw new TypeError("assertHtmlResponse| Invalid HTML response", { cause: response });
   }
 }
 
@@ -274,7 +270,7 @@ export function isValidResult(value: unknown): value is RequiredProductFields {
  */
 export function checkMissingMinimalProductFields(product: unknown): string[] {
   if (!product || typeof product !== "object") {
-    throw new TypeError(`checkMissingMinimalProductFields| Invalid product: ${product}`);
+    throw new TypeError("checkMissingMinimalProductFields| Invalid product", { cause: product });
   }
 
   const requiredProps: Record<keyof RequiredProductFields, string> = {
@@ -292,18 +288,20 @@ export function checkMissingMinimalProductFields(product: unknown): string[] {
   const result = Object.entries(requiredProps).reduce(
     (acc: string[], [key, expectedType]: [string, string]) => {
       if (key in record === false) {
-        console.debug(
-          `checkMissingMinimalProductFields| No ${key} value found in product`,
+        console.debug("checkMissingMinimalProductFields| No value found in product", {
           product,
-        );
+          key,
+        });
         return [...acc, key];
       }
 
       if (typeof record[key] !== expectedType) {
-        console.debug(
-          `checkMissingMinimalProductFields| ${key} property not the correct type (${typeof record[key]} !== ${expectedType})`,
+        console.debug("checkMissingMinimalProductFields| Property not the correct type", {
           product,
-        );
+          key,
+          expectedType,
+          actualType: typeof record[key],
+        });
         return [...acc, key];
       }
 
@@ -312,7 +310,7 @@ export function checkMissingMinimalProductFields(product: unknown): string[] {
     [],
   );
   if (result.length > 0) {
-    console.warn(`checkMissingMinimalProductFields| Results for`, product, `is:`, result);
+    console.warn("checkMissingMinimalProductFields| Results for product is", { product, result });
   }
   return result;
 }
@@ -362,17 +360,15 @@ export function isMinimalProduct(product: unknown): product is RequiredProductFi
   try {
     const missingFields = checkMissingMinimalProductFields(product);
     if (missingFields.length > 0) {
-      console.debug(
-        `isMinimalProduct| The product`,
+      console.debug("isMinimalProduct| Product is missing minimal fields", {
         product,
-        `is missing the following fields:`,
         missingFields,
-      );
+      });
       return false;
     }
     return true;
   } catch (error) {
-    console.warn(`isMinimalProduct| The product`, product, `is invalid:`, error);
+    console.warn("isMinimalProduct| The product is invalid", { product, error });
     return false;
   }
 }
@@ -395,7 +391,7 @@ export function isMinimalProduct(product: unknown): product is RequiredProductFi
  */
 export function checkCompleteProductFields(product: unknown): string[] {
   if (!product || typeof product !== "object") {
-    throw new TypeError(`checkCompleteProductFields| Invalid product: ${product}`);
+    throw new TypeError("checkCompleteProductFields| Invalid product", { cause: product });
   }
 
   const requiredProps: Record<keyof RequiredProductFields, string> = {
@@ -413,15 +409,17 @@ export function checkCompleteProductFields(product: unknown): string[] {
   const result = Object.entries(requiredProps).reduce(
     (acc: string[], [key, expectedType]: [string, string]) => {
       if (key in record === false) {
-        console.debug(`checkCompleteProductFields| No ${key} value found in product`, product);
+        console.debug("checkCompleteProductFields| No value found in product", { product, key });
         return [...acc, key];
       }
 
       if (typeof record[key] !== expectedType) {
-        console.debug(
-          `checkCompleteProductFields| ${key} property not the correct type (${typeof record[key]} !== ${expectedType})`,
+        console.debug("checkCompleteProductFields| Property not the correct type", {
           product,
-        );
+          key,
+          expectedType,
+          actualType: typeof record[key],
+        });
         return [...acc, key];
       }
 
@@ -430,7 +428,7 @@ export function checkCompleteProductFields(product: unknown): string[] {
     [],
   );
   if (result.length > 0) {
-    console.warn(`checkCompleteProductFields| Results for`, product, `is:`, result);
+    console.warn("checkCompleteProductFields| Results for product is", { product, result });
   }
   return result;
 }
@@ -459,7 +457,7 @@ export function assertCompleteProductFields(
   const missingFields = checkCompleteProductFields(product);
   if (missingFields.length > 0) {
     throw new TypeError(
-      `Product does not contain or has invalid data for the following required fields: ${missingFields.join(", ")}`,
+      `Product does not contain or has invalid data for the following required fields: ${missingFields.join(", ")} `,
     );
   }
 }
@@ -511,7 +509,7 @@ export function isProduct(product: unknown): product is Product {
     assertCompleteProductFields(product);
     return true;
   } catch (error) {
-    console.warn(`isProduct| The product`, product, `is invalid:`, error);
+    console.warn("isProduct| The product is invalid", { product, error });
     return false;
   }
 }
@@ -537,8 +535,7 @@ export function isProduct(product: unknown): product is Product {
  */
 export function isCurrencySymbol(symbol: unknown): symbol is CurrencySymbol {
   return (
-    typeof symbol === "string" &&
-    (Object.values(CURRENCY_CODE_MAP) as string[]).includes(symbol)
+    typeof symbol === "string" && (Object.values(CURRENCY_CODE_MAP) as string[]).includes(symbol)
   );
 }
 

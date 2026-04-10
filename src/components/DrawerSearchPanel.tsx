@@ -3,7 +3,9 @@ import {
   SHIPPING_OPTIONS,
   SUPPLIER_COUNTRY_OPTIONS,
 } from "@/constants/common";
+import { useAppContext } from "@/context";
 import SupplierFactory from "@/suppliers/SupplierFactory";
+import { ExpandMore as ExpandMoreIcon, Search as SearchIcon } from "@mui/icons-material";
 import {
   Accordion,
   Autocomplete,
@@ -16,12 +18,11 @@ import {
 } from "@mui/material";
 import React from "react";
 import styles from "./DrawerSearchPanel.module.scss";
-
-import { ExpandMore as ExpandMoreIcon, Search as SearchIcon } from "@mui/icons-material";
-
 import { StyledAccordionDetails, StyledAccordionSummary } from "./StyledComponents";
 
-import { useAppContext } from "@/context";
+const suppliers = SupplierFactory.supplierList();
+const supplierNames = SupplierFactory.supplierDisplayNames();
+
 const DrawerSearchPanel: React.FC<{
   expandedAccordion: string | false;
   onAccordionChange: (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => void;
@@ -36,9 +37,6 @@ const DrawerSearchPanel: React.FC<{
     searchFilters,
     setSearchFilters,
   } = useAppContext();
-
-  const suppliers = SupplierFactory.supplierList();
-  const supplierNames = SupplierFactory.supplierDisplayNames();
 
   const toggleChip = (field: "availability" | "country" | "shippingType", value: string) => {
     const current = searchFilters[field];

@@ -1,3 +1,4 @@
+import { mapDefined } from "@/helpers/utils";
 import Logger from "@/utils/Logger";
 import { incrementParseError } from "@/utils/SupplierStatsStore";
 import { Queue } from "async-await-queue";
@@ -95,17 +96,17 @@ export default class SupplierFactory<P extends Product> {
    */
   public static supplierDisplayNames(): Record<string, string> {
     const controller = new AbortController();
-    const names: Record<string, string> = {};
-    for (const [key, SupplierClass] of Object.entries(suppliers)) {
-      const ConcreteClass = SupplierClass as unknown as new (
-        query: string,
-        limit: number,
-        controller: AbortController,
-      ) => SupplierBase<unknown, Product>;
-      const instance = new ConcreteClass("", 1, controller);
-      names[key] = instance.supplierName;
-    }
-    return names;
+    return Object.fromEntries(
+      mapDefined(Object.entries(suppliers), ([key, SupplierClass]) => {
+        const ConcreteClass = SupplierClass as unknown as new (
+          query: string,
+          limit: number,
+          controller: AbortController,
+        ) => SupplierBase<unknown, Product>;
+        const instance = new ConcreteClass("", 1, controller);
+        return [key, instance.supplierName];
+      }),
+    );
   }
 
   /**
@@ -124,22 +125,21 @@ export default class SupplierFactory<P extends Product> {
    */
   public async executeAll(concurrency: number = 3): Promise<P[]> {
     // 1. Instantiate supplier classes
-    const supplierInstances: SupplierBase<unknown, P>[] = Object.entries(suppliers).reduce(
-      (result: SupplierBase<unknown, P>[], [supplierClassName, supplierClass]) => {
-        if (this.suppliers.length === 0 || this.suppliers.includes(supplierClassName)) {
-          this.logger.debug("Initializing supplier class:", supplierClassName);
-          const ConcreteSupplierClass = supplierClass as unknown as new (
-            query: string,
-            limit: number,
-            controller: AbortController,
-          ) => SupplierBase<unknown, P>;
-          const instance = new ConcreteSupplierClass(this.query, this.limit, this.controller);
-          instance.initCache();
-          result.push(instance);
-        }
-        return result;
+    const supplierInstances: SupplierBase<unknown, P>[] = mapDefined(
+      Object.entries(suppliers),
+      ([supplierClassName, supplierClass]) => {
+        if (!(this.suppliers.length === 0 || this.suppliers.includes(supplierClassName))) return;
+
+        this.logger.debug("Initializing supplier class:", supplierClassName);
+        const ConcreteSupplierClass = supplierClass as unknown as new (
+          query: string,
+          limit: number,
+          controller: AbortController,
+        ) => SupplierBase<unknown, P>;
+        const instance = new ConcreteSupplierClass(this.query, this.limit, this.controller);
+        instance.initCache();
+        return instance;
       },
-      [],
     );
 
     // 2. Use async-await-queue for parallel execution
@@ -183,22 +183,21 @@ export default class SupplierFactory<P extends Product> {
    * @source
    */
   public async *executeAllStream(concurrency: number = 3): AsyncGenerator<P, void, undefined> {
-    const supplierInstances: SupplierBase<unknown, P>[] = Object.entries(suppliers).reduce(
-      (result: SupplierBase<unknown, P>[], [supplierClassName, supplierClass]) => {
-        if (this.suppliers.length === 0 || this.suppliers.includes(supplierClassName)) {
-          this.logger.debug("Initializing supplier class:", supplierClassName);
-          const ConcreteSupplierClass = supplierClass as unknown as new (
-            query: string,
-            limit: number,
-            controller: AbortController,
-          ) => SupplierBase<unknown, P>;
-          const instance = new ConcreteSupplierClass(this.query, this.limit, this.controller);
-          instance.initCache();
-          result.push(instance);
-        }
-        return result;
+    const supplierInstances: SupplierBase<unknown, P>[] = mapDefined(
+      Object.entries(suppliers),
+      ([supplierClassName, supplierClass]) => {
+        if (!(this.suppliers.length === 0 || this.suppliers.includes(supplierClassName))) return;
+
+        this.logger.debug("Initializing supplier class", { supplierClassName });
+        const ConcreteSupplierClass = supplierClass as unknown as new (
+          query: string,
+          limit: number,
+          controller: AbortController,
+        ) => SupplierBase<unknown, P>;
+        const instance = new ConcreteSupplierClass(this.query, this.limit, this.controller);
+        instance.initCache();
+        return instance;
       },
-      [],
     );
 
     const queue = new Queue(concurrency, 100);
