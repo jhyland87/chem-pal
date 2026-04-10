@@ -248,7 +248,7 @@ export function useSearch() {
     const loadSearchData = async () => {
       try {
         const data = await chrome.storage.session.get([
-          CACHE.SEARCH_INPUT,
+          CACHE.QUERY,
           CACHE.SEARCH_RESULTS,
           CACHE.SEARCH_IS_NEW_SEARCH,
         ]);
@@ -273,13 +273,13 @@ export function useSearch() {
         // Only execute search if this is a new search submission
         if (
           data[CACHE.SEARCH_IS_NEW_SEARCH] &&
-          data[CACHE.SEARCH_INPUT] &&
-          data[CACHE.SEARCH_INPUT].trim()
+          data[CACHE.QUERY] &&
+          data[CACHE.QUERY].trim()
         ) {
           isSearchInitiatedRef.current = true;
 
           console.debug("Found new search submission, executing search", {
-            query: data[CACHE.SEARCH_INPUT],
+            query: data[CACHE.QUERY],
           });
           // Await the flag removal to prevent race conditions with re-runs
           try {
@@ -289,11 +289,11 @@ export function useSearch() {
           }
 
           console.debug("executing search FROM USEFFECT", {
-            query: data[CACHE.SEARCH_INPUT],
+            query: data[CACHE.QUERY],
           });
           // Execute the search - performSearch reads supplierResultLimit/suppliers
           // from appContext via its default parameters, so we don't need to pass them.
-          performSearch({ query: data[CACHE.SEARCH_INPUT] });
+          performSearch({ query: data[CACHE.QUERY] });
         }
       } catch (error) {
         console.warn("Failed to load search data from session storage:", { error });

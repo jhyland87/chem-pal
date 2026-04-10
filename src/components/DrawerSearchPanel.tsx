@@ -1,5 +1,6 @@
 import {
   AVAILABILITY_OPTIONS,
+  CACHE,
   DRAWER_INDEX,
   SHIPPING_OPTIONS,
   SUPPLIER_COUNTRY_OPTIONS,
@@ -17,7 +18,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import styles from "./DrawerSearchPanel.module.scss";
 import { StyledAccordionDetails, StyledAccordionSummary } from "./StyledComponents";
 
@@ -39,6 +40,26 @@ const DrawerSearchPanel: React.FC<{
     setSearchFilters,
   } = useAppContext();
 
+  // Hydrate the title query field from the shared live search input value so
+  // the drawer shows whatever the user last typed in any search input, even
+  // if it hasn't been submitted yet.
+  useEffect(() => {
+    const loadSearchInput = async () => {
+      try {
+        const data = await chrome.storage.session.get([CACHE.SEARCH_INPUT]);
+        const stored = data[CACHE.SEARCH_INPUT];
+        if (typeof stored === "string" && stored !== searchFilters.titleQuery) {
+          setSearchFilters({ ...searchFilters, titleQuery: stored });
+        }
+      } catch (error) {
+        console.warn("Failed to load search input from session storage:", { error });
+      }
+    };
+    loadSearchInput();
+    // Run once on mount; we intentionally don't depend on searchFilters to avoid loops.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const toggleChip = (field: "availability" | "country" | "shippingType", value: string) => {
     const current = searchFilters[field];
     const updated = current.includes(value)
@@ -47,16 +68,41 @@ const DrawerSearchPanel: React.FC<{
     setSearchFilters({ ...searchFilters, [field]: updated });
   };
 
-  const handleSearch = () => {
+  const handleTitleQueryChange = async (value: string) => {
+    setSearchFilters({ ...searchFilters, titleQuery: value });
+    try {
+      await chrome.storage.session.set({ [CACHE.SEARCH_INPUT]: value });
+    } catch (error) {
+      console.warn("Failed to persist search input to session storage:", { error });
+    }
+  };
+
+  const handleSearch = async () => {
     const query = searchFilters.titleQuery.trim();
     if (!query) return;
+    try {
+      // Commit the submitted query so useSearch picks it up and executes the
+      // search, the same path used by SearchPanelHome's submit handler. Also
+      // clear the live in-progress draft in session storage now that it has
+      // been promoted to the committed query.
+      await chrome.storage.session.set({
+        [CACHE.QUERY]: query,
+        [CACHE.SEARCH_INPUT]: "",
+        [CACHE.SEARCH_IS_NEW_SEARCH]: true,
+      });
+    } catch (error) {
+      console.warn("Failed to persist submitted query to session storage:", { error });
+    }
+    // Clear the drawer's visible field to match the cleared draft so re-opening
+    // the drawer doesn't show stale text from the just-submitted query.
+    setSearchFilters({ ...searchFilters, titleQuery: "" });
     setPendingSearchQuery(query);
     setDrawerTab(DRAWER_INDEX.CLOSED);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      handleSearch();
+      void handleSearch();
     }
   };
 
@@ -69,7 +115,7 @@ const DrawerSearchPanel: React.FC<{
           label="Product name or keyword"
           size="small"
           value={searchFilters.titleQuery}
-          onChange={(e) => setSearchFilters({ ...searchFilters, titleQuery: e.target.value })}
+          onChange={(e) => handleTitleQueryChange(e.target.value)}
           onKeyDown={handleKeyDown}
         />
       </Box>
@@ -283,7 +329,7 @@ const DrawerSearchPanel: React.FC<{
           variant="contained"
           fullWidth
           startIcon={<SearchIcon />}
-          onClick={handleSearch}
+          onClick={() => void handleSearch()}
           disabled={!searchFilters.titleQuery.trim()}
         >
           Search

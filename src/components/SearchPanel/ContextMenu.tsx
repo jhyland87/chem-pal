@@ -1,6 +1,8 @@
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
+import BlockIcon from "@/icons/BlockIcon";
 import BookmarkIcon from "@/icons/BookmarkIcon";
-import ClearIcon from "@/icons/ClearIcon";
+import CopyIcon from "@/icons/CopyIcon";
+import HttpIcon from "@/icons/HttpIcon";
 import InfoOutlineIcon from "@/icons/InfoOutlineIcon";
 import SearchIcon from "@/icons/SearchIcon";
 import SettingsIcon from "@/icons/SettingsIcon";
@@ -186,7 +188,7 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
    */
   const handleAddToFavorites = () => {
     // TODO: Implement favorites functionality
-    console.log("Adding to favorites:", product.title);
+    console.log("Adding to favorites:", { product });
     // This would integrate with your favorites system
     onClose();
   };
@@ -204,8 +206,8 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
           text: `Check out this chemical product: ${product.title}`,
           url: product.url,
         });
-      } catch (err) {
-        console.log("Share failed, falling back to clipboard:", err);
+      } catch (error) {
+        console.error("Share failed, falling back to clipboard", { error });
         await handleCopyUrl();
       }
     } else {
@@ -222,7 +224,7 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
    */
   const handleViewDetails = () => {
     // TODO: Implement product details modal/panel
-    console.log("Viewing details for:", product.title);
+    console.log("Viewing details", { product });
     onClose();
   };
 
@@ -233,7 +235,13 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
    */
   const handleQuickSearch = () => {
     // TODO: Implement quick search for similar products
-    console.log("Quick search for:", product.title);
+    console.log("Quick search", { product });
+    onClose();
+  };
+
+  const handleIgnoreProduct = () => {
+    // TODO: Implement ignore product functionality
+    console.log("Ignoring product", { product });
     onClose();
   };
 
@@ -256,15 +264,16 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
 
     try {
       await navigator.clipboard.writeText(productInfo.join("\n"));
-      console.log("Product info copied to clipboard");
-    } catch (err) {
-      console.error("Failed to copy product info:", err);
+      console.log("Product info copied to clipboard", { productInfo });
+    } catch (error) {
+      console.error("Failed to copy product info", { error });
     }
     onClose();
   };
 
   return (
-    <Paper className={styles['context-menu-paper']}
+    <Paper
+      className={styles["context-menu-paper"]}
       ref={menuRef}
       elevation={8}
       style={{
@@ -273,64 +282,88 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
       }}
     >
       <MenuList dense>
-        <MenuItem className={styles['context-menu-item']} onClick={handleCopyTitle}>
+        <MenuItem className={styles["context-menu-item"]} onClick={handleCopyTitle}>
           <ListItemIcon>
-            <ClearIcon fontSize="small" />
+            <CopyIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText className={styles['context-menu-option-text']} primary="Copy Title" />
+          <ListItemText className={styles["context-menu-option-text"]} primary="Copy Title" />
         </MenuItem>
 
-        <MenuItem className={styles['context-menu-item']} onClick={handleCopyUrl} disabled={!product.url}>
+        <MenuItem
+          className={styles["context-menu-item"]}
+          onClick={handleCopyUrl}
+          disabled={!product.url}
+        >
           <ListItemIcon>
-            <ClearIcon fontSize="small" />
+            <HttpIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText className={styles['context-menu-option-text']} primary="Copy URL" />
+          <ListItemText className={styles["context-menu-option-text"]} primary="Copy URL" />
         </MenuItem>
 
-        <MenuItem className={styles['context-menu-item']} onClick={handleCopyProductInfo}>
+        <MenuItem className={styles["context-menu-item"]} onClick={handleCopyProductInfo}>
           <ListItemIcon>
-            <ClearIcon fontSize="small" />
+            <CopyIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText className={styles['context-menu-option-text']} primary="Copy Product Info" />
+          <ListItemText
+            className={styles["context-menu-option-text"]}
+            primary="Copy Product Info"
+          />
         </MenuItem>
 
         <Divider />
 
-        <MenuItem className={styles['context-menu-item']} onClick={handleOpenInNewTab} disabled={!product.url}>
+        <MenuItem className={styles["context-menu-item"]} onClick={handleIgnoreProduct}>
+          <ListItemIcon>
+            <BlockIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText className={styles["context-menu-option-text"]} primary="Ignore Product" />
+        </MenuItem>
+
+        <Divider />
+
+        <MenuItem
+          className={styles["context-menu-item"]}
+          onClick={handleOpenInNewTab}
+          disabled={!product.url}
+        >
           <ListItemIcon>
             <ArrowRightIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText className={styles['context-menu-option-text']} primary="Open in New Tab" />
+          <ListItemText className={styles["context-menu-option-text"]} primary="Open in New Tab" />
         </MenuItem>
 
-        <MenuItem className={styles['context-menu-item']} onClick={handleViewDetails}>
+        <MenuItem className={styles["context-menu-item"]} onClick={handleViewDetails}>
           <ListItemIcon>
             <InfoOutlineIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText className={styles['context-menu-option-text']} primary="View Details" />
+          <ListItemText className={styles["context-menu-option-text"]} primary="View Details" />
         </MenuItem>
 
         <Divider />
 
-        <MenuItem className={styles['context-menu-item']} onClick={handleAddToFavorites}>
+        <MenuItem className={styles["context-menu-item"]} onClick={handleAddToFavorites}>
           <ListItemIcon>
             <BookmarkIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText className={styles['context-menu-option-text']} primary="Add to Favorites" />
+          <ListItemText className={styles["context-menu-option-text"]} primary="Add to Favorites" />
         </MenuItem>
 
-        <MenuItem className={styles['context-menu-item']} onClick={handleQuickSearch}>
+        <MenuItem className={styles["context-menu-item"]} onClick={handleQuickSearch}>
           <ListItemIcon>
             <SearchIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText className={styles['context-menu-option-text']} primary="Search Similar" />
+          <ListItemText className={styles["context-menu-option-text"]} primary="Search Similar" />
         </MenuItem>
 
-        <MenuItem className={styles['context-menu-item']} onClick={handleShare} disabled={!product.url}>
+        <MenuItem
+          className={styles["context-menu-item"]}
+          onClick={handleShare}
+          disabled={!product.url}
+        >
           <ListItemIcon>
             <SettingsIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText className={styles['context-menu-option-text']} primary="Share" />
+          <ListItemText className={styles["context-menu-option-text"]} primary="Share" />
         </MenuItem>
       </MenuList>
     </Paper>

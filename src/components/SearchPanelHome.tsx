@@ -43,9 +43,13 @@ const SearchPanelHome: React.FC = () => {
   }, [appContext.searchResults]);
 
   const handleSearch = async (query: string) => {
-    // Save the query to Chrome session storage (same as SearchInput)
+    // Commit the submitted query to session storage and clear the live
+    // in-progress value — once a search is submitted, CACHE.QUERY becomes the
+    // source of truth and CACHE.SEARCH_INPUT (the unsubmitted draft) should
+    // reset so the next visit to any search field starts empty.
     await chrome.storage.session.set({
-      [CACHE.SEARCH_INPUT]: query,
+      [CACHE.QUERY]: query,
+      [CACHE.SEARCH_INPUT]: "",
       [CACHE.SEARCH_IS_NEW_SEARCH]: true, // Flag to indicate this is a new search submission
     });
     // Switch to the results panel

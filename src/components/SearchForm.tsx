@@ -1,6 +1,7 @@
+import { CACHE } from "@/constants/common";
 import { Science as ScienceIcon, Search as SearchIcon } from "@mui/icons-material";
 import { Box, IconButton } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAppContext } from "../context";
 import styles from "./SearchForm.module.scss";
 import {
@@ -24,6 +25,31 @@ export const SearchForm: React.FC<SearchFormProps> = ({
   const [query, setQuery] = useState("");
   const appContext = useAppContext();
 
+  // Hydrate the input from the shared live search input value in session storage
+  // so this field stays synced with any other search input (e.g. the drawer).
+  useEffect(() => {
+    const loadSearchInput = async () => {
+      try {
+        const data = await chrome.storage.session.get([CACHE.SEARCH_INPUT]);
+        if (data[CACHE.SEARCH_INPUT]) {
+          setQuery(data[CACHE.SEARCH_INPUT]);
+        }
+      } catch (error) {
+        console.warn("Failed to load search input from session storage:", { error });
+      }
+    };
+    loadSearchInput();
+  }, []);
+
+  const handleChange = async (value: string) => {
+    setQuery(value);
+    try {
+      await chrome.storage.session.set({ [CACHE.SEARCH_INPUT]: value });
+    } catch (error) {
+      console.warn("Failed to persist search input to session storage:", { error });
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
@@ -45,7 +71,7 @@ export const SearchForm: React.FC<SearchFormProps> = ({
         <SearchFormInput
           placeholder={placeholder}
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => handleChange(e.target.value)}
           slotProps={{
             input: {
               "aria-label": "search for products",
