@@ -39,7 +39,7 @@ export default class SupplierFactory<P extends Product> {
   private suppliers: Array<string>;
 
   // Maximum number of results for each supplier
-  private limit: number = 5;
+  private limit: number = 15;
 
   // Logger instance
   private logger: Logger;
@@ -60,13 +60,11 @@ export default class SupplierFactory<P extends Product> {
     suppliers: Array<string> = [],
   ) {
     this.logger = new Logger("SupplierFactory");
-    this.logger.debug("initialized");
+    this.logger.debug("initialized", { query, limit, controller, suppliers });
     this.query = query;
-    this.logger.debug("Query:", this.query);
     this.limit = limit;
     this.controller = controller;
     this.suppliers = suppliers;
-    this.logger.debug("Suppliers:", this.suppliers);
   }
 
   /**

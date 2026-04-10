@@ -1,9 +1,9 @@
+import { setupMockRoutes } from "@e2e/helpers/mockRoutes";
 import { expect as playwrightExpect } from "@playwright/test";
 import { execSync } from "node:child_process";
 import path from "node:path";
 import { type BrowserContext, type Page, chromium } from "playwright";
 import { afterAll, beforeAll, describe, it, expect as vitestExpect } from "vitest";
-import { setupMockRoutes } from "@e2e/helpers/mockRoutes";
 
 const buildDir = path.resolve(__dirname, "..", "build");
 const mockResponsesDir = path.resolve(__dirname, "mock-requests/responses");
@@ -95,7 +95,7 @@ describe("Chem-Pal search query", () => {
     // Use the results count as the primary signal since the backdrop can
     // appear and disappear faster than the polling interval.
     const resultsCount = page.locator("text=Results:");
-    await playwrightExpect(resultsCount).toContainText("Results: 78", {
+    await playwrightExpect(resultsCount).toContainText("Results: 189", {
       timeout: 120_000,
     });
 
@@ -110,8 +110,11 @@ describe("Chem-Pal search query", () => {
     const firstCell = resultsTable.locator("tbody tr td").first();
     await playwrightExpect(firstCell).toBeVisible({ timeout: 5_000 });
 
-    const rowCount = await resultsTable.locator("tbody tr").filter({ has: page.locator("td") }).count();
-    vitestExpect(rowCount).toBe(78);
+    const rowCount = await resultsTable
+      .locator("tbody tr")
+      .filter({ has: page.locator("td") })
+      .count();
+    vitestExpect(rowCount).toBe(189);
 
     // Pause so you can inspect DevTools (Network tab, console, etc.)
     // The test will wait here until you call `playwright.resume()` in the

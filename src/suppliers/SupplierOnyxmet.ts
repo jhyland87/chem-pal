@@ -1,7 +1,7 @@
 import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
-import { mapDefined } from "@/helpers/utils";
+import { firstMap, mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import { isSearchResultItem } from "@/utils/typeGuards/onyxmet";
 import SupplierBase from "./SupplierBase";
@@ -227,24 +227,43 @@ export default class SupplierOnyxmet
 
       const cas = findCAS(builder.get("description"));
       const title = content?.querySelector("h3.product-title")?.textContent?.trim() || "";
+      // Array.from(document.querySelectorAll('.product-right > ul > li')).find(e => e.innerText.includes('Product Code')).innerText
+      const productCode =
+        Array.from(content?.querySelectorAll(".product-right > ul > li") ?? [])
+          .find((e) => e.textContent?.includes("Product Code"))
+          ?.textContent?.trim()
+          .replace(/product\s*code:\s*/i, "") ?? "";
+
       const statusTxt = productInfo.Availability || "";
       const productPrice = content.querySelector(".product-price")?.textContent?.trim() || "";
 
-      const price = parsePrice(productPrice);
+      // @todo More than one product option should result in vartiants being created
+      const productOptions = Array.from(
+        content?.querySelectorAll("#product div label:has(input)") ?? [],
+      ).map((e) => e.textContent?.trim().replaceAll(/\s+/g, " ") ?? "");
+
+      // Array.from(document.querySelectorAll('#product div label:has(input)'))
+      const price = firstMap(parsePrice, [productPrice, ...productOptions]);
 
       if (!price) {
         // @todo If this fails, the price can be retrieved from the product page via:
         /// document.querySelectorAll('#product > .form-group > div > div > label')
         //    .forEach(e => console.log(e.textContent.trim().replace(/\s+/, ' ')))
-        this.logger.warn("No price for product", { builder, parsed: productPrice });
+        this.logger.warn("No price for product", {
+          builder,
+          parsed: { productPrice, productOptions },
+        });
         return;
       }
-      const quantity = parseQuantity(title);
+      const quantity = firstMap(parseQuantity, [title, productCode, ...productOptions]);
 
       if (!quantity) {
         // @todo if this fails, retrieve the quantity the from the product page via same
         // JS used for price.
-        this.logger.warn("No quantity for product", { builder, parsed: title });
+        this.logger.warn("No quantity for product", {
+          builder,
+          parsed: { title, productCode, productOptions },
+        });
         return;
       }
 

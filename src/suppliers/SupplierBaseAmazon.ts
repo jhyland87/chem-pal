@@ -121,7 +121,6 @@ export default abstract class SupplierBaseAmazon
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    limit = 10;
     const queryPagination = async (paginationQuery: string, page: number = 1) => {
       const response = await this.httpPost({
         path: `/s?k=${paginationQuery}&page=${page}&${this.extraParams || ""}`,

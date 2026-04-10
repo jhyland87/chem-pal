@@ -23,10 +23,7 @@ type ColumnFilterConfig = Record<string, { filterVariant: string; filterData: un
  *
  * NOTE: preserves existing (possibly buggy) range logic — see original code.
  */
-export function updateColumnFilterFromResult(
-  config: ColumnFilterConfig,
-  result: Product,
-): void {
+export function updateColumnFilterFromResult(config: ColumnFilterConfig, result: Product): void {
   for (const [columnName, columnValue] of Object.entries(result)) {
     if (columnName in config === false) continue;
     const column = config[columnName];
@@ -112,7 +109,10 @@ export async function updateHistoryResultCount(timestamp: number, count: number)
  * Builds the "no results found" message for the results table, optionally suggesting
  * broader filters or a PubChem-normalized alternative name.
  */
-export async function buildNoResultsMessage(query: string, filtersActive: boolean): Promise<string> {
+export async function buildNoResultsMessage(
+  query: string,
+  filtersActive: boolean,
+): Promise<string> {
   const lines = [`No results found for "${query}"`];
 
   if (filtersActive) {
@@ -320,7 +320,7 @@ export function useSearch() {
   const performSearch = useCallback(
     async ({
       query,
-      supplierResultLimit = appContext.userSettings.supplierResultLimit ?? 3,
+      supplierResultLimit = appContext.userSettings.supplierResultLimit ?? 15,
       suppliers = appContext.selectedSuppliers ?? [],
     }: {
       query: string;
@@ -361,11 +361,17 @@ export function useSearch() {
       BadgeAnimator.animate("ellipsis", 300);
 
       const columnFilterConfig = getColumnFilterConfig();
-      const userLimit = appContext.userSettings.supplierResultLimit ?? 5;
+      const userLimit = appContext.userSettings.supplierResultLimit ?? 15;
 
       // When filters are active, fetch more results so there's enough after filtering.
       // The per-supplier limit is applied post-filter, so we ask each supplier for more.
       const fetchLimit = filtersActive ? userLimit * 5 : userLimit;
+      console.debug("fetchLimit", {
+        fetchLimit,
+        userLimit,
+        filtersActive,
+        supplierResultLimit: appContext.userSettings.supplierResultLimit,
+      });
 
       // Create new abort controller for this search
       fetchControllerRef.current = new AbortController();

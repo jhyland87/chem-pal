@@ -3,7 +3,6 @@ import { UOM } from "@/constants/common";
 import { EmptyResponseError } from "@/helpers/exceptions";
 import { stripQuantityFromString } from "@/helpers/quantity";
 import { fetchDecorator } from "@/helpers/request";
-import { isFullURL } from "@/utils/typeGuards/common";
 import Logger from "@/utils/Logger";
 import ProductBuilder from "@/utils/ProductBuilder";
 import SupplierCache from "@/utils/SupplierCache";
@@ -15,6 +14,7 @@ import {
   incrementSuccess,
 } from "@/utils/SupplierStatsStore";
 import {
+  isFullURL,
   isHtmlResponse,
   isHttpResponse,
   isJsonResponse,
@@ -322,7 +322,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * ```
    * @source
    */
-  public constructor(query: string, limit: number = 5, controller?: AbortController) {
+  public constructor(query: string, limit: number = 15, controller?: AbortController) {
     // Initialize required properties
     this.query = query;
     this.limit = limit;

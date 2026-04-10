@@ -78,7 +78,7 @@ const initialAppState: AppState = {
     jason: false,
     antoine: true,
     popupSize: "small",
-    supplierResultLimit: 5,
+    supplierResultLimit: 15,
     autoResize: true,
     someSetting: false,
     suppliers: SupplierFactory.supplierList(),
@@ -261,6 +261,36 @@ function App() {
     };
     loadFromStorage();
   }, [dispatch]);
+
+  // "Magic" redirect: if the user is on the results panel and the search results
+  // get cleared from anywhere (e.g. SpeedDial "Clear Results", another tab, etc.),
+  // bounce them back to the SearchPanelHome and clear the action badge so it
+  // doesn't show a stale result count. We only attach the storage listener while
+  // panel === 1 so we're not reacting to clears that happen while the user is
+  // already on a different panel.
+  useEffect(() => {
+    if (appState.panel !== 1) return;
+
+    const listener = (changes: Record<string, chrome.storage.StorageChange>, areaName: string) => {
+      if (areaName !== "session") return;
+      const change = changes[CACHE_KEYS.SEARCH_RESULTS];
+      if (change && Array.isArray(change.newValue) && change.newValue.length === 0) {
+        dispatch({ type: APP_ACTION.SET_PANEL, panel: 0 });
+        // Clear the extension action badge (the "number of results" pill)
+        // so it doesn't linger after the results are gone.
+        (async () => {
+          try {
+            await chrome.action.setBadgeText({ text: "" });
+          } catch (error) {
+            console.warn("Failed to clear action badge text:", { error });
+          }
+        })();
+      }
+    };
+
+    chrome.storage.onChanged.addListener(listener);
+    return () => chrome.storage.onChanged.removeListener(listener);
+  }, [appState.panel, dispatch]);
 
   // Speed dial visibility logicc
   useEffect(() => {
