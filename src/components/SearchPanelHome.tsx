@@ -1,3 +1,4 @@
+import { CACHE, PANEL } from "@/constants/common";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import SettingsIcon from "@mui/icons-material/Settings";
 import Badge from "@mui/material/Badge";
@@ -12,9 +13,6 @@ import {
   SearchPanelHomeSettingsButton,
 } from "./StyledComponents";
 
-import { CACHE_KEYS } from "@/constants/common";
-const RESULTS_TAB_INDEX = 1;
-
 const SearchPanelHome: React.FC = () => {
   const appContext = useAppContext();
   const { mode } = useCustomTheme();
@@ -28,10 +26,10 @@ const SearchPanelHome: React.FC = () => {
     } else {
       const loadStoredResults = async () => {
         try {
-          const data = await chrome.storage.session.get([CACHE_KEYS.SEARCH_RESULTS]);
-          if (data[CACHE_KEYS.SEARCH_RESULTS] && data[CACHE_KEYS.SEARCH_RESULTS].length > 0) {
+          const data = await chrome.storage.session.get([CACHE.SEARCH_RESULTS]);
+          if (data[CACHE.SEARCH_RESULTS] && data[CACHE.SEARCH_RESULTS].length > 0) {
             setHasStoredResults(true);
-            setResultCount(data[CACHE_KEYS.SEARCH_RESULTS].length);
+            setResultCount(data[CACHE.SEARCH_RESULTS].length);
           } else {
             setHasStoredResults(false);
             setResultCount(0);
@@ -47,12 +45,12 @@ const SearchPanelHome: React.FC = () => {
   const handleSearch = async (query: string) => {
     // Save the query to Chrome session storage (same as SearchInput)
     await chrome.storage.session.set({
-      [CACHE_KEYS.SEARCH_INPUT]: query,
-      [CACHE_KEYS.SEARCH_IS_NEW_SEARCH]: true, // Flag to indicate this is a new search submission
+      [CACHE.SEARCH_INPUT]: query,
+      [CACHE.SEARCH_IS_NEW_SEARCH]: true, // Flag to indicate this is a new search submission
     });
     // Switch to the results panel
     if (typeof appContext.setPanel === "function") {
-      appContext.setPanel(RESULTS_TAB_INDEX);
+      appContext.setPanel(PANEL.RESULTS);
     } else if (typeof appContext.setUserSettings === "function") {
       appContext.setUserSettings({
         ...appContext.userSettings,
@@ -79,7 +77,7 @@ const SearchPanelHome: React.FC = () => {
       {/* Forward arrow in upper right, only if there are results */}
       {hasStoredResults && appContext.setPanel && (
         <SearchPanelHomeForwardButton
-          onClick={() => appContext.setPanel!(RESULTS_TAB_INDEX)}
+          onClick={() => appContext.setPanel!(PANEL.RESULTS)}
           aria-label="Go to results"
           isDarkTheme={mode === "dark"}
         >

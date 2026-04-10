@@ -1,3 +1,4 @@
+import { CACHE } from "@/constants/common";
 import type { CachedData } from "@/suppliers/SupplierBase";
 import Logger from "@/utils/Logger";
 import { md5 } from "js-md5";
@@ -209,8 +210,6 @@ import { md5 } from "js-md5";
  * @source
  */
 export default class SupplierCache {
-  private static readonly queryCacheKey = "supplier_query_cache";
-  private static readonly productDataCacheKey = "supplier_product_data_cache";
   private static readonly CACHE_VERSION = 1;
   private static readonly cacheSize = 100;
   private static readonly productDataCacheSize = 100;
@@ -244,7 +243,7 @@ export default class SupplierCache {
         // Fallback to Node's Buffer if available
         if (typeof Buffer !== "undefined") {
           const key = Buffer.from(data).toString("base64");
-          this.logger.debug("Generated cache key (Buffer):", key);
+          this.logger.debug("Generated cache key (Buffer):", { key });
           return key;
         }
         // If neither is available, use a simple hash function
@@ -255,13 +254,13 @@ export default class SupplierCache {
           hash = hash & hash; // Convert to 32bit integer
         }
         const key = hash.toString(36);
-        this.logger.debug("Generated cache key (hash):", key);
+        this.logger.debug("Generated cache key (hash):", { key });
         return key;
       } catch (error) {
         this.logger.error("Error generating cache key:", error);
         // Fallback to a simple string if all else fails
         const key = data.replace(/[^a-zA-Z0-9]/g, "_");
-        this.logger.debug("Generated cache key (fallback):", key);
+        this.logger.debug("Generated cache key (fallback):", { key });
         return key;
       }
     }
@@ -272,11 +271,7 @@ export default class SupplierCache {
    * This ensures that identical detail requests (even from different queries) share the same cache entry.
    * @source
    */
-  getProductDataCacheKey(
-    url: string,
-    supplierName: string,
-    params?: QueryParams,
-  ): string {
+  getProductDataCacheKey(url: string, supplierName: string, params?: QueryParams): string {
     const data = {
       url, // Must match the actual HTTP request URL
       params: params || {}, // Must match the actual HTTP request params
@@ -297,9 +292,9 @@ export default class SupplierCache {
   ): Promise<void> {
     try {
       const key = this.generateCacheKey(query, supplierName);
-      const result = await chrome.storage.local.get(SupplierCache.queryCacheKey);
+      const result = await chrome.storage.local.get(CACHE.SUPPLIER_QUERY_CACHE);
       const cache =
-        (result[SupplierCache.queryCacheKey] as Record<string, CachedData<unknown>>) || {};
+        (result[CACHE.SUPPLIER_QUERY_CACHE] as Record<string, CachedData<unknown>>) || {};
 
       // If cache is full, remove oldest entry
       if (Object.keys(cache).length >= SupplierCache.cacheSize) {
@@ -333,9 +328,9 @@ export default class SupplierCache {
         metadata: cache[key].__cacheMetadata,
       });
 
-      await chrome.storage.local.set({ [SupplierCache.queryCacheKey]: cache });
+      await chrome.storage.local.set({ [CACHE.SUPPLIER_QUERY_CACHE]: cache });
     } catch (error) {
-      this.logger.error("Error storing query results in cache:", error);
+      this.logger.error("Error storing query results in cache:", { error });
     }
   }
 
@@ -345,9 +340,9 @@ export default class SupplierCache {
    */
   async getCachedProductData(key: string): Promise<Maybe<Record<string, unknown>>> {
     try {
-      const result = await chrome.storage.local.get(SupplierCache.productDataCacheKey);
+      const result = await chrome.storage.local.get(CACHE.SUPPLIER_PRODUCT_DATA_CACHE);
       const cache =
-        (result[SupplierCache.productDataCacheKey] as Record<string, CachedProductEntry>) || {};
+        (result[CACHE.SUPPLIER_PRODUCT_DATA_CACHE] as Record<string, CachedProductEntry>) || {};
       const cached = cache[key];
       if (cached) {
         await this.updateProductDataCacheTimestamp(key);
@@ -355,7 +350,7 @@ export default class SupplierCache {
       }
       return undefined;
     } catch (error) {
-      this.logger.error("Error retrieving product data from cache:", error);
+      this.logger.error("Error retrieving product data from cache:", { error });
       return undefined;
     }
   }
@@ -366,15 +361,15 @@ export default class SupplierCache {
    */
   async updateProductDataCacheTimestamp(key: string): Promise<void> {
     try {
-      const result = await chrome.storage.local.get(SupplierCache.productDataCacheKey);
+      const result = await chrome.storage.local.get(CACHE.SUPPLIER_PRODUCT_DATA_CACHE);
       const cache =
-        (result[SupplierCache.productDataCacheKey] as Record<string, CachedProductEntry>) || {};
+        (result[CACHE.SUPPLIER_PRODUCT_DATA_CACHE] as Record<string, CachedProductEntry>) || {};
       if (cache[key]) {
         cache[key].timestamp = Date.now();
-        await chrome.storage.local.set({ [SupplierCache.productDataCacheKey]: cache });
+        await chrome.storage.local.set({ [CACHE.SUPPLIER_PRODUCT_DATA_CACHE]: cache });
       }
     } catch (error) {
-      this.logger.error("Error updating product data cache timestamp:", error);
+      this.logger.error("Error updating product data cache timestamp:", { error });
     }
   }
 
@@ -384,9 +379,9 @@ export default class SupplierCache {
    */
   async cacheProductData(key: string, data: Record<string, unknown>): Promise<void> {
     try {
-      const result = await chrome.storage.local.get(SupplierCache.productDataCacheKey);
+      const result = await chrome.storage.local.get(CACHE.SUPPLIER_PRODUCT_DATA_CACHE);
       const cache =
-        (result[SupplierCache.productDataCacheKey] as Record<string, CachedProductEntry>) || {};
+        (result[CACHE.SUPPLIER_PRODUCT_DATA_CACHE] as Record<string, CachedProductEntry>) || {};
       if (Object.keys(cache).length >= SupplierCache.productDataCacheSize) {
         const oldestKey = Object.entries(cache).sort(
           ([, a], [, b]) => a.timestamp - b.timestamp,
@@ -397,9 +392,9 @@ export default class SupplierCache {
         data,
         timestamp: Date.now(),
       };
-      await chrome.storage.local.set({ [SupplierCache.productDataCacheKey]: cache });
+      await chrome.storage.local.set({ [CACHE.SUPPLIER_PRODUCT_DATA_CACHE]: cache });
     } catch (error) {
-      this.logger.error("Error storing product data in cache:", error);
+      this.logger.error("Error storing product data in cache:", { error });
     }
   }
 
@@ -408,7 +403,7 @@ export default class SupplierCache {
    * @source
    */
   static getQueryCacheKey(): string {
-    return SupplierCache.queryCacheKey;
+    return CACHE.SUPPLIER_QUERY_CACHE;
   }
 
   /**
@@ -416,7 +411,7 @@ export default class SupplierCache {
    * @source
    */
   static getProductDataCacheKey(): string {
-    return SupplierCache.productDataCacheKey;
+    return CACHE.SUPPLIER_PRODUCT_DATA_CACHE;
   }
 
   /**
@@ -427,12 +422,12 @@ export default class SupplierCache {
     console.debug("Clearing supplier cache");
     try {
       await chrome.storage.local.remove([
-        SupplierCache.queryCacheKey,
-        SupplierCache.productDataCacheKey,
+        String(CACHE.SUPPLIER_QUERY_CACHE),
+        String(CACHE.SUPPLIER_PRODUCT_DATA_CACHE),
       ]);
       console.debug("Supplier cache cleared");
     } catch (error) {
-      console.error("Error clearing supplier cache:", error);
+      console.error("Error clearing supplier cache:", { error });
     }
   }
 }

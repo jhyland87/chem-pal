@@ -8,6 +8,12 @@ import {
   ViewColumn as ViewColumnIcon,
 } from "@mui/icons-material";
 
+import { defaultResultsLimit } from "@/../config.json";
+import DrawerSystem from "@/components/DrawerSystem";
+import LoadingBackdrop from "@/components/LoadingBackdrop";
+import resultStyles from "@/components/ResultsPanel.module.scss";
+import { generatePageSizes } from "@/helpers/utils";
+import { useDebouncedCallback } from "@/shared/hooks";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
   Box,
@@ -21,12 +27,6 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-
-import DrawerSystem from "@/components/DrawerSystem";
-import LoadingBackdrop from "@/components/LoadingBackdrop";
-import resultStyles from "@/components/ResultsPanel.module.scss";
-import { generatePageSizes } from "@/helpers/utils";
-import { useDebouncedCallback } from "@/shared/hooks";
 import { Column, ColumnFiltersState, flexRender, Header, Row } from "@tanstack/react-table";
 import { isEmpty } from "lodash";
 import React, { Dispatch, ReactElement, SetStateAction, useEffect, useState } from "react";
@@ -174,7 +174,7 @@ export default function ResultsTable({
       jason: false,
       antoine: true,
       popupSize: "small",
-      supplierResultLimit: 15,
+      supplierResultLimit: defaultResultsLimit,
       autoResize: true,
       someSetting: false,
       suppliers: [],

@@ -1,5 +1,6 @@
 import {
   AVAILABILITY_OPTIONS,
+  DRAWER_INDEX,
   SHIPPING_OPTIONS,
   SUPPLIER_COUNTRY_OPTIONS,
 } from "@/constants/common";
@@ -50,7 +51,7 @@ const DrawerSearchPanel: React.FC<{
     const query = searchFilters.titleQuery.trim();
     if (!query) return;
     setPendingSearchQuery(query);
-    setDrawerTab(-1);
+    setDrawerTab(DRAWER_INDEX.CLOSED);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

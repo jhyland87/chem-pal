@@ -1,10 +1,10 @@
-import { CACHE_KEYS } from "@/constants/common";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   resetChromeStorageMock,
   restoreChromeStorageMock,
   setupChromeStorageMock,
 } from "@/__fixtures__/helpers/chrome/storageMock";
+import { CACHE } from "@/constants/common";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   buildNoResultsMessage,
   createInitialHistoryEntry,
@@ -82,10 +82,7 @@ describe("useSearch helpers", () => {
       const config = {
         price: { filterVariant: "range", filterData: [] as unknown[] },
       };
-      updateColumnFilterFromResult(
-        config,
-        { price: "not a number" } as unknown as Product,
-      );
+      updateColumnFilterFromResult(config, { price: "not a number" } as unknown as Product);
       expect(config.price.filterData).toEqual([]);
     });
   });
@@ -95,8 +92,8 @@ describe("useSearch helpers", () => {
       const results = [{ id: 1, title: "Widget" }] as unknown as Product[];
       await saveResultsToSession(results);
 
-      const stored = await chrome.storage.session.get([CACHE_KEYS.SEARCH_RESULTS]);
-      expect(stored[CACHE_KEYS.SEARCH_RESULTS]).toEqual(results);
+      const stored = await chrome.storage.session.get([CACHE.SEARCH_RESULTS]);
+      expect(stored[CACHE.SEARCH_RESULTS]).toEqual(results);
     });
 
     it("does not throw when chrome.storage.session.set rejects", async () => {
@@ -125,8 +122,8 @@ describe("useSearch helpers", () => {
 
       await createInitialHistoryEntry("acetone", timestamp, filters, ["Carolina"]);
 
-      const stored = await chrome.storage.local.get([CACHE_KEYS.SEARCH_HISTORY]);
-      const history = stored[CACHE_KEYS.SEARCH_HISTORY] as SearchHistoryEntry[];
+      const stored = await chrome.storage.local.get([CACHE.SEARCH_HISTORY]);
+      const history = stored[CACHE.SEARCH_HISTORY] as SearchHistoryEntry[];
 
       expect(history).toHaveLength(1);
       expect(history[0]).toMatchObject({
@@ -150,8 +147,8 @@ describe("useSearch helpers", () => {
       await createInitialHistoryEntry("first", 1, filters, []);
       await createInitialHistoryEntry("second", 2, filters, []);
 
-      const stored = await chrome.storage.local.get([CACHE_KEYS.SEARCH_HISTORY]);
-      const history = stored[CACHE_KEYS.SEARCH_HISTORY] as SearchHistoryEntry[];
+      const stored = await chrome.storage.local.get([CACHE.SEARCH_HISTORY]);
+      const history = stored[CACHE.SEARCH_HISTORY] as SearchHistoryEntry[];
 
       expect(history.map((h) => h.query)).toEqual(["second", "first"]);
     });
@@ -173,12 +170,12 @@ describe("useSearch helpers", () => {
         filters,
         selectedSuppliers: [],
       }));
-      await chrome.storage.local.set({ [CACHE_KEYS.SEARCH_HISTORY]: seeded });
+      await chrome.storage.local.set({ [CACHE.SEARCH_HISTORY]: seeded });
 
       await createInitialHistoryEntry("newest", 9999, filters, []);
 
-      const stored = await chrome.storage.local.get([CACHE_KEYS.SEARCH_HISTORY]);
-      const history = stored[CACHE_KEYS.SEARCH_HISTORY] as SearchHistoryEntry[];
+      const stored = await chrome.storage.local.get([CACHE.SEARCH_HISTORY]);
+      const history = stored[CACHE.SEARCH_HISTORY] as SearchHistoryEntry[];
 
       expect(history).toHaveLength(100);
       expect(history[0].query).toBe("newest");
@@ -192,12 +189,12 @@ describe("useSearch helpers", () => {
         shippingType: [],
       } as unknown as SearchFilters;
 
-      await chrome.storage.local.set({ [CACHE_KEYS.SEARCH_HISTORY]: "garbage" });
+      await chrome.storage.local.set({ [CACHE.SEARCH_HISTORY]: "garbage" });
 
       await createInitialHistoryEntry("q", 1, filters, []);
 
-      const stored = await chrome.storage.local.get([CACHE_KEYS.SEARCH_HISTORY]);
-      const history = stored[CACHE_KEYS.SEARCH_HISTORY] as SearchHistoryEntry[];
+      const stored = await chrome.storage.local.get([CACHE.SEARCH_HISTORY]);
+      const history = stored[CACHE.SEARCH_HISTORY] as SearchHistoryEntry[];
 
       expect(history).toHaveLength(1);
       expect(history[0].query).toBe("q");
@@ -218,8 +215,8 @@ describe("useSearch helpers", () => {
 
       await updateHistoryResultCount(100, 42);
 
-      const stored = await chrome.storage.local.get([CACHE_KEYS.SEARCH_HISTORY]);
-      const history = stored[CACHE_KEYS.SEARCH_HISTORY] as SearchHistoryEntry[];
+      const stored = await chrome.storage.local.get([CACHE.SEARCH_HISTORY]);
+      const history = stored[CACHE.SEARCH_HISTORY] as SearchHistoryEntry[];
 
       const updated = history.find((h) => h.timestamp === 100);
       const untouched = history.find((h) => h.timestamp === 200);
@@ -232,8 +229,8 @@ describe("useSearch helpers", () => {
 
       await updateHistoryResultCount(999, 5);
 
-      const stored = await chrome.storage.local.get([CACHE_KEYS.SEARCH_HISTORY]);
-      const history = stored[CACHE_KEYS.SEARCH_HISTORY] as SearchHistoryEntry[];
+      const stored = await chrome.storage.local.get([CACHE.SEARCH_HISTORY]);
+      const history = stored[CACHE.SEARCH_HISTORY] as SearchHistoryEntry[];
 
       expect(history[0].resultCount).toBe(0);
     });

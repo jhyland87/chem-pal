@@ -1,3 +1,4 @@
+import { CACHE } from "@/constants/common";
 import { FetchDecoratorResponse } from "@/helpers/fetch";
 
 /**
@@ -90,12 +91,12 @@ export class HttpLru {
     if (HttpLru.#instance) {
       return HttpLru.#instance;
     }
-    const data = await chrome.storage.local.get(["httplru"]);
-    if (data.httplru) {
+    const data = await chrome.storage.local.get([CACHE.HTTP_LRU]);
+    if (data[CACHE.HTTP_LRU]) {
       const httplru = new HttpLru(capacity);
-      httplru.cache = new Map(Object.entries(data.httplru.cache));
-      httplru.head = data.httplru.head;
-      httplru.tail = data.httplru.tail;
+      httplru.cache = new Map(Object.entries(data[CACHE.HTTP_LRU].cache));
+      httplru.head = data[CACHE.HTTP_LRU].head;
+      httplru.tail = data[CACHE.HTTP_LRU].tail;
       HttpLru.#instance = httplru;
       return httplru;
     } else {
@@ -228,7 +229,7 @@ export class HttpLru {
   private async saveToStorage(): Promise<void> {
     const cacheData = Object.fromEntries(this.cache);
     await chrome.storage.local.set({
-      httplru: {
+      [CACHE.HTTP_LRU]: {
         cache: cacheData,
         head: this.head,
         tail: this.tail,

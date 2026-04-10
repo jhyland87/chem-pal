@@ -1,3 +1,4 @@
+import { defaultResultsLimit } from "@/../config.json";
 import { mapDefined } from "@/helpers/utils";
 import Logger from "@/utils/Logger";
 import { incrementParseError } from "@/utils/SupplierStatsStore";
@@ -39,7 +40,7 @@ export default class SupplierFactory<P extends Product> {
   private suppliers: Array<string>;
 
   // Maximum number of results for each supplier
-  private limit: number = 15;
+  private limit: number = defaultResultsLimit;
 
   // Logger instance
   private logger: Logger;

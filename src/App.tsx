@@ -1,4 +1,5 @@
-import { APP_ACTION, CACHE_KEYS } from "@/constants/common";
+import { defaultResultsLimit } from "@/../config.json";
+import { APP_ACTION, CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
 import { AppContext } from "@/context";
 import SupplierFactory from "@/suppliers/SupplierFactory";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -59,9 +60,9 @@ import { getUserCountry } from "./helpers/utils";
 
 interface AppState {
   userSettings: UserSettings;
-  panel: number;
+  panel: PANEL;
   speedDialVisibility: boolean;
-  drawerTab: number;
+  drawerTab: DRAWER_INDEX;
   selectedSuppliers: string[];
 }
 
@@ -78,7 +79,7 @@ const initialAppState: AppState = {
     jason: false,
     antoine: true,
     popupSize: "small",
-    supplierResultLimit: 15,
+    supplierResultLimit: defaultResultsLimit,
     autoResize: true,
     someSetting: false,
     suppliers: SupplierFactory.supplierList(),
@@ -88,18 +89,18 @@ const initialAppState: AppState = {
     hideColumns: ["description", "uom"],
     columnFilterConfig: {},
   },
-  panel: 0,
+  panel: PANEL.SEARCH_HOME,
   speedDialVisibility: false,
-  drawerTab: -1,
+  drawerTab: DRAWER_INDEX.CLOSED,
   selectedSuppliers: [],
 };
 
 type AppAction =
   | { type: APP_ACTION.UPDATE_SETTINGS; settings: UserSettings }
-  | { type: APP_ACTION.SET_PANEL; panel: number }
+  | { type: APP_ACTION.SET_PANEL; panel: PANEL }
   | { type: APP_ACTION.SET_SPEED_DIAL_VISIBILITY; visible: boolean }
   | { type: APP_ACTION.LOAD_FROM_STORAGE; data: Partial<AppState> }
-  | { type: APP_ACTION.SET_DRAWER_TAB; tab: number }
+  | { type: APP_ACTION.SET_DRAWER_TAB; tab: DRAWER_INDEX }
   | { type: APP_ACTION.SET_SELECTED_SUPPLIERS; suppliers: string[] };
 
 /**
@@ -136,7 +137,7 @@ function App() {
                 const currencyRate = await getCurrencyRate("USD", newSettings.currency);
                 const updatedSettings = { ...newSettings, currencyRate };
                 try {
-                  await chrome.storage.local.set({ userSettings: updatedSettings });
+                  await chrome.storage.local.set({ [CACHE.USER_SETTINGS]: updatedSettings });
                 } catch (error) {
                   console.error("Failed to update settings:", { error });
                 }
@@ -159,7 +160,7 @@ function App() {
           startTransition(() => {
             (async () => {
               try {
-                await chrome.storage.session.set({ panel: action.panel });
+                await chrome.storage.session.set({ [CACHE.PANEL]: action.panel });
               } catch (error) {
                 console.error("Failed to save panel:", { error });
               }
@@ -204,7 +205,9 @@ function App() {
           startTransition(() => {
             (async () => {
               try {
-                await chrome.storage.local.set({ selectedSuppliers: action.suppliers });
+                await chrome.storage.local.set({
+                  [CACHE.SELECTED_SUPPLIERS]: action.suppliers,
+                });
               } catch (error) {
                 console.error("Failed to save selectedSuppliers:", { error });
               }
@@ -226,30 +229,29 @@ function App() {
 
   // Load initial data from Chrome storage on mount
   useEffect(() => {
-    console.log("SET_PANEL", appState.panel);
     const loadFromStorage = async () => {
       try {
         const [sessionData, localData] = await Promise.all([
-          chrome.storage.session.get(["panel", CACHE_KEYS.SEARCH_RESULTS]),
-          chrome.storage.local.get(["userSettings", "selectedSuppliers"]),
+          chrome.storage.session.get([CACHE.PANEL, CACHE.SEARCH_RESULTS]),
+          chrome.storage.local.get([CACHE.USER_SETTINGS, CACHE.SELECTED_SUPPLIERS]),
         ]);
         const loadedData: Partial<AppState> = {};
 
-        if (sessionData.panel) {
-          const savedPanel = Number(sessionData.panel);
-          const results = sessionData[CACHE_KEYS.SEARCH_RESULTS];
+        if (sessionData[CACHE.PANEL]) {
+          const savedPanel = Number(sessionData[CACHE.PANEL]);
+          const results = sessionData[CACHE.SEARCH_RESULTS];
           const hasResults = Array.isArray(results) && results.length > 0;
 
           // If restoring to results panel but there are no results, go to search instead
           loadedData.panel = savedPanel === 1 && !hasResults ? 0 : savedPanel;
         }
 
-        if (localData.userSettings) {
-          loadedData.userSettings = { ...localData.userSettings };
+        if (localData[CACHE.USER_SETTINGS]) {
+          loadedData.userSettings = { ...localData[CACHE.USER_SETTINGS] };
         }
 
-        if (localData.selectedSuppliers) {
-          loadedData.selectedSuppliers = localData.selectedSuppliers as string[];
+        if (localData[CACHE.SELECTED_SUPPLIERS]) {
+          loadedData.selectedSuppliers = localData[CACHE.SELECTED_SUPPLIERS] as string[];
         }
 
         if (Object.keys(loadedData).length > 0) {
@@ -269,11 +271,11 @@ function App() {
   // panel === 1 so we're not reacting to clears that happen while the user is
   // already on a different panel.
   useEffect(() => {
-    if (appState.panel !== 1) return;
+    if (appState.panel !== PANEL.RESULTS) return;
 
     const listener = (changes: Record<string, chrome.storage.StorageChange>, areaName: string) => {
       if (areaName !== "session") return;
-      const change = changes[CACHE_KEYS.SEARCH_RESULTS];
+      const change = changes[CACHE.SEARCH_RESULTS];
       if (change && Array.isArray(change.newValue) && change.newValue.length === 0) {
         dispatch({ type: APP_ACTION.SET_PANEL, panel: 0 });
         // Clear the extension action badge (the "number of results" pill)
@@ -316,7 +318,7 @@ function App() {
     dispatch({ type: APP_ACTION.UPDATE_SETTINGS, settings });
   };
 
-  const handleSetPanel = (panel: number) => {
+  const handleSetPanel = (panel: PANEL) => {
     dispatch({ type: APP_ACTION.SET_PANEL, panel });
   };
 
@@ -328,9 +330,12 @@ function App() {
     setSearchResults, // Expose setter for child components to use
     setPanel: handleSetPanel, // Add setPanel to context for tab switching
     drawerTab: appState.drawerTab,
-    setDrawerTab: (tab: number) => dispatch({ type: APP_ACTION.SET_DRAWER_TAB, tab }),
+    setDrawerTab: (tab: DRAWER_INDEX) => dispatch({ type: APP_ACTION.SET_DRAWER_TAB, tab }),
     toggleDrawer: () =>
-      dispatch({ type: APP_ACTION.SET_DRAWER_TAB, tab: appState.drawerTab === -1 ? 0 : -1 }),
+      dispatch({
+        type: APP_ACTION.SET_DRAWER_TAB,
+        tab: appState.drawerTab === DRAWER_INDEX.CLOSED ? DRAWER_INDEX.SEARCH : DRAWER_INDEX.CLOSED,
+      }),
     selectedSuppliers: appState.selectedSuppliers,
     setSelectedSuppliers: (suppliers: string[]) =>
       dispatch({ type: APP_ACTION.SET_SELECTED_SUPPLIERS, suppliers }),
@@ -349,9 +354,9 @@ function App() {
             {/* Show loading indicator when settings are updating */}
             {isPending && <div className="loading-indicator-box" />}
             {/* Render only the active panel, no app bar or tab navigation */}
-            {appState.panel === 0 && <SearchPanelHome />}
-            {appState.panel === 1 && <SearchPanel />}
-            {appState.panel === 2 && <StatsPanel />}
+            {appState.panel === PANEL.SEARCH_HOME && <SearchPanelHome />}
+            {appState.panel === PANEL.RESULTS && <SearchPanel />}
+            {appState.panel === PANEL.STATS && <StatsPanel />}
             {/* {appState.panel === 3 && <FavoritesPanel />}
             {appState.panel === 4 && <HistoryPanel />}
             {appState.panel === 5 && <SettingsPanel />} */}

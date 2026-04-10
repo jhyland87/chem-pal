@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { defaultResultsLimit } from "@/../config.json";
 import { UOM } from "@/constants/common";
 import { EmptyResponseError } from "@/helpers/exceptions";
 import { stripQuantityFromString } from "@/helpers/quantity";
@@ -322,7 +323,11 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * ```
    * @source
    */
-  public constructor(query: string, limit: number = 15, controller?: AbortController) {
+  public constructor(
+    query: string,
+    limit: number = defaultResultsLimit,
+    controller?: AbortController,
+  ) {
     // Initialize required properties
     this.query = query;
     this.limit = limit;
