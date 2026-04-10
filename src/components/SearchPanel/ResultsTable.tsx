@@ -134,8 +134,15 @@ export default function ResultsTable({
   const [globalFilter, setGlobalFilter] = useState("");
 
   // Enhanced search hook that maintains streaming behavior
-  const { searchResults, isLoading, error, executeSearch, handleStopSearch, tableText } =
-    useSearch();
+  const {
+    searchResults,
+    isLoading,
+    error,
+    executeSearch,
+    handleStopSearch,
+    excludeProduct,
+    tableText,
+  } = useSearch();
 
   // Watch for pending search queries triggered from HistoryPanel
   useEffect(() => {
@@ -148,19 +155,10 @@ export default function ResultsTable({
   // Context menu functionality
   const { contextMenu, handleContextMenu, handleCloseContextMenu } = useContextMenu();
 
-  // Global filter logic
-  const filteredResults = globalFilter.trim()
-    ? searchResults.filter((row) =>
-        Object.values(row).join(" ").toLowerCase().includes(globalFilter.trim().toLowerCase()),
-      )
-    : searchResults;
-
-  // Use filteredResults instead of searchResults for optimisticResults
-  const optimisticResults = filteredResults;
-
   const table = useResultsTable({
-    showSearchResults: optimisticResults,
+    showSearchResults: searchResults,
     columnFilterFns,
+    globalFilterFns: [globalFilter, setGlobalFilter],
     getRowCanExpand,
     userSettings: appContext?.userSettings || {
       showHelp: false,
@@ -197,8 +195,9 @@ export default function ResultsTable({
     }
   }, [appContext?.userSettings.hideColumns, table]);
 
-  // Auto column sizing
-  const { getMeasurementTableProps } = useAutoColumnSizing(table, optimisticResults);
+  // Auto column sizing is driven by the raw searchResults (not the filtered
+  // row model) so that filter input keystrokes don't trigger column remeasuring.
+  const { getMeasurementTableProps } = useAutoColumnSizing(table, searchResults);
 
   const handleSearch = (query: string) => {
     if (query.trim()) {
@@ -221,7 +220,7 @@ export default function ResultsTable({
     <>
       <LoadingBackdrop
         open={isLoading}
-        resultCount={optimisticResults.length}
+        resultCount={searchResults.length}
         onClick={handleStopSearch}
       />
       <DrawerSystem />
@@ -266,12 +265,18 @@ export default function ResultsTable({
           </div>
         </div>
 
-        {/* <div className="results-title">Search Results ({optimisticResults.length} found)</div> */}
+        {/* <div className="results-title">Search Results ({searchResults.length} found)</div> */}
 
         <ResultsHeaderContainer>
-          <ResultsCountDisplay>Results: {optimisticResults.length}</ResultsCountDisplay>
-          {/* Only show the global filter if there are results */}
-          {table.getRowModel().rows.length > 0 && (
+          <ResultsCountDisplay>
+            Results: {table.getFilteredRowModel().rows.length}
+            {table.getFilteredRowModel().rows.length !== searchResults.length &&
+              ` of ${searchResults.length}`}
+          </ResultsCountDisplay>
+          {/* Only show the global filter if there are results. Based on
+              searchResults (not the filtered row model) so the input doesn't
+              vanish once the user's filter query matches zero rows. */}
+          {searchResults.length > 0 && (
             <GlobalFilterTextField
               size="small"
               variant="outlined"
@@ -386,9 +391,10 @@ export default function ResultsTable({
               ) : (
                 <TableRow className={resultStyles["styled-table-row"]}>
                   <EmptyStateCell colSpan={table.getAllColumns().length}>
-                    {optimisticResults.length === 0
+                    {searchResults.length === 0
                       ? tableText || "No search query"
-                      : table.getState().columnFilters.length > 0
+                      : table.getState().columnFilters.length > 0 ||
+                          table.getState().globalFilter
                         ? "No results matching your filter values"
                         : "No results found"}
                   </EmptyStateCell>
@@ -507,6 +513,7 @@ export default function ResultsTable({
             y={contextMenu.y}
             product={contextMenu.product}
             onClose={handleCloseContextMenu}
+            onExcludeProduct={excludeProduct}
           />
         )}
       </div>

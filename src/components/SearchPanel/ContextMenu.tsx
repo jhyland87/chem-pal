@@ -28,6 +28,11 @@ interface ContextMenuProps {
   onClose: () => void;
   /** Product data to display actions for */
   product: Product;
+  /**
+   * Called when the user selects "Ignore Product". Responsible for both
+   * persisting the exclusion and removing the row from the visible results.
+   */
+  onExcludeProduct?: (product: Product) => void | Promise<void>;
 }
 
 /**
@@ -64,7 +69,13 @@ interface ContextMenuPosition {
  * ```
  * @source
  */
-export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps) {
+export default function ContextMenu({
+  x,
+  y,
+  onClose,
+  product,
+  onExcludeProduct,
+}: ContextMenuProps) {
   if (!product) return null;
   const menuRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<ContextMenuPosition>({ x, y });
@@ -239,9 +250,19 @@ export default function ContextMenu({ x, y, onClose, product }: ContextMenuProps
     onClose();
   };
 
-  const handleIgnoreProduct = () => {
-    // TODO: Implement ignore product functionality
-    console.log("Ignoring product", { product });
+  /**
+   * Delegates the "Ignore Product" action to the parent via the
+   * `onExcludeProduct` callback, which is responsible for both persisting the
+   * exclusion to chrome.storage.local and removing the row from the visible
+   * results. We only close the menu here.
+   * @source
+   */
+  const handleIgnoreProduct = async () => {
+    try {
+      await onExcludeProduct?.(product);
+    } catch (error) {
+      console.warn("Failed to ignore product:", { error });
+    }
     onClose();
   };
 

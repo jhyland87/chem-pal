@@ -2,6 +2,12 @@
 import { defaultResultsLimit } from "@/../config.json";
 import { UOM } from "@/constants/common";
 import { EmptyResponseError } from "@/helpers/exceptions";
+import {
+  countExcludedProductsForSupplier,
+  getProductExclusionKey,
+  loadExcludedProductKeys,
+  shouldExcludeProduct,
+} from "@/helpers/excludedProducts";
 import { stripQuantityFromString } from "@/helpers/quantity";
 import { fetchDecorator } from "@/helpers/request";
 import Logger from "@/utils/Logger";
@@ -296,6 +302,13 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
 
   // Cache instance for this supplier
   protected cache!: SupplierCache;
+
+  // Product-data cache keys the user has explicitly excluded via the
+  // "Ignore Product" context menu action. Loaded once per execute() from
+  // chrome.storage.local so membership checks are synchronous on the hot
+  // path (see getProductData). Newly-ignored products take effect on the
+  // next search, which matches the stated feature requirement.
+  protected excludedProductKeys: Set<string> = new Set();
 
   /**
    * Creates a new instance of the supplier base class.
@@ -1044,16 +1057,51 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    */
   public async *execute(): AsyncGenerator<T, void, undefined> {
     await this.setup();
+    // Snapshot the user's ignore list once per search. Any product whose
+    // exclusion key matches an entry here is dropped before the detail phase
+    // runs (see the filter after queryProductsWithCache below).
+    this.excludedProductKeys = await loadExcludedProductKeys();
+    // Over-fetch by the number of previously-ignored products belonging to
+    // this supplier so that, in the worst case where every ignored product
+    // appears in the top of the query result set, we still end up with
+    // `this.limit` survivors after filtering. The queryProductsWithCache
+    // cache invalidates itself when the requested limit exceeds the cached
+    // limit, so this is safe.
+    const excludedForSupplier = await countExcludedProductsForSupplier(this.supplierName);
+    const fetchLimit = this.limit + excludedForSupplier;
     incrementSearchQueryCount(this.supplierName);
     this.logger.log(
-      `Executing query '${this.query}' for supplier ${this.supplierName} (limit: ${this.limit})`,
+      `Executing query '${this.query}' for supplier ${this.supplierName} (limit: ${this.limit}, fetchLimit: ${fetchLimit}, excluded: ${excludedForSupplier})`,
     );
-    const results = await this.queryProductsWithCache(this.query, this.limit);
+    const results = await this.queryProductsWithCache(this.query, fetchLimit);
     if (!results || results.length === 0) {
       this.logger.log(`No query results found`);
       return;
     }
-    this.products = results;
+    // Drop any products the user has ignored, then slice back down to the
+    // user-visible limit. Uses the same key shape as getProductData so
+    // whichever side catches the exclusion first, the check is consistent.
+    const survivors: ProductBuilder<T>[] = [];
+    for (const builder of results) {
+      if (survivors.length >= this.limit) break;
+      const rawUrl = builder.get("url");
+      if (typeof rawUrl !== "string") {
+        survivors.push(builder);
+        continue;
+      }
+      const exclusionUrl = this.href(rawUrl);
+      const exclusionKey = getProductExclusionKey(exclusionUrl, this.supplierName);
+      if (this.excludedProductKeys.has(exclusionKey)) {
+        this.logger.debug("Skipping excluded product (pre-detail)", {
+          url: rawUrl,
+          exclusionUrl,
+          exclusionKey,
+        });
+        continue;
+      }
+      survivors.push(builder);
+    }
+    this.products = survivors;
     const queue = new Queue(this.maxConcurrentRequests, this.minConcurrentCycle);
 
     // Create an array of promises, each yielding a product as soon as it's ready
@@ -1334,8 +1382,31 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       this.logger.error("Invalid URL in product:", { url });
       return undefined;
     }
+    // Normalize the URL the same way ProductBuilder.build() does (line 975
+    // calls `this.href(this.product.url)`) *only* for the exclusion check,
+    // so the md5 matches the absolute URL that the UI's context menu passed
+    // to addExcludedProduct. Suppliers often stage relative paths here
+    // (e.g. "/products/acetone") which would otherwise hash differently than
+    // the absolute URL stored on the built Product.
+    const exclusionUrl = this.href(url);
+    const shouldExclude = await shouldExcludeProduct(exclusionUrl, this.supplierName);
+    if (shouldExclude) {
+      this.logger.debug("Skipping excluded product", {
+        url,
+        exclusionUrl,
+        supplierName: this.supplierName,
+      });
+      return undefined;
+    }
     const cacheKey = this.cache.getProductDataCacheKey(url, this.supplierName);
     this.logger.debug("[SupplierBase] Product detail cache key:", cacheKey, "for url:", url);
+    // Skip products the user has explicitly excluded via the "Ignore Product"
+    // context menu. The exclusion key mirrors getProductDataCacheKey's no-params
+    // shape, so this check catches ignored entries regardless of supplier.
+    if (this.excludedProductKeys.has(cacheKey)) {
+      this.logger.debug("Skipping excluded product", { url, cacheKey });
+      return undefined;
+    }
     try {
       const cachedData = await this.cache.getCachedProductData(cacheKey);
       if (cachedData) {
@@ -1398,6 +1469,19 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       this.logger.error("Invalid URL in product:", { url });
       return undefined;
     }
+    // See getProductData above: normalize only for the exclusion key so it
+    // lines up with the absolute URL the UI context menu stores.
+    const exclusionUrl = this.href(url);
+    const shouldExclude = await shouldExcludeProduct(exclusionUrl, this.supplierName);
+    if (shouldExclude) {
+      this.logger.debug("Skipping excluded product", {
+        url,
+        exclusionUrl,
+        supplierName: this.supplierName,
+      });
+      return undefined;
+    }
+
     const cacheKey = this.cache.getProductDataCacheKey(url, this.supplierName, params);
     this.logger.debug("[SupplierBase] Product detail cache key:", cacheKey, "for url:", url);
     try {
