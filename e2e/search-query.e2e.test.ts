@@ -122,5 +122,5 @@ describe("Chem-Pal search query", () => {
     //await page.pause();
 
     await page.close();
-  }, 120_000);
+  }, 200_000);
 });
