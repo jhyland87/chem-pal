@@ -133,17 +133,17 @@ export default class Logger {
         // Check for global window property
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const globalWindow = window as Window & { LOG_LEVEL?: string };
-        const windowLevel = globalWindow.LOG_LEVEL;
-        if (windowLevel && windowLevel in LogLevel) {
-          return LogLevel[windowLevel as keyof typeof LogLevel];
+        const windowLevel = globalWindow.LOG_LEVEL?.toLowerCase();
+        if (windowLevel && Object.values(LogLevel).includes(windowLevel as LogLevel)) {
+          return windowLevel as LogLevel;
         }
       }
 
       // Fall back to Node.js environment check
       if (typeof process !== "undefined" && process.env) {
-        const nodeLevel = process.env.LOG_LEVEL;
-        if (nodeLevel && nodeLevel in LogLevel) {
-          return LogLevel[nodeLevel as keyof typeof LogLevel];
+        const nodeLevel = process.env.LOG_LEVEL?.toLowerCase();
+        if (nodeLevel && Object.values(LogLevel).includes(nodeLevel as LogLevel)) {
+          return nodeLevel as LogLevel;
         }
       }
 
@@ -155,6 +155,13 @@ export default class Logger {
     }
   }
 
+  public static setEnvLogLevel(level: LogLevel): void {
+    (window as any).LOG_LEVEL = level;
+    if (typeof process !== "undefined" && process.env) {
+      process.env.LOG_LEVEL = level;
+    }
+  }
+
   /**
    * The identifier prefix that will be included in all log messages from this instance.
    * Used to distinguish logs from different parts of the application.
@@ -162,13 +169,20 @@ export default class Logger {
    */
   private prefix: string;
 
+  private _currentLogLevel: LogLevel;
+
   /**
    * The current minimum log level for this logger instance.
    * Messages with a level lower than this will not be logged.
    * Can be changed at runtime using `setLogLevel()`.
    * @source
    */
-  private currentLogLevel: LogLevel;
+  private get currentLogLevel(): LogLevel {
+    if (this.useEnvOverride) {
+      return Logger.getEnvLogLevel();
+    }
+    return this._currentLogLevel;
+  }
 
   /**
    * Controls whether this logger instance should automatically sync its log level
@@ -203,7 +217,7 @@ export default class Logger {
   constructor(prefix: string, initialLogLevel?: LogLevel) {
     this.prefix = prefix;
     this.useEnvOverride = !initialLogLevel;
-    this.currentLogLevel = initialLogLevel ?? Logger.getEnvLogLevel();
+    this._currentLogLevel = initialLogLevel ?? this.currentLogLevel;
   }
 
   /**
@@ -222,7 +236,7 @@ export default class Logger {
    */
   public setLogLevel(level: LogLevel): void {
     this.useEnvOverride = false;
-    this.currentLogLevel = level;
+    this._currentLogLevel = level;
   }
 
   /**
@@ -307,9 +321,9 @@ export default class Logger {
     // If using environment override, check for changes
     if (this.useEnvOverride) {
       const envLevel = Logger.getEnvLogLevel();
-      if (envLevel !== this.currentLogLevel) {
-        const oldLevel = this.currentLogLevel;
-        this.currentLogLevel = envLevel;
+      if (envLevel !== this._currentLogLevel) {
+        const oldLevel = this._currentLogLevel;
+        this._currentLogLevel = envLevel;
         // Only log the level change if it would be visible at the new level
         if (Logger.logLevelPriority[LogLevel.INFO] >= Logger.logLevelPriority[envLevel]) {
           console.info(
@@ -890,4 +904,8 @@ export default class Logger {
       console.debug(this.formatMessage(LogLevel.DEBUG, message));
     }
   }
+}
+
+if (typeof window !== "undefined") {
+  (window as any).Logger = Logger;
 }

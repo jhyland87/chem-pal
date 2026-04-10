@@ -24,7 +24,9 @@ export default defineConfig({
       "src/helpers/__tests__/productBuilder.test.ts",
       "**/dist/**",
       "**/.{idea,git,cache,output,temp}/**",
-      "src/suppliers/**",
+      "src/suppliers/__fixtures__/**",
+      "src/suppliers/__tests__/supplierMacklin.test.ts",
+      //"src/suppliers/__tests__/supplierLaboratoriumDiscounter.test.ts",
       // disabling all component testing for now
       //"src/components/**",
       "src/__tests__/**",

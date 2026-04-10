@@ -7,6 +7,7 @@ import ArrowRightIcon from "@/icons/ArrowRightIcon";
 import {
   ColumnDef,
   type CellContext,
+  type ColumnMeta,
   type FilterFnOption,
   type SortingFnOption,
 } from "@tanstack/react-table";
@@ -233,12 +234,7 @@ export function getColumnFilterConfig() {
   const filterableColumns = TableColumns().reduce<
     Record<string, { filterVariant: string; filterData: unknown[] }>
   >((accu, column: ColumnDef<Product, unknown>) => {
-    const meta = column.meta as { filterVariant?: string };
-    console.debug("meta:", meta);
-    console.debug("accu", accu);
-    console.debug("column", column);
-    console.debug("column.id:", column.id);
-    console.debug("filterVariant", meta?.filterVariant);
+    const meta = column.meta as ColumnMeta<Product, unknown>;
     if (meta?.filterVariant === undefined || !column.id) return accu;
 
     accu[column.id] = {

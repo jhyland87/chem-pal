@@ -322,6 +322,21 @@ function App() {
     dispatch({ type: APP_ACTION.SET_PANEL, panel });
   };
 
+  const handleSetSelectedSuppliers = (suppliers: string[]) => {
+    dispatch({ type: APP_ACTION.SET_SELECTED_SUPPLIERS, suppliers });
+  };
+
+  const handleSetDrawerTab = (tab: DRAWER_INDEX) => {
+    dispatch({ type: APP_ACTION.SET_DRAWER_TAB, tab });
+  };
+
+  const handleToggleDrawer = () => {
+    dispatch({
+      type: APP_ACTION.SET_DRAWER_TAB,
+      tab: appState.drawerTab === DRAWER_INDEX.CLOSED ? DRAWER_INDEX.SEARCH : DRAWER_INDEX.CLOSED,
+    });
+  };
+
   // AppContext value with fixed searchResults property
   const appContextValue = {
     userSettings: appState.userSettings,
@@ -330,15 +345,10 @@ function App() {
     setSearchResults, // Expose setter for child components to use
     setPanel: handleSetPanel, // Add setPanel to context for tab switching
     drawerTab: appState.drawerTab,
-    setDrawerTab: (tab: DRAWER_INDEX) => dispatch({ type: APP_ACTION.SET_DRAWER_TAB, tab }),
-    toggleDrawer: () =>
-      dispatch({
-        type: APP_ACTION.SET_DRAWER_TAB,
-        tab: appState.drawerTab === DRAWER_INDEX.CLOSED ? DRAWER_INDEX.SEARCH : DRAWER_INDEX.CLOSED,
-      }),
+    setDrawerTab: handleSetDrawerTab,
+    toggleDrawer: handleToggleDrawer,
     selectedSuppliers: appState.selectedSuppliers,
-    setSelectedSuppliers: (suppliers: string[]) =>
-      dispatch({ type: APP_ACTION.SET_SELECTED_SUPPLIERS, suppliers }),
+    setSelectedSuppliers: handleSetSelectedSuppliers,
     pendingSearchQuery,
     setPendingSearchQuery,
     searchFilters,

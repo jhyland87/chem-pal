@@ -1,10 +1,12 @@
 import { AVAILABILITY } from "@/constants/common";
+import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 import { findCAS } from "@/helpers/cas";
+import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
-import { urlencode } from "@/helpers/request";
+import { createDOM, urlencode } from "@/helpers/request";
 import { firstMap, mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
-import { isPopulatedObject, isQuantityObject } from "@/utils/typeGuards/common";
+import { isPopulatedArray, isPopulatedObject, isQuantityObject } from "@/utils/typeGuards/common";
 import {
   isProductObject,
   isSearchResponseOk,
@@ -252,9 +254,9 @@ export default class SupplierLaboratoriumDiscounter
   protected initProductBuilders(
     data: LaboratoriumDiscounterSearchResponseProduct[],
   ): ProductBuilder<Product>[] {
-    this.logger.info("initProductBuilders data:", { data });
+    //this.logger.debug("initProductBuilders data:", { data });
     return mapDefined(data, (product) => {
-      this.logger.info("initProductBuilders product:", { product });
+      //this.logger.debug("initProductBuilders product:", { product });
       const productBuilder = new ProductBuilder(this.baseURL);
 
       const quantity = firstMap(parseQuantity, [
@@ -282,8 +284,221 @@ export default class SupplierLaboratoriumDiscounter
     });
   }
 
+  private metaAvailabilityToAvailability(availability: string): AVAILABILITY {
+    switch (availability) {
+      case "http://schema.org/InStock":
+        return AVAILABILITY.IN_STOCK;
+      case "http://schema.org/OutOfStock":
+        return AVAILABILITY.OUT_OF_STOCK;
+      case "http://schema.org/LimitedAvailability":
+        return AVAILABILITY.LIMITED_STOCK;
+      case "http://schema.org/PreOrder":
+        return AVAILABILITY.PRE_ORDER;
+      case "http://schema.org/BackOrder":
+        return AVAILABILITY.BACKORDER;
+      case "http://schema.org/Discontinued":
+        return AVAILABILITY.DISCONTINUED;
+      default:
+        this.logger.warn("Unknown availability - Defaulting to UNKNOWN", { availability });
+        return AVAILABILITY.UNKNOWN;
+    }
+  }
+
   /**
-   * Fetches product data for a given product builder
+   * Fetches the product detail HTML page and parses pricing, metadata and variants
+   * out of the rendered markup. Used as a fallback when the JSON endpoint does not
+   * return a valid product object.
+   * @param builder - The ProductBuilder to populate with parsed data
+   * @returns Promise resolving to the populated builder, or void if the fetch failed
+   * @source
+   */
+  private async getProductDataFromHTML(
+    builder: ProductBuilder<Product>,
+  ): Promise<ProductBuilder<Product> | void> {
+    const path = builder.get("url").startsWith("en/")
+      ? builder.get("url")
+      : `en/${builder.get("url")}`;
+    const url = new URL(path, this.baseURL);
+    const productResponse = await this.httpGetHtml({
+      path: url.toString(),
+    });
+    if (!productResponse) {
+      this.logger.warn("No product response", { url });
+      return;
+    }
+    const parsedHTML = createDOM(productResponse);
+    const productData = Array.from(parsedHTML.querySelectorAll("div[itemscope] > meta")).reduce<
+      Partial<Product>
+    >((acc, meta) => {
+      const property = meta.getAttribute("itemprop");
+      if (!property) return acc;
+      switch (property) {
+        case "url":
+        case "sku":
+          acc[property as keyof Product] = meta.getAttribute("content") ?? "";
+          break;
+        case "name":
+          acc.title = meta.getAttribute("content") ?? "";
+          break;
+        case "description":
+          acc.description = meta.getAttribute("content") ?? "";
+          const data = acc.description
+            ?.split(", ")
+            .reduce<Record<string, string>>((acc, val, idx) => {
+              if (idx === 0) acc.title = val as string;
+              else if (val.includes("CAS-No")) acc.cas = findCAS(val.split(" ")[1]) as CAS<string>;
+              // else if ( val.includes('Mol.weight'))
+              //   acc.weight = val.split(' ')[1];
+              else if (val.includes("min.") && val.includes("%"))
+                acc.conc = `${val.split(" ")[1]}%`;
+              return acc;
+            }, {});
+
+          Object.assign(acc, data);
+          break;
+        case "price":
+          acc.price = parseFloat(meta.getAttribute("content") ?? "");
+          break;
+        case "priceCurrency":
+          acc.currencyCode = meta.getAttribute("content");
+          acc.currencySymbol = CURRENCY_SYMBOL_MAP[acc.currencyCode as CurrencyCode];
+          break;
+        case "availability":
+          acc.availability = this.metaAvailabilityToAvailability(
+            meta.getAttribute("content") ?? "",
+          );
+          break;
+      }
+
+      return acc;
+    }, {});
+
+    const variants =
+      mapDefined(
+        Array.from(parsedHTML.querySelectorAll("#bulkProduct > .customOptions")),
+        (e) =>
+          ({
+            price:
+              parsePrice(
+                e
+                  .querySelector(
+                    ".variant-costPrice > div > .productPrice > .product-price.incl > span",
+                  )
+                  ?.textContent?.trim() ?? "",
+              )?.price ?? 0,
+            quantity:
+              parseQuantity(e.querySelector(".variant-title > span")?.textContent?.trim() ?? "")
+                ?.quantity ?? 0,
+            uom:
+              parseQuantity(e.querySelector(".variant-title > span")?.textContent?.trim() ?? "")
+                ?.uom ?? "",
+            sku:
+              Array.from(e.querySelectorAll("table td"))
+                ?.find((td) => td.textContent?.trim() === "SKU")
+                ?.nextElementSibling?.textContent?.trim() ?? "",
+          }) satisfies Variant,
+      ) ?? [];
+
+    if (isPopulatedArray(variants)) {
+      Object.assign(productData, variants.shift() ?? {});
+    }
+
+    Object.assign(productData, {
+      variants,
+    });
+
+    builder.setData(productData);
+
+    this.logger.debug("getProductDataFromHTML productData:", { builder, productData });
+    return builder;
+  }
+
+  /**
+   * Fetches product data from the JSON product endpoint and populates the builder
+   * with pricing and variants. Returns void if the response is missing or fails the
+   * product typeguard, signaling the caller to fall back to HTML scraping.
+   * @param builder - The ProductBuilder to populate with parsed data
+   * @returns Promise resolving to the populated builder, or void on failure
+   * @source
+   */
+  private async getProductDataFromJSON(
+    builder: ProductBuilder<Product>,
+  ): Promise<ProductBuilder<Product> | void> {
+    const path = builder.get("url").startsWith("en/")
+      ? builder.get("url")
+      : `en/${builder.get("url")}`;
+
+    const productResponse = await this.httpGetJson({
+      path,
+      params: { format: "json" },
+    });
+
+    if (!productResponse || !isProductObject(productResponse)) {
+      this.logger.warn("Invalid JSON product data - did not pass typeguard:", {
+        path,
+        productResponse,
+      });
+      return;
+    }
+
+    const productData = productResponse.product;
+    const currency = productResponse.shop.currencies[productResponse.shop.currency];
+    builder.setPricing(productData.price.price, currency.code, currency.symbol);
+    if (isPopulatedObject(productData.variants)) {
+      for (const variant of Object.values(productData.variants)) {
+        if (variant.active === false) continue;
+        const quantity = parseQuantity(variant.title);
+        if (!isQuantityObject(quantity)) {
+          this.logger.warn("Invalid quantity - skipping", {
+            parsedValue: variant.title,
+            variant,
+            builder,
+            productResponse,
+          });
+          continue;
+        }
+
+        if (quantity.quantity === builder.get("quantity")) {
+          this.logger.debug("Quantity already exists - skipping", {
+            quantity: quantity.quantity,
+            builder,
+            productResponse,
+          });
+          continue;
+        }
+
+        builder.addVariant({
+          id: variant.id,
+          uuid: variant.code,
+          sku: variant.sku,
+          title: variant.title,
+          price: variant.price.price,
+          quantity: quantity.quantity,
+          uom: quantity.uom,
+          availability: variant.stock
+            ? typeof variant.stock === "object"
+              ? ((stock) => {
+                  if (stock.available) return AVAILABILITY.IN_STOCK;
+                  if (stock.on_stock) return AVAILABILITY.IN_STOCK;
+                  if (stock.allow_backorders) return AVAILABILITY.BACKORDER;
+                  this.logger.warn("Unknown availability stock - Defaulting to UNKNOWN", {
+                    path,
+                    stock: variant.stock,
+                    variant,
+                  });
+                  return AVAILABILITY.UNKNOWN;
+                })(variant.stock)
+              : undefined
+            : undefined,
+        });
+      }
+    }
+    return builder;
+  }
+
+  /**
+   * Fetches product data for a given product builder. Tries the JSON endpoint
+   * first, then falls back to scraping the HTML product page.
    * @param product - Product builder to fetch data for
    * @returns Promise resolving to product builder or void if data fetch fails
    * @source
@@ -291,83 +506,14 @@ export default class SupplierLaboratoriumDiscounter
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    const params = { format: "json" };
     return this.getProductDataWithCache(
       product,
       async (builder) => {
-        const path = builder.get("url").startsWith("en/")
-          ? builder.get("url")
-          : `en/${builder.get("url")}`;
-
-        const productResponse = await this.httpGetJson({
-          path,
-          params,
-        });
-
-        if (!productResponse || !isProductObject(productResponse)) {
-          this.logger.warn("Invalid product data - did not pass typeguard:", {
-            path,
-            productResponse,
-          });
-          return builder;
-        }
-        const productData = productResponse.product;
-        const currency = productResponse.shop.currencies[productResponse.shop.currency];
-        builder.setPricing(productData.price.price, currency.code, currency.symbol);
-        if (isPopulatedObject(productData.variants)) {
-          for (const variant of Object.values(productData.variants)) {
-            if (variant.active === false) continue;
-            const quantity = parseQuantity(variant.title);
-            if (!isQuantityObject(quantity)) {
-              this.logger.warn("Invalid quantity - skipping", {
-                parsedValue: variant.title,
-                variant,
-                builder,
-                product,
-                productResponse,
-              });
-              continue;
-            }
-
-            if (quantity.quantity === builder.get("quantity")) {
-              this.logger.debug("Quantity already exists - skipping", {
-                quantity: quantity.quantity,
-                builder,
-                product,
-                productResponse,
-              });
-              continue;
-            }
-
-            builder.addVariant({
-              id: variant.id,
-              uuid: variant.code,
-              sku: variant.sku,
-              title: variant.title,
-              price: variant.price.price,
-              quantity: quantity.quantity,
-              uom: quantity.uom,
-              availability: variant.stock
-                ? typeof variant.stock === "object"
-                  ? ((stock) => {
-                      if (stock.available) return AVAILABILITY.IN_STOCK;
-                      if (stock.on_stock) return AVAILABILITY.IN_STOCK;
-                      if (stock.allow_backorders) return AVAILABILITY.BACKORDER;
-                      this.logger.warn("Unknown availability stock - Defaulting to UNKNOWN", {
-                        path,
-                        stock: variant.stock,
-                        variant,
-                      });
-                      return AVAILABILITY.UNKNOWN;
-                    })(variant.stock)
-                  : undefined
-                : undefined,
-            });
-          }
-        }
-        return builder;
+        const fromJson = await this.getProductDataFromJSON(builder);
+        if (fromJson) return fromJson;
+        return this.getProductDataFromHTML(builder);
       },
-      params,
+      { format: "json" },
     );
   }
 }

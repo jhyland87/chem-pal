@@ -62,6 +62,8 @@ export enum APP_ACTION {
 export enum CACHE {
   /** Application settings */
   USER_SETTINGS = "user_settings",
+  /** The current query */
+  QUERY = "query",
   /** The current search input text */
   SEARCH_INPUT = "search_input",
   /** Array of product results from the most recent search */

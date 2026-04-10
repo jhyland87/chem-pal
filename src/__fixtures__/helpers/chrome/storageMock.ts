@@ -54,8 +54,11 @@ const createStorageMock = (area: "session" | "local" | "sync") => {
     );
 
   const set = vi.fn().mockImplementation(async (items: ChromeStorageItems) => {
+    // Real chrome.storage.local structured-clones values on write, so callers
+    // can mutate the original object afterwards without affecting the stored
+    // copy. Mirror that here so the mock matches production semantics.
     Object.entries(items).forEach(([key, value]) => {
-      storageMaps[area].set(key, value);
+      storageMaps[area].set(key, structuredClone(value));
     });
   });
 

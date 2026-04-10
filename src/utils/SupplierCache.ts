@@ -419,15 +419,9 @@ export default class SupplierCache {
    * @source
    */
   static async clearAll(): Promise<void> {
-    console.debug("Clearing supplier cache");
-    try {
-      await chrome.storage.local.remove([
-        String(CACHE.SUPPLIER_QUERY_CACHE),
-        String(CACHE.SUPPLIER_PRODUCT_DATA_CACHE),
-      ]);
-      console.debug("Supplier cache cleared");
-    } catch (error) {
-      console.error("Error clearing supplier cache:", { error });
-    }
+    await chrome.storage.local.remove([
+      String(CACHE.SUPPLIER_QUERY_CACHE),
+      String(CACHE.SUPPLIER_PRODUCT_DATA_CACHE),
+    ]);
   }
 }

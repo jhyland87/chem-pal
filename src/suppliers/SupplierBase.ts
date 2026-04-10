@@ -935,7 +935,14 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
 
     if (!isJsonResponse(httpRequest)) {
       const badResponse = await (httpRequest as unknown as Response)?.text();
-      this.logger.error("Invalid HTTP GET response: ", badResponse);
+      this.logger.error("Invalid HTTP GET JSON response:", {
+        badResponse,
+        httpRequest,
+        path,
+        params,
+        headers,
+        host,
+      });
       return;
     }
 
@@ -1392,7 +1399,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       return undefined;
     }
     const cacheKey = this.cache.getProductDataCacheKey(url, this.supplierName, params);
-    this.logger.log("[SupplierBase] Product detail cache key:", cacheKey, "for url:", url);
+    this.logger.debug("[SupplierBase] Product detail cache key:", cacheKey, "for url:", url);
     try {
       const cachedData = await this.cache.getCachedProductData(cacheKey);
       if (cachedData) {

@@ -19,7 +19,10 @@ import type SupplierBase from "../../SupplierBase";
  * ```
  */
 export const spyOnSupplier = (supplier: Class<SupplierBase<any, any>>, fixtures: any) => {
-  const getCachedResultsSpy = vi.spyOn(supplier.prototype, "getCachedResults" as any);
+  const queryProductsWithCacheSpy = vi.spyOn(
+    supplier.prototype,
+    "queryProductsWithCache" as any,
+  );
   const httpGetJsonMock = vi.spyOn(supplier.prototype, "httpGetJson" as any);
   const titleSelectorSpy = vi.spyOn(supplier.prototype, "titleSelector" as any);
 
@@ -29,5 +32,5 @@ export const spyOnSupplier = (supplier: Class<SupplierBase<any, any>>, fixtures:
     return await fixtures.httpGetJson(data.path);
   });
 
-  return { getCachedResultsSpy, httpGetJsonMock, titleSelectorSpy };
+  return { queryProductsWithCacheSpy, httpGetJsonMock, titleSelectorSpy };
 };
