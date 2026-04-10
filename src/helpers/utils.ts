@@ -230,7 +230,7 @@ export function firstMap<T, R>(fn: (arg: T) => R | void, properties: T[]): R | v
  * ```
  * @source
  */
-export function mapDefined<T, R>(items: T[], fn: (arg: T) => R | null | undefined): R[] {
+export function mapDefined<T, R>(items: T[], fn: (arg: T) => R | null | undefined | void): R[] {
   /* The commented code block you provided is a conditional check within the `mapDefined` function. It
  is checking the type and value of the `items` parameter to ensure that it is an array before
  proceeding with the mapping and filtering operations. */
