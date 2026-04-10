@@ -1,15 +1,14 @@
-import { Drawer, Tab, Tabs } from "@mui/material";
-import React, { useState } from "react";
-import styles from "./DrawerSystem.module.scss";
-
+import { DRAWER_INDEX } from "@/constants/common";
+import { useAppContext } from "@/context";
 import {
   History as HistoryIcon,
   Search as SearchIcon,
   Settings as SettingsIcon,
 } from "@mui/icons-material";
-
-import { useAppContext } from "@/context";
+import { Drawer, Tab, Tabs } from "@mui/material";
+import React, { useState } from "react";
 import DrawerSearchPanel from "./DrawerSearchPanel";
+import styles from "./DrawerSystem.module.scss";
 import HistoryPanel from "./HistoryPanel";
 import SettingsPanelFull from "./SettingsPanelFull";
 
@@ -36,12 +35,12 @@ const DrawerSystem: React.FC = () => {
   const appContext = useAppContext();
   const [expandedAccordion, setExpandedAccordion] = useState<string | false>("search-availability");
 
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    appContext.setDrawerTab(newValue);
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: DRAWER_INDEX) => {
+    appContext.setDrawerTab(newValue as DRAWER_INDEX);
     // Reset accordion when switching tabs
-    if (newValue === 0) {
+    if (newValue === DRAWER_INDEX.SEARCH) {
       setExpandedAccordion("search-availability");
-    } else if (newValue === 2) {
+    } else if (newValue === DRAWER_INDEX.SETTINGS) {
       setExpandedAccordion("settings-general");
     } else {
       setExpandedAccordion(false);
@@ -56,12 +55,12 @@ const DrawerSystem: React.FC = () => {
   return (
     <Drawer
       anchor="right"
-      open={appContext.drawerTab !== -1}
-      onClose={() => appContext.setDrawerTab(-1)}
+      open={appContext.drawerTab !== DRAWER_INDEX.CLOSED}
+      onClose={() => appContext.setDrawerTab(DRAWER_INDEX.CLOSED)}
       variant="temporary"
     >
       <div className={styles["drawer-container"]}>
-        {appContext.drawerTab !== -1 && (
+        {appContext.drawerTab !== DRAWER_INDEX.CLOSED && (
           <Tabs
             value={appContext.drawerTab}
             onChange={handleTabChange}
@@ -74,18 +73,18 @@ const DrawerSystem: React.FC = () => {
           </Tabs>
         )}
 
-        <TabPanel value={appContext.drawerTab} index={0}>
+        <TabPanel value={appContext.drawerTab} index={DRAWER_INDEX.SEARCH}>
           <DrawerSearchPanel
             expandedAccordion={expandedAccordion}
             onAccordionChange={handleAccordionChange}
           />
         </TabPanel>
 
-        <TabPanel value={appContext.drawerTab} index={1}>
+        <TabPanel value={appContext.drawerTab} index={DRAWER_INDEX.HISTORY}>
           <HistoryPanel />
         </TabPanel>
 
-        <TabPanel value={appContext.drawerTab} index={2}>
+        <TabPanel value={appContext.drawerTab} index={DRAWER_INDEX.SETTINGS}>
           <SettingsPanelFull />
         </TabPanel>
       </div>

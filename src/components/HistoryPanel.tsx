@@ -1,3 +1,6 @@
+import { CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
+import { useAppContext } from "@/context";
+import { Delete as DeleteIcon, FilterList as FilterListIcon } from "@mui/icons-material";
 import {
   Box,
   IconButton,
@@ -8,12 +11,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import {
-  Delete as DeleteIcon,
-  FilterList as FilterListIcon,
-} from "@mui/icons-material";
 import { useEffect, useState } from "react";
-import { useAppContext } from "@/context";
 import styles from "./HistoryPanel.module.scss";
 
 /**
@@ -37,14 +35,15 @@ import styles from "./HistoryPanel.module.scss";
  */
 const HistoryPanel: React.FC = () => {
   const [history, setHistory] = useState<SearchHistoryEntry[]>([]);
-  const { setPendingSearchQuery, setDrawerTab, setSearchFilters, setSelectedSuppliers, setPanel } = useAppContext();
+  const { setPendingSearchQuery, setDrawerTab, setSearchFilters, setSelectedSuppliers, setPanel } =
+    useAppContext();
 
   useEffect(() => {
     const loadHistory = async () => {
       try {
-        const data = await chrome.storage.local.get(["search_history"]);
-        if (Array.isArray(data.search_history)) {
-          setHistory(data.search_history);
+        const data = await chrome.storage.local.get([CACHE.SEARCH_HISTORY]);
+        if (Array.isArray(data[CACHE.SEARCH_HISTORY])) {
+          setHistory(data[CACHE.SEARCH_HISTORY] as SearchHistoryEntry[]);
         }
       } catch (error) {
         console.warn("Failed to load search history:", error);
@@ -66,7 +65,7 @@ const HistoryPanel: React.FC = () => {
    */
   const handleClearHistory = async () => {
     try {
-      await chrome.storage.local.set({ search_history: [] });
+      await chrome.storage.local.set({ [CACHE.SEARCH_HISTORY]: [] });
       setHistory([]);
     } catch (error) {
       console.warn("Failed to clear search history:", error);
@@ -94,8 +93,8 @@ const HistoryPanel: React.FC = () => {
       setSelectedSuppliers(entry.selectedSuppliers);
     }
     setPendingSearchQuery(entry.query);
-    setDrawerTab(-1); // Close the drawer
-    setPanel?.(1); // Navigate to results panel
+    setDrawerTab(DRAWER_INDEX.CLOSED); // Close the drawer
+    setPanel?.(PANEL.RESULTS); // Navigate to results panel
   };
 
   /**
@@ -113,9 +112,12 @@ const HistoryPanel: React.FC = () => {
   const getFilterSummary = (entry: SearchHistoryEntry): string | null => {
     const parts: string[] = [];
     if (entry.filters) {
-      if (entry.filters.availability.length > 0) parts.push(`Availability: ${entry.filters.availability.join(", ")}`);
-      if (entry.filters.country.length > 0) parts.push(`Country: ${entry.filters.country.join(", ")}`);
-      if (entry.filters.shippingType.length > 0) parts.push(`Shipping: ${entry.filters.shippingType.join(", ")}`);
+      if (entry.filters.availability.length > 0)
+        parts.push(`Availability: ${entry.filters.availability.join(", ")}`);
+      if (entry.filters.country.length > 0)
+        parts.push(`Country: ${entry.filters.country.join(", ")}`);
+      if (entry.filters.shippingType.length > 0)
+        parts.push(`Shipping: ${entry.filters.shippingType.join(", ")}`);
     }
     if (entry.selectedSuppliers && entry.selectedSuppliers.length > 0) {
       parts.push(`Suppliers: ${entry.selectedSuppliers.length} selected`);
@@ -134,27 +136,39 @@ const HistoryPanel: React.FC = () => {
   };
 
   return (
-    <Box className={styles['history-panel']}>
-      <Box className={styles['history-panel__header']}>
+    <Box className={styles["history-panel"]}>
+      <Box className={styles["history-panel__header"]}>
         <Typography variant="caption" color="text.secondary">
           {history.length} {history.length === 1 ? "search" : "searches"}
         </Typography>
         {history.length > 0 && (
           <Tooltip title="Clear history">
-            <IconButton size="small" onClick={handleClearHistory} className={styles['history-panel__clear-btn']}>
-              <DeleteIcon className={styles['history-panel__clear-icon']} />
+            <IconButton
+              size="small"
+              onClick={handleClearHistory}
+              className={styles["history-panel__clear-btn"]}
+            >
+              <DeleteIcon className={styles["history-panel__clear-icon"]} />
             </IconButton>
           </Tooltip>
         )}
       </Box>
       {history.length === 0 ? (
-        <Typography variant="caption" color="text.secondary" className={styles['history-panel__empty']}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          className={styles["history-panel__empty"]}
+        >
           No search history yet.
         </Typography>
       ) : (
         <List dense disablePadding>
           {history.map((entry, idx) => (
-            <ListItem key={`${entry.timestamp}-${idx}`} divider className={styles['history-panel__list-item']}>
+            <ListItem
+              key={`${entry.timestamp}-${idx}`}
+              divider
+              className={styles["history-panel__list-item"]}
+            >
               <ListItemText
                 primary={
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
@@ -163,7 +177,7 @@ const HistoryPanel: React.FC = () => {
                       variant="body2"
                       onClick={() => handleReSearch(entry)}
                       sx={{ fontWeight: "bold" }}
-                      className={styles['history-panel__link']}
+                      className={styles["history-panel__link"]}
                     >
                       {entry.query}
                     </Link>
@@ -175,8 +189,11 @@ const HistoryPanel: React.FC = () => {
                   </Box>
                 }
                 secondary={`${formatTimestamp(entry.timestamp)} — ${entry.resultCount} result${entry.resultCount !== 1 ? "s" : ""}`}
-                secondaryTypographyProps={{ variant: "caption", className: styles['history-panel__secondary-text'] }}
-                className={styles['history-panel__list-item-text']}
+                secondaryTypographyProps={{
+                  variant: "caption",
+                  className: styles["history-panel__secondary-text"],
+                }}
+                className={styles["history-panel__list-item-text"]}
               />
             </ListItem>
           ))}

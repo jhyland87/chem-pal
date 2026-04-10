@@ -8,6 +8,34 @@
 import { locations } from "@/../config.json";
 
 /**
+ * Indexes for the different panels in the application.
+ * @source
+ */
+export enum PANEL {
+  /** Search home panel index */
+  SEARCH_HOME = 0,
+  /** Results panel index */
+  RESULTS = 1,
+  /** Stats panel index */
+  STATS = 2,
+}
+
+/**
+ * Indexes for the different drawer tabs in the application.
+ * @source
+ */
+export enum DRAWER_INDEX {
+  /** Closed tab index */
+  CLOSED = -1,
+  /** Search tab index */
+  SEARCH = 0,
+  /** History tab index (not implemented yet) */
+  HISTORY = 1,
+  /** Settings tab index (not implemented yet) */
+  SETTINGS = 2,
+}
+
+/**
  * Action types dispatched to the App component's useActionState reducer.
  * Each action corresponds to a specific state transition in the application.
  * @source
@@ -31,7 +59,9 @@ export enum APP_ACTION {
  * Keys used for storing and retrieving data in chrome.storage.session.
  * @source
  */
-export enum CACHE_KEYS {
+export enum CACHE {
+  /** Application settings */
+  USER_SETTINGS = "user_settings",
   /** The current search input text */
   SEARCH_INPUT = "search_input",
   /** Array of product results from the most recent search */
@@ -40,9 +70,20 @@ export enum CACHE_KEYS {
   SEARCH_IS_NEW_SEARCH = "is_new_search",
   /** Persisted search history entries stored in chrome.storage.local */
   SEARCH_HISTORY = "search_history",
-
+  /** Selected suppliers list for search filtering */
+  SELECTED_SUPPLIERS = "selected_suppliers",
   /** HTTP LRU cache */
   HTTP_LRU = "httplru",
+  /** The current panel (0 = SearchHome, 1 = Results, 2 = Stats) */
+  PANEL = "panel",
+  /** Query results cache */
+  QUERY_RESULTS_CACHE = "query_results_cache",
+  /** Product data cache */
+  PRODUCT_DATA_CACHE = "product_data_cache",
+  /** Supplier query results cache */
+  SUPPLIER_QUERY_CACHE = "supplier_query_cache",
+  /** Supplier product data cache */
+  SUPPLIER_PRODUCT_DATA_CACHE = "supplier_product_data_cache",
 }
 
 /**

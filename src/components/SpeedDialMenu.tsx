@@ -1,4 +1,4 @@
-import { CACHE_KEYS } from "@/constants/common";
+import { CACHE, PANEL } from "@/constants/common";
 import { useAppContext } from "@/context";
 import AutoDeleteIcon from "@/icons/AutoDeleteIcon";
 import ClearIcon from "@/icons/ClearIcon";
@@ -13,8 +13,6 @@ import { MouseEvent, useState } from "react";
 import { useTheme } from "../themes";
 import AboutModal from "./AboutModal";
 import HelpTooltip from "./HelpTooltip";
-
-const STATS_PANEL_INDEX = 2;
 
 /**
  * SpeedDialMenu component that provides quick access to various application actions.
@@ -46,12 +44,9 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
   const handleClearResults = async (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     try {
-      await chrome.storage.session.set({ [CACHE_KEYS.SEARCH_RESULTS]: [] });
+      await chrome.storage.session.set({ [CACHE.SEARCH_RESULTS]: [] });
     } catch (error) {
-      console.warn(
-        `Failed to clear ${CACHE_KEYS.SEARCH_RESULTS} results from session storage:`,
-        error,
-      );
+      console.warn(`Failed to clear ${CACHE.SEARCH_RESULTS} results from session storage:`, error);
     }
 
     console.debug("[handleClearResults] Setting userSettings to:", { ...appContext.userSettings });
@@ -110,7 +105,7 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
    * @source
    */
   const handleStatsOpen = () => {
-    appContext.setPanel?.(STATS_PANEL_INDEX);
+    appContext.setPanel?.(PANEL.STATS);
   };
 
   /**
