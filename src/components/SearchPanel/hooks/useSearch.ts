@@ -484,7 +484,10 @@ export function useSearch() {
         const searchTime = endSearchTime - startSearchTime;
         (window.resultsTable as Table<Product>)?.updateBadgeCount?.();
 
-        console.debug(`Found ${resultsTable.getRowCount()} products in ${searchTime} milliseconds`);
+        console.debug(
+          `Found ${resultsTable.getRowCount()} products in ${searchTime} milliseconds`,
+          { query, fetchLimit, productQueryResults, startSearchTime, endSearchTime, searchTime },
+        );
 
         // If no results were found, then try to suggest alternative search terms using cactus.nci.nih.gov API.
         if (resultsTable.getRowCount() === 0) {

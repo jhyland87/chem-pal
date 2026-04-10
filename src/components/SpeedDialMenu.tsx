@@ -79,7 +79,7 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
       await SupplierCache.clearAll();
       console.debug("Supplier cache cleared");
     } catch (error) {
-      console.warn("Failed to clear supplier cache:", error);
+      console.error("Failed to clear supplier cache:", { error });
     }
   };
 

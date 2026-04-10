@@ -91,7 +91,7 @@ export default function SettingsPanel() {
   // React v19's useActionState for form management
   const [formState, updateSetting, isPending] = useActionState(
     (currentSettings: UserSettings, action: SettingAction): UserSettings => {
-      console.log("Settings action:", action);
+      console.debug("Settings action", { action, currentSettings });
 
       let newSettings: UserSettings;
 
