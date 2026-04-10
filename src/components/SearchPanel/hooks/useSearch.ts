@@ -1,6 +1,7 @@
 import { getColumnFilterConfig } from "@/components/SearchPanel/TableColumns";
 import { AVAILABILITY_LABEL_MAP, CACHE } from "@/constants/common";
 import { useAppContext } from "@/context";
+import { addExcludedProduct } from "@/helpers/excludedProducts";
 import { getCompoundNameFromAlias } from "@/helpers/pubchem";
 import SupplierFactory from "@/suppliers/SupplierFactory";
 import BadgeAnimator from "@/utils/BadgeAnimator";
@@ -550,6 +551,42 @@ export function useSearch() {
     [appContext, performSearch],
   );
 
+  /**
+   * Remove a product from the current results and persist it to the
+   * excluded-products list so future searches skip it as well. Drives the
+   * "Ignore Product" context-menu action: it immediately drops the row from
+   * the visible table, updates the session-storage snapshot so a reload
+   * doesn't resurrect it, and writes the exclusion entry to local storage.
+   *
+   * Matching is done by `(url, supplier)` pair — identical to the shape of
+   * the exclusion key used in `SupplierBase.getProductData`.
+   *
+   * @param product - The product to exclude and drop from results.
+   * @example
+   * ```ts
+   * const { excludeProduct } = useSearch();
+   * await excludeProduct(row.original);
+   * ```
+   * @source
+   */
+  const excludeProduct = useCallback(async (product: Product) => {
+    if (!product?.url || !product?.supplier) return;
+    let nextResults: Product[] = [];
+    setSearchResults((prev) => {
+      nextResults = prev.filter(
+        (p) => !(p.url === product.url && p.supplier === product.supplier),
+      );
+      return nextResults;
+    });
+    try {
+      await addExcludedProduct(product.url, product.supplier, { title: product.title });
+    } catch (error) {
+      console.warn("Failed to persist excluded product:", { error });
+    }
+    // Persist the updated results so a reload doesn't resurrect the row.
+    await saveResultsToSession(nextResults);
+  }, []);
+
   const handleStopSearch = useCallback(() => {
     console.debug("triggering abort..");
     fetchControllerRef.current.abort();
@@ -570,6 +607,7 @@ export function useSearch() {
     resultCount: state.resultCount,
     executeSearch,
     handleStopSearch,
+    excludeProduct,
     tableText,
   };
 }

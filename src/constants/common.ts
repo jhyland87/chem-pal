@@ -86,6 +86,8 @@ export enum CACHE {
   SUPPLIER_QUERY_CACHE = "supplier_query_cache",
   /** Supplier product data cache */
   SUPPLIER_PRODUCT_DATA_CACHE = "supplier_product_data_cache",
+  /** User-excluded products, keyed by product data cache key (see getProductExclusionKey) */
+  EXCLUDED_PRODUCTS = "excluded_products",
 }
 
 /**

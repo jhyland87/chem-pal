@@ -67,6 +67,8 @@ interface UseResultsTableProps {
   showSearchResults: Product[];
   /** Tuple containing column filter state and setter function from useState */
   columnFilterFns: [ColumnFiltersState, OnChangeFn<ColumnFiltersState>];
+  /** Tuple containing global filter state and setter function from useState */
+  globalFilterFns: [string, OnChangeFn<string>];
   /** Function to determine if a row can be expanded to show sub-rows */
   getRowCanExpand: (row: Row<Product>) => boolean;
   /** User preferences and settings object containing display options */
@@ -105,6 +107,7 @@ interface UseResultsTableProps {
 export function useResultsTable({
   showSearchResults,
   columnFilterFns,
+  globalFilterFns,
   getRowCanExpand,
   userSettings,
 }: UseResultsTableProps) {
@@ -168,8 +171,10 @@ export function useResultsTable({
     },
     state: {
       columnFilters: columnFilterFns[0],
+      globalFilter: globalFilterFns[0],
     },
     onColumnFiltersChange: columnFilterFns[1],
+    onGlobalFilterChange: globalFilterFns[1],
     getSubRows: (row) => row?.variants as Product[],
     getRowCanExpand: (row: Row<Product>) => getRowCanExpand(row),
     getCoreRowModel: getCoreRowModel(),
