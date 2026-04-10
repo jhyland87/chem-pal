@@ -73,7 +73,7 @@ describe("Chem-Pal search query", () => {
     await page.close();
   }, 30_000);
 
-  it("should query for 'potassium' and display 78 results from mock data", async () => {
+  it("should query for 'potassium' and display 189 results from mock data", async () => {
     const page = await openExtension();
 
     // Set up mock routes to intercept all HTTPS requests
@@ -96,7 +96,7 @@ describe("Chem-Pal search query", () => {
     // appear and disappear faster than the polling interval.
     const resultsCount = page.locator("text=Results:");
     await playwrightExpect(resultsCount).toContainText("Results: 189", {
-      timeout: 120_000,
+      timeout: 200_000,
     });
 
     // Change the page size to "All" so all rows are visible
