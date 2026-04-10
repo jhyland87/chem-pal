@@ -174,7 +174,7 @@ export default function ResultsTable({
       jason: false,
       antoine: true,
       popupSize: "small",
-      supplierResultLimit: 5,
+      supplierResultLimit: 15,
       autoResize: true,
       someSetting: false,
       suppliers: [],

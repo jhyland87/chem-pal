@@ -42,7 +42,7 @@ export default function SupplierResultLimit() {
         style={{ lineHeight: "1em" }}
         id="result-limit"
         size="small"
-        value={appContext.userSettings.supplierResultLimit ?? 5}
+        value={appContext.userSettings.supplierResultLimit ?? 15}
         onChange={handleResultLimitChange}
       />
     </StyledFormControlSelector>
