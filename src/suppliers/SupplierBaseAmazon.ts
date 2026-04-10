@@ -175,7 +175,7 @@ export default abstract class SupplierBaseAmazon
 
     const searchTerm = `${this.queryPrefix ?? this.supplierName}+${query}`;
 
-    const results = resultPages.flatMap((resultPage) => {
+    const results: AmazonListing[] = resultPages.flatMap((resultPage) => {
       if (!resultPage) return [];
 
       // New format: response is an HTML string
