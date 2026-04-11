@@ -28,12 +28,25 @@ describe("parseQuantity", () => {
     /* eslint-enable */
   };
 
+  const normalize = (quantity: number, uom: string): { quantity: number; uom: string } => {
+    const conversions: Record<string, { threshold: number; factor: number; to: string }> = {
+      mg: { threshold: 1000, factor: 1000, to: "g" },
+      g: { threshold: 1000, factor: 1000, to: "kg" },
+      kg: { threshold: 1000, factor: 1000, to: "t" },
+      ml: { threshold: 1000, factor: 1000, to: "l" },
+    };
+    const c = conversions[uom];
+    if (!c || quantity < c.threshold) return { quantity, uom };
+    return { quantity: Math.round((quantity / c.factor) * 100) / 100, uom: c.to };
+  };
+
   for (const [uom, aliases] of Object.entries(UOM_ALIASES)) {
     describe(aliases.join("/"), () => {
       for (const alias of aliases) {
         for (const [input, output] of Object.entries(testData)) {
-          it(`should return ${output} ${uom} when parsing: ${input} ${alias}`, () =>
-            expect(parseQuantity(`${input} ${alias}`)).toMatchObject({ quantity: output, uom }));
+          const expected = normalize(output, uom);
+          it(`should return ${expected.quantity} ${expected.uom} when parsing: ${input} ${alias}`, () =>
+            expect(parseQuantity(`${input} ${alias}`)).toMatchObject(expected));
         }
       }
     });
