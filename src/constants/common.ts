@@ -169,6 +169,8 @@ export enum UOM {
   GAL = "gal",
   /** Abbreviated form of ounce */
   OZ = "oz",
+  /** Abbreviated form of fluid ounce */
+  FLOZ = "floz",
   /** Abbreviated form of milligram */
   MG = "mg",
   /** Abbreviated form of piece */
@@ -219,6 +221,8 @@ export const UOM_ALIASES: UOMAliases = {
   [UOM.MG]: ["milligram", "milligrams", "mg", "mgs"],
   /** Each aliases */
   [UOM.EA]: ["each", "ea"],
+  /** Fluid ounce aliases */
+  [UOM.FLOZ]: ["fl oz", "floz", "fl.oz", "fl. oz"],
 } as const;
 
 /**

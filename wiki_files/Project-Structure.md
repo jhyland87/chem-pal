@@ -121,7 +121,8 @@ suppliers/
 | `Logger.ts` | Structured logging with per-supplier prefixes |
 | `ProductBuilder.ts` | Fluent product construction with validation and serialization |
 | `Pubchem.ts` | PubChem API client |
-| `SupplierCache.ts` | Chrome storage caching with LRU eviction |
+| `storage.ts` | `cstorage` — compression-aware `chrome.storage` wrapper using lz-string (UTF-16) |
+| `SupplierCache.ts` | Chrome storage caching with LRU eviction (writes via `cstorage`) |
 | `SupplierStatsStore.ts` | Per-supplier success/failure/timing statistics |
 | `Cactus.ts` | NCI/CADD Chemical Identifier Resolver utility |
 | `BadgeAnimator.ts` | Extension badge animations |

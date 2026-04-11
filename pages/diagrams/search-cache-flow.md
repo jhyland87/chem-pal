@@ -9,6 +9,7 @@ This diagram details how ChemPal caches search results and product data using `c
 - **Limit-aware invalidation**: The query cache invalidates entries when a new search requests more results than the cached limit
 - **Timestamp refresh on read**: Product data cache updates `cachedAt` on hit to prevent active entries from being evicted
 - **Serialization**: `ProductBuilder.dump()` serializes builders for storage; `ProductBuilder.createFromCache()` re-hydrates them
+- **Transparent compression**: All cache writes flow through `cstorage` (`src/utils/storage.ts`), which LZ-compresses values at rest via `lz-string` `compressToUTF16` wrapped in an `LzEnvelope` (`{ __lz: 1, d: "..." }`). Reads auto-detect the envelope and decompress, falling back to raw values for legacy data so pre-compression entries still work.
 
 ## Diagram
 
@@ -28,8 +29,11 @@ end
 
 subgraph Storage["Chrome Storage Backend"]
 direction LR
-QCS[("chrome.storage.local\nQuery Results Cache\nkey: SupplierCache.getQueryCacheKey()")]
-PDS[("chrome.storage.local\nProduct Data Cache\nkey: SupplierCache.getProductDataCacheKey()")]
+CSTORAGE["cstorage wrapper\nlz-string compression\nencodeValue / decodeValue"]
+QCS[("chrome.storage.local\nQuery Results Cache\nLZ envelope at rest\nkey: SupplierCache.getQueryCacheKey()")]
+PDS[("chrome.storage.local\nProduct Data Cache\nLZ envelope at rest\nkey: SupplierCache.getProductDataCacheKey()")]
+CSTORAGE --> QCS
+CSTORAGE --> PDS
 end
 
 subgraph QueryCache["Query Results Cache Flow"]
@@ -148,9 +152,11 @@ classDef lru fill:#E74C3C,stroke:#C0392B,color:#fff
 classDef meta fill:#8E44AD,stroke:#6C3483,color:#fff
 classDef keygen fill:#1ABC9C,stroke:#148F77,color:#fff
 classDef comp fill:#5DADE2,stroke:#2E86C1,color:#fff
+classDef compress fill:#16A085,stroke:#0E6B57,color:#fff,font-weight:bold
 
 class SB,IC,SC init
 class QCS,PDS storage
+class CSTORAGE compress
 class QPC,GPD cacheFlow
 class RESTORE,SETDATA,TOUCH hit
 class QP,DUMP1,SAVE1,FETCH,DUMP2,SAVE2 miss

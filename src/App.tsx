@@ -265,6 +265,34 @@ function App() {
     loadFromStorage();
   }, [dispatch]);
 
+  // Debug watcher: log decoded values when any of the watched storage keys change.
+  // cstorage.onChanged auto-decodes LZ envelopes, so change.newValue / oldValue
+  // are already the real objects — no manual decompression required.
+  useEffect(() => {
+    const watchedKeys = new Set<string>([
+      CACHE.USER_SETTINGS,
+      CACHE.SEARCH_HISTORY,
+      CACHE.SELECTED_SUPPLIERS,
+      CACHE.EXCLUDED_PRODUCTS,
+    ]);
+
+    const listener = (
+      changes: Record<string, chrome.storage.StorageChange>,
+      areaName: chrome.storage.AreaName,
+    ) => {
+      for (const [key, change] of Object.entries(changes)) {
+        if (!watchedKeys.has(key)) continue;
+        console.debug(`[storage:${areaName}] ${key} changed`, {
+          oldValue: change.oldValue,
+          newValue: change.newValue,
+        });
+      }
+    };
+
+    cstorage.onChanged.addListener(listener);
+    return () => cstorage.onChanged.removeListener(listener);
+  }, []);
+
   // "Magic" redirect: if the user is on the results panel and the search results
   // get cleared from anywhere (e.g. SpeedDial "Clear Results", another tab, etc.),
   // bounce them back to the SearchPanelHome and clear the action badge so it

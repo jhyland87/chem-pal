@@ -13,7 +13,7 @@ subgraph EntryPoints["Entry Points"]
 direction LR
 POPUP["Popup / SidePanel\n(React 19)"]
 SW["Service Worker\n(background)"]
-STORAGE[("chrome.storage\n.local (cache)\n.session (state)")]
+STORAGE[("chrome.storage\n.local (cache)\n.session (state)\nvia cstorage lz-string wrapper")]
 end
 
 subgraph AppLayer["Application Layer"]
@@ -81,8 +81,11 @@ All suppliers extend `SupplierBase`, which defines the lifecycle: `setup()` → 
 
 Both use LRU eviction at 100 entries. See [Caching](Caching) for details.
 
+### Transparent Storage Compression
+All `chrome.storage.local` / `chrome.storage.session` access in the app flows through `cstorage` (`src/utils/storage.ts`), a thin wrapper that LZ-compresses values at rest using `lz-string`'s `compressToUTF16` inside a versioned envelope (`{ __lz: 1, d: "..." }`). Reads auto-detect the envelope and decompress, while legacy uncompressed values pass through unchanged for backward compatibility. The codec layer is pure (no `chrome.*` access) and directly unit-tested in `src/utils/__tests__/storage.test.ts`. See [Caching § Transparent Compression](Caching#transparent-compression) for details.
+
 ### State Management
-The app uses React 19's `useActionState` for settings, with `AppContext` providing global state. The Chrome extension persists query state and results to `chrome.storage.session` for seamless restore-on-mount.
+The app uses React 19's `useActionState` for settings, with `AppContext` providing global state. The Chrome extension persists query state and results to `chrome.storage.session` (via `cstorage`) for seamless restore-on-mount. Theme preference lives in `user_settings` (read through `useAppContext()`), not `localStorage`.
 
 ## Chrome Extension Entry Points
 
