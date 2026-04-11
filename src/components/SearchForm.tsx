@@ -2,7 +2,7 @@ import { CACHE } from "@/constants/common";
 import { cstorage } from "@/utils/storage";
 import { Science as ScienceIcon, Search as SearchIcon } from "@mui/icons-material";
 import { Box, IconButton } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useAppContext } from "../context";
 import styles from "./SearchForm.module.scss";
 import {
@@ -23,27 +23,34 @@ export const SearchForm: React.FC<SearchFormProps> = ({
   onDrawerToggle,
   placeholder = "Search for products...",
 }) => {
-  const [query, setQuery] = useState("");
   const appContext = useAppContext();
+  const { searchFilters, setSearchFilters } = appContext;
+  const query = searchFilters.titleQuery;
 
-  // Hydrate the input from the shared live search input value in session storage
-  // so this field stays synced with any other search input (e.g. the drawer).
+  // Hydrate the shared title query from the persisted draft in session storage
+  // so this field reflects whatever was last typed in any search input — even
+  // across popup re-opens. Both this component and DrawerSearchPanel bind to
+  // searchFilters.titleQuery, so once context is populated they stay in sync
+  // automatically without re-reading the cache.
   useEffect(() => {
     const loadSearchInput = async () => {
       try {
         const data = await cstorage.session.get([CACHE.SEARCH_INPUT]);
-        if (data[CACHE.SEARCH_INPUT]) {
-          setQuery(data[CACHE.SEARCH_INPUT]);
+        const stored = data[CACHE.SEARCH_INPUT];
+        if (typeof stored === "string" && stored && stored !== searchFilters.titleQuery) {
+          setSearchFilters({ ...searchFilters, titleQuery: stored });
         }
       } catch (error) {
         console.warn("Failed to load search input from session storage:", { error });
       }
     };
     loadSearchInput();
+    // Run once on mount; intentionally don't depend on searchFilters to avoid loops.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChange = async (value: string) => {
-    setQuery(value);
+    setSearchFilters({ ...searchFilters, titleQuery: value });
     try {
       await cstorage.session.set({ [CACHE.SEARCH_INPUT]: value });
     } catch (error) {
@@ -53,8 +60,13 @@ export const SearchForm: React.FC<SearchFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) {
-      onSearch(query.trim());
+    const trimmed = query.trim();
+    if (trimmed) {
+      // Clear the live draft so re-opening the drawer doesn't show stale text
+      // from the just-submitted query. The parent's onSearch handler is also
+      // responsible for clearing CACHE.SEARCH_INPUT in session storage.
+      setSearchFilters({ ...searchFilters, titleQuery: "" });
+      onSearch(trimmed);
     }
   };
 

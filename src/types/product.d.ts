@@ -172,12 +172,6 @@ declare global {
     jason: boolean;
 
     /**
-     * Feature flag for Antoine's experimental features.
-     * Defaults to false.
-     */
-    antoine: boolean;
-
-    /**
      * Dimensions of the popup window in format 'widthxheight'
      * @example "800x600"
      */

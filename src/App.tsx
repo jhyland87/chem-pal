@@ -78,7 +78,6 @@ const initialAppState: AppState = {
     shipsToMyLocation: false,
     foo: "bar",
     jason: false,
-    antoine: true,
     popupSize: "small",
     supplierResultLimit: defaultResultsLimit,
     autoResize: true,
