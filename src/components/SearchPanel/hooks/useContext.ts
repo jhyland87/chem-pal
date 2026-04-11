@@ -1,4 +1,5 @@
 import { AppContext } from "@/context";
+import { cstorage } from "@/utils/storage";
 import { use } from "react";
 
 /**
@@ -35,13 +36,13 @@ export function useChromeStorage<T>(key: string, defaultValue: T) {
   // This will suspend the component until the promise resolves
   const storedValue = use(
     (async () => {
-      const data = await chrome.storage.session.get([key]);
+      const data = await cstorage.session.get([key]);
       return data[key] !== undefined ? (data[key] as T) : defaultValue;
     })(),
   );
 
   const setValue = (value: T) => {
-    chrome.storage.session.set({ [key]: value });
+    cstorage.session.set({ [key]: value });
   };
 
   return [storedValue, setValue] as const;
@@ -62,7 +63,7 @@ export function useChromeStorageEnhanced<T>(
     };
   },
 ) {
-  const storage = options?.storage === "local" ? chrome.storage.local : chrome.storage.session;
+  const storage = options?.storage === "local" ? cstorage.local : cstorage.session;
   const { serializer } = options || {};
 
   const storedValue = use(
@@ -125,7 +126,7 @@ export function useReactiveChromeStorage<T>(key: string, defaultValue: T) {
   const createStoragePromise = () => {
     return new Promise<T>(async (resolve) => {
       // Initial load
-      const data = await chrome.storage.session.get([key]);
+      const data = await cstorage.session.get([key]);
       resolve(data[key] !== undefined ? (data[key] as T) : defaultValue);
 
       // Listen for changes
@@ -137,7 +138,7 @@ export function useReactiveChromeStorage<T>(key: string, defaultValue: T) {
         }
       };
 
-      chrome.storage.onChanged.addListener(listener);
+      cstorage.onChanged.addListener(listener);
 
       // Cleanup is handled by React's concurrent features
       // This is a simplified example - in practice you'd want proper cleanup
@@ -147,7 +148,7 @@ export function useReactiveChromeStorage<T>(key: string, defaultValue: T) {
   const value = use(createStoragePromise());
 
   const setValue = (newValue: T) => {
-    chrome.storage.session.set({ [key]: newValue });
+    cstorage.session.set({ [key]: newValue });
   };
 
   return [value, setValue] as const;

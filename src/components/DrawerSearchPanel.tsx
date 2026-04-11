@@ -7,6 +7,7 @@ import {
 } from "@/constants/common";
 import { useAppContext } from "@/context";
 import SupplierFactory from "@/suppliers/SupplierFactory";
+import { cstorage } from "@/utils/storage";
 import { ExpandMore as ExpandMoreIcon, Search as SearchIcon } from "@mui/icons-material";
 import {
   Accordion,
@@ -46,7 +47,7 @@ const DrawerSearchPanel: React.FC<{
   useEffect(() => {
     const loadSearchInput = async () => {
       try {
-        const data = await chrome.storage.session.get([CACHE.SEARCH_INPUT]);
+        const data = await cstorage.session.get([CACHE.SEARCH_INPUT]);
         const stored = data[CACHE.SEARCH_INPUT];
         if (typeof stored === "string" && stored !== searchFilters.titleQuery) {
           setSearchFilters({ ...searchFilters, titleQuery: stored });
@@ -71,7 +72,7 @@ const DrawerSearchPanel: React.FC<{
   const handleTitleQueryChange = async (value: string) => {
     setSearchFilters({ ...searchFilters, titleQuery: value });
     try {
-      await chrome.storage.session.set({ [CACHE.SEARCH_INPUT]: value });
+      await cstorage.session.set({ [CACHE.SEARCH_INPUT]: value });
     } catch (error) {
       console.warn("Failed to persist search input to session storage:", { error });
     }
@@ -85,7 +86,7 @@ const DrawerSearchPanel: React.FC<{
       // search, the same path used by SearchPanelHome's submit handler. Also
       // clear the live in-progress draft in session storage now that it has
       // been promoted to the committed query.
-      await chrome.storage.session.set({
+      await cstorage.session.set({
         [CACHE.QUERY]: query,
         [CACHE.SEARCH_INPUT]: "",
         [CACHE.SEARCH_IS_NEW_SEARCH]: true,

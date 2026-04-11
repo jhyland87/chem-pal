@@ -1,6 +1,7 @@
 import { CACHE } from "@/constants/common";
 import type { CachedData } from "@/suppliers/SupplierBase";
 import Logger from "@/utils/Logger";
+import { cstorage } from "@/utils/storage";
 import { md5 } from "js-md5";
 
 /**
@@ -292,7 +293,7 @@ export default class SupplierCache {
   ): Promise<void> {
     try {
       const key = this.generateCacheKey(query, supplierName);
-      const result = await chrome.storage.local.get(CACHE.SUPPLIER_QUERY_CACHE);
+      const result = await cstorage.local.get(CACHE.SUPPLIER_QUERY_CACHE);
       const cache =
         (result[CACHE.SUPPLIER_QUERY_CACHE] as Record<string, CachedData<unknown>>) || {};
 
@@ -328,7 +329,7 @@ export default class SupplierCache {
         metadata: cache[key].__cacheMetadata,
       });
 
-      await chrome.storage.local.set({ [CACHE.SUPPLIER_QUERY_CACHE]: cache });
+      await cstorage.local.set({ [CACHE.SUPPLIER_QUERY_CACHE]: cache });
     } catch (error) {
       this.logger.error("Error storing query results in cache:", { error });
     }
@@ -340,7 +341,7 @@ export default class SupplierCache {
    */
   async getCachedProductData(key: string): Promise<Maybe<Record<string, unknown>>> {
     try {
-      const result = await chrome.storage.local.get(CACHE.SUPPLIER_PRODUCT_DATA_CACHE);
+      const result = await cstorage.local.get(CACHE.SUPPLIER_PRODUCT_DATA_CACHE);
       const cache =
         (result[CACHE.SUPPLIER_PRODUCT_DATA_CACHE] as Record<string, CachedProductEntry>) || {};
       const cached = cache[key];
@@ -361,12 +362,12 @@ export default class SupplierCache {
    */
   async updateProductDataCacheTimestamp(key: string): Promise<void> {
     try {
-      const result = await chrome.storage.local.get(CACHE.SUPPLIER_PRODUCT_DATA_CACHE);
+      const result = await cstorage.local.get(CACHE.SUPPLIER_PRODUCT_DATA_CACHE);
       const cache =
         (result[CACHE.SUPPLIER_PRODUCT_DATA_CACHE] as Record<string, CachedProductEntry>) || {};
       if (cache[key]) {
         cache[key].timestamp = Date.now();
-        await chrome.storage.local.set({ [CACHE.SUPPLIER_PRODUCT_DATA_CACHE]: cache });
+        await cstorage.local.set({ [CACHE.SUPPLIER_PRODUCT_DATA_CACHE]: cache });
       }
     } catch (error) {
       this.logger.error("Error updating product data cache timestamp:", { error });
@@ -379,7 +380,7 @@ export default class SupplierCache {
    */
   async cacheProductData(key: string, data: Record<string, unknown>): Promise<void> {
     try {
-      const result = await chrome.storage.local.get(CACHE.SUPPLIER_PRODUCT_DATA_CACHE);
+      const result = await cstorage.local.get(CACHE.SUPPLIER_PRODUCT_DATA_CACHE);
       const cache =
         (result[CACHE.SUPPLIER_PRODUCT_DATA_CACHE] as Record<string, CachedProductEntry>) || {};
       if (Object.keys(cache).length >= SupplierCache.productDataCacheSize) {
@@ -392,7 +393,7 @@ export default class SupplierCache {
         data,
         timestamp: Date.now(),
       };
-      await chrome.storage.local.set({ [CACHE.SUPPLIER_PRODUCT_DATA_CACHE]: cache });
+      await cstorage.local.set({ [CACHE.SUPPLIER_PRODUCT_DATA_CACHE]: cache });
     } catch (error) {
       this.logger.error("Error storing product data in cache:", { error });
     }
@@ -419,7 +420,7 @@ export default class SupplierCache {
    * @source
    */
   static async clearAll(): Promise<void> {
-    await chrome.storage.local.remove([
+    await cstorage.local.remove([
       String(CACHE.SUPPLIER_QUERY_CACHE),
       String(CACHE.SUPPLIER_PRODUCT_DATA_CACHE),
     ]);

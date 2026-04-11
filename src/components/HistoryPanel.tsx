@@ -1,5 +1,6 @@
 import { CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
 import { useAppContext } from "@/context";
+import { cstorage } from "@/utils/storage";
 import { Delete as DeleteIcon, FilterList as FilterListIcon } from "@mui/icons-material";
 import {
   Box,
@@ -41,7 +42,7 @@ const HistoryPanel: React.FC = () => {
   useEffect(() => {
     const loadHistory = async () => {
       try {
-        const data = await chrome.storage.local.get([CACHE.SEARCH_HISTORY]);
+        const data = await cstorage.local.get([CACHE.SEARCH_HISTORY]);
         if (Array.isArray(data[CACHE.SEARCH_HISTORY])) {
           setHistory(data[CACHE.SEARCH_HISTORY] as SearchHistoryEntry[]);
         }
@@ -65,7 +66,7 @@ const HistoryPanel: React.FC = () => {
    */
   const handleClearHistory = async () => {
     try {
-      await chrome.storage.local.set({ [CACHE.SEARCH_HISTORY]: [] });
+      await cstorage.local.set({ [CACHE.SEARCH_HISTORY]: [] });
       setHistory([]);
     } catch (error) {
       console.warn("Failed to clear search history:", error);

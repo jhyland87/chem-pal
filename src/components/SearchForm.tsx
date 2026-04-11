@@ -1,4 +1,5 @@
 import { CACHE } from "@/constants/common";
+import { cstorage } from "@/utils/storage";
 import { Science as ScienceIcon, Search as SearchIcon } from "@mui/icons-material";
 import { Box, IconButton } from "@mui/material";
 import React, { useEffect, useState } from "react";
@@ -30,7 +31,7 @@ export const SearchForm: React.FC<SearchFormProps> = ({
   useEffect(() => {
     const loadSearchInput = async () => {
       try {
-        const data = await chrome.storage.session.get([CACHE.SEARCH_INPUT]);
+        const data = await cstorage.session.get([CACHE.SEARCH_INPUT]);
         if (data[CACHE.SEARCH_INPUT]) {
           setQuery(data[CACHE.SEARCH_INPUT]);
         }
@@ -44,7 +45,7 @@ export const SearchForm: React.FC<SearchFormProps> = ({
   const handleChange = async (value: string) => {
     setQuery(value);
     try {
-      await chrome.storage.session.set({ [CACHE.SEARCH_INPUT]: value });
+      await cstorage.session.set({ [CACHE.SEARCH_INPUT]: value });
     } catch (error) {
       console.warn("Failed to persist search input to session storage:", { error });
     }

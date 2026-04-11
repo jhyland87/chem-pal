@@ -12,6 +12,7 @@ import { stripQuantityFromString } from "@/helpers/quantity";
 import { fetchDecorator } from "@/helpers/request";
 import Logger from "@/utils/Logger";
 import ProductBuilder from "@/utils/ProductBuilder";
+import { cstorage } from "@/utils/storage";
 import SupplierCache from "@/utils/SupplierCache";
 import {
   incrementFailure,
@@ -305,7 +306,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
 
   // Product-data cache keys the user has explicitly excluded via the
   // "Ignore Product" context menu action. Loaded once per execute() from
-  // chrome.storage.local so membership checks are synchronous on the hot
+  // cstorage.local so membership checks are synchronous on the hot
   // path (see getProductData). Newly-ignored products take effect on the
   // next search, which matches the stated feature requirement.
   protected excludedProductKeys: Set<string> = new Set();
@@ -1007,7 +1008,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       limit,
     );
     const key = this.cache.generateCacheKey(query, this.supplierName);
-    const result = await chrome.storage.local.get(SupplierCache.getQueryCacheKey());
+    const result = await cstorage.local.get(SupplierCache.getQueryCacheKey());
     const cache =
       (result[SupplierCache.getQueryCacheKey()] as Record<string, CachedData<unknown>>) || {};
     const cached = cache[key];
@@ -1023,7 +1024,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
           requestedLimit: limit,
         });
         delete cache[key];
-        await chrome.storage.local.set({ [SupplierCache.getQueryCacheKey()]: cache });
+        await cstorage.local.set({ [SupplierCache.getQueryCacheKey()]: cache });
       } else {
         this.logger.debug("Returning cached query results");
         // Re-initialize product builders from cached processed data
@@ -1293,7 +1294,10 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       product.setSupplierPaymentMethods(this.paymentMethods);
     }
 
-    return await product.build();
+    console.log("[supplierbase] finishProduct", { product });
+    const built = await product.build();
+    console.log("[supplierbase] built", { built });
+    return built;
   }
 
   /**

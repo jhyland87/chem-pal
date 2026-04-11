@@ -2,6 +2,7 @@ import { defaultResultsLimit } from "@/../config.json";
 import { APP_ACTION, CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
 import { AppContext } from "@/context";
 import SupplierFactory from "@/suppliers/SupplierFactory";
+import { cstorage } from "@/utils/storage";
 import CssBaseline from "@mui/material/CssBaseline";
 import { startTransition, useActionState, useEffect, useState } from "react";
 import "./App.scss";
@@ -37,8 +38,8 @@ import { getUserCountry } from "./helpers/utils";
  * const [currencyRate, setCurrencyRate] = useState(1.0);
  *
  * // Multiple useEffect hooks for loading/saving
- * useEffect(() => { chrome.storage.session.get... }, []);
- * useEffect(() => { chrome.storage.local.get... }, []);
+ * useEffect(() => { cstorage.session.get... }, []);
+ * useEffect(() => { cstorage.local.get... }, []);
  * useEffect(() => { getCurrencyRate... }, [userSettings, panel]);
  * ```
  *
@@ -126,7 +127,7 @@ function App() {
     (currentState: AppState, action: AppAction): AppState => {
       switch (action.type) {
         // Applies new user settings (theme, currency, caching, suppliers, etc.) and
-        // persists them to chrome.storage.local. Also fetches the updated currency rate.
+        // persists them to cstorage.local. Also fetches the updated currency rate.
         // Dispatched by child components via appContext.setUserSettings().
         case APP_ACTION.UPDATE_SETTINGS: {
           const newSettings = action.settings;
@@ -137,7 +138,7 @@ function App() {
                 const currencyRate = await getCurrencyRate("USD", newSettings.currency);
                 const updatedSettings = { ...newSettings, currencyRate };
                 try {
-                  await chrome.storage.local.set({ [CACHE.USER_SETTINGS]: updatedSettings });
+                  await cstorage.local.set({ [CACHE.USER_SETTINGS]: updatedSettings });
                 } catch (error) {
                   console.error("Failed to update settings:", { error });
                 }
@@ -154,13 +155,13 @@ function App() {
         }
 
         // Switches the active panel (0 = SearchHome, 1 = Results, 2 = Stats) and
-        // persists the selection to chrome.storage.session so it survives popup re-opens.
+        // persists the selection to cstorage.session so it survives popup re-opens.
         // Dispatched by child components via appContext.setPanel().
         case APP_ACTION.SET_PANEL: {
           startTransition(() => {
             (async () => {
               try {
-                await chrome.storage.session.set({ [CACHE.PANEL]: action.panel });
+                await cstorage.session.set({ [CACHE.PANEL]: action.panel });
               } catch (error) {
                 console.error("Failed to save panel:", { error });
               }
@@ -200,12 +201,12 @@ function App() {
           };
 
         // Updates the list of selected suppliers for search filtering and persists
-        // the selection to chrome.storage.local. Dispatched via appContext.setSelectedSuppliers().
+        // the selection to cstorage.local. Dispatched via appContext.setSelectedSuppliers().
         case APP_ACTION.SET_SELECTED_SUPPLIERS: {
           startTransition(() => {
             (async () => {
               try {
-                await chrome.storage.local.set({
+                await cstorage.local.set({
                   [CACHE.SELECTED_SUPPLIERS]: action.suppliers,
                 });
               } catch (error) {
@@ -232,8 +233,8 @@ function App() {
     const loadFromStorage = async () => {
       try {
         const [sessionData, localData] = await Promise.all([
-          chrome.storage.session.get([CACHE.PANEL, CACHE.SEARCH_RESULTS]),
-          chrome.storage.local.get([CACHE.USER_SETTINGS, CACHE.SELECTED_SUPPLIERS]),
+          cstorage.session.get([CACHE.PANEL, CACHE.SEARCH_RESULTS]),
+          cstorage.local.get([CACHE.USER_SETTINGS, CACHE.SELECTED_SUPPLIERS]),
         ]);
         const loadedData: Partial<AppState> = {};
 
@@ -290,8 +291,8 @@ function App() {
       }
     };
 
-    chrome.storage.onChanged.addListener(listener);
-    return () => chrome.storage.onChanged.removeListener(listener);
+    cstorage.onChanged.addListener(listener);
+    return () => cstorage.onChanged.removeListener(listener);
   }, [appState.panel, dispatch]);
 
   // Speed dial visibility logicc
@@ -357,8 +358,8 @@ function App() {
 
   return (
     <ErrorBoundary fallback={<p>Something went wrong</p>}>
-      <ThemeProvider>
-        <AppContext.Provider value={appContextValue}>
+      <AppContext.Provider value={appContextValue}>
+        <ThemeProvider>
           <CssBaseline />
           <div className="app-container">
             {/* Show loading indicator when settings are updating */}
@@ -375,8 +376,8 @@ function App() {
               <SpeedDialMenu speedDialVisibility={appState.speedDialVisibility} />
             </div>
           </div>
-        </AppContext.Provider>
-      </ThemeProvider>
+        </ThemeProvider>
+      </AppContext.Provider>
     </ErrorBoundary>
   );
 }

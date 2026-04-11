@@ -65,11 +65,6 @@ const amazonDomains: CountryDomainMap = {
 };
 
 const userCountry = getUserCountry();
-if (!amazonDomains[userCountry]) {
-  console.warn("No Amazon domain found for user country", { userCountry });
-} else {
-  console.debug("amazonDomains[getUserCountry()]", { domain: amazonDomains[userCountry] });
-}
 
 /**
  * Base class for Amazon suppliers

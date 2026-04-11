@@ -1,5 +1,6 @@
 import { CACHE } from "@/constants/common";
 import { FetchDecoratorResponse } from "@/helpers/fetch";
+import { cstorage } from "@/utils/storage";
 
 /**
  * Represents a single node in the doubly-linked list used by {@link HttpLru}.
@@ -25,13 +26,13 @@ const DEFAULT_CAPACITY = 100;
 
 /**
  * A singleton LRU (Least Recently Used) cache for HTTP responses, backed by
- * `chrome.storage.local` for persistence across browser sessions.
+ * `cstorage.local` for persistence across browser sessions.
  *
  * The cache uses a doubly-linked list combined with a `Map` for O(1) lookups,
  * insertions, and evictions. When the cache exceeds its configured capacity,
  * the least recently accessed entry is automatically evicted.
  *
- * State is persisted to `chrome.storage.local` on every mutation so that
+ * State is persisted to `cstorage.local` on every mutation so that
  * cached responses survive extension restarts and browser closures.
  *
  * @example
@@ -75,7 +76,7 @@ export class HttpLru {
 
   /**
    * Returns the singleton HttpLru instance, restoring persisted state from
-   * `chrome.storage.local` on first access. Subsequent calls return the
+   * `cstorage.local` on first access. Subsequent calls return the
    * same in-memory instance without hitting storage.
    *
    * @param capacity - Maximum number of entries (only applied when creating a new instance)
@@ -91,7 +92,7 @@ export class HttpLru {
     if (HttpLru.#instance) {
       return HttpLru.#instance;
     }
-    const data = await chrome.storage.local.get([CACHE.HTTP_LRU]);
+    const data = await cstorage.local.get([CACHE.HTTP_LRU]);
     if (data[CACHE.HTTP_LRU]) {
       const httplru = new HttpLru(capacity);
       httplru.cache = new Map(Object.entries(data[CACHE.HTTP_LRU].cache));
@@ -154,7 +155,7 @@ export class HttpLru {
    * node is created at the head. When the cache exceeds its capacity, the
    * least recently used entry (tail) is evicted.
    *
-   * Persists the updated cache state to `chrome.storage.local` after mutation.
+   * Persists the updated cache state to `cstorage.local` after mutation.
    *
    * @param key - The cache key (typically a request hash)
    * @param value - The HTTP response to store
@@ -185,14 +186,14 @@ export class HttpLru {
         }
       }
     }
-    // Save to chrome.storage.local
+    // Save to cstorage.local
     await this.saveToStorage();
   }
 
   /**
    * Detaches a node from its current position in the doubly-linked list and
    * reinserts it at the head, marking it as the most recently used entry.
-   * Persists the reordered state to `chrome.storage.local`.
+   * Persists the reordered state to `cstorage.local`.
    *
    * @param node - The node to promote to the head of the list
    * @source
@@ -215,20 +216,20 @@ export class HttpLru {
       this.head.prev = node;
     }
     this.head = node;
-    // Save to chrome.storage.local after moving node
+    // Save to cstorage.local after moving node
     await this.saveToStorage();
   }
 
   /**
    * Serializes the current cache state (map entries, head, and tail pointers)
-   * and writes it to `chrome.storage.local` under the `httplru` key.
+   * and writes it to `cstorage.local` under the `httplru` key.
    * Called internally after every mutation to ensure persistence.
    *
    * @source
    */
   private async saveToStorage(): Promise<void> {
     const cacheData = Object.fromEntries(this.cache);
-    await chrome.storage.local.set({
+    await cstorage.local.set({
       [CACHE.HTTP_LRU]: {
         cache: cacheData,
         head: this.head,

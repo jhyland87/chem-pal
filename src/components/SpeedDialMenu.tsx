@@ -5,6 +5,7 @@ import ClearIcon from "@/icons/ClearIcon";
 import ContrastIcon from "@/icons/ContrastIcon";
 import InfoOutlineIcon from "@/icons/InfoOutlineIcon";
 import SupplierCache from "@/utils/SupplierCache";
+import { cstorage } from "@/utils/storage";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import SpeedDial from "@mui/material/SpeedDial";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
@@ -44,7 +45,7 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
   const handleClearResults = async (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     try {
-      await chrome.storage.session.set({ [CACHE.SEARCH_RESULTS]: [] });
+      await cstorage.session.set({ [CACHE.SEARCH_RESULTS]: [] });
     } catch (error) {
       console.warn(`Failed to clear ${CACHE.SEARCH_RESULTS} results from session storage:`, error);
     }
