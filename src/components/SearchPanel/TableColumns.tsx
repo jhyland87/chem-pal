@@ -66,16 +66,21 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       accessorKey: "title",
       header: "Title",
       cell: ({ row }: ProductRow) => {
+        // Indent variant rows so the hierarchy is visually obvious — 16px per
+        // depth level, matching the chevron column width.
+        const indent = row.depth > 0 ? row.depth * 16 : 0;
         return (
-          <Link
-            history={{
-              type: "product",
-              data: omit(row.original, "variants") as Omit<Product, "variants">,
-            }}
-            href={row.original.url}
-          >
-            {row.original.title}
-          </Link>
+          <span style={{ paddingLeft: indent, display: "inline-block" }}>
+            <Link
+              history={{
+                type: "product",
+                data: omit(row.original, "variants") as Omit<Product, "variants">,
+              }}
+              href={row.original.url}
+            >
+              {row.original.title}
+            </Link>
+          </span>
         );
       },
       enableHiding: false,
