@@ -18,11 +18,12 @@ const buildValidProduct = () => ({
   stockId: 42,
   availability: { name: "In Stock" },
   price: {
-    gross: { base: "100", final: "100" },
-    net: { base: "90", final: "90" },
+    gross: { base: "100", base_float: 100, final: "100", final_float: 100 },
+    net: { base: "90", base_float: 90, final: "90", final_float: 90 },
   },
   weight: { weight_float: 0, weight: "0 kg" },
   shortDescription: "Test Description",
+  description: "Test long description",
   producer: { id: 1, name: "Test Producer", img: "test.jpg" },
   options_configuration: [
     {
@@ -228,7 +229,9 @@ describe("Synthetika Type Guards", () => {
     it("should return true for valid SynthetikaProductPrice", () => {
       const validPrice = {
         base: "100",
+        base_float: 100,
         final: "100",
+        final_float: 100,
       };
 
       expect(isSynthetikaProductPrice(validPrice)).toBe(true);
@@ -260,7 +263,9 @@ describe("Synthetika Type Guards", () => {
     it("should not throw for valid SynthetikaProductPrice", () => {
       const validPrice = {
         base: "100",
+        base_float: 100,
         final: "100",
+        final_float: 100,
       };
 
       expect(() => assertIsSynthetikaProductPrice(validPrice)).not.toThrow();
