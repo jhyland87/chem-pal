@@ -2,10 +2,11 @@ import { AVAILABILITY } from "@/constants/common";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM, urlencode } from "@/helpers/request";
-import { mapDefined } from "@/helpers/utils";
+import { firstMap, mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import {
   assertIsSynthetikaSearchResponse,
+  isSynthetikaMinimalProduct,
   isSynthetikaProduct,
 } from "@/utils/typeGuards/synthetika";
 import SupplierBase from "./SupplierBase";
@@ -260,9 +261,8 @@ export default class SupplierSynthetika
 
     const fuzzFiltered = this.fuzzyFilter<SynthetikaProduct>(query, products);
     const grouped = this.groupVariants<SynthetikaProduct>(fuzzFiltered);
-    return this.initProductBuilders(grouped.slice(0, limit));
+    return this.initProductBuilders(grouped);
   }
-
   /**
    * Selects the title/name of a product from the search response
    * @param data - Product object from search response
@@ -274,7 +274,13 @@ export default class SupplierSynthetika
   }
 
   /**
-   * Converts the availability string from Synthetika to an AVAILABILITY enum value
+   * Converts the availability string from Synthetika to an AVAILABILITY enum value.
+   * I wrote a bash script that iterated over their collections, then the products in
+   * those collections, getting the availability for each. I only found the below:
+   * - Large quantity
+   * - na wyczerpaniu // Translates to "to exhaustion" (ie: running out)
+   * - średnia ilość // Translates to "medium quantity"
+   * - tymczasowo niedostępny // Translates to "temporarily unavailable"
    * @param availability - Availability string from Synthetika
    * @returns AVAILABILITY enum value
    * @source
@@ -289,6 +295,7 @@ export default class SupplierSynthetika
       case "na wyczerpaniu":
         return AVAILABILITY.LIMITED_STOCK;
       case "large quantity":
+      case "średnia ilość":
         return AVAILABILITY.IN_STOCK;
       case "tymczasowo niedostępny":
         return AVAILABILITY.UNAVAILABLE;
@@ -320,6 +327,12 @@ export default class SupplierSynthetika
     return mapDefined(data, (product) => {
       const productBuilder = new ProductBuilder(this.baseURL);
 
+      const availability = this.availabilityConverter(product.availability.name);
+      if ([AVAILABILITY.LIMITED_STOCK, AVAILABILITY.IN_STOCK].includes(availability) === false) {
+        this.logger.warn("Product not in stock - Skipping", { availability, product });
+        return;
+      }
+
       productBuilder
         .setBasicInfo(product.name, product.url, this.supplierName)
         .setDescription(product.shortDescription)
@@ -328,7 +341,11 @@ export default class SupplierSynthetika
         .setSku(product.code)
         .setUUID(product.code);
 
-      const quantity = parseQuantity(product.name);
+      const quantity = firstMap(parseQuantity, [
+        product.name,
+        product.description,
+        product.weight.weight,
+      ]);
       if (quantity) {
         productBuilder.setQuantity(quantity);
       }
@@ -407,6 +424,7 @@ export default class SupplierSynthetika
   protected async getProductData(
     product: ProductBuilder<Product & { variants?: Variant[] }>,
   ): Promise<ProductBuilder<Product> | void> {
+    console.log("[synthetika] getProductData init", { product });
     return this.getProductDataWithCache(product, async (builder) => {
       if (builder instanceof ProductBuilder === false) {
         this.logger.warn("Invalid product object - Expected ProductBuilder instance:", {
@@ -417,18 +435,76 @@ export default class SupplierSynthetika
       }
 
       const productURL = this.href(`/webapi/front/en_US/products/usd/${builder.get("id")}`);
-      const productResponse = await this.httpGetJson({
+      const productResponse = (await this.httpGetJson({
         path: productURL,
+      })) as unknown;
+
+      console.log("[synthetika] productResponse", {
+        builder,
+        product,
+        productURL,
+        productResponse,
       });
 
-      if (!isSynthetikaProduct(productResponse)) {
-        this.logger.warn("Product Response body did not satisfy typeguard:", {
+      let quantityObject: QuantityObject | undefined;
+      if (isSynthetikaProduct(productResponse)) {
+        quantityObject = mapDefined(
+          productResponse.options_configuration[0].values,
+          (value: SynthetikaConfigurationOptionValueSchema) => {
+            return parseQuantity(value.name);
+          },
+        )
+          .sort((a, b) => (a?.quantity ?? 0) - (b?.quantity ?? 0))
+          .at(0);
+        console.log("[synthetika] quantityObject (from configurationOptions", { quantityObject });
+      } else if (!isSynthetikaMinimalProduct(productResponse)) {
+        this.logger.warn("Product Response body did not satisfy minimal product typeguard:", {
           productResponse,
           builder,
           product,
           productURL,
         });
-        return builder;
+        return;
+      }
+
+      if (!quantityObject) {
+        quantityObject =
+          firstMap<string, QuantityObject | undefined>(parseQuantity, [
+            productResponse.name,
+            productResponse.description,
+            productResponse.weight.weight,
+          ]) ?? undefined;
+        if (!quantityObject) {
+          this.logger.warn("Failed to parse quantity from product response", {
+            productResponse,
+            builder,
+            product,
+            productURL,
+            parsedValues: [
+              productResponse.name,
+              productResponse.description,
+              productResponse.weight.weight,
+            ],
+          });
+          return;
+        }
+      }
+
+      builder.setQuantity(quantityObject);
+
+      if (builder.get("price") === undefined) {
+        const price = parsePrice(productResponse.price.gross.final);
+        if (!price) {
+          this.logger.warn("Failed to parse price from product response", {
+            productResponse,
+            builder,
+            product,
+            productURL,
+            parsedValue: productResponse.price.gross.final,
+          });
+          return;
+        }
+        builder.setPricing(price.price, price.currencyCode, price.currencySymbol);
       }
 
       const descriptionProperties = this.parseDescriptionHTML(productResponse.description);
@@ -448,34 +524,11 @@ export default class SupplierSynthetika
         }
       }
 
-      const variants = mapDefined(productResponse.options_configuration[0].values, (value) => {
-        const quantity = parseQuantity(value.name);
-        if (!quantity) {
-          this.logger.warn("Failed to parse quantity from value name", {
-            value,
-            builder,
-            product,
-          });
-          return;
-        }
-        return {
-          title: `${builder.get("title")} - ${value.name}`,
-          price: parsePrice(value.name)?.price ?? 0,
-          quantity: quantity.quantity,
-          uom: quantity.uom,
-          url: productResponse.url,
-        };
-      });
-
-      if (variants.length > 0) {
-        builder.setData(variants.shift() ?? {});
-      }
-
       // if (variants.length > 0) {
       //   builder.setVariants(variants);
       // }
 
-      console.log("[synthetika] builder", { builder, product, variants });
+      console.log("[synthetika] builder", { builder, product });
 
       return builder;
     });

@@ -398,6 +398,8 @@ declare global {
     [UOM.M]: string[];
     /** Alternative strings representing ounces */
     [UOM.OZ]: string[];
+    /** Alternative strings representing fluid ounces */
+    [UOM.FLOZ]: string[];
     /** Alternative strings representing milligrams */
     [UOM.MG]: string[];
     /** Alternative strings representing kilometers */

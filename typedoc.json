@@ -82,7 +82,7 @@
   "includeHierarchySummary": true,
   "navigation": {
     "includeFolders": true,
-    "compactFolders": false,
+    "compactFolders": true,
     "includeGroups": true,
     "includeCategories": true,
     "excludeReferences": true
@@ -132,6 +132,7 @@
     "Hooks",
     "Types",
     "Typeguards",
+    "Helpers",
     "Context",
     "*"
   ],

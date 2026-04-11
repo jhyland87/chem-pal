@@ -21,6 +21,18 @@
     {
       "tagName": "@subcategory",
       "syntaxKind": "block"
+    },
+    {
+      "tagName": "@categoryDescription",
+      "syntaxKind": "block"
+    },
+    {
+      "tagName": "@groupDescription",
+      "syntaxKind": "block"
+    },
+    {
+      "tagName": "@group",
+      "syntaxKind": "inline"
     }
   ],
   "supportForTags": {
@@ -49,7 +61,9 @@
     "@mergeModuleWith": true,
     "@group": true,
     "@groupDescription": true,
+    "@categoryDescription": true,
     "@showGroups": true,
+    "@showCategories": true,
     "@summary": true,
     "@internal": true,
     "@includeCode": true,

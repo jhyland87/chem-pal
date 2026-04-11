@@ -1,6 +1,6 @@
 # Caching
 
-ChemPal caches search results and product data in `chrome.storage.local` to avoid redundant network requests across searches.
+ChemPal caches search results and product data in `chrome.storage.local` to avoid redundant network requests across searches. All writes go through the `cstorage` compression wrapper (see [Transparent Compression](#transparent-compression)), so cache payloads are LZ-compressed at rest.
 
 ## Key Concepts
 
@@ -9,6 +9,51 @@ ChemPal caches search results and product data in `chrome.storage.local` to avoi
 - **Limit-aware invalidation**: The query cache invalidates entries when a new search requests more results than the cached limit
 - **Timestamp refresh on read**: Product data cache updates `cachedAt` on hit to prevent active entries from being evicted
 - **Serialization**: `ProductBuilder.dump()` serializes builders for storage; `ProductBuilder.createFromCache()` re-hydrates them
+- **Transparent compression**: `src/utils/storage.ts` wraps `chrome.storage` with lz-string (UTF-16) compression so more cached entries fit under the extension quota
+
+## Transparent Compression
+
+All `chrome.storage` access in the cache layer flows through `cstorage`, a compression-aware facade exported from `src/utils/storage.ts`. This lets ChemPal cache substantially more data in the same storage quota without any call-site changes beyond the import.
+
+### Wire format
+
+Compressed values are wrapped in a small envelope so reads can distinguish compressed from legacy entries:
+
+```ts
+interface LzEnvelope {
+  __lz: 1;   // version tag (LZ_VERSION)
+  d: string; // lz-string compressToUTF16 output
+}
+```
+
+On `set`, values are `JSON.stringify`ed and run through `compressToUTF16`, then wrapped in the envelope. On `get`, `isLzEnvelope(value)` decides whether to decompress and `JSON.parse`, or pass the value through unchanged (backward compatibility for data that was written before the wrapper shipped, or written directly via `chrome.storage.*`).
+
+### Two-layer design
+
+The module is intentionally split so the compression logic is directly unit-testable without mocking `chrome.*`:
+
+- **Pure codec** — `encodeValue`, `decodeValue`, `encodeItems`, `decodeItems`, `decodeChanges`, `isLzEnvelope`. No `chrome.*` access.
+- **Adapter** — `cstorage.local`, `cstorage.session`, `cstorage.onChanged`. Thin shim that delegates to the codec and talks to `chrome.storage`.
+
+`cstorage.onChanged.addListener` wraps the caller's listener so that `oldValue` / `newValue` in the change payload are already decompressed. A `WeakMap` tracks the outer→inner listener mapping so `removeListener` works as expected.
+
+### What's compressed
+
+| Area | Keys | Purpose |
+|---|---|---|
+| `chrome.storage.local` | Query results cache entries | Per-supplier search result lists |
+| `chrome.storage.local` | Product data cache entries | Per-URL product detail snapshots |
+| `chrome.storage.local` | `HttpLru` cache | HTTP response cache used by suppliers |
+| `chrome.storage.local` | `SupplierStatsStore` entries | Per-supplier runtime stats |
+| `chrome.storage.local` | `HISTORY`, `EXCLUDED_PRODUCTS`, `USER_SETTINGS` | App-level persistent state |
+| `chrome.storage.session` | `SEARCH_RESULTS` | Persisted search results for restore-on-mount |
+
+### Backward compatibility
+
+- Reads auto-detect envelopes, so pre-compression data in users' browsers continues to work after upgrade.
+- Reads of externally-written envelopes (e.g. another page that imports `cstorage`) are transparent.
+- If compression or decompression fails, the wrapper logs via `Logger("storage")` and falls back to the raw value so cached data is never lost on a codec error.
+- The envelope carries a `__lz` version tag (`LZ_VERSION = 1`) so the wire format can be migrated in the future.
 
 ## Cache Architecture
 
@@ -25,8 +70,11 @@ end
 
 subgraph Storage["Chrome Storage Backend"]
 direction LR
-QCS[("chrome.storage.local\nQuery Results Cache\nkey: SupplierCache.getQueryCacheKey()")]
-PDS[("chrome.storage.local\nProduct Data Cache\nkey: SupplierCache.getProductDataCacheKey()")]
+CSTORAGE["cstorage wrapper\nlz-string compression\nencodeValue / decodeValue"]
+QCS[("chrome.storage.local\nQuery Results Cache\nLZ envelope at rest\nkey: SupplierCache.getQueryCacheKey()")]
+PDS[("chrome.storage.local\nProduct Data Cache\nLZ envelope at rest\nkey: SupplierCache.getProductDataCacheKey()")]
+CSTORAGE --> QCS
+CSTORAGE --> PDS
 end
 
 subgraph QueryCache["Query Results Cache Flow"]
@@ -119,9 +167,11 @@ classDef decision fill:#F5D76E,stroke:#C5A83D,color:#333,font-weight:bold
 classDef lru fill:#E74C3C,stroke:#C0392B,color:#fff
 classDef meta fill:#8E44AD,stroke:#6C3483,color:#fff
 classDef keygen fill:#1ABC9C,stroke:#148F77,color:#fff
+classDef compress fill:#16A085,stroke:#0E6B57,color:#fff,font-weight:bold
 
 class SB,IC,SC init
 class QCS,PDS storage
+class CSTORAGE compress
 class QPC,GPD cacheFlow
 class RESTORE,SETDATA,TOUCH hit
 class QP,DUMP1,SAVE1,FETCH,DUMP2,SAVE2 miss

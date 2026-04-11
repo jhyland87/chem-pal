@@ -57,7 +57,9 @@ export function assertIsSynthetikaSearchResponse(
 
 const synthetikaProductPriceSchema = z.object({
   base: z.string(),
+  base_float: z.number(),
   final: z.string(),
+  final_float: z.number(),
 });
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -71,7 +73,7 @@ const synthetikaConfigurationOptionSchema = z.object({
   values: z.array(synthetikaConfigurationOptionValueSchema),
 });
 
-const synthetikaProductSchema = z.object({
+const synthetikaMinimalProductSchema = z.object({
   id: z.number(),
   name: z.string(),
   can_buy: z.boolean(),
@@ -95,6 +97,10 @@ const synthetikaProductSchema = z.object({
   }),
   producer: z.record(z.string(), z.unknown()).nullable(),
   shortDescription: z.string(),
+  description: z.string(),
+});
+
+const synthetikaProductSchema = synthetikaMinimalProductSchema.extend({
   options_configuration: z.array(synthetikaConfigurationOptionSchema),
 });
 /* eslint-enable @typescript-eslint/naming-convention */
@@ -116,6 +122,10 @@ const synthetikaProductSchema = z.object({
  */
 export function isSynthetikaProduct(data: unknown): data is SynthetikaProduct {
   return synthetikaProductSchema.safeParse(data).success;
+}
+
+export function isSynthetikaMinimalProduct(data: unknown): data is SynthetikaMinimalProduct {
+  return synthetikaMinimalProductSchema.safeParse(data).success;
 }
 
 /**
