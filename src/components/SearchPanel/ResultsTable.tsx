@@ -28,7 +28,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Column, ColumnFiltersState, flexRender, Header, Row } from "@tanstack/react-table";
-import { isEmpty } from "lodash";
+import isEmpty from "lodash/isEmpty";
 import React, { Dispatch, ReactElement, SetStateAction, useEffect, useState } from "react";
 import {
   BackButton,
@@ -393,8 +393,7 @@ export default function ResultsTable({
                   <EmptyStateCell colSpan={table.getAllColumns().length}>
                     {searchResults.length === 0
                       ? tableText || "No search query"
-                      : table.getState().columnFilters.length > 0 ||
-                          table.getState().globalFilter
+                      : table.getState().columnFilters.length > 0 || table.getState().globalFilter
                         ? "No results matching your filter values"
                         : "No results found"}
                   </EmptyStateCell>
