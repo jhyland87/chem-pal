@@ -1,5 +1,6 @@
+import { useAppContext } from "@/context";
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   darkPalette,
   darkTheme,
@@ -15,23 +16,12 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const [mode, setMode] = useState<ThemeMode>("light");
+  const { userSettings, setUserSettings } = useAppContext();
 
-  // Load theme preference from localStorage on mount
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") as ThemeMode;
-    if (savedTheme && (savedTheme === "light" || savedTheme === "dark")) {
-      setMode(savedTheme);
-    }
-  }, []);
-
-  // Save theme preference to localStorage when it changes
-  useEffect(() => {
-    localStorage.setItem("theme", mode);
-  }, [mode]);
+  const mode: ThemeMode = userSettings.theme === "dark" ? "dark" : "light";
 
   const toggleTheme = () => {
-    setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
+    setUserSettings({ ...userSettings, theme: mode === "light" ? "dark" : "light" });
   };
 
   const currentTheme = mode === "light" ? lightTheme : darkTheme;

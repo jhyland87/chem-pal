@@ -1,10 +1,13 @@
 import { AVAILABILITY } from "@/constants/common";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
-import { urlencode } from "@/helpers/request";
+import { createDOM, urlencode } from "@/helpers/request";
 import { mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
-import { assertIsSynthetikaSearchResponse } from "@/utils/typeGuards/synthetika";
+import {
+  assertIsSynthetikaSearchResponse,
+  isSynthetikaProduct,
+} from "@/utils/typeGuards/synthetika";
 import SupplierBase from "./SupplierBase";
 
 /**
@@ -355,6 +358,47 @@ export default class SupplierSynthetika
   }
 
   /**
+   * Parses the description HTML and returns a record of properties
+   * @param descriptionHTML - The description HTML to parse
+   * @returns A record of properties
+   * @source
+   */
+  protected parseDescriptionHTML(descriptionHTML: string): Record<string, string> {
+    const descriptionDOM = createDOM(descriptionHTML);
+
+    const properties: Record<string, string> = {};
+
+    // Find all <strong> elements that end with ":"
+    descriptionDOM.querySelectorAll("strong").forEach((strong) => {
+      const label = strong.textContent?.trim();
+      if (!label || !label.endsWith(":")) return;
+
+      const key = label.slice(0, -1); // strip the colon
+
+      // The value is the text that follows the <strong> inside its parent
+      const parent = strong.parentElement;
+      let value = "";
+
+      // Walk sibling nodes after the <strong>
+      let node = strong.nextSibling;
+      while (node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          value += node.textContent;
+        } else if (node.nodeName === "BR") {
+          break; // stop at line break — next field starts here
+        } else {
+          value += node.textContent;
+        }
+        node = node.nextSibling;
+      }
+
+      properties[key] = value.trim();
+    });
+
+    return properties;
+  }
+
+  /**
    * Process the product data and return a ProductBuilder instance
    * @param product - The ProductBuilder instance to process
    * @returns Promise resolving to a ProductBuilder instance or void
@@ -363,6 +407,77 @@ export default class SupplierSynthetika
   protected async getProductData(
     product: ProductBuilder<Product & { variants?: Variant[] }>,
   ): Promise<ProductBuilder<Product> | void> {
-    return product;
+    return this.getProductDataWithCache(product, async (builder) => {
+      if (builder instanceof ProductBuilder === false) {
+        this.logger.warn("Invalid product object - Expected ProductBuilder instance:", {
+          builder,
+          product,
+        });
+        return;
+      }
+
+      const productURL = this.href(`/webapi/front/en_US/products/usd/${builder.get("id")}`);
+      const productResponse = await this.httpGetJson({
+        path: productURL,
+      });
+
+      if (!isSynthetikaProduct(productResponse)) {
+        this.logger.warn("Product Response body did not satisfy typeguard:", {
+          productResponse,
+          builder,
+          product,
+          productURL,
+        });
+        return builder;
+      }
+
+      const descriptionProperties = this.parseDescriptionHTML(productResponse.description);
+      console.log("[synthetika] descriptionProperties", {
+        descriptionProperties,
+        builder,
+        product,
+        productURL,
+      });
+
+      if (Object.keys(descriptionProperties).length > 0) {
+        if ("CAS Number" in descriptionProperties) {
+          builder.setCAS(descriptionProperties["CAS Number"]);
+        }
+        if ("Sum Formula" in descriptionProperties) {
+          builder.setFormula(descriptionProperties["Sum Formula"]);
+        }
+      }
+
+      const variants = mapDefined(productResponse.options_configuration[0].values, (value) => {
+        const quantity = parseQuantity(value.name);
+        if (!quantity) {
+          this.logger.warn("Failed to parse quantity from value name", {
+            value,
+            builder,
+            product,
+          });
+          return;
+        }
+        return {
+          title: `${builder.get("title")} - ${value.name}`,
+          price: parsePrice(value.name)?.price ?? 0,
+          quantity: quantity.quantity,
+          uom: quantity.uom,
+          url: productResponse.url,
+        };
+      });
+
+      if (variants.length > 0) {
+        builder.setData(variants.shift() ?? {});
+      }
+
+      // if (variants.length > 0) {
+      //   builder.setVariants(variants);
+      // }
+
+      console.log("[synthetika] builder", { builder, product, variants });
+
+      return builder;
+    });
   }
 }

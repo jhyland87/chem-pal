@@ -1,9 +1,9 @@
 /**
  * Utility for persisting per-supplier, per-day search statistics
- * in chrome.storage.local.
+ * in cstorage.local.
  *
  * Each day gets its own storage key: `supplier_stats_MMDDYYYY`
- * This avoids hitting chrome.storage.local's per-item size limit.
+ * This avoids hitting cstorage.local's per-item size limit.
  *
  * Uses an in-memory buffer to avoid race conditions from concurrent
  * fire-and-forget writes. Flushes to storage on a debounced timer.
@@ -17,6 +17,8 @@
  * @category Utils
  * @source
  */
+
+import { cstorage } from "@/utils/storage";
 
 const STORAGE_PREFIX = "supplier_stats_";
 const RETENTION_DAYS = 30;
@@ -114,7 +116,7 @@ async function flushToStorage(): Promise<void> {
   const storageKeys = dateKeys.map(dateKeyToStorageKey);
 
   try {
-    const data = await chrome.storage.local.get(storageKeys);
+    const data = await cstorage.local.get(storageKeys);
     const updates: Record<string, Record<string, SupplierDayStats>> = {};
 
     for (const dateKey of dateKeys) {
@@ -130,7 +132,7 @@ async function flushToStorage(): Promise<void> {
       updates[sKey] = existing;
     }
 
-    await chrome.storage.local.set(updates);
+    await cstorage.local.set(updates);
     // Prune old entries
     await pruneOldStorageKeys();
   } catch (error) {
@@ -146,7 +148,7 @@ async function flushToStorage(): Promise<void> {
 async function pruneOldStorageKeys(): Promise<void> {
   const cutoff = getCutoffDateKey();
   try {
-    const allData = await chrome.storage.local.get(null);
+    const allData = await cstorage.local.get(null);
     const keysToRemove: string[] = [];
     for (const key of Object.keys(allData)) {
       if (!key.startsWith(STORAGE_PREFIX)) continue;
@@ -156,7 +158,7 @@ async function pruneOldStorageKeys(): Promise<void> {
       }
     }
     if (keysToRemove.length > 0) {
-      await chrome.storage.local.remove(keysToRemove);
+      await cstorage.local.remove(keysToRemove);
     }
   } catch (err) {
     console.warn("Failed to prune old supplier stats:", err);
@@ -195,7 +197,7 @@ export function incrementParseError(supplier: string): void {
  */
 async function migrateLegacyStats(): Promise<void> {
   try {
-    const data = await chrome.storage.local.get(["supplierStats"]);
+    const data = await cstorage.local.get(["supplierStats"]);
     if (!data.supplierStats || typeof data.supplierStats !== "object") return;
 
     const legacy = data.supplierStats as SupplierStatsData;
@@ -207,9 +209,9 @@ async function migrateLegacyStats(): Promise<void> {
     }
 
     if (Object.keys(updates).length > 0) {
-      await chrome.storage.local.set(updates);
+      await cstorage.local.set(updates);
     }
-    await chrome.storage.local.remove("supplierStats");
+    await cstorage.local.remove("supplierStats");
     console.log("Migrated legacy supplierStats to per-day keys");
   } catch (error) {
     console.warn("Failed to migrate legacy supplier stats:", error);
@@ -227,7 +229,7 @@ export async function getStats(): Promise<SupplierStatsData> {
 
   flushToStorage();
   try {
-    const allData = await chrome.storage.local.get(null);
+    const allData = await cstorage.local.get(null);
     const result: SupplierStatsData = {};
 
     for (const [key, value] of Object.entries(allData)) {
@@ -249,10 +251,10 @@ export async function getStats(): Promise<SupplierStatsData> {
 export async function clearStats(): Promise<void> {
   pendingIncrements.clear();
   try {
-    const allData = await chrome.storage.local.get(null);
+    const allData = await cstorage.local.get(null);
     const keysToRemove = Object.keys(allData).filter((k) => k.startsWith(STORAGE_PREFIX));
     if (keysToRemove.length > 0) {
-      await chrome.storage.local.remove(keysToRemove);
+      await cstorage.local.remove(keysToRemove);
     }
   } catch (error) {
     console.warn("Failed to clear supplier stats:", error);

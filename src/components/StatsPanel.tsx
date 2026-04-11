@@ -9,6 +9,7 @@ import { useDrawingArea } from "@mui/x-charts/hooks";
 import { useEffect, useMemo, useState } from "react";
 import { useAppContext } from "@/context";
 import { clearStats, getStats } from "@/utils/SupplierStatsStore";
+import { cstorage } from "@/utils/storage";
 import { BackButton } from "./StyledComponents";
 import styles from "./StatsPanel.module.scss";
 
@@ -87,8 +88,8 @@ const StatsPanel: React.FC = () => {
         loadStats();
       }
     };
-    chrome.storage.onChanged.addListener(listener);
-    return () => chrome.storage.onChanged.removeListener(listener);
+    cstorage.onChanged.addListener(listener);
+    return () => cstorage.onChanged.removeListener(listener);
   }, []);
 
   const handleClear = async () => {

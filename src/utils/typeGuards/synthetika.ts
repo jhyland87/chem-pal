@@ -55,18 +55,47 @@ export function assertIsSynthetikaSearchResponse(
   }
 }
 
+const synthetikaProductPriceSchema = z.object({
+  base: z.string(),
+  final: z.string(),
+});
+
 /* eslint-disable @typescript-eslint/naming-convention */
+const synthetikaConfigurationOptionValueSchema = z.object({
+  id: z.string(),
+  order: z.string(),
+  name: z.string(),
+});
+
+const synthetikaConfigurationOptionSchema = z.object({
+  values: z.array(synthetikaConfigurationOptionValueSchema),
+});
+
 const synthetikaProductSchema = z.object({
   id: z.number(),
   name: z.string(),
-  url: z.string(),
-  category: z.record(z.string(), z.unknown()),
-  code: z.string(),
   can_buy: z.boolean(),
-  availability: z.record(z.string(), z.unknown()),
-  price: z.record(z.string(), z.unknown()),
-  shortDescription: z.string(),
+  code: z.string(),
+  unit: z.object({
+    name: z.string(),
+    floating_point: z.boolean(),
+  }),
+  stockId: z.number(),
+  url: z.string(),
+  availability: z.object({
+    name: z.string(),
+  }),
+  price: z.object({
+    gross: synthetikaProductPriceSchema,
+    net: synthetikaProductPriceSchema,
+  }),
+  weight: z.object({
+    weight_float: z.number(),
+    weight: z.string(),
+  }),
   producer: z.record(z.string(), z.unknown()).nullable(),
+  shortDescription: z.string(),
+  options_configuration: z.array(synthetikaConfigurationOptionSchema),
 });
 /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -88,11 +117,6 @@ const synthetikaProductSchema = z.object({
 export function isSynthetikaProduct(data: unknown): data is SynthetikaProduct {
   return synthetikaProductSchema.safeParse(data).success;
 }
-
-const synthetikaProductPriceSchema = z.object({
-  base: z.string(),
-  final: z.string(),
-});
 
 /**
  * This can be used to typeguard the .price.gross and .price.net fields of a SynthetikaProduct

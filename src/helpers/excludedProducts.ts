@@ -1,4 +1,5 @@
 import { CACHE } from "@/constants/common";
+import { cstorage } from "@/utils/storage";
 import { md5 } from "js-md5";
 
 /**
@@ -88,7 +89,7 @@ export function getProductExclusionKey(url: string, supplierName: string): strin
  */
 export async function loadExcludedProducts(): Promise<ExcludedProductsMap> {
   try {
-    const data = await chrome.storage.local.get([CACHE.EXCLUDED_PRODUCTS]);
+    const data = await cstorage.local.get([CACHE.EXCLUDED_PRODUCTS]);
     const map = data[CACHE.EXCLUDED_PRODUCTS] as ExcludedProductsMap | undefined;
     return map ?? {};
   } catch (error) {
@@ -171,7 +172,7 @@ export async function addExcludedProduct(
       title: meta?.title,
       excludedAt: Date.now(),
     };
-    await chrome.storage.local.set({ [CACHE.EXCLUDED_PRODUCTS]: map });
+    await cstorage.local.set({ [CACHE.EXCLUDED_PRODUCTS]: map });
   } catch (error) {
     console.warn("Failed to persist excluded product to local storage:", { error });
   }

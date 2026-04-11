@@ -1,4 +1,5 @@
 import { CACHE, PANEL } from "@/constants/common";
+import { cstorage } from "@/utils/storage";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import SettingsIcon from "@mui/icons-material/Settings";
 import Badge from "@mui/material/Badge";
@@ -26,7 +27,7 @@ const SearchPanelHome: React.FC = () => {
     } else {
       const loadStoredResults = async () => {
         try {
-          const data = await chrome.storage.session.get([CACHE.SEARCH_RESULTS]);
+          const data = await cstorage.session.get([CACHE.SEARCH_RESULTS]);
           if (data[CACHE.SEARCH_RESULTS] && data[CACHE.SEARCH_RESULTS].length > 0) {
             setHasStoredResults(true);
             setResultCount(data[CACHE.SEARCH_RESULTS].length);
@@ -47,7 +48,7 @@ const SearchPanelHome: React.FC = () => {
     // in-progress value — once a search is submitted, CACHE.QUERY becomes the
     // source of truth and CACHE.SEARCH_INPUT (the unsubmitted draft) should
     // reset so the next visit to any search field starts empty.
-    await chrome.storage.session.set({
+    await cstorage.session.set({
       [CACHE.QUERY]: query,
       [CACHE.SEARCH_INPUT]: "",
       [CACHE.SEARCH_IS_NEW_SEARCH]: true, // Flag to indicate this is a new search submission

@@ -1,4 +1,5 @@
 import { CACHE } from "@/constants/common";
+import { cstorage } from "@/utils/storage";
 
 /**
  * Get the history of products that were clicked on.
@@ -7,7 +8,7 @@ import { CACHE } from "@/constants/common";
  * @source
  */
 export async function getHistory(): Promise<HistoryEntry[]> {
-  const { history } = await chrome.storage.local.get([CACHE.SEARCH_HISTORY]);
+  const { history } = await cstorage.local.get([CACHE.SEARCH_HISTORY]);
   return history || [];
 }
 
@@ -24,5 +25,5 @@ export async function addHistory(history: HistoryEntry): Promise<void> {
   history.timestamp = Date.now();
   const historyData = await getHistory();
   historyData.push(history);
-  await chrome.storage.local.set({ [CACHE.SEARCH_HISTORY]: historyData });
+  await cstorage.local.set({ [CACHE.SEARCH_HISTORY]: historyData });
 }

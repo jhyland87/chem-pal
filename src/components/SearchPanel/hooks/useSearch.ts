@@ -5,6 +5,7 @@ import { addExcludedProduct } from "@/helpers/excludedProducts";
 import { getCompoundNameFromAlias } from "@/helpers/pubchem";
 import SupplierFactory from "@/suppliers/SupplierFactory";
 import BadgeAnimator from "@/utils/BadgeAnimator";
+import { cstorage } from "@/utils/storage";
 import { type Table } from "@tanstack/react-table";
 import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 interface SearchState {
@@ -45,18 +46,18 @@ export function updateColumnFilterFromResult(config: ColumnFilterConfig, result:
 }
 
 /**
- * Persists search results to chrome.storage.session, logging (but not throwing on) errors.
+ * Persists search results to cstorage.session, logging (but not throwing on) errors.
  */
 export async function saveResultsToSession(results: Product[]): Promise<void> {
   try {
-    await chrome.storage.session.set({ [CACHE.SEARCH_RESULTS]: results });
+    await cstorage.session.set({ [CACHE.SEARCH_RESULTS]: results });
   } catch (error) {
     console.warn("Failed to save search results to session storage:", { error });
   }
 }
 
 /**
- * Creates an initial search history entry in chrome.storage.local with a placeholder
+ * Creates an initial search history entry in cstorage.local with a placeholder
  * result count of 0. The count will be updated later via `updateHistoryResultCount`
  * as results stream in. Keeps the most recent 100 entries.
  */
@@ -67,7 +68,7 @@ export async function createInitialHistoryEntry(
   selectedSuppliers: string[],
 ): Promise<void> {
   try {
-    const data = await chrome.storage.local.get([CACHE.SEARCH_HISTORY]);
+    const data = await cstorage.local.get([CACHE.SEARCH_HISTORY]);
     const history: SearchHistoryEntry[] = Array.isArray(data[CACHE.SEARCH_HISTORY])
       ? data[CACHE.SEARCH_HISTORY]
       : [];
@@ -80,7 +81,7 @@ export async function createInitialHistoryEntry(
       selectedSuppliers: [...selectedSuppliers],
     });
     // Keep last 100 entries
-    await chrome.storage.local.set({ [CACHE.SEARCH_HISTORY]: history.slice(0, 100) });
+    await cstorage.local.set({ [CACHE.SEARCH_HISTORY]: history.slice(0, 100) });
   } catch (error) {
     console.warn("Failed to save search history:", { error });
   }
@@ -92,14 +93,14 @@ export async function createInitialHistoryEntry(
  */
 export async function updateHistoryResultCount(timestamp: number, count: number): Promise<void> {
   try {
-    const data = await chrome.storage.local.get([CACHE.SEARCH_HISTORY]);
+    const data = await cstorage.local.get([CACHE.SEARCH_HISTORY]);
     const history: SearchHistoryEntry[] = Array.isArray(data[CACHE.SEARCH_HISTORY])
       ? data[CACHE.SEARCH_HISTORY]
       : [];
     const entry = history.find((h) => h.timestamp === timestamp);
     if (entry) {
       entry.resultCount = count;
-      await chrome.storage.local.set({ [CACHE.SEARCH_HISTORY]: history });
+      await cstorage.local.set({ [CACHE.SEARCH_HISTORY]: history });
     }
   } catch (error) {
     console.warn("Failed to update search history result count:", { error });
@@ -248,7 +249,7 @@ export function useSearch() {
 
     const loadSearchData = async () => {
       try {
-        const data = await chrome.storage.session.get([
+        const data = await cstorage.session.get([
           CACHE.QUERY,
           CACHE.SEARCH_RESULTS,
           CACHE.SEARCH_IS_NEW_SEARCH,
@@ -284,7 +285,7 @@ export function useSearch() {
           });
           // Await the flag removal to prevent race conditions with re-runs
           try {
-            await chrome.storage.session.remove([String(CACHE.SEARCH_IS_NEW_SEARCH)]);
+            await cstorage.session.remove([String(CACHE.SEARCH_IS_NEW_SEARCH)]);
           } catch (error) {
             console.warn(`Failed to clear ${CACHE.SEARCH_IS_NEW_SEARCH} flag`, { error });
           }
@@ -314,8 +315,8 @@ export function useSearch() {
         setState((prev) => ({ ...prev, resultCount: 0, status: false }));
       }
     };
-    chrome.storage.onChanged.addListener(listener);
-    return () => chrome.storage.onChanged.removeListener(listener);
+    cstorage.onChanged.addListener(listener);
+    return () => cstorage.onChanged.removeListener(listener);
   }, []);
 
   const performSearch = useCallback(

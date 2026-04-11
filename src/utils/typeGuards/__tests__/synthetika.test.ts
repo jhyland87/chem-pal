@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import sodiumDichromateFixture from "@/__mocks__/responses/synthetika.com/sodium-dichromate-7670.json";
 import {
   assertIsSynthetikaProductPrice,
   assertIsSynthetikaSearchResponse,
@@ -6,6 +7,29 @@ import {
   isSynthetikaProductPrice,
   isSynthetikaSearchResponse,
 } from "../synthetika";
+
+const buildValidProduct = () => ({
+  id: 1,
+  name: "Test Product",
+  url: "https://example.com",
+  code: "TEST123",
+  can_buy: true,
+  unit: { name: "szt.", floating_point: false },
+  stockId: 42,
+  availability: { name: "In Stock" },
+  price: {
+    gross: { base: "100", final: "100" },
+    net: { base: "90", final: "90" },
+  },
+  weight: { weight_float: 0, weight: "0 kg" },
+  shortDescription: "Test Description",
+  producer: { id: 1, name: "Test Producer", img: "test.jpg" },
+  options_configuration: [
+    {
+      values: [{ id: "1", order: "1", name: "1000g" }],
+    },
+  ],
+});
 
 describe("Synthetika Type Guards", () => {
   describe("isSynthetikaSearchResponse", () => {
@@ -91,23 +115,11 @@ describe("Synthetika Type Guards", () => {
 
   describe("isSynthetikaProduct", () => {
     it("should return true for valid SynthetikaProduct", () => {
-      const validProduct = {
-        id: 1,
-        name: "Test Product",
-        url: "https://example.com",
-        category: { id: 1, name: "Test Category" },
-        code: "TEST123",
-        can_buy: true,
-        availability: { name: "In Stock" },
-        price: {
-          gross: { base: "100", final: "100" },
-          net: { base: "90", final: "90" },
-        },
-        shortDescription: "Test Description",
-        producer: { id: 1, name: "Test Producer", img: "test.jpg" },
-      };
+      expect(isSynthetikaProduct(buildValidProduct())).toBe(true);
+    });
 
-      expect(isSynthetikaProduct(validProduct)).toBe(true);
+    it("should return true for the real sodium-dichromate-7670 fixture", () => {
+      expect(isSynthetikaProduct(sodiumDichromateFixture)).toBe(true);
     });
 
     it("should return false for null", () => {
@@ -134,22 +146,81 @@ describe("Synthetika Type Guards", () => {
 
     it("should return false when fields have wrong types", () => {
       const invalidProduct = {
+        ...buildValidProduct(),
         id: "1", // should be number
-        name: "Test Product",
-        url: "https://example.com",
-        category: { id: 1, name: "Test Category" },
-        code: "TEST123",
         can_buy: "true", // should be boolean
-        availability: { name: "In Stock" },
-        price: {
-          gross: { base: "100", final: "100" },
-          net: { base: "90", final: "90" },
-        },
-        shortDescription: "Test Description",
-        producer: { id: 1, name: "Test Producer", img: "test.jpg" },
       };
 
       expect(isSynthetikaProduct(invalidProduct)).toBe(false);
+    });
+
+    it("should return false when unit is missing", () => {
+      const { unit: _unit, ...invalidProduct } = buildValidProduct();
+      expect(isSynthetikaProduct(invalidProduct)).toBe(false);
+    });
+
+    it("should return false when stockId is missing", () => {
+      const { stockId: _stockId, ...invalidProduct } = buildValidProduct();
+      expect(isSynthetikaProduct(invalidProduct)).toBe(false);
+    });
+
+    it("should return false when weight is missing", () => {
+      const { weight: _weight, ...invalidProduct } = buildValidProduct();
+      expect(isSynthetikaProduct(invalidProduct)).toBe(false);
+    });
+
+    it("should return false when price.gross is missing the final field", () => {
+      const invalidProduct = {
+        ...buildValidProduct(),
+        price: {
+          gross: { base: "100" },
+          net: { base: "90", final: "90" },
+        },
+      };
+      expect(isSynthetikaProduct(invalidProduct)).toBe(false);
+    });
+
+    it("should return false when price.net is missing entirely", () => {
+      const invalidProduct = {
+        ...buildValidProduct(),
+        price: {
+          gross: { base: "100", final: "100" },
+        },
+      };
+      expect(isSynthetikaProduct(invalidProduct)).toBe(false);
+    });
+
+    it("should return false when options_configuration is missing", () => {
+      const { options_configuration: _opts, ...invalidProduct } = buildValidProduct();
+      expect(isSynthetikaProduct(invalidProduct)).toBe(false);
+    });
+
+    it("should return false when options_configuration is not an array", () => {
+      const invalidProduct = {
+        ...buildValidProduct(),
+        options_configuration: { values: [] },
+      };
+      expect(isSynthetikaProduct(invalidProduct)).toBe(false);
+    });
+
+    it("should return false when an options_configuration value is missing id/order/name", () => {
+      const invalidProduct = {
+        ...buildValidProduct(),
+        options_configuration: [
+          {
+            values: [{ id: "1", name: "1000g" }], // missing order
+          },
+        ],
+      };
+      expect(isSynthetikaProduct(invalidProduct)).toBe(false);
+    });
+
+    it("should accept an empty options_configuration array", () => {
+      const validProduct = {
+        ...buildValidProduct(),
+        options_configuration: [],
+      };
+      expect(isSynthetikaProduct(validProduct)).toBe(true);
     });
   });
 

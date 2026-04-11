@@ -66,6 +66,15 @@ declare global {
     };
     newProduct: boolean;
     shortDescription: string;
+    description: string;
+    options_configuration: Array<{
+      values: Array<{
+        id: string;
+        order: string;
+        name: string;
+      }>;
+      [key: string]: unknown;
+    }>;
     main_image: string;
     main_image_filename: string;
     historical_lowest_price: string;
