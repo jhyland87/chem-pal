@@ -23,8 +23,8 @@ import {
   useReactTable,
   type Table,
 } from "@tanstack/react-table";
-import { throttle } from "lodash";
 import debounce from "lodash/debounce";
+import throttle from "lodash/throttle";
 import { useMemo, useState } from "react";
 import TableColumns from "./TableColumns";
 
