@@ -52,7 +52,6 @@ export default function SettingsPanelFull() {
             caching: true,
             autocomplete: true,
             autoResize: true,
-            someSetting: false,
             showColumnFilters: true,
             showAllColumns: false,
             popupSize: "small",
@@ -117,14 +116,23 @@ export default function SettingsPanelFull() {
 
   return (
     <Box>
-      <Accordion expanded={expanded === "behavior"} onChange={handleAccordionChange("behavior")} disableGutters>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />} className={styles['settings-panel__accordion-summary']}>
-          <Typography variant="body2" fontWeight={500}>Behavior</Typography>
+      <Accordion
+        expanded={expanded === "behavior"}
+        onChange={handleAccordionChange("behavior")}
+        disableGutters
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          className={styles["settings-panel__accordion-summary"]}
+        >
+          <Typography variant="body2" fontWeight={500}>
+            Behavior
+          </Typography>
         </AccordionSummary>
-        <AccordionDetails className={styles['settings-panel__accordion-details']}>
+        <AccordionDetails className={styles["settings-panel__accordion-details"]}>
           <List dense component="nav" aria-labelledby="behavior-list-subheader">
             {/* Caching */}
-            <ListItem className={styles['settings-panel__helper-on-hover']}>
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
               <ListItemText primary="Cache Search Results" />
               {/*<FormHelperText>Improves performance</FormHelperText>*/}
               <FormControlLabel
@@ -141,7 +149,7 @@ export default function SettingsPanelFull() {
               />
             </ListItem>
             {/* Autocomplete */}
-            <ListItem className={styles['settings-panel__helper-on-hover']}>
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
               <ListItemText primary="AutoComplete" />
               {/*<FormHelperText>Autocomplete search input</FormHelperText>*/}
               <FormControlLabel
@@ -158,7 +166,7 @@ export default function SettingsPanelFull() {
               />
             </ListItem>
             {/* Currency */}
-            <ListItem className={styles['settings-panel__helper-on-hover']}>
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
               <ListItemText primary="Currency" />
               {/*<FormHelperText>Convert all currency to this</FormHelperText>*/}
               <FormControl>
@@ -167,7 +175,7 @@ export default function SettingsPanelFull() {
                   onChange={handleInputChange}
                   name="currency"
                   size="small"
-                  className={styles['settings-panel__input']}
+                  className={styles["settings-panel__input"]}
                   disabled={isPending}
                 >
                   {Object.entries(currencies).map(([currencyId, { symbol }]) => (
@@ -179,7 +187,7 @@ export default function SettingsPanelFull() {
               </FormControl>
             </ListItem>
             {/* Location */}
-            <ListItem className={styles['settings-panel__helper-on-hover']}>
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
               <ListItemText primary="Location" />
               {/*<FormHelperText>Your country</FormHelperText>*/}
               <FormControl>
@@ -188,7 +196,7 @@ export default function SettingsPanelFull() {
                   onChange={handleInputChange}
                   name="location"
                   size="small"
-                  className={styles['settings-panel__input']}
+                  className={styles["settings-panel__input"]}
                   disabled={isPending}
                 >
                   <MenuItem value="">
@@ -203,7 +211,7 @@ export default function SettingsPanelFull() {
               </FormControl>
             </ListItem>
             {/* Ships to Location */}
-            <ListItem className={styles['settings-panel__helper-on-hover']}>
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
               <ListItemText primary="Ships to Location" />
               {/*<FormHelperText>Only show products that ship to your location</FormHelperText>*/}
               <FormControl>
@@ -216,17 +224,17 @@ export default function SettingsPanelFull() {
               </FormControl>
             </ListItem>
             {/* Foo Example */}
-            <ListItem className={styles['settings-panel__helper-on-hover']}>
-              <ListItemText primary="Foo" />
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText primary="Currency Rate" />
               {/*<FormHelperText>Just an input example</FormHelperText>*/}
               <FormControl>
                 <TextField
-                  value={currentSettings.foo}
-                  name="foo"
+                  value={currentSettings.currencyRate}
+                  name="currencyRate"
                   onChange={handleInputChange}
                   variant="outlined"
                   size="small"
-                  className={styles['settings-panel__input']}
+                  className={styles["settings-panel__input"]}
                   disabled={isPending}
                 />
               </FormControl>
@@ -234,14 +242,23 @@ export default function SettingsPanelFull() {
           </List>
         </AccordionDetails>
       </Accordion>
-      <Accordion expanded={expanded === "display"} onChange={handleAccordionChange("display")} disableGutters>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />} className={styles['settings-panel__accordion-summary']}>
-          <Typography variant="body2" fontWeight={500}>Display</Typography>
+      <Accordion
+        expanded={expanded === "display"}
+        onChange={handleAccordionChange("display")}
+        disableGutters
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          className={styles["settings-panel__accordion-summary"]}
+        >
+          <Typography variant="body2" fontWeight={500}>
+            Display
+          </Typography>
         </AccordionSummary>
-        <AccordionDetails className={styles['settings-panel__accordion-details']}>
+        <AccordionDetails className={styles["settings-panel__accordion-details"]}>
           <List dense component="nav" aria-labelledby="display-list-subheader">
             {/* Popup Size */}
-            <ListItem className={styles['settings-panel__helper-on-hover']}>
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
               <ListItemText primary="Popup Size" />
               {/*<FormHelperText>Popup size</FormHelperText>*/}
               <FormControl>
@@ -282,7 +299,7 @@ export default function SettingsPanelFull() {
               </FormControl>
             </ListItem>
             {/* Auto-Resize */}
-            <ListItem className={styles['settings-panel__helper-on-hover']}>
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
               <ListItemText primary="Auto-Resize" />
               {/*<FormHelperText>More results = larger window</FormHelperText>*/}
               <Switch
@@ -295,11 +312,20 @@ export default function SettingsPanelFull() {
           </List>
         </AccordionDetails>
       </Accordion>
-      <Accordion expanded={expanded === "actions"} onChange={handleAccordionChange("actions")} disableGutters>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />} className={styles['settings-panel__accordion-summary']}>
-          <Typography variant="body2" fontWeight={500}>Actions</Typography>
+      <Accordion
+        expanded={expanded === "actions"}
+        onChange={handleAccordionChange("actions")}
+        disableGutters
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          className={styles["settings-panel__accordion-summary"]}
+        >
+          <Typography variant="body2" fontWeight={500}>
+            Actions
+          </Typography>
         </AccordionSummary>
-        <AccordionDetails className={styles['settings-panel__accordion-details--actions']}>
+        <AccordionDetails className={styles["settings-panel__accordion-details--actions"]}>
           <Stack direction="row" spacing={2}>
             <Button
               variant="outlined"

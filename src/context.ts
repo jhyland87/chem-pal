@@ -28,7 +28,7 @@ export const AppContext = createContext<AppContextProps | undefined>(undefined);
  * ```tsx
  * function MyComponent() {
  *   const { userSettings, data } = useAppContext();
- *   return <div>{userSettings.someSetting}</div>;
+ *   return <div>{userSettings.currency}</div>;
  * }
  * ```
  * @source

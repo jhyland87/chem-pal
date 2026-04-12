@@ -11,7 +11,7 @@ declare module "@tanstack/react-table" {
     userSettings?: UserSettings;
     /** Function to update user settings */
     setUserSettings?: (settings: UserSettings) => void;
-    /** Function to sort table rows by match percentage */
+    /** Function to sort table rows by match percentage (fuzz match, Levenshtein distance, basically) */
     sortByMatchPercentage?: (order?: "asc" | "desc") => void;
     /** Function to check if table is currently sorted by match percentage */
     isSortedByMatchPercentage?: () => boolean;

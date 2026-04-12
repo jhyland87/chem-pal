@@ -225,3 +225,40 @@ export const cstorage = {
 };
 
 export default cstorage;
+
+/* -------------------------------------------------------------------------- */
+/*                  Console debug utility (_decodeCache)                      */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Reads and decodes a compressed value from chrome.storage, logging the
+ * result to the console. Registered as `window._decodeCache` for quick
+ * inspection during development.
+ *
+ * @example
+ * ```js
+ * // From the browser console:
+ * _decodeCache('table_state')
+ * _decodeCache('search_results', 'local')
+ * ```
+ * @param key - The storage key to look up (e.g. `'table_state'`).
+ * @param area - `'session'` (default) or `'local'`.
+ * @returns The decoded value (also logged to the console).
+ */
+async function decodeCache(key: string, area: "session" | "local" = "session"): Promise<unknown> {
+  try {
+    const data = await cstorage[area].get([key]);
+    const value = data[key];
+    //console.log(`%c_decodeCache("${key}", "${area}"):`, "color: #4fc3f7; font-weight: bold", value);
+    return value;
+  } catch (error) {
+    console.error(`Failed to decode cache key "${key}" from ${area}:`, error);
+    return undefined;
+  }
+}
+
+// Register the global so it's callable from the browser console.
+if (typeof window !== "undefined") {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any)._decodeCache = decodeCache;
+}
