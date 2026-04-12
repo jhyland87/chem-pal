@@ -34,7 +34,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       id: "expander",
       header: () => null,
       cell: ({ row }: ProductRow) => {
-        if (!row?.originalSubRows || row?.originalSubRows?.length === 0) {
+        if (!row?.original?.variants || row.original.variants.length === 0) {
           return;
         }
         return row.getCanExpand() ? (

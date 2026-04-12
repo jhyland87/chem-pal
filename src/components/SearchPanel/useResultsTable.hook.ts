@@ -119,15 +119,6 @@ export function useResultsTable({
   // Apply custom sorting to data if needed
   const sortedData = useMemo(() => {
     if (customSort?.type === "matchPercentage") {
-      console.log("🔄 Applying match percentage sort:", customSort.order);
-      console.log(
-        "📊 Before sorting - first 5 products:",
-        showSearchResults.slice(0, 5).map((item) => ({
-          title: item.title?.substring(0, 30) + "...",
-          matchPercentage: item.matchPercentage,
-        })),
-      );
-
       const sorted = [...showSearchResults].sort((a, b) => {
         const aVal = a.matchPercentage ?? 0;
         const bVal = b.matchPercentage ?? 0;
@@ -138,14 +129,6 @@ export function useResultsTable({
           return aVal - bVal;
         }
       });
-
-      console.log(
-        "📈 After sorting - first 5 products:",
-        sorted.slice(0, 5).map((item) => ({
-          title: item.title?.substring(0, 30) + "...",
-          matchPercentage: item.matchPercentage,
-        })),
-      );
 
       return sorted;
     }
@@ -207,8 +190,6 @@ export function useResultsTable({
            * @source
            */
           table.sortByMatchPercentage = (order: "asc" | "desc" = "desc") => {
-            console.log("🔍 Initiating match percentage sort:", order);
-
             // Clear existing table sorting first
             table.resetSorting();
 

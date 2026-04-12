@@ -157,20 +157,6 @@ declare global {
      * Defaults to false.
      */
     shipsToMyLocation: boolean;
-
-    /**
-     * Legacy feature flag for experimental functionality.
-     * Note: This feature is deprecated and will be removed in a future version.
-     * Use more specific feature flags instead.
-     */
-    foo: string;
-
-    /**
-     * Feature flag for Jason's experimental features.
-     * Defaults to false.
-     */
-    jason: boolean;
-
     /**
      * Dimensions of the popup window in format 'widthxheight'
      * @example "800x600"
@@ -182,12 +168,6 @@ declare global {
      * Defaults to true.
      */
     autoResize: boolean;
-
-    /**
-     * Generic feature flag for experimental functionality.
-     * Defaults to false.
-     */
-    someSetting: boolean;
 
     /**
      * List of supplier IDs that are enabled for searching

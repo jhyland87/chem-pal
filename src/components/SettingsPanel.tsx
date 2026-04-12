@@ -125,7 +125,6 @@ export default function SettingsPanel() {
             caching: true,
             autocomplete: true,
             autoResize: true,
-            someSetting: false,
             showColumnFilters: true,
             showAllColumns: false,
             popupSize: "small",
@@ -323,13 +322,13 @@ export default function SettingsPanel() {
         </ListItem>
 
         <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Foo" />
+          <ListItemText primary="Currency Rate" />
           {/*<FormHelperText>Just an input example</FormHelperText>*/}
           <FormControl>
             <TextField
-              value={currentSettings.foo}
-              label="Foo"
-              name="foo"
+              value={currentSettings.currencyRate}
+              label="Currency Rate"
+              name="currencyRate"
               onChange={handleInputChange}
               variant="filled"
               size="small"
@@ -392,17 +391,6 @@ export default function SettingsPanel() {
             checked={currentSettings.autoResize}
             onChange={handleSwitchChange}
             name="autoResize"
-            disabled={isPending}
-          />
-        </ListItem>
-
-        <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Some Setting" />
-          {/*<FormHelperText id="some-setting-helper-text">Disabled by default</FormHelperText>*/}
-          <Switch
-            checked={currentSettings.someSetting}
-            onChange={handleSwitchChange}
-            name="someSetting"
             disabled={isPending}
           />
         </ListItem>

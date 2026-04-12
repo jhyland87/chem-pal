@@ -88,6 +88,8 @@ export enum CACHE {
   SUPPLIER_PRODUCT_DATA_CACHE = "supplier_product_data_cache",
   /** User-excluded products, keyed by product data cache key (see getProductExclusionKey) */
   EXCLUDED_PRODUCTS = "excluded_products",
+  /** Persisted TanStack table state (sorting, pagination, expanded rows, column visibility) */
+  TABLE_STATE = "table_state",
 }
 
 /**

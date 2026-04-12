@@ -1,4 +1,8 @@
-import { type Column, type StringOrTemplateHeader, type Table } from "@tanstack/react-table";
+import {
+  type Column,
+  type StringOrTemplateHeader,
+  type Table,
+} from "@tanstack/react-table";
 
 type ColumnDefWithAccessor<TData> = { accessorKey?: keyof TData };
 

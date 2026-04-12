@@ -12,8 +12,10 @@ import { defaultResultsLimit } from "@/../config.json";
 import DrawerSystem from "@/components/DrawerSystem";
 import LoadingBackdrop from "@/components/LoadingBackdrop";
 import resultStyles from "@/components/ResultsPanel.module.scss";
+import { CACHE } from "@/constants/common";
 import { generatePageSizes } from "@/helpers/utils";
 import { useDebouncedCallback } from "@/shared/hooks";
+import { cstorage } from "@/utils/storage";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
   Box,
@@ -27,12 +29,21 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { Column, ColumnFiltersState, flexRender, Header, Row } from "@tanstack/react-table";
+import {
+  Column,
+  ColumnFiltersState,
+  flexRender,
+  Header,
+  Row,
+  type TableState,
+} from "@tanstack/react-table";
+import debounce from "lodash/debounce";
 import isEmpty from "lodash/isEmpty";
 import React, {
   Dispatch,
   ReactElement,
   SetStateAction,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -95,7 +106,6 @@ function DebouncedFilterInput({ header }: { header: Header<Product, unknown> }) 
         .filter(Boolean)
         .map(String);
     }
-    console.info("Filter applied (debounced):", filterValue);
     header.column.setFilterValue(filterValue);
   }, FILTER_DEBOUNCE_MS);
 
@@ -106,7 +116,6 @@ function DebouncedFilterInput({ header }: { header: Header<Product, unknown> }) 
       placeholder="Search..."
       value={localValue}
       onChange={(e) => {
-        console.debug("Filter keystroke:", e.target.value);
         setLocalValue(e.target.value);
         applyFilter(e.target.value);
       }}
@@ -184,6 +193,7 @@ export default function ResultsTable({
     globalFilterFns: [globalFilter, setGlobalFilter],
     getRowCanExpand,
     userSettings: appContext?.userSettings || {
+      // Not all of these settings work, yet
       showHelp: false,
       caching: true,
       autocomplete: true,
@@ -191,12 +201,9 @@ export default function ResultsTable({
       currencyRate: 1.0,
       location: "US",
       shipsToMyLocation: false,
-      foo: "bar",
-      jason: false,
       popupSize: "small",
       supplierResultLimit: defaultResultsLimit,
       autoResize: true,
-      someSetting: false,
       suppliers: [],
       theme: "light",
       showColumnFilters: true,
@@ -205,6 +212,107 @@ export default function ResultsTable({
       columnFilterConfig: {},
     },
   });
+
+  // ── Table state persistence ──────────────────────────────────────────
+  // Uses the TanStack "fully controlled state" pattern: take over the
+  // table's state via `table.setOptions`, persist the slices we care about
+  // (sorting, pagination, expanded rows, column visibility) to
+  // chrome.storage.session, and restore them on mount.
+  const [tableState, setTableState] = useState<TableState>(table.initialState);
+  const isStateLoadedRef = useRef(false);
+
+  // Load persisted state once on mount
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await cstorage.session.get([CACHE.TABLE_STATE]);
+        const stored = data[CACHE.TABLE_STATE] as
+          | (Partial<TableState> & { globalFilter?: string; showFilters?: boolean })
+          | undefined;
+        if (stored && typeof stored === "object") {
+          if (typeof stored.globalFilter === "string") {
+            setGlobalFilter(stored.globalFilter);
+          }
+          if (typeof stored.showFilters === "boolean") {
+            setShowFilters(stored.showFilters);
+          }
+          if (Array.isArray(stored.columnFilters)) {
+            columnFilterFns[1](stored.columnFilters);
+          }
+          setTableState((prev) => ({ ...prev, ...stored }));
+        }
+      } catch (error) {
+        console.warn("Failed to load table state from session storage:", { error });
+      }
+      isStateLoadedRef.current = true;
+    };
+    load();
+  }, []);
+
+  // Override state management — the table reads state from our local
+  // `tableState` and pushes every change back through `setTableState`.
+  // Column filters and global filter remain externally controlled.
+  table.setOptions((prev) => ({
+    ...prev,
+    state: {
+      ...tableState,
+      columnFilters: columnFilterFns[0],
+      globalFilter,
+    },
+    onStateChange: setTableState,
+  }));
+
+  // Debounced save — only persist the slices we care about restoring
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const saveTableState = useCallback(
+    debounce(async (s: TableState & { showFilters?: boolean }) => {
+      try {
+        await cstorage.session.set({
+          [CACHE.TABLE_STATE]: {
+            sorting: s.sorting,
+            pagination: s.pagination,
+            expanded: s.expanded,
+            columnVisibility: s.columnVisibility,
+            columnFilters: s.columnFilters,
+            globalFilter: s.globalFilter,
+            showFilters: s.showFilters,
+          },
+        });
+      } catch (error) {
+        console.warn("Failed to persist table state:", { error });
+      }
+    }, 300),
+    [],
+  );
+
+  // Persist whenever controlled state changes (skip until initial load
+  // completes to avoid overwriting stored state with defaults).
+  // globalFilter, columnFilters, and showFilters are managed externally
+  // but still persisted alongside table state.
+  useEffect(() => {
+    if (!isStateLoadedRef.current) return;
+    saveTableState({
+      ...tableState,
+      globalFilter,
+      columnFilters: columnFilterFns[0],
+      showFilters,
+    } as TableState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tableState, globalFilter, columnFilterFns[0], showFilters, saveTableState]);
+
+  // Clamp pageSize synchronously so the MUI Select never renders with an
+  // out-of-range value (e.g. persisted pageSize=36 when valid options are
+  // [10, 20, 40, 74]). Must happen during render, not in a useEffect,
+  // because MUI warns before effects run.
+  const filteredRowCount = table.getFilteredRowModel().rows.length;
+  if (filteredRowCount > 0) {
+    const validSizes = generatePageSizes(filteredRowCount, 10, 5);
+    const currentPageSize = tableState.pagination?.pageSize ?? 10;
+    if (!validSizes.includes(currentPageSize)) {
+      const best = validSizes.filter((s) => s <= currentPageSize).pop() ?? validSizes.at(-1)!;
+      table.setPageSize(best);
+    }
+  }
 
   // Initialize column visibility - this effect is still needed
   useEffect(() => {
@@ -323,7 +431,7 @@ export default function ResultsTable({
             className={resultStyles["hidden-measurement-table"]}
             {...getMeasurementTableProps()}
           >
-            <thead>
+            <thead className="results-table-column-headers">
               <tr>
                 {table.getAllLeafColumns().map((col) => (
                   <th key={col.id}>
@@ -334,7 +442,7 @@ export default function ResultsTable({
                 ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="results-table-body">
               {table
                 .getRowModel()
                 .rows.slice(0, 5)
