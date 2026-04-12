@@ -6,7 +6,12 @@ import { parseQuantity } from "@/helpers/quantity";
 import { createDOM, urlencode } from "@/helpers/request";
 import { firstMap, mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
-import { isPopulatedArray, isPopulatedObject, isQuantityObject } from "@/utils/typeGuards/common";
+import {
+  isFullURL,
+  isPopulatedArray,
+  isPopulatedObject,
+  isQuantityObject,
+} from "@/utils/typeGuards/common";
 import {
   isProductObject,
   isSearchResponseOk,
@@ -315,9 +320,13 @@ export default class SupplierLaboratoriumDiscounter
   private async getProductDataFromHTML(
     builder: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    const path = builder.get("url").startsWith("en/")
-      ? builder.get("url")
-      : `en/${builder.get("url")}`;
+    // The builder stores absolute URLs, so extract just the pathname
+    // before applying the locale prefix.
+    let urlPath = builder.get("url");
+    if (isFullURL(urlPath)) {
+      urlPath = new URL(urlPath).pathname.replace(/^\//, "");
+    }
+    const path = urlPath.startsWith("en/") ? urlPath : `en/${urlPath}`;
     const url = new URL(path, this.baseURL);
     const productResponse = await this.httpGetHtml({
       path: url.toString(),
@@ -424,9 +433,13 @@ export default class SupplierLaboratoriumDiscounter
   private async getProductDataFromJSON(
     builder: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    const path = builder.get("url").startsWith("en/")
-      ? builder.get("url")
-      : `en/${builder.get("url")}`;
+    // The builder stores absolute URLs, so extract just the pathname
+    // before applying the locale prefix.
+    let urlPath = builder.get("url");
+    if (isFullURL(urlPath)) {
+      urlPath = new URL(urlPath).pathname.replace(/^\//, "");
+    }
+    const path = urlPath.startsWith("en/") ? urlPath : `en/${urlPath}`;
 
     const productResponse = await this.httpGetJson({
       path,
