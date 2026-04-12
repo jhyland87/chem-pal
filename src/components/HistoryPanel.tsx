@@ -136,6 +136,7 @@ const HistoryPanel: React.FC = () => {
     });
   };
 
+  console.log("history", history);
   return (
     <Box className={styles["history-panel"]}>
       <Box className={styles["history-panel__header"]}>

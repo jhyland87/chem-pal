@@ -29,7 +29,14 @@ import {
 } from "@mui/material";
 import { Column, ColumnFiltersState, flexRender, Header, Row } from "@tanstack/react-table";
 import isEmpty from "lodash/isEmpty";
-import React, { Dispatch, ReactElement, SetStateAction, useEffect, useState } from "react";
+import React, {
+  Dispatch,
+  ReactElement,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   BackButton,
   ColoredIconButton,
@@ -144,12 +151,28 @@ export default function ResultsTable({
     tableText,
   } = useSearch();
 
-  // Watch for pending search queries triggered from HistoryPanel
+  // Watch for pending search queries triggered from HistoryPanel or the drawer.
+  // The ref guard dedupes against:
+  //   1. StrictMode double-invoke of effects on mount (dev only)
+  //   2. The `appContext` dep in the array — context object identity changes on
+  //      every context state update, so this effect re-fires whenever anything
+  //      in AppContext changes, not just `pendingSearchQuery`.
+  //   3. `executeSearch` / `appContext` not being stable references, which
+  //      would otherwise cause spurious re-runs.
+  // Without the guard, a single submitted query fires `executeSearch` twice
+  // (and two sets of supplier HTTP requests).
+  const lastHandledPendingQueryRef = useRef<string | null>(null);
   useEffect(() => {
-    if (appContext?.pendingSearchQuery) {
-      executeSearch(appContext.pendingSearchQuery);
-      appContext.setPendingSearchQuery(null);
+    const pending = appContext?.pendingSearchQuery;
+    if (!pending) {
+      // Reset so the same query can be submitted again later.
+      lastHandledPendingQueryRef.current = null;
+      return;
     }
+    if (lastHandledPendingQueryRef.current === pending) return;
+    lastHandledPendingQueryRef.current = pending;
+    executeSearch(pending);
+    appContext?.setPendingSearchQuery(null);
   }, [appContext?.pendingSearchQuery, executeSearch, appContext]);
 
   // Context menu functionality

@@ -6,7 +6,6 @@ import { firstMap, mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import {
   assertIsSynthetikaSearchResponse,
-  isSynthetikaMinimalProduct,
   isSynthetikaProduct,
 } from "@/utils/typeGuards/synthetika";
 import SupplierBase from "./SupplierBase";
@@ -328,8 +327,15 @@ export default class SupplierSynthetika
       const productBuilder = new ProductBuilder(this.baseURL);
 
       const availability = this.availabilityConverter(product.availability.name);
-      if ([AVAILABILITY.LIMITED_STOCK, AVAILABILITY.IN_STOCK].includes(availability) === false) {
-        this.logger.warn("Product not in stock - Skipping", { availability, product });
+      if (
+        [AVAILABILITY.LIMITED_STOCK, AVAILABILITY.IN_STOCK].includes(availability) === false ||
+        product.can_buy === false
+      ) {
+        this.logger.warn("Product not in stock - Skipping", {
+          availability,
+          product,
+          can_buy: product.can_buy,
+        });
         return;
       }
 
@@ -346,16 +352,13 @@ export default class SupplierSynthetika
         product.description,
         product.weight.weight,
       ]);
-      if (quantity) {
-        productBuilder.setQuantity(quantity);
-      }
+
+      if (quantity) productBuilder.setQuantity(quantity);
 
       const price = parsePrice(product.price.gross.final);
-      if (price) {
-        productBuilder.setPricing(price.price, price.currencyCode, price.currencySymbol);
-      }
+      if (price) productBuilder.setPricing(price.price, price.currencyCode, price.currencySymbol);
 
-      if (product.variants) {
+      if (Array.isArray(product.variants) && product.variants.length > 0) {
         productBuilder.setVariants(
           product.variants.map((v) => {
             const price = parsePrice(v.price?.gross.final ?? "");
@@ -446,8 +449,19 @@ export default class SupplierSynthetika
         productResponse,
       });
 
+      // Run the minimal check first, so if that fails we can bail early.
+      if (!isSynthetikaProduct(productResponse)) {
+        this.logger.warn("Product Response body did not satisfy product typeguard:", {
+          productResponse,
+          builder,
+          product,
+          productURL,
+        });
+        return;
+      }
+
       let quantityObject: QuantityObject | undefined;
-      if (isSynthetikaProduct(productResponse)) {
+      if ("options_configuration" in productResponse) {
         quantityObject = mapDefined(
           productResponse.options_configuration[0].values,
           (value: SynthetikaConfigurationOptionValueSchema) => {
@@ -457,14 +471,6 @@ export default class SupplierSynthetika
           .sort((a, b) => (a?.quantity ?? 0) - (b?.quantity ?? 0))
           .at(0);
         console.log("[synthetika] quantityObject (from configurationOptions", { quantityObject });
-      } else if (!isSynthetikaMinimalProduct(productResponse)) {
-        this.logger.warn("Product Response body did not satisfy minimal product typeguard:", {
-          productResponse,
-          builder,
-          product,
-          productURL,
-        });
-        return;
       }
 
       if (!quantityObject) {
@@ -474,6 +480,7 @@ export default class SupplierSynthetika
             productResponse.description,
             productResponse.weight.weight,
           ]) ?? undefined;
+
         if (!quantityObject) {
           this.logger.warn("Failed to parse quantity from product response", {
             productResponse,

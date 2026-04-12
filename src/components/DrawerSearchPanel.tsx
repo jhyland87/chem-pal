@@ -2,6 +2,7 @@ import {
   AVAILABILITY_OPTIONS,
   CACHE,
   DRAWER_INDEX,
+  PANEL,
   SHIPPING_OPTIONS,
   SUPPLIER_COUNTRY_OPTIONS,
 } from "@/constants/common";
@@ -39,6 +40,7 @@ const DrawerSearchPanel: React.FC<{
     setPendingSearchQuery,
     searchFilters,
     setSearchFilters,
+    setPanel,
   } = useAppContext();
 
   // Hydrate the title query field from the shared live search input value so
@@ -78,27 +80,33 @@ const DrawerSearchPanel: React.FC<{
     }
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (): Promise<void> => {
     const query = searchFilters.titleQuery.trim();
     if (!query) return;
+    // Clear the live in-progress draft in session storage now that the query
+    // has been promoted to a real search. We intentionally do NOT write
+    // CACHE.QUERY or CACHE.SEARCH_IS_NEW_SEARCH here: those are consumed by
+    // useSearch's mount effect, which would fire a duplicate performSearch in
+    // parallel with the pendingSearchQuery path below. HistoryPanel.handleReSearch
+    // follows the same single-path pattern.
     try {
-      // Commit the submitted query so useSearch picks it up and executes the
-      // search, the same path used by SearchPanelHome's submit handler. Also
-      // clear the live in-progress draft in session storage now that it has
-      // been promoted to the committed query.
-      await cstorage.session.set({
-        [CACHE.QUERY]: query,
-        [CACHE.SEARCH_INPUT]: "",
-        [CACHE.SEARCH_IS_NEW_SEARCH]: true,
-      });
+      await cstorage.session.set({ [CACHE.SEARCH_INPUT]: "" });
     } catch (error) {
-      console.warn("Failed to persist submitted query to session storage:", { error });
+      console.warn("Failed to clear search input draft in session storage:", { error });
     }
     // Clear the drawer's visible field to match the cleared draft so re-opening
     // the drawer doesn't show stale text from the just-submitted query.
     setSearchFilters({ ...searchFilters, titleQuery: "" });
+    // Stage the query for ResultsTable's pendingSearchQuery effect to consume.
+    // This works whether SearchPanel is already mounted (effect re-fires on the
+    // context update) or is about to mount (fresh mount reads pendingSearchQuery
+    // from context on first render).
     setPendingSearchQuery(query);
     setDrawerTab(DRAWER_INDEX.CLOSED);
+    // Switch to the results panel so SearchPanel / ResultsTable mount if the
+    // user triggered the search from the home panel. When already on RESULTS,
+    // this is a harmless no-op.
+    setPanel?.(PANEL.RESULTS);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -127,7 +135,14 @@ const DrawerSearchPanel: React.FC<{
         onChange={onAccordionChange("search-availability")}
       >
         <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>Availability</Typography>
+          <Typography>
+            Availability
+            {searchFilters.availability.length > 0 && (
+              <span className={styles["accordion-hint"]}>
+                ({searchFilters.availability.length} selected)
+              </span>
+            )}
+          </Typography>
         </StyledAccordionSummary>
         <StyledAccordionDetails>
           <Box className={styles["chip-container"]}>
@@ -151,7 +166,14 @@ const DrawerSearchPanel: React.FC<{
         onChange={onAccordionChange("search-supplier")}
       >
         <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>Search Suppliers</Typography>
+          <Typography>
+            Search Suppliers
+            {selectedSuppliers.length > 0 && (
+              <span className={styles["accordion-hint"]}>
+                ({selectedSuppliers.length} selected)
+              </span>
+            )}
+          </Typography>
         </StyledAccordionSummary>
         <StyledAccordionDetails>
           <Autocomplete
@@ -190,7 +212,14 @@ const DrawerSearchPanel: React.FC<{
         onChange={onAccordionChange("search-country")}
       >
         <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>Country</Typography>
+          <Typography>
+            Country
+            {searchFilters.country.length > 0 && (
+              <span className={styles["accordion-hint"]}>
+                ({searchFilters.country.length} selected)
+              </span>
+            )}
+          </Typography>
         </StyledAccordionSummary>
         <StyledAccordionDetails>
           <Autocomplete
@@ -238,7 +267,14 @@ const DrawerSearchPanel: React.FC<{
         onChange={onAccordionChange("search-shipping")}
       >
         <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>Shipping Type</Typography>
+          <Typography>
+            Shipping Type
+            {searchFilters.shippingType.length > 0 && (
+              <span className={styles["accordion-hint"]}>
+                ({searchFilters.shippingType.length} selected)
+              </span>
+            )}
+          </Typography>
         </StyledAccordionSummary>
         <StyledAccordionDetails>
           <Box className={styles["chip-container"]}>
@@ -262,7 +298,14 @@ const DrawerSearchPanel: React.FC<{
         onChange={onAccordionChange("per-supplier-limit")}
       >
         <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>Results Limit</Typography>
+          <Typography>
+            Results Limit
+            {userSettings.supplierResultLimit != null && (
+              <span className={styles["accordion-hint"]}>
+                ({userSettings.supplierResultLimit} per supplier)
+              </span>
+            )}
+          </Typography>
         </StyledAccordionSummary>
         <StyledAccordionDetails>
           <TextField
@@ -285,7 +328,18 @@ const DrawerSearchPanel: React.FC<{
         onChange={onAccordionChange("search-price")}
       >
         <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>Price Range</Typography>
+          <Typography>
+            Price Range
+            {(userSettings.priceMin != null || userSettings.priceMax != null) && (
+              <span className={styles["accordion-hint"]}>
+                ({userSettings.priceMin != null && userSettings.priceMax != null
+                  ? `$${userSettings.priceMin} - $${userSettings.priceMax}`
+                  : userSettings.priceMin != null
+                    ? `min $${userSettings.priceMin}`
+                    : `max $${userSettings.priceMax}`})
+              </span>
+            )}
+          </Typography>
         </StyledAccordionSummary>
         <StyledAccordionDetails>
           <Box sx={{ display: "flex", gap: 2 }}>
