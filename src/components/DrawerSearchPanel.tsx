@@ -354,10 +354,12 @@ const DrawerSearchPanel: React.FC<{
                   priceMin: e.target.value ? parseFloat(e.target.value) : undefined,
                 })
               }
-              InputProps={{
-                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+              slotProps={{
+                input: {
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                },
+                htmlInput: { min: 0 },
               }}
-              slotProps={{ htmlInput: { min: 0 } }}
             />
             <TextField
               label="Max"
@@ -370,10 +372,12 @@ const DrawerSearchPanel: React.FC<{
                   priceMax: e.target.value ? parseFloat(e.target.value) : undefined,
                 })
               }
-              InputProps={{
-                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+              slotProps={{
+                input: {
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                },
+                htmlInput: { min: 0 },
               }}
-              slotProps={{ htmlInput: { min: 0 } }}
             />
           </Box>
         </StyledAccordionDetails>
