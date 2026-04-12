@@ -114,7 +114,7 @@ export default class ProductBuilder<T extends Product> {
    */
   setBasicInfo(title: string, url: string, supplier: string): ProductBuilder<T> {
     this.product.title = title;
-    this.product.url = url;
+    this.product.url = this.href(url);
     this.product.supplier = supplier;
     return this;
   }
