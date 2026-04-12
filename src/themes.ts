@@ -300,6 +300,17 @@ export const lightTheme: Theme = createTheme({
         },
       },
     },
+    MuiLink: {
+      styleOverrides: {
+        root: {
+          ...globalComponentOverrides.MuiLink.styleOverrides.root,
+          color: lightPalette.text,
+          "&:hover": {
+            color: lightPalette.text,
+          },
+        },
+      },
+    },
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
@@ -430,6 +441,17 @@ export const darkTheme: Theme = createTheme({
             backgroundColor: darkPalette.hoverBackground,
             cursor: "default",
             transition: "background-color 0.15s ease-in-out",
+          },
+        },
+      },
+    },
+    MuiLink: {
+      styleOverrides: {
+        root: {
+          ...globalComponentOverrides.MuiLink.styleOverrides.root,
+          color: darkPalette.text,
+          "&:hover": {
+            color: darkPalette.text,
           },
         },
       },

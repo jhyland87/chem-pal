@@ -23,7 +23,16 @@ const synthetikaSearchResponseSchema = z.object({
  * @source
  */
 export function isSynthetikaSearchResponse(data: unknown): data is SynthetikaSearchResponse {
-  return synthetikaSearchResponseSchema.safeParse(data).success;
+  const check = synthetikaSearchResponseSchema.safeParse(data);
+  if (!check.success) {
+    console.warn("isSynthetikaSearchResponse: data is not a SynthetikaSearchResponse", {
+      data,
+      check,
+      error: check.error,
+      issues: check.error.issues,
+    });
+  }
+  return check.success;
 }
 
 /**
@@ -73,7 +82,7 @@ const synthetikaConfigurationOptionSchema = z.object({
   values: z.array(synthetikaConfigurationOptionValueSchema),
 });
 
-const synthetikaMinimalProductSchema = z.object({
+const synthetikaProductResponseSchema = z.object({
   id: z.number(),
   name: z.string(),
   can_buy: z.boolean(),
@@ -82,7 +91,7 @@ const synthetikaMinimalProductSchema = z.object({
     name: z.string(),
     floating_point: z.boolean(),
   }),
-  stockId: z.number(),
+  //stockId: z.number(),
   url: z.string(),
   availability: z.object({
     name: z.string(),
@@ -95,14 +104,12 @@ const synthetikaMinimalProductSchema = z.object({
     weight_float: z.number(),
     weight: z.string(),
   }),
-  producer: z.record(z.string(), z.unknown()).nullable(),
+  //producer: z.record(z.string(), z.unknown()).nullable(),
   shortDescription: z.string(),
   description: z.string(),
+  options_configuration: z.array(synthetikaConfigurationOptionSchema).optional(),
 });
 
-const synthetikaProductSchema = synthetikaMinimalProductSchema.extend({
-  options_configuration: z.array(synthetikaConfigurationOptionSchema),
-});
 /* eslint-enable @typescript-eslint/naming-convention */
 
 /**
@@ -121,11 +128,16 @@ const synthetikaProductSchema = synthetikaMinimalProductSchema.extend({
  * @source
  */
 export function isSynthetikaProduct(data: unknown): data is SynthetikaProduct {
-  return synthetikaProductSchema.safeParse(data).success;
-}
-
-export function isSynthetikaMinimalProduct(data: unknown): data is SynthetikaMinimalProduct {
-  return synthetikaMinimalProductSchema.safeParse(data).success;
+  const check = synthetikaProductResponseSchema.safeParse(data);
+  if (!check.success) {
+    console.warn("isSynthetikaProduct: data is not a SynthetikaProduct", {
+      data,
+      check,
+      error: check.error,
+      issues: check.error.issues,
+    });
+  }
+  return check.success;
 }
 
 /**

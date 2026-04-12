@@ -160,11 +160,6 @@ describe("Synthetika Type Guards", () => {
       expect(isSynthetikaProduct(invalidProduct)).toBe(false);
     });
 
-    it("should return false when stockId is missing", () => {
-      const { stockId: _stockId, ...invalidProduct } = buildValidProduct();
-      expect(isSynthetikaProduct(invalidProduct)).toBe(false);
-    });
-
     it("should return false when weight is missing", () => {
       const { weight: _weight, ...invalidProduct } = buildValidProduct();
       expect(isSynthetikaProduct(invalidProduct)).toBe(false);
@@ -188,11 +183,6 @@ describe("Synthetika Type Guards", () => {
           gross: { base: "100", final: "100" },
         },
       };
-      expect(isSynthetikaProduct(invalidProduct)).toBe(false);
-    });
-
-    it("should return false when options_configuration is missing", () => {
-      const { options_configuration: _opts, ...invalidProduct } = buildValidProduct();
       expect(isSynthetikaProduct(invalidProduct)).toBe(false);
     });
 
