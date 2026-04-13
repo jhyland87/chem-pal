@@ -92,6 +92,8 @@
     "@types/fs-extra": "^11.0.4",
     "@types/js-md5": "^0.7.2",
     "@types/lodash": "^4.17.16",
+    "@types/lunr": "^2.3.7",
+    "@types/mocha": "^10.0.10",
     "@types/money": "^0.2.3",
     "@types/node": "^22.15.19",
     "@types/react": "^19.0.10",

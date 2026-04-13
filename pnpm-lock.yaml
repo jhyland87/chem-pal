@@ -192,6 +192,12 @@ importers:
       '@types/lodash':
         specifier: ^4.17.16
         version: 4.17.17
+      '@types/lunr':
+        specifier: ^2.3.7
+        version: 2.3.7
+      '@types/mocha':
+        specifier: ^10.0.10
+        version: 10.0.10
       '@types/money':
         specifier: ^0.2.3
         version: 0.2.3
@@ -2206,11 +2212,17 @@ packages:
   '@types/lodash@4.17.17':
     resolution: {integrity: sha512-RRVJ+J3J+WmyOTqnz3PiBLA501eKwXl2noseKOrNo/6+XEHjTAxO4xHvxQB6QuNm+s4WRbn6rSiap8+EA+ykFQ==}
 
+  '@types/lunr@2.3.7':
+    resolution: {integrity: sha512-Tb/kUm38e8gmjahQzdCKhbdsvQ9/ppzHFfsJ0dMs3ckqQsRj+P5IkSAwFTBrBxdyr3E/LoMUUrZngjDYAjiE3A==}
+
   '@types/markdown-it@14.1.2':
     resolution: {integrity: sha512-promo4eFwuiW+TfGxhi+0x3czqTYJkG8qB17ZUJiVF10Xm7NLVRSLUsfRTU/6h1e24VvRnXCx+hG7li58lkzog==}
 
   '@types/mdurl@2.0.0':
     resolution: {integrity: sha512-RGdgjQUZba5p6QEFAVx2OGb8rQDL/cPRG7GiedRzMcJ1tYnUANBncjbSB1NRGwbvjcPeikRABz2nshyPk1bhWg==}
+
+  '@types/mocha@10.0.10':
+    resolution: {integrity: sha512-xPyYSz1cMPnJQhl0CLMH68j3gprKZaTjG3s5Vi+fDgx+uhG9NOXwbVt52eFS8ECyXhyKcjDLCBEqBExKuiZb7Q==}
 
   '@types/money@0.2.3':
     resolution: {integrity: sha512-vBydZBuQnNlOq9g8JqwwScj74oFuilxpciT8qm8wyq7qATZL4ZumqBiEPbd0M1oFpcVTFi64puSzkCFAaFcLgw==}
@@ -6780,12 +6792,16 @@ snapshots:
 
   '@types/lodash@4.17.17': {}
 
+  '@types/lunr@2.3.7': {}
+
   '@types/markdown-it@14.1.2':
     dependencies:
       '@types/linkify-it': 5.0.0
       '@types/mdurl': 2.0.0
 
   '@types/mdurl@2.0.0': {}
+
+  '@types/mocha@10.0.10': {}
 
   '@types/money@0.2.3': {}
 

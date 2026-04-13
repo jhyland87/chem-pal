@@ -57,7 +57,7 @@ declare global {
     host?: string | undefined;
     body?: object | string;
     params?: Maybe<RequestParams>;
-    headers?: Maybe<Record<string, string | number | boolean>>;
+    headers?: Maybe<Record<string, string>>;
   }
 
   /**
