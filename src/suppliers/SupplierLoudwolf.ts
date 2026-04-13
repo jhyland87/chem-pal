@@ -179,7 +179,6 @@ export default class SupplierLoudwolf
       const builder = new ProductBuilder<Product>(this.baseURL);
 
       const priceElem = element.querySelector("div.caption > p.price");
-      console.log("priceElem:", { priceElem });
       const price = parsePrice(priceElem?.textContent?.trim() || "");
 
       if (price === undefined) {
