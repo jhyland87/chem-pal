@@ -1,11 +1,23 @@
 import "@tanstack/react-table";
 import { UserSettings } from "./common";
 
+/**
+ * TanStack Table types.
+ * @source
+ */
 declare module "@tanstack/react-table" {
+  /**
+   * Table meta data.
+   * @source
+   */
   interface TableMeta {
     userSettings: UserSettings;
   }
 
+  /**
+   * Table interface
+   * @source
+   */
   interface Table {
     /** User settings associated with this table */
     userSettings?: UserSettings;
@@ -23,6 +35,10 @@ declare module "@tanstack/react-table" {
     updateBadgeCount?: () => void;
   }
 
+  /**
+   * Column interface
+   * @source
+   */
   interface Column<TValue> {
     /**
      * Returns a sorted array of unique values from the currently visible rows in the column.
@@ -81,18 +97,6 @@ declare module "@tanstack/react-table" {
     userSettings?: UserSettings;
   }
 
-  // interface ColumnMeta {
-  //   /** The type of filter to use for this column */
-  //   filterVariant?: "text" | "range" | "select";
-  //   /** Array of unique values for select-type filters */
-  //   uniqueValues?: string[];
-  //   /** Array of range values for range-type filters */
-  //   rangeValues?: number[];
-  //   /** CSS properties to apply to the column */
-  //   style?: CSSProperties;
-
-  // }
-
   /**
    * Configuration metadata for table columns.
    * Used to customize column behavior and appearance.
@@ -106,6 +110,7 @@ declare module "@tanstack/react-table" {
    *   style: { width: "200px" }
    * };
    * ```
+   * @source
    */
   interface ColumnMeta {
     /**

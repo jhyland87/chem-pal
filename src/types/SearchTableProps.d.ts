@@ -4,6 +4,7 @@ declare global {
   /**
    * Props interface for the SearchTable component.
    * Generic type parameter TData represents the type of data being displayed in the table.
+   * @source
    */
   interface SearchTableProps<TData> {
     /** Array of data items to display in the table */
