@@ -12,7 +12,6 @@ declare global {
    *   "data": { ... }
    * }
    * ```
-   * @source
    */
   interface MacklinApiResponse<T = unknown> {
     /** HTTP status code returned by the API */
