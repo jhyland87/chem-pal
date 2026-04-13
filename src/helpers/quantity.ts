@@ -10,6 +10,7 @@ import { UOM, UOM_ALIASES } from "@/constants/common";
 
 /**
  * Pattern for matching quantities in strings.
+ * @see https://regex101.com/r/Ruid54/8
  * @source
  */
 const quantityPattern =
@@ -27,10 +28,16 @@ const quantityPattern =
 type QuantityObject = { quantity: number; uom: string };
 
 /**
+ * @type UnitConversion
+ * @group Quantity
+ */
+type UnitConversion = { threshold: number; factor: number; from: string; to: string };
+
+/**
  * @type unitConversions
  * @group Quantity
  */
-const unitConversions: { threshold: number; factor: number; from: string; to: string }[] = [
+const unitConversions: UnitConversion[] = [
   { threshold: 1000, factor: 1000, from: "g", to: "kg" },
   { threshold: 1000, factor: 1000, from: "mg", to: "g" },
   { threshold: 1000, factor: 1000, from: "kg", to: "t" },
@@ -84,14 +91,12 @@ export function normalizeQuantity(input: QuantityObject): QuantityObject {
  * parseQuantity('1.2 L') // Returns { quantity: 1.2, uom: 'L' }
  * parseQuantity('1.2 g/mol') // Returns nothing, as g/mol is not a quantity
  * ```
- *
- * @see https://regex101.com/r/Ruid54/7
+ * @see https://regex101.com/r/Ruid54/8
  * @source
  */
 export function parseQuantity(value: string): QuantityObject | void {
   if (!value) return;
 
-  // (?<quantity>[1-9][0-9]*(?:[.,]\d+)*)\s?(?<uom>(?:milli|kilo|centi)?(?:ounce|g(?:allon|ram|al)|pound|quart|qt|piece|pc|lb|(?:met|lit)[re]{2})|oz|k[mg]?|g|l|[cm]?[glm])s?(?!\/mol)(?![A-Za-z])
   const quantityPatternRegex = new RegExp(quantityPattern, "i");
   const quantityMatch = value.match(quantityPatternRegex);
 
@@ -131,7 +136,6 @@ export function parseQuantity(value: string): QuantityObject | void {
  * stripQuantityFromString("1200 milliliters of some reagent") // Returns "milliliters of some reagent"
  * stripQuantityFromString("1.2 L of some reagent") // Returns "L of some reagent"
  * ```
- * @see https://regex101.com/r/1lzkMN/1
  * @source
  */
 export function stripQuantityFromString(value: string): string {
