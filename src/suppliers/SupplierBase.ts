@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { defaultResultsLimit } from "@/../config.json";
 import { UOM } from "@/constants/common";
 import { EmptyResponseError } from "@/helpers/exceptions";
@@ -8,8 +7,8 @@ import {
   loadExcludedProductKeys,
   shouldExcludeProduct,
 } from "@/helpers/excludedProducts";
+import { type FetchDecoratorResponse, fetchDecorator } from "@/helpers/fetch";
 import { stripQuantityFromString } from "@/helpers/quantity";
-import { fetchDecorator } from "@/helpers/request";
 import Logger from "@/utils/Logger";
 import ProductBuilder from "@/utils/ProductBuilder";
 import { cstorage } from "@/utils/storage";
@@ -105,6 +104,13 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
   public abstract readonly paymentMethods: PaymentMethod[];
 
   /**
+   * Optional external API hostname used by some suppliers (e.g., Typesense, Searchanise).
+   * When set, automatically included in requiredHosts for permission checks.
+   * @source
+   */
+  protected readonly apiURL?: string;
+
+  /**
    * All host origin patterns required for this supplier to function.
    * Automatically includes baseURL and, if defined, apiURL.
    * Used by the factory to check chrome permissions before querying.
@@ -112,9 +118,8 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    */
   public get requiredHosts(): string[] {
     const hosts = [`${this.baseURL}/*`];
-    const self = this as Record<string, unknown>;
-    if (typeof self.apiURL === "string" && self.apiURL) {
-      hosts.push(`https://${self.apiURL}/*`);
+    if (this.apiURL) {
+      hosts.push(`https://${this.apiURL}/*`);
     }
     return hosts;
   }
@@ -532,7 +537,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     const bodyStr = typeof body === "string" ? body : (JSON.stringify(body) ?? null);
     const headersObj = new Headers({
       ...this.headers,
-      ...(headers as HeadersInit),
+      ...headers,
     });
     const url = this.href(path, params, host);
 
@@ -804,19 +809,14 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
   protected fuzzyFilter<X>(query: string, data: X[], cutoff: number = 40): X[] {
     const res = extract(query, data, {
       scorer: WRatio,
-      processor: this.titleSelector as (choice: unknown) => string,
+      processor: this.titleSelector,
       cutoff: cutoff,
       sortBySimilarity: true,
-    }).reduce(
-      (acc, [obj, score, idx]) => {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        acc[idx] = Object.assign(obj, { _fuzz: { score, idx }, matchPercentage: score });
-        //acc[idx] = { ...obj, _fuzz: { score, idx }, matchPercentage: score };
-        return acc;
-      },
+    }).reduce<FuzzyMatchResult<X>[]>((acc, [obj, score, idx]) => {
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      [] as FuzzyMatchResult<X>[],
-    ) as X[];
+      acc[idx] = Object.assign(obj, { _fuzz: { score, idx }, matchPercentage: score });
+      return acc;
+    }, []);
 
     this.logger.debug("fuzzed search results:", res);
 
@@ -855,6 +855,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * ```
    * @source
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected abstract titleSelector(data: any): Maybe<string>;
 
   /**
@@ -963,7 +964,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     const httpRequest = await this.httpGet({ path, params, headers, host });
 
     if (!isJsonResponse(httpRequest)) {
-      const badResponse = await (httpRequest as unknown as Response)?.text();
+      const badResponse = isHttpResponse(httpRequest) ? await httpRequest.text() : undefined;
       this.logger.error("Invalid HTTP GET JSON response:", {
         badResponse,
         httpRequest,
@@ -1025,7 +1026,9 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     const key = this.cache.generateCacheKey(query, this.supplierName);
     const result = await cstorage.local.get(SupplierCache.getQueryCacheKey());
     const cache =
-      (result[SupplierCache.getQueryCacheKey()] as Record<string, CachedData<unknown>>) || {};
+      (result[SupplierCache.getQueryCacheKey()] as
+        | Record<string, CachedData<unknown>>
+        | undefined) ?? {};
     const cached = cache[key];
     this.logger.debug("queryProductsWithCache: cache hit:", !!cached, "key:", key);
     if (cached) {
@@ -1153,7 +1156,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
         }
       }
       if (finished) {
-        yield finished as unknown as T;
+        yield finished;
       }
     }
   }
@@ -1294,7 +1297,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * ```
    * @source
    */
-  protected async finishProduct(product: ProductBuilder<Product>): Promise<Maybe<Product>> {
+  protected async finishProduct(product: ProductBuilder<T>): Promise<Maybe<T>> {
     if (!isMinimalProduct(product.dump())) {
       this.logger.warn("Unable to finish product - Minimum data not set", { product });
       return;
@@ -1364,12 +1367,11 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
 
     if (params && Object.keys(params).length > 0) {
       href.search = new URLSearchParams(
-        Object.entries(params).reduce((acc, [key, value]) => {
+        Object.entries(params).reduce<QueryParams>((acc, [key, value]) => {
           acc[key] = String(value);
           return acc;
-        }, {} as QueryParams),
+        }, {}),
       ).toString();
-      //href.search = new URLSearchParams(params as QueryParams).toString();
     }
 
     return href.toString();
@@ -1566,7 +1568,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
         const main = product.splice(0, 1)[0];
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { groupId, ...newObject } = main;
-        newObject.variants = product as unknown as GroupedItem<R>["variants"];
+        newObject.variants = product as GroupedItem<R>["variants"];
 
         return newObject;
       })
@@ -1602,7 +1604,9 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * ```
    * @source
    */
-  protected async fetch(...args: Parameters<typeof fetchDecorator>): Promise<any> {
+  protected async fetch(
+    ...args: Parameters<typeof fetchDecorator>
+  ): Promise<FetchDecoratorResponse> {
     const [input] = args;
     this.logger.debug(`Fetching: ${input}`);
     this.requestCount++;

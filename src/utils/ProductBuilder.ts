@@ -888,7 +888,7 @@ export default class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  async build(): Promise<Maybe<Product>> {
+  async build(): Promise<Maybe<T>> {
     if (!isMinimalProduct(this.product)) {
       return;
     }
@@ -974,7 +974,7 @@ export default class ProductBuilder<T extends Product> {
 
     this.product.url = this.href(this.product.url);
     this.logger.debug("ProductBuilder| Built product:", { product: this.product, builder: this });
-    return this.product;
+    return this.product as T;
   }
 
   /**

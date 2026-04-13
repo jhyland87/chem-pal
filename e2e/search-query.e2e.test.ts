@@ -1,9 +1,9 @@
-import { setupMockRoutes } from "@e2e/helpers/mockRoutes";
 import { expect as playwrightExpect } from "@playwright/test";
 import { execSync } from "node:child_process";
 import path from "node:path";
 import { type BrowserContext, type Page, chromium } from "playwright";
 import { afterAll, beforeAll, describe, it, expect as vitestExpect } from "vitest";
+import { setupMockRoutes } from "./helpers/mockRoutes";
 
 const buildDir = path.resolve(__dirname, "..", "build");
 const mockResponsesDir = path.resolve(__dirname, "mock-requests/responses");
