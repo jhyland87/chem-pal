@@ -366,13 +366,20 @@ export const StyledTableRow = styled(TableRow)(() => ({
   // default styles for all table rows
 }));
 
-// Sub-row styling — use action.selected (~8% overlay) instead of action.hover
-// (~4%) so variant rows are visibly distinct from their parent in both light
-// and dark themes. Title-cell indentation is applied separately in TableColumns.
+// Sub-row styling — a subtle darker grey so variant rows are visibly distinct
+// from their parent in both light and dark themes.
+// Title-cell indentation is applied separately in TableColumns.
 export const SubRowTableRow = styled(StyledTableRow, {
   shouldForwardProp: (prop) => prop !== "isSubRow",
 })<{ isSubRow: boolean }>(({ theme, isSubRow }) => ({
-  backgroundColor: isSubRow ? theme.palette.action.selected : "transparent",
+  ...(isSubRow && {
+    "& > td, & > th": {
+      backgroundColor: theme.palette.mode === "light" ? "#f3f3f3" : "#252525",
+    },
+    "&:hover > td, &:hover > th": {
+      backgroundColor: theme.palette.action.hover,
+    },
+  }),
 }));
 
 // === SEARCH PANEL HOME COMPONENTS ===
