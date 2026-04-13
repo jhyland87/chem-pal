@@ -9,6 +9,18 @@ import { UOM, UOM_ALIASES } from "@/constants/common";
  */
 
 /**
+ * Pattern for matching quantities in strings.
+ * @source
+ */
+const quantityPattern =
+  "(?:(?<multiplier>[1-9][0-9]*)\\s?[xX\u00D7]\\s?(?=[1-9]))?" +
+  "(?<quantity>[1-9][0-9]*(?:[.,]\\d+)*(?:\\s\\d{3})*)\\s?" +
+  "(?<uom>(?:milli|kilo|centi)?(?:ml|ounce|g(?:allon|ram|al)" +
+  "|each|ea?" +
+  "|pound|quart|q(?:uar)?t|piece|pc|lb|(?:met|lit)[re]{2})s?" +
+  "|fl\\.?\\s?oz|oz|k[mg]?|g|l|[cm]?[gl])s?(?!\\/mol)(?![A-Za-z])";
+
+/**
  * @type QuantityObject
  * @group Quantity
  */
@@ -53,13 +65,6 @@ export function normalizeQuantity(input: QuantityObject): QuantityObject {
   };
 }
 
-const quantityPattern =
-  "(?<quantity>[1-9][0-9]*(?:[.,]\\d+)*(?:\\s\\d{3})*)\\s?" +
-  "(?<uom>(?:milli|kilo|centi)?(?:ml|ounce|g(?:allon|ram|al)" +
-  "|each|ea?" +
-  "|pound|quart|q(?:uar)?t|piece|pc|lb|(?:met|lit)[re]{2})s?" +
-  "|fl\\.?\\s?oz|oz|k[mg]?|g|l|[cm]?[gl])s?(?!/mol)(?![A-Za-z])";
-
 /**
  * Parses a quantity string into a structured object containing the numeric value and unit of measure.
  * Handles various formats including foreign number formats (e.g., 1.234,56).
@@ -89,7 +94,6 @@ export function parseQuantity(value: string): QuantityObject | void {
   // (?<quantity>[1-9][0-9]*(?:[.,]\d+)*)\s?(?<uom>(?:milli|kilo|centi)?(?:ounce|g(?:allon|ram|al)|pound|quart|qt|piece|pc|lb|(?:met|lit)[re]{2})|oz|k[mg]?|g|l|[cm]?[glm])s?(?!\/mol)(?![A-Za-z])
   const quantityPatternRegex = new RegExp(quantityPattern, "i");
   const quantityMatch = value.match(quantityPatternRegex);
-  console.log("quantityMatch", { quantityMatch, value });
 
   if (!quantityMatch?.groups?.quantity || !quantityMatch?.groups?.uom) return;
 
@@ -104,8 +108,9 @@ export function parseQuantity(value: string): QuantityObject | void {
 
   const uom = standardizeUom(quantityMatch.groups.uom);
   const quantity = parseFloat(parsedQuantity.replaceAll(/[,\s]/g, ""));
+  const multiplier = parseInt(quantityMatch.groups?.multiplier ?? "1");
 
-  if (uom && quantity) return normalizeQuantity({ quantity, uom });
+  if (uom && quantity) return normalizeQuantity({ quantity: quantity * multiplier, uom });
 }
 
 /**

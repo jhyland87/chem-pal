@@ -29,7 +29,7 @@ export async function shouldExcludeProduct(url: string, supplierName: string): P
   try {
     const map = await loadExcludedProducts();
     const key = getProductExclusionKey(url, supplierName);
-    console.log("exclusion key", { key, map, supplierName, url });
+    //console.debug("exclusion key", { key, map, supplierName, url });
     return map[key] !== undefined;
   } catch (error) {
     console.warn("Failed to check if product should be excluded", { error });
