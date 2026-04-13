@@ -1,4 +1,8 @@
 declare global {
+  /**
+   * Response from the Synthetika search API.
+   * @source
+   */
   interface SynthetikaSearchResponse {
     count: number;
     pages: number;
@@ -6,12 +10,20 @@ declare global {
     list: SynthetikaProduct[];
   }
 
+  /**
+   * Configuration option value schema for Synthetika.
+   * @source
+   */
   interface SynthetikaConfigurationOptionValueSchema {
     id: string;
     order: string;
     name: string;
   }
 
+  /**
+   * Product price schema for Synthetika.
+   * @source
+   */
   interface SynthetikaProductPrice {
     /* eslint-disable */
     base: string;
@@ -21,6 +33,10 @@ declare global {
     /* eslint-enable */
   }
 
+  /**
+   * Minimal product schema for Synthetika.
+   * @source
+   */
   interface SynthetikaMinimalProduct {
     /* eslint-disable */
     id: number;
@@ -64,6 +80,10 @@ declare global {
     /* eslint-enable */
   }
 
+  /**
+   * Product schema for Synthetika.
+   * @source
+   */
   interface SynthetikaProduct extends SynthetikaMinimalProduct {
     /* eslint-disable */
     options_configuration: Array<{
