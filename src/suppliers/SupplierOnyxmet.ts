@@ -214,7 +214,7 @@ export default class SupplierOnyxmet
         ?.closest("ul")
         ?.querySelectorAll("li");
 
-      const productInfo = Array.from(productData || []).reduce(
+      const productInfo = Array.from(productData || []).reduce<Record<string, string>>(
         (acc, element) => {
           const [key, value] = element.textContent?.split(": ") || [];
           if (key && value) {
@@ -222,7 +222,7 @@ export default class SupplierOnyxmet
           }
           return acc;
         },
-        {} as Record<string, string>,
+        {},
       );
 
       const cas = findCAS(builder.get("description"));

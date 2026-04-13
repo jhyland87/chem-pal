@@ -104,16 +104,7 @@ export default class SupplierChemsavers
 
       assertValidSearchResponse(response);
 
-      const products = mapDefined(response.results[0].hits.flat(), (hit: unknown) => {
-        if (
-          typeof hit !== "object" ||
-          hit === null ||
-          "document" in hit === false ||
-          typeof hit.document !== "object"
-        )
-          return;
-        return hit.document as ChemsaversProductObject;
-      });
+      const products = response.results[0].hits.flat().map((hit) => hit.document);
 
       this.logger.debug("Mapped response objects:", products);
 

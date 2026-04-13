@@ -211,3 +211,20 @@ const macklinProductDetailsSchema = z.object({
 export function isMacklinProductDetails(data: unknown): data is MacklinProductDetails {
   return macklinProductDetailsSchema.safeParse(data).success;
 }
+
+/**
+ * Type guard for TimestampStorage objects stored in local state.
+ * @param data - The value to check
+ * @returns Whether the value is a valid TimestampStorage
+ * @source
+ */
+export function isTimestampStorage(data: unknown): data is TimestampStorage {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    "serverTm" in data &&
+    typeof (data as TimestampStorage).serverTm === "number" &&
+    "clientTm" in data &&
+    typeof (data as TimestampStorage).clientTm === "number"
+  );
+}

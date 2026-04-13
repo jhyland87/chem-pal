@@ -457,6 +457,12 @@ declare global {
      * @example 3
      */
     totalPages: number;
+
+    /**
+     * Array of product item listings returned by the search.
+     * May contain null entries that need to be filtered out.
+     */
+    items?: (ItemListing | null)[];
   }
 
   /**

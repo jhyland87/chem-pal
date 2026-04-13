@@ -134,7 +134,7 @@ export default abstract class SupplierBaseShopify
       return;
     }
 
-    const validItems = (searchRequest.items as unknown as (ItemListing | null)[]).filter(
+    const validItems = (searchRequest.items ?? []).filter(
       (item): item is ItemListing => item !== null,
     );
     const fuzzResults = this.fuzzyFilter<ItemListing>(query, validItems);

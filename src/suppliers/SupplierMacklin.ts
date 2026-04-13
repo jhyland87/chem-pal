@@ -8,6 +8,7 @@ import {
   isMacklinApiResponse,
   isMacklinProductDetailsResponse,
   isMacklinSearchResult,
+  isTimestampStorage,
 } from "@/utils/typeGuards/macklin";
 import { md5 } from "js-md5";
 import SupplierBase from "./SupplierBase";
@@ -411,7 +412,10 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
    */
   private async request<T>(path: string, options: MacklinApiRequestOptions = {}): Promise<T> {
     try {
-      const timestamp = (this.localStorage.MklTmKey as TimestampStorage).serverTm;
+      if (!isTimestampStorage(this.localStorage.MklTmKey)) {
+        throw new Error("Missing or invalid timestamp in localStorage");
+      }
+      const timestamp = this.localStorage.MklTmKey.serverTm;
 
       // Create a fresh headers object to avoid any potential array concatenation
       const headers: MacklinRequestHeaders = {
@@ -455,7 +459,7 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
       // Sign the request
       const signature = this.signRequest(
         headers,
-        options.method === "GET" || !options.method ? params : (body as RequestParams),
+        options.method === "GET" || !options.method ? params : (body ?? {}),
       );
       headers.sign = signature;
       this.lastSignature = signature;
@@ -557,8 +561,8 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
    */
   private async validateAndUpdateTimestamp(): Promise<string> {
     const currentTime = Math.round(Date.now() / 1000);
-    const storedTimestamp = this.localStorage.MklTmKey
-      ? (this.localStorage.MklTmKey as TimestampStorage)
+    const storedTimestamp = isTimestampStorage(this.localStorage.MklTmKey)
+      ? this.localStorage.MklTmKey
       : null;
 
     if (

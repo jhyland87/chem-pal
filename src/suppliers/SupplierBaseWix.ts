@@ -2,7 +2,7 @@ import { UOM } from "@/constants/common";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { findFormulaInHtml } from "@/helpers/science";
-import { firstMap } from "@/helpers/utils";
+import { firstMap, htmlToAscii, mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import { isProductItem, isProductSelection, isValidSearchResponse } from "@/utils/typeGuards/wix";
 import merge from "lodash/merge";
@@ -183,22 +183,30 @@ export default abstract class SupplierBaseWix
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    const q = this.getGraphQLQuery();
+    const graphQLQuery = this.getGraphQLQuery();
 
-    const v = this.getGraphQLVariables(query);
+    const graphQLVariables = this.getGraphQLVariables(query);
 
     const queryResponse = await this.httpGetJson({
       path: "_api/wix-ecommerce-storefront-web/api",
       params: {
         o: "getFilteredProducts",
         s: "WixStoresWebClient",
-        q,
-        v: JSON.stringify(v),
+        q: graphQLQuery,
+        v: JSON.stringify(graphQLVariables),
       },
     });
 
     if (isValidSearchResponse(queryResponse) === false) {
-      throw new Error(`Invalid or empty Wix query response for ${query}`);
+      throw new Error(`Invalid or empty Wix query response for ${query}`, {
+        cause: {
+          queryResponse,
+          graphQLQuery,
+          graphQLVariables,
+          query,
+          supplier: this.supplierName,
+        },
+      });
     }
 
     const fuzzResults = this.fuzzyFilter<ProductObject>(
@@ -206,7 +214,11 @@ export default abstract class SupplierBaseWix
       queryResponse.data.catalog.category.productsWithMetaData.list,
     );
 
-    this.logger.info("fuzzResults:", fuzzResults);
+    this.logger.info("fuzzResults", {
+      query,
+      productResults: queryResponse.data.catalog.category.productsWithMetaData.list,
+      fuzzResults,
+    });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));
   }
@@ -241,82 +253,72 @@ export default abstract class SupplierBaseWix
    * @source
    */
   protected initProductBuilders(results: ProductObject[]): ProductBuilder<Product>[] {
-    return results
-      .map((product) => {
-        if (!product.price) {
-          return;
-        }
+    return mapDefined(results, (product) => {
+      if (!product.price) {
+        return;
+      }
 
-        // Generate an object with the products UUID and formatted price, with the option ID as the keys
-        const productItems = Object.fromEntries(
-          product.productItems
-            .map((item: ProductItem) => {
-              if (!isProductItem(item)) {
-                console.warn("Invalid product item:", item);
-                return [];
-              }
-              return [
-                item.optionsSelections[0],
-                {
-                  ...parsePrice(item.formattedPrice),
-                  id: item.id,
-                  quantity: item.price,
-                },
-              ];
-            })
-            .filter((entry) => entry.length > 0),
-        );
+      // Generate an object with the products UUID and formatted price, with the option ID as the keys
+      const productItems = Object.fromEntries(
+        mapDefined(product.productItems, (item: ProductItem) => {
+          if (!isProductItem(item)) {
+            this.logger.warn("Invalid product item:", { item });
+            return;
+          }
+          return [
+            item.optionsSelections[0],
+            {
+              ...parsePrice(item.formattedPrice),
+              id: item.id,
+              quantity: item.price,
+            },
+          ];
+        }),
+      );
 
-        // Generate an object with the product quantity selections and the product selection ID
-        const productSelections = Object.fromEntries(
-          product.options[0].selections
-            .map((selection: ProductSelection) => {
-              if (!isProductSelection(selection)) {
-                console.warn("Invalid product selection:", selection);
-                return [];
-              }
-              return [selection.id, parseQuantity(selection.value)];
-            })
-            .filter((entry) => entry.length > 0),
-        );
+      // Generate an object with the product quantity selections and the product selection ID
+      const productSelections = Object.fromEntries(
+        mapDefined(product.options[0].selections, (selection: ProductSelection) => {
+          if (!isProductSelection(selection)) {
+            this.logger.warn("Invalid product selection:", { selection });
+            return;
+          }
+          return [selection.id, parseQuantity(selection.value)];
+        }),
+      );
 
-        const productVariants = merge(productItems, productSelections);
-        const productPrice = parsePrice(product.formattedPrice);
+      const productVariants = merge(productItems, productSelections);
+      const productPrice = parsePrice(product.formattedPrice);
 
-        if (!productPrice) {
-          return;
-        }
+      if (!productPrice) {
+        return;
+      }
 
-        const firstVariant = productVariants[Object.keys(productVariants)[0]];
-        if (!firstVariant || !("quantity" in firstVariant) || !("uom" in firstVariant)) {
-          return;
-        }
+      const firstVariant = productVariants[Object.keys(productVariants)[0]];
+      if (!firstVariant || !("quantity" in firstVariant) || !("uom" in firstVariant)) {
+        return;
+      }
 
-        const builder = new ProductBuilder<Product>(this.baseURL);
+      const builder = new ProductBuilder<Product>(this.baseURL);
 
-        const cas = firstMap(findFormulaInHtml, [
+      const cas = firstMap(findFormulaInHtml, [product.name, product.description, product.urlPart]);
+
+      builder
+        .setBasicInfo(
           product.name,
-          product.description,
-          product.urlPart,
-        ]);
+          `${this.baseURL}/product-page/${product.urlPart}`,
+          this.supplierName,
+        )
+        .setPricing(productPrice.price, productPrice.currencyCode, productPrice.currencySymbol)
+        .setQuantity(firstVariant.quantity, firstVariant.uom)
+        .setID(product.id)
+        .setCAS(cas ?? "")
+        .setSku(product.sku)
+        .setDescription(htmlToAscii(product.description))
+        .setVariants(Object.values(productVariants) as Partial<Variant>[]);
 
-        builder
-          .setBasicInfo(
-            product.name,
-            `${this.baseURL}/product-page/${product.urlPart}`,
-            this.supplierName,
-          )
-          .setPricing(productPrice.price, productPrice.currencyCode, productPrice.currencySymbol)
-          .setQuantity(firstVariant.quantity, firstVariant.uom)
-          .setID(product.id)
-          .setCAS(cas ?? "")
-          .setSku(product.sku)
-          .setDescription(product.description)
-          .setVariants(Object.values(productVariants) as unknown as Variant[]);
-
-        return builder;
-      })
-      .filter((builder) => builder !== undefined);
+      return builder;
+    });
   }
 
   /**
