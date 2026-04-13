@@ -3,12 +3,10 @@ import { UserSettings } from "./common";
 
 /**
  * TanStack Table types.
- * @source
  */
 declare module "@tanstack/react-table" {
   /**
    * Table meta data.
-   * @source
    */
   interface TableMeta {
     userSettings: UserSettings;
@@ -16,7 +14,6 @@ declare module "@tanstack/react-table" {
 
   /**
    * Table interface
-   * @source
    */
   interface Table {
     /** User settings associated with this table */
@@ -37,7 +34,6 @@ declare module "@tanstack/react-table" {
 
   /**
    * Column interface
-   * @source
    */
   interface Column<TValue> {
     /**
@@ -110,7 +106,6 @@ declare module "@tanstack/react-table" {
    *   style: { width: "200px" }
    * };
    * ```
-   * @source
    */
   interface ColumnMeta {
     /**

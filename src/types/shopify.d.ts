@@ -13,7 +13,6 @@ declare global {
    *   description: "High purity chemicals for laboratory use"
    * };
    * ```
-   * @source
    */
   interface ItemCategory {
     /* eslint-disable */
