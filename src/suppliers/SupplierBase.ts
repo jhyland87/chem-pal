@@ -105,6 +105,21 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
   public abstract readonly paymentMethods: PaymentMethod[];
 
   /**
+   * All host origin patterns required for this supplier to function.
+   * Automatically includes baseURL and, if defined, apiURL.
+   * Used by the factory to check chrome permissions before querying.
+   * @source
+   */
+  public get requiredHosts(): string[] {
+    const hosts = [`${this.baseURL}/*`];
+    const self = this as Record<string, unknown>;
+    if (typeof self.apiURL === "string" && self.apiURL) {
+      hosts.push(`https://${self.apiURL}/*`);
+    }
+    return hosts;
+  }
+
+  /**
    * String to query for (Product name, CAS, etc).
    * This is the search term that will be used to find products.
    * Set during construction and used throughout the supplier's lifecycle.

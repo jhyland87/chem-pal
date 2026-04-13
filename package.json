@@ -42,7 +42,6 @@
     "@tanstack/react-table": "^8.21.3",
     "async-await-queue": "^2.1.4",
     "axios": "^1.9.0",
-    "classnames": "^2.5.1",
     "content-type": "^1.0.5",
     "country-flag-icons": "^1.5.19",
     "currency-parser": "^1.0.0",

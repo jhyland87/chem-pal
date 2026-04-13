@@ -51,6 +51,7 @@ describe("Chem-Pal search query", () => {
     await playwrightExpect(page.getByRole("textbox", { name: "search for products" })).toBeVisible({
       timeout: 10_000,
     });
+
     return page;
   }
 

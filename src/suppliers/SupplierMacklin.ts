@@ -105,7 +105,7 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
   public readonly baseURL: string = "https://www.macklin.cn";
 
   /** The host of the Macklin API. */
-  public readonly apiHost: string = "api.macklin.cn";
+  public readonly apiURL: string = "api.macklin.cn";
 
   /** Shipping scope for Macklin */
   public readonly shipping: ShippingRange = "worldwide";
@@ -461,7 +461,7 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
       this.lastSignature = signature;
 
       // Debug logging to match api-client.js
-      this.logger.debug("Full request URL:", this.href(path, params, this.apiHost));
+      this.logger.debug("Full request URL:", this.href(path, params, this.apiURL));
       this.logger.debug("Request headers:", headers);
       this.logger.debug("Request params:", params);
       this.logger.debug("Request body:", body);
@@ -471,7 +471,7 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
         headers,
         params,
         body: body ? JSON.stringify(body) : undefined,
-        host: this.apiHost,
+        host: this.apiURL,
       });
 
       if (!isMacklinApiResponse<T>(response)) {
@@ -508,7 +508,7 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
   private async fetchServerTimestamp(): Promise<number> {
     const response = await this.httpGetJson({
       path: `/api/timestamp`,
-      host: this.apiHost,
+      host: this.apiURL,
     });
 
     if (!isMacklinApiResponse<TimestampResponse>(response)) {
