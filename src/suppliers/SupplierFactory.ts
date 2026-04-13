@@ -109,6 +109,59 @@ export default class SupplierFactory<P extends Product> {
   }
 
   /**
+   * Get a map of supplier class names to their required host origins.
+   * Creates throwaway instances to read requiredHosts from each supplier.
+   *
+   * @returns Record mapping supplier class names to their requiredHosts arrays
+   * @source
+   */
+  public static supplierRequiredHosts(): Record<string, string[]> {
+    const controller = new AbortController();
+    return Object.fromEntries(
+      mapDefined(Object.entries(suppliers), ([key, SupplierClass]) => {
+        const ConcreteClass = SupplierClass as unknown as new (
+          query: string,
+          limit: number,
+          controller: AbortController,
+        ) => SupplierBase<unknown, Product>;
+        const instance = new ConcreteClass("", 1, controller);
+        return [key, instance.requiredHosts];
+      }),
+    );
+  }
+
+  /**
+   * Filters supplier instances to only those whose required host permissions
+   * are already granted. Uses chrome.permissions.contains() which is a passive
+   * check — it does not prompt the user. Permission granting should be handled
+   * separately in a UI flow (e.g., a settings page).
+   *
+   * @param instances - Array of supplier instances to check
+   * @returns Filtered array of suppliers with granted permissions
+   * @source
+   */
+  private async filterByPermissions<P extends Product>(
+    instances: SupplierBase<unknown, P>[],
+  ): Promise<SupplierBase<unknown, P>[]> {
+    const results = await Promise.all(
+      instances.map(async (instance) => {
+        if (instance.requiredHosts.length === 0) return { instance, granted: true };
+        try {
+          const granted = await chrome.permissions.contains({ origins: instance.requiredHosts });
+          return { instance, granted };
+        } catch (e) {
+          this.logger.error("Permission check failed for supplier", {
+            supplier: instance.supplierName,
+            error: e,
+          });
+          return { instance, granted: false };
+        }
+      }),
+    );
+    return results.filter((r) => r.granted).map((r) => r.instance);
+  }
+
+  /**
    * Executes the execute() method on all selected suppliers in parallel using async-await-queue.
    * Results are collected and flattened into a single array.
    *
@@ -141,12 +194,15 @@ export default class SupplierFactory<P extends Product> {
       },
     );
 
-    // 2. Use async-await-queue for parallel execution
+    // 2. Filter to only suppliers with granted host permissions
+    const permittedInstances = await this.filterByPermissions(supplierInstances);
+
+    // 3. Use async-await-queue for parallel execution
     const queue = new Queue(concurrency, 100);
     const allResults: P[] = [];
     const errors: SupplierExecutionError<P>[] = [];
 
-    const tasks = supplierInstances.map((supplier) =>
+    const tasks = permittedInstances.map((supplier) =>
       queue.run(async () => {
         try {
           for await (const product of supplier.execute()) {
@@ -199,11 +255,14 @@ export default class SupplierFactory<P extends Product> {
       },
     );
 
+    // Filter to only suppliers with granted host permissions
+    const permittedInstances = await this.filterByPermissions(supplierInstances);
+
     const queue = new Queue(concurrency, 100);
     const channel: P[] = [];
     let doneCount = 0;
 
-    supplierInstances.forEach((supplier) => {
+    permittedInstances.forEach((supplier) => {
       queue.run(async () => {
         try {
           const iterator = supplier.execute() as AsyncGenerator<P, void, undefined>;
@@ -220,7 +279,7 @@ export default class SupplierFactory<P extends Product> {
     });
 
     // Yield results as they come in, until all suppliers are done and the channel is empty
-    while (doneCount < supplierInstances.length || channel.length > 0) {
+    while (doneCount < permittedInstances.length || channel.length > 0) {
       if (channel.length > 0) {
         yield channel.shift()!;
       } else {

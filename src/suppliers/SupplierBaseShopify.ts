@@ -53,7 +53,7 @@ export default abstract class SupplierBaseShopify
 {
   protected apiKey: string = "";
 
-  protected apiHost: string = "searchserverapi.com";
+  protected apiURL: string = "searchserverapi.com";
 
   /**
    * Query products from the Shopify API
@@ -110,7 +110,7 @@ export default abstract class SupplierBaseShopify
 
     const searchRequest = await this.httpGetJson({
       path: "/getresults",
-      host: this.apiHost,
+      host: this.apiURL,
       params: getParams,
     });
 
