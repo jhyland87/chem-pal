@@ -155,17 +155,17 @@ export default class SupplierN2O3 extends SupplierBase<Product, Product> impleme
       return;
     }
 
-    const result = {
+    const result: Record<string, string | undefined> = {
       href: titleElem.getAttribute("href") || "",
       title: titleElem.textContent?.trim() || "",
       id: element.querySelector("div > div > div:nth-child(2) > span")?.textContent || "",
-      cas: undefined as string | undefined,
-      quantity: undefined as string | undefined,
-      grade: undefined as string | undefined,
-      price: undefined as string | undefined,
-      uom: undefined as string | undefined,
-      currencyCode: undefined as string | undefined,
-      currencySymbol: undefined as string | undefined,
+      cas: undefined,
+      quantity: undefined,
+      grade: undefined,
+      price: undefined,
+      uom: undefined,
+      currencyCode: undefined,
+      currencySymbol: undefined,
     };
 
     for (const a of element.querySelectorAll("div > div > div:nth-child(2) > div > a")) {
@@ -180,7 +180,7 @@ export default class SupplierN2O3 extends SupplierBase<Product, Product> impleme
       const attrKey = tr.querySelector("th");
       switch (attrKey?.textContent?.toLowerCase()) {
         case "quantity":
-          match = (tr.querySelector("td")?.textContent?.trim() as string).match(
+          match = (tr.querySelector("td")?.textContent?.trim() ?? "").match(
             /(?<quantity>\d+) \[(?<uom>\w+)\]/,
           );
           if (match) {
@@ -189,7 +189,7 @@ export default class SupplierN2O3 extends SupplierBase<Product, Product> impleme
           }
           break;
         case "grade":
-          result.grade = (tr.querySelector("td")?.textContent?.trim() as string) || undefined;
+          result.grade = tr.querySelector("td")?.textContent?.trim() || undefined;
           break;
         default:
           break;
@@ -302,7 +302,7 @@ export default class SupplierN2O3 extends SupplierBase<Product, Product> impleme
       const item = this.listingElementToObject(element);
       if (!item) return;
       const product = new ProductBuilder(this.baseURL);
-      product.setBasicInfo(item.title as string, item.href as string, this.supplierName);
+      product.setBasicInfo(item.title ?? "", item.href ?? "", this.supplierName);
       if (item.price) product.setPrice(item.price);
       if (item.quantity) product.setQuantity(item.quantity);
       if (item.uom) product.setUOM(item.uom);

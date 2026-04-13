@@ -231,39 +231,15 @@ export function firstMap<T, R>(fn: (arg: T) => R | void, properties: T[]): R | v
  * @source
  */
 export function mapDefined<T, R>(items: T[], fn: (arg: T) => R | null | undefined | void): R[] {
-  /* The commented code block you provided is a conditional check within the `mapDefined` function. It
- is checking the type and value of the `items` parameter to ensure that it is an array before
- proceeding with the mapping and filtering operations. */
-  // if (typeof items !== "object" || items === null || !Array.isArray(items)) {
-  //   console.warn(`mapDefined: items provided was a ${typeof items}, expected an array - `, items);
-  //   return [];
-  // }
-  try {
-    return items.map(fn).filter((result): result is R => result !== undefined && result !== null);
-  } catch (error) {
-    console.error("ERROR in mapDefined:", error);
-    throw error;
-    return [];
-  }
-  // return items.map(fn).filter((result): result is R => {
-  //   if (result === undefined || result === null) {
-  //     return false;
-  //   }
-
-  //   if (Array.isArray(result)) {
-  //     return result.length > 0;
-  //   }
-
-  //   if (typeof result === "object") {
-  //     return Object.keys(result).length > 0;
-  //   }
-
-  //   if (typeof result === "string") {
-  //     return result.trim().length > 0;
-  //   }
-
-  //   return true;
-  // });
+  return items.map(fn).filter((result): result is R => {
+    if (result === undefined || result === null) {
+      return false;
+    }
+    if (Array.isArray(result)) {
+      return result.length > 0;
+    }
+    return true;
+  });
 }
 
 /**
@@ -302,6 +278,32 @@ export function decodeHTMLEntities(text: string) {
   return text
     .replace(/&[a-z]+;/gi, (match) => entities[match] || match)
     .replace(/&#(\d+);/gi, (match, dec) => String.fromCharCode(dec));
+}
+
+/**
+ * Converts HTML to ASCII.
+ * @category Helpers
+ * @param html - The HTML string to convert
+ * @returns The ASCII string
+ * @example
+ * ```typescript
+ * htmlToAscii("<p>Hello <b>world</b></p><p>This is a test</p>")
+ * // Returns "Hello world\nThis is a test"
+ * ```
+ * @source
+ */
+export function htmlToAscii(html: string): string {
+  return html
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .trim();
 }
 
 /**

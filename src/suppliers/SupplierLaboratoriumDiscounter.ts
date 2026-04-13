@@ -343,8 +343,10 @@ export default class SupplierLaboratoriumDiscounter
       if (!property) return acc;
       switch (property) {
         case "url":
+          acc.url = meta.getAttribute("content") ?? "";
+          break;
         case "sku":
-          acc[property as keyof Product] = meta.getAttribute("content") ?? "";
+          acc.sku = meta.getAttribute("content") ?? "";
           break;
         case "name":
           acc.title = meta.getAttribute("content") ?? "";
@@ -354,8 +356,8 @@ export default class SupplierLaboratoriumDiscounter
           const data = acc.description
             ?.split(", ")
             .reduce<Record<string, string>>((acc, val, idx) => {
-              if (idx === 0) acc.title = val as string;
-              else if (val.includes("CAS-No")) acc.cas = findCAS(val.split(" ")[1]) as CAS<string>;
+              if (idx === 0) acc.title = val;
+              else if (val.includes("CAS-No")) acc.cas = findCAS(val.split(" ")[1]) ?? "";
               // else if ( val.includes('Mol.weight'))
               //   acc.weight = val.split(' ')[1];
               else if (val.includes("min.") && val.includes("%"))
@@ -370,7 +372,9 @@ export default class SupplierLaboratoriumDiscounter
           break;
         case "priceCurrency":
           acc.currencyCode = meta.getAttribute("content");
-          acc.currencySymbol = CURRENCY_SYMBOL_MAP[acc.currencyCode as CurrencyCode];
+          if (acc.currencyCode) {
+            acc.currencySymbol = CURRENCY_SYMBOL_MAP[acc.currencyCode];
+          }
           break;
         case "availability":
           acc.availability = this.metaAvailabilityToAvailability(

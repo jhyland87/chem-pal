@@ -438,9 +438,9 @@ export default class SupplierSynthetika
       }
 
       const productURL = this.href(`/webapi/front/en_US/products/usd/${builder.get("id")}`);
-      const productResponse = (await this.httpGetJson({
+      const productResponse = await this.httpGetJson({
         path: productURL,
-      })) as unknown;
+      });
 
       console.log("[synthetika] productResponse", {
         builder,
