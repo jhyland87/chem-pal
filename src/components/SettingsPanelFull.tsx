@@ -1,4 +1,6 @@
 import { useAppContext } from "@/components/SearchPanel/hooks/useContext";
+import { ACTION_TYPE } from "@/constants/common";
+import { isButtonElement } from "@/utils/typeGuards/common";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
@@ -36,16 +38,16 @@ export default function SettingsPanelFull() {
     (currentSettings: UserSettings, action: SettingAction): UserSettings => {
       let newSettings: UserSettings;
       switch (action.type) {
-        case "SWITCH_CHANGE":
+        case ACTION_TYPE.SWITCH_CHANGE:
           newSettings = { ...currentSettings, [action.name]: action.checked };
           break;
-        case "INPUT_CHANGE":
+        case ACTION_TYPE.INPUT_CHANGE:
           newSettings = { ...currentSettings, [action.name]: action.value };
           break;
-        case "BUTTON_CLICK":
+        case ACTION_TYPE.BUTTON_CLICK:
           newSettings = { ...currentSettings, [action.name]: action.value };
           break;
-        case "RESTORE_DEFAULTS":
+        case ACTION_TYPE.RESTORE_DEFAULTS:
           newSettings = {
             ...currentSettings,
             showHelp: false,
@@ -75,7 +77,7 @@ export default function SettingsPanelFull() {
 
   const handleSwitchChange = (event: ChangeEvent<HTMLInputElement>) => {
     updateSetting({
-      type: "SWITCH_CHANGE",
+      type: ACTION_TYPE.SWITCH_CHANGE,
       name: event.target.name,
       checked: event.target.checked,
     });
@@ -85,26 +87,26 @@ export default function SettingsPanelFull() {
     event: SelectChangeEvent | ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     updateSetting({
-      type: "INPUT_CHANGE",
+      type: ACTION_TYPE.INPUT_CHANGE,
       name: event.target.name,
       value: event.target.value,
     });
   };
 
   const handleButtonClick = (event: MouseEvent<HTMLDivElement>) => {
-    const button = event.target as HTMLButtonElement;
-    const value = button.textContent?.toLowerCase();
-    if (value && button.name) {
+    if (!isButtonElement(event.target)) return;
+    const value = event.target.textContent?.toLowerCase();
+    if (value && event.target.name) {
       updateSetting({
-        type: "BUTTON_CLICK",
-        name: button.name,
+        type: ACTION_TYPE.BUTTON_CLICK,
+        name: event.target.name,
         value,
       });
     }
   };
 
   const handleRestoreDefaults = () => {
-    updateSetting({ type: "RESTORE_DEFAULTS" });
+    updateSetting({ type: ACTION_TYPE.RESTORE_DEFAULTS });
   };
 
   const currentSettings = formState || appContext.userSettings;

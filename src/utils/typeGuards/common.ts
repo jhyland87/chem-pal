@@ -1,4 +1,4 @@
-import { CAS_REGEX, UOM } from "@/constants/common";
+import { CAS_REGEX, SPIN_SPEED, UOM } from "@/constants/common";
 import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 import { z } from "zod";
 
@@ -734,4 +734,48 @@ export function isFullURL(val: unknown): val is URL {
  */
 export function isRequest(req: unknown): req is Request {
   return req instanceof Request;
+}
+
+/**
+ * Type guard to check if a string is a valid SPIN_SPEED key.
+ * @category Typeguards
+ * @param key - The string to check
+ * @returns Type predicate indicating if the key is a valid SPIN_SPEED enum key
+ * @source
+ */
+export function isSpinSpeed(key: string): key is keyof typeof SPIN_SPEED {
+  return key in SPIN_SPEED;
+}
+
+/**
+ * Type guard to check if an EventTarget is an HTMLButtonElement.
+ * @category Typeguards
+ * @param target - The EventTarget to check
+ * @returns Type predicate indicating if the target is an HTMLButtonElement
+ * @source
+ */
+export function isButtonElement(target: EventTarget | null): target is HTMLButtonElement {
+  return target instanceof HTMLButtonElement;
+}
+
+/**
+ * Type guard to check if an EventTarget is an HTMLAnchorElement.
+ * @category Typeguards
+ * @param target - The EventTarget to check
+ * @returns Type predicate indicating if the target is an HTMLAnchorElement
+ * @source
+ */
+export function isAnchorElement(target: EventTarget | null): target is HTMLAnchorElement {
+  return target instanceof HTMLAnchorElement;
+}
+
+/**
+ * Type guard to check if an EventTarget is an HTMLInputElement.
+ * @category Typeguards
+ * @param target - The EventTarget to check
+ * @returns Type predicate indicating if the target is an HTMLInputElement
+ * @source
+ */
+export function isInputElement(target: EventTarget | null): target is HTMLInputElement {
+  return target instanceof HTMLInputElement;
 }

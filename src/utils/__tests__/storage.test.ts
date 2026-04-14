@@ -1,5 +1,8 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { compressToUTF16 } from "lz-string";
+import {
+  resetChromeStorageMock,
+  restoreChromeStorageMock,
+  setupChromeStorageMock,
+} from "@/__fixtures__/helpers/chrome/storageMock";
 import {
   cstorage,
   decodeChanges,
@@ -11,11 +14,8 @@ import {
   LZ_VERSION,
   type LzEnvelope,
 } from "@/utils/storage";
-import {
-  resetChromeStorageMock,
-  restoreChromeStorageMock,
-  setupChromeStorageMock,
-} from "@/__fixtures__/helpers/chrome/storageMock";
+import { compressToUTF16 } from "lz-string";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("storage codec (pure functions)", () => {
   describe("isLzEnvelope", () => {
@@ -45,10 +45,7 @@ describe("storage codec (pure functions)", () => {
   describe("encodeValue / decodeValue round-trip", () => {
     const cases: [string, unknown][] = [
       ["plain object", { name: "Acetone", cas: "67-64-1", price: 12.5 }],
-      [
-        "nested object",
-        { a: { b: { c: { d: [1, 2, 3, "four", { five: true }] } } }, meta: null },
-      ],
+      ["nested object", { a: { b: { c: { d: [1, 2, 3, "four", { five: true }] } } }, meta: null }],
       ["array of objects", Array.from({ length: 50 }, (_, i) => ({ i, label: `item-${i}` }))],
       ["string", "the quick brown fox"],
       ["number", 3.14159],
@@ -265,7 +262,11 @@ describe("cstorage adapter", () => {
 
       // Capture the inner listener registered with chrome.storage.onChanged.
       const addListenerMock = chrome.storage.onChanged.addListener as unknown as {
-        mock: { calls: Array<[(c: Record<string, chrome.storage.StorageChange>, a: chrome.storage.AreaName) => void]> };
+        mock: {
+          calls: Array<
+            [(c: Record<string, chrome.storage.StorageChange>, a: chrome.storage.AreaName) => void]
+          >;
+        };
       };
       const inner = addListenerMock.mock.calls[addListenerMock.mock.calls.length - 1][0];
       expect(typeof inner).toBe("function");

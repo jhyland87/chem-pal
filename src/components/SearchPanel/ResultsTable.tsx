@@ -13,6 +13,7 @@ import DrawerSystem from "@/components/DrawerSystem";
 import LoadingBackdrop from "@/components/LoadingBackdrop";
 import resultStyles from "@/components/ResultsPanel.module.scss";
 import { CACHE } from "@/constants/common";
+import { isInputElement } from "@/utils/typeGuards/common";
 import { generatePageSizes } from "@/helpers/utils";
 import { useDebouncedCallback } from "@/shared/hooks";
 import { cstorage } from "@/utils/storage";
@@ -90,7 +91,7 @@ const FILTER_DEBOUNCE_MS = 250;
  * @source
  */
 function DebouncedFilterInput({ header }: { header: Header<Product, unknown> }) {
-  const [localValue, setLocalValue] = useState((header.column.getFilterValue() as string) ?? "");
+  const [localValue, setLocalValue] = useState(String(header.column.getFilterValue() ?? ""));
 
   const applyFilter = useDebouncedCallback((value: string) => {
     let filterValue: unknown = value;
@@ -99,7 +100,8 @@ function DebouncedFilterInput({ header }: { header: Header<Product, unknown> }) 
         header.column.columnDef.filterFn === "inNumberRange") ||
       header.column.columnDef.meta?.filterVariant === "range"
     ) {
-      filterValue = value.split(/[-\s]+/).map(Number) as unknown as [number, number];
+      const [min, max] = value.split(/[-\s]+/).map(Number);
+      filterValue = [min, max] as [number, number];
     } else if (header.column.columnDef.meta?.filterVariant === "select") {
       filterValue = value
         .split(/[\s,;]+/)
@@ -296,7 +298,7 @@ export default function ResultsTable({
       globalFilter,
       columnFilters: columnFilterFns[0],
       showFilters,
-    } as TableState);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableState, globalFilter, columnFilterFns[0], showFilters, saveTableState]);
 
@@ -336,9 +338,8 @@ export default function ResultsTable({
   };
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
-    if (event.key === "Enter") {
-      const target = event.target as HTMLInputElement;
-      handleSearch(target.value);
+    if (event.key === "Enter" && isInputElement(event.target)) {
+      handleSearch(event.target.value);
     }
   };
 
