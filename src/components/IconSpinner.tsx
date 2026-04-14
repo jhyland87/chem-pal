@@ -1,7 +1,7 @@
 import { SPIN_SPEED } from "@/constants/common";
+import { isSpinSpeed } from "@/utils/typeGuards/common";
 import { keyframes, styled } from "@mui/material/styles";
-import { cloneElement } from "react";
-import styles from "./IconSpinner.module.scss";
+import { cloneElement, isValidElement } from "react";
 
 /**
  * A component that adds a spinning animation to any icon component passed as a child.
@@ -44,11 +44,8 @@ const IconSpinner: React.FC<IconSpinnerProps> = (props: IconSpinnerProps) => {
   let { speed = 2 } = props;
 
   if (typeof speed === "string") {
-    if (speed.toUpperCase() in SPIN_SPEED) {
-      speed = SPIN_SPEED[speed.toUpperCase() as keyof typeof SPIN_SPEED];
-    } else {
-      speed = SPIN_SPEED.MEDIUM;
-    }
+    const key = speed.toUpperCase();
+    speed = isSpinSpeed(key) ? SPIN_SPEED[key] : SPIN_SPEED.MEDIUM;
   }
 
   const spin = keyframes`
@@ -65,7 +62,10 @@ const IconSpinner: React.FC<IconSpinnerProps> = (props: IconSpinnerProps) => {
     animation: `${spin} ${speed}s linear infinite`,
   });
   // Clone the child element to preserve its props
-  const child = cloneElement(props.children as React.ReactElement);
+  if (!isValidElement(props.children)) {
+    return null;
+  }
+  const child = cloneElement(props.children);
   return <SpinningWrapper data-testid="spinning-wrapper">{child}</SpinningWrapper>;
 };
 

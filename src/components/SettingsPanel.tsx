@@ -1,4 +1,7 @@
+import { currencies, locations } from "@/../config.json";
 import { useAppContext } from "@/components/SearchPanel/hooks/useContext";
+import { ACTION_TYPE } from "@/constants/common";
+import { isButtonElement } from "@/utils/typeGuards/common";
 import Button from "@mui/material/Button";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import Divider from "@mui/material/Divider";
@@ -16,7 +19,6 @@ import Stack from "@mui/material/Stack";
 import Switch from "@mui/material/Switch";
 import TextField from "@mui/material/TextField";
 import { ChangeEvent, MouseEvent, startTransition, useActionState } from "react";
-import { currencies, locations } from "../../config.json";
 
 const inputStyle = {
   width: 120,
@@ -96,28 +98,28 @@ export default function SettingsPanel() {
       let newSettings: UserSettings;
 
       switch (action.type) {
-        case "SWITCH_CHANGE":
+        case ACTION_TYPE.SWITCH_CHANGE:
           newSettings = {
             ...currentSettings,
             [action.name]: action.checked,
           };
           break;
 
-        case "INPUT_CHANGE":
+        case ACTION_TYPE.INPUT_CHANGE:
           newSettings = {
             ...currentSettings,
             [action.name]: action.value,
           };
           break;
 
-        case "BUTTON_CLICK":
+        case ACTION_TYPE.BUTTON_CLICK:
           newSettings = {
             ...currentSettings,
             [action.name]: action.value,
           };
           break;
 
-        case "RESTORE_DEFAULTS":
+        case ACTION_TYPE.RESTORE_DEFAULTS:
           // Restore to default settings
           newSettings = {
             ...currentSettings,
@@ -154,7 +156,7 @@ export default function SettingsPanel() {
   // Unified event handlers using the action dispatcher
   const handleSwitchChange = (event: ChangeEvent<HTMLInputElement>) => {
     updateSetting({
-      type: "SWITCH_CHANGE",
+      type: ACTION_TYPE.SWITCH_CHANGE,
       name: event.target.name,
       checked: event.target.checked,
     });
@@ -164,26 +166,26 @@ export default function SettingsPanel() {
     event: SelectChangeEvent | ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     updateSetting({
-      type: "INPUT_CHANGE",
+      type: ACTION_TYPE.INPUT_CHANGE,
       name: event.target.name,
       value: event.target.value,
     });
   };
 
   const handleButtonClick = (event: MouseEvent<HTMLDivElement>) => {
-    const button = event.target as HTMLButtonElement;
-    const value = button.textContent?.toLowerCase();
-    if (value && button.name) {
+    if (!isButtonElement(event.target)) return;
+    const value = event.target.textContent?.toLowerCase();
+    if (value && event.target.name) {
       updateSetting({
-        type: "BUTTON_CLICK",
-        name: button.name,
+        type: ACTION_TYPE.BUTTON_CLICK,
+        name: event.target.name,
         value,
       });
     }
   };
 
   const handleRestoreDefaults = () => {
-    updateSetting({ type: "RESTORE_DEFAULTS" });
+    updateSetting({ type: ACTION_TYPE.RESTORE_DEFAULTS });
   };
 
   // Use formState for current values, falling back to appContext

@@ -8,6 +8,18 @@
 import { locations } from "@/../config.json";
 
 /**
+ * Action types for settings panel form state management.
+ * Used by both SettingsPanel and SettingsPanelFull components.
+ * @source
+ */
+export enum ACTION_TYPE {
+  SWITCH_CHANGE = "SWITCH_CHANGE",
+  INPUT_CHANGE = "INPUT_CHANGE",
+  BUTTON_CLICK = "BUTTON_CLICK",
+  RESTORE_DEFAULTS = "RESTORE_DEFAULTS",
+}
+
+/**
  * Indexes for the different panels in the application.
  * @source
  */

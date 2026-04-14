@@ -28,7 +28,7 @@ function loadMockResponses(responsesDir: string): {
   const byUrl = new Map<string, MockResponse>();
 
   if (!existsSync(responsesDir)) {
-    console.warn(`[MockRoutes] Responses directory not found: ${responsesDir}`);
+    console.warn("[MockRoutes] Responses directory not found", { responsesDir });
     return { byHash, byUrl };
   }
 
@@ -50,8 +50,8 @@ function loadMockResponses(responsesDir: string): {
           const key = `${data._request.method}:${normalizeUrl(data._request.url)}`;
           byUrl.set(key, data);
         }
-      } catch (err) {
-        console.warn(`[MockRoutes] Failed to load ${filePath}:`, err);
+      } catch (error) {
+        console.warn(`[MockRoutes] Failed to load ${filePath}:`, { error, filePath });
       }
     }
   }

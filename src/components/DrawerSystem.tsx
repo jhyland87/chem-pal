@@ -36,7 +36,7 @@ const DrawerSystem: React.FC = () => {
   const [expandedAccordion, setExpandedAccordion] = useState<string | false>("search-availability");
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: DRAWER_INDEX) => {
-    appContext.setDrawerTab(newValue as DRAWER_INDEX);
+    appContext.setDrawerTab(newValue);
     // Reset accordion when switching tabs
     if (newValue === DRAWER_INDEX.SEARCH) {
       setExpandedAccordion("search-availability");

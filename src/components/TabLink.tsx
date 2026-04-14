@@ -13,13 +13,13 @@ interface TabLinkProps {
 const handleResultClick = (event: MouseEvent<HTMLAnchorElement>, history?: HistoryEntry) => {
   // Stop the form from propagating
   event.preventDefault();
-  // Get the target
-  const target = event.target as HTMLAnchorElement;
-  // Open a new tab to that targets href
+  // Use currentTarget (the element the handler is bound to) rather than
+  // target, which could be a child element inside the anchor.
+  const anchor = event.currentTarget;
   if (typeof chrome?.tabs !== "undefined") {
-    chrome.tabs.create({ url: target.href, active: false });
+    chrome.tabs.create({ url: anchor.href, active: false });
   } else {
-    window.open(target.href, "_blank");
+    window.open(anchor.href, "_blank");
   }
 
   if (history) {
