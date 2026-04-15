@@ -605,7 +605,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
   }: RequestOptions): Promise<Maybe<JsonValue>> {
     const httpResponse = await this.httpPost({ path, host, body, params, headers });
     if (!isJsonResponse(httpResponse) || !httpResponse.ok) {
-      console.error("httpPostJson| Invalid POST response: ", {
+      this.logger.error("httpPostJson| Invalid POST response: ", {
         httpResponse,
         path,
         host,
@@ -1083,26 +1083,11 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * @source
    */
   public async *execute(): AsyncGenerator<T, void, undefined> {
-    console.log("Inside execute", {
-      supplierName: this.supplierName,
-      query: this.query,
-      limit: this.limit,
-    });
     await this.setup();
-    console.log("After setup", {
-      supplierName: this.supplierName,
-      query: this.query,
-      limit: this.limit,
-    });
     // Snapshot the user's ignore list once per search. Any product whose
     // exclusion key matches an entry here is dropped before the detail phase
     // runs (see the filter after queryProductsWithCache below).
     this.excludedProductKeys = await loadExcludedProductKeys();
-    console.log("After loadExcludedProductKeys", {
-      supplierName: this.supplierName,
-      query: this.query,
-      limit: this.limit,
-    });
     // Over-fetch by the number of previously-ignored products belonging to
     // this supplier so that, in the worst case where every ignored product
     // appears in the top of the query result set, we still end up with
@@ -1110,27 +1095,9 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     // cache invalidates itself when the requested limit exceeds the cached
     // limit, so this is safe.
     const excludedForSupplier = await countExcludedProductsForSupplier(this.supplierName);
-    console.log("After countExcludedProductsForSupplier", {
-      supplierName: this.supplierName,
-      query: this.query,
-      limit: this.limit,
-      excludedForSupplier,
-    });
     const fetchLimit = this.limit + excludedForSupplier;
     incrementSearchQueryCount(this.supplierName);
-    console.log(`Executing query '${this.query}' for supplier ${this.supplierName}`, {
-      limit: this.limit,
-      fetchLimit,
-      excludedForSupplier,
-    });
     const results = await this.queryProductsWithCache(this.query, fetchLimit);
-    console.log("After queryProductsWithCache", {
-      supplierName: this.supplierName,
-      query: this.query,
-      limit: this.limit,
-      fetchLimit,
-      results,
-    });
     if (!results || results.length === 0) {
       this.logger.log(`No query results found`);
       return;
@@ -1350,9 +1317,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       product.setSupplierPaymentMethods(this.paymentMethods);
     }
 
-    console.log("[supplierbase] finishProduct", { product });
     const built = await product.build();
-    console.log("[supplierbase] built", { built });
     return built;
   }
 
