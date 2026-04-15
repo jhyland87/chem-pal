@@ -108,11 +108,11 @@ export default abstract class SupplierBaseShopify
   ): Promise<ProductBuilder<Product>[] | void> {
     this.logger.info("queryProducts", { query, limit });
     const graphQLQuery = this.getGraphQLQuery(query, 200);
-    console.log("graphQLQuery", graphQLQuery);
-    console.log("apiURL", this.apiURL);
-    console.log("apiVersion", this.apiVersion);
-    console.log("body", { query: graphQLQuery });
-    console.log("headers", { "Content-Type": "application/json" });
+    this.logger.debug("graphQLQuery", graphQLQuery);
+    this.logger.debug("apiURL", this.apiURL);
+    this.logger.debug("apiVersion", this.apiVersion);
+    this.logger.debug("body", { query: graphQLQuery });
+    this.logger.debug("headers", { "Content-Type": "application/json" });
 
     const queryResponse = await this.httpPostJson({
       path: `/api/${this.apiVersion}/graphql.json`,
@@ -131,14 +131,14 @@ export default abstract class SupplierBaseShopify
 
     const products = queryResponse.data.products.edges.map((edge) => edge.node);
 
-    this.logger.info("products", { products });
+    this.logger.debug("products", { products });
     if (products.length === 0) {
       this.logger.error("Shopify search returned no products", { query });
       return;
     }
 
     const fuzzResults = this.fuzzyFilter<ShopifyProductNode>(query, products);
-    this.logger.info("fuzzResults", { query, products, fuzzResults });
+    this.logger.debug("fuzzResults", { query, products, fuzzResults });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));
   }
