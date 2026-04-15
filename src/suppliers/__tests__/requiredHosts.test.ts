@@ -72,7 +72,7 @@ describe("requiredHosts", () => {
     });
   });
 
-  describe("Shopify suppliers include searchserverapi.com", () => {
+  describe("Searchanise suppliers include searchserverapi.com", () => {
     it("HbarSci includes searchserverapi.com", () => {
       const instance = new (suppliers.SupplierHbarSci as any)("", 1, controller);
       expect(instance.requiredHosts).toContain("https://searchserverapi.com/*");

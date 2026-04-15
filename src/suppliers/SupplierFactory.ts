@@ -147,6 +147,12 @@ export default class SupplierFactory<P extends Product> {
         if (instance.requiredHosts.length === 0) return { instance, granted: true };
         try {
           const granted = await chrome.permissions.contains({ origins: instance.requiredHosts });
+          if (!granted) {
+            this.logger.warn("Permission check failed for supplier", {
+              supplier: instance.supplierName,
+              requiredHosts: instance.requiredHosts,
+            });
+          }
           return { instance, granted };
         } catch (e) {
           this.logger.error("Permission check failed for supplier", {
@@ -240,7 +246,9 @@ export default class SupplierFactory<P extends Product> {
 
         this.logger.debug("Initializing supplier class", { supplierClassName });
         const ConcreteSupplierClass = supplierClass as unknown as SupplierConstructor<P>;
+        console.log("Initializing supplier class...", { supplierClassName, ConcreteSupplierClass });
         const instance = new ConcreteSupplierClass(this.query, this.limit, this.controller);
+        console.log("After initializing supplier class", { supplierClassName, instance });
         instance.initCache();
         return instance;
       },
@@ -248,12 +256,14 @@ export default class SupplierFactory<P extends Product> {
 
     // Filter to only suppliers with granted host permissions
     const permittedInstances = await this.filterByPermissions(supplierInstances);
-
+    console.log("After filtering by permissions", { permittedInstances });
     const queue = new Queue(concurrency, 100);
+
     const channel: P[] = [];
     let doneCount = 0;
 
     permittedInstances.forEach((supplier) => {
+      console.log("Running queue", { supplier });
       queue.run(async () => {
         try {
           const iterator = supplier.execute();

@@ -1,7 +1,7 @@
-import SupplierBaseShopify from "./SupplierBaseShopify";
+import SupplierBaseSearchanise from "./SupplierBaseSearchanise";
 
 /**
- * SupplierHbarSci class that extends SupplierBaseShopify and implements AsyncIterable<T>.
+ * SupplierHbarSci class that extends SupplierBaseSearchanise and implements AsyncIterable<T>.
  *
  * @remarks
  *
@@ -10,7 +10,7 @@ import SupplierBaseShopify from "./SupplierBaseShopify";
  * @category Suppliers
  * @source
  */
-export default class SupplierHbarSci extends SupplierBaseShopify implements ISupplier {
+export default class SupplierHbarSci extends SupplierBaseSearchanise implements ISupplier {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "SupplierHbarSci";
 

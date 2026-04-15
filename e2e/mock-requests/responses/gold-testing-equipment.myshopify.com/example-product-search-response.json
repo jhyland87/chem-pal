@@ -1,0 +1,555 @@
+{
+  "errors": [
+    {
+      "message": "Access denied for quantityAvailable field. Required access: `unauthenticated_read_product_inventory` access scope.",
+      "locations": [
+        {
+          "line": 1,
+          "column": 189
+        }
+      ],
+      "path": [
+        "products",
+        "edges",
+        0,
+        "node",
+        "variants",
+        "edges",
+        0,
+        "node",
+        "quantityAvailable"
+      ],
+      "extensions": {
+        "code": "ACCESS_DENIED",
+        "documentation": "https://shopify.dev/api/usage/access-scopes",
+        "requiredAccess": "`unauthenticated_read_product_inventory` access scope."
+      }
+    },
+    {
+      "message": "Access denied for quantityAvailable field. Required access: `unauthenticated_read_product_inventory` access scope.",
+      "locations": [
+        {
+          "line": 1,
+          "column": 189
+        }
+      ],
+      "path": [
+        "products",
+        "edges",
+        1,
+        "node",
+        "variants",
+        "edges",
+        0,
+        "node",
+        "quantityAvailable"
+      ],
+      "extensions": {
+        "code": "ACCESS_DENIED",
+        "documentation": "https://shopify.dev/api/usage/access-scopes",
+        "requiredAccess": "`unauthenticated_read_product_inventory` access scope."
+      }
+    },
+    {
+      "message": "Access denied for quantityAvailable field. Required access: `unauthenticated_read_product_inventory` access scope.",
+      "locations": [
+        {
+          "line": 1,
+          "column": 189
+        }
+      ],
+      "path": [
+        "products",
+        "edges",
+        2,
+        "node",
+        "variants",
+        "edges",
+        0,
+        "node",
+        "quantityAvailable"
+      ],
+      "extensions": {
+        "code": "ACCESS_DENIED",
+        "documentation": "https://shopify.dev/api/usage/access-scopes",
+        "requiredAccess": "`unauthenticated_read_product_inventory` access scope."
+      }
+    },
+    {
+      "message": "Access denied for quantityAvailable field. Required access: `unauthenticated_read_product_inventory` access scope.",
+      "locations": [
+        {
+          "line": 1,
+          "column": 189
+        }
+      ],
+      "path": [
+        "products",
+        "edges",
+        3,
+        "node",
+        "variants",
+        "edges",
+        0,
+        "node",
+        "quantityAvailable"
+      ],
+      "extensions": {
+        "code": "ACCESS_DENIED",
+        "documentation": "https://shopify.dev/api/usage/access-scopes",
+        "requiredAccess": "`unauthenticated_read_product_inventory` access scope."
+      }
+    },
+    {
+      "message": "Access denied for quantityAvailable field. Required access: `unauthenticated_read_product_inventory` access scope.",
+      "locations": [
+        {
+          "line": 1,
+          "column": 189
+        }
+      ],
+      "path": [
+        "products",
+        "edges",
+        4,
+        "node",
+        "variants",
+        "edges",
+        0,
+        "node",
+        "quantityAvailable"
+      ],
+      "extensions": {
+        "code": "ACCESS_DENIED",
+        "documentation": "https://shopify.dev/api/usage/access-scopes",
+        "requiredAccess": "`unauthenticated_read_product_inventory` access scope."
+      }
+    },
+    {
+      "message": "Access denied for quantityAvailable field. Required access: `unauthenticated_read_product_inventory` access scope.",
+      "locations": [
+        {
+          "line": 1,
+          "column": 189
+        }
+      ],
+      "path": [
+        "products",
+        "edges",
+        5,
+        "node",
+        "variants",
+        "edges",
+        0,
+        "node",
+        "quantityAvailable"
+      ],
+      "extensions": {
+        "code": "ACCESS_DENIED",
+        "documentation": "https://shopify.dev/api/usage/access-scopes",
+        "requiredAccess": "`unauthenticated_read_product_inventory` access scope."
+      }
+    },
+    {
+      "message": "Access denied for quantityAvailable field. Required access: `unauthenticated_read_product_inventory` access scope.",
+      "locations": [
+        {
+          "line": 1,
+          "column": 189
+        }
+      ],
+      "path": [
+        "products",
+        "edges",
+        6,
+        "node",
+        "variants",
+        "edges",
+        0,
+        "node",
+        "quantityAvailable"
+      ],
+      "extensions": {
+        "code": "ACCESS_DENIED",
+        "documentation": "https://shopify.dev/api/usage/access-scopes",
+        "requiredAccess": "`unauthenticated_read_product_inventory` access scope."
+      }
+    },
+    {
+      "message": "Access denied for quantityAvailable field. Required access: `unauthenticated_read_product_inventory` access scope.",
+      "locations": [
+        {
+          "line": 1,
+          "column": 189
+        }
+      ],
+      "path": [
+        "products",
+        "edges",
+        7,
+        "node",
+        "variants",
+        "edges",
+        0,
+        "node",
+        "quantityAvailable"
+      ],
+      "extensions": {
+        "code": "ACCESS_DENIED",
+        "documentation": "https://shopify.dev/api/usage/access-scopes",
+        "requiredAccess": "`unauthenticated_read_product_inventory` access scope."
+      }
+    },
+    {
+      "message": "Access denied for quantityAvailable field. Required access: `unauthenticated_read_product_inventory` access scope.",
+      "locations": [
+        {
+          "line": 1,
+          "column": 189
+        }
+      ],
+      "path": [
+        "products",
+        "edges",
+        8,
+        "node",
+        "variants",
+        "edges",
+        0,
+        "node",
+        "quantityAvailable"
+      ],
+      "extensions": {
+        "code": "ACCESS_DENIED",
+        "documentation": "https://shopify.dev/api/usage/access-scopes",
+        "requiredAccess": "`unauthenticated_read_product_inventory` access scope."
+      }
+    },
+    {
+      "message": "Access denied for quantityAvailable field. Required access: `unauthenticated_read_product_inventory` access scope.",
+      "locations": [
+        {
+          "line": 1,
+          "column": 189
+        }
+      ],
+      "path": [
+        "products",
+        "edges",
+        9,
+        "node",
+        "variants",
+        "edges",
+        0,
+        "node",
+        "quantityAvailable"
+      ],
+      "extensions": {
+        "code": "ACCESS_DENIED",
+        "documentation": "https://shopify.dev/api/usage/access-scopes",
+        "requiredAccess": "`unauthenticated_read_product_inventory` access scope."
+      }
+    }
+  ],
+  "data": {
+    "products": {
+      "edges": [
+        {
+          "node": {
+            "id": "gid://shopify/Product/6047654445205",
+            "title": "JSP 10K 14K 18K Gold Jewelry Acid Testing Kit Solutions Bottles Coins Bars Scrap Oro Appraise Checker",
+            "handle": "gold-test-kit-jewelry-10k-14k-18k-scrap",
+            "description": "Quickly verify the purity and authenticity of gold jewelry, coins, bars, and scrap gold with this easy-to-use JSP Gold Testing Kit. Designed for jewelers, gold buyers, pawn shops, collectors, and refiners, this kit uses the trusted acid testing method to help identify gold karat content with reliable results. Simply scratch your item on a testing stone (sold separately or use your existing one), apply a drop of testing acid, and observe the reaction to determine the gold purity. Why Choose JSP Testing Solutions Unlike many gold testing kits on the market, JSP testing acids are never imported and are always produced fresh, helping ensure accurate and consistent results. • Bottles are up to 3× larger than many competing kits• Freshly produced acids for dependable testing results• Trusted JSP formulas used by professionals for decades• Manufactured in the USA Kit Includes • (1) JSP 10K Gold Testing Acid – 0.5 oz (14 g)• (1) JSP 14K Gold Testing Acid – 0.5 oz (14 g)• (1) JSP 18K Gold Testing Acid – 0.5 oz (14 g) Includes easy-to-follow instructions to help you quickly interpret test results. Perfect For Testing • Gold jewelry• Scrap gold• Gold coins and bullion• Estate jewelry and thrift store finds The compact bottles make this kit easy to carry in a pocket, purse, or tool kit, making it ideal for testing gold on the go. A must-have tool for anyone who buys, sells, or invests in gold.",
+            "onlineStoreUrl": "https://www.goldandsilvertesting.com/products/gold-test-kit-jewelry-10k-14k-18k-scrap",
+            "variants": {
+              "edges": [
+                {
+                  "node": {
+                    "title": "Default Title",
+                    "sku": "10K,14K,18K JSP",
+                    "barcode": "",
+                    "price": {
+                      "amount": "14.99"
+                    },
+                    "weight": 3.0,
+                    "weightUnit": "POUNDS",
+                    "quantityAvailable": null,
+                    "requiresShipping": true,
+                    "availableForSale": true,
+                    "currentlyNotInStock": false
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "gid://shopify/Product/6047724961941",
+            "title": "JSP Gold 10K & 14K Jewelry Testing Acid Tester Kit + Scratch Stone Detect Precious Metals",
+            "handle": "gold-test-kit-jewelry-10k-14k-scrap-bars",
+            "description": "This JSP Gold Testing Kit is designed for fast, accurate karat verification using fresh, USA-made JSP testing solutions. Unlike many imported or old acids on the market, JSP acids are bottled fresh to deliver consistent, reliable reactions you can trust. Testing is simple. Scratch your item on the test stone, apply a drop of acid, and observe the reaction to determine gold purity in seconds. No complicated steps. No guesswork. What’s included: JSP 10K Gold Testing Acid Solution 0.5 oz (14 g) JSP 14K Gold Testing Acid Solution 0.5 oz (14 g) GTE 2\" x 2\" Premium Test Stone Easy-to-read instruction guide Each 0.5 oz bottle provides hundreds of tests and offers more usable product than many competitor kits that include tiny sample vials. The compact size makes this kit easy to store, travel with, or keep on hand for on-the-go testing. Ideal for investors, resellers, collectors, jewelers, and pawn shops who need dependable gold testing without cutting corners. A must-have tool for anyone serious about verifying gold accurately and confidently.",
+            "onlineStoreUrl": "https://www.goldandsilvertesting.com/products/gold-test-kit-jewelry-10k-14k-scrap-bars",
+            "variants": {
+              "edges": [
+                {
+                  "node": {
+                    "title": "Default Title",
+                    "sku": "10k+14k+2x2 gte",
+                    "barcode": "",
+                    "price": {
+                      "amount": "14.97"
+                    },
+                    "weight": 3.0,
+                    "weightUnit": "OUNCES",
+                    "quantityAvailable": null,
+                    "requiresShipping": true,
+                    "availableForSale": true,
+                    "currentlyNotInStock": false
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "gid://shopify/Product/6047782764693",
+            "title": "JSP Gold Silver & Platinum Jewelry Acid Tester Kit w/ Scratch Stone for Precious Metals Detect Plating Bars Coins",
+            "handle": "gold-and-silver-jewelry-test-kit",
+            "description": "JSP & GTE Gold, Silver & Platinum Testing Kit Complete 6-Solution Professional Set Test gold, silver, and platinum with confidence using genuine JSP & GTE testing solutions trusted by professionals since 1980. JSP acids are manufactured in the United States and are never imported. Freshness and consistency matter when verifying precious metals, and every batch is produced to professional standards. Bottles ship sealed and are typically less than two weeks old to ensure reliable, accurate reactions. Unlike many low-cost imported kits, these 0.5 oz bottles are approximately three times the size of many competitor bottles. Each bottle provides enough solution for hundreds of tests, delivering real long-term value. What’s Included • JSP 10K Gold Testing Solution• JSP 14K Gold Testing Solution• JSP 18K Gold Testing Solution• JSP 22K Gold Testing Solution• JSP Silver Testing Solution• JSP Platinum Testing Solution• GTE 2\" x 2\" Premium Scratch Test Stone with non-slip rubber backing• Easy-to-follow instruction booklet with color comparison chart Simple 3-Step Testing Make a small scratch on the included test stone. Apply a drop of the appropriate testing solution. Compare the reaction to determine authenticity and purity. Ideal For • Jewelry buyers and resellers• Pawn shops and estate purchasers• Coin and bullion collectors• Scrap metal refiners• Investors verifying precious metals When you are testing real value, do not rely on imported, diluted, or inconsistently formulated acids. Choose a U.S.-manufactured brand with over four decades of professional use and larger bottles that deliver more tests per kit. If you have questions, we’re here to help. Neutralizer sold separately and can be found here: Neutralizer Solution",
+            "onlineStoreUrl": "https://www.goldandsilvertesting.com/products/gold-and-silver-jewelry-test-kit",
+            "variants": {
+              "edges": [
+                {
+                  "node": {
+                    "title": "Default Title",
+                    "sku": "6 pk jsp",
+                    "barcode": "",
+                    "price": {
+                      "amount": "26.97"
+                    },
+                    "weight": 7.0,
+                    "weightUnit": "OUNCES",
+                    "quantityAvailable": null,
+                    "requiresShipping": true,
+                    "availableForSale": true,
+                    "currentlyNotInStock": false
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "gid://shopify/Product/6047987630229",
+            "title": "JSP Silver Jewelry Acid Test Apprail Kit Detect 999 925 Sterling Solution with GTE Scratch Stone Precious Metals",
+            "handle": "silver-test-kit-for-jewelry-999-sterling",
+            "description": "JSP Silver Testing Kit – Professional Silver Purity Test with Scratch Stone Quickly determine the purity and authenticity of silver jewelry, coins, bars, and scrap metal with this easy-to-use JSP Silver Testing Kit. Designed for jewelers, collectors, refiners, pawn shops, and precious metal investors, this kit provides reliable results using the trusted scratch-and-acid testing method. Simply scratch your item on the included testing stone, apply a drop of silver testing acid, and observe the reaction to help identify the silver content. Why Choose JSP Testing Solutions Unlike many testing kits on the market, JSP testing acids are never imported and are always produced fresh, helping ensure consistent and accurate testing results. • Bottles are up to 3× larger than many competing kits• Freshly produced testing acids for dependable results• Trusted JSP formulas used by professionals for decades• Manufactured in the USA Kit Includes • (1) JSP Silver Testing Acid – 0.5 oz (14 g)• (1) GTE Premium 2\" × 2\" Scratch Test Stone with rubber backing for stable, non-slip testing• (1) Instruction booklet with color chart for easy result comparison Perfect For Testing • Silver jewelry• Sterling silver items• Silver coins and bullion• Scrap silver and collectibles• Estate and thrift store finds The compact bottle size makes this kit easy to carry in a pocket, purse, or tool kit, making it ideal for on-the-go testing. Storage Information Testing acids typically remain effective for up to one year after opening when stored tightly sealed in a cool, dark place. A must-have tool for anyone who buys, sells, or collects silver. All products include a 1-year guarantee.",
+            "onlineStoreUrl": "https://www.goldandsilvertesting.com/products/silver-test-kit-for-jewelry-999-sterling",
+            "variants": {
+              "edges": [
+                {
+                  "node": {
+                    "title": "Default Title",
+                    "sku": "SILVER JSP+2X2 gte",
+                    "barcode": "",
+                    "price": {
+                      "amount": "12.99"
+                    },
+                    "weight": 3.0,
+                    "weightUnit": "OUNCES",
+                    "quantityAvailable": null,
+                    "requiresShipping": true,
+                    "availableForSale": true,
+                    "currentlyNotInStock": false
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "gid://shopify/Product/6048015614101",
+            "title": "JSP 10K Gold and Silver Jewelry Acid Test Kit for 10K and Sterling 999 Precious Metals",
+            "handle": "gold-silver-test-jewelry-10k-silver-999",
+            "description": "JSP Gold & Silver Testing Kit – 10K Gold & Silver Test with Scratch Stone Quickly and confidently verify the purity and authenticity of gold and silver jewelry, coins, and scrap metals with this easy-to-use JSP Gold & Silver Testing Kit. Designed for jewelers, collectors, pawn shops, refiners, and precious metal investors, this kit uses the trusted scratch-and-acid testing method to deliver reliable results. Simply make a small mark on the included testing stone with your item, apply a drop of testing acid, and observe the reaction to help determine the metal content. Why Choose JSP Testing Solutions Unlike many testing kits on the market, JSP testing acids are never imported and are always produced fresh, helping ensure accurate and consistent results. • Bottles are up to 3× larger than many competing kits• Freshly produced testing acids for dependable testing• Trusted JSP formulas used by professionals for decades• Manufactured in the USA Kit Includes • (1) JSP 10K Gold Testing Acid – 0.5 oz (14 g)• (1) JSP Silver Testing Acid – 0.5 oz (14 g)• (1) GTE Premium 2\" × 2\" Scratch Test Stone with rubber backing for stable, non-slip testing• (1) Instruction booklet with color chart for easy result comparison Perfect For Testing • Gold jewelry and scrap gold• Silver jewelry and sterling items• Coins and bullion• Estate jewelry and thrift store finds The compact bottles make this kit easy to carry in a pocket, purse, or tool kit, making it ideal for testing on the go. A must-have tool for anyone who buys, sells, or collects gold and silver.",
+            "onlineStoreUrl": "https://www.goldandsilvertesting.com/products/gold-silver-test-jewelry-10k-silver-999",
+            "variants": {
+              "edges": [
+                {
+                  "node": {
+                    "title": "Default Title",
+                    "sku": "10k,silver,2x2 gte",
+                    "barcode": "",
+                    "price": {
+                      "amount": "14.99"
+                    },
+                    "weight": 2.0,
+                    "weightUnit": "OUNCES",
+                    "quantityAvailable": null,
+                    "requiresShipping": true,
+                    "availableForSale": true,
+                    "currentlyNotInStock": false
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "gid://shopify/Product/6048020988053",
+            "title": "JSP 18K Gold Jewelry Acid Test Kit for Bars Coins Precious Metals w/ GTE Test Stone",
+            "handle": "18k-gold-test-kit-for-jewelry",
+            "description": "JSP 18K Gold Testing Kit – Professional Gold Purity Test with Scratch Stone Quickly verify the purity and authenticity of gold jewelry, coins, bars, and scrap gold with this easy-to-use JSP 18K Gold Testing Kit. This kit uses the trusted scratch-and-acid testing method used by jewelers, pawn shops, refiners, and precious metal buyers worldwide. Simply make a small mark on the included testing stone, apply a drop of testing acid, and observe the reaction to help determine the gold content. Why Choose JSP Testing Solutions Unlike many test kits on the market, JSP testing acids are never imported and are always produced fresh, ensuring reliable and consistent results. • Bottles are up to 3× larger than many competing kits• Freshly produced testing acids for accurate testing• Trusted JSP formulas used by professionals for decades• Manufactured in the USA Kit Includes • (1) JSP 18K Gold Testing Acid – 0.5 oz (14 g)• (1) 2\" × 2\" Scratch Test Stone• (1) Instruction booklet with color chart for easy result comparison Perfect For Testing • Gold jewelry• Scrap gold• Gold coins and bullion• Estate jewelry and thrift store finds The compact bottle size makes this kit easy to carry in a pocket, purse, or tool kit, making it ideal for testing gold on the go. A must-have tool for anyone who buys, sells, or collects gold.",
+            "onlineStoreUrl": "https://www.goldandsilvertesting.com/products/18k-gold-test-kit-for-jewelry",
+            "variants": {
+              "edges": [
+                {
+                  "node": {
+                    "title": "Default Title",
+                    "sku": "18k + 2x2 gte",
+                    "barcode": "",
+                    "price": {
+                      "amount": "12.99"
+                    },
+                    "weight": 2.0,
+                    "weightUnit": "OUNCES",
+                    "quantityAvailable": null,
+                    "requiresShipping": true,
+                    "availableForSale": true,
+                    "currentlyNotInStock": false
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "gid://shopify/Product/6048026427541",
+            "title": "JSP 14K Gold Jewelry Acid Test Kit for Bars Coins Precious Metals w/ Test Stone",
+            "handle": "14k-gold-test-kit-for-jewelry",
+            "description": "JSP 14K Gold Testing Kit – Professional Gold Purity Test with Scratch Stone Quickly verify the purity and authenticity of gold jewelry, coins, bars, and scrap gold with this easy-to-use JSP 14K Gold Testing Kit. This kit uses the trusted scratch-and-acid testing method relied on by jewelers, gold buyers, pawn shops, and precious metal collectors. Simply make a small mark on the included testing stone, apply a drop of testing acid, and observe the reaction to help determine the gold karat content. Why Choose JSP Testing Solutions Unlike many gold testing kits on the market, JSP testing acids are never imported and are always produced fresh, ensuring dependable and accurate results. • Bottles are up to 3× larger than many competing kits• Freshly produced acids for reliable testing• Trusted JSP formulas used by professionals for decades• Manufactured in the USA Kit Includes • (1) JSP 14K Gold Testing Acid – 0.5 oz (14 g)• (1) GTE Premium 2\" × 2\" Scratch Test Stone with rubber backing for stable, non-slip testing• (1) Instruction booklet with color chart for easy result comparison Perfect For Testing • Gold jewelry• Scrap gold• Coins and bullion• Estate jewelry and thrift store finds The compact bottle size makes this kit easy to carry in a pocket, purse, or tool kit, making it ideal for testing gold on the go. A must-have tool for anyone who buys, sells, or collects gold.",
+            "onlineStoreUrl": "https://www.goldandsilvertesting.com/products/14k-gold-test-kit-for-jewelry",
+            "variants": {
+              "edges": [
+                {
+                  "node": {
+                    "title": "Default Title",
+                    "sku": "14K JSP + 2X2 gte stone",
+                    "barcode": "",
+                    "price": {
+                      "amount": "12.99"
+                    },
+                    "weight": 3.0,
+                    "weightUnit": "OUNCES",
+                    "quantityAvailable": null,
+                    "requiresShipping": true,
+                    "availableForSale": true,
+                    "currentlyNotInStock": false
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "gid://shopify/Product/6048042942613",
+            "title": "JSP Gold 10k 14k 18k Jewelry Acid Testing Kit w/ GTE Scratch Stone Precious Metals Kit",
+            "handle": "gold-test-kit-jewelry-10k-14k-18k-scrap-2",
+            "description": "JSP Gold Testing Kit 5-Piece Professional Gold Appraisal Set This easy-to-use testing kit is built with genuine JSP gold testing acids, trusted by jewelers and metal professionals since 1980, and designed to accurately determine the karat and purity of gold jewelry, scrap, bars, and coins. Why JSP Gold Testing Acids Matter Most gold testing kits on the market rely on small, imported acids that sit too long and lose effectiveness. This kit does not. • Never imported testing acids• Manufactured in the USA by JSP, a trusted name since 1980• Full 0.5 oz bottles, up to 3× larger than many competitors• Always fresh for consistent, reliable results• Each bottle performs hundreds of tests Fresh acid matters. Old or diluted acid leads to inaccurate readings. This kit is built for real testing, not guesswork. Simple, Proven Testing Process Scratch your item on the test stone, apply a drop of the appropriate testing solution, and observe the reaction. Results appear quickly and clearly using the included color chart and instructions. What’s Included. 5-Piece Kit • JSP 10K Gold Testing Acid Solution 0.5 oz• JSP 14K Gold Testing Acid Solution 0.5 oz• JSP 18K Gold Testing Acid Solution 0.5 oz • GTE 2 x 2 inch Premium Scratch Test Stone– Non-slip rubber backing for safe desktop testing • Easy-to-follow instruction booklet with color chart Built for Portability and Real Use The compact size makes this kit ideal for estate sales, shops, travel, and on-the-go testing, while the full-size bottles provide long-term value and repeat use. Ideal For • Gold investors• Jewelry buyers and sellers• Estate sale and auction shoppers• Collectors and hobbyists Test with confidence using fresh, American-made JSP gold testing acids trusted for decades",
+            "onlineStoreUrl": "https://www.goldandsilvertesting.com/products/gold-test-kit-jewelry-10k-14k-18k-scrap-2",
+            "variants": {
+              "edges": [
+                {
+                  "node": {
+                    "title": "Default Title",
+                    "sku": "10k,14k,18k,2x2 gte",
+                    "barcode": "",
+                    "price": {
+                      "amount": "15.97"
+                    },
+                    "weight": 5.0,
+                    "weightUnit": "OUNCES",
+                    "quantityAvailable": null,
+                    "requiresShipping": true,
+                    "availableForSale": true,
+                    "currentlyNotInStock": false
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "gid://shopify/Product/6052890214549",
+            "title": "GTE 2''x2'' Small Premium Black Scratch Touchstone for Acid Gold Silver Platinum Jewelry Testing",
+            "handle": "gte-testing-stone",
+            "description": "The GTE Premium Testing Scratch Stone is an essential tool used to determine the purity and authenticity of gold, silver, and platinum when used with testing acids. This durable touchstone allows you to create a visible metal streak that reacts with testing solutions, helping you quickly evaluate precious metals. Compact, reliable, and easy to use, this testing stone is widely used by jewelers, pawn shops, refiners, and precious metal buyers for everyday metal testing. Product Includes • GTE Premium 2\" × 2\" Scratch Test Stone• Rubber backing for stable, non-slip desktop testing Testing acids sold separately. How to Use Scratch the item you want to test across the surface of the stone, leaving a visible metal streak about 1 inch long. Apply a drop of testing acid to the streak using the solution that corresponds to the metal you are testing. Observe the reaction and compare the results using your testing chart to determine the metal purity. Ideal For Testing • Gold jewelry• Silver jewelry• Platinum jewelry• Coins and bullion• Scrap precious metals A must-have testing tool for anyone who buys, sells, refines, or collects precious metals.",
+            "onlineStoreUrl": "https://www.goldandsilvertesting.com/products/gte-testing-stone",
+            "variants": {
+              "edges": [
+                {
+                  "node": {
+                    "title": "Default Title",
+                    "sku": "2x2 stone",
+                    "barcode": "",
+                    "price": {
+                      "amount": "9.99"
+                    },
+                    "weight": 2.0,
+                    "weightUnit": "OUNCES",
+                    "quantityAvailable": null,
+                    "requiresShipping": true,
+                    "availableForSale": true,
+                    "currentlyNotInStock": false
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "gid://shopify/Product/6852761616533",
+            "title": "PuriTEST Gold Silver Jewelry Acid Testing Kit 9K 10K 14K 18K 22K Sterling 999 925 w/ Scratch Stone Tester Test Scrap Neutralizer",
+            "handle": "puritest-gold-silver-jewelry-acid-testing-kit-9k-10k-14k-18k-22k-sterling-999-925-w-scratch-stone-tester-test-scrap-neutralizer",
+            "description": "Quickly and confidently determine the purity and authenticity of gold, silver, and platinum jewelry, coins, bars, and scrap metals with the PuriTEST Precious Metal Testing Kit. This complete kit uses the trusted scratch-and-acid testing method used by jewelers, pawn shops, collectors, and precious metal buyers. Simply scratch your item across the included testing stone, apply a drop of the appropriate testing acid, and observe the reaction to determine the metal content. Designed to make precious metal testing fast, accurate, and easy. Why Choose PuriTEST • Fresh testing acids for reliable results• Each bottle performs hundreds of tests• Compact bottles ideal for travel or field testing• Trusted tools used by jewelers, collectors, and metal buyers Complete 8-Piece Testing Kit • (1) PuriTEST 10K Gold Testing Acid – 0.5 oz• (1) PuriTEST 14K Gold Testing Acid – 0.5 oz• (1) PuriTEST 18K Gold Testing Acid – 0.5 oz• (1) PuriTEST 24K Gold Testing Acid – 0.5 oz• (1) PuriTEST Silver Testing Acid – 0.5 oz• (1) PuriTEST Platinum Testing Acid – 0.5 oz• (1) PuriTEST 2\" × 2\" Scratch Test Stone with rubber backing for stable testing• (1) GTE Acid Neutralizing Solution – cleans testing stone between tests• Instruction booklet with color comparison chart Perfect For Testing • Gold jewelry and scrap gold• Silver jewelry and sterling items• Platinum jewelry• Coins and bullion• Estate jewelry and thrift store finds A must-have testing kit for anyone who buys, sells, or collects precious metals.",
+            "onlineStoreUrl": "https://www.goldandsilvertesting.com/products/puritest-gold-silver-jewelry-acid-testing-kit-9k-10k-14k-18k-22k-sterling-999-925-w-scratch-stone-tester-test-scrap-neutralizer",
+            "variants": {
+              "edges": [
+                {
+                  "node": {
+                    "title": "Default Title",
+                    "sku": "6 PK PURI W NEUTRALIZER",
+                    "barcode": "",
+                    "price": {
+                      "amount": "29.99"
+                    },
+                    "weight": 8.0,
+                    "weightUnit": "OUNCES",
+                    "quantityAvailable": null,
+                    "requiresShipping": true,
+                    "availableForSale": true,
+                    "currentlyNotInStock": false
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  },
+  "extensions": {
+    "cost": {
+      "requestedQueryCost": 49
+    }
+  }
+}

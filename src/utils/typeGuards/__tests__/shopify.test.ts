@@ -1,234 +1,174 @@
 import { describe, expect, it } from "vitest";
-import { isItemListing, isShopifyVariant, isValidSearchResponse } from "../shopify";
+import {
+  isShopifyProductNode,
+  isShopifyVariantNode,
+  isValidShopifySearchResponse,
+} from "../shopify";
+
+const validVariant = {
+  title: "Default Title",
+  sku: "GTK-001",
+  barcode: "",
+  price: { amount: "14.99" },
+  weight: 3.0,
+  weightUnit: "OUNCES",
+  requiresShipping: true,
+  availableForSale: true,
+  currentlyNotInStock: false,
+};
+
+const validProduct = {
+  id: "gid://shopify/Product/6047654445205",
+  title: "Gold Testing Kit",
+  handle: "gold-test-kit",
+  description: "Professional gold testing kit",
+  onlineStoreUrl: "https://www.example.com/products/gold-test-kit",
+  variants: {
+    edges: [{ node: validVariant }],
+  },
+};
 
 describe("Shopify TypeGuards", () => {
-  describe("isValidSearchResponse", () => {
-    const validResponse = {
-      totalItems: 100,
-      startIndex: 0,
-      itemsPerPage: 20,
-      currentItemCount: 20,
-      pageStartIndex: 0,
-      totalPages: 5,
-      suggestions: ["sodium", "chloride", "nacl"],
-      pages: [1, 2, 3, 4, 5],
-      items: [
-        {
-          title: "Sodium Chloride",
-          price: "29.99",
-          link: "/products/nacl",
-          product_id: "12345",
-          product_code: "CHEM-001",
-          quantity: "500g",
-          vendor: "Chemical Supplier",
-          original_product_id: "12345",
-          list_price: "39.99",
-          shopify_variants: [
-            {
-              sku: "CHEM-001-500G",
-              price: "29.99",
-              link: "/products/nacl?variant=1",
-              variant_id: "1",
-              quantity_total: "100",
-              options: { Model: "500g" },
-            },
-          ],
-        },
-      ],
-    };
+  describe("isShopifyVariantNode", () => {
+    it("should return true for a valid variant", () => {
+      expect(isShopifyVariantNode(validVariant)).toBe(true);
+    });
 
-    it("should return true for a valid search response", () => {
-      expect(isValidSearchResponse(validResponse)).toBe(true);
+    it("should return true for all valid weightUnit values", () => {
+      for (const unit of ["POUNDS", "OUNCES", "GRAMS", "KILOGRAMS"]) {
+        expect(isShopifyVariantNode({ ...validVariant, weightUnit: unit })).toBe(true);
+      }
+    });
+
+    it("should return false for invalid weightUnit", () => {
+      expect(isShopifyVariantNode({ ...validVariant, weightUnit: "TONS" })).toBe(false);
     });
 
     it("should return false for null", () => {
-      expect(isValidSearchResponse(null)).toBe(false);
+      expect(isShopifyVariantNode(null)).toBe(false);
     });
 
     it("should return false for non-object values", () => {
-      expect(isValidSearchResponse("not an object")).toBe(false);
-      expect(isValidSearchResponse(123)).toBe(false);
-      expect(isValidSearchResponse(undefined)).toBe(false);
-    });
-
-    it("should return false for missing required properties", () => {
-      const missingTotalItems = { ...validResponse };
-      delete (missingTotalItems as any).totalItems;
-      expect(isValidSearchResponse(missingTotalItems)).toBe(false);
-
-      const missingItems = { ...validResponse };
-      delete (missingItems as any).items;
-      expect(isValidSearchResponse(missingItems)).toBe(false);
-    });
-
-    it("should return false for wrong property types", () => {
-      const wrongTypes = {
-        ...validResponse,
-        totalItems: "100", // Should be number
-        itemsPerPage: "20", // Should be number
-        items: "not an array", // Should be array
-      };
-      expect(isValidSearchResponse(wrongTypes)).toBe(false);
-    });
-
-    it("should return false for invalid items array", () => {
-      const invalidItems = {
-        ...validResponse,
-        items: [
-          {
-            title: "Invalid Item",
-            // Missing required properties
-          },
-        ],
-      };
-      expect(isValidSearchResponse(invalidItems)).toBe(false);
-    });
-  });
-
-  describe("isShopifyVariant", () => {
-    const validVariant = {
-      sku: "CHEM-001-500G",
-      price: "29.99",
-      link: "/products/nacl?variant=1",
-      variant_id: "1",
-      quantity_total: "100",
-      options: { Model: "500g" },
-    };
-
-    it("should return true for a valid Shopify variant", () => {
-      expect(isShopifyVariant(validVariant)).toBe(true);
-    });
-
-    it("should return true for variant with numeric quantity", () => {
-      const numericQuantityVariant = {
-        ...validVariant,
-        quantity_total: 100,
-      };
-      expect(isShopifyVariant(numericQuantityVariant)).toBe(true);
-    });
-
-    it("should return false for null", () => {
-      expect(isShopifyVariant(null)).toBe(false);
-    });
-
-    it("should return false for non-object values", () => {
-      expect(isShopifyVariant("not an object")).toBe(false);
-      expect(isShopifyVariant(123)).toBe(false);
-      expect(isShopifyVariant(undefined)).toBe(false);
+      expect(isShopifyVariantNode("not an object")).toBe(false);
+      expect(isShopifyVariantNode(123)).toBe(false);
+      expect(isShopifyVariantNode(undefined)).toBe(false);
     });
 
     it("should return false for missing required properties", () => {
       const missingSku = { ...validVariant };
       delete (missingSku as any).sku;
-      expect(isShopifyVariant(missingSku)).toBe(false);
+      expect(isShopifyVariantNode(missingSku)).toBe(false);
 
-      const missingOptions = { ...validVariant };
-      delete (missingOptions as any).options;
-      expect(isShopifyVariant(missingOptions)).toBe(false);
+      const missingPrice = { ...validVariant };
+      delete (missingPrice as any).price;
+      expect(isShopifyVariantNode(missingPrice)).toBe(false);
     });
 
     it("should return false for wrong property types", () => {
-      const wrongTypes = {
-        ...validVariant,
-        sku: 12345, // Should be string
-        price: 29.99, // Should be string
-        link: 123, // Should be string
-        variant_id: 1, // Should be string
-        quantity_total: true, // Should be string or number
-        options: "500g", // Should be object
-      };
-      expect(isShopifyVariant(wrongTypes)).toBe(false);
+      expect(isShopifyVariantNode({ ...validVariant, weight: "3.0" })).toBe(false);
+      expect(isShopifyVariantNode({ ...validVariant, availableForSale: "true" })).toBe(false);
+      expect(isShopifyVariantNode({ ...validVariant, price: "14.99" })).toBe(false);
     });
 
-    it("should return false when options is null", () => {
-      const nullOptions = { ...validVariant, options: null };
-      expect(isShopifyVariant(nullOptions)).toBe(false);
-    });
-
-    it("should accept quantity_total as either string or number", () => {
-      expect(isShopifyVariant({ ...validVariant, quantity_total: "50" })).toBe(true);
-      expect(isShopifyVariant({ ...validVariant, quantity_total: 50 })).toBe(true);
-      expect(isShopifyVariant({ ...validVariant, quantity_total: true })).toBe(false);
-      expect(isShopifyVariant({ ...validVariant, quantity_total: null })).toBe(false);
+    it("should return false when price.amount is not a string", () => {
+      expect(isShopifyVariantNode({ ...validVariant, price: { amount: 14.99 } })).toBe(false);
     });
   });
 
-  describe("isItemListing", () => {
-    const validItem = {
-      title: "Sodium Chloride",
-      price: "29.99",
-      link: "/products/nacl",
-      product_id: "12345",
-      product_code: "CHEM-001",
-      quantity: "500g",
-      vendor: "Chemical Supplier",
-      original_product_id: "12345",
-      list_price: "39.99",
-      shopify_variants: [
-        {
-          sku: "CHEM-001-500G",
-          price: "29.99",
-          link: "/products/nacl?variant=1",
-          variant_id: "1",
-          quantity_total: "100",
-          options: { Model: "500g" },
-        },
-      ],
-    };
+  describe("isShopifyProductNode", () => {
+    it("should return true for a valid product", () => {
+      expect(isShopifyProductNode(validProduct)).toBe(true);
+    });
 
-    it("should return true for a valid item listing", () => {
-      expect(isItemListing(validItem)).toBe(true);
+    it("should return true for a product with empty variants", () => {
+      expect(isShopifyProductNode({ ...validProduct, variants: { edges: [] } })).toBe(true);
     });
 
     it("should return false for null", () => {
-      expect(isItemListing(null)).toBe(false);
-    });
-
-    it("should return false for non-object values", () => {
-      expect(isItemListing("not an object")).toBe(false);
-      expect(isItemListing(123)).toBe(false);
-      expect(isItemListing(undefined)).toBe(false);
+      expect(isShopifyProductNode(null)).toBe(false);
     });
 
     it("should return false for missing required properties", () => {
-      const missingTitle = { ...validItem };
+      const missingTitle = { ...validProduct };
       delete (missingTitle as any).title;
-      expect(isItemListing(missingTitle)).toBe(false);
+      expect(isShopifyProductNode(missingTitle)).toBe(false);
 
-      const missingVariants = { ...validItem };
-      delete (missingVariants as any).shopify_variants;
-      expect(isItemListing(missingVariants)).toBe(false);
+      const missingVariants = { ...validProduct };
+      delete (missingVariants as any).variants;
+      expect(isShopifyProductNode(missingVariants)).toBe(false);
+    });
+
+    it("should return false for invalid variant nodes", () => {
+      const invalidVariants = {
+        ...validProduct,
+        variants: {
+          edges: [{ node: { title: "Invalid", sku: 123 } }],
+        },
+      };
+      expect(isShopifyProductNode(invalidVariants)).toBe(false);
     });
 
     it("should return false for wrong property types", () => {
-      const wrongTypes = {
-        ...validItem,
-        title: 123, // Should be string
-        price: 29.99, // Should be string
-        product_id: 12345, // Should be string
-        shopify_variants: "invalid", // Should be array
+      expect(isShopifyProductNode({ ...validProduct, id: 123 })).toBe(false);
+      expect(isShopifyProductNode({ ...validProduct, title: 456 })).toBe(false);
+    });
+  });
+
+  describe("isValidShopifySearchResponse", () => {
+    const validResponse = {
+      data: {
+        products: {
+          edges: [{ node: validProduct }],
+        },
+      },
+    };
+
+    it("should return true for a valid search response", () => {
+      expect(isValidShopifySearchResponse(validResponse)).toBe(true);
+    });
+
+    it("should return true for a response with errors alongside valid data", () => {
+      const responseWithErrors = {
+        errors: [{ message: "Access denied for field" }],
+        ...validResponse,
       };
-      expect(isItemListing(wrongTypes)).toBe(false);
+      expect(isValidShopifySearchResponse(responseWithErrors)).toBe(true);
     });
 
-    it("should accept price as either string or number", () => {
-      expect(isItemListing({ ...validItem, price: "29.99" })).toBe(true);
-      expect(isItemListing({ ...validItem, price: 29.99 })).toBe(true);
-      expect(isItemListing({ ...validItem, price: true })).toBe(false);
+    it("should return true for a response with empty products", () => {
+      const emptyResponse = {
+        data: { products: { edges: [] } },
+      };
+      expect(isValidShopifySearchResponse(emptyResponse)).toBe(true);
     });
 
-    it("should return false for invalid variants array", () => {
-      const invalidVariants = {
-        ...validItem,
-        shopify_variants: [
-          {
-            sku: 12345, // Should be string
-            price: 29.99, // Should be string
-            // Missing other required properties
+    it("should return false for null", () => {
+      expect(isValidShopifySearchResponse(null)).toBe(false);
+    });
+
+    it("should return false for non-object values", () => {
+      expect(isValidShopifySearchResponse("not an object")).toBe(false);
+      expect(isValidShopifySearchResponse(123)).toBe(false);
+      expect(isValidShopifySearchResponse(undefined)).toBe(false);
+    });
+
+    it("should return false for missing data property", () => {
+      expect(isValidShopifySearchResponse({})).toBe(false);
+    });
+
+    it("should return false for missing products property", () => {
+      expect(isValidShopifySearchResponse({ data: {} })).toBe(false);
+    });
+
+    it("should return false for invalid product nodes in edges", () => {
+      const invalidResponse = {
+        data: {
+          products: {
+            edges: [{ node: { id: "123" } }],
           },
-        ],
+        },
       };
-      expect(isItemListing(invalidVariants)).toBe(false);
+      expect(isValidShopifySearchResponse(invalidResponse)).toBe(false);
     });
   });
 });

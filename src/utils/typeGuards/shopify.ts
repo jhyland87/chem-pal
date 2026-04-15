@@ -1,157 +1,145 @@
 import { z } from "zod";
 
-const validSearchResponseSchema = z.object({
-  totalItems: z.number(),
-  startIndex: z.number(),
-  itemsPerPage: z.number(),
-  currentItemCount: z.number(),
-  items: z.array(z.unknown()),
+/* eslint-disable @typescript-eslint/naming-convention */
+const shopifyVariantNodeSchema = z.object({
+  title: z.string(),
+  sku: z.string().nullable(),
+  barcode: z.string().nullable(),
+  price: z.object({
+    amount: z.string(),
+  }),
+  weight: z.number(),
+  weightUnit: z.enum(["POUNDS", "OUNCES", "GRAMS", "KILOGRAMS"]),
+  requiresShipping: z.boolean(),
+  availableForSale: z.boolean(),
+  currentlyNotInStock: z.boolean(),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
+
+/**
+ * Type guard to validate if an object is a valid Shopify variant node.
+ * Checks for the presence and correct types of all required variant properties
+ * including title, SKU, price, weight, and availability fields.
+ *
+ * @category Typeguards
+ * @param variant - The object to validate
+ * @returns Type predicate indicating if the object is a valid ShopifyVariantNode
+ * @example
+ * ```typescript
+ * const variant = {
+ *   title: "Default Title",
+ *   sku: "GTK-001",
+ *   barcode: "",
+ *   price: { amount: "14.99" },
+ *   weight: 3.0,
+ *   weightUnit: "OUNCES",
+ *   requiresShipping: true,
+ *   availableForSale: true,
+ *   currentlyNotInStock: false
+ * };
+ *
+ * if (isShopifyVariantNode(variant)) {
+ *   console.log("Valid variant:", variant.sku);
+ * }
+ * ```
+ * @source
+ */
+export function isShopifyVariantNode(variant: unknown): variant is ShopifyVariantNode {
+  return shopifyVariantNodeSchema.safeParse(variant).success;
+}
+
+/* eslint-disable @typescript-eslint/naming-convention */
+const shopifyProductNodeSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  handle: z.string(),
+  description: z.string(),
+  onlineStoreUrl: z.string(),
+  variants: z.object({
+    edges: z.array(
+      z.object({
+        node: shopifyVariantNodeSchema,
+      }),
+    ),
+  }),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
+
+/**
+ * Type guard to validate if an object is a valid Shopify product node.
+ * Checks for the presence and correct types of all required product properties
+ * and validates that all nested variant nodes are also valid.
+ *
+ * @category Typeguards
+ * @param product - The object to validate
+ * @returns Type predicate indicating if the object is a valid ShopifyProductNode
+ * @example
+ * ```typescript
+ * const product = {
+ *   id: "gid://shopify/Product/123",
+ *   title: "Gold Test Kit",
+ *   handle: "gold-test-kit",
+ *   description: "A gold testing kit",
+ *   onlineStoreUrl: "https://example.com/products/gold-test-kit",
+ *   variants: { edges: [{ node: validVariant }] }
+ * };
+ *
+ * if (isShopifyProductNode(product)) {
+ *   console.log("Valid product:", product.title);
+ * }
+ * ```
+ * @source
+ */
+export function isShopifyProductNode(product: unknown): product is ShopifyProductNode {
+  return shopifyProductNodeSchema.safeParse(product).success;
+}
+
+const shopifySearchResponseSchema = z.object({
+  data: z.object({
+    products: z.object({
+      edges: z.array(
+        z.object({
+          node: shopifyProductNodeSchema,
+        }),
+      ),
+    }),
+  }),
+  extensions: z.object({
+    cost: z.object({
+      requestedQueryCost: z.number(),
+    }),
+  }),
 });
 
 /**
- * Type guard to validate if a response from the Shopify search API is a valid SearchResponse object.
- * Checks for the presence and correct types of all required properties including pagination info,
- * suggestions, and a valid array of item listings.
+ * Type guard to validate if a response from the Shopify GraphQL API is a valid
+ * ShopifySearchResponse. Checks for the nested data.products.edges structure and
+ * validates all product nodes within.
  *
  * @category Typeguards
  * @param response - The response object to validate
- * @returns Type predicate indicating if the response is a valid SearchResponse
+ * @returns Type predicate indicating if the response is a valid ShopifySearchResponse
  * @example
  * ```typescript
- * // Valid search response
- * const validResponse = {
- *   totalItems: 100,
- *   startIndex: 0,
- *   itemsPerPage: 20,
- *   currentItemCount: 20,
- *   items: [
- *     {
- *       title: "Sodium Chloride",
- *       price: "29.99",
- *       link: "/products/nacl",
- *       product_id: "12345",
- *       product_code: "CHEM-001",
- *       quantity: "500g",
- *       vendor: "Chemical Supplier",
- *       original_product_id: "12345",
- *       list_price: "39.99",
- *       shopify_variants: []
- *     }
- *   ]
- * };
+ * const response = await fetch(shopifyGraphQLUrl, { method: "POST", body: query });
+ * const json = await response.json();
  *
- * if (isValidSearchResponse(validResponse)) {
- *   console.log(`Found ${validResponse.items.length} items`);
- * } else {
- *   console.error("Invalid search response structure");
+ * if (isValidShopifySearchResponse(json)) {
+ *   const products = json.data.products.edges.map(e => e.node);
+ *   console.log(`Found ${products.length} products`);
  * }
  * ```
  * @source
  */
-export function isValidSearchResponse(response: unknown): response is SearchResponse {
-  if (!validSearchResponseSchema.safeParse(response).success) {
-    return false;
+export function isValidShopifySearchResponse(response: unknown): response is ShopifySearchResponse {
+  const parsed = shopifySearchResponseSchema.safeParse(response);
+  if (!parsed.success) {
+    console.warn("isValidShopifySearchResponse: response is not a valid ShopifySearchResponse", {
+      response,
+      parsed,
+      error: parsed.error,
+      issues: parsed.error.issues,
+    });
   }
-  return (response as { items: unknown[] }).items.every((item) => isItemListing(item));
-}
-
-/* eslint-disable @typescript-eslint/naming-convention */
-const shopifyVariantSchema = z.object({
-  sku: z.string(),
-  price: z.string(),
-  link: z.string(),
-  variant_id: z.string(),
-  quantity_total: z.union([z.string(), z.number()]),
-  options: z.record(z.string(), z.unknown()),
-});
-/* eslint-enable @typescript-eslint/naming-convention */
-
-/**
- * Type guard to validate if an object is a valid Shopify product variant.
- * Checks for the presence and correct types of all required variant properties
- * including SKU, price, link, variant ID, quantity, and options.
- *
- * @category Typeguards
- * @param variant - The variant object to validate
- * @returns Type predicate indicating if the object is a valid ShopifyVariant
- * @example
- * ```typescript
- * // Valid Shopify variant
- * const validVariant = {
- *   sku: "CHEM-001-500G",
- *   price: "29.99",
- *   link: "/products/nacl?variant=1",
- *   variant_id: "1",
- *   quantity_total: "100",
- *   options: { Model: "500g" }
- * };
- *
- * if (isShopifyVariant(validVariant)) {
- *   console.log("Valid variant:", validVariant.sku);
- *   console.log("Price:", validVariant.price);
- * }
- * ```
- * @source
- */
-export function isShopifyVariant(variant: unknown): variant is ShopifyVariant {
-  return shopifyVariantSchema.safeParse(variant).success;
-}
-
-/* eslint-disable @typescript-eslint/naming-convention */
-const itemListingSchema = z.object({
-  title: z.string(),
-  price: z.union([z.string(), z.number()]),
-  link: z.string(),
-  product_id: z.string(),
-  product_code: z.string(),
-  quantity: z.string(),
-  shopify_variants: z.array(shopifyVariantSchema),
-  vendor: z.string(),
-  original_product_id: z.string(),
-  list_price: z.string(),
-});
-/* eslint-enable @typescript-eslint/naming-convention */
-
-/**
- * Type guard to validate if an object is a valid Shopify item listing.
- * Checks for the presence and correct types of all required properties including
- * product details, pricing, and an array of valid Shopify variants.
- *
- * @category Typeguards
- * @param item - The item object to validate
- * @returns Type predicate indicating if the object is a valid ItemListing
- * @example
- * ```typescript
- * // Valid item listing
- * const validItem = {
- *   title: "Sodium Chloride",
- *   price: "29.99",
- *   link: "/products/nacl",
- *   product_id: "12345",
- *   product_code: "CHEM-001",
- *   quantity: "500g",
- *   vendor: "Chemical Supplier",
- *   original_product_id: "12345",
- *   list_price: "39.99",
- *   shopify_variants: [
- *     {
- *       sku: "CHEM-001-500G",
- *       price: "29.99",
- *       link: "/products/nacl?variant=1",
- *       variant_id: "1",
- *       quantity_total: "100",
- *       options: { Model: "500g" }
- *     }
- *   ]
- * };
- *
- * if (isItemListing(validItem)) {
- *   console.log("Valid item listing:", validItem.title);
- *   console.log("Vendor:", validItem.vendor);
- * }
- * ```
- * @source
- */
-export function isItemListing(item: unknown): item is ItemListing {
-  return itemListingSchema.safeParse(item).success;
+  return parsed.success;
 }

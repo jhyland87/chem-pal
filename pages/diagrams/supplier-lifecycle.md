@@ -38,7 +38,7 @@ flowchart TD
 
 ## Class Hierarchy
 
-The inheritance tree for all 17 active suppliers.
+The inheritance tree for all 18 active suppliers.
 
 ```mermaid
 classDiagram
@@ -64,9 +64,13 @@ classDiagram
         <<abstract>>
         Wix GraphQL API
     }
+    class SupplierBaseSearchanise {
+        <<abstract>>
+        Searchanise API
+    }
     class SupplierBaseShopify {
         <<abstract>>
-        Shopify Searchanise API
+        Shopify GraphQL API
     }
     class SupplierBaseWoocommerce {
         <<abstract>>
@@ -78,6 +82,7 @@ classDiagram
     }
 
     SupplierBase <|-- SupplierBaseWix
+    SupplierBase <|-- SupplierBaseSearchanise
     SupplierBase <|-- SupplierBaseShopify
     SupplierBase <|-- SupplierBaseWoocommerce
     SupplierBase <|-- SupplierBaseAmazon
@@ -95,8 +100,10 @@ classDiagram
     SupplierBaseWix <|-- BioFuranChem
     SupplierBaseWix <|-- FtfScientific
 
-    SupplierBaseShopify <|-- HbarSci
-    SupplierBaseShopify <|-- Laballey
+    SupplierBaseSearchanise <|-- HbarSci
+    SupplierBaseSearchanise <|-- Laballey
+
+    SupplierBaseShopify <|-- GoldAndSilverTesting
 
     SupplierBaseWoocommerce <|-- CarolinaChemical
     SupplierBaseWoocommerce <|-- LibertySci
@@ -160,7 +167,7 @@ flowchart LR
 
 ## Supplier Map
 
-All 17 active suppliers by platform, country, and data strategy.
+All 18 active suppliers by platform, country, and data strategy.
 
 ### Direct (SupplierBase) - 9 suppliers
 - **Ambeed** - CN - JSON Only
@@ -177,9 +184,12 @@ All 17 active suppliers by platform, country, and data strategy.
 - **BioFuranChem** - US - JSON Only
 - **FTF Scientific** - US - JSON Only
 
-### Shopify Platform - 2 suppliers
+### Searchanise Platform - 2 suppliers
 - **H-Bar Scientific** - US - JSON Only
 - **Lab Alley** - US - JSON Only
+
+### Shopify Platform - 1 supplier
+- **Gold and Silver Testing** - US - JSON Only
 
 ### WooCommerce Platform - 2 suppliers
 - **Carolina Chemical** - US - JSON Only

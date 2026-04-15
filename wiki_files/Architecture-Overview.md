@@ -45,6 +45,7 @@ end
 subgraph External["External APIs & Supplier Sites"]
 direction LR
 WIX["Wix"]
+SEARCHANISE["Searchanise"]
 SHOPIFY["Shopify"]
 WOO["WooCommerce"]
 CUSTOM["Custom HTML"]
@@ -64,7 +65,7 @@ class POPUP,SW entry
 class SEARCH,SETTINGS,STATS,DRAWER,FAVS,HISTORY app
 class HOOK,FACTORY,S1,S2,S3,SN exec
 class STORAGE storage
-class WIX,SHOPIFY,WOO,CUSTOM,PUBCHEM,HEXARATE external
+class WIX,SEARCHANISE,SHOPIFY,WOO,CUSTOM,PUBCHEM,HEXARATE external
 ```
 
 ## Key Design Decisions
@@ -73,7 +74,7 @@ class WIX,SHOPIFY,WOO,CUSTOM,PUBCHEM,HEXARATE external
 Rather than waiting for all suppliers to finish, `SupplierFactory` uses an `AsyncGenerator` to yield products as they arrive. The UI updates incrementally — users see results within seconds even though some suppliers may take longer.
 
 ### Supplier Abstraction
-All suppliers extend `SupplierBase`, which defines the lifecycle: `setup()` → `queryProducts()` → `fuzzyFilter()` → `initProductBuilders()` → `getProductData()` → `yield product`. Platform-specific base classes (`SupplierBaseWix`, `SupplierBaseShopify`, `SupplierBaseWoocommerce`) handle common patterns for those e-commerce platforms.
+All suppliers extend `SupplierBase`, which defines the lifecycle: `setup()` → `queryProducts()` → `fuzzyFilter()` → `initProductBuilders()` → `getProductData()` → `yield product`. Platform-specific base classes (`SupplierBaseWix`, `SupplierBaseSearchanise`, `SupplierBaseShopify`, `SupplierBaseWoocommerce`) handle common patterns for those e-commerce platforms.
 
 ### Two-Level Caching
 - **Query cache** (`chrome.storage.local`) — caches search result lists per supplier, keyed by query + supplier name
