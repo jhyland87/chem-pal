@@ -146,6 +146,9 @@ export default abstract class SupplierBaseShopify
   /**
    * Initialize product builders from Shopify GraphQL search response data.
    * Transforms Shopify product nodes into ProductBuilder instances, handling:
+   * - Extracting the "Default Title" variant as the primary product data (price, SKU, quantity),
+   *   falling back to the first variant if no "Default Title" variant exists
+   * - Excluding the "Default Title" variant from the variants list
    * - Basic product information (title, URL, supplier)
    * - Pricing via parsePrice for proper currency detection
    * - Product descriptions
@@ -159,11 +162,17 @@ export default abstract class SupplierBaseShopify
    */
   protected initProductBuilders(results: ShopifyProductNode[]): ProductBuilder<Product>[] {
     return mapDefined(results, (product) => {
-      const firstVariantEdge = product.variants.edges[0];
-      if (!firstVariantEdge) return;
+      const defaultVariantIndex = product.variants.edges.findIndex(
+        (edge) => edge.node.title === "Default Title",
+      );
+      const primaryVariant =
+        defaultVariantIndex !== -1
+          ? product.variants.edges[defaultVariantIndex].node
+          : product.variants.edges[0]?.node;
 
-      const firstVariant = firstVariantEdge.node;
-      const parsedPrice = parsePrice(`$${firstVariant.price.amount}`);
+      if (!primaryVariant) return;
+
+      const parsedPrice = parsePrice(`$${primaryVariant.price.amount}`);
       if (!parsedPrice) return;
 
       const builder = new ProductBuilder<Product>(this.baseURL);
@@ -172,11 +181,11 @@ export default abstract class SupplierBaseShopify
         .setBasicInfo(product.title, product.onlineStoreUrl, this.supplierName)
         .setPricing(parsedPrice)
         .setDescription(product.description)
-        .setSku(firstVariant.sku)
+        .setSku(primaryVariant.sku)
         .setID(product.id);
 
       const quantity = firstMap(parseQuantity, [
-        firstVariant.sku,
+        primaryVariant.sku,
         product.title,
         product.description,
       ]);
@@ -187,7 +196,11 @@ export default abstract class SupplierBaseShopify
         builder.setQuantity(1, UOM.EA);
       }
 
-      for (const variantEdge of product.variants.edges) {
+      const remainingVariants = product.variants.edges.filter(
+        (_edge, index) => index !== defaultVariantIndex,
+      );
+
+      for (const variantEdge of remainingVariants) {
         const variant = variantEdge.node;
         const variantPrice = parsePrice(`$${variant.price.amount}`);
 
