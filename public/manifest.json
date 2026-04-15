@@ -55,6 +55,8 @@
     "https://www.amazon.eg/*",
     "https://www.amazon.ie/*",
     "https://www.amazon.co.za/*",
+    "https://gold-testing-equipment.myshopify.com/*",
+    "https://www.goldandsilvertesting.com/*",
     "https://pubchem.ncbi.nlm.nih.gov/*"
   ],
   "background": {

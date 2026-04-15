@@ -1,6 +1,6 @@
 # Supplier System
 
-ChemPal aggregates results from 17 active chemical supplier websites. Each supplier is a class that extends `SupplierBase` and implements a standardized lifecycle for searching, parsing, and yielding products.
+ChemPal aggregates results from 18 active chemical supplier websites. Each supplier is a class that extends `SupplierBase` and implements a standardized lifecycle for searching, parsing, and yielding products.
 
 ## Active Suppliers
 
@@ -12,10 +12,11 @@ ChemPal aggregates results from 17 active chemical supplier websites. Each suppl
 | Carolina Chemical | WooCommerce | US | JSON Only |
 | ChemSavers | Custom | US | JSON Only |
 | FTF Scientific | Wix | US | JSON Only |
-| H-Bar Scientific | Shopify | US | JSON Only |
+| Gold and Silver Testing | Shopify | US | JSON Only |
+| H-Bar Scientific | Searchanise | US | JSON Only |
 | HiMedia | Amazon | IN | JSON Only |
 | Innovating Science | Amazon | US | JSON Only |
-| Lab Alley | Shopify | US | JSON Only |
+| Lab Alley | Searchanise | US | JSON Only |
 | Laboratorium Discounter | Custom | NL | Hybrid (JSON search + HTML/JSON detail) |
 | Liberty Science | WooCommerce | US | JSON Only |
 | Loudwolf | Custom | US | HTML Only |
@@ -30,7 +31,7 @@ Suppliers follow one of three patterns depending on what the vendor exposes:
 
 ### JSON Only
 The search API returns all product data (title, price, quantity, CAS, etc.) in a single response. No detail page fetch is required.
-- Examples: Wix-based suppliers, Shopify-based suppliers, WooCommerce-based suppliers, Amazon-based suppliers, Ambeed, Carolina Chemical, Macklin
+- Examples: Wix-based suppliers, Searchanise-based suppliers, Shopify-based suppliers, WooCommerce-based suppliers, Amazon-based suppliers, Ambeed, Carolina Chemical, Macklin
 
 ### HTML Only
 Both search results and product details are scraped from HTML pages using `DOMParser`.
@@ -74,7 +75,8 @@ Common e-commerce platforms have shared base classes that handle platform-specif
 | Base Class | File | Handles |
 |------------|------|---------|
 | `SupplierBaseWix` | `SupplierBaseWix.ts` | Wix access token flow, GraphQL product queries |
-| `SupplierBaseShopify` | `SupplierBaseShopify.ts` | Shopify Searchanise API, product JSON parsing |
+| `SupplierBaseSearchanise` | `SupplierBaseSearchanise.ts` | Searchanise API, product JSON parsing |
+| `SupplierBaseShopify` | `SupplierBaseShopify.ts` | Shopify GraphQL Storefront API product queries |
 | `SupplierBaseWoocommerce` | `SupplierBaseWoocommerce.ts` | WooCommerce REST API product queries |
 | `SupplierBaseAmazon` | `SupplierBaseAmazon.ts` | Amazon product page scraping (used by HiMedia, Innovating Science) |
 
@@ -98,7 +100,7 @@ for await (const product of factory) {
 ## Adding a New Supplier
 
 1. Create `src/suppliers/SupplierMyVendor.ts`
-2. Extend the appropriate base class (`SupplierBase`, or a platform base like `SupplierBaseShopify`)
+2. Extend the appropriate base class (`SupplierBase`, or a platform base like `SupplierBaseSearchanise`, `SupplierBaseShopify`)
 3. Implement required abstract members:
    - `supplierName`, `baseURL`, `shipping`, `country`, `paymentMethods`
    - `queryProducts()` — fetch search results, apply fuzzy filtering, and return `ProductBuilder[]` instances

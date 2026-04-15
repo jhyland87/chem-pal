@@ -1,0 +1,272 @@
+import { parseQuantity } from "@/helpers/quantity";
+import { firstMap } from "@/helpers/utils";
+import ProductBuilder from "@/utils/ProductBuilder";
+import { isSearchaniseVariant, isValidSearchResponse } from "@/utils/typeGuards/searchanise";
+import SupplierBase from "./SupplierBase";
+
+/**
+ * Base class for Searchanise-based suppliers that provides common functionality for
+ * interacting with Searchanise API endpoints.
+ *
+ * @remarks
+ * I'm pretty sure that there's a different API tht could be used, but I noticed that when I started
+ * searching for a product in the search bar, all of the Searchanise sites were making a call to a
+ * `/getresults` endpoint hosted at `searchserverapi.com`. That domain belongs to
+ * {@link https://searchanise.io/ | Searchanise}, who provides tracking data and autocomplete
+ * functionality for the search feature on the website. There are quite a few query parameters for
+ * that page, but the ones we care about most are:
+ * - `api_key` - The API key for the search server, this is unique for each supplier.
+ * - `q` - The query to search for.
+ * - `maxResults` - The maximum number of results to return.
+ *
+ * - {@link https://searchserverapi.com/getresults?api_key=8B7o0X1o7c&q=acid&maxResults=3 | Query three "Acid" products from LabAlley}
+ *
+ *
+ * The suppliers using this endpoint need literally no custom code at all, with the exception of the
+ * `api_key` value being specified.
+ * Another possible solution would be the graphql api endpoint, which can be found at
+ * `/api/2024-10/graphql.json`. I can use this to query data about specific products, but I don't
+ * see that its an more useful than just the searchserveapi results.
+ *
+ * @category Suppliers
+ * @example
+ * ```typescript
+ * // Crate a new class using the SupplierBaseSearchanise class
+ * export default class SupplierFoobar
+ *   extends SupplierBaseSearchanise
+ *   implements AsyncIterable<Product>
+ * {
+ *   // Name of supplier (for display purposes)
+ *   public readonly supplierName: string = "Foobar";
+ *
+ *   protected apiKey: string = "<api_key>";
+ *
+ *   // Base URL for HTTP(s) requests
+ *   public readonly baseURL: string = "https://www.foobar.com";
+ * }
+ * ```
+ * @source
+ */
+export default abstract class SupplierBaseSearchanise
+  extends SupplierBase<ItemListing, Product>
+  implements ISupplier
+{
+  protected apiKey: string = "";
+
+  protected apiURL: string = "searchserverapi.com";
+
+  /**
+   * Query products from the Searchanise API
+   *
+   * @param query - The query to search for
+   * @param limit - The limit of products to return
+   * @returns A promise that resolves when the products are queried
+   * @example
+   * ```typescript
+   * // Search for sodium chloride with a limit of 10 results
+   * const products = await this.queryProducts("sodium chloride", 10);
+   * if (products) {
+   *   console.log(`Found ${products.length} products`);
+   *   for (const product of products) {
+   *     const builtProduct = await product.build();
+   *     console.log({
+   *       title: builtProduct.title,
+   *       price: builtProduct.price,
+   *       quantity: builtProduct.quantity,
+   *       uom: builtProduct.uom
+   *     });
+   *   }
+   * }
+   * ```
+   * @source
+   */
+  protected async queryProducts(
+    query: string,
+    limit: number = this.limit,
+  ): Promise<ProductBuilder<Product>[] | void> {
+    // curl -s --get https://searchserverapi.com/getresults \
+    //   --data-urlencode "api_key=8B7o0X1o7c" \
+    //   --data-urlencode "q=sulf" \
+    //   --data-urlencode "maxResults=6" \
+    //   --data-urlencode "items=true" | jq
+    const getParams: RequestParams = {
+      // Setting the limit here to 1000, since the limit parameter should
+      // apply to results returned from Supplier3SChem, not the rquests
+      // made by it.
+      /* eslint-disable */
+      api_key: this.apiKey,
+      q: query,
+      maxResults: 200,
+      startIndex: 0,
+      items: true,
+      pageStartIndex: 0,
+      pagesMaxResults: 1,
+      vendorsMaxResults: 200,
+      output: "json",
+      _: new Date().getTime(),
+      ...this.baseSearchParams,
+      /* eslint-enable */
+    };
+
+    const searchRequest = await this.httpGetJson({
+      path: "/getresults",
+      host: this.apiURL,
+      params: getParams,
+    });
+
+    if (!isValidSearchResponse(searchRequest)) {
+      this.logger.error("Invalid search response", { response: searchRequest });
+      return;
+    }
+
+    if (!("items" in searchRequest)) {
+      this.logger.error("Invalid search response", { response: searchRequest });
+      return;
+    }
+
+    if ("items" in searchRequest === false || !Array.isArray(searchRequest.items)) {
+      this.logger.error("Search response items is not an array", { items: searchRequest.items });
+      return;
+    }
+
+    if (searchRequest.items.length === 0) {
+      this.logger.error("Search response items is empty", { items: searchRequest.items });
+      return;
+    }
+
+    const validItems = (searchRequest.items ?? []).filter(
+      (item): item is ItemListing => item !== null,
+    );
+    const fuzzResults = this.fuzzyFilter<ItemListing>(query, validItems);
+    this.logger.info("fuzzResults", { fuzzResults });
+
+    return this.initProductBuilders(fuzzResults.slice(0, limit));
+  }
+
+  /**
+   * Initialize product builders from Searchanise search response data.
+   * Transforms Searchanise product listings into ProductBuilder instances, handling:
+   * - Basic product information (title, link, supplier)
+   * - Pricing information in USD
+   * - Product descriptions
+   * - SKU/product codes
+   * - Vendor information
+   * - Quantity parsing from multiple fields
+   * - Searchanise-specific variants with their attributes
+   *
+   * @param results - Array of Searchanise item listings from search results
+   * @returns Array of ProductBuilder instances initialized with Searchanise product data
+   * @example
+   * ```typescript
+   * const results = await this.queryProducts("sodium chloride");
+   * if (results) {
+   *   const builders = this.initProductBuilders(results);
+   *   // Each builder contains parsed product data from Searchanise
+   *   for (const builder of builders) {
+   *     const product = await builder.build();
+   *     console.log({
+   *       title: product.title,
+   *       price: product.price,
+   *       quantity: product.quantity,
+   *       uom: product.uom,
+   *       variants: product.variants
+   *     });
+   *   }
+   * }
+   * ```
+   * @source
+   */
+  protected initProductBuilders(results: ItemListing[]): ProductBuilder<Product>[] {
+    return results
+      .map((item) => {
+        const builder = new ProductBuilder(this.baseURL);
+        builder
+          .setBasicInfo(item.title, item.link, this.supplierName)
+          .setPricing(parseFloat(item.price), "USD", "$")
+          .setDescription(item.description)
+          .setSku(item.product_code)
+          .setVendor(item.vendor);
+
+        const quantity = firstMap(parseQuantity, [
+          item.product_code,
+          item.quantity,
+          item.title,
+          item.description,
+        ]);
+
+        if (!quantity) {
+          this.logger.warn("Failed to get quantity from retrieved product data", {
+            item,
+            parsedValues: [item.product_code, item.quantity, item.title, item.description],
+            builder,
+          });
+          return;
+        }
+
+        builder.setQuantity(quantity.quantity, quantity.uom);
+
+        if ("shopify_variants" in item && Array.isArray(item.shopify_variants)) {
+          item.shopify_variants.forEach((variant) => {
+            if (!isSearchaniseVariant(variant)) return;
+
+            const variantQuantity = firstMap(parseQuantity, [
+              variant.sku,
+              String(variant?.options?.Model ?? ""),
+            ]);
+
+            builder.addVariant({
+              id: variant.variant_id,
+              sku: variant.sku,
+              //title: variant.title,
+              price: variant.price,
+              title: String(variant?.options?.Model ?? ""),
+              url: variant.link,
+              ...variantQuantity,
+            });
+          });
+        }
+
+        return builder;
+      })
+      .filter((builder): builder is ProductBuilder<Product> => builder !== undefined);
+  }
+
+  /**
+   * Transforms a Searchanise product listing into the common Product type.
+   * @param product - The Searchanise product listing to transform
+   * @returns Promise resolving to a partial Product object or void if invalid
+   * @example
+   * ```typescript
+   * const products = await this.queryProducts("sodium chloride");
+   * if (products) {
+   *   const product = await this.getProductData(products[0]);
+   *   if (product) {
+   *     const builtProduct = await product.build();
+   *     console.log({
+   *       title: builtProduct.title,
+   *       price: builtProduct.price,
+   *       quantity: builtProduct.quantity,
+   *       uom: builtProduct.uom,
+   *       variants: builtProduct.variants
+   *     });
+   *   }
+   * }
+   * ```
+   * @source
+   */
+  protected async getProductData(
+    product: ProductBuilder<Product>,
+  ): Promise<ProductBuilder<Product> | void> {
+    return this.getProductDataWithCache(product, async (builder) => builder);
+  }
+
+  /**
+   * Selects the title of a product from the search response
+   * @param data - Product object from search response
+   * @returns - The title of the product
+   * @source
+   */
+  protected titleSelector(data: ItemListing): string {
+    return data.title;
+  }
+}

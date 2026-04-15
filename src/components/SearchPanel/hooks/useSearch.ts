@@ -273,11 +273,7 @@ export function useSearch() {
         }
 
         // Only execute search if this is a new search submission
-        if (
-          data[CACHE.SEARCH_IS_NEW_SEARCH] &&
-          data[CACHE.QUERY] &&
-          data[CACHE.QUERY].trim()
-        ) {
+        if (data[CACHE.SEARCH_IS_NEW_SEARCH] && data[CACHE.QUERY] && data[CACHE.QUERY].trim()) {
           isSearchInitiatedRef.current = true;
 
           console.debug("Found new search submission, executing search", {
@@ -352,6 +348,7 @@ export function useSearch() {
       // Create a history entry immediately so it's recorded even if the search is cancelled or hangs.
       // The resultCount will be updated live as results stream in.
       const historyTimestamp = Date.now();
+      console.log("Searching for", { query, suppliers, appContext });
       void createInitialHistoryEntry(
         query,
         historyTimestamp,
@@ -574,9 +571,7 @@ export function useSearch() {
     if (!product?.url || !product?.supplier) return;
     let nextResults: Product[] = [];
     setSearchResults((prev) => {
-      nextResults = prev.filter(
-        (p) => !(p.url === product.url && p.supplier === product.supplier),
-      );
+      nextResults = prev.filter((p) => !(p.url === product.url && p.supplier === product.supplier));
       return nextResults;
     });
     try {

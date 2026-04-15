@@ -1,80 +1,102 @@
+import { UOM } from "@/constants/common";
+import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
-import { firstMap } from "@/helpers/utils";
+import { firstMap, mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
-import { isShopifyVariant, isValidSearchResponse } from "@/utils/typeGuards/shopify";
+import { isValidShopifySearchResponse } from "@/utils/typeGuards/shopify";
 import SupplierBase from "./SupplierBase";
 
 /**
  * Base class for Shopify-based suppliers that provides common functionality for
- * interacting with Shopify API endpoints.
+ * interacting with the Shopify GraphQL Storefront API.
  *
  * @remarks
- * I'm pretty sure that there's a different API tht could be used, but I noticed that when I started
- * searching for a product in the search bar, all of the shopify sites were making a call to a
- * `/getresults` endpoint hosted at `searchserverapi.com`. That domain belongs to
- * {@link https://searchanise.io/ | Searchanise}, who provides tracking data and autocomplete
- * functionality for the search feature on the website. There are quite a few query parameters for
- * that page, but the ones we care about most are:
- * - `api_key` - The API key for the search server, this is unique for each supplier.
- * - `q` - The query to search for.
- * - `maxResults` - The maximum number of results to return.
+ * This base class queries the Shopify GraphQL API at `{apiURL}/api/{apiVersion}/graphql.json`
+ * using a POST request with a product search query. The API is unauthenticated and uses the
+ * public Storefront API endpoint available on `myshopify.com` domains.
  *
- * - {@link https://searchserverapi.com/getresults?api_key=8B7o0X1o7c&q=acid&maxResults=3 | Query three "Acid" products from LabAlley}
- *
- *
- * The suppliers using this endpoint need literally no custom code at all, with the exception of the
- * `api_key` value being specified.
- * Another possible solution would be the graphql api endpoint, which can be found at
- * `/api/2024-10/graphql.json`. I can use this to query data about specific products, but I don't
- * see that its an more useful than just the searchserveapi results.
+ * Subclasses only need to provide the `apiURL` (the myshopify.com domain) along with the
+ * standard supplier properties (supplierName, baseURL, shipping, country, paymentMethods).
  *
  * @category Suppliers
  * @example
  * ```typescript
- * // Crate a new class using the SupplierBaseShopify class
- * export default class SupplierFoobar
+ * // Create a new class using the SupplierBaseShopify class
+ * export default class SupplierMyStore
  *   extends SupplierBaseShopify
- *   implements AsyncIterable<Product>
+ *   implements ISupplier
  * {
- *   // Name of supplier (for display purposes)
- *   public readonly supplierName: string = "Foobar";
- *
- *   protected apiKey: string = "<api_key>";
- *
- *   // Base URL for HTTP(s) requests
- *   public readonly baseURL: string = "https://www.foobar.com";
+ *   public readonly supplierName: string = "My Store";
+ *   public readonly baseURL: string = "https://www.mystore.com";
+ *   public readonly shipping: ShippingRange = "domestic";
+ *   public readonly country: CountryCode = "US";
+ *   public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+ *   protected apiURL: string = "my-store.myshopify.com";
  * }
  * ```
  * @source
  */
 export default abstract class SupplierBaseShopify
-  extends SupplierBase<ItemListing, Product>
+  extends SupplierBase<ShopifyProductNode, Product>
   implements ISupplier
 {
-  protected apiKey: string = "";
-
-  protected apiURL: string = "searchserverapi.com";
+  /** Shopify GraphQL API version */
+  protected apiVersion: string = "2026-04";
 
   /**
-   * Query products from the Shopify API
+   * Builds the GraphQL query string for searching products by title.
    *
-   * @param query - The query to search for
-   * @param limit - The limit of products to return
-   * @returns A promise that resolves when the products are queried
+   * @param query - The search term to match against product titles
+   * @param limit - Maximum number of products to return
+   * @returns The GraphQL query string
+   * @source
+   */
+  protected getGraphQLQuery(query: string, limit: number): string {
+    return `{
+      products(first: ${limit}, query: "title:*${query}*") {
+        edges {
+          node {
+            id,
+            title,
+            handle,
+            description,
+            onlineStoreUrl,
+            variants(first: 5) {
+              edges {
+                node {
+                  title,
+                  sku,
+                  barcode,
+                  price {
+                    amount
+                  },
+                  weight,
+                  weightUnit,
+                  requiresShipping,
+                  availableForSale,
+                  currentlyNotInStock
+                }
+              }
+            }
+          }
+        }
+      }
+    }`;
+  }
+
+  /**
+   * Query products from the Shopify GraphQL Storefront API.
+   *
+   * @param query - The search term to query for
+   * @param limit - The maximum number of products to return
+   * @returns A promise that resolves to an array of ProductBuilder instances or void
    * @example
    * ```typescript
-   * // Search for sodium chloride with a limit of 10 results
-   * const products = await this.queryProducts("sodium chloride", 10);
+   * const products = await this.queryProducts("gold test kit", 10);
    * if (products) {
-   *   console.log(`Found ${products.length} products`);
    *   for (const product of products) {
-   *     const builtProduct = await product.build();
-   *     console.log({
-   *       title: builtProduct.title,
-   *       price: builtProduct.price,
-   *       quantity: builtProduct.quantity,
-   *       uom: builtProduct.uom
-   *     });
+   *     const built = await product.build();
+   *     console.log(built.title, built.price);
    *   }
    * }
    * ```
@@ -84,174 +106,109 @@ export default abstract class SupplierBaseShopify
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    // curl -s --get https://searchserverapi.com/getresults \
-    //   --data-urlencode "api_key=8B7o0X1o7c" \
-    //   --data-urlencode "q=sulf" \
-    //   --data-urlencode "maxResults=6" \
-    //   --data-urlencode "items=true" | jq
-    const getParams: RequestParams = {
-      // Setting the limit here to 1000, since the limit parameter should
-      // apply to results returned from Supplier3SChem, not the rquests
-      // made by it.
-      /* eslint-disable */
-      api_key: this.apiKey,
-      q: query,
-      maxResults: 200,
-      startIndex: 0,
-      items: true,
-      pageStartIndex: 0,
-      pagesMaxResults: 1,
-      vendorsMaxResults: 200,
-      output: "json",
-      _: new Date().getTime(),
-      ...this.baseSearchParams,
-      /* eslint-enable */
-    };
+    this.logger.info("queryProducts", { query, limit });
+    const graphQLQuery = this.getGraphQLQuery(query, 200);
+    console.log("graphQLQuery", graphQLQuery);
+    console.log("apiURL", this.apiURL);
+    console.log("apiVersion", this.apiVersion);
+    console.log("body", { query: graphQLQuery });
+    console.log("headers", { "Content-Type": "application/json" });
 
-    const searchRequest = await this.httpGetJson({
-      path: "/getresults",
+    const queryResponse = await this.httpPostJson({
+      path: `/api/${this.apiVersion}/graphql.json`,
       host: this.apiURL,
-      params: getParams,
+      body: { query: graphQLQuery },
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
-    if (!isValidSearchResponse(searchRequest)) {
-      this.logger.error("Invalid search response", { response: searchRequest });
+    this.logger.info("queryResponse", { queryResponse });
+    if (!isValidShopifySearchResponse(queryResponse)) {
+      this.logger.error("Invalid Shopify search response", { response: queryResponse });
       return;
     }
 
-    if (!("items" in searchRequest)) {
-      this.logger.error("Invalid search response", { response: searchRequest });
+    const products = queryResponse.data.products.edges.map((edge) => edge.node);
+
+    this.logger.info("products", { products });
+    if (products.length === 0) {
+      this.logger.error("Shopify search returned no products", { query });
       return;
     }
 
-    if ("items" in searchRequest === false || !Array.isArray(searchRequest.items)) {
-      this.logger.error("Search response items is not an array", { items: searchRequest.items });
-      return;
-    }
-
-    if (searchRequest.items.length === 0) {
-      this.logger.error("Search response items is empty", { items: searchRequest.items });
-      return;
-    }
-
-    const validItems = (searchRequest.items ?? []).filter(
-      (item): item is ItemListing => item !== null,
-    );
-    const fuzzResults = this.fuzzyFilter<ItemListing>(query, validItems);
-    this.logger.info("fuzzResults", { fuzzResults });
+    const fuzzResults = this.fuzzyFilter<ShopifyProductNode>(query, products);
+    this.logger.info("fuzzResults", { query, products, fuzzResults });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));
   }
 
   /**
-   * Initialize product builders from Shopify search response data.
-   * Transforms Shopify product listings into ProductBuilder instances, handling:
-   * - Basic product information (title, link, supplier)
-   * - Pricing information in USD
+   * Initialize product builders from Shopify GraphQL search response data.
+   * Transforms Shopify product nodes into ProductBuilder instances, handling:
+   * - Basic product information (title, URL, supplier)
+   * - Pricing via parsePrice for proper currency detection
    * - Product descriptions
-   * - SKU/product codes
-   * - Vendor information
-   * - Quantity parsing from multiple fields
-   * - Shopify-specific variants with their attributes
+   * - SKU and product IDs
+   * - Quantity parsing from SKU, title, and description fields
+   * - Variant mapping with price and weight information
    *
-   * @param results - Array of Shopify item listings from search results
+   * @param results - Array of Shopify product nodes from search results
    * @returns Array of ProductBuilder instances initialized with Shopify product data
-   * @example
-   * ```typescript
-   * const results = await this.queryProducts("sodium chloride");
-   * if (results) {
-   *   const builders = this.initProductBuilders(results);
-   *   // Each builder contains parsed product data from Shopify
-   *   for (const builder of builders) {
-   *     const product = await builder.build();
-   *     console.log({
-   *       title: product.title,
-   *       price: product.price,
-   *       quantity: product.quantity,
-   *       uom: product.uom,
-   *       variants: product.variants
-   *     });
-   *   }
-   * }
-   * ```
    * @source
    */
-  protected initProductBuilders(results: ItemListing[]): ProductBuilder<Product>[] {
-    return results
-      .map((item) => {
-        const builder = new ProductBuilder(this.baseURL);
-        builder
-          .setBasicInfo(item.title, item.link, this.supplierName)
-          .setPricing(parseFloat(item.price), "USD", "$")
-          .setDescription(item.description)
-          .setSku(item.product_code)
-          .setVendor(item.vendor);
+  protected initProductBuilders(results: ShopifyProductNode[]): ProductBuilder<Product>[] {
+    return mapDefined(results, (product) => {
+      const firstVariantEdge = product.variants.edges[0];
+      if (!firstVariantEdge) return;
 
-        const quantity = firstMap(parseQuantity, [
-          item.product_code,
-          item.quantity,
-          item.title,
-          item.description,
-        ]);
+      const firstVariant = firstVariantEdge.node;
+      const parsedPrice = parsePrice(`$${firstVariant.price.amount}`);
+      if (!parsedPrice) return;
 
-        if (!quantity) {
-          this.logger.warn("Failed to get quantity from retrieved product data", {
-            item,
-            parsedValues: [item.product_code, item.quantity, item.title, item.description],
-            builder,
-          });
-          return;
-        }
+      const builder = new ProductBuilder<Product>(this.baseURL);
 
+      builder
+        .setBasicInfo(product.title, product.onlineStoreUrl, this.supplierName)
+        .setPricing(parsedPrice)
+        .setDescription(product.description)
+        .setSku(firstVariant.sku)
+        .setID(product.id);
+
+      const quantity = firstMap(parseQuantity, [
+        firstVariant.sku,
+        product.title,
+        product.description,
+      ]);
+
+      if (quantity) {
         builder.setQuantity(quantity.quantity, quantity.uom);
+      } else {
+        builder.setQuantity(1, UOM.EA);
+      }
 
-        if ("shopify_variants" in item && Array.isArray(item.shopify_variants)) {
-          item.shopify_variants.forEach((variant) => {
-            if (!isShopifyVariant(variant)) return;
+      for (const variantEdge of product.variants.edges) {
+        const variant = variantEdge.node;
+        const variantPrice = parsePrice(`$${variant.price.amount}`);
 
-            const variantQuantity = firstMap(parseQuantity, [
-              variant.sku,
-              String(variant?.options?.Model ?? ""),
-            ]);
+        builder.addVariant({
+          title: variant.title,
+          sku: variant.sku,
+          price: variantPrice?.price,
+          ...firstMap(parseQuantity, [variant.sku, variant.title]),
+        });
+      }
 
-            builder.addVariant({
-              id: variant.variant_id,
-              sku: variant.sku,
-              //title: variant.title,
-              price: variant.price,
-              title: String(variant?.options?.Model ?? ""),
-              url: variant.link,
-              ...variantQuantity,
-            });
-          });
-        }
-
-        return builder;
-      })
-      .filter((builder): builder is ProductBuilder<Product> => builder !== undefined);
+      return builder;
+    });
   }
 
   /**
-   * Transforms a Shopify product listing into the common Product type.
-   * @param product - The Shopify product listing to transform
-   * @returns Promise resolving to a partial Product object or void if invalid
-   * @example
-   * ```typescript
-   * const products = await this.queryProducts("sodium chloride");
-   * if (products) {
-   *   const product = await this.getProductData(products[0]);
-   *   if (product) {
-   *     const builtProduct = await product.build();
-   *     console.log({
-   *       title: builtProduct.title,
-   *       price: builtProduct.price,
-   *       quantity: builtProduct.quantity,
-   *       uom: builtProduct.uom,
-   *       variants: builtProduct.variants
-   *     });
-   *   }
-   * }
-   * ```
+   * Returns the product builder as-is since all product data is available from the search response.
+   * Wrapped in getProductDataWithCache for caching support.
+   *
+   * @param product - The product builder to return
+   * @returns Promise resolving to the product builder or void
    * @source
    */
   protected async getProductData(
@@ -261,12 +218,13 @@ export default abstract class SupplierBaseShopify
   }
 
   /**
-   * Selects the title of a product from the search response
-   * @param data - Product object from search response
-   * @returns - The title of the product
+   * Selects the title of a product from the Shopify search response for fuzzy matching.
+   *
+   * @param data - Shopify product node from search response
+   * @returns The title of the product
    * @source
    */
-  protected titleSelector(data: ItemListing): string {
+  protected titleSelector(data: ShopifyProductNode): string {
     return data.title;
   }
 }

@@ -33,6 +33,7 @@ export { default as SupplierCarolina } from "./SupplierCarolina";
 export { default as SupplierCarolinaChemical } from "./SupplierCarolinaChemical";
 export { default as SupplierChemsavers } from "./SupplierChemsavers";
 export { default as SupplierFtfScientific } from "./SupplierFtfScientific";
+export { default as SupplierGoldAndSilverTesting } from "./SupplierGoldAndSilverTesting";
 export { default as SupplierHbarSci } from "./SupplierHbarSci";
 export { default as SupplierHimedia } from "./SupplierHimedia";
 export { default as SupplierInnovatingScience } from "./SupplierInnovatingScience";

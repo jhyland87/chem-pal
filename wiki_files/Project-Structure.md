@@ -89,6 +89,7 @@ suppliers/
 ├── SupplierBase.ts           # Abstract base class
 ├── SupplierFactory.ts        # Parallel execution orchestrator
 ├── SupplierBaseWix.ts        # Wix platform base
+├── SupplierBaseSearchanise.ts # Searchanise platform base
 ├── SupplierBaseShopify.ts    # Shopify platform base
 ├── SupplierBaseWoocommerce.ts # WooCommerce platform base
 ├── SupplierBaseAmazon.ts     # Amazon platform base
@@ -98,6 +99,7 @@ suppliers/
 ├── SupplierCarolinaChemical.ts
 ├── SupplierChemsavers.ts
 ├── SupplierFtfScientific.ts
+├── SupplierGoldAndSilverTesting.ts
 ├── SupplierHbarSci.ts
 ├── SupplierHimedia.ts
 ├── SupplierInnovatingScience.ts
@@ -158,7 +160,7 @@ suppliers/
 | `datetime.d.ts` | Date/time utility types |
 | `tanstack.d.ts` | TanStack React Table extensions |
 | `props.d.ts` | React component prop types |
-| Supplier-specific: | `carolina.d.ts`, `ambeed.d.ts`, `macklin.d.ts`, `shopify.d.ts`, `wix.d.ts`, `woocommerce.d.ts`, etc. |
+| Supplier-specific: | `carolina.d.ts`, `ambeed.d.ts`, `macklin.d.ts`, `searchanise.d.ts`, `shopify.d.ts`, `wix.d.ts`, `woocommerce.d.ts`, etc. |
 
 ### Shared (`src/shared/`)
 
