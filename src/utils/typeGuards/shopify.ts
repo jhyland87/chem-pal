@@ -104,11 +104,13 @@ const shopifySearchResponseSchema = z.object({
       ),
     }),
   }),
-  extensions: z.object({
-    cost: z.object({
-      requestedQueryCost: z.number(),
-    }),
-  }),
+  extensions: z
+    .object({
+      cost: z.object({
+        requestedQueryCost: z.number(),
+      }),
+    })
+    .optional(),
 });
 
 /**
