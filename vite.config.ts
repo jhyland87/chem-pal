@@ -5,8 +5,8 @@ import { viteStaticCopy } from "vite-plugin-static-copy";
 // https://vite.dev/config/
 
 export default ({ mode }: { mode: string }) => {
-  const env = "development"; //loadEnv(mode, process.cwd());
-  const isDev = true; //  mode === "development" || mode === "mock";
+  //const env = "development"; //loadEnv(mode, process.cwd());
+  //const isDev = true; //  mode === "development" || mode === "mock";
 
   //console.log("process.env:", process.env);
   const staticCopyTargets = [
