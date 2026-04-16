@@ -1,4 +1,5 @@
 import { addHistory } from "@/helpers/history";
+import { useStatusBar } from "@/components/StatusBar";
 import Link from "@mui/material/Link";
 import { MouseEvent, ReactNode } from "react";
 
@@ -35,8 +36,17 @@ const handleResultClick = (event: MouseEvent<HTMLAnchorElement>, history?: Histo
  * @source
  */
 export default function TabLink({ href, history, children, ...props }: TabLinkProps) {
+  const { setStatusText } = useStatusBar();
+
   return (
-    <Link href={href} onClick={(e) => handleResultClick(e, history)} sx={{ textDecoration: "none", "&:hover": { textDecoration: "underline" } }} {...props}>
+    <Link
+      href={href}
+      onClick={(e) => handleResultClick(e, history)}
+      onMouseEnter={() => setStatusText(href)}
+      onMouseLeave={() => setStatusText(null)}
+      sx={{ textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
+      {...props}
+    >
       {children}
     </Link>
   );

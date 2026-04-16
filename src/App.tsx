@@ -9,6 +9,7 @@ import { startTransition, useActionState, useEffect, useState } from "react";
 import "./App.scss";
 import DrawerSystem from "./components/DrawerSystem";
 import ErrorBoundary from "./components/ErrorBoundary";
+import StatusBar, { StatusBarProvider } from "./components/StatusBar";
 import SearchPanel from "./components/SearchPanel/SearchPanel";
 import SearchPanelHome from "./components/SearchPanelHome";
 import SpeedDialMenu from "./components/SpeedDialMenu";
@@ -380,22 +381,25 @@ function App() {
     <ErrorBoundary fallback={<p>Something went wrong</p>}>
       <AppContext.Provider value={appContextValue}>
         <ThemeProvider>
-          <CssBaseline />
-          <div className="app-container">
-            {/* Show loading indicator when settings are updating */}
-            {isPending && <div className="loading-indicator-box" />}
-            {/* Render only the active panel, no app bar or tab navigation */}
-            {appState.panel === PANEL.SEARCH_HOME && <SearchPanelHome />}
-            {appState.panel === PANEL.RESULTS && <SearchPanel />}
-            {appState.panel === PANEL.STATS && <StatsPanel />}
-            {/* {appState.panel === 3 && <FavoritesPanel />}
-            {appState.panel === 4 && <HistoryPanel />}
-            {appState.panel === 5 && <SettingsPanel />} */}
-            <div className="main-content">
-              <DrawerSystem />
-              <SpeedDialMenu speedDialVisibility={appState.speedDialVisibility} />
+          <StatusBarProvider>
+            <CssBaseline />
+            <div className="app-container">
+              {/* Show loading indicator when settings are updating */}
+              {isPending && <div className="loading-indicator-box" />}
+              {/* Render only the active panel, no app bar or tab navigation */}
+              {appState.panel === PANEL.SEARCH_HOME && <SearchPanelHome />}
+              {appState.panel === PANEL.RESULTS && <SearchPanel />}
+              {appState.panel === PANEL.STATS && <StatsPanel />}
+              {/* {appState.panel === 3 && <FavoritesPanel />}
+              {appState.panel === 4 && <HistoryPanel />}
+              {appState.panel === 5 && <SettingsPanel />} */}
+              <div className="main-content">
+                <DrawerSystem />
+                <SpeedDialMenu speedDialVisibility={appState.speedDialVisibility} />
+              </div>
             </div>
-          </div>
+            <StatusBar />
+          </StatusBarProvider>
         </ThemeProvider>
       </AppContext.Provider>
     </ErrorBoundary>
