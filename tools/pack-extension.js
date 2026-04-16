@@ -3,27 +3,32 @@
  *
  * Usage: node tools/pack-extension.js
  *
+ * Reads the app name from package.json "name" field to derive file names.
+ *
  * Requires:
- *   - ./build/          (run `pnpm build` first)
- *   - ./ChemPal.pem     (private key for signing)
+ *   - ./build/              (run `pnpm build` first)
+ *   - ./<app-name>.pem      (private key for signing)
  *
  * Outputs:
- *   - ./Chem-Pal.crx
+ *   - ./<app-name>.crx
  *
  * Works on macOS, Linux, and Windows.
  */
 
 import { execFileSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 
+const pkg = JSON.parse(readFileSync(resolve(ROOT, "package.json"), "utf-8"));
+const appName = pkg.name;
+
 const BUILD_DIR = resolve(ROOT, "build");
-const PEM_FILE = resolve(ROOT, "ChemPal.pem");
-const OUTPUT_CRX = resolve(ROOT, "ChemPal.crx");
+const PEM_FILE = resolve(ROOT, `${appName}.pem`);
+const OUTPUT_CRX = resolve(ROOT, `${appName}.crx`);
 
 // Preflight checks
 if (!existsSync(BUILD_DIR)) {
@@ -32,7 +37,7 @@ if (!existsSync(BUILD_DIR)) {
 }
 
 if (!existsSync(PEM_FILE)) {
-  console.error("❌ ChemPal.pem not found in project root.");
+  console.error(`❌ ${appName}.pem not found in project root.`);
   process.exit(1);
 }
 
