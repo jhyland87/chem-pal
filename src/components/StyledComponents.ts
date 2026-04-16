@@ -18,6 +18,19 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { darkPalette, designTokens, lightPalette } from "../themes";
 
+// === STATUS BAR ===
+
+// Fixed bottom-left status bar (e.g. URL preview on link hover)
+export const StatusBarContainer = styled(Box)(({ theme }) => ({
+  color: theme.palette.text.secondary,
+  backgroundColor:
+    theme.palette.mode === "dark" ? "rgba(30, 30, 30, 0.85)" : "rgba(240, 240, 240, 0.85)",
+  border: `1px solid ${theme.palette.divider}`,
+  borderBottom: "none",
+  borderLeft: "none",
+  backdropFilter: "blur(4px)",
+}));
+
 // === SEARCH PAGE COMPONENTS ===
 
 // Main container with dynamic background gradient

@@ -1,4 +1,4 @@
-import { SUBSCRIPTS, SUPERSCRIPTS } from "../constants/science";
+import { SUBSCRIPTS, SUPERSCRIPTS } from "@/constants/science";
 
 /**
  * @group Helpers
