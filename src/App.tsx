@@ -3,6 +3,7 @@ import { APP_ACTION, CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
 import { AppContext } from "@/context";
 import SupplierFactory from "@/suppliers/SupplierFactory";
 import { cstorage } from "@/utils/storage";
+import { getSearchResults, IDB_SEARCH_RESULTS_CLEARED } from "@/utils/idbCache";
 import CssBaseline from "@mui/material/CssBaseline";
 import { startTransition, useActionState, useEffect, useState } from "react";
 import "./App.scss";
@@ -228,16 +229,16 @@ function App() {
   useEffect(() => {
     const loadFromStorage = async () => {
       try {
-        const [sessionData, localData] = await Promise.all([
-          cstorage.session.get([CACHE.PANEL, CACHE.SEARCH_RESULTS]),
+        const [sessionData, localData, idbResults] = await Promise.all([
+          cstorage.session.get([CACHE.PANEL]),
           cstorage.local.get([CACHE.USER_SETTINGS, CACHE.SELECTED_SUPPLIERS]),
+          getSearchResults(),
         ]);
         const loadedData: Partial<AppState> = {};
 
         if (sessionData[CACHE.PANEL]) {
           const savedPanel = Number(sessionData[CACHE.PANEL]);
-          const results = sessionData[CACHE.SEARCH_RESULTS];
-          const hasResults = Array.isArray(results) && results.length > 0;
+          const hasResults = idbResults.length > 0;
 
           // If restoring to results panel but there are no results, go to search instead
           loadedData.panel = savedPanel === 1 && !hasResults ? 0 : savedPanel;
@@ -267,7 +268,6 @@ function App() {
   useEffect(() => {
     const watchedKeys = new Set<string>([
       CACHE.USER_SETTINGS,
-      CACHE.SEARCH_HISTORY,
       CACHE.SELECTED_SUPPLIERS,
       CACHE.EXCLUDED_PRODUCTS,
     ]);
@@ -298,25 +298,21 @@ function App() {
   useEffect(() => {
     if (appState.panel !== PANEL.RESULTS) return;
 
-    const listener = (changes: Record<string, chrome.storage.StorageChange>, areaName: string) => {
-      if (areaName !== "session") return;
-      const change = changes[CACHE.SEARCH_RESULTS];
-      if (change && Array.isArray(change.newValue) && change.newValue.length === 0) {
-        dispatch({ type: APP_ACTION.SET_PANEL, panel: 0 });
-        // Clear the extension action badge (the "number of results" pill)
-        // so it doesn't linger after the results are gone.
-        (async () => {
-          try {
-            await chrome.action.setBadgeText({ text: "" });
-          } catch (error) {
-            console.warn("Failed to clear action badge text:", { error });
-          }
-        })();
-      }
+    const handler = () => {
+      dispatch({ type: APP_ACTION.SET_PANEL, panel: 0 });
+      // Clear the extension action badge (the "number of results" pill)
+      // so it doesn't linger after the results are gone.
+      (async () => {
+        try {
+          await chrome.action.setBadgeText({ text: "" });
+        } catch (error) {
+          console.warn("Failed to clear action badge text:", { error });
+        }
+      })();
     };
 
-    cstorage.onChanged.addListener(listener);
-    return () => cstorage.onChanged.removeListener(listener);
+    window.addEventListener(IDB_SEARCH_RESULTS_CLEARED, handler);
+    return () => window.removeEventListener(IDB_SEARCH_RESULTS_CLEARED, handler);
   }, [appState.panel, dispatch]);
 
   // Speed dial visibility logicc

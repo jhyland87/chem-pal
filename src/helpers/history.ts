@@ -1,5 +1,4 @@
-import { CACHE } from "@/constants/common";
-import { cstorage } from "@/utils/storage";
+import { getSearchHistory, addSearchHistoryEntry } from "@/utils/idbCache";
 
 /**
  * Get the history of products that were clicked on.
@@ -8,8 +7,7 @@ import { cstorage } from "@/utils/storage";
  * @source
  */
 export async function getHistory(): Promise<HistoryEntry[]> {
-  const { history } = await cstorage.local.get([CACHE.SEARCH_HISTORY]);
-  return history || [];
+  return await getSearchHistory();
 }
 
 /**
@@ -23,7 +21,7 @@ export async function addHistory(history: HistoryEntry): Promise<void> {
     return;
   }
   history.timestamp = Date.now();
-  const historyData = await getHistory();
-  historyData.push(history);
-  await cstorage.local.set({ [CACHE.SEARCH_HISTORY]: historyData });
+  if (history.type === "search") {
+    await addSearchHistoryEntry(history);
+  }
 }

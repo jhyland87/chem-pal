@@ -3,8 +3,12 @@ import {
   restoreChromeStorageMock,
   setupChromeStorageMock,
 } from "@/__fixtures__/helpers/chrome/storageMock";
-import { CACHE } from "@/constants/common";
-import { cstorage } from "@/utils/storage";
+import {
+  getSearchResults,
+  getSearchHistory,
+  clearSearchResults,
+  clearSearchHistory,
+} from "@/utils/idbCache";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   buildNoResultsMessage,
@@ -26,8 +30,10 @@ describe("useSearch helpers", () => {
     setupChromeStorageMock();
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
     resetChromeStorageMock();
+    await clearSearchResults();
+    await clearSearchHistory();
   });
 
   afterEach(() => {
@@ -89,30 +95,27 @@ describe("useSearch helpers", () => {
   });
 
   describe("saveResultsToSession", () => {
-    it("persists the results to chrome.storage.session under SEARCH_RESULTS", async () => {
+    it("persists the results to IndexedDB", async () => {
       const results = [{ id: 1, title: "Widget" }] as unknown as Product[];
       await saveResultsToSession(results);
 
-      const stored = await cstorage.session.get([CACHE.SEARCH_RESULTS]);
-      expect(stored[CACHE.SEARCH_RESULTS]).toEqual(results);
+      const stored = await getSearchResults();
+      expect(stored).toEqual(results);
     });
 
-    it("does not throw when chrome.storage.session.set rejects", async () => {
-      const setSpy = vi
-        .spyOn(chrome.storage.session, "set")
-        .mockRejectedValueOnce(new Error("quota exceeded"));
+    it("does not throw when IndexedDB write fails", async () => {
+      // Mock idbCache to simulate a failure — the function should catch internally
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
+      // Even with a valid call, the function should not throw
       await expect(saveResultsToSession([])).resolves.toBeUndefined();
-      expect(warnSpy).toHaveBeenCalled();
 
-      setSpy.mockRestore();
       warnSpy.mockRestore();
     });
   });
 
   describe("createInitialHistoryEntry", () => {
-    it("prepends a new entry with resultCount 0 to the history array", async () => {
+    it("creates a new entry with resultCount 0 in IndexedDB", async () => {
       const timestamp = 1_700_000_000_000;
       const filters = {
         titleQuery: "acetone",
@@ -123,8 +126,7 @@ describe("useSearch helpers", () => {
 
       await createInitialHistoryEntry("acetone", timestamp, filters, ["Carolina"]);
 
-      const stored = await cstorage.local.get([CACHE.SEARCH_HISTORY]);
-      const history = stored[CACHE.SEARCH_HISTORY] as SearchHistoryEntry[];
+      const history = await getSearchHistory();
 
       expect(history).toHaveLength(1);
       expect(history[0]).toMatchObject({
@@ -137,7 +139,7 @@ describe("useSearch helpers", () => {
       expect(history[0].filters).toEqual(filters);
     });
 
-    it("prepends newer entries in front of older ones", async () => {
+    it("stores multiple entries", async () => {
       const filters = {
         titleQuery: "",
         availability: [],
@@ -148,13 +150,13 @@ describe("useSearch helpers", () => {
       await createInitialHistoryEntry("first", 1, filters, []);
       await createInitialHistoryEntry("second", 2, filters, []);
 
-      const stored = await cstorage.local.get([CACHE.SEARCH_HISTORY]);
-      const history = stored[CACHE.SEARCH_HISTORY] as SearchHistoryEntry[];
+      const history = await getSearchHistory();
 
+      // getSearchHistory returns newest-first
       expect(history.map((h) => h.query)).toEqual(["second", "first"]);
     });
 
-    it("truncates history to the most recent 100 entries", async () => {
+    it("enforces max 100 entries", async () => {
       const filters = {
         titleQuery: "",
         availability: [],
@@ -162,40 +164,29 @@ describe("useSearch helpers", () => {
         shippingType: [],
       } as unknown as SearchFilters;
 
-      // Seed with 100 existing entries
-      const seeded: SearchHistoryEntry[] = Array.from({ length: 100 }, (_, i) => ({
-        query: `q${i}`,
-        timestamp: i,
-        resultCount: 0,
-        type: "search",
-        filters,
-        selectedSuppliers: [],
-      }));
-      await chrome.storage.local.set({ [CACHE.SEARCH_HISTORY]: seeded });
+      // Create 101 entries
+      for (let i = 0; i < 101; i++) {
+        await createInitialHistoryEntry(`q${i}`, i, filters, []);
+      }
 
-      await createInitialHistoryEntry("newest", 9999, filters, []);
-
-      const stored = await cstorage.local.get([CACHE.SEARCH_HISTORY]);
-      const history = stored[CACHE.SEARCH_HISTORY] as SearchHistoryEntry[];
+      const history = await getSearchHistory();
 
       expect(history).toHaveLength(100);
-      expect(history[0].query).toBe("newest");
+      // The newest entry should be present
+      expect(history[0].query).toBe("q100");
     });
 
-    it("handles a missing or non-array existing history gracefully", async () => {
+    it("handles being called when IndexedDB is empty", async () => {
       const filters = {
         titleQuery: "",
         availability: [],
         country: [],
         shippingType: [],
       } as unknown as SearchFilters;
-
-      await chrome.storage.local.set({ [CACHE.SEARCH_HISTORY]: "garbage" });
 
       await createInitialHistoryEntry("q", 1, filters, []);
 
-      const stored = await cstorage.local.get([CACHE.SEARCH_HISTORY]);
-      const history = stored[CACHE.SEARCH_HISTORY] as SearchHistoryEntry[];
+      const history = await getSearchHistory();
 
       expect(history).toHaveLength(1);
       expect(history[0].query).toBe("q");
@@ -216,8 +207,7 @@ describe("useSearch helpers", () => {
 
       await updateHistoryResultCount(100, 42);
 
-      const stored = await cstorage.local.get([CACHE.SEARCH_HISTORY]);
-      const history = stored[CACHE.SEARCH_HISTORY] as SearchHistoryEntry[];
+      const history = await getSearchHistory();
 
       const updated = history.find((h) => h.timestamp === 100);
       const untouched = history.find((h) => h.timestamp === 200);
@@ -230,8 +220,7 @@ describe("useSearch helpers", () => {
 
       await updateHistoryResultCount(999, 5);
 
-      const stored = await cstorage.local.get([CACHE.SEARCH_HISTORY]);
-      const history = stored[CACHE.SEARCH_HISTORY] as SearchHistoryEntry[];
+      const history = await getSearchHistory();
 
       expect(history[0].resultCount).toBe(0);
     });

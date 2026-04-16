@@ -23,6 +23,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.tsx";
+import { migrateFromChromeStorage } from "./utils/idbMigration";
 import "./main.scss";
 
 /**
@@ -46,6 +47,7 @@ async function enableMocking() {
 
 (async () => {
   await enableMocking();
+  await migrateFromChromeStorage();
   createRoot(document.getElementById("root")!, {
     onUncaughtError: (error, errorInfo) => {
       console.error("Uncaught error:", error, errorInfo);

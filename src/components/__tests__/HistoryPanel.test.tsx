@@ -5,6 +5,7 @@ import {
   resetChromeStorageMock,
   restoreChromeStorageMock,
 } from "../../__fixtures__/helpers/chrome/storageMock";
+import { addSearchHistoryEntry, clearSearchHistory } from "@/utils/idbCache";
 
 // Mock @mui/icons-material to avoid ENFILE from barrel import
 vi.mock("@mui/icons-material", () => ({
@@ -29,13 +30,20 @@ vi.mock("@/context", () => ({
 
 import HistoryPanel from "../HistoryPanel";
 
+async function seedHistory(entries: SearchHistoryEntry[]): Promise<void> {
+  for (const entry of entries) {
+    await addSearchHistoryEntry(entry);
+  }
+}
+
 describe("HistoryPanel", () => {
   beforeAll(() => {
     setupChromeStorageMock();
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
     resetChromeStorageMock();
+    await clearSearchHistory();
     mockSetPendingSearchQuery.mockClear();
     mockSetDrawerTab.mockClear();
     mockSetSearchFilters.mockClear();
@@ -56,12 +64,12 @@ describe("HistoryPanel", () => {
     expect(screen.getByText("0 searches")).toBeInTheDocument();
   });
 
-  it("renders history entries from chrome storage", async () => {
+  it("renders history entries from IndexedDB", async () => {
     const entries: SearchHistoryEntry[] = [
       { query: "sodium chloride", timestamp: Date.now(), resultCount: 10, type: "search" },
       { query: "acetic acid", timestamp: Date.now() - 60000, resultCount: 5, type: "search" },
     ];
-    await chrome.storage.local.set({ search_history: entries });
+    await seedHistory(entries);
 
     render(<HistoryPanel />);
 
@@ -76,7 +84,7 @@ describe("HistoryPanel", () => {
     const entries: SearchHistoryEntry[] = [
       { query: "ethanol", timestamp: Date.now(), resultCount: 3, type: "search" },
     ];
-    await chrome.storage.local.set({ search_history: entries });
+    await seedHistory(entries);
 
     render(<HistoryPanel />);
 
@@ -89,7 +97,7 @@ describe("HistoryPanel", () => {
     const entries: SearchHistoryEntry[] = [
       { query: "sulfuric acid", timestamp: Date.now(), resultCount: 42, type: "search" },
     ];
-    await chrome.storage.local.set({ search_history: entries });
+    await seedHistory(entries);
 
     render(<HistoryPanel />);
 
@@ -102,7 +110,7 @@ describe("HistoryPanel", () => {
     const entries: SearchHistoryEntry[] = [
       { query: "rare compound", timestamp: Date.now(), resultCount: 1, type: "search" },
     ];
-    await chrome.storage.local.set({ search_history: entries });
+    await seedHistory(entries);
 
     render(<HistoryPanel />);
 
@@ -115,7 +123,7 @@ describe("HistoryPanel", () => {
     const entries: SearchHistoryEntry[] = [
       { query: "test query", timestamp: Date.now(), resultCount: 5, type: "search" },
     ];
-    await chrome.storage.local.set({ search_history: entries });
+    await seedHistory(entries);
 
     render(<HistoryPanel />);
 
@@ -145,7 +153,7 @@ describe("HistoryPanel", () => {
     const entries: SearchHistoryEntry[] = [
       { query: "potassium nitrate", timestamp: Date.now(), resultCount: 8, type: "search" },
     ];
-    await chrome.storage.local.set({ search_history: entries });
+    await seedHistory(entries);
 
     render(<HistoryPanel />);
 
@@ -166,7 +174,7 @@ describe("HistoryPanel", () => {
     const entries: SearchHistoryEntry[] = [
       { query: "test", timestamp: date.getTime(), resultCount: 0, type: "search" },
     ];
-    await chrome.storage.local.set({ search_history: entries });
+    await seedHistory(entries);
 
     render(<HistoryPanel />);
 
@@ -181,7 +189,7 @@ describe("HistoryPanel", () => {
       { query: "second", timestamp: Date.now() - 1000, resultCount: 2, type: "search" },
       { query: "third", timestamp: Date.now() - 2000, resultCount: 3, type: "search" },
     ];
-    await chrome.storage.local.set({ search_history: entries });
+    await seedHistory(entries);
 
     render(<HistoryPanel />);
 

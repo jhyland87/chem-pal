@@ -526,9 +526,14 @@ export default class SupplierLaboratoriumDiscounter
     return this.getProductDataWithCache(
       product,
       async (builder) => {
-        const fromJson = await this.getProductDataFromJSON(builder);
-        if (fromJson) return fromJson;
-        return this.getProductDataFromHTML(builder);
+        const jsonResponse = await this.getProductDataFromJSON(builder);
+        if (jsonResponse) return jsonResponse;
+        this.logger.debug("getProductDataFromJSON failed - falling back to HTML scraping", {
+          builder,
+        });
+        const htmlResponse = await this.getProductDataFromHTML(builder);
+        this.logger.debug("getProductDataFromHTML result:", { htmlResponse });
+        return htmlResponse;
       },
       { format: "json" },
     );
