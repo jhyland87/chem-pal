@@ -1,11 +1,11 @@
-import { CACHE, PANEL } from "@/constants/common";
+import { PANEL } from "@/constants/common";
 import { useAppContext } from "@/context";
 import AutoDeleteIcon from "@/icons/AutoDeleteIcon";
 import ClearIcon from "@/icons/ClearIcon";
 import ContrastIcon from "@/icons/ContrastIcon";
 import InfoOutlineIcon from "@/icons/InfoOutlineIcon";
 import SupplierCache from "@/utils/SupplierCache";
-import { cstorage } from "@/utils/storage";
+import { clearSearchResults } from "@/utils/idbCache";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import SpeedDial from "@mui/material/SpeedDial";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
@@ -45,9 +45,9 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
   const handleClearResults = async (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     try {
-      await cstorage.session.set({ [CACHE.SEARCH_RESULTS]: [] });
+      await clearSearchResults();
     } catch (error) {
-      console.warn(`Failed to clear ${CACHE.SEARCH_RESULTS} results from session storage:`, error);
+      console.warn("Failed to clear search results from IndexedDB:", error);
     }
 
     console.debug("[handleClearResults] Setting userSettings to:", { ...appContext.userSettings });

@@ -1,6 +1,6 @@
-import { CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
+import { DRAWER_INDEX, PANEL } from "@/constants/common";
 import { useAppContext } from "@/context";
-import { cstorage } from "@/utils/storage";
+import { getSearchHistory, clearSearchHistory } from "@/utils/idbCache";
 import { Delete as DeleteIcon, FilterList as FilterListIcon } from "@mui/icons-material";
 import {
   Box,
@@ -42,10 +42,8 @@ const HistoryPanel: React.FC = () => {
   useEffect(() => {
     const loadHistory = async () => {
       try {
-        const data = await cstorage.local.get([CACHE.SEARCH_HISTORY]);
-        if (Array.isArray(data[CACHE.SEARCH_HISTORY])) {
-          setHistory(data[CACHE.SEARCH_HISTORY] as SearchHistoryEntry[]);
-        }
+        const entries = await getSearchHistory();
+        setHistory(entries);
       } catch (error) {
         console.warn("Failed to load search history:", error);
       }
@@ -66,7 +64,7 @@ const HistoryPanel: React.FC = () => {
    */
   const handleClearHistory = async () => {
     try {
-      await cstorage.local.set({ [CACHE.SEARCH_HISTORY]: [] });
+      await clearSearchHistory();
       setHistory([]);
     } catch (error) {
       console.warn("Failed to clear search history:", error);

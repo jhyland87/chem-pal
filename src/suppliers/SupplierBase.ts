@@ -11,8 +11,8 @@ import { type FetchDecoratorResponse, fetchDecorator } from "@/helpers/fetch";
 import { stripQuantityFromString } from "@/helpers/quantity";
 import Logger from "@/utils/Logger";
 import ProductBuilder from "@/utils/ProductBuilder";
-import { cstorage } from "@/utils/storage";
 import SupplierCache from "@/utils/SupplierCache";
+import { deleteSupplierQueryCacheEntry } from "@/utils/idbCache";
 import {
   incrementFailure,
   incrementParseError,
@@ -1032,12 +1032,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       limit,
     );
     const key = this.cache.generateCacheKey(query, this.supplierName);
-    const result = await cstorage.local.get(SupplierCache.getQueryCacheKey());
-    const cache =
-      (result[SupplierCache.getQueryCacheKey()] as
-        | Record<string, CachedData<unknown>>
-        | undefined) ?? {};
-    const cached = cache[key];
+    const cached = await this.cache.getCachedQueryEntry(key);
     this.logger.debug("queryProductsWithCache: cache hit:", !!cached, "key:", key);
     if (cached) {
       // If the cached limit is less than the requested limit, invalidate the cache
@@ -1049,8 +1044,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
           cachedLimit: cached.__cacheMetadata.limit,
           requestedLimit: limit,
         });
-        delete cache[key];
-        await cstorage.local.set({ [SupplierCache.getQueryCacheKey()]: cache });
+        await deleteSupplierQueryCacheEntry(key);
       } else {
         this.logger.debug("Returning cached query results");
         // Re-initialize product builders from cached processed data

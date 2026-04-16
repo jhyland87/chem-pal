@@ -2,6 +2,7 @@ import {
   resetChromeStorageMock,
   setupChromeStorageMock,
 } from "@/__fixtures__/helpers/chrome/storageMock";
+import { clearAllCaches } from "@/utils/idbCache";
 import { beforeAll, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import eur_to_usd_rate from "../__fixtures__/common/eur-to-usd-rate.json";
 import { fixtureData } from "../__fixtures__/helpers/fixtureData";
@@ -54,6 +55,10 @@ describe("SupplierLaboratoriumDiscounter", () => {
     });
 
     describe("queryProductsWithCache", () => {
+      beforeEach(async () => {
+        await clearAllCaches();
+      });
+
       it("issues search + per-product detail requests on first call", async () => {
         supplier = new SupplierModule("borohydride", 4);
         supplier.initCache();

@@ -1,4 +1,5 @@
 import { CACHE, PANEL } from "@/constants/common";
+import { getSearchResults } from "@/utils/idbCache";
 import { cstorage } from "@/utils/storage";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -27,16 +28,16 @@ const SearchPanelHome: React.FC = () => {
     } else {
       const loadStoredResults = async () => {
         try {
-          const data = await cstorage.session.get([CACHE.SEARCH_RESULTS]);
-          if (data[CACHE.SEARCH_RESULTS] && data[CACHE.SEARCH_RESULTS].length > 0) {
+          const results = await getSearchResults();
+          if (results.length > 0) {
             setHasStoredResults(true);
-            setResultCount(data[CACHE.SEARCH_RESULTS].length);
+            setResultCount(results.length);
           } else {
             setHasStoredResults(false);
             setResultCount(0);
           }
         } catch (error) {
-          console.warn("Failed to load search results from session storage:", { error });
+          console.warn("Failed to load search results from IndexedDB:", { error });
         }
       };
       loadStoredResults();

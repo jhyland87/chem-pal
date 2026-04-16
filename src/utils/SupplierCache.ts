@@ -1,219 +1,31 @@
-import { CACHE } from "@/constants/common";
 import type { CachedData } from "@/suppliers/SupplierBase";
 import Logger from "@/utils/Logger";
-import { cstorage } from "@/utils/storage";
+import {
+  getSupplierQueryCacheEntry,
+  putSupplierQueryCacheEntry,
+  getSupplierProductDataCacheEntry,
+  putSupplierProductDataCacheEntry,
+  clearSupplierQueryCache,
+  clearSupplierProductDataCache,
+} from "@/utils/idbCache";
 import { md5 } from "js-md5";
 
 /**
- * Utility class for managing supplier data caching in Chrome's local storage.
+ * Utility class for managing supplier data caching in IndexedDB.
  * Provides a robust caching system for both query results and product detail data.
  *
  * @remarks
- * Benefits of this Caching Approach:
+ * The cache system uses two IndexedDB object stores:
+ * 1. `supplierQueryCache` - Stores search query results (one record per query+supplier)
+ * 2. `supplierProductDataCache` - Stores detailed product data (one record per product)
  *
- * 1. Granular Data Reuse:
- *    - Product detail data is cached independently of search results
- *    - Same product details can be reused across different search queries
- *    - Example: If "sodium chloride" and "NaCl" searches return the same product,
- *      the product details are only fetched and cached once
- *
- * 2. Flexible Result Limits:
- *    - Search results are cached without limit constraints
- *    - Same cached results can be used for different limit requests
- *    - Example: A search for "acetone" can return 5, 10, or 20 results
- *      using the same cached data, just sliced differently
- *
- * 3. Storage Efficiency:
- *    - Avoids duplicate storage of product details
- *    - Reduces storage requirements by ~50-80% compared to
- *      caching complete results for each query
- *    - Example: 100 searches returning the same 10 products
- *      would store product details 100 times in a naive cache,
- *      but only 10 times in this system
- *
- * 4. Improved Performance:
- *    - Faster subsequent searches due to partial cache hits
- *    - Reduced API calls by reusing cached product details
- *    - Example: A new search that includes previously
- *      cached products can skip their detail fetches
- *
- * 5. Better Cache Invalidation:
- *    - Product details can be invalidated independently
- *    - Search results remain valid even if some product
- *      details are updated
- *    - Example: Price updates only require re-fetching
- *      affected product details, not all search results
- *
- * 6. Optimized Network Usage:
- *    - Minimizes redundant API calls
- *    - Reduces bandwidth usage by avoiding
- *      re-fetching unchanged data
- *    - Example: Product descriptions rarely change,
- *      so they can be cached longer than prices
- *
- * The cache system uses two separate storage keys:
- * 1. `supplier_query_cache` - Stores search query results
- * 2. `supplier_product_data_cache` - Stores detailed product data
- *
- * Cache Storage Format:
- * - Query Cache:
- *   ```typescript
- *   {
- *     [cacheKey: string]: {
- *       data: T[],                    // The actual cached results
- *       __cacheMetadata: {            // Metadata about the cache entry
- *         cachedAt: number,           // Timestamp when cached
- *         version: number,            // Cache format version
- *         query: string,              // Original search query
- *         supplier: string,           // Supplier name
- *         resultCount: number,        // Number of results
- *         limit: number              // Limit used for query
- *       }
- *     }
- *   }
- *   ```
- *
- * - Product Data Cache:
- *   ```typescript
- *   {
- *     [cacheKey: string]: {
- *       data: Record<string, unknown>, // The cached product data
- *       timestamp: number             // When the data was cached
- *     }
- *   }
- *   ```
- *
- * Cache Key Generation:
- * - Query Cache Keys: Generated using base64 encoding of `${query}:${supplierName}`
- *   Falls back to a simple hash if base64 is unavailable
- * - Product Data Cache Keys: Generated using MD5 hash of JSON stringified object containing:
- *   ```typescript
- *   {
- *     url: string,                    // Product URL
- *     params?: Record<string, string>, // Optional request parameters
- *     supplier: string                // Supplier name
- *   }
- *   ```
- *
- * Cache Expiration & Management:
- * - Size Limits:
- *   - Query Cache: Maximum 100 entries
- *   - Product Data Cache: Maximum 100 entries
- * - Eviction Policy: Least Recently Used (LRU)
- *   - When cache is full, oldest entries are removed based on timestamp
- * - Cache Invalidation:
- *   - Query cache entries are invalidated if:
- *     1. Cache version changes (`CACHE_VERSION` constant)
- *     2. Requested limit is greater than cached limit
- *   - Product data cache entries are refreshed on access
- *     (timestamp updated to prevent premature eviction)
- *
- * Cache Triggering:
- * The cache is automatically triggered in two main scenarios:
- *
- * 1. Query Results Caching (via `queryProductsWithCache`):
- *    ```typescript
- *    // Inside SupplierBase class
- *    protected async queryProductsWithCache(query: string, limit: number) {
- *      // 1. Check cache first
- *      const key = this.cache.generateCacheKey(query, this.supplierName);
- *      const cached = await this.getCachedQueryResults(key);
- *
- *      if (cached) {
- *        // 2a. Return cached results if valid
- *        return ProductBuilder.createFromCache(cached.data);
- *      }
- *
- *      // 2b. If not in cache, perform actual query
- *      const results = await this.queryProducts(query, limit);
- *
- *      // 3. Cache the new results
- *      if (results) {
- *        await this.cache.cacheQueryResults(
- *          query,
- *          this.supplierName,
- *          results.map(b => b.dump()),
- *          limit
- *        );
- *      }
- *
- *      return results;
- *    }
- *    ```
- *
- * 2. Product Data Caching (via `getProductData`):
- *    ```typescript
- *    // Inside SupplierBase class
- *    protected async getProductData(product: ProductBuilder<T>) {
- *      const url = product.get("url");
- *      const cacheKey = this.cache.getProductDataCacheKey(url, this.supplierName);
- *
- *      // 1. Check cache first
- *      const cachedData = await this.cache.getCachedProductData(cacheKey);
- *      if (cachedData) {
- *        // 2a. Return cached data if available
- *        product.setData(cachedData);
- *        return product;
- *      }
- *
- *      // 2b. If not in cache, fetch fresh data
- *      const resultBuilder = await this.getProductDataWithCache(product);
- *
- *      // 3. Cache the new data
- *      if (resultBuilder) {
- *        await this.cache.cacheProductData(
- *          cacheKey,
- *          resultBuilder.dump()
- *        );
- *      }
- *
- *      return resultBuilder;
- *    }
- *    ```
- *
- * Cache Flow:
- * 1. Query Results:
- *    - Triggered by supplier's search operations
- *    - Cached after initial search results are processed (smaller cache than if the raw result was cached or the fully processed data)
- *    - Retrieved before making new search requests
- *    - Invalidated when search parameters change (not including timestamps in the URL)
- *
- * 2. Product Data:
- *    - Triggered when fetching detailed product information
- *    - Cached after successful product data retrieval (output of `ProductBuilder.dump()`)
- *    - Retrieved before making new product detail requests
- *    - Automatically refreshed on access to prevent eviction
- *
- * Usage Example:
- * ```typescript
- * // Initialize cache for a supplier
- * const cache = new SupplierCache("ChemSupplier");
- *
- * // Cache query results
- * await cache.cacheQueryResults(
- *   "sodium chloride",
- *   "ChemSupplier",
- *   results,
- *   10
- * );
- *
- * // Cache product data
- * await cache.cacheProductData(
- *   cacheKey,
- *   productData
- * );
- *
- * // Retrieve cached data
- * const cachedData = await cache.getCachedProductData(cacheKey);
- * ```
+ * Each store supports max 100 entries with LRU eviction handled by idbCache.
  * @category Utils
  * @typeParam T - The type of data being cached
  * @source
  */
 export default class SupplierCache {
   private static readonly CACHE_VERSION = 1;
-  private static readonly cacheSize = 100;
-  private static readonly productDataCacheSize = 100;
 
   private logger: Logger;
 
@@ -283,6 +95,7 @@ export default class SupplierCache {
 
   /**
    * Stores query results in the cache.
+   * LRU eviction (max 100 entries) is handled by idbCache.
    * @source
    */
   async cacheQueryResults(
@@ -293,26 +106,8 @@ export default class SupplierCache {
   ): Promise<void> {
     try {
       const key = this.generateCacheKey(query, supplierName);
-      const result = await cstorage.local.get(CACHE.SUPPLIER_QUERY_CACHE);
-      const cache =
-        (result[CACHE.SUPPLIER_QUERY_CACHE] as Record<string, CachedData<unknown>>) || {};
 
-      // If cache is full, remove oldest entry
-      if (Object.keys(cache).length >= SupplierCache.cacheSize) {
-        const oldestKey = Object.entries(cache).sort(
-          ([, a], [, b]) => a.__cacheMetadata.cachedAt - b.__cacheMetadata.cachedAt,
-        )[0][0];
-        this.logger.debug("Removing oldest cache entry", {
-          key: oldestKey,
-          age:
-            Math.round(
-              (Date.now() - cache[oldestKey].__cacheMetadata.cachedAt) / (60 * 60 * 1000),
-            ) + " hours",
-        });
-        delete cache[oldestKey];
-      }
-
-      cache[key] = {
+      const entry: CachedData<unknown> = {
         data: results,
         __cacheMetadata: {
           cachedAt: Date.now(),
@@ -326,10 +121,10 @@ export default class SupplierCache {
 
       this.logger.debug("Cached query results", {
         key,
-        metadata: cache[key].__cacheMetadata,
+        metadata: entry.__cacheMetadata,
       });
 
-      await cstorage.local.set({ [CACHE.SUPPLIER_QUERY_CACHE]: cache });
+      await putSupplierQueryCacheEntry(key, entry);
     } catch (error) {
       this.logger.error("Error storing query results in cache:", { error });
     }
@@ -337,16 +132,18 @@ export default class SupplierCache {
 
   /**
    * Retrieves cached product data for a given key.
+   * Updates the timestamp on access to prevent premature eviction.
    * @source
    */
   async getCachedProductData(key: string): Promise<Maybe<Record<string, unknown>>> {
     try {
-      const result = await cstorage.local.get(CACHE.SUPPLIER_PRODUCT_DATA_CACHE);
-      const cache =
-        (result[CACHE.SUPPLIER_PRODUCT_DATA_CACHE] as Record<string, CachedProductEntry>) || {};
-      const cached = cache[key];
+      const cached = await getSupplierProductDataCacheEntry(key);
       if (cached) {
-        await this.updateProductDataCacheTimestamp(key);
+        // Refresh timestamp on access
+        await putSupplierProductDataCacheEntry(key, {
+          data: cached.data,
+          timestamp: Date.now(),
+        });
         return cached.data;
       }
       return undefined;
@@ -357,72 +154,39 @@ export default class SupplierCache {
   }
 
   /**
-   * Updates the timestamp for a cached product data entry.
-   * @source
-   */
-  async updateProductDataCacheTimestamp(key: string): Promise<void> {
-    try {
-      const result = await cstorage.local.get(CACHE.SUPPLIER_PRODUCT_DATA_CACHE);
-      const cache =
-        (result[CACHE.SUPPLIER_PRODUCT_DATA_CACHE] as Record<string, CachedProductEntry>) || {};
-      if (cache[key]) {
-        cache[key].timestamp = Date.now();
-        await cstorage.local.set({ [CACHE.SUPPLIER_PRODUCT_DATA_CACHE]: cache });
-      }
-    } catch (error) {
-      this.logger.error("Error updating product data cache timestamp:", { error });
-    }
-  }
-
-  /**
    * Stores product data in the cache.
+   * LRU eviction (max 100 entries) is handled by idbCache.
    * @source
    */
   async cacheProductData(key: string, data: Record<string, unknown>): Promise<void> {
     try {
-      const result = await cstorage.local.get(CACHE.SUPPLIER_PRODUCT_DATA_CACHE);
-      const cache =
-        (result[CACHE.SUPPLIER_PRODUCT_DATA_CACHE] as Record<string, CachedProductEntry>) || {};
-      if (Object.keys(cache).length >= SupplierCache.productDataCacheSize) {
-        const oldestKey = Object.entries(cache).sort(
-          ([, a], [, b]) => a.timestamp - b.timestamp,
-        )[0][0];
-        delete cache[oldestKey];
-      }
-      cache[key] = {
+      await putSupplierProductDataCacheEntry(key, {
         data,
         timestamp: Date.now(),
-      };
-      await cstorage.local.set({ [CACHE.SUPPLIER_PRODUCT_DATA_CACHE]: cache });
+      });
     } catch (error) {
       this.logger.error("Error storing product data in cache:", { error });
     }
   }
 
   /**
-   * Gets the query cache key used in storage.
+   * Retrieves a cached query entry by key.
    * @source
    */
-  static getQueryCacheKey(): string {
-    return CACHE.SUPPLIER_QUERY_CACHE;
+  async getCachedQueryEntry(key: string): Promise<CachedData<unknown> | undefined> {
+    try {
+      return await getSupplierQueryCacheEntry(key);
+    } catch (error) {
+      this.logger.error("Error retrieving query cache entry:", { error });
+      return undefined;
+    }
   }
 
   /**
-   * Gets the product data cache key used in storage.
-   * @source
-   */
-  static getProductDataCacheKey(): string {
-    return CACHE.SUPPLIER_PRODUCT_DATA_CACHE;
-  }
-
-  /**
-   * Clears both the query cache and product data cache from local storage.
+   * Clears both the query cache and product data cache from IndexedDB.
    * @source
    */
   static async clearAll(): Promise<void> {
-    await cstorage.local.remove([
-      String(CACHE.SUPPLIER_QUERY_CACHE),
-      String(CACHE.SUPPLIER_PRODUCT_DATA_CACHE),
-    ]);
+    await Promise.all([clearSupplierQueryCache(), clearSupplierProductDataCache()]);
   }
 }

@@ -78,11 +78,11 @@ export enum CACHE {
   QUERY = "query",
   /** The current search input text */
   SEARCH_INPUT = "search_input",
-  /** Array of product results from the most recent search */
+  /** Array of product results from the most recent search (stored in IndexedDB) */
   SEARCH_RESULTS = "search_results",
   /** Flag indicating a new search was submitted from the search home panel */
   SEARCH_IS_NEW_SEARCH = "is_new_search",
-  /** Persisted search history entries stored in chrome.storage.local */
+  /** Persisted search history entries (stored in IndexedDB) */
   SEARCH_HISTORY = "search_history",
   /** Selected suppliers list for search filtering */
   SELECTED_SUPPLIERS = "selected_suppliers",
@@ -90,13 +90,9 @@ export enum CACHE {
   HTTP_LRU = "httplru",
   /** The current panel (0 = SearchHome, 1 = Results, 2 = Stats) */
   PANEL = "panel",
-  /** Query results cache */
-  QUERY_RESULTS_CACHE = "query_results_cache",
-  /** Product data cache */
-  PRODUCT_DATA_CACHE = "product_data_cache",
-  /** Supplier query results cache */
+  /** Supplier query results cache (stored in IndexedDB) */
   SUPPLIER_QUERY_CACHE = "supplier_query_cache",
-  /** Supplier product data cache */
+  /** Supplier product data cache (stored in IndexedDB) */
   SUPPLIER_PRODUCT_DATA_CACHE = "supplier_product_data_cache",
   /** User-excluded products, keyed by product data cache key (see getProductExclusionKey) */
   EXCLUDED_PRODUCTS = "excluded_products",

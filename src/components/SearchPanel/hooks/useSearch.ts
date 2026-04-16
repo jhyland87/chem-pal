@@ -6,6 +6,13 @@ import { getCompoundNameFromAlias } from "@/helpers/pubchem";
 import SupplierFactory from "@/suppliers/SupplierFactory";
 import BadgeAnimator from "@/utils/BadgeAnimator";
 import { cstorage } from "@/utils/storage";
+import {
+  getSearchResults,
+  setSearchResults as idbSetSearchResults,
+  addSearchHistoryEntry,
+  updateSearchHistoryResultCount as idbUpdateHistoryResultCount,
+  IDB_SEARCH_RESULTS_CLEARED,
+} from "@/utils/idbCache";
 import { type Table } from "@tanstack/react-table";
 import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 interface SearchState {
@@ -50,9 +57,9 @@ export function updateColumnFilterFromResult(config: ColumnFilterConfig, result:
  */
 export async function saveResultsToSession(results: Product[]): Promise<void> {
   try {
-    await cstorage.session.set({ [CACHE.SEARCH_RESULTS]: results });
+    await idbSetSearchResults(results);
   } catch (error) {
-    console.warn("Failed to save search results to session storage:", { error });
+    console.warn("Failed to save search results to IndexedDB:", { error });
   }
 }
 
@@ -68,11 +75,7 @@ export async function createInitialHistoryEntry(
   selectedSuppliers: string[],
 ): Promise<void> {
   try {
-    const data = await cstorage.local.get([CACHE.SEARCH_HISTORY]);
-    const history: SearchHistoryEntry[] = Array.isArray(data[CACHE.SEARCH_HISTORY])
-      ? data[CACHE.SEARCH_HISTORY]
-      : [];
-    history.unshift({
+    await addSearchHistoryEntry({
       query,
       timestamp,
       resultCount: 0,
@@ -80,8 +83,6 @@ export async function createInitialHistoryEntry(
       filters: { ...filters },
       selectedSuppliers: [...selectedSuppliers],
     });
-    // Keep last 100 entries
-    await cstorage.local.set({ [CACHE.SEARCH_HISTORY]: history.slice(0, 100) });
   } catch (error) {
     console.warn("Failed to save search history:", { error });
   }
@@ -93,15 +94,7 @@ export async function createInitialHistoryEntry(
  */
 export async function updateHistoryResultCount(timestamp: number, count: number): Promise<void> {
   try {
-    const data = await cstorage.local.get([CACHE.SEARCH_HISTORY]);
-    const history: SearchHistoryEntry[] = Array.isArray(data[CACHE.SEARCH_HISTORY])
-      ? data[CACHE.SEARCH_HISTORY]
-      : [];
-    const entry = history.find((h) => h.timestamp === timestamp);
-    if (entry) {
-      entry.resultCount = count;
-      await cstorage.local.set({ [CACHE.SEARCH_HISTORY]: history });
-    }
+    await idbUpdateHistoryResultCount(timestamp, count);
   } catch (error) {
     console.warn("Failed to update search history result count:", { error });
   }
@@ -249,28 +242,27 @@ export function useSearch() {
 
     const loadSearchData = async () => {
       try {
-        const data = await cstorage.session.get([
-          CACHE.QUERY,
-          CACHE.SEARCH_RESULTS,
-          CACHE.SEARCH_IS_NEW_SEARCH,
-        ]);
+        // Load search results from IndexedDB
+        const cachedResults = await getSearchResults();
 
-        if (
-          data[CACHE.SEARCH_RESULTS] &&
-          Array.isArray(data[CACHE.SEARCH_RESULTS]) &&
-          data[CACHE.SEARCH_RESULTS].length > 0
-        ) {
-          console.debug("Loading previous search results from session storage", {
-            length: data[CACHE.SEARCH_RESULTS]?.length ?? 0,
-            results: data[CACHE.SEARCH_RESULTS],
+        if (cachedResults.length > 0) {
+          console.debug("Loading previous search results from IndexedDB", {
+            length: cachedResults.length,
+            results: cachedResults,
           });
-          setSearchResults(data[CACHE.SEARCH_RESULTS]);
+          setSearchResults(cachedResults);
           setState((prev) => ({
             ...prev,
-            resultCount: data[CACHE.SEARCH_RESULTS].length,
+            resultCount: cachedResults.length,
             status: false, // Don't show status when loading from storage
           }));
         }
+
+        // Check session storage for new search flag and query
+        const data = await cstorage.session.get([
+          CACHE.QUERY,
+          CACHE.SEARCH_IS_NEW_SEARCH,
+        ]);
 
         // Only execute search if this is a new search submission
         if (data[CACHE.SEARCH_IS_NEW_SEARCH] && data[CACHE.QUERY] && data[CACHE.QUERY].trim()) {
@@ -303,16 +295,12 @@ export function useSearch() {
 
   // Listen for external clears of search results (e.g. SpeedDial "Clear Results")
   useEffect(() => {
-    const listener = (changes: Record<string, chrome.storage.StorageChange>, areaName: string) => {
-      if (areaName !== "session") return;
-      const change = changes[CACHE.SEARCH_RESULTS];
-      if (change && Array.isArray(change.newValue) && change.newValue.length === 0) {
-        setSearchResults([]);
-        setState((prev) => ({ ...prev, resultCount: 0, status: false }));
-      }
+    const handler = () => {
+      setSearchResults([]);
+      setState((prev) => ({ ...prev, resultCount: 0, status: false }));
     };
-    cstorage.onChanged.addListener(listener);
-    return () => cstorage.onChanged.removeListener(listener);
+    window.addEventListener(IDB_SEARCH_RESULTS_CLEARED, handler);
+    return () => window.removeEventListener(IDB_SEARCH_RESULTS_CLEARED, handler);
   }, []);
 
   const performSearch = useCallback(
