@@ -2,7 +2,7 @@
 
 ## User Settings
 
-User settings are managed via React 19's `useActionState` and persisted to Chrome storage. The settings UI is available through the drawer navigation.
+User settings are managed via React 19's `useActionState` and persisted to `chrome.storage.local` (via `cstorage`). The settings UI is available through the drawer navigation.
 
 ### Available Settings
 
@@ -48,7 +48,7 @@ CTX["AppContext\n(global provider)"]
 end
 
 subgraph Persistence["Persistence"]
-CS[("chrome.storage\nsync settings")]
+CS[("chrome.storage.local\nvia cstorage wrapper\nuser settings, table state")]
 end
 
 SP --> AR

@@ -13,7 +13,8 @@ subgraph EntryPoints["Entry Points"]
 direction LR
 POPUP["Popup / SidePanel\n(React 19)"]
 SW["Service Worker\n(background)"]
-STORAGE[("chrome.storage\n.local (cache)\n.session (state)\nvia cstorage lz-string wrapper")]
+IDB[("IndexedDB\n(search results, supplier caches,\nhistory, stats)")]
+STORAGE[("chrome.storage\n.local (settings, state)\n.session (query, panel)\nvia cstorage wrapper")]
 end
 
 subgraph AppLayer["Application Layer"]
@@ -39,6 +40,7 @@ end
 
 POPUP --> AppLayer
 SEARCH --> HOOK --> FACTORY
+AppLayer <-.-> IDB
 AppLayer <-.-> STORAGE
 end
 
@@ -64,7 +66,7 @@ classDef external fill:#9B59B6,stroke:#6F3D8A,color:#fff
 class POPUP,SW entry
 class SEARCH,SETTINGS,STATS,DRAWER,FAVS,HISTORY app
 class HOOK,FACTORY,S1,S2,S3,SN exec
-class STORAGE storage
+class IDB,STORAGE storage
 class WIX,SEARCHANISE,SHOPIFY,WOO,CUSTOM,PUBCHEM,HEXARATE external
 ```
 
@@ -76,17 +78,24 @@ Rather than waiting for all suppliers to finish, `SupplierFactory` uses an `Asyn
 ### Supplier Abstraction
 All suppliers extend `SupplierBase`, which defines the lifecycle: `setup()` → `queryProducts()` → `fuzzyFilter()` → `initProductBuilders()` → `getProductData()` → `yield product`. Platform-specific base classes (`SupplierBaseWix`, `SupplierBaseSearchanise`, `SupplierBaseShopify`, `SupplierBaseWoocommerce`) handle common patterns for those e-commerce platforms.
 
-### Two-Level Caching
-- **Query cache** (`chrome.storage.local`) — caches search result lists per supplier, keyed by query + supplier name
-- **Product data cache** (`chrome.storage.local`) — caches individual product detail fetches, keyed by URL + supplier
+### Tiered Storage
+- **IndexedDB** (`chempal` database) — bulk cached data: search results, supplier query/product caches, search history, supplier stats. Migrated from `chrome.storage` via a one-time migration (`idbMigration.ts`).
+- **chrome.storage.local** (via `cstorage`) — lightweight app state: user settings, excluded products, table state, HTTP LRU cache, bookmarks folder ID.
+- **chrome.storage.session** (via `cstorage`) — ephemeral session state: current query, panel index, search input text.
 
-Both use LRU eviction at 100 entries. See [Caching](Caching) for details.
+### Two-Level Supplier Caching (IndexedDB)
+- **Query cache** (`supplierQueryCache` store) — caches search result lists per supplier, keyed by `base64(query + supplier)`
+- **Product data cache** (`supplierProductDataCache` store) — caches individual product detail fetches, keyed by `MD5(url + supplier + params)`
 
-### Transparent Storage Compression
-All `chrome.storage.local` / `chrome.storage.session` access in the app flows through `cstorage` (`src/utils/storage.ts`), a thin wrapper that LZ-compresses values at rest using `lz-string`'s `compressToUTF16` inside a versioned envelope (`{ __lz: 1, d: "..." }`). Reads auto-detect the envelope and decompress, while legacy uncompressed values pass through unchanged for backward compatibility. The codec layer is pure (no `chrome.*` access) and directly unit-tested in `src/utils/__tests__/storage.test.ts`. See [Caching § Transparent Compression](Caching#transparent-compression) for details.
+Both use LRU eviction at 100 entries via IndexedDB indexes. See [Caching](Caching) for details.
+
+### Optional Storage Compression
+`chrome.storage` access flows through `cstorage` (`src/utils/storage.ts`), a thin wrapper that can optionally LZ-compress values at rest using `lz-string`'s `compressToUTF16` inside a versioned envelope (`{ __lz: 1, d: "..." }`). Compression is controlled by the `useStorageCompression` flag in `config.json`. Reads auto-detect the envelope and decompress, while legacy uncompressed values pass through unchanged for backward compatibility. The codec layer is pure (no `chrome.*` access) and directly unit-tested in `src/utils/__tests__/storage.test.ts`. See [Caching § Transparent Compression](Caching#transparent-compression) for details.
+
+> **Note:** IndexedDB data is not compressed via `cstorage`. The compression layer only applies to `chrome.storage` access.
 
 ### State Management
-The app uses React 19's `useActionState` for settings, with `AppContext` providing global state. The Chrome extension persists query state and results to `chrome.storage.session` (via `cstorage`) for seamless restore-on-mount. Theme preference lives in `user_settings` (read through `useAppContext()`), not `localStorage`.
+The app uses React 19's `useActionState` for settings, with `AppContext` providing global state. The Chrome extension persists query state to `chrome.storage.session` (via `cstorage`) and search results to IndexedDB for seamless restore-on-mount. Theme preference lives in `user_settings` (read through `useAppContext()`), not `localStorage`.
 
 ## Chrome Extension Entry Points
 
@@ -103,7 +112,8 @@ The app uses React 19's `useActionState` for settings, with `AppContext` providi
 | `SupplierBase` | `src/suppliers/SupplierBase.ts` | Abstract base class for all supplier implementations |
 | `SupplierFactory` | `src/suppliers/SupplierFactory.ts` | Orchestrates parallel supplier queries via async generator |
 | `ProductBuilder` | `src/utils/ProductBuilder.ts` | Builds and validates product objects with a fluent API |
-| `SupplierCache` | `src/utils/SupplierCache.ts` | Chrome storage caching layer with LRU eviction |
+| `SupplierCache` | `src/utils/SupplierCache.ts` | IndexedDB caching layer with LRU eviction |
+| `idbCache` | `src/utils/idbCache.ts` | IndexedDB database management (chempal db, v2) |
 | `Logger` | `src/utils/Logger.ts` | Structured logging with per-supplier prefixes |
 | `Pubchem` | `src/utils/Pubchem.ts` | PubChem compound lookups and suggestions |
 | `SupplierStatsStore` | `src/utils/SupplierStatsStore.ts` | Tracks per-supplier success/failure/timing stats |

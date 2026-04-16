@@ -6,7 +6,7 @@ This diagram details the end-to-end search flow from user input through to rende
 
 - **Two entry points**: `SearchPage` (web app) and `SearchPanelHome` (Chrome extension) both feed into the same execution pipeline
 - **Streaming results**: `SupplierFactory.executeAllStream()` yields products as they arrive from any supplier, enabling incremental UI updates
-- **Session persistence**: The Chrome extension persists query state and results to `chrome.storage.session` for restore-on-mount
+- **Session persistence**: The Chrome extension persists query state to `chrome.storage.session` (via `cstorage`) and search results to IndexedDB for restore-on-mount
 - **Supplier data strategies**: Each supplier implements one of three patterns depending on what the vendor's site exposes:
   - **JSON Only** (e.g. Wix) — GraphQL/REST API provides all product data in the search response; no detail page fetch needed
   - **HTML Only** (e.g. Loudwolf) — Both search results and product details are scraped from HTML pages via `DOMParser`
@@ -44,13 +44,15 @@ ES["executeSearch(query)\nuseSearch hook"]
 ES -->|"startTransition"| PS["performSearch()"]
 PS -->|"1. Instantiate"| SFACT["SupplierFactory\nnew SupplierFactory(query, limit, controller, suppliers?)"]
 SFACT -->|"2. Stream results"| STREAM["executeAllStream(concurrency=3)\nAsyncGenerator - yields products\nas they arrive from any supplier"]
-STREAM -->|"for await (product)"| PROCESS["Process Each Result\nupdate resultCount\nappend to searchResults\nsave to chrome.storage.session"]
+STREAM -->|"for await (product)"| PROCESS["Process Each Result\nupdate resultCount\nappend to searchResults\nsave to IndexedDB"]
 end
 
-CHROME[("chrome.storage.session\nquery, isNewSearch flag,\npersisted results")]
+IDB[("IndexedDB\nsearchResults store\ncurrent result set")]
+CHROME[("chrome.storage.session\nquery, isNewSearch flag")]
 SPH -.->|"save query + isNewSearch flag"| CHROME
 CHROME -.->|"load on mount\nif isNewSearch then performSearch"| ES
-PROCESS -.->|"save incrementally"| CHROME
+PROCESS -.->|"save incrementally"| IDB
+IDB -.->|"load on mount\nrestore results"| ES
 
 subgraph Factory["SupplierFactory"]
 direction TB
@@ -67,7 +69,7 @@ subgraph SupplierPipeline["SupplierBase.execute - AsyncGenerator Pipeline"]
 direction TB
 EXEC["execute()"]
 SETUP["setup()\nsupplier-specific init\nauth tokens, headers, etc."]
-QPC["queryProductsWithCache()\ncheck chrome.storage.local cache\nfallback to queryProducts()"]
+QPC["queryProductsWithCache()\ncheck IndexedDB cache\nfallback to queryProducts()"]
 QP["queryProducts()\nfetch search results\nsupplier-specific"]
 FUZZ["fuzzyFilter()\nfuzzball WRatio scorer\nvia titleSelector()"]
 IPB["initProductBuilders()\nparse raw data into\nProductBuilder instances"]
@@ -143,7 +145,7 @@ class EXEC,SETUP,QPC,QP,FUZZ,IPB,GPDC,GPD,FP pipeline
 class WS,WQ,WI,WG json
 class LQ,LF,LI,LG html
 class OQ,OF,OI,OG hybrid
-class CHROME storage
+class IDB,CHROME storage
 class RT output
 class PUBCHEM fallback
 class YIELD yieldNode
