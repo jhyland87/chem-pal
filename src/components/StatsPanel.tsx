@@ -9,7 +9,7 @@ import { useDrawingArea } from "@mui/x-charts/hooks";
 import { useEffect, useMemo, useState } from "react";
 import { useAppContext } from "@/context";
 import { clearStats, getStats } from "@/utils/SupplierStatsStore";
-import { cstorage } from "@/utils/storage";
+import { IDB_SUPPLIER_STATS_UPDATED } from "@/utils/idbCache";
 import { BackButton } from "./StyledComponents";
 import styles from "./StatsPanel.module.scss";
 
@@ -81,15 +81,10 @@ const StatsPanel: React.FC = () => {
       }
     };
     loadStats();
-    // Re-read stats when any supplier_stats_* key changes (live updates during search)
-    const listener = (changes: { [key: string]: chrome.storage.StorageChange }) => {
-      const hasStatsChange = Object.keys(changes).some((k) => k.startsWith("supplier_stats_"));
-      if (hasStatsChange) {
-        loadStats();
-      }
-    };
-    cstorage.onChanged.addListener(listener);
-    return () => cstorage.onChanged.removeListener(listener);
+    // Re-read stats when supplier stats are updated in IndexedDB (live updates during search)
+    const handler = () => loadStats();
+    window.addEventListener(IDB_SUPPLIER_STATS_UPDATED, handler);
+    return () => window.removeEventListener(IDB_SUPPLIER_STATS_UPDATED, handler);
   }, []);
 
   const handleClear = async () => {

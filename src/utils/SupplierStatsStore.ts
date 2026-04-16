@@ -1,12 +1,11 @@
 /**
  * Utility for persisting per-supplier, per-day search statistics
- * in cstorage.local.
+ * in IndexedDB via the `supplierStats` object store.
  *
- * Each day gets its own storage key: `supplier_stats_MMDDYYYY`
- * This avoids hitting cstorage.local's per-item size limit.
+ * Each day gets its own record keyed by `YYYY-MM-DD`.
  *
  * Uses an in-memory buffer to avoid race conditions from concurrent
- * fire-and-forget writes. Flushes to storage on a debounced timer.
+ * fire-and-forget writes. Flushes to IndexedDB on a debounced timer.
  *
  * All stat calls use `supplierName` from SupplierBase (e.g. "Carolina"),
  * NOT the class name (e.g. "SupplierCarolina"), to keep keys consistent.
@@ -18,9 +17,14 @@
  * @source
  */
 
-import { cstorage } from "@/utils/storage";
+import {
+  getSupplierStatsEntry,
+  putSupplierStatsEntry,
+  getAllSupplierStats,
+  deleteSupplierStatsEntries,
+  clearSupplierStats as idbClearSupplierStats,
+} from "@/utils/idbCache";
 
-const STORAGE_PREFIX = "supplier_stats_";
 const RETENTION_DAYS = 30;
 const FLUSH_DELAY_MS = 500;
 
@@ -28,28 +32,9 @@ const FLUSH_DELAY_MS = 500;
 const pendingIncrements: Map<string, number> = new Map();
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
 
-/** Returns today's date as MMDDYYYY for storage key */
-function todayStorageKey(): string {
-  const d = new Date();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  const yyyy = d.getFullYear();
-  return `${STORAGE_PREFIX}${mm}${dd}${yyyy}`;
-}
-
 /** Returns today's date as YYYY-MM-DD for data grouping */
 function todayDateKey(): string {
   return new Date().toISOString().slice(0, 10);
-}
-
-/** Extract YYYY-MM-DD from a storage key like supplier_stats_03262026 */
-function storageKeyToDateKey(storageKey: string): string | null {
-  const suffix = storageKey.replace(STORAGE_PREFIX, "");
-  if (suffix.length !== 8) return null;
-  const mm = suffix.slice(0, 2);
-  const dd = suffix.slice(2, 4);
-  const yyyy = suffix.slice(4, 8);
-  return `${yyyy}-${mm}-${dd}`;
 }
 
 /** Get the cutoff date key for pruning */
@@ -86,15 +71,9 @@ function scheduleFlush(): void {
   }, FLUSH_DELAY_MS);
 }
 
-/** Convert a YYYY-MM-DD date key to a MMDDYYYY storage key */
-function dateKeyToStorageKey(dateKey: string): string {
-  const [yyyy, mm, dd] = dateKey.split("-");
-  return `${STORAGE_PREFIX}${mm}${dd}${yyyy}`;
-}
-
 /**
- * Apply all pending increments to storage. Groups by date so each day's
- * data goes to its own storage key (supplier_stats_MMDDYYYY).
+ * Apply all pending increments to IndexedDB. Groups by date so each day's
+ * data goes to its own record in the `supplierStats` object store.
  * @source
  */
 async function flushToStorage(): Promise<void> {
@@ -111,30 +90,20 @@ async function flushToStorage(): Promise<void> {
     byDate[date].push([date, supplier, field, delta]);
   }
 
-  // Read + update each day's storage key separately
-  const dateKeys = Object.keys(byDate);
-  const storageKeys = dateKeys.map(dateKeyToStorageKey);
-
   try {
-    const data = await cstorage.local.get(storageKeys);
-    const updates: Record<string, Record<string, SupplierDayStats>> = {};
-
-    for (const dateKey of dateKeys) {
-      const sKey = dateKeyToStorageKey(dateKey);
-      const existing: Record<string, SupplierDayStats> =
-        data[sKey] && typeof data[sKey] === "object" ? data[sKey] : {};
+    for (const dateKey of Object.keys(byDate)) {
+      const existing = (await getSupplierStatsEntry(dateKey)) ?? {};
 
       for (const [, supplier, field, delta] of byDate[dateKey]) {
         if (!existing[supplier]) existing[supplier] = { ...EMPTY_STATS };
         (existing[supplier][field] as number) += delta;
       }
 
-      updates[sKey] = existing;
+      await putSupplierStatsEntry(dateKey, existing);
     }
 
-    await cstorage.local.set(updates);
     // Prune old entries
-    await pruneOldStorageKeys();
+    await pruneOldEntries();
   } catch (error) {
     console.warn("Failed to flush supplier stats:", error);
     for (const [key, delta] of batch) {
@@ -144,21 +113,14 @@ async function flushToStorage(): Promise<void> {
   }
 }
 
-/** Remove storage keys older than RETENTION_DAYS */
-async function pruneOldStorageKeys(): Promise<void> {
+/** Remove records older than RETENTION_DAYS */
+async function pruneOldEntries(): Promise<void> {
   const cutoff = getCutoffDateKey();
   try {
-    const allData = await cstorage.local.get(null);
-    const keysToRemove: string[] = [];
-    for (const key of Object.keys(allData)) {
-      if (!key.startsWith(STORAGE_PREFIX)) continue;
-      const dateKey = storageKeyToDateKey(key);
-      if (dateKey && dateKey < cutoff) {
-        keysToRemove.push(key);
-      }
-    }
+    const allStats = await getAllSupplierStats();
+    const keysToRemove = Object.keys(allStats).filter((dateKey) => dateKey < cutoff);
     if (keysToRemove.length > 0) {
-      await cstorage.local.remove(keysToRemove);
+      await deleteSupplierStatsEntries(keysToRemove);
     }
   } catch (err) {
     console.warn("Failed to prune old supplier stats:", err);
@@ -191,71 +153,26 @@ export function incrementParseError(supplier: string): void {
 }
 
 /**
- * Migrate legacy `supplierStats` single-object storage to per-day keys.
- * Runs once; deletes the old key after migration.
- * @source
- */
-async function migrateLegacyStats(): Promise<void> {
-  try {
-    const data = await cstorage.local.get(["supplierStats"]);
-    if (!data.supplierStats || typeof data.supplierStats !== "object") return;
-
-    const legacy = data.supplierStats as SupplierStatsData;
-    const updates: Record<string, Record<string, SupplierDayStats>> = {};
-
-    for (const [dateKey, suppliers] of Object.entries(legacy)) {
-      const storageKey = dateKeyToStorageKey(dateKey);
-      updates[storageKey] = suppliers;
-    }
-
-    if (Object.keys(updates).length > 0) {
-      await cstorage.local.set(updates);
-    }
-    await cstorage.local.remove("supplierStats");
-    console.log("Migrated legacy supplierStats to per-day keys");
-  } catch (error) {
-    console.warn("Failed to migrate legacy supplier stats:", error);
-  }
-}
-
-/**
- * Read all stats from storage, reassembling from per-day keys into
- * the SupplierStatsData shape: { [dateKey]: { [supplier]: SupplierDayStats } }
+ * Read all stats from IndexedDB, returning the SupplierStatsData shape:
+ * `{ [dateKey]: { [supplier]: SupplierDayStats } }`
  * @source
  */
 export async function getStats(): Promise<SupplierStatsData> {
-  // Migrate old format if it exists
-  await migrateLegacyStats();
-
-  flushToStorage();
+  // Flush any pending increments first
+  await flushToStorage();
   try {
-    const allData = await cstorage.local.get(null);
-    const result: SupplierStatsData = {};
-
-    for (const [key, value] of Object.entries(allData)) {
-      if (!key.startsWith(STORAGE_PREFIX)) continue;
-      const dateKey = storageKeyToDateKey(key);
-      if (dateKey && typeof value === "object" && value !== null) {
-        result[dateKey] = value as Record<string, SupplierDayStats>;
-      }
-    }
-
-    return result;
+    return await getAllSupplierStats();
   } catch (error) {
     console.warn("Failed to read supplier stats:", error);
     return {};
   }
 }
 
-/** Clear all stats — removes all supplier_stats_* keys */
+/** Clear all stats — removes all records from the supplierStats store */
 export async function clearStats(): Promise<void> {
   pendingIncrements.clear();
   try {
-    const allData = await cstorage.local.get(null);
-    const keysToRemove = Object.keys(allData).filter((k) => k.startsWith(STORAGE_PREFIX));
-    if (keysToRemove.length > 0) {
-      await cstorage.local.remove(keysToRemove);
-    }
+    await idbClearSupplierStats();
   } catch (error) {
     console.warn("Failed to clear supplier stats:", error);
   }

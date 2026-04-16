@@ -4,6 +4,7 @@ import {
   resetChromeStorageMock,
   restoreChromeStorageMock,
 } from "../../__fixtures__/helpers/chrome/storageMock";
+import { clearSupplierStats } from "@/utils/idbCache";
 import {
   incrementSearchQueryCount,
   incrementSuccess,
@@ -19,8 +20,9 @@ describe("SupplierStatsStore", () => {
     setupChromeStorageMock();
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
     resetChromeStorageMock();
+    await clearSupplierStats();
     vi.useFakeTimers();
   });
 
@@ -170,48 +172,17 @@ describe("SupplierStatsStore", () => {
     expect(stats[today]["RapidTest"].successCount).toBe(20);
   });
 
-  it("stores data in per-day storage keys", async () => {
+  it("stores data keyed by date in IndexedDB", async () => {
     incrementSuccess("TestSupplier");
     await flushStore();
 
-    // Check that the storage key follows supplier_stats_MMDDYYYY format
-    vi.useRealTimers();
-    const allData = await chrome.storage.local.get(null);
-    const statsKeys = Object.keys(allData).filter((k) => k.startsWith("supplier_stats_"));
-
-    expect(statsKeys.length).toBeGreaterThan(0);
-
-    // Verify key format: supplier_stats_MMDDYYYY
-    const keyPattern = /^supplier_stats_\d{8}$/;
-    for (const key of statsKeys) {
-      expect(key).toMatch(keyPattern);
-    }
-  });
-
-  it("migrates legacy supplierStats format", async () => {
-    // Set up legacy format data
-    const legacyData: SupplierStatsData = {
-      "2026-03-25": {
-        Carolina: {
-          searchQueryCount: 5,
-          successCount: 10,
-          failureCount: 1,
-          uniqueProductCount: 4,
-          parseErrorCount: 0,
-        },
-      },
-    };
-    await chrome.storage.local.set({ supplierStats: legacyData });
-
     vi.useRealTimers();
     const stats = await getStats();
+    const today = new Date().toISOString().slice(0, 10);
 
-    // Should have migrated the data
-    expect(stats["2026-03-25"]).toBeDefined();
-    expect(stats["2026-03-25"]["Carolina"].successCount).toBe(10);
-
-    // Legacy key should be removed
-    const remaining = await chrome.storage.local.get(["supplierStats"]);
-    expect(remaining.supplierStats).toBeUndefined();
+    // Verify the date key is in YYYY-MM-DD format
+    expect(stats[today]).toBeDefined();
+    expect(today).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(stats[today]["TestSupplier"].successCount).toBe(1);
   });
 });

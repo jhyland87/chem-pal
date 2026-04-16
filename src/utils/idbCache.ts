@@ -9,10 +9,16 @@ import Logger from "@/utils/Logger";
  */
 export const IDB_SEARCH_RESULTS_CLEARED = "idb:search-results-cleared";
 
+/**
+ * Custom event name dispatched when supplier stats are updated.
+ * Consumers listen for this to live-refresh stats during searches.
+ */
+export const IDB_SUPPLIER_STATS_UPDATED = "idb:supplier-stats-updated";
+
 const logger = new Logger("idbCache");
 
 const DB_NAME = "chempal";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const MAX_SUPPLIER_CACHE_ENTRIES = 100;
 const MAX_HISTORY_ENTRIES = 100;
 
@@ -58,6 +64,13 @@ interface ChemPalDBSchema extends DBSchema {
       timestamp: number;
     };
   };
+  supplierStats: {
+    key: string;
+    value: {
+      dateKey: string;
+      suppliers: Record<string, SupplierDayStats>;
+    };
+  };
 }
 
 let dbPromise: Promise<IDBPDatabase<ChemPalDBSchema>> | null = null;
@@ -87,6 +100,10 @@ function getDB(): Promise<IDBPDatabase<ChemPalDBSchema>> {
           const spdc = db.createObjectStore("supplierProductDataCache", { keyPath: "cacheKey" });
           spdc.createIndex("timestamp", "timestamp");
         }
+
+        if (!db.objectStoreNames.contains("supplierStats")) {
+          db.createObjectStore("supplierStats", { keyPath: "dateKey" });
+        }
       },
     });
   }
@@ -95,6 +112,10 @@ function getDB(): Promise<IDBPDatabase<ChemPalDBSchema>> {
 
 function emitSearchResultsCleared(): void {
   window.dispatchEvent(new CustomEvent(IDB_SEARCH_RESULTS_CLEARED));
+}
+
+function emitSupplierStatsUpdated(): void {
+  window.dispatchEvent(new CustomEvent(IDB_SUPPLIER_STATS_UPDATED));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -343,6 +364,73 @@ export async function clearSupplierProductDataCache(): Promise<void> {
 }
 
 /* -------------------------------------------------------------------------- */
+/*                          Supplier Stats                                    */
+/* -------------------------------------------------------------------------- */
+
+export async function getSupplierStatsEntry(
+  dateKey: string,
+): Promise<Record<string, SupplierDayStats> | undefined> {
+  try {
+    const db = await getDB();
+    const record = await db.get("supplierStats", dateKey);
+    return record?.suppliers;
+  } catch (error) {
+    logger.error("Failed to get supplier stats entry from IndexedDB", { error });
+    return undefined;
+  }
+}
+
+export async function putSupplierStatsEntry(
+  dateKey: string,
+  suppliers: Record<string, SupplierDayStats>,
+): Promise<void> {
+  try {
+    const db = await getDB();
+    await db.put("supplierStats", { dateKey, suppliers });
+    emitSupplierStatsUpdated();
+  } catch (error) {
+    logger.error("Failed to put supplier stats entry in IndexedDB", { error });
+  }
+}
+
+export async function getAllSupplierStats(): Promise<SupplierStatsData> {
+  try {
+    const db = await getDB();
+    const all = await db.getAll("supplierStats");
+    const result: SupplierStatsData = {};
+    for (const record of all) {
+      result[record.dateKey] = record.suppliers;
+    }
+    return result;
+  } catch (error) {
+    logger.error("Failed to get all supplier stats from IndexedDB", { error });
+    return {};
+  }
+}
+
+export async function deleteSupplierStatsEntries(dateKeys: string[]): Promise<void> {
+  try {
+    const db = await getDB();
+    const tx = db.transaction("supplierStats", "readwrite");
+    for (const dateKey of dateKeys) {
+      tx.store.delete(dateKey);
+    }
+    await tx.done;
+  } catch (error) {
+    logger.error("Failed to delete supplier stats entries from IndexedDB", { error });
+  }
+}
+
+export async function clearSupplierStats(): Promise<void> {
+  try {
+    const db = await getDB();
+    await db.clear("supplierStats");
+  } catch (error) {
+    logger.error("Failed to clear supplier stats from IndexedDB", { error });
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 /*                                 Bulk                                       */
 /* -------------------------------------------------------------------------- */
 
@@ -350,7 +438,13 @@ export async function clearAllCaches(): Promise<void> {
   try {
     const db = await getDB();
     const tx = db.transaction(
-      ["searchResults", "searchHistory", "supplierQueryCache", "supplierProductDataCache"],
+      [
+        "searchResults",
+        "searchHistory",
+        "supplierQueryCache",
+        "supplierProductDataCache",
+        "supplierStats",
+      ],
       "readwrite",
     );
     await Promise.all([
@@ -358,6 +452,7 @@ export async function clearAllCaches(): Promise<void> {
       tx.objectStore("searchHistory").clear(),
       tx.objectStore("supplierQueryCache").clear(),
       tx.objectStore("supplierProductDataCache").clear(),
+      tx.objectStore("supplierStats").clear(),
       tx.done,
     ]);
     emitSearchResultsCleared();
