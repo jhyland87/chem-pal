@@ -1,23 +1,60 @@
 # Caching
 
-ChemPal caches search results and product data in `chrome.storage.local` to avoid redundant network requests across searches. All writes go through the `cstorage` compression wrapper (see [Transparent Compression](#transparent-compression)), so cache payloads are LZ-compressed at rest.
+ChemPal uses a tiered storage architecture to cache search results, product data, and application state. Bulk cached data (search results, supplier caches, search history, supplier stats) lives in **IndexedDB** for performance and capacity, while lightweight app state (user settings, UI state, excluded products) remains in **chrome.storage**. All `chrome.storage` writes optionally flow through the `cstorage` compression wrapper (see [Transparent Compression](#transparent-compression)).
 
 ## Key Concepts
 
-- **Two independent caches**: Query results and product details are cached separately with different key generation strategies
-- **LRU eviction**: Both caches cap at 100 entries, evicting the least recently used when full
+- **IndexedDB for cached data**: Query results, product details, search history, and supplier stats are stored in IndexedDB (`chempal` database, version 2) for better performance with large datasets and no quota pressure on `chrome.storage`
+- **chrome.storage for app state**: User settings, table state, excluded products, and session state (current query, panel) remain in `chrome.storage.local` / `chrome.storage.session`
+- **Two independent supplier caches**: Query results and product details are cached separately in IndexedDB with different key generation strategies
+- **LRU eviction**: Both supplier caches cap at 100 entries, evicting the least recently used when full (using IndexedDB indexes on `cachedAt` / `timestamp`)
 - **Limit-aware invalidation**: The query cache invalidates entries when a new search requests more results than the cached limit
-- **Timestamp refresh on read**: Product data cache updates `cachedAt` on hit to prevent active entries from being evicted
+- **Timestamp refresh on read**: Product data cache updates `timestamp` on hit to prevent active entries from being evicted
 - **Serialization**: `ProductBuilder.dump()` serializes builders for storage; `ProductBuilder.createFromCache()` re-hydrates them
-- **Transparent compression**: `src/utils/storage.ts` wraps `chrome.storage` with lz-string (UTF-16) compression so more cached entries fit under the extension quota
+- **Optional compression**: `src/utils/storage.ts` wraps `chrome.storage` with lz-string (UTF-16) compression, controlled by the `useStorageCompression` flag in `config.json`
+- **One-time migration**: `idbMigration.ts` migrates legacy `chrome.storage` cache data to IndexedDB on first run
+
+## Storage Architecture
+
+### IndexedDB (`chempal` database, v2)
+
+| Object Store | Key | Purpose | Max Entries | Eviction |
+|---|---|---|---|---|
+| `searchResults` | `"current"` (single record) | Last search result set | 1 | Overwritten |
+| `searchHistory` | `timestamp` | Search history entries | 100 | Oldest pruned on add |
+| `supplierQueryCache` | `base64(query:supplier)` | Per-supplier search result lists | 100 | LRU by `cachedAt` index |
+| `supplierProductDataCache` | `MD5(url + supplier + params)` | Per-URL product detail snapshots | 100 | LRU by `timestamp` index |
+| `supplierStats` | `YYYY-MM-DD` | Per-supplier, per-day statistics | 30 days | Auto-pruned beyond 30 days |
+
+### chrome.storage.local (via `cstorage`)
+
+| Key | Purpose |
+|---|---|
+| `USER_SETTINGS` | User preferences (theme, currency, suppliers, etc.) |
+| `HTTP_LRU` | LRU cache for HTTP responses (100 max entries) |
+| `EXCLUDED_PRODUCTS` | Map of user-excluded products |
+| `TABLE_STATE` | TanStack table state (sorting, pagination, column visibility) |
+| `SELECTED_SUPPLIERS` | Array of selected supplier names |
+| `BOOKMARKS_FOLDER_ID` | Chrome bookmarks folder ID for ChemPal favorites |
+
+### chrome.storage.session (via `cstorage`)
+
+| Key | Purpose |
+|---|---|
+| `QUERY` | Current search query string |
+| `SEARCH_INPUT` | Current search input text |
+| `SEARCH_IS_NEW_SEARCH` | Boolean flag for new search detection |
+| `PANEL` | Current panel index (0=SearchHome, 1=Results, 2=Stats) |
 
 ## Transparent Compression
 
-All `chrome.storage` access in the cache layer flows through `cstorage`, a compression-aware facade exported from `src/utils/storage.ts`. This lets ChemPal cache substantially more data in the same storage quota without any call-site changes beyond the import.
+All `chrome.storage` access flows through `cstorage`, a compression-aware facade exported from `src/utils/storage.ts`. Compression is controlled by the `useStorageCompression` flag in `config.json` — when `true`, values are LZ-compressed at rest; when `false`, values are stored as plain JSON.
+
+> **Note:** IndexedDB data is **not** compressed via `cstorage`. The compression layer only applies to `chrome.storage.local` and `chrome.storage.session` access.
 
 ### Wire format
 
-Compressed values are wrapped in a small envelope so reads can distinguish compressed from legacy entries:
+When compression is enabled, values are wrapped in a small envelope so reads can distinguish compressed from legacy entries:
 
 ```ts
 interface LzEnvelope {
@@ -37,16 +74,17 @@ The module is intentionally split so the compression logic is directly unit-test
 
 `cstorage.onChanged.addListener` wraps the caller's listener so that `oldValue` / `newValue` in the change payload are already decompressed. A `WeakMap` tracks the outer→inner listener mapping so `removeListener` works as expected.
 
-### What's compressed
+### Compression toggle
 
-| Area | Keys | Purpose |
-|---|---|---|
-| `chrome.storage.local` | Query results cache entries | Per-supplier search result lists |
-| `chrome.storage.local` | Product data cache entries | Per-URL product detail snapshots |
-| `chrome.storage.local` | `HttpLru` cache | HTTP response cache used by suppliers |
-| `chrome.storage.local` | `SupplierStatsStore` entries | Per-supplier runtime stats |
-| `chrome.storage.local` | `HISTORY`, `EXCLUDED_PRODUCTS`, `USER_SETTINGS` | App-level persistent state |
-| `chrome.storage.session` | `SEARCH_RESULTS` | Persisted search results for restore-on-mount |
+The `useStorageCompression` flag in `config.json` controls whether `encodeValue()` compresses or passes through:
+
+```json
+{
+  "useStorageCompression": false
+}
+```
+
+When `false`, `encodeValue()` returns the raw value without wrapping it in an `LzEnvelope`. `decodeValue()` always handles both compressed envelopes and raw values, so toggling the flag is fully backward-compatible with existing data.
 
 ### Backward compatibility
 
@@ -54,6 +92,20 @@ The module is intentionally split so the compression logic is directly unit-test
 - Reads of externally-written envelopes (e.g. another page that imports `cstorage`) are transparent.
 - If compression or decompression fails, the wrapper logs via `Logger("storage")` and falls back to the raw value so cached data is never lost on a codec error.
 - The envelope carries a `__lz` version tag (`LZ_VERSION = 1`) so the wire format can be migrated in the future.
+
+## One-Time Migration
+
+`idbMigration.ts` runs once before React renders (called from `main.tsx`). It migrates legacy `chrome.storage` cache data to IndexedDB:
+
+| Legacy Key (chrome.storage) | Target (IndexedDB store) |
+|---|---|
+| `search_results` (session) | `searchResults` |
+| `search_history` (local) | `searchHistory` |
+| `supplier_query_cache` (local) | `supplierQueryCache` |
+| `supplier_product_data_cache` (local) | `supplierProductDataCache` |
+| `supplier_stats_*` and legacy `supplierStats` (local) | `supplierStats` (with date key conversion) |
+
+The migration is idempotent — it checks the `__idb_migrated` flag in `chrome.storage.local` and skips if already run. After migration, legacy cache keys are removed from `chrome.storage`. Non-cache keys (`USER_SETTINGS`, `HTTP_LRU`, `EXCLUDED_PRODUCTS`, etc.) are not touched.
 
 ## Cache Architecture
 
@@ -68,13 +120,21 @@ SC["SupplierCache instance\nscoped to supplier name\ne.g. Loudwolf, Onyxmet"]
 SB --> IC --> SC
 end
 
-subgraph Storage["Chrome Storage Backend"]
+subgraph Storage["Storage Backend"]
 direction LR
-CSTORAGE["cstorage wrapper\nlz-string compression\nencodeValue / decodeValue"]
-QCS[("chrome.storage.local\nQuery Results Cache\nLZ envelope at rest\nkey: SupplierCache.getQueryCacheKey()")]
-PDS[("chrome.storage.local\nProduct Data Cache\nLZ envelope at rest\nkey: SupplierCache.getProductDataCacheKey()")]
-CSTORAGE --> QCS
-CSTORAGE --> PDS
+subgraph IDB["IndexedDB (chempal db)"]
+direction TB
+QCS[("supplierQueryCache\nQuery Results\nkey: base64(query:supplier)\nindex: cachedAt")]
+PDS[("supplierProductDataCache\nProduct Data\nkey: MD5(url+supplier+params)\nindex: timestamp")]
+SRS[("searchResults\nCurrent Results\nkey: 'current'")]
+SHS[("searchHistory\nSearch History\nkey: timestamp")]
+SSS[("supplierStats\nSupplier Stats\nkey: YYYY-MM-DD")]
+end
+subgraph CS["chrome.storage (via cstorage)"]
+direction TB
+LOCAL[("chrome.storage.local\nUSER_SETTINGS, HTTP_LRU,\nEXCLUDED_PRODUCTS,\nTABLE_STATE, etc.")]
+SESSION[("chrome.storage.session\nQUERY, PANEL,\nSEARCH_INPUT")]
+end
 end
 
 subgraph QueryCache["Query Results Cache Flow"]
@@ -89,7 +149,7 @@ GCK --> QLOOKUP
 subgraph CacheHit1["Cache Hit"]
 direction TB
 LIMITCHK{"cached.limit\nless than requested limit?"}
-INVALIDATE["Invalidate entry\ndelete cache key\nsave back to storage"]
+INVALIDATE["Invalidate entry\ndelete cache key"]
 RESTORE["ProductBuilder.createFromCache(baseURL, data)\nre-hydrate builders from\ncached serialized data\nslice to requested limit"]
 LIMITCHK -->|"yes - insufficient data"| INVALIDATE
 LIMITCHK -->|"no - sufficient"| RESTORE
@@ -108,7 +168,7 @@ end
 
 SAVE1 -->|"write"| QCS
 QLOOKUP -.->|"read"| QCS
-INVALIDATE -.->|"delete + write"| QCS
+INVALIDATE -.->|"delete"| QCS
 
 subgraph ProductCache["Product Data Cache Flow"]
 direction TB
@@ -121,7 +181,7 @@ PLOOKUP{"getCachedProductData(key)\nexists?"}
 GPCK --> PLOOKUP
 subgraph CacheHit2["Cache Hit"]
 direction TB
-TOUCH["updateProductDataCacheTimestamp(key)\nrefresh cachedAt to prevent\nLRU eviction"]
+TOUCH["updateProductDataCacheTimestamp(key)\nrefresh timestamp to prevent\nLRU eviction"]
 SETDATA["product.setData(cachedData)\nhydrate builder with\ncached product details"]
 TOUCH --> SETDATA
 end
@@ -143,7 +203,7 @@ TOUCH -.->|"update timestamp"| PDS
 subgraph LRU["LRU Eviction Policy"]
 direction TB
 MAX["Max entries: 100 per cache\nquery cache and product cache\neach have independent limits"]
-EVICT["On write: if entries ≥ 100\nsort by cachedAt ascending\ndelete oldest entry"]
+EVICT["On write: if entries >= 100\nsort by cachedAt/timestamp ascending\ndelete oldest entry via IDB index"]
 MAX --- EVICT
 end
 
@@ -159,7 +219,8 @@ SAVE1 -.->|"attached as __cacheMetadata"| Metadata
 SAVE2 -.->|"attached as __cacheMetadata"| Metadata
 
 classDef init fill:#4A90D9,stroke:#2C5F8A,color:#fff,font-weight:bold
-classDef storage fill:#E8A838,stroke:#B8841F,color:#fff,font-weight:bold
+classDef idb fill:#E67E22,stroke:#D35400,color:#fff,font-weight:bold
+classDef cstorage fill:#16A085,stroke:#0E6B57,color:#fff,font-weight:bold
 classDef cacheFlow fill:#5A7D8B,stroke:#3E5A66,color:#fff
 classDef hit fill:#27AE60,stroke:#1E8449,color:#fff
 classDef miss fill:#D97B2A,stroke:#A35D1F,color:#fff
@@ -167,11 +228,10 @@ classDef decision fill:#F5D76E,stroke:#C5A83D,color:#333,font-weight:bold
 classDef lru fill:#E74C3C,stroke:#C0392B,color:#fff
 classDef meta fill:#8E44AD,stroke:#6C3483,color:#fff
 classDef keygen fill:#1ABC9C,stroke:#148F77,color:#fff
-classDef compress fill:#16A085,stroke:#0E6B57,color:#fff,font-weight:bold
 
 class SB,IC,SC init
-class QCS,PDS storage
-class CSTORAGE compress
+class QCS,PDS,SRS,SHS,SSS idb
+class LOCAL,SESSION cstorage
 class QPC,GPD cacheFlow
 class RESTORE,SETDATA,TOUCH hit
 class QP,DUMP1,SAVE1,FETCH,DUMP2,SAVE2 miss
@@ -185,9 +245,11 @@ class GCK,GPCK keygen
 
 | | Query Results Cache | Product Data Cache |
 |---|---|---|
+| **Storage** | IndexedDB `supplierQueryCache` | IndexedDB `supplierProductDataCache` |
 | **Purpose** | Cache search result lists | Cache individual product details |
 | **Key** | `base64(query + supplier)` | `MD5(url + supplier + params)` |
 | **Stored data** | Array of serialized `ProductBuilder` snapshots | Single serialized `ProductBuilder` snapshot |
 | **Invalidation** | When requested limit exceeds cached limit | LRU eviction only |
 | **Written** | After `queryProducts()` returns results | After `getProductData()` fetches a product page |
 | **Max entries** | 100 | 100 |
+| **LRU index** | `cachedAt` | `timestamp` |
