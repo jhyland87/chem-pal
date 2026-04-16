@@ -67,6 +67,7 @@ interface AppState {
   speedDialVisibility: boolean;
   drawerTab: DRAWER_INDEX;
   selectedSuppliers: string[];
+  bookmarksFolderId: string | null;
 }
 
 const initialAppState: AppState = {
@@ -92,6 +93,7 @@ const initialAppState: AppState = {
   speedDialVisibility: false,
   drawerTab: DRAWER_INDEX.CLOSED,
   selectedSuppliers: [],
+  bookmarksFolderId: null,
 };
 
 type AppAction =
@@ -100,7 +102,8 @@ type AppAction =
   | { type: APP_ACTION.SET_SPEED_DIAL_VISIBILITY; visible: boolean }
   | { type: APP_ACTION.LOAD_FROM_STORAGE; data: Partial<AppState> }
   | { type: APP_ACTION.SET_DRAWER_TAB; tab: DRAWER_INDEX }
-  | { type: APP_ACTION.SET_SELECTED_SUPPLIERS; suppliers: string[] };
+  | { type: APP_ACTION.SET_SELECTED_SUPPLIERS; suppliers: string[] }
+  | { type: APP_ACTION.SET_BOOKMARKS_FOLDER_ID; id: string | null };
 
 /**
  * React v19 App component with enhanced state management
@@ -219,6 +222,27 @@ function App() {
           };
         }
 
+        // Persists the ChemPal Favorites bookmarks folder ID to cstorage.local
+        // so we don't need to scan the bookmark tree on every popup open.
+        case APP_ACTION.SET_BOOKMARKS_FOLDER_ID: {
+          startTransition(() => {
+            (async () => {
+              try {
+                await cstorage.local.set({
+                  [CACHE.BOOKMARKS_FOLDER_ID]: action.id,
+                });
+              } catch (error) {
+                console.error("Failed to save bookmarksFolderId:", { error });
+              }
+            })();
+          });
+
+          return {
+            ...currentState,
+            bookmarksFolderId: action.id,
+          };
+        }
+
         default:
           return currentState;
       }
@@ -232,7 +256,7 @@ function App() {
       try {
         const [sessionData, localData, idbResults] = await Promise.all([
           cstorage.session.get([CACHE.PANEL]),
-          cstorage.local.get([CACHE.USER_SETTINGS, CACHE.SELECTED_SUPPLIERS]),
+          cstorage.local.get([CACHE.USER_SETTINGS, CACHE.SELECTED_SUPPLIERS, CACHE.BOOKMARKS_FOLDER_ID]),
           getSearchResults(),
         ]);
         const loadedData: Partial<AppState> = {};
@@ -251,6 +275,10 @@ function App() {
 
         if (localData[CACHE.SELECTED_SUPPLIERS]) {
           loadedData.selectedSuppliers = localData[CACHE.SELECTED_SUPPLIERS] as string[];
+        }
+
+        if (localData[CACHE.BOOKMARKS_FOLDER_ID]) {
+          loadedData.bookmarksFolderId = localData[CACHE.BOOKMARKS_FOLDER_ID] as string;
         }
 
         if (Object.keys(loadedData).length > 0) {
@@ -359,6 +387,10 @@ function App() {
     });
   };
 
+  const handleSetBookmarksFolderId = (id: string | null) => {
+    dispatch({ type: APP_ACTION.SET_BOOKMARKS_FOLDER_ID, id });
+  };
+
   // AppContext value with fixed searchResults property
   const appContextValue = {
     userSettings: appState.userSettings,
@@ -375,6 +407,8 @@ function App() {
     setPendingSearchQuery,
     searchFilters,
     setSearchFilters,
+    bookmarksFolderId: appState.bookmarksFolderId,
+    setBookmarksFolderId: handleSetBookmarksFolderId,
   };
 
   return (

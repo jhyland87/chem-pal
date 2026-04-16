@@ -92,6 +92,10 @@ declare global {
     searchFilters: SearchFilters;
     /** Function to update pre-search filters */
     setSearchFilters: (filters: SearchFilters) => void;
+    /** ID of the ChemPal Favorites bookmarks folder (null if not yet resolved) */
+    bookmarksFolderId: string | null;
+    /** Function to store the bookmarks folder ID */
+    setBookmarksFolderId: (id: string | null) => void;
   }
 
   /**

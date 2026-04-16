@@ -311,19 +311,19 @@ export function htmlToAscii(html: string): string {
  *
  * @category Helpers
  * @param data - The data to parse
- * @returns The parsed JSON or false if it fails
+ * @returns The parsed JSON or undefined if it fails
  * @example
  * ```typescript
  * tryParseJson('{"name": "John", "age": 30}') // { name: 'John', age: 30 }
- * tryParseJson('not a json string') // false
+ * tryParseJson('not a json string') // undefined
  * ```
  * @source
  */
-export function tryParseJson(data: unknown): unknown | false {
+export function tryParseJson(data: unknown): unknown | undefined {
   try {
     return JSON.parse(String(data));
   } catch {
-    return false;
+    return undefined;
   }
 }
 
