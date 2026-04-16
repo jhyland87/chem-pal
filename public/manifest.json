@@ -13,11 +13,8 @@
     "scripting",
     "sidePanel",
     "tabs",
-    "activeTab",
     "storage",
-    "nativeMessaging",
     "bookmarks",
-    "contextMenus",
     "declarativeNetRequest"
   ],
   "host_permissions": [

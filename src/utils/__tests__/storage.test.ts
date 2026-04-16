@@ -3,7 +3,16 @@ import {
   restoreChromeStorageMock,
   setupChromeStorageMock,
 } from "@/__fixtures__/helpers/chrome/storageMock";
-import {
+import { compressToUTF16 } from "lz-string";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+
+// Ensure compression is enabled for these tests regardless of config.json
+vi.mock("@/../config.json", async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>();
+  return { ...actual, useStorageCompression: true };
+});
+
+const {
   cstorage,
   decodeChanges,
   decodeItems,
@@ -12,10 +21,8 @@ import {
   encodeValue,
   isLzEnvelope,
   LZ_VERSION,
-  type LzEnvelope,
-} from "@/utils/storage";
-import { compressToUTF16 } from "lz-string";
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+} = await import("@/utils/storage");
+type LzEnvelope = import("@/utils/storage").LzEnvelope;
 
 describe("storage codec (pure functions)", () => {
   describe("isLzEnvelope", () => {
