@@ -5,6 +5,7 @@ import {
   addSearchHistoryEntry,
   putSupplierQueryCacheEntry,
   putSupplierProductDataCacheEntry,
+  putSupplierStatsEntry,
 } from "@/utils/idbCache";
 import type { CachedData } from "@/suppliers/SupplierBase";
 
@@ -92,6 +93,41 @@ export async function migrateFromChromeStorage(): Promise<void> {
       logger.debug("Migrated supplier_product_data_cache", { count: entries.length });
     }
 
+    // Migrate supplier stats (dynamic keys: supplier_stats_MMDDYYYY and legacy supplierStats)
+    const allLocalData = await cstorage.local.get(null);
+    const statsKeysToRemove: string[] = [];
+
+    // Migrate per-day stats keys (supplier_stats_MMDDYYYY)
+    const STATS_PREFIX = "supplier_stats_";
+    for (const [key, value] of Object.entries(allLocalData)) {
+      if (!key.startsWith(STATS_PREFIX)) continue;
+      statsKeysToRemove.push(key);
+      if (typeof value !== "object" || value === null) continue;
+
+      // Convert MMDDYYYY storage key to YYYY-MM-DD date key
+      const suffix = key.replace(STATS_PREFIX, "");
+      if (suffix.length !== 8) continue;
+      const mm = suffix.slice(0, 2);
+      const dd = suffix.slice(2, 4);
+      const yyyy = suffix.slice(4, 8);
+      const dateKey = `${yyyy}-${mm}-${dd}`;
+
+      await putSupplierStatsEntry(dateKey, value as Record<string, SupplierDayStats>);
+    }
+
+    // Migrate legacy single-object supplierStats key
+    if (allLocalData.supplierStats && typeof allLocalData.supplierStats === "object") {
+      const legacy = allLocalData.supplierStats as SupplierStatsData;
+      for (const [dateKey, suppliers] of Object.entries(legacy)) {
+        await putSupplierStatsEntry(dateKey, suppliers);
+      }
+      statsKeysToRemove.push("supplierStats");
+    }
+
+    if (statsKeysToRemove.length > 0) {
+      logger.debug("Migrated supplier stats", { count: statsKeysToRemove.length });
+    }
+
     // Remove all legacy keys from chrome.storage
     await Promise.all([
       cstorage.local.remove([
@@ -100,6 +136,7 @@ export async function migrateFromChromeStorage(): Promise<void> {
         LEGACY_KEYS.SUPPLIER_PRODUCT_DATA_CACHE,
         LEGACY_KEYS.QUERY_RESULTS_CACHE,
         LEGACY_KEYS.PRODUCT_DATA_CACHE,
+        ...statsKeysToRemove,
       ]),
       cstorage.session.remove([LEGACY_KEYS.SEARCH_RESULTS]),
     ]);
