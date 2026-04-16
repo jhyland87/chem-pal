@@ -117,19 +117,84 @@ export default abstract class SupplierBaseAmazon
    * @returns The products from Amazon
    * @source
    */
+  /**
+   * Unique rule ID for the declarativeNetRequest Origin header override.
+   * Each Amazon domain instance uses its own ID derived from the baseURL hash
+   * to avoid collisions when multiple Amazon suppliers run concurrently.
+   */
+  private get originRuleId(): number {
+    // Simple hash of baseURL to produce a stable, unique rule ID per domain
+    let hash = 0;
+    for (let i = 0; i < this.baseURL.length; i++) {
+      hash = (hash * 31 + this.baseURL.charCodeAt(i)) | 0;
+    }
+    return Math.abs(hash % 1_000_000) + 1; // IDs must be positive integers
+  }
+
+  /**
+   * Adds a declarativeNetRequest rule to override the Origin header on POST
+   * requests to this supplier's Amazon domain so they appear to originate
+   * from the Amazon domain itself rather than the extension.
+   */
+  private async addOriginOverrideRule(): Promise<void> {
+    try {
+      const ruleId = this.originRuleId;
+      const urlFilter = `${this.baseURL}/*`;
+
+      // Remove any stale rule with the same ID first
+      await chrome.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds: [ruleId],
+        addRules: [
+          {
+            id: ruleId,
+            priority: 1,
+            action: {
+              type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+              requestHeaders: [
+                {
+                  header: "Origin",
+                  operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+                  value: this.baseURL,
+                },
+              ],
+            },
+            condition: {
+              urlFilter,
+              resourceTypes: [chrome.declarativeNetRequest.ResourceType.XMLHTTPREQUEST],
+            },
+          },
+        ],
+      });
+      this.logger.debug("Origin override rule added", { ruleId, urlFilter });
+    } catch (error) {
+      this.logger.error("Failed to add Origin override rule", { error });
+    }
+  }
+
+  /**
+   * Removes the declarativeNetRequest Origin override rule for this supplier's
+   * Amazon domain.
+   */
+  private async removeOriginOverrideRule(): Promise<void> {
+    try {
+      await chrome.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds: [this.originRuleId],
+      });
+    } catch (error) {
+      this.logger.error("Failed to remove Origin override rule", { error });
+    }
+  }
+
   protected async queryProducts(
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
+    // Override the Origin header for the duration of the Amazon requests
+    await this.addOriginOverrideRule();
+
     const queryPagination = async (paginationQuery: string, page: number = 1) => {
       const response = await this.httpPost({
         path: `/s?k=${paginationQuery}&page=${page}&${this.extraParams || ""}`,
-        // path: `/s/query`, //?i=industrial&k=${paginationQuery}&page=${page}`,
-        // params: {
-        //   i: "industrial",
-        //   k: paginationQuery,
-        //   page: page,
-        // },
         body: {
           /* eslint-disable */
           "page-content-type": "atf",
@@ -139,10 +204,8 @@ export default abstract class SupplierBaseAmazon
         },
         headers: {
           "Accept-Language": "en-US,en;q=0.6",
-          //referrer: `${this.baseURL}/s?k=${urlencode(paginationQuery)}&ref=nb_sb_noss`,
           Referrerpolicy: "strict-origin-when-cross-origin",
           Cookie: "i18n-prefs=USD; lc-main=en_US",
-          //redirect: "follow",
         },
       });
       if (!response) {
@@ -163,11 +226,17 @@ export default abstract class SupplierBaseAmazon
       return this.parseResponse(String(responseTextWithoutSearchTerm));
     };
 
-    const resultPages = await Promise.all(
-      Array.from({ length: Math.ceil(limit / 16) }, (_, i) =>
-        queryPagination(`${this.queryPrefix ?? this.supplierName}+${query}`, i + 1),
-      ),
-    );
+    let resultPages: (unknown | void)[];
+    try {
+      resultPages = await Promise.all(
+        Array.from({ length: Math.ceil(limit / 16) }, (_, i) =>
+          queryPagination(`${this.queryPrefix ?? this.supplierName}+${query}`, i + 1),
+        ),
+      );
+    } finally {
+      // Always clean up the rule, even if the requests fail
+      await this.removeOriginOverrideRule();
+    }
 
     this.logger.debug("resultPages:", { query, resultPages });
     if (!resultPages || !Array.isArray(resultPages) || resultPages.length === 0) {
