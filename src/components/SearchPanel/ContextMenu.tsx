@@ -1,3 +1,5 @@
+import { useStatusBar } from "@/components/StatusBar";
+import { useAppContext } from "@/context";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
 import BlockIcon from "@/icons/BlockIcon";
 import BookmarkIcon from "@/icons/BookmarkIcon";
@@ -76,6 +78,8 @@ export default function ContextMenu({
   product,
   onExcludeProduct,
 }: ContextMenuProps) {
+  const { flashStatusText } = useStatusBar();
+  const { bookmarksFolderId, setBookmarksFolderId } = useAppContext();
   if (!product) return null;
   const menuRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<ContextMenuPosition>({ x, y });
@@ -193,14 +197,91 @@ export default function ContextMenu({
   };
 
   /**
-   * Handles adding the product to favorites.
-   * Currently logs to console - needs integration with favorites system.
+   * Handles creating a bookmark for the product in a "ChemPal Favorites" folder.
+   * First checks AppContext for a cached folder ID, then scans the full bookmark
+   * tree if needed, and creates the folder in the bookmarks root as a last resort.
+   * Persists the resolved folder ID back to AppContext / chrome.storage.
    * @source
    */
-  const handleAddToFavorites = () => {
-    // TODO: Implement favorites functionality
-    console.log("Adding to favorites:", { product });
-    // This would integrate with your favorites system
+  const handleCreateBookmark = async () => {
+    const FOLDER_NAME = "ChemPal Favorites";
+
+    /**
+     * Recursively searches the bookmark tree for a folder matching the given name.
+     * @param nodes - Bookmark tree nodes to search
+     * @returns The matching folder node, or undefined if not found
+     */
+    const findFolderInTree = (
+      nodes: chrome.bookmarks.BookmarkTreeNode[],
+    ): chrome.bookmarks.BookmarkTreeNode | undefined => {
+      for (const node of nodes) {
+        if (node.title === FOLDER_NAME && !node.url) return node;
+        if (node.children) {
+          const found = findFolderInTree(node.children);
+          if (found) return found;
+        }
+      }
+      return undefined;
+    };
+
+    try {
+      let folderId = bookmarksFolderId;
+
+      // 1. If we have a cached ID, verify it still exists
+      if (folderId) {
+        try {
+          const [existing] = await chrome.bookmarks.get(folderId);
+          if (!existing || existing.url) {
+            // ID is stale or points to a bookmark, not a folder
+            folderId = null;
+          }
+        } catch {
+          // Bookmark was deleted — clear the cached ID
+          folderId = null;
+        }
+      }
+
+      // 2. If no cached ID, scan the entire bookmark tree
+      if (!folderId) {
+        const tree = await chrome.bookmarks.getTree();
+        const folder = findFolderInTree(tree);
+        folderId = folder?.id ?? null;
+      }
+
+      // 3. If still not found, create the folder in the bookmarks root
+      if (!folderId) {
+        const rootNodes = await chrome.bookmarks.getTree();
+        const rootChildren = rootNodes[0]?.children ?? [];
+        const created = await chrome.bookmarks.create({
+          parentId: rootChildren[0]?.id,
+          title: FOLDER_NAME,
+        });
+        folderId = created.id;
+      }
+
+      // Persist the resolved folder ID
+      if (folderId !== bookmarksFolderId) {
+        setBookmarksFolderId(folderId);
+      }
+
+      // Check if a bookmark with this URL already exists in the folder
+      const children = await chrome.bookmarks.getChildren(folderId);
+      const duplicate = children.find((node) => node.url === product.url);
+
+      if (duplicate) {
+        flashStatusText(`Bookmark already exists in ${FOLDER_NAME}`);
+      } else {
+        await chrome.bookmarks.create({
+          parentId: folderId,
+          title: product.title,
+          url: product.url,
+        });
+        flashStatusText(`Bookmark created at ${FOLDER_NAME}/${product.title}`);
+      }
+    } catch (error) {
+      console.error("Failed to create bookmark:", { error, product });
+    }
+
     onClose();
   };
 
@@ -362,11 +443,11 @@ export default function ContextMenu({
 
         <Divider />
 
-        <MenuItem className={styles["context-menu-item"]} onClick={handleAddToFavorites}>
+        <MenuItem className={styles["context-menu-item"]} onClick={handleCreateBookmark}>
           <ListItemIcon>
             <BookmarkIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText className={styles["context-menu-option-text"]} primary="Add to Favorites" />
+          <ListItemText className={styles["context-menu-option-text"]} primary="Create Bookmark" />
         </MenuItem>
 
         <MenuItem className={styles["context-menu-item"]} onClick={handleQuickSearch}>

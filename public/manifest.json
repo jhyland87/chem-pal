@@ -9,7 +9,16 @@
   "side_panel": {
     "default_path": "index.html"
   },
-  "permissions": ["scripting", "sidePanel", "tabs", "activeTab", "storage", "nativeMessaging"],
+  "permissions": [
+    "scripting",
+    "sidePanel",
+    "tabs",
+    "activeTab",
+    "storage",
+    "nativeMessaging",
+    "bookmarks",
+    "contextMenus"
+  ],
   "host_permissions": [
     "https://www.ambeed.com/*",
     "https://www.carolina.com/*",

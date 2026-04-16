@@ -116,5 +116,6 @@
       "symbol": "JP¥"
     }
   },
-  "defaultResultsLimit": 5
+  "defaultResultsLimit": 5,
+  "useStorageCompression": false
 }

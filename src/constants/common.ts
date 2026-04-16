@@ -65,6 +65,8 @@ export enum APP_ACTION {
   SET_DRAWER_TAB = "SET_DRAWER_TAB",
   /** Updates the selected suppliers list for search filtering */
   SET_SELECTED_SUPPLIERS = "SET_SELECTED_SUPPLIERS",
+  /** Stores the ID of the ChemPal Favorites bookmarks folder */
+  SET_BOOKMARKS_FOLDER_ID = "SET_BOOKMARKS_FOLDER_ID",
 }
 
 /**
@@ -98,6 +100,8 @@ export enum CACHE {
   EXCLUDED_PRODUCTS = "excluded_products",
   /** Persisted TanStack table state (sorting, pagination, expanded rows, column visibility) */
   TABLE_STATE = "table_state",
+  /** ID of the ChemPal Favorites bookmarks folder */
+  BOOKMARKS_FOLDER_ID = "bookmarks_folder_id",
 }
 
 /**

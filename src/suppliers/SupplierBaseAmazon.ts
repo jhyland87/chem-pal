@@ -1,7 +1,9 @@
+import { AVAILABILITY } from "@/constants/common";
 import { getCurrencyCodeFromSymbol, parsePrice } from "@/helpers/currency";
+import { findElementWithText } from "@/helpers/dom";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM } from "@/helpers/request";
-import { getUserCountry, mapDefined } from "@/helpers/utils";
+import { getUserCountry, mapDefined, tryParseJson } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import SupplierBase from "./SupplierBase";
 
@@ -31,7 +33,10 @@ export interface SearchResult {
   results: SearchItem[];
 }
 
-export type AmazonListing = Pick<Product, "id" | "title" | "url" | "price" | "currencySymbol">;
+export type AmazonListing = Pick<
+  Product,
+  "id" | "title" | "url" | "price" | "currencySymbol" | "availability"
+>;
 
 const amazonDomains: CountryDomainMap = {
   /* eslint-disable */
@@ -133,8 +138,10 @@ export default abstract class SupplierBaseAmazon
           /* eslint-enable */
         },
         headers: {
+          "Accept-Language": "en-US,en;q=0.6",
           //referrer: `${this.baseURL}/s?k=${urlencode(paginationQuery)}&ref=nb_sb_noss`,
-          referrerPolicy: "strict-origin-when-cross-origin",
+          Referrerpolicy: "strict-origin-when-cross-origin",
+          Cookie: "i18n-prefs=USD; lc-main=en_US",
           //redirect: "follow",
         },
       });
@@ -242,15 +249,22 @@ export default abstract class SupplierBaseAmazon
   }
 
   private findQID(doc: Document): Maybe<string> {
-    const link = Array.from(doc.querySelectorAll("a")).find((a: HTMLAnchorElement) =>
-      a.href.includes("qid="),
-    );
+    // const link = Array.from(doc.querySelectorAll("a")).find((a: HTMLAnchorElement) =>
+    //   a.href.includes("qid="),
+    // );
+    const xpath = ".//a[contains(@href, 'qid=')]";
+
+    const nodes = document.evaluate(xpath, doc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+
+    const link = nodes.singleNodeValue as HTMLAnchorElement;
     if (!link) {
       this.logger.warn("No QID found", { doc });
       return;
     }
-    return link.href.split("qid=")[1];
+    console.log("Found QID:", link.href.split("qid=").at(1));
+    return link.href.split("qid=").at(1);
   }
+
   /**
    * Parses the search result from Amazon
    * @param raw - The raw HTML of the search result
@@ -310,6 +324,11 @@ export default abstract class SupplierBaseAmazon
 
       if (!documentBody) {
         throw new Error("Document body not found");
+      }
+
+      const stockElement = findElementWithText(documentBody, "left in stock", "span");
+      if (stockElement) {
+        this.logger.debug("stockElement", { stockElement });
       }
 
       // Extracting the title
@@ -378,6 +397,9 @@ export default abstract class SupplierBaseAmazon
 
       return {
         id: productId,
+        availability: stockElement?.innerText.toLowerCase().includes("order soon")
+          ? AVAILABILITY.LIMITED_STOCK
+          : AVAILABILITY.IN_STOCK,
         url: `${amazonBase}/dp/${productId}`,
         title,
         currencySymbol: currency,
@@ -403,15 +425,7 @@ export default abstract class SupplierBaseAmazon
         const splitted = response.split("\n&&&\n");
         if (splitted.length < 3) throw new Error();
 
-        return splitted
-          .map((s) => {
-            try {
-              return JSON.parse(s);
-            } catch {
-              return null;
-            }
-          })
-          .filter((s) => s);
+        return mapDefined(splitted, tryParseJson);
       } catch {
         return String(response ?? "");
       }
@@ -425,34 +439,29 @@ export default abstract class SupplierBaseAmazon
    * @source
    */
   protected initProductBuilders(results: AmazonListing[]): ProductBuilder<Product>[] {
-    return results
-      .map((item) => {
-        const builder = new ProductBuilder(this.baseURL);
-        builder
-          .setBasicInfo(item.title, item.url, this.supplierName)
-          .setPricing(
-            item.price,
-            getCurrencyCodeFromSymbol(item.currencySymbol),
-            item.currencySymbol,
-          )
-          .setVendor("Amazon");
+    return mapDefined(results, (item) => {
+      const builder = new ProductBuilder(this.baseURL);
+      builder
+        .setBasicInfo(item.title, item.url, this.supplierName)
+        .setPricing(item.price, getCurrencyCodeFromSymbol(item.currencySymbol), item.currencySymbol)
+        .setAvailability(item.availability)
+        .setVendor("Amazon");
 
-        const quantity = parseQuantity(item.title);
+      const quantity = parseQuantity(item.title);
 
-        if (!quantity) {
-          this.logger.warn("Failed to get quantity from retrieved product title", {
-            title: item.title,
-            builder,
-            item,
-          });
-          return;
-        }
+      if (!quantity) {
+        this.logger.warn("Failed to get quantity from retrieved product title", {
+          title: item.title,
+          builder,
+          item,
+        });
+        return;
+      }
 
-        builder.setQuantity(quantity.quantity, quantity.uom);
+      builder.setQuantity(quantity.quantity, quantity.uom);
 
-        return builder;
-      })
-      .filter((builder): builder is ProductBuilder<Product> => builder !== undefined);
+      return builder;
+    });
   }
 
   protected async getProductData(
