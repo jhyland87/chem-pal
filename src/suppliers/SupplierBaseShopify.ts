@@ -74,7 +74,8 @@ export default abstract class SupplierBaseShopify
                   weightUnit,
                   requiresShipping,
                   availableForSale,
-                  currentlyNotInStock
+                  currentlyNotInStock,
+                  productType
                 }
               }
             }

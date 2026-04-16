@@ -19,3 +19,4 @@
 
 # Suppliers to add
 - aladdinsci.com
+- alchemielabs.com

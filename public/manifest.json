@@ -17,7 +17,8 @@
     "storage",
     "nativeMessaging",
     "bookmarks",
-    "contextMenus"
+    "contextMenus",
+    "declarativeNetRequest"
   ],
   "host_permissions": [
     "https://www.ambeed.com/*",
@@ -66,7 +67,16 @@
     "https://www.amazon.co.za/*",
     "https://gold-testing-equipment.myshopify.com/*",
     "https://www.goldandsilvertesting.com/*",
-    "https://pubchem.ncbi.nlm.nih.gov/*"
+    "https://pubchem.ncbi.nlm.nih.gov/*",
+    "https://best-value-vacs.myshopify.com/*",
+    "https://shopbvv.com/*",
+    "https://alchemielabs.com/*",
+    "https://aladdinsci.com/*",
+    "https://www.amazon.com/*",
+    "https://www.amazon.co.uk/*",
+    "https://www.amazon.de/*",
+    "https://www.amazon.co.jp/*",
+    "https://www.amazon.ca/*"
   ],
   "background": {
     "service_worker": "service-worker.js"

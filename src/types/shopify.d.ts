@@ -42,6 +42,8 @@ declare global {
     availableForSale: boolean;
     /** Whether the variant is currently out of stock */
     currentlyNotInStock: boolean;
+    /** Product type */
+    productType: string | null;
     /* eslint-enable */
   }
 
