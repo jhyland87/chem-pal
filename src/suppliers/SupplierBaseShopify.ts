@@ -61,6 +61,7 @@ export default abstract class SupplierBaseShopify
             handle,
             description,
             onlineStoreUrl,
+            productType,
             variants(first: 5) {
               edges {
                 node {
@@ -74,8 +75,7 @@ export default abstract class SupplierBaseShopify
                   weightUnit,
                   requiresShipping,
                   availableForSale,
-                  currentlyNotInStock,
-                  productType
+                  currentlyNotInStock
                 }
               }
             }

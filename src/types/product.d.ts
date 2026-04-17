@@ -158,10 +158,11 @@ declare global {
      */
     shipsToMyLocation: boolean;
     /**
-     * Dimensions of the popup window in format 'widthxheight'
-     * @example "800x600"
+     * UI font size scale. Controls the root `html` font-size so every `rem`-based
+     * style (MUI defaults and styled components) scales proportionally.
+     * @example "medium"
      */
-    popupSize: string;
+    fontSize: "small" | "medium" | "large";
 
     /**
      * Controls automatic window resizing behavior.

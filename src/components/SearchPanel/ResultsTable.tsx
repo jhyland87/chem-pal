@@ -13,10 +13,10 @@ import DrawerSystem from "@/components/DrawerSystem";
 import LoadingBackdrop from "@/components/LoadingBackdrop";
 import resultStyles from "@/components/ResultsPanel.module.scss";
 import { CACHE } from "@/constants/common";
-import { isInputElement } from "@/utils/typeGuards/common";
 import { generatePageSizes } from "@/helpers/utils";
 import { useDebouncedCallback } from "@/shared/hooks";
 import { cstorage } from "@/utils/storage";
+import { isInputElement } from "@/utils/typeGuards/common";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
   Box,
@@ -101,7 +101,7 @@ function DebouncedFilterInput({ header }: { header: Header<Product, unknown> }) 
       header.column.columnDef.meta?.filterVariant === "range"
     ) {
       const [min, max] = value.split(/[-\s]+/).map(Number);
-      filterValue = [min, max] as [number, number];
+      filterValue = [min, max];
     } else if (header.column.columnDef.meta?.filterVariant === "select") {
       filterValue = value
         .split(/[\s,;]+/)
@@ -203,7 +203,7 @@ export default function ResultsTable({
       currencyRate: 1.0,
       location: "US",
       shipsToMyLocation: false,
-      popupSize: "small",
+      fontSize: "small",
       supplierResultLimit: defaultResultsLimit,
       autoResize: true,
       suppliers: [],

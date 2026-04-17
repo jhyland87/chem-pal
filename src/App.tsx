@@ -2,18 +2,18 @@ import { defaultResultsLimit } from "@/../config.json";
 import { APP_ACTION, CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
 import { AppContext } from "@/context";
 import SupplierFactory from "@/suppliers/SupplierFactory";
-import { cstorage } from "@/utils/storage";
 import { getSearchResults, IDB_SEARCH_RESULTS_CLEARED } from "@/utils/idbCache";
+import { cstorage } from "@/utils/storage";
 import CssBaseline from "@mui/material/CssBaseline";
 import { startTransition, useActionState, useEffect, useState } from "react";
 import "./App.scss";
 import DrawerSystem from "./components/DrawerSystem";
 import ErrorBoundary from "./components/ErrorBoundary";
-import StatusBar, { StatusBarProvider } from "./components/StatusBar";
 import SearchPanel from "./components/SearchPanel/SearchPanel";
 import SearchPanelHome from "./components/SearchPanelHome";
 import SpeedDialMenu from "./components/SpeedDialMenu";
 import StatsPanel from "./components/StatsPanel";
+import StatusBar, { StatusBarProvider } from "./components/StatusBar";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { getCurrencyCodeFromLocation, getCurrencyRate } from "./helpers/currency";
 import { getUserCountry } from "./helpers/utils";
@@ -79,7 +79,7 @@ const initialAppState: AppState = {
     currencyRate: 1.0,
     location: getUserCountry(),
     shipsToMyLocation: false,
-    popupSize: "small",
+    fontSize: "medium",
     supplierResultLimit: defaultResultsLimit,
     autoResize: true,
     suppliers: SupplierFactory.supplierList(),
@@ -256,7 +256,11 @@ function App() {
       try {
         const [sessionData, localData, idbResults] = await Promise.all([
           cstorage.session.get([CACHE.PANEL]),
-          cstorage.local.get([CACHE.USER_SETTINGS, CACHE.SELECTED_SUPPLIERS, CACHE.BOOKMARKS_FOLDER_ID]),
+          cstorage.local.get([
+            CACHE.USER_SETTINGS,
+            CACHE.SELECTED_SUPPLIERS,
+            CACHE.BOOKMARKS_FOLDER_ID,
+          ]),
           getSearchResults(),
         ]);
         const loadedData: Partial<AppState> = {};
@@ -274,11 +278,11 @@ function App() {
         }
 
         if (localData[CACHE.SELECTED_SUPPLIERS]) {
-          loadedData.selectedSuppliers = localData[CACHE.SELECTED_SUPPLIERS] as string[];
+          loadedData.selectedSuppliers = localData[CACHE.SELECTED_SUPPLIERS];
         }
 
         if (localData[CACHE.BOOKMARKS_FOLDER_ID]) {
-          loadedData.bookmarksFolderId = localData[CACHE.BOOKMARKS_FOLDER_ID] as string;
+          loadedData.bookmarksFolderId = localData[CACHE.BOOKMARKS_FOLDER_ID];
         }
 
         if (Object.keys(loadedData).length > 0) {

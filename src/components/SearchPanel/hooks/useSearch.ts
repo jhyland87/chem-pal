@@ -414,7 +414,7 @@ export function useSearch() {
           // Set all filtered+limited results at once
           const finalResults = limited.map((r, idx) => ({ ...r, id: idx }));
           setSearchResults(finalResults);
-          resultsTable?.updateBadgeCount?.();
+          BadgeAnimator.setText(finalResults.length.toString());
 
           // Save to Chrome storage and update history with final count
           await saveResultsToSession(finalResults);
@@ -427,9 +427,14 @@ export function useSearch() {
           });
         } else {
           // No filters active — stream results directly (original behavior)
+          let receivedCount = 0;
           for await (const result of productQueryResults) {
-            // Update the live counter immediately
-            resultsTable?.updateBadgeCount?.();
+            receivedCount++;
+            // Update the live counter immediately. Can't use
+            // `resultsTable.updateBadgeCount()` here — it reads the committed
+            // row count, but the append below is scheduled in a transition and
+            // hasn't flushed yet, so the badge would always lag by one.
+            BadgeAnimator.setText(receivedCount.toString());
 
             // Update state with current count using startTransition for better performance
             startTransition(() => {
@@ -469,7 +474,6 @@ export function useSearch() {
 
         const endSearchTime = performance.now();
         const searchTime = endSearchTime - startSearchTime;
-        (window.resultsTable as Table<Product>)?.updateBadgeCount?.();
 
         console.debug(
           `Found ${resultsTable.getRowCount()} products in ${searchTime} milliseconds`,

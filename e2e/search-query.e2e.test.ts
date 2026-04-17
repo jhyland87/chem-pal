@@ -74,7 +74,7 @@ describe("Chem-Pal search query", () => {
     await page.close();
   }, 30_000);
 
-  it("should query for 'potassium' and display 79 results from mock data", async () => {
+  it("should query for 'potassium' and display 80 results from mock data", async () => {
     const page = await openExtension();
 
     // Set up mock routes to intercept all HTTPS requests
@@ -96,7 +96,7 @@ describe("Chem-Pal search query", () => {
     // Use the results count as the primary signal since the backdrop can
     // appear and disappear faster than the polling interval.
     const resultsCount = page.locator("text=Results:");
-    await playwrightExpect(resultsCount).toContainText("Results: 79", {
+    await playwrightExpect(resultsCount).toContainText("Results: 80", {
       timeout: 120_000,
     });
 
@@ -115,7 +115,7 @@ describe("Chem-Pal search query", () => {
       .locator("tbody tr")
       .filter({ has: page.locator("td") })
       .count();
-    vitestExpect(rowCount).toBe(79);
+    vitestExpect(rowCount).toBe(80);
 
     // Pause so you can inspect DevTools (Network tab, console, etc.)
     // The test will wait here until you call `playwright.resume()` in the
