@@ -4,13 +4,20 @@ import { ChangeEvent, useState } from "react";
 /**
  * Compact text filter input for the results-table header row. The column
  * header is shown in the row above, so we drop the redundant input label and
- * lean on `meta.filterPlaceholder` for hinting.
- *
+ * lean on `meta.filterPlaceholder` for hinting. Keystrokes update local
+ * state immediately; the table's filter is updated via the column's
+ * debounced setter so typing doesn't thrash.
  * @component
- * @param props - Component props
+ * @param props - Component props.
+ * @param props.column - A TanStack column with `meta.filterVariant === "text"`.
+ * @returns A 32px-tall `TextField` bound to the column's debounced filter.
  * @example
  * ```tsx
- * <TextColumnFilter column={column} />
+ * // TableColumns.tsx declared meta.filterPlaceholder = "Description..."
+ * <TextColumnFilter column={descriptionColumn} />
+ * // Renders: <input placeholder="Description..." aria-label="Description" />
+ * // User types "acid" → column.setFilterValueDebounced("acid") after 250ms,
+ * // which filters the table via TanStack's string-includes filter.
  * ```
  * @source
  */
@@ -38,10 +45,12 @@ export default function TextColumnFilter({ column }: FilterVariantInputProps) {
       sx={{
         m: 0,
         mr: 0.5,
-        // Match the Autocomplete `size="small"` height so text/select filters
-        // line up visually across the filter row.
-        "& .MuiInputBase-root": { height: 32 },
-        "& .MuiInputBase-input": { padding: "4px 8px", fontSize: 13 },
+        // Match the Select `size="small"` height so filters line up across
+        // the filter row. `fontSize: inherit` overrides the project-wide
+        // MuiTextField theme override (0.8rem) and picks up the TableCell's
+        // default instead, so the filter text matches the body rows.
+        "& .MuiInputBase-root": { height: 32, fontSize: "inherit" },
+        "& .MuiInputBase-input": { padding: "4px 8px", fontSize: "inherit" },
       }}
       slotProps={{ htmlInput: { "aria-label": column.getHeaderText() } }}
     />

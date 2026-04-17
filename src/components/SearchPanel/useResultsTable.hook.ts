@@ -156,6 +156,14 @@ export function useResultsTable({
       columnFilters: columnFilterFns[0],
       globalFilter: globalFilterFns[0],
     },
+    // Columns that should start hidden — users can opt them in via the
+    // column-visibility menu. Overridden by any persisted visibility state
+    // in chrome.storage on mount.
+    initialState: {
+      columnVisibility: {
+        availability: false,
+      },
+    },
     onColumnFiltersChange: columnFilterFns[1],
     onGlobalFilterChange: globalFilterFns[1],
     getSubRows: (row) => row?.variants as Product[],

@@ -24,11 +24,28 @@ export interface ExcludedProductEntry {
  */
 export type ExcludedProductsMap = Record<string, ExcludedProductEntry>;
 
+/**
+ * Check whether a given product (identified by URL + supplier name) is on
+ * the user's ignore list. Called from the supplier hot-path to drop results
+ * the user previously excluded. Returns `false` on any read error so a
+ * storage blip can't accidentally hide everything.
+ * @param url - Canonical product URL — same URL the supplier fetches.
+ * @param supplierName - Supplier name, e.g. `"Loudwolf"`.
+ * @returns `true` if an entry exists for this (url, supplier) pair.
+ * @example
+ * ```ts
+ * if (await shouldExcludeProduct("https://example.com/acetone", "Loudwolf")) {
+ *   return undefined; // skip this result
+ * }
+ * // => true  (user previously right-click → Ignore)
+ * // => false (not ignored, or read failed)
+ * ```
+ * @source
+ */
 export async function shouldExcludeProduct(url: string, supplierName: string): Promise<boolean> {
   try {
     const map = await loadExcludedProducts();
     const key = getProductExclusionKey(url, supplierName);
-    //console.debug("exclusion key", { key, map, supplierName, url });
     return map[key] !== undefined;
   } catch (error) {
     console.warn("Failed to check if product should be excluded", { error });

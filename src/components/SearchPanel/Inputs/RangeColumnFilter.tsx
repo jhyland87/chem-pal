@@ -10,12 +10,19 @@ import styles from "./RangeColumnFilter.module.scss";
  * rendered directly above, so we no longer show a duplicate header and inline
  * MIN / MAX labels — the `valueLabelDisplay="auto"` tooltip surfaces the live
  * values on hover/focus.
- *
  * @component
- * @param props - Component props
+ * @param props - Component props.
+ * @param props.column - A TanStack column with `meta.filterVariant === "range"`
+ *                       whose `getFullRange()` returns `[min, max]`.
+ * @returns A 32px-tall MUI `Slider` bound to the column's debounced filter.
  * @example
  * ```tsx
- * <RangeColumnFilter column={column} />
+ * // Price column — getFullRange() returns [0, 1000] from facet data.
+ * <RangeColumnFilter column={priceColumn} />
+ * // Initial render: two thumbs at 0 and 1000.
+ * // Dragging the right thumb to 250 →
+ * //   column.setFilterValueDebounced([0, 250])
+ * // which narrows the table to prices ≤ $250 via TanStack's inNumberRange.
  * ```
  * @source
  */

@@ -30,7 +30,33 @@ interface ColumnDrawerSectionProps {
  * component which slice of app state to read/write.
  *
  * Keeps columns free of context knowledge — columns describe what the user
- * sees, this component wires it up.
+ * sees, this component wires it up to `selectedSuppliers`, `searchFilters`,
+ * or `userSettings` via `useAppContext`.
+ * @param props - Component props.
+ * @param props.columnId - Column id; the accordion's `panelId` is derived as
+ *                         `search-${columnId}`.
+ * @param props.config - The column's `meta.drawer` payload.
+ * @param props.expandedAccordion - Currently expanded accordion's panel id
+ *                                  (or `false` for none).
+ * @param props.onAccordionChange - MUI Accordion `onChange` factory; call
+ *                                  with the panelId to get the handler.
+ * @returns An MUI `Accordion` summary + the widget matching `config.widget`.
+ * @example
+ * ```tsx
+ * // Country column — meta.drawer is widget: "autocompleteObjects", bound
+ * // to searchFilters.country with code/label option objects.
+ * <ColumnDrawerSection
+ *   columnId="country"
+ *   config={countryDrawerConfig}
+ *   expandedAccordion="search-country"
+ *   onAccordionChange={(panelId) => (_e, isOpen) => setExpanded(isOpen ? panelId : false)}
+ * />
+ * // Renders:
+ * //   <Accordion panelId="search-country" expanded>
+ * //     Country  (2 selected)           ← summary hint updates with value.length
+ * //     <Autocomplete multiple value={[{code:"US",label:"United States"}, ...]}
+ * //                   onChange={... setSearchFilters({..., country: codes}) ...} />
+ * ```
  * @source
  */
 export default function ColumnDrawerSection({

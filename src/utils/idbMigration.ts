@@ -36,12 +36,29 @@ const LEGACY_KEYS = {
 } as const;
 
 /**
- * One-time migration from chrome.storage to IndexedDB.
- * Reads existing cached data from chrome.storage.local and chrome.storage.session,
- * writes it into IndexedDB, then removes the old keys. Idempotent — checks a
- * `__idb_migrated` flag in chrome.storage.local and skips if already done.
+ * One-time migration from `chrome.storage` to IndexedDB. Reads every legacy
+ * key (see `LEGACY_KEYS`, plus any dynamic `supplier_stats_MMDDYYYY` entries),
+ * writes the data into the matching IndexedDB object store, and removes the
+ * old key from chrome.storage.
  *
- * Called once from main.tsx before the React app renders.
+ * Idempotent via the `__idb_migrated_v2` flag:
+ *   - Fresh installs: flag absent → runs the full migration, sets the flag.
+ *   - Users on v1: `__idb_migrated` is set but `__idb_migrated_v2` isn't, so
+ *     the migration re-runs. The legacy keys it already migrated are gone
+ *     (no-op), and the v2 addition (`excluded_products`) is what actually
+ *     moves. The v1 flag is cleaned up at the end.
+ *   - Users on v2+: flag set → returns immediately.
+ *
+ * Errors are logged and the flag is not set, so the migration will retry on
+ * the next app load — never throws to the caller.
+ * @returns Resolves once migration (or the early flag-check skip) completes.
+ * @example
+ * ```ts
+ * // main.tsx — run before React renders.
+ * await migrateFromChromeStorage();
+ * createRoot(document.getElementById("root")!).render(<App />);
+ * ```
+ * @source
  */
 export async function migrateFromChromeStorage(): Promise<void> {
   try {

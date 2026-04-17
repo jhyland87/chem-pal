@@ -446,6 +446,24 @@ export async function clearSupplierStats(): Promise<void> {
 /*                          Excluded Products                                 */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Load the user's excluded-products map from the `excludedProducts` object
+ * store. The whole map lives under a single row keyed by `"current"` (same
+ * single-row pattern used by `searchResults`), so this is a single read.
+ * Returns `{}` when the store is empty or the read fails, letting callers
+ * treat the result as always-valid without null-checking.
+ * @returns Map of md5 exclusion key → entry, or `{}` when absent.
+ * @example
+ * ```ts
+ * const excluded = await getExcludedProducts();
+ * // => { "a1b2c3…": { url: "https://…", supplier: "Loudwolf",
+ * //                   title: "Acetone 500ml", excludedAt: 1713301200000 } }
+ * if (excluded[key]) {
+ *   // product is on the ignore list
+ * }
+ * ```
+ * @source
+ */
 export async function getExcludedProducts(): Promise<ExcludedProductsMap> {
   try {
     const db = await getDB();
@@ -457,6 +475,21 @@ export async function getExcludedProducts(): Promise<ExcludedProductsMap> {
   }
 }
 
+/**
+ * Write the full excluded-products map back into IndexedDB, overwriting the
+ * previous value. Callers typically read via `getExcludedProducts`, mutate
+ * the returned object, and pass it back here — the object store holds one
+ * row keyed by `"current"` so each call is a complete replacement.
+ * @param map - The map to persist. Pass `{}` to effectively clear.
+ * @returns Resolves once the write completes; errors are logged, not thrown.
+ * @example
+ * ```ts
+ * const map = await getExcludedProducts();
+ * map["a1b2c3…"] = { url, supplier: "Loudwolf", title, excludedAt: Date.now() };
+ * await putExcludedProducts(map);
+ * ```
+ * @source
+ */
 export async function putExcludedProducts(map: ExcludedProductsMap): Promise<void> {
   try {
     const db = await getDB();
@@ -466,6 +499,18 @@ export async function putExcludedProducts(map: ExcludedProductsMap): Promise<voi
   }
 }
 
+/**
+ * Remove the excluded-products row from IndexedDB entirely. After this, a
+ * subsequent `getExcludedProducts()` returns `{}`. Used by the bulk
+ * `clearAllCaches` flow; callers don't typically invoke this directly.
+ * @returns Resolves once the delete completes; errors are logged, not thrown.
+ * @example
+ * ```ts
+ * await clearExcludedProducts();
+ * const excluded = await getExcludedProducts(); // => {}
+ * ```
+ * @source
+ */
 export async function clearExcludedProducts(): Promise<void> {
   try {
     const db = await getDB();

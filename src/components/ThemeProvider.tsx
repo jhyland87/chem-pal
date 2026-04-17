@@ -1,6 +1,6 @@
 import { useAppContext } from "@/context";
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
-import React, { useEffect } from "react";
+import { FC, ReactNode, useEffect } from "react";
 import {
   darkPalette,
   darkTheme,
@@ -12,7 +12,7 @@ import {
 } from "../themes";
 
 interface ThemeProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 const FONT_SIZE_PX: Record<UserSettings["fontSize"], string> = {
@@ -21,7 +21,29 @@ const FONT_SIZE_PX: Record<UserSettings["fontSize"], string> = {
   large: "18px",
 };
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
+/**
+ * Wraps the app in MUI's `ThemeProvider` plus a local `ThemeContext`, and
+ * keeps the root `<html>` font-size in sync with `userSettings.fontSize`
+ * (small = 14px, medium = 16px, large = 18px). Because every styled
+ * component in the project uses `rem`, changing the root size rescales the
+ * whole UI proportionally.
+ * @param props - Component props.
+ * @param props.children - App tree to render under the theme.
+ * @returns The children wrapped in `ThemeContext.Provider` and MUI's theme.
+ * @example
+ * ```tsx
+ * <AppContext.Provider value={appValue}>
+ *   <ThemeProvider>
+ *     <App />
+ *   </ThemeProvider>
+ * </AppContext.Provider>
+ * // Mounting with userSettings.fontSize === "large" sets
+ * // <html style="font-size: 18px"> and picks the light/dark theme based on
+ * // userSettings.theme.
+ * ```
+ * @source
+ */
+export const ThemeProvider: FC<ThemeProviderProps> = ({ children }) => {
   const { userSettings, setUserSettings } = useAppContext();
 
   useEffect(() => {
