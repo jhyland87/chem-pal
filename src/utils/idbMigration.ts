@@ -6,12 +6,19 @@ import {
   putSupplierQueryCacheEntry,
   putSupplierProductDataCacheEntry,
   putSupplierStatsEntry,
+  putExcludedProducts,
 } from "@/utils/idbCache";
 import type { CachedData } from "@/suppliers/SupplierBase";
+import type { ExcludedProductsMap } from "@/helpers/excludedProducts";
 
 const logger = new Logger("idbMigration");
 
-const MIGRATION_FLAG = "__idb_migrated";
+// Bumped from v1 → v2 when `excluded_products` was added to the migration.
+// Users on v1 still have an `excluded_products` entry in chrome.storage that
+// needs to move over; the old LEGACY_KEYS entries are already gone for them
+// so those steps no-op.
+const MIGRATION_FLAG = "__idb_migrated_v2";
+const LEGACY_MIGRATION_FLAG = "__idb_migrated";
 
 /**
  * Legacy chrome.storage keys that are being migrated to IndexedDB.
@@ -25,6 +32,7 @@ const LEGACY_KEYS = {
   SUPPLIER_PRODUCT_DATA_CACHE: "supplier_product_data_cache",
   QUERY_RESULTS_CACHE: "query_results_cache",
   PRODUCT_DATA_CACHE: "product_data_cache",
+  EXCLUDED_PRODUCTS: "excluded_products",
 } as const;
 
 /**
@@ -51,6 +59,7 @@ export async function migrateFromChromeStorage(): Promise<void> {
         LEGACY_KEYS.SEARCH_HISTORY,
         LEGACY_KEYS.SUPPLIER_QUERY_CACHE,
         LEGACY_KEYS.SUPPLIER_PRODUCT_DATA_CACHE,
+        LEGACY_KEYS.EXCLUDED_PRODUCTS,
       ]),
       cstorage.session.get([LEGACY_KEYS.SEARCH_RESULTS]),
     ]);
@@ -93,6 +102,15 @@ export async function migrateFromChromeStorage(): Promise<void> {
       logger.debug("Migrated supplier_product_data_cache", { count: entries.length });
     }
 
+    // Migrate excluded products (local → IndexedDB)
+    const excludedProducts = localData[LEGACY_KEYS.EXCLUDED_PRODUCTS];
+    if (excludedProducts && typeof excludedProducts === "object") {
+      await putExcludedProducts(excludedProducts as ExcludedProductsMap);
+      logger.debug("Migrated excluded_products", {
+        count: Object.keys(excludedProducts).length,
+      });
+    }
+
     // Migrate supplier stats (dynamic keys: supplier_stats_MMDDYYYY and legacy supplierStats)
     const allLocalData = await cstorage.local.get(null);
     const statsKeysToRemove: string[] = [];
@@ -128,7 +146,8 @@ export async function migrateFromChromeStorage(): Promise<void> {
       logger.debug("Migrated supplier stats", { count: statsKeysToRemove.length });
     }
 
-    // Remove all legacy keys from chrome.storage
+    // Remove all legacy keys from chrome.storage (including the v1 flag, so
+    // it doesn't linger as dead state once the v2 flag is in play).
     await Promise.all([
       cstorage.local.remove([
         LEGACY_KEYS.SEARCH_HISTORY,
@@ -136,6 +155,8 @@ export async function migrateFromChromeStorage(): Promise<void> {
         LEGACY_KEYS.SUPPLIER_PRODUCT_DATA_CACHE,
         LEGACY_KEYS.QUERY_RESULTS_CACHE,
         LEGACY_KEYS.PRODUCT_DATA_CACHE,
+        LEGACY_KEYS.EXCLUDED_PRODUCTS,
+        LEGACY_MIGRATION_FLAG,
         ...statsKeysToRemove,
       ]),
       cstorage.session.remove([LEGACY_KEYS.SEARCH_RESULTS]),

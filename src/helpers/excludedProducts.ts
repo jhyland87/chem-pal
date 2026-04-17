@@ -1,5 +1,4 @@
-import { CACHE } from "@/constants/common";
-import { cstorage } from "@/utils/storage";
+import { getExcludedProducts, putExcludedProducts } from "@/utils/idbCache";
 import { md5 } from "js-md5";
 
 /**
@@ -19,8 +18,8 @@ export interface ExcludedProductEntry {
 }
 
 /**
- * Map of exclusion-key → excluded product entry, as persisted in
- * `chrome.storage.local[CACHE.EXCLUDED_PRODUCTS]`.
+ * Map of exclusion-key → excluded product entry, as persisted in the
+ * `excludedProducts` IndexedDB object store (via `@/utils/idbCache`).
  * @source
  */
 export type ExcludedProductsMap = Record<string, ExcludedProductEntry>;
@@ -73,9 +72,9 @@ export function getProductExclusionKey(url: string, supplierName: string): strin
 }
 
 /**
- * Load the excluded-products map from `chrome.storage.local`. Returns an
- * empty object if the key is missing or the read fails, so callers can treat
- * the result as always-valid.
+ * Load the excluded-products map from IndexedDB. Returns an empty object if
+ * the store is empty or the read fails, so callers can treat the result as
+ * always-valid.
  *
  * @returns The persisted exclusions map (never `null`/`undefined`).
  * @example
@@ -88,14 +87,7 @@ export function getProductExclusionKey(url: string, supplierName: string): strin
  * @source
  */
 export async function loadExcludedProducts(): Promise<ExcludedProductsMap> {
-  try {
-    const data = await cstorage.local.get([CACHE.EXCLUDED_PRODUCTS]);
-    const map = data[CACHE.EXCLUDED_PRODUCTS] as ExcludedProductsMap | undefined;
-    return map ?? {};
-  } catch (error) {
-    console.warn("Failed to load excluded products from local storage:", { error });
-    return {};
-  }
+  return getExcludedProducts();
 }
 
 /**
@@ -141,10 +133,9 @@ export async function countExcludedProductsForSupplier(supplierName: string): Pr
 }
 
 /**
- * Add a product to the excluded list in `chrome.storage.local`. Idempotent:
- * re-excluding an already-ignored product just refreshes its `excludedAt`
- * and last-known title. Returns the exclusion key for the caller's logging
- * convenience.
+ * Add a product to the excluded list in IndexedDB. Idempotent: re-excluding
+ * an already-ignored product just refreshes its `excludedAt` and last-known
+ * title. Returns the exclusion key for the caller's logging convenience.
  *
  * @param url - Canonical product URL.
  * @param supplierName - Supplier name.
@@ -172,9 +163,9 @@ export async function addExcludedProduct(
       title: meta?.title,
       excludedAt: Date.now(),
     };
-    await cstorage.local.set({ [CACHE.EXCLUDED_PRODUCTS]: map });
+    await putExcludedProducts(map);
   } catch (error) {
-    console.warn("Failed to persist excluded product to local storage:", { error });
+    console.warn("Failed to persist excluded product to IndexedDB:", { error });
   }
   return key;
 }
