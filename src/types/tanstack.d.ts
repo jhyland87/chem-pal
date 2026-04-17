@@ -137,6 +137,12 @@ declare module "@tanstack/react-table" {
      * @example 6
      */
     filterInputSize?: number;
+
+    /**
+     * Placeholder text for the filter input
+     * @example "Search..."
+     */
+    filterPlaceholder?: string;
   }
 
   // Register our custom sorting functions by augmenting the `SortingFns`

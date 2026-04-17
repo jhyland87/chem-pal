@@ -299,11 +299,7 @@ function App() {
   // cstorage.onChanged auto-decodes LZ envelopes, so change.newValue / oldValue
   // are already the real objects — no manual decompression required.
   useEffect(() => {
-    const watchedKeys = new Set<string>([
-      CACHE.USER_SETTINGS,
-      CACHE.SELECTED_SUPPLIERS,
-      CACHE.EXCLUDED_PRODUCTS,
-    ]);
+    const watchedKeys = new Set<string>([CACHE.USER_SETTINGS, CACHE.SELECTED_SUPPLIERS]);
 
     const listener = (
       changes: Record<string, chrome.storage.StorageChange>,

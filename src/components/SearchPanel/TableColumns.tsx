@@ -83,6 +83,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       },
       enableHiding: false,
       meta: {
+        filterPlaceholder: "Title...",
         filterVariant: "text",
         style: {
           textAlign: "left",
@@ -96,6 +97,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       cell: (info) => info.getValue(),
       filterFn: "multiSelect",
       meta: {
+        filterPlaceholder: "BVV, HiMedia, etc...",
         filterVariant: "select",
         style: {
           textAlign: "left",
@@ -119,6 +121,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       },
       filterFn: "multiSelect",
       meta: {
+        filterPlaceholder: "US, CN, etc...",
         filterVariant: "select",
         style: {
           textAlign: "center",
@@ -132,6 +135,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       cell: (info) => info.getValue(),
       filterFn: "multiSelect",
       meta: {
+        filterPlaceholder: "Shipping...",
         filterVariant: "select",
       },
     },
@@ -139,6 +143,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       accessorKey: "description",
       header: "Description",
       meta: {
+        filterPlaceholder: "Description...",
         filterVariant: "text",
         style: {
           textAlign: "left",
@@ -175,6 +180,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       sortingFn: "priceSortingFn",
       filterFn: "inNumberRange",
       meta: {
+        filterPlaceholder: "1.00 - 1000.00",
         filterVariant: "range",
         style: {
           textAlign: "left",
@@ -186,6 +192,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       header: "Qty",
       accessorKey: "quantity",
       meta: {
+        filterPlaceholder: "1 - 100",
         filterVariant: "range",
         style: {
           textAlign: "left",
@@ -204,6 +211,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       accessorKey: "uom",
       filterFn: "multiSelect",
       meta: {
+        filterPlaceholder: "Unit",
         filterVariant: "select",
         style: {
           textAlign: "left",

@@ -90,7 +90,13 @@ const FILTER_DEBOUNCE_MS = 250;
  * @param header - The TanStack table header containing the column to filter
  * @source
  */
-function DebouncedFilterInput({ header }: { header: Header<Product, unknown> }) {
+function DebouncedFilterInput({
+  header,
+  placeholder = "Search...",
+}: {
+  header: Header<Product, unknown>;
+  placeholder?: string;
+}) {
   const [localValue, setLocalValue] = useState(String(header.column.getFilterValue() ?? ""));
 
   const applyFilter = useDebouncedCallback((value: string) => {
@@ -115,7 +121,7 @@ function DebouncedFilterInput({ header }: { header: Header<Product, unknown> }) 
     <FilterTextField
       size="small"
       variant="outlined"
-      placeholder="Search..."
+      placeholder={placeholder}
       value={localValue}
       onChange={(e) => {
         setLocalValue(e.target.value);
@@ -484,17 +490,24 @@ export default function ResultsTable({
 
               {/* Filter Row */}
               {showFilters &&
-                table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={`${headerGroup.id}-filters`}>
-                    {headerGroup.headers.map((header) => (
-                      <FilterTableCell key={`${header.id}-filter`} cellWidth={header.getSize()}>
-                        {header.column.getCanFilter() ? (
-                          <DebouncedFilterInput header={header} />
-                        ) : null}
-                      </FilterTableCell>
-                    ))}
-                  </TableRow>
-                ))}
+                table.getHeaderGroups().map((headerGroup) => {
+                  return (
+                    <TableRow key={`${headerGroup.id}-filters`}>
+                      {headerGroup.headers.map((header) => {
+                        return (
+                          <FilterTableCell key={`${header.id}-filter`} cellWidth={header.getSize()}>
+                            {header.column.getCanFilter() ? (
+                              <DebouncedFilterInput
+                                header={header}
+                                placeholder={header.column.columnDef.meta?.filterPlaceholder}
+                              />
+                            ) : null}
+                          </FilterTableCell>
+                        );
+                      })}
+                    </TableRow>
+                  );
+                })}
             </StyledTableHead>
 
             {/* Table Body */}

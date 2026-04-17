@@ -566,6 +566,10 @@ export function useSearch() {
       nextResults = prev.filter((p) => !(p.url === product.url && p.supplier === product.supplier));
       return nextResults;
     });
+    // Reflect the new top-level count on the extension badge. searchResults
+    // holds only parent products (variants live in .variants), so the length
+    // here is already the "not including variants" count the user sees.
+    BadgeAnimator.setText(nextResults.length.toString());
     try {
       await addExcludedProduct(product.url, product.supplier, { title: product.title });
     } catch (error) {

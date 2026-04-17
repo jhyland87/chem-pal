@@ -1,4 +1,5 @@
 import type { CachedData } from "@/suppliers/SupplierBase";
+import type { ExcludedProductsMap } from "@/helpers/excludedProducts";
 import { type DBSchema, type IDBPDatabase, openDB } from "idb";
 import Logger from "@/utils/Logger";
 
@@ -18,7 +19,7 @@ export const IDB_SUPPLIER_STATS_UPDATED = "idb:supplier-stats-updated";
 const logger = new Logger("idbCache");
 
 const DB_NAME = "chempal";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const MAX_SUPPLIER_CACHE_ENTRIES = 100;
 const MAX_HISTORY_ENTRIES = 100;
 
@@ -71,6 +72,13 @@ interface ChemPalDBSchema extends DBSchema {
       suppliers: Record<string, SupplierDayStats>;
     };
   };
+  excludedProducts: {
+    key: string;
+    value: {
+      id: string;
+      map: ExcludedProductsMap;
+    };
+  };
 }
 
 let dbPromise: Promise<IDBPDatabase<ChemPalDBSchema>> | null = null;
@@ -103,6 +111,10 @@ function getDB(): Promise<IDBPDatabase<ChemPalDBSchema>> {
 
         if (!db.objectStoreNames.contains("supplierStats")) {
           db.createObjectStore("supplierStats", { keyPath: "dateKey" });
+        }
+
+        if (!db.objectStoreNames.contains("excludedProducts")) {
+          db.createObjectStore("excludedProducts", { keyPath: "id" });
         }
       },
     });
@@ -431,6 +443,39 @@ export async function clearSupplierStats(): Promise<void> {
 }
 
 /* -------------------------------------------------------------------------- */
+/*                          Excluded Products                                 */
+/* -------------------------------------------------------------------------- */
+
+export async function getExcludedProducts(): Promise<ExcludedProductsMap> {
+  try {
+    const db = await getDB();
+    const record = await db.get("excludedProducts", "current");
+    return record?.map ?? {};
+  } catch (error) {
+    logger.error("Failed to get excluded products from IndexedDB", { error });
+    return {};
+  }
+}
+
+export async function putExcludedProducts(map: ExcludedProductsMap): Promise<void> {
+  try {
+    const db = await getDB();
+    await db.put("excludedProducts", { id: "current", map });
+  } catch (error) {
+    logger.error("Failed to put excluded products in IndexedDB", { error });
+  }
+}
+
+export async function clearExcludedProducts(): Promise<void> {
+  try {
+    const db = await getDB();
+    await db.delete("excludedProducts", "current");
+  } catch (error) {
+    logger.error("Failed to clear excluded products from IndexedDB", { error });
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 /*                                 Bulk                                       */
 /* -------------------------------------------------------------------------- */
 
@@ -444,6 +489,7 @@ export async function clearAllCaches(): Promise<void> {
         "supplierQueryCache",
         "supplierProductDataCache",
         "supplierStats",
+        "excludedProducts",
       ],
       "readwrite",
     );
@@ -453,6 +499,7 @@ export async function clearAllCaches(): Promise<void> {
       tx.objectStore("supplierQueryCache").clear(),
       tx.objectStore("supplierProductDataCache").clear(),
       tx.objectStore("supplierStats").clear(),
+      tx.objectStore("excludedProducts").clear(),
       tx.done,
     ]);
     emitSearchResultsCleared();
