@@ -2,6 +2,9 @@ import { currencies, locations } from "@/../config.json";
 import { useAppContext } from "@/components/SearchPanel/hooks/useContext";
 import { ACTION_TYPE } from "@/constants/common";
 import { isButtonElement } from "@/utils/typeGuards/common";
+import TextDecreaseIcon from "@mui/icons-material/TextDecrease";
+import TextFormatIcon from "@mui/icons-material/TextFormat";
+import TextIncreaseIcon from "@mui/icons-material/TextIncrease";
 import Button from "@mui/material/Button";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import Divider from "@mui/material/Divider";
@@ -129,7 +132,7 @@ export default function SettingsPanel() {
             autoResize: true,
             showColumnFilters: true,
             showAllColumns: false,
-            popupSize: "small",
+            fontSize: "medium",
             hideColumns: ["description", "uom"],
           };
           break;
@@ -174,13 +177,9 @@ export default function SettingsPanel() {
 
   const handleButtonClick = (event: MouseEvent<HTMLDivElement>) => {
     if (!isButtonElement(event.target)) return;
-    const value = event.target.textContent?.toLowerCase();
-    if (value && event.target.name) {
-      updateSetting({
-        type: ACTION_TYPE.BUTTON_CLICK,
-        name: event.target.name,
-        value,
-      });
+    const { name, value } = event.target;
+    if (name && value) {
+      updateSetting({ type: ACTION_TYPE.BUTTON_CLICK, name, value });
     }
   };
 
@@ -346,41 +345,47 @@ export default function SettingsPanel() {
         </ListSubheader>
 
         <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Popup Size" />
+          <ListItemText primary="Font Size" />
           {/*<FormHelperText>Popup size</FormHelperText>*/}
           <FormControl>
             <ButtonGroup
               variant="contained"
-              aria-label="Basic button group"
+              aria-label="Font size"
               onClick={handleButtonClick}
               disabled={isPending}
             >
               <Button
-                name="popupSize"
+                name="fontSize"
                 value="small"
                 size="small"
-                variant={currentSettings.popupSize === "small" ? "contained" : "text"}
+                aria-label="Small"
+                title="Small"
+                variant={currentSettings.fontSize === "small" ? "contained" : "text"}
                 disabled={isPending}
               >
-                Small
+                <TextDecreaseIcon fontSize="small" sx={{ pointerEvents: "none" }} />
               </Button>
               <Button
-                name="popupSize"
+                name="fontSize"
                 value="medium"
                 size="small"
-                variant={currentSettings.popupSize === "medium" ? "contained" : "text"}
+                aria-label="Medium"
+                title="Medium"
+                variant={currentSettings.fontSize === "medium" ? "contained" : "text"}
                 disabled={isPending}
               >
-                Medium
+                <TextFormatIcon fontSize="small" sx={{ pointerEvents: "none" }} />
               </Button>
               <Button
-                name="popupSize"
+                name="fontSize"
                 value="large"
                 size="small"
-                variant={currentSettings.popupSize === "large" ? "contained" : "text"}
+                aria-label="Large"
+                title="Large"
+                variant={currentSettings.fontSize === "large" ? "contained" : "text"}
                 disabled={isPending}
               >
-                Large
+                <TextIncreaseIcon fontSize="small" sx={{ pointerEvents: "none" }} />
               </Button>
             </ButtonGroup>
           </FormControl>

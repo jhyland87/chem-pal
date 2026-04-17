@@ -139,34 +139,25 @@ declare module "@tanstack/react-table" {
     filterInputSize?: number;
   }
 
-  // Extend the SortingFnOption type to include our custom sorting functions
-  type SortingFnOption<TData> =
-    | "alphanumeric"
-    | "alphanumericCaseSensitive"
-    | "basic"
-    | "datetime"
-    | "matchPercentage"
-    | "priceSortingFn"
-    | "quantitySortingFn"
-    | "quantityStringSortingFn"
-    | "weightSortingFn"
-    | "volumeSortingFn"
-    | SortingFn<TData>;
+  // Register our custom sorting functions by augmenting the `SortingFns`
+  // interface. TanStack resolves `SortingFnOption<TData>` via `keyof SortingFns`,
+  // so adding keys here makes them valid `sortingFn` string literals. The set
+  // must match what's actually registered on the table in
+  // `useResultsTable.hook.ts` — keys listed here become *required* in the
+  // table's `sortingFns` option.
+  // Type aliases can't be merged, so this is the only way to extend the union.
+  interface SortingFns {
+    matchPercentage: SortingFn<RowData>;
+    priceSortingFn: SortingFn<RowData>;
+    quantitySortingFn: SortingFn<RowData>;
+  }
 
-  // Extend the FilterFnOption type to include our custom filter functions
-  type FilterFnOption<TData> =
-    | "includesString"
-    | "includesStringSensitive"
-    | "equalsString"
-    | "equalsStringSensitive"
-    | "arrIncludes"
-    | "arrIncludesAll"
-    | "arrIncludesSome"
-    | "between"
-    | "betweenInclusive"
-    | "inNumberRange"
-    | "multiSelect"
-    | FilterFn<TData>;
+  // Register our custom filter functions by augmenting the `FilterFns`
+  // interface. Same reasoning as `SortingFns` above — `FilterFnOption<TData>`
+  // is derived from `keyof FilterFns`.
+  interface FilterFns {
+    multiSelect: FilterFn<RowData>;
+  }
 }
 
 declare global {

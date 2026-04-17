@@ -4,16 +4,14 @@ import { default as Link } from "@/components/TabLink";
 import { omit } from "@/helpers/collectionUtils";
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
-import {
-  ColumnDef,
-  type CellContext,
-  type ColumnMeta,
-  type FilterFnOption,
-  type SortingFnOption,
-} from "@tanstack/react-table";
+import { ColumnDef, type CellContext } from "@tanstack/react-table";
 import { hasFlag } from "country-flag-icons";
 import getUnicodeFlagIcon from "country-flag-icons/unicode";
 import styles from "./TableColumns.module.scss";
+
+// Narrows a runtime string to a known location key so `locations[code]` can be
+// indexed without a cast.
+const isLocationCode = (code: string): code is keyof typeof locations => code in locations;
 
 /**
  * Defines the column configuration for the product results table.
@@ -74,7 +72,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
             <Link
               history={{
                 type: "product",
-                data: omit(row.original, "variants") as Omit<Product, "variants">,
+                data: omit(row.original, "variants"),
               }}
               href={row.original.url}
             >
@@ -96,7 +94,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       header: "Supplier",
       accessorKey: "supplier",
       cell: (info) => info.getValue(),
-      filterFn: "multiSelect" as FilterFnOption<Product>,
+      filterFn: "multiSelect",
       meta: {
         filterVariant: "select",
         style: {
@@ -108,18 +106,18 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       id: "country",
       header: "Country",
       accessorKey: "supplierCountry",
-      cell: (info) => {
-        const country = info.getValue() as string;
-        const countryName = locations[country as keyof typeof locations]?.name;
-        return hasFlag(country) ? (
-          <CountryFlagTooltip title={countryName ?? country} placement="top">
+      cell: ({ row }: ProductRow) => {
+        const country = row.original.supplierCountry;
+        if (!country) return null;
+        if (!hasFlag(country)) return country;
+        const countryName = isLocationCode(country) ? locations[country].name : country;
+        return (
+          <CountryFlagTooltip title={countryName} placement="top">
             <span>{getUnicodeFlagIcon(country)}</span>
           </CountryFlagTooltip>
-        ) : (
-          country
         );
       },
-      filterFn: "multiSelect" as FilterFnOption<Product>,
+      filterFn: "multiSelect",
       meta: {
         filterVariant: "select",
         style: {
@@ -132,7 +130,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       header: "Shipping",
       accessorKey: "supplierShipping",
       cell: (info) => info.getValue(),
-      filterFn: "multiSelect" as FilterFnOption<Product>,
+      filterFn: "multiSelect",
       meta: {
         filterVariant: "select",
       },
@@ -152,38 +150,30 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       header: "Price",
       accessorKey: "price",
       cell: ({ row, table }: CellContext<Product, unknown>) => {
-        //console.log("cell:", row.id, { row, table });
+        const { usdPrice, price: rawPrice, currencyCode } = row.original;
         const userSettings = table.options.meta?.userSettings;
         const currency = userSettings?.currency ?? "USD";
         const currencyRate = userSettings?.currencyRate ?? 1;
-        const thisRow = row?.original;
-        let price = Number(thisRow?.usdPrice ?? thisRow?.price);
 
-        // If the currency is not in USD...
-        if (thisRow.currencyCode !== "USD") {
-          // Then check if there is a USD price generated to use (this may have a different converstion
-          // rate than the users current currency)
-          if (!thisRow.usdPrice) {
-            // If there isn't any, then just use the original currency
-            console.error("Non-USD product is missing USD price", { row });
-            return new Intl.NumberFormat(thisRow.currencyCode ?? "USD", {
-              style: "currency",
-              currency: thisRow.currencyCode ?? "USD",
-            }).format(Number(thisRow.price));
-          }
-          // If there is a usdPrice already generatd, thens witch to that.
-          else {
-            price = thisRow.usdPrice;
-          }
+        // Non-USD product without a USD anchor: we can't convert into the
+        // user's chosen currency, so render the native price as-is.
+        if (currencyCode !== "USD" && usdPrice === undefined) {
+          console.error("Non-USD product is missing USD price", { row });
+          const fallbackCurrency = currencyCode ?? "USD";
+          return new Intl.NumberFormat(fallbackCurrency, {
+            style: "currency",
+            currency: fallbackCurrency,
+          }).format(Number(rawPrice));
         }
 
+        const priceInUsd = usdPrice ?? Number(rawPrice);
         return new Intl.NumberFormat(currency, {
           style: "currency",
-          currency: currency,
-        }).format(price * currencyRate);
+          currency,
+        }).format(priceInUsd * currencyRate);
       },
-      sortingFn: "priceSortingFn" as SortingFnOption<Product>,
-      filterFn: "inNumberRange" as FilterFnOption<Product>,
+      sortingFn: "priceSortingFn",
+      filterFn: "inNumberRange",
       meta: {
         filterVariant: "range",
         style: {
@@ -204,15 +194,15 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       cell: ({ row }: ProductRow) => {
         return `${row.original.quantity} ${row.original.uom}`;
       },
-      sortingFn: "quantitySortingFn" as SortingFnOption<Product>,
-      filterFn: "inNumberRange" as FilterFnOption<Product>,
+      sortingFn: "quantitySortingFn",
+      filterFn: "inNumberRange",
       minSize: 50,
     },
     {
       id: "uom",
       header: "Unit",
       accessorKey: "uom",
-      filterFn: "multiSelect" as FilterFnOption<Product>,
+      filterFn: "multiSelect",
       meta: {
         filterVariant: "select",
         style: {
@@ -236,18 +226,17 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
  * @source
  */
 export function getColumnFilterConfig() {
-  const filterableColumns = TableColumns().reduce<
-    Record<string, { filterVariant: string; filterData: unknown[] }>
-  >((accu, column: ColumnDef<Product, unknown>) => {
-    const meta = column.meta as ColumnMeta<Product, unknown>;
-    if (meta?.filterVariant === undefined || !column.id) return accu;
+  return TableColumns().reduce<Record<string, { filterVariant: string; filterData: unknown[] }>>(
+    (accu, column) => {
+      const filterVariant = column.meta?.filterVariant;
+      if (filterVariant === undefined || !column.id) return accu;
 
-    accu[column.id] = {
-      filterVariant: meta.filterVariant,
-      filterData: [],
-    };
-    return accu;
-  }, {});
-
-  return filterableColumns;
+      accu[column.id] = {
+        filterVariant,
+        filterData: [],
+      };
+      return accu;
+    },
+    {},
+  );
 }

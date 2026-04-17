@@ -1,6 +1,6 @@
 import { useAppContext } from "@/context";
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   darkPalette,
   darkTheme,
@@ -15,8 +15,19 @@ interface ThemeProviderProps {
   children: React.ReactNode;
 }
 
+const FONT_SIZE_PX: Record<UserSettings["fontSize"], string> = {
+  small: "14px",
+  medium: "16px",
+  large: "18px",
+};
+
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const { userSettings, setUserSettings } = useAppContext();
+
+  useEffect(() => {
+    document.documentElement.style.fontSize =
+      FONT_SIZE_PX[userSettings.fontSize] ?? FONT_SIZE_PX.medium;
+  }, [userSettings.fontSize]);
 
   const mode: ThemeMode = userSettings.theme === "dark" ? "dark" : "light";
 
