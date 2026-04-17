@@ -27,6 +27,7 @@
 // N2O3 is offline since 01/20/2026
 //export { default as SupplierN2O3 } from "./SupplierN2O3";
 
+export { default as SupplierAlchemieLabs } from "./SupplierAlchemieLabs";
 export { default as SupplierAmbeed } from "./SupplierAmbeed";
 export { default as SupplierBioFuranChem } from "./SupplierBiofuranChem";
 export { default as SupplierBVV } from "./SupplierBVV";
