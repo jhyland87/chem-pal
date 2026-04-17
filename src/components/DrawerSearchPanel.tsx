@@ -1,33 +1,51 @@
 import TableColumns from "@/components/SearchPanel/TableColumns";
-import { AVAILABILITY_OPTIONS, CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
+import { CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
 import { useAppContext } from "@/context";
 import { cstorage } from "@/utils/storage";
 import { ExpandMore as ExpandMoreIcon, Search as SearchIcon } from "@mui/icons-material";
-import { Accordion, Box, Button, Chip, TextField, Typography } from "@mui/material";
-import React, { useEffect, useMemo } from "react";
+import { Accordion, Box, Button, TextField, Typography } from "@mui/material";
+import { FC, KeyboardEvent, SyntheticEvent, useEffect, useMemo } from "react";
 import ColumnDrawerSection from "./ColumnDrawerSection";
 import styles from "./DrawerSearchPanel.module.scss";
 import { StyledAccordionDetails, StyledAccordionSummary } from "./StyledComponents";
 
 /**
- * The ordered list of drawer sections. Column ids (`"supplier"`, `"country"`,
- * `"shipping"`, `"price"`) resolve to a ColumnDef with `meta.drawer` and are
- * rendered via `<ColumnDrawerSection>`. The `"availability"` and
- * `"resultLimit"` entries are not backed by table columns and render their
- * own hand-coded accordion here.
+ * Pre-search filter drawer. Renders the product-name field, then walks
+ * `TableColumns()` in column-config order and emits one accordion section
+ * per column with a `meta.drawer` payload (via `ColumnDrawerSection`). The
+ * non-column "Results Limit" section is injected just before the `price`
+ * entry to preserve its historical position.
+ *
+ * Adding, removing, or reordering a drawer-backed column in TableColumns.tsx
+ * is reflected here automatically — no edits to this file are required.
+ * @param props - Component props.
+ * @param props.expandedAccordion - Currently open accordion's panel id
+ *                                  (e.g. `"search-country"`), or `false`.
+ * @param props.onAccordionChange - Factory from panelId to MUI Accordion's
+ *                                  `onChange` handler.
+ * @returns The search drawer body (title input, filter accordions, submit).
+ * @example
+ * ```tsx
+ * const [expanded, setExpanded] = useState<string | false>(false);
+ * const handleChange = (panel: string) => (_e: SyntheticEvent, isOpen: boolean) =>
+ *   setExpanded(isOpen ? panel : false);
+ *
+ * <DrawerSearchPanel expandedAccordion={expanded} onAccordionChange={handleChange} />
+ * // Renders (with current TableColumns config):
+ * //   [Product name or keyword]
+ * //   ▸ Supplier (0 selected)
+ * //   ▸ Country (0 selected)
+ * //   ▸ Shipping Type
+ * //   ▸ Availability
+ * //   ▸ Results Limit (15 per supplier)   ← non-column, injected before Price
+ * //   ▸ Price Range
+ * //   [Search]
+ * ```
+ * @source
  */
-const SECTION_ORDER = [
-  "availability",
-  "supplier",
-  "country",
-  "shipping",
-  "resultLimit",
-  "price",
-] as const;
-
-const DrawerSearchPanel: React.FC<{
+const DrawerSearchPanel: FC<{
   expandedAccordion: string | false;
-  onAccordionChange: (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => void;
+  onAccordionChange: (panel: string) => (event: SyntheticEvent, isExpanded: boolean) => void;
 }> = ({ expandedAccordion, onAccordionChange }) => {
   const {
     userSettings,
@@ -39,16 +57,17 @@ const DrawerSearchPanel: React.FC<{
     setPanel,
   } = useAppContext();
 
-  // Build a lookup of columns that declared a drawer section in their meta.
-  // Memoized per-render only — TableColumns() is pure and cheap.
-  const drawerColumns = useMemo(() => {
-    const map = new Map<string, ColumnDrawerConfig>();
-    for (const column of TableColumns()) {
-      const drawer = column.meta?.drawer;
-      if (drawer && column.id) map.set(column.id, drawer);
-    }
-    return map;
-  }, []);
+  // Collect columns that declared a drawer section in their meta, preserving
+  // the order they appear in TableColumns(). Memoized per-render only —
+  // TableColumns() is pure and cheap.
+  const drawerColumns = useMemo(
+    () =>
+      TableColumns().flatMap((column) => {
+        const drawer = column.meta?.drawer;
+        return drawer && column.id ? [{ id: column.id, drawer }] : [];
+      }),
+    [],
+  );
 
   // Hydrate the title query field from the shared live search input value so
   // the drawer shows whatever the user last typed in any search input, even
@@ -69,14 +88,6 @@ const DrawerSearchPanel: React.FC<{
     // Run once on mount; we intentionally don't depend on searchFilters to avoid loops.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const toggleAvailability = (value: string) => {
-    const current = searchFilters.availability;
-    const updated = current.includes(value)
-      ? current.filter((item) => item !== value)
-      : [...current, value];
-    setSearchFilters({ ...searchFilters, availability: updated });
-  };
 
   const handleTitleQueryChange = async (value: string) => {
     setSearchFilters({ ...searchFilters, titleQuery: value });
@@ -116,44 +127,11 @@ const DrawerSearchPanel: React.FC<{
     setPanel?.(PANEL.RESULTS);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
       void handleSearch();
     }
   };
-
-  const renderAvailability = () => (
-    <Accordion
-      key="search-availability"
-      expanded={expandedAccordion === "search-availability"}
-      onChange={onAccordionChange("search-availability")}
-    >
-      <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Typography>
-          Availability
-          {searchFilters.availability.length > 0 && (
-            <span className={styles["accordion-hint"]}>
-              ({searchFilters.availability.length} selected)
-            </span>
-          )}
-        </Typography>
-      </StyledAccordionSummary>
-      <StyledAccordionDetails>
-        <Box className={styles["chip-container"]}>
-          {AVAILABILITY_OPTIONS.map((option) => (
-            <Chip
-              key={option}
-              label={option}
-              size="small"
-              onClick={() => toggleAvailability(option)}
-              color={searchFilters.availability.includes(option) ? "primary" : "default"}
-              variant={searchFilters.availability.includes(option) ? "filled" : "outlined"}
-            />
-          ))}
-        </Box>
-      </StyledAccordionDetails>
-    </Accordion>
-  );
 
   const renderResultLimit = () => (
     <Accordion
@@ -201,20 +179,21 @@ const DrawerSearchPanel: React.FC<{
         />
       </Box>
 
-      {SECTION_ORDER.map((entry) => {
-        if (entry === "availability") return renderAvailability();
-        if (entry === "resultLimit") return renderResultLimit();
-        const config = drawerColumns.get(entry);
-        if (!config) return null;
-        return (
+      {drawerColumns.flatMap(({ id, drawer }) => {
+        // "Results Limit" is a user setting (not a filter on a column), so it
+        // has no column to anchor it to. Inject it right before the price
+        // section to preserve its historical position in the drawer UX.
+        const resultLimit = id === "price" ? [renderResultLimit()] : [];
+        return [
+          ...resultLimit,
           <ColumnDrawerSection
-            key={entry}
-            columnId={entry}
-            config={config}
+            key={id}
+            columnId={id}
+            config={drawer}
             expandedAccordion={expandedAccordion}
             onAccordionChange={onAccordionChange}
-          />
-        );
+          />,
+        ];
       })}
 
       <Box sx={{ p: 2 }}>

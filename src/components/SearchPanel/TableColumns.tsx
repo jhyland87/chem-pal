@@ -2,6 +2,7 @@ import { locations } from "@/../config.json";
 import { CountryFlagTooltip } from "@/components/StyledComponents";
 import { default as Link } from "@/components/TabLink";
 import {
+  AVAILABILITY_OPTIONS,
   SHIPPING_OPTIONS,
   SUPPLIER_COUNTRY_OPTIONS,
 } from "@/constants/common";
@@ -19,15 +20,22 @@ import styles from "./TableColumns.module.scss";
 const isLocationCode = (code: string): code is keyof typeof locations => code in locations;
 
 /**
- * Defines the column configuration for the product results table.
- * Each column specifies its display properties, filtering capabilities,
- * and cell rendering behavior.
+ * Defines the column configuration for the product results table. Each
+ * column declares its accessor, cell renderer, sort/filter functions, and
+ * (optionally) `meta.drawer` to opt into a pre-search drawer accordion.
  *
- * @returns Array of column definitions
- *
+ * The returned order is the render order in both the table header and the
+ * drawer's column-backed sections (see `DrawerSearchPanel`).
+ * @returns Ordered TanStack column definitions for the `Product` row type.
  * @example
  * ```tsx
  * const columns = TableColumns();
+ * useReactTable({ columns, data, ... });
+ * // columns.map(c => c.id) →
+ * //   ["expander", "title", "supplier", "country", "shipping",
+ * //    "availability", "description", "price", "quantity", "uom"]
+ * // columns.filter(c => c.meta?.drawer).map(c => c.id) →
+ * //   ["supplier", "country", "shipping", "availability", "price"]
  * ```
  * @source
  */
@@ -170,6 +178,26 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       },
     },
     {
+      id: "availability",
+      header: "Availability",
+      accessorKey: "availability",
+      cell: (info) => info.getValue(),
+      filterFn: "multiSelect",
+      meta: {
+        filterPlaceholder: "Availability...",
+        filterVariant: "select",
+        style: {
+          textAlign: "left",
+        },
+        drawer: {
+          label: "Availability",
+          widget: "chips",
+          options: AVAILABILITY_OPTIONS,
+          bind: { kind: "searchFilters", key: "availability" },
+        },
+      },
+    },
+    {
       accessorKey: "description",
       header: "Description",
       meta: {
@@ -262,14 +290,27 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
 }
 
 /**
- * Creates a configuration object for column filtering based on the column definitions.
- * Each filterable column gets an entry with its filter variant and an empty array for filter data.
- *
- * @returns Object mapping column IDs to their filter configurations
+ * Builds a seed filter-config object from the column definitions, keyed by
+ * column id. Each filterable column contributes one entry with its
+ * `filterVariant` and an empty `filterData` array ready to be populated as
+ * search results stream in.
+ * @returns Record of `{ [columnId]: { filterVariant, filterData: [] } }` for
+ *          every column whose `meta.filterVariant` is defined and that has
+ *          a non-empty `id`.
  * @example
  * ```tsx
  * const filterConfig = getColumnFilterConfig();
- * // Returns: { title: { filterVariant: "text", filterData: [] }, ... }
+ * // => {
+ * //   title:        { filterVariant: "text",   filterData: [] },
+ * //   supplier:     { filterVariant: "select", filterData: [] },
+ * //   country:      { filterVariant: "select", filterData: [] },
+ * //   shipping:     { filterVariant: "select", filterData: [] },
+ * //   availability: { filterVariant: "select", filterData: [] },
+ * //   description:  { filterVariant: "text",   filterData: [] },
+ * //   price:        { filterVariant: "range",  filterData: [] },
+ * //   quantity:     { filterVariant: "range",  filterData: [] },
+ * //   uom:          { filterVariant: "select", filterData: [] },
+ * // }
  * ```
  * @source
  */

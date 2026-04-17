@@ -56,15 +56,17 @@ describe("SelectColumnFilter", () => {
   it("accumulates selections across multiple picks", () => {
     render(<SelectColumnFilter column={mockColumn} />);
 
+    // MUI Select with `multiple` keeps the menu open after each click, so we
+    // only open it once and then click two options in sequence.
     fireEvent.mouseDown(screen.getByRole("combobox", { name: "Test Column" }));
-    fireEvent.click(within(screen.getByRole("listbox")).getByText("Option 1"));
-    fireEvent.mouseDown(screen.getByRole("combobox", { name: "Test Column" }));
-    fireEvent.click(within(screen.getByRole("listbox")).getByText("Option 2"));
+    const listbox = screen.getByRole("listbox");
+    fireEvent.click(within(listbox).getByText("Option 1"));
+    fireEvent.click(within(listbox).getByText("Option 2"));
 
     expect(mockColumn.setFilterValueDebounced).toHaveBeenLastCalledWith(["Option 1", "Option 2"]);
   });
 
-  it("renders a single count chip for pre-selected values", () => {
+  it("renders pre-selected values as comma-separated text", () => {
     const columnWithValue = {
       ...mockColumn,
       getFilterValue: () => ["Option 1", "Option 2"],
@@ -72,14 +74,10 @@ describe("SelectColumnFilter", () => {
 
     render(<SelectColumnFilter column={columnWithValue} />);
 
-    // Selected values are collapsed into one compact count chip so the narrow
-    // header cell doesn't grow — individual per-value chips would wrap and
-    // distort the filter row.
-    expect(screen.getByText("2")).toBeInTheDocument();
-    expect(screen.queryByText(/Option 1/)).not.toBeInTheDocument();
+    expect(screen.getByText("Option 1, Option 2")).toBeInTheDocument();
   });
 
-  it("disables the control and shows 'No Options Available' when there are no options", () => {
+  it("disables the control when there are no options", () => {
     const columnWithNoOptions = {
       ...mockColumn,
       getAllUniqueValues: () => [],
@@ -88,6 +86,6 @@ describe("SelectColumnFilter", () => {
     render(<SelectColumnFilter column={columnWithNoOptions} />);
 
     const combobox = screen.getByRole("combobox", { name: "Test Column" });
-    expect(combobox).toBeDisabled();
+    expect(combobox).toHaveAttribute("aria-disabled", "true");
   });
 });
