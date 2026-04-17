@@ -8,6 +8,7 @@ const mockColumn = {
   getHeaderText: () => "Test Column",
   getFilterValue: () => "",
   setFilterValueDebounced: vi.fn(),
+  columnDef: { meta: {} },
 };
 
 describe("TextColumnFilter", () => {

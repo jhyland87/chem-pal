@@ -61,6 +61,67 @@ declare global {
   }
 
   /**
+   * Describes where a column's drawer-section value reads/writes in app state.
+   * DrawerSearchPanel dispatches on `.kind` to pull/push the right slice —
+   * columns don't need to know how the context is structured.
+   */
+  type ColumnDrawerBinding =
+    | { kind: "searchFilters"; key: keyof SearchFilters }
+    | { kind: "selectedSuppliers" }
+    | { kind: "userSettingsRange"; minKey: keyof UserSettings; maxKey: keyof UserSettings };
+
+  /**
+   * Column-meta payload describing how a column appears in the drawer
+   * accordion. Only columns with `meta.drawer` set are rendered there.
+   * The `widget` field picks the input component and must match the
+   * runtime type of `options` (e.g. `"autocompleteObjects"` needs
+   * `{ code: string; label: string }[]`).
+   *
+   * The accordion's `panelId` is derived from the column id
+   * (`search-${column.id}`) — no need to repeat it per column.
+   */
+  type ColumnDrawerConfig =
+    | {
+        label: string;
+        widget: "autocompleteStrings";
+        /** Strings rendered as the option list. */
+        options: readonly string[];
+        /** Optional display map for option strings, e.g. supplier key → name. */
+        optionLabels?: Readonly<Record<string, string>>;
+        /** Italic helper text shown under empty input. */
+        emptyHelperText: string;
+        placeholder?: string;
+        bind: ColumnDrawerBinding;
+      }
+    | {
+        label: string;
+        widget: "autocompleteObjects";
+        options: ReadonlyArray<{ code: string; label: string }>;
+        emptyHelperText: string;
+        placeholder?: string;
+        bind: ColumnDrawerBinding;
+      }
+    | {
+        label: string;
+        widget: "chips";
+        options: readonly string[];
+        /** Optional display transform (e.g. capitalize) for chip labels. */
+        formatChipLabel?: (option: string) => string;
+        bind: ColumnDrawerBinding;
+      }
+    | {
+        label: string;
+        widget: "numberRange";
+        /**
+         * Optional start-adornment. Pass the literal string `"currency"` to
+         * resolve the symbol at render time from `userSettings.currency`
+         * (e.g. USD → "$", EUR → "€"). Any other string is used as-is.
+         */
+        adornment?: "currency" | (string & {});
+        bind: ColumnDrawerBinding;
+      };
+
+  /**
    * AppContextProps interface for application context
    */
   interface AppContextProps {

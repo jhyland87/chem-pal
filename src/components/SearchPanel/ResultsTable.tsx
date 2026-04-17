@@ -14,7 +14,6 @@ import LoadingBackdrop from "@/components/LoadingBackdrop";
 import resultStyles from "@/components/ResultsPanel.module.scss";
 import { CACHE } from "@/constants/common";
 import { generatePageSizes } from "@/helpers/utils";
-import { useDebouncedCallback } from "@/shared/hooks";
 import { cstorage } from "@/utils/storage";
 import { isInputElement } from "@/utils/typeGuards/common";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -41,6 +40,7 @@ import {
 import debounce from "lodash/debounce";
 import isEmpty from "lodash/isEmpty";
 import React, {
+  ComponentType,
   Dispatch,
   ReactElement,
   SetStateAction,
@@ -58,7 +58,6 @@ import {
   ErrorRetryButton,
   FilterIconButton,
   FilterTableCell,
-  FilterTextField,
   GlobalFilterTextField,
   NavigationContainer,
   PageSizeContainer,
@@ -76,59 +75,38 @@ import {
 import ContextMenu from "./ContextMenu";
 import { useAppContext } from "./hooks/useContext";
 import { useSearch } from "./hooks/useSearch";
+import RangeColumnFilter from "./Inputs/RangeColumnFilter";
+import SelectColumnFilter from "./Inputs/SelectColumnFilter";
+import TextColumnFilter from "./Inputs/TextColumnFilter";
 import styles from "./ResultsTable.module.scss";
 import { useAutoColumnSizing } from "./useAutoColumnSizing.hook";
 import { useContextMenu } from "./useContextMenu.hook";
 import { useResultsTable } from "./useResultsTable.hook";
 
-const FILTER_DEBOUNCE_MS = 250;
+type FilterVariant = "text" | "range" | "select";
 
 /**
- * Filter input that debounces column filter updates.
- * Maintains local state for responsive typing while delaying
- * the actual table filter application by {@link FILTER_DEBOUNCE_MS}.
- * @param header - The TanStack table header containing the column to filter
+ * Maps a column's `meta.filterVariant` to the input component that renders
+ * inside the header filter row. `text` is the fallback so columns without
+ * `meta.filterVariant` still get a filter.
  * @source
  */
-function DebouncedFilterInput({
-  header,
-  placeholder = "Search...",
-}: {
-  header: Header<Product, unknown>;
-  placeholder?: string;
-}) {
-  const [localValue, setLocalValue] = useState(String(header.column.getFilterValue() ?? ""));
+const filterComponentMap: Record<FilterVariant, ComponentType<FilterVariantInputProps>> = {
+  text: TextColumnFilter,
+  range: RangeColumnFilter,
+  select: SelectColumnFilter,
+};
 
-  const applyFilter = useDebouncedCallback((value: string) => {
-    let filterValue: unknown = value;
-    if (
-      (typeof header.column.columnDef?.filterFn === "string" &&
-        header.column.columnDef.filterFn === "inNumberRange") ||
-      header.column.columnDef.meta?.filterVariant === "range"
-    ) {
-      const [min, max] = value.split(/[-\s]+/).map(Number);
-      filterValue = [min, max];
-    } else if (header.column.columnDef.meta?.filterVariant === "select") {
-      filterValue = value
-        .split(/[\s,;]+/)
-        .filter(Boolean)
-        .map(String);
-    }
-    header.column.setFilterValue(filterValue);
-  }, FILTER_DEBOUNCE_MS);
-
-  return (
-    <FilterTextField
-      size="small"
-      variant="outlined"
-      placeholder={placeholder}
-      value={localValue}
-      onChange={(e) => {
-        setLocalValue(e.target.value);
-        applyFilter(e.target.value);
-      }}
-    />
-  );
+/**
+ * Dispatches to the correct filter component based on the column's
+ * `meta.filterVariant`. Rendered inside each header cell's filter row.
+ * @source
+ */
+function FilterVariantCell({ header }: { header: Header<Product, unknown> }) {
+  const variant = (header.column.columnDef.meta?.filterVariant ?? "text") as FilterVariant;
+  const Component = filterComponentMap[variant];
+  if (!Component) return null;
+  return <Component column={header.column as CustomColumn<Product, unknown>} />;
 }
 
 interface ResultsTableProps {
@@ -497,10 +475,7 @@ export default function ResultsTable({
                         return (
                           <FilterTableCell key={`${header.id}-filter`} cellWidth={header.getSize()}>
                             {header.column.getCanFilter() ? (
-                              <DebouncedFilterInput
-                                header={header}
-                                placeholder={header.column.columnDef.meta?.filterPlaceholder}
-                              />
+                              <FilterVariantCell header={header} />
                             ) : null}
                           </FilterTableCell>
                         );

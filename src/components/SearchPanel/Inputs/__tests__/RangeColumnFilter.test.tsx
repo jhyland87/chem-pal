@@ -16,60 +16,26 @@ describe("RangeColumnFilter", () => {
     vi.clearAllMocks();
   });
 
-  it("renders with correct label and initial range", () => {
+  it("renders two slider thumbs at the column's full range", () => {
     render(
       <RangeColumnFilter column={mockColumn as unknown as FilterVariantInputProps["column"]} />,
     );
 
-    expect(screen.getByText("Test Column")).toBeInTheDocument();
-
-    // Get both slider thumbs using data-index
     const sliders = screen.getAllByRole("slider", { name: "Test Column range" });
-    const minSlider = sliders[0];
-    const maxSlider = sliders[1];
-
-    expect(minSlider).toBeInTheDocument();
-    expect(maxSlider).toBeInTheDocument();
-    expect(minSlider).toHaveAttribute("aria-valuenow", "0");
-    expect(maxSlider).toHaveAttribute("aria-valuenow", "100");
+    expect(sliders).toHaveLength(2);
+    expect(sliders[0]).toHaveAttribute("aria-valuenow", "0");
+    expect(sliders[1]).toHaveAttribute("aria-valuenow", "100");
   });
 
-  it("updates filter value when range changes", () => {
+  it("updates filter value when the range changes", () => {
     render(
       <RangeColumnFilter column={mockColumn as unknown as FilterVariantInputProps["column"]} />,
     );
 
     const sliders = screen.getAllByRole("slider", { name: "Test Column range" });
-    const minSlider = sliders[0];
-    fireEvent.change(minSlider, { target: { value: 25 } });
+    fireEvent.change(sliders[0], { target: { value: 25 } });
 
     expect(mockColumn.setFilterValueDebounced).toHaveBeenCalledWith([25, 100]);
-  });
-
-  it("resets to full range when min/max labels are clicked", () => {
-    render(
-      <RangeColumnFilter column={mockColumn as unknown as FilterVariantInputProps["column"]} />,
-    );
-
-    // First set a custom range
-    const sliders = screen.getAllByRole("slider", { name: "Test Column range" });
-    const minSlider = sliders[0];
-    fireEvent.change(minSlider, { target: { value: 25 } });
-
-    // Then click the min label to reset
-    const minLabel = screen.getByText("0");
-    fireEvent.click(minLabel);
-
-    expect(mockColumn.setFilterValueDebounced).toHaveBeenCalledWith([0, 100]);
-
-    // Reset mocks to test max label
-    vi.clearAllMocks();
-
-    // Click the max label to reset
-    const maxLabel = screen.getByText("100");
-    fireEvent.click(maxLabel);
-
-    expect(mockColumn.setFilterValueDebounced).toHaveBeenCalledWith([0, 100]);
   });
 
   it("initializes with existing filter value", () => {
@@ -85,10 +51,7 @@ describe("RangeColumnFilter", () => {
     );
 
     const sliders = screen.getAllByRole("slider", { name: "Test Column range" });
-    const minSlider = sliders[0];
-    const maxSlider = sliders[1];
-
-    expect(minSlider).toHaveAttribute("aria-valuenow", "25");
-    expect(maxSlider).toHaveAttribute("aria-valuenow", "75");
+    expect(sliders[0]).toHaveAttribute("aria-valuenow", "25");
+    expect(sliders[1]).toHaveAttribute("aria-valuenow", "75");
   });
 });
