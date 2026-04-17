@@ -167,6 +167,7 @@ export function useResultsTable({
     getPaginationRowModel: getPaginationRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues(),
+    paginateExpandedRows: false,
     debugTable: false,
     debugHeaders: false,
     debugColumns: false,

@@ -3,6 +3,7 @@ import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { firstMap, mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
+import { isQuantityObject } from "@/utils/typeGuards/common";
 import { isValidShopifySearchResponse } from "@/utils/typeGuards/shopify";
 import SupplierBase from "./SupplierBase";
 
@@ -191,7 +192,7 @@ export default abstract class SupplierBaseShopify
         product.description,
       ]);
 
-      if (quantity) {
+      if (isQuantityObject(quantity)) {
         builder.setQuantity(quantity.quantity, quantity.uom);
       } else {
         builder.setQuantity(1, UOM.EA);
@@ -203,13 +204,16 @@ export default abstract class SupplierBaseShopify
 
       for (const variantEdge of remainingVariants) {
         const variant = variantEdge.node;
+        if (!variant.price.amount) continue;
         const variantPrice = parsePrice(`$${variant.price.amount}`);
+
+        const quantity = firstMap(parseQuantity, [variant.sku, variant.title]);
 
         builder.addVariant({
           title: variant.title,
           sku: variant.sku,
           price: variantPrice?.price,
-          ...firstMap(parseQuantity, [variant.sku, variant.title]),
+          ...(isQuantityObject(quantity) ? quantity : { quantity: 1, uom: UOM.EA }),
         });
       }
 
