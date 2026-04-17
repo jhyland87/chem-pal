@@ -1,9 +1,14 @@
 import { locations } from "@/../config.json";
 import { CountryFlagTooltip } from "@/components/StyledComponents";
 import { default as Link } from "@/components/TabLink";
+import {
+  SHIPPING_OPTIONS,
+  SUPPLIER_COUNTRY_OPTIONS,
+} from "@/constants/common";
 import { omit } from "@/helpers/collectionUtils";
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
+import SupplierFactory from "@/suppliers/SupplierFactory";
 import { ColumnDef, type CellContext } from "@tanstack/react-table";
 import { hasFlag } from "country-flag-icons";
 import getUnicodeFlagIcon from "country-flag-icons/unicode";
@@ -102,6 +107,15 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         style: {
           textAlign: "left",
         },
+        drawer: {
+          label: "Search Suppliers",
+          widget: "autocompleteStrings",
+          options: SupplierFactory.supplierList(),
+          optionLabels: SupplierFactory.supplierDisplayNames(),
+          emptyHelperText: "All suppliers included by default",
+          placeholder: "Type supplier name",
+          bind: { kind: "selectedSuppliers" },
+        },
       },
     },
     {
@@ -121,10 +135,19 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       },
       filterFn: "multiSelect",
       meta: {
-        filterPlaceholder: "US, CN, etc...",
+        filterPlaceholder: "🇺🇸 🇨🇳 …",
         filterVariant: "select",
         style: {
           textAlign: "center",
+        },
+        renderSelectOption: (code) => (hasFlag(code) ? getUnicodeFlagIcon(code) : code),
+        drawer: {
+          label: "Country",
+          widget: "autocompleteObjects",
+          options: SUPPLIER_COUNTRY_OPTIONS,
+          emptyHelperText: "All countries included by default",
+          placeholder: "Type country or code",
+          bind: { kind: "searchFilters", key: "country" },
         },
       },
     },
@@ -137,6 +160,13 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       meta: {
         filterPlaceholder: "Shipping...",
         filterVariant: "select",
+        drawer: {
+          label: "Shipping Type",
+          widget: "chips",
+          options: SHIPPING_OPTIONS,
+          formatChipLabel: (option) => option.charAt(0).toUpperCase() + option.slice(1),
+          bind: { kind: "searchFilters", key: "shippingType" },
+        },
       },
     },
     {
@@ -184,6 +214,16 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         filterVariant: "range",
         style: {
           textAlign: "left",
+        },
+        drawer: {
+          label: "Price Range",
+          widget: "numberRange",
+          adornment: "currency",
+          bind: {
+            kind: "userSettingsRange",
+            minKey: "priceMin",
+            maxKey: "priceMax",
+          },
         },
       },
     },

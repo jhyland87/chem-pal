@@ -1,35 +1,24 @@
-import { StyledFormControlSelector } from "@/components/Styles";
 import TextField from "@mui/material/TextField";
 import { ChangeEvent, useState } from "react";
 
 /**
- * TextColumnFilter component that provides a text input filter for columns.
- * It allows users to filter data by entering text that matches column values.
+ * Compact text filter input for the results-table header row. The column
+ * header is shown in the row above, so we drop the redundant input label and
+ * lean on `meta.filterPlaceholder` for hinting.
  *
  * @component
- *
  * @param props - Component props
- *
  * @example
  * ```tsx
  * <TextColumnFilter column={column} />
  * ```
  * @source
  */
-export default function TextColumnFilter(props: FilterVariantInputProps) {
-  const { column } = props;
-
+export default function TextColumnFilter({ column }: FilterVariantInputProps) {
   const [columnFilterValue, setColumnFilterValue] = useState<string>(
     String(column.getFilterValue() ?? ""),
   );
 
-  /**
-   * Handles changes to the text filter input.
-   * Updates the local state and triggers the column filter update with debouncing.
-   *
-   * @param event - The change event
-   * @source
-   */
   const handleColumnTextFilterChange = (event: ChangeEvent<HTMLInputElement>) => {
     const {
       target: { value },
@@ -37,16 +26,24 @@ export default function TextColumnFilter(props: FilterVariantInputProps) {
     setColumnFilterValue(value);
     column.setFilterValueDebounced(value);
   };
+
   return (
-    <StyledFormControlSelector>
-      <TextField
-        label={column.getHeaderText()}
-        style={{ lineHeight: "1em" }}
-        id={column.id}
-        size="small"
-        value={columnFilterValue}
-        onChange={handleColumnTextFilterChange}
-      />
-    </StyledFormControlSelector>
+    <TextField
+      id={column.id}
+      size="small"
+      fullWidth
+      placeholder={column.columnDef.meta?.filterPlaceholder}
+      value={columnFilterValue}
+      onChange={handleColumnTextFilterChange}
+      sx={{
+        m: 0,
+        mr: 0.5,
+        // Match the Autocomplete `size="small"` height so text/select filters
+        // line up visually across the filter row.
+        "& .MuiInputBase-root": { height: 32 },
+        "& .MuiInputBase-input": { padding: "4px 8px", fontSize: 13 },
+      }}
+      slotProps={{ htmlInput: { "aria-label": column.getHeaderText() } }}
+    />
   );
 }

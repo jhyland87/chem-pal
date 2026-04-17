@@ -534,9 +534,7 @@ export function isProduct(product: unknown): product is Product {
  * @source
  */
 export function isCurrencySymbol(symbol: unknown): symbol is CurrencySymbol {
-  return (
-    typeof symbol === "string" && (Object.values(CURRENCY_CODE_MAP) as string[]).includes(symbol)
-  );
+  return typeof symbol === "string" && Object.values(CURRENCY_CODE_MAP).includes(symbol);
 }
 
 /**
@@ -559,9 +557,7 @@ export function isCurrencySymbol(symbol: unknown): symbol is CurrencySymbol {
  * @source
  */
 export function isCurrencyCode(code: unknown): code is CurrencyCode {
-  return (
-    typeof code === "string" && (Object.values(CURRENCY_SYMBOL_MAP) as string[]).includes(code)
-  );
+  return typeof code === "string" && Object.values(CURRENCY_SYMBOL_MAP).includes(code);
 }
 
 /**
@@ -717,7 +713,7 @@ export function isCAS(cas: unknown): cas is CAS<string> {
  */
 export function isFullURL(val: unknown): val is URL {
   try {
-    new URL(val as string);
+    new URL(String(val));
     return true;
   } catch {
     return false;

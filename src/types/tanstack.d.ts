@@ -143,6 +143,23 @@ declare module "@tanstack/react-table" {
      * @example "Search..."
      */
     filterPlaceholder?: string;
+
+    /**
+     * Optional drawer-section configuration. When present, DrawerSearchPanel
+     * renders an accordion entry for this column, bound to a slice of app
+     * state (`searchFilters`, `selectedSuppliers`, or `userSettings`).
+     * Columns without this field do not appear in the drawer.
+     */
+    drawer?: ColumnDrawerConfig;
+
+    /**
+     * Optional per-option renderer for `filterVariant: "select"` columns.
+     * When defined, `SelectColumnFilter` uses it to render each value in both
+     * the dropdown list and the selected-chip area (overriding the default
+     * collapsed count chip) — useful when text codes (e.g. country codes like
+     * `"US"`) would read better as icons (e.g. a flag).
+     */
+    renderSelectOption?: (value: string) => import("react").ReactNode;
   }
 
   // Register our custom sorting functions by augmenting the `SortingFns`

@@ -296,11 +296,12 @@ export const SortableTableHeaderCell = styled(StyledTableCell, {
   backgroundColor: theme.palette.background.paper,
 }));
 
-// Filter cell with fixed sizing
+// Filter cell with fixed sizing. Minimal padding — the filter components
+// supply their own right-margin for breathing room between cells.
 export const FilterTableCell = styled(StyledTableCell, {
   shouldForwardProp: (prop) => prop !== "cellWidth",
 })<{ cellWidth: number }>(({ theme, cellWidth }) => ({
-  padding: "4px 4px 4px 0",
+  padding: "2px 0",
   width: `${cellWidth}px`,
   minWidth: `${cellWidth}px`,
   maxWidth: `${cellWidth}px`,
