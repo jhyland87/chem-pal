@@ -73,7 +73,8 @@
     "https://www.amazon.co.uk/*",
     "https://www.amazon.de/*",
     "https://www.amazon.co.jp/*",
-    "https://www.amazon.ca/*"
+    "https://www.amazon.ca/*",
+    "https://alchemielabs.com/*"
   ],
   "background": {
     "service_worker": "service-worker.js"
