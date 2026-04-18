@@ -1,4 +1,3 @@
-export * from "./DetailsContainer";
 export * from "./Inputs";
 export * from "./Pagination";
 export * from "./ResultsTable";

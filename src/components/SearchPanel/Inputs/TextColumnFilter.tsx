@@ -45,10 +45,6 @@ export default function TextColumnFilter({ column }: FilterVariantInputProps) {
       sx={{
         m: 0,
         mr: 0.5,
-        // Match the Select `size="small"` height so filters line up across
-        // the filter row. `fontSize: inherit` overrides the project-wide
-        // MuiTextField theme override (0.8rem) and picks up the TableCell's
-        // default instead, so the filter text matches the body rows.
         "& .MuiInputBase-root": { height: 32, fontSize: "inherit" },
         "& .MuiInputBase-input": { padding: "4px 8px", fontSize: "inherit" },
       }}
