@@ -332,6 +332,28 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
   protected excludedProductKeys: Set<string> = new Set();
 
   /**
+   * Memoizes `setup()` so it runs at most once per supplier instance, lazily,
+   * only when the search is about to do real work. The gate lives at the
+   * phase boundaries in `queryProductsWithCache` (before `queryProducts`)
+   * and `getProductData` / `getProductDataWithCache` (before the fetcher),
+   * so setup runs strictly before any code that reads its mutated state
+   * (`this.headers`, `this.localStorage`, etc.) — including subclasses whose
+   * request path reads `localStorage` synchronously. If every query and
+   * product lookup is a cache hit, the promise stays null and setup is never
+   * invoked.
+   *
+   * @defaultValue null
+   * @example
+   * ```typescript
+   * // First cache miss sets the promise; subsequent awaits share it.
+   * await this.ensureSetup();
+   * console.log(this.setupPromise); // Promise<void> (resolved)
+   * ```
+   * @source
+   */
+  private setupPromise: Promise<void> | null = null;
+
+  /**
    * Creates a new instance of the supplier base class.
    * Initializes the supplier with query parameters, request limits, and abort controller.
    * Sets up logging and default product values.
@@ -407,6 +429,35 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * @source
    */
   protected async setup(): Promise<void> {}
+
+  /**
+   * Lazy, single-shot wrapper around `setup()`. Invoked at the phase
+   * boundaries in `queryProductsWithCache` and `getProductData` /
+   * `getProductDataWithCache`, so setup runs only when the search is about
+   * to do real work — a fully cached search never triggers setup at all.
+   * Concurrency-safe: parallel callers share the same promise and all await
+   * its real resolution, so no worker can race past setup. Because the gate
+   * lives above `fetch()`, `setup()` itself can freely call `this.httpGet`
+   * / `this.httpPost` — there is no re-entry to defend against. If
+   * `setup()` throws, the rejected promise is memoized — callers won't
+   * silently retry a broken supplier.
+   *
+   * @returns A promise that resolves once `setup()` has completed.
+   *
+   * @example
+   * ```typescript
+   * // Called internally before any code path that reads setup-mutated state:
+   * await this.ensureSetup();
+   * const response = await this.queryProducts(query, limit);
+   * ```
+   * @source
+   */
+  private async ensureSetup(): Promise<void> {
+    if (!this.setupPromise) {
+      this.setupPromise = this.setup();
+    }
+    return this.setupPromise;
+  }
 
   /**
    * Retrieves HTTP headers from a URL using a HEAD request.
@@ -750,8 +801,6 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       this.logger.debug("resoponseHeaders:", resoponseHeaders);
       this.logger.debug("resoponseHeaders.location:", resoponseHeaders.location);
 
-      //const httpResponse = await fetchDecorator(requestObj.url, requestObj);
-
       return httpResponse;
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
@@ -1052,7 +1101,11 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       }
     }
 
-    // If not in cache, perform the actual query
+    // If not in cache, perform the actual query. Run setup first so any
+    // subclass state it mutates (headers, localStorage, tokens, etc.) is
+    // in place before `queryProducts` reads it. Memoized, so this is cheap
+    // on repeat calls within the same supplier instance.
+    await this.ensureSetup();
     const results = await this.queryProducts(query, limit);
     if (results) {
       // Store processed results in cache (dumped/serialized form) and the limit used
@@ -1077,7 +1130,11 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * @source
    */
   public async *execute(): AsyncGenerator<T, void, undefined> {
-    await this.setup();
+    // setup() is not called eagerly here — it's run lazily from the
+    // phase-boundary gates inside `queryProductsWithCache` and
+    // `getProductData` / `getProductDataWithCache`. A fully cached search
+    // never reaches those gates, so setup's token/cookie/permission
+    // requests are skipped entirely.
     // Snapshot the user's ignore list once per search. Any product whose
     // exclusion key matches an entry here is dropped before the detail phase
     // runs (see the filter after queryProductsWithCache below).
@@ -1431,7 +1488,9 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
         product.setData(cachedData as Partial<T>);
         return product;
       }
-      // Cache miss: call fetcher
+      // Cache miss: run setup (memoized) so any state subclasses rely on is
+      // ready before the fetcher reads it, then call the fetcher.
+      await this.ensureSetup();
       let resultBuilder: ProductBuilder<T> | void = undefined;
       try {
         resultBuilder = await this.getProductDataWithCache(product, this.getProductData, {});
@@ -1508,7 +1567,9 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
         product.setData(cachedData as Partial<T>);
         return product;
       }
-      // Cache miss: call fetcher
+      // Cache miss: run setup (memoized) so any state subclasses rely on is
+      // ready before the fetcher reads it, then call the fetcher.
+      await this.ensureSetup();
       let resultBuilder: ProductBuilder<T> | void = undefined;
       try {
         resultBuilder = await fetcher(product);
