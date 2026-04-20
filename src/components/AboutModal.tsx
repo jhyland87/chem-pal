@@ -8,32 +8,24 @@ import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { styled, type Theme } from "@mui/material/styles";
-import styles from "./AboutModal.module.scss";
 
 /**
  * Styled Paper component for contributor items.
  * Provides consistent styling for contributor links with theme-aware colors and spacing.
- *
  * @param props - Component props
  * @source
  */
 const Item = styled(Paper)(({ theme }: { theme: Theme }) => ({
-  backgroundColor: "#fff",
   ...theme.typography.body2,
   padding: theme.spacing(1),
   textAlign: "center",
   color: theme.palette.text.secondary,
   flexGrow: 1,
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  "&.dark": {
-    backgroundColor: "#1A2027",
-  },
 }));
 
 /**
  * AboutModal component that displays information about the application.
  * Shows the application title, description, and contributor information in a modal dialog.
- *
  * @component
  * @category Components
  * @param props - Component props
@@ -54,67 +46,90 @@ export default function AboutModal({
   setAboutOpen: (open: boolean) => void;
 }) {
   return (
-    <div>
-      <Modal
-        id="about-modal"
-        data-testid="about-modal"
-        onClick={() => setAboutOpen(false)}
-        open={aboutOpen}
-        onClose={() => setAboutOpen(false)}
-        aria-labelledby="application-title"
-        aria-describedby="application-description"
+    <Modal
+      data-testid="about-modal"
+      onClick={() => setAboutOpen(false)}
+      open={aboutOpen}
+      onClose={() => setAboutOpen(false)}
+      aria-labelledby="application-title"
+      aria-describedby="application-description"
+    >
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "min(500px, 90vw)",
+          maxHeight: "85vh",
+          overflowY: "auto",
+          bgcolor: "background.paper",
+          color: "text.primary",
+          borderRadius: 2,
+          boxShadow: 24,
+          p: 4,
+          outline: "none",
+        }}
       >
-        <Box className={styles['about-box']}>
-          <Typography id="application-title" variant="h6" component="h2">
-            About ChemPal
-            <IconButton
-              data-testid="github-button"
-              href="https://github.com/justinhyland/chem-pal"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles['github-button']}
-            >
-              <GitHubIcon className={styles['github-icon']} />
-            </IconButton>
+        <Typography
+          id="application-title"
+          variant="h6"
+          component="h2"
+          sx={{ textAlign: "center" }}
+        >
+          About ChemPal
+          <IconButton
+            data-testid="github-button"
+            href="https://github.com/justinhyland/chem-pal"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{ ml: 1.25 }}
+          >
+            <GitHubIcon />
+          </IconButton>
+        </Typography>
+        <Typography
+          id="application-description"
+          variant="subtitle2"
+          gutterBottom
+          sx={{ mt: 0.5, display: "block" }}
+        >
+          Open source project aimed at helping amateur chemistry hobbyists find the best deals on
+          chemical reagents. There are plenty of similar services out there for businesses,
+          universities and research institutions, but none are available for individuals and
+          hobbyists. ChemPal only searches suppliers that sell to individuals and ship to
+          residences.
+        </Typography>
+        <Divider sx={{ color: "secondary.light", my: 2 }}>
+          <Typography variant="overline" gutterBottom sx={{ display: "block", fontSize: "0.8rem" }}>
+            Contributors
           </Typography>
-          <Typography id="application-description" variant="subtitle2" gutterBottom>
-            Open source project aimed at helping amateur chemistry hobbyists find the best deals on
-            chemical reagents. There are plenty of similar services out there for businesses,
-            universities and research institutions, but none are available for individuals and
-            hobbyists. ChemPal only searches suppliers that sell to individuals and ship to
-            residences.
-          </Typography>
-          <Divider sx={{ color: "secondary.light" }}>
-            <Typography variant="overline" gutterBottom sx={{ display: "block" }}>
-              Contributors
-            </Typography>
-          </Divider>
+        </Divider>
 
-          <Stack direction="row" useFlexGap>
-            <Item>
-              <Link data-testid="contributor-justin" href="https://github.com/jhyland87">
-                <Typography className={styles['application-contributors']} sx={{ color: "text.secondary" }}>
-                  Justin Hyland
-                </Typography>
-              </Link>
-            </Item>
-            <Item>
-              <Link data-testid="contributor-maui" href="https://github.com/YourHeatingMantle">
-                <Typography className={styles['application-contributors']} sx={{ color: "text.secondary" }}>
-                  Maui3
-                </Typography>
-              </Link>
-            </Item>
-            <Item>
-              <Link data-testid="contributor-spous" href="https://github.com/spous">
-                <Typography className={styles['application-contributors']} sx={{ color: "text.secondary" }}>
-                  Spous
-                </Typography>
-              </Link>
-            </Item>
-          </Stack>
-        </Box>
-      </Modal>
-    </div>
+        <Stack direction="row" useFlexGap sx={{ flexWrap: "wrap", gap: 2 }}>
+          <Item>
+            <Link data-testid="contributor-justin" href="https://github.com/jhyland87">
+              <Typography sx={{ color: "text.secondary", fontSize: "0.8rem", textAlign: "center" }}>
+                Justin Hyland
+              </Typography>
+            </Link>
+          </Item>
+          <Item>
+            <Link data-testid="contributor-maui" href="https://github.com/YourHeatingMantle">
+              <Typography sx={{ color: "text.secondary", fontSize: "0.8rem", textAlign: "center" }}>
+                Maui3
+              </Typography>
+            </Link>
+          </Item>
+          <Item>
+            <Link data-testid="contributor-spous" href="https://github.com/spous">
+              <Typography sx={{ color: "text.secondary", fontSize: "0.8rem", textAlign: "center" }}>
+                Spous
+              </Typography>
+            </Link>
+          </Item>
+        </Stack>
+      </Box>
+    </Modal>
   );
 }

@@ -1,12 +1,14 @@
 import { defaultResultsLimit } from "@/../config.json";
 import { APP_ACTION, CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
 import { AppContext } from "@/context";
+import { HotkeyHelpModal, useHotkeys } from "@/hotkeys";
 import SupplierFactory from "@/suppliers/SupplierFactory";
-import { getSearchResults, IDB_SEARCH_RESULTS_CLEARED } from "@/utils/idbCache";
+import SupplierCache from "@/utils/SupplierCache";
+import { clearSearchResults, getSearchResults, IDB_SEARCH_RESULTS_CLEARED } from "@/utils/idbCache";
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import { cstorage } from "@/utils/storage";
 import CssBaseline from "@mui/material/CssBaseline";
-import { lazy, startTransition, Suspense, useActionState, useEffect, useState } from "react";
+import { lazy, startTransition, Suspense, useActionState, useEffect, useMemo, useState } from "react";
 import "./App.scss";
 import DrawerSystem from "./components/DrawerSystem";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -115,6 +117,8 @@ type AppAction =
 function App() {
   // Search results state - separate from main app state for better performance
   const [searchResults, setSearchResults] = useState<Product[]>([]);
+  // Controls the HotkeyHelpModal visibility (shift+? opens it)
+  const [hotkeyHelpOpen, setHotkeyHelpOpen] = useState(false);
   // Pending search query - set by HistoryPanel, consumed by ResultsTable
   const [pendingSearchQuery, setPendingSearchQuery] = useState<string | null>(null);
   // Pre-search filters - set by DrawerSearchPanel, consumed by useSearch
@@ -394,6 +398,36 @@ function App() {
     dispatch({ type: APP_ACTION.SET_BOOKMARKS_FOLDER_ID, id });
   };
 
+  // Hotkey action handlers. Keyed by the `id` field in config.json -> hotkeys.
+  // The useHotkeys hook already suppresses events when focus is in an input.
+  const hotkeyHandlers = useMemo(
+    () => ({
+      showHotkeyHelp: () => {
+        setHotkeyHelpOpen(true);
+      },
+      goToSearch: () => {
+        dispatch({ type: APP_ACTION.SET_PANEL, panel: PANEL.SEARCH_HOME });
+      },
+      clearAndRetrySearch: async () => {
+        const data = await cstorage.session.get([CACHE.QUERY]);
+        const query = data[CACHE.QUERY];
+        if (!query) {
+          // Nothing to re-run; still clear supplier cache so the next search is fresh.
+          await SupplierCache.clearAll();
+          return;
+        }
+        await SupplierCache.clearAll();
+        await clearSearchResults();
+        // Flag the search as "new" so the useSearch mount effect re-executes it,
+        // then force SearchPanel to (re)mount by switching to the results panel.
+        await cstorage.session.set({ [CACHE.SEARCH_IS_NEW_SEARCH]: true });
+        dispatch({ type: APP_ACTION.SET_PANEL, panel: PANEL.RESULTS });
+      },
+    }),
+    [dispatch],
+  );
+  useHotkeys(hotkeyHandlers);
+
   // AppContext value with fixed searchResults property
   const appContextValue = {
     userSettings: appState.userSettings,
@@ -439,6 +473,10 @@ function App() {
                 <DrawerSystem />
                 <SpeedDialMenu speedDialVisibility={appState.speedDialVisibility} />
               </div>
+              <HotkeyHelpModal
+                open={hotkeyHelpOpen}
+                onClose={() => setHotkeyHelpOpen(false)}
+              />
             </div>
             <StatusBar />
           </StatusBarProvider>
