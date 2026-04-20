@@ -33,6 +33,9 @@ export default class SupplierAladdinSci
   // Shipping scope for AladdinSci
   public readonly shipping: ShippingRange = "worldwide";
 
+  // Country the supplier ships from (US storefront: aladdinsci.com/us_en)
+  public readonly country: CountryCode = "US";
+
   // The payment methods accepted by the supplier.
   public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
 
