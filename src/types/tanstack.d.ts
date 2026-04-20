@@ -180,6 +180,8 @@ declare module "@tanstack/react-table" {
   // is derived from `keyof FilterFns`.
   interface FilterFns {
     multiSelect: FilterFn<RowData>;
+    includeHierarchy: FilterFn<RowData>;
+    inNumberRangeHierarchy: FilterFn<RowData>;
   }
 }
 

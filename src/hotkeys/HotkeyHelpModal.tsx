@@ -75,7 +75,7 @@ export default function HotkeyHelpModal({ open, onClose }: HotkeyHelpModalProps)
             </Typography>
             {entries.map((entry) => (
               <HotkeyRow key={entry.id} className={styles["hotkey-row"]}>
-                <HotkeyCombo component="span" className={styles["hotkey-combo"]}>
+                <HotkeyCombo className={styles["hotkey-combo"]}>
                   {formatBinding(entry.keys)}
                 </HotkeyCombo>
                 <Typography variant="body2" className={styles["hotkey-description"]}>

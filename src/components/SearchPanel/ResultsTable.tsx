@@ -199,6 +199,7 @@ export default function ResultsTable({
     getRowCanExpand,
     userSettings: appContext?.userSettings || {
       // Not all of these settings work, yet
+      showHelp: false,
       caching: true,
       autocomplete: true,
       currency: "USD",
