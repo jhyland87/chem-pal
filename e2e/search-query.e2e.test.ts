@@ -91,14 +91,16 @@ describe("Chem-Pal search query", () => {
     await searchInput.fill("potassium");
     await page.getByRole("button", { name: "search" }).click();
 
-    // Wait for search to complete: the backdrop appears while searching, then
-    // disappears when done. The results count text confirms data has loaded.
-    // Use the results count as the primary signal since the backdrop can
-    // appear and disappear faster than the polling interval.
-    const resultsCount = page.locator("text=Results:");
-    await playwrightExpect(resultsCount).toContainText("Results: 80", {
-      timeout: 120_000,
-    });
+    // Wait for search to complete: the #loading-backdrop overlay is visible
+    // while the suppliers are still streaming in results, and disappears
+    // when every supplier has finished. Waiting on the backdrop (rather
+    // than on a specific result count) makes the test robust to changes in
+    // how many mock responses each supplier contributes.
+    const backdrop = page.locator("#loading-backdrop");
+    // The backdrop should appear shortly after the search is submitted.
+    await playwrightExpect(backdrop).toBeVisible({ timeout: 10_000 });
+    // Then wait for it to go away as suppliers complete.
+    await playwrightExpect(backdrop).toBeHidden({ timeout: 120_000 });
 
     // Change the page size to "All" so all rows are visible
     // MUI Select renders a custom dropdown — target the trigger div by aria-label
