@@ -187,7 +187,7 @@ export default abstract class SupplierBaseWix
 
     const graphQLVariables = this.getGraphQLVariables(query);
 
-    const queryResponse = await this.httpGetJson({
+    const searchRequest = await this.httpGetJson({
       path: "_api/wix-ecommerce-storefront-web/api",
       params: {
         o: "getFilteredProducts",
@@ -197,10 +197,10 @@ export default abstract class SupplierBaseWix
       },
     });
 
-    if (isValidSearchResponse(queryResponse) === false) {
+    if (isValidSearchResponse(searchRequest) === false) {
       throw new Error(`Invalid or empty Wix query response for ${query}`, {
         cause: {
-          queryResponse,
+          searchRequest,
           graphQLQuery,
           graphQLVariables,
           query,
@@ -211,12 +211,12 @@ export default abstract class SupplierBaseWix
 
     const fuzzResults = this.fuzzyFilter<ProductObject>(
       query,
-      queryResponse.data.catalog.category.productsWithMetaData.list,
+      searchRequest.data.catalog.category.productsWithMetaData.list,
     );
 
     this.logger.info("fuzzResults", {
       query,
-      productResults: queryResponse.data.catalog.category.productsWithMetaData.list,
+      productResults: searchRequest.data.catalog.category.productsWithMetaData.list,
       fuzzResults,
     });
 

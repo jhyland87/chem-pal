@@ -95,7 +95,7 @@ export default class SupplierWarchem
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    const searchResponse = await this.httpGetHtml({
+    const searchRequest = await this.httpGetHtml({
       path: "/szukaj.html",
       params: {
         szukaj: encodeURIComponent(query),
@@ -109,19 +109,19 @@ export default class SupplierWarchem
       },
     });
 
-    if (!searchResponse) {
+    if (!searchRequest) {
       this.logger.error("No search response", { query });
       return;
     }
 
-    this.logger.log("Received search response", { query, searchResponse });
+    this.logger.log("Received search response", { query, searchRequest });
 
-    const fuzzResults = this.fuzzHtmlResponse(query, searchResponse);
+    const fuzzResults = this.fuzzHtmlResponse(query, searchRequest);
 
-    this.logger.info("fuzzResults:", { query, searchResponse, fuzzResults });
+    this.logger.info("fuzzResults:", { query, searchRequest, fuzzResults });
 
     const builders = this.initProductBuilders(fuzzResults.slice(0, limit));
-    this.logger.info("builders:", { query, searchResponse, fuzzResults, builders });
+    this.logger.info("builders:", { query, searchRequest, fuzzResults, builders });
     return builders;
   }
 
@@ -286,16 +286,13 @@ export default class SupplierWarchem
       const parsedHTML = createDOM(productResponse);
       const metaTags = parsedHTML.getElementsByTagName("meta");
 
-      const productMeta = Array.from(metaTags).reduce<Record<string, string>>(
-        (acc, meta) => {
-          const property = meta.getAttribute("property");
-          if (typeof property === "string") {
-            acc[property] = meta.getAttribute("content") ?? "";
-          }
-          return acc;
-        },
-        {},
-      );
+      const productMeta = Array.from(metaTags).reduce<Record<string, string>>((acc, meta) => {
+        const property = meta.getAttribute("property");
+        if (typeof property === "string") {
+          acc[property] = meta.getAttribute("content") ?? "";
+        }
+        return acc;
+      }, {});
 
       this.logger.debug("productMeta", { builder, productMeta });
 

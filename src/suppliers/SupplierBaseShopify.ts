@@ -116,7 +116,7 @@ export default abstract class SupplierBaseShopify
     this.logger.debug("body", { query: graphQLQuery });
     this.logger.debug("headers", { "Content-Type": "application/json" });
 
-    const queryResponse = await this.httpPostJson({
+    const searchRequest = await this.httpPostJson({
       path: `/api/${this.apiVersion}/graphql.json`,
       host: this.apiURL,
       body: { query: graphQLQuery },
@@ -125,14 +125,14 @@ export default abstract class SupplierBaseShopify
       },
     });
 
-    this.logger.debug("queryResponse", { queryResponse });
-    if (!isValidShopifySearchResponse(queryResponse)) {
-      this.logger.error("Invalid Shopify search response", { response: queryResponse });
-      throw new Error("Invalid Shopify search response", { cause: { queryResponse } });
+    this.logger.debug("searchRequest", { searchRequest });
+    if (!isValidShopifySearchResponse(searchRequest)) {
+      this.logger.error("Invalid Shopify search response", { response: searchRequest });
+      throw new Error("Invalid Shopify search response", { cause: { searchRequest } });
       //return;
     }
 
-    const products = queryResponse.data.products.edges.map((edge) => edge.node);
+    const products = searchRequest.data.products.edges.map((edge) => edge.node);
 
     if (products.length === 0) {
       this.logger.warn("Shopify search returned no products", { query });
@@ -142,7 +142,7 @@ export default abstract class SupplierBaseShopify
     this.logger.debug(`Query returned ${products.length} products`, { products });
 
     const fuzzResults = this.fuzzyFilter<ShopifyProductNode>(query, products);
-    this.logger.debug("fuzzResults", { query, products, fuzzResults });
+    this.logger.debug("fuzzResults", { query, searchRequest, products, fuzzResults });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));
   }

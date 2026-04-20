@@ -195,21 +195,28 @@ export default class SupplierLaboratoriumDiscounter
       return;
     }
 
-    const response: unknown = await this.httpGetJson({
+    const searchRequest: unknown = await this.httpGetJson({
       path: `/en/search/${urlencode(query)}/`, // Leave trailing slash, otherwise will 301
       params,
     });
 
-    if (!isSearchResponseOk(response)) {
-      this.logger.warn("Bad search response:", { response });
+    if (!isSearchResponseOk(searchRequest)) {
+      this.logger.warn("Bad search response:", { searchRequest });
       return;
     }
 
-    const rawSearchResults = Object.values(response.collection.products);
+    const rawSearchResults = Object.values(searchRequest.collection.products);
 
     const fuzzFiltered = this.fuzzyFilter<SearchResponseProduct>(query, rawSearchResults);
-    this.logger.info("fuzzFiltered:", fuzzFiltered);
+    this.logger.debug("fuzzFiltered:", { query, searchRequest, rawSearchResults, fuzzFiltered });
     const grouped = this.groupVariants<SearchResponseProduct>(fuzzFiltered);
+    this.logger.debug("grouped:", {
+      query,
+      searchRequest,
+      rawSearchResults,
+      fuzzFiltered,
+      grouped,
+    });
     return this.initProductBuilders(grouped.slice(0, limit));
   }
 

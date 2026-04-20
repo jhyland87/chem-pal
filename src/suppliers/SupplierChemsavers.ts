@@ -1,8 +1,8 @@
-import { isCAS } from "@/utils/typeGuards/common";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
 import { assertValidSearchResponse } from "@/utils/typeGuards/chemsavers";
+import { isCAS } from "@/utils/typeGuards/common";
 import SupplierBase from "./SupplierBase";
 
 /**
@@ -90,7 +90,7 @@ export default class SupplierChemsavers
     try {
       const body = this.makeRequestBody(query);
 
-      const response: unknown = await this.httpPostJson({
+      const searchRequest: unknown = await this.httpPostJson({
         path: `/multi_search`,
         host: this.apiURL,
         params: {
@@ -100,17 +100,17 @@ export default class SupplierChemsavers
         body,
       });
 
-      this.logger.debug("Query response:", response);
+      this.logger.debug("Query response:", searchRequest);
 
-      assertValidSearchResponse(response);
+      assertValidSearchResponse(searchRequest);
 
-      const products = response.results[0].hits.flat().map((hit) => hit.document);
+      const products = searchRequest.results[0].hits.flat().map((hit) => hit.document);
 
       this.logger.debug("Mapped response objects:", products);
 
       const fuzzResults = this.fuzzyFilter<ChemsaversProductObject>(query, products);
 
-      this.logger.info("fuzzResults:", fuzzResults);
+      this.logger.debug("fuzzResults:", { query, searchRequest, products, fuzzResults });
       const grouped = this.groupVariants<ChemsaversProductObject>(fuzzResults);
       // Initialize product builders from filtered results
       return this.initProductBuilders(grouped.slice(0, limit));
