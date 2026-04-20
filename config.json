@@ -116,5 +116,25 @@
     }
   },
   "defaultResultsLimit": 5,
-  "useStorageCompression": false
+  "useStorageCompression": false,
+  "hotkeys": [
+    {
+      "id": "showHotkeyHelp",
+      "keys": "shift+?",
+      "description": "Show this list of hotkeys",
+      "group": "General"
+    },
+    {
+      "id": "clearAndRetrySearch",
+      "keys": "mod+shift+r",
+      "description": "Clear cache, clear results, and re-run the current search",
+      "group": "Search"
+    },
+    {
+      "id": "goToSearch",
+      "keys": { "mac": "meta+s", "other": "ctrl+shift+s" },
+      "description": "Go to the search panel",
+      "group": "Navigation"
+    }
+  ]
 }
