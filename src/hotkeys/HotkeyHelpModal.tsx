@@ -1,11 +1,12 @@
-import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import Modal from "@mui/material/Modal";
 import Typography from "@mui/material/Typography";
 import { useMemo } from "react";
 import { formatBinding } from "./matcher";
-import { getHotkeyConfigs } from "./useHotkeys";
+import styles from "./HotkeyHelpModal.module.scss";
+import { HotkeyCombo, HotkeyHelpBox, HotkeyRow } from "./HotkeyHelpModal.styled";
 import type { HotkeyConfig } from "./types";
+import { getHotkeyConfigs } from "./useHotkeys";
 
 interface HotkeyHelpModalProps {
   open: boolean;
@@ -27,8 +28,12 @@ function groupByGroup(configs: HotkeyConfig[]): Record<string, HotkeyConfig[]> {
  * `group` field. Each row shows the formatted key combo (platform-aware)
  * and the human-readable description.
  *
- * The modal is driven entirely off the config — adding a new entry to
- * `config.json` is sufficient to make it appear here with no code change.
+ * Static layout (positioning, sizing, text alignment, font families) lives
+ * in the sibling `HotkeyHelpModal.module.scss`. Theme-dependent styling
+ * (palette, spacing, radius, shadow) lives in `HotkeyHelpModal.styled.ts`.
+ * The modal itself is driven entirely off the config — adding a new entry
+ * to `config.json` is sufficient to make it appear here with no code
+ * change.
  * @param props - Component props.
  * @example
  * ```tsx
@@ -47,77 +52,40 @@ export default function HotkeyHelpModal({ open, onClose }: HotkeyHelpModalProps)
       aria-labelledby="hotkey-help-title"
       sx={{ zIndex: (theme) => theme.zIndex.modal + 10 }}
     >
-      <Box
-        sx={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "min(460px, 90vw)",
-          maxHeight: "80vh",
-          overflowY: "auto",
-          bgcolor: "background.paper",
-          color: "text.primary",
-          borderRadius: 2,
-          boxShadow: 24,
-          p: 3,
-          outline: "none",
-        }}
-      >
+      <HotkeyHelpBox className={styles["hotkey-help-box"]}>
         <Typography
           id="hotkey-help-title"
-          variant="h6"
+          variant="subtitle1"
           component="h2"
-          sx={{ textAlign: "center", mb: 1.5 }}
+          className={styles["hotkey-help-title"]}
+          sx={{ mb: 0.5 }}
         >
           Keyboard Shortcuts
         </Typography>
         <Divider />
         {Object.entries(grouped).map(([group, entries]) => (
-          <Box key={group}>
+          <div key={group}>
             <Typography
               variant="overline"
               color="text.secondary"
-              sx={{ display: "block", mt: 2 }}
+              className={styles["hotkey-group-heading"]}
+              sx={{ mt: 1 }}
             >
               {group}
             </Typography>
             {entries.map((entry) => (
-              <Box
-                key={entry.id}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 2,
-                  py: 0.75,
-                }}
-              >
-                <Typography variant="body2" sx={{ flex: "1 1 auto" }}>
+              <HotkeyRow key={entry.id} className={styles["hotkey-row"]}>
+                <HotkeyCombo component="span" className={styles["hotkey-combo"]}>
+                  {formatBinding(entry.keys)}
+                </HotkeyCombo>
+                <Typography variant="body2" className={styles["hotkey-description"]}>
                   {entry.description}
                 </Typography>
-                <Box
-                  component="span"
-                  sx={{
-                    flex: "0 0 auto",
-                    fontFamily:
-                      "ui-monospace, SFMono-Regular, Menlo, monospace",
-                    fontSize: "0.85rem",
-                    px: 1,
-                    py: 0.25,
-                    borderRadius: 1,
-                    border: 1,
-                    borderColor: "divider",
-                    bgcolor: "action.hover",
-                  }}
-                >
-                  {formatBinding(entry.keys)}
-                </Box>
-              </Box>
+              </HotkeyRow>
             ))}
-          </Box>
+          </div>
         ))}
-      </Box>
+      </HotkeyHelpBox>
     </Modal>
   );
 }

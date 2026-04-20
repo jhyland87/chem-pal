@@ -33,6 +33,12 @@ export interface HotkeyConfig {
   description: string;
   /** Grouping label used to organize the help modal list. */
   group: string;
+  /**
+   * Optional confirmation text flashed in the status bar when the hotkey
+   * fires. Omit for shortcuts whose effect is self-evident (e.g. opening a
+   * modal) so we don't spam redundant feedback.
+   */
+  flash?: string;
 }
 
 /**

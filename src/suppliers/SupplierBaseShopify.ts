@@ -125,19 +125,21 @@ export default abstract class SupplierBaseShopify
       },
     });
 
-    this.logger.info("queryResponse", { queryResponse });
+    this.logger.debug("queryResponse", { queryResponse });
     if (!isValidShopifySearchResponse(queryResponse)) {
       this.logger.error("Invalid Shopify search response", { response: queryResponse });
-      return;
+      throw new Error("Invalid Shopify search response", { cause: { queryResponse } });
+      //return;
     }
 
     const products = queryResponse.data.products.edges.map((edge) => edge.node);
 
-    this.logger.debug("products", { products });
     if (products.length === 0) {
-      this.logger.error("Shopify search returned no products", { query });
+      this.logger.warn("Shopify search returned no products", { query });
       return;
     }
+
+    this.logger.debug(`Query returned ${products.length} products`, { products });
 
     const fuzzResults = this.fuzzyFilter<ShopifyProductNode>(query, products);
     this.logger.debug("fuzzResults", { query, products, fuzzResults });
@@ -173,6 +175,7 @@ export default abstract class SupplierBaseShopify
           : product.variants.edges[0]?.node;
 
       if (!primaryVariant) return;
+      this.logger.debug("primaryVariant", { primaryVariant });
 
       const parsedPrice = parsePrice(`$${primaryVariant.price.amount}`);
       if (!parsedPrice) return;
@@ -186,15 +189,25 @@ export default abstract class SupplierBaseShopify
         .setSku(primaryVariant.sku)
         .setID(product.id);
 
-      const quantity = firstMap(parseQuantity, [
+      const parseableQuantityStrings = [
+        `${primaryVariant.weight} ${primaryVariant.weightUnit}`,
         primaryVariant.sku,
         product.title,
         product.description,
-      ]);
+      ];
+      this.logger.debug("parseableQuantityStrings", { parseableQuantityStrings });
+      const quantity = firstMap(parseQuantity, parseableQuantityStrings);
 
       if (isQuantityObject(quantity)) {
         builder.setQuantity(quantity.quantity, quantity.uom);
       } else {
+        this.logger.warn("Failed to parse quantity from primary variant, defaulting to 1 EA", {
+          parseableQuantityStrings,
+          quantity,
+          builder,
+          product,
+        });
+
         builder.setQuantity(1, UOM.EA);
       }
 

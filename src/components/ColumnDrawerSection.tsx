@@ -112,12 +112,15 @@ export default function ColumnDrawerSection({
           <Autocomplete
             multiple
             size="small"
+            disableCloseOnSelect
             options={[...options]}
             getOptionLabel={(option) => optionLabels?.[option] ?? option}
             filterOptions={(opts, { inputValue }) => {
               const term = inputValue.toLowerCase();
-              return opts.filter((opt) =>
-                (optionLabels?.[opt] ?? opt).toLowerCase().includes(term),
+              return opts.filter(
+                (opt) =>
+                  !currentValue.includes(opt) &&
+                  (optionLabels?.[opt] ?? opt).toLowerCase().includes(term),
               );
             }}
             value={currentValue}
@@ -159,13 +162,16 @@ export default function ColumnDrawerSection({
           <Autocomplete
             multiple
             size="small"
+            disableCloseOnSelect
             options={[...options]}
             getOptionLabel={(option) => option.label}
             filterOptions={(opts, { inputValue }) => {
               const term = inputValue.toLowerCase();
               return opts.filter(
                 (opt) =>
-                  opt.label.toLowerCase().includes(term) || opt.code.toLowerCase().includes(term),
+                  !selectedCodes.includes(opt.code) &&
+                  (opt.label.toLowerCase().includes(term) ||
+                    opt.code.toLowerCase().includes(term)),
               );
             }}
             value={currentValue}

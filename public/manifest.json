@@ -74,7 +74,8 @@
     "https://www.amazon.de/*",
     "https://www.amazon.co.jp/*",
     "https://www.amazon.ca/*",
-    "https://alchemielabs.com/*"
+    "https://alchemielabs.com/*",
+    "https://www.aladdinsci.com/*"
   ],
   "background": {
     "service_worker": "service-worker.js"
