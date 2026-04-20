@@ -128,13 +128,33 @@
       "id": "clearAndRetrySearch",
       "keys": "mod+shift+r",
       "description": "Clear cache, clear results, and re-run the current search",
-      "group": "Search"
+      "group": "Search",
+      "flash": "Cache cleared, search re-triggered"
     },
     {
       "id": "goToSearch",
       "keys": { "mac": "meta+s", "other": "ctrl+shift+s" },
       "description": "Go to the search panel",
       "group": "Navigation"
+    },
+    {
+      "id": "openHistory",
+      "keys": "mod+h",
+      "description": "Open search history in the side drawer",
+      "group": "Navigation",
+      "flash": "Search history opened"
+    },
+    {
+      "id": "focusGlobalFilter",
+      "keys": "mod+f",
+      "description": "Focus the global filter on the results panel",
+      "group": "Results"
+    },
+    {
+      "id": "toggleColumnFilters",
+      "keys": "mod+shift+f",
+      "description": "Toggle the column filters in the results table",
+      "group": "Results"
     }
   ]
 }

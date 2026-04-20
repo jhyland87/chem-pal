@@ -14,6 +14,7 @@ import LoadingBackdrop from "@/components/LoadingBackdrop";
 import resultStyles from "@/components/ResultsPanel.module.scss";
 import { CACHE } from "@/constants/common";
 import { generatePageSizes } from "@/helpers/utils";
+import { FOCUS_GLOBAL_FILTER_EVENT, TOGGLE_COLUMN_FILTERS_EVENT } from "@/hotkeys";
 import { cstorage } from "@/utils/storage";
 import { isInputElement } from "@/utils/typeGuards/common";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -134,6 +135,24 @@ export default function ResultsTable({
   const [showFilters, setShowFilters] = useState(false);
   const [columnMenuAnchor, setColumnMenuAnchor] = useState<null | HTMLElement>(null);
   const [globalFilter, setGlobalFilter] = useState("");
+  const globalFilterInputRef = useRef<HTMLInputElement>(null);
+
+  // Bridge hotkeys (fired from App.tsx) into local state/refs.
+  useEffect(() => {
+    const onFocus = () => {
+      const el = globalFilterInputRef.current;
+      if (!el) return;
+      el.focus();
+      el.select();
+    };
+    const onToggle = () => setShowFilters((v) => !v);
+    window.addEventListener(FOCUS_GLOBAL_FILTER_EVENT, onFocus);
+    window.addEventListener(TOGGLE_COLUMN_FILTERS_EVENT, onToggle);
+    return () => {
+      window.removeEventListener(FOCUS_GLOBAL_FILTER_EVENT, onFocus);
+      window.removeEventListener(TOGGLE_COLUMN_FILTERS_EVENT, onToggle);
+    };
+  }, []);
 
   // Enhanced search hook that maintains streaming behavior
   const {
@@ -180,13 +199,11 @@ export default function ResultsTable({
     getRowCanExpand,
     userSettings: appContext?.userSettings || {
       // Not all of these settings work, yet
-      showHelp: false,
       caching: true,
       autocomplete: true,
       currency: "USD",
       currencyRate: 1.0,
       location: "US",
-      shipsToMyLocation: false,
       fontSize: "small",
       supplierResultLimit: defaultResultsLimit,
       autoResize: true,
@@ -398,6 +415,7 @@ export default function ResultsTable({
               placeholder="Filter results..."
               value={globalFilter}
               onChange={(e) => setGlobalFilter(e.target.value)}
+              inputRef={globalFilterInputRef}
               slotProps={{
                 input: {
                   onKeyDown: handleKeyPress,

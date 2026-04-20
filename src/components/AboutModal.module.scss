@@ -1,0 +1,23 @@
+.about-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(500px, 90vw);
+  max-height: 85vh;
+  overflow-y: auto;
+  outline: none;
+}
+
+.about-title {
+  text-align: center;
+}
+
+.about-contributor-stack {
+  flex-wrap: wrap;
+}
+
+.about-contributor-link {
+  font-size: 0.8rem;
+  text-align: center;
+}

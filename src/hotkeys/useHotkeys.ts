@@ -30,6 +30,18 @@ function compile(configs: HotkeyConfig[]): CompiledHotkey[] {
 }
 
 /**
+ * Options accepted by {@link useHotkeys}. All fields optional.
+ * @source
+ */
+export interface UseHotkeysOptions {
+  /**
+   * Called after a hotkey's handler is invoked, with the matched config.
+   * Typical use: flash a status-bar confirmation when `config.flash` is set.
+   */
+  onTriggered?: (config: HotkeyConfig) => void;
+}
+
+/**
  * Installs a single global `keydown` listener on `document` that dispatches
  * to the supplied handler map based on the application's hotkey config.
  *
@@ -41,17 +53,19 @@ function compile(configs: HotkeyConfig[]): CompiledHotkey[] {
  * - Calling `preventDefault` + `stopPropagation` when a binding fires
  * - Awaiting async handlers and logging any errors
  * @param handlers - Map of hotkey action id -> handler.
+ * @param options - Optional hooks, e.g. `onTriggered` for status-bar feedback.
  * @example
  * ```ts
- * useHotkeys({
- *   showHotkeyHelp: () => setHelpOpen(true),
- *   goToSearch: () => setPanel(PANEL.SEARCH_HOME),
- * });
+ * useHotkeys(
+ *   { showHotkeyHelp: () => setHelpOpen(true) },
+ *   { onTriggered: (cfg) => cfg.flash && flashStatusText(cfg.flash) },
+ * );
  * ```
  * @source
  */
-export function useHotkeys(handlers: HotkeyHandlers): void {
+export function useHotkeys(handlers: HotkeyHandlers, options: UseHotkeysOptions = {}): void {
   const compiled = useMemo(() => compile(hotkeysConfig as HotkeyConfig[]), []);
+  const { onTriggered } = options;
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -72,6 +86,7 @@ export function useHotkeys(handlers: HotkeyHandlers): void {
               console.error(`Hotkey handler "${config.id}" failed`, { error });
             });
           }
+          onTriggered?.(config);
         } catch (error) {
           console.error(`Hotkey handler "${config.id}" threw`, { error });
         }
@@ -81,7 +96,7 @@ export function useHotkeys(handlers: HotkeyHandlers): void {
 
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [compiled, handlers]);
+  }, [compiled, handlers, onTriggered]);
 }
 
 /**

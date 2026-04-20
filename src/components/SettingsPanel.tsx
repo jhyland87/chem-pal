@@ -310,19 +310,6 @@ export default function SettingsPanel() {
         </ListItem>
 
         <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Ships to Location" />
-          {/*<FormHelperText>Only show products that ship to your location</FormHelperText>*/}
-          <FormControl>
-            <Switch
-              checked={!!currentSettings.location && currentSettings.shipsToMyLocation}
-              disabled={currentSettings.location === "" || isPending}
-              onChange={handleSwitchChange}
-              name="shipsToMyLocation"
-            />
-          </FormControl>
-        </ListItem>
-
-        <ListItem sx={displayHelperOnHover}>
           <ListItemText primary="Currency Rate" />
           {/*<FormHelperText>Just an input example</FormHelperText>*/}
           <FormControl>

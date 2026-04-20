@@ -1,21 +1,35 @@
 import { defaultResultsLimit } from "@/../config.json";
 import { APP_ACTION, CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
 import { AppContext } from "@/context";
-import { HotkeyHelpModal, useHotkeys } from "@/hotkeys";
+import {
+  FOCUS_GLOBAL_FILTER_EVENT,
+  HotkeyHelpModal,
+  TOGGLE_COLUMN_FILTERS_EVENT,
+  useHotkeys,
+  type HotkeyHandlers,
+} from "@/hotkeys";
 import SupplierFactory from "@/suppliers/SupplierFactory";
 import SupplierCache from "@/utils/SupplierCache";
 import { clearSearchResults, getSearchResults, IDB_SEARCH_RESULTS_CLEARED } from "@/utils/idbCache";
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import { cstorage } from "@/utils/storage";
 import CssBaseline from "@mui/material/CssBaseline";
-import { lazy, startTransition, Suspense, useActionState, useEffect, useMemo, useState } from "react";
+import {
+  lazy,
+  startTransition,
+  Suspense,
+  useActionState,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import "./App.scss";
 import DrawerSystem from "./components/DrawerSystem";
 import ErrorBoundary from "./components/ErrorBoundary";
 import SearchPanel from "./components/SearchPanel/SearchPanel";
 import SearchPanelHome from "./components/SearchPanelHome";
 import SpeedDialMenu from "./components/SpeedDialMenu";
-import StatusBar, { StatusBarProvider } from "./components/StatusBar";
+import StatusBar, { StatusBarProvider, useStatusBar } from "./components/StatusBar";
 import { DevBadge } from "./components/StyledComponents";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { getCurrencyCodeFromLocation, getCurrencyRate } from "./helpers/currency";
@@ -83,7 +97,6 @@ const initialAppState: AppState = {
     currency: getCurrencyCodeFromLocation(getUserCountry()),
     currencyRate: 1.0,
     location: getUserCountry(),
-    shipsToMyLocation: false,
     fontSize: "medium",
     supplierResultLimit: defaultResultsLimit,
     autoResize: true,
@@ -109,6 +122,23 @@ type AppAction =
   | { type: APP_ACTION.SET_DRAWER_TAB; tab: DRAWER_INDEX }
   | { type: APP_ACTION.SET_SELECTED_SUPPLIERS; suppliers: string[] }
   | { type: APP_ACTION.SET_BOOKMARKS_FOLDER_ID; id: string | null };
+
+/**
+ * Installs the global hotkey listener and relays confirmation text through
+ * the StatusBar. Split out so it can live inside `StatusBarProvider` and
+ * read `useStatusBar()` — `App` itself sits above the provider.
+ * @param props - Hotkey handlers keyed by config id.
+ * @source
+ */
+function HotkeyLayer({ handlers }: { handlers: HotkeyHandlers }) {
+  const { flashStatusText } = useStatusBar();
+  useHotkeys(handlers, {
+    onTriggered: (config) => {
+      if (config.flash) flashStatusText(config.flash);
+    },
+  });
+  return null;
+}
 
 /**
  * React v19 App component with enhanced state management
@@ -400,13 +430,23 @@ function App() {
 
   // Hotkey action handlers. Keyed by the `id` field in config.json -> hotkeys.
   // The useHotkeys hook already suppresses events when focus is in an input.
-  const hotkeyHandlers = useMemo(
+  // Wired up inside StatusBarProvider via <HotkeyLayer /> so flash messages work.
+  const hotkeyHandlers: HotkeyHandlers = useMemo(
     () => ({
       showHotkeyHelp: () => {
         setHotkeyHelpOpen(true);
       },
       goToSearch: () => {
         dispatch({ type: APP_ACTION.SET_PANEL, panel: PANEL.SEARCH_HOME });
+      },
+      openHistory: () => {
+        dispatch({ type: APP_ACTION.SET_DRAWER_TAB, tab: DRAWER_INDEX.HISTORY });
+      },
+      focusGlobalFilter: () => {
+        window.dispatchEvent(new CustomEvent(FOCUS_GLOBAL_FILTER_EVENT));
+      },
+      toggleColumnFilters: () => {
+        window.dispatchEvent(new CustomEvent(TOGGLE_COLUMN_FILTERS_EVENT));
       },
       clearAndRetrySearch: async () => {
         const data = await cstorage.session.get([CACHE.QUERY]);
@@ -426,7 +466,6 @@ function App() {
     }),
     [dispatch],
   );
-  useHotkeys(hotkeyHandlers);
 
   // AppContext value with fixed searchResults property
   const appContextValue = {
@@ -453,6 +492,7 @@ function App() {
       <AppContext.Provider value={appContextValue}>
         <ThemeProvider>
           <StatusBarProvider>
+            <HotkeyLayer handlers={hotkeyHandlers} />
             <CssBaseline />
             <div className="app-container">
               {/* Show loading indicator when settings are updating */}
@@ -473,10 +513,7 @@ function App() {
                 <DrawerSystem />
                 <SpeedDialMenu speedDialVisibility={appState.speedDialVisibility} />
               </div>
-              <HotkeyHelpModal
-                open={hotkeyHelpOpen}
-                onClose={() => setHotkeyHelpOpen(false)}
-              />
+              <HotkeyHelpModal open={hotkeyHelpOpen} onClose={() => setHotkeyHelpOpen(false)} />
             </div>
             <StatusBar />
           </StatusBarProvider>

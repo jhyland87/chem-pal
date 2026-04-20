@@ -11,6 +11,7 @@ import BadgeAnimator from "@/utils/BadgeAnimator";
 import {
   ColumnDef,
   ColumnFiltersState,
+  filterFns,
   getCoreRowModel,
   getExpandedRowModel,
   getFacetedMinMaxValues,
@@ -21,6 +22,7 @@ import {
   OnChangeFn,
   Row,
   useReactTable,
+  type FilterFn,
   type Table,
 } from "@tanstack/react-table";
 import debounce from "lodash/debounce";
@@ -38,7 +40,7 @@ import TableColumns from "./TableColumns";
  * @returns true if the row should be shown, false otherwise
  * @source
  */
-function multiSelectFilter(row: Row<Product>, columnId: string, filterValue: string[]): boolean {
+const multiSelectBase: FilterFn<Product> = (row, columnId, filterValue) => {
   // If no filter values are selected, show all rows
   if (!Array.isArray(filterValue) || filterValue.length === 0) {
     return true;
@@ -56,7 +58,62 @@ function multiSelectFilter(row: Row<Product>, columnId: string, filterValue: str
 
   // Show row if cell value matches ANY of the selected filter values (OR logic)
   return filterValue.some((value) => value.toLowerCase() === cellValueStr.toLowerCase());
+};
+
+const includesTextBase: FilterFn<Product> = (row, columnId, filterValue) => {
+  const search = String(filterValue ?? "").toLowerCase().trim();
+  if (!search) return true;
+  const cellValue = row.getValue(columnId);
+  if (cellValue == null) return false;
+  return String(cellValue).toLowerCase().includes(search);
+};
+
+/**
+ * Higher-order filter that makes any base filter "hierarchy aware" across
+ * the parent/variant row tree:
+ *
+ * - If THIS row's cell passes the base filter, include it.
+ * - If ANY ANCESTOR passes the base filter, include this row too (so a
+ *   matching parent pulls all its variants along).
+ * - If ANY DESCENDANT passes the base filter, include this row too (so a
+ *   matching variant pulls its parent along — non-matching siblings stay
+ *   hidden because they fail on all three checks).
+ *
+ * Used as a wrapper in `filterFns` so every column filter and the global
+ * filter behave consistently with respect to the parent ↔ variant
+ * relationship. Works with `filterFromLeafRows: false` (the default).
+ */
+function withHierarchy<T>(base: FilterFn<T>): FilterFn<T> {
+  const fn: FilterFn<T> = (row, columnId, filterValue, addMeta) => {
+    if (base(row, columnId, filterValue, addMeta)) return true;
+
+    let parent = row.getParentRow();
+    while (parent) {
+      if (base(parent, columnId, filterValue, addMeta)) return true;
+      parent = parent.getParentRow();
+    }
+
+    const anyDescendant = (r: Row<T>): boolean => {
+      for (const sub of r.subRows) {
+        if (base(sub, columnId, filterValue, addMeta)) return true;
+        if (anyDescendant(sub)) return true;
+      }
+      return false;
+    };
+    return anyDescendant(row);
+  };
+  // Preserve `resolveFilterValue` / `autoRemove` hooks that the base filter
+  // may define (e.g. the built-in `inNumberRange` relies on these to parse
+  // min/max values). Without this passthrough, `inNumberRangeHierarchy`
+  // would never receive a parsed tuple and would reject every row.
+  fn.resolveFilterValue = base.resolveFilterValue;
+  fn.autoRemove = base.autoRemove;
+  return fn;
 }
+
+const multiSelectFilter = withHierarchy(multiSelectBase);
+const includeHierarchyTextFilter = withHierarchy(includesTextBase);
+const inNumberRangeHierarchyFilter = withHierarchy(filterFns.inNumberRange);
 
 /**
  * Configuration options for the useResultsTable hook.
@@ -146,6 +203,8 @@ export function useResultsTable({
     columns: TableColumns() as ColumnDef<Product, unknown>[],
     filterFns: {
       multiSelect: multiSelectFilter,
+      includeHierarchy: includeHierarchyTextFilter,
+      inNumberRangeHierarchy: inNumberRangeHierarchyFilter,
     },
     sortingFns: {
       matchPercentage: matchPercentageSortingFn,
@@ -156,6 +215,7 @@ export function useResultsTable({
       columnFilters: columnFilterFns[0],
       globalFilter: globalFilterFns[0],
     },
+    globalFilterFn: includeHierarchyTextFilter,
     // Columns that should start hidden — users can opt them in via the
     // column-visibility menu. Overridden by any persisted visibility state
     // in chrome.storage on mount.
@@ -164,6 +224,12 @@ export function useResultsTable({
         availability: false,
       },
     },
+    // Each row is filtered independently by our `withHierarchy` wrapper
+    // (self / ancestors / descendants). Setting `filterFromLeafRows: true`
+    // would short-circuit that — parents of matching leaves would always
+    // be kept regardless of whether we matched them, which breaks the
+    // "show only matching variants" requirement.
+    filterFromLeafRows: false,
     onColumnFiltersChange: columnFilterFns[1],
     onGlobalFilterChange: globalFilterFns[1],
     getSubRows: (row) => row?.variants as Product[],

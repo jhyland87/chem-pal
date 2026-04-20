@@ -12,7 +12,6 @@ User settings are managed via React 19's `useActionState` and persisted to `chro
 | `autocomplete` | `boolean` | Enable search input autocomplete suggestions |
 | `currency` | `CurrencyCode` | Preferred currency for price display |
 | `location` | `CountryCode` | User's geographic location |
-| `shipsToMyLocation` | `boolean` | Filter results to suppliers that ship to your location |
 | `suppliers` | `string[]` | List of enabled supplier class names |
 | `theme` | `string` | UI theme selection |
 | `showHelp` | `boolean` | Show help tooltips |

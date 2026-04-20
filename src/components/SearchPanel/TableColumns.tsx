@@ -95,6 +95,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         );
       },
       enableHiding: false,
+      filterFn: "includeHierarchy",
       meta: {
         filterPlaceholder: "Title...",
         filterVariant: "text",
@@ -236,7 +237,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         }).format(priceInUsd * currencyRate);
       },
       sortingFn: "priceSortingFn",
-      filterFn: "inNumberRange",
+      filterFn: "inNumberRangeHierarchy",
       meta: {
         filterPlaceholder: "1.00 - 1000.00",
         filterVariant: "range",
@@ -270,7 +271,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         return `${row.original.quantity} ${row.original.uom}`;
       },
       sortingFn: "quantitySortingFn",
-      filterFn: "inNumberRange",
+      filterFn: "inNumberRangeHierarchy",
       minSize: 50,
     },
     {

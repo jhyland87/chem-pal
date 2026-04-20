@@ -1,0 +1,39 @@
+.hotkey-help-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(420px, 90vw);
+  max-height: 80vh;
+  overflow-y: auto;
+  outline: none;
+}
+
+.hotkey-help-title {
+  text-align: center;
+  font-weight: 600;
+}
+
+.hotkey-group-heading {
+  display: block;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.hotkey-row {
+  display: flex;
+  align-items: center;
+}
+
+.hotkey-combo {
+  flex: 0 0 auto;
+  min-width: 72px;
+  text-align: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+}
+
+.hotkey-description {
+  flex: 1 1 auto;
+  font-size: 0.85rem;
+}

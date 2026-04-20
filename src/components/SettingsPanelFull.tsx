@@ -211,19 +211,7 @@ export default function SettingsPanelFull() {
                 </Select>
               </FormControl>
             </ListItem>
-            {/* Ships to Location */}
-            <ListItem className={styles["settings-panel__helper-on-hover"]}>
-              <ListItemText primary="Ships to Location" />
-              {/*<FormHelperText>Only show products that ship to your location</FormHelperText>*/}
-              <FormControl>
-                <Switch
-                  checked={!!currentSettings.location && currentSettings.shipsToMyLocation}
-                  disabled={currentSettings.location === "" || isPending}
-                  onChange={handleSwitchChange}
-                  name="shipsToMyLocation"
-                />
-              </FormControl>
-            </ListItem>
+
             {/* Foo Example */}
             <ListItem className={styles["settings-panel__helper-on-hover"]}>
               <ListItemText primary="Currency Rate" />

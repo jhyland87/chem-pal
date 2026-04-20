@@ -5,6 +5,7 @@ import {
   IconButton,
   ListItem,
   ListItemText,
+  Paper,
   Select,
   TextField,
   Tooltip,
@@ -91,12 +92,12 @@ export const SearchButton = styled(IconButton)(({ theme }) => ({
 // Development badge - small transparent badge in bottom left corner
 export const DevBadge = styled(Box)(({ theme }) => ({
   position: "fixed",
-  bottom: "8px",
-  left: "8px",
-  backgroundColor: `${theme.palette.error.main}E6`, // 90% opacity
+  bottom: "0",
+  left: "0",
+  backgroundColor: `${theme.palette.error.main}80`, // 50% opacity
   color: theme.palette.error.contrastText,
   padding: "4px 8px",
-  borderRadius: designTokens.borderRadius.small,
+  borderRadius: "0px 4px 0px 0px",
   fontSize: "0.65rem",
   fontWeight: 500,
   zIndex: 9999,
@@ -572,4 +573,26 @@ export const CountryFlagTooltip = styled(Tooltip)(() => ({
     margin: "0px",
     fontSize: "0.7em",
   },
+}));
+
+// === ABOUT MODAL ===
+
+// Theme-aware wrapper for the AboutModal body. Positioning/sizing is handled
+// by the `.about-box` class in AboutModal.module.scss.
+export const AboutModalBox = styled(Box)(({ theme }) => ({
+  backgroundColor: theme.palette.background.paper,
+  color: theme.palette.text.primary,
+  borderRadius: Number(theme.shape.borderRadius) * 2,
+  boxShadow: theme.shadows[24],
+  padding: theme.spacing(4),
+}));
+
+// Paper tile for each contributor entry in the AboutModal. Theme-aware for
+// typography, color, and padding; the static text alignment lives in the
+// AboutModal.module.scss `.about-contributor-link` class.
+export const AboutContributorItem = styled(Paper)(({ theme }) => ({
+  ...theme.typography.body2,
+  padding: theme.spacing(1),
+  color: theme.palette.text.secondary,
+  flexGrow: 1,
 }));
