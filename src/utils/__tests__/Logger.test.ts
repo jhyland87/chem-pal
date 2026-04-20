@@ -37,9 +37,11 @@ describe("Logger", () => {
   });
 
   describe("initialization", () => {
-    it("should create logger with default INFO level when no level specified", () => {
+    it("should create logger with default DEBUG level in dev builds when no level specified", () => {
       delete process.env.LOG_LEVEL;
-      expect(logger.getLogLevel()).toBe(LogLevel.INFO);
+      // Vitest runs with MODE === "test" which is treated as a dev build,
+      // so the build-mode default is DEBUG.
+      expect(logger.getLogLevel()).toBe(LogLevel.DEBUG);
     });
 
     it("should create logger with specified level", () => {
@@ -48,9 +50,9 @@ describe("Logger", () => {
     });
 
     it("should use window.LOG_LEVEL when available", () => {
-      (window as ExtendedWindow).LOG_LEVEL = "DEBUG";
+      (window as ExtendedWindow).LOG_LEVEL = "WARN";
       const logger = new Logger("Test");
-      expect(logger.getLogLevel()).toBe(LogLevel.DEBUG);
+      expect(logger.getLogLevel()).toBe(LogLevel.WARN);
     });
 
     it("should fall back to process.env.LOG_LEVEL when window.LOG_LEVEL not available", () => {
@@ -59,10 +61,11 @@ describe("Logger", () => {
       expect(logger.getLogLevel()).toBe(LogLevel.ERROR);
     });
 
-    it("should default to INFO when invalid level specified in environment", () => {
+    it("should fall back to the build-mode default when an invalid level is specified", () => {
       (window as ExtendedWindow).LOG_LEVEL = "INVALID";
       const logger = new Logger("Test");
-      expect(logger.getLogLevel()).toBe(LogLevel.INFO);
+      // Build-mode default under Vitest (MODE === "test") is DEBUG.
+      expect(logger.getLogLevel()).toBe(LogLevel.DEBUG);
     });
   });
 
@@ -172,11 +175,16 @@ describe("Logger", () => {
 
     describe("environment change notification", () => {
       it("should log level change when environment changes and new level allows INFO", () => {
-        (window as ExtendedWindow).LOG_LEVEL = "DEBUG";
+        // Start from a level that suppresses the change message so the
+        // assertion isn't polluted by the default DEBUG behavior.
+        (window as ExtendedWindow).LOG_LEVEL = "ERROR";
+        logger.error("prime to ERROR");
+        consoleSpies.info.mockClear();
 
-        logger.debug("trigger check");
+        (window as ExtendedWindow).LOG_LEVEL = "INFO";
+        logger.info("trigger check");
         expect(consoleSpies.info).toHaveBeenCalledWith(
-          expect.stringContaining("Log level changed from INFO to DEBUG"),
+          expect.stringContaining("Log level changed from ERROR to INFO"),
         );
       });
 
