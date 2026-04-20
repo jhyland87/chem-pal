@@ -103,10 +103,10 @@ export default class SupplierLoudwolf
       return;
     }
 
-    this.logger.log("searchResponse:", { searchResponse });
+    this.logger.debug("searchResponse:", { searchResponse });
 
     const $fuzzResults = this.fuzzHtmlResponse(query, searchResponse);
-    this.logger.info("fuzzResults:", { fuzzResults: Array.from($fuzzResults) });
+    this.logger.debug("fuzzResults:", { fuzzResults: Array.from($fuzzResults) });
 
     return this.initProductBuilders($fuzzResults.slice(0, limit));
   }

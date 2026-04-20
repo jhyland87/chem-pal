@@ -204,20 +204,23 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
     this.limit = limit;
-    const response: unknown = await this.request<MacklinSearchResultProducts>(`/api/item/search`, {
-      params: { keyword: query, limit: 90, page: 1 },
-    });
+    const searchRequest: unknown = await this.request<MacklinSearchResultProducts>(
+      `/api/item/search`,
+      {
+        params: { keyword: query, limit: 90, page: 1 },
+      },
+    );
 
-    if (!isMacklinSearchResult<MacklinSearchResultProducts>(response)) {
+    if (!isMacklinSearchResult<MacklinSearchResultProducts>(searchRequest)) {
       this.logger.warn("Invalid API response format");
       return;
     }
 
     // Flatten the array of arrays into a single array of products
-    const products = Object.values(response.list).map((item) => item[0]);
+    const products = Object.values(searchRequest.list).map((item) => item[0]);
 
     const fuzzFiltered = this.fuzzyFilter<MacklinProductVariant>(query, products);
-    this.logger.info("fuzzFiltered:", fuzzFiltered);
+    this.logger.debug("fuzzFiltered:", { query, searchRequest, products, fuzzFiltered });
     const processed = fuzzFiltered.slice(0, limit);
     return this.initProductBuilders(processed);
   }
@@ -519,7 +522,7 @@ export default class SupplierMacklin extends SupplierBase<Product, Product> impl
       throw new MacklinApiError("Invalid API response format");
     }
 
-    this.logger.log("serverTimestamp response:", response);
+    this.logger.debug("serverTimestamp response:", response);
 
     const clientTime = Math.round(Date.now() / 1000);
     const timestampData: TimestampStorage = {

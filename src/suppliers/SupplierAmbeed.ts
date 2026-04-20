@@ -230,17 +230,17 @@ export default class SupplierAmbeed
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    const response: unknown = await this.httpGetJson({
+    const searchRequest: unknown = await this.httpGetJson({
       path: "webapi/v1/productlistbykeyword",
       params: {
         params: this.makeQueryParams(query),
       },
     });
 
-    assertIsAmbeedProductListResponse(response);
+    assertIsAmbeedProductListResponse(searchRequest);
 
     // Sanitize the products, removing the <em></em> tags and decoding the prices.
-    const products = response.value.result.map(this.sanitizeSearchableFields.bind(this));
+    const products = searchRequest.value.result.map(this.sanitizeSearchableFields.bind(this));
 
     const fuzzedResults = this.fuzzyFilter<AmbeedProductListResponseResultItem>(query, products);
 

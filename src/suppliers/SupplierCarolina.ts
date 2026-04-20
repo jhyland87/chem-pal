@@ -137,20 +137,20 @@ export default class SupplierCarolina
   ): Promise<ProductBuilder<Product>[] | void> {
     const params = this.makeQueryParams(query);
 
-    const response: unknown = await this.httpGetJson({
+    const searchRequest: unknown = await this.httpGetJson({
       path: "/browse/product-search-results",
       params,
     });
 
-    if (!isResponseOk(response)) {
-      this.logger.warn("Response status:", response);
+    if (!isResponseOk(searchRequest)) {
+      this.logger.warn("Response status:", searchRequest);
       return;
     }
 
-    const results = await this.extractSearchResults(response);
+    const results = await this.extractSearchResults(searchRequest);
 
     const fuzzResults = this.fuzzyFilter<CarolinaSearchResult>(query, results);
-    this.logger.info("fuzzResults:", fuzzResults);
+    this.logger.debug("fuzzResults:", { query, searchRequest, results, fuzzResults });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));
   }
@@ -185,8 +185,11 @@ export default class SupplierCarolina
    */
   protected initProductBuilders(data: CarolinaSearchResult[]): ProductBuilder<Product>[] {
     return data.map((result) => {
-      const builder = new ProductBuilder(this.baseURL)
-        .setBasicInfo(result.productName, result.productUrl, this.supplierName);
+      const builder = new ProductBuilder(this.baseURL).setBasicInfo(
+        result.productName,
+        result.productUrl,
+        this.supplierName,
+      );
       const parsedPrice = parsePrice(result.itemPrice);
       if (parsedPrice) builder.setPricing(parsedPrice);
       const casNo = findCAS(result["product.shortDescription"]);
@@ -248,9 +251,7 @@ export default class SupplierCarolina
       const resultsContainer = productsFolder.childRules[0].ContentRuleZone.find(
         (zone: ContentRuleZoneItem): zone is ResultsContainer => {
           return (
-            zone["@type"] === "ResultsContainer" &&
-            "results" in zone &&
-            Array.isArray(zone.results)
+            zone["@type"] === "ResultsContainer" && "results" in zone && Array.isArray(zone.results)
           );
         },
       );
