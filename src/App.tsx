@@ -3,20 +3,23 @@ import { APP_ACTION, CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
 import { AppContext } from "@/context";
 import SupplierFactory from "@/suppliers/SupplierFactory";
 import { getSearchResults, IDB_SEARCH_RESULTS_CLEARED } from "@/utils/idbCache";
+import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import { cstorage } from "@/utils/storage";
 import CssBaseline from "@mui/material/CssBaseline";
-import { startTransition, useActionState, useEffect, useState } from "react";
+import { lazy, startTransition, Suspense, useActionState, useEffect, useState } from "react";
 import "./App.scss";
 import DrawerSystem from "./components/DrawerSystem";
 import ErrorBoundary from "./components/ErrorBoundary";
 import SearchPanel from "./components/SearchPanel/SearchPanel";
 import SearchPanelHome from "./components/SearchPanelHome";
 import SpeedDialMenu from "./components/SpeedDialMenu";
-import StatsPanel from "./components/StatsPanel";
 import StatusBar, { StatusBarProvider } from "./components/StatusBar";
+import { DevBadge } from "./components/StyledComponents";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { getCurrencyCodeFromLocation, getCurrencyRate } from "./helpers/currency";
 import { getUserCountry } from "./helpers/utils";
+
+const StatsPanel = IS_DEV_BUILD ? lazy(() => import("./components/StatsPanel")) : null;
 
 /**
  * Enhanced App component using React v19 features for improved performance
@@ -423,7 +426,12 @@ function App() {
               {/* Render only the active panel, no app bar or tab navigation */}
               {appState.panel === PANEL.SEARCH_HOME && <SearchPanelHome />}
               {appState.panel === PANEL.RESULTS && <SearchPanel />}
-              {appState.panel === PANEL.STATS && <StatsPanel />}
+              {IS_DEV_BUILD && StatsPanel && appState.panel === PANEL.STATS && (
+                <Suspense fallback={null}>
+                  <StatsPanel />
+                </Suspense>
+              )}
+              {IS_DEV_BUILD && <DevBadge>DEV BUILD</DevBadge>}
               {/* {appState.panel === 3 && <FavoritesPanel />}
               {appState.panel === 4 && <HistoryPanel />}
               {appState.panel === 5 && <SettingsPanel />} */}

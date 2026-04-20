@@ -6,6 +6,7 @@ import ContrastIcon from "@/icons/ContrastIcon";
 import InfoOutlineIcon from "@/icons/InfoOutlineIcon";
 import SupplierCache from "@/utils/SupplierCache";
 import { clearSearchResults } from "@/utils/idbCache";
+import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import SpeedDial from "@mui/material/SpeedDial";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
@@ -102,23 +103,28 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
   const handleAboutOpen = () => setAboutOpen(true);
 
   /**
-   * Handles navigating to the stats panel.
+   * Handles navigating to the stats panel. No-op in production builds, where
+   * the Stats panel is not bundled.
    * @source
    */
   const handleStatsOpen = () => {
+    if (!IS_DEV_BUILD) return;
     appContext.setPanel?.(PANEL.STATS);
   };
 
   /**
    * Array of action configurations for the speed dial menu.
    * Each action includes an icon, name, and click handler.
+   * The Stats action is only present in dev builds.
    * @source
    */
   const actions = [
     { icon: <ClearIcon />, name: "Clear Results", onClick: handleClearResults },
     { icon: <AutoDeleteIcon />, name: "Clear Cache", onClick: handleClearCache },
     { icon: <ContrastIcon />, name: "Toggle Theme", onClick: handleToggleTheme },
-    { icon: <BarChartIcon />, name: "Stats", onClick: handleStatsOpen },
+    ...(IS_DEV_BUILD
+      ? [{ icon: <BarChartIcon />, name: "Stats", onClick: handleStatsOpen }]
+      : []),
     { icon: <InfoOutlineIcon />, name: "About", onClick: handleAboutOpen },
   ];
 

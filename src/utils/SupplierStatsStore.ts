@@ -24,6 +24,7 @@ import {
   deleteSupplierStatsEntries,
   clearSupplierStats as idbClearSupplierStats,
 } from "@/utils/idbCache";
+import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 
 const RETENTION_DAYS = 30;
 const FLUSH_DELAY_MS = 500;
@@ -129,35 +130,42 @@ async function pruneOldEntries(): Promise<void> {
 
 /** Increment search query count (called once per supplier at start of execute()) */
 export function incrementSearchQueryCount(supplier: string): void {
+  if (!IS_DEV_BUILD) return;
   bufferIncrement(supplier, "searchQueryCount");
 }
 
 /** Increment successful HTTP connection count (HTTP 2xx, non-cached) */
 export function incrementSuccess(supplier: string): void {
+  if (!IS_DEV_BUILD) return;
   bufferIncrement(supplier, "successCount");
 }
 
 /** Increment failed HTTP connection count (HTTP 4xx/5xx, network errors, non-cached) */
 export function incrementFailure(supplier: string): void {
+  if (!IS_DEV_BUILD) return;
   bufferIncrement(supplier, "failureCount");
 }
 
 /** Increment unique product count (called when a non-cached product detail is fetched) */
 export function incrementProductCount(supplier: string): void {
+  if (!IS_DEV_BUILD) return;
   bufferIncrement(supplier, "uniqueProductCount");
 }
 
 /** Increment parse/processing error count (called when product processing throws) */
 export function incrementParseError(supplier: string): void {
+  if (!IS_DEV_BUILD) return;
   bufferIncrement(supplier, "parseErrorCount");
 }
 
 /**
  * Read all stats from IndexedDB, returning the SupplierStatsData shape:
- * `{ [dateKey]: { [supplier]: SupplierDayStats } }`
+ * `{ [dateKey]: { [supplier]: SupplierDayStats } }`. Returns an empty object
+ * in production builds, where stats tracking is disabled.
  * @source
  */
 export async function getStats(): Promise<SupplierStatsData> {
+  if (!IS_DEV_BUILD) return {};
   // Flush any pending increments first
   await flushToStorage();
   try {
@@ -168,8 +176,9 @@ export async function getStats(): Promise<SupplierStatsData> {
   }
 }
 
-/** Clear all stats — removes all records from the supplierStats store */
+/** Clear all stats — removes all records from the supplierStats store. No-op in production. */
 export async function clearStats(): Promise<void> {
+  if (!IS_DEV_BUILD) return;
   pendingIncrements.clear();
   try {
     await idbClearSupplierStats();

@@ -1,3 +1,8 @@
+import { IS_DEV_BUILD } from "@/utils/isDevBuild";
+
+/** Default log level when nothing is set via window/process env. DEBUG in dev, WARN in prod. */
+const DEFAULT_LOG_LEVEL_FOR_BUILD = IS_DEV_BUILD ? ("debug" as const) : ("warn" as const);
+
 /**
  * Available logging levels in ascending order of severity:
  * DEBUG → INFO → WARN → ERROR
@@ -110,20 +115,20 @@ export default class Logger {
    * Checks the following in order:
    * 1. `window.LOG_LEVEL` (Browser)
    * 2. `process.env.LOG_LEVEL` (Node.js)
-   * Returns LogLevel.INFO if no valid log level is found or if any errors occur.
+   * 3. Falls back to the build-mode default — `DEBUG` in dev builds,
+   *    `WARN` in production builds (see `DEFAULT_LOG_LEVEL_FOR_BUILD`).
    *
    * @example
    * ```typescript
    * // Dynamic logger that syncs with environment
    * const appLogger = new Logger('App');
-   * appLogger.getEnvLogLevel(); // Returns LogLevel.INFO
-   * appLogger.debug("This will not be logged");
+   * appLogger.getEnvLogLevel(); // Returns LogLevel.DEBUG in dev, LogLevel.WARN in prod
    * window.LOG_LEVEL = "DEBUG";
    * appLogger.getEnvLogLevel(); // Returns LogLevel.DEBUG
    * appLogger.debug("This will be logged");
    * ```
    *
-   * @returns The environment-specified log level or LogLevel.INFO if not set
+   * @returns The environment-specified log level, or the build-mode default if not set
    * @source
    */
   private static getEnvLogLevel(): LogLevel {
@@ -147,11 +152,11 @@ export default class Logger {
         }
       }
 
-      return LogLevel.INFO;
+      return DEFAULT_LOG_LEVEL_FOR_BUILD as LogLevel;
     } catch (err) {
       // Log the error for debugging purposes but continue with default
       console.warn("Error determining log level:", err);
-      return LogLevel.INFO;
+      return DEFAULT_LOG_LEVEL_FOR_BUILD as LogLevel;
     }
   }
 
