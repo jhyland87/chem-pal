@@ -4,7 +4,7 @@
  * `true` for any non-production Vite build: the dev server (`pnpm dev`),
  * `--mode=development`, `--mode=aggregate`, `--mode=mock`, and Vitest
  * (which uses `MODE === "test"`). `false` only for `--mode=production`
- * (i.e. `pnpm build:pack`).
+ * (i.e. `pnpm build:prod`).
  *
  * Vite replaces `import.meta.env.MODE` with a string literal at build time,
  * so downstream `if (!IS_DEV_BUILD)` branches collapse to dead code in prod

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Chem Pal",
   "version": "0.0.12",
-  "description": "A simple React app as a Chrome extension",
+  "description": "Search and compare laboratory chemical product listings across supported supplier websites from a side panel.",
   "action": {
     "default_popup": "index.html"
   },
@@ -10,13 +10,14 @@
     "default_path": "index.html"
   },
   "permissions": [
-    "scripting",
     "sidePanel",
     "tabs",
     "storage",
-    "bookmarks",
-    "declarativeNetRequest"
+    "bookmarks"
   ],
+  "background": {
+    "service_worker": "service-worker.js"
+  },
   "host_permissions": [
     "https://www.ambeed.com/*",
     "https://www.carolina.com/*",
@@ -69,17 +70,8 @@
     "https://shopbvv.com/*",
     "https://alchemielabs.com/*",
     "https://aladdinsci.com/*",
-    "https://www.amazon.com/*",
-    "https://www.amazon.co.uk/*",
-    "https://www.amazon.de/*",
-    "https://www.amazon.co.jp/*",
-    "https://www.amazon.ca/*",
-    "https://alchemielabs.com/*",
     "https://www.aladdinsci.com/*"
   ],
-  "background": {
-    "service_worker": "service-worker.js"
-  },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   },

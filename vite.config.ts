@@ -14,22 +14,14 @@ export default ({ mode }: { mode: string }) => {
       src: "public/manifest.json",
       dest: ".",
     },
-    {
-      src: "src/service-worker.js",
-      dest: ".",
-    },
-    {
-      src: "src/__mocks__/mockServiceWorker.js",
-      dest: "public",
-    },
   ];
-  /*
-  if (isDev) {
+
+  if (mode !== "production") {
     staticCopyTargets.push({
       src: "src/__mocks__/mockServiceWorker.js",
       dest: "public",
     });
-  }*/
+  }
 
   const isAggregate = mode === "aggregate";
 
