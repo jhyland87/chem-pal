@@ -1,8 +1,0 @@
-{
-  "contentType": "application/json-amazonui-streaming",
-  "content": "JTVCJTIwJTIyZGlzcGF0Y2glMjIlMkMlMjAlMjJkYXRhLXJlZGlyZWN0JTIyJTJDJTIwJTdCJTBBJTIwJTIwJTIyaHRtbCUyMiUyMCUzQSUyMCUyMiUzQ3NjcmlwdCUzRXdpbmRvdy5sb2NhdGlvbi5yZXBsYWNlKCU1QyUyMiU1QyU1QyUyRnMlM0ZrJTNEaGltZWRpYSUyQmJvcm9oeWRyaWRlJTVDJTVDeDI2cmglM0RwXzEyMyUyNTNBNTY5MzYzJTVDJTIyKSUzQiUzQyUyRnNjcmlwdCUzRSUzQ25vc2NyaXB0JTNFJTNDbWV0YSUyMGh0dHAtZXF1aXYlM0QlNUMlMjJyZWZyZXNoJTVDJTIyJTIwY29udGVudCUzRCU1QyUyMjAlM0IlMjB1cmwlM0QlMkZzJTNGayUzRGhpbWVkaWElMkJib3JvaHlkcmlkZSUyNmFtcCUzQnJoJTNEcF8xMjMlMjUzQTU2OTM2MyU1QyUyMiUzRSUzQyUyRm5vc2NyaXB0JTNFJTIyJTJDJTBBJTIwJTIwJTIycmVkaXJlY3RVcmwlMjIlMjAlM0ElMjAlMjIlMkZzJTNGayUzRGhpbWVkaWElMkJib3JvaHlkcmlkZSUyNnJoJTNEcF8xMjMlMjUzQTU2OTM2MyUyMiUwQSU3RCUyMCU1RCUwQSUyNiUyNiUyNiUwQQ==",
-  "_request": {
-    "url": "https://www.amazon.com/s/query?k=himedia+borohydride&page=1&rh=p_123:569363",
-    "method": "POST"
-  }
-}

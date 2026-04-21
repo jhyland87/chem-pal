@@ -1,0 +1,8 @@
+{
+  "contentType": "application/json",
+  "content": "JTVCJTVE",
+  "_request": {
+    "url": "https://alchemielabs.com/wp-json/wc/store/v1/products?search=potassium&per_page=100",
+    "method": "GET"
+  }
+}
