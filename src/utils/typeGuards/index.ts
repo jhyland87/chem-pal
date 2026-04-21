@@ -2,6 +2,7 @@ export * as ambeed from "./ambeed";
 export * as carolina from "./carolina";
 export * as common from "./common";
 export * as laboratoriumdiscounter from "./laboratoriumdiscounter";
+export * as magento2 from "./magento2";
 export * as onyxmet from "./onyxmet";
 export * as productbuilder from "./productbuilder";
 export * as searchanise from "./searchanise";
