@@ -465,7 +465,7 @@ export function formatFromHtml(html: string): string {
     switch (child.nodeName) {
       // Paragraphs just get their own lines.
       case "P":
-        return child.textContent;
+        return `${child.textContent}\n`;
       case "UL":
         return Array.from(child.children).map((e) => `- ${e.textContent}`);
       case "OL":
