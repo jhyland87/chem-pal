@@ -1,6 +1,6 @@
 # ChemPal Wiki
 
-ChemPal is a Chrome extension for searching chemical suppliers and comparing product prices across 17+ vendors simultaneously. Built with React 19, TypeScript, and Vite, it streams results in real time as they arrive from each supplier.
+ChemPal is a Chrome extension for searching chemical suppliers and comparing product prices across 21 vendors simultaneously. Built with React 19, TypeScript, and Vite, it streams results in real time as they arrive from each supplier.
 
 ## Quick Links
 

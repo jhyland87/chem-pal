@@ -1,6 +1,7 @@
 import { DRAWER_INDEX, PANEL } from "@/constants/common";
 import { useAppContext } from "@/context";
-import { getSearchHistory, clearSearchHistory } from "@/utils/idbCache";
+import { formatTimestamp } from "@/helpers/utils";
+import { clearSearchHistory, getSearchHistory } from "@/utils/idbCache";
 import { Delete as DeleteIcon, FilterList as FilterListIcon } from "@mui/icons-material";
 import {
   Box,
@@ -96,18 +97,6 @@ const HistoryPanel: React.FC = () => {
     setPanel?.(PANEL.RESULTS); // Navigate to results panel
   };
 
-  /**
-   * Formats a Unix epoch timestamp (in milliseconds) into a short,
-   * human-readable date string using the user's locale.
-   * @param epochMs - Timestamp in milliseconds since Unix epoch
-   * @returns A locale-formatted string like `"Mar 26, 2:15 PM"`
-   * @example
-   * ```ts
-   * formatTimestamp(1711468500000);
-   * // => "Mar 26, 2:15 PM"
-   * ```
-   * @source
-   */
   const getFilterSummary = (entry: SearchHistoryEntry): string | null => {
     const parts: string[] = [];
     if (entry.filters) {
@@ -124,17 +113,6 @@ const HistoryPanel: React.FC = () => {
     return parts.length > 0 ? parts.join("\n") : null;
   };
 
-  const formatTimestamp = (epochMs: number) => {
-    const date = new Date(epochMs);
-    return date.toLocaleString(undefined, {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  };
-
-  console.log("history", history);
   return (
     <Box className={styles["history-panel"]}>
       <Box className={styles["history-panel__header"]}>
@@ -189,9 +167,11 @@ const HistoryPanel: React.FC = () => {
                   </Box>
                 }
                 secondary={`${formatTimestamp(entry.timestamp)} — ${entry.resultCount} result${entry.resultCount !== 1 ? "s" : ""}`}
-                secondaryTypographyProps={{
-                  variant: "caption",
-                  className: styles["history-panel__secondary-text"],
+                slotProps={{
+                  secondary: {
+                    variant: "caption",
+                    className: styles["history-panel__secondary-text"],
+                  },
                 }}
                 className={styles["history-panel__list-item-text"]}
               />

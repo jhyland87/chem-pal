@@ -38,7 +38,7 @@ flowchart TD
 
 ## Class Hierarchy
 
-The inheritance tree for all 18 active suppliers.
+The inheritance tree for all 21 active suppliers.
 
 ```mermaid
 classDiagram
@@ -76,6 +76,10 @@ classDiagram
         <<abstract>>
         WooCommerce REST API
     }
+    class SupplierBaseMagento2 {
+        <<abstract>>
+        Magento 2 API
+    }
     class SupplierBaseAmazon {
         <<abstract>>
         Amazon HTML scraping
@@ -85,6 +89,7 @@ classDiagram
     SupplierBase <|-- SupplierBaseSearchanise
     SupplierBase <|-- SupplierBaseShopify
     SupplierBase <|-- SupplierBaseWoocommerce
+    SupplierBase <|-- SupplierBaseMagento2
     SupplierBase <|-- SupplierBaseAmazon
 
     SupplierBase <|-- Ambeed
@@ -103,10 +108,14 @@ classDiagram
     SupplierBaseSearchanise <|-- HbarSci
     SupplierBaseSearchanise <|-- Laballey
 
+    SupplierBaseShopify <|-- BVV
     SupplierBaseShopify <|-- GoldAndSilverTesting
 
+    SupplierBaseWoocommerce <|-- AlchemieLabs
     SupplierBaseWoocommerce <|-- CarolinaChemical
     SupplierBaseWoocommerce <|-- LibertySci
+
+    SupplierBaseMagento2 <|-- AladdinSci
 
     SupplierBaseAmazon <|-- Himedia
     SupplierBaseAmazon <|-- InnovatingScience
@@ -118,7 +127,7 @@ How each data strategy flows from search to finished product.
 
 ```mermaid
 flowchart LR
-    subgraph JSON["JSON Only (11)"]
+    subgraph JSON["JSON Only (16)"]
         direction TB
         J1["queryProducts()
         Fetch JSON / GraphQL"]
@@ -167,12 +176,12 @@ flowchart LR
 
 ## Supplier Map
 
-All 18 active suppliers by platform, country, and data strategy.
+All 21 active suppliers by platform, country, and data strategy. Display names match each class's `supplierName` constant — see [Supplier System](../../wiki_files/Supplier-System.md) for the canonical table.
 
 ### Direct (SupplierBase) - 9 suppliers
 - **Ambeed** - CN - JSON Only
 - **Carolina** - US - Hybrid
-- **ChemSavers** - US - JSON Only
+- **Chemsavers** - US - JSON Only
 - **Laboratorium Discounter** - NL - Hybrid
 - **Loudwolf** - US - HTML Only
 - **Macklin** - CN - JSON Only
@@ -181,23 +190,33 @@ All 18 active suppliers by platform, country, and data strategy.
 - **Warchem** - PL - HTML Only
 
 ### Wix Platform - 2 suppliers
-- **BioFuranChem** - US - JSON Only
+- **BioFuran Chem** - US - JSON Only
 - **FTF Scientific** - US - JSON Only
 
 ### Searchanise Platform - 2 suppliers
-- **H-Bar Scientific** - US - JSON Only
-- **Lab Alley** - US - JSON Only
+- **HbarSci** - US - JSON Only
+- **Laballey** - US - JSON Only
 
-### Shopify Platform - 1 supplier
+### Shopify Platform - 2 suppliers
+- **BVV** - US - JSON Only
 - **Gold and Silver Testing** - US - JSON Only
 
-### WooCommerce Platform - 2 suppliers
+### WooCommerce Platform - 3 suppliers
+- **Alchemie Labs** - US - JSON Only
 - **Carolina Chemical** - US - JSON Only
-- **Liberty Science** - US - JSON Only
+- **LibertySci** - US - JSON Only
+
+### Magento 2 Platform - 1 supplier
+- **AladdinSci** - US - JSON Only
 
 ### Amazon Platform - 2 suppliers
-- **HiMedia** - IN - JSON Only
+- **Himedia** - IN - JSON Only
 - **Innovating Science** - US - JSON Only
+
+### Deprecated (not exported by `src/suppliers/index.ts`)
+- **Akmekem** - Amazon - supplier was removed from Amazon
+- **Bunmurra Labs** - Wix - site under reconstruction
+- **N2O3** - Custom - site offline since 2026-01-20
 
 ## SupplierFactory Orchestration
 

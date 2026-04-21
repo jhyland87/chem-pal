@@ -98,7 +98,7 @@ export default function SelectColumnFilter({ column }: FilterVariantInputProps) 
           },
         }}
         MenuProps={{
-          PaperProps: { sx: { maxHeight: 300 } },
+          slotProps: { paper: { sx: { maxHeight: 300 } } },
         }}
       >
         {columnFilterOptions.map((option) => (

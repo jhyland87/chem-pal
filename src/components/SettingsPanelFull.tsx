@@ -1,6 +1,14 @@
 import { useAppContext } from "@/components/SearchPanel/hooks/useContext";
 import { ACTION_TYPE } from "@/constants/common";
+import {
+  loadExcludedProducts,
+  removeExcludedProduct,
+  type ExcludedProductsMap,
+} from "@/helpers/excludedProducts";
+import { formatTimestamp } from "@/helpers/utils";
+import { clearExcludedProducts } from "@/utils/idbCache";
 import { isButtonElement } from "@/utils/typeGuards/common";
+import DeleteIcon from "@mui/icons-material/Delete";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import TextDecreaseIcon from "@mui/icons-material/TextDecrease";
 import TextFormatIcon from "@mui/icons-material/TextFormat";
@@ -14,6 +22,8 @@ import ButtonGroup from "@mui/material/ButtonGroup";
 import FormControl from "@mui/material/FormControl";
 import FormControlLabel from "@mui/material/FormControlLabel";
 //import FormHelperText from "@mui/material/FormHelperText";
+import IconButton from "@mui/material/IconButton";
+import Link from "@mui/material/Link";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
@@ -22,8 +32,17 @@ import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
 import Switch from "@mui/material/Switch";
 import TextField from "@mui/material/TextField";
+import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
-import React, { ChangeEvent, MouseEvent, startTransition, useActionState, useState } from "react";
+import {
+  ChangeEvent,
+  MouseEvent,
+  SyntheticEvent,
+  startTransition,
+  useActionState,
+  useEffect,
+  useState,
+} from "react";
 import { currencies, locations } from "../../config.json";
 import styles from "./SettingsPanelFull.module.scss";
 
@@ -108,10 +127,51 @@ export default function SettingsPanelFull() {
     updateSetting({ type: ACTION_TYPE.RESTORE_DEFAULTS });
   };
 
+  const [excludedProducts, setExcludedProducts] = useState<ExcludedProductsMap>({});
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const map = await loadExcludedProducts();
+        setExcludedProducts(map);
+      } catch (error) {
+        console.warn("Failed to load excluded products:", error);
+      }
+    };
+    load();
+  }, []);
+
+  const handleRemoveExcluded = async (key: string) => {
+    try {
+      await removeExcludedProduct(key);
+      setExcludedProducts((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+    } catch (error) {
+      console.warn("Failed to remove excluded product:", error);
+    }
+  };
+
+  const handleClearAllExcluded = async () => {
+    try {
+      await clearExcludedProducts();
+      setExcludedProducts({});
+    } catch (error) {
+      console.warn("Failed to clear excluded products:", error);
+    }
+  };
+
+  const excludedEntries = Object.entries(excludedProducts).sort(
+    ([, a], [, b]) => b.excludedAt - a.excludedAt,
+  );
+  const excludedCount = excludedEntries.length;
+
   const currentSettings = formState || appContext.userSettings;
 
   const handleAccordionChange =
-    (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
+    (panel: string) => (_event: SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false);
     };
 
@@ -305,6 +365,99 @@ export default function SettingsPanelFull() {
               />
             </ListItem>
           </List>
+        </AccordionDetails>
+      </Accordion>
+      <Accordion
+        expanded={expanded === "excluded"}
+        onChange={handleAccordionChange("excluded")}
+        disableGutters
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          className={styles["settings-panel__accordion-summary"]}
+        >
+          <Typography variant="body2" fontWeight={500}>
+            Excluded Products
+            {excludedCount > 0 && (
+              <Typography
+                component="span"
+                variant="caption"
+                color="text.secondary"
+                sx={{ ml: 0.5 }}
+              >
+                ({excludedCount})
+              </Typography>
+            )}
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails className={styles["settings-panel__accordion-details"]}>
+          {excludedCount === 0 ? (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              className={styles["settings-panel__excluded-empty"]}
+            >
+              No excluded products.
+            </Typography>
+          ) : (
+            <>
+              <List dense disablePadding>
+                {excludedEntries.map(([key, entry]) => (
+                  <ListItem
+                    key={key}
+                    divider
+                    className={styles["settings-panel__excluded-item"]}
+                    secondaryAction={
+                      <Tooltip title="Remove">
+                        <IconButton
+                          edge="end"
+                          size="small"
+                          onClick={() => handleRemoveExcluded(key)}
+                          className={styles["settings-panel__excluded-delete-btn"]}
+                          aria-label={`Remove ${entry.title || entry.url}`}
+                        >
+                          <DeleteIcon
+                            className={styles["settings-panel__excluded-delete-icon"]}
+                          />
+                        </IconButton>
+                      </Tooltip>
+                    }
+                  >
+                    <ListItemText
+                      primary={
+                        <Link
+                          href={entry.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          variant="body2"
+                          className={styles["settings-panel__excluded-link"]}
+                        >
+                          {entry.title || entry.url}
+                        </Link>
+                      }
+                      secondary={`${entry.supplier} — ${formatTimestamp(entry.excludedAt)}`}
+                      slotProps={{
+                        secondary: {
+                          variant: "caption",
+                          className: styles["settings-panel__excluded-secondary-text"],
+                        },
+                      }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+              <Box className={styles["settings-panel__excluded-actions"]}>
+                <Button
+                  variant="outlined"
+                  color="warning"
+                  size="small"
+                  onClick={handleClearAllExcluded}
+                >
+                  Clear All
+                </Button>
+              </Box>
+            </>
+          )}
         </AccordionDetails>
       </Accordion>
       <Accordion

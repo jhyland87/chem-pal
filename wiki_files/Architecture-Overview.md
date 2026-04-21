@@ -34,7 +34,7 @@ FACTORY["SupplierFactory"]
 S1["Supplier 1"]
 S2["Supplier 2"]
 S3["Supplier ..."]
-SN["Supplier 17"]
+SN["Supplier 21"]
 FACTORY --> S1 & S2 & S3 & SN
 end
 
@@ -76,7 +76,7 @@ class WIX,SEARCHANISE,SHOPIFY,WOO,CUSTOM,PUBCHEM,HEXARATE external
 Rather than waiting for all suppliers to finish, `SupplierFactory` uses an `AsyncGenerator` to yield products as they arrive. The UI updates incrementally — users see results within seconds even though some suppliers may take longer.
 
 ### Supplier Abstraction
-All suppliers extend `SupplierBase`, which defines the lifecycle: `setup()` → `queryProducts()` → `fuzzyFilter()` → `initProductBuilders()` → `getProductData()` → `yield product`. Platform-specific base classes (`SupplierBaseWix`, `SupplierBaseSearchanise`, `SupplierBaseShopify`, `SupplierBaseWoocommerce`) handle common patterns for those e-commerce platforms.
+All suppliers extend `SupplierBase`, which defines the lifecycle: `setup()` → `queryProducts()` → `fuzzyFilter()` → `initProductBuilders()` → `getProductData()` → `yield product`. Platform-specific base classes (`SupplierBaseWix`, `SupplierBaseSearchanise`, `SupplierBaseShopify`, `SupplierBaseWoocommerce`, `SupplierBaseMagento2`, `SupplierBaseAmazon`) handle common patterns for those e-commerce platforms.
 
 ### Tiered Storage
 - **IndexedDB** (`chempal` database) — bulk cached data: search results, supplier query/product caches, search history, supplier stats. Migrated from `chrome.storage` via a one-time migration (`idbMigration.ts`).
