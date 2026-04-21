@@ -74,13 +74,17 @@ describe("Chem-Pal search query", () => {
     await page.close();
   }, 30_000);
 
-  it("should query for 'potassium' and display 80 results from mock data", async () => {
+  it("should query for 'potassium' and display 53 results from mock data", async () => {
     const page = await openExtension();
 
-    // Set up mock routes to intercept all HTTPS requests
+    // Set up mock routes to intercept all HTTPS requests.
+    // `fallback: "abort"` keeps the test hermetic: any supplier request
+    // that isn't covered by a saved mock fails fast instead of silently
+    // escaping to the live internet (which inflates the result count
+    // locally and drops it on CI when supplier IPs get blocked).
     await setupMockRoutes(page, {
       responsesDir: mockResponsesDir,
-      fallback: "passthrough",
+      fallback: "abort",
       verbose: false,
     });
 
@@ -117,7 +121,7 @@ describe("Chem-Pal search query", () => {
       .locator("tbody tr")
       .filter({ has: page.locator("td") })
       .count();
-    vitestExpect(rowCount).toBe(80);
+    vitestExpect(rowCount).toBe(53);
 
     // Pause so you can inspect DevTools (Network tab, console, etc.)
     // The test will wait here until you call `playwright.resume()` in the

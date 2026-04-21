@@ -1,0 +1,8 @@
+{
+  "contentType": "application/json",
+  "content": "JTdCJTIyZGF0YSUyMiUzQSU3QiUyMnByb2R1Y3RzJTIyJTNBJTdCJTIyZWRnZXMlMjIlM0ElNUIlNUQlN0QlN0QlMkMlMjJleHRlbnNpb25zJTIyJTNBJTdCJTIyY29zdCUyMiUzQSU3QiUyMnJlcXVlc3RlZFF1ZXJ5Q29zdCUyMiUzQTEyMSU3RCU3RCU3RA==",
+  "_request": {
+    "url": "https://gold-testing-equipment.myshopify.com/api/2026-04/graphql.json",
+    "method": "POST"
+  }
+}

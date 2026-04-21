@@ -1,8 +1,0 @@
-{
-  "contentType": "application/json-amazonui-streaming",
-  "content": "JTVCJTIwJTIyZGlzcGF0Y2glMjIlMkMlMjAlMjJkYXRhLXJlZGlyZWN0JTIyJTJDJTIwJTdCJTBBJTIwJTIwJTIyaHRtbCUyMiUyMCUzQSUyMCUyMiUzQ3NjcmlwdCUzRXdpbmRvdy5sb2NhdGlvbi5yZXBsYWNlKCU1QyUyMiU1QyU1QyUyRnMlM0ZrJTNEQWxkb24lMkJib3JvaHlkcmlkZSU1QyU1Q3gyNnJoJTNEcF8xMjMlMjUzQTE1NzE2NCU1QyUyMiklM0IlM0MlMkZzY3JpcHQlM0UlM0Nub3NjcmlwdCUzRSUzQ21ldGElMjBodHRwLWVxdWl2JTNEJTVDJTIycmVmcmVzaCU1QyUyMiUyMGNvbnRlbnQlM0QlNUMlMjIwJTNCJTIwdXJsJTNEJTJGcyUzRmslM0RBbGRvbiUyQmJvcm9oeWRyaWRlJTI2YW1wJTNCcmglM0RwXzEyMyUyNTNBMTU3MTY0JTVDJTIyJTNFJTNDJTJGbm9zY3JpcHQlM0UlMjIlMkMlMEElMjAlMjAlMjJyZWRpcmVjdFVybCUyMiUyMCUzQSUyMCUyMiUyRnMlM0ZrJTNEQWxkb24lMkJib3JvaHlkcmlkZSUyNnJoJTNEcF8xMjMlMjUzQTE1NzE2NCUyMiUwQSU3RCUyMCU1RCUwQSUyNiUyNiUyNiUwQQ==",
-  "_request": {
-    "url": "https://www.amazon.com/s/query?k=Aldon+borohydride&page=1&rh=p_123:157164",
-    "method": "POST"
-  }
-}
