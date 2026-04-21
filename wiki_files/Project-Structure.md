@@ -92,25 +92,35 @@ suppliers/
 ├── SupplierBaseSearchanise.ts # Searchanise platform base
 ├── SupplierBaseShopify.ts    # Shopify platform base
 ├── SupplierBaseWoocommerce.ts # WooCommerce platform base
+├── SupplierBaseMagento2.ts   # Magento 2 platform base
 ├── SupplierBaseAmazon.ts     # Amazon platform base
+├── SupplierAladdinSci.ts     # AladdinSci (Magento 2)
+├── SupplierAlchemieLabs.ts   # Alchemie Labs (WooCommerce)
 ├── SupplierAmbeed.ts         # Ambeed
-├── SupplierBiofuranChem.ts   # BioFuranChem
+├── SupplierBiofuranChem.ts   # BioFuran Chem (Wix)
+├── SupplierBVV.ts            # BVV (Shopify)
 ├── SupplierCarolina.ts       # Carolina Biological
-├── SupplierCarolinaChemical.ts
+├── SupplierCarolinaChemical.ts # Carolina Chemical (WooCommerce)
 ├── SupplierChemsavers.ts
-├── SupplierFtfScientific.ts
-├── SupplierGoldAndSilverTesting.ts
-├── SupplierHbarSci.ts
-├── SupplierHimedia.ts
-├── SupplierInnovatingScience.ts
-├── SupplierLaballey.ts
+├── SupplierFtfScientific.ts  # FTF Scientific (Wix)
+├── SupplierGoldAndSilverTesting.ts # Gold and Silver Testing (Shopify)
+├── SupplierHbarSci.ts        # HbarSci (Searchanise)
+├── SupplierHimedia.ts        # Himedia (Amazon)
+├── SupplierInnovatingScience.ts # Innovating Science (Amazon)
+├── SupplierLaballey.ts       # Laballey (Searchanise)
 ├── SupplierLaboratoriumDiscounter.ts
-├── SupplierLibertySci.ts
+├── SupplierLibertySci.ts     # LibertySci (WooCommerce)
 ├── SupplierLoudwolf.ts
 ├── SupplierMacklin.ts
 ├── SupplierOnyxmet.ts
 ├── SupplierSynthetika.ts
 ├── SupplierWarchem.ts
+├── SupplierAkmekem.ts        # Deprecated — not in index.ts (booted from Amazon)
+├── SupplierBunmurraLabs.ts   # Deprecated — not in index.ts (site under reconstruction)
+├── SupplierN2O3.ts           # Deprecated — not in index.ts (offline since 2026-01-20)
+├── base/                     # Platform base-class helpers
+├── cache/                    # Supplier cache helpers
+├── queries/                  # Platform query definitions (GraphQL, REST)
 ├── __tests__/                # Supplier tests
 ├── __mocks__/                # Supplier mocks
 └── __fixtures__/             # Test fixtures

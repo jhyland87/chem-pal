@@ -186,3 +186,31 @@ export async function addExcludedProduct(
   }
   return key;
 }
+
+/**
+ * Remove a single entry from the excluded-products map in IndexedDB.
+ * Load → delete → put, matching `addExcludedProduct`'s read-modify-write
+ * shape so a caller holding a stale map cannot clobber concurrent writes.
+ * No-op (and no write) when the key is absent, so repeated removals are
+ * safe. Errors are logged, not thrown — callers don't need to try/catch.
+ * @param key - Exclusion key, as produced by `getProductExclusionKey`.
+ * @returns Resolves once the write completes.
+ * @example
+ * ```ts
+ * const key = getProductExclusionKey(product.url, product.supplier);
+ * await removeExcludedProduct(key);
+ * // entry for `key` is gone from IndexedDB; next search may surface the
+ * // product again (subject to any cached supplier results).
+ * ```
+ * @source
+ */
+export async function removeExcludedProduct(key: string): Promise<void> {
+  try {
+    const map = await loadExcludedProducts();
+    if (map[key] === undefined) return;
+    delete map[key];
+    await putExcludedProducts(map);
+  } catch (error) {
+    console.warn("Failed to remove excluded product from IndexedDB:", { error });
+  }
+}

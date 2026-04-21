@@ -57,3 +57,39 @@
     font-size: 0.8rem;
   }
 }
+
+.settings-panel__excluded-item {
+  padding: 2px 4px;
+  min-height: unset;
+}
+
+.settings-panel__excluded-empty {
+  display: block;
+  padding: 12px;
+  text-align: center;
+}
+
+.settings-panel__excluded-delete-btn {
+  padding: 2px;
+}
+
+.settings-panel__excluded-delete-icon {
+  font-size: 1rem;
+}
+
+.settings-panel__excluded-link {
+  font-size: 0.8rem;
+  line-height: 1.3;
+  text-align: left;
+}
+
+.settings-panel__excluded-secondary-text {
+  font-size: 0.7rem;
+  line-height: 1.2;
+}
+
+.settings-panel__excluded-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}

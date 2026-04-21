@@ -479,3 +479,26 @@ export function formatFromHtml(html: string): string {
 
   return result.filter((x) => x !== undefined).join("\n");
 }
+
+/**
+ * Format a Unix epoch timestamp (in milliseconds) as a short, locale-aware
+ * "month day, hour:minute" string for UI surfaces like the history and
+ * excluded-products lists in the settings drawer. Shared so both panels
+ * render the same shape without drifting over time.
+ * @param epochMs - Timestamp in milliseconds since the Unix epoch.
+ * @returns A locale-formatted string such as `"Mar 26, 2:15 PM"`.
+ * @example
+ * ```ts
+ * formatTimestamp(1711468500000);
+ * // => "Mar 26, 2:15 PM"  (en-US locale)
+ * ```
+ * @source
+ */
+export function formatTimestamp(epochMs: number): string {
+  return new Date(epochMs).toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
