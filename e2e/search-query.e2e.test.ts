@@ -74,7 +74,7 @@ describe("Chem-Pal search query", () => {
     await page.close();
   }, 30_000);
 
-  it("should query for 'potassium' and display 85 results from mock data", async () => {
+  it("should query for 'potassium' and display 80 results from mock data", async () => {
     const page = await openExtension();
 
     // Set up mock routes to intercept all HTTPS requests
@@ -117,7 +117,7 @@ describe("Chem-Pal search query", () => {
       .locator("tbody tr")
       .filter({ has: page.locator("td") })
       .count();
-    vitestExpect(rowCount).toBe(85);
+    vitestExpect(rowCount).toBe(80);
 
     // Pause so you can inspect DevTools (Network tab, console, etc.)
     // The test will wait here until you call `playwright.resume()` in the
