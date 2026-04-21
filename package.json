@@ -28,7 +28,7 @@
     "validate-docs": "tsc --noEmit",
     "generate-logo-files": "node tools/generate-logo-files.js",
     "pack": "node tools/pack-extension.js",
-    "build:pack": "pnpm run generate-logo-files && vite build --mode=production && node tools/pack-extension.js"
+    "build:prod": "pnpm run generate-logo-files && vite build --mode=production && node tools/pack-extension.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -170,7 +170,7 @@
   },
   "msw": {
     "workerDirectory": [
-      "build"
+      "public"
     ]
   }
 }

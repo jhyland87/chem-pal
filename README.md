@@ -29,6 +29,8 @@ npm install -g pnpm
 
 ## Building the extension
 
+For local development — loading as an unpacked extension:
+
 ```bash
 git clone https://github.com/jhyland87/chem-pal.git
 cd chem-pal
@@ -36,7 +38,22 @@ pnpm run setup
 pnpm run build
 ```
 
-Then import the build folder as an unpacked chrome extension.
+Then import the `build/` folder as an unpacked Chrome extension.
+
+> [!WARNING]
+> `pnpm run build` produces a **development** build and includes the MSW
+> mock service worker plus source maps. Do **not** submit the output of
+> `pnpm run build` to the Chrome Web Store.
+
+For a Chrome Web Store submission bundle, use:
+
+```bash
+pnpm run build:prod
+```
+
+This runs the production Vite build and packs the extension via
+`tools/pack-extension.js`. The resulting artifact is the only build
+intended for store submission.
 
 ## Development
 
