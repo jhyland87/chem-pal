@@ -13,3 +13,6 @@ export const FOCUS_GLOBAL_FILTER_EVENT = "chempal:focus-global-filter";
 
 /** Toggle the per-column filter row in the results table. */
 export const TOGGLE_COLUMN_FILTERS_EVENT = "chempal:toggle-column-filters";
+
+/** Abort the currently-running search (same effect as the stop button). */
+export const ABORT_SEARCH_EVENT = "chempal:abort-search";

@@ -215,6 +215,11 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       accessorKey: "price",
       cell: ({ row, table }: CellContext<Product, unknown>) => {
         const { usdPrice, price: rawPrice, currencyCode } = row.original;
+        // Read userSettings from table meta rather than context so
+        // TableColumns() stays hook-free — it's called from both React
+        // renders and non-render code paths (getColumnFilterConfig,
+        // DrawerSearchPanel's useMemo), and calling useAppContext() from
+        // those paths would violate the Rules of Hooks.
         const userSettings = table.options.meta?.userSettings;
         const currency = userSettings?.currency ?? "USD";
         const currencyRate = userSettings?.currencyRate ?? 1;

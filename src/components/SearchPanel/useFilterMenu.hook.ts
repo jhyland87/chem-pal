@@ -45,11 +45,12 @@ export function useFilterMenu(table?: any) {
   // Accordion state for filters
   const [expanded, setExpanded] = useState<string | false>("");
 
-  // Supplier selection state - use context instead of local state
-  const { selectedSuppliers, setSelectedSuppliers } = appContext ?? {
-    selectedSuppliers: [] as string[],
-    setSelectedSuppliers: (() => {}) as (suppliers: string[]) => void,
-  };
+  // Supplier selection state - use context instead of local state.
+  // `selectedSuppliers` is optional in AppContextProps; coalesce so the hook
+  // body can treat it as a concrete array throughout.
+  const selectedSuppliers: string[] = appContext?.selectedSuppliers ?? [];
+  const setSelectedSuppliers =
+    appContext?.setSelectedSuppliers ?? ((() => undefined) as (suppliers: string[]) => void);
 
   // Column visibility state
   const columnStatus =

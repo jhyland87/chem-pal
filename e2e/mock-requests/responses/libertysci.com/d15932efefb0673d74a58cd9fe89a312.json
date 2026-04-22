@@ -1,0 +1,8 @@
+{
+  "contentType": "application/json",
+  "content": "JTVCJTVE",
+  "_request": {
+    "url": "https://libertysci.com/wp-json/wc/store/v1/products?search=this+should+not+return+any+results&per_page=100",
+    "method": "GET"
+  }
+}

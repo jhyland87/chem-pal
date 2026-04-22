@@ -220,7 +220,11 @@ export default abstract class SupplierBaseShopify
         if (!variant.price.amount) continue;
         const variantPrice = parsePrice(`$${variant.price.amount}`);
 
-        const quantity = firstMap(parseQuantity, [variant.sku, variant.title]);
+        const quantity = firstMap(parseQuantity, [
+          `${variant.weight} ${variant.weightUnit}`,
+          variant.sku,
+          variant.title,
+        ]);
 
         builder.addVariant({
           title: variant.title,

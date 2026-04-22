@@ -502,3 +502,90 @@ export function formatTimestamp(epochMs: number): string {
     minute: "2-digit",
   });
 }
+
+/**
+ * Resolves a value out of a nested object/array using a key path.
+ *
+ * Traversal is forgiving: if any segment is `null` or `undefined` (or the
+ * parent isn't indexable), resolution short-circuits and returns the same
+ * nullish value rather than throwing. An empty path returns `obj` as-is.
+ * Paths can mix string and numeric segments — numeric segments index arrays
+ * via the same bracket access as object keys.
+ * @param obj - Root object / array / primitive to read from.
+ * @param path - Ordered list of keys / indexes to traverse.
+ * @returns The value at the resolved path, or `undefined` when any segment
+ *   of the path is missing.
+ * @example
+ * ```typescript
+ * getPath({ a: { b: { c: 1 } } }, ["a", "b", "c"]); // 1
+ * getPath({ a: { b: 1 } }, ["a", "x"]);             // undefined
+ * getPath({ items: [10, 20, 30] }, ["items", 1]);   // 20
+ * getPath({ a: null }, ["a", "b"]);                 // null (short-circuits)
+ * getPath({ a: 1 }, []);                            // { a: 1 }
+ * ```
+ * @source
+ */
+export function getPath(obj: unknown, path: readonly PropertyKey[]): unknown {
+  return path.reduce<unknown>(
+    (acc, key) =>
+      acc == null ? acc : (acc as Record<PropertyKey, unknown>)[key],
+    obj,
+  );
+}
+
+// Matches the real zod `$ZodIssue.path` shape (PropertyKey[]), which can
+// include `symbol` segments. `getPath` ignores those (they never index a
+// JSON-shaped settings object), but the constraint has to be wide enough to
+// accept what zod actually hands us.
+// Intentionally no index signature: zod's concrete issue types (e.g.
+// `$ZodIssueInvalidType`) have closed shapes that don't satisfy a
+// `[key: string]: unknown` signature, and we only need to *read* the `path`
+// field here — any extra fields just pass through via the spread in the
+// caller.
+interface PathedIssue {
+  path: readonly PropertyKey[];
+}
+
+/**
+ * Enriches a list of zod issues (or any `{ path }`-shaped records) with the
+ * actual value found at each issue's path in the source object. Useful when
+ * logging validation failures — stock zod issues only say "expected X at
+ * path Y", and knowing what *was* there makes debugging drastically faster.
+ *
+ * The original issue objects are spread shallowly, so extra zod fields
+ * (`code`, `message`, `expected`, etc.) pass through untouched; only the new
+ * `actual` key is added.
+ * @param issues - Array of issue records; each must have a `path` array.
+ * @param obj - The value that was validated — used as the root for `getPath`.
+ * @returns A new array of issues, each augmented with an `actual` field.
+ * @example
+ * ```typescript
+ * const issues = [
+ *   { path: ["user", "age"], code: "invalid_type", message: "Expected number" },
+ * ];
+ * const obj = { user: { age: "forty" } };
+ * zodAddActualValueToIssues(issues, obj);
+ * // [
+ * //   {
+ * //     path: ["user", "age"],
+ * //     code: "invalid_type",
+ * //     message: "Expected number",
+ * //     actual: "forty",
+ * //   },
+ * // ]
+ *
+ * // Missing path → `actual` is undefined
+ * zodAddActualValueToIssues([{ path: ["missing"] }], {});
+ * // [{ path: ["missing"], actual: undefined }]
+ * ```
+ * @source
+ */
+export function zodAddActualValueToIssues<T extends PathedIssue>(
+  issues: readonly T[],
+  obj: unknown,
+): Array<T & { actual: unknown }> {
+  return issues.map((issue) => ({
+    ...issue,
+    actual: getPath(obj, issue.path),
+  }));
+}

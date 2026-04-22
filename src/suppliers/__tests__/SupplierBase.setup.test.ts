@@ -11,8 +11,12 @@ const cacheState = {
 vi.mock("@/utils/SupplierCache", () => {
   return {
     default: class MockSupplierCache {
-      generateCacheKey(query: string, supplier: string) {
-        return `${supplier}:${query}`;
+      private supplierName: string;
+      constructor(supplierName: string) {
+        this.supplierName = supplierName;
+      }
+      generateCacheKey(query: string) {
+        return `${this.supplierName}:${query}`;
       }
       async getCachedQueryEntry() {
         return cacheState.queryHit || null;

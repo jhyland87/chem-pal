@@ -114,7 +114,12 @@ function SupplierSelection() {
     return <div>Context not available</div>;
   }
 
-  const { selectedSuppliers, setSelectedSuppliers } = appContext;
+  // `selectedSuppliers` is optional in AppContextProps (undefined before
+  // LOAD_FROM_STORAGE hydrates it). Fall back to an empty list so the
+  // filter-menu UI renders cleanly on first mount without the checkbox/state
+  // code having to re-check for undefined at every access.
+  const selectedSuppliers = appContext.selectedSuppliers ?? [];
+  const { setSelectedSuppliers } = appContext;
 
   const handleSupplierSelect = (supplierName: string) => {
     const newChecked = selectedSuppliers.includes(supplierName)

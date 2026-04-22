@@ -34,37 +34,37 @@ declare global {
      * Controls visibility of help tooltips throughout the application.
      * Defaults to false.
      */
-    showHelp: boolean;
+    showHelp?: boolean;
 
     /**
      * Enables or disables data caching functionality.
      * Defaults to true.
      */
-    caching: boolean;
+    caching?: boolean;
 
     /**
      * Enables or disables search autocomplete suggestions.
      * Defaults to true.
      */
-    autocomplete: boolean;
+    autocomplete?: boolean;
 
     /**
      * Currency rate for the user's currency
      * @example 1.0
      */
-    currencyRate: number;
+    currencyRate?: number;
 
     /**
      * Selected currency code for price display
      * @example "USD"
      */
-    currency: string;
+    currency?: string;
 
     /**
      * User's geographical location for shipping calculations
      * @example "US"
      */
-    location: string;
+    location?: string;
 
     /**
      * Currency rate for the user's currency
@@ -77,43 +77,37 @@ declare global {
      * style (MUI defaults and styled components) scales proportionally.
      * @example "medium"
      */
-    fontSize: "small" | "medium" | "large";
-
-    /**
-     * Controls automatic window resizing behavior.
-     * Defaults to true.
-     */
-    autoResize: boolean;
+    fontSize?: "small" | "medium" | "large";
 
     /**
      * List of supplier IDs that are enabled for searching
      * @example ["supplier1", "supplier2"]
      */
-    suppliers: Array<string>;
+    suppliers?: Array<string>;
 
     /**
      * Selected UI theme identifier
      * @example "light"
      */
-    theme: string;
+    theme?: "light" | "dark";
 
     /**
      * Controls visibility of all available table columns.
      * Defaults to true.
      */
-    showAllColumns: boolean;
+    showAllColumns?: boolean;
 
     /**
      * List of column identifiers that should be hidden from view
      * @example ["price", "quantity"]
      */
-    hideColumns: Array<string>;
+    hideColumns?: Array<string>;
 
     /**
      * Controls visibility of column filter UI elements.
      * Defaults to false.
      */
-    showColumnFilters: boolean;
+    showColumnFilters?: boolean;
 
     /**
      * Configuration object for individual column filter settings.
@@ -127,14 +121,48 @@ declare global {
      * }
      * ```
      */
-    columnFilterConfig: Record<string, ColumnMeta>;
+    columnFilterConfig?: Record<string, ColumnMeta>;
 
     /**
      * Number of results to display per supplier
      * @example 20
      */
-    supplierResultLimit?: number;
+    supplierResultLimit?: number | undefined;
+
+    /**
+     * Auto-resize the popup window so more results are visible when the
+     * search returns many products. Surfaced as a toggle in the "Display"
+     * settings accordion.
+     * @example true
+     */
+    autoResize?: boolean;
+
+    /**
+     * Minimum price (in the user's selected currency) to include in results.
+     * Applied by `useSearch.passesSearchFilters` after suppliers return.
+     * Undefined disables the lower bound.
+     * @example 0
+     */
     priceMin?: number;
+
+    /**
+     * Maximum price (in the user's selected currency) to include in results.
+     * Applied by `useSearch.passesSearchFilters` after suppliers return.
+     * Undefined disables the upper bound.
+     * @example 100
+     */
     priceMax?: number;
+
+    /**
+     * Optional global override for the fuzz-match scorer used by each supplier.
+     * When set, `fuzzyFilter` uses this scorer instead of each supplier class's
+     * default `fuzzScorer`. Value is the exported function name from `fuzzball`
+     * (e.g. `"ratio"`, `"token_set_ratio"`, `"WRatio"`).
+     *
+     * Surfaced via the "Advanced" drawer accordion — hidden unless
+     * `showAdvancedSettings` is true in `config.json`.
+     * @example "token_set_ratio"
+     */
+    fuzzScorerOverride?: string;
   }
 }

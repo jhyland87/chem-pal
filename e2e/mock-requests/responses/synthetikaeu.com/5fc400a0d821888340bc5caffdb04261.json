@@ -1,0 +1,8 @@
+{
+  "contentType": "application/json",
+  "content": "JTdCJTIyY291bnQlMjIlM0EwJTJDJTIycGFnZXMlMjIlM0EwJTJDJTIycGFnZSUyMiUzQTElMkMlMjJsaXN0JTIyJTNBJTVCJTVEJTdE",
+  "_request": {
+    "url": "https://synthetikaeu.com/webapi/front/en_US/products/usd/search/this+should+not+return+any+results?limit=50&page=1",
+    "method": "GET"
+  }
+}

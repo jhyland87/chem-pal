@@ -1,0 +1,8 @@
+{
+  "contentType": "text/javascript",
+  "content": "JTdCJTIydG90YWxJdGVtcyUyMiUzQTAlMkMlMjJzdGFydEluZGV4JTIyJTNBMCUyQyUyMml0ZW1zUGVyUGFnZSUyMiUzQTIwMCUyQyUyMmN1cnJlbnRJdGVtQ291bnQlMjIlM0EwJTJDJTIyaXRlbXMlMjIlM0ElNUIlNUQlN0Q=",
+  "_request": {
+    "url": "https://searchserverapi.com/getresults?api_key=2H3i9C5v0m&q=this+should+not+return+any+results&maxResults=200&startIndex=0&items=true&pageStartIndex=0&pagesMaxResults=1&vendorsMaxResults=200&output=json&_=1776819974932&tab=products&restrictBy%5Bfilter_ptag_bf51a4bd1f5efe4002b3d50737306113%5D=Chemicals",
+    "method": "GET"
+  }
+}

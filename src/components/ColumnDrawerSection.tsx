@@ -92,10 +92,13 @@ export default function ColumnDrawerSection({
     }
 
     const { options, optionLabels, emptyHelperText, placeholder } = config;
-    const currentValue =
+    // `selectedSuppliers` and per-filter arrays may be undefined before the
+    // mount hydration lands — coalesce to [] so the Autocomplete + summary
+    // code below can treat `currentValue` as a concrete array uniformly.
+    const currentValue: string[] =
       config.bind.kind === "selectedSuppliers"
-        ? selectedSuppliers
-        : (searchFilters[config.bind.key] as string[]);
+        ? (selectedSuppliers ?? [])
+        : ((searchFilters[config.bind.key] as string[] | undefined) ?? []);
 
     const handleChange = (_event: SyntheticEvent, newValue: string[]) => {
       if (config.bind.kind === "selectedSuppliers") {

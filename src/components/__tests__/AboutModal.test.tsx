@@ -1,3 +1,4 @@
+import contributors from "@/../contributors.json";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import AboutModal from "../AboutModal";
@@ -25,25 +26,32 @@ describe("AboutModal", () => {
     expect(screen.queryByText("About ChemPal")).not.toBeInTheDocument();
   });
 
-  it("calls setAboutOpen when clicking outside the modal", () => {
+  it("calls setAboutOpen when clicking the backdrop (outside the modal content)", () => {
     render(<AboutModal aboutOpen={true} setAboutOpen={mockSetAboutOpen} />);
 
-    const modal = screen.getByTestId("about-modal");
-    fireEvent.click(modal);
+    const backdrop = document.querySelector(".MuiBackdrop-root");
+    expect(backdrop).not.toBeNull();
+    fireEvent.click(backdrop!);
 
     expect(mockSetAboutOpen).toHaveBeenCalledWith(false);
+  });
+
+  it("does not call setAboutOpen when clicking inside the modal content", () => {
+    render(<AboutModal aboutOpen={true} setAboutOpen={mockSetAboutOpen} />);
+
+    fireEvent.click(screen.getByText("About ChemPal"));
+
+    expect(mockSetAboutOpen).not.toHaveBeenCalled();
   });
 
   it("renders all contributor links with correct hrefs", () => {
     render(<AboutModal aboutOpen={true} setAboutOpen={mockSetAboutOpen} />);
 
-    const justinLink = screen.getByText("Justin Hyland").closest("a");
-    const mauiLink = screen.getByText("Maui3").closest("a");
-    const spousLink = screen.getByText("Spous").closest("a");
-
-    expect(justinLink).toHaveAttribute("href", "https://github.com/jhyland87");
-    expect(mauiLink).toHaveAttribute("href", "https://github.com/YourHeatingMantle");
-    expect(spousLink).toHaveAttribute("href", "https://github.com/spous");
+    expect(contributors.length).toBeGreaterThan(0);
+    for (const { name, github } of contributors) {
+      const link = screen.getByText(name).closest("a");
+      expect(link).toHaveAttribute("href", github);
+    }
   });
 
   it("renders GitHub link with correct attributes", () => {

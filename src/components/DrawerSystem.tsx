@@ -62,7 +62,7 @@ const DrawerSystem: React.FC = () => {
       <div className={styles["drawer-container"]}>
         {appContext.drawerTab !== DRAWER_INDEX.CLOSED && (
           <Tabs
-            value={appContext.drawerTab}
+            value={appContext.drawerTab ?? DRAWER_INDEX.CLOSED}
             onChange={handleTabChange}
             variant="fullWidth"
             className={styles["drawer-tabs"]}
@@ -73,18 +73,18 @@ const DrawerSystem: React.FC = () => {
           </Tabs>
         )}
 
-        <TabPanel value={appContext.drawerTab} index={DRAWER_INDEX.SEARCH}>
+        <TabPanel value={appContext.drawerTab ?? DRAWER_INDEX.CLOSED} index={DRAWER_INDEX.SEARCH}>
           <DrawerSearchPanel
             expandedAccordion={expandedAccordion}
             onAccordionChange={handleAccordionChange}
           />
         </TabPanel>
 
-        <TabPanel value={appContext.drawerTab} index={DRAWER_INDEX.HISTORY}>
+        <TabPanel value={appContext.drawerTab ?? DRAWER_INDEX.CLOSED} index={DRAWER_INDEX.HISTORY}>
           <HistoryPanel />
         </TabPanel>
 
-        <TabPanel value={appContext.drawerTab} index={DRAWER_INDEX.SETTINGS}>
+        <TabPanel value={appContext.drawerTab ?? DRAWER_INDEX.CLOSED} index={DRAWER_INDEX.SETTINGS}>
           <SettingsPanelFull />
         </TabPanel>
       </div>

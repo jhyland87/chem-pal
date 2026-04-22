@@ -17,6 +17,7 @@ import {
   isSearchResponseOk,
   isValidSearchParams,
 } from "@/utils/typeGuards/laboratoriumdiscounter";
+import { token_set_ratio } from "fuzzball";
 import SupplierBase from "./SupplierBase";
 
 /**
@@ -84,6 +85,13 @@ export default class SupplierLaboratoriumDiscounter
     "paypal",
     "banktransfer",
   ];
+
+  // Override the base `ratio` default: this catalog's titles embed the queried
+  // compound inside longer descriptive strings (e.g. "Benzyltriethylammonium
+  // Borohydride >90.0%(T) 5g"), which scores poorly under full-string
+  // Levenshtein. `token_set_ratio` tokenizes + set-compares, so the target
+  // compound hits ~100% regardless of surrounding boilerplate.
+  protected readonly fuzzScorer = token_set_ratio;
 
   // Override the type of queryResults to use our specific type
   protected queryResults: Array<LaboratoriumDiscounterProductObject> = [];
