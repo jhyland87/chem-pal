@@ -43,12 +43,6 @@ declare global {
     caching?: boolean;
 
     /**
-     * Enables or disables search autocomplete suggestions.
-     * Defaults to true.
-     */
-    autocomplete?: boolean;
-
-    /**
      * Currency rate for the user's currency
      * @example 1.0
      */
@@ -128,14 +122,6 @@ declare global {
      * @example 20
      */
     supplierResultLimit?: number | undefined;
-
-    /**
-     * Auto-resize the popup window so more results are visible when the
-     * search returns many products. Surfaced as a toggle in the "Display"
-     * settings accordion.
-     * @example true
-     */
-    autoResize?: boolean;
 
     /**
      * Minimum price (in the user's selected currency) to include in results.

@@ -789,7 +789,6 @@ function buildUserSettingsSchema() {
   return z.object({
     showHelp: z.boolean().optional(),
     caching: z.boolean().optional(),
-    autocomplete: z.boolean().optional(),
     currencyRate: z.number().optional(),
     currency: z.enum(Object.keys(currencies)).optional(),
     location: z.enum(Object.keys(locations)).optional(),
@@ -818,8 +817,8 @@ function getUserSettingsSchema() {
  * @returns Type predicate indicating if the value is a valid UserSettings object
  * @example
  * ```typescript
- * isValidUserSettings({ showHelp: true, caching: true, autocomplete: true, currencyRate: 1.0, currency: "USD", location: "US" }) // Returns true
- * isValidUserSettings({ showHelp: "test", caching: true, autocomplete: true, currencyRate: 1.0, currency: "USD", location: "US" }) // Returns false
+ * isValidUserSettings({ showHelp: true, caching: true, currencyRate: 1.0, currency: "USD", location: "US" }) // Returns true
+ * isValidUserSettings({ showHelp: "test", caching: true, currencyRate: 1.0, currency: "USD", location: "US" }) // Returns false
  * ```
  * @source
  */

@@ -282,7 +282,6 @@ describe("Common TypeGuards", () => {
         isValidUserSettings({
           showHelp: false,
           caching: true,
-          autocomplete: true,
           currencyRate: 1.0,
           currency: "USD",
           location: "US",

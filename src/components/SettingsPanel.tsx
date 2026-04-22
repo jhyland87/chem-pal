@@ -235,23 +235,6 @@ export default function SettingsPanel() {
         </ListItem>
 
         <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="AutoComplete" />
-          {/* <FormHelperText>Autocomplete search input</FormHelperText> */}
-          <FormControlLabel
-            control={
-              <Switch
-                checked={currentSettings.autocomplete}
-                onChange={handleSwitchChange}
-                name="autocomplete"
-                disabled={isPending}
-              />
-            }
-            labelPlacement="start"
-            label=""
-          />
-        </ListItem>
-
-        <ListItem sx={displayHelperOnHover}>
           <ListItemText primary="Currency" />
           {/*<FormHelperText>Convert all currency to this</FormHelperText>*/}
           <FormControl>
