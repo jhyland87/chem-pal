@@ -266,6 +266,20 @@ export const BackButton = styled(IconButton)(({ theme }) => ({
   color: theme.palette.text.primary,
 }));
 
+// Subtle label showing the most recently executed search query, displayed
+// in the results panel header next to the back button.
+export const SearchedQueryLabel = styled(Typography)(({ theme }) => ({
+  marginLeft: theme.spacing(1),
+  fontSize: "0.85rem",
+  fontWeight: 400,
+  color: theme.palette.text.secondary,
+  fontStyle: "italic",
+  maxWidth: 240,
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+}));
+
 // === TABLE CELL COMPONENTS ===
 export const StyledTableCell = styled(TableCell)(() => ({
   padding: "2px 0 0 0",

@@ -66,6 +66,7 @@ import {
   PaginationContainer,
   ResultsCountDisplay,
   ResultsHeaderContainer,
+  SearchedQueryLabel,
   SearchResultsTable,
   StickyHeaderCell,
   StyledTableBody,
@@ -163,6 +164,7 @@ export default function ResultsTable({
     handleStopSearch,
     excludeProduct,
     tableText,
+    executedQuery,
   } = useSearch();
 
   // Watch for pending search queries triggered from HistoryPanel or the drawer.
@@ -207,6 +209,18 @@ export default function ResultsTable({
   // chrome.storage.session, and restore them on mount.
   const [tableState, setTableState] = useState<TableState>(table.initialState);
   const isStateLoadedRef = useRef(false);
+
+  // Collapse all variant rows whenever a new search begins. Without this,
+  // the persisted `expanded` state from the previous search can leak into
+  // the new results when row IDs happen to collide (e.g. both searches
+  // include a product at the same index).
+  const prevIsLoadingRef = useRef(false);
+  useEffect(() => {
+    if (isLoading && !prevIsLoadingRef.current) {
+      setTableState((prev) => ({ ...prev, expanded: {} }));
+    }
+    prevIsLoadingRef.current = isLoading;
+  }, [isLoading]);
 
   // Load persisted state once on mount
   useEffect(() => {
@@ -377,6 +391,14 @@ export default function ResultsTable({
               >
                 <ArrowBackIcon />
               </BackButton>
+            )}
+            {executedQuery && (
+              <SearchedQueryLabel
+                variant="body2"
+                title={`Searched for: ${executedQuery}`}
+              >
+                {executedQuery}
+              </SearchedQueryLabel>
             )}
           </div>
           <div className={resultStyles["header-right"]}>

@@ -30,6 +30,7 @@
 export { default as SupplierAladdinSci } from "./SupplierAladdinSci";
 export { default as SupplierAlchemieLabs } from "./SupplierAlchemieLabs";
 export { default as SupplierAmbeed } from "./SupplierAmbeed";
+export { default as SupplierAsesChem } from "./SupplierAsesChem";
 export { default as SupplierBioFuranChem } from "./SupplierBiofuranChem";
 export { default as SupplierBVV } from "./SupplierBVV";
 export { default as SupplierCarolina } from "./SupplierCarolina";

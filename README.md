@@ -1,9 +1,18 @@
 > [!NOTE]
 > WORK IN PROGRESS - Plenty of bugs exist and were working on them as time permits.
 
-Just a simple React/Typescript plugin for Chrome
 
-Example output:
+<p align="center">
+<img src="./public/static/images/logo/ChemPal-logo-v2.png" alt="chem-pal example" width="200"/>
+</p>
+
+
+Open source project aimed at helping amateur chemistry hobbyists find the best deals on chemical reagents. There are plenty of similar services out there for businesses, universities and research institutions, but none are available for individuals and hobbyists. ChemPal only searches suppliers that sell to individuals and ship to residences.
+
+----
+
+
+### Demo
 
 <img src="./assets/images/chem-pal-demo.gif" alt="chem-pal example" width="600"/>
 

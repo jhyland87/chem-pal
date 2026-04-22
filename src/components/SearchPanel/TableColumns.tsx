@@ -236,10 +236,24 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         }
 
         const priceInUsd = usdPrice ?? Number(rawPrice);
+
+        console.log("CURRENCY TEST", {
+          row,
+          usdPrice,
+          rawPrice,
+          currencyCode,
+          currency,
+          currencyRate,
+          priceInUsd,
+          conversion: new Intl.NumberFormat(currency, {
+            style: "currency",
+            currency,
+          }).format(priceInUsd * (currencyRate / 100)),
+        });
         return new Intl.NumberFormat(currency, {
           style: "currency",
           currency,
-        }).format(priceInUsd * currencyRate);
+        }).format(priceInUsd * (currencyRate / 100));
       },
       sortingFn: "priceSortingFn",
       filterFn: "inNumberRangeHierarchy",

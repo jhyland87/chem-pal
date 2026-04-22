@@ -231,6 +231,9 @@ export function useSearch() {
   const [state, setState] = useState<SearchState>(initialState);
   const [tableText, setTableText] = useState<string>("");
   const [searchResults, setSearchResults] = useState<Product[]>([]);
+  // The query string of the most recently executed search. Displayed in the
+  // results panel header so the user can see what they searched for.
+  const [executedQuery, setExecutedQuery] = useState<string>("");
 
   // Guard to ensure session storage is only loaded once, even under StrictMode's
   // double-invoke of effects in development.
@@ -270,6 +273,11 @@ export function useSearch() {
             resultCount: cachedResults.length,
             status: false, // Don't show status when loading from storage
           }));
+          // Restore the query label shown in the results header so it
+          // survives a popup reopen.
+          if (typeof sessionData[CACHE.QUERY] === "string") {
+            setExecutedQuery(sessionData[CACHE.QUERY]);
+          }
         }
 
         // Only execute search if this is a new search submission
@@ -345,6 +353,7 @@ export function useSearch() {
       });
       setSearchResults([]);
       setTableText("");
+      setExecutedQuery(query);
 
       // Create a history entry immediately so it's recorded even if the search is cancelled or hangs.
       // The resultCount will be updated live as results stream in.
@@ -625,5 +634,6 @@ export function useSearch() {
     handleStopSearch,
     excludeProduct,
     tableText,
+    executedQuery,
   };
 }
