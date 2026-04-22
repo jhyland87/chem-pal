@@ -10,12 +10,7 @@
   "side_panel": {
     "default_path": "index.html"
   },
-  "permissions": [
-    "sidePanel",
-    "tabs",
-    "storage",
-    "bookmarks"
-  ],
+  "permissions": ["sidePanel", "tabs", "storage", "bookmarks"],
   "background": {
     "service_worker": "service-worker.js"
   },
@@ -71,7 +66,9 @@
     "https://shopbvv.com/*",
     "https://alchemielabs.com/*",
     "https://aladdinsci.com/*",
-    "https://www.aladdinsci.com/*"
+    "https://www.aladdinsci.com/*",
+    "https://ases.in/*",
+    "https://aseschem.myshopify.com/*"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
