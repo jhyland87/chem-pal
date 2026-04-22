@@ -4,8 +4,9 @@ import { parseQuantity } from "@/helpers/quantity";
 import { findFormulaInHtml } from "@/helpers/science";
 import { firstMap, htmlToAscii, mapDefined } from "@/helpers/utils";
 import ProductBuilder from "@/utils/ProductBuilder";
+import { isParsedPrice } from "@/utils/typeGuards/common";
+import { isValidVariant } from "@/utils/typeGuards/productbuilder";
 import { isProductItem, isProductSelection, isValidSearchResponse } from "@/utils/typeGuards/wix";
-import merge from "lodash/merge";
 import SupplierBase from "./SupplierBase";
 /**
  * SupplierBaseWix class that extends SupplierBase and implements AsyncIterable<Product>.
@@ -258,66 +259,113 @@ export default abstract class SupplierBaseWix
         return;
       }
 
-      // Generate an object with the products UUID and formatted price, with the option ID as the keys
-      const productItems = Object.fromEntries(
-        mapDefined(product.productItems, (item: ProductItem) => {
-          if (!isProductItem(item)) {
-            this.logger.warn("Invalid product item:", { item });
-            return;
-          }
-          return [
-            item.optionsSelections[0],
-            {
-              ...parsePrice(item.formattedPrice),
-              id: item.id,
-              quantity: item.price,
-            },
-          ];
-        }),
-      );
-
-      // Generate an object with the product quantity selections and the product selection ID
-      const productSelections = Object.fromEntries(
-        mapDefined(product.options[0].selections, (selection: ProductSelection) => {
+      // Build selectionId -> parsed quantity map across ALL options.
+      const selectionIndex = new Map<number, ReturnType<typeof parseQuantity>>();
+      for (const option of product.options ?? []) {
+        for (const selection of option.selections ?? []) {
           if (!isProductSelection(selection)) {
             this.logger.warn("Invalid product selection:", { selection });
-            return;
+            continue;
           }
-          return [selection.id, parseQuantity(selection.value)];
-        }),
-      );
+          const parsed = parseQuantity(selection.value);
+          if (parsed) {
+            selectionIndex.set(selection.id, parsed);
+          }
+        }
+      }
 
-      const productVariants = merge(productItems, productSelections);
-      const productPrice = parsePrice(product.formattedPrice);
+      // Track which selection IDs are covered by explicit productItems.
+      const coveredSelectionIds = new Set<number>();
 
-      if (!productPrice) {
+      // Resolve explicit productItems first.
+      const productVariants = mapDefined(product.productItems, (item: ProductItem) => {
+        if (!isProductItem(item)) {
+          this.logger.warn("Invalid product item:", { item });
+          return;
+        }
+
+        const parsedPrice = parsePrice(item.formattedPrice ?? product.formattedPrice);
+        if (!isParsedPrice(parsedPrice)) {
+          return;
+        }
+
+        const resolvedQuantities = mapDefined(item.optionsSelections ?? [], (selectionId) => {
+          coveredSelectionIds.add(selectionId);
+          return selectionIndex.get(selectionId);
+        });
+
+        const quantityInfo = resolvedQuantities.find((q) => q && "uom" in q);
+        if (!quantityInfo) {
+          return;
+        }
+
+        return {
+          ...parsedPrice,
+          ...quantityInfo,
+          id: item.id,
+        };
+      });
+
+      // Synthesize the implicit default variant from the parent price.
+      // Wix omits the default variant from productItems, so any selection
+      // that wasn't covered above represents the parent's price point.
+      const parentParsedPrice = parsePrice(product.formattedPrice);
+      if (isParsedPrice(parentParsedPrice)) {
+        for (const option of product.options ?? []) {
+          for (const selection of option.selections ?? []) {
+            if (coveredSelectionIds.has(selection.id)) continue;
+            const quantityInfo = selectionIndex.get(selection.id);
+            if (!quantityInfo || !("uom" in quantityInfo)) continue;
+
+            productVariants.push({
+              ...parentParsedPrice,
+              ...quantityInfo,
+              id: `${product.id}:${selection.id}`, // synthetic — no real Wix variant ID
+            });
+            coveredSelectionIds.add(selection.id);
+          }
+        }
+      }
+
+      // Sort variants by quantity within the same UOM, falling back to price.
+      productVariants.sort((a, b) => {
+        if (a.uom === b.uom) return a.quantity - b.quantity;
+        return a.price - b.price;
+      });
+
+      if (!isParsedPrice(parentParsedPrice)) {
         return;
       }
 
-      const firstVariant = productVariants[Object.keys(productVariants)[0]];
-      if (!firstVariant || !("quantity" in firstVariant) || !("uom" in firstVariant)) {
+      // The parent's own quantity/uom should come from the variant whose
+      // price matches the parent price, not just the first variant.
+      const parentVariant =
+        productVariants.find((v) => v.price === parentParsedPrice.price) ?? productVariants[0];
+
+      if (!parentVariant || !("quantity" in parentVariant) || !("uom" in parentVariant)) {
         return;
       }
 
       const builder = new ProductBuilder<Product>(this.baseURL);
-
       const cas = firstMap(findFormulaInHtml, [product.name, product.description, product.urlPart]);
 
-      builder
+      return builder
         .setBasicInfo(
           product.name,
           `${this.baseURL}/product-page/${product.urlPart}`,
           this.supplierName,
         )
-        .setPricing(productPrice.price, productPrice.currencyCode, productPrice.currencySymbol)
-        .setQuantity(firstVariant.quantity, firstVariant.uom)
+        .setPricing(
+          parentParsedPrice.price,
+          parentParsedPrice.currencyCode,
+          parentParsedPrice.currencySymbol,
+        )
+        .setQuantity(parentVariant.quantity, parentVariant.uom)
         .setID(product.id)
         .setCAS(cas ?? "")
         .setSku(product.sku)
         .setDescription(htmlToAscii(product.description))
-        .setVariants(Object.values(productVariants) as Partial<Variant>[]);
-
-      return builder;
+        .setVariants(productVariants.filter(isValidVariant));
     });
   }
 
