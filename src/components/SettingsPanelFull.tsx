@@ -76,8 +76,6 @@ export default function SettingsPanelFull() {
             ...currentSettings,
             showHelp: false,
             caching: true,
-            autocomplete: true,
-            autoResize: true,
             showColumnFilters: true,
             showAllColumns: false,
             fontSize: "medium",
@@ -211,23 +209,6 @@ export default function SettingsPanelFull() {
                 label=""
               />
             </ListItem>
-            {/* Autocomplete */}
-            <ListItem className={styles["settings-panel__helper-on-hover"]}>
-              <ListItemText primary="AutoComplete" />
-              {/*<FormHelperText>Autocomplete search input</FormHelperText>*/}
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={currentSettings.autocomplete}
-                    onChange={handleSwitchChange}
-                    name="autocomplete"
-                    disabled={isPending}
-                  />
-                }
-                labelPlacement="start"
-                label=""
-              />
-            </ListItem>
             {/* Currency */}
             <ListItem className={styles["settings-panel__helper-on-hover"]}>
               <ListItemText primary="Currency" />
@@ -354,17 +335,6 @@ export default function SettingsPanelFull() {
                   </Button>
                 </ButtonGroup>
               </FormControl>
-            </ListItem>
-            {/* Auto-Resize */}
-            <ListItem className={styles["settings-panel__helper-on-hover"]}>
-              <ListItemText primary="Auto-Resize" />
-              {/*<FormHelperText>More results = larger window</FormHelperText>*/}
-              <Switch
-                checked={currentSettings.autoResize}
-                onChange={handleSwitchChange}
-                name="autoResize"
-                disabled={isPending}
-              />
             </ListItem>
           </List>
         </AccordionDetails>
