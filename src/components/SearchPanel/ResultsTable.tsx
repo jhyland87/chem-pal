@@ -5,6 +5,7 @@ import resultStyles from "@/components/ResultsPanel.module.scss";
 import { CACHE } from "@/constants/common";
 import { generatePageSizes } from "@/helpers/utils";
 import { FOCUS_GLOBAL_FILTER_EVENT, TOGGLE_COLUMN_FILTERS_EVENT } from "@/hotkeys";
+import BadgeAnimator from "@/utils/BadgeAnimator";
 import { cstorage } from "@/utils/storage";
 import { isInputElement } from "@/utils/typeGuards/common";
 import {
@@ -290,9 +291,30 @@ export default function ResultsTable({
   // out-of-range value (e.g. persisted pageSize=36 when valid options are
   // [10, 20, 40, 74]). Must happen during render, not in a useEffect,
   // because MUI warns before effects run.
-  const filteredRowCount = table.getFilteredRowModel().rows.length;
-  if (filteredRowCount > 0) {
-    const validSizes = generatePageSizes(filteredRowCount, 10, 5);
+  const filteredRowCount = table.getRowModel().rows.filter((row) => row.depth === 0).length;
+  const totalRowCount = table.getFilteredRowModel().rows.length;
+
+  // Mirror the table's filtered row count onto the extension's badge. This
+  // is the single source of truth for the counter — it covers streaming
+  // results (each append triggers a re-render), search completion, product
+  // exclusion, AND user-applied column/global filters uniformly. Keep the
+  // effect skipped while the table is empty so the BadgeAnimator's
+  // "Searching…" ellipsis animation (started in useSearch.performSearch)
+  // isn't immediately overwritten with "0".
+  useEffect(() => {
+    if (totalRowCount === 0) return;
+    BadgeAnimator.setText(totalRowCount.toString());
+  }, [filteredRowCount, totalRowCount]);
+
+  // Compute valid page sizes from the *filter-applied total* (totalRowCount)
+  // rather than the page-visible count (filteredRowCount) — feeding the
+  // page-visible count here creates a self-reinforcing collapse when a prior
+  // search left pageSize larger than the new search's result count: valid
+  // sizes would shrink to `[page-visible]`, which forces pageSize down,
+  // which keeps only that many rows visible, etc. The options Select below
+  // (line ~572) correctly uses the total as well.
+  if (totalRowCount > 0) {
+    const validSizes = generatePageSizes(totalRowCount, 10, 5);
     const currentPageSize = tableState.pagination?.pageSize ?? 10;
     if (!validSizes.includes(currentPageSize)) {
       const best = validSizes.filter((s) => s <= currentPageSize).pop() ?? validSizes.at(-1)!;
@@ -335,7 +357,11 @@ export default function ResultsTable({
     <>
       <LoadingBackdrop
         open={isLoading}
-        resultCount={searchResults.length}
+        // Count top-level rows only — `searchResults.length` can double-count
+        // when suppliers yield variants as flat products rather than nested.
+        // `getFilteredRowModel().rows.length` is the committed parent-row count
+        // (sub-rows live on each row's `.subRows`), which is what users see.
+        resultCount={totalRowCount}
         onClick={handleStopSearch}
       />
       <DrawerSystem />
@@ -384,9 +410,8 @@ export default function ResultsTable({
 
         <ResultsHeaderContainer>
           <ResultsCountDisplay>
-            Results: {table.getFilteredRowModel().rows.length}
-            {table.getFilteredRowModel().rows.length !== searchResults.length &&
-              ` of ${searchResults.length}`}
+            Results: {filteredRowCount}
+            {filteredRowCount !== totalRowCount && ` of ${totalRowCount}`}
           </ResultsCountDisplay>
           {/* Only show the global filter if there are results. Based on
               searchResults (not the filtered row model) so the input doesn't
@@ -538,7 +563,7 @@ export default function ResultsTable({
           )}
 
           {/* Pagination Controls - Only show if more than 1 page */}
-          {table.getPageCount() > 1 && (
+          {totalRowCount > 10 && (
             <PaginationContainer>
               {/* Page Size Selector */}
               <PageSizeContainer>
@@ -549,22 +574,25 @@ export default function ResultsTable({
                     onChange={(e) => table.setPageSize(Number(e.target.value))}
                     aria-label="rows per page"
                   >
-                    {generatePageSizes(table.getFilteredRowModel().rows.length, 10, 5).map(
-                      (pageSize) => (
-                        <MenuItem key={pageSize} value={pageSize}>
-                          {pageSize === table.getFilteredRowModel().rows.length ? "All" : pageSize}
-                        </MenuItem>
-                      ),
-                    )}
+                    {generatePageSizes(totalRowCount, 10, 5).map((pageSize) => (
+                      <MenuItem key={pageSize} value={pageSize}>
+                        {pageSize === totalRowCount ? "All" : pageSize}
+                      </MenuItem>
+                    ))}
                   </PageSizeSelect>
                 </FormControl>
                 <Typography variant="body2">rows</Typography>
               </PageSizeContainer>
 
-              {/* Page Info */}
+              {/* Page Info — "Showing N of M" surfaces the post-filter vs
+                  pre-filter delta when the user narrows the results with a
+                  column / global filter. When no filter is active (filtered
+                  === total) it collapses back to the plain total form. */}
               <Typography variant="body2">
-                Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()} (
-                {table.getFilteredRowModel().rows.length} total results)
+                Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+                {filteredRowCount === totalRowCount
+                  ? ` (${totalRowCount} total results)`
+                  : ` (Showing ${filteredRowCount} of ${totalRowCount} results)`}
               </Typography>
 
               {/* Navigation Buttons */}

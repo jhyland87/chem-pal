@@ -426,10 +426,13 @@ export function useSearch() {
             updateColumnFilterFromResult(columnFilterConfig, result);
           }
 
-          // Set all filtered+limited results at once
+          // Set all filtered+limited results at once. The badge counter is
+          // driven off the table's filtered row count in ResultsTable.tsx —
+          // once React commits this state update the table re-renders and
+          // the badge-syncing effect fires, so no direct BadgeAnimator call
+          // is needed here.
           const finalResults = limited.map((r, idx) => ({ ...r, id: idx }));
           setSearchResults(finalResults);
-          BadgeAnimator.setText(finalResults.length.toString());
 
           // Save to Chrome storage and update history with final count
           await saveResultsToSession(finalResults);
@@ -441,16 +444,12 @@ export function useSearch() {
             finalResults,
           });
         } else {
-          // No filters active — stream results directly (original behavior)
-          let receivedCount = 0;
+          // No filters active — stream results directly (original behavior).
+          // The extension badge is wired to `table.getFilteredRowModel()` in
+          // ResultsTable.tsx's badge-sync effect, so each row appended below
+          // triggers a re-render that bumps the badge — no direct
+          // BadgeAnimator call is needed in this loop.
           for await (const result of productQueryResults) {
-            receivedCount++;
-            // Update the live counter immediately. Can't use
-            // `resultsTable.updateBadgeCount()` here — it reads the committed
-            // row count, but the append below is scheduled in a transition and
-            // hasn't flushed yet, so the badge would always lag by one.
-            BadgeAnimator.setText(receivedCount.toString());
-
             // Update state with current count using startTransition for better performance
             startTransition(() => {
               setState((prev) => ({
@@ -582,10 +581,9 @@ export function useSearch() {
       nextResults = prev.filter((p) => !(p.url === product.url && p.supplier === product.supplier));
       return nextResults;
     });
-    // Reflect the new top-level count on the extension badge. searchResults
-    // holds only parent products (variants live in .variants), so the length
-    // here is already the "not including variants" count the user sees.
-    BadgeAnimator.setText(nextResults.length.toString());
+    // Badge count is synced off `table.getFilteredRowModel()` inside
+    // ResultsTable.tsx — this setSearchResults call triggers the re-render
+    // that updates it, no direct BadgeAnimator.setText needed here.
     try {
       await addExcludedProduct(product.url, product.supplier, { title: product.title });
     } catch (error) {
