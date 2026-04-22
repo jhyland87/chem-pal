@@ -3,9 +3,11 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(420px, 90vw);
-  max-height: 80vh;
-  overflow-y: auto;
+  width: min(520px, 90vw);
+  height: min(560px, 85vh);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   outline: none;
 }
 
@@ -14,26 +16,34 @@
   font-weight: 600;
 }
 
-.hotkey-group-heading {
-  display: block;
-  line-height: 1.4;
-  text-align: center;
+.hotkey-tabs {
+  min-height: 36px;
+}
+
+.hotkey-tab-panel {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-block: 0.4rem;
 }
 
 .hotkey-row {
   display: flex;
   align-items: center;
-}
-
-.hotkey-combo {
-  flex: 0 0 auto;
-  min-width: 72px;
-  text-align: center;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.8rem;
+  gap: 20px !important;
 }
 
 .hotkey-description {
   flex: 1 1 auto;
   font-size: 0.85rem;
+}
+
+.hotkey-combo-group {
+  flex: 0 0 auto;
+  min-width: 90px;
+}
+
+.hotkey-combo {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  line-height: 1.4;
 }

@@ -23,19 +23,36 @@ export const HotkeyHelpBox = styled(Box)(({ theme }) => ({
  */
 export const HotkeyRow = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1.25),
-  paddingBlock: theme.spacing(0.25),
+  paddingBlock: theme.spacing(0.35),
 }));
 
 /**
- * Pill that displays the key combo for a hotkey. Colors, border, and inner
- * padding are all theme-derived so the pill reads correctly in both light
- * and dark palettes.
+ * Inline flex wrapper that right-aligns a sequence of per-key {@link HotkeyCombo}
+ * chips. Used in the help modal so each modifier / key renders as its own
+ * block (e.g. `⌘` `⇧` `R`) — matching the style Onshape uses for its
+ * keyboard-shortcuts panel.
+ * @source
+ */
+export const HotkeyComboGroup = styled(Box)(({ theme }) => ({
+  display: "inline-flex",
+  gap: theme.spacing(0.4),
+  justifyContent: "flex-end",
+  flexWrap: "wrap",
+}));
+
+/**
+ * Pill that displays a single key or modifier in a hotkey combo. Colors,
+ * border, and inner padding are theme-derived so the pill reads correctly
+ * in both light and dark palettes. Multiple chips are grouped inline via
+ * {@link HotkeyComboGroup}.
  * @source
  */
 export const HotkeyCombo = styled(Box)(({ theme }) => ({
-  paddingInline: theme.spacing(0.75),
-  paddingBlock: theme.spacing(0.125),
+  paddingInline: theme.spacing(0.6),
+  paddingBlock: theme.spacing(0.05),
   borderRadius: Number(theme.shape.borderRadius),
   border: `1px solid ${theme.palette.divider}`,
   backgroundColor: theme.palette.action.hover,
+  minWidth: "1.4rem",
+  textAlign: "center",
 }));

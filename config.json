@@ -1,4 +1,18 @@
 {
+  "defaultSettings": {
+    "showHelp": false,
+    "caching": true,
+    "autocomplete": true,
+    "currency": "USD",
+    "location": "US",
+    "currencyRate": 1.0,
+    "fontSize": "medium",
+    "theme": "light",
+    "showColumnFilters": true,
+    "showAllColumns": false,
+    "hideColumns": ["description", "uom"],
+    "columnFilterConfig": {}
+  },
   "locations": {
     "AU": {
       "name": "Australia",
@@ -155,6 +169,13 @@
       "keys": "mod+shift+f",
       "description": "Toggle the column filters in the results table",
       "group": "Results"
+    },
+    {
+      "id": "abortSearch",
+      "keys": "mod+.",
+      "description": "Abort the currently-running search",
+      "group": "Search",
+      "flash": "Search aborted"
     }
   ]
 }

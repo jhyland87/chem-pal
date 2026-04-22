@@ -1,7 +1,7 @@
-import type { CachedData } from "@/suppliers/SupplierBase";
 import type { ExcludedProductsMap } from "@/helpers/excludedProducts";
-import { type DBSchema, type IDBPDatabase, openDB } from "idb";
+import type { CachedData } from "@/suppliers/SupplierBase";
 import Logger from "@/utils/Logger";
+import { type DBSchema, type IDBPDatabase, openDB } from "idb";
 
 /**
  * Custom event name dispatched when search results are cleared.

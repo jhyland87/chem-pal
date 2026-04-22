@@ -1,3 +1,4 @@
+import { zodAddActualValueToIssues } from "@/helpers/utils";
 import { z } from "zod";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -63,7 +64,7 @@ const magento2ConfigurableVariantSchema = z.object({
     )
     .optional(),
   product: z.object({
-    uid: z.string(),
+    uid: z.string().nullable().optional(),
     sku: z.string(),
     name: z.string(),
     stock_status: z.string().optional(),
@@ -76,7 +77,7 @@ const magento2ConfigurableVariantSchema = z.object({
 
 const magento2ProductItemSchema = z.object({
   __typename: z.string(),
-  uid: z.string(),
+  uid: z.string().nullable().optional(),
   sku: z.string(),
   name: z.string(),
   url_key: z.string(),
@@ -167,15 +168,12 @@ export function isValidMagento2SearchResponse(
 ): response is Magento2SearchResponse {
   const parsed = magento2SearchResponseSchema.safeParse(response);
   if (!parsed.success) {
-    console.warn(
-      "isValidMagento2SearchResponse: response is not a valid Magento2SearchResponse",
-      {
-        response,
-        parsed,
-        error: parsed.error,
-        issues: parsed.error.issues,
-      },
-    );
+    console.warn("isValidMagento2SearchResponse: response is not a valid Magento2SearchResponse", {
+      response,
+      parsed,
+      error: parsed.error,
+      issues: zodAddActualValueToIssues(parsed.error.issues, response),
+    });
   }
   return parsed.success;
 }

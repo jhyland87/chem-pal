@@ -1,5 +1,6 @@
 import { useAppContext } from "@/components/SearchPanel/hooks/useContext";
 import { ACTION_TYPE } from "@/constants/common";
+import { FUZZ_SCORER_NAMES } from "@/constants/fuzzScorers";
 import {
   loadExcludedProducts,
   removeExcludedProduct,
@@ -7,6 +8,7 @@ import {
 } from "@/helpers/excludedProducts";
 import { formatTimestamp } from "@/helpers/utils";
 import { clearExcludedProducts } from "@/utils/idbCache";
+import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import { isButtonElement } from "@/utils/typeGuards/common";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -416,9 +418,7 @@ export default function SettingsPanelFull() {
                           className={styles["settings-panel__excluded-delete-btn"]}
                           aria-label={`Remove ${entry.title || entry.url}`}
                         >
-                          <DeleteIcon
-                            className={styles["settings-panel__excluded-delete-icon"]}
-                          />
+                          <DeleteIcon className={styles["settings-panel__excluded-delete-icon"]} />
                         </IconButton>
                       </Tooltip>
                     }
@@ -460,6 +460,57 @@ export default function SettingsPanelFull() {
           )}
         </AccordionDetails>
       </Accordion>
+      {/* Dev-only Advanced section. `IS_DEV_BUILD` is a Vite-replaced string
+          literal, so the entire block is tree-shaken from prod bundles — no
+          config flag or runtime check reaches production users. */}
+      {IS_DEV_BUILD && (
+        <Accordion
+          expanded={expanded === "advanced"}
+          onChange={handleAccordionChange("advanced")}
+          disableGutters
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            className={styles["settings-panel__accordion-summary"]}
+          >
+            <Typography variant="body2" fontWeight={500}>
+              Advanced
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails className={styles["settings-panel__accordion-details"]}>
+            {/* Mirrors the search drawer's single-select filter-input style:
+                full-width labeled outlined TextField with italic helper text.
+                Using `TextField select` (rather than the horizontal
+                ListItem + Select pattern the rest of this panel uses) gives
+                long scorer names like `partial_token_similarity_sort_ratio`
+                room to render, and keeps the visual consistent with the
+                search drawer filters. */}
+            <Box sx={{ p: 1 }}>
+              <TextField
+                select
+                fullWidth
+                size="small"
+                name="fuzzScorerOverride"
+                label="Fuzz match method"
+                value={currentSettings.fuzzScorerOverride ?? ""}
+                onChange={handleInputChange}
+                disabled={isPending}
+                helperText="Overrides each supplier's default scorer"
+                slotProps={{ formHelperText: { sx: { fontStyle: "italic" } } }}
+              >
+                <MenuItem value="">
+                  <em>Default (per supplier)</em>
+                </MenuItem>
+                {FUZZ_SCORER_NAMES.map((name) => (
+                  <MenuItem key={name} value={name}>
+                    {name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Box>
+          </AccordionDetails>
+        </Accordion>
+      )}
       <Accordion
         expanded={expanded === "actions"}
         onChange={handleAccordionChange("actions")}

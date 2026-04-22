@@ -1,13 +1,15 @@
 import { UOM } from "@/constants/common";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   isHtmlResponse,
   isHttpResponse,
   isJsonResponse,
   isMinimalProduct,
+  isPlainContainer,
   isProduct,
   isUOM,
   isValidResult,
+  isValidUserSettings,
 } from "../common";
 
 describe("Common TypeGuards", () => {
@@ -216,6 +218,100 @@ describe("Common TypeGuards", () => {
       expect(isProduct(null)).toBe(false);
       expect(isProduct(undefined)).toBe(false);
       expect(isProduct("not an object")).toBe(false);
+    });
+  });
+
+  describe("isPlainContainer", () => {
+    it("returns true for plain object literals", () => {
+      expect(isPlainContainer({})).toBe(true);
+      expect(isPlainContainer({ a: 1, b: 2 })).toBe(true);
+    });
+
+    it("returns true for arrays", () => {
+      expect(isPlainContainer([])).toBe(true);
+      expect(isPlainContainer([1, 2, 3])).toBe(true);
+    });
+
+    it("returns true for prototype-less objects", () => {
+      expect(isPlainContainer(Object.create(null))).toBe(true);
+    });
+
+    it("returns false for primitives", () => {
+      expect(isPlainContainer(1)).toBe(false);
+      expect(isPlainContainer("str")).toBe(false);
+      expect(isPlainContainer(true)).toBe(false);
+      expect(isPlainContainer(Symbol("x"))).toBe(false);
+    });
+
+    it("returns false for null / undefined", () => {
+      expect(isPlainContainer(null)).toBe(false);
+      expect(isPlainContainer(undefined)).toBe(false);
+    });
+
+    it("returns false for Date / Map / Set / class instances", () => {
+      expect(isPlainContainer(new Date())).toBe(false);
+      expect(isPlainContainer(new Map())).toBe(false);
+      expect(isPlainContainer(new Set())).toBe(false);
+      class Custom {}
+      expect(isPlainContainer(new Custom())).toBe(false);
+    });
+
+    it("returns false for functions", () => {
+      expect(isPlainContainer(() => undefined)).toBe(false);
+      expect(isPlainContainer(function named() {})).toBe(false);
+    });
+  });
+
+  describe("isValidUserSettings", () => {
+    // Silence the console.warn that the function emits on invalid input so the
+    // test output isn't flooded with expected warnings.
+    const originalWarn = console.warn;
+    beforeEach(() => {
+      console.warn = () => undefined;
+    });
+    afterEach(() => {
+      console.warn = originalWarn;
+    });
+
+    it("accepts an empty object (all fields are optional)", () => {
+      expect(isValidUserSettings({})).toBe(true);
+    });
+
+    it("accepts a fully populated, well-typed settings object", () => {
+      expect(
+        isValidUserSettings({
+          showHelp: false,
+          caching: true,
+          autocomplete: true,
+          currencyRate: 1.0,
+          currency: "USD",
+          location: "US",
+          theme: "light",
+          fontSize: "medium",
+          showColumnFilters: true,
+          showAllColumns: false,
+          hideColumns: ["description"],
+          fuzzScorerOverride: "ratio",
+        }),
+      ).toBe(true);
+    });
+
+    it("rejects fields with the wrong type", () => {
+      expect(isValidUserSettings({ showHelp: "yes" })).toBe(false);
+      expect(isValidUserSettings({ currencyRate: "1.0" })).toBe(false);
+      expect(isValidUserSettings({ hideColumns: "not an array" })).toBe(false);
+    });
+
+    it("rejects enum values outside the whitelist", () => {
+      expect(isValidUserSettings({ theme: "sepia" })).toBe(false);
+      expect(isValidUserSettings({ fontSize: "enormous" })).toBe(false);
+    });
+
+    it("rejects non-object roots", () => {
+      expect(isValidUserSettings(null)).toBe(false);
+      expect(isValidUserSettings(undefined)).toBe(false);
+      expect(isValidUserSettings("hi")).toBe(false);
+      expect(isValidUserSettings(42)).toBe(false);
     });
   });
 });

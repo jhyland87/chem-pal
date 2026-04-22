@@ -1,16 +1,15 @@
 import contributors from "@/../contributors.json";
 import { default as Link } from "@/components/TabLink";
 import GitHubIcon from "@/icons/GitHubIcon";
+import { ThemeContext } from "@/themes";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import Modal from "@mui/material/Modal";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { useContext } from "react";
 import styles from "./AboutModal.module.scss";
-import {
-  AboutContributorItem,
-  AboutModalBox,
-} from "./StyledComponents";
+import { AboutContributorItem, AboutModalBox } from "./StyledComponents";
 
 interface Contributor {
   name: string;
@@ -47,17 +46,22 @@ export default function AboutModal({
   setAboutOpen: (open: boolean) => void;
 }) {
   const entries = contributors as Contributor[];
+  const themeContext = useContext(ThemeContext);
+  const logoSrc =
+    themeContext?.mode === "dark"
+      ? "/static/images/logo/ChemPal-logo-v2-inverted.svg"
+      : "/static/images/logo/ChemPal-logo-v2.svg";
 
   return (
     <Modal
       data-testid="about-modal"
-      onClick={() => setAboutOpen(false)}
       open={aboutOpen}
       onClose={() => setAboutOpen(false)}
       aria-labelledby="application-title"
       aria-describedby="application-description"
     >
-      <AboutModalBox className={styles["about-box"]}>
+      <AboutModalBox className={styles["about-box"]} onClick={(e) => e.stopPropagation()}>
+        <img src={logoSrc} alt="ChemPal logo" className={styles["about-logo"]} />
         <Typography
           id="application-title"
           variant="h6"
@@ -70,7 +74,14 @@ export default function AboutModal({
             href="https://github.com/justinhyland/chem-pal"
             target="_blank"
             rel="noopener noreferrer"
-            sx={{ ml: 1.25 }}
+            sx={{
+              ml: 1.25,
+              color: "text.secondary",
+              "&:hover": {
+                color: "primary.main",
+                backgroundColor: "action.hover",
+              },
+            }}
           >
             <GitHubIcon />
           </IconButton>

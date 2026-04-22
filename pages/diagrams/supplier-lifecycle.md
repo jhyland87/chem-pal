@@ -53,7 +53,7 @@ classDiagram
         #setup()
         #queryProducts(query, limit)*
         #titleSelector(data)*
-        #fuzzyFilter(query, data, cutoff)
+        #fuzzyFilter(query, data, this.minMatchPercentage)
         #queryProductsWithCache(query, limit)
         #getProductData(product)
         #getProductDataWithCache(product)

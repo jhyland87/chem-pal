@@ -13,8 +13,7 @@ import type { KeyBinding, ParsedBinding } from "./types";
  * @source
  */
 export function isMac(): boolean {
-  const uaData = (navigator as Navigator & { userAgentData?: { platform?: string } })
-    .userAgentData;
+  const uaData = (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData;
   if (uaData?.platform) return /mac/i.test(uaData.platform);
   return /mac/i.test(navigator.platform);
 }
@@ -133,17 +132,57 @@ export function matches(event: KeyboardEvent, binding: ParsedBinding): boolean {
  * @source
  */
 export function formatBinding(binding: KeyBinding): string {
+  const tokens = formatBindingTokens(binding);
+  return isMac() ? tokens.join("") : tokens.join("+");
+}
+
+/**
+ * Like {@link formatBinding}, but returns the individual key / modifier
+ * labels as an array instead of a pre-joined string. Useful when each token
+ * should render as its own UI element (e.g. chip per key in the help modal)
+ * so layout can flex or wrap.
+ * @param binding - The key-binding source (same shape as in config).
+ * @returns Array of labels in press order, e.g. `["⌘", "⇧", "R"]` or
+ *   `["Ctrl", "Shift", "R"]`.
+ * @example
+ * ```ts
+ * formatBindingTokens("mod+shift+r"); // ["⌘", "⇧", "R"] on macOS
+ * formatBindingTokens("shift+?");      // ["⇧", "?"]
+ * ```
+ * @source
+ */
+export function formatBindingTokens(binding: KeyBinding): string[] {
   const mac = isMac();
   const resolved = resolveBinding(binding);
   const tokens = resolved.split("+").map((t) => t.trim().toLowerCase());
   const last = tokens.pop() ?? "";
 
   const symbols: Record<string, string> = mac
-    ? { mod: "⌘", meta: "⌘", cmd: "⌘", command: "⌘", ctrl: "⌃", control: "⌃", alt: "⌥", option: "⌥", shift: "⇧" }
-    : { mod: "Ctrl", meta: "Meta", cmd: "Cmd", command: "Cmd", ctrl: "Ctrl", control: "Ctrl", alt: "Alt", option: "Alt", shift: "Shift" };
+    ? {
+        mod: "⌘",
+        meta: "⌘",
+        cmd: "⌘",
+        command: "⌘",
+        ctrl: "⌃",
+        control: "⌃",
+        alt: "⌥",
+        option: "⌥",
+        shift: "⇧",
+      }
+    : {
+        mod: "Ctrl",
+        meta: "Meta",
+        cmd: "Cmd",
+        command: "Cmd",
+        ctrl: "Ctrl",
+        control: "Ctrl",
+        alt: "Alt",
+        option: "Alt",
+        shift: "Shift",
+      };
 
-  const parts = tokens.map((t) => symbols[t] ?? t);
-  const keyLabel = last.length === 1 ? last.toUpperCase() : last.charAt(0).toUpperCase() + last.slice(1);
-  parts.push(keyLabel);
-  return mac ? parts.join("") : parts.join("+");
+  const modifiers = tokens.map((t) => symbols[t] ?? t);
+  const keyLabel =
+    last.length === 1 ? last.toUpperCase() : last.charAt(0).toUpperCase() + last.slice(1);
+  return [...modifiers, keyLabel];
 }

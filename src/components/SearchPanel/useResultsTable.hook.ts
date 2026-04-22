@@ -201,6 +201,10 @@ export function useResultsTable({
     },
     columnResizeMode: "onChange",
     columns: TableColumns() as ColumnDef<Product, unknown>[],
+    // Passed through TanStack's `meta` so hook-free cell renderers (see the
+    // price column in TableColumns.tsx) can read userSettings without
+    // calling useAppContext() themselves.
+    meta: { userSettings },
     filterFns: {
       multiSelect: multiSelectFilter,
       includeHierarchy: includeHierarchyTextFilter,

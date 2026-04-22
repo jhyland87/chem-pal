@@ -1,3 +1,12 @@
+import { defaultSettings } from "@/../config.json";
+import DrawerSystem from "@/components/DrawerSystem";
+import LoadingBackdrop from "@/components/LoadingBackdrop";
+import resultStyles from "@/components/ResultsPanel.module.scss";
+import { CACHE } from "@/constants/common";
+import { generatePageSizes } from "@/helpers/utils";
+import { FOCUS_GLOBAL_FILTER_EVENT, TOGGLE_COLUMN_FILTERS_EVENT } from "@/hotkeys";
+import { cstorage } from "@/utils/storage";
+import { isInputElement } from "@/utils/typeGuards/common";
 import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
@@ -7,16 +16,6 @@ import {
   Settings as SettingsIcon,
   ViewColumn as ViewColumnIcon,
 } from "@mui/icons-material";
-
-import { defaultResultsLimit } from "@/../config.json";
-import DrawerSystem from "@/components/DrawerSystem";
-import LoadingBackdrop from "@/components/LoadingBackdrop";
-import resultStyles from "@/components/ResultsPanel.module.scss";
-import { CACHE } from "@/constants/common";
-import { generatePageSizes } from "@/helpers/utils";
-import { FOCUS_GLOBAL_FILTER_EVENT, TOGGLE_COLUMN_FILTERS_EVENT } from "@/hotkeys";
-import { cstorage } from "@/utils/storage";
-import { isInputElement } from "@/utils/typeGuards/common";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
   Box,
@@ -197,24 +196,7 @@ export default function ResultsTable({
     columnFilterFns,
     globalFilterFns: [globalFilter, setGlobalFilter],
     getRowCanExpand,
-    userSettings: appContext?.userSettings || {
-      // Not all of these settings work, yet
-      showHelp: false,
-      caching: true,
-      autocomplete: true,
-      currency: "USD",
-      currencyRate: 1.0,
-      location: "US",
-      fontSize: "small",
-      supplierResultLimit: defaultResultsLimit,
-      autoResize: true,
-      suppliers: [],
-      theme: "light",
-      showColumnFilters: true,
-      showAllColumns: false,
-      hideColumns: ["description", "uom"],
-      columnFilterConfig: {},
-    },
+    userSettings: appContext?.userSettings ?? (defaultSettings as UserSettings),
   });
 
   // ── Table state persistence ──────────────────────────────────────────
@@ -322,7 +304,7 @@ export default function ResultsTable({
   useEffect(() => {
     if (appContext && !isEmpty(appContext.userSettings.hideColumns)) {
       table.getAllLeafColumns().map((column: Column<Product>) => {
-        if (appContext.userSettings.hideColumns.includes(column.id)) {
+        if (appContext.userSettings?.hideColumns?.includes(column.id)) {
           column.toggleVisibility(false);
         }
       });
@@ -530,7 +512,9 @@ export default function ResultsTable({
                 <TableRow className={resultStyles["styled-table-row"]}>
                   <EmptyStateCell colSpan={table.getAllColumns().length}>
                     {searchResults.length === 0
-                      ? tableText || "No search query"
+                      ? isLoading
+                        ? "Searching..."
+                        : tableText || "No search query"
                       : table.getState().columnFilters.length > 0 || table.getState().globalFilter
                         ? "No results matching your filter values"
                         : "No results found"}

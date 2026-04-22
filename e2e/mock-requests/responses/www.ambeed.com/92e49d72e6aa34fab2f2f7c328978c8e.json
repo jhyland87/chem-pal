@@ -1,0 +1,8 @@
+{
+  "contentType": "application/json",
+  "content": "JTdCJTIydGltZSUyMiUzQSUyMjIwMjYwNDIyMDkwNjA5MDM2NDIxJTIyJTJDJTIybGFuZyUyMiUzQSUyMnpoX0NOJTIyJTJDJTIydmFsdWUlMjIlM0ElN0IlMjJtZW51X3JlcyUyMiUzQSU3QiUyMm1lbnVfbGlzdCUyMiUzQSU1QiU1RCUyQyUyMm9uZV9tZW51X2xpc3QlMjIlM0ElNUIlNUQlMkMlMjJzdWJtZW51X2xpc3QlMjIlM0ElNUIlNUQlMkMlMjJtZW51X2NvdW50JTIyJTNBMCU3RCUyQyUyMnJlc3VsdCUyMiUzQSU1QiU1RCU3RCUyQyUyMmNvZGUlMjIlM0EyMDAlMkMlMjJzb3VyY2UlMjIlM0ExMDAwJTdE",
+  "_request": {
+    "url": "https://www.ambeed.com/webapi/v1/productlistbykeyword?params=eyJrZXl3b3JkIjoidGhpcyBzaG91bGQgbm90IHJldHVybiBhbnkgcmVzdWx0cyJ9",
+    "method": "GET"
+  }
+}

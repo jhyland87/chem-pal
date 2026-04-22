@@ -6,6 +6,7 @@ import { getCompoundNameFromAlias } from "@/helpers/pubchem";
 import SupplierFactory from "@/suppliers/SupplierFactory";
 import BadgeAnimator from "@/utils/BadgeAnimator";
 import { cstorage } from "@/utils/storage";
+import { ABORT_SEARCH_EVENT } from "@/hotkeys";
 import {
   getSearchResults,
   setSearchResults as idbSetSearchResults,
@@ -242,10 +243,23 @@ export function useSearch() {
 
     const loadSearchData = async () => {
       try {
-        // Load search results from IndexedDB
-        const cachedResults = await getSearchResults();
+        // Check for a pending new-search submission *before* rehydrating from
+        // IndexedDB. If one is queued, loading stale results first would flash
+        // the previous search's rows into the table for a frame before the new
+        // search's setSearchResults([]) clears them. Read both in parallel so
+        // we don't add a serial round-trip to the hot path.
+        const [cachedResults, sessionData] = await Promise.all([
+          getSearchResults(),
+          cstorage.session.get([CACHE.QUERY, CACHE.SEARCH_IS_NEW_SEARCH]),
+        ]);
 
-        if (cachedResults.length > 0) {
+        const hasPendingSearch = Boolean(
+          sessionData[CACHE.SEARCH_IS_NEW_SEARCH] &&
+            sessionData[CACHE.QUERY] &&
+            sessionData[CACHE.QUERY].trim(),
+        );
+
+        if (!hasPendingSearch && cachedResults.length > 0) {
           console.debug("Loading previous search results from IndexedDB", {
             length: cachedResults.length,
             results: cachedResults,
@@ -258,18 +272,12 @@ export function useSearch() {
           }));
         }
 
-        // Check session storage for new search flag and query
-        const data = await cstorage.session.get([
-          CACHE.QUERY,
-          CACHE.SEARCH_IS_NEW_SEARCH,
-        ]);
-
         // Only execute search if this is a new search submission
-        if (data[CACHE.SEARCH_IS_NEW_SEARCH] && data[CACHE.QUERY] && data[CACHE.QUERY].trim()) {
+        if (hasPendingSearch) {
           isSearchInitiatedRef.current = true;
 
           console.debug("Found new search submission, executing search", {
-            query: data[CACHE.QUERY],
+            query: sessionData[CACHE.QUERY],
           });
           // Await the flag removal to prevent race conditions with re-runs
           try {
@@ -279,11 +287,11 @@ export function useSearch() {
           }
 
           console.debug("executing search FROM USEFFECT", {
-            query: data[CACHE.QUERY],
+            query: sessionData[CACHE.QUERY],
           });
           // Execute the search - performSearch reads supplierResultLimit/suppliers
           // from appContext via its default parameters, so we don't need to pass them.
-          performSearch({ query: data[CACHE.QUERY] });
+          performSearch({ query: sessionData[CACHE.QUERY] });
         }
       } catch (error) {
         console.warn("Failed to load search data from session storage:", { error });
@@ -324,7 +332,11 @@ export function useSearch() {
         filtersActive,
         searchFilters,
       });
-      // Reset state for new search
+      // Reset state for new search. Clearing `tableText` here prevents a stale
+      // empty-state message (e.g. "No results found for X" from the previous
+      // search, or "Search aborted") from bleeding into the new search's
+      // empty-state cell. While `isLoading === true` the cell renders
+      // "Searching..." regardless, so clearing now doesn't cause a flash.
       setState({
         isLoading: true,
         status: "Searching...",
@@ -332,6 +344,7 @@ export function useSearch() {
         resultCount: 0,
       });
       setSearchResults([]);
+      setTableText("");
 
       // Create a history entry immediately so it's recorded even if the search is cancelled or hangs.
       // The resultCount will be updated live as results stream in.
@@ -341,7 +354,7 @@ export function useSearch() {
         query,
         historyTimestamp,
         searchFilters,
-        appContext.selectedSuppliers,
+        appContext.selectedSuppliers ?? [],
       );
 
       // Start the loading animation
@@ -371,6 +384,8 @@ export function useSearch() {
           fetchLimit,
           fetchControllerRef.current,
           appContext.selectedSuppliers,
+          appContext.userSettings.caching,
+          appContext.userSettings.fuzzScorerOverride,
         );
 
         const startSearchTime = performance.now();
@@ -508,6 +523,7 @@ export function useSearch() {
             status: "Search aborted",
             error: undefined,
           }));
+          setTableText("Search aborted");
         } else {
           setState((prev) => ({
             ...prev,
@@ -588,8 +604,18 @@ export function useSearch() {
         isLoading: false,
         status: "Search aborted",
       }));
+      setTableText("Search aborted");
     });
   }, []);
+
+  // Listen for the global abort-search hotkey (mod+.) dispatched from App.tsx.
+  // Kept here rather than in App.tsx so we have direct access to the local
+  // AbortController ref without threading it through context.
+  useEffect(() => {
+    const handler = () => handleStopSearch();
+    window.addEventListener(ABORT_SEARCH_EVENT, handler);
+    return () => window.removeEventListener(ABORT_SEARCH_EVENT, handler);
+  }, [handleStopSearch]);
 
   return {
     searchResults,

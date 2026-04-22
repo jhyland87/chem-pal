@@ -34,7 +34,9 @@ export function useSupplierSelection() {
     throw new Error("useSupplierSelection must be used within AppContext");
   }
 
-  const selectedSuppliers = appContext.userSettings.suppliers;
+  // `suppliers` is optional on UserSettings — coalesce so the hook's toggle
+  // logic below can treat it as a concrete array without undefined-checks.
+  const selectedSuppliers: string[] = appContext.userSettings.suppliers ?? [];
   const allSuppliers = SupplierFactory.supplierList();
 
   /**

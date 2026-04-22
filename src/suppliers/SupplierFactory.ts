@@ -49,6 +49,16 @@ export default class SupplierFactory<P extends Product> {
   // Maximum number of results for each supplier
   private limit: number = defaultResultsLimit;
 
+  // Whether supplier caches (query + product detail) should be read from and
+  // written to for this search. Mirrors userSettings.caching so a user who has
+  // disabled caching gets fresh results every time.
+  private caching: boolean;
+
+  // Optional global fuzz-scorer override from userSettings.fuzzScorerOverride.
+  // When set, applied to every supplier instance before execute() runs so the
+  // user's Advanced-settings choice wins over each supplier class's default.
+  private fuzzScorerOverride?: string;
+
   // Logger instance
   private logger: Logger;
 
@@ -59,6 +69,10 @@ export default class SupplierFactory<P extends Product> {
    * @param limit - Maximum number of results for each supplier
    * @param controller - Fetch controller (can be used to terminate the query)
    * @param suppliers - Array of suppliers to query (empty is the same as querying all)
+   * @param caching - Whether to read from / write to the supplier caches. Defaults to true.
+   * @param fuzzScorerOverride - Optional fuzz scorer name (from `FUZZ_SCORERS`)
+   *   that overrides each supplier's default `fuzzScorer`. Omit or pass
+   *   `undefined` to respect per-supplier defaults.
    * @source
    */
   constructor(
@@ -66,13 +80,24 @@ export default class SupplierFactory<P extends Product> {
     limit: number = this.limit,
     controller: AbortController,
     suppliers: Array<string> = [],
+    caching: boolean = true,
+    fuzzScorerOverride?: string,
   ) {
     this.logger = new Logger("SupplierFactory");
-    this.logger.debug("initialized", { query, limit, controller, suppliers });
+    this.logger.debug("initialized", {
+      query,
+      limit,
+      controller,
+      suppliers,
+      caching,
+      fuzzScorerOverride,
+    });
     this.query = query;
     this.limit = limit;
     this.controller = controller;
     this.suppliers = suppliers;
+    this.caching = caching;
+    this.fuzzScorerOverride = fuzzScorerOverride;
   }
 
   /**
@@ -190,7 +215,8 @@ export default class SupplierFactory<P extends Product> {
         this.logger.debug("Initializing supplier class:", supplierClassName);
         const ConcreteSupplierClass = supplierClass as unknown as SupplierConstructor<P>;
         const instance = new ConcreteSupplierClass(this.query, this.limit, this.controller);
-        instance.initCache();
+        instance.initCache(this.caching);
+        instance.setFuzzScorerOverride(this.fuzzScorerOverride);
         return instance;
       },
     );
@@ -249,7 +275,8 @@ export default class SupplierFactory<P extends Product> {
         console.log("Initializing supplier class...", { supplierClassName, ConcreteSupplierClass });
         const instance = new ConcreteSupplierClass(this.query, this.limit, this.controller);
         console.log("After initializing supplier class", { supplierClassName, instance });
-        instance.initCache();
+        instance.initCache(this.caching);
+        instance.setFuzzScorerOverride(this.fuzzScorerOverride);
         return instance;
       },
     );

@@ -23,31 +23,9 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.tsx";
-import { migrateFromChromeStorage } from "./utils/idbMigration";
 import "./main.scss";
 
-/**
- * Enable mocking if there is no chrome.extension object (ie: were running outsie of the
- * extension) and were in development mode
- *
- * @source
- */
-async function enableMocking() {
-  return;
-  if (typeof chrome.extension === "undefined") {
-    return;
-  }
-
-  const { worker } = await import("./__mocks__/browser.ts");
-
-  // `worker.start()` returns a Promise that resolves
-  // once the Service Worker is up and ready to intercept requests.
-  return worker.start();
-}
-
 (async () => {
-  await enableMocking();
-  await migrateFromChromeStorage();
   createRoot(document.getElementById("root")!, {
     onUncaughtError: (error, errorInfo) => {
       console.error("Uncaught error:", error, errorInfo);

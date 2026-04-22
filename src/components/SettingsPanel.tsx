@@ -1,4 +1,4 @@
-import { currencies, locations } from "@/../config.json";
+import { currencies, defaultSettings, locations } from "@/../config.json";
 import { useAppContext } from "@/components/SearchPanel/hooks/useContext";
 import { ACTION_TYPE } from "@/constants/common";
 import { isButtonElement } from "@/utils/typeGuards/common";
@@ -125,15 +125,8 @@ export default function SettingsPanel() {
         case ACTION_TYPE.RESTORE_DEFAULTS:
           // Restore to default settings
           newSettings = {
+            ...(defaultSettings as UserSettings),
             ...currentSettings,
-            showHelp: false,
-            caching: true,
-            autocomplete: true,
-            autoResize: true,
-            showColumnFilters: true,
-            showAllColumns: false,
-            fontSize: "medium",
-            hideColumns: ["description", "uom"],
           };
           break;
 
@@ -376,17 +369,6 @@ export default function SettingsPanel() {
               </Button>
             </ButtonGroup>
           </FormControl>
-        </ListItem>
-
-        <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Auto-Resize" />
-          {/*<FormHelperText>More results = larger window</FormHelperText>*/}
-          <Switch
-            checked={currentSettings.autoResize}
-            onChange={handleSwitchChange}
-            name="autoResize"
-            disabled={isPending}
-          />
         </ListItem>
 
         <ListItem sx={displayHelperOnHover}>

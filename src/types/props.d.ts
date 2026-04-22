@@ -140,9 +140,9 @@ declare global {
     /** Function to toggle drawer */
     toggleDrawer: () => void;
     /** Drawer state management - -1 = closed, 0 = search tab, 1 = history tab, 2 = settings tab */
-    drawerTab: number;
+    drawerTab?: number;
     /** Selected Suppliers */
-    selectedSuppliers: string[];
+    selectedSuppliers?: string[];
     /** Function to update selected suppliers */
     setSelectedSuppliers: (suppliers: string[]) => void;
     /** Pending search query set from history panel (consumed by ResultsTable) */
@@ -154,7 +154,7 @@ declare global {
     /** Function to update pre-search filters */
     setSearchFilters: (filters: SearchFilters) => void;
     /** ID of the ChemPal Favorites bookmarks folder (null if not yet resolved) */
-    bookmarksFolderId: string | null;
+    bookmarksFolderId?: string | null;
     /** Function to store the bookmarks folder ID */
     setBookmarksFolderId: (id: string | null) => void;
   }

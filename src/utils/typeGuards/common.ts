@@ -1,5 +1,9 @@
+import { currencies, locations } from "@/../config.json";
 import { CAS_REGEX, SPIN_SPEED, UOM } from "@/constants/common";
 import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "@/constants/currency";
+import { zodAddActualValueToIssues } from "@/helpers/utils";
+import SupplierFactory from "@/suppliers/SupplierFactory";
+//import { currencies } from "price-parser";
 import { z } from "zod";
 
 /**
@@ -774,4 +778,81 @@ export function isAnchorElement(target: EventTarget | null): target is HTMLAncho
  */
 export function isInputElement(target: EventTarget | null): target is HTMLInputElement {
   return target instanceof HTMLInputElement;
+}
+
+// Lazily built so `SupplierFactory.supplierList()` isn't evaluated at module
+// load. `typeGuards/common.ts` sits on a circular import path through
+// `SupplierFactory` → supplier classes → `SupplierBase` → `typeGuards/common`,
+// so touching `SupplierFactory` at top level puts it in the TDZ.
+let cachedUserSettingsSchema: ReturnType<typeof buildUserSettingsSchema> | null = null;
+function buildUserSettingsSchema() {
+  return z.object({
+    showHelp: z.boolean().optional(),
+    caching: z.boolean().optional(),
+    autocomplete: z.boolean().optional(),
+    currencyRate: z.number().optional(),
+    currency: z.enum(Object.keys(currencies)).optional(),
+    location: z.enum(Object.keys(locations)).optional(),
+    theme: z.enum(["light", "dark"]).optional(),
+    fontSize: z.enum(["small", "medium", "large"]).optional(),
+    suppliers: z.array(z.enum(SupplierFactory.supplierList())).optional(),
+    showColumnFilters: z.boolean().optional(),
+    showAllColumns: z.boolean().optional(),
+    hideColumns: z.array(z.string()).optional(),
+    fuzzScorerOverride: z.string().optional(),
+  });
+}
+function getUserSettingsSchema() {
+  if (!cachedUserSettingsSchema) {
+    cachedUserSettingsSchema = buildUserSettingsSchema();
+  }
+  return cachedUserSettingsSchema;
+}
+
+/**
+ * Type guard to validate if a value is a valid UserSettings object.
+ * Checks for the presence and correct types of all UserSettings properties.
+ *
+ * @category Typeguards
+ * @param settings - The value to validate
+ * @returns Type predicate indicating if the value is a valid UserSettings object
+ * @example
+ * ```typescript
+ * isValidUserSettings({ showHelp: true, caching: true, autocomplete: true, currencyRate: 1.0, currency: "USD", location: "US" }) // Returns true
+ * isValidUserSettings({ showHelp: "test", caching: true, autocomplete: true, currencyRate: 1.0, currency: "USD", location: "US" }) // Returns false
+ * ```
+ * @source
+ */
+export function isValidUserSettings(settings: unknown): settings is UserSettings {
+  const check = getUserSettingsSchema().safeParse(settings);
+  if (!check.success) {
+    console.warn("isValidUserSettings| The user settings are invalid", {
+      settings,
+      issues: zodAddActualValueToIssues(check.error.issues, settings),
+    });
+  }
+  return check.success;
+}
+
+/**
+ * Check if a value is a plain object or array.
+ * @param v - The value to check.
+ * @returns True if the value is a plain object or array, false otherwise.
+ * @example
+ * ```typescript
+ * const obj = { a: 1, b: 2, c: 3 };
+ * isPlainContainer(obj) // true
+ * isPlainContainer([1, 2, 3]) // true
+ * isPlainContainer(1) // false
+ * isPlainContainer("hello") // false
+ * isPlainContainer(null) // false
+ * isPlainContainer(undefined) // false
+ * ```
+ * @source
+ */
+export function isPlainContainer(v: unknown): v is object {
+  if (v == null || typeof v !== "object") return false;
+  if (Array.isArray(v)) return true;
+  const proto = Object.getPrototypeOf(v);
+  return proto === Object.prototype || proto === null;
 }

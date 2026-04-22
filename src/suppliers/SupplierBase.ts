@@ -9,10 +9,11 @@ import {
 } from "@/helpers/excludedProducts";
 import { type FetchDecoratorResponse, fetchDecorator } from "@/helpers/fetch";
 import { stripQuantityFromString } from "@/helpers/quantity";
+import { deleteSupplierQueryCacheEntry } from "@/utils/idbCache";
+import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import Logger from "@/utils/Logger";
 import ProductBuilder from "@/utils/ProductBuilder";
 import SupplierCache from "@/utils/SupplierCache";
-import { deleteSupplierQueryCacheEntry } from "@/utils/idbCache";
 import {
   incrementFailure,
   incrementParseError,
@@ -28,7 +29,24 @@ import {
   isMinimalProduct,
 } from "@/utils/typeGuards/common";
 import { Queue } from "async-await-queue";
-import { extract, WRatio } from "fuzzball";
+import {
+  distance,
+  extract,
+  partial_ratio,
+  partial_token_set_ratio,
+  partial_token_similarity_sort_ratio,
+  partial_token_sort_ratio,
+  ratio,
+  token_set_ratio,
+  token_similarity_sort_ratio,
+  token_sort_ratio,
+  WRatio,
+} from "fuzzball";
+import {
+  FUZZ_SCORERS,
+  isFuzzScorerName,
+  type FuzzScorerFn,
+} from "@/constants/fuzzScorers";
 import { type JsonValue } from "type-fest";
 
 /**
@@ -82,40 +100,44 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
   // The base URL for the supplier.
   public abstract readonly baseURL: string;
 
-  /**
-   * The shipping scope of the supplier.
-   * This is used to determine the shipping scope of the supplier.
-   * @source
-   */
+  // The minimum match percentage for a product to be considered a match.
+  protected readonly minMatchPercentage: number = 55;
+
+  // Fuzz scorer used by `fuzzyFilter` to score each candidate's title against
+  // the query. Any function from `fuzzball` with the `(str1, str2, opts?) => number`
+  // shape works. Subclasses override this when a supplier's title format needs
+  // a different scorer (e.g. a catalog that pads titles with boilerplate might
+  // prefer `partial_ratio`). Defaults to `ratio`.
+  //
+  // Overridable at runtime from userSettings.fuzzScorerOverride — see
+  // `setFuzzScorerOverride` and `fuzzyFilter` below. The user's Advanced
+  // settings selection wins over this subclass default when set.
+  protected readonly fuzzScorer: FuzzScorerFn = ratio;
+
+  // Runtime override resolved from `userSettings.fuzzScorerOverride`. When
+  // set, `fuzzyFilter` uses this instead of `this.fuzzScorer`. Undefined
+  // (the default) means "use whatever the supplier class picked".
+  private fuzzScorerOverride?: FuzzScorerFn;
+
+  // The shipping scope of the supplier.
+  // This is used to determine the shipping scope of the supplier.
   public abstract readonly shipping: ShippingRange;
 
-  /**
-   * The country code of the supplier.
-   * This is used to determine the currency and other country-specific information.
-   * @source
-   */
+  // The country code of the supplier.
+  // This is used to determine the currency and other country-specific information.
   public abstract readonly country: CountryCode;
 
-  /**
-   * The payment methods accepted by the supplier.
-   * This is used to determine the payment methods accepted by the supplier.
-   * @source
-   */
+  // The payment methods accepted by the supplier.
+  // This is used to determine the payment methods accepted by the supplier.
   public abstract readonly paymentMethods: PaymentMethod[];
 
-  /**
-   * Optional external API hostname used by some suppliers (e.g., Typesense, Searchanise).
-   * When set, automatically included in requiredHosts for permission checks.
-   * @source
-   */
+  // Optional external API hostname used by some suppliers (e.g., Typesense, Searchanise).
+  // When set, automatically included in requiredHosts for permission checks.
   protected readonly apiURL?: string;
 
-  /**
-   * All host origin patterns required for this supplier to function.
-   * Automatically includes baseURL and, if defined, apiURL.
-   * Used by the factory to check chrome permissions before querying.
-   * @source
-   */
+  // All host origin patterns required for this supplier to function.
+  // Automatically includes baseURL and, if defined, apiURL.
+  // Used by the factory to check chrome permissions before querying.
   public get requiredHosts(): string[] {
     const hosts = [`${this.baseURL}/*`];
     if (this.apiURL) {
@@ -124,33 +146,14 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     return hosts;
   }
 
-  /**
-   * String to query for (Product name, CAS, etc).
-   * This is the search term that will be used to find products.
-   * Set during construction and used throughout the supplier's lifecycle.
-   *
-   * @example
-   * ```typescript
-   * const supplier = new MySupplier("sodium chloride", 10);
-   * console.log(supplier.query); // "sodium chloride"
-   * ```
-   * @source
-   */
+  // String to query for (Product name, CAS, etc).
+  // This is the search term that will be used to find products.
+  // Set during construction and used throughout the supplier's lifecycle.
   protected query: string;
 
-  /**
-   * If the products first require a query of a search page that gets iterated over,
-   * those results are stored here. This acts as a cache for the initial search results
-   * before they are processed into full product objects.
-   *
-   * @example
-   * ```typescript
-   * // After a search query
-   * await supplier.queryProducts("acetone");
-   * console.log(`Found ${supplier.queryResults.length} initial results`);
-   * ```
-   * @source
-   */
+  // If the products first require a query of a search page that gets iterated over,
+  // those results are stored here. This acts as a cache for the initial search results
+  // before they are processed into full product objects.
   protected queryResults: Array<S> = [];
 
   /**
@@ -412,8 +415,36 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * ```
    * @source
    */
-  public initCache(): void {
-    this.cache = new SupplierCache(this.supplierName);
+  public initCache(enabled: boolean = true): void {
+    this.cache = new SupplierCache(this.supplierName, enabled);
+  }
+
+  /**
+   * Applies (or clears) a runtime override for the fuzz scorer. Driven by
+   * `userSettings.fuzzScorerOverride` — when the user picks a scorer in the
+   * Advanced drawer section, `SupplierFactory` calls this on each instance
+   * so the choice takes effect uniformly across every supplier.
+   *
+   * Silently ignores unknown names so an outdated / corrupted setting can't
+   * blow up the search flow — callers fall back to the subclass default.
+   * @param name - Name of a scorer from `FUZZ_SCORERS`, or `undefined` to
+   *   clear the override and use the subclass default.
+   * @example
+   * ```ts
+   * const supplier = new MySupplier("acetone", 5, controller);
+   * supplier.setFuzzScorerOverride("token_set_ratio");
+   * // fuzzyFilter now uses token_set_ratio regardless of MySupplier's default
+   * supplier.setFuzzScorerOverride(undefined);
+   * // back to MySupplier's default
+   * ```
+   * @source
+   */
+  public setFuzzScorerOverride(name: string | undefined): void {
+    if (isFuzzScorerName(name)) {
+      this.fuzzScorerOverride = FUZZ_SCORERS[name];
+    } else {
+      this.fuzzScorerOverride = undefined;
+    }
   }
 
   /**
@@ -816,12 +847,49 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
   }
 
   /**
+   * Evaluation logging: run every candidate scorer against the same
+   * query/title pair so we can compare which fuzz filter ranks this
+   * supplier's results best. Emitted as one console.table per call so the
+   * rows are side-by-side readable in devtools. Remove once we've picked
+   * a scorer.
+   * @param query - The query to compare the data against
+   * @param data - The data to compare the query against
+   * @returns void
+   * @source
+   * ```typescript
+   * // Example usage
+   * this.showFuzzScorerComparisonTable("sodium chloride", products);
+   * ```
+   */
+  private showFuzzScorerComparisonTable<X>(query: string, data: X[]): void {
+    const scorerComparison = data.map((obj, idx) => {
+      const title = String(this.titleSelector(obj) ?? "");
+      return {
+        idx,
+        title,
+        distance: distance(query, title),
+        ratio: ratio(query, title),
+        partial_ratio: partial_ratio(query, title),
+        token_sort_ratio: token_sort_ratio(query, title),
+        token_set_ratio: token_set_ratio(query, title),
+        token_similarity_sort_ratio: token_similarity_sort_ratio(query, title),
+        partial_token_sort_ratio: partial_token_sort_ratio(query, title),
+        partial_token_set_ratio: partial_token_set_ratio(query, title),
+        partial_token_similarity_sort_ratio: partial_token_similarity_sort_ratio(query, title),
+        WRatio: WRatio(query, title),
+      };
+    });
+
+    console.table(scorerComparison);
+  }
+
+  /**
    * Filters an array of data using fuzzy string matching to find items that closely match a query string.
    * Uses the WRatio algorithm from fuzzball for string similarity comparison.
    *
    * @param query - The search string to match against
    * @param data - Array of data objects to search through
-   * @param cutoff - Minimum similarity score (0-100) for a match to be included (default: 40)
+   * @param minMatchPercentage - Minimum match percentage (0-100) for a match to be included (default: 55)
    * @returns Array of matching data objects with added fuzzy match metadata
    *
    * @example
@@ -847,7 +915,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * //   }
    * // ]
    *
-   * // Example with custom cutoff
+   * // Example with custom minMatchPercentage
    * const strictMatches = this.fuzzyFilter("sodium chloride", products, 90);
    * // Returns only exact matches with score >= 90
    *
@@ -863,13 +931,44 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * ```
    * @source
    */
-  protected fuzzyFilter<X>(query: string, data: X[], cutoff: number = 40): X[] {
+  protected fuzzyFilter<X>(
+    query: string,
+    data: X[],
+    minMatchPercentage: number = this.minMatchPercentage,
+  ): X[] {
+    console.log(
+      `[fuzzyFilter] ${this.supplierName} query="${query}" — scorer comparison (cutoff=${minMatchPercentage})`,
+    );
+    if (IS_DEV_BUILD) {
+      this.showFuzzScorerComparisonTable(query, data);
+    }
+
+    // User's Advanced-settings override wins over the subclass default.
+    const activeScorer = this.fuzzScorerOverride ?? this.fuzzScorer;
     const res = extract(query, data, {
-      scorer: WRatio,
+      scorer: activeScorer,
       processor: this.titleSelector,
-      cutoff: cutoff,
+      cutoff: minMatchPercentage,
       sortBySimilarity: true,
     }).reduce<FuzzyMatchResult<X>[]>((acc, [obj, score, idx]) => {
+      console.log("FUZZ DATA", {
+        product: obj,
+        _fuzz: { score, idx },
+        matchPercentage: score,
+        minMatchPercentage: minMatchPercentage,
+        scoreBelowMinimum: score < minMatchPercentage,
+      });
+
+      if (score < minMatchPercentage) {
+        this.logger.debug("fuzzyFilter: score below minimum match percentage, excluding product", {
+          product: obj,
+          score,
+          idx,
+          minMatchPercentage: minMatchPercentage,
+        });
+        return acc;
+      }
+
       // eslint-disable-next-line @typescript-eslint/naming-convention
       acc[idx] = Object.assign(obj, { _fuzz: { score, idx }, matchPercentage: score });
       return acc;
@@ -1080,7 +1179,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       "limit:",
       limit,
     );
-    const key = this.cache.generateCacheKey(query, this.supplierName);
+    const key = this.cache.generateCacheKey(query);
     const cached = await this.cache.getCachedQueryEntry(key);
     this.logger.debug("queryProductsWithCache: cache hit:", !!cached, "key:", key);
     if (cached) {
@@ -1111,7 +1210,6 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       // Store processed results in cache (dumped/serialized form) and the limit used
       await this.cache.cacheQueryResults(
         query,
-        this.supplierName,
         results.map((b) => b.dump()),
         limit,
       );
@@ -1473,7 +1571,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       });
       return undefined;
     }
-    const cacheKey = this.cache.getProductDataCacheKey(url, this.supplierName);
+    const cacheKey = this.cache.getProductDataCacheKey(url);
     this.logger.debug("[SupplierBase] Product detail cache key:", cacheKey, "for url:", url);
     // Skip products the user has explicitly excluded via the "Ignore Product"
     // context menu. The exclusion key mirrors getProductDataCacheKey's no-params
@@ -1559,7 +1657,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       return undefined;
     }
 
-    const cacheKey = this.cache.getProductDataCacheKey(url, this.supplierName, params);
+    const cacheKey = this.cache.getProductDataCacheKey(url, params);
     this.logger.debug("[SupplierBase] Product detail cache key:", cacheKey, "for url:", url);
     try {
       const cachedData = await this.cache.getCachedProductData(cacheKey);

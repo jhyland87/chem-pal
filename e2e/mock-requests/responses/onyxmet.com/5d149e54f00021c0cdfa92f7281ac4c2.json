@@ -1,0 +1,8 @@
+{
+  "contentType": "text/html",
+  "content": "JTVCJTVE",
+  "_request": {
+    "url": "https://onyxmet.com/index.php?term=this+should+not+return+any+results&route=product%2Fsearch%2Fjson",
+    "method": "GET"
+  }
+}

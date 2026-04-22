@@ -1,7 +1,8 @@
-import { defaultResultsLimit } from "@/../config.json";
+import { defaultResultsLimit, defaultSettings } from "@/../config.json";
 import { APP_ACTION, CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
 import { AppContext } from "@/context";
 import {
+  ABORT_SEARCH_EVENT,
   FOCUS_GLOBAL_FILTER_EVENT,
   HotkeyHelpModal,
   TOGGLE_COLUMN_FILTERS_EVENT,
@@ -13,6 +14,7 @@ import SupplierCache from "@/utils/SupplierCache";
 import { clearSearchResults, getSearchResults, IDB_SEARCH_RESULTS_CLEARED } from "@/utils/idbCache";
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import { cstorage } from "@/utils/storage";
+import { isValidUserSettings } from "@/utils/typeGuards/common";
 import CssBaseline from "@mui/material/CssBaseline";
 import {
   lazy,
@@ -32,6 +34,7 @@ import SpeedDialMenu from "./components/SpeedDialMenu";
 import StatusBar, { StatusBarProvider, useStatusBar } from "./components/StatusBar";
 import { DevBadge } from "./components/StyledComponents";
 import { ThemeProvider } from "./components/ThemeProvider";
+import { diff } from "./helpers/collectionUtils";
 import { getCurrencyCodeFromLocation, getCurrencyRate } from "./helpers/currency";
 import { getUserCountry } from "./helpers/utils";
 
@@ -81,7 +84,7 @@ const StatsPanel = IS_DEV_BUILD ? lazy(() => import("./components/StatsPanel")) 
  */
 
 interface AppState {
-  userSettings: UserSettings;
+  userSettings?: UserSettings;
   panel: PANEL;
   speedDialVisibility: boolean;
   drawerTab: DRAWER_INDEX;
@@ -89,30 +92,26 @@ interface AppState {
   bookmarksFolderId: string | null;
 }
 
-const initialAppState: AppState = {
+const initialAppState: Partial<AppState> = {};
+
+if (isValidUserSettings(defaultSettings)) {
+  Object.assign(initialAppState, { userSettings: defaultSettings });
+}
+
+Object.assign(initialAppState, {
   userSettings: {
-    showHelp: false,
-    caching: true,
-    autocomplete: true,
+    ...initialAppState.userSettings,
     currency: getCurrencyCodeFromLocation(getUserCountry()),
-    currencyRate: 1.0,
     location: getUserCountry(),
-    fontSize: "medium",
     supplierResultLimit: defaultResultsLimit,
-    autoResize: true,
     suppliers: SupplierFactory.supplierList(),
-    theme: "light",
-    showColumnFilters: true,
-    showAllColumns: false,
-    hideColumns: ["description", "uom"],
-    columnFilterConfig: {},
-  },
+  } satisfies UserSettings,
   panel: PANEL.SEARCH_HOME,
   speedDialVisibility: false,
   drawerTab: DRAWER_INDEX.CLOSED,
   selectedSuppliers: [],
   bookmarksFolderId: null,
-};
+});
 
 type AppAction =
   | { type: APP_ACTION.UPDATE_SETTINGS; settings: UserSettings }
@@ -162,7 +161,7 @@ function App() {
 
   // React v19's useActionState consolidates app state management
   const [appState, dispatch, isPending] = useActionState(
-    (currentState: AppState, action: AppAction): AppState => {
+    (currentState: Partial<AppState>, action: AppAction): Partial<AppState> => {
       switch (action.type) {
         // Applies new user settings (theme, currency, caching, suppliers, etc.) and
         // persists them to cstorage.local. Also fetches the updated currency rate.
@@ -302,12 +301,21 @@ function App() {
         ]);
         const loadedData: Partial<AppState> = {};
 
-        if (sessionData[CACHE.PANEL]) {
-          const savedPanel = Number(sessionData[CACHE.PANEL]);
-          const hasResults = idbResults.length > 0;
+        const hasResults = idbResults.length > 0;
+        const savedPanelRaw = sessionData[CACHE.PANEL];
+        const savedPanel =
+          savedPanelRaw !== undefined && savedPanelRaw !== null ? Number(savedPanelRaw) : undefined;
 
-          // If restoring to results panel but there are no results, go to search instead
-          loadedData.panel = savedPanel === 1 && !hasResults ? 0 : savedPanel;
+        // Panel selection on popup open:
+        //  - If there are cached search results, land on the results table.
+        //  - Otherwise, land on the search home.
+        //  - Exception: preserve the STATS panel selection (dev-only) so a
+        //    developer inspecting stats doesn't get bounced every time the
+        //    popup reopens.
+        if (savedPanel === PANEL.STATS) {
+          loadedData.panel = PANEL.STATS;
+        } else {
+          loadedData.panel = hasResults ? PANEL.RESULTS : PANEL.SEARCH_HOME;
         }
 
         if (localData[CACHE.USER_SETTINGS]) {
@@ -347,6 +355,7 @@ function App() {
         console.debug(`[storage:${areaName}] ${key} changed`, {
           oldValue: change.oldValue,
           newValue: change.newValue,
+          diff: diff(change.oldValue, change.newValue),
         });
       }
     };
@@ -448,6 +457,9 @@ function App() {
       toggleColumnFilters: () => {
         window.dispatchEvent(new CustomEvent(TOGGLE_COLUMN_FILTERS_EVENT));
       },
+      abortSearch: () => {
+        window.dispatchEvent(new CustomEvent(ABORT_SEARCH_EVENT));
+      },
       clearAndRetrySearch: async () => {
         const data = await cstorage.session.get([CACHE.QUERY]);
         const query = data[CACHE.QUERY];
@@ -469,7 +481,7 @@ function App() {
 
   // AppContext value with fixed searchResults property
   const appContextValue = {
-    userSettings: appState.userSettings,
+    userSettings: { ...(defaultSettings as UserSettings), ...appState.userSettings },
     setUserSettings: handleSetUserSettings,
     searchResults, // This fixes the missing property linter error
     setSearchResults, // Expose setter for child components to use
@@ -511,7 +523,7 @@ function App() {
               {appState.panel === 5 && <SettingsPanel />} */}
               <div className="main-content">
                 <DrawerSystem />
-                <SpeedDialMenu speedDialVisibility={appState.speedDialVisibility} />
+                <SpeedDialMenu speedDialVisibility={appState.speedDialVisibility ?? false} />
               </div>
               <HotkeyHelpModal open={hotkeyHelpOpen} onClose={() => setHotkeyHelpOpen(false)} />
             </div>

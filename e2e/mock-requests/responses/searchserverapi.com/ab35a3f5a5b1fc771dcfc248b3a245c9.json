@@ -1,0 +1,8 @@
+{
+  "contentType": "text/javascript",
+  "content": "JTdCJTIydG90YWxJdGVtcyUyMiUzQTAlMkMlMjJzdGFydEluZGV4JTIyJTNBMCUyQyUyMml0ZW1zUGVyUGFnZSUyMiUzQTIwMCUyQyUyMmN1cnJlbnRJdGVtQ291bnQlMjIlM0EwJTJDJTIyaXRlbXMlMjIlM0ElNUIlNUQlN0Q=",
+  "_request": {
+    "url": "https://searchserverapi.com/getresults?api_key=8B7o0X1o7c&q=this+should+not+return+any+results&maxResults=200&startIndex=0&items=true&pageStartIndex=0&pagesMaxResults=1&vendorsMaxResults=200&output=json&_=1776819975968",
+    "method": "GET"
+  }
+}
