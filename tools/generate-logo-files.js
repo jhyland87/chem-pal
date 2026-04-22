@@ -62,7 +62,7 @@ async function getNumberOfSuppliers() {
  * @returns {string} The plugin version
  */
 function getPluginVersion() {
-  return manifest.version;
+  return manifest.version_name || manifest.version;
 }
 
 /**

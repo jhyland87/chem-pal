@@ -12,5 +12,5 @@
   <!-- ChemPal label -->
   <text x="50%" y="75%" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="52" fill="#ffffff" font-weight="bold" dominant-baseline="middle">ChemPal</text>
   <!-- Utilities label -->
-  <text x="50%" y="87%" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" fill="#D6E3F3" font-weight="normal" dominant-baseline="middle">v0.0.13</text>
+  <text x="50%" y="87%" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" fill="#D6E3F3" font-weight="normal" dominant-baseline="middle">v0.0.13-beta.2</text>
 </svg>
