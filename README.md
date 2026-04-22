@@ -3,7 +3,7 @@
 
 
 <p align="center">
-<img src="./public/static/images/logo/ChemPal-logo-v2.png" alt="chem-pal example" width="200"/>
+  <img src="./public/static/images/logo/ChemPal-logo-v2.png" alt="chem-pal example" width="200"/>
 </p>
 
 
@@ -13,8 +13,15 @@ Open source project aimed at helping amateur chemistry hobbyists find the best d
 
 
 ### Demo
+<p align="center">
+  <img src="./assets/images/chem-pal-demo.gif" alt="chem-pal example" width="600"/>
+</p>
 
-<img src="./assets/images/chem-pal-demo.gif" alt="chem-pal example" width="600"/>
+
+## Installation
+This is currently in beta, so its not in the Chrome webstore. But you can get the latest release from the [releases page](https://github.com/jhyland87/chem-pal/releases/latest).
+
+Download the .crx asset, then go to your Chrome extensions, and click "Load Packed", then select the .crx file and import it.
 
 ## Node version
 
