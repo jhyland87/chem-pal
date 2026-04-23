@@ -10,7 +10,7 @@
   "side_panel": {
     "default_path": "index.html"
   },
-  "permissions": ["sidePanel", "tabs", "storage", "bookmarks"],
+  "permissions": ["sidePanel", "tabs", "storage", "bookmarks", "cookies"],
   "background": {
     "service_worker": "service-worker.js"
   },
@@ -33,6 +33,7 @@
     "https://onyxmet.com/*",
     "https://synthetikaeu.com/*",
     "https://warchem.pl/*",
+    "https://shop.es-drei.de/*",
     "https://www.amazon.com/*",
     "https://www.amazon.co.uk/*",
     "https://www.amazon.de/*",

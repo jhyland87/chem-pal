@@ -18,6 +18,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:all": "pnpm test && pnpm test:e2e",
     "test:ui": "vitest --ui --coverage --open=true",
     "test:ui:open": "vitest --ui --coverage --open=true",
     "test:coverage": "vitest run --coverage --open=true",
