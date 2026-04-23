@@ -18,4 +18,5 @@
 
 
 # Suppliers to add
-- ??
+- ~~S3 (https://shop.es-drei.de/)~~
+- LiMac (https://www.limac.lv/)

@@ -47,5 +47,6 @@ export { default as SupplierLibertySci } from "./SupplierLibertySci";
 export { default as SupplierLoudwolf } from "./SupplierLoudwolf";
 export { default as SupplierMacklin } from "./SupplierMacklin";
 export { default as SupplierOnyxmet } from "./SupplierOnyxmet";
+export { default as SupplierS3Chemicals } from "./SupplierS3Chemicals";
 export { default as SupplierSynthetika } from "./SupplierSynthetika";
 export { default as SupplierWarchem } from "./SupplierWarchem";
