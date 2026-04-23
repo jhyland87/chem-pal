@@ -1,7 +1,7 @@
 {
   "name": "chem-pal",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.13-beta.3",
   "type": "module",
   "engines": {
     "npm": ">=10.9.2",
