@@ -957,14 +957,6 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       cutoff: minMatchPercentage,
       sortBySimilarity: true,
     }).reduce<FuzzyMatchResult<X>[]>((acc, [obj, score, idx]) => {
-      console.debug("FUZZ DATA", {
-        product: obj,
-        _fuzz: { score, idx },
-        matchPercentage: score,
-        minMatchPercentage: minMatchPercentage,
-        scoreBelowMinimum: score < minMatchPercentage,
-      });
-
       if (score < minMatchPercentage) {
         this.logger.debug("fuzzyFilter: score below minimum match percentage, excluding product", {
           product: obj,
@@ -980,7 +972,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       return acc;
     }, []);
 
-    console.debug("[fuzzyFilter]", {
+    this.logger.debug("[fuzzyFilter]", {
       supplierName: this.supplierName,
       query,
       minMatchPercentage,
