@@ -31,7 +31,7 @@ export { default as SupplierAladdinSci } from "./SupplierAladdinSci";
 export { default as SupplierAlchemieLabs } from "./SupplierAlchemieLabs";
 export { default as SupplierAmbeed } from "./SupplierAmbeed";
 export { default as SupplierAsesChem } from "./SupplierAsesChem";
-export { default as SupplierAsesChem2 } from "./SupplierAsesChem2";
+//export { default as SupplierAsesChem2 } from "./SupplierAsesChem2";
 export { default as SupplierBioFuranChem } from "./SupplierBiofuranChem";
 export { default as SupplierBVV } from "./SupplierBVV";
 export { default as SupplierCarolina } from "./SupplierCarolina";
@@ -45,6 +45,7 @@ export { default as SupplierInnovatingScience } from "./SupplierInnovatingScienc
 export { default as SupplierLaballey } from "./SupplierLaballey";
 export { default as SupplierLaboratoriumDiscounter } from "./SupplierLaboratoriumDiscounter";
 export { default as SupplierLibertySci } from "./SupplierLibertySci";
+export { default as SupplierLiMac } from "./SupplierLiMac";
 export { default as SupplierLoudwolf } from "./SupplierLoudwolf";
 export { default as SupplierMacklin } from "./SupplierMacklin";
 export { default as SupplierOnyxmet } from "./SupplierOnyxmet";

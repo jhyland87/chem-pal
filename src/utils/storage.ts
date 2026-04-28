@@ -214,13 +214,13 @@ export const cstorage = {
         listener(decodeChanges(changes), areaName);
       };
       listenerMap.set(listener, inner);
-      chrome.storage.onChanged.addListener(inner);
+      chrome.storage.onChanged?.addListener(inner);
     },
     /** Removes a listener previously added via {@link addListener}. */
     removeListener(listener: ChangedListener): void {
       const inner = listenerMap.get(listener);
       if (inner) {
-        chrome.storage.onChanged.removeListener(inner);
+        chrome.storage.onChanged?.removeListener(inner);
         listenerMap.delete(listener);
       }
     },
