@@ -91,18 +91,19 @@ export const SearchButton = styled(IconButton)(({ theme }) => ({
 
 // Development badge - small transparent badge in bottom left corner
 export const DevBadge = styled(Box)(({ theme }) => ({
+  className: "dev-badge",
   position: "fixed",
   bottom: "0",
   left: "0",
-  backgroundColor: `${theme.palette.error.main}80`, // 50% opacity
-  color: theme.palette.error.contrastText,
+  backgroundColor: `${theme.palette.error.main}90`, // 90% opacity
+  color: theme.palette.error.dark,
   padding: "4px 8px",
   borderRadius: "0px 4px 0px 0px",
   fontSize: "0.65rem",
   fontWeight: 500,
   zIndex: 9999,
   backdropFilter: "blur(4px)",
-  border: `1px solid ${theme.palette.error.main}60`, // 38% opacity border
+  border: `1px solid ${theme.palette.error.main}99`, // 60% opacity border
   boxShadow: "0 1px 4px rgba(0, 0, 0, 0.2)",
   width: "fit-content",
   height: "fit-content",

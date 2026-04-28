@@ -239,6 +239,12 @@ declare global {
      * @example `[{ name: "Size", value: "500g" }]`
      */
     attributes?: { name: string; value: string }[];
+
+    /**
+     * Number of moles of the variant
+     * @example 23.5
+     */
+    moles?: number;
   }
 
   /**

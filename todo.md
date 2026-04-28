@@ -19,4 +19,6 @@
 
 # Suppliers to add
 - ~~S3 (https://shop.es-drei.de/)~~
-- LiMac (https://www.limac.lv/)
+- ~~LiMac (https://www.limac.lv/)~~
+- Possibly allow pictures of the products? (On hover, maybe, as to not overcrowd the interface)
+- Calculate the moles in the products when possible, and store in a new `moles` product attribute to be displayed
