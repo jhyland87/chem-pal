@@ -1,5 +1,6 @@
 import { defaultResultsLimit } from "@/../config.json";
 import { UOM } from "@/constants/common";
+import { FUZZ_SCORERS, isFuzzScorerName, type FuzzScorerFn } from "@/constants/fuzzScorers";
 import { EmptyResponseError } from "@/helpers/exceptions";
 import {
   countExcludedProductsForSupplier,
@@ -7,7 +8,7 @@ import {
   loadExcludedProductKeys,
   shouldExcludeProduct,
 } from "@/helpers/excludedProducts";
-import { type FetchDecoratorResponse, fetchDecorator } from "@/helpers/fetch";
+import { fetchDecorator, type FetchDecoratorResponse } from "@/helpers/fetch";
 import { stripQuantityFromString } from "@/helpers/quantity";
 import { deleteSupplierQueryCacheEntry } from "@/utils/idbCache";
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
@@ -42,11 +43,6 @@ import {
   token_sort_ratio,
   WRatio,
 } from "fuzzball";
-import {
-  FUZZ_SCORERS,
-  isFuzzScorerName,
-  type FuzzScorerFn,
-} from "@/constants/fuzzScorers";
 import { type JsonValue } from "type-fest";
 
 /**
@@ -67,6 +63,13 @@ export interface CacheMetadata {
   resultCount: number;
   /** Limit used to generate this cache */
   limit: number;
+}
+
+export interface ProductDefaults {
+  currencyCode?: CurrencyCode;
+  currencySymbol?: CurrencySymbol;
+  uom?: UOM;
+  quantity?: number;
 }
 
 /**
@@ -117,7 +120,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
   // Runtime override resolved from `userSettings.fuzzScorerOverride`. When
   // set, `fuzzyFilter` uses this instead of `this.fuzzScorer`. Undefined
   // (the default) means "use whatever the supplier class picked".
-  private fuzzScorerOverride?: FuzzScorerFn;
+  protected readonly fuzzScorerOverride?: FuzzScorerFn;
 
   // The shipping scope of the supplier.
   // This is used to determine the shipping scope of the supplier.
@@ -317,7 +320,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
   protected logger: Logger;
 
   // Default values for products. These will get overridden if they're found in the product data.
-  protected productDefaults = {
+  protected productDefaults: ProductDefaults = {
     uom: UOM.EA,
     quantity: 1,
     currencyCode: "USD",
@@ -936,22 +939,24 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     data: X[],
     minMatchPercentage: number = this.minMatchPercentage,
   ): X[] {
-    console.log(
-      `[fuzzyFilter] ${this.supplierName} query="${query}" — scorer comparison (cutoff=${minMatchPercentage})`,
-    );
+    // User's Advanced-settings override wins over the subclass default.
+    const activeScorer = this.fuzzScorerOverride ?? this.fuzzScorer;
+
+    // console.log(
+    //   `[fuzzyFilter] ${this.supplierName} query="${query}" — scorer comparison (cutoff=${minMatchPercentage})`,
+    // );
+
     if (IS_DEV_BUILD) {
       this.showFuzzScorerComparisonTable(query, data);
     }
 
-    // User's Advanced-settings override wins over the subclass default.
-    const activeScorer = this.fuzzScorerOverride ?? this.fuzzScorer;
-    const res = extract(query, data, {
+    const results = extract(query, data, {
       scorer: activeScorer,
       processor: this.titleSelector,
       cutoff: minMatchPercentage,
       sortBySimilarity: true,
     }).reduce<FuzzyMatchResult<X>[]>((acc, [obj, score, idx]) => {
-      console.log("FUZZ DATA", {
+      console.debug("FUZZ DATA", {
         product: obj,
         _fuzz: { score, idx },
         matchPercentage: score,
@@ -974,10 +979,16 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       return acc;
     }, []);
 
-    this.logger.debug("fuzzed search results:", res);
+    console.debug("[fuzzyFilter]", {
+      supplierName: this.supplierName,
+      query,
+      minMatchPercentage,
+      activeScorer,
+      results,
+    });
 
     // Get rid of any empty items that didn't match closely enough
-    return res.filter((item) => !!item);
+    return results.filter((item) => !!item);
   }
 
   /**

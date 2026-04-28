@@ -240,7 +240,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         return new Intl.NumberFormat(currency, {
           style: "currency",
           currency,
-        }).format(priceInUsd * (currencyRate / 100));
+        }).format(priceInUsd * currencyRate);
       },
       sortingFn: "priceSortingFn",
       filterFn: "inNumberRangeHierarchy",

@@ -64,6 +64,9 @@ describe("parseQuantity", () => {
     "Hydrochloric Acid, 0.05 M, Laboratory Grade, 500 mL": { quantity: 500, uom: "ml" },
     "2x100g": { quantity: 200, uom: "g" },
     "3 × 200g": { quantity: 600, uom: "g" },
+    "10GM": { quantity: 10, uom: "g" },
+    "3x100g": { quantity: 300, uom: "g" },
+    "2x1.2ml": { quantity: 2.4, uom: "ml" },
     /* eslint-enable */
   };
 

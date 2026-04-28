@@ -220,7 +220,7 @@ export const UOM_ALIASES: UOMAliases = {
   /** Milliliter aliases */
   [UOM.ML]: ["ml", "mls", "millilitre", "milliliter", "milliliters", "millilitres"],
   /** Gram aliases */
-  [UOM.G]: ["grams", "g"],
+  [UOM.G]: ["grams", "g", "gm", "gram"],
   /** Liter aliases */
   [UOM.L]: ["liters", "litres", "l"],
   /** Quart aliases */

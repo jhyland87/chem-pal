@@ -182,7 +182,12 @@ export default abstract class SupplierBaseSearchanise
         const builder = new ProductBuilder(this.baseURL);
         builder
           .setBasicInfo(item.title, item.link, this.supplierName)
-          .setPricing(parseFloat(item.price), "USD", "$")
+          .setData(this.productDefaults)
+          .setPricing(
+            parseFloat(item.price),
+            this.productDefaults.currencyCode,
+            this.productDefaults.currencySymbol,
+          )
           .setDescription(item.description)
           .setSku(item.product_code)
           .setVendor(item.vendor);
@@ -205,14 +210,18 @@ export default abstract class SupplierBaseSearchanise
 
         builder.setQuantity(quantity.quantity, quantity.uom);
 
+        console.log("item.shopify_variants", { item });
         if ("shopify_variants" in item && Array.isArray(item.shopify_variants)) {
           item.shopify_variants.forEach((variant) => {
             if (!isSearchaniseVariant(variant)) return;
 
             const variantQuantity = firstMap(parseQuantity, [
-              variant.sku,
               String(variant?.options?.Model ?? ""),
+              String(variant?.options?.Size ?? ""),
+              variant.sku,
             ]);
+
+            console.log("variantQuantity", { variantQuantity, item });
 
             builder.addVariant({
               id: variant.variant_id,

@@ -10,7 +10,7 @@ import { UOM, UOM_ALIASES } from "@/constants/common";
 
 /**
  * Pattern for matching quantities in strings.
- * @see https://regex101.com/r/Ruid54/8
+ * @see https://regex101.com/r/Ruid54/9
  * @source
  */
 const quantityPattern =
@@ -19,7 +19,7 @@ const quantityPattern =
   "(?<uom>(?:milli|kilo|centi)?(?:ml|ounce|g(?:allon|ram|al)" +
   "|each|ea?" +
   "|pound|quart|q(?:uar)?t|piece|pc|lb|(?:met|lit)[re]{2})s?" +
-  "|fl\\.?\\s?oz|oz|k[mg]?|g|l|[cm]?[gl])s?(?!\\/mol)(?![A-Za-z])";
+  "|fl\\.?\\s?oz|oz|k[mg]?|gm?|l|[cm]?[gl])s?(?!\\/mol)(?![A-Za-z])";
 
 /**
  * @type QuantityObject
@@ -91,7 +91,7 @@ export function normalizeQuantity(input: QuantityObject): QuantityObject {
  * parseQuantity('1.2 L') // Returns { quantity: 1.2, uom: 'L' }
  * parseQuantity('1.2 g/mol') // Returns nothing, as g/mol is not a quantity
  * ```
- * @see https://regex101.com/r/Ruid54/8
+ * @see https://regex101.com/r/Ruid54/9
  * @source
  */
 export function parseQuantity(value: string): QuantityObject | void {

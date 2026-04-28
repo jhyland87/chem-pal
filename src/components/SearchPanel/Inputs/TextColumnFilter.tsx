@@ -1,5 +1,5 @@
 import TextField from "@mui/material/TextField";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 
 /**
  * Compact text filter input for the results-table header row. The column
@@ -22,9 +22,12 @@ import { ChangeEvent, useState } from "react";
  * @source
  */
 export default function TextColumnFilter({ column }: FilterVariantInputProps) {
-  const [columnFilterValue, setColumnFilterValue] = useState<string>(
-    String(column.getFilterValue() ?? ""),
-  );
+  const filterValue = column.getFilterValue();
+  const [columnFilterValue, setColumnFilterValue] = useState<string>(String(filterValue ?? ""));
+
+  useEffect(() => {
+    setColumnFilterValue(String(filterValue ?? ""));
+  }, [filterValue]);
 
   const handleColumnTextFilterChange = (event: ChangeEvent<HTMLInputElement>) => {
     const {

@@ -12,7 +12,7 @@ import SupplierBaseSearchanise from "./SupplierBaseSearchanise";
  */
 export default class SupplierHbarSci extends SupplierBaseSearchanise implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = "SupplierHbarSci";
+  public readonly supplierName: string = "HbarSci";
 
   // Base URL for HTTP(s) requests
   public readonly baseURL: string = "https://www.hbarsci.com";
