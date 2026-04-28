@@ -119,8 +119,9 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
 
   // Runtime override resolved from `userSettings.fuzzScorerOverride`. When
   // set, `fuzzyFilter` uses this instead of `this.fuzzScorer`. Undefined
-  // (the default) means "use whatever the supplier class picked".
-  protected readonly fuzzScorerOverride?: FuzzScorerFn;
+  // (the default) means "use whatever the supplier class picked". Mutated
+  // by `setFuzzScorerOverride` so it can't be `readonly`.
+  protected fuzzScorerOverride?: FuzzScorerFn;
 
   // The shipping scope of the supplier.
   // This is used to determine the shipping scope of the supplier.
