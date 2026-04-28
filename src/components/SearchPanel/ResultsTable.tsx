@@ -18,6 +18,7 @@ import {
   ViewColumn as ViewColumnIcon,
 } from "@mui/icons-material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import SearchOffIcon from "@mui/icons-material/SearchOff";
 import {
   Box,
   Checkbox,
@@ -28,6 +29,7 @@ import {
   Menu,
   MenuItem,
   TableRow,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import {
@@ -393,10 +395,7 @@ export default function ResultsTable({
               </BackButton>
             )}
             {executedQuery && (
-              <SearchedQueryLabel
-                variant="body2"
-                title={`Searched for: ${executedQuery}`}
-              >
+              <SearchedQueryLabel variant="body2" title={`Searched for: ${executedQuery}`}>
                 {executedQuery}
               </SearchedQueryLabel>
             )}
@@ -520,6 +519,26 @@ export default function ResultsTable({
                   return (
                     <TableRow key={`${headerGroup.id}-filters`}>
                       {headerGroup.headers.map((header) => {
+                        if (header.column.id === "expander") {
+                          return (
+                            <FilterTableCell
+                              key={`${header.id}-filter`}
+                              cellWidth={27.5}
+                              sx={{ flexShrink: 0 }}
+                            >
+                              <Tooltip title="Clear all filters">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => columnFilterFns[1]([])}
+                                  aria-label="Clear all filters"
+                                  sx={{ flexShrink: 0 }}
+                                >
+                                  <SearchOffIcon fontSize="small" sx={{ flexShrink: 0 }} />
+                                </IconButton>
+                              </Tooltip>
+                            </FilterTableCell>
+                          );
+                        }
                         return (
                           <FilterTableCell key={`${header.id}-filter`} cellWidth={header.getSize()}>
                             {header.column.getCanFilter() ? (
