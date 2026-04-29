@@ -15,7 +15,7 @@ declare module "@tanstack/react-table" {
   /**
    * Table interface
    */
-  interface Table {
+  interface Table<TData extends RowData> {
     /** User settings associated with this table */
     userSettings?: UserSettings;
     /** Function to update user settings */
@@ -35,7 +35,7 @@ declare module "@tanstack/react-table" {
   /**
    * Column interface
    */
-  interface Column<TValue> {
+  interface Column<TData extends RowData, TValue> {
     /**
      * Returns a sorted array of unique values from the currently visible rows in the column.
      * This excludes values from rows that are filtered out by other column filters.
