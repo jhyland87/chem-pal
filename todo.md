@@ -22,3 +22,5 @@
 - ~~LiMac (https://www.limac.lv/)~~
 - Possibly allow pictures of the products? (On hover, maybe, as to not overcrowd the interface)
 - Calculate the moles in the products when possible, and store in a new `moles` product attribute to be displayed
+- Some suppliers ship from different locations. Maybe create a way to indicate what origin the product would ship from as opposed to assuming its the same as the suppliers main location.
+-

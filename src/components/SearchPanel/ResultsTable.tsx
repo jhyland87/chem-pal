@@ -309,6 +309,7 @@ export default function ResultsTable({
   // because MUI warns before effects run.
   const filteredRowCount = table.getRowModel().rows.filter((row) => row.depth === 0).length;
   const totalRowCount = table.getFilteredRowModel().rows.length;
+  const supplierResultsCount = table.getColumn("supplier")?.getFacetedUniqueValues().size ?? 0;
 
   // Mirror the table's filtered row count onto the extension's badge. This
   // is the single source of truth for the counter — it covers streaming
@@ -378,6 +379,7 @@ export default function ResultsTable({
         // `getFilteredRowModel().rows.length` is the committed parent-row count
         // (sub-rows live on each row's `.subRows`), which is what users see.
         resultCount={totalRowCount}
+        supplierResultsCount={supplierResultsCount}
         onClick={handleStopSearch}
       />
       <DrawerSystem />

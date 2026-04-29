@@ -15,6 +15,7 @@ import {
   getCoreRowModel,
   getExpandedRowModel,
   getFacetedMinMaxValues,
+  getFacetedRowModel,
   getFacetedUniqueValues,
   getFilteredRowModel,
   getPaginationRowModel,
@@ -61,7 +62,9 @@ const multiSelectBase: FilterFn<Product> = (row, columnId, filterValue) => {
 };
 
 const includesTextBase: FilterFn<Product> = (row, columnId, filterValue) => {
-  const search = String(filterValue ?? "").toLowerCase().trim();
+  const search = String(filterValue ?? "")
+    .toLowerCase()
+    .trim();
   if (!search) return true;
   const cellValue = row.getValue(columnId);
   if (cellValue == null) return false;
@@ -180,11 +183,8 @@ export function useResultsTable({
         const aVal = a.matchPercentage ?? 0;
         const bVal = b.matchPercentage ?? 0;
 
-        if (customSort.order === "desc") {
-          return bVal - aVal;
-        } else {
-          return aVal - bVal;
-        }
+        if (customSort.order === "desc") return bVal - aVal;
+        return aVal - bVal;
       });
 
       return sorted;
@@ -245,6 +245,7 @@ export function useResultsTable({
     getPaginationRowModel: getPaginationRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues(),
+    getFacetedRowModel: getFacetedRowModel(),
     paginateExpandedRows: false,
     debugTable: false,
     debugHeaders: false,
