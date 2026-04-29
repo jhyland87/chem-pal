@@ -1,0 +1,216 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag to release (e.g. v0.0.13 or v0.0.13-beta.3)'
+        required: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NODE_VERSION: 'v22.15.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: true
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install pnpm
+        run: npm install -g pnpm
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-store-
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build the app
+        run: pnpm run build
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-output
+          path: build/
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: true
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install pnpm
+        run: npm install -g pnpm
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-store-
+      - name: Install dependencies
+        run: pnpm install
+      - name: Run unit tests
+        run: ulimit -n 65536 && pnpm run test
+
+  test-e2e:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: true
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install pnpm
+        run: npm install -g pnpm
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-store-
+      - name: Install dependencies
+        run: pnpm install
+      - name: Download build artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: build-output
+          path: build/
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Run E2E tests
+        run: xvfb-run --auto-servernum -- pnpm run test:e2e
+
+  release:
+    needs: [test, test-e2e]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Resolve version from tag or input
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.version }}"
+          else
+            TAG="${{ github.ref_name }}"
+          fi
+
+          # Strip leading v for the human-readable version_name
+          VERSION_NAME="${TAG#v}"
+
+          # Chrome's manifest.version must be 1-4 dot-separated integers — strip any prerelease suffix
+          VERSION=$(echo "$VERSION_NAME" | grep -oE '^[0-9]+(\.[0-9]+){0,3}' || true)
+          if [ -z "$VERSION" ]; then
+            echo "::error::Could not extract numeric version from tag: $TAG"
+            exit 1
+          fi
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+          echo "Releasing tag=$TAG version=$VERSION version_name=$VERSION_NAME"
+
+      - name: Apply version to package.json and manifest.json
+        run: |
+          jq --arg v "${{ steps.version.outputs.version_name }}" \
+            '.version = $v' package.json > package.json.tmp
+          mv package.json.tmp package.json
+
+          jq --arg v "${{ steps.version.outputs.version }}" \
+             --arg vn "${{ steps.version.outputs.version_name }}" \
+            '.version = $v | .version_name = $vn' public/manifest.json > public/manifest.json.tmp
+          mv public/manifest.json.tmp public/manifest.json
+
+      - name: Write signing key
+        env:
+          CRX_PRIVATE_KEY: ${{ secrets.CRX_PRIVATE_KEY }}
+        run: |
+          if [ -z "$CRX_PRIVATE_KEY" ]; then
+            echo "::error::CRX_PRIVATE_KEY secret is not set"
+            exit 1
+          fi
+          printf '%s\n' "$CRX_PRIVATE_KEY" > chem-pal.pem
+          chmod 600 chem-pal.pem
+
+      - name: Build production extension
+        run: pnpm run build:prod
+
+      - name: Verify .crx output
+        run: |
+          if [ ! -f chem-pal.crx ]; then
+            echo "::error::chem-pal.crx not produced by build:prod"
+            exit 1
+          fi
+          ls -lh chem-pal.crx
+
+      - name: Zip unpacked build
+        run: |
+          cd build && zip -r "../chem-pal-${{ steps.version.outputs.version_name }}-unpacked.zip" . && cd ..
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+
+          # On workflow_dispatch the tag may not exist yet — let gh create it at the current commit
+          EXTRA_ARGS=""
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            EXTRA_ARGS="--target ${{ github.sha }}"
+          fi
+
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --generate-notes \
+            $EXTRA_ARGS \
+            chem-pal.crx \
+            "chem-pal-${{ steps.version.outputs.version_name }}-unpacked.zip"
+
+      - name: Always remove signing key
+        if: always()
+        run: rm -f chem-pal.pem
