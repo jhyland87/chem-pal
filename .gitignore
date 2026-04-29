@@ -32,3 +32,4 @@ coverage
 build.pem
 ChemPal.pem
 chem-pal.pem
+*.crx
