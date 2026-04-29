@@ -308,6 +308,8 @@ declare global {
     onClick?: () => void;
     /** Number of results */
     resultCount: number;
+    /** Number of supplier results */
+    supplierResultsCount: number;
   }
 
   /**

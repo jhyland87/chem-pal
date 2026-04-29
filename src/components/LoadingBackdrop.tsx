@@ -26,6 +26,10 @@ import styles from "./LoadingBackdrop.module.scss";
  * @source
  */
 export default function LoadingBackdrop(props: LoadingBackdropProps) {
+  const supplierCount = props.supplierResultsCount;
+  const supplierLabel = supplierCount === 1 ? "supplier" : "suppliers";
+  const supplierSuffix = supplierCount > 0 ? ` from ${supplierCount} ${supplierLabel}` : "";
+
   return (
     <>
       <Backdrop open={props.open} id="loading-backdrop" role="status" aria-label="search loading">
@@ -36,7 +40,9 @@ export default function LoadingBackdrop(props: LoadingBackdropProps) {
             </IconSpinner>
           </Box>*/}
           <Button className={styles["status-button"]} onClick={props.onClick}>
-            {props.resultCount === 0 ? "Loading..." : `Found ${props.resultCount} results..`}
+            {props.resultCount === 0
+              ? "Loading..."
+              : `Found ${props.resultCount} results${supplierSuffix}...`}
           </Button>
         </Box>
       </Backdrop>
