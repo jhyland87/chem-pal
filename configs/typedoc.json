@@ -1,13 +1,13 @@
 {
   "name": "ChemPal Documentation",
   "entryPoints": [
-    "./src/**/index.ts",
-    "./src/suppliers/*.ts",
-    "./src/helpers/*.ts",
-    "./src/constants/*.ts",
-    "./src/types/*.ts",
-    "./src/mixins/*.ts",
-    "./src/components/**/*.tsx"
+    "../src/**/index.ts",
+    "../src/suppliers/*.ts",
+    "../src/helpers/*.ts",
+    "../src/constants/*.ts",
+    "../src/types/*.ts",
+    "../src/mixins/*.ts",
+    "../src/components/**/*.tsx"
   ],
   "plugin": [
     "typedoc-plugin-mark-react-functional-components",
@@ -25,7 +25,7 @@
     //"typedoc-theme-oxide",
     //"typedoc-unhoax-theme",,
     //"typedoc-plugin-mermaid",
-    "./plugins/typedoc-mermaid-plugin.mjs",
+    "../plugins/typedoc-mermaid-plugin.mjs",
     "typedoc-theme-hierarchy"
   ],
   "ignoredHighlightLanguages": [
@@ -45,7 +45,7 @@
     "linkify": true
   },
   "projectDocuments": [
-    "./pages/**/*.md"
+    "../pages/**/*.md"
   ],
   //"includes": "./pages/diagrams",
   "lightHighlightTheme": "github-light-high-contrast",
@@ -71,7 +71,7 @@
   "jsDocCompatibility": true,
   "placeInternalsInOwningModule": false,
   "useTsLinkResolution": true,
-  "out": "docs",
+  "out": "../docs",
   "exclude": [
     "**/vite-env*",
     "**/node_modules/**",
@@ -96,7 +96,7 @@
   ],
   "includeVersion": true,
   "hideGenerator": false,
-  "readme": "README.md",
+  "readme": "../README.md",
   "navigationLinks": {
     "Reference": "https://jhyland87.github.io/chem-pal",
     "GitHub": "https://github.com/jhyland87/chem-pal",

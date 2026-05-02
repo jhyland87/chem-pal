@@ -40,7 +40,7 @@ export default tseslint.config(
       globals: globals.browser,
       parser: tseslint.parser,
       parserOptions: {
-        project: ["./tsconfig.json", "./tsconfig.app.json", "./tsconfig.test.json"],
+        project: ["./tsconfig.json", "./configs/tsconfig.app.json", "./configs/tsconfig.test.json"],
         tsconfigRootDir: __dirname,
         ecmaVersion: 2018,
         sourceType: "module",

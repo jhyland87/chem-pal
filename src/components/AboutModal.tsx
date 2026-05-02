@@ -1,4 +1,4 @@
-import contributors from "@/../contributors.json";
+import contributors from "@/data/contributors.json";
 import { default as Link } from "@/components/TabLink";
 import GitHubIcon from "@/icons/GitHubIcon";
 import { ThemeContext } from "@/themes";
@@ -21,7 +21,7 @@ interface Contributor {
  * AboutModal component that displays information about the application.
  * Shows the application title, description, and contributor information in a modal dialog.
  *
- * The contributor list is loaded from `contributors.json` at the repo root;
+ * The contributor list is loaded from `src/data/contributors.json`;
  * entries render in the order they appear in that file. Static layout styles
  * (positioning, text alignment, contributor font size) live in the sibling
  * `AboutModal.module.scss`. Theme-dependent styles (palette, spacing, radius,

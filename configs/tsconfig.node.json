@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "tsBuildInfoFile": "../node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "target": "ES2024",
     "lib": [
       "ES2024"
@@ -19,7 +19,7 @@
     "skipLibCheck": true,
     "allowJs": true,
     "esModuleInterop": true,
-    "baseUrl": "./",
+    "baseUrl": "../",
     "paths": {
       "@/*": [
         "./src/*"
@@ -38,8 +38,8 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "typeRoots": [
-      "./node_modules/@types",
-      "./src/types/**/*"
+      "../node_modules/@types",
+      "../src/types/**/*"
     ],
     "types": [
       "node",
@@ -47,7 +47,7 @@
     ]
   },
   "include": [
-    "vite.config.ts",
-    "*.ts"
+    "../vite.config.ts",
+    "../*.ts"
   ]
 }
