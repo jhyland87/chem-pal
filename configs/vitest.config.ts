@@ -1,9 +1,11 @@
 import reactSWC from "@vitejs/plugin-react-swc";
+import path from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   plugins: [reactSWC()],
   test: {
+    root: path.resolve(__dirname, ".."),
     //reporters: ["html", "text","c"],
     pool: "vmThreads",
     poolOptions: {
@@ -15,7 +17,7 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     fileParallelism: false,
-    setupFiles: ["./vitest.setup.ts"],
+    setupFiles: [path.resolve(__dirname, "vitest.setup.ts")],
     include: ["src/**/__tests__/**/*.{test,spec}.{js,ts,jsx,tsx}"],
     exclude: [
       "**/node_modules/**",
@@ -57,7 +59,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": "/src",
+      "@": path.resolve(__dirname, "..", "src"),
     },
     dedupe: ["react", "react-dom"],
   },
