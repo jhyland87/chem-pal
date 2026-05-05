@@ -9,6 +9,26 @@ declare global {
     search: string;
   }
 
+  interface WooCommercePriceRange {
+    /** Minimum price of the product */
+    min_price: string | null;
+    /** Maximum price of the product */
+    max_price: string | null;
+    /** ISO currency code (e.g., 'USD', 'EUR') */
+    currency_code: string | null;
+    /** Currency symbol (e.g., '$', '€') */
+    currency_symbol: string | null;
+    /** Number of decimal places for the currency */
+    currency_minor_unit: number | null;
+    /** Character used as decimal separator */
+    currency_decimal_separator: string | null;
+    /** Character used as thousands separator */
+    currency_thousand_separator: string | null;
+    /** Text to display before the price */
+    currency_prefix: string | null;
+    /** Text to display after the price */
+    currency_suffix: string | null;
+  }
   /**
    * Search response from WooCommerce API
    */
@@ -57,6 +77,9 @@ declare global {
       /** Sale price if the product is on sale */
       sale_price: string;
 
+      /** Price range of the product */
+      price_range?: WooCommercePriceRange;
+
       /** ISO currency code (e.g., 'USD', 'EUR') */
       currency_code: string;
 
@@ -78,6 +101,9 @@ declare global {
       /** Text to display after the price */
       currency_suffix: string;
     };
+
+    /** Price HTML of the product */
+    price_html: string;
 
     /** Categories the product belongs to */
     categories?: {
@@ -140,6 +166,32 @@ declare global {
 
     /** Array of tag names associated with the product */
     tags?: string[];
+
+    /** Whether the product is purchasable */
+    is_purchasable?: boolean | null;
+
+    /** Whether the product is in stock */
+    is_in_stock?: boolean | null;
+
+    /** Whether the product is on backorder */
+    is_on_backorder?: boolean | null;
+
+    /** Low stock remaining */
+    low_stock_remaining?: boolean | null;
+
+    /** Stock availability */
+    stock_availability?: {
+      /** Text description of the stock availability */
+      text: string;
+      /** Class name of the stock availability */
+      class: string;
+    };
+
+    /** Weight of the product */
+    weight: string | null;
+
+    /** Formatted weight of the product */
+    formatted_weight: string | null;
   }
 
   /**

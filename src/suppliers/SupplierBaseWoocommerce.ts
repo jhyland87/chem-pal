@@ -97,17 +97,54 @@ export default abstract class SupplierBaseWoocommerce
     });
 
     if (!isSearchResponse(searchRequest)) {
-      this.logger.error("Invalid search response:", searchRequest);
+      this.logger.error("Invalid search response:", { query, searchRequest });
       return;
     }
 
-    const results: WooCommerceSearchResponseItem[] = searchRequest;
+    this.logger.info("search request response:", { searchRequest });
+
+    const results: WooCommerceSearchResponseItem[] = this.stripInvalidResults(searchRequest);
+
+    this.logger.info("results:", { results });
+
     const fuzzFiltered = this.fuzzyFilter<WooCommerceSearchResponseItem>(query, results);
-    this.logger.info("fuzzFiltered:", fuzzFiltered);
+    this.logger.info("fuzzFiltered:", { query, results, fuzzFiltered });
 
     return this.initProductBuilders(fuzzFiltered.slice(0, limit));
   }
 
+  /**
+   * Strips invalid results from the search response. This avoids having to run any
+   * of the heavier functions (eg: fuzzyFilter) on products that are not purchasable,
+   * out-of-stock, or have no price objects to parse.
+   * @param results - The search response to strip invalid results from.
+   * @returns The search response with invalid results stripped.
+   * @source
+   */
+  protected stripInvalidResults(
+    results: WooCommerceSearchResponseItem[],
+  ): WooCommerceSearchResponseItem[] {
+    return results.filter((productResult) => {
+      if (productResult.is_purchasable === false) {
+        this.logger.debug("stripInvalidResults: skipping non-purchasable product:", {
+          productResult,
+        });
+        return false;
+      }
+      if (productResult.is_in_stock === false) {
+        this.logger.debug("stripInvalidResults: skipping out-of-stock product:", { productResult });
+        return false;
+      }
+      if (!productResult.prices.price && !productResult.price_html) {
+        this.logger.debug("stripInvalidResults: skipping product with no price objects to parse:", {
+          productResult,
+        });
+        return false;
+      }
+
+      return true;
+    });
+  }
   /**
    * Selects the title of a product from the search response
    * @param data - Product object from search response
@@ -116,6 +153,36 @@ export default abstract class SupplierBaseWoocommerce
    */
   protected titleSelector(data: WooCommerceSearchResponseItem): string {
     return data.name;
+  }
+
+  /**
+   * Hook for subclasses to contribute additional strings to be parsed for the
+   * product's quantity/UoM. Returned values are appended to the list of
+   * candidates fed through `parseQuantity`, after the standard
+   * `name`/`description`/`short_description`/`weight`/`formatted_weight`
+   * fields, so the standard fields win when they already contain a parseable
+   * quantity. Default returns an empty array; subclasses opt in only when they
+   * have non-standard quantity locations (e.g. attribute terms).
+   * @param item - The raw WooCommerce search response item
+   * @returns Extra candidate strings to parse for quantity
+   * @example
+   * ```typescript
+   * // In a subclass that stores pack size under attributes[].terms[].name:
+   * protected getAdditionalQuantityStrings(
+   *   item: WooCommerceSearchResponseItem,
+   * ): string[] {
+   *   // input: { attributes: [{ terms: [{ name: "500 grams Plastic Tin" }] }] }
+   *   // output: ["500 grams Plastic Tin"]
+   *   return item.attributes?.flatMap((a) => a.terms?.map((t) => t.name) ?? []) ?? [];
+   * }
+   * ```
+   * @source
+   */
+  protected getAdditionalQuantityStrings(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    item: WooCommerceSearchResponseItem,
+  ): string[] {
+    return [];
   }
 
   /**
@@ -165,7 +232,14 @@ export default abstract class SupplierBaseWoocommerce
 
       if (cas) builder.setCAS(cas);
 
-      const toParseForQuantity = [item.name, item.description, item.short_description];
+      const toParseForQuantity = [
+        item.name,
+        item.description,
+        item.short_description,
+        item.weight ?? "",
+        item.formatted_weight ?? "",
+        ...this.getAdditionalQuantityStrings(item),
+      ];
 
       if ("variations" in item) {
         const variations = mapDefined(item.variations, (variation: Partial<Variant>) => {
@@ -182,6 +256,7 @@ export default abstract class SupplierBaseWoocommerce
             }
 
             toParseForQuantity.push(size.value);
+
             const variantQty = parseQuantity(size.value);
 
             if (!variantQty) {

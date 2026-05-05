@@ -32,6 +32,7 @@ export { default as SupplierAlchemieLabs } from "./SupplierAlchemieLabs";
 export { default as SupplierAmbeed } from "./SupplierAmbeed";
 export { default as SupplierAsesChem } from "./SupplierAsesChem";
 //export { default as SupplierAsesChem2 } from "./SupplierAsesChem2";
+export { default as SupplierAmarisChemicalSolutions } from "./SupplierAmarisChemicalSolutions";
 export { default as SupplierBioFuranChem } from "./SupplierBiofuranChem";
 export { default as SupplierBVV } from "./SupplierBVV";
 export { default as SupplierCarolina } from "./SupplierCarolina";

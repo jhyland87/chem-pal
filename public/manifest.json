@@ -71,7 +71,8 @@
     "https://aladdinsci.com/*",
     "https://www.aladdinsci.com/*",
     "https://ases.in/*",
-    "https://aseschem.myshopify.com/*"
+    "https://aseschem.myshopify.com/*",
+    "https://amarischemicalsolutions.com/*"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
