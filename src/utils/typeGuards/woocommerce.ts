@@ -1,5 +1,41 @@
 import { z } from "zod";
 
+const searchItemImagesSchema = z.array(
+  z.object({
+    id: z.number(),
+    src: z.string(),
+    thumbnail: z.string(),
+    srcset: z.string(),
+    sizes: z.string(),
+    thumbnail_srcset: z.string(),
+    thumbnail_sizes: z.string(),
+    name: z.string(),
+    alt: z.string(),
+  }),
+);
+
+const searchItemPricesSchema = z.object({
+  price: z.string(),
+  regular_price: z.string(),
+  sale_price: z.string(),
+  currency_code: z.string(),
+  currency_symbol: z.string(),
+  currency_minor_unit: z.number(),
+  currency_decimal_separator: z.string(),
+  currency_thousand_separator: z.string(),
+  currency_prefix: z.string(),
+  currency_suffix: z.string(),
+  price_range: z
+    .object({
+      min_price: z.string(),
+      max_price: z.string(),
+      currency_code: z.string(),
+      currency_symbol: z.string(),
+    })
+    .nullable()
+    .optional(),
+});
+
 /* eslint-disable @typescript-eslint/naming-convention */
 const searchResponseItemSchema = z.object({
   id: z.number(),
@@ -10,19 +46,12 @@ const searchResponseItemSchema = z.object({
   permalink: z.string(),
   is_in_stock: z.boolean(),
   sold_individually: z.boolean(),
+  weight: z.string().nullable().optional(),
+  formatted_weight: z.string().nullable().optional(),
   sku: z.string(),
-  prices: z.object({
-    price: z.string(),
-    regular_price: z.string(),
-    sale_price: z.string(),
-    currency_code: z.string(),
-    currency_symbol: z.string(),
-    currency_minor_unit: z.number(),
-    currency_decimal_separator: z.string(),
-    currency_thousand_separator: z.string(),
-    currency_prefix: z.string(),
-    currency_suffix: z.string(),
-  }),
+  prices: searchItemPricesSchema,
+  price_html: z.string().nullable().optional(),
+  images: searchItemImagesSchema.nullable().optional(),
 });
 /* eslint-enable @typescript-eslint/naming-convention */
 
