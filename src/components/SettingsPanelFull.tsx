@@ -275,6 +275,40 @@ export default function SettingsPanelFull() {
         </AccordionDetails>
       </Accordion>
       <Accordion
+        expanded={expanded === "cache"}
+        onChange={handleAccordionChange("cache")}
+        disableGutters
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          className={styles["settings-panel__accordion-summary"]}
+        >
+          <Typography variant="body2" fontWeight={500}>
+            Cache
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails className={styles["settings-panel__accordion-details"]}>
+          <List dense component="nav" aria-labelledby="cache-list-subheader">
+            {/* Do Not Cache Empty Results */}
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText primary="Do Not Cache Empty Results" />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={Boolean(currentSettings.doNotCacheEmptyResults)}
+                    onChange={handleSwitchChange}
+                    name="doNotCacheEmptyResults"
+                    disabled={isPending}
+                  />
+                }
+                labelPlacement="start"
+                label=""
+              />
+            </ListItem>
+          </List>
+        </AccordionDetails>
+      </Accordion>
+      <Accordion
         expanded={expanded === "display"}
         onChange={handleAccordionChange("display")}
         disableGutters

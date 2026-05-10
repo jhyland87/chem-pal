@@ -4,7 +4,9 @@ import SupplierBase from "../SupplierBase";
 
 // Toggle-able cache stubs so each test can simulate hits / misses.
 const cacheState = {
-  queryHit: false as false | { data: unknown[]; __cacheMetadata: { limit: number } },
+  queryHit: false as
+    | false
+    | { data: unknown[]; __cacheMetadata: { limit: number; supplierModule?: string } },
   productHit: false as false | Record<string, unknown>,
 };
 
@@ -12,7 +14,12 @@ vi.mock("@/utils/SupplierCache", () => {
   return {
     default: class MockSupplierCache {
       private supplierName: string;
-      constructor(supplierName: string) {
+      constructor(
+        supplierName: string,
+        _supplierModule: string,
+        _enabled: boolean = true,
+        _doNotCacheEmptyResults: boolean = false,
+      ) {
         this.supplierName = supplierName;
       }
       generateCacheKey(query: string) {

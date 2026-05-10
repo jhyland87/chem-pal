@@ -57,8 +57,10 @@ export interface CacheMetadata {
   version: number;
   /** Original query that produced these results */
   query: string;
-  /** Supplier that provided these results */
+  /** Supplier display name that provided these results */
   supplier: string;
+  /** Supplier module class name (e.g. "SupplierCarolina") that produced this entry */
+  supplierModule: string;
   /** Number of results in the cache */
   resultCount: number;
   /** Limit used to generate this cache */
@@ -419,8 +421,13 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * ```
    * @source
    */
-  public initCache(enabled: boolean = true): void {
-    this.cache = new SupplierCache(this.supplierName, enabled);
+  public initCache(enabled: boolean = true, doNotCacheEmptyResults: boolean = false): void {
+    this.cache = new SupplierCache(
+      this.supplierName,
+      this.constructor.name,
+      enabled,
+      doNotCacheEmptyResults,
+    );
   }
 
   /**

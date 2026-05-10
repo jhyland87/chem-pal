@@ -43,6 +43,14 @@ declare global {
     caching?: boolean;
 
     /**
+     * When true, suppliers that return zero results for a query will not write
+     * a cache entry for that query. Lets a previously-out-of-stock supplier
+     * surface fresh results on the next search instead of returning the cached
+     * empty list. Defaults to false.
+     */
+    doNotCacheEmptyResults?: boolean;
+
+    /**
      * Currency rate for the user's currency
      * @example 1.0
      */

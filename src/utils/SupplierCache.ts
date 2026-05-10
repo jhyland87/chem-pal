@@ -3,6 +3,7 @@ import Logger from "@/utils/Logger";
 import {
   clearSupplierProductDataCache,
   clearSupplierQueryCache,
+  deleteSupplierQueryCacheEntry,
   getSupplierProductDataCacheEntry,
   getSupplierQueryCacheEntry,
   putSupplierProductDataCacheEntry,
@@ -26,7 +27,7 @@ import { md5 } from "js-md5";
  */
 export default class SupplierCache {
   //The version of the cache format.
-  private static readonly CACHE_VERSION = 1;
+  private static readonly CACHE_VERSION = 2;
 
   // The logger instance.
   private logger: Logger;
@@ -36,16 +37,40 @@ export default class SupplierCache {
   // string don't collide.
   private supplierName: string;
 
+  // Class name of the supplier module that owns this cache (e.g.
+  // "SupplierCarolina"). Stored on each cache entry's metadata to make it
+  // possible to trace an entry back to the exact module that wrote it,
+  // independent of the human-readable display name.
+  private supplierModule: string;
+
   // When false, all reads return undefined and all writes no-op. Lets callers
   // honor userSettings.caching without every cache-call site needing its own
   // guard.
   private enabled: boolean;
 
-  constructor(supplierName: string, enabled: boolean = true) {
+  // Mirrors userSettings.doNotCacheEmptyResults. When true, a query that
+  // returns zero results is not written to the cache, so a previously
+  // out-of-stock supplier surfaces fresh results on the next search instead
+  // of returning the cached empty list.
+  private doNotCacheEmptyResults: boolean;
+
+  constructor(
+    supplierName: string,
+    supplierModule: string,
+    enabled: boolean = true,
+    doNotCacheEmptyResults: boolean = false,
+  ) {
     this.logger = new Logger(supplierName);
     this.supplierName = supplierName;
+    this.supplierModule = supplierModule;
     this.enabled = enabled;
-    this.logger.debug("SupplierCache initialized", { supplierName, enabled });
+    this.doNotCacheEmptyResults = doNotCacheEmptyResults;
+    this.logger.debug("SupplierCache initialized", {
+      supplierName,
+      supplierModule,
+      enabled,
+      doNotCacheEmptyResults,
+    });
   }
 
   /**
@@ -116,6 +141,13 @@ export default class SupplierCache {
    */
   async cacheQueryResults(query: string, results: unknown[], limit: number): Promise<void> {
     if (!this.enabled) return;
+    if (this.doNotCacheEmptyResults && results.length === 0) {
+      this.logger.debug("Skipping empty-result cache write per doNotCacheEmptyResults", {
+        query,
+        supplierName: this.supplierName,
+      });
+      return;
+    }
     this.logger.debug("[SupplierCache] Caching query results", {
       query,
       supplierName: this.supplierName,
@@ -133,6 +165,7 @@ export default class SupplierCache {
           version: SupplierCache.CACHE_VERSION,
           query,
           supplier: this.supplierName,
+          supplierModule: this.supplierModule,
           resultCount: results.length,
           limit,
         },
@@ -200,7 +233,17 @@ export default class SupplierCache {
     if (!this.enabled) return undefined;
     this.logger.debug("Getting cached query entry", { key });
     try {
-      return await getSupplierQueryCacheEntry(key);
+      const cached = await getSupplierQueryCacheEntry(key);
+      if (cached && cached.__cacheMetadata.version !== SupplierCache.CACHE_VERSION) {
+        this.logger.debug("Evicting stale cache entry due to version mismatch", {
+          key,
+          cachedVersion: cached.__cacheMetadata.version,
+          currentVersion: SupplierCache.CACHE_VERSION,
+        });
+        await deleteSupplierQueryCacheEntry(key);
+        return undefined;
+      }
+      return cached;
     } catch (error) {
       this.logger.error("Error retrieving query cache entry:", { error });
       return undefined;

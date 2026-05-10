@@ -122,7 +122,7 @@ SAVE2 -.->|"triggers if full"| LRU
 
 subgraph Metadata["CacheMetadata - per entry"]
 direction LR
-META["cachedAt: timestamp\nversion: 1\nquery: search term\nsupplier: supplier name\nresultCount: number of results\nlimit: requested limit"]
+META["cachedAt: timestamp\nversion: 2\nquery: search term\nsupplier: display name\nsupplierModule: class name\nresultCount: number of results\nlimit: requested limit"]
 end
 
 SAVE1 -.->|"attached as __cacheMetadata"| Metadata
