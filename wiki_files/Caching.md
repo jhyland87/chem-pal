@@ -115,7 +115,7 @@ flowchart TB
 subgraph Init["Cache Initialization"]
 direction TB
 SB["SupplierBase constructor"]
-IC["initCache()\nthis.cache = new SupplierCache(supplierName)"]
+IC["initCache()\nthis.cache = new SupplierCache(supplierName, supplierModule)"]
 SC["SupplierCache instance\nscoped to supplier name\ne.g. Loudwolf, Onyxmet"]
 SB --> IC --> SC
 end
@@ -212,7 +212,7 @@ SAVE2 -.->|"triggers if full"| LRU
 
 subgraph Metadata["CacheMetadata - per entry"]
 direction LR
-META["cachedAt: timestamp\nversion: 1\nquery: search term\nsupplier: supplier name\nresultCount: number of results\nlimit: requested limit"]
+META["cachedAt: timestamp\nversion: 2\nquery: search term\nsupplier: display name\nsupplierModule: class name\nresultCount: number of results\nlimit: requested limit"]
 end
 
 SAVE1 -.->|"attached as __cacheMetadata"| Metadata
@@ -249,7 +249,30 @@ class GCK,GPCK keygen
 | **Purpose** | Cache search result lists | Cache individual product details |
 | **Key** | `base64(query + supplier)` | `MD5(url + supplier + params)` |
 | **Stored data** | Array of serialized `ProductBuilder` snapshots | Single serialized `ProductBuilder` snapshot |
-| **Invalidation** | When requested limit exceeds cached limit | LRU eviction only |
+| **Invalidation** | Cached limit < requested limit, or `__cacheMetadata.version` ≠ `SupplierCache.CACHE_VERSION` | LRU eviction only |
 | **Written** | After `queryProducts()` returns results | After `getProductData()` fetches a product page |
 | **Max entries** | 100 | 100 |
 | **LRU index** | `cachedAt` | `timestamp` |
+
+## Query Cache Metadata
+
+Each `supplierQueryCache` record carries a `__cacheMetadata` object alongside the cached data. The fields are:
+
+| Field | Type | Purpose |
+|---|---|---|
+| `cachedAt` | `number` (epoch ms) | When the entry was written. Drives LRU eviction. |
+| `version` | `number` | `SupplierCache.CACHE_VERSION`. On read, entries whose `version` differs from the current constant are deleted and treated as a miss. |
+| `query` | `string` | The original search term that produced the entry. |
+| `supplier` | `string` | The supplier's human-readable display name (`SupplierBase.supplierName`, e.g. `"Carolina"`). |
+| `supplierModule` | `string` | The supplier module's class name (`this.constructor.name`, e.g. `"SupplierCarolina"`). Distinct from `supplier` so the originating module is unambiguous even if display names are reused or renamed. |
+| `resultCount` | `number` | Number of items in `data` at write time. |
+| `limit` | `number` | The `limit` argument passed when the cache was written. If a future read requests a larger limit, the entry is invalidated. |
+
+## User Settings That Affect Caching
+
+| Setting | Default | Effect |
+|---|---|---|
+| `caching` | `true` | When `false`, every `SupplierCache` instance no-ops on read and write — the cache is bypassed entirely for the search. Surfaced in **Settings → Behavior → Cache Search Results**. |
+| `doNotCacheEmptyResults` | `false` | When `true`, a query that returns zero results from a supplier will not write a cache entry, so the supplier is re-fetched next time. Lets a previously out-of-stock supplier surface fresh results without manually clearing the cache. Surfaced in **Settings → Cache → Do Not Cache Empty Results**. |
+
+Both flags propagate from `userSettings` through `SupplierFactory` to `SupplierBase.initCache()`, which forwards them to the `SupplierCache` constructor.

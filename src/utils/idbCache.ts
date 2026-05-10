@@ -46,6 +46,7 @@ interface ChemPalDBSchema extends DBSchema {
         version: number;
         query: string;
         supplier: string;
+        supplierModule: string;
         resultCount: number;
         limit: number;
       };

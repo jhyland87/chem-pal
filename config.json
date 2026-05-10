@@ -2,6 +2,7 @@
   "defaultSettings": {
     "showHelp": false,
     "caching": true,
+    "doNotCacheEmptyResults": false,
     "autocomplete": true,
     "currency": "USD",
     "location": "US",
