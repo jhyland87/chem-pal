@@ -249,7 +249,7 @@ class GCK,GPCK keygen
 | **Purpose** | Cache search result lists | Cache individual product details |
 | **Key** | `base64(query + supplier)` | `MD5(url + supplier + params)` |
 | **Stored data** | Array of serialized `ProductBuilder` snapshots | Single serialized `ProductBuilder` snapshot |
-| **Invalidation** | Cached limit < requested limit, or `__cacheMetadata.version` ≠ `SupplierCache.CACHE_VERSION` | LRU eviction only |
+| **Invalidation** | Cached limit < requested limit; `__cacheMetadata.version` ≠ `SupplierCache.CACHE_VERSION`; or entry age exceeds `userSettings.cacheTtlMinutes` (when > 0) | LRU eviction only |
 | **Written** | After `queryProducts()` returns results | After `getProductData()` fetches a product page |
 | **Max entries** | 100 | 100 |
 | **LRU index** | `cachedAt` | `timestamp` |
@@ -274,5 +274,6 @@ Each `supplierQueryCache` record carries a `__cacheMetadata` object alongside th
 |---|---|---|
 | `caching` | `true` | When `false`, every `SupplierCache` instance no-ops on read and write — the cache is bypassed entirely for the search. Surfaced in **Settings → Behavior → Cache Search Results**. |
 | `doNotCacheEmptyResults` | `false` | When `true`, a query that returns zero results from a supplier will not write a cache entry, so the supplier is re-fetched next time. Lets a previously out-of-stock supplier surface fresh results without manually clearing the cache. Surfaced in **Settings → Cache → Do Not Cache Empty Results**. |
+| `cacheTtlMinutes` | `0` | Maximum age (in minutes) of a query cache entry. On read, entries older than this are evicted via `deleteSupplierQueryCacheEntry` and treated as a cache miss, forcing a fresh fetch. `0` (the default) disables TTL expiration — entries then live until LRU eviction, version-mismatch eviction, or limit-mismatch invalidation. Negative or non-finite values are coerced to `0`. Applies to the query cache only; the product-data cache uses LRU only. Surfaced in **Settings → Cache → Cache TTL (minutes)**. |
 
-Both flags propagate from `userSettings` through `SupplierFactory` to `SupplierBase.initCache()`, which forwards them to the `SupplierCache` constructor.
+All three settings propagate from `userSettings` through `SupplierFactory` to `SupplierBase.initCache()`, which forwards them to the `SupplierCache` constructor.

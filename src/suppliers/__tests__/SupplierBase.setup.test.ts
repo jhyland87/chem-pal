@@ -19,6 +19,7 @@ vi.mock("@/utils/SupplierCache", () => {
         _supplierModule: string,
         _enabled: boolean = true,
         _doNotCacheEmptyResults: boolean = false,
+        _cacheTtlMinutes: number = 0,
       ) {
         this.supplierName = supplierName;
       }

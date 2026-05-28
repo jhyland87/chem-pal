@@ -421,12 +421,17 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * ```
    * @source
    */
-  public initCache(enabled: boolean = true, doNotCacheEmptyResults: boolean = false): void {
+  public initCache(
+    enabled: boolean = true,
+    doNotCacheEmptyResults: boolean = false,
+    cacheTtlMinutes: number = 0,
+  ): void {
     this.cache = new SupplierCache(
       this.supplierName,
       this.constructor.name,
       enabled,
       doNotCacheEmptyResults,
+      cacheTtlMinutes,
     );
   }
 
