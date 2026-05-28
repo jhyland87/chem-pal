@@ -54,22 +54,36 @@ export default class SupplierCache {
   // of returning the cached empty list.
   private doNotCacheEmptyResults: boolean;
 
+  // Mirrors userSettings.cacheTtlMinutes, stored here in milliseconds for
+  // direct comparison against `Date.now() - cachedAt`. A value of 0 disables
+  // TTL expiration (preserves the original behavior where entries live until
+  // LRU eviction or version-mismatch eviction).
+  private cacheTtlMs: number;
+
   constructor(
     supplierName: string,
     supplierModule: string,
     enabled: boolean = true,
     doNotCacheEmptyResults: boolean = false,
+    cacheTtlMinutes: number = 0,
   ) {
     this.logger = new Logger(supplierName);
     this.supplierName = supplierName;
     this.supplierModule = supplierModule;
     this.enabled = enabled;
     this.doNotCacheEmptyResults = doNotCacheEmptyResults;
+    // Coerce here so callers can hand us a string from a TextField without
+    // every call site needing to remember to parse first. Negative or NaN
+    // values fall back to 0 (TTL disabled).
+    const minutes = Number(cacheTtlMinutes);
+    this.cacheTtlMs = Number.isFinite(minutes) && minutes > 0 ? minutes * 60_000 : 0;
     this.logger.debug("SupplierCache initialized", {
       supplierName,
       supplierModule,
       enabled,
       doNotCacheEmptyResults,
+      cacheTtlMinutes,
+      cacheTtlMs: this.cacheTtlMs,
     });
   }
 
@@ -242,6 +256,18 @@ export default class SupplierCache {
         });
         await deleteSupplierQueryCacheEntry(key);
         return undefined;
+      }
+      if (cached && this.cacheTtlMs > 0) {
+        const age = Date.now() - cached.__cacheMetadata.cachedAt;
+        if (age > this.cacheTtlMs) {
+          this.logger.debug("Evicting expired cache entry due to TTL", {
+            key,
+            ageMs: age,
+            ttlMs: this.cacheTtlMs,
+          });
+          await deleteSupplierQueryCacheEntry(key);
+          return undefined;
+        }
       }
       return cached;
     } catch (error) {

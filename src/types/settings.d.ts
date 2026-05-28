@@ -51,6 +51,15 @@ declare global {
     doNotCacheEmptyResults?: boolean;
 
     /**
+     * Maximum age of a query cache entry, in minutes. On read, entries older
+     * than this are evicted and treated as a cache miss, forcing a fresh
+     * fetch. Set to `0` (the default) to disable TTL expiration entirely —
+     * entries then live until LRU eviction or version-mismatch eviction.
+     * @example 60
+     */
+    cacheTtlMinutes?: number;
+
+    /**
      * Currency rate for the user's currency
      * @example 1.0
      */

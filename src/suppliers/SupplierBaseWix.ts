@@ -35,6 +35,8 @@ export default abstract class SupplierBaseWix
     currencySymbol: "$",
   };
 
+  protected readonly minMatchPercentage: number = 45;
+
   /**
    * Sets up the Wix API access by retrieving and setting the access token.
    * This method must be called before making any API requests.

@@ -790,6 +790,7 @@ function buildUserSettingsSchema() {
     showHelp: z.boolean().optional(),
     caching: z.boolean().optional(),
     doNotCacheEmptyResults: z.boolean().optional(),
+    cacheTtlMinutes: z.coerce.number().nonnegative().optional(),
     currencyRate: z.number().optional(),
     currency: z.enum(Object.keys(currencies)).optional(),
     location: z.enum(Object.keys(locations)).optional(),

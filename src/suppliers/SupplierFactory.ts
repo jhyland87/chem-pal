@@ -59,6 +59,11 @@ export default class SupplierFactory<P extends Product> {
   // supplier doesn't get cached and mask future restocks.
   private doNotCacheEmptyResults: boolean;
 
+  // Mirrors userSettings.cacheTtlMinutes. Forwarded to each supplier's
+  // SupplierCache so query cache entries older than this are evicted on read.
+  // 0 disables TTL expiration.
+  private cacheTtlMinutes: number;
+
   // Optional global fuzz-scorer override from userSettings.fuzzScorerOverride.
   // When set, applied to every supplier instance before execute() runs so the
   // user's Advanced-settings choice wins over each supplier class's default.
@@ -80,6 +85,8 @@ export default class SupplierFactory<P extends Product> {
    *   `undefined` to respect per-supplier defaults.
    * @param doNotCacheEmptyResults - When true, suppliers that return zero
    *   results for the query will skip writing a cache entry. Defaults to false.
+   * @param cacheTtlMinutes - Maximum age (in minutes) of a query cache entry
+   *   before it is evicted on read. 0 disables TTL expiration. Defaults to 0.
    * @source
    */
   constructor(
@@ -90,6 +97,7 @@ export default class SupplierFactory<P extends Product> {
     caching: boolean = true,
     fuzzScorerOverride?: string,
     doNotCacheEmptyResults: boolean = false,
+    cacheTtlMinutes: number = 0,
   ) {
     this.logger = new Logger("SupplierFactory");
     this.logger.debug("initialized", {
@@ -100,6 +108,7 @@ export default class SupplierFactory<P extends Product> {
       caching,
       fuzzScorerOverride,
       doNotCacheEmptyResults,
+      cacheTtlMinutes,
     });
     this.query = query;
     this.limit = limit;
@@ -108,6 +117,7 @@ export default class SupplierFactory<P extends Product> {
     this.caching = caching;
     this.fuzzScorerOverride = fuzzScorerOverride;
     this.doNotCacheEmptyResults = doNotCacheEmptyResults;
+    this.cacheTtlMinutes = cacheTtlMinutes;
   }
 
   /**
@@ -225,7 +235,7 @@ export default class SupplierFactory<P extends Product> {
         this.logger.debug("Initializing supplier class:", supplierClassName);
         const ConcreteSupplierClass = supplierClass as unknown as SupplierConstructor<P>;
         const instance = new ConcreteSupplierClass(this.query, this.limit, this.controller);
-        instance.initCache(this.caching, this.doNotCacheEmptyResults);
+        instance.initCache(this.caching, this.doNotCacheEmptyResults, this.cacheTtlMinutes);
         instance.setFuzzScorerOverride(this.fuzzScorerOverride);
         return instance;
       },
@@ -285,7 +295,7 @@ export default class SupplierFactory<P extends Product> {
         console.log("Initializing supplier class...", { supplierClassName, ConcreteSupplierClass });
         const instance = new ConcreteSupplierClass(this.query, this.limit, this.controller);
         console.log("After initializing supplier class", { supplierClassName, instance });
-        instance.initCache(this.caching, this.doNotCacheEmptyResults);
+        instance.initCache(this.caching, this.doNotCacheEmptyResults, this.cacheTtlMinutes);
         instance.setFuzzScorerOverride(this.fuzzScorerOverride);
         return instance;
       },

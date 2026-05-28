@@ -3,6 +3,7 @@
     "showHelp": false,
     "caching": true,
     "doNotCacheEmptyResults": false,
+    "cacheTtlMinutes": 0,
     "autocomplete": true,
     "currency": "USD",
     "location": "US",

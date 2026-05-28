@@ -125,4 +125,71 @@ describe("SupplierCache", () => {
       expect(idbMocks.deleteSupplierQueryCacheEntry).not.toHaveBeenCalled();
     });
   });
+
+  describe("getCachedQueryEntry TTL eviction", () => {
+    /**
+     * Build a fresh cache entry whose `cachedAt` is `ageMinutes` minutes
+     * before now. Uses the current CACHE_VERSION (round-tripped via a write)
+     * so the version-mismatch check doesn't fire first and mask the TTL path.
+     */
+    const buildEntryAgedMinutes = async (ageMinutes: number): Promise<CachedData<unknown>> => {
+      const cache = new SupplierCache("Carolina", "SupplierCarolina");
+      let stored: CachedData<unknown> | undefined;
+      idbMocks.putSupplierQueryCacheEntry.mockImplementationOnce(async (_key, entry) => {
+        stored = entry;
+      });
+      await cache.cacheQueryResults("acetone", [{ a: 1 }], 10);
+      // Backdate the entry. Round-tripping the write captures the real
+      // CACHE_VERSION so we don't have to hard-code it.
+      stored!.__cacheMetadata.cachedAt = Date.now() - ageMinutes * 60_000;
+      idbMocks.putSupplierQueryCacheEntry.mockClear();
+      return stored!;
+    };
+
+    it("does not expire entries when cacheTtlMinutes is 0 (the default)", async () => {
+      const entry = await buildEntryAgedMinutes(120); // 2 hours old
+      idbMocks.getSupplierQueryCacheEntry.mockResolvedValueOnce(entry);
+
+      const cache = new SupplierCache("Carolina", "SupplierCarolina", true, false, 0);
+      const result = await cache.getCachedQueryEntry("any-key");
+
+      expect(result).toBe(entry);
+      expect(idbMocks.deleteSupplierQueryCacheEntry).not.toHaveBeenCalled();
+    });
+
+    it("returns the entry when its age is within the TTL", async () => {
+      const entry = await buildEntryAgedMinutes(5);
+      idbMocks.getSupplierQueryCacheEntry.mockResolvedValueOnce(entry);
+
+      const cache = new SupplierCache("Carolina", "SupplierCarolina", true, false, 60);
+      const result = await cache.getCachedQueryEntry("fresh-key");
+
+      expect(result).toBe(entry);
+      expect(idbMocks.deleteSupplierQueryCacheEntry).not.toHaveBeenCalled();
+    });
+
+    it("evicts and returns undefined when the entry is older than the TTL", async () => {
+      const entry = await buildEntryAgedMinutes(120); // 2 hours old
+      idbMocks.getSupplierQueryCacheEntry.mockResolvedValueOnce(entry);
+
+      const cache = new SupplierCache("Carolina", "SupplierCarolina", true, false, 60);
+      const result = await cache.getCachedQueryEntry("expired-key");
+
+      expect(result).toBeUndefined();
+      expect(idbMocks.deleteSupplierQueryCacheEntry).toHaveBeenCalledExactlyOnceWith(
+        "expired-key",
+      );
+    });
+
+    it("treats negative or non-finite TTL inputs as disabled", async () => {
+      const entry = await buildEntryAgedMinutes(120);
+      idbMocks.getSupplierQueryCacheEntry.mockResolvedValueOnce(entry);
+
+      const cache = new SupplierCache("Carolina", "SupplierCarolina", true, false, -5);
+      const result = await cache.getCachedQueryEntry("any-key");
+
+      expect(result).toBe(entry);
+      expect(idbMocks.deleteSupplierQueryCacheEntry).not.toHaveBeenCalled();
+    });
+  });
 });

@@ -305,6 +305,23 @@ export default function SettingsPanelFull() {
                 label=""
               />
             </ListItem>
+            {/* Cache TTL (minutes) — 0 disables expiration */}
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText primary="Cache TTL (minutes)" />
+              <FormControl>
+                <TextField
+                  value={currentSettings.cacheTtlMinutes ?? 0}
+                  name="cacheTtlMinutes"
+                  onChange={handleInputChange}
+                  type="number"
+                  variant="outlined"
+                  size="small"
+                  className={styles["settings-panel__input"]}
+                  disabled={isPending}
+                  slotProps={{ htmlInput: { min: 0, step: 1 } }}
+                />
+              </FormControl>
+            </ListItem>
           </List>
         </AccordionDetails>
       </Accordion>
