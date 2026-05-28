@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import ProductBuilder from "@/utils/ProductBuilder";
-import SupplierBase from "../SupplierBase";
+import { ProductBuilder } from "@/utils/ProductBuilder";
+import { SupplierBase } from "../SupplierBase";
 
 // Toggle-able cache stubs so each test can simulate hits / misses.
 const cacheState = {
@@ -12,7 +12,7 @@ const cacheState = {
 
 vi.mock("@/utils/SupplierCache", () => {
   return {
-    default: class MockSupplierCache {
+    SupplierCache: class MockSupplierCache {
       private supplierName: string;
       constructor(
         supplierName: string,

@@ -1,4 +1,4 @@
-import SupplierBaseMagento2 from "./SupplierBaseMagento2";
+import { SupplierBaseMagento2 } from "./SupplierBaseMagento2";
 
 /**
  * SupplierAladdinSci class that extends SupplierBaseMagento2 and implements AsyncIterable<Product>.
@@ -11,7 +11,7 @@ import SupplierBaseMagento2 from "./SupplierBaseMagento2";
  * @category Suppliers
  * @source
  */
-export default class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplier {
+export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplier {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "AladdinSci";
 

@@ -1,5 +1,5 @@
 import { useStorageCompression } from "@/../config.json";
-import Logger from "@/utils/Logger";
+import { Logger } from "@/utils/Logger";
 import { compressToUTF16, decompressFromUTF16 } from "lz-string";
 
 /**

@@ -3,7 +3,7 @@ import {
   setupChromeStorageMock,
 } from "@/__fixtures__/helpers/chrome/storageMock";
 import { AVAILABILITY } from "@/constants/common";
-import ProductBuilder from "@/utils/ProductBuilder";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from "vitest";
 import * as quantityHelpers from "../quantity";
 

@@ -9,7 +9,7 @@ import {
 import { omit } from "@/helpers/collectionUtils";
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
-import SupplierFactory from "@/suppliers/SupplierFactory";
+import { SupplierFactory } from "@/suppliers/SupplierFactory";
 import { ColumnDef, type CellContext } from "@tanstack/react-table";
 import { hasFlag } from "country-flag-icons";
 import getUnicodeFlagIcon from "country-flag-icons/unicode";

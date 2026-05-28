@@ -1,7 +1,7 @@
 import { AVAILABILITY } from "@/constants/common";
 import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 import { mapDefined } from "@/helpers/utils";
-import ProductBuilder from "@/utils/ProductBuilder";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import {
   isAuthCheckEndpoint,
   isAuthRequiredEndpoint,
@@ -11,7 +11,7 @@ import {
   isTimestampStorage,
 } from "@/utils/typeGuards/macklin";
 import { md5 } from "js-md5";
-import SupplierBase from "./SupplierBase";
+import { SupplierBase } from "./SupplierBase";
 
 class MacklinApiError extends Error {
   constructor(
@@ -98,7 +98,7 @@ class TimeoutError extends Error {
  * ```
  * @source
  */
-export default class SupplierMacklin extends SupplierBase<Product, Product> implements ISupplier {
+export class SupplierMacklin extends SupplierBase<Product, Product> implements ISupplier {
   /** Name of supplier (for display purposes) */
   public readonly supplierName: string = "Macklin";
 

@@ -21,35 +21,35 @@
  */
 
 // Akmekem got booted from Amazon
-//export { default as SupplierAkmekem } from "./SupplierAkmekem";
+//export { SupplierAkmekem } from "./SupplierAkmekem";
 // BunmurraLabs is under construction, new website only has default shopping cart items.
-//export { default as SupplierBunmurraLabs } from "./supplierBunmurraLabs";
+//export { SupplierBunmurraLabs } from "./supplierBunmurraLabs";
 // N2O3 is offline since 01/20/2026
-//export { default as SupplierN2O3 } from "./SupplierN2O3";
+//export { SupplierN2O3 } from "./SupplierN2O3";
 
-export { default as SupplierAladdinSci } from "./SupplierAladdinSci";
-export { default as SupplierAlchemieLabs } from "./SupplierAlchemieLabs";
-export { default as SupplierAmbeed } from "./SupplierAmbeed";
-export { default as SupplierAsesChem } from "./SupplierAsesChem";
-//export { default as SupplierAsesChem2 } from "./SupplierAsesChem2";
-export { default as SupplierAmarisChemicalSolutions } from "./SupplierAmarisChemicalSolutions";
-export { default as SupplierBioFuranChem } from "./SupplierBiofuranChem";
-export { default as SupplierBVV } from "./SupplierBVV";
-export { default as SupplierCarolina } from "./SupplierCarolina";
-export { default as SupplierCarolinaChemical } from "./SupplierCarolinaChemical";
-export { default as SupplierChemsavers } from "./SupplierChemsavers";
-export { default as SupplierFtfScientific } from "./SupplierFtfScientific";
-export { default as SupplierGoldAndSilverTesting } from "./SupplierGoldAndSilverTesting";
-export { default as SupplierHbarSci } from "./SupplierHbarSci";
-export { default as SupplierHimedia } from "./SupplierHimedia";
-export { default as SupplierInnovatingScience } from "./SupplierInnovatingScience";
-export { default as SupplierLaballey } from "./SupplierLaballey";
-export { default as SupplierLaboratoriumDiscounter } from "./SupplierLaboratoriumDiscounter";
-export { default as SupplierLibertySci } from "./SupplierLibertySci";
-export { default as SupplierLiMac } from "./SupplierLiMac";
-export { default as SupplierLoudwolf } from "./SupplierLoudwolf";
-export { default as SupplierMacklin } from "./SupplierMacklin";
-export { default as SupplierOnyxmet } from "./SupplierOnyxmet";
-export { default as SupplierS3Chemicals } from "./SupplierS3Chemicals";
-export { default as SupplierSynthetika } from "./SupplierSynthetika";
-export { default as SupplierWarchem } from "./SupplierWarchem";
+export { SupplierAladdinSci } from "./SupplierAladdinSci";
+export { SupplierAlchemieLabs } from "./SupplierAlchemieLabs";
+export { SupplierAmbeed } from "./SupplierAmbeed";
+export { SupplierAsesChem } from "./SupplierAsesChem";
+//export { SupplierAsesChem2 } from "./SupplierAsesChem2";
+export { SupplierAmarisChemicalSolutions } from "./SupplierAmarisChemicalSolutions";
+export { SupplierBioFuranChem } from "./SupplierBiofuranChem";
+export { SupplierBVV } from "./SupplierBVV";
+export { SupplierCarolina } from "./SupplierCarolina";
+export { SupplierCarolinaChemical } from "./SupplierCarolinaChemical";
+export { SupplierChemsavers } from "./SupplierChemsavers";
+export { SupplierFtfScientific } from "./SupplierFtfScientific";
+export { SupplierGoldAndSilverTesting } from "./SupplierGoldAndSilverTesting";
+export { SupplierHbarSci } from "./SupplierHbarSci";
+export { SupplierHimedia } from "./SupplierHimedia";
+export { SupplierInnovatingScience } from "./SupplierInnovatingScience";
+export { SupplierLaballey } from "./SupplierLaballey";
+export { SupplierLaboratoriumDiscounter } from "./SupplierLaboratoriumDiscounter";
+export { SupplierLibertySci } from "./SupplierLibertySci";
+export { SupplierLiMac } from "./SupplierLiMac";
+export { SupplierLoudwolf } from "./SupplierLoudwolf";
+export { SupplierMacklin } from "./SupplierMacklin";
+export { SupplierOnyxmet } from "./SupplierOnyxmet";
+export { SupplierS3Chemicals } from "./SupplierS3Chemicals";
+export { SupplierSynthetika } from "./SupplierSynthetika";
+export { SupplierWarchem } from "./SupplierWarchem";

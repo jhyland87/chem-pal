@@ -9,8 +9,8 @@ import {
   useHotkeys,
   type HotkeyHandlers,
 } from "@/hotkeys";
-import SupplierFactory from "@/suppliers/SupplierFactory";
-import SupplierCache from "@/utils/SupplierCache";
+import { SupplierFactory } from "@/suppliers/SupplierFactory";
+import { SupplierCache } from "@/utils/SupplierCache";
 import { clearSearchResults, getSearchResults, IDB_SEARCH_RESULTS_CLEARED } from "@/utils/idbCache";
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import { cstorage } from "@/utils/storage";

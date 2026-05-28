@@ -3,10 +3,10 @@ import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { findFormulaInHtml } from "@/helpers/science";
 import { firstMap, htmlToAscii, mapDefined } from "@/helpers/utils";
-import ProductBuilder from "@/utils/ProductBuilder";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isQuantityObject } from "@/utils/typeGuards/common";
 import { isValidMagento2SearchResponse } from "@/utils/typeGuards/magento2";
-import SupplierBase from "./SupplierBase";
+import { SupplierBase } from "./SupplierBase";
 
 /**
  * Internal shape used while normalizing a Magento 2 product's nested variants
@@ -58,7 +58,7 @@ interface RawMagento2Variant {
  * ```
  * @source
  */
-export default abstract class SupplierBaseMagento2
+export abstract class SupplierBaseMagento2
   extends SupplierBase<Magento2ProductItem, Product>
   implements ISupplier
 {

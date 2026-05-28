@@ -2,10 +2,10 @@ import { UOM } from "@/constants/common";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { firstMap, mapDefined } from "@/helpers/utils";
-import ProductBuilder from "@/utils/ProductBuilder";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isQuantityObject } from "@/utils/typeGuards/common";
 import { isValidShopifySearchResponse } from "@/utils/typeGuards/shopify";
-import SupplierBase from "./SupplierBase";
+import { SupplierBase } from "./SupplierBase";
 
 /**
  * Base class for Shopify-based suppliers that provides common functionality for
@@ -37,7 +37,7 @@ import SupplierBase from "./SupplierBase";
  * ```
  * @source
  */
-export default abstract class SupplierBaseShopify
+export abstract class SupplierBaseShopify
   extends SupplierBase<ShopifyProductNode, Product>
   implements ISupplier
 {

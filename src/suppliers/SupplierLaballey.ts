@@ -1,4 +1,4 @@
-import SupplierBaseSearchanise from "./SupplierBaseSearchanise";
+import { SupplierBaseSearchanise } from "./SupplierBaseSearchanise";
 
 /**
  * SupplierLaballey class that extends SupplierBaseSearchanise and implements AsyncIterable<T>.
@@ -6,7 +6,7 @@ import SupplierBaseSearchanise from "./SupplierBaseSearchanise";
  * @category Suppliers
  * @source
  */
-export default class SupplierLaballey extends SupplierBaseSearchanise implements ISupplier {
+export class SupplierLaballey extends SupplierBaseSearchanise implements ISupplier {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "Laballey";
 

@@ -1,8 +1,8 @@
 import { findCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
-import ProductBuilder from "@/utils/ProductBuilder";
-import SupplierBase from "./SupplierBase";
+import { ProductBuilder } from "@/utils/ProductBuilder";
+import { SupplierBase } from "./SupplierBase";
 /**
  * Supplier implementation for LiMac Science, a Latvian chemical supplier.
  * LiMac delegates product search to FreeFind (a 3rd-party site search engine),
@@ -21,7 +21,7 @@ import SupplierBase from "./SupplierBase";
  * ```
  * @source
  */
-export default class SupplierLiMac
+export class SupplierLiMac
   extends SupplierBase<Partial<Product>, Product>
   implements ISupplier
 {

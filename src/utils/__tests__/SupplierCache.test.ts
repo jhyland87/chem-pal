@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { CachedData } from "@/suppliers/SupplierBase";
 
 const idbMocks = {
   deleteSupplierQueryCacheEntry: vi.fn(async (_key: string) => {}),
@@ -13,7 +12,7 @@ const idbMocks = {
 
 vi.mock("@/utils/idbCache", () => idbMocks);
 vi.mock("@/utils/Logger", () => ({
-  default: class MockLogger {
+  Logger: class MockLogger {
     debug() {}
     info() {}
     warn() {}
@@ -21,8 +20,7 @@ vi.mock("@/utils/Logger", () => ({
   },
 }));
 
-const SupplierCacheModule = await import("@/utils/SupplierCache");
-const SupplierCache = SupplierCacheModule.default;
+const { SupplierCache } = await import("@/utils/SupplierCache");
 
 describe("SupplierCache", () => {
   beforeEach(() => {

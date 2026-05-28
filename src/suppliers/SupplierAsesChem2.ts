@@ -1,7 +1,6 @@
 import { FuzzScorerFn } from "@/constants/fuzzScorers";
 import { partial_ratio } from "fuzzball";
-import type { ProductDefaults } from "./SupplierBase";
-import SupplierBaseSearchanise from "./SupplierBaseSearchanise";
+import { SupplierBaseSearchanise } from "./SupplierBaseSearchanise";
 
 /**
  * SupplierAsesChem2 class that extends SupplierBaseSearchanise and implements AsyncIterable<T>.
@@ -13,7 +12,7 @@ import SupplierBaseSearchanise from "./SupplierBaseSearchanise";
  * @category Suppliers
  * @source
  */
-export default class SupplierAsesChem2 extends SupplierBaseSearchanise implements ISupplier {
+export class SupplierAsesChem2 extends SupplierBaseSearchanise implements ISupplier {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "AsesChem";
 

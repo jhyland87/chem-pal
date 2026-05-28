@@ -40,7 +40,7 @@
  * @source
  */
 // #region class
-class BadgeAnimator {
+export class BadgeAnimator {
   /** Available predefined character sets for badge animations */
   static readonly charsets: Record<string, string[]> = {
     /** Hourglass animation (⏳ ⌛) */
@@ -156,7 +156,6 @@ class BadgeAnimator {
 }
 // #endregion class
 // Export the class directly
-export default BadgeAnimator;
 
 /**
  * Can do something similar with the icon iself.

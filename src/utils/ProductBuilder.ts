@@ -3,7 +3,7 @@ import { findCAS } from "@/helpers/cas";
 import { parsePrice, toUSD } from "@/helpers/currency";
 import { parseQuantity, toBaseQuantity } from "@/helpers/quantity";
 import { findFormulaInHtml } from "@/helpers/science";
-import Logger from "@/utils/Logger";
+import { Logger } from "@/utils/Logger";
 import {
   isCAS,
   isMinimalProduct,
@@ -47,7 +47,7 @@ import { isAvailability, isValidVariant } from "@/utils/typeGuards/productbuilde
  * ```
  * @source
  */
-export default class ProductBuilder<T extends Product> {
+export class ProductBuilder<T extends Product> {
   /** The partial product object being built */
   private product: Partial<T> = {};
 

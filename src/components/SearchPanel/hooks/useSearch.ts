@@ -3,8 +3,8 @@ import { AVAILABILITY_LABEL_MAP, CACHE } from "@/constants/common";
 import { useAppContext } from "@/context";
 import { addExcludedProduct } from "@/helpers/excludedProducts";
 import { getCompoundNameFromAlias } from "@/helpers/pubchem";
-import SupplierFactory from "@/suppliers/SupplierFactory";
-import BadgeAnimator from "@/utils/BadgeAnimator";
+import { SupplierFactory } from "@/suppliers/SupplierFactory";
+import { BadgeAnimator } from "@/utils/BadgeAnimator";
 import { cstorage } from "@/utils/storage";
 import { ABORT_SEARCH_EVENT } from "@/hotkeys";
 import {

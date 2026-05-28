@@ -1,9 +1,9 @@
-import ProductBuilder from "@/utils/ProductBuilder";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import individualProduct from "../__fixtures__/laboratoriumdiscounter/individual-product.json";
-import SupplierLaboratoriumDiscounter from "../SupplierLaboratoriumDiscounter";
+import { SupplierLaboratoriumDiscounter } from "../SupplierLaboratoriumDiscounter";
 
 const productHTMLFixture = readFileSync(
   resolve(

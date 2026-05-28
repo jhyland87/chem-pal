@@ -3,12 +3,12 @@ import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM, urlencode } from "@/helpers/request";
 import { firstMap, mapDefined } from "@/helpers/utils";
-import ProductBuilder from "@/utils/ProductBuilder";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import {
   assertIsSynthetikaSearchResponse,
   isSynthetikaProduct,
 } from "@/utils/typeGuards/synthetika";
-import SupplierBase from "./SupplierBase";
+import { SupplierBase } from "./SupplierBase";
 
 /**
  * Supplier implementation for Synthetika
@@ -53,7 +53,7 @@ import SupplierBase from "./SupplierBase";
  * ```
  * @source
  */
-export default class SupplierSynthetika
+export class SupplierSynthetika
   extends SupplierBase<SynthetikaProduct, Product>
   implements ISupplier
 {

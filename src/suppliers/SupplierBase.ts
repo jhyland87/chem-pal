@@ -12,9 +12,9 @@ import { fetchDecorator, type FetchDecoratorResponse } from "@/helpers/fetch";
 import { stripQuantityFromString } from "@/helpers/quantity";
 import { deleteSupplierQueryCacheEntry } from "@/utils/idbCache";
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
-import Logger from "@/utils/Logger";
-import ProductBuilder from "@/utils/ProductBuilder";
-import SupplierCache from "@/utils/SupplierCache";
+import { Logger } from "@/utils/Logger";
+import { ProductBuilder } from "@/utils/ProductBuilder";
+import { SupplierCache } from "@/utils/SupplierCache";
 import {
   incrementFailure,
   incrementParseError,
@@ -23,7 +23,6 @@ import {
   incrementSuccess,
 } from "@/utils/SupplierStatsStore";
 import {
-  isFullURL,
   isHtmlResponse,
   isHttpResponse,
   isJsonResponse,
@@ -45,46 +44,8 @@ import {
 } from "fuzzball";
 import { type JsonValue } from "type-fest";
 
-/**
- * Metadata about cached results including timestamp and version information.
- * This helps determine if cached data is stale or needs to be refreshed.
- * @source
- */
-export interface CacheMetadata {
-  /** When the data was cached */
-  cachedAt: number;
-  /** Version of the cache format - useful for cache invalidation */
-  version: number;
-  /** Original query that produced these results */
-  query: string;
-  /** Supplier display name that provided these results */
-  supplier: string;
-  /** Supplier module class name (e.g. "SupplierCarolina") that produced this entry */
-  supplierModule: string;
-  /** Number of results in the cache */
-  resultCount: number;
-  /** Limit used to generate this cache */
-  limit: number;
-}
-
-export interface ProductDefaults {
-  currencyCode?: CurrencyCode;
-  currencySymbol?: CurrencySymbol;
-  uom?: UOM;
-  quantity?: number;
-}
-
-/**
- * Type for cached data including the results and metadata
- * @source
- */
-export interface CachedData<T> {
-  /** The actual cached results */
-  data: T[];
-  /** Metadata about the cache entry */
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  __cacheMetadata: CacheMetadata;
-}
+// CacheMetadata, CachedData<T>, and ProductDefaults are declared globally in
+// types/supplierCache.d.ts — see that file for their definitions.
 
 /**
  * The base class for all suppliers.
@@ -98,52 +59,68 @@ export interface CachedData<T> {
  * ```
  * @source
  */
-export default abstract class SupplierBase<S, T extends Product> implements ISupplier {
-  // The name of the supplier (used for display name, lists, etc)
+export abstract class SupplierBase<S, T extends Product> implements ISupplier {
+  /** The name of the supplier (used for display name, lists, etc). */
   public abstract readonly supplierName: string;
 
-  // The base URL for the supplier.
+  /** The base URL for the supplier. */
   public abstract readonly baseURL: string;
 
-  // The minimum match percentage for a product to be considered a match.
+  /** The minimum match percentage for a product to be considered a match. */
   protected readonly minMatchPercentage: number = 55;
 
-  // Fuzz scorer used by `fuzzyFilter` to score each candidate's title against
-  // the query. Any function from `fuzzball` with the `(str1, str2, opts?) => number`
-  // shape works. Subclasses override this when a supplier's title format needs
-  // a different scorer (e.g. a catalog that pads titles with boilerplate might
-  // prefer `partial_ratio`). Defaults to `ratio`.
-  //
-  // Overridable at runtime from userSettings.fuzzScorerOverride — see
-  // `setFuzzScorerOverride` and `fuzzyFilter` below. The user's Advanced
-  // settings selection wins over this subclass default when set.
+  /**
+   * Fuzz scorer used by `fuzzyFilter` to score each candidate's title against
+   * the query. Any function from `fuzzball` with the
+   * `(str1, str2, opts?) => number` shape works. Subclasses override this when
+   * a supplier's title format needs a different scorer (e.g. a catalog that
+   * pads titles with boilerplate might prefer `partial_ratio`). Defaults to
+   * `ratio`.
+   *
+   * Overridable at runtime from `userSettings.fuzzScorerOverride` — see
+   * `setFuzzScorerOverride` and `fuzzyFilter` below. The user's Advanced
+   * settings selection wins over this subclass default when set.
+   */
   protected readonly fuzzScorer: FuzzScorerFn = ratio;
 
-  // Runtime override resolved from `userSettings.fuzzScorerOverride`. When
-  // set, `fuzzyFilter` uses this instead of `this.fuzzScorer`. Undefined
-  // (the default) means "use whatever the supplier class picked". Mutated
-  // by `setFuzzScorerOverride` so it can't be `readonly`.
+  /**
+   * Runtime override resolved from `userSettings.fuzzScorerOverride`. When
+   * set, `fuzzyFilter` uses this instead of `this.fuzzScorer`. Undefined
+   * (the default) means "use whatever the supplier class picked". Mutated
+   * by `setFuzzScorerOverride` so it can't be `readonly`.
+   */
   protected fuzzScorerOverride?: FuzzScorerFn;
 
-  // The shipping scope of the supplier.
-  // This is used to determine the shipping scope of the supplier.
+  /**
+   * The shipping scope of the supplier. Used to determine the shipping scope
+   * of the supplier.
+   */
   public abstract readonly shipping: ShippingRange;
 
-  // The country code of the supplier.
-  // This is used to determine the currency and other country-specific information.
+  /**
+   * The country code of the supplier. Used to determine the currency and other
+   * country-specific information.
+   */
   public abstract readonly country: CountryCode;
 
-  // The payment methods accepted by the supplier.
-  // This is used to determine the payment methods accepted by the supplier.
+  /**
+   * The payment methods accepted by the supplier. Used to determine the
+   * payment methods accepted by the supplier.
+   */
   public abstract readonly paymentMethods: PaymentMethod[];
 
-  // Optional external API hostname used by some suppliers (e.g., Typesense, Searchanise).
-  // When set, automatically included in requiredHosts for permission checks.
+  /**
+   * Optional external API hostname used by some suppliers (e.g., Typesense,
+   * Searchanise). When set, automatically included in `requiredHosts` for
+   * permission checks.
+   */
   protected readonly apiURL?: string;
 
-  // All host origin patterns required for this supplier to function.
-  // Automatically includes baseURL and, if defined, apiURL.
-  // Used by the factory to check chrome permissions before querying.
+  /**
+   * All host origin patterns required for this supplier to function.
+   * Automatically includes `baseURL` and, if defined, `apiURL`. Used by the
+   * factory to check chrome permissions before querying.
+   */
   public get requiredHosts(): string[] {
     const hosts = [`${this.baseURL}/*`];
     if (this.apiURL) {
@@ -152,15 +129,19 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     return hosts;
   }
 
-  // String to query for (Product name, CAS, etc).
-  // This is the search term that will be used to find products.
-  // Set during construction and used throughout the supplier's lifecycle.
+  /**
+   * String to query for (product name, CAS, etc.). The search term that will
+   * be used to find products. Set during construction and used throughout the
+   * supplier's lifecycle.
+   */
   protected query: string;
 
-  // If the products first require a query of a search page that gets iterated over,
-  // those results are stored here. This acts as a cache for the initial search results
-  // before they are processed into full product objects.
-  protected queryResults: Array<S> = [];
+  /**
+   * If the products first require a query of a search page that gets iterated
+   * over, those results are stored here. Acts as a cache for the initial
+   * search results before they are processed into full product objects.
+   */
+  protected queryResults: S[] = [];
 
   /**
    * The base search parameters that are always included in search requests.
@@ -318,11 +299,16 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    */
   protected headers: HeadersInit = {};
 
-  // Logger for the supplier. This gets initialized in this constructor with the
-  // name of the inheriting class.
+  /**
+   * Logger for the supplier. Initialized in the constructor with the name of
+   * the inheriting class.
+   */
   protected logger: Logger;
 
-  // Default values for products. These will get overridden if they're found in the product data.
+  /**
+   * Default values for products. These will get overridden if they're found in
+   * the product data.
+   */
   protected productDefaults: ProductDefaults = {
     uom: UOM.EA,
     quantity: 1,
@@ -330,14 +316,26 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     currencySymbol: "$",
   };
 
-  // Cache instance for this supplier
+  /**
+   * Cache instance for this supplier.
+   *
+   * Initialized after construction by `initCache()` (called from
+   * `SupplierFactory` once `supplierName` is set). The `!` assertion is safe
+   * here because every code path that reads `this.cache`
+   * (`queryProductsWithCache`, `getProductData`, `getProductDataWithCache`)
+   * runs only after `execute()` is called on a factory-built instance, and the
+   * factory always calls `initCache()` before handing the instance out.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   protected cache!: SupplierCache;
 
-  // Product-data cache keys the user has explicitly excluded via the
-  // "Ignore Product" context menu action. Loaded once per execute() from
-  // cstorage.local so membership checks are synchronous on the hot
-  // path (see getProductData). Newly-ignored products take effect on the
-  // next search, which matches the stated feature requirement.
+  /**
+   * Product-data cache keys the user has explicitly excluded via the "Ignore
+   * Product" context menu action. Loaded once per `execute()` from
+   * `storage.local` so membership checks are synchronous on the hot path
+   * (see `getProductData`). Newly-ignored products take effect on the next
+   * search, which matches the stated feature requirement.
+   */
   protected excludedProductKeys: Set<string> = new Set();
 
   /**
@@ -537,22 +535,21 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * @source
    */
   protected async httpGetHeaders(url: string | URL): Promise<Maybe<HeadersInit>> {
+    const requestObj = new Request(this.href(url), {
+      signal: this.controller.signal,
+      headers: new Headers(this.headers),
+      referrer: this.baseURL,
+      referrerPolicy: "strict-origin-when-cross-origin",
+      body: null,
+      method: "HEAD",
+      mode: "cors",
+      credentials: "include",
+    });
+
     try {
-      const requestObj = new Request(this.href(url), {
-        signal: this.controller.signal,
-        headers: new Headers(this.headers),
-        referrer: this.baseURL,
-        referrerPolicy: "strict-origin-when-cross-origin",
-        body: null,
-        method: "HEAD",
-        mode: "cors",
-        credentials: "include",
-      });
-
       const httpResponse = await this.fetch(requestObj);
-
       return Object.fromEntries(httpResponse.headers.entries()) satisfies HeadersInit;
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof Error && error.name === "AbortError") {
         this.logger.warn("Request was aborted", { error, signal: this.controller.signal });
         this.controller.abort();
@@ -562,6 +559,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
           signal: this.controller.signal,
         });
       }
+      return;
     }
   }
 
@@ -803,53 +801,53 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     headers,
     host,
   }: RequestOptions): Promise<Maybe<Response>> {
-    try {
-      // Check if the request has been aborted before proceeding
-      if (this.controller.signal.aborted) {
-        this.logger.warn("Request was aborted before fetch", {
-          signal: this.controller.signal,
-        });
-        return;
-      }
-
-      const headersRaw = { ...this.headers };
-
-      Object.assign(headersRaw, {
-        accept: [
-          "text/html",
-          "application/xhtml+xml",
-          "application/xml;q=0.9",
-          "image/avif",
-          "image/webp",
-          "image/apng",
-          "*/*;q=0.8",
-        ].join(","),
-        ...(headers ?? {}),
-      });
-
-      const requestObj = new Request(this.href(path, params, host), {
+    // Check if the request has been aborted before proceeding
+    if (this.controller.signal.aborted) {
+      this.logger.warn("Request was aborted before fetch", {
         signal: this.controller.signal,
-        headers: new Headers(headersRaw),
-        referrer: this.baseURL,
-        referrerPolicy: "no-referrer",
-        body: null,
-        method: "GET",
-        mode: "cors",
-        credentials: "include",
-        redirect: "follow",
       });
+      return;
+    }
 
+    const headersRaw = { ...this.headers };
+
+    Object.assign(headersRaw, {
+      accept: [
+        "text/html",
+        "application/xhtml+xml",
+        "application/xml;q=0.9",
+        "image/avif",
+        "image/webp",
+        "image/apng",
+        "*/*;q=0.8",
+      ].join(","),
+      ...(headers ?? {}),
+    });
+
+    const requestObj = new Request(this.href(path, params, host), {
+      signal: this.controller.signal,
+      headers: new Headers(headersRaw),
+      referrer: this.baseURL,
+      referrerPolicy: "no-referrer",
+      body: null,
+      method: "GET",
+      mode: "cors",
+      credentials: "include",
+      redirect: "follow",
+    });
+
+    try {
       // Fetch the goods
       const httpResponse = await this.fetch(requestObj.url, requestObj);
 
-      const resoponseHeaders = Object.fromEntries(
+      const responseHeaders = Object.fromEntries(
         httpResponse.headers.entries(),
       ) satisfies HeadersInit;
-      this.logger.debug("resoponseHeaders:", resoponseHeaders);
-      this.logger.debug("resoponseHeaders.location:", resoponseHeaders.location);
+      this.logger.debug("responseHeaders:", responseHeaders);
+      this.logger.debug("responseHeaders.location:", responseHeaders.location);
 
       return httpResponse;
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof Error && error.name === "AbortError") {
         this.logger.warn("Request was aborted", { error, signal: this.controller.signal });
         this.controller.abort();
@@ -859,6 +857,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
           signal: this.controller.signal,
         });
       }
+      return;
     }
   }
 
@@ -998,37 +997,28 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
 
   /**
    * Abstract method to select the title from the initial raw search data.
-   * This method should be implemented by each supplier to handle their specific data structure.
+   * This method should be implemented by each supplier to handle their specific
+   * data structure.
    *
-   * @param data - The data object to extract the title from
-   * @returns The title string to use for fuzzy matching
+   * The parameter is typed as `unknown` because callers (`fuzzyFilter`,
+   * `groupVariants`, `showFuzzScorerComparisonTable`) accept arbitrary `X[]`
+   * arrays — subclasses narrow with a type guard or cast (with a comment
+   * explaining why the cast is safe) to their parsed search-result type.
+   *
+   * @param data - The raw data object to extract the title from
+   * @returns The title string to use for fuzzy matching, or undefined
    * @abstract
    * @example
    * ```typescript
-   * // Example implementation for a supplier with simple title field
-   * protected titleSelector(data: Cheerio<Element>): string {
-   *   return data.text();
-   * }
-   *
-   * // Example implementation for a supplier with nested title
-   * protected titleSelector(data: SupplierProduct): string {
-   *   return data.productInfo.name;
-   * }
-   *
-   * // Example implementation for a supplier with multiple possible title fields
-   * protected titleSelector(data: SupplierProduct): string {
-   *   return data.displayName || data.productName || data.name || '';
-   * }
-   *
-   * // Example implementation for a supplier with formatted title
-   * protected titleSelector(data: SupplierProduct): string {
-   *   return `${data.name} ${data.grade} ${data.purity}`.trim();
+   * // Subclass narrows via cast (commented why safe):
+   * protected titleSelector(data: unknown): Maybe<string> {
+   *   // Safe: queryProducts only stores Cheerio<Element> into queryResults.
+   *   return (data as Cheerio<Element>).text();
    * }
    * ```
    * @source
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected abstract titleSelector(data: any): Maybe<string>;
+  protected abstract titleSelector(data: unknown): Maybe<string>;
 
   /**
    * Makes an HTTP GET request and returns the response as a string.
@@ -1307,7 +1297,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
           if (finished) {
             return finished;
           }
-        } catch (e) {
+        } catch (e: unknown) {
           this.logger.error("Error processing product", { error: e, product });
           incrementParseError(this.supplierName);
         }
@@ -1521,13 +1511,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
    * @source
    */
   protected href(path: string | URL, params?: Maybe<RequestParams>, host?: string): string {
-    let href: URL;
-
-    if (typeof path === "string" && isFullURL(path)) {
-      href = new URL(path);
-    }
-
-    href = new URL(path, this.baseURL);
+    const href = new URL(path, this.baseURL);
 
     if (host) {
       href.host = host;
@@ -1599,6 +1583,8 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     try {
       const cachedData = await this.cache.getCachedProductData(cacheKey);
       if (cachedData) {
+        // Safe: cache only stores values previously produced by ProductBuilder<T>.dump(),
+        // so the round-tripped shape is structurally a Partial<T>.
         product.setData(cachedData as Partial<T>);
         return product;
       }
@@ -1608,7 +1594,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       let resultBuilder: ProductBuilder<T> | void = undefined;
       try {
         resultBuilder = await this.getProductDataWithCache(product, this.getProductData, {});
-      } catch (err) {
+      } catch (err: unknown) {
         this.logger.error("Error in product detail fetcher:", err);
         incrementParseError(this.supplierName);
         return undefined;
@@ -1617,7 +1603,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
         await this.cache.cacheProductData(cacheKey, resultBuilder.dump());
       }
       return resultBuilder;
-    } catch (outerErr) {
+    } catch (outerErr: unknown) {
       this.logger.error("Error in getProductDataWithCache:", outerErr);
       incrementParseError(this.supplierName);
       return undefined;
@@ -1678,6 +1664,8 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
     try {
       const cachedData = await this.cache.getCachedProductData(cacheKey);
       if (cachedData) {
+        // Safe: cache only stores values previously produced by ProductBuilder<T>.dump(),
+        // so the round-tripped shape is structurally a Partial<T>.
         product.setData(cachedData as Partial<T>);
         return product;
       }
@@ -1687,7 +1675,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       let resultBuilder: ProductBuilder<T> | void = undefined;
       try {
         resultBuilder = await fetcher(product);
-      } catch (err) {
+      } catch (err: unknown) {
         this.logger.error("Error in product detail fetcher:", err);
         incrementParseError(this.supplierName);
         return undefined;
@@ -1697,7 +1685,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
         await this.cache.cacheProductData(cacheKey, resultBuilder.dump());
       }
       return resultBuilder;
-    } catch (outerErr) {
+    } catch (outerErr: unknown) {
       this.logger.error("Error in getProductDataWithCache:", outerErr);
       incrementParseError(this.supplierName);
       return undefined;
@@ -1796,7 +1784,7 @@ export default abstract class SupplierBase<S, T extends Product> implements ISup
       }
       incrementSuccess(this.supplierName);
       return response;
-    } catch (error) {
+    } catch (error: unknown) {
       incrementFailure(this.supplierName);
       throw error;
     }

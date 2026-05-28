@@ -2,7 +2,7 @@ import { currencies, locations } from "@/../config.json";
 import { CAS_REGEX, SPIN_SPEED, UOM } from "@/constants/common";
 import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 import { zodAddActualValueToIssues } from "@/helpers/utils";
-import SupplierFactory from "@/suppliers/SupplierFactory";
+import { SupplierFactory } from "@/suppliers/SupplierFactory";
 //import { currencies } from "price-parser";
 import { z } from "zod";
 

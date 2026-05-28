@@ -1,8 +1,8 @@
 import { parseQuantity } from "@/helpers/quantity";
 import { firstMap } from "@/helpers/utils";
-import ProductBuilder from "@/utils/ProductBuilder";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isSearchaniseVariant, isValidSearchResponse } from "@/utils/typeGuards/searchanise";
-import SupplierBase from "./SupplierBase";
+import { SupplierBase } from "./SupplierBase";
 
 /**
  * Base class for Searchanise-based suppliers that provides common functionality for
@@ -47,7 +47,7 @@ import SupplierBase from "./SupplierBase";
  * ```
  * @source
  */
-export default abstract class SupplierBaseSearchanise
+export abstract class SupplierBaseSearchanise
   extends SupplierBase<ItemListing, Product>
   implements ISupplier
 {

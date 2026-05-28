@@ -1,4 +1,4 @@
-import SupplierBaseWix from "./SupplierBaseWix";
+import { SupplierBaseWix } from "./SupplierBaseWix";
 
 /**
  * The SupplierBioFuranChem module is meant to perform searches and retrieve product details from the
@@ -12,7 +12,7 @@ import SupplierBaseWix from "./SupplierBaseWix";
  * @category Suppliers
  * @source
  */
-export default class SupplierBioFuranChem extends SupplierBaseWix implements ISupplier {
+export class SupplierBioFuranChem extends SupplierBaseWix implements ISupplier {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "BioFuran Chem";
 

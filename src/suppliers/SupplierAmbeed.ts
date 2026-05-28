@@ -1,9 +1,9 @@
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
-import ProductBuilder from "@/utils/ProductBuilder";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import { assertIsAmbeedProductListResponse } from "@/utils/typeGuards/ambeed";
-import SupplierBase from "./SupplierBase";
+import { SupplierBase } from "./SupplierBase";
 
 /**
  * Ambeed is a Chinese chemical supplier.
@@ -20,7 +20,7 @@ import SupplierBase from "./SupplierBase";
  * @see https://www.ambeed.com/
  * @source
  */
-export default class SupplierAmbeed
+export class SupplierAmbeed
   extends SupplierBase<AmbeedProductObject, Product>
   implements ISupplier
 {

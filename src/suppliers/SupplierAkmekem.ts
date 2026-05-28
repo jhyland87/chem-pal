@@ -1,4 +1,4 @@
-import SupplierBaseAmazon from "./SupplierBaseAmazon";
+import { SupplierBaseAmazon } from "./SupplierBaseAmazon";
 /* @hideconstructor */
 /* @hideden */
 /**
@@ -11,7 +11,7 @@ import SupplierBaseAmazon from "./SupplierBaseAmazon";
  * @deprecated Supplier got the boot from Amazon.
  * @source
  */
-export default class SupplierAkmekem extends SupplierBaseAmazon implements ISupplier {
+export class SupplierAkmekem extends SupplierBaseAmazon implements ISupplier {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "Akmekem";
 

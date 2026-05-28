@@ -1,5 +1,4 @@
-import type { CachedData } from "@/suppliers/SupplierBase";
-import Logger from "@/utils/Logger";
+import { Logger } from "@/utils/Logger";
 import {
   clearSupplierProductDataCache,
   clearSupplierQueryCache,
@@ -25,7 +24,7 @@ import { md5 } from "js-md5";
  * @typeParam T - The type of data being cached
  * @source
  */
-export default class SupplierCache {
+export class SupplierCache {
   //The version of the cache format.
   private static readonly CACHE_VERSION = 2;
 

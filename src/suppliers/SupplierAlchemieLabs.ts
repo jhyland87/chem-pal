@@ -1,4 +1,4 @@
-import SupplierBaseWoocommerce from "./SupplierBaseWoocommerce";
+import { SupplierBaseWoocommerce } from "./SupplierBaseWoocommerce";
 
 /**
  * Supplier class for Alchemie Labs, a chemical supplier using the WooCommerce platform.
@@ -22,7 +22,7 @@ import SupplierBaseWoocommerce from "./SupplierBaseWoocommerce";
  * @see https://alchemielabs.com/wp-json/wc/store/v1/products
  * @source
  */
-export default class SupplierAlchemieLabs extends SupplierBaseWoocommerce implements ISupplier {
+export class SupplierAlchemieLabs extends SupplierBaseWoocommerce implements ISupplier {
   /**
    * The display name of the supplier.
    * Used for identifying the supplier in product listings and user interfaces.

@@ -4,8 +4,8 @@ import { findElementWithText } from "@/helpers/dom";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM } from "@/helpers/request";
 import { getUserCountry, mapDefined, tryParseJson } from "@/helpers/utils";
-import ProductBuilder from "@/utils/ProductBuilder";
-import SupplierBase from "./SupplierBase";
+import { ProductBuilder } from "@/utils/ProductBuilder";
+import { SupplierBase } from "./SupplierBase";
 
 export interface SearchItem {
   id: string;
@@ -79,7 +79,7 @@ const userCountry = getUserCountry();
  *
  * @source
  */
-export default abstract class SupplierBaseAmazon
+export abstract class SupplierBaseAmazon
   extends SupplierBase<Product, Product>
   implements ISupplier
 {

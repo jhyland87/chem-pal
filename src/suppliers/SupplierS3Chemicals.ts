@@ -3,10 +3,10 @@ import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM } from "@/helpers/request";
 import { firstMap, mapDefined } from "@/helpers/utils";
-import ProductBuilder from "@/utils/ProductBuilder";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isCAS } from "@/utils/typeGuards/common";
 import { WRatio } from "fuzzball";
-import SupplierBase from "./SupplierBase";
+import { SupplierBase } from "./SupplierBase";
 /**
  * Supplier implementation for S3 Chemicals, a German based chemical supplier
  * (shop.es-drei.de) built on the Shopware 5 platform.
@@ -28,7 +28,7 @@ import SupplierBase from "./SupplierBase";
  * ```
  * @source
  */
-export default class SupplierS3Chemicals
+export class SupplierS3Chemicals
   extends SupplierBase<Partial<Product>, Product>
   implements ISupplier
 {

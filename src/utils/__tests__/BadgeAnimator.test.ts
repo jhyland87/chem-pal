@@ -4,7 +4,7 @@ import {
   restoreChromeActionMock,
   setupChromeActionMock,
 } from "../../__fixtures__/helpers/chrome/actionMock";
-import BadgeAnimator from "../BadgeAnimator";
+import { BadgeAnimator } from "../BadgeAnimator";
 
 describe("BadgeAnimator", () => {
   let mockChromeAction: ReturnType<typeof setupChromeActionMock>;
