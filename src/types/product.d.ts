@@ -1,5 +1,5 @@
-import type SupplierBase from "@/suppliers/SupplierBase";
-import type SupplierFactory from "@/suppliers/SupplierFactory";
+import type { SupplierBase } from "@/suppliers/SupplierBase";
+import type { SupplierFactory } from "@/suppliers/SupplierFactory";
 
 declare global {
   /**

@@ -7,7 +7,7 @@ import {
   getVisibleUniqueValues,
   setColumnVisibility,
 } from "@/mixins/tanstack";
-import BadgeAnimator from "@/utils/BadgeAnimator";
+import { BadgeAnimator } from "@/utils/BadgeAnimator";
 import {
   ColumnDef,
   ColumnFiltersState,

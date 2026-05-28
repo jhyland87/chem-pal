@@ -4,7 +4,7 @@ import { parseQuantity } from "@/helpers/quantity";
 import { firstMap } from "@/helpers/utils";
 import { isQuantityObject } from "@/utils/typeGuards/common";
 
-import ProductBuilder from "@/utils/ProductBuilder";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import {
   isATGResponse,
   isResponseOk,
@@ -12,7 +12,7 @@ import {
   isValidProductResponse,
   isValidSearchResponse,
 } from "@/utils/typeGuards/carolina";
-import SupplierBase from "./SupplierBase";
+import { SupplierBase } from "./SupplierBase";
 
 /**
  * Implementation of the Carolina Biological Supply Company supplier.
@@ -44,7 +44,7 @@ import SupplierBase from "./SupplierBase";
  * @category Suppliers
  * @source
  */
-export default class SupplierCarolina
+export class SupplierCarolina
   extends SupplierBase<CarolinaSearchResult, Product>
   implements ISupplier
 {

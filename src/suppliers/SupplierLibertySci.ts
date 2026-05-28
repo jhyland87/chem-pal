@@ -1,4 +1,4 @@
-import SupplierBaseWoocommerce from "./SupplierBaseWoocommerce";
+import { SupplierBaseWoocommerce } from "./SupplierBaseWoocommerce";
 
 /**
  * Supplier class for LibbertySci, a chemical supplier using the WooCommerce platform.
@@ -22,7 +22,7 @@ import SupplierBaseWoocommerce from "./SupplierBaseWoocommerce";
  * @see https://www.libertysci.com/wp-json/wc/store/v1/products
  * @source
  */
-export default class SupplierLibertySci extends SupplierBaseWoocommerce implements ISupplier {
+export class SupplierLibertySci extends SupplierBaseWoocommerce implements ISupplier {
   // The display name of the supplier.
   public readonly supplierName: string = "LibertySci";
 

@@ -1,9 +1,9 @@
 import { findCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
 import { firstMap, mapDefined } from "@/helpers/utils";
-import ProductBuilder from "@/utils/ProductBuilder";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isSearchResponse, isSearchResponseItem } from "@/utils/typeGuards/woocommerce";
-import SupplierBase from "./SupplierBase";
+import { SupplierBase } from "./SupplierBase";
 
 /**
  * Base class for WooCommerce-based suppliers that provides common functionality for
@@ -46,7 +46,7 @@ import SupplierBase from "./SupplierBase";
  * @see https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/products.md#list-products
  * @source
  */
-export default abstract class SupplierBaseWoocommerce
+export abstract class SupplierBaseWoocommerce
   extends SupplierBase<WooCommerceSearchResponseItem, Product>
   implements ISupplier
 {

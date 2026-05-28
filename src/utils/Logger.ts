@@ -64,7 +64,7 @@ export enum LogLevel {
  * ```
  * @source
  */
-export default class Logger {
+export class Logger {
   /**
    * Maps log levels to their priority values for comparison.
    * Higher numbers indicate higher priority levels.

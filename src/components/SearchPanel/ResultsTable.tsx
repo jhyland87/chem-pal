@@ -5,7 +5,7 @@ import resultStyles from "@/components/ResultsPanel.module.scss";
 import { CACHE } from "@/constants/common";
 import { generatePageSizes } from "@/helpers/utils";
 import { FOCUS_GLOBAL_FILTER_EVENT, TOGGLE_COLUMN_FILTERS_EVENT } from "@/hotkeys";
-import BadgeAnimator from "@/utils/BadgeAnimator";
+import { BadgeAnimator } from "@/utils/BadgeAnimator";
 import { cstorage } from "@/utils/storage";
 import { isInputElement } from "@/utils/typeGuards/common";
 import {

@@ -93,7 +93,7 @@ function assertIsSdqAgentResponse(data: unknown): asserts data is SDQResponse {
  * ```
  * @source
  */
-export default class Pubchem {
+export class Pubchem {
   /** Base URL for PubChem API endpoints */
   private readonly baseURL = "https://pubchem.ncbi.nlm.nih.gov";
 

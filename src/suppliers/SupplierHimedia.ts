@@ -1,4 +1,4 @@
-import SupplierBaseAmazon from "./SupplierBaseAmazon";
+import { SupplierBaseAmazon } from "./SupplierBaseAmazon";
 
 /**
  * Supplier for Himedia (via Amazon marketplace)
@@ -6,7 +6,7 @@ import SupplierBaseAmazon from "./SupplierBaseAmazon";
  * {@link https://www.amazon.com/s?k=Himedia | Himedias Amazon Listings}
  * @source
  */
-export default class SupplierHimedia extends SupplierBaseAmazon implements ISupplier {
+export class SupplierHimedia extends SupplierBaseAmazon implements ISupplier {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "Himedia";
 

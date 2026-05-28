@@ -4,8 +4,8 @@ import {
 } from "@/__fixtures__/helpers/chrome/storageMock";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import * as suppliers from "..";
-import SupplierBase from "../SupplierBase";
-import SupplierFactory from "../SupplierFactory";
+import { SupplierBase } from "../SupplierBase";
+import { SupplierFactory } from "../SupplierFactory";
 
 beforeAll(() => {
   setupChromeStorageMock();

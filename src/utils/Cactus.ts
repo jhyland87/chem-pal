@@ -82,7 +82,7 @@ function assertIsStringResponse(response: unknown): asserts response is string {
  * ```
  * @source
  */
-export default class Cactus {
+export class Cactus {
   /** Chemical name */
   private name: string;
 

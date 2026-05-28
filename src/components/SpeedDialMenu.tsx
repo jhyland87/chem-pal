@@ -4,7 +4,7 @@ import AutoDeleteIcon from "@/icons/AutoDeleteIcon";
 import ClearIcon from "@/icons/ClearIcon";
 import ContrastIcon from "@/icons/ContrastIcon";
 import InfoOutlineIcon from "@/icons/InfoOutlineIcon";
-import SupplierCache from "@/utils/SupplierCache";
+import { SupplierCache } from "@/utils/SupplierCache";
 import { clearSearchResults } from "@/utils/idbCache";
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import BarChartIcon from "@mui/icons-material/BarChart";

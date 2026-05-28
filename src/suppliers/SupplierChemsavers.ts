@@ -1,9 +1,9 @@
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
-import ProductBuilder from "@/utils/ProductBuilder";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import { assertValidSearchResponse } from "@/utils/typeGuards/chemsavers";
 import { isCAS } from "@/utils/typeGuards/common";
-import SupplierBase from "./SupplierBase";
+import { SupplierBase } from "./SupplierBase";
 
 /**
  * Module sed to retrieve products sold on the Chemsavers website.
@@ -17,7 +17,7 @@ import SupplierBase from "./SupplierBase";
  * @category Suppliers
  * @source
  */
-export default class SupplierChemsavers
+export class SupplierChemsavers
   extends SupplierBase<ChemsaversProductObject, Product>
   implements ISupplier
 {

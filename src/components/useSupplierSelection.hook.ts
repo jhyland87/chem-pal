@@ -1,5 +1,5 @@
 import { useAppContext } from "@/context";
-import SupplierFactory from "@/suppliers/SupplierFactory";
+import { SupplierFactory } from "@/suppliers/SupplierFactory";
 import { ChangeEvent, useCallback } from "react";
 
 /**

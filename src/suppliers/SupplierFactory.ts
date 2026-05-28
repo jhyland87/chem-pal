@@ -1,10 +1,10 @@
 import { defaultResultsLimit } from "@/../config.json";
 import { mapDefined } from "@/helpers/utils";
-import Logger from "@/utils/Logger";
+import { Logger } from "@/utils/Logger";
 import { incrementParseError } from "@/utils/SupplierStatsStore";
 import { Queue } from "async-await-queue";
 import * as suppliers from ".";
-import SupplierBase from "./SupplierBase";
+import { SupplierBase } from "./SupplierBase";
 
 /** Constructor signature for supplier classes used by the factory */
 type SupplierConstructor<P extends Product> = new (
@@ -36,7 +36,7 @@ type SupplierConstructor<P extends Product> = new (
  * ```
  * @source
  */
-export default class SupplierFactory<P extends Product> {
+export class SupplierFactory<P extends Product> {
   // Term being queried
   private query: string;
 

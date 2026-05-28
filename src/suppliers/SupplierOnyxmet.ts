@@ -2,9 +2,9 @@ import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { firstMap, mapDefined } from "@/helpers/utils";
-import ProductBuilder from "@/utils/ProductBuilder";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isSearchResultItem } from "@/utils/typeGuards/onyxmet";
-import SupplierBase from "./SupplierBase";
+import { SupplierBase } from "./SupplierBase";
 
 /**
  * Supplier implementation for Onyxmet chemical supplier.
@@ -23,7 +23,7 @@ import SupplierBase from "./SupplierBase";
  * ```
  * @source
  */
-export default class SupplierOnyxmet
+export class SupplierOnyxmet
   extends SupplierBase<OnyxMetSearchResultResponse, Product>
   implements ISupplier
 {

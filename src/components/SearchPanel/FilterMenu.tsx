@@ -1,6 +1,6 @@
 import ArrowForwardIosSharpIcon from "@/icons/ArrowDropDownIcon";
 import SearchIcon from "@/icons/SearchIcon";
-import SupplierFactory from "@/suppliers/SupplierFactory";
+import { SupplierFactory } from "@/suppliers/SupplierFactory";
 import ManageSearchIcon from "@mui/icons-material/ManageSearch";
 import Box from "@mui/material/Box";
 import Checkbox from "@mui/material/Checkbox";

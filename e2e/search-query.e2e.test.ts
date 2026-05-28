@@ -195,14 +195,14 @@ describe("Chem-Pal search query", () => {
     await page.close();
   }, 30_000);
 
-  it("should produce 94 results for 'potassium' when fuzzScorerOverride is 'WRatio'", async () => {
+  it("should produce 90 results for 'potassium' when fuzzScorerOverride is 'WRatio'", async () => {
     const rowCount = await potassiumRowCountWithScorer("WRatio");
-    vitestExpect(rowCount).toBe(94);
+    vitestExpect(rowCount).toBe(90);
   }, 200_000);
 
-  it("should produce 25 results for 'potassium' when fuzzScorerOverride is 'ratio'", async () => {
+  it("should produce 24 results for 'potassium' when fuzzScorerOverride is 'ratio'", async () => {
     const rowCount = await potassiumRowCountWithScorer("ratio");
-    vitestExpect(rowCount).toBe(25);
+    vitestExpect(rowCount).toBe(24);
   }, 200_000);
 
   it("should display 'No results found' for a query that matches nothing", async () => {
@@ -240,7 +240,7 @@ describe("Chem-Pal search query", () => {
     await page.close();
   }, 200_000);
 
-  it("should query for 'potassium' and display 16 results from mock data", async () => {
+  it("should query for 'potassium' and display 15 results from mock data", async () => {
     const page = await openExtension();
 
     // Type the search query and submit (mock routes + "abort" fallback are
@@ -277,7 +277,7 @@ describe("Chem-Pal search query", () => {
       .locator("tbody tr")
       .filter({ has: page.locator("td") })
       .count();
-    vitestExpect(rowCount).toBe(16);
+    vitestExpect(rowCount).toBe(15);
 
     // Pause so you can inspect DevTools (Network tab, console, etc.)
     // The test will wait here until you call `playwright.resume()` in the

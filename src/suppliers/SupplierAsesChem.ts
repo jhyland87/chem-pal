@@ -1,4 +1,4 @@
-import SupplierBaseShopify from "./SupplierBaseShopify";
+import { SupplierBaseShopify } from "./SupplierBaseShopify";
 
 /**
  * SupplierGoldAndSilverTesting class that extends SupplierBaseShopify.
@@ -10,7 +10,7 @@ import SupplierBaseShopify from "./SupplierBaseShopify";
  * @category Suppliers
  * @source
  */
-export default class SupplierAsesChem extends SupplierBaseShopify implements ISupplier {
+export class SupplierAsesChem extends SupplierBaseShopify implements ISupplier {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "AsesChem";
 

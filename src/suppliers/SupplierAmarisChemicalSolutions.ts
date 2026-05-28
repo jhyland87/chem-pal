@@ -1,4 +1,4 @@
-import SupplierBaseWoocommerce from "./SupplierBaseWoocommerce";
+import { SupplierBaseWoocommerce } from "./SupplierBaseWoocommerce";
 
 /**
  * Supplier class for Amaris Chemical Solutions, a chemical supplier using the WooCommerce platform.
@@ -29,7 +29,7 @@ import SupplierBaseWoocommerce from "./SupplierBaseWoocommerce";
  * @see https://amarischemicalsolutions.com/wp-json/wc/store/v1/products
  * @source
  */
-export default class SupplierAmarisChemicalSolutions
+export class SupplierAmarisChemicalSolutions
   extends SupplierBaseWoocommerce
   implements ISupplier
 {

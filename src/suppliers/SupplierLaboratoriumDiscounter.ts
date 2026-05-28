@@ -5,7 +5,7 @@ import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM, urlencode } from "@/helpers/request";
 import { firstMap, mapDefined } from "@/helpers/utils";
-import ProductBuilder from "@/utils/ProductBuilder";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import {
   isFullURL,
   isPopulatedArray,
@@ -18,7 +18,7 @@ import {
   isValidSearchParams,
 } from "@/utils/typeGuards/laboratoriumdiscounter";
 import { token_set_ratio } from "fuzzball";
-import SupplierBase from "./SupplierBase";
+import { SupplierBase } from "./SupplierBase";
 
 /**
  * Class for retrieving search results and iterating over Laboratorium Discounter online
@@ -62,7 +62,7 @@ import SupplierBase from "./SupplierBase";
  * ```
  * @source
  */
-export default class SupplierLaboratoriumDiscounter
+export class SupplierLaboratoriumDiscounter
   extends SupplierBase<LaboratoriumDiscounterProductObject, Product>
   implements ISupplier
 {

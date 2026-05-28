@@ -1,6 +1,5 @@
 import type { ExcludedProductsMap } from "@/helpers/excludedProducts";
-import type { CachedData } from "@/suppliers/SupplierBase";
-import Logger from "@/utils/Logger";
+import { Logger } from "@/utils/Logger";
 import { type DBSchema, type IDBPDatabase, openDB } from "idb";
 
 /**

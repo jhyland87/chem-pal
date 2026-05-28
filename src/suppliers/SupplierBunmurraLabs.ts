@@ -1,4 +1,4 @@
-import SupplierBaseWix from "./SupplierBaseWix";
+import { SupplierBaseWix } from "./SupplierBaseWix";
 /* @hideconstructor */
 /* @hideden */
 /**
@@ -7,7 +7,7 @@ import SupplierBaseWix from "./SupplierBaseWix";
  * @deprecated Supplier is redoing website and has not gotten the new one live yet.
  * @source
  */
-export default class SupplierBunmurraLabs extends SupplierBaseWix implements ISupplier {
+export class SupplierBunmurraLabs extends SupplierBaseWix implements ISupplier {
   /* @deprecated */
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "Bunmurra Labs";

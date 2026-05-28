@@ -2,9 +2,9 @@ import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
-import ProductBuilder from "@/utils/ProductBuilder";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import chunk from "lodash/chunk";
-import SupplierBase from "./SupplierBase";
+import { SupplierBase } from "./SupplierBase";
 /**
  * Supplier implementation for Loudwolf chemical supplier.
  * Extends the base supplier class and provides Loudwolf-specific implementation
@@ -22,7 +22,7 @@ import SupplierBase from "./SupplierBase";
  * ```
  * @source
  */
-export default class SupplierLoudwolf
+export class SupplierLoudwolf
   extends SupplierBase<Partial<Product>, Product>
   implements ISupplier
 {

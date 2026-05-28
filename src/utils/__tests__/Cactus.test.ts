@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
-import Cactus from "../Cactus";
+import { Cactus } from "../Cactus";
 
 describe("Cactus", () => {
   let mockFetch: Mock;

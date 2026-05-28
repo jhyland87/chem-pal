@@ -1,6 +1,6 @@
 import { mapDefined } from "@/helpers/utils";
-import ProductBuilder from "@/utils/ProductBuilder";
-import SupplierBase from "./SupplierBase";
+import { ProductBuilder } from "@/utils/ProductBuilder";
+import { SupplierBase } from "./SupplierBase";
 /* @hideconstructor */
 /* @hideden */
 /**
@@ -26,7 +26,7 @@ import SupplierBase from "./SupplierBase";
  * @deprecated Supplier website is offline.
  * @source
  */
-export default class SupplierN2O3 extends SupplierBase<Product, Product> implements ISupplier {
+export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISupplier {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "N2O3";
 

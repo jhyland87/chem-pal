@@ -1,4 +1,4 @@
-import ProductBuilder from "@/utils/ProductBuilder";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import { describe, expect, it } from "vitest";
 import { SupplierAmarisChemicalSolutions } from "..";
 

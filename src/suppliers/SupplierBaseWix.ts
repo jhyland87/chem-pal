@@ -3,18 +3,18 @@ import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { findFormulaInHtml } from "@/helpers/science";
 import { firstMap, htmlToAscii, mapDefined } from "@/helpers/utils";
-import ProductBuilder from "@/utils/ProductBuilder";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isParsedPrice } from "@/utils/typeGuards/common";
 import { isValidVariant } from "@/utils/typeGuards/productbuilder";
 import { isProductItem, isProductSelection, isValidSearchResponse } from "@/utils/typeGuards/wix";
-import SupplierBase from "./SupplierBase";
+import { SupplierBase } from "./SupplierBase";
 /**
  * SupplierBaseWix class that extends SupplierBase and implements AsyncIterable<Product>.
  * @abstract
  * @category Suppliers
  * @source
  */
-export default abstract class SupplierBaseWix
+export abstract class SupplierBaseWix
   extends SupplierBase<ProductObject, Product>
   implements ISupplier
 {

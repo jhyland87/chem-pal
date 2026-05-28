@@ -2,10 +2,10 @@ import { findCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM } from "@/helpers/request";
 import { firstMap, mapDefined } from "@/helpers/utils";
-import ProductBuilder from "@/utils/ProductBuilder";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isCAS } from "@/utils/typeGuards/common";
 import priceParser from "price-parser";
-import SupplierBase from "./SupplierBase";
+import { SupplierBase } from "./SupplierBase";
 /**
  * Supplier implementation for Warchem, a Polish based chemical supplier.
  *
@@ -22,7 +22,7 @@ import SupplierBase from "./SupplierBase";
  * ```
  * @source
  */
-export default class SupplierWarchem
+export class SupplierWarchem
   extends SupplierBase<Partial<Product>, Product>
   implements ISupplier
 {
