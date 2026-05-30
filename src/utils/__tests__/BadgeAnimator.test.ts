@@ -177,6 +177,37 @@ describe("BadgeAnimator", () => {
     });
   });
 
+  describe("search outcome badge state", () => {
+    it("ends empty after a 0-result search (animate then clear)", () => {
+      BadgeAnimator.animate("ellipsis", 300);
+      BadgeAnimator.clear();
+      expect(mockChromeAction._state.badgeText).toBe("");
+    });
+
+    it("ends empty after an aborted search (animate then clear)", () => {
+      BadgeAnimator.animate("ellipsis", 300);
+      BadgeAnimator.clear();
+      expect(mockChromeAction._state.badgeText).toBe("");
+    });
+
+    it("shows the count when results exist (animate then setText)", () => {
+      BadgeAnimator.animate("ellipsis", 300);
+      BadgeAnimator.setText("5");
+      expect(mockChromeAction._state.badgeText).toBe("5");
+    });
+
+    it("stops animating once cleared so the badge can't get stuck on an ellipsis", async () => {
+      BadgeAnimator.animate("ellipsis", 300);
+      BadgeAnimator.clear();
+      const callsAfterClear = mockChromeAction.setBadgeText.mock.calls.length;
+
+      await vi.advanceTimersByTimeAsync(900);
+
+      expect(mockChromeAction.setBadgeText.mock.calls.length).toBe(callsAfterClear);
+      expect(mockChromeAction._state.badgeText).toBe("");
+    });
+  });
+
   describe("charsets", () => {
     it("should have all predefined charsets available", () => {
       expect(BadgeAnimator.charsets).toHaveProperty("hourglass");

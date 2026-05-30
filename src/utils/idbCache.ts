@@ -157,11 +157,30 @@ export async function setSearchResults(results: Product[]): Promise<void> {
   }
 }
 
-export async function clearSearchResults(): Promise<void> {
+/**
+ * Clears all persisted search results from IndexedDB.
+ * By default this dispatches {@link IDB_SEARCH_RESULTS_CLEARED} so listeners
+ * (e.g. the App) can react to an explicit, user-initiated clear. Pass
+ * `{ notify: false }` to clear silently — used when resetting the store at the
+ * start of a new search, where firing the event would bounce the user off the
+ * results panel.
+ * @param options - Clear behavior.
+ * @param options.notify - Whether to dispatch {@link IDB_SEARCH_RESULTS_CLEARED} (default `true`).
+ * @example
+ * ```ts
+ * await clearSearchResults();                  // clears + notifies listeners
+ * await clearSearchResults({ notify: false }); // clears silently
+ * ```
+ * @source
+ */
+export async function clearSearchResults(options: { notify?: boolean } = {}): Promise<void> {
+  const { notify = true } = options;
   try {
     const db = await getDB();
     await db.delete("searchResults", "current");
-    emitSearchResultsCleared();
+    if (notify) {
+      emitSearchResultsCleared();
+    }
   } catch (error) {
     logger.error("Failed to clear search results from IndexedDB", { error });
   }

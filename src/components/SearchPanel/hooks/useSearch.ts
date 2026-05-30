@@ -10,6 +10,7 @@ import { ABORT_SEARCH_EVENT } from "@/hotkeys";
 import {
   getSearchResults,
   setSearchResults as idbSetSearchResults,
+  clearSearchResults,
   addSearchHistoryEntry,
   updateSearchHistoryResultCount as idbUpdateHistoryResultCount,
   IDB_SEARCH_RESULTS_CLEARED,
@@ -355,6 +356,13 @@ export function useSearch() {
       setTableText("");
       setExecutedQuery(query);
 
+      // Drop any previously persisted results so a search that ends with zero
+      // results (or is aborted/errors before streaming) doesn't rehydrate stale
+      // data on the next popup open. Cleared silently so it doesn't fire
+      // IDB_SEARCH_RESULTS_CLEARED, which would bounce the user off the results
+      // panel mid-search. New results re-persist as they stream in.
+      await clearSearchResults({ notify: false });
+
       // Create a history entry immediately so it's recorded even if the search is cancelled or hangs.
       // The resultCount will be updated live as results stream in.
       const historyTimestamp = Date.now();
@@ -510,9 +518,14 @@ export function useSearch() {
           const message = await buildNoResultsMessage(query, filtersActive);
           setTableText(message);
           console.debug("setting table text", { tableText: message });
+          // No results — stop the loading animation and leave the badge empty so
+          // it doesn't stay stuck on the "…" ellipsis.
+          BadgeAnimator.clear();
         } else {
           // Clear any status text from a previous search.
           setTableText("");
+          // Stop the loading animation and pin the final result count on the badge.
+          BadgeAnimator.setText(resultsTable.getRowCount().toString());
         }
 
         // Final state - search complete
@@ -526,6 +539,9 @@ export function useSearch() {
           resultCount: resultsTable.getRowCount(),
         });
       } catch (error) {
+        // Stop the loading animation in either terminal path so the badge
+        // doesn't stay stuck on the "…" ellipsis after an abort or failure.
+        BadgeAnimator.clear();
         if (error instanceof Error && error.name === "AbortError") {
           setState((prev) => ({
             ...prev,
