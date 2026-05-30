@@ -1,20 +1,20 @@
 import { getColumnFilterConfig } from "@/components/SearchPanel/TableColumns";
 import { AVAILABILITY_LABEL_MAP, CACHE } from "@/constants/common";
 import { useAppContext } from "@/context";
+import { SearchEvent, emitSearchEvent } from "@/events/searchEvents";
 import { addExcludedProduct } from "@/helpers/excludedProducts";
 import { getCompoundNameFromAlias } from "@/helpers/pubchem";
-import { SupplierFactory } from "@/suppliers/SupplierFactory";
-import { BadgeAnimator } from "@/utils/BadgeAnimator";
-import { cstorage } from "@/utils/storage";
 import { ABORT_SEARCH_EVENT } from "@/hotkeys";
+import { SupplierFactory } from "@/suppliers/SupplierFactory";
 import {
+  IDB_SEARCH_RESULTS_CLEARED,
+  addSearchHistoryEntry,
+  clearSearchResults,
   getSearchResults,
   setSearchResults as idbSetSearchResults,
-  clearSearchResults,
-  addSearchHistoryEntry,
   updateSearchHistoryResultCount as idbUpdateHistoryResultCount,
-  IDB_SEARCH_RESULTS_CLEARED,
 } from "@/utils/idbCache";
+import { cstorage } from "@/utils/storage";
 import { type Table } from "@tanstack/react-table";
 import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 interface SearchState {
@@ -374,8 +374,8 @@ export function useSearch() {
         appContext.selectedSuppliers ?? [],
       );
 
-      // Start the loading animation
-      BadgeAnimator.animate("ellipsis", 300);
+      // Signal search start — the badge controller owns the loading animation.
+      emitSearchEvent(SearchEvent.STARTED, { query });
 
       const columnFilterConfig = getColumnFilterConfig();
       const userLimit = appContext.userSettings.supplierResultLimit ?? 15;
@@ -445,11 +445,10 @@ export function useSearch() {
             updateColumnFilterFromResult(columnFilterConfig, result);
           }
 
-          // Set all filtered+limited results at once. The badge counter is
-          // driven off the table's filtered row count in ResultsTable.tsx —
-          // once React commits this state update the table re-renders and
-          // the badge-syncing effect fires, so no direct BadgeAnimator call
-          // is needed here.
+          // Set all filtered+limited results at once. The badge count is driven
+          // by ResultsTable emitting SearchEvent.RESULTS_COUNT off its filtered row count
+          // count — committing this state update re-renders the table, which
+          // re-emits the count, so no direct badge update is needed here.
           const finalResults = limited.map((r, idx) => ({ ...r, id: idx }));
           setSearchResults(finalResults);
 
@@ -464,10 +463,9 @@ export function useSearch() {
           });
         } else {
           // No filters active — stream results directly (original behavior).
-          // The extension badge is wired to `table.getFilteredRowModel()` in
-          // ResultsTable.tsx's badge-sync effect, so each row appended below
-          // triggers a re-render that bumps the badge — no direct
-          // BadgeAnimator call is needed in this loop.
+          // ResultsTable emits SearchEvent.RESULTS_COUNT off `table.getFilteredRowModel()`,
+          // so each row appended below triggers a re-render that re-emits the
+          // count and bumps the badge — no direct badge update is needed here.
           for await (const result of productQueryResults) {
             // Update state with current count using startTransition for better performance
             startTransition(() => {
@@ -518,15 +516,14 @@ export function useSearch() {
           const message = await buildNoResultsMessage(query, filtersActive);
           setTableText(message);
           console.debug("setting table text", { tableText: message });
-          // No results — stop the loading animation and leave the badge empty so
-          // it doesn't stay stuck on the "…" ellipsis.
-          BadgeAnimator.clear();
         } else {
           // Clear any status text from a previous search.
           setTableText("");
-          // Stop the loading animation and pin the final result count on the badge.
-          BadgeAnimator.setText(resultsTable.getRowCount().toString());
         }
+
+        // Signal completion — the badge controller reconciles the final count
+        // (0 → empty badge, N → count), so no direct BadgeAnimator call here.
+        emitSearchEvent(SearchEvent.COMPLETED, { count: resultsTable.getRowCount() });
 
         // Final state - search complete
         // NOTE: Do NOT wrap in startTransition — the isLoading:false update must be
@@ -539,10 +536,10 @@ export function useSearch() {
           resultCount: resultsTable.getRowCount(),
         });
       } catch (error) {
-        // Stop the loading animation in either terminal path so the badge
-        // doesn't stay stuck on the "…" ellipsis after an abort or failure.
-        BadgeAnimator.clear();
+        // Signal the terminal outcome — the badge controller clears the badge on
+        // either path so it doesn't stay stuck on the "…" ellipsis.
         if (error instanceof Error && error.name === "AbortError") {
+          emitSearchEvent(SearchEvent.ABORTED);
           setState((prev) => ({
             ...prev,
             isLoading: false,
@@ -551,6 +548,9 @@ export function useSearch() {
           }));
           setTableText("Search aborted");
         } else {
+          emitSearchEvent(SearchEvent.FAILED, {
+            error: error instanceof Error ? error.message : "Search failed",
+          });
           setState((prev) => ({
             ...prev,
             isLoading: false,
@@ -608,9 +608,9 @@ export function useSearch() {
       nextResults = prev.filter((p) => !(p.url === product.url && p.supplier === product.supplier));
       return nextResults;
     });
-    // Badge count is synced off `table.getFilteredRowModel()` inside
-    // ResultsTable.tsx — this setSearchResults call triggers the re-render
-    // that updates it, no direct BadgeAnimator.setText needed here.
+    // Badge count is driven by ResultsTable emitting SearchEvent.RESULTS_COUNT off
+    // `table.getFilteredRowModel()` — this setSearchResults call triggers the
+    // re-render that re-emits it, so no direct badge update is needed here.
     try {
       await addExcludedProduct(product.url, product.supplier, { title: product.title });
     } catch (error) {

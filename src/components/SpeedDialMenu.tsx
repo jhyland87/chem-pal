@@ -54,16 +54,6 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
     console.debug("[handleClearResults] Setting userSettings to:", { ...appContext.userSettings });
     appContext.setUserSettings({ ...appContext.userSettings });
 
-    const badgeText = await chrome.action.getBadgeText({});
-    if (badgeText !== "" && badgeText !== null) {
-      await chrome.action.setBadgeText({ text: "0" });
-      setTimeout(async () => {
-        console.debug("[handleClearResults] Cleared results from session storage");
-        await chrome.action.setBadgeText({ text: "" });
-      }, 1000);
-      console.debug("[handleClearResults] Cleared results from session storage");
-    }
-
     appContext.setSearchResults([]);
   };
 
@@ -122,9 +112,7 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
     { icon: <ClearIcon />, name: "Clear Results", onClick: handleClearResults },
     { icon: <AutoDeleteIcon />, name: "Clear Cache", onClick: handleClearCache },
     { icon: <ContrastIcon />, name: "Toggle Theme", onClick: handleToggleTheme },
-    ...(IS_DEV_BUILD
-      ? [{ icon: <BarChartIcon />, name: "Stats", onClick: handleStatsOpen }]
-      : []),
+    ...(IS_DEV_BUILD ? [{ icon: <BarChartIcon />, name: "Stats", onClick: handleStatsOpen }] : []),
     { icon: <InfoOutlineIcon />, name: "About", onClick: handleAboutOpen },
   ];
 

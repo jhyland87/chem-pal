@@ -7,6 +7,7 @@ This page details the end-to-end search flow from user input through to rendered
 - **Two entry points**: `SearchPage` (web app) and `SearchPanelHome` (Chrome extension) both feed into the same execution pipeline
 - **Streaming results**: `SupplierFactory.executeAllStream()` yields products as they arrive from any supplier, enabling incremental UI updates
 - **Session persistence**: The Chrome extension persists query state to `chrome.storage.session` (via `cstorage`) and search results to IndexedDB for restore-on-mount
+- **Lifecycle events**: `performSearch` emits typed `CustomEvent`s at each phase — the `SearchEvent` enum (`STARTED`, `RESULTS_COUNT`, `COMPLETED`, `ABORTED`, `FAILED`) — decoupling side-effects like the toolbar badge from the search code. See [Events](Events)
 - **Supplier data strategies**: Each supplier implements one of three patterns depending on what the vendor's site exposes:
   - **JSON Only** (e.g. Wix) — GraphQL/REST API provides all product data in the search response; no detail page fetch needed
   - **HTML Only** (e.g. Loudwolf) — Both search results and product details are scraped from HTML pages via `DOMParser`

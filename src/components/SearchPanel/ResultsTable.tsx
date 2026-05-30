@@ -5,7 +5,7 @@ import resultStyles from "@/components/ResultsPanel.module.scss";
 import { CACHE } from "@/constants/common";
 import { generatePageSizes } from "@/helpers/utils";
 import { FOCUS_GLOBAL_FILTER_EVENT, TOGGLE_COLUMN_FILTERS_EVENT } from "@/hotkeys";
-import { BadgeAnimator } from "@/utils/BadgeAnimator";
+import { SearchEvent, emitSearchEvent } from "@/events/searchEvents";
 import { cstorage } from "@/utils/storage";
 import { isInputElement } from "@/utils/typeGuards/common";
 import {
@@ -311,16 +311,23 @@ export default function ResultsTable({
   const totalRowCount = table.getFilteredRowModel().rows.length;
   const supplierResultsCount = table.getColumn("supplier")?.getFacetedUniqueValues().size ?? 0;
 
-  // Mirror the table's filtered row count onto the extension's badge. This
-  // is the single source of truth for the counter — it covers streaming
-  // results (each append triggers a re-render), search completion, product
-  // exclusion, AND user-applied column/global filters uniformly. Keep the
-  // effect skipped while the table is empty so the BadgeAnimator's
-  // "Searching…" ellipsis animation (started in useSearch.performSearch)
-  // isn't immediately overwritten with "0".
+  // Emit the table's filtered row count as a search-lifecycle event. The badge
+  // controller (src/utils/badgeController.ts) is the single place that turns this
+  // into a badge update — it covers streaming results (each append re-renders),
+  // search completion, product exclusion, AND user-applied column/global filters
+  // uniformly. A count of 0 mid-search keeps the ellipsis (the controller tracks
+  // isSearching); a count of 0 after a search clears the badge.
+  //
+  // Suppress the *leading* zeros: on open, the table briefly renders empty
+  // before restored/streamed results populate it. Emitting that transient 0
+  // would clear a badge App already set to the restored count — a visible
+  // flicker. Once the table has shown any results, emit every change (including
+  // a genuine 0 from filtering, so "filtered to nothing → no badge" still works).
+  const hasHadResultsRef = useRef(false);
   useEffect(() => {
-    if (totalRowCount === 0) return;
-    BadgeAnimator.setText(totalRowCount.toString());
+    if (totalRowCount > 0) hasHadResultsRef.current = true;
+    if (totalRowCount === 0 && !hasHadResultsRef.current) return;
+    emitSearchEvent(SearchEvent.RESULTS_COUNT, { count: totalRowCount });
   }, [filteredRowCount, totalRowCount]);
 
   // Compute valid page sizes from the *filter-applied total* (totalRowCount)
