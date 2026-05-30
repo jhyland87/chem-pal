@@ -7,7 +7,6 @@ import {
   getVisibleUniqueValues,
   setColumnVisibility,
 } from "@/mixins/tanstack";
-import { BadgeAnimator } from "@/utils/BadgeAnimator";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -303,15 +302,6 @@ export function useResultsTable({
           table.getMatchPercentageSortOrder = () => {
             if (!table.isSortedByMatchPercentage?.()) return null;
             return table._customSort?.order || null;
-          };
-
-          /**
-           * Updates the badge with the current row count from the table.
-           * @source
-           */
-          table.updateBadgeCount = () => {
-            const rowCount = table.getRowCount();
-            BadgeAnimator.setText(rowCount.toString());
           };
         },
         /**

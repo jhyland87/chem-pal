@@ -9,6 +9,7 @@
 **Architecture**
 - [Architecture Overview](Architecture-Overview)
 - [Search Flow](Search-Flow)
+- [Events](Events)
 - [Caching](Caching)
 
 **Suppliers**

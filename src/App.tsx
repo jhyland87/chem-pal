@@ -10,7 +10,8 @@ import {
   type HotkeyHandlers,
 } from "@/hotkeys";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
-import { BadgeAnimator } from "@/utils/BadgeAnimator";
+import { useBadgeController } from "@/utils/badgeController";
+import { SearchEvent, emitSearchEvent } from "@/events/searchEvents";
 import { SupplierCache } from "@/utils/SupplierCache";
 import { clearSearchResults, getSearchResults, IDB_SEARCH_RESULTS_CLEARED } from "@/utils/idbCache";
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
@@ -145,6 +146,11 @@ function HotkeyLayer({ handlers }: { handlers: HotkeyHandlers }) {
  * @source
  */
 function App() {
+  // Single owner of all extension-badge updates. Subscribes to search-lifecycle
+  // events (and results-cleared) and reconciles the badge; mounted before the
+  // storage-load effect below so its listeners exist when that effect emits.
+  useBadgeController();
+
   // Search results state - separate from main app state for better performance
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   // Controls the HotkeyHelpModal visibility (shift+? opens it)
@@ -304,14 +310,10 @@ function App() {
 
         const hasResults = idbResults.length > 0;
 
-        // Sync the toolbar badge with the restored results on open: show the
-        // count when there are results, otherwise clear any stale badge (e.g. a
-        // leftover "…" left by a previous session).
-        if (hasResults) {
-          BadgeAnimator.setText(idbResults.length.toString());
-        } else {
-          BadgeAnimator.clear();
-        }
+        // Sync the toolbar badge with the restored results on open. The badge
+        // controller reconciles this: a count of 0 (no search running) clears any
+        // stale badge left by a previous session; a positive count is shown.
+        emitSearchEvent(SearchEvent.RESULTS_COUNT, { count: idbResults.length });
 
         const savedPanelRaw = sessionData[CACHE.PANEL];
         const savedPanel =
@@ -386,15 +388,8 @@ function App() {
 
     const handler = () => {
       dispatch({ type: APP_ACTION.SET_PANEL, panel: 0 });
-      // Clear the extension action badge (the "number of results" pill)
-      // so it doesn't linger after the results are gone.
-      (async () => {
-        try {
-          await chrome.action.setBadgeText({ text: "" });
-        } catch (error) {
-          console.warn("Failed to clear action badge text:", { error });
-        }
-      })();
+      // The badge controller also listens for IDB_SEARCH_RESULTS_CLEARED and
+      // clears the action badge, so this handler only handles panel navigation.
     };
 
     window.addEventListener(IDB_SEARCH_RESULTS_CLEARED, handler);

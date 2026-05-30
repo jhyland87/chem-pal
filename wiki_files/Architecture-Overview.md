@@ -97,6 +97,9 @@ Both use LRU eviction at 100 entries via IndexedDB indexes. See [Caching](Cachin
 ### State Management
 The app uses React 19's `useActionState` for settings, with `AppContext` providing global state. The Chrome extension persists query state to `chrome.storage.session` (via `cstorage`) and search results to IndexedDB for seamless restore-on-mount. Theme preference lives in `user_settings` (read through `useAppContext()`), not `localStorage`.
 
+### Decoupled Custom Events
+Cross-cutting concerns that don't fit cleanly into the component tree are wired with `window`-dispatched `CustomEvent`s instead of lifting state into context — hotkey-to-component bridges, the search lifecycle (start/results-count/completed/aborted/failed), and IndexedDB change notifications. Producers dispatch a named event; consumers subscribe while mounted. The toolbar badge, for example, is driven entirely by a single controller that reacts to search-lifecycle events. See [Events](Events) for the full catalog.
+
 ## Chrome Extension Entry Points
 
 | Entry Point | File | Description |
@@ -118,3 +121,5 @@ The app uses React 19's `useActionState` for settings, with `AppContext` providi
 | `Pubchem` | `src/utils/Pubchem.ts` | PubChem compound lookups and suggestions |
 | `SupplierStatsStore` | `src/utils/SupplierStatsStore.ts` | Tracks per-supplier success/failure/timing stats |
 | `fetchDecorator` | `src/utils/fetchDecorator.ts` | Enhanced fetch wrapper with response capture support |
+| `searchEvents` | `src/events/searchEvents.ts` | Typed search-lifecycle `CustomEvent` bus (see [Events](Events)) |
+| `badgeController` | `src/utils/badgeController.ts` | Single owner of toolbar-badge state, driven by search-lifecycle events |

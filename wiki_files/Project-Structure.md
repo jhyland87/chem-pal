@@ -12,6 +12,7 @@ chem-pal/
 │   ├── index.tsx            # Entry point
 │   ├── service-worker.js    # Extension service worker
 │   ├── components/          # React components
+│   ├── events/              # Typed window CustomEvent buses (search lifecycle)
 │   ├── suppliers/           # Supplier implementations
 │   ├── types/               # TypeScript type definitions
 │   ├── utils/               # Utility classes
@@ -137,7 +138,8 @@ suppliers/
 | `SupplierCache.ts` | Chrome storage caching with LRU eviction (writes via `cstorage`) |
 | `SupplierStatsStore.ts` | Per-supplier success/failure/timing statistics |
 | `Cactus.ts` | NCI/CADD Chemical Identifier Resolver utility |
-| `BadgeAnimator.ts` | Extension badge animations |
+| `BadgeAnimator.ts` | Extension badge animation/text primitives (called only by `badgeController`) |
+| `badgeController.ts` | Single owner of toolbar-badge state; reacts to search-lifecycle events (see [Events](Events)) |
 | `HttpLru.ts` | In-memory LRU cache for HTTP requests |
 | `fetchDecorator.ts` | Enhanced fetch wrapper with response capture |
 
