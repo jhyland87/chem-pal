@@ -10,6 +10,7 @@ import {
   type HotkeyHandlers,
 } from "@/hotkeys";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
+import { BadgeAnimator } from "@/utils/BadgeAnimator";
 import { SupplierCache } from "@/utils/SupplierCache";
 import { clearSearchResults, getSearchResults, IDB_SEARCH_RESULTS_CLEARED } from "@/utils/idbCache";
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
@@ -302,6 +303,16 @@ function App() {
         const loadedData: Partial<AppState> = {};
 
         const hasResults = idbResults.length > 0;
+
+        // Sync the toolbar badge with the restored results on open: show the
+        // count when there are results, otherwise clear any stale badge (e.g. a
+        // leftover "…" left by a previous session).
+        if (hasResults) {
+          BadgeAnimator.setText(idbResults.length.toString());
+        } else {
+          BadgeAnimator.clear();
+        }
+
         const savedPanelRaw = sessionData[CACHE.PANEL];
         const savedPanel =
           savedPanelRaw !== undefined && savedPanelRaw !== null ? Number(savedPanelRaw) : undefined;
