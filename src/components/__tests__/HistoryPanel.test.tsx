@@ -1,11 +1,11 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { beforeAll, beforeEach, afterAll, describe, expect, it, vi } from "vitest";
 import {
-  setupChromeStorageMock,
   resetChromeStorageMock,
   restoreChromeStorageMock,
-} from "../../__fixtures__/helpers/chrome/storageMock";
+  setupChromeStorageMock,
+} from "@/__fixtures__/helpers/chrome/storageMock";
 import { addSearchHistoryEntry, clearSearchHistory } from "@/utils/idbCache";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock @mui/icons-material to avoid ENFILE from barrel import
 vi.mock("@mui/icons-material", () => ({

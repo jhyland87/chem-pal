@@ -19,10 +19,7 @@ import type { SupplierBase } from "../../SupplierBase";
  * ```
  */
 export const spyOnSupplier = (supplier: Class<SupplierBase<any, any>>, fixtures: any) => {
-  const queryProductsWithCacheSpy = vi.spyOn(
-    supplier.prototype,
-    "queryProductsWithCache" as any,
-  );
+  const queryProductsWithCacheSpy = vi.spyOn(supplier.prototype, "queryProductsWithCache" as any);
   const httpGetJsonMock = vi.spyOn(supplier.prototype, "httpGetJson" as any);
   const titleSelectorSpy = vi.spyOn(supplier.prototype, "titleSelector" as any);
 

@@ -1,9 +1,9 @@
-import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   resetChromeActionMock,
   restoreChromeActionMock,
   setupChromeActionMock,
-} from "../../__fixtures__/helpers/chrome/actionMock";
+} from "@/__fixtures__/helpers/chrome/actionMock";
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BadgeAnimator } from "../BadgeAnimator";
 
 describe("BadgeAnimator", () => {
