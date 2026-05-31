@@ -146,9 +146,7 @@ function HotkeyLayer({ handlers }: { handlers: HotkeyHandlers }) {
  * @source
  */
 function App() {
-  // Single owner of all extension-badge updates. Subscribes to search-lifecycle
-  // events (and results-cleared) and reconciles the badge; mounted before the
-  // storage-load effect below so its listeners exist when that effect emits.
+  // Single owner of all extension-badge updates (reacts to search events).
   useBadgeController();
 
   // Search results state - separate from main app state for better performance
@@ -310,9 +308,7 @@ function App() {
 
         const hasResults = idbResults.length > 0;
 
-        // Sync the toolbar badge with the restored results on open. The badge
-        // controller reconciles this: a count of 0 (no search running) clears any
-        // stale badge left by a previous session; a positive count is shown.
+        // Sync the badge with the restored count on open (controller clears it if 0).
         emitSearchEvent(SearchEvent.RESULTS_COUNT, { count: idbResults.length });
 
         const savedPanelRaw = sessionData[CACHE.PANEL];
@@ -377,19 +373,14 @@ function App() {
     return () => cstorage.onChanged.removeListener(listener);
   }, []);
 
-  // "Magic" redirect: if the user is on the results panel and the search results
-  // get cleared from anywhere (e.g. SpeedDial "Clear Results", another tab, etc.),
-  // bounce them back to the SearchPanelHome and clear the action badge so it
-  // doesn't show a stale result count. We only attach the storage listener while
-  // panel === 1 so we're not reacting to clears that happen while the user is
-  // already on a different panel.
+  // While on the results panel, bounce back to SearchPanelHome when results are
+  // cleared from anywhere (SpeedDial, another tab). The badge controller clears
+  // the badge separately; this only handles panel navigation.
   useEffect(() => {
     if (appState.panel !== PANEL.RESULTS) return;
 
     const handler = () => {
       dispatch({ type: APP_ACTION.SET_PANEL, panel: 0 });
-      // The badge controller also listens for IDB_SEARCH_RESULTS_CLEARED and
-      // clears the action badge, so this handler only handles panel navigation.
     };
 
     window.addEventListener(IDB_SEARCH_RESULTS_CLEARED, handler);

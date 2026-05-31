@@ -1,14 +1,20 @@
-import { describe, expect, it } from "vitest";
+import { renderHook } from "@testing-library/react";
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  IDB_SEARCH_RESULTS_CLEARED,
-} from "../idbCache";
-import { SearchEvent } from "../../events/searchEvents";
+  resetChromeActionMock,
+  restoreChromeActionMock,
+  setupChromeActionMock,
+} from "../../__fixtures__/helpers/chrome/actionMock";
+import { SearchEvent, emitSearchEvent } from "../../events/searchEvents";
+import { BadgeAnimator } from "../BadgeAnimator";
+import { IDB_SEARCH_RESULTS_CLEARED } from "../idbCache";
 import {
   BadgeEvent,
   initialBadgeState,
   isSameBadgeOutput,
   reduceBadge,
   shouldApplyToBadge,
+  useBadgeController,
 } from "../badgeController";
 
 /**
@@ -154,5 +160,157 @@ describe("shouldApplyToBadge", () => {
   it("always applies animate (current text can't reveal whether it's already cycling)", () => {
     expect(shouldApplyToBadge("", { kind: "animate" })).toBe(true);
     expect(shouldApplyToBadge("‥", { kind: "animate" })).toBe(true);
+  });
+});
+
+describe("useBadgeController (integration with the chrome.action mock)", () => {
+  let mockChromeAction: ReturnType<typeof setupChromeActionMock>;
+  let animateSpy: ReturnType<typeof vi.spyOn>;
+  let setTextSpy: ReturnType<typeof vi.spyOn>;
+  let clearSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    mockChromeAction = setupChromeActionMock();
+    // Stub `animate` to a no-op so it never schedules a real ellipsis timer that
+    // could leak into the next test — we only assert that the controller *routes*
+    // to it (BadgeAnimator's own frame/timer behavior is covered in
+    // BadgeAnimator.test.ts). `setText`/`clear` call through so they update the
+    // mocked badge state, which the flicker assertions rely on.
+    animateSpy = vi.spyOn(BadgeAnimator, "animate").mockImplementation(() => {});
+    setTextSpy = vi.spyOn(BadgeAnimator, "setText");
+    clearSpy = vi.spyOn(BadgeAnimator, "clear");
+  });
+
+  afterEach(() => {
+    // Restore only our own BadgeAnimator spies — NOT vi.restoreAllMocks(), which
+    // would also strip the fixture's chrome.action vi.fn() implementations
+    // (getBadgeText/setBadgeText), breaking state tracking in later tests.
+    animateSpy.mockRestore();
+    setTextSpy.mockRestore();
+    clearSpy.mockRestore();
+    resetChromeActionMock();
+  });
+
+  afterAll(() => {
+    restoreChromeActionMock();
+  });
+
+  /**
+   * Drain the controller's chained async applies. Each apply is pure microtasks
+   * (it awaits the `getBadgeText` async mock, no timers), so flushing the
+   * microtask queue a few times settles the chain.
+   */
+  const flush = async () => {
+    for (let i = 0; i < 10; i++) await Promise.resolve();
+  };
+
+  it("starts the ellipsis animation on search start", async () => {
+    const { unmount } = renderHook(() => useBadgeController());
+
+    emitSearchEvent(SearchEvent.STARTED, { query: "acetone" });
+    await flush();
+
+    expect(animateSpy).toHaveBeenCalledWith("ellipsis", 300);
+    unmount();
+  });
+
+  it("shows the streaming count, then pins the final count", async () => {
+    const { unmount } = renderHook(() => useBadgeController());
+
+    emitSearchEvent(SearchEvent.STARTED, { query: "acetone" });
+    await flush();
+    emitSearchEvent(SearchEvent.RESULTS_COUNT, { count: 3 });
+    await flush();
+    expect(setTextSpy).toHaveBeenLastCalledWith("3");
+    expect(mockChromeAction._state.badgeText).toBe("3");
+
+    emitSearchEvent(SearchEvent.COMPLETED, { count: 3 });
+    await flush();
+    expect(mockChromeAction._state.badgeText).toBe("3");
+
+    unmount();
+  });
+
+  it("clears the badge when a search completes with zero results", async () => {
+    const { unmount } = renderHook(() => useBadgeController());
+
+    emitSearchEvent(SearchEvent.STARTED, { query: "xyzzy" });
+    await flush();
+    emitSearchEvent(SearchEvent.COMPLETED, { count: 0 });
+    await flush();
+
+    expect(mockChromeAction._state.badgeText).toBe("");
+    unmount();
+  });
+
+  it("clears the badge on abort", async () => {
+    const { unmount } = renderHook(() => useBadgeController());
+
+    emitSearchEvent(SearchEvent.STARTED, { query: "acetone" });
+    await flush();
+    emitSearchEvent(SearchEvent.ABORTED);
+    await flush();
+
+    expect(mockChromeAction._state.badgeText).toBe("");
+    unmount();
+  });
+
+  it("clears the badge when results are cleared externally", async () => {
+    const { unmount } = renderHook(() => useBadgeController());
+
+    emitSearchEvent(SearchEvent.COMPLETED, { count: 5 });
+    await flush();
+    expect(mockChromeAction._state.badgeText).toBe("5");
+
+    window.dispatchEvent(new CustomEvent(IDB_SEARCH_RESULTS_CLEARED));
+    await flush();
+    expect(mockChromeAction._state.badgeText).toBe("");
+
+    unmount();
+  });
+
+  it("does NOT rewrite the badge when opening with the count it already shows (flicker fix)", async () => {
+    // Simulate the persistent badge already showing the restored count on open.
+    mockChromeAction._state.badgeText = "50";
+    const { unmount } = renderHook(() => useBadgeController());
+    mockChromeAction.setBadgeText.mockClear();
+
+    // App emits the restored count on popup open.
+    emitSearchEvent(SearchEvent.RESULTS_COUNT, { count: 50 });
+    await flush();
+
+    // The value was already correct, so the badge must not be re-written
+    // (setText would clear-then-set, causing a visible blink).
+    expect(mockChromeAction.setBadgeText).not.toHaveBeenCalled();
+    expect(mockChromeAction._state.badgeText).toBe("50");
+
+    unmount();
+  });
+
+  it("does not restart the animation when count keeps reporting 0 mid-search", async () => {
+    const { unmount } = renderHook(() => useBadgeController());
+
+    emitSearchEvent(SearchEvent.STARTED, { query: "acetone" });
+    await flush();
+    animateSpy.mockClear();
+
+    // ResultsTable re-emitting 0 while the search runs must not re-trigger animate.
+    emitSearchEvent(SearchEvent.RESULTS_COUNT, { count: 0 });
+    emitSearchEvent(SearchEvent.RESULTS_COUNT, { count: 0 });
+    await flush();
+
+    expect(animateSpy).not.toHaveBeenCalled();
+    unmount();
+  });
+
+  it("stops touching the badge after the hook unmounts", async () => {
+    const { unmount } = renderHook(() => useBadgeController());
+    unmount();
+    mockChromeAction.setBadgeText.mockClear();
+
+    emitSearchEvent(SearchEvent.COMPLETED, { count: 7 });
+    await flush();
+
+    expect(mockChromeAction.setBadgeText).not.toHaveBeenCalled();
   });
 });

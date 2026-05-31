@@ -356,11 +356,8 @@ export function useSearch() {
       setTableText("");
       setExecutedQuery(query);
 
-      // Drop any previously persisted results so a search that ends with zero
-      // results (or is aborted/errors before streaming) doesn't rehydrate stale
-      // data on the next popup open. Cleared silently so it doesn't fire
-      // IDB_SEARCH_RESULTS_CLEARED, which would bounce the user off the results
-      // panel mid-search. New results re-persist as they stream in.
+      // Drop stale persisted results so a 0-result/aborted search doesn't
+      // rehydrate them on next open. Silent so it doesn't bounce off the panel.
       await clearSearchResults({ notify: false });
 
       // Create a history entry immediately so it's recorded even if the search is cancelled or hangs.
@@ -462,10 +459,8 @@ export function useSearch() {
             finalResults,
           });
         } else {
-          // No filters active — stream results directly (original behavior).
-          // ResultsTable emits SearchEvent.RESULTS_COUNT off `table.getFilteredRowModel()`,
-          // so each row appended below triggers a re-render that re-emits the
-          // count and bumps the badge — no direct badge update is needed here.
+          // No filters active — stream results directly; ResultsTable re-emits
+          // the count per appended row, so no direct badge update is needed here.
           for await (const result of productQueryResults) {
             // Update state with current count using startTransition for better performance
             startTransition(() => {
@@ -521,8 +516,7 @@ export function useSearch() {
           setTableText("");
         }
 
-        // Signal completion — the badge controller reconciles the final count
-        // (0 → empty badge, N → count), so no direct BadgeAnimator call here.
+        // Signal completion; the badge controller reconciles the final count.
         emitSearchEvent(SearchEvent.COMPLETED, { count: resultsTable.getRowCount() });
 
         // Final state - search complete
@@ -536,8 +530,7 @@ export function useSearch() {
           resultCount: resultsTable.getRowCount(),
         });
       } catch (error) {
-        // Signal the terminal outcome — the badge controller clears the badge on
-        // either path so it doesn't stay stuck on the "…" ellipsis.
+        // Signal the terminal outcome; the badge controller clears the badge.
         if (error instanceof Error && error.name === "AbortError") {
           emitSearchEvent(SearchEvent.ABORTED);
           setState((prev) => ({
@@ -608,9 +601,8 @@ export function useSearch() {
       nextResults = prev.filter((p) => !(p.url === product.url && p.supplier === product.supplier));
       return nextResults;
     });
-    // Badge count is driven by ResultsTable emitting SearchEvent.RESULTS_COUNT off
-    // `table.getFilteredRowModel()` — this setSearchResults call triggers the
-    // re-render that re-emits it, so no direct badge update is needed here.
+    // setSearchResults re-renders the table, which re-emits the count; no
+    // direct badge update needed here.
     try {
       await addExcludedProduct(product.url, product.supplier, { title: product.title });
     } catch (error) {
