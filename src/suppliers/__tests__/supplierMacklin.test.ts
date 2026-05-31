@@ -23,7 +23,7 @@ describe.skip("SupplierMacklin", async () => {
 
   let supplier: SupplierModule;
 
-  const { getCachedResultsSpy, httpGetJsonMock, titleSelectorSpy } = spyOnSupplier(
+  const { queryProductsWithCacheSpy, httpGetJsonMock, titleSelectorSpy } = spyOnSupplier(
     SupplierModule,
     supplierFixtures,
   );

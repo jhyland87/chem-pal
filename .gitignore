@@ -33,3 +33,5 @@ build.pem
 ChemPal.pem
 chem-pal.pem
 *.crx
+
+public/mockServiceWorker.js
