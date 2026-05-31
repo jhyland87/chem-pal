@@ -15,3 +15,34 @@ export class EmptyResponseError extends Error {
     this.name = "EmptyResponseError";
   }
 }
+
+/**
+ * Error thrown when an HTTP response has a non-2xx status. Carries the numeric
+ * status so callers can branch on it (e.g. retrying a `403` WAF cookie
+ * challenge) rather than string-matching the message.
+ * @category Exceptions
+ * @param status - The HTTP status code (e.g. 403)
+ * @param statusText - The HTTP status text (e.g. "Forbidden")
+ * @returns The HttpError instance
+ * @example
+ * ```typescript
+ * try {
+ *   await fetchDecorator(url);
+ * } catch (error) {
+ *   if (error instanceof HttpError && error.status === 403) {
+ *     // retry the request
+ *   }
+ * }
+ * ```
+ * @source
+ */
+export class HttpError extends Error {
+  public readonly status: number;
+  public readonly statusText: string;
+  constructor(status: number, statusText: string) {
+    super(`HTTP Error: ${status} ${statusText}`);
+    this.name = "HttpError";
+    this.status = status;
+    this.statusText = statusText;
+  }
+}
