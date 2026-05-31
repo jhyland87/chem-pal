@@ -8,11 +8,11 @@ import type { SupplierBase } from "../../SupplierBase";
  *
  * @param supplier - The supplier class to spy on
  * @param fixtures - The fixture data to use for mock implementations
- * @returns An object containing the spies for getCachedResults and httpGetJson
+ * @returns An object containing the spies for queryProductsWithCache and httpGetJson
  *
  * @example
  * ```typescript
- * const { getCachedResultsSpy, httpGetJsonMock } = spyOnSupplier(
+ * const { queryProductsWithCacheSpy, httpGetJsonMock } = spyOnSupplier(
  *   SupplierLaboratoriumDiscounter,
  *   laboratoriumiscounter_fixtures
  * );
