@@ -201,16 +201,11 @@ async function applyBadgeOutput(output: BadgeOutput): Promise<void> {
  */
 export function useBadgeController(): void {
   useEffect(() => {
-    // State lives in the effect closure (not React state) because the badge is an
-    // external system — re-rendering App on every count tick is unnecessary.
+    // Badge state is external; keep it in the closure, not React state.
     let state = initialBadgeState;
-    // The last output we *intended* to apply this session. Guards against the
-    // ellipsis animation restarting when SearchEvent.RESULTS_COUNT keeps reporting 0
-    // mid-search. (The against-the-real-badge check in applyBadgeOutput handles
-    // the cross-session "already shows the right value on open" flicker.)
+    // Skip re-emitting an identical output (e.g. repeated mid-search 0 → animate).
     let lastOutput: BadgeOutput | null = null;
-    // Serialize the async applies so their getBadgeText reads can't interleave
-    // and apply out of order.
+    // Serialize applies so their async getBadgeText reads don't interleave.
     let applyChain: Promise<void> = Promise.resolve();
 
     const handle = (event: BadgeEvent) => {
