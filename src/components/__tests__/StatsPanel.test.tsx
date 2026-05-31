@@ -1,10 +1,10 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import { beforeAll, beforeEach, afterAll, describe, expect, it, vi } from "vitest";
 import {
-  setupChromeStorageMock,
   resetChromeStorageMock,
   restoreChromeStorageMock,
-} from "../../__fixtures__/helpers/chrome/storageMock";
+  setupChromeStorageMock,
+} from "@/__fixtures__/helpers/chrome/storageMock";
+import { render, screen, waitFor } from "@testing-library/react";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the context
 const mockSetPanel = vi.fn();
@@ -57,7 +57,7 @@ vi.mock("@/utils/SupplierStatsStore", () => ({
   clearStats: vi.fn(),
 }));
 
-import { getStats, clearStats } from "@/utils/SupplierStatsStore";
+import { clearStats, getStats } from "@/utils/SupplierStatsStore";
 import StatsPanel from "../StatsPanel";
 
 const mockGetStats = getStats as ReturnType<typeof vi.fn>;
@@ -101,7 +101,13 @@ describe("StatsPanel", () => {
   it("renders tabs when data exists", async () => {
     mockGetStats.mockResolvedValue({
       "2026-03-26": {
-        Carolina: { searchQueryCount: 1, successCount: 5, failureCount: 0, uniqueProductCount: 3, parseErrorCount: 0 },
+        Carolina: {
+          searchQueryCount: 1,
+          successCount: 5,
+          failureCount: 0,
+          uniqueProductCount: 3,
+          parseErrorCount: 0,
+        },
       },
     });
 
@@ -117,8 +123,20 @@ describe("StatsPanel", () => {
   it("displays total call count in header", async () => {
     mockGetStats.mockResolvedValue({
       "2026-03-26": {
-        Carolina: { searchQueryCount: 1, successCount: 10, failureCount: 2, uniqueProductCount: 5, parseErrorCount: 0 },
-        Ambeed: { searchQueryCount: 1, successCount: 3, failureCount: 0, uniqueProductCount: 2, parseErrorCount: 0 },
+        Carolina: {
+          searchQueryCount: 1,
+          successCount: 10,
+          failureCount: 2,
+          uniqueProductCount: 5,
+          parseErrorCount: 0,
+        },
+        Ambeed: {
+          searchQueryCount: 1,
+          successCount: 3,
+          failureCount: 0,
+          uniqueProductCount: 2,
+          parseErrorCount: 0,
+        },
       },
     });
 
@@ -132,7 +150,13 @@ describe("StatsPanel", () => {
   it("renders pie chart on By Supplier tab by default", async () => {
     mockGetStats.mockResolvedValue({
       "2026-03-26": {
-        Carolina: { searchQueryCount: 1, successCount: 5, failureCount: 0, uniqueProductCount: 3, parseErrorCount: 0 },
+        Carolina: {
+          searchQueryCount: 1,
+          successCount: 5,
+          failureCount: 0,
+          uniqueProductCount: 3,
+          parseErrorCount: 0,
+        },
       },
     });
 
@@ -150,7 +174,13 @@ describe("StatsPanel", () => {
   it("renders pie chart with two series (inner + outer ring)", async () => {
     mockGetStats.mockResolvedValue({
       "2026-03-26": {
-        Carolina: { searchQueryCount: 1, successCount: 5, failureCount: 1, uniqueProductCount: 3, parseErrorCount: 0 },
+        Carolina: {
+          searchQueryCount: 1,
+          successCount: 5,
+          failureCount: 1,
+          uniqueProductCount: 3,
+          parseErrorCount: 0,
+        },
       },
     });
 
@@ -164,8 +194,20 @@ describe("StatsPanel", () => {
   it("shows supplier legend on pie chart tab", async () => {
     mockGetStats.mockResolvedValue({
       "2026-03-26": {
-        Carolina: { searchQueryCount: 1, successCount: 5, failureCount: 0, uniqueProductCount: 3, parseErrorCount: 0 },
-        Ambeed: { searchQueryCount: 1, successCount: 2, failureCount: 0, uniqueProductCount: 1, parseErrorCount: 0 },
+        Carolina: {
+          searchQueryCount: 1,
+          successCount: 5,
+          failureCount: 0,
+          uniqueProductCount: 3,
+          parseErrorCount: 0,
+        },
+        Ambeed: {
+          searchQueryCount: 1,
+          successCount: 2,
+          failureCount: 0,
+          uniqueProductCount: 1,
+          parseErrorCount: 0,
+        },
       },
     });
 
@@ -180,7 +222,13 @@ describe("StatsPanel", () => {
   it("shows clear button when data exists", async () => {
     mockGetStats.mockResolvedValue({
       "2026-03-26": {
-        Carolina: { searchQueryCount: 1, successCount: 1, failureCount: 0, uniqueProductCount: 0, parseErrorCount: 0 },
+        Carolina: {
+          searchQueryCount: 1,
+          successCount: 1,
+          failureCount: 0,
+          uniqueProductCount: 0,
+          parseErrorCount: 0,
+        },
       },
     });
 
@@ -205,7 +253,13 @@ describe("StatsPanel", () => {
   it("displays singular 'call' for count of 1", async () => {
     mockGetStats.mockResolvedValue({
       "2026-03-26": {
-        Carolina: { searchQueryCount: 1, successCount: 1, failureCount: 0, uniqueProductCount: 0, parseErrorCount: 0 },
+        Carolina: {
+          searchQueryCount: 1,
+          successCount: 1,
+          failureCount: 0,
+          uniqueProductCount: 0,
+          parseErrorCount: 0,
+        },
       },
     });
 

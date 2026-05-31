@@ -1,13 +1,12 @@
-import { renderHook } from "@testing-library/react";
-import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   resetChromeActionMock,
   restoreChromeActionMock,
   setupChromeActionMock,
-} from "../../__fixtures__/helpers/chrome/actionMock";
-import { SearchEvent, emitSearchEvent } from "../../events/searchEvents";
+} from "@/__fixtures__/helpers/chrome/actionMock";
+import { SearchEvent, emitSearchEvent } from "@/events/searchEvents";
+import { renderHook } from "@testing-library/react";
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BadgeAnimator } from "../BadgeAnimator";
-import { IDB_SEARCH_RESULTS_CLEARED } from "../idbCache";
 import {
   BadgeEvent,
   initialBadgeState,
@@ -16,6 +15,7 @@ import {
   shouldApplyToBadge,
   useBadgeController,
 } from "../badgeController";
+import { IDB_SEARCH_RESULTS_CLEARED } from "../idbCache";
 
 /**
  * Drives a sequence of events through the pure reducer and returns the final
@@ -127,7 +127,9 @@ describe("isSameBadgeOutput", () => {
   });
 
   it("treats text with the same value as the same, different value as different", () => {
-    expect(isSameBadgeOutput({ kind: "text", value: "5" }, { kind: "text", value: "5" })).toBe(true);
+    expect(isSameBadgeOutput({ kind: "text", value: "5" }, { kind: "text", value: "5" })).toBe(
+      true,
+    );
     expect(isSameBadgeOutput({ kind: "text", value: "5" }, { kind: "text", value: "6" })).toBe(
       false,
     );

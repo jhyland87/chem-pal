@@ -1,18 +1,18 @@
-import { beforeAll, beforeEach, afterAll, afterEach, describe, expect, it, vi } from "vitest";
 import {
-  setupChromeStorageMock,
   resetChromeStorageMock,
   restoreChromeStorageMock,
-} from "../../__fixtures__/helpers/chrome/storageMock";
+  setupChromeStorageMock,
+} from "@/__fixtures__/helpers/chrome/storageMock";
 import { clearSupplierStats } from "@/utils/idbCache";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  clearStats,
+  getStats,
+  incrementFailure,
+  incrementParseError,
+  incrementProductCount,
   incrementSearchQueryCount,
   incrementSuccess,
-  incrementFailure,
-  incrementProductCount,
-  incrementParseError,
-  getStats,
-  clearStats,
 } from "../SupplierStatsStore";
 
 describe("SupplierStatsStore", () => {

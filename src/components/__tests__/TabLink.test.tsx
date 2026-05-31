@@ -1,9 +1,6 @@
+import { restoreChromeTabsMock, setupChromeTabsMock } from "@/__fixtures__/helpers/chrome/tabsMock";
 import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  restoreChromeTabsMock,
-  setupChromeTabsMock,
-} from "../../__fixtures__/helpers/chrome/tabsMock";
 import TabLink from "../TabLink";
 
 describe("TabLink", () => {

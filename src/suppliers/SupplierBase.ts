@@ -1,6 +1,7 @@
 import { defaultResultsLimit } from "@/../config.json";
 import { UOM } from "@/constants/common";
 import { FUZZ_SCORERS, isFuzzScorerName, type FuzzScorerFn } from "@/constants/fuzzScorers";
+import { setCookie } from "@/helpers/cookies";
 import { EmptyResponseError, HttpError } from "@/helpers/exceptions";
 import {
   countExcludedProductsForSupplier,
@@ -8,7 +9,6 @@ import {
   loadExcludedProductKeys,
   shouldExcludeProduct,
 } from "@/helpers/excludedProducts";
-import { setCookie } from "@/helpers/cookies";
 import { fetchDecorator, type FetchDecoratorResponse } from "@/helpers/fetch";
 import { stripQuantityFromString } from "@/helpers/quantity";
 import { deleteSupplierQueryCacheEntry } from "@/utils/idbCache";
