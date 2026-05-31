@@ -1,5 +1,6 @@
 /** @internal */
 import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
+import { FC } from "react";
 
 /**
  * A React component that renders a benzene molecule icon using SVG.
@@ -15,7 +16,7 @@ import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
  * ```
  * @source
  */
-const BenzeneBlueIcon: React.FC<SvgIconProps> = (props) => {
+const BenzeneBlueIcon: FC<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props}>
       <svg

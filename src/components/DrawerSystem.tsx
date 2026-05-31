@@ -6,7 +6,7 @@ import {
   Settings as SettingsIcon,
 } from "@mui/icons-material";
 import { Drawer, Tab, Tabs } from "@mui/material";
-import React, { useState } from "react";
+import { useState, FC, SyntheticEvent } from "react";
 import DrawerSearchPanel from "./DrawerSearchPanel";
 import styles from "./DrawerSystem.module.scss";
 import HistoryPanel from "./HistoryPanel";
@@ -14,6 +14,22 @@ import SettingsPanelFull from "./SettingsPanelFull";
 
 // TabPanelProps is declared globally in types/props.d.ts
 
+/**
+ * Renders its children only when the active drawer tab `value` matches this
+ * panel's `index`, hiding the panel otherwise. Used to switch between the
+ * Search, History, and Settings drawer tabs.
+ * @param props - The {@link TabPanelProps}: `children`, the active `value`, and
+ *   this panel's `index`.
+ * @returns A `tabpanel` element that shows `children` when active, otherwise hidden.
+ * @example
+ * ```tsx
+ * <TabPanel value={activeTab} index={DRAWER_INDEX.SEARCH}>
+ *   <DrawerSearchPanel />
+ * </TabPanel>
+ * // Renders DrawerSearchPanel only when activeTab === DRAWER_INDEX.SEARCH.
+ * ```
+ * @source
+ */
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
 
@@ -31,11 +47,24 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-const DrawerSystem: React.FC = () => {
+/**
+ * The right-hand slide-out drawer hosting the Search, History, and Settings
+ * tabs. Driven by `appContext.drawerTab`: opens when a tab is selected, closes
+ * on backdrop click, and renders the matching panel via the local `TabPanel`.
+ * @returns The drawer element; an empty (closed) drawer when no tab is active.
+ * @example
+ * ```tsx
+ * // Mounted once near the app root; visibility is controlled via app context.
+ * <DrawerSystem />
+ * // appContext.setDrawerTab(DRAWER_INDEX.SETTINGS) opens it to the Settings tab.
+ * ```
+ * @source
+ */
+const DrawerSystem: FC = () => {
   const appContext = useAppContext();
   const [expandedAccordion, setExpandedAccordion] = useState<string | false>("search-availability");
 
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: DRAWER_INDEX) => {
+  const handleTabChange = (_event: SyntheticEvent, newValue: DRAWER_INDEX) => {
     appContext.setDrawerTab(newValue);
     // Reset accordion when switching tabs
     if (newValue === DRAWER_INDEX.SEARCH) {
@@ -48,7 +77,7 @@ const DrawerSystem: React.FC = () => {
   };
 
   const handleAccordionChange =
-    (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
+    (panel: string) => (_event: SyntheticEvent, isExpanded: boolean) => {
       setExpandedAccordion(isExpanded ? panel : false);
     };
 

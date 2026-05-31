@@ -1,6 +1,6 @@
 /** @internal */
 import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
-import React from "react";
+import { FC } from "react";
 
 /**
  * A Material-UI icon component that renders a copy icon.
@@ -11,7 +11,7 @@ import React from "react";
  * @returns A React component that renders the copy icon
  * @source
  */
-const CopyIcon: React.FC<SvgIconProps> = (props) => {
+const CopyIcon: FC<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props}>
       <svg

@@ -1,5 +1,6 @@
 /** @internal */
 import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
+import { FC } from "react";
 
 /**
  * A Material-UI icon component that renders a tune/settings icon.
@@ -10,7 +11,7 @@ import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
  * @returns A React component that renders the tune icon
  * @source
  */
-const TuneIcon: React.FC<SvgIconProps> = (props) => {
+const TuneIcon: FC<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props}>
       <svg

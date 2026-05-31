@@ -1,6 +1,6 @@
 import { CACHE } from "@/constants/common";
 import { cstorage } from "@/utils/storage";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, FormEvent } from "react";
 
 /**
  * Return type for the useSearchInput hook.
@@ -17,7 +17,7 @@ interface UseSearchInputReturn {
   /** Function that returns a form submit handler */
   handleSubmit: (
     onSearch?: (query: string) => void,
-  ) => (e: React.FormEvent<HTMLFormElement>) => void;
+  ) => (e: FormEvent<HTMLFormElement>) => void;
   /** Function to manually set the loading state */
   setIsLoading: (loading: boolean) => void;
 }
@@ -99,7 +99,7 @@ export function useSearchInput(): UseSearchInputReturn {
    */
   const handleSubmit = useCallback(
     (onSearch?: (query: string) => void) => {
-      return (e: React.FormEvent<HTMLFormElement>) => {
+      return (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (searchInputValue.trim()) {
           setIsLoading(true);

@@ -6,7 +6,7 @@ import { styled } from "@mui/material/styles";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { useDrawingArea } from "@mui/x-charts/hooks";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, FC, ReactNode } from "react";
 import { useAppContext } from "@/context";
 import { clearStats, getStats } from "@/utils/SupplierStatsStore";
 import { IDB_SUPPLIER_STATS_UPDATED } from "@/utils/idbCache";
@@ -37,7 +37,21 @@ const StyledText = styled("text")(({ theme }) => ({
   fontWeight: 500,
 }));
 
-function PieCenterLabel({ children }: { children: React.ReactNode }) {
+/**
+ * Renders text centered in the hole of a MUI X pie chart, positioned via the
+ * chart's drawing area. Used to show a total or label inside the pie.
+ * @param props - Component props.
+ * @param props.children - The content to render at the pie's center.
+ * @returns An SVG text element centered in the chart.
+ * @example
+ * ```tsx
+ * <PieChart series={...}>
+ *   <PieCenterLabel>1,234</PieCenterLabel>
+ * </PieChart>
+ * ```
+ * @source
+ */
+function PieCenterLabel({ children }: { children: ReactNode }) {
   const { width, height, left, top } = useDrawingArea();
   return (
     <StyledText x={left + width / 2} y={top + height / 2}>
@@ -65,7 +79,7 @@ type PieView = "http" | "parsed";
  * @category Components
  * @source
  */
-const StatsPanel: React.FC = () => {
+const StatsPanel: FC = () => {
   const appContext = useAppContext();
   const [stats, setStats] = useState<SupplierStatsData>({});
   const [activeTab, setActiveTab] = useState(0);
