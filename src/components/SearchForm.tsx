@@ -2,7 +2,7 @@ import { CACHE } from "@/constants/common";
 import { cstorage } from "@/utils/storage";
 import { Science as ScienceIcon, Search as SearchIcon } from "@mui/icons-material";
 import { Box, IconButton } from "@mui/material";
-import React, { useEffect } from "react";
+import { useEffect, FC, FormEvent } from "react";
 import { useAppContext } from "../context";
 import styles from "./SearchForm.module.scss";
 import {
@@ -11,14 +11,45 @@ import {
   SearchFormPaper,
 } from "./StyledComponents";
 
+/**
+ * Props for {@link SearchForm}. Controls submit handling, the advanced-options
+ * button behavior, and the input's placeholder text.
+ * @example
+ * ```tsx
+ * const props: SearchFormProps = {
+ *   onSearch: (q) => runSearch(q),
+ *   placeholder: "Search chemicals...",
+ * };
+ * ```
+ * @source
+ */
 interface SearchFormProps {
+  /** Called with the trimmed query when the form is submitted. */
   onSearch: (query: string) => void;
+  /** Overrides the advanced-options button action; defaults to toggling the app drawer. */
   onDrawerToggle?: () => void;
+  /** Placeholder text for the input. Defaults to `"Search for products..."`. */
   placeholder?: string;
+  /** Whether to show the advanced-options button. */
   showAdvancedButton?: boolean;
 }
 
-export const SearchForm: React.FC<SearchFormProps> = ({
+/**
+ * Renders the primary search bar: a text input bound to the shared
+ * `searchFilters.titleQuery`, a submit button, and an advanced-options button
+ * that opens the settings drawer. The input hydrates from and persists to
+ * session storage so the query survives popup re-opens.
+ * @param props - The {@link SearchFormProps} controlling submit handling,
+ *   placeholder text, and the drawer-toggle override.
+ * @returns The search form element.
+ * @example
+ * ```tsx
+ * <SearchForm onSearch={(q) => runSearch(q)} placeholder="Search chemicals..." />
+ * // Renders a search box; submitting "acetone" calls onSearch("acetone").
+ * ```
+ * @source
+ */
+export const SearchForm: FC<SearchFormProps> = ({
   onSearch,
   onDrawerToggle,
   placeholder = "Search for products...",
@@ -58,7 +89,7 @@ export const SearchForm: React.FC<SearchFormProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     const trimmed = query.trim();
     if (trimmed) {

@@ -11,7 +11,16 @@ import {
   ThemeMode,
 } from "../themes";
 
+/**
+ * Props for {@link ThemeProvider}.
+ * @example
+ * ```tsx
+ * <ThemeProvider><App /></ThemeProvider>
+ * ```
+ * @source
+ */
 interface ThemeProviderProps {
+  /** The app subtree to render under the theme. */
   children: ReactNode;
 }
 

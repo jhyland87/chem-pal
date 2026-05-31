@@ -14,12 +14,27 @@ import { ChangeEvent, ReactNode, SyntheticEvent } from "react";
 import styles from "./DrawerSearchPanel.module.scss";
 import { StyledAccordionDetails, StyledAccordionSummary } from "./StyledComponents";
 
+/** A selectable country option for the country autocomplete: ISO code + display label. */
 type CountryOption = { code: string; label: string };
 
+/**
+ * Props for {@link ColumnDrawerSection}.
+ * @example
+ * ```tsx
+ * const props: ColumnDrawerSectionProps = {
+ *   columnId: "supplier", config, expandedAccordion: "search-supplier", onAccordionChange,
+ * };
+ * ```
+ * @source
+ */
 interface ColumnDrawerSectionProps {
+  /** Column id; the accordion's panel id is derived as `search-${columnId}`. */
   columnId: string;
+  /** The column's `meta.drawer` payload describing the widget and state binding. */
   config: ColumnDrawerConfig;
+  /** Currently expanded accordion panel id, or `false` for none. */
   expandedAccordion: string | false;
+  /** Accordion expand/collapse handler factory for the given `panel`. */
   onAccordionChange: (panel: string) => (event: SyntheticEvent, isExpanded: boolean) => void;
 }
 

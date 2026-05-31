@@ -1,5 +1,18 @@
 import type { Row } from "@tanstack/react-table";
 
+/**
+ * TanStack sorting comparator that orders two product rows by their normalized
+ * `baseQuantity` (a missing quantity sorts as 0).
+ * @param rowA - The first row to compare.
+ * @param rowB - The second row to compare.
+ * @returns `1` if rowA > rowB, `-1` if rowA < rowB, `0` if equal.
+ * @example
+ * ```ts
+ * useReactTable({ sortingFns: { quantity: quantitySortingFn }, ... });
+ * // A row with baseQuantity 500 sorts after one with 100.
+ * ```
+ * @source
+ */
 export function quantitySortingFn(rowA: Row<Product>, rowB: Row<Product>) {
   const a = rowA.original.baseQuantity ?? 0;
   const b = rowB.original.baseQuantity ?? 0;
@@ -9,8 +22,14 @@ export function quantitySortingFn(rowA: Row<Product>, rowB: Row<Product>) {
 /**
  * Custom sorting function for match percentage comparison between two product rows.
  * Compares the match percentage of products and returns a sort order value.
- *
- * @returns Returns 1 if rowA -gt rowB, -1 if rowA -lt rowB, 0 if equal
+ * @param rowA - The first row to compare.
+ * @param rowB - The second row to compare.
+ * @returns `1` if rowA > rowB, `-1` if rowA < rowB, `0` if equal.
+ * @example
+ * ```ts
+ * useReactTable({ sortingFns: { match: matchPercentageSortingFn }, ... });
+ * // A row with matchPercentage 90 sorts after one with 70.
+ * ```
  * @source
  */
 export function matchPercentageSortingFn(rowA: Row<Product>, rowB: Row<Product>) {
@@ -21,9 +40,16 @@ export function matchPercentageSortingFn(rowA: Row<Product>, rowB: Row<Product>)
 
 /**
  * Custom sorting function for price comparison between two product rows.
- * Compares the USD prices of products and returns a sort order value.
- *
- * @returns Returns 1 if rowA -gt rowB, -1 if rowA -lt rowB, 0 if equal
+ * Compares the USD prices of products (falling back to raw price) and returns
+ * a sort order value.
+ * @param rowA - The first row to compare.
+ * @param rowB - The second row to compare.
+ * @returns `1` if rowA > rowB, `-1` if rowA < rowB, `0` if equal.
+ * @example
+ * ```ts
+ * useReactTable({ sortingFns: { price: priceSortingFn }, ... });
+ * // A row with usdPrice 29.99 sorts after one with 9.99.
+ * ```
  * @source
  */
 export function priceSortingFn(rowA: Row<Product>, rowB: Row<Product>) {

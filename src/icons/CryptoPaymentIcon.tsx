@@ -1,6 +1,5 @@
 import Tooltip from "@mui/material/Tooltip";
-import * as React from "react";
-import { SVGProps } from "react";
+import { SVGProps, FC, ReactNode } from "react";
 
 export type CryptoType = "bitcoin" | "ethereum" | "tether" | "litecoin";
 
@@ -8,7 +7,7 @@ export interface CryptoPaymentIconProps extends SVGProps<SVGSVGElement> {
   type: CryptoType;
 }
 
-const iconMap: Record<CryptoType, React.ReactNode> = {
+const iconMap: Record<CryptoType, ReactNode> = {
   bitcoin: (
     <>
       <g transform="scale(4.8, 5)" fill="none" fillRule="evenodd" id="Page-1" stroke="none">
@@ -92,7 +91,7 @@ const iconMap: Record<CryptoType, React.ReactNode> = {
  * <CryptoPaymentIcon type="litecoin" width={20} />
  * ```
  */
-const CryptoPaymentIcon: React.FC<CryptoPaymentIconProps> = ({ type, ...props }) => (
+const CryptoPaymentIcon: FC<CryptoPaymentIconProps> = ({ type, ...props }) => (
   <Tooltip title={type} placement="top" arrow>
     <svg
       viewBox="0 0 780 500"

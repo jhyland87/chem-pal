@@ -4,7 +4,7 @@ import { cstorage } from "@/utils/storage";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import SettingsIcon from "@mui/icons-material/Settings";
 import Badge from "@mui/material/Badge";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, FC } from "react";
 import { useAppContext } from "../context";
 import { useTheme as useCustomTheme } from "../themes";
 import { SearchForm } from "./SearchForm";
@@ -15,7 +15,19 @@ import {
   SearchPanelHomeSettingsButton,
 } from "./StyledComponents";
 
-const SearchPanelHome: React.FC = () => {
+/**
+ * The popup's home panel. Shows the search entry point and, when a previous
+ * search's results are cached, a summary with the result count plus a button to
+ * jump back into them. Reads and persists state via app context.
+ * @returns The home panel element.
+ * @example
+ * ```tsx
+ * // Rendered as the default popup view.
+ * <SearchPanelHome />
+ * ```
+ * @source
+ */
+const SearchPanelHome: FC = () => {
   const appContext = useAppContext();
   const { mode } = useCustomTheme();
   const [hasStoredResults, setHasStoredResults] = useState(false);

@@ -42,9 +42,10 @@ import {
 } from "@tanstack/react-table";
 import debounce from "lodash/debounce";
 import isEmpty from "lodash/isEmpty";
-import React, {
+import {
   ComponentType,
   Dispatch,
+  KeyboardEvent,
   ReactElement,
   SetStateAction,
   useCallback,
@@ -113,8 +114,21 @@ function FilterVariantCell({ header }: { header: Header<Product, unknown> }) {
   return <Component column={header.column as CustomColumn<Product, unknown>} />;
 }
 
+/**
+ * Props for {@link ResultsTable}.
+ * @example
+ * ```tsx
+ * const props: ResultsTableProps = {
+ *   getRowCanExpand: (row) => (row.original.variants?.length ?? 0) > 0,
+ *   columnFilterFns: [filters, setFilters],
+ * };
+ * ```
+ * @source
+ */
 interface ResultsTableProps {
+  /** Predicate deciding whether a row can expand to show variant sub-rows. */
   getRowCanExpand: (row: Row<Product>) => boolean;
+  /** Controlled column-filter state tuple `[state, setState]`. */
   columnFilterFns: [ColumnFiltersState, Dispatch<SetStateAction<ColumnFiltersState>>];
 }
 
@@ -358,7 +372,7 @@ export default function ResultsTable({
     }
   };
 
-  const handleKeyPress = (event: React.KeyboardEvent) => {
+  const handleKeyPress = (event: KeyboardEvent) => {
     if (event.key === "Enter" && isInputElement(event.target)) {
       handleSearch(event.target.value);
     }

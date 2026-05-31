@@ -1,7 +1,7 @@
 import { SPIN_SPEED } from "@/constants/common";
 import { isSpinSpeed } from "@/utils/typeGuards/common";
 import { keyframes, styled } from "@mui/material/styles";
-import { cloneElement, isValidElement } from "react";
+import { cloneElement, isValidElement, FC } from "react";
 
 /**
  * A component that adds a spinning animation to any icon component passed as a child.
@@ -40,7 +40,7 @@ import { cloneElement, isValidElement } from "react";
  * ```
  * @source
  */
-const IconSpinner: React.FC<IconSpinnerProps> = (props: IconSpinnerProps) => {
+const IconSpinner: FC<IconSpinnerProps> = (props: IconSpinnerProps) => {
   let { speed = 2 } = props;
 
   if (typeof speed === "string") {

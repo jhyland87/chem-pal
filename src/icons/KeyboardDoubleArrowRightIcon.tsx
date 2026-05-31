@@ -1,5 +1,6 @@
 /** @internal */
 import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
+import { FC } from "react";
 
 /**
  * A Material-UI icon component that renders a double right arrow icon.
@@ -10,7 +11,7 @@ import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
  * @returns A React component that renders the double right arrow icon
  * @source
  */
-const KeyboardDoubleArrowRightIcon: React.FC<SvgIconProps> = (props) => {
+const KeyboardDoubleArrowRightIcon: FC<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props}>
       <svg

@@ -13,7 +13,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, FC } from "react";
 import styles from "./HistoryPanel.module.scss";
 
 /**
@@ -35,7 +35,7 @@ import styles from "./HistoryPanel.module.scss";
  * @category Components
  * @source
  */
-const HistoryPanel: React.FC = () => {
+const HistoryPanel: FC = () => {
   const [history, setHistory] = useState<SearchHistoryEntry[]>([]);
   const { setPendingSearchQuery, setDrawerTab, setSearchFilters, setSelectedSuppliers, setPanel } =
     useAppContext();

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, MouseEvent } from "react";
 
 /**
  * Context menu state object containing position and product data.
@@ -22,7 +22,7 @@ interface UseContextMenuReturn {
   /** Current context menu state, null when menu is closed */
   contextMenu: ContextMenuState | null;
   /** Function to handle context menu open events */
-  handleContextMenu: (event: React.MouseEvent, product: Product) => void;
+  handleContextMenu: (event: MouseEvent, product: Product) => void;
   /** Function to close the context menu */
   handleCloseContextMenu: () => void;
 }
@@ -68,7 +68,7 @@ export function useContextMenu(): UseContextMenuReturn {
    * @param product - The product data associated with the clicked row
    * @source
    */
-  const handleContextMenu = (event: React.MouseEvent, product: Product) => {
+  const handleContextMenu = (event: MouseEvent, product: Product) => {
     event.preventDefault();
     event.stopPropagation();
 

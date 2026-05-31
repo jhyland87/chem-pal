@@ -7,10 +7,24 @@ import { Table } from "@tanstack/react-table";
 import SearchInput from "./SearchInput";
 import styles from "./TableOptions.module.scss";
 
+/**
+ * Props for {@link TableOptions}.
+ * @example
+ * ```tsx
+ * const props: TableOptionsProps = {
+ *   table, onSearch: (q) => runSearch(q), onToggleDrawer: () => {}, isDrawerOpen: false,
+ * };
+ * ```
+ * @source
+ */
 interface TableOptionsProps {
+  /** The TanStack table instance the toolbar operates on. */
   table: Table<Product>;
+  /** Called with the query when a search is submitted from the toolbar input. */
   onSearch: (query: string) => void;
+  /** Toggles the filter drawer open/closed. */
   onToggleDrawer: () => void;
+  /** Whether the filter drawer is currently open. */
   isDrawerOpen: boolean;
 }
 

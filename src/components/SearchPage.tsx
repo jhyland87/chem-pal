@@ -1,6 +1,6 @@
 import { Settings as SettingsIcon } from "@mui/icons-material";
 import { Box, IconButton } from "@mui/material";
-import React from "react";
+import { FC } from "react";
 import { useNavigate } from "react-router-dom";
 import "../main.scss";
 import { useTheme } from "../themes";
@@ -15,14 +15,40 @@ import { ThemeSwitcher } from "./ThemeSwitcher";
 // TODO: Replace with local logo assets if available
 import { default as darkLogo, default as lightLogo } from "../assets/react.svg";
 
+/**
+ * Props for {@link SearchPage}.
+ * @example
+ * ```tsx
+ * const props: SearchPageProps = {
+ *   onSearch: (q) => runSearch(q),
+ *   onDrawerToggle: () => openDrawer(),
+ * };
+ * ```
+ * @source
+ */
 interface SearchPageProps {
+  /** Called with the submitted query; the page then navigates to `/results`. */
   onSearch: (query: string) => void;
+  /** Opens the settings/advanced drawer (settings gear + advanced button). */
   onDrawerToggle: () => void;
 }
 
 const isDevelopment = process.env.NODE_ENV === "development";
 
-const SearchPage: React.FC<SearchPageProps> = ({ onSearch, onDrawerToggle }) => {
+/**
+ * The landing/home view: centered logo, the {@link SearchForm}, a settings
+ * gear, and a {@link ThemeSwitcher}. Submitting a search runs `onSearch` and
+ * navigates to the results route; shows a "DEV MODE" badge in development.
+ * @param props - The {@link SearchPageProps} with the search and drawer-toggle callbacks.
+ * @returns The search landing page element.
+ * @example
+ * ```tsx
+ * <SearchPage onSearch={(q) => runSearch(q)} onDrawerToggle={() => openDrawer()} />
+ * // Submitting "acetone" calls onSearch("acetone") and navigates to /results.
+ * ```
+ * @source
+ */
+const SearchPage: FC<SearchPageProps> = ({ onSearch, onDrawerToggle }) => {
   const navigate = useNavigate();
   const { mode } = useTheme();
 

@@ -1,11 +1,12 @@
 import { SPIN_SPEED } from "@/constants/common";
+import { FC } from "react";
 import { SvgIcon, SvgIconProps } from "@mui/material";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import IconSpinner from "../IconSpinner";
 
 // Mock child component for testing
-const MockIcon: React.FC<SvgIconProps> = (props) => (
+const MockIcon: FC<SvgIconProps> = (props) => (
   <SvgIcon data-testid="mock-icon" style={{ width: 24, height: 24 }} {...props}>
     <path d="M0 0h24v24H0z" />
   </SvgIcon>

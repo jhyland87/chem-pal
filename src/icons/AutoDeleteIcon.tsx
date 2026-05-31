@@ -1,6 +1,6 @@
 /** @internal */
 import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
-import React from "react";
+import { FC } from "react";
 
 /**
  * A Material-UI icon component that renders an auto-delete icon.
@@ -16,7 +16,7 @@ import React from "react";
  * {@includeCode ./AutoDeleteIcon.tsx}
  * @source
  */
-const AutoDeleteIcon: React.FC<SvgIconProps> = (props) => {
+const AutoDeleteIcon: FC<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props}>
       <svg

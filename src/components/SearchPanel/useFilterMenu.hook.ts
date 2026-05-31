@@ -1,5 +1,5 @@
 import { SelectChangeEvent } from "@mui/material/Select";
-import { useCallback, useState } from "react";
+import { useCallback, useState, SyntheticEvent } from "react";
 import { useAppContext } from "./hooks/useContext";
 
 /**
@@ -68,7 +68,7 @@ export function useFilterMenu(table?: any) {
 
   // Tab handlers
   const handleTabChange = useCallback(
-    (event: React.SyntheticEvent, newValue: number) => {
+    (event: SyntheticEvent, newValue: number) => {
       setActiveTab(newValue);
       // Auto-open drawer when tab is clicked
       if (!drawerState) {
@@ -87,7 +87,7 @@ export function useFilterMenu(table?: any) {
 
   // Accordion handlers
   const handleAccordionChange = useCallback((panel: string) => {
-    return (event: React.SyntheticEvent, newExpanded: boolean) => {
+    return (event: SyntheticEvent, newExpanded: boolean) => {
       setExpanded(newExpanded ? panel : false);
     };
   }, []);

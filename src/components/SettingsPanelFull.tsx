@@ -50,6 +50,18 @@ import styles from "./SettingsPanelFull.module.scss";
 
 // SettingAction type is declared globally in types/settings.d.ts
 
+/**
+ * The full settings panel shown in the drawer's Settings tab. Renders all user
+ * preference controls (currencies, locations, toggles, numeric limits, excluded
+ * products, etc.) and persists changes to `userSettings` via app context.
+ * @returns The settings panel element.
+ * @example
+ * ```tsx
+ * // Rendered inside the Settings drawer tab.
+ * <SettingsPanelFull />
+ * ```
+ * @source
+ */
 export default function SettingsPanelFull() {
   const appContext = useAppContext();
   const [expanded, setExpanded] = useState<string | false>("behavior");
