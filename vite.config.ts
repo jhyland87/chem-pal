@@ -24,6 +24,7 @@ export default ({ mode }: { mode: string }) => {
   }
 
   const isAggregate = mode === "aggregate";
+  const isProd = mode === "production";
 
   return defineConfig({
     define: {
@@ -66,11 +67,11 @@ export default ({ mode }: { mode: string }) => {
       }),*/
     ],
     build: {
-      // Enable source maps for both dev and prod
-      sourcemap: true,
-      // Improve source map quality
-      minify: false, //isDev ? false : "esbuild",
-      // Preserve original file structure in source maps
+      // Source maps in dev/aggregate only; prod ships without them to keep the
+      // packaged extension small and avoid shipping source.
+      sourcemap: !isProd,
+      // Minify prod; leave dev/aggregate readable for debugging.
+      minify: isProd ? "esbuild" : false,
       chunkSizeWarningLimit: 1000,
       outDir: "build",
       rollupOptions: {
