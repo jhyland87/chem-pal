@@ -59,6 +59,12 @@ export class SupplierAmarisChemicalSolutions
   // The payment methods accepted by the supplier.
   public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
 
+  // Amaris sits behind a WAF that 403s the first API hit while planting a
+  // session cookie, then expects the request retried with that cookie. With
+  // credentials:"include" the cookie lands in the jar, so retrying the 403
+  // clears the handshake. See SupplierBase.challengeRetryLimit.
+  protected readonly challengeRetryLimit: number = 2;
+
   /**
    * Amaris stores pack sizes under attribute terms (e.g. taxonomy
    * `pa_pack-size`, term name `"500 grams Plastic Tin"`) rather than in the

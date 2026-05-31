@@ -75,6 +75,14 @@ declare global {
   interface RequestParams extends Record<string, unknown> {
     [key: string]: unknown;
   }
+
+  /**
+   * A cookie a supplier needs seeded into the browser jar before its requests
+   * run (e.g. a currency or session-preference cookie the backend reads).
+   * Mirrors `chrome.cookies.SetDetails` but makes `url` optional — `SupplierBase`
+   * defaults it to the supplier's `baseURL`.
+   */
+  type SupplierCookieSeed = Omit<chrome.cookies.SetDetails, "url"> & { url?: string };
 }
 
 // This export is needed to make the file a module

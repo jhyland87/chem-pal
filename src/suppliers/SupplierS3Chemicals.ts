@@ -68,36 +68,11 @@ export class SupplierS3Chemicals
   // Number of requests to process in parallel when fetching product details
   protected maxConcurrentRequests: number = 5;
 
-  /**
-   * Writes Shopware's `currency=2` cookie into the browser cookie jar before
-   * any request runs so the storefront returns USD prices. The `Cookie`
-   * request header is on the fetch-forbidden list and cannot be set via
-   * `this.headers`; `chrome.cookies.set` is the only reliable path.
-   * @returns A promise that resolves when the cookie has been written.
-   * @source
-   */
-  protected async setup(): Promise<void> {
-    // `chrome.cookies` is undefined unless the extension has the "cookies"
-    // permission *and* the host_permission for this origin. Guard so the
-    // query still runs in environments that lack the API (e.g. dev fallback
-    // or when a user hasn't accepted the upgraded permission set yet) —
-    // prices will just render in the session default currency.
-    if (typeof chrome === "undefined" || !chrome.cookies?.set) {
-      this.logger.warn("chrome.cookies unavailable; skipping currency cookie set");
-      return;
-    }
-    try {
-      await chrome.cookies.set({
-        url: this.baseURL,
-        name: "currency",
-        value: "2",
-      });
-    } catch (error) {
-      this.logger.warn("Failed to set currency cookie; prices may render in session default", {
-        error,
-      });
-    }
-  }
+  // Seed Shopware's `currency=2` cookie into the browser jar before any
+  // request runs so the storefront returns USD prices. The `Cookie` request
+  // header is fetch-forbidden, so the jar (seeded via chrome.cookies) is the
+  // only reliable path — see SupplierBase.seedRequiredCookies.
+  protected readonly requiredCookies: SupplierCookieSeed[] = [{ name: "currency", value: "2" }];
 
   /**
    * Normalizes a Shopware-rendered price string (German locale) into a

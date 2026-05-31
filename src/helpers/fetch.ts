@@ -1,3 +1,4 @@
+import { HttpError } from "@/helpers/exceptions";
 import { addCapturedResponse, initConsoleApi } from "@/helpers/responseAggregate";
 
 declare const __RESPONSE_AGGREGATE__: boolean;
@@ -170,7 +171,7 @@ export async function fetchDecorator(
     if (aggregateRequestClone && aggregateResponseClone) {
       await addCapturedResponse(aggregateRequestClone, aggregateResponseClone);
     }
-    throw new Error(`HTTP Error: ${clonedResponse.status} ${clonedResponse.statusText}`);
+    throw new HttpError(clonedResponse.status, clonedResponse.statusText);
   }
 
   const contentType = clonedResponse.headers.get("content-type") || "";

@@ -50,6 +50,7 @@ export abstract class SupplierBaseWix
    */
   protected async setup(): Promise<void> {
     const accessTokenResponse = await fetch(`${this.baseURL}/_api/v1/access-tokens`, {
+      credentials: "include",
       headers: {
         accept: "*/*",
         "accept-language": "en-US,en;q=0.5",

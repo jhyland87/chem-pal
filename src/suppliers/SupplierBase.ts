@@ -1,13 +1,14 @@
 import { defaultResultsLimit } from "@/../config.json";
 import { UOM } from "@/constants/common";
 import { FUZZ_SCORERS, isFuzzScorerName, type FuzzScorerFn } from "@/constants/fuzzScorers";
-import { EmptyResponseError } from "@/helpers/exceptions";
+import { EmptyResponseError, HttpError } from "@/helpers/exceptions";
 import {
   countExcludedProductsForSupplier,
   getProductExclusionKey,
   loadExcludedProductKeys,
   shouldExcludeProduct,
 } from "@/helpers/excludedProducts";
+import { setCookie } from "@/helpers/cookies";
 import { fetchDecorator, type FetchDecoratorResponse } from "@/helpers/fetch";
 import { stripQuantityFromString } from "@/helpers/quantity";
 import { deleteSupplierQueryCacheEntry } from "@/utils/idbCache";
@@ -300,6 +301,49 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   protected headers: HeadersInit = {};
 
   /**
+   * Cookies that must be written into the browser jar before any request runs
+   * — e.g. a currency or session-preference cookie the backend reads. Seeded
+   * once per instance by `ensureSetup` (before `setup`) via `chrome.cookies`,
+   * since the `Cookie` request header is on the fetch-forbidden list and can't
+   * be set through `this.headers`. Each entry's `url` defaults to `baseURL`.
+   * Subclasses override this instead of hand-rolling a `setup` that calls
+   * `chrome.cookies.set` directly.
+   * @defaultValue []
+   * @example
+   * ```typescript
+   * class MySupplier extends SupplierBase<Partial<Product>, Product> {
+   *   protected readonly requiredCookies: SupplierCookieSeed[] = [
+   *     { name: "currency", value: "2" },
+   *   ];
+   * }
+   * ```
+   * @source
+   */
+  protected readonly requiredCookies: SupplierCookieSeed[] = [];
+
+  /**
+   * Number of times `fetch` retries a request that comes back `403`. Some
+   * suppliers sit behind a WAF that 403s the first hit while planting a
+   * session cookie (a "cookie handshake"); because every request now sets
+   * `credentials: "include"`, that cookie lands in the jar and the retry
+   * carries it back, usually passing. We can't gate on the `Set-Cookie`
+   * header (it's fetch-forbidden and invisible to JS), so this per-supplier
+   * flag is the gate — `0` (the default) means never retry. Only enable it
+   * for suppliers known to do this handshake.
+   * @defaultValue 0
+   * @source
+   */
+  protected readonly challengeRetryLimit: number = 0;
+
+  /**
+   * Delay in milliseconds between `403` challenge retries. Gives the WAF a
+   * brief beat before re-requesting with the freshly-planted cookie.
+   * @defaultValue 300
+   * @source
+   */
+  protected readonly challengeRetryDelayMs: number = 300;
+
+  /**
    * Logger for the supplier. Initialized in the constructor with the name of
    * the inheriting class.
    */
@@ -499,9 +543,27 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    */
   private async ensureSetup(): Promise<void> {
     if (!this.setupPromise) {
-      this.setupPromise = this.setup();
+      this.setupPromise = (async () => {
+        await this.seedRequiredCookies();
+        await this.setup();
+      })();
     }
     return this.setupPromise;
+  }
+
+  /**
+   * Writes every entry in `requiredCookies` into the browser jar before
+   * `setup` runs. Each cookie's `url` defaults to `baseURL`. Failures are
+   * swallowed and logged by `setCookie`, so a missing cookie permission never
+   * aborts the query — affected prices/preferences just fall back to the
+   * session default.
+   * @returns A promise that resolves once all cookies have been seeded.
+   * @source
+   */
+  private async seedRequiredCookies(): Promise<void> {
+    for (const cookie of this.requiredCookies) {
+      await setCookie({ url: this.baseURL, ...cookie });
+    }
   }
 
   /**
@@ -645,6 +707,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       body: bodyStr,
       method,
       mode,
+      credentials: "include",
     });
 
     // Fetch the goods
@@ -1769,24 +1832,62 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   ): Promise<FetchDecoratorResponse> {
     const [input] = args;
     this.logger.debug(`Fetching: ${input}`);
-    this.requestCount++;
-    if (this.requestCount > this.httpRequestHardLimit) {
-      this.logger.warn("Request count exceeded hard limit", { requestCount: this.requestCount });
-      incrementFailure(this.supplierName);
-      throw new Error("Request count exceeded hard limit");
-    }
-    try {
-      const response = await fetchDecorator(...args);
-      this.logger.debug(`Response Status: ${response.status}`);
-      this.logger.debug("response hash:", response.requestHash);
-      if (typeof response.data === "string" && response.data?.length === 0) {
-        throw new EmptyResponseError(`Invalid response: ${response.data}`);
+
+    // One initial attempt plus up to `challengeRetryLimit` retries. A 403 from
+    // a WAF cookie handshake plants a cookie on the first hit (stored because
+    // credentials:"include"); the retry sends it back and usually passes.
+    const maxAttempts = 1 + Math.max(0, this.challengeRetryLimit);
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      // Each attempt is a real network request, so it counts toward the hard
+      // limit. For non-retrying suppliers (maxAttempts === 1) this is
+      // identical to the previous single increment.
+      this.requestCount++;
+      if (this.requestCount > this.httpRequestHardLimit) {
+        this.logger.warn("Request count exceeded hard limit", { requestCount: this.requestCount });
+        incrementFailure(this.supplierName);
+        throw new Error("Request count exceeded hard limit");
       }
-      incrementSuccess(this.supplierName);
-      return response;
-    } catch (error: unknown) {
-      incrementFailure(this.supplierName);
-      throw error;
+
+      try {
+        const response = await fetchDecorator(...args);
+        this.logger.debug(`Response Status: ${response.status}`);
+        this.logger.debug("response hash:", response.requestHash);
+        if (typeof response.data === "string" && response.data?.length === 0) {
+          throw new EmptyResponseError(`Invalid response: ${response.data}`);
+        }
+        incrementSuccess(this.supplierName);
+        return response;
+      } catch (error: unknown) {
+        if (this.shouldRetryChallenge(error) && attempt < maxAttempts) {
+          this.logger.warn("Retrying after 403 (WAF cookie handshake)", {
+            attempt,
+            maxAttempts,
+            input,
+          });
+          await new Promise((resolve) => setTimeout(resolve, this.challengeRetryDelayMs));
+          continue;
+        }
+        incrementFailure(this.supplierName);
+        throw error;
+      }
     }
+
+    // Unreachable: the loop always returns on success or throws on the final
+    // failed attempt. Present only to satisfy the return-type checker.
+    throw new Error("fetch: exhausted retries without resolving");
+  }
+
+  /**
+   * Whether a thrown fetch error is a retryable WAF cookie-handshake `403`.
+   * Gated by `challengeRetryLimit` so only opted-in suppliers retry; we can't
+   * inspect the `Set-Cookie` header (fetch-forbidden), so any `403` qualifies
+   * once a supplier has opted in.
+   * @param error - The error thrown by `fetchDecorator`
+   * @returns `true` when the request should be retried
+   * @source
+   */
+  private shouldRetryChallenge(error: unknown): boolean {
+    return this.challengeRetryLimit > 0 && error instanceof HttpError && error.status === 403;
   }
 }
