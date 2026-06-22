@@ -44,8 +44,8 @@ export function isLzEnvelope(value: unknown): value is LzEnvelope {
     typeof value === "object" &&
     value !== null &&
     !Array.isArray(value) &&
-    (value as { __lz?: unknown }).__lz === LZ_VERSION &&
-    typeof (value as { d?: unknown }).d === "string"
+    Reflect.get(value, "__lz") === LZ_VERSION &&
+    typeof Reflect.get(value, "d") === "string"
   );
 }
 
@@ -262,6 +262,5 @@ async function decodeCache(key: string, area: "session" | "local" = "session"): 
 
 // Register the global so it's callable from the browser console.
 if (typeof window !== "undefined") {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any)._decodeCache = decodeCache;
+  Reflect.set(window, "_decodeCache", decodeCache);
 }

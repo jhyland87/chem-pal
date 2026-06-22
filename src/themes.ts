@@ -38,7 +38,7 @@ export const lightPalette = {
   activeBackground: "#f5f5f5",
   borders: "#e0e0e0",
   hoverBackground: "#f5f5f5",
-} as typeof darkPalette;
+} satisfies typeof darkPalette;
 
 export const darkPalette = {
   text: "#e0e0e0",

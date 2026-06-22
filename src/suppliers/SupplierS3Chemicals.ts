@@ -4,7 +4,7 @@ import { parseQuantity } from "@/helpers/quantity";
 import { createDOM } from "@/helpers/request";
 import { firstMap, mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
-import { isCAS } from "@/utils/typeGuards/common";
+import { isCAS, isCurrencyCode } from "@/utils/typeGuards/common";
 import { WRatio } from "fuzzball";
 import { SupplierBase } from "./SupplierBase";
 /**
@@ -408,8 +408,8 @@ export class SupplierS3Chemicals
     const currencyCode = details
       .querySelector('meta[itemprop="priceCurrency"]')
       ?.getAttribute("content");
-    if (currencyCode) {
-      variant.currencyCode = currencyCode as CurrencyCode;
+    if (isCurrencyCode(currencyCode)) {
+      variant.currencyCode = currencyCode;
     }
 
     const visiblePrice = details.querySelector("span.price--content")?.textContent;

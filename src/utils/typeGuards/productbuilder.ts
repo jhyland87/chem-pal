@@ -1,6 +1,8 @@
 import { AVAILABILITY } from "@/constants/common";
 import { z } from "zod";
 
+// `z.enum` requires a non-empty tuple type, which `Object.values` (typed as a plain
+// array) cannot express. The enum always has at least one member, so the cast is safe.
 const availabilityValues = Object.values(AVAILABILITY) as [AVAILABILITY, ...AVAILABILITY[]];
 
 // Zod schema that accepts any string whose lowercased form matches an `AVAILABILITY`

@@ -257,6 +257,20 @@ describe("SupplierBase cookie handling", () => {
   });
 
   it('sends credentials: "include" on POST requests so cookies are stored/sent', async () => {
+    // Under the vmThreads + jsdom env, jsdom's AbortSignal isn't an instanceof
+    // Node/undici's AbortSignal, so the real `new Request(url, { signal })` in
+    // httpPost throws a cross-realm error. Stub Request with a capturing fake —
+    // we only need to assert httpPost built the init with credentials:"include".
+    class FakeRequest {
+      url: string;
+      credentials?: string;
+      constructor(url: string, init: RequestInit = {}) {
+        this.url = url;
+        Object.assign(this, init);
+      }
+    }
+    vi.stubGlobal("Request", FakeRequest);
+
     const supplier = new TestSupplier("q", 5, new AbortController());
     supplier.initCache();
 

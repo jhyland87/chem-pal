@@ -1791,7 +1791,10 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
         const main = product.splice(0, 1)[0];
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { groupId, ...newObject } = main;
-        newObject.variants = product as GroupedItem<R>["variants"];
+        // R is unconstrained, so TS widens newObject.variants to
+        // R["variants"] & (R[] | undefined), which it cannot prove product
+        // (GroupedItem<R>[]) satisfies; assert to the destructured property type.
+        newObject.variants = product as typeof newObject.variants;
 
         return newObject;
       })

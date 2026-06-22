@@ -149,6 +149,8 @@ export class SupplierFactory<P extends Product> {
     const controller = new AbortController();
     return Object.fromEntries(
       mapDefined(Object.entries(suppliers), ([key, SupplierClass]) => {
+        // Trusted static supplier classes; the union of concrete constructors
+        // isn't structurally assignable to the generic SupplierConstructor.
         const ConcreteClass = SupplierClass as unknown as SupplierConstructor<Product>;
         const instance = new ConcreteClass("", 1, controller);
         return [key, instance.supplierName];
@@ -167,6 +169,8 @@ export class SupplierFactory<P extends Product> {
     const controller = new AbortController();
     return Object.fromEntries(
       mapDefined(Object.entries(suppliers), ([key, SupplierClass]) => {
+        // Trusted static supplier classes; the union of concrete constructors
+        // isn't structurally assignable to the generic SupplierConstructor.
         const ConcreteClass = SupplierClass as unknown as SupplierConstructor<Product>;
         const instance = new ConcreteClass("", 1, controller);
         return [key, instance.requiredHosts];
@@ -233,6 +237,8 @@ export class SupplierFactory<P extends Product> {
         if (!(this.suppliers.length === 0 || this.suppliers.includes(supplierClassName))) return;
 
         this.logger.debug("Initializing supplier class:", supplierClassName);
+        // Trusted static supplier classes; the union of concrete constructors
+        // isn't structurally assignable to the generic SupplierConstructor<P>.
         const ConcreteSupplierClass = supplierClass as unknown as SupplierConstructor<P>;
         const instance = new ConcreteSupplierClass(this.query, this.limit, this.controller);
         instance.initCache(this.caching, this.doNotCacheEmptyResults, this.cacheTtlMinutes);
@@ -291,6 +297,8 @@ export class SupplierFactory<P extends Product> {
         if (!(this.suppliers.length === 0 || this.suppliers.includes(supplierClassName))) return;
 
         this.logger.debug("Initializing supplier class", { supplierClassName });
+        // Trusted static supplier classes; the union of concrete constructors
+        // isn't structurally assignable to the generic SupplierConstructor<P>.
         const ConcreteSupplierClass = supplierClass as unknown as SupplierConstructor<P>;
         console.log("Initializing supplier class...", { supplierClassName, ConcreteSupplierClass });
         const instance = new ConcreteSupplierClass(this.query, this.limit, this.controller);

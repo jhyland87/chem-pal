@@ -113,7 +113,9 @@ export default function ColumnDrawerSection({
     const currentValue: string[] =
       config.bind.kind === "selectedSuppliers"
         ? (selectedSuppliers ?? [])
-        : ((searchFilters[config.bind.key] as string[] | undefined) ?? []);
+        : // `bind.key` is `keyof SearchFilters`, whose values are `string |
+          // string[]`; this widget only binds to the `string[]` filters.
+          ((searchFilters[config.bind.key] as string[] | undefined) ?? []);
 
     const handleChange = (_event: SyntheticEvent, newValue: string[]) => {
       if (config.bind.kind === "selectedSuppliers") {
@@ -163,6 +165,8 @@ export default function ColumnDrawerSection({
     if (config.bind.kind !== "searchFilters") return null;
     const bindKey = config.bind.key;
     const { options, emptyHelperText, placeholder } = config;
+    // `bindKey` is `keyof SearchFilters` (values `string | string[]`); this
+    // widget only binds to the `string[]` filters.
     const selectedCodes = searchFilters[bindKey] as string[];
     const currentValue: CountryOption[] = options.filter((opt) => selectedCodes.includes(opt.code));
 
@@ -215,6 +219,8 @@ export default function ColumnDrawerSection({
     if (config.bind.kind !== "searchFilters") return null;
     const bindKey = config.bind.key;
     const { options, formatChipLabel } = config;
+    // `bindKey` is `keyof SearchFilters` (values `string | string[]`); this
+    // widget only binds to the `string[]` filters.
     const selected = searchFilters[bindKey] as string[];
 
     const toggle = (value: string) => {
@@ -249,6 +255,8 @@ export default function ColumnDrawerSection({
   if (config.widget === "numberRange") {
     if (config.bind.kind !== "userSettingsRange") return null;
     const { minKey, maxKey } = config.bind;
+    // `minKey`/`maxKey` are `keyof UserSettings` (a heterogeneous interface);
+    // this widget only binds them to the numeric range settings.
     const minValue = userSettings[minKey] as number | undefined;
     const maxValue = userSettings[maxKey] as number | undefined;
     // Resolve the `"currency"` sentinel at render time so the symbol follows

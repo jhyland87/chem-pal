@@ -92,6 +92,8 @@ export function isMacklinApiResponse<T>(data: unknown): data is MacklinApiRespon
  * @source
  */
 export function isAuthRequiredEndpoint(url: string): boolean {
+  // TS narrows enum-value arrays to the enum union; widen to string[] so
+  // .includes accepts an arbitrary string argument.
   return (Object.values(AuthRequiredEndpoints) as string[]).includes(url);
 }
 
@@ -112,6 +114,8 @@ export function isAuthRequiredEndpoint(url: string): boolean {
  * @source
  */
 export function isAuthCheckEndpoint(url: string): boolean {
+  // Widen the enum-value array to string[] so .includes accepts an
+  // arbitrary string argument (the array element type is the enum union).
   return (
     [
       ApiEndpoints.USER_INFO,
@@ -223,8 +227,8 @@ export function isTimestampStorage(data: unknown): data is TimestampStorage {
     typeof data === "object" &&
     data !== null &&
     "serverTm" in data &&
-    typeof (data as TimestampStorage).serverTm === "number" &&
+    typeof data.serverTm === "number" &&
     "clientTm" in data &&
-    typeof (data as TimestampStorage).clientTm === "number"
+    typeof data.clientTm === "number"
   );
 }

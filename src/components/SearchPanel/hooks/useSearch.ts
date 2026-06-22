@@ -406,6 +406,9 @@ export function useSearch() {
 
         const startSearchTime = performance.now();
 
+        // window.resultsTable is typed as `object` in the global decl but is the
+        // live TanStack Table instance set in useResultsTable.hook.ts; assert its
+        // real type for this trusted cross-component bridge.
         const resultsTable = window.resultsTable as Table<Product>;
 
         // Execute the search for all suppliers.

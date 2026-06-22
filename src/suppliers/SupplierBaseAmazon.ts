@@ -248,8 +248,8 @@ export abstract class SupplierBaseAmazon
 
     const nodes = document.evaluate(xpath, doc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
 
-    const link = nodes.singleNodeValue as HTMLAnchorElement;
-    if (!link) {
+    const link = nodes.singleNodeValue;
+    if (!(link instanceof HTMLAnchorElement)) {
       this.logger.warn("No QID found", { doc });
       return;
     }

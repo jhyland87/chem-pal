@@ -45,6 +45,7 @@ export default function AboutModal({
   aboutOpen: boolean;
   setAboutOpen: (open: boolean) => void;
 }) {
+  // Trusted static build-time JSON whose shape matches Contributor.
   const entries = contributors as Contributor[];
   const themeContext = useContext(ThemeContext);
   const logoSrc =

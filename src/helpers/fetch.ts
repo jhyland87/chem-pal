@@ -75,7 +75,7 @@ export async function generateRequestHash(
   const contentType =
     input instanceof Request
       ? input.headers.get("content-type") || ""
-      : (headers instanceof Headers ? headers.get("content-type") : (headers as Record<string, string>)?.["content-type"]) ?? "";
+      : (headers instanceof Headers ? headers.get("content-type") : Reflect.get(headers, "content-type")) ?? "";
 
   const data = {
     url,
@@ -209,5 +209,7 @@ export async function fetchDecorator(
     await addCapturedResponse(aggregateRequestClone, aggregateResponseClone);
   }
 
+  // Safe: `data` and `requestHash` were just attached via Object.defineProperties
+  // above, but the type system can't track those runtime additions.
   return enhancedResponse as FetchDecoratorResponse;
 }

@@ -90,6 +90,10 @@ import { useResultsTable } from "./useResultsTable.hook";
 
 type FilterVariant = "text" | "range" | "select";
 
+/** Narrows an unknown column `filterVariant` to a known {@link FilterVariant}. */
+const isFilterVariant = (value: unknown): value is FilterVariant =>
+  value === "text" || value === "range" || value === "select";
+
 /**
  * Maps a column's `meta.filterVariant` to the input component that renders
  * inside the header filter row. `text` is the fallback so columns without
@@ -108,9 +112,13 @@ const filterComponentMap: Record<FilterVariant, ComponentType<FilterVariantInput
  * @source
  */
 function FilterVariantCell({ header }: { header: Header<Product, unknown> }) {
-  const variant = (header.column.columnDef.meta?.filterVariant ?? "text") as FilterVariant;
+  const rawVariant = header.column.columnDef.meta?.filterVariant;
+  const variant: FilterVariant = isFilterVariant(rawVariant) ? rawVariant : "text";
   const Component = filterComponentMap[variant];
   if (!Component) return null;
+  // header.column is a base TanStack Column; the filter inputs expect the
+  // CustomColumn augmentation our columns carry. Safe: every column rendered
+  // here is built by TableColumns() with that shape.
   return <Component column={header.column as CustomColumn<Product, unknown>} />;
 }
 
@@ -215,6 +223,9 @@ export default function ResultsTable({
     columnFilterFns,
     globalFilterFns: [globalFilter, setGlobalFilter],
     getRowCanExpand,
+    // defaultSettings is config.json's canonical UserSettings default; its
+    // JSON-inferred literals widen to `string`, so a cast (not a runtime guard)
+    // is appropriate for this trusted static config.
     userSettings: appContext?.userSettings ?? (defaultSettings as UserSettings),
   });
 

@@ -17,10 +17,7 @@ import { currencies, locations } from "@/../config.json";
  * @source
  */
 export const CURRENCY_SYMBOL_MAP: { [key: string]: string } = Object.fromEntries(
-  Object.entries(currencies).map(([code, { symbol }]) => [
-    code,
-    symbol as string as CurrencySymbol,
-  ]),
+  Object.entries(currencies).map(([code, { symbol }]) => [code, symbol]),
 );
 
 /**
@@ -33,7 +30,7 @@ export const CURRENCY_SYMBOL_MAP: { [key: string]: string } = Object.fromEntries
  * @source
  */
 export const CURRENCY_CODE_MAP: { [key: string]: string } = Object.fromEntries(
-  Object.entries(currencies).map(([code, { symbol }]) => [symbol, code as CurrencyCode]),
+  Object.entries(currencies).map(([code, { symbol }]) => [symbol, code]),
 );
 
 /**
@@ -46,5 +43,5 @@ export const CURRENCY_CODE_MAP: { [key: string]: string } = Object.fromEntries(
  * @source
  */
 export const CURRENCY_CODE_MAP_BY_LOCATION: { [key: string]: string } = Object.fromEntries(
-  Object.entries(locations).map(([code, { currency }]) => [code, currency as CurrencyCode]),
+  Object.entries(locations).map(([code, { currency }]) => [code, currency]),
 );

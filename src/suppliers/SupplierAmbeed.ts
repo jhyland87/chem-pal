@@ -91,6 +91,7 @@ export class SupplierAmbeed
   ]);
 
   protected makeQueryParams(query: string): Base64String {
+    // btoa returns a plain string; cast brands it as Base64String (a nominal Brand type).
     return btoa(JSON.stringify({ keyword: query })) as Base64String;
   }
 
@@ -342,6 +343,7 @@ export class SupplierAmbeed
         return;
       }
 
+      // mainVariant is a Variant from this builder; its fields are a subset of Product.
       productBuilder.setData(mainVariant as Partial<Product>);
 
       return productBuilder

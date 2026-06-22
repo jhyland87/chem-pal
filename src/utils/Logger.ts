@@ -1,8 +1,5 @@
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 
-/** Default log level when nothing is set via window/process env. DEBUG in dev, WARN in prod. */
-const DEFAULT_LOG_LEVEL_FOR_BUILD = IS_DEV_BUILD ? ("debug" as const) : ("warn" as const);
-
 /**
  * Available logging levels in ascending order of severity:
  * DEBUG → INFO → WARN → ERROR
@@ -24,6 +21,14 @@ export enum LogLevel {
   WARN = "warn",
   /** Error conditions that affect program execution */
   ERROR = "error",
+}
+
+/** Default log level when nothing is set via window/process env. DEBUG in dev, WARN in prod. */
+const DEFAULT_LOG_LEVEL_FOR_BUILD: LogLevel = IS_DEV_BUILD ? LogLevel.DEBUG : LogLevel.WARN;
+
+/** Narrows an arbitrary string to a `LogLevel` enum member. */
+function isLogLevel(value: string): value is LogLevel {
+  return (Object.values(LogLevel) as string[]).includes(value);
 }
 
 /**
@@ -135,33 +140,32 @@ export class Logger {
     try {
       // Check browser environment first
       if (typeof window !== "undefined") {
-        // Check for global window property
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        const globalWindow = window as Window & { LOG_LEVEL?: string };
-        const windowLevel = globalWindow.LOG_LEVEL?.toLowerCase();
-        if (windowLevel && Object.values(LogLevel).includes(windowLevel as LogLevel)) {
-          return windowLevel as LogLevel;
+        // Read the non-standard global without widening the Window type.
+        const windowLevel = Reflect.get(window, "LOG_LEVEL");
+        const normalized = typeof windowLevel === "string" ? windowLevel.toLowerCase() : undefined;
+        if (normalized && isLogLevel(normalized)) {
+          return normalized;
         }
       }
 
       // Fall back to Node.js environment check
       if (typeof process !== "undefined" && process.env) {
         const nodeLevel = process.env.LOG_LEVEL?.toLowerCase();
-        if (nodeLevel && Object.values(LogLevel).includes(nodeLevel as LogLevel)) {
-          return nodeLevel as LogLevel;
+        if (nodeLevel && isLogLevel(nodeLevel)) {
+          return nodeLevel;
         }
       }
 
-      return DEFAULT_LOG_LEVEL_FOR_BUILD as LogLevel;
+      return DEFAULT_LOG_LEVEL_FOR_BUILD;
     } catch (err) {
       // Log the error for debugging purposes but continue with default
       console.warn("Error determining log level:", err);
-      return DEFAULT_LOG_LEVEL_FOR_BUILD as LogLevel;
+      return DEFAULT_LOG_LEVEL_FOR_BUILD;
     }
   }
 
   public static setEnvLogLevel(level: LogLevel): void {
-    (window as any).LOG_LEVEL = level;
+    Reflect.set(window, "LOG_LEVEL", level);
     if (typeof process !== "undefined" && process.env) {
       process.env.LOG_LEVEL = level;
     }
@@ -912,5 +916,5 @@ export class Logger {
 }
 
 if (typeof window !== "undefined") {
-  (window as any).Logger = Logger;
+  Reflect.set(window, "Logger", Logger);
 }

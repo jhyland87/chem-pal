@@ -9,8 +9,8 @@ import type { HotkeyConfig, HotkeyHandlers, ParsedBinding } from "./types";
  * suppressed in these cases so typing is not hijacked.
  */
 function isEditableTarget(event: KeyboardEvent): boolean {
-  const target = event.target as HTMLElement | null;
-  if (!target) return false;
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) return false;
   const tag = target.tagName;
   if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
   if (target.isContentEditable) return true;
@@ -64,6 +64,8 @@ export interface UseHotkeysOptions {
  * @source
  */
 export function useHotkeys(handlers: HotkeyHandlers, options: UseHotkeysOptions = {}): void {
+  // Trusted static config: JSON import infers literal types that don't widen to
+  // HotkeyConfig[]; shape is validated by config.json's authored structure.
   const compiled = useMemo(() => compile(hotkeysConfig as HotkeyConfig[]), []);
   const { onTriggered } = options;
 
@@ -111,5 +113,7 @@ export function useHotkeys(handlers: HotkeyHandlers, options: UseHotkeysOptions 
  * @source
  */
 export function getHotkeyConfigs(): HotkeyConfig[] {
+  // Trusted static config: JSON import infers literal types that don't widen to
+  // HotkeyConfig[]; shape is validated by config.json's authored structure.
   return hotkeysConfig as HotkeyConfig[];
 }

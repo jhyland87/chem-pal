@@ -109,11 +109,13 @@ const searchResponseOkSchema = z.object({
  * @source
  */
 export function isSearchResponseOk(response: unknown): response is SearchResponse {
-  if (!searchResponseOkSchema.safeParse(response).success) {
+  const parsed = searchResponseOkSchema.safeParse(response);
+  if (!parsed.success) {
     return false;
   }
-  const { collection } = response as { collection: { products: Record<string, unknown> } };
-  return Object.values(collection.products).every((product) => isSearchResponseProduct(product));
+  return Object.values(parsed.data.collection.products).every((product) =>
+    isSearchResponseProduct(product),
+  );
 }
 
 /* eslint-disable @typescript-eslint/naming-convention */

@@ -135,6 +135,8 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
           <SpeedDialAction
             id={action.name}
             onClick={(e: MouseEvent<HTMLDivElement>) => {
+              // MUI's SpeedDialAction fires a div MouseEvent; handlers only use
+              // preventDefault(), which is identical across element types.
               action.onClick(e as unknown as MouseEvent<HTMLAnchorElement>);
             }}
             key={action.name}

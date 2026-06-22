@@ -86,6 +86,8 @@ async function flushToStorage(): Promise<void> {
   // Group increments by date
   const byDate: Record<string, Array<[string, string, keyof SupplierDayStats, number]>> = {};
   for (const [key, delta] of batch) {
+    // Keys are built internally by bufferIncrement as `date:supplier:field`, so the
+    // tuple shape is guaranteed; split() only ever returns the wider string[] type.
     const [date, supplier, field] = key.split(":") as [string, string, keyof SupplierDayStats];
     if (!byDate[date]) byDate[date] = [];
     byDate[date].push([date, supplier, field, delta]);
@@ -97,7 +99,7 @@ async function flushToStorage(): Promise<void> {
 
       for (const [, supplier, field, delta] of byDate[dateKey]) {
         if (!existing[supplier]) existing[supplier] = { ...EMPTY_STATS };
-        (existing[supplier][field] as number) += delta;
+        existing[supplier][field] += delta;
       }
 
       await putSupplierStatsEntry(dateKey, existing);

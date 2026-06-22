@@ -173,7 +173,8 @@ export function standardizeUom(uom: string): UOM | void {
   }
 
   const normalized = uom.toLowerCase();
-  if (normalized in uomMap) return uomMap[normalized] satisfies string as UOM;
+  // uomMap values are canonical UOM enum strings, widened to string by Record<string, string>.
+  if (normalized in uomMap) return uomMap[normalized] as UOM;
 }
 
 /**

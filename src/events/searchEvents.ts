@@ -88,6 +88,9 @@ export function onSearchEvent<K extends SearchEventType>(
   handler: (detail: SearchEventDetailMap[K]) => void,
 ): () => void {
   const listener = (event: Event) => {
+    // DOM `addEventListener` types the callback arg as `Event`; this event is
+    // only ever dispatched via `emitSearchEvent` as a `CustomEvent` with the
+    // matching `detail`, so narrowing to `CustomEvent` is safe.
     handler((event as CustomEvent<SearchEventDetailMap[K]>).detail);
   };
   window.addEventListener(type, listener);

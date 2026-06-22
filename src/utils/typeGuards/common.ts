@@ -75,6 +75,7 @@ export function isHttpResponse(value: unknown): value is Response {
  * @source
  */
 export function isUOM(uom: unknown): uom is UOM {
+  // Widen the enum-value array to string[] so includes() accepts an arbitrary string.
   return typeof uom === "string" && (Object.values(UOM) as string[]).includes(uom);
 }
 
@@ -288,6 +289,7 @@ export function checkMissingMinimalProductFields(product: unknown): string[] {
     currencySymbol: "string",
   };
 
+  // Safe: the guard above already verified product is a non-null object.
   const record = product as Record<string, unknown>;
   const result = Object.entries(requiredProps).reduce(
     (acc: string[], [key, expectedType]: [string, string]) => {
@@ -409,6 +411,7 @@ export function checkCompleteProductFields(product: unknown): string[] {
     currencySymbol: "string",
   };
 
+  // Safe: the guard above already verified product is a non-null object.
   const record = product as Record<string, unknown>;
   const result = Object.entries(requiredProps).reduce(
     (acc: string[], [key, expectedType]: [string, string]) => {
