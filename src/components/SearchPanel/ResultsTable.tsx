@@ -7,6 +7,7 @@ import { generatePageSizes } from "@/helpers/utils";
 import { FOCUS_GLOBAL_FILTER_EVENT, TOGGLE_COLUMN_FILTERS_EVENT } from "@/hotkeys";
 import { SearchEvent, emitSearchEvent } from "@/events/searchEvents";
 import { cstorage } from "@/utils/storage";
+import { isTabView, openExtensionTab } from "@/utils/displayContext";
 import { isInputElement } from "@/utils/typeGuards/common";
 import {
   ChevronLeft as ChevronLeftIcon,
@@ -18,6 +19,7 @@ import {
   ViewColumn as ViewColumnIcon,
 } from "@mui/icons-material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import SearchOffIcon from "@mui/icons-material/SearchOff";
 import {
   Box,
@@ -449,6 +451,17 @@ export default function ResultsTable({
             >
               <SettingsIcon />
             </ColoredIconButton>
+            {/* Maximize: open in a full tab. Last icon, popup/side-panel only. */}
+            {!isTabView() && (
+              <ColoredIconButton
+                onClick={() => void openExtensionTab()}
+                size="small"
+                iconColor="#666"
+                aria-label="Open in tab"
+              >
+                <OpenInNewIcon />
+              </ColoredIconButton>
+            )}
           </div>
         </div>
 
