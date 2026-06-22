@@ -1,7 +1,9 @@
 import { CACHE, PANEL } from "@/constants/common";
 import { getSearchResults } from "@/utils/idbCache";
 import { cstorage } from "@/utils/storage";
+import { isTabView, openExtensionTab } from "@/utils/displayContext";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import SettingsIcon from "@mui/icons-material/Settings";
 import Badge from "@mui/material/Badge";
 import { useEffect, useState, FC } from "react";
@@ -12,7 +14,9 @@ import styles from "./SearchPanelHome.module.scss";
 import {
   SearchPanelHomeContainer,
   SearchPanelHomeForwardButton,
+  SearchPanelHomeMaximizeButton,
   SearchPanelHomeSettingsButton,
+  SearchPanelHomeTopBar,
 } from "./StyledComponents";
 
 /**
@@ -84,26 +88,39 @@ const SearchPanelHome: FC = () => {
 
   return (
     <SearchPanelHomeContainer>
-      {/* Settings button in upper right */}
-      <SearchPanelHomeSettingsButton
-        onClick={() => appContext.toggleDrawer()}
-        aria-label="Open settings"
-      >
-        <SettingsIcon />
-      </SearchPanelHomeSettingsButton>
-
-      {/* Forward arrow in upper right, only if there are results */}
-      {hasStoredResults && appContext.setPanel && (
-        <SearchPanelHomeForwardButton
-          onClick={() => appContext.setPanel!(PANEL.RESULTS)}
-          aria-label="Go to results"
-          isDarkTheme={mode === "dark"}
+      {/* Header icons in the upper right, ordered left-to-right */}
+      <SearchPanelHomeTopBar>
+        {/* Settings */}
+        <SearchPanelHomeSettingsButton
+          onClick={() => appContext.toggleDrawer()}
+          aria-label="Open settings"
         >
-          <Badge badgeContent={resultCount} color="primary">
-            <ArrowForwardIcon />
-          </Badge>
-        </SearchPanelHomeForwardButton>
-      )}
+          <SettingsIcon />
+        </SearchPanelHomeSettingsButton>
+
+        {/* Forward arrow, only if there are results */}
+        {hasStoredResults && appContext.setPanel && (
+          <SearchPanelHomeForwardButton
+            onClick={() => appContext.setPanel!(PANEL.RESULTS)}
+            aria-label="Go to results"
+            isDarkTheme={mode === "dark"}
+          >
+            <Badge badgeContent={resultCount} color="primary">
+              <ArrowForwardIcon />
+            </Badge>
+          </SearchPanelHomeForwardButton>
+        )}
+
+        {/* Maximize: open in a full tab. Last icon, popup/side-panel only. */}
+        {!isTabView() && (
+          <SearchPanelHomeMaximizeButton
+            onClick={() => void openExtensionTab()}
+            aria-label="Open in tab"
+          >
+            <OpenInNewIcon />
+          </SearchPanelHomeMaximizeButton>
+        )}
+      </SearchPanelHomeTopBar>
       <div className={styles["search-panel-home-content"]}>
         {/* Logo always visible at the top */}
         <div className={styles["search-panel-home-logo-container"]}>

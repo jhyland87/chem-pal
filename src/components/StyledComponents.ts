@@ -423,16 +423,23 @@ export const SearchPanelHomeContainer = styled(SearchContainer)(() => ({
   paddingTop: "4vh",
 }));
 
-export const SearchPanelHomeForwardButton = styled(IconButton, {
-  shouldForwardProp: (prop) => prop !== "isDarkTheme",
-})<{ isDarkTheme?: boolean }>(({ theme, isDarkTheme }) => ({
+// Flex container anchoring the home panel's header icons in the upper-right.
+// Renders its children left-to-right so icon order follows DOM order.
+export const SearchPanelHomeTopBar = styled("div")(() => ({
   position: "absolute",
   top: 16,
   right: 16,
+  display: "flex",
+  gap: 5,
+  zIndex: 2,
+}));
+
+export const SearchPanelHomeForwardButton = styled(IconButton, {
+  shouldForwardProp: (prop) => prop !== "isDarkTheme",
+})<{ isDarkTheme?: boolean }>(({ theme, isDarkTheme }) => ({
   color: theme.palette.text.primary,
   background: theme.palette.background.paper,
   boxShadow: theme.shadows[1],
-  zIndex: 2,
   "& .MuiBadge-badge": {
     backgroundColor: isDarkTheme ? "#ffffff" : "#1976d2",
     color: isDarkTheme ? "#000000" : "#ffffff",
@@ -443,14 +450,15 @@ export const SearchPanelHomeForwardButton = styled(IconButton, {
 }));
 
 export const SearchPanelHomeSettingsButton = styled(IconButton)(({ theme }) => ({
-  position: "absolute",
-  top: 16,
-  right: 56,
   color: theme.palette.text.primary,
   background: theme.palette.background.paper,
   boxShadow: theme.shadows[1],
-  zIndex: 2,
-  marginRight: "5px",
+}));
+
+export const SearchPanelHomeMaximizeButton = styled(IconButton)(({ theme }) => ({
+  color: theme.palette.text.primary,
+  background: theme.palette.background.paper,
+  boxShadow: theme.shadows[1],
 }));
 
 export const StyledTable = styled(Table)(({ theme }) => ({

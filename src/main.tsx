@@ -24,8 +24,16 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.tsx";
 import "./main.scss";
+import { isTabView } from "./utils/displayContext";
 
 (async () => {
+  // Tag the document so CSS can drop the popup's fixed dimensions and fill the
+  // window when the extension is opened in a full browser tab. Done pre-render
+  // to avoid a resize flash.
+  if (isTabView()) {
+    document.body.classList.add("view-tab");
+  }
+
   createRoot(document.getElementById("root")!, {
     onUncaughtError: (error, errorInfo) => {
       console.error("Uncaught error:", error, errorInfo);
