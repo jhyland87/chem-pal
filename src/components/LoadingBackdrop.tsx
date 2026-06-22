@@ -1,6 +1,8 @@
+import { BenzeneBlueIcon } from "@/icons";
 import Backdrop from "@mui/material/Backdrop";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import IconSpinner from "./IconSpinner";
 import styles from "./LoadingBackdrop.module.scss";
 
 /**
@@ -30,19 +32,28 @@ export default function LoadingBackdrop(props: LoadingBackdropProps) {
   const supplierLabel = supplierCount === 1 ? "supplier" : "suppliers";
   const supplierSuffix = supplierCount > 0 ? ` from ${supplierCount} ${supplierLabel}` : "";
 
+  const statusText = props.isAborting
+    ? "Aborting..."
+    : props.resultCount === 0
+      ? "Loading..."
+      : `Found ${props.resultCount} results${supplierSuffix}...`;
+
   return (
     <>
       <Backdrop open={props.open} id="loading-backdrop" role="status" aria-label="search loading">
         <Box className={styles["loading-backdrop-box"]}>
-          {/*<Box className={styles['spinner-box']}>
+          <Box className={styles["spinner-box"]}>
             <IconSpinner>
-              <BlueBenzeneIcon sx={{ width: 100, height: 100 }} />
+              <BenzeneBlueIcon sx={{ width: 80, height: 80 }} />
             </IconSpinner>
-          </Box>*/}
-          <Button className={styles["status-button"]} onClick={props.onClick}>
-            {props.resultCount === 0
-              ? "Loading..."
-              : `Found ${props.resultCount} results${supplierSuffix}...`}
+          </Box>
+          <span className={styles["status-text"]}>{statusText}</span>
+          <Button
+            className={styles["abort-button"]}
+            onClick={props.onClick}
+            disabled={props.isAborting}
+          >
+            Cancel search
           </Button>
         </Box>
       </Backdrop>

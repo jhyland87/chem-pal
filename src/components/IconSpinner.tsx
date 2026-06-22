@@ -3,6 +3,25 @@ import { isSpinSpeed } from "@/utils/typeGuards/common";
 import { keyframes, styled } from "@mui/material/styles";
 import { cloneElement, isValidElement, FC } from "react";
 
+const spin = keyframes`
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+`;
+
+// Defined at module scope (not inside the component) so the styled component
+// keeps a stable identity across re-renders; otherwise a parent re-render —
+// e.g. an updating result count — remounts the node and restarts the animation.
+const SpinningWrapper = styled("div", {
+  shouldForwardProp: (prop) => prop !== "speed",
+})<{ speed: number }>(({ speed }) => ({
+  display: "inline-flex",
+  animation: `${spin} ${speed}s linear infinite`,
+}));
+
 /**
  * A component that adds a spinning animation to any icon component passed as a child.
  * The component preserves any existing styles while adding the spinning animation.
@@ -48,25 +67,16 @@ const IconSpinner: FC<IconSpinnerProps> = (props: IconSpinnerProps) => {
     speed = isSpinSpeed(key) ? SPIN_SPEED[key] : SPIN_SPEED.MEDIUM;
   }
 
-  const spin = keyframes`
-  from {
-    transform: rotate(360deg);
-  }
-  to {
-    transform: rotate(0deg);
-  }
-`;
-
-  const SpinningWrapper = styled("div")({
-    display: "inline-flex",
-    animation: `${spin} ${speed}s linear infinite`,
-  });
   // Clone the child element to preserve its props
   if (!isValidElement(props.children)) {
     return null;
   }
   const child = cloneElement(props.children);
-  return <SpinningWrapper data-testid="spinning-wrapper">{child}</SpinningWrapper>;
+  return (
+    <SpinningWrapper speed={speed} data-testid="spinning-wrapper">
+      {child}
+    </SpinningWrapper>
+  );
 };
 
 export default IconSpinner;

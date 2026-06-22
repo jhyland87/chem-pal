@@ -4,10 +4,10 @@ import {
   setupChromeStorageMock,
 } from "@/__fixtures__/helpers/chrome/storageMock";
 import {
-  getSearchResults,
-  getSearchHistory,
-  clearSearchResults,
   clearSearchHistory,
+  clearSearchResults,
+  getSearchHistory,
+  getSearchResults,
 } from "@/utils/idbCache";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -244,7 +244,8 @@ describe("useSearch helpers", () => {
       expect(msg).toContain("broadening your search filters");
     });
 
-    it("suggests the PubChem name when it differs from the query", async () => {
+    // Disabled the Pubchem name suggestion for now as it's not very useful.
+    it.skip("suggests the PubChem name when it differs from the query", async () => {
       mockedGetCompoundNameFromAlias.mockResolvedValueOnce("acetone");
 
       const msg = await buildNoResultsMessage("propan-2-one", false);

@@ -10,17 +10,34 @@
 }
 
 .spinner-box {
-  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
 }
 
-.status-button {
+.status-text {
+  color: white;
+  font-weight: bold;
+  font-size: 0.95rem;
+  margin: 8px 16px;
+  text-align: center;
+  white-space: pre-line;
+}
+
+.abort-button {
   background-color: #386181 !important;
   color: white !important;
   font-weight: bold !important;
-  margin: 16px;
+  margin: 8px 16px 16px;
   padding: 10px 24px;
   border-radius: 8px;
   font-size: 0.95rem;
   text-transform: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+  &:disabled {
+    opacity: 0.6;
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
 }
