@@ -29,7 +29,7 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
   const filterableColumns = useMemo(() => {
     return table.options.columns.reduce<Record<string, ColumnMeta<Product, unknown>>>(
       (accu, column: ColumnDef<Product, unknown>) => {
-        const meta = column.meta as ColumnMeta<Product, unknown> | undefined;
+        const meta = column.meta;
         if (meta?.filterVariant === undefined || !column.id) return accu;
 
         accu[column.id] = {
@@ -57,7 +57,7 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
          */
         const rangeValues = table.options.data.reduce(
           (accu, row: Product) => {
-            const value = Number(row[colName as keyof Product]);
+            const value = Number(Reflect.get(row, colName));
             if (value < accu[0]) {
               accu[0] = value;
             } else if (value > accu[1]) {
@@ -77,7 +77,7 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
        * @source
        */
       const uniqueValues = table.options.data.reduce<string[]>((accu, row: Product) => {
-        const value = String(row[colName as keyof Product]);
+        const value = String(Reflect.get(row, colName));
         if (value !== undefined && accu.indexOf(value) === -1) {
           accu.push(value);
         }
@@ -94,7 +94,7 @@ export default function TableHeader({ table }: { table: Table<Product> }) {
           {headerGroup.headers.map((header: Header<Product, unknown>) => {
             // If the column has filterable values, populate the unique values for the column
             if (filterableColumns[header.id] !== undefined) {
-              const meta = header.column.columnDef.meta as ColumnMeta<Product, unknown>;
+              const meta = header.column.columnDef.meta;
               header.column.columnDef.meta = {
                 ...meta,
                 ...filterableColumns[header.id],

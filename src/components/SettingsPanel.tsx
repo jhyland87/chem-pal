@@ -126,7 +126,8 @@ export default function SettingsPanel() {
           break;
 
         case ACTION_TYPE.RESTORE_DEFAULTS:
-          // Restore to default settings
+          // Restore to default settings. Trusted static config.json; JSON widens
+          // string literals (e.g. fontSize) so assert to the model type.
           newSettings = {
             ...(defaultSettings as UserSettings),
             ...currentSettings,

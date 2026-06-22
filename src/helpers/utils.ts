@@ -400,7 +400,7 @@ export function getUserCountry(): CountryCode {
   if (typeof chrome === "undefined" || typeof chrome.i18n === "undefined") {
     return "US";
   }
-  return chrome.i18n.getUILanguage().split("-")[1] as CountryCode;
+  return chrome.i18n.getUILanguage().split("-")[1];
 }
 
 /**
@@ -528,7 +528,7 @@ export function formatTimestamp(epochMs: number): string {
 export function getPath(obj: unknown, path: readonly PropertyKey[]): unknown {
   return path.reduce<unknown>(
     (acc, key) =>
-      acc == null ? acc : (acc as Record<PropertyKey, unknown>)[key],
+      acc == null ? acc : Reflect.get(acc, key),
     obj,
   );
 }

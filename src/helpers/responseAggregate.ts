@@ -182,6 +182,7 @@ export function initConsoleApi(): void {
       },
     };
 
+    // window has no typed slot for our custom debug property; widen to a string-keyed record to attach it.
     (window as unknown as Record<string, unknown>).__responseAggregate = api;
 
     console.log(

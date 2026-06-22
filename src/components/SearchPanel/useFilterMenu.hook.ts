@@ -49,8 +49,8 @@ export function useFilterMenu(table?: any) {
   // `selectedSuppliers` is optional in AppContextProps; coalesce so the hook
   // body can treat it as a concrete array throughout.
   const selectedSuppliers: string[] = appContext?.selectedSuppliers ?? [];
-  const setSelectedSuppliers =
-    appContext?.setSelectedSuppliers ?? ((() => undefined) as (suppliers: string[]) => void);
+  const setSelectedSuppliers: (suppliers: string[]) => void =
+    appContext?.setSelectedSuppliers ?? (() => undefined);
 
   // Column visibility state
   const columnStatus =

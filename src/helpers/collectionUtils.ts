@@ -33,7 +33,9 @@ export function omit<T extends object, K extends keyof T>(
   }
 
   return Object.fromEntries(
+    // `key` is a runtime own-enumerable key of `T`, safe to narrow to `K` for membership check
     Object.entries(data).filter(([key]) => !path.includes(key as K)),
+    // `Object.fromEntries` is typed as `{ [k: string]: unknown }`; result is structurally `Omit<T, K>`
   ) as Omit<T, K>;
 }
 
@@ -120,13 +122,13 @@ export function diff(
     const maxLen = Math.max(oldObj.length, newObj.length);
     for (let i = 0; i < maxLen; i++) keys.add(i);
   } else {
-    for (const k of Object.keys(oldObj as object)) keys.add(k);
-    for (const k of Object.keys(newObj as object)) keys.add(k);
+    for (const k of Object.keys(oldObj)) keys.add(k);
+    for (const k of Object.keys(newObj)) keys.add(k);
   }
 
   for (const key of keys) {
-    const oldVal = (oldObj as Record<string | number, unknown>)[key];
-    const newVal = (newObj as Record<string | number, unknown>)[key];
+    const oldVal = Reflect.get(oldObj, key);
+    const newVal = Reflect.get(newObj, key);
     changes.push(...diff(oldVal, newVal, [...path, key]));
   }
 

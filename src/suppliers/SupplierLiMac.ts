@@ -2,6 +2,7 @@ import { findCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
+import { isCurrencyCode } from "@/utils/typeGuards/common";
 import { SupplierBase } from "./SupplierBase";
 /**
  * Supplier implementation for LiMac Science, a Latvian chemical supplier.
@@ -221,6 +222,8 @@ export class SupplierLiMac
       }
 
       const productResponse = await this.httpGetHtml({
+        // `get` returns a union over all Product fields; `url` is set in
+        // initProductBuilders and is always a string here.
         path: builder.get("url") as string,
       });
 
@@ -243,6 +246,9 @@ export class SupplierLiMac
       const variants = Array.isArray(mozApi.variants) ? mozApi.variants : [];
       const main = variants[0];
 
+      // `currency` comes from page-parsed runtime data; validate before typing it.
+      const currencyCode = isCurrencyCode(mozApi.currency) ? mozApi.currency : undefined;
+
       if (main) {
         const mainQty = parseQuantity(main.options?.[0]?.title ?? "");
         if (mainQty) builder.setQuantity(mainQty);
@@ -256,7 +262,7 @@ export class SupplierLiMac
           id: variant.id,
           title: optionTitle || undefined,
           price: variant.price,
-          currencyCode: mozApi.currency as CurrencyCode,
+          currencyCode,
           currencySymbol: "€",
           quantity: variantQty?.quantity,
           uom: variantQty?.uom,
@@ -318,7 +324,7 @@ export class SupplierLiMac
       const normalised = literal
         .replace(/([{,]\s*)([A-Za-z_$][A-Za-z0-9_$]*|\d+)\s*:/g, '$1"$2":')
         .replace(/,(\s*[}\]])/g, "$1");
-      return JSON.parse(normalised) as MozCatItemMozApi;
+      return JSON.parse(normalised);
     } catch (error) {
       this.logger.error("Failed to parse mozCatItemMozApi literal", { error, literal });
       return undefined;

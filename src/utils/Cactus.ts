@@ -273,7 +273,9 @@ export class Cactus {
       result = await response.text();
     }
 
-    // Cache the result
+    // Cache the result. result is narrowed to string | Blob here; the
+    // LRUCache is string-typed and in practice only text results reach this
+    // path, so the assertion is safe and preserves existing caching behavior.
     if (this.cacheEnabled && result !== undefined) {
       this.cache?.set(url, result as string);
       Cactus.globalCache.set(url, result as string);

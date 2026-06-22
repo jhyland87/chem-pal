@@ -49,10 +49,11 @@ const validSearchResponseSchema = z.object({
  * @source
  */
 export function isValidSearchResponse(response: unknown): response is SearchResponse {
-  if (!validSearchResponseSchema.safeParse(response).success) {
+  const parsed = validSearchResponseSchema.safeParse(response);
+  if (!parsed.success) {
     return false;
   }
-  return (response as { items: unknown[] }).items.every((item) => isItemListing(item));
+  return parsed.data.items.every((item) => isItemListing(item));
 }
 
 /* eslint-disable @typescript-eslint/naming-convention */

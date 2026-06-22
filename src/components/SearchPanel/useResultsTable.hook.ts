@@ -199,7 +199,7 @@ export function useResultsTable({
       // Removed minSize and maxSize for more flexibility
     },
     columnResizeMode: "onChange",
-    columns: TableColumns() as ColumnDef<Product, unknown>[],
+    columns: TableColumns(),
     // Passed through TanStack's `meta` so hook-free cell renderers (see the
     // price column in TableColumns.tsx) can read userSettings without
     // calling useAppContext() themselves.
@@ -235,6 +235,9 @@ export function useResultsTable({
     filterFromLeafRows: false,
     onColumnFiltersChange: columnFilterFns[1],
     onGlobalFilterChange: globalFilterFns[1],
+    // Variants are built Product-shaped by the suppliers but typed as Variant[];
+    // reinterpret them as the table's row type. This is a data-model alias of
+    // trusted internal data, not untrusted input, so no runtime guard applies.
     getSubRows: (row) => row?.variants as Product[],
     getRowCanExpand: (row: Row<Product>) => getRowCanExpand(row),
     getCoreRowModel: getCoreRowModel(),

@@ -370,7 +370,9 @@ const StatsPanel: FC = () => {
                         outerRadius: middleRadius + 20,
                         data: activePie.outer,
                         valueFormatter: (item) =>
-                          `${item.value} (${((item as any).percentage ?? 0).toFixed(0)}%)`,
+                          // MUI's pie item type omits our custom PieDatum fields; the runtime
+                          // data is the PieDatum[] we passed, so reading `percentage` is safe.
+                          `${item.value} (${((item as unknown as PieDatum).percentage ?? 0).toFixed(0)}%)`,
                         highlightScope: { fade: "global", highlight: "item" },
                         highlighted: { additionalRadius: 2 },
                         cornerRadius: 3,

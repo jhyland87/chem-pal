@@ -60,6 +60,7 @@ export default function ColumnVisibilitySelect({
     }
 
     // Create a synthetic event to maintain compatibility with existing handler
+    // Safe: handler only reads event.target.value; the partial MUI event shape is intentional.
     const syntheticEvent = {
       target: { value: newChecked },
     } as SelectChangeEvent<string[]>;
@@ -79,6 +80,7 @@ export default function ColumnVisibilitySelect({
     }
 
     // Create a synthetic event to maintain compatibility with existing handler
+    // Safe: handler only reads event.target.value; the partial MUI event shape is intentional.
     const syntheticEvent = {
       target: { value: newChecked },
     } as SelectChangeEvent<string[]>;

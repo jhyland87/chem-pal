@@ -1,8 +1,4 @@
-import {
-  type Column,
-  type StringOrTemplateHeader,
-  type Table,
-} from "@tanstack/react-table";
+import { type Column, type Table } from "@tanstack/react-table";
 
 type ColumnDefWithAccessor<TData> = { accessorKey?: keyof TData };
 
@@ -16,10 +12,11 @@ type ColumnDefWithAccessor<TData> = { accessorKey?: keyof TData };
  * @source
  */
 export function getHeaderText<TData>(column: Column<TData, unknown>): string {
-  const header = column.columnDef.header as StringOrTemplateHeader<TData, unknown>;
+  const header = column.columnDef.header;
   if (header === undefined) return "";
   if (typeof header === "string") return header;
   if (typeof header === "function") {
+    // TanStack's header template is typed loosely; cast to read the React element's children prop.
     const result = (header as () => { props?: { children?: string } })()?.props?.children;
     return result ?? "";
   }
@@ -44,6 +41,7 @@ export function getVisibleUniqueValues<TData>(
 
   table.getRowModel().rows.forEach((row) => {
     const value = row.getValue(column.id);
+    // TanStack's row.getValue returns unknown; column values are primitives here.
     if (value !== undefined && value !== null) values.add(value as string | number);
   });
 
@@ -70,7 +68,8 @@ export function getAllUniqueValues<TData>(
   if (!accessorKey) return [];
 
   const uniqueValues = table.options.data.reduce<(string | number)[]>((accu, row) => {
-    const value = row[accessorKey as keyof TData] as string | number;
+    // Narrow the generic TData[keyof TData] member to the primitive column values handled here.
+    const value = row[accessorKey] as string | number;
     if (value !== undefined && value !== null && !accu.includes(value)) {
       accu.push(value);
     }
@@ -97,6 +96,7 @@ export function getFullRange<TData>(
   table: Table<TData>,
 ): [number, number] {
   const values = getAllUniqueValues(column, table);
+  // Range helpers are only called on numeric columns, so the endpoints are numbers.
   return [values[0] as number, values.at(-1) as number];
 }
 
@@ -115,6 +115,7 @@ export function getVisibleRange<TData>(
   table: Table<TData>,
 ): [number, number] {
   const values = getVisibleUniqueValues(column, table);
+  // Range helpers are only called on numeric columns, so the endpoints are numbers.
   return [values[0] as number, values.at(-1) as number];
 }
 

@@ -116,6 +116,8 @@ export default function ContextMenu({
      * @source
      */
     const handleClickOutside = (event: MouseEvent) => {
+      // event.target is typed as EventTarget | null; for a DOM mousedown it is
+      // always a Node, which is what Element.contains expects.
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         onClose();
       }

@@ -13,6 +13,8 @@ import type { KeyBinding, ParsedBinding } from "./types";
  * @source
  */
 export function isMac(): boolean {
+  // `userAgentData` is a not-yet-standardized browser API absent from the DOM lib types;
+  // widen the trusted `navigator` global to read it safely.
   const uaData = (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData;
   if (uaData?.platform) return /mac/i.test(uaData.platform);
   return /mac/i.test(navigator.platform);

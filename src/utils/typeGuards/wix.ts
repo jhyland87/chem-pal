@@ -119,18 +119,22 @@ const wixProductSchema = z.object({
  * @source
  */
 export function isWixProduct(product: unknown): product is ProductObject {
-  if (!wixProductSchema.safeParse(product).success) {
+  const parsed = wixProductSchema.safeParse(product);
+  if (!parsed.success) {
     return false;
   }
 
-  const p = product as { productItems: unknown[]; options: Array<{ selections?: unknown[] }> };
+  const p = parsed.data;
 
   if (!p.productItems.every((item) => isProductItem(item))) {
     return false;
   }
 
-  if (p.options.length > 0 && !p.options[0]?.selections?.every((s) => isProductSelection(s))) {
-    return false;
+  if (p.options.length > 0) {
+    const firstOption = p.options[0] as { selections?: unknown[] };
+    if (!firstOption?.selections?.every((s) => isProductSelection(s))) {
+      return false;
+    }
   }
 
   return true;

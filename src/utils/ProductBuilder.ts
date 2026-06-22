@@ -561,6 +561,7 @@ export class ProductBuilder<T extends Product> {
    */
   setID(id?: number | string): ProductBuilder<T> {
     if (id) {
+      // T["id"] narrows the generic product's id type; the number|string input is the data-model alias for it.
       this.product.id = id as T["id"];
     }
     return this;
@@ -805,7 +806,7 @@ export class ProductBuilder<T extends Product> {
    */
   get(key: keyof T): T[keyof T] | Maybe<T[keyof T]> {
     if (key in this.product && typeof this.product[key] !== "undefined") {
-      return this.product[key] as T[keyof T];
+      return this.product[key];
     }
 
     return;
@@ -974,6 +975,7 @@ export class ProductBuilder<T extends Product> {
 
     this.product.url = this.href(this.product.url);
     this.logger.debug("ProductBuilder| Built product:", { product: this.product, builder: this });
+    // isProduct() above narrows to the base Product; T is the caller's concrete subtype of Product.
     return this.product as T;
   }
 
@@ -1019,6 +1021,8 @@ export class ProductBuilder<T extends Product> {
   ): ProductBuilder<T>[] {
     return data.map((d) => {
       const builder = new ProductBuilder<T>(baseURL);
+      // Cached .dump() output is opaque unknown[]; no runtime shape exists for the generic Partial<T>,
+      // and build() re-validates the result via isProduct() before use.
       builder.setData(d as Partial<T>);
       return builder;
     });

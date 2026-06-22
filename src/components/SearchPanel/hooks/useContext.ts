@@ -37,6 +37,7 @@ export function useChromeStorage<T>(key: string, defaultValue: T) {
   const storedValue = use(
     (async () => {
       const data = await cstorage.session.get([key]);
+      // chrome.storage returns untyped data; narrow to the caller's generic T.
       return data[key] !== undefined ? (data[key] as T) : defaultValue;
     })(),
   );
@@ -75,13 +76,14 @@ export function useChromeStorageEnhanced<T>(
 
         if (serializer) {
           try {
-            return serializer.deserialize(rawValue as string);
+            return serializer.deserialize(rawValue);
           } catch (error) {
             console.warn(`Failed to deserialize ${key}:`, error);
             return defaultValue;
           }
         }
 
+        // chrome.storage returns untyped data; narrow to the caller's generic T.
         return rawValue as T;
       } catch (error) {
         console.error(`Failed to load ${key} from Chrome storage:`, error);
@@ -127,11 +129,13 @@ export function useReactiveChromeStorage<T>(key: string, defaultValue: T) {
     return new Promise<T>(async (resolve) => {
       // Initial load
       const data = await cstorage.session.get([key]);
+      // chrome.storage returns untyped data; narrow to the caller's generic T.
       resolve(data[key] !== undefined ? (data[key] as T) : defaultValue);
 
       // Listen for changes
       const listener = (changes: { [key: string]: chrome.storage.StorageChange }) => {
         if (changes[key]) {
+          // chrome.storage change values are untyped; narrow to the caller's generic T.
           resolve(
             changes[key].newValue !== undefined ? (changes[key].newValue as T) : defaultValue,
           );

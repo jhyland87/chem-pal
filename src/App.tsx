@@ -478,6 +478,8 @@ function App() {
 
   // AppContext value with fixed searchResults property
   const appContextValue = {
+    // defaultSettings is trusted static config.json; its JSON-inferred type widens
+    // beyond UserSettings, so assert to the model type here.
     userSettings: { ...(defaultSettings as UserSettings), ...appState.userSettings },
     setUserSettings: handleSetUserSettings,
     searchResults, // This fixes the missing property linter error
