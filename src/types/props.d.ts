@@ -304,12 +304,14 @@ declare global {
   interface LoadingBackdropProps {
     /** Whether backdrop is visible */
     open: boolean;
-    /** Click handler */
+    /** Abort-button click handler */
     onClick?: () => void;
     /** Number of results */
     resultCount: number;
     /** Number of supplier results */
     supplierResultsCount: number;
+    /** Whether the search is in the process of aborting (pending requests still settling) */
+    isAborting?: boolean;
   }
 
   /**

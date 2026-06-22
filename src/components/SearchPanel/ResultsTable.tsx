@@ -185,6 +185,7 @@ export default function ResultsTable({
   const {
     searchResults,
     isLoading,
+    isAborting,
     error,
     executeSearch,
     handleStopSearch,
@@ -405,6 +406,7 @@ export default function ResultsTable({
         // (sub-rows live on each row's `.subRows`), which is what users see.
         resultCount={totalRowCount}
         supplierResultsCount={supplierResultsCount}
+        isAborting={isAborting}
         onClick={handleStopSearch}
       />
       <DrawerSystem />

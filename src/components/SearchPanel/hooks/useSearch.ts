@@ -3,7 +3,6 @@ import { AVAILABILITY_LABEL_MAP, CACHE } from "@/constants/common";
 import { useAppContext } from "@/context";
 import { SearchEvent, emitSearchEvent } from "@/events/searchEvents";
 import { addExcludedProduct } from "@/helpers/excludedProducts";
-import { getCompoundNameFromAlias } from "@/helpers/pubchem";
 import { ABORT_SEARCH_EVENT } from "@/hotkeys";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
 import {
@@ -19,6 +18,10 @@ import { type Table } from "@tanstack/react-table";
 import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 interface SearchState {
   isLoading: boolean;
+  // True between the user requesting an abort and the in-flight requests
+  // finishing draining. The overlay stays up (showing "Aborting...") until
+  // the search settles and isLoading flips to false.
+  isAborting: boolean;
   status: string | boolean;
   error?: string;
   resultCount: number;
@@ -116,10 +119,10 @@ export async function buildNoResultsMessage(
     lines.push("Try broadening your search filters in the drawer.");
   }
 
-  const pubchemSimpleName = await getCompoundNameFromAlias(query);
-  if (pubchemSimpleName && pubchemSimpleName.toLowerCase() !== query.toLowerCase()) {
-    lines.push(`Perhaps try the PubChem name instead: ${pubchemSimpleName}`);
-  }
+  // const pubchemSimpleName = await getCompoundNameFromAlias(query);
+  // if (pubchemSimpleName && pubchemSimpleName.toLowerCase() !== query.toLowerCase()) {
+  //   lines.push(`Perhaps try the PubChem name instead: ${pubchemSimpleName}`);
+  // }
 
   return lines.join("\n");
 }
@@ -224,6 +227,7 @@ export function useSearch() {
 
   const initialState: SearchState = {
     isLoading: false,
+    isAborting: false,
     status: false,
     error: undefined,
     resultCount: 0,
@@ -348,6 +352,7 @@ export function useSearch() {
       // "Searching..." regardless, so clearing now doesn't cause a flash.
       setState({
         isLoading: true,
+        isAborting: false,
         status: "Searching...",
         error: undefined,
         resultCount: 0,
@@ -528,17 +533,22 @@ export function useSearch() {
         // would let React defer it behind the queued streaming updates indefinitely.
         setState({
           isLoading: false,
+          isAborting: false,
           status: false, // Hide status when complete
           error: undefined,
           resultCount: resultsTable.getRowCount(),
         });
       } catch (error) {
         // Signal the terminal outcome; the badge controller clears the badge.
+        // Either branch lands here once the stream has fully drained — including
+        // after an abort, when in-flight requests have finished settling — so
+        // this is where isLoading/isAborting reset and the overlay closes.
         if (error instanceof Error && error.name === "AbortError") {
           emitSearchEvent(SearchEvent.ABORTED);
           setState((prev) => ({
             ...prev,
             isLoading: false,
+            isAborting: false,
             status: "Search aborted",
             error: undefined,
           }));
@@ -550,6 +560,7 @@ export function useSearch() {
           setState((prev) => ({
             ...prev,
             isLoading: false,
+            isAborting: false,
             status: false,
             error: error instanceof Error ? error.message : "Search failed",
           }));
@@ -617,14 +628,17 @@ export function useSearch() {
 
   const handleStopSearch = useCallback(() => {
     console.debug("triggering abort..");
+    // Signal the abort but keep the overlay up: requests already in flight will
+    // keep streaming back until the supplier streams settle. Flip into the
+    // "Aborting..." state now; performSearch resets isLoading/isAborting once the
+    // stream finishes draining, which is what actually closes the overlay.
     fetchControllerRef.current.abort();
     startTransition(() => {
       setState((prev) => ({
         ...prev,
-        isLoading: false,
-        status: "Search aborted",
+        isAborting: true,
+        status: "Aborting...",
       }));
-      setTableText("Search aborted");
     });
   }, []);
 
@@ -640,6 +654,7 @@ export function useSearch() {
   return {
     searchResults,
     isLoading: state.isLoading,
+    isAborting: state.isAborting,
     statusLabel: state.status,
     error: state.error,
     resultCount: state.resultCount,
