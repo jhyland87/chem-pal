@@ -11,6 +11,7 @@ import {
 } from "@/helpers/excludedProducts";
 import { fetchDecorator, type FetchDecoratorResponse } from "@/helpers/fetch";
 import { stripQuantityFromString } from "@/helpers/quantity";
+import { sleep } from "@/helpers/utils";
 import { deleteSupplierQueryCacheEntry } from "@/utils/idbCache";
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import { Logger } from "@/utils/Logger";
@@ -1868,7 +1869,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
             maxAttempts,
             input,
           });
-          await new Promise((resolve) => setTimeout(resolve, this.challengeRetryDelayMs));
+          await sleep(this.challengeRetryDelayMs);
           continue;
         }
         incrementFailure(this.supplierName);
