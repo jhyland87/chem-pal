@@ -78,7 +78,8 @@ add-ons are removed when Firefox restarts.
 | `pnpm run build:full` | Type-check + build |
 | `pnpm run test` | Run unit tests (Vitest, watch mode) |
 | `pnpm run test:run` | Run unit tests once |
-| `pnpm run test:e2e` | Run Chrome E2E tests (Playwright) |
+| `pnpm run test:e2e` | Run all E2E tests (Chrome then Firefox) |
+| `pnpm run test:e2e:chrome` | Run Chrome E2E tests (Playwright) |
 | `pnpm run test:e2e:firefox` | Run Firefox load smoke test |
 | `pnpm run lint:firefox` | Lint the Firefox build with `web-ext` |
 | `pnpm run test:coverage` | Run tests with coverage report |

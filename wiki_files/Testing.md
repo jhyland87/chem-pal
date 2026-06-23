@@ -49,10 +49,13 @@ pnpm run test:coverage
 # With Vitest UI
 pnpm run test:ui
 
-# Chrome E2E tests
+# All E2E tests (Chrome then Firefox)
 pnpm run test:e2e
 
-# Firefox load smoke test
+# Chrome E2E tests only
+pnpm run test:e2e:chrome
+
+# Firefox load smoke test only
 pnpm run test:e2e:firefox
 ```
 
