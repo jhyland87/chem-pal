@@ -1,5 +1,5 @@
 import { defaultResultsLimit } from "@/../config.json";
-import { mapDefined } from "@/helpers/utils";
+import { mapDefined, sleep } from "@/helpers/utils";
 import { Logger } from "@/utils/Logger";
 import { incrementParseError } from "@/utils/SupplierStatsStore";
 import { Queue } from "async-await-queue";
@@ -339,7 +339,7 @@ export class SupplierFactory<P extends Product> {
       if (channel.length > 0) {
         yield channel.shift()!;
       } else {
-        await new Promise((resolve) => setTimeout(resolve, 25));
+        await sleep(25);
       }
     }
   }
