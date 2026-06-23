@@ -188,6 +188,17 @@ jobs:
           fi
           ls -lh chem-pal.crx
 
+      - name: Build Firefox extension
+        run: pnpm run build:prod:firefox
+
+      - name: Verify Firefox zip output
+        run: |
+          if [ ! -f chem-pal-firefox.zip ]; then
+            echo "::error::chem-pal-firefox.zip not produced by build:prod:firefox"
+            exit 1
+          fi
+          ls -lh chem-pal-firefox.zip
+
       - name: Zip unpacked build
         run: |
           cd build && zip -r "../chem-pal-${{ steps.version.outputs.version_name }}-unpacked.zip" . && cd ..
@@ -209,6 +220,7 @@ jobs:
             --generate-notes \
             $EXTRA_ARGS \
             chem-pal.crx \
+            chem-pal-firefox.zip \
             "chem-pal-${{ steps.version.outputs.version_name }}-unpacked.zip"
 
       - name: Always remove signing key

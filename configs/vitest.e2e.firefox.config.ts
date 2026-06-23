@@ -9,11 +9,9 @@ export default defineConfig({
   },
   test: {
     root: path.resolve(__dirname, ".."),
-    include: ["e2e/**/*.e2e.test.ts"],
-    // Firefox E2E runs under its own config (vitest.e2e.firefox.config.ts).
-    exclude: ["e2e/**/*.firefox.e2e.test.ts"],
+    include: ["e2e/**/*.firefox.e2e.test.ts"],
     testTimeout: 60_000,
-    hookTimeout: 60_000,
+    hookTimeout: 120_000,
     // No jsdom — e2e tests use real browser via Playwright
     environment: "node",
     // Single thread to avoid multiple browser instances

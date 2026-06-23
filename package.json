@@ -13,6 +13,7 @@
     "dev-mock": "vite --mode=mock",
     "type-check": "tsc --noEmit",
     "build": "vite build --mode=development",
+    "build:firefox": "BROWSER=firefox vite build --mode=development",
     "build:aggregate": "vite build --mode=aggregate",
     "build:full": "pnpm type-check && pnpm build",
     "lint": "eslint .",
@@ -24,12 +25,15 @@
     "test:coverage": "vitest run --coverage --open=true --config configs/vitest.config.ts",
     "test:run": "vitest run --config configs/vitest.config.ts",
     "test:e2e": "vitest run --config configs/vitest.e2e.config.ts",
+    "test:e2e:firefox": "vitest run --config configs/vitest.e2e.firefox.config.ts",
+    "lint:firefox": "web-ext lint --source-dir build-firefox",
     "docs": "typedoc --options configs/typedoc.json && cp themes/typedoc-theme-hierarchy/packages/plugin/dist/assets/hierarchy.css themes/typedoc-theme-hierarchy/packages/plugin/dist/assets/hierarchy-theme.js docs/assets/",
     "docs:www": "pnpm run docs && npx http-server -p 8080 docs",
     "validate-docs": "tsc --noEmit",
     "generate-logo-files": "node tools/generate-logo-files.js",
     "pack": "node tools/pack-extension.js",
-    "build:prod": "pnpm run generate-logo-files && vite build --mode=production && node tools/pack-extension.js"
+    "build:prod": "pnpm run generate-logo-files && vite build --mode=production && node tools/pack-extension.js",
+    "build:prod:firefox": "pnpm run generate-logo-files && BROWSER=firefox vite build --mode=production && node tools/pack-firefox.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -133,6 +137,7 @@
     "msw": "^2.8.3",
     "multiformats": "^9.9.0",
     "playwright": "^1.58.2",
+    "playwright-webextext": "^0.0.5",
     "prettier": "^3.5.3",
     "react-test-renderer": "^19.1.0",
     "sass-embedded": "^1.89.0",
@@ -167,7 +172,8 @@
     "vite": "^6.3.1",
     "vite-bundle-analyzer": "^0.20.1",
     "vite-plugin-static-copy": "^2.3.1",
-    "vitest": "^3.1.4"
+    "vitest": "^3.1.4",
+    "web-ext": "^10.4.0"
   },
   "msw": {
     "workerDirectory": [

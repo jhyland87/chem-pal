@@ -19,9 +19,18 @@ Open source project aimed at helping amateur chemistry hobbyists find the best d
 
 
 ## Installation
-This is currently in beta, so its not in the Chrome webstore. But you can get the latest release from the [releases page](https://github.com/jhyland87/chem-pal/releases/latest).
+This is currently in beta, so its not in the Chrome or Firefox stores yet. But you can get the latest release from the [releases page](https://github.com/jhyland87/chem-pal/releases/latest).
 
-Download the .crx asset, then go to your Chrome extensions, and click "Load Packed", then select the .crx file and import it.
+### Chrome
+Download the `chem-pal.crx` asset, then go to your Chrome extensions, and click "Load Packed", then select the .crx file and import it.
+
+### Firefox
+Download the `chem-pal-firefox.zip` asset, then open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on…**, and select the downloaded zip (or its `manifest.json`).
+
+> [!NOTE]
+> Temporary add-ons are removed when Firefox restarts — re-load the zip to use
+> it again. A permanently installable signed `.xpi` (via addons.mozilla.org) is
+> not provided yet.
 
 ## Node version
 
@@ -55,6 +64,15 @@ pnpm run build
 ```
 
 Then import the `build/` folder as an unpacked Chrome extension.
+
+For Firefox, build the Firefox variant and load it as a temporary add-on:
+
+```bash
+pnpm run build:firefox
+```
+
+Then open `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on…**
+and select `build-firefox/manifest.json`.
 
 > [!WARNING]
 > `pnpm run build` produces a **development** build and includes the MSW

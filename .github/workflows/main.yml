@@ -43,6 +43,13 @@ jobs:
         with:
           name: build-output
           path: build/
+      - name: Build the app (Firefox)
+        run: pnpm run build:firefox
+      - name: Upload Firefox build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-firefox-output
+          path: build-firefox/
 
   test:
     needs: build
@@ -70,6 +77,7 @@ jobs:
         run: ulimit -n 65536 && pnpm run test
 
   test-e2e:
+    name: Chrome E2E
     needs: build
     runs-on: ubuntu-latest
     steps:
