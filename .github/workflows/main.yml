@@ -43,6 +43,13 @@ jobs:
         with:
           name: build-output
           path: build/
+      - name: Build the app (Firefox)
+        run: pnpm run build:firefox
+      - name: Upload Firefox build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-firefox-output
+          path: build-firefox/
 
   test:
     needs: build
@@ -69,40 +76,11 @@ jobs:
       - name: Run unit tests
         run: ulimit -n 65536 && pnpm run test
 
-  test-e2e:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-        with:
-          submodules: true
-      - name: Setup Node
-        uses: actions/setup-node@v5
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-      - name: Install pnpm
-        run: npm install -g pnpm
-      - name: Cache pnpm store
-        uses: actions/cache@v4
-        with:
-          path: ~/.local/share/pnpm/store
-          key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: pnpm-store-
-      - name: Install dependencies
-        run: pnpm install
-      - name: Download build artifact
-        uses: actions/download-artifact@v8
-        with:
-          name: build-output
-          path: build/
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium
-      - name: Run E2E tests
-        run: xvfb-run --auto-servernum -- pnpm run test:e2e
+  # Chrome and Firefox E2E run as their own parallel workflows
+  # (chrome-e2e.yml / firefox-e2e.yml).
 
   wiki:
-    needs: [test, test-e2e]
+    needs: [test]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
@@ -116,7 +94,7 @@ jobs:
           commit-message: 'Docs: Auto-sync wiki from repo content'
 
   docs:
-    needs: [test, test-e2e]
+    needs: [test]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:

@@ -9,6 +9,7 @@ lerna-debug.log*
 
 node_modules
 build
+build-firefox
 dist
 dist-ssr
 dev
@@ -33,5 +34,6 @@ build.pem
 ChemPal.pem
 chem-pal.pem
 *.crx
+chem-pal-firefox.zip
 
 public/mockServiceWorker.js

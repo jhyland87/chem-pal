@@ -128,7 +128,7 @@ export function deserialize(data: string): string {
  * ```
  * @source
  */
-export function sleep(ms: number) {
+export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
@@ -158,7 +158,7 @@ export function sleep(ms: number) {
  * ```
  * @source
  */
-export async function delayAction(ms: number, action: () => void) {
+export async function delayAction(ms: number, action: () => void): Promise<void> {
   await sleep(ms);
   action();
 }
@@ -193,7 +193,6 @@ export async function delayAction(ms: number, action: () => void) {
  * @source
  */
 export function firstMap<T, R>(fn: (arg: T) => R | void, properties: T[]): R | void {
-  //try {
   for (const prop of properties) {
     const result = fn(prop);
     if (result !== undefined && result !== null) {
@@ -201,11 +200,6 @@ export function firstMap<T, R>(fn: (arg: T) => R | void, properties: T[]): R | v
     }
   }
   return undefined;
-  // } catch (error) {
-  //   //console.error("ERROR in firstMap:", error);
-  //   throw
-  //   return undefined;
-  // }
 }
 
 /**
@@ -256,7 +250,7 @@ export function mapDefined<T, R>(items: T[], fn: (arg: T) => R | null | undefine
  * ```
  * @source
  */
-export function decodeHTMLEntities(text: string) {
+export function decodeHTMLEntities(text: string): string {
   const entities: Record<string, string> = {
     /* eslint-disable */
     "&nbsp;": " ",
@@ -526,11 +520,7 @@ export function formatTimestamp(epochMs: number): string {
  * @source
  */
 export function getPath(obj: unknown, path: readonly PropertyKey[]): unknown {
-  return path.reduce<unknown>(
-    (acc, key) =>
-      acc == null ? acc : Reflect.get(acc, key),
-    obj,
-  );
+  return path.reduce<unknown>((acc, key) => (acc == null ? acc : Reflect.get(acc, key)), obj);
 }
 
 // Matches the real zod `$ZodIssue.path` shape (PropertyKey[]), which can

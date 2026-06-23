@@ -7,7 +7,8 @@ ChemPal uses Vitest for both unit and E2E testing, with Mock Service Worker (MSW
 | Config | File | Environment | Purpose |
 |--------|------|-------------|---------|
 | Unit tests | `vitest.config.ts` | jsdom | Component and utility tests |
-| E2E tests | `vitest.e2e.config.ts` | node | Full browser tests via Playwright |
+| Chrome E2E | `vitest.e2e.config.ts` | node | Full browser UI tests via Playwright (Chromium) |
+| Firefox E2E | `vitest.e2e.firefox.config.ts` | node | Firefox extension load smoke test |
 
 ### Unit Test Settings
 - **Pool**: vmThreads (max 4, min 1)
@@ -18,7 +19,20 @@ ChemPal uses Vitest for both unit and E2E testing, with Mock Service Worker (MSW
 ### E2E Test Settings
 - **Pool**: single fork
 - **Timeout**: 60 seconds
-- **Pattern**: `e2e/**/*.e2e.test.ts`
+- **Chrome pattern**: `e2e/**/*.e2e.test.ts` (excludes `*.firefox.e2e.test.ts`)
+- **Firefox pattern**: `e2e/**/*.firefox.e2e.test.ts`
+
+### Firefox E2E scope
+
+Playwright cannot drive a Firefox extension's UI pages — `page.goto` to a
+`moz-extension://` URL never completes ([microsoft/playwright#3792](https://github.com/microsoft/playwright/issues/3792)).
+So the Firefox suite (`e2e/extension-load.firefox.e2e.test.ts`) is a **load smoke
+test**: it installs the `build-firefox/` bundle as a temporary add-on over
+Firefox's remote debugging protocol (via `playwright-webextext`) and asserts the
+add-on registers and its background script reaches `RUNNING`. Functional UI
+behaviour (search, result counts) is covered by the Chrome E2E suite, which runs
+the same `index.html` bundle. `pnpm run lint:firefox` additionally validates the
+Firefox build with Mozilla's `web-ext lint`.
 
 ## Running Tests
 
@@ -35,8 +49,14 @@ pnpm run test:coverage
 # With Vitest UI
 pnpm run test:ui
 
-# E2E tests
+# All E2E tests (Chrome then Firefox)
 pnpm run test:e2e
+
+# Chrome E2E tests only
+pnpm run test:e2e:chrome
+
+# Firefox load smoke test only
+pnpm run test:e2e:firefox
 ```
 
 ## Test File Locations

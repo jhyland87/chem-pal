@@ -1,0 +1,49 @@
+name: Firefox E2E
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NODE_VERSION: 'v22.15.0'
+
+permissions:
+  contents: read
+
+jobs:
+  firefox-e2e:
+    name: Firefox E2E
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: true
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install pnpm
+        run: npm install -g pnpm
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-store-
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build the Firefox extension
+        run: pnpm run build:firefox
+      - name: Lint the Firefox extension (web-ext)
+        run: pnpm run lint:firefox
+      - name: Install Playwright Firefox
+        run: pnpm exec playwright install --with-deps firefox
+      # The smoke test installs the build as a temporary add-on over Firefox's
+      # remote debugging protocol and asserts it loads + its background script
+      # runs. Headless — no virtual display needed.
+      - name: Run Firefox load smoke test
+        run: pnpm run test:e2e:firefox

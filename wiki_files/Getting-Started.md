@@ -50,18 +50,38 @@ The build output is written to the `build/` directory.
 
 The extension will appear in your toolbar. Click the icon to open the popup, or use the side panel.
 
+## Loading in Firefox
+
+Firefox uses a separate build (the manifest swaps the Chrome side panel for a
+sidebar and the service worker for a background script):
+
+```bash
+pnpm run build:firefox
+```
+
+1. Open `about:debugging#/runtime/this-firefox`
+2. Click **Load Temporary Add-on…**
+3. Select `build-firefox/manifest.json`
+
+The extension appears in your toolbar; open it from the sidebar. Temporary
+add-ons are removed when Firefox restarts.
+
 ## Development Scripts
 
 | Command | Description |
 |---------|-------------|
 | `pnpm run dev` | Start Vite dev server |
 | `pnpm run dev-mock` | Dev server with mocked API responses |
-| `pnpm run build` | Production build to `build/` |
+| `pnpm run build` | Build the Chrome extension to `build/` |
+| `pnpm run build:firefox` | Build the Firefox extension to `build-firefox/` |
 | `pnpm run build:aggregate` | Build with response capture enabled |
 | `pnpm run build:full` | Type-check + build |
 | `pnpm run test` | Run unit tests (Vitest, watch mode) |
 | `pnpm run test:run` | Run unit tests once |
-| `pnpm run test:e2e` | Run E2E tests (Playwright) |
+| `pnpm run test:e2e` | Run all E2E tests (Chrome then Firefox) |
+| `pnpm run test:e2e:chrome` | Run Chrome E2E tests (Playwright) |
+| `pnpm run test:e2e:firefox` | Run Firefox load smoke test |
+| `pnpm run lint:firefox` | Lint the Firefox build with `web-ext` |
 | `pnpm run test:coverage` | Run tests with coverage report |
 | `pnpm run test:ui` | Open Vitest UI with coverage |
 | `pnpm run docs` | Generate TypeDoc API documentation |
