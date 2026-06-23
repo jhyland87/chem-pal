@@ -1,0 +1,45 @@
+name: Chrome E2E
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NODE_VERSION: 'v22.15.0'
+
+permissions:
+  contents: read
+
+jobs:
+  chrome-e2e:
+    name: Chrome E2E
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: true
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install pnpm
+        run: npm install -g pnpm
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-store-
+      - name: Install dependencies
+        run: pnpm install
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      # The E2E test builds the extension itself (in beforeAll) and loads the
+      # unpacked build into Chromium, which requires a headed browser — hence
+      # the virtual display.
+      - name: Run Chrome E2E tests
+        run: xvfb-run --auto-servernum -- pnpm run test:e2e:chrome
