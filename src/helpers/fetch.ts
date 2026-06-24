@@ -68,14 +68,16 @@ export async function generateRequestHash(
   input: RequestInfo | URL,
   options?: RequestInit,
 ): Promise<string> {
-  const url = input instanceof Request ? input.url : input.toString();
+  const url = input instanceof Request ? input.url : String(input);
   const method = input instanceof Request ? input.method : options?.method || "GET";
   const headers = input instanceof Request ? input.headers : options?.headers || {};
   const body = input instanceof Request ? input.body : options?.body || "";
   const contentType =
     input instanceof Request
       ? input.headers.get("content-type") || ""
-      : (headers instanceof Headers ? headers.get("content-type") : Reflect.get(headers, "content-type")) ?? "";
+      : ((headers instanceof Headers
+          ? headers.get("content-type")
+          : Reflect.get(headers, "content-type")) ?? "");
 
   const data = {
     url,
@@ -151,7 +153,7 @@ export async function fetchDecorator(
   let aggregateRequestClone: Request | undefined;
   if (typeof __RESPONSE_AGGREGATE__ !== "undefined" && __RESPONSE_AGGREGATE__) {
     aggregateRequestClone =
-      input instanceof Request ? input.clone() : new Request(input.toString(), init);
+      input instanceof Request ? input.clone() : new Request(String(input), init);
   }
 
   const response = await fetch(input, init);

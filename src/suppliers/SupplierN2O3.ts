@@ -40,12 +40,7 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
   public readonly country: CountryCode = "PL";
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = [
-    "mastercard",
-    "visa",
-    "paypal",
-    "banktransfer",
-  ];
+  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa", "paypal", "ach"];
 
   // Override the type of queryResults to use our specific type
   protected queryResults: Array<Product> = [];
@@ -113,7 +108,7 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
         path: "en/catalogue/",
         params: {
           szukaj: encodeURIComponent(query),
-          offset: page.toString(),
+          offset: String(page),
         },
       });
 

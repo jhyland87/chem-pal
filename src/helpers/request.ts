@@ -105,7 +105,7 @@ export async function getCachableResponse(
   const reqHash = getRequestHash(request);
 
   // Generate a serialized object to be saved
-  const dataType = contentType.parse(response.headers.get("content-type")?.toString() ?? "");
+  const dataType = contentType.parse(String(response.headers.get("content-type") ?? ""));
 
   const serializedResponse: SerializedResponse = {
     contentType: dataType.type,

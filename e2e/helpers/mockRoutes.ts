@@ -100,7 +100,7 @@ function normalizeUrl(urlStr: string): string {
       url.searchParams.delete(param);
     }
     url.searchParams.sort();
-    return `${url.origin}${url.pathname}?${url.searchParams.toString()}`;
+    return `${url.origin}${url.pathname}?${String(url.searchParams)}`;
   } catch {
     return urlStr;
   }

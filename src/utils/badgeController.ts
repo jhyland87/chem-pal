@@ -1,7 +1,7 @@
-import { useEffect } from "react";
+import { SearchEvent, onSearchEvent } from "@/events/searchEvents";
 import { BadgeAnimator } from "@/utils/BadgeAnimator";
 import { IDB_SEARCH_RESULTS_CLEARED } from "@/utils/idbCache";
-import { SearchEvent, onSearchEvent } from "@/events/searchEvents";
+import { useEffect } from "react";
 
 /**
  * The single place that decides what the extension toolbar badge shows and when.
@@ -99,7 +99,7 @@ export function reduceBadge(
  * number, zero-while-searching keeps the ellipsis, and zero-when-idle clears.
  */
 function render(state: BadgeState): BadgeOutput {
-  if (state.count > 0) return { kind: "text", value: state.count.toString() };
+  if (state.count > 0) return { kind: "text", value: String(state.count) };
   if (state.isSearching) return { kind: "animate" };
   return { kind: "clear" };
 }

@@ -1,8 +1,10 @@
 import { findCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
+import { createDOM } from "@/helpers/request";
 import { mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isCurrencyCode } from "@/utils/typeGuards/common";
+import { extract } from "fuzzball";
 import { SupplierBase } from "./SupplierBase";
 /**
  * Supplier implementation for LiMac Science, a Latvian chemical supplier.
@@ -22,10 +24,7 @@ import { SupplierBase } from "./SupplierBase";
  * ```
  * @source
  */
-export class SupplierLiMac
-  extends SupplierBase<Partial<Product>, Product>
-  implements ISupplier
-{
+export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> implements ISupplier {
   // Display name of the supplier used for UI and logging
   public readonly supplierName: string = "LiMac";
 
@@ -44,7 +43,7 @@ export class SupplierLiMac
   public readonly country: CountryCode = "LV";
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "other", "banktransfer"];
+  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "other", "ach"];
 
   // Cached search results from the last query execution
   protected queryResults: Array<Partial<Product>> = [];
@@ -141,17 +140,82 @@ export class SupplierLiMac
    * ```
    * @source
    */
-  protected fuzzHtmlResponse(query: string, response: string): Element[] {
-    const parser = new DOMParser();
-    const parsedHTML = parser.parseFromString(response, "text/html");
-    const links = parsedHTML.querySelectorAll("font.search-results > a");
-
-    if (links.length === 0) {
+  protected fuzzHtmlResponse(
+    query: string,
+    response: string,
+    minMatchPercentage: number = this.minMatchPercentage,
+  ): Element[] {
+    const parsedHTML = createDOM(response);
+    const noResultsCheck = parsedHTML.querySelector(
+      ".search-header-table .search-count > .search-no-results",
+    );
+    if (noResultsCheck) {
       this.logger.log("No products found", { query });
       return [];
     }
 
-    return Array.from(links);
+    const resultCount = parsedHTML.querySelector(
+      ".search-header-table td.search-count > font.search-count",
+    )?.textContent;
+    if (!resultCount) {
+      this.logger.log("No products found", { query });
+      return [];
+    }
+
+    const resultCountMatch = resultCount.match(
+      /Found (?<result_count>[0-9]+) items, now showing (?<from>[0-9]+) \- (?<to>[0-9]+)/m,
+    );
+    if (!resultCountMatch) {
+      this.logger.log("No products found", { query });
+      return [];
+    }
+
+    const totalResults = Number(resultCountMatch.groups?.result_count ?? "0");
+    const startResult = Number(resultCountMatch.groups?.from ?? "0");
+    const endResult = Number(resultCountMatch.groups?.to ?? "0");
+
+    this.logger.log("Found results", { query, totalResults, startResult, endResult });
+
+    const links = parsedHTML.querySelectorAll("font.search-results > a");
+
+    const activeScorer = this.fuzzScorerOverride ?? this.fuzzScorer;
+
+    const fuzzResults = extract(query, links, {
+      scorer: activeScorer,
+      processor: this.titleSelector,
+      cutoff: minMatchPercentage,
+      sortBySimilarity: true,
+    }).reduce<FuzzyMatchResult<Element>[]>((acc, [obj, score, idx]) => {
+      if (!obj.id || typeof idx !== "number") {
+        this.logger.error("No ID for product", { element: obj });
+        return acc;
+      }
+
+      if (score < minMatchPercentage) {
+        this.logger.debug("fuzzyFilter: score below minimum match percentage, excluding product", {
+          product: obj,
+          score,
+          idx,
+          minMatchPercentage: minMatchPercentage,
+        });
+        return acc;
+      }
+
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      acc[idx] = Object.assign(obj, { _fuzz: { score, idx }, matchPercentage: score });
+      return acc;
+    }, []);
+
+    this.logger.debug("fuzzHtmlResponse results:", {
+      supplierName: this.supplierName,
+      query,
+      minMatchPercentage,
+      activeScorer,
+      fuzzResults,
+    });
+
+    // Get rid of any empty items that didn't match closely enough
+    return fuzzResults.filter((item) => !!item);
   }
 
   /**
@@ -181,14 +245,14 @@ export class SupplierLiMac
       // LiMac product URL shape: /catalog/params/category/{cat}/item/{id}/
       const id = url.pathname.match(/\/item\/(\d+)\//)?.[1];
       if (!id) {
-        this.logger.error("No ID for product", { element, url: url.toString() });
+        this.logger.error("No ID for product", { element, url: String(url) });
         return;
       }
 
       const title = element.textContent?.trim() || "";
 
       return new ProductBuilder<Product>(this.baseURL)
-        .setBasicInfo(title, url.toString(), this.supplierName)
+        .setBasicInfo(title, String(url), this.supplierName)
         .setID(id);
     });
   }

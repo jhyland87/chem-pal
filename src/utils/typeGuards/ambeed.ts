@@ -184,3 +184,119 @@ export function isAmbeedProductListResponsePriceList(
 export function isAmbeedSearchResponseProduct(data: unknown): data is AmbeedSearchResponseProduct {
   return ambeedProductListResponseSchema.safeParse(data).success;
 }
+
+/* eslint-disable @typescript-eslint/naming-convention */
+const ambeedProductPriceResponseSchema = z.object({
+  source: z.number(),
+  code: z.number(),
+  lang: z.string(),
+  time: z.string(),
+  value: z.object({
+    proInfo: z.custom<object>((val) => typeof val === "object" && val !== null),
+  }),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
+
+/**
+ * Type guard to validate if data matches the Ambeed product price API response structure.
+ * Checks the `AmbeedResponseBase` fields plus a `value.proInfo` object, which carries the
+ * shared product info every priced variant in the response is keyed against.
+ * @category Typeguards
+ * @param data - The response data to validate
+ * @returns Type predicate indicating if the data is a valid AmbeedProductPriceResponse
+ * @example
+ * ```typescript
+ * const response = await this.httpPostJson({ path: "/webapi/v1/product_price" });
+ * if (isAmbeedProductPriceResponse(response)) {
+ *   console.log("Product:", response.value.proInfo.p_name_en);
+ *   console.log("Lead time:", response.value.proInfo.p_leadtime);
+ * }
+ * ```
+ * @source
+ */
+export function isAmbeedProductPriceResponse(data: unknown): data is AmbeedProductPriceResponse {
+  return ambeedProductPriceResponseSchema.safeParse(data).success;
+}
+
+/**
+ * Type assertion to ensure the given data is a valid AmbeedProductPriceResponse.
+ * Throws an error if the data does not match the expected structure.
+ * @category Typeguards
+ * @param data - The response data to assert
+ * @throws Error if the data is not a valid AmbeedProductPriceResponse
+ * @example
+ * ```typescript
+ * assertIsAmbeedProductPriceResponse(response);
+ * // response is now typed as AmbeedProductPriceResponse
+ * console.log(response.value.proInfo.p_am);
+ * ```
+ * @source
+ */
+export function assertIsAmbeedProductPriceResponse(
+  data: unknown,
+): asserts data is AmbeedProductPriceResponse {
+  if (!isAmbeedProductPriceResponse(data)) {
+    throw new Error("assertIsAmbeedProductPriceResponse failed");
+  }
+}
+
+/* eslint-disable @typescript-eslint/naming-convention */
+const ambeedGetSearchProductAndRecommendedProductsByCASResponseSchema = z.object({
+  source: z.number(),
+  code: z.number(),
+  lang: z.string(),
+  time: z.string(),
+  value: z.object({
+    search_pro_dict: z.custom<object>((val) => typeof val === "object" && val !== null),
+    r_pro_list: z.array(z.unknown()),
+  }),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
+
+/**
+ * Type guard to validate if data matches the Ambeed "get search product and recommended
+ * products by CAS" API response structure. Checks the `AmbeedResponseBase` fields plus a
+ * `value` object containing the CAS-matched `search_pro_dict` and the `r_pro_list` array
+ * of recommendations.
+ * @category Typeguards
+ * @param data - The response data to validate
+ * @returns Type predicate indicating if the data is a valid
+ *   AmbeedGetSearchProductAndRecommendedProductsByCASResponse
+ * @example
+ * ```typescript
+ * if (isAmbeedGetSearchProductAndRecommendedProductsByCASResponse(response)) {
+ *   console.log("Matched product:", response.value.search_pro_dict.p_name_en);
+ *   console.log("Recommendations:", response.value.r_pro_list.length);
+ * }
+ * ```
+ * @source
+ */
+export function isAmbeedGetSearchProductAndRecommendedProductsByCASResponse(
+  data: unknown,
+): data is AmbeedGetSearchProductAndRecommendedProductsByCASResponse {
+  return ambeedGetSearchProductAndRecommendedProductsByCASResponseSchema.safeParse(data).success;
+}
+
+/**
+ * Type assertion to ensure the given data is a valid
+ * AmbeedGetSearchProductAndRecommendedProductsByCASResponse. Throws an error if the data
+ * does not match the expected structure.
+ * @category Typeguards
+ * @param data - The response data to assert
+ * @throws Error if the data is not a valid
+ *   AmbeedGetSearchProductAndRecommendedProductsByCASResponse
+ * @example
+ * ```typescript
+ * assertIsAmbeedGetSearchProductAndRecommendedProductsByCASResponse(response);
+ * // response is now typed as AmbeedGetSearchProductAndRecommendedProductsByCASResponse
+ * console.log(response.value.search_pro_dict.p_cas);
+ * ```
+ * @source
+ */
+export function assertIsAmbeedGetSearchProductAndRecommendedProductsByCASResponse(
+  data: unknown,
+): asserts data is AmbeedGetSearchProductAndRecommendedProductsByCASResponse {
+  if (!isAmbeedGetSearchProductAndRecommendedProductsByCASResponse(data)) {
+    throw new Error("assertIsAmbeedGetSearchProductAndRecommendedProductsByCASResponse failed");
+  }
+}

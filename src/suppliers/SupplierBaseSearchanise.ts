@@ -184,7 +184,7 @@ export abstract class SupplierBaseSearchanise
           .setBasicInfo(item.title, item.link, this.supplierName)
           .setData(this.productDefaults)
           .setPricing(
-            parseFloat(item.price),
+            Number(item.price),
             this.productDefaults.currencyCode,
             this.productDefaults.currencySymbol,
           )

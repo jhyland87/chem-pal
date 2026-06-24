@@ -3,6 +3,7 @@ import { findCAS } from "@/helpers/cas";
 import { parsePrice, toUSD } from "@/helpers/currency";
 import { parseQuantity, toBaseQuantity } from "@/helpers/quantity";
 import { findFormulaInHtml } from "@/helpers/science";
+import { htmlToAscii, isMoleForm } from "@/helpers/utils";
 import { Logger } from "@/utils/Logger";
 import {
   isCAS,
@@ -116,6 +117,75 @@ export class ProductBuilder<T extends Product> {
     this.product.title = title;
     this.product.url = this.href(url);
     this.product.supplier = supplier;
+    return this;
+  }
+
+  /**
+   * Sets the URL for the product.
+   * @param url - The URL to set
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setURL("https://example.com/products/sodium-chloride-500g");
+   * ```
+   * @source
+   */
+  setURL(url: string | URL): ProductBuilder<T> {
+    this.product.url = this.href(url);
+    return this;
+  }
+
+  /**
+   * Sets the permalink for the product.
+   * @param permalink - The permalink to set
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setPermalink("https://example.com/products/sodium-chloride-500g");
+   * ```
+   * @source
+   */
+  setPermalink(permalink: string | URL): ProductBuilder<T> {
+    this.product.permalink = this.href(permalink);
+    return this;
+  }
+
+  /**
+   * Sets the image URL for the product.
+   * @param imageURL - The image URL to set
+   * @param imageAltText - The alt text for the image
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setImage("https://example.com/image.jpg");
+   * builder.setImage("https://example.com/image.jpg", "Sodium Chloride ACS Grade 500g");
+   * ```
+   * @source
+   */
+  setImage(imageURL: string, imageAltText?: string): ProductBuilder<T> {
+    if (imageURL && typeof imageURL === "string" && imageURL.trim().length > 0) {
+      this.product.imageURL = this.href(imageURL);
+    }
+    if (imageAltText && typeof imageAltText === "string" && imageAltText.trim().length > 0) {
+      this.product.imageAltText = imageAltText;
+    }
+    return this;
+  }
+
+  /**
+   * Sets the thumbnail URL for the product.
+   * @param thumbnail - The thumbnail URL to set
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setThumbnail("https://example.com/thumbnail.jpg/thumbnail.jpg");
+   * ```
+   * @source
+   */
+  setThumbnail(thumbnail: string): ProductBuilder<T> {
+    if (thumbnail && typeof thumbnail === "string" && thumbnail.trim().length > 0) {
+      this.product.thumbnail = this.href(thumbnail);
+    }
     return this;
   }
 
@@ -421,6 +491,22 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
+   * Sets the moles for the product.
+   * @param moles - The moles to set
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setMoles(23.5);
+   * ```
+   * @source
+   */
+  setMoles(moles: number): ProductBuilder<T> {
+    if (typeof moles === "number" && !Number.isNaN(moles) && moles > 0) {
+      this.product.moles = moles;
+    }
+    return this;
+  }
+  /**
    * Sets the unit of measure for the product.
    *
    * @param uom - The unit of measure for the product
@@ -508,7 +594,60 @@ export class ProductBuilder<T extends Product> {
    * @source
    */
   setDescription(description: string): ProductBuilder<T> {
-    this.product.description = description;
+    if (typeof description === "string" && description.trim().length > 0) {
+      this.product.description = htmlToAscii(description);
+    }
+    return this;
+  }
+
+  /**
+   * Sets the short description for the product.
+   * @param shortDescription - The short description to set
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setShortDescription("Sodium Chloride 500g");
+   * ```
+   * @source
+   */
+  setShortDescription(shortDescription: string): ProductBuilder<T> {
+    if (typeof shortDescription === "string" && shortDescription.trim().length > 0) {
+      this.product.shortDescription = htmlToAscii(shortDescription);
+    }
+    return this;
+  }
+
+  /**
+   * Sets the rating for the product.
+   * @param rating - The rating to set
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setRating(4.5);
+   * ```
+   * @source
+   */
+  setRating(rating: number | string): ProductBuilder<T> {
+    if (typeof rating === "number" || typeof rating === "string") {
+      this.product.rating = Number(rating);
+    }
+    return this;
+  }
+
+  /**
+   * Sets the review count for the product.
+   * @param reviewCount - The review count to set
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setReviewCount(100);
+   * ```
+   * @source
+   */
+  setReviewCount(reviewCount: number | string): ProductBuilder<T> {
+    if (typeof reviewCount === "number" || typeof reviewCount === "string") {
+      this.product.reviewCount = Number(reviewCount);
+    }
     return this;
   }
 
@@ -560,7 +699,7 @@ export class ProductBuilder<T extends Product> {
    * @source
    */
   setID(id?: number | string): ProductBuilder<T> {
-    if (id) {
+    if (typeof id === "number" || typeof id === "string") {
       // T["id"] narrows the generic product's id type; the number|string input is the data-model alias for it.
       this.product.id = id as T["id"];
     }
@@ -793,6 +932,104 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
+   * Sets the purity for the product.
+   * @param purity - The purity to set (can be 99% or just 99)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setPurity(98);
+   * builder.setPurity(98.5);
+   * builder.setPurity(99);
+   * builder.setPurity(99.5);
+   * builder.setPurity(100);
+   * builder.setPurity("98%");
+   * builder.setPurity("98.5%");
+   * builder.setPurity("99%");
+   * builder.setPurity("99.5%");
+   * builder.setPurity("100%");
+   * ```
+   * @source
+   */
+  setPurity(purity: number | string): ProductBuilder<T> {
+    if (typeof purity === "string") {
+      purity = Number(purity.replace("%", ""));
+    }
+
+    if (typeof purity === "number" && !Number.isNaN(purity) && purity > 0 && purity <= 100) {
+      this.product.purity = purity;
+    }
+    return this;
+  }
+
+  /**
+   * Sets the concentration for the product.
+   * @param concentration - The concentration to set
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setConcentration(98);
+   * ```
+   * @source
+   */
+  setConcentration(concentration: number | string): ProductBuilder<T> {
+    if (typeof concentration === "string") {
+      concentration = Number(concentration.replace("%", ""));
+    }
+
+    if (
+      typeof concentration === "number" &&
+      !Number.isNaN(concentration) &&
+      concentration > 0 &&
+      concentration <= 100
+    ) {
+      this.product.concentration = concentration;
+    }
+    return this;
+  }
+
+  /**
+   * Sets the molecular weight for the product.
+   * @param moleweight - The molecular weight to set
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setMoleweight(100.00);
+   * ```
+   * @source
+   */
+  setMoleweight(moleweight: number | string): ProductBuilder<T> {
+    if (typeof moleweight === "string") {
+      moleweight = Number(moleweight);
+    }
+
+    if (typeof moleweight === "number" && !Number.isNaN(moleweight) && moleweight > 0) {
+      this.product.moleweight = moleweight;
+    }
+    return this;
+  }
+
+  /**
+   * Sets the molecular formula for the product.
+   * @param moleform - The molecular formula to set
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setMoleform("C<sub>12</sub>H<sub>6</sub>NNaO<sub>4</sub>") // accepted
+   * Builder.setMoleform("C12H6NNaO4") // accepted
+   * builder.setMoleform("C12H22O11");// fails because it's not a valid molecular formula
+   * builder.setMoleform("Just some text"); // fails because it's not a valid molecular formula
+   * builder.setMoleform(123); // fails because it's not a string
+   * ```
+   * @source
+   */
+  setMoleform(moleform: string): ProductBuilder<T> {
+    if (typeof moleform === "string" && moleform.trim().length > 0 && isMoleForm(moleform)) {
+      this.product.moleform = moleform;
+    }
+    return this;
+  }
+
+  /**
    * Get a specific property from the product.
    *
    * @param key - The key of the property to get
@@ -860,8 +1097,11 @@ export class ProductBuilder<T extends Product> {
    * @source
    */
   private href(path: string | URL): string {
+    if (URL.canParse(path)) {
+      return String(path);
+    }
     const urlObj = new URL(path, this.baseURL);
-    return urlObj.toString();
+    return String(urlObj);
   }
 
   /**

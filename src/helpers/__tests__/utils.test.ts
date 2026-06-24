@@ -1,10 +1,13 @@
 import {
+  base36Timestamp,
+  base64EncodeUtf8,
   delayAction,
   deserialize,
   firstMap,
   getPath,
   mapDefined,
   md5sum,
+  objectToQueryString,
   serialize,
   sleep,
   zodAddActualValueToIssues,
@@ -25,6 +28,30 @@ describe("md5sum", () => {
 
   it("should throw error for invalid input types", () => {
     expect(() => md5sum(Symbol("test"))).toThrow("Unexpected input type: symbol");
+  });
+});
+
+describe("objectToQueryString", () => {
+  it("serializes objects in insertion order", () => {
+    expect(objectToQueryString({ a: 1, b: "two" })).toBe("a=1&b=two");
+    expect(objectToQueryString({ foo: "bar" })).toBe("foo=bar");
+  });
+
+  it("joins array values with commas", () => {
+    expect(objectToQueryString({ __: ["timestamp", "proid"] })).toBe("__=timestamp,proid");
+  });
+});
+
+describe("base64EncodeUtf8", () => {
+  it("encodes ascii strings", () => {
+    expect(base64EncodeUtf8("hello")).toBe("aGVsbG8=");
+    expect(base64EncodeUtf8(md5sum("test"))).toBe("MDk4ZjZiY2Q0NjIxZDM3M2NhZGU0ZTgzMjYyN2I0ZjY=");
+  });
+});
+
+describe("base36Timestamp", () => {
+  it("returns a non-empty base-36 string", () => {
+    expect(base36Timestamp()).toMatch(/^[a-z0-9]+$/);
   });
 });
 
@@ -155,7 +182,15 @@ describe("getPath", () => {
 
   it("indexes arrays with numeric segments", () => {
     expect(getPath({ items: [10, 20, 30] }, ["items", 1])).toBe(20);
-    expect(getPath([[1, 2], [3, 4]], [1, 0])).toBe(3);
+    expect(
+      getPath(
+        [
+          [1, 2],
+          [3, 4],
+        ],
+        [1, 0],
+      ),
+    ).toBe(3);
   });
 
   it("short-circuits on null without throwing", () => {
@@ -179,9 +214,7 @@ describe("getPath", () => {
 
 describe("zodAddActualValueToIssues", () => {
   it("adds the resolved actual value from the source object", () => {
-    const issues = [
-      { path: ["user", "age"], code: "invalid_type", message: "Expected number" },
-    ];
+    const issues = [{ path: ["user", "age"], code: "invalid_type", message: "Expected number" }];
     const obj = { user: { age: "forty" } };
 
     expect(zodAddActualValueToIssues(issues, obj)).toEqual([

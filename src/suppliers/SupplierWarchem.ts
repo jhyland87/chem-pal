@@ -1,3 +1,4 @@
+import { AVAILABILITY } from "@/constants/common";
 import { findCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM } from "@/helpers/request";
@@ -22,10 +23,7 @@ import { SupplierBase } from "./SupplierBase";
  * ```
  * @source
  */
-export class SupplierWarchem
-  extends SupplierBase<Partial<Product>, Product>
-  implements ISupplier
-{
+export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> implements ISupplier {
   // Display name of the supplier used for UI and logging
   public readonly supplierName: string = "Warchem";
 
@@ -40,7 +38,7 @@ export class SupplierWarchem
   public readonly country: CountryCode = "PL";
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa", "banktransfer", "cash"];
+  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa", "ach", "cash"];
 
   // Cached search results from the last query execution
   protected queryResults: Array<Partial<Product>> = [];
@@ -201,37 +199,66 @@ export class SupplierWarchem
       this.logger.info("initProductBuilders mapping element:", { element });
       const builder = new ProductBuilder<Product>(this.baseURL);
 
-      const priceElem = element.querySelector(".ProdCena .Brutto");
-      if (!priceElem) {
-        this.logger.error("No price element for product", { element });
+      const productId = element.getAttribute("id");
+
+      const itemDiv = element.querySelector('div.[itemprop="item"]');
+      const productName = itemDiv?.querySelector('meta.[itemprop="name"]')?.getAttribute("content");
+      const productUrl = itemDiv?.querySelector('link.[itemprop="url"]')?.getAttribute("href");
+
+      if (!productName) {
+        this.logger.error("No product name for product", { element });
+        return;
+      }
+      if (!productUrl) {
+        this.logger.error("No product URL for product", { element });
         return;
       }
 
-      const headerElem = element.querySelector("h3 > a");
-      if (!headerElem) {
-        this.logger.error("No header for product", { element });
-        return;
-      }
+      builder
+        .setBasicInfo(productName, productUrl, this.supplierName)
+        .setID(productId ?? "")
+        .setImage(itemDiv?.querySelector('link.[itemprop="image"]')?.getAttribute("href") ?? "")
+        .setSku(itemDiv?.querySelector('meta.[itemprop="sku"]')?.getAttribute("content") ?? "")
+        .setAvailability(
+          this.getAvailabilityFromLink(
+            itemDiv?.querySelector('link.[itemprop="availability"]')?.getAttribute("href") ?? "",
+          ),
+        )
+        .setPrice(itemDiv?.querySelector('meta.[itemprop="price"]')?.getAttribute("content") ?? "")
+        .setCurrencyCode(
+          itemDiv?.querySelector('meta.[itemprop="priceCurrency"]')?.getAttribute("content") ?? "",
+        );
 
-      const title = headerElem.textContent?.trim();
+      // const headerElem = element.querySelector("h3 > a");
+      // if (!headerElem) {
+      //   this.logger.error("No header for product", { element });
+      //   return;
+      // }
 
-      if (!title) {
-        this.logger.error("No title for product", { element });
-        return;
-      }
+      this.logger.info("initProductBuilders setting basic info", {
+        productName,
+        productUrl,
+        builder,
+      });
 
-      const href = headerElem.getAttribute("href");
-
-      if (!href) {
-        this.logger.error("No URL for product", { element });
-        return;
-      }
-
-      const url = new URL(href, this.baseURL);
-
-      this.logger.info("initProductBuilders setting basic info", { title, url, builder });
-      return builder.setBasicInfo(title, url.toString(), this.supplierName);
+      return builder;
     });
+  }
+
+  private getAvailabilityFromLink(link: string): AVAILABILITY {
+    const availability = link.split("/").pop();
+    switch (availability) {
+      case "InStock":
+        return AVAILABILITY.IN_STOCK;
+      case "OutOfStock":
+        return AVAILABILITY.OUT_OF_STOCK;
+      case "PreOrder":
+        return AVAILABILITY.PRE_ORDER;
+      case "BackOrder":
+        return AVAILABILITY.BACKORDER;
+      default:
+        return AVAILABILITY.UNKNOWN;
+    }
   }
 
   /**

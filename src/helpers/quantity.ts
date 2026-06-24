@@ -112,8 +112,8 @@ export function parseQuantity(value: string): QuantityObject | void {
       .replaceAll("xx", ",");
 
   const uom = standardizeUom(quantityMatch.groups.uom);
-  const quantity = parseFloat(parsedQuantity.replaceAll(/[,\s]/g, ""));
-  const multiplier = parseInt(quantityMatch.groups?.multiplier ?? "1");
+  const quantity = Number(parsedQuantity.replaceAll(/[,\s]/g, ""));
+  const multiplier = Number(quantityMatch.groups?.multiplier ?? "1");
 
   if (uom && quantity) return normalizeQuantity({ quantity: quantity * multiplier, uom });
 }

@@ -46,7 +46,7 @@ export class SupplierS3Chemicals
   public readonly country: CountryCode = "DE";
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa", "banktransfer"];
+  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa", "ach"];
 
   // German-language titles rarely overlap the English query tokens, so we
   // use WRatio (a best-of-several-scorers heuristic) with a low cutoff to
@@ -246,9 +246,7 @@ export class SupplierS3Chemicals
         builder.setDescription(description);
       }
 
-      const qtyText = element
-        .querySelector("div.price--unit span.is--nowrap")
-        ?.textContent?.trim();
+      const qtyText = element.querySelector("div.price--unit span.is--nowrap")?.textContent?.trim();
       if (qtyText) {
         const qty = parseQuantity(qtyText);
         if (qty) {
@@ -256,7 +254,7 @@ export class SupplierS3Chemicals
         }
       }
 
-      builder.setBasicInfo(title, url.toString(), this.supplierName);
+      builder.setBasicInfo(title, String(url), this.supplierName);
       if (ordernumber) {
         builder.setID(ordernumber);
       }
@@ -364,7 +362,7 @@ export class SupplierS3Chemicals
   protected buildVariantUrl(baseUrl: string, selectName: string, value: string): string {
     const url = new URL(baseUrl);
     url.searchParams.set(selectName, value);
-    return url.toString();
+    return String(url);
   }
 
   /**
@@ -436,7 +434,10 @@ export class SupplierS3Chemicals
         ?.textContent?.replace(/\s+/g, " ")
         .trim();
       if (unitText) {
-        const cleaned = unitText.replace(/inhalt\s*:/i, "").split("(")[0].trim();
+        const cleaned = unitText
+          .replace(/inhalt\s*:/i, "")
+          .split("(")[0]
+          .trim();
         const qtyFromUnit = parseQuantity(cleaned);
         if (qtyFromUnit) {
           variant.quantity = qtyFromUnit.quantity;
@@ -445,9 +446,7 @@ export class SupplierS3Chemicals
       }
     }
 
-    const productID = details
-      .querySelector('meta[itemprop="productID"]')
-      ?.getAttribute("content");
+    const productID = details.querySelector('meta[itemprop="productID"]')?.getAttribute("content");
     if (productID) {
       variant.id = productID;
     }

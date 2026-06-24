@@ -1,3 +1,4 @@
+import { WRatio } from "fuzzball";
 import { SupplierBaseWoocommerce } from "./SupplierBaseWoocommerce";
 
 /**
@@ -31,7 +32,7 @@ export class SupplierAlchemieLabs extends SupplierBaseWoocommerce implements ISu
    * ```typescript
    * const supplier = new SupplierAlchemieLabs();
    * console.log(`Products from ${supplier.supplierName}`);
-   * // Output: "Products from Carolina Chemical"
+   * // Output: "Products from Alchemie Labs"
    * ```
    * @source
    */
@@ -45,6 +46,9 @@ export class SupplierAlchemieLabs extends SupplierBaseWoocommerce implements ISu
 
   // The country code of the supplier.
   public readonly country: CountryCode = "US";
+
+  protected readonly minMatchPercentage: number = 20;
+  protected readonly fuzzScorer = WRatio;
 
   // The payment methods accepted by the supplier.
   public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];

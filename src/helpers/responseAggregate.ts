@@ -1,5 +1,5 @@
-import JSZip from "jszip";
 import { getCachableResponse } from "@/helpers/request";
+import JSZip from "jszip";
 
 declare const __RESPONSE_AGGREGATE__: boolean;
 
@@ -41,7 +41,7 @@ function stripDynamicParams(url: string): string {
     for (const param of DYNAMIC_PARAMS) {
       parsed.searchParams.delete(param);
     }
-    return parsed.toString();
+    return String(parsed);
   } catch {
     return url;
   }
@@ -79,9 +79,7 @@ export async function addCapturedResponse(request: Request, response: Response):
     console.log(
       `[ResponseAggregate] Captured ${request.method} ${request.url} → ${filePath} (${captured.size} total)`,
     );
-    console.log(
-      `[ResponseAggregate]   normalized: ${request.method}:${normalized}`,
-    );
+    console.log(`[ResponseAggregate]   normalized: ${request.method}:${normalized}`);
   } catch (err) {
     console.error("[ResponseAggregate] FAILED to capture:", request.method, request.url);
     console.error("[ResponseAggregate]   error:", err);
