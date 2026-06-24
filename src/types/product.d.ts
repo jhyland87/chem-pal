@@ -122,6 +122,24 @@ declare global {
     description?: string;
 
     /**
+     * Short description of the variant
+     * @example "Sodium Chloride 500g"
+     */
+    shortDescription?: string;
+
+    /**
+     * Rating of the variant
+     * @example 4.5
+     */
+    rating?: number;
+
+    /**
+     * Number of reviews for the variant
+     * @example 100
+     */
+    reviewCount?: number;
+
+    /**
      * Unit of measurement for the variant quantity
      * @example "g"
      */
@@ -208,7 +226,25 @@ declare global {
      * Chemical concentration specification
      * @example "98%"
      */
-    conc?: string;
+    concentration?: number;
+
+    /**
+     * Molecular weight of the variant
+     * @example 100.00
+     */
+    moleweight?: number;
+
+    /**
+     * Molecular formula of the variant
+     * @example "C<sub>18<\/sub>H<sub>33<\/sub>NaO<sub>3<\/sub>"
+     */
+    moleform?: string;
+
+    /**
+     * Purity of the variant
+     * @example 98
+     */
+    purity?: number;
 
     /**
      * Current status code of the variant
@@ -245,6 +281,24 @@ declare global {
      * @example 23.5
      */
     moles?: number;
+
+    /**
+     * Thumbnail URL
+     * @example "https://example.com/thumbnail.jpg"
+     */
+    thumbnail?: string;
+
+    /**
+     * Image URL
+     * @example "https://example.com/image.jpg"
+     */
+    imageURL?: string;
+
+    /**
+     * Image Alt Text
+     * @example "Sodium Chloride ACS Grade 500g"
+     */
+    imageAltText?: string;
   }
 
   /**

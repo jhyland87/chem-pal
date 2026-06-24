@@ -114,7 +114,7 @@ declare global {
    * This is a two-letter code that uniquely identifies a country.
    * Examples: "US", "GB", "DE", "FR"
    */
-  type CountryCode = string;
+  type CountryCode = valueof<typeof COUNTRIES>;
 
   /**
    * Creates an opaque type with a type name
@@ -147,9 +147,11 @@ declare global {
     | "mastercard"
     | "visa"
     | "paypal"
-    | "banktransfer"
+    | "ach"
     | "cash"
+    | "check"
     | "crypto"
+    | "moneyorder"
     | "other";
 
   /**
@@ -183,6 +185,7 @@ declare global {
   interface SearchHistoryEntry {
     /** Epoch ms timestamp of when the search was executed */
     timestamp: number;
+    /** The type of history entry */
     type: "search";
     /** The search query string */
     query: string;

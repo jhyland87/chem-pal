@@ -107,10 +107,10 @@ export abstract class SupplierBaseWoocommerce
 
     this.logger.info("results:", { results });
 
-    const fuzzFiltered = this.fuzzyFilter<WooCommerceSearchResponseItem>(query, results);
-    this.logger.info("fuzzFiltered:", { query, results, fuzzFiltered });
+    const fuzzedResults = this.fuzzyFilter<WooCommerceSearchResponseItem>(query, results);
+    this.logger.info("fuzzedResults:", { query, results, fuzzedResults });
 
-    return this.initProductBuilders(fuzzFiltered.slice(0, limit));
+    return this.initProductBuilders(fuzzedResults.slice(0, limit));
   }
 
   /**
@@ -220,13 +220,26 @@ export abstract class SupplierBaseWoocommerce
       builder
         .setBasicInfo(item.name, item.permalink, this.supplierName)
         .setMatchPercentage(item.matchPercentage)
+        .setDescription(item.description)
+        .setShortDescription(item.short_description)
+        .setRating(item.average_rating)
+        .setReviewCount(item.review_count)
         .setID(item.id)
         .setSku(item.sku)
+        .setURL(`/wp-json/wc/store/v1/products/${item.id}`)
         .setPricing(
           Number(item.prices.price) / 100,
           item.prices.currency_code,
           item.prices.currency_symbol,
         );
+
+      if (item.images && item.images.length > 0) {
+        builder.setImage(item.images[0].src, item.images[0].alt);
+
+        if (item.images[0].thumbnail) {
+          builder.setThumbnail(item.images[0].thumbnail);
+        }
+      }
 
       const cas = firstMap(findCAS, [item.description, item.short_description]);
 

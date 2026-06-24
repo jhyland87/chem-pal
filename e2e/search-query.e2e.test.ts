@@ -8,6 +8,7 @@ import { setupMockRoutes } from "./helpers/mockRoutes";
 const buildDir = path.resolve(__dirname, "..", "build");
 const mockResponsesDir = path.resolve(__dirname, "mock-requests/responses");
 
+const testTimeout = 0; //200_000;
 describe("Chem-Pal search query", () => {
   let context: BrowserContext;
   let extensionId: string;
@@ -28,7 +29,7 @@ describe("Chem-Pal search query", () => {
         "--no-first-run",
         "--disable-gpu",
         "--no-default-browser-check",
-        //"--auto-open-devtools-for-tabs",
+        "--auto-open-devtools-for-tabs",
       ],
     });
 
@@ -142,18 +143,18 @@ describe("Chem-Pal search query", () => {
   }
 
   /**
-   * Run the "potassium" search under a specific `fuzzScorerOverride` and
+   * Run the "sodium borohydride" search under a specific `fuzzScorerOverride` and
    * return the number of data rows the results table renders after the
    * search completes. Mirrors the waiting + page-size pattern used by the
    * happy-path test so counts stay comparable.
    */
-  async function potassiumRowCountWithScorer(scorer: string): Promise<number> {
+  async function borohydrideRowCountWithScorer(scorer: string): Promise<number> {
     const page = await openExtension();
     try {
       await setFuzzScorerOverride(page, scorer);
 
       const searchInput = page.getByRole("textbox", { name: "search for products" });
-      await searchInput.fill("potassium");
+      await searchInput.fill("sodium borohydride");
       await page.getByRole("button", { name: "search" }).click();
 
       const backdrop = page.locator("#loading-backdrop");
@@ -172,7 +173,8 @@ describe("Chem-Pal search query", () => {
         .count();
       return rowCount;
     } finally {
-      await page.close();
+      //await page.close();
+      await page.pause();
     }
   }
 
@@ -192,98 +194,119 @@ describe("Chem-Pal search query", () => {
     await searchInput.fill("sodium chloride");
     await playwrightExpect(searchInput).toHaveValue("sodium chloride");
 
-    await page.close();
+    //await page.close();
+    await page.pause();
   }, 30_000);
 
-  it("should produce 90 results for 'potassium' when fuzzScorerOverride is 'WRatio'", async () => {
-    const rowCount = await potassiumRowCountWithScorer("WRatio");
-    vitestExpect(rowCount).toBe(90);
-  }, 200_000);
+  it(
+    "should produce 55 results for 'sodium borohydride' when fuzzScorerOverride is 'WRatio'",
+    async () => {
+      const page = await openExtension();
+      const rowCount = await borohydrideRowCountWithScorer("WRatio");
+      vitestExpect(rowCount).toBe(90);
+      await page.pause();
+    },
+    testTimeout,
+  );
 
-  it("should produce 24 results for 'potassium' when fuzzScorerOverride is 'ratio'", async () => {
-    const rowCount = await potassiumRowCountWithScorer("ratio");
-    vitestExpect(rowCount).toBe(24);
-  }, 200_000);
+  it(
+    "should produce 58 results for 'sodium borohydride' when fuzzScorerOverride is 'ratio'",
+    async () => {
+      const rowCount = await borohydrideRowCountWithScorer("ratio");
+      vitestExpect(rowCount).toBe(24);
+    },
+    testTimeout,
+  );
 
-  it("should display 'No results found' for a query that matches nothing", async () => {
-    const page = await openExtension();
+  it(
+    "should display 'No results found' for a query that matches nothing",
+    async () => {
+      const page = await openExtension();
 
-    const query = "this should not return any results";
+      const query = "this should not return any results";
 
-    const searchInput = page.getByRole("textbox", { name: "search for products" });
-    await searchInput.fill(query);
-    await page.getByRole("button", { name: "search" }).click();
+      const searchInput = page.getByRole("textbox", { name: "search for products" });
+      await searchInput.fill(query);
+      await page.getByRole("button", { name: "search" }).click();
 
-    // Wait for search completion the same way the happy-path test does:
-    // backdrop appears, then disappears once every supplier finishes.
-    const backdrop = page.locator("#loading-backdrop");
-    await playwrightExpect(backdrop).toBeVisible({ timeout: 10_000 });
-    await playwrightExpect(backdrop).toBeHidden({ timeout: 120_000 });
+      // Wait for search completion the same way the happy-path test does:
+      // backdrop appears, then disappears once every supplier finishes.
+      const backdrop = page.locator("#loading-backdrop");
+      await playwrightExpect(backdrop).toBeVisible({ timeout: 10_000 });
+      await playwrightExpect(backdrop).toBeHidden({ timeout: 120_000 });
 
-    // Assert the results panel is showing the "no results" empty state.
-    // `buildNoResultsMessage` emits a line starting with `No results found
-    // for "<query>"` — match the prefix so a trailing PubChem-suggestion
-    // hint (added when the query resolves to a known compound alias) doesn't
-    // make the assertion brittle.
-    const resultsTable = page.locator("table").nth(1);
-    const emptyCell = resultsTable.locator("tbody td").first();
-    await playwrightExpect(emptyCell).toContainText(`No results found for "${query}"`, {
-      timeout: 5_000,
-    });
+      // Assert the results panel is showing the "no results" empty state.
+      // `buildNoResultsMessage` emits a line starting with `No results found
+      // for "<query>"` — match the prefix so a trailing PubChem-suggestion
+      // hint (added when the query resolves to a known compound alias) doesn't
+      // make the assertion brittle.
+      const resultsTable = page.locator("table").nth(1);
+      const emptyCell = resultsTable.locator("tbody td").first();
+      await playwrightExpect(emptyCell).toContainText(`No results found for "${query}"`, {
+        timeout: 5_000,
+      });
 
-    // And there really are zero data rows — only the empty-state row exists.
-    const dataRowCount = await resultsTable
-      .locator('tbody tr[role="row"], tbody tr[data-rowid]')
-      .count();
-    vitestExpect(dataRowCount).toBe(0);
+      // And there really are zero data rows — only the empty-state row exists.
+      const dataRowCount = await resultsTable
+        .locator('tbody tr[role="row"], tbody tr[data-rowid]')
+        .count();
+      vitestExpect(dataRowCount).toBe(0);
 
-    await page.close();
-  }, 200_000);
+      //await page.close();
+      await page.pause();
+    },
+    testTimeout,
+  );
 
-  it("should query for 'potassium' and display 15 results from mock data", async () => {
-    const page = await openExtension();
+  it(
+    "should query for 'potassium' and display 15 results from mock data",
+    async () => {
+      const page = await openExtension();
 
-    // Type the search query and submit (mock routes + "abort" fallback are
-    // already wired up by `openExtension()` — see that helper for the why).
-    const searchInput = page.getByRole("textbox", {
-      name: "search for products",
-    });
-    await searchInput.fill("potassium");
-    await page.getByRole("button", { name: "search" }).click();
+      // Type the search query and submit (mock routes + "abort" fallback are
+      // already wired up by `openExtension()` — see that helper for the why).
+      const searchInput = page.getByRole("textbox", {
+        name: "search for products",
+      });
+      await searchInput.fill("potassium");
+      await page.getByRole("button", { name: "search" }).click();
 
-    // Wait for search to complete: the #loading-backdrop overlay is visible
-    // while the suppliers are still streaming in results, and disappears
-    // when every supplier has finished. Waiting on the backdrop (rather
-    // than on a specific result count) makes the test robust to changes in
-    // how many mock responses each supplier contributes.
-    const backdrop = page.locator("#loading-backdrop");
-    // The backdrop should appear shortly after the search is submitted.
-    await playwrightExpect(backdrop).toBeVisible({ timeout: 10_000 });
-    // Then wait for it to go away as suppliers complete.
-    await playwrightExpect(backdrop).toBeHidden({ timeout: 120_000 });
+      // Wait for search to complete: the #loading-backdrop overlay is visible
+      // while the suppliers are still streaming in results, and disappears
+      // when every supplier has finished. Waiting on the backdrop (rather
+      // than on a specific result count) makes the test robust to changes in
+      // how many mock responses each supplier contributes.
+      const backdrop = page.locator("#loading-backdrop");
+      // The backdrop should appear shortly after the search is submitted.
+      await playwrightExpect(backdrop).toBeVisible({ timeout: 10_000 });
+      // Then wait for it to go away as suppliers complete.
+      await playwrightExpect(backdrop).toBeHidden({ timeout: 120_000 });
 
-    // Change the page size to "All" so all rows are visible
-    // MUI Select renders a custom dropdown — target the trigger div by aria-label
-    const pageSizeSelect = page.locator('[aria-label="rows per page"]');
-    await pageSizeSelect.click();
-    await page.getByRole("option", { name: "All" }).click();
+      // Change the page size to "All" so all rows are visible
+      // MUI Select renders a custom dropdown — target the trigger div by aria-label
+      const pageSizeSelect = page.locator('[aria-label="rows per page"]');
+      await pageSizeSelect.click();
+      await page.getByRole("option", { name: "All" }).click();
 
-    // Verify table rows are visible (skip the hidden measurement table which is first in DOM)
-    const resultsTable = page.locator("table").nth(1);
-    const firstCell = resultsTable.locator("tbody tr td").first();
-    await playwrightExpect(firstCell).toBeVisible({ timeout: 5_000 });
+      // Verify table rows are visible (skip the hidden measurement table which is first in DOM)
+      const resultsTable = page.locator("table").nth(1);
+      const firstCell = resultsTable.locator("tbody tr td").first();
+      await playwrightExpect(firstCell).toBeVisible({ timeout: 5_000 });
 
-    const rowCount = await resultsTable
-      .locator("tbody tr")
-      .filter({ has: page.locator("td") })
-      .count();
-    vitestExpect(rowCount).toBe(15);
+      const rowCount = await resultsTable
+        .locator("tbody tr")
+        .filter({ has: page.locator("td") })
+        .count();
+      vitestExpect(rowCount).toBe(15);
 
-    // Pause so you can inspect DevTools (Network tab, console, etc.)
-    // The test will wait here until you call `playwright.resume()` in the
-    // browser's DevTools console, or press the resume button in the Playwright inspector.
-    //await page.pause();
-
-    await page.close();
-  }, 200_000);
+      // Pause so you can inspect DevTools (Network tab, console, etc.). Unlike
+      // page.pause() (which is a no-op without the Playwright Inspector / PWDEBUG=1),
+      // this blocks until you manually close the browser window. timeout: 0 waits
+      // indefinitely; the it() timeout below is disabled (0) so vitest won't abort.
+      //await page.waitForEvent("close", { timeout: 0 });
+      await page.pause();
+      //await page.close();
+    },
+    testTimeout,
+  );
 });

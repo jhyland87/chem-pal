@@ -122,7 +122,7 @@ export function parsePrice(price: string): ParsedPrice | void {
   return {
     currencyCode,
     currencySymbol,
-    price: parseFloat(bareAmount),
+    price: Number(bareAmount),
   } satisfies ParsedPrice;
 }
 
@@ -239,7 +239,7 @@ export function getCurrencyCodeFromLocation(location: CountryCode): CurrencyCode
  */
 export async function toUSD(amount: number, fromCurrencyCode: CurrencyCode): Promise<number> {
   const rate = await getCurrencyRate(fromCurrencyCode, "USD");
-  return parseFloat(Number(amount * rate).toFixed(2));
+  return Number(Number(amount * rate).toFixed(2));
 }
 
 /**
@@ -270,5 +270,5 @@ export async function USDto(amount: number, toCurrencyCode: CurrencyCode): Promi
   );
   if (!currencyData) return 0;
   const rate = await getCurrencyRate("USD", toCurrencyCode);
-  return parseFloat(Number(amount * rate).toFixed(currencyData.exponent));
+  return Number(Number(amount * rate).toFixed(currencyData.exponent));
 }

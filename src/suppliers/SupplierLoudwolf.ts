@@ -22,10 +22,7 @@ import { SupplierBase } from "./SupplierBase";
  * ```
  * @source
  */
-export class SupplierLoudwolf
-  extends SupplierBase<Partial<Product>, Product>
-  implements ISupplier
-{
+export class SupplierLoudwolf extends SupplierBase<Partial<Product>, Product> implements ISupplier {
   // Display name of the supplier used for UI and logging
   public readonly supplierName: string = "Loudwolf";
 
@@ -204,7 +201,7 @@ export class SupplierLoudwolf
       const title = element.querySelector("div.caption h4 a")?.textContent?.trim() || "";
 
       return builder
-        .setBasicInfo(title, url.toString(), this.supplierName)
+        .setBasicInfo(title, String(url), this.supplierName)
         .setDescription(
           element.querySelector("div.caption > p:nth-child(2)")?.textContent?.trim() || "",
         )

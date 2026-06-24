@@ -381,7 +381,7 @@ export abstract class SupplierBaseAmazon
 
       // Extracting the star rating
       //const starRatingElement = documentBody.querySelector("span.a-icon-alt");
-      //const starRating = starRatingElement ? parseFloat(starRatingElement.textContent?.split(" ")[0] || "0") : 0;
+      //const starRating = starRatingElement ? Number(starRatingElement.textContent?.split(" ")[0] || "0") : 0;
 
       // Extracting the total ratings
       //const totalRatingsElement = documentBody.querySelector("span.a-size-base");

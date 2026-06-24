@@ -28,7 +28,7 @@ export function md5sum<T>(input: NonNullable<T>): string | T {
   }
 
   if (typeof input === "number") {
-    return md5(input.toString());
+    return md5(String(input));
   }
 
   if (typeof input !== "string") {
@@ -36,6 +36,76 @@ export function md5sum<T>(input: NonNullable<T>): string | T {
   }
 
   return md5(input);
+}
+
+/**
+ * Builds a URL-style query string from a plain object.
+ * Keys are emitted in insertion order. Array values are comma-joined.
+ *
+ * @param obj - Object whose entries become `key=value` pairs
+ * @returns Query string without a leading `?`
+ *
+ * @example
+ * ```typescript
+ * objectToQueryString({ a: 1, b: [2, 3] }); // "a=1&b=2,3"
+ * objectToQueryString({ foo: "bar" });      // "foo=bar"
+ * ```
+ * @source
+ */
+export function objectToQueryString(obj: Record<string, unknown>): string {
+  let qs = "";
+  for (const key of Object.keys(obj)) {
+    const value = obj[key];
+    const serialized = value == null ? "" : Array.isArray(value) ? value.join(",") : String(value);
+    const part = `${key}=${serialized}`;
+    qs = qs ? `${qs}&${part}` : part;
+  }
+  return qs;
+}
+
+/**
+ * Base64-encodes a UTF-8 string (raw bytes, not URI-encoded).
+ * ASCII-only input uses `btoa` directly.
+ *
+ * @param str - String to encode
+ * @returns Base64 representation
+ *
+ * @example
+ * ```typescript
+ * base64EncodeUtf8("hello"); // "aGVsbG8="
+ * base64EncodeUtf8("098f6bcd4621d373cade4e832627b4f6"); // MD5 hex digest
+ * ```
+ * @source
+ */
+export function base64EncodeUtf8(str: string): string {
+  if (/^[\x00-\x7f]*$/.test(str)) {
+    return btoa(str);
+  }
+
+  const bytes = new TextEncoder().encode(str);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+/**
+ * Opaque base-36 timestamp string (milliseconds + random suffix).
+ * Used by some suppliers for cache-busting request IDs.
+ *
+ * @param timestamp - The timestamp to use (defaults to current time)
+ * @returns Base-36 timestamp string
+ *
+ * @example
+ * ```typescript
+ * base36Timestamp(); // e.g. "m5x2k1abc4"
+ * base36Timestamp(Date.now()); // e.g. "m5x2k1abc4"
+ * ```
+ * @source
+ */
+export function base36Timestamp(timestamp: number = Date.now()): string {
+  return timestamp.toString(36) + Math.random().toString(36).slice(3);
 }
 
 /**
@@ -578,4 +648,22 @@ export function zodAddActualValueToIssues<T extends PathedIssue>(
     ...issue,
     actual: getPath(obj, issue.path),
   }));
+}
+
+/**
+ * Checks if a string is a valid molecular formula.
+ * @see https://regex101.com/r/YTOdbq/1
+ * @param moleform - The string to check
+ * @returns True if the string is a valid molecular formula, false otherwise
+ * @example
+ * ```typescript
+ * isMoleForm("C12H22O11"); // true
+ * isMoleForm("12H22O11"); // false
+ * isMoleForm("C<sub>11</sub>H<sub>8</sub>I<sub>3</sub>N<sub>2</sub>NaO<sub>4</sub>") // true
+ * ```
+ * @source
+ */
+export function isMoleForm(moleform: string): boolean {
+  const pattern = new RegExp(/^(?:[A-Z][a-z]?(?:(?:<sub>)?[1-9]\d*(?:<\/sub>)?)?)+$/);
+  return pattern.test(moleform);
 }

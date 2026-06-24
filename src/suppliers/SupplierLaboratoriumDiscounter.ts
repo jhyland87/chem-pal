@@ -79,12 +79,7 @@ export class SupplierLaboratoriumDiscounter
   public readonly country: CountryCode = "NL";
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = [
-    "mastercard",
-    "visa",
-    "paypal",
-    "banktransfer",
-  ];
+  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa", "paypal", "ach"];
 
   // Override the base `ratio` default: this catalog's titles embed the queried
   // compound inside longer descriptive strings (e.g. "Benzyltriethylammonium
@@ -114,17 +109,6 @@ export class SupplierLaboratoriumDiscounter
     "accept-language": "en-US,en;q=0.6",
     "cache-control": "no-cache",
     pragma: "no-cache",
-    "sec-ch-ua": '"Brave";v="135\', "Not-A.Brand";v="8\', "Chromium";v="135"',
-    "sec-ch-ua-arch": '"arm"',
-    "sec-ch-ua-full-version-list":
-      '"Brave";v="135.0.0.0\', "Not-A.Brand";v="8.0.0.0\', "Chromium";v="135.0.0.0"',
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-model": '""',
-    "sec-ch-ua-platform": '"macOS"',
-    "sec-fetch-dest": "empty",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin",
-    "sec-gpc": "1",
     "x-requested-with": "XMLHttpRequest",
     /* eslint-enable */
   };
@@ -168,7 +152,7 @@ export class SupplierLaboratoriumDiscounter
   protected makeQueryParams(limit?: number): LaboratoriumDiscounterSearchParams {
     return {
       format: "json",
-      limit: limit?.toString() ?? "100",
+      limit: String(limit ?? 100),
     };
   }
 
@@ -344,7 +328,7 @@ export class SupplierLaboratoriumDiscounter
     const path = urlPath.startsWith("en/") ? urlPath : `en/${urlPath}`;
     const url = new URL(path, this.baseURL);
     const productResponse = await this.httpGetHtml({
-      path: url.toString(),
+      path: String(url),
     });
     if (!productResponse) {
       this.logger.warn("No product response", { url });
@@ -383,7 +367,7 @@ export class SupplierLaboratoriumDiscounter
           Object.assign(acc, data);
           break;
         case "price":
-          acc.price = parseFloat(meta.getAttribute("content") ?? "");
+          acc.price = Number(meta.getAttribute("content") ?? "");
           break;
         case "priceCurrency":
           acc.currencyCode = meta.getAttribute("content");

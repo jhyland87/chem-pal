@@ -694,7 +694,7 @@ export function isCAS(cas: unknown): cas is CAS<string> {
   const segB = match.groups.seg_b;
   const segChecksum = match.groups.seg_checksum;
 
-  if (parseInt(segA) === 0 && parseInt(segB) === 0) return false;
+  if (Number(segA) === 0 && Number(segB) === 0) return false;
 
   const segABCalc = Array.from(segA + segB)
     .map(Number)

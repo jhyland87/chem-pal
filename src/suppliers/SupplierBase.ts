@@ -112,6 +112,16 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   public abstract readonly paymentMethods: PaymentMethod[];
 
   /**
+   * The countries to which the supplier ships.
+   * @example
+   * ```typescript
+   * public readonly shipsTo: CountryCode[] = ["US", "CN", "NL"];
+   * ```
+   * @source
+   */
+  protected readonly shipsTo?: CountryCode[];
+
+  /**
    * Optional external API hostname used by some suppliers (e.g., Typesense,
    * Searchanise). When set, automatically included in `requiredHosts` for
    * permission checks.
@@ -688,16 +698,32 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     params,
     headers,
   }: RequestOptions): Promise<Maybe<Response>> {
+    this.logger.log("httpPost| Requesting:", {
+      path,
+      host,
+      body,
+      params,
+      headers,
+    });
     const method = "POST";
     const mode = "cors";
     const referrer = this.baseURL;
     const referrerPolicy = "strict-origin-when-cross-origin";
     const signal = this.controller.signal;
-    const bodyStr = typeof body === "string" ? body : (JSON.stringify(body) ?? null);
     const headersObj = new Headers({
       ...this.headers,
       ...headers,
     });
+
+    let bodyStr = null;
+    if (body instanceof FormData) {
+      headersObj.set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+      bodyStr = body;
+    } else if (typeof body === "string") {
+      bodyStr = body;
+    } else if (typeof body === "object" && body !== null) {
+      bodyStr = JSON.stringify(body);
+    }
     const url = this.href(path, params, host);
 
     const requestObj = new Request(url, {
@@ -717,12 +743,56 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     if (!isHttpResponse(httpResponse) || !httpResponse.ok) {
       const badResponse = await httpResponse.text();
       this.logger.error("Invalid POST response: ", badResponse);
-      throw new TypeError(`Invalid POST response: ${httpResponse?.toString()}`);
+      throw new TypeError(`Invalid POST response: ${String(httpResponse)}`);
     }
 
     return httpResponse;
   }
 
+  /**
+   * Sends a POST request with the body encoded as `multipart/form-data`.
+   * Converts the given object into a `FormData` instance (one field per
+   * key/value pair) before delegating to `httpPost`.
+   * @param options - The request configuration options. `body` must be a non-null object.
+   * @returns Promise resolving to the Response object or void if the request fails
+   * @throws TypeError - If `body` is not an object, or the response is not a valid HTTP response
+   * @example
+   * ```typescript
+   * const response = await this.httpPostFormData({
+   *   path: "/api/v1/cart",
+   *   body: { productId: "123", quantity: "2" },
+   * });
+   * ```
+   * @source
+   */
+  protected async httpPostFormData({
+    path,
+    host,
+    body,
+    params,
+    headers,
+  }: RequestOptions): Promise<Maybe<Response>> {
+    if (typeof body !== "object" || body === null) {
+      throw new TypeError("httpPostFormData| Body must be an object");
+    }
+
+    headers = {
+      ...headers,
+      "Content-Type": "application/x-www-form-urlencoded",
+    };
+    const formData = new FormData();
+    for (const [key, value] of Object.entries(body)) {
+      formData.append(key, value);
+    }
+    const httpResponse = await this.httpPost({ path, host, body: formData, params, headers });
+    if (!isHttpResponse(httpResponse) || !httpResponse.ok) {
+      const badResponse = await httpResponse?.text();
+      this.logger.error("Invalid POST response: ", badResponse);
+      throw new TypeError(`Invalid POST response: ${String(httpResponse)}`);
+    }
+    this.logger.log("httpPostFormData| Successfully sent POST request to:", path);
+    return httpResponse;
+  }
   /**
    * Sends a POST request and returns the response as a JSON object.
    *
@@ -1590,7 +1660,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       ).toString();
     }
 
-    return href.toString();
+    return String(href);
   }
 
   /**

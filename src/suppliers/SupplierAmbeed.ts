@@ -1,8 +1,20 @@
+import { getCookie } from "@/helpers/cookies";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
-import { mapDefined } from "@/helpers/utils";
+import {
+  base36Timestamp,
+  base64EncodeUtf8,
+  mapDefined,
+  md5sum,
+  objectToQueryString,
+} from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
-import { assertIsAmbeedProductListResponse } from "@/utils/typeGuards/ambeed";
+import {
+  assertIsAmbeedGetSearchProductAndRecommendedProductsByCASResponse,
+  assertIsAmbeedProductListResponse,
+  isAmbeedProductPriceResponse,
+} from "@/utils/typeGuards/ambeed";
+import type { JsonValue } from "type-fest";
 import { SupplierBase } from "./SupplierBase";
 
 /**
@@ -12,6 +24,8 @@ import { SupplierBase } from "./SupplierBase";
  * Ambeed seems to have a custom API located at `https://www.ambeed.com/webapi/v1`. All the
  * GET endpoints seem to require a `params` query parameter, which is a base64 encoded JSON
  * string.
+ * They only seem to ship to three locations: USA, China and two places in Amsterdam. Each
+ * location has its own quantity
  *
  * ```js
  * const params = btoa(JSON.stringify({"keyword":"sodium","country":"United States","one_menu_id":0,"one_menu_life_id":0,"menu_id":0}));
@@ -36,14 +50,81 @@ export class SupplierAmbeed
   // The country code of the supplier.
   public readonly country: CountryCode = "CN";
 
+  // The countries to which the supplier ships.
+  public readonly shipsTo: CountryCode[] = [
+    "AR",
+    "BR",
+    "CA",
+    "MX",
+    "US",
+    "AT",
+    "BE",
+    "BG",
+    "HR",
+    "CY",
+    "CZ",
+    "DK",
+    "EE",
+    "FI",
+    "FR",
+    "DE",
+    "GR",
+    "HU",
+    "IE",
+    "IT",
+    "LV",
+    "LI",
+    "LT",
+    "LU",
+    "MT",
+    "NL",
+    "NO",
+    "PL",
+    "PT",
+    "RO",
+    "SK",
+    "SI",
+    "ES",
+    "SE",
+    "CH",
+    "TR",
+    "GB",
+    "AU",
+    "CN",
+    "IN",
+    "ID",
+    "JP",
+    "KR",
+    "MY",
+    "NZ",
+    "PH",
+    "SG",
+    "TH",
+    "VN",
+    "EG",
+    "IL",
+  ] as const;
+
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = [
+    "mastercard",
+    "visa",
+    "ach",
+    "moneyorder",
+    "check",
+  ] as const;
 
   // Override the type of queryResults to use our specific type
   protected queryResults: Array<AmbeedProductObject> = [];
 
   // Used to keep track of how many requests have been made to the supplier.
   protected httpRequstCount: number = 0;
+
+  /** The sign secret for the Ambeed API. */
+  protected signSecret: string = this.calculateSignSecret();
+
+  /** The XSRF token for the Ambeed API. */
+  protected xsrfToken: string = "";
 
   // HTTP headers used as a basis for all queries.
   protected headers: HeadersInit = {
@@ -60,21 +141,13 @@ export class SupplierAmbeed
     "accept-language": "en-US,en;q=0.6",
     "cache-control": "no-cache",
     pragma: "no-cache",
-    "sec-ch-ua": '"Brave";v="135\', "Not-A.Brand";v="8\', "Chromium";v="135"',
-    "sec-ch-ua-arch": '"arm"',
-    "sec-ch-ua-full-version-list":
-      '"Brave";v="135.0.0.0\', "Not-A.Brand";v="8.0.0.0\', "Chromium";v="135.0.0.0"',
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-model": '""',
-    "sec-ch-ua-platform": '"macOS"',
-    "sec-fetch-dest": "empty",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin",
-    "sec-gpc": "1",
     "x-requested-with": "XMLHttpRequest",
     /* eslint-enable */
   };
 
+  /**
+   * Map of encoded price characters to their corresponding decoded characters.
+   */
   protected encodedPriceChars: Map<string, string> = new Map([
     ["\u00b6", "."],
     ["\u0142", "$"],
@@ -90,19 +163,162 @@ export class SupplierAmbeed
     ["\u00ee", "9"],
   ]);
 
+  /**
+   * Calculates the sign secret for the Ambeed API.
+   * @returns The sign secret
+   * @example
+   * ```js
+   * console.log(this.calculateSignSecret());
+   * // "6587ab544f254fe4a5f64a41531b95b2"
+   * ```
+   * @source
+   */
+  protected calculateSignSecret(): string {
+    /** Obfuscation alphabet constants from Ambeed's `f1()` signer. */
+    const forwardAlphabet = "abcdefghijklmnopqrstuvwxyz";
+    const reversedAlphabet = "zyxwvutsrqponmlkjihgfedcba";
+    const embeddedFragmentA = "7ab544f2"; // RC4 0x6a, key "&$SR"
+    const embeddedFragmentB = "fe4a5f64a41531b"; // RC4 0x80, key "W61u"
+    return (
+      String(forwardAlphabet.indexOf("g")) + // "6"
+      String(forwardAlphabet.indexOf("f")) + // "5"
+      String(reversedAlphabet.indexOf("y") * 8) + // "8"
+      embeddedFragmentA +
+      String(Math.pow(reversedAlphabet.indexOf("t"), 2) + 18) + // "54"
+      embeddedFragmentB +
+      String(Math.pow(forwardAlphabet.indexOf("k"), 2) - 5) + // "95"
+      "b2"
+    );
+  }
+
+  /**
+   * Sets the XSRF token if it's not already set. Checks the browser cookies
+   * first, and if the token isn't there, makes a request to the base URL to
+   * have the backend plant it, then reads it back from the cookies.
+   * @example
+   * ```js
+   * await this.setXsrfToken();
+   * console.log(this.xsrfToken);
+   * // "2|d4c7158a|d58bc32de23d069be88c542ddebdacb5|1782230077"
+   * ```
+   * @source
+   */
+  protected async setXsrfToken(): Promise<void> {
+    if (this.xsrfToken) {
+      return;
+    }
+
+    let cookie = await getCookie(this.baseURL, "_xsrf");
+    if (cookie) {
+      this.xsrfToken = cookie.value;
+      return;
+    }
+
+    await this.httpGetHtml({
+      path: "/",
+    });
+
+    cookie = await getCookie(this.baseURL, "_xsrf");
+    if (cookie) {
+      this.xsrfToken = cookie.value;
+      return;
+    }
+
+    this.xsrfToken = "";
+    return;
+  }
+
+  /**
+   * Makes the query params for the Ambeed API.
+   * @param query - The query to make the query params for
+   * @returns The query params
+   * @todo Add
+   * @example
+   * ```js
+   * console.log(this.makeQueryParams("sodium chloride"));
+   * // "btoa(JSON.stringify({ keyword: "sodium chloride" }))"
+   * ```
+   * @source
+   */
   protected makeQueryParams(query: string): Base64String {
     // btoa returns a plain string; cast brands it as Base64String (a nominal Brand type).
     return btoa(JSON.stringify({ keyword: query })) as Base64String;
   }
 
   /**
+   * Makes the query params for the Ambeed API for product price.
+   * @param proid - The product ID
+   * @returns The query params
+   * @example
+   * ```js
+   * console.log(this.makeProductPriceParams("P000640099"));
+   * // "btoa(JSON.stringify({
+   * //   timestamp: "m5x2k1abc4",
+   * //   proid: "P000640099",
+   * //   _: this.getSign({
+   * //     timestamp: "m5x2k1abc4",
+   * //     proid: "P000640099",
+   * //   }, 1),
+   * //   __: ["timestamp", "proid"]
+   * // }))"
+   * ```
+   * @source
+   */
+  protected makeProductPriceParams(proid: string, timestamp: number = Date.now()): Base64String {
+    const payload = {
+      timestamp,
+      proid,
+    };
+
+    const encodedData = {
+      ...payload,
+      _: this.getSign(payload, 1),
+      __: ["timestamp", "proid"],
+    };
+
+    return btoa(JSON.stringify(encodedData)) as Base64String;
+  }
+
+  /**
+   * Ambeed cache-busting timestamp used in signed API payloads.
+   * @returns Base-36 timestamp string
+   * @source
+   */
+  protected getEncodedDate(timestamp: number = Date.now()): string {
+    return base36Timestamp(timestamp);
+  }
+
+  /**
+   * Ambeed request signature (deobfuscated from `getSign` in dev/ambeed3.js).
+   *
+   * @param data - Mode `1`: plain object signed as a query string. Other modes: string input.
+   * @param mode - `1` → Base64(MD5_hex(query + sign=secret)); else → MD5_hex(string + secret)
+   * @returns Signature string
+   * @source
+   */
+  protected getSign(data: Record<string, unknown> | string, mode: 0 | 1): string {
+    if (mode === 1) {
+      if (typeof data === "string") {
+        throw new Error("getSign mode 1 requires a plain object");
+      }
+
+      let query = objectToQueryString(data);
+      query += (query ? "&sign=" : "sign=") + this.signSecret;
+      return base64EncodeUtf8(md5sum(query));
+    }
+
+    return md5sum(String(data) + this.signSecret);
+  }
+
+  /**
+   *
    * Ambeed encodes all the prices in a different font (newwebfont/am-new.woff) than the rest
    * of the page which is stored as unicode characters in the API and their weird font
    * characters in the source, but displays just fine in the UI. For example, the API response
    * will have the price as `\u0142\u00c7\u00cd\u00a7\u00b6\u00ca\u00ca`, which in the source
    * is `łÇÍ§¶ÊÊ`, but in the UI is displayed as `$143.00`.
    *
-   * This conersion is just a simple character map lookup, which I have stored at this.encodedPriceChars.
+   * This conversion is just a simple character map lookup, which is stored at this.encodedPriceChars.
    *
    * @param encoded - The encoded price string
    * @returns The decoded price string
@@ -231,6 +447,10 @@ export class SupplierAmbeed
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
+    await this.setXsrfToken();
+    await this.setCountryCookie("United States");
+    await this.getCountryCookie();
+
     const searchRequest: unknown = await this.httpGetJson({
       path: "webapi/v1/productlistbykeyword",
       params: {
@@ -259,7 +479,7 @@ export class SupplierAmbeed
   }
 
   /**
-   * Initialize product builders from Laboratorium Discounter search response data.
+   * Initialize product builders from Ambeed search response data.
    * Transforms product listings into ProductBuilder instances, handling:
    * - Basic product information (title, URL, supplier)
    * - Product descriptions and content
@@ -331,7 +551,7 @@ export class SupplierAmbeed
           quantity: quantity.quantity,
           uom: quantity.uom,
           sku: variant.pr_am,
-          id: variant.pr_id.toString(),
+          id: String(variant.pr_id),
         });
       }
 
@@ -343,17 +563,57 @@ export class SupplierAmbeed
         return;
       }
 
-      // mainVariant is a Variant from this builder; its fields are a subset of Product.
-      productBuilder.setData(mainVariant as Partial<Product>);
-
       return productBuilder
+        .setData(mainVariant as Partial<Product>)
         .setBasicInfo(product.p_proper_name3, `/products/${product.s_url}`, this.supplierName)
         .setID(product.p_id)
         .setUUID(product.p_am)
+        .setImage(product.p_proimg ?? "")
+        .setPurity(product.p_purity ?? "")
+        .setMoleweight(product.p_moleweight ?? "")
+        .setMoleform(product.p_moleform ?? "")
         .setDescription(product.p_name_en)
         .setSupplierCountry(this.country)
-        .setSupplierShipping(this.shipping);
+        .setSupplierShipping(this.shipping)
+        .setCAS(product.p_cas);
     });
+  }
+
+  /**
+   * Sets the country cookie for the Ambeed API.
+   * @param country - The country to set the cookie for
+   * @returns The country cookie
+   * @source
+   */
+  protected async setCountryCookie(country: string = "United States"): Promise<void> {
+    await this.httpPostJson({
+      path: "/webapi/v1/countrycookie",
+      params: {
+        params: btoa(JSON.stringify({ country })),
+      },
+      headers: {
+        "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+      },
+    });
+  }
+
+  /**
+   * Gets the country cookie currently set for the Ambeed API.
+   * @returns The country cookie response, or void if the request fails
+   * @example
+   * ```js
+   * const countryCookie = await this.getCountryCookie();
+   * console.log(countryCookie);
+   * // { time: "...", lang: "en", source: 1, code: 200, value: { country: "United States" } }
+   * ```
+   * @source
+   */
+  protected async getCountryCookie(): Promise<Maybe<JsonValue>> {
+    const countryCookie = await this.httpGetJson({
+      path: "/webapi/v1/countrycookie",
+    });
+
+    return countryCookie;
   }
 
   /**
@@ -366,6 +626,65 @@ export class SupplierAmbeed
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
+    // /webapi/v1/product_price?params=btoa(JSON.stringify({ proid: "P000640099" }))
+    const productPriceParams = this.makeProductPriceParams(product.get("id"));
+
+    const productPriceResponse = await this.httpPostJson({
+      path: `/webapi/v1/product_price`,
+      params: {
+        num: this.getEncodedDate(),
+      },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+      },
+      body: new URLSearchParams({
+        params: productPriceParams,
+        _xsrf: this.xsrfToken,
+      }).toString(),
+    });
+
+    if (!isAmbeedProductPriceResponse(productPriceResponse)) {
+      this.logger.warn("Invalid Ambeed product price response", {
+        productPriceParams,
+        productPriceResponse,
+      });
+      return product;
+    }
+
+    this.logger.log("productPriceResponse", productPriceResponse);
     return product;
+  }
+
+  /**
+   * Fetches the product matched by a CAS number along with Ambeed's recommended
+   * products for that CAS.
+   * @param cas - The CAS number to look up
+   * @returns The validated CAS search response
+   * @throws Error if the response does not match the expected structure
+   * @example
+   * ```js
+   * const response = await this.getSearchProductAndRecommendedProductsByCAS("108-24-7");
+   * console.log(response.value.search_pro_dict.p_name_en);
+   * // "Acetic anhydride"
+   * console.log(response.value.r_pro_list.length);
+   * // 12
+   * ```
+   * @source
+   */
+  protected async getSearchProductAndRecommendedProductsByCAS(
+    cas: string,
+  ): Promise<AmbeedGetSearchProductAndRecommendedProductsByCASResponse> {
+    const response = await this.httpPostJson({
+      path: "/webapi/v1/get_search_product_and_recommended_products_by_cas",
+      params: {
+        params: btoa(JSON.stringify({ cas })),
+      },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+      },
+    });
+
+    assertIsAmbeedGetSearchProductAndRecommendedProductsByCASResponse(response);
+    return response;
   }
 }

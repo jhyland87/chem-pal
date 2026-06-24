@@ -54,6 +54,12 @@ declare global {
     /** Brief HTML description of the product */
     short_description: string;
 
+    /** Average rating for the product */
+    average_rating: string;
+
+    /** Number of reviews for the product */
+    review_count: number;
+
     /** URL to the product's page on the store */
     permalink: string;
 
@@ -192,6 +198,28 @@ declare global {
 
     /** Formatted weight of the product */
     formatted_weight: string | null;
+
+    /** Images of the product */
+    images: {
+      /** Unique identifier for the image */
+      id: number;
+      /** URL of the image */
+      src: string;
+      /** Thumbnail URL of the image */
+      thumbnail: string;
+      /** Srcset of the image */
+      srcset: string;
+      /** Sizes of the image */
+      sizes: string;
+      /** Thumbnail srcset of the image */
+      thumbnail_srcset: string;
+      /** Thumbnail sizes of the image */
+      thumbnail_sizes: string;
+      /** Name of the image */
+      name: string;
+      /** Alt text of the image */
+      alt: string;
+    }[];
   }
 
   /**
