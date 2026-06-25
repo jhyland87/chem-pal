@@ -199,18 +199,29 @@ export class ProductBuilder<T extends Product> {
    * builder.setFormula('foobar K<sub>2</sub>Cr<sub>2</sub>O<sub>7</sub> baz');
    * // sets this.product.formula to "K₂Cr₂O₇"
    * builder.setFormula("H<sub>2</sub>SO<sub>4</sub>");
-   * // sets this.product.formula to "H₂SO ₄"
+   * // sets this.product.formula to "H₂SO₄"
+   * builder.setFormula("NaBH4");
+   * // sets this.product.formula to "NaBH4" (clean formula stored as-is)
    * builder.setFormula("Just some text");
-   * // sets this.product.formula to undefined
+   * // leaves this.product.formula unset
    * ```
    * @source
    */
   setFormula(formula?: string): ProductBuilder<T> {
-    if (formula && typeof formula === "string" && formula.trim().length > 0) {
-      const parsedResult = findFormulaInHtml(formula);
-      if (parsedResult) {
-        this.product.formula = parsedResult;
-      }
+    if (!formula || typeof formula !== "string" || formula.trim().length === 0) {
+      return this;
+    }
+    const trimmed = formula.trim();
+    // A clean molecular formula with no markup (including ones containing "1"
+    // such as "C12H22O11", which findFormulaInHtml mishandles) is stored as-is.
+    if (!trimmed.includes("<sub>") && isMoleForm(trimmed)) {
+      this.product.formula = trimmed;
+      return this;
+    }
+    // Otherwise extract and subscript-format a formula from HTML/surrounding text.
+    const parsedResult = findFormulaInHtml(trimmed);
+    if (parsedResult) {
+      this.product.formula = parsedResult;
     }
     return this;
   }
@@ -1008,26 +1019,6 @@ export class ProductBuilder<T extends Product> {
     return this;
   }
 
-  /**
-   * Sets the molecular formula for the product.
-   * @param moleform - The molecular formula to set
-   * @returns The builder instance for method chaining
-   * @example
-   * ```typescript
-   * builder.setMoleform("C<sub>12</sub>H<sub>6</sub>NNaO<sub>4</sub>") // accepted
-   * Builder.setMoleform("C12H6NNaO4") // accepted
-   * builder.setMoleform("C12H22O11");// fails because it's not a valid molecular formula
-   * builder.setMoleform("Just some text"); // fails because it's not a valid molecular formula
-   * builder.setMoleform(123); // fails because it's not a string
-   * ```
-   * @source
-   */
-  setMoleform(moleform: string): ProductBuilder<T> {
-    if (typeof moleform === "string" && moleform.trim().length > 0 && isMoleForm(moleform)) {
-      this.product.moleform = moleform;
-    }
-    return this;
-  }
 
   /**
    * Get a specific property from the product.

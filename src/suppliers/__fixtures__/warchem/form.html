@@ -1,0 +1,277 @@
+<form action="/" method="post" id="FormKartaProduktu" class="cmxform" autocomplete="off">
+  <div id="CechyProduktu">
+    <script>
+      var opcje = [];
+      opcje['x1-10'] = '31.71;39.00;0;0;0.00';
+      opcje['x1-11'] = '58.54;72.00;0;0;0.00';
+      opcje['x1-12'] = '106.50;131.00;0;0;0.00';
+      opcje['x1-7'] = '6.50;8.00;0;0;0.00';
+      opcje['x1-8'] = '8.94;11.00;0;0;0.00';
+      opcje['x1-9'] = '14.63;18.00;0;0;0.00';
+      var opcjeIlosc = [];
+      var opcjeIlosc = ["x0-1x0-1"];
+    </script>
+    <input type="hidden" value="ceny" id="TypCechy" />
+    <input type="hidden" value="1" id="IleCechProduktu" />
+    <div>
+      <div class="CechaProduktu CechaGrupa-1">
+        <strong class="CechaProduktuEtykieta">Opakowanie:</strong>
+        <div class="CechaWyboru" id="nr_cechy_1" data-typ="pole" data-id="1">
+          <div class="Radio PoleWyboruCechy" id="id_wartosc_cechy_7">
+            <label for="wartosc_7_1" tabindex="0">
+              <input
+                aria-label="Opakowanie:: 25g"
+                type="radio"
+                data-id-cechy="1"
+                data-id="7"
+                value="7"
+                onchange="ZmienCeche('44962_81', '', 1)"
+                id="wartosc_7_1"
+                name="cecha_1"
+                tabindex="-1"
+              />
+              <span id="radio_7" class="samo_radio">25g</span>
+            </label>
+          </div>
+          <div class="Radio PoleWyboruCechy" id="id_wartosc_cechy_8">
+            <label for="wartosc_8_1" tabindex="0">
+              <input
+                aria-label="Opakowanie:: 50g"
+                type="radio"
+                data-id-cechy="1"
+                data-id="8"
+                value="8"
+                onchange="ZmienCeche('44962_81', '', 1)"
+                id="wartosc_8_1"
+                name="cecha_1"
+                tabindex="-1"
+              />
+              <span id="radio_8" class="samo_radio">50g</span>
+            </label>
+          </div>
+          <div class="Radio PoleWyboruCechy" id="id_wartosc_cechy_9">
+            <label for="wartosc_9_1" tabindex="0">
+              <input
+                aria-label="Opakowanie:: 100g"
+                type="radio"
+                data-id-cechy="1"
+                data-id="9"
+                value="9"
+                onchange="ZmienCeche('44962_81', '', 1)"
+                id="wartosc_9_1"
+                name="cecha_1"
+                tabindex="-1"
+              />
+              <span id="radio_9" class="samo_radio">100g</span>
+            </label>
+          </div>
+          <div class="Radio PoleWyboruCechy" id="id_wartosc_cechy_10">
+            <label for="wartosc_10_1" tabindex="0">
+              <input
+                aria-label="Opakowanie:: 250g"
+                type="radio"
+                data-id-cechy="1"
+                data-id="10"
+                value="10"
+                onchange="ZmienCeche('44962_81', '', 1)"
+                id="wartosc_10_1"
+                name="cecha_1"
+                tabindex="-1"
+              />
+              <span id="radio_10" class="samo_radio">250g</span>
+            </label>
+          </div>
+          <div class="Radio PoleWyboruCechy" id="id_wartosc_cechy_11">
+            <label for="wartosc_11_1" tabindex="0">
+              <input
+                aria-label="Opakowanie:: 500g"
+                type="radio"
+                data-id-cechy="1"
+                data-id="11"
+                value="11"
+                onchange="ZmienCeche('44962_81', '', 1)"
+                id="wartosc_11_1"
+                name="cecha_1"
+                tabindex="-1"
+              />
+              <span id="radio_11" class="samo_radio">500g</span>
+            </label>
+          </div>
+          <div class="Radio PoleWyboruCechy" id="id_wartosc_cechy_12">
+            <label for="wartosc_12_1" tabindex="0">
+              <input
+                aria-label="Opakowanie:: 1kg"
+                type="radio"
+                data-id-cechy="1"
+                data-id="12"
+                value="12"
+                onchange="ZmienCeche('44962_81', '', 1)"
+                id="wartosc_12_1"
+                name="cecha_1"
+                tabindex="-1"
+              />
+              <span id="radio_12" class="samo_radio">1kg</span>
+            </label>
+          </div>
+        </div>
+        <div class="errorInformacjaCecha" data-error="cecha_1" style="display: none">
+          <label class="error">Zaznacz jedną opcję</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="SekcjaCen">
+    <div class="CenyProduktu" itemprop="offers" itemscope="" itemtype="https://schema.org/Offer">
+      <p id="CenaGlownaProduktuBrutto">
+        Cena brutto: <strong><span itemprop="price" content="8.00">8,00 zł</span></strong>
+      </p>
+
+      <p id="CenaGlownaProduktuNetto">Cena netto: <strong>6,50 zł</strong></p>
+
+      <div id="ProduktZegar" style="display: none">
+        <div class="Odliczanie">
+          <span id="sekundy_karta_81"></span>pozostało tylko do końca promocji !!
+        </div>
+      </div>
+
+      <p id="HistoriaCenProduktu" style="display: none">
+        <span class="Informacja"></span>
+      </p>
+
+      <meta itemprop="priceCurrency" content="PLN" />
+      <meta itemprop="availability" content="https://schema.org/InStock" />
+      <meta itemprop="itemCondition" content="NewCondition" />
+      <meta
+        itemprop="url"
+        content="https://warchem.pl/winian-amonu-sodu-4hydrat-czysty-p-81.html"
+      />
+      <meta itemprop="priceValidUntil" content="2080-01-01" />
+      <div
+        itemprop="hasMerchantReturnPolicy"
+        itemtype="https://schema.org/MerchantReturnPolicy"
+        itemscope=""
+      >
+        <meta itemprop="applicableCountry" content="PL" />
+        <meta
+          itemprop="returnPolicyCategory"
+          content="https://schema.org/MerchantReturnFiniteReturnWindow"
+        />
+        <meta itemprop="merchantReturnDays" content="14" />
+        <meta itemprop="returnMethod" content="https://schema.org/ReturnByMail" />
+        <meta itemprop="returnFees" content="https://schema.org/FreeReturn" />
+      </div>
+
+      <div
+        itemprop="shippingDetails"
+        itemtype="https://schema.org/OfferShippingDetails"
+        itemscope=""
+      >
+        <div
+          itemprop="shippingDestination"
+          itemtype="https://schema.org/DefinedRegion"
+          itemscope=""
+        >
+          <meta itemprop="addressCountry" content="PL" />
+        </div>
+        <div
+          itemprop="deliveryTime"
+          itemtype="https://schema.org/ShippingDeliveryTime"
+          itemscope=""
+        >
+          <div itemprop="handlingTime" itemtype="https://schema.org/QuantitativeValue" itemscope="">
+            <meta itemprop="unitCode" content="d" />
+            <meta itemprop="minValue" content="1" />
+            <meta itemprop="maxValue" content="3" />
+          </div>
+          <div itemprop="transitTime" itemtype="https://schema.org/QuantitativeValue" itemscope="">
+            <meta itemprop="unitCode" content="d" />
+            <meta itemprop="minValue" content="1" />
+            <meta itemprop="maxValue" content="3" />
+          </div>
+        </div>
+      </div>
+
+      <meta itemprop="shipsFromCountry" content="PL" />
+    </div>
+
+    <div class="Przyciski">
+      <div id="PrzyciskKupowania" style="display: block">
+        <div class="ErrorCechy">Przed zakupem produktu wybierz wymagane opcje.</div>
+
+        <div class="PrzyciskIlosc">
+          <div class="PoleIlosciKoszyka">
+            Ilość:
+            <div class="PoleIlosc">
+              <span class="minus" tabindex="0" role="button" aria-label="Zmniejsz ilość">-</span
+              ><input
+                type="number"
+                lang="en_EN"
+                pattern="[0-9]+([\.][0-9]+)?"
+                step="1"
+                id="ilosc_44962_81"
+                value="1"
+                min="1"
+                onchange="SprIlosc(this,0,1,'44962_81','0')"
+                name="ilosc"
+                aria-label="Ilość"
+              /><span class="plus" tabindex="0" role="button" aria-label="Zwiększ ilość">+</span>
+            </div>
+            opak.
+          </div>
+
+          <div class="PolePrzyciskiKoszyka">
+            <span
+              class="DoKoszykaKartaProduktu"
+              role="button"
+              tabindex="0"
+              onclick="return DoKoszyka('44962_81','dodaj',0,0)"
+              aria-label="Dodaj do koszyka WINIAN AMONU SODU 4hydrat - czysty"
+              title="Dodaj do koszyka WINIAN AMONU SODU 4hydrat - czysty"
+              >Dodaj do koszyka</span
+            >
+          </div>
+        </div>
+
+        <p id="ZakupPrzezAllegro"></p>
+      </div>
+
+      <p id="InfoNiedostepny" class="miganieSek" style="display: none">
+        <span class="Info">Chwilowo niedostępny</span>
+
+        <br />
+        <span role="button" tabindex="0" class="przycisk" id="PowiadomDostepnosc" data-id="44962_81"
+          >Powiadom mnie o dostępności</span
+        >
+      </p>
+
+      <p id="PrzyciskSchowek" class="KartaSchowekDoDodania">
+        <span
+          class="ToolTip"
+          onclick="DoSchowka(81)"
+          title="dodaj do schowka"
+          tabindex="0"
+          role="button"
+          aria-label="dodaj do schowka"
+          >dodaj do schowka</span
+        >
+      </p>
+    </div>
+  </div>
+
+  <div>
+    <input id="InputCenaKoncowaBrutto" value="8.00" type="hidden" />
+    <input id="InputWybraneCechy_44962_81" value="" type="hidden" />
+    <input id="CenaPunkty" value="0" type="hidden" />
+    <input id="parametry" value="44962_81;8.00;6.50;;0.00" type="hidden" />
+    <input id="parametryLukas" value="" type="hidden" />
+    <input id="parametrySantander" value="" type="hidden" />
+    <input id="parametryMbank" value="" type="hidden" />
+    <input id="parametryComfino" value="" type="hidden" />
+    <input id="parametryIleasing" value="" type="hidden" />
+    <input id="parametryIraty" value="" type="hidden" />
+    <input id="parametryLeaselink" value="" type="hidden" />
+    <input id="parametryPayURaty" value="" type="hidden" />
+    <input id="parametryBgz" value="" type="hidden" />
+  </div>
+</form>

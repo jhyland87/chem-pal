@@ -69,7 +69,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   public abstract readonly baseURL: string;
 
   /** The minimum match percentage for a product to be considered a match. */
-  protected readonly minMatchPercentage: number = 55;
+  protected readonly minMatchPercentage: number = 50;
 
   /**
    * Fuzz scorer used by `fuzzyFilter` to score each candidate's title against

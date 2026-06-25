@@ -583,7 +583,7 @@ export class SupplierAmbeed
         .setImage(product.p_proimg ?? "")
         .setPurity(product.p_purity ?? "")
         .setMoleweight(product.p_moleweight ?? "")
-        .setMoleform(product.p_moleform ?? "")
+        .setFormula(product.p_moleform ?? "")
         .setDescription(product.p_name_en)
         .setSupplierCountry(this.country)
         .setSupplierShipping(this.shipping)

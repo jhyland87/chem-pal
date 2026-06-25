@@ -341,7 +341,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
    * const builder = await supplier.getProductData(partialBuilder);
    * if (builder) {
    *   const product = await builder.build();
-   *   console.log(product.title, product.cas, product.moleform, product.purity);
+   *   console.log(product.title, product.cas, product.formula, product.purity);
    * }
    * ```
    * @source
@@ -492,15 +492,15 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
    * @example
    * ```typescript
    * this.applyBasicProperties(builder, dom);
-   * // builder.get("moleform") -> "NaBH4", builder.get("moleweight") -> 37.83
+   * // builder.get("formula") -> "NaBH4", builder.get("moleweight") -> 37.83
    * ```
    * @source
    */
   private applyBasicProperties(builder: ProductBuilder<Product>, dom: Document): void {
     const props = this.parseDetailTable(dom, "#basic");
 
-    const moleform = props["Molecular Formula"];
-    if (moleform) builder.setMoleform(moleform);
+    const formula = props["Molecular Formula"];
+    if (formula) builder.setFormula(formula);
 
     const moleweight = props["Molecular Weight"]?.match(/[\d.]+/)?.[0];
     if (moleweight) builder.setMoleweight(moleweight);

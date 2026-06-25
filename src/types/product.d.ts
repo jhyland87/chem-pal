@@ -243,10 +243,10 @@ declare global {
     moleweight?: number;
 
     /**
-     * Molecular formula of the variant
+     * Molecular formula
      * @example `C<sub>18</sub>H<sub>33</sub>NaO<sub>3</sub>`
      */
-    moleform?: string;
+    formula?: string;
 
     /**
      * Purity of the variant
@@ -417,12 +417,6 @@ declare global {
      * @example "7647-14-5"
      */
     cas?: CAS<string>;
-
-    /**
-     * Chemical molecular formula
-     * @example "NaCl"
-     */
-    formula?: string;
 
     /**
      * Alternative name for the supplier
