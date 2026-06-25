@@ -56,7 +56,7 @@ export interface ParsedBinding {
 }
 
 /**
- * Map of hotkey action id -> handler function. Used by `useHotkeys`.
+ * Map of hotkey action id → handler function. Used by `useHotkeys`.
  * A handler may return a promise; errors are logged but not thrown.
  * @source
  */

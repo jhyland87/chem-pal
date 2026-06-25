@@ -143,6 +143,11 @@ export default function ContextMenu({
     };
   }, [onClose]);
 
+  // The human-facing page to open/copy/share/bookmark. Falls back to `url`
+  // for scraped suppliers where the two are the same. Product exclusion keeps
+  // using `product.url` (the processing identity), not this.
+  const openUrl = product.permalink ?? product.url;
+
   /**
    * Handles copying the product title to clipboard.
    * Shows console feedback on success/failure.
@@ -164,9 +169,9 @@ export default function ContextMenu({
    * @source
    */
   const handleCopyUrl = async () => {
-    if (product.url) {
+    if (openUrl) {
       try {
-        await navigator.clipboard.writeText(product.url);
+        await navigator.clipboard.writeText(openUrl);
         console.log("Product URL copied to clipboard");
       } catch (err) {
         console.error("Failed to copy product URL:", err);
@@ -181,18 +186,18 @@ export default function ContextMenu({
    * @source
    */
   const handleOpenInNewTab = async () => {
-    if (product.url) {
+    if (openUrl) {
       // Chrome extension compatible way to open new tab
       if (typeof chrome !== "undefined" && chrome.tabs) {
         try {
-          await chrome.tabs.create({ url: product.url });
+          await chrome.tabs.create({ url: openUrl });
         } catch {
           // Fallback for non-extension environments
-          window.open(product.url, "_blank", "noopener,noreferrer");
+          window.open(openUrl, "_blank", "noopener,noreferrer");
         }
       } else {
         // Fallback for non-extension environments
-        window.open(product.url, "_blank", "noopener,noreferrer");
+        window.open(openUrl, "_blank", "noopener,noreferrer");
       }
     }
     onClose();
@@ -268,7 +273,7 @@ export default function ContextMenu({
 
       // Check if a bookmark with this URL already exists in the folder
       const children = await chrome.bookmarks.getChildren(folderId);
-      const duplicate = children.find((node) => node.url === product.url);
+      const duplicate = children.find((node) => node.url === openUrl);
 
       if (duplicate) {
         flashStatusText(`Bookmark already exists in ${FOLDER_NAME}`);
@@ -276,7 +281,7 @@ export default function ContextMenu({
         await chrome.bookmarks.create({
           parentId: folderId,
           title: product.title,
-          url: product.url,
+          url: openUrl,
         });
         flashStatusText(`Bookmark created at ${FOLDER_NAME}/${product.title}`);
       }
@@ -293,12 +298,12 @@ export default function ContextMenu({
    * @source
    */
   const handleShare = async () => {
-    if (navigator.share && product.url) {
+    if (navigator.share && openUrl) {
       try {
         await navigator.share({
           title: product.title || "Chemical Product",
           text: `Check out this chemical product: ${product.title}`,
-          url: product.url,
+          url: openUrl,
         });
       } catch (error) {
         console.error("Share failed, falling back to clipboard", { error });
@@ -359,7 +364,7 @@ export default function ContextMenu({
       product.title,
       `Price: ${product.currencySymbol}${product.price}`,
       `Supplier: ${product.supplier}`,
-      `URL: ${product.url}`,
+      `URL: ${openUrl}`,
     ];
 
     if (product.description) {
@@ -396,7 +401,7 @@ export default function ContextMenu({
         <MenuItem
           className={styles["context-menu-item"]}
           onClick={handleCopyUrl}
-          disabled={!product.url}
+          disabled={!openUrl}
         >
           <ListItemIcon>
             <HttpIcon fontSize="small" />
@@ -428,7 +433,7 @@ export default function ContextMenu({
         <MenuItem
           className={styles["context-menu-item"]}
           onClick={handleOpenInNewTab}
-          disabled={!product.url}
+          disabled={!openUrl}
         >
           <ListItemIcon>
             <ArrowRightIcon fontSize="small" />
@@ -462,7 +467,7 @@ export default function ContextMenu({
         <MenuItem
           className={styles["context-menu-item"]}
           onClick={handleShare}
-          disabled={!product.url}
+          disabled={!openUrl}
         >
           <ListItemIcon>
             <SettingsIcon fontSize="small" />

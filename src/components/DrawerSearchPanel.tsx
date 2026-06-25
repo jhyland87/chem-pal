@@ -19,10 +19,10 @@ import { StyledAccordionDetails, StyledAccordionSummary } from "./StyledComponen
  * Adding, removing, or reordering a drawer-backed column in TableColumns.tsx
  * is reflected here automatically — no edits to this file are required.
  * @param props - Component props.
- * @param props.expandedAccordion - Currently open accordion's panel id
- *                                  (e.g. `"search-country"`), or `false`.
- * @param props.onAccordionChange - Factory from panelId to MUI Accordion's
- *                                  `onChange` handler.
+ * - `expandedAccordion` - Currently open accordion's panel id
+ *   (e.g. `"search-country"`), or `false`.
+ * - `onAccordionChange` - Factory from panelId to MUI Accordion's
+ *   `onChange` handler.
  * @returns The search drawer body (title input, filter accordions, submit).
  * @example
  * ```tsx

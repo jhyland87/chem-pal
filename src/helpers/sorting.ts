@@ -5,7 +5,7 @@ import type { Row } from "@tanstack/react-table";
  * `baseQuantity` (a missing quantity sorts as 0).
  * @param rowA - The first row to compare.
  * @param rowB - The second row to compare.
- * @returns `1` if rowA > rowB, `-1` if rowA < rowB, `0` if equal.
+ * @returns `1` if rowA ranks after rowB, `-1` if before, `0` if equal.
  * @example
  * ```ts
  * useReactTable({ sortingFns: { quantity: quantitySortingFn }, ... });
@@ -24,7 +24,7 @@ export function quantitySortingFn(rowA: Row<Product>, rowB: Row<Product>) {
  * Compares the match percentage of products and returns a sort order value.
  * @param rowA - The first row to compare.
  * @param rowB - The second row to compare.
- * @returns `1` if rowA > rowB, `-1` if rowA < rowB, `0` if equal.
+ * @returns `1` if rowA ranks after rowB, `-1` if before, `0` if equal.
  * @example
  * ```ts
  * useReactTable({ sortingFns: { match: matchPercentageSortingFn }, ... });
@@ -44,7 +44,7 @@ export function matchPercentageSortingFn(rowA: Row<Product>, rowB: Row<Product>)
  * a sort order value.
  * @param rowA - The first row to compare.
  * @param rowB - The second row to compare.
- * @returns `1` if rowA > rowB, `-1` if rowA < rowB, `0` if equal.
+ * @returns `1` if rowA ranks after rowB, `-1` if before, `0` if equal.
  * @example
  * ```ts
  * useReactTable({ sortingFns: { price: priceSortingFn }, ... });

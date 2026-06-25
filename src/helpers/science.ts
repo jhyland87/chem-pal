@@ -74,3 +74,31 @@ export const findFormulaInHtml = (html: string): string | undefined => {
     .replace(/<sub>(\d+)<\/sub>/g, (match, p1) => subscript(p1 || ""))
     .replace(/<sup>(\d+)<\/sup>/g, (match, p1) => superscript(p1 || ""));
 };
+
+/**
+ * Extracts a purity percentage from a string. Suppliers commonly bake the
+ * purity into a product name or grade label (e.g. "Sodium borohydride, min
+ * 95%"), so this finds the first percentage and returns it as a number when it
+ * falls within the valid `(0, 100]` range — matching the values
+ * `ProductBuilder.setPurity` accepts. Returns nothing when no valid percentage
+ * is present.
+ * @param value - The string to extract the purity from
+ * @returns The purity as a number (e.g. `95`), or nothing if none is found
+ * @example
+ * ```typescript
+ * parsePurity("Sodium borohydride, min 95%") // Returns 95
+ * parsePurity("98.5%") // Returns 98.5
+ * parsePurity("120%") // Returns nothing (out of range)
+ * parsePurity("no percentage here") // Returns nothing
+ * ```
+ * @source
+ */
+export const parsePurity = (value: string): number | void => {
+  if (!value || typeof value !== "string") return;
+
+  const match = value.match(/(\d+(?:\.\d+)?)\s*%/);
+  if (!match) return;
+
+  const purity = Number(match[1]);
+  if (!Number.isNaN(purity) && purity > 0 && purity <= 100) return purity;
+};

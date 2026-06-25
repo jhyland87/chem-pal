@@ -199,10 +199,18 @@ declare global {
     sku?: number | string;
 
     /**
-     * URL to the variant's detail page
+     * URL ChemPal queries/processes for this variant — may be an API endpoint
+     * rather than a human-facing page.
      * @example "/products/sodium-chloride-500g"
      */
     url?: string;
+
+    /**
+     * Human-facing page for this variant, i.e. what the user opens in the
+     * browser. Defaults to {@link url} when not separately provided.
+     * @example "https://supplier.com/products/sodium-chloride-500g"
+     */
+    permalink?: string;
 
     /**
      * Unique identifier within the system
@@ -236,7 +244,7 @@ declare global {
 
     /**
      * Molecular formula of the variant
-     * @example "C<sub>18<\/sub>H<sub>33<\/sub>NaO<sub>3<\/sub>"
+     * @example `C<sub>18</sub>H<sub>33</sub>NaO<sub>3</sub>`
      */
     moleform?: string;
 
@@ -346,10 +354,21 @@ declare global {
     title: string;
 
     /**
-     * Absolute URL to the product's detail page
+     * Absolute URL ChemPal queries/processes for this product. For scraped
+     * suppliers this is the product page; for JSON-backed suppliers it may be
+     * an API endpoint. Used as the product's processing identity (cache and
+     * exclusion keys, detail fetches).
      * @example "https://supplier.com/products/sodium-chloride-500g"
      */
     url: string;
+
+    /**
+     * Absolute human-facing page the user opens in the browser. Defaults to
+     * {@link url} (so scraped suppliers need not set it); JSON-backed suppliers
+     * whose web UI differs from their API endpoint set it explicitly.
+     * @example "https://supplier.com/products/sodium-chloride-500g"
+     */
+    permalink?: string;
 
     /**
      * Current price of the product

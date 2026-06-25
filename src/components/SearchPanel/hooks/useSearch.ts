@@ -16,7 +16,6 @@ import {
   updateSearchHistoryResultCount as idbUpdateHistoryResultCount,
 } from "@/utils/idbCache";
 import { cstorage } from "@/utils/storage";
-import { type Table } from "@tanstack/react-table";
 import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 interface SearchState {
   isLoading: boolean;
@@ -441,13 +440,15 @@ export function useSearch() {
 
         const startSearchTime = performance.now();
 
-        // window.resultsTable is typed as `object` in the global decl but is the
-        // live TanStack Table instance set in useResultsTable.hook.ts; assert its
-        // real type for this trusted cross-component bridge.
-        const resultsTable = window.resultsTable as Table<Product>;
-
         // Execute the search for all suppliers.
         const productQueryResults = await productQueryFactory.executeAllStream(3);
+
+        // Authoritative result count, tracked from the data we actually produce.
+        // `resultsTable.getRowCount()` only reflects the last committed render,
+        // which lags the `setSearchResults` calls below (the streaming branch
+        // defers them with startTransition), so reading it right after the
+        // stream drains can spuriously report 0 — see the no-results check below.
+        let totalResults = 0;
 
         // When filters are active, collect all results first, then filter and limit.
         // When no filters are active, stream results directly for immediate UI feedback.
@@ -486,6 +487,7 @@ export function useSearch() {
           // re-emits the count, so no direct badge update is needed here.
           const finalResults = limited.map((r, idx) => ({ ...r, id: idx }));
           setSearchResults(finalResults);
+          totalResults = finalResults.length;
 
           // Save to Chrome storage and update history with final count
           await saveResultsToSession(finalResults);
@@ -500,12 +502,14 @@ export function useSearch() {
           // No filters active — stream results directly; ResultsTable re-emits
           // the count per appended row, so no direct badge update is needed here.
           for await (const result of productQueryResults) {
+            totalResults += 1;
+
             // Update state with current count using startTransition for better performance
             startTransition(() => {
               setState((prev) => ({
                 ...prev,
-                resultCount: resultsTable.getRowCount(),
-                status: `Found ${resultsTable.getRowCount()} result${resultsTable.getRowCount() !== 1 ? "s" : ""}...`,
+                resultCount: totalResults,
+                status: `Found ${totalResults} result${totalResults !== 1 ? "s" : ""}...`,
               }));
             });
 
@@ -515,7 +519,7 @@ export function useSearch() {
             // Add result immediately to the table - streaming behavior restored!
             const productWithId = {
               ...result,
-              id: resultsTable.getRowCount() - 1,
+              id: totalResults - 1,
             };
 
             // Update results immediately using startTransition for better performance
@@ -540,12 +544,12 @@ export function useSearch() {
         const searchTime = endSearchTime - startSearchTime;
 
         console.debug(
-          `Found ${resultsTable.getRowCount()} products in ${searchTime} milliseconds`,
+          `Found ${totalResults} products in ${searchTime} milliseconds`,
           { query, fetchLimit, productQueryResults, startSearchTime, endSearchTime, searchTime },
         );
 
         // If no results were found, then try to suggest alternative search terms using cactus.nci.nih.gov API.
-        if (resultsTable.getRowCount() === 0) {
+        if (totalResults === 0) {
           const message = await buildNoResultsMessage(query, filtersActive);
           setTableText(message);
           console.debug("setting table text", { tableText: message });
@@ -555,7 +559,7 @@ export function useSearch() {
         }
 
         // Signal completion; the badge controller reconciles the final count.
-        emitSearchEvent(SearchEvent.COMPLETED, { count: resultsTable.getRowCount() });
+        emitSearchEvent(SearchEvent.COMPLETED, { count: totalResults });
 
         // Final state - search complete
         // NOTE: Do NOT wrap in startTransition — the isLoading:false update must be
@@ -566,7 +570,7 @@ export function useSearch() {
           isAborting: false,
           status: false, // Hide status when complete
           error: undefined,
-          resultCount: resultsTable.getRowCount(),
+          resultCount: totalResults,
         });
       } catch (error) {
         // Signal the terminal outcome; the badge controller clears the badge.

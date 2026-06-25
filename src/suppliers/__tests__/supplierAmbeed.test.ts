@@ -9,7 +9,7 @@ type AmbeedSignSupplier = SupplierAmbeed & {
 };
 
 describe("SupplierAmbeed signing", () => {
-  const supplier = new SupplierAmbeed() as AmbeedSignSupplier;
+  const supplier = new SupplierAmbeed("test", 1) as AmbeedSignSupplier;
 
   it("calculateSignSecret returns the expected constant secret", () => {
     expect(supplier.calculateSignSecret()).toBe("6587ab544f254fe4a5f64a41531b95b2");

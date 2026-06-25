@@ -58,7 +58,7 @@ type DiffChange =
  *   - Plain object / array on both sides → recurses per-key; the union of
  *     both sides' keys is walked so missing keys surface as created/deleted.
  *
- * Claude may or may not have stolen this right from Lodash ¯\_(ツ)_/¯
+ * Claude may or may not have stolen this right from Lodash.
  * @param oldObj - Previous value. Pass `null`/`undefined` for "nothing there".
  * @param newObj - New value. Pass `null`/`undefined` for "gone".
  * @param path - Accumulator used by the recursion; callers should omit it.

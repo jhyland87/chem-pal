@@ -41,7 +41,7 @@ const StyledText = styled("text")(({ theme }) => ({
  * Renders text centered in the hole of a MUI X pie chart, positioned via the
  * chart's drawing area. Used to show a total or label inside the pie.
  * @param props - Component props.
- * @param props.children - The content to render at the pie's center.
+ * - `children` - The content to render at the pie's center.
  * @returns An SVG text element centered in the chart.
  * @example
  * ```tsx

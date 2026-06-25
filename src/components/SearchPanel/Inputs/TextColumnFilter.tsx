@@ -9,7 +9,7 @@ import { ChangeEvent, useEffect, useState } from "react";
  * debounced setter so typing doesn't thrash.
  * @component
  * @param props - Component props.
- * @param props.column - A TanStack column with `meta.filterVariant === "text"`.
+ * - `column` - A TanStack column with `meta.filterVariant === "text"`.
  * @returns A 32px-tall `TextField` bound to the column's debounced filter.
  * @example
  * ```tsx

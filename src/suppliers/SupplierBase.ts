@@ -1033,6 +1033,29 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   }
 
   /**
+   * Scores a single string against the current search query (`this.query`)
+   * using the active fuzz scorer — the user's `fuzzScorerOverride` when set,
+   * otherwise the supplier's `fuzzScorer`. Returns a 0–100 similarity score
+   * (higher is closer). Useful for suppliers that can only fuzz-match after a
+   * secondary request reveals the real product name, e.g. when the search
+   * index only exposes coarse category breadcrumbs.
+   *
+   * @param text - The text to score against `this.query`.
+   * @returns A similarity score from 0 (no match) to 100 (identical).
+   * @example
+   * ```typescript
+   * // this.query === "sodium borohydride"
+   * this.fuzzyScore("Sodium borohydride, min 95%"); // ~90
+   * this.fuzzyScore("Acetone"); // ~10
+   * ```
+   * @source
+   */
+  protected fuzzyScore(text: string): number {
+    const activeScorer = this.fuzzScorerOverride ?? this.fuzzScorer;
+    return activeScorer(this.query, text);
+  }
+
+  /**
    * Filters an array of data using fuzzy string matching to find items that closely match a query string.
    * Uses the WRatio algorithm from fuzzball for string similarity comparison.
    *

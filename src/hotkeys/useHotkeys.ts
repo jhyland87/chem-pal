@@ -52,7 +52,7 @@ export interface UseHotkeysOptions {
  * - Matching modifier combos strictly (so `ctrl+s` won't fire on `ctrl+shift+s`)
  * - Calling `preventDefault` + `stopPropagation` when a binding fires
  * - Awaiting async handlers and logging any errors
- * @param handlers - Map of hotkey action id -> handler.
+ * @param handlers - Map of hotkey action id → handler.
  * @param options - Optional hooks, e.g. `onTriggered` for status-bar feedback.
  * @example
  * ```ts

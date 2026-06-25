@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findFormulaInHtml, subscript, superscript } from "../science";
+import { findFormulaInHtml, parsePurity, subscript, superscript } from "../science";
 
 describe("science helpers", () => {
   describe("subscript", () => {
@@ -92,6 +92,36 @@ describe("science helpers", () => {
     it("should return undefined when given non-existent elements in formula", () => {
       expect(findFormulaInHtml("Fx<sup>2</sup>Hp<sub>3</sub>")).toBeUndefined();
       expect(findFormulaInHtml("Cq<sup>6</sup>SD<sub>4</sub>")).toBeUndefined();
+    });
+  });
+
+  describe("parsePurity", () => {
+    it("should parse a plain percentage", () => {
+      expect(parsePurity("95%")).toBe(95);
+      expect(parsePurity("100%")).toBe(100);
+    });
+
+    it("should parse a percentage embedded in a product name", () => {
+      expect(parsePurity("Sodium borohydride, min 95%")).toBe(95);
+      expect(parsePurity("Acetone 99.9% ACS grade")).toBe(99.9);
+    });
+
+    it("should parse decimal percentages", () => {
+      expect(parsePurity("98.5%")).toBe(98.5);
+    });
+
+    it("should tolerate whitespace before the percent sign", () => {
+      expect(parsePurity("min 95 %")).toBe(95);
+    });
+
+    it("should return nothing when there is no percentage", () => {
+      expect(parsePurity("Sodium borohydride")).toBeUndefined();
+      expect(parsePurity("")).toBeUndefined();
+    });
+
+    it("should return nothing for out-of-range percentages", () => {
+      expect(parsePurity("120%")).toBeUndefined();
+      expect(parsePurity("0%")).toBeUndefined();
     });
   });
 });

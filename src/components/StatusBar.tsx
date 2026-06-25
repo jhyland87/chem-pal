@@ -48,7 +48,7 @@ export function useStatusBar() {
  * `setStatusText` / `flashStatusText` (the latter auto-clears via a timer) to
  * descendants through {@link useStatusBar}.
  * @param props - The provider props.
- * @param props.children - The subtree that can read and update the status bar.
+ * - `children` - The subtree that can read and update the status bar.
  * @returns The provider wrapping `children`.
  * @example
  * ```tsx

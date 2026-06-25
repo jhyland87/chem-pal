@@ -218,7 +218,10 @@ export abstract class SupplierBaseWoocommerce
       const builder = new ProductBuilder<Product>(this.baseURL);
 
       builder
-        .setBasicInfo(item.name, item.permalink, this.supplierName)
+        // `url` is the Store API endpoint ChemPal fetches; `permalink` is the
+        // human-facing product page the user opens in the browser.
+        .setBasicInfo(item.name, `/wp-json/wc/store/v1/products/${item.id}`, this.supplierName)
+        .setPermalink(item.permalink)
         .setMatchPercentage(item.matchPercentage)
         .setDescription(item.description)
         .setShortDescription(item.short_description)
@@ -226,7 +229,6 @@ export abstract class SupplierBaseWoocommerce
         .setReviewCount(item.review_count)
         .setID(item.id)
         .setSku(item.sku)
-        .setURL(`/wp-json/wc/store/v1/products/${item.id}`)
         .setPricing(
           Number(item.prices.price) / 100,
           item.prices.currency_code,
@@ -347,7 +349,10 @@ export abstract class SupplierBaseWoocommerce
           variant.price = Number(variantResponse.prices.price) / 100;
           variant.currencyCode = variantResponse.prices.currency_code;
           variant.currencySymbol = variantResponse.prices.currency_symbol;
-          variant.url = variantResponse.permalink;
+          // `url` is the Store API endpoint we queried; `permalink` is the
+          // human-facing variant page.
+          variant.url = `/wp-json/wc/store/v1/products/${variant.id}`;
+          variant.permalink = variantResponse.permalink;
           variant.description = variantResponse.description;
           variant.sku = variantResponse.sku;
 

@@ -158,12 +158,14 @@ export class BadgeAnimator {
 // Export the class directly
 
 /**
- * Can do something similar with the icon iself.
+ * Can do something similar with the icon itself:
+ * ```ts
  * chrome.action.setIcon({
-  path: {
-    16: 'static/images/logo/logo-icon-128.png',
-    32: 'static/images/logo/logo-icon-128.png',
-  },
-})
+ *   path: {
+ *     16: 'static/images/logo/logo-icon-128.png',
+ *     32: 'static/images/logo/logo-icon-128.png',
+ *   },
+ * });
+ * ```
  * @source
  */

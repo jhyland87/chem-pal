@@ -89,11 +89,18 @@ export default tseslint.config(
         //   trailingUnderscore: "allow",
         // },
         {
+          // Double-underscore globals (e.g. __RESPONSE_AGGREGATE__) must be
+          // UPPER_CASE. `filter` scopes this entry to those names only;
+          // `allowDouble` strips the surrounding `__` before the format check.
+          // The general `variable` rule below covers everything else.
           selector: "variable",
           format: ["UPPER_CASE"],
-          leadingUnderscore: "allow",
-          trailingUnderscore: "allow",
-          allow: ["^__", "__$"],
+          leadingUnderscore: "allowDouble",
+          trailingUnderscore: "allowDouble",
+          filter: {
+            regex: "^__|__$",
+            match: true,
+          },
         },
         {
           selector: "variable",
