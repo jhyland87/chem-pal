@@ -1,4 +1,5 @@
 import { AVAILABILITY } from "@/constants/common";
+import { FUZZ_SCORERS, type FuzzScorerFn } from "@/constants/fuzzScorers";
 import { findCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM } from "@/helpers/request";
@@ -31,7 +32,7 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
   public readonly baseURL: string = "https://warchem.pl";
 
   // Shipping scope for Warchem
-  public readonly shipping: ShippingRange = "international";
+  public readonly shipping: ShippingRange = "domestic";
 
   // The country code of the supplier.
   // This is used to determine the currency and other country-specific information.
@@ -52,6 +53,13 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
 
   // Number of requests to process in parallel when fetching product details
   protected maxConcurrentRequests: number = 5;
+
+  // Warchem product names append qualifiers (grade, hydrate form, etc.), so the
+  // default `ratio` scorer penalizes a short query like "WINIAN AMONU" against
+  // the longer full names — they land right at the cutoff. token_set_ratio
+  // scores ~100 when the query's words are a subset of the title, which keeps
+  // those fuller-named variants in the results.
+  protected readonly fuzzScorer: FuzzScorerFn = FUZZ_SCORERS.token_set_ratio;
 
   /**
    * Warchem stores the search result limit in the cookies which needs to be set
@@ -155,7 +163,10 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
     }
 
     const productContainers = parsedHTML.querySelectorAll(
-      "div.ListingWierszeKontener > div.Wiersz.LiniaDolna",
+      // This selector excludes any results that have product restriction warnings, which are stored in the .LiniaOpisu element.
+      // All product elements have .LiniaOpisu, but the ones with no restrictions have the nested div with just &nbsp;&nbsp;
+      // inside, whereas the ones with restrictions have spans with the restriction text.
+      "div.ListingWierszeKontener > div.Wiersz.LiniaDolna:not(:has(.LiniaOpisu > div > span))",
     );
     if (!productContainers || productContainers.length === 0) {
       this.logger.log("No products found", { query, response, parsedHTML, productContainers });
@@ -201,9 +212,9 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
 
       const productId = element.getAttribute("id");
 
-      const itemDiv = element.querySelector('div.[itemprop="item"]');
-      const productName = itemDiv?.querySelector('meta.[itemprop="name"]')?.getAttribute("content");
-      const productUrl = itemDiv?.querySelector('link.[itemprop="url"]')?.getAttribute("href");
+      const itemDiv = element.querySelector('div[itemprop="item"]');
+      const productName = itemDiv?.querySelector('meta[itemprop="name"]')?.getAttribute("content");
+      const productUrl = itemDiv?.querySelector('link[itemprop="url"]')?.getAttribute("href");
 
       if (!productName) {
         this.logger.error("No product name for product", { element });
@@ -217,16 +228,16 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
       builder
         .setBasicInfo(productName, productUrl, this.supplierName)
         .setID(productId ?? "")
-        .setImage(itemDiv?.querySelector('link.[itemprop="image"]')?.getAttribute("href") ?? "")
-        .setSku(itemDiv?.querySelector('meta.[itemprop="sku"]')?.getAttribute("content") ?? "")
+        .setImage(itemDiv?.querySelector('link[itemprop="image"]')?.getAttribute("href") ?? "")
+        .setSku(itemDiv?.querySelector('meta[itemprop="sku"]')?.getAttribute("content") ?? "")
         .setAvailability(
           this.getAvailabilityFromLink(
-            itemDiv?.querySelector('link.[itemprop="availability"]')?.getAttribute("href") ?? "",
+            itemDiv?.querySelector('link[itemprop="availability"]')?.getAttribute("href") ?? "",
           ),
         )
-        .setPrice(itemDiv?.querySelector('meta.[itemprop="price"]')?.getAttribute("content") ?? "")
+        .setPrice(itemDiv?.querySelector('meta[itemprop="price"]')?.getAttribute("content") ?? "")
         .setCurrencyCode(
-          itemDiv?.querySelector('meta.[itemprop="priceCurrency"]')?.getAttribute("content") ?? "",
+          itemDiv?.querySelector('meta[itemprop="priceCurrency"]')?.getAttribute("content") ?? "",
         );
 
       // const headerElem = element.querySelector("h3 > a");
@@ -348,13 +359,18 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
         product.setDescription(productMeta["og:description"]);
       }
 
+      if (productMeta["og:image"]) {
+        product.setImage(productMeta["og:image"]);
+      }
+
       if (productMeta["product:availability"]) {
         product.setAvailability(productMeta["product:availability"]);
       }
 
+      // findCAS throws on undefined input, so drop any absent meta values first.
       const cas = firstMap(
         (p) => findCAS(p),
-        [productMeta["og:title"], productMeta["og:description"]],
+        [productMeta["og:title"], productMeta["og:description"]].filter(Boolean),
       );
 
       if (isCAS(cas)) {
@@ -368,8 +384,149 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
           product.setQuantity(qty);
         }
       }
+
+      // The meta tags only describe the default pack size; the other sizes and
+      // their prices live in the inline `opcje` script + radio inputs.
+      const variants = this.parseVariants(productResponse, parsedHTML);
+      if (variants.length > 0) {
+        this.logger.info("variants found", { builder, productResponse, parsedHTML, variants });
+        product.setVariants(variants);
+      } else {
+        this.logger.warn("No variants found", { builder, productResponse, parsedHTML });
+      }
+
+      // The description tab carries a structured spec table with the most
+      // reliable CAS, formula, and molar mass for the product.
+      this.applyDataTable(product, parsedHTML);
+
       this.logger.debug("product", product);
       return product;
+    });
+  }
+
+  /**
+   * Reads Warchem's product "description" spec table — a two-column
+   * label/value `<tr>` grid — and applies the structured fields it carries:
+   * the CAS number (a far more reliable source than scraping the title or
+   * description), the molecular formula, and the molar mass. Labels are
+   * Polish: "Numer CAS", "Wzór chemiczny" (chemical formula), and
+   * "Masa molowa" (molar mass, e.g. "261,06 g/mol").
+   *
+   * @param builder - The ProductBuilder to enrich.
+   * @param dom - The parsed product page Document.
+   * @returns Nothing; mutates the builder in place.
+   * @example
+   * ```typescript
+   * this.applyDataTable(builder, createDOM(html));
+   * // builder.get("cas") -> "20199-92-2", builder.get("moleweight") -> 261.06
+   * ```
+   * @source
+   */
+  private applyDataTable(builder: ProductBuilder<Product>, dom: Document): void {
+    const rows = dom.querySelectorAll(
+      '#TresciZakladek > div[itemprop="description"] > div.FormatEdytor > table > tbody > tr',
+    );
+
+    for (const row of Array.from(rows)) {
+      const cells = row.querySelectorAll("td");
+      const label = cells[0]?.textContent?.replace(/\s+/g, " ").replace(/:\s*$/, "").trim();
+      const value = cells[1]?.textContent?.replace(/\s+/g, " ").trim();
+      if (!label || !value) {
+        continue;
+      }
+
+      if (label.startsWith("Numer CAS")) {
+        const cas = findCAS(value);
+        if (cas) builder.setCAS(cas);
+      } else if (label.startsWith("Wzór chemiczny")) {
+        // The table value is already display-formatted (unicode subscripts and
+        // hydrate notation), so store it verbatim rather than re-parsing it.
+        builder.setData({ formula: value });
+      } else if (label.startsWith("Masa molowa")) {
+        // e.g. "261,06 g/mol" — Polish decimal comma, strip the unit.
+        const mass = Number(value.replace(/[^\d.,]/g, "").replace(",", "."));
+        if (!Number.isNaN(mass) && mass > 0) {
+          builder.setMoleweight(mass);
+        }
+      }
+    }
+  }
+
+  /**
+   * Parses the size/price variants from a Warchem product page. Warchem stores
+   * every variant's prices in an inline `opcje` JS map keyed by
+   * `x{data-id-cechy}-{data-id}` (e.g. `opcje['x1-7'] = 'netto;brutto;...'`),
+   * while the matching radio input carries the pack size in its `aria-label`
+   * (e.g. "Opakowanie:: 25g"). Each radio is tied to its gross (brutto) price —
+   * the second `;`-separated field, mirroring the page's own `cenyCech[1]`
+   * logic — and its parsed quantity. Currency is intentionally left unset so
+   * each variant inherits the parent product's currency when the builder is
+   * built.
+   *
+   * Only single feature-group products (one `data-id-cechy`) are supported;
+   * multi-group products use composite `opcje` keys and are skipped.
+   *
+   * @param html - The raw product page HTML (for the inline `opcje` script).
+   * @param dom - The parsed product page Document (for the radio inputs).
+   * @returns The parsed variants in DOM (ascending-size) order; empty when the
+   *   product exposes no size options.
+   * @example
+   * ```typescript
+   * const variants = this.parseVariants(html, createDOM(html));
+   * // [{ id: "7", title: "25g", price: 8, quantity: 25, uom: "g" }, ...]
+   * ```
+   * @source
+   */
+  private parseVariants(html: string, dom: Document): Partial<Variant>[] {
+    // Each variant's prices are emitted inline as
+    //   opcje['x<feature>-<value>'] = 'netto;brutto;poprzednia_netto;poprzednia_brutto;katalogowa'
+    // (quotes may be single or double). Named groups label each PLN field; only
+    // the gross (brutto) price is shown, but the rest document the format.
+    const opcjePattern = new RegExp(
+      // key: opcje['x<feature>-<value>']
+      "opcje\\[['\"]x(?<featureId>\\d+)-(?<valueId>\\d+)['\"]]\\s*=\\s*" +
+        // value: the five ;-separated PLN price fields
+        "['\"](?<netPrice>\\d+(?:\\.\\d+)?);" +
+        "(?<grossPrice>\\d+(?:\\.\\d+)?);" +
+        "(?<previousNetPrice>\\d+(?:\\.\\d+)?);" +
+        "(?<previousGrossPrice>\\d+(?:\\.\\d+)?);" +
+        "(?<catalogPrice>\\d+(?:\\.\\d+)?)['\"]",
+      "g",
+    );
+
+    const grossPriceByKey: Record<string, number> = {};
+    for (const match of html.matchAll(opcjePattern)) {
+      const { featureId, valueId, grossPrice } = match.groups ?? {};
+      if (featureId && valueId && grossPrice) {
+        grossPriceByKey[`x${featureId}-${valueId}`] = Number(grossPrice);
+      }
+    }
+    if (Object.keys(grossPriceByKey).length === 0) {
+      return [];
+    }
+
+    const radios = dom.querySelectorAll('.CechaWyboru input[type="radio"]');
+    return mapDefined(Array.from(radios), (radio: Element) => {
+      const cecha = radio.getAttribute("data-id-cechy");
+      const id = radio.getAttribute("data-id");
+      if (!cecha || !id) {
+        return;
+      }
+
+      const grossPrice = grossPriceByKey[`x${cecha}-${id}`];
+      if (grossPrice === undefined || grossPrice <= 0) {
+        return;
+      }
+
+      const qty = parseQuantity(radio.getAttribute("aria-label") ?? "");
+
+      return {
+        id,
+        title: qty ? `${qty.quantity}${qty.uom}` : undefined,
+        price: grossPrice,
+        quantity: qty?.quantity,
+        uom: qty?.uom,
+      };
     });
   }
 

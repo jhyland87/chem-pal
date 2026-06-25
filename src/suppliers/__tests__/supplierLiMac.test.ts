@@ -58,7 +58,7 @@ describe("SupplierLiMac getProductData", () => {
     expect(dump.purity).toBe(95);
 
     // From the #basic properties table
-    expect(dump.moleform).toBe("NaBH4");
+    expect(dump.formula).toBe("NaBH4");
     expect(dump.moleweight).toBe(37.83);
 
     // Image from og:image, thumbnail from mozCatItemPictures
