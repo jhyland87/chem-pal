@@ -205,26 +205,29 @@ declare global {
     /** Variant lists keyed by batch identifier (e.g. `BD123_4`). */
     [variantKey: `BD${string}_${string}`]: AmbeedProductPriceResponseVariantItem[];
     /** Shared product information common to every variant. */
-    proInfo: {
-      /** Estimated lead time for the product. */
-      p_leadtime: string;
-      /** Whether the product is currently active/available. */
-      p_status: boolean;
-      /** Proper (canonical) name of the product. */
-      p_proper_name3: string;
-      /** Whether the product is held in supplier stock (`1`/`0`). */
-      p_issupplierstock: number;
-      /** Number of variants in the price list. */
-      listLength: number;
-      /** Product name in English. */
-      p_name_en: string;
-      /** Display unit for the product. */
-      unit: string;
-      /** Product AM identifier. */
-      p_am: string;
-      /** Whether the product can be split into smaller quantities. */
-      p_split: boolean;
-    };
+    proInfo: AmbeedProductPriceProInfo;
+  }
+
+  /** Shared product information returned alongside the priced variants. */
+  export interface AmbeedProductPriceProInfo {
+    /** Estimated lead time for the product. */
+    p_leadtime: string;
+    /** Whether the product is currently active/available. */
+    p_status: boolean;
+    /** Proper (canonical) name of the product. */
+    p_proper_name3: string;
+    /** Whether the product is held in supplier stock (`1`/`0`). */
+    p_issupplierstock: number;
+    /** Number of variants in the price list. */
+    listLength: number;
+    /** Product name in English. */
+    p_name_en: string;
+    /** Display unit for the product. */
+    unit: string;
+    /** Product AM identifier. */
+    p_am: string;
+    /** Whether the product can be split into smaller quantities. */
+    p_split: boolean;
   }
 
   /** A single priced variant within the product price response. */

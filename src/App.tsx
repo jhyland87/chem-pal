@@ -37,8 +37,9 @@ import StatusBar, { StatusBarProvider, useStatusBar } from "./components/StatusB
 import { DevBadge } from "./components/StyledComponents";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { diff } from "./helpers/collectionUtils";
+import { getCountryName } from "./helpers/country";
 import { getCurrencyCodeFromLocation, getCurrencyRate } from "./helpers/currency";
-import { getUserCountry } from "./helpers/utils";
+import { getUserLocation } from "./helpers/utils";
 
 const StatsPanel = IS_DEV_BUILD ? lazy(() => import("./components/StatsPanel")) : null;
 
@@ -103,8 +104,9 @@ if (isValidUserSettings(defaultSettings)) {
 Object.assign(initialAppState, {
   userSettings: {
     ...initialAppState.userSettings,
-    currency: getCurrencyCodeFromLocation(getUserCountry()),
-    location: getUserCountry(),
+    currency: getCurrencyCodeFromLocation(getUserLocation()),
+    location: getUserLocation(),
+    country: getCountryName(getUserLocation()),
     supplierResultLimit: defaultResultsLimit,
     suppliers: SupplierFactory.supplierList(),
   } satisfies UserSettings,
@@ -172,7 +174,12 @@ function App() {
         // persists them to cstorage.local. Also fetches the updated currency rate.
         // Dispatched by child components via appContext.setUserSettings().
         case APP_ACTION.UPDATE_SETTINGS: {
-          const newSettings = action.settings;
+          // Keep `country` (full name) in sync with `location` (country code) on
+          // every settings change, so consumers like Ambeed can read it directly.
+          const newSettings: UserSettings = {
+            ...action.settings,
+            country: getCountryName(action.settings.location),
+          };
 
           startTransition(() => {
             (async () => {

@@ -72,10 +72,19 @@ declare global {
     currency?: string;
 
     /**
-     * User's geographical location for shipping calculations
+     * User's geographical location (two-letter country code) for shipping
+     * calculations. Kept in sync with `country` whenever it changes.
      * @example "US"
      */
     location?: string;
+
+    /**
+     * Full country name derived from `location` via `country-list-js`. Updated
+     * automatically whenever `location` is set; suppliers that need a country
+     * name (e.g. Ambeed's country cookie) read this rather than the code.
+     * @example "United States"
+     */
+    country?: string;
 
     /**
      * Currency rate for the user's currency

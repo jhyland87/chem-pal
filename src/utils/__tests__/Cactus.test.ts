@@ -170,6 +170,54 @@ describe("Cactus", () => {
         expect(result).toEqual(["aspirin", "acetylsalicylic acid"]);
       });
 
+      it("should strip parenthetical qualifiers before filtering", async () => {
+        // "Aspirin (JP15/USP)" would be rejected outright by the simple-name filter; stripping the
+        // parenthetical recovers "Aspirin" so it qualifies.
+        const mockResponse = "Aspirin (JP15/USP)\nEasprin (TN)\n50-78-2\n2-acetyloxybenzoic acid";
+        mockFetch.mockResolvedValueOnce({
+          status: 200,
+          headers: new Map([["content-type", "text/plain"]]),
+          text: () => Promise.resolve(mockResponse),
+          clone: () => ({
+            headers: new Map([["content-type", "text/plain"]]),
+          }),
+        });
+
+        const result = await cactus.getSimpleNames();
+        expect(result).toEqual(["Aspirin", "Easprin"]);
+      });
+
+      it("should strip bracketed language tags before filtering", async () => {
+        const mockResponse =
+          "Acetylsalicylsaure [German]\nAcide acetylsalicylique [French]\n50-78-2";
+        mockFetch.mockResolvedValueOnce({
+          status: 200,
+          headers: new Map([["content-type", "text/plain"]]),
+          text: () => Promise.resolve(mockResponse),
+          clone: () => ({
+            headers: new Map([["content-type", "text/plain"]]),
+          }),
+        });
+
+        const result = await cactus.getSimpleNames();
+        expect(result).toEqual(["Acetylsalicylsaure", "Acide acetylsalicylique"]);
+      });
+
+      it("should de-duplicate names that collapse to the same value after stripping", async () => {
+        const mockResponse = "Aspirin (JP15/USP)\nAspirin (TN)\nAspirin (USP)\n50-78-2";
+        mockFetch.mockResolvedValueOnce({
+          status: 200,
+          headers: new Map([["content-type", "text/plain"]]),
+          text: () => Promise.resolve(mockResponse),
+          clone: () => ({
+            headers: new Map([["content-type", "text/plain"]]),
+          }),
+        });
+
+        const result = await cactus.getSimpleNames();
+        expect(result).toEqual(["Aspirin"]);
+      });
+
       it("should respect limit parameter", async () => {
         const mockResponse = "aspirin\nacetylsalicylic acid\nacetoxybenzoic acid\nbenzoic acid";
         mockFetch.mockResolvedValueOnce({

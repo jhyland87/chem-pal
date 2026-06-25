@@ -6,12 +6,21 @@ import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isCurrencyCode } from "@/utils/typeGuards/common";
 import { extract } from "fuzzball";
 import { SupplierBase } from "./SupplierBase";
+
 /**
  * Supplier implementation for LiMac Science, a Latvian chemical supplier.
  * LiMac delegates product search to FreeFind (a 3rd-party site search engine),
  * so the supplier issues its query against `search.freefind.com` and then
  * fetches each product page on `www.limac.lv` to extract pricing, variants,
  * and CAS information from the embedded `mozCatItem*` JavaScript objects.
+ *
+ * LiMac also supports a "refined search" feature which allows for searching
+ * for more than one phrase at a time, while using logic.
+ * eg:  `(sulfuric acid) OR (boric acid)`
+ *      `(sulfuric) OR (boric) acid`
+ *      `(sodium borohydride) AND (95%)`
+ *
+ * @see https://search.freefind.com/searchtipspop.html
  *
  * @typeParam S - The supplier-specific product type (Partial<Product>)
  * @typeParam T - The common Product type that all suppliers map to
@@ -57,6 +66,9 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
   // Number of requests to process in parallel when fetching product details
   protected maxConcurrentRequests: number = 5;
 
+  // The site ID for the FreeFind search engine.
+  protected readonly siteId: number = 52187908;
+
   /**
    * No setup is required for LiMac; the FreeFind search endpoint is stateless
    * and the product pages don't depend on any session cookies.
@@ -94,7 +106,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
       host: this.apiURL,
       path: "/find.html",
       params: {
-        si: "52187908",
+        si: this.siteId,
         pid: "r",
         n: "0",
         // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -111,10 +123,57 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
 
     this.logger.debug("searchResponse:", { searchResponse });
 
-    const fuzzResults = this.fuzzHtmlResponse(query, searchResponse);
-    this.logger.debug("fuzzResults:", { fuzzResults });
+    const productLinks = this.getProductLinksFromSearchResponse(searchResponse);
+    this.logger.debug("productLinks:", { productLinks });
 
-    return this.initProductBuilders(fuzzResults.slice(0, limit));
+    return mapDefined(productLinks, (link: string) => {
+      return new ProductBuilder<Product>(this.baseURL).setURL(link);
+    }).slice(0, limit);
+  }
+
+  private getProductLinksFromSearchResponse(response: string): string[] {
+    const parsedHTML = createDOM(response);
+    const noResultsCheck = parsedHTML.querySelector(
+      ".search-header-table .search-count > .search-no-results",
+    );
+    if (noResultsCheck) {
+      this.logger.log("No products found", { response });
+      return [];
+    }
+
+    const resultCount = parsedHTML.querySelector(
+      ".search-header-table td.search-count > font.search-count",
+    )?.textContent;
+    if (!resultCount) {
+      this.logger.log("No products found", { response });
+      return [];
+    }
+
+    const resultCountMatch = resultCount.match(
+      /Found (?<result_count>[0-9]+) items, now showing (?<from>[0-9]+) \- (?<to>[0-9]+)/m,
+    );
+    if (!resultCountMatch) {
+      this.logger.log("No products found", { response });
+      return [];
+    }
+
+    const totalResults = Number(resultCountMatch.groups?.result_count ?? "0");
+    const startResult = Number(resultCountMatch.groups?.from ?? "0");
+    const endResult = Number(resultCountMatch.groups?.to ?? "0");
+
+    this.logger.log("Found results", { response, totalResults, startResult, endResult });
+
+    const productLinks = parsedHTML.querySelectorAll("font.search-results > a");
+
+    return mapDefined(Array.from(productLinks), (link: Element) => {
+      const href = link.getAttribute("href");
+      if (!href) {
+        this.logger.error("No URL for product", { link });
+        return;
+      }
+
+      return new URL(href, this.baseURL).toString();
+    });
   }
 
   /**

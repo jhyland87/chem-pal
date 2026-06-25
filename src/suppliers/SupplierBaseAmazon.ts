@@ -3,7 +3,7 @@ import { getCurrencyCodeFromSymbol, parsePrice } from "@/helpers/currency";
 import { findElementWithText } from "@/helpers/dom";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM } from "@/helpers/request";
-import { getUserCountry, mapDefined, tryParseJson } from "@/helpers/utils";
+import { getUserLocation, mapDefined, tryParseJson } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { SupplierBase } from "./SupplierBase";
 
@@ -69,7 +69,7 @@ const amazonDomains: CountryDomainMap = {
   /* eslint-enable */
 };
 
-const userCountry = getUserCountry();
+const userCountry = getUserLocation();
 
 /**
  * Base class for Amazon suppliers
@@ -85,7 +85,7 @@ export abstract class SupplierBaseAmazon
 {
   /**
    * The base URL of Amazon - This is determined by the users locale (eg: using output of
-   * getUserCountry() from /src/helpers/utils.ts) and a lookup table. Defaults to "US" if
+   * getUserLocation() from /src/helpers/utils.ts) and a lookup table. Defaults to "US" if
    * the user's country is not found in the lookup table.
    * @source
    */

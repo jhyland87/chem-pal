@@ -441,26 +441,26 @@ export function parseJsonFromDirtyString(data: string): unknown {
 }
 
 /**
- * Gets the user's country from the browser's i18n API. This just splits the locale
- * by the "-" character and returns the second part. This is a simple way to get the
- * country code from the locale.
+ * Gets the user's location (two-letter country code) from the browser's i18n
+ * API. This just splits the locale by the "-" character and returns the second
+ * part. This is a simple way to get the country code from the locale.
  *
  * @category Helpers
- * @returns The user's country as a CountryCode. (defaults to "US")
+ * @returns The user's location as a CountryCode. (defaults to "US")
  * @example
  * ```typescript
  * // If the locale is "en-US"
- * getUserCountry() // Returns "US" (United States)
+ * getUserLocation() // Returns "US" (United States)
  *
  * // If the locale is "en-GB"
- * getUserCountry() // Returns "GB" (United Kingdom)
+ * getUserLocation() // Returns "GB" (United Kingdom)
  *
  * // If the locale is "en-CA"
- * getUserCountry() // Returns "CA" (Canada)
+ * getUserLocation() // Returns "CA" (Canada)
  * ```
  * @source
  */
-export function getUserCountry(): CountryCode {
+export function getUserLocation(): CountryCode {
   if (typeof chrome === "undefined" || typeof chrome.i18n === "undefined") {
     return "US";
   }

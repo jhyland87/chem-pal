@@ -1,5 +1,6 @@
 //import type { ExchangeRateResponse, ParsedPrice } from "types";
-import { CURRENCY_CODE_MAP, CURRENCY_CODE_MAP_BY_LOCATION } from "@/constants/currency";
+import { CURRENCY_CODE_MAP } from "@/constants/currency";
+import { findCountryByIso2 } from "@/helpers/country";
 import { LRUCache } from "lru-cache";
 import priceParser from "price-parser";
 /**
@@ -191,8 +192,9 @@ export function getCurrencyCodeFromSymbol(symbol: CurrencySymbol): CurrencyCode 
 
 /**
  * Maps a location to its corresponding currency code.
- * Uses a predefined mapping from the CURRENCY_CODE_MAP_BY_LOCATION constant.
- * Supports major international locations.
+ * Looks the country up in `country-list-js` by its two-letter code and reads
+ * the associated currency. Falls back to 'USD' for unknown locations (e.g. the
+ * synthetic 'OTHER' option).
  *
  * @category Helpers
  * @param location - The location to look up (e.g., 'US', 'GB')
@@ -202,11 +204,12 @@ export function getCurrencyCodeFromSymbol(symbol: CurrencySymbol): CurrencyCode 
  * ```typescript
  * getCurrencyCodeFromLocation('US') // Returns 'USD'
  * getCurrencyCodeFromLocation('GB') // Returns 'GBP'
+ * getCurrencyCodeFromLocation('OTHER') // Returns 'USD'
  * ```
  * @source
  */
 export function getCurrencyCodeFromLocation(location: CountryCode): CurrencyCode {
-  return CURRENCY_CODE_MAP_BY_LOCATION[String(location)];
+  return findCountryByIso2(String(location))?.currency?.code ?? "USD";
 }
 
 /**

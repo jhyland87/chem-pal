@@ -1,4 +1,5 @@
 import { getCookie } from "@/helpers/cookies";
+import { getUserCountryName } from "@/helpers/country";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import {
@@ -436,6 +437,21 @@ export class SupplierAmbeed
   }
 
   /**
+   * Initializes the Ambeed session: sets the XSRF token, then aligns the
+   * country cookie with the user's selected country (defaulting to
+   * "United States" when none is stored).
+   * @returns Resolves once the session cookies are set
+   * @source
+   */
+  setup(): Promise<void> {
+    return (async () => {
+      await this.setXsrfToken();
+      await this.setCountryCookie(await getUserCountryName());
+      await this.getCountryCookie();
+    })();
+  }
+
+  /**
    * The query params are sent over in a base64 encoded JSON.stringify of
    * ```js
    * params=btoa(JSON.stringify({ keyword: "sodium chloride" }))
@@ -447,10 +463,6 @@ export class SupplierAmbeed
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    await this.setXsrfToken();
-    await this.setCountryCookie("United States");
-    await this.getCountryCookie();
-
     const searchRequest: unknown = await this.httpGetJson({
       path: "webapi/v1/productlistbykeyword",
       params: {
@@ -617,6 +629,35 @@ export class SupplierAmbeed
   }
 
   /**
+   * Extracts the priced variants from an Ambeed `product_price` response value.
+   *
+   * The variants live under a dynamic `${pr_bd}_${p_purity}` key (e.g.
+   * `"BD41982_95%"`) that varies per product and can't be indexed by a plain
+   * string, so this walks the entries and returns the first array-valued one,
+   * skipping the `proInfo` block.
+   *
+   * @param value - The `value` object from an AmbeedProductPriceResponse
+   * @returns The list of priced variants, or an empty array when none is present
+   * @example
+   * ```js
+   * this.getPriceVariants(response.value);
+   * // [{ pr_id: 3805067, pr_size: "1mg", pr_usd: "$10.00", ... }]
+   * ```
+   * @source
+   */
+  protected getPriceVariants(
+    value: AmbeedProductPriceResponseValue,
+  ): AmbeedProductPriceResponseVariantItem[] {
+    for (const [key, entry] of Object.entries(value)) {
+      if (key === "proInfo" || !Array.isArray(entry)) {
+        continue;
+      }
+      return entry;
+    }
+    return [];
+  }
+
+  /**
    * No real need to get the product data on a second page, the initial product listing
    * page has enough data.
    * @param product - The product builder to get data for
@@ -651,7 +692,8 @@ export class SupplierAmbeed
       return product;
     }
 
-    this.logger.log("productPriceResponse", productPriceResponse);
+    const variants = this.getPriceVariants(productPriceResponse.value);
+    this.logger.log("Ambeed product price variants", variants);
     return product;
   }
 
