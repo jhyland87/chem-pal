@@ -18,6 +18,92 @@ import {
 import type { JsonValue } from "type-fest";
 import { SupplierBase } from "./SupplierBase";
 
+// Decoder for ambeed's am-new2.woff cmap-substitution font.
+// Source codepoint -> visible character. Verified: "łÇÊ¶ÊÊ" -> "$10.00".
+// NOTE: this table is specific to am-new2.woff; re-extract if the font is rotated.
+const AMBEED_FONT_MAP: Record<number, string> = {
+  0x00ca: "0",
+  0x00c7: "1",
+  0x00cb: "2",
+  0x00a7: "3",
+  0x00cd: "4",
+  0x00ff: "5",
+  0x00f2: "6",
+  0x010f: "7",
+  0x00f3: "8",
+  0x00ee: "9",
+  0x00e8: "a",
+  0x00df: "b",
+  0x00de: "c",
+  0x0119: "d",
+  0x0121: "e",
+  0x00d1: "f",
+  0x00d5: "g",
+  0x00d0: "h",
+  0x00db: "i",
+  0x00d9: "j",
+  0x00d2: "k",
+  0x0127: "m",
+  0x010b: "n",
+  0x0167: "n",
+  0x0109: "o",
+  0x0123: "p",
+  0x00c9: "q",
+  0x0104: "r",
+  0x00a2: "s",
+  0x00f0: "t",
+  0x00c8: "u",
+  0x00c5: "v",
+  0x0126: "w",
+  0x00fb: "x",
+  0x00c3: "y",
+  0x00c4: "z",
+  0x00d6: "A",
+  0x00d4: "B",
+  0x00dd: "C",
+  0x00d8: "D",
+  0x012d: "E",
+  0x0153: "F",
+  0x012b: "G",
+  0x0129: "H",
+  0x00f1: "J",
+  0x00ed: "K",
+  0x0105: "L",
+  0x00ef: "M",
+  0x00e0: "N",
+  0x00eb: "O",
+  0x010c: "P",
+  0x00e3: "Q",
+  0x00a4: "R",
+  0x00cf: "S",
+  0x00e1: "T",
+  0x00f6: "U",
+  0x00dc: "V",
+  0x00cc: "W",
+  0x00e7: "X",
+  0x00ec: "Y",
+  0x00e4: "Z",
+  0x00b6: ".",
+  0x0142: "$",
+  0x0100: "\u00A3",
+  0x0101: "\u00A3",
+  0x0102: "\u20AC",
+  0x0155: "%",
+  0x0193: ",",
+  0x0164: "-",
+  0x015b: "(",
+  0x01a5: ")",
+  0x01ab: "*",
+  0x00c6: "/",
+  0x00e9: "=",
+  0x00ea: "<",
+  0x00e2: ">",
+  0x00e5: "\u2264",
+  0x00a3: "\u2265",
+  0x00a1: "I",
+  0x0157: "l", // bare vertical stroke: I / l / 1 indistinguishable
+};
+
 /**
  * Ambeed is a Chinese chemical supplier.
  *
@@ -146,23 +232,23 @@ export class SupplierAmbeed
     /* eslint-enable */
   };
 
-  /**
-   * Map of encoded price characters to their corresponding decoded characters.
-   */
-  protected encodedPriceChars: Map<string, string> = new Map([
-    ["\u00b6", "."],
-    ["\u0142", "$"],
-    ["\u00ca", "0"],
-    ["\u00c7", "1"],
-    ["\u00cb", "2"],
-    ["\u00a7", "3"],
-    ["\u00cd", "4"],
-    ["\u00ff", "5"],
-    ["\u00f2", "6"],
-    ["\u010f", "7"],
-    ["\u00f3", "8"],
-    ["\u00ee", "9"],
-  ]);
+  // /**
+  //  * Map of encoded price characters to their corresponding decoded characters.
+  //  */
+  // protected encodedPriceChars: Map<string, string> = new Map([
+  //   ["\u00b6", "."],
+  //   ["\u0142", "$"],
+  //   ["\u00ca", "0"],
+  //   ["\u00c7", "1"],
+  //   ["\u00cb", "2"],
+  //   ["\u00a7", "3"],
+  //   ["\u00cd", "4"],
+  //   ["\u00ff", "5"],
+  //   ["\u00f2", "6"],
+  //   ["\u010f", "7"],
+  //   ["\u00f3", "8"],
+  //   ["\u00ee", "9"],
+  // ]);
 
   /**
    * Calculates the sign secret for the Ambeed API.
@@ -336,11 +422,24 @@ export class SupplierAmbeed
    * ```
    * @source
    */
-  protected decodePrice(encoded: string): string {
-    return encoded
-      .split("")
-      .map((char) => this.encodedPriceChars.get(char) || "")
-      .join("");
+  // protected decodePrice(encoded: string): string {
+  //   return encoded
+  //     .split("")
+  //     .map((char) => this.encodedPriceChars.get(char) || "")
+  //     .join("");
+  // }
+
+  protected decodeAmbeedFont(str: string): string {
+    if (!str || typeof str !== "string") {
+      return str;
+    }
+
+    let out = "";
+    for (const ch of str) {
+      const cp = ch.codePointAt(0);
+      out += cp !== undefined ? (AMBEED_FONT_MAP[cp] ?? ch) : ch;
+    }
+    return out;
   }
 
   /**
@@ -374,9 +473,9 @@ export class SupplierAmbeed
     return {
       ...priceData,
       /* eslint-disable */
-      pr_usd: this.decodePrice(priceData.pr_usd),
-      vip_usd: this.decodePrice(priceData.vip_usd),
-      discount_usd: this.decodePrice(priceData.discount_usd),
+      pr_usd: this.decodeAmbeedFont(priceData.pr_usd),
+      vip_usd: this.decodeAmbeedFont(priceData.vip_usd),
+      discount_usd: this.decodeAmbeedFont(priceData.discount_usd),
       /* eslint-enable */
     };
   }
