@@ -165,7 +165,7 @@ export async function setSearchResults(results: Product[]): Promise<void> {
  * start of a new search, where firing the event would bounce the user off the
  * results panel.
  * @param options - Clear behavior.
- * @param options.notify - Whether to dispatch {@link IDB_SEARCH_RESULTS_CLEARED} (default `true`).
+ * - `notify` - Whether to dispatch {@link IDB_SEARCH_RESULTS_CLEARED} (default `true`).
  * @example
  * ```ts
  * await clearSearchResults();                  // clears + notifies listeners

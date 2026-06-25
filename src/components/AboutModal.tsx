@@ -30,8 +30,8 @@ interface Contributor {
  * @component
  * @category Components
  * @param props - Component props.
- * @param props.aboutOpen - Whether the modal is open.
- * @param props.setAboutOpen - Setter to close the modal.
+ * - `aboutOpen` - Whether the modal is open.
+ * - `setAboutOpen` - Setter to close the modal.
  * @example
  * ```tsx
  * <AboutModal aboutOpen={isOpen} setAboutOpen={setIsOpen} />

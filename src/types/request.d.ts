@@ -61,7 +61,7 @@ declare global {
   }
 
   /**
-   * @description Type for request parameters.
+   * Type for request parameters.
    * @example
    * ```typescript
    * const params: RequestParams = {

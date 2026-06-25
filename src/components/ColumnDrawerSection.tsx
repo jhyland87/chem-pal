@@ -48,13 +48,13 @@ interface ColumnDrawerSectionProps {
  * sees, this component wires it up to `selectedSuppliers`, `searchFilters`,
  * or `userSettings` via `useAppContext`.
  * @param props - Component props.
- * @param props.columnId - Column id; the accordion's `panelId` is derived as
- *                         `search-${columnId}`.
- * @param props.config - The column's `meta.drawer` payload.
- * @param props.expandedAccordion - Currently expanded accordion's panel id
- *                                  (or `false` for none).
- * @param props.onAccordionChange - MUI Accordion `onChange` factory; call
- *                                  with the panelId to get the handler.
+ * - `columnId` - Column id; the accordion's `panelId` is derived as
+ *   `search-${columnId}`.
+ * - `config` - The column's `meta.drawer` payload.
+ * - `expandedAccordion` - Currently expanded accordion's panel id
+ *   (or `false` for none).
+ * - `onAccordionChange` - MUI Accordion `onChange` factory; call
+ *   with the panelId to get the handler.
  * @returns An MUI `Accordion` summary + the widget matching `config.widget`.
  * @example
  * ```tsx

@@ -21,18 +21,6 @@
     {
       "tagName": "@subcategory",
       "syntaxKind": "block"
-    },
-    {
-      "tagName": "@categoryDescription",
-      "syntaxKind": "block"
-    },
-    {
-      "tagName": "@groupDescription",
-      "syntaxKind": "block"
-    },
-    {
-      "tagName": "@group",
-      "syntaxKind": "inline"
     }
   ],
   "supportForTags": {

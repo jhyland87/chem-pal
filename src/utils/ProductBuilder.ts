@@ -1192,6 +1192,14 @@ export class ProductBuilder<T extends Product> {
           variant.url = this.href(variant.url);
         }
 
+        // Default the variant's human-facing permalink to its own permalink,
+        // then its processing URL, then the parent product's permalink/URL.
+        const variantPermalink =
+          variant.permalink ?? variant.url ?? this.product.permalink ?? this.product.url;
+        if (variantPermalink) {
+          variant.permalink = this.href(variantPermalink);
+        }
+
         // Re-populate the variant using the parent product properties as defaults and the current
         // values as overrides.
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1214,6 +1222,9 @@ export class ProductBuilder<T extends Product> {
     }
 
     this.product.url = this.href(this.product.url);
+    // Human-facing permalink defaults to the processing URL when a supplier
+    // didn't set one (the common case for scraped suppliers).
+    this.product.permalink = this.href(this.product.permalink ?? this.product.url);
     this.logger.debug("ProductBuilder| Built product:", { product: this.product, builder: this });
     // isProduct() above narrows to the base Product; T is the caller's concrete subtype of Product.
     return this.product as T;

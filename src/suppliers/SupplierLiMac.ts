@@ -1,6 +1,7 @@
 import { findCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM } from "@/helpers/request";
+import { parsePurity } from "@/helpers/science";
 import { mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isCurrencyCode } from "@/utils/typeGuards/common";
@@ -19,6 +20,8 @@ import { SupplierBase } from "./SupplierBase";
  * eg:  `(sulfuric acid) OR (boric acid)`
  *      `(sulfuric) OR (boric) acid`
  *      `(sodium borohydride) AND (95%)`
+ *
+ *
  *
  * @see https://search.freefind.com/searchtipspop.html
  *
@@ -109,10 +112,9 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
         si: this.siteId,
         pid: "r",
         n: "0",
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         _charset_: "UTF-8",
         bcd: "÷",
-        query: encodeURIComponent(query),
+        query: encodeURIComponent(query).replaceAll("%20", "+"),
       },
     });
 
@@ -123,21 +125,37 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
 
     this.logger.debug("searchResponse:", { searchResponse });
 
-    const productLinks = this.getProductLinksFromSearchResponse(searchResponse);
-    this.logger.debug("productLinks:", { productLinks });
+    // Hand the result anchors to initProductBuilders (rather than building the
+    // ProductBuilders inline) so each one gets its title, supplier, and ID set
+    // via setBasicInfo — the same flow every other supplier follows.
+    const productElements = this.getSearchResultElements(searchResponse);
+    this.logger.debug("productElements:", { count: productElements.length });
 
-    return mapDefined(productLinks, (link: string) => {
-      return new ProductBuilder<Product>(this.baseURL).setURL(link);
-    }).slice(0, limit);
+    return this.initProductBuilders(productElements).slice(0, limit);
   }
 
-  private getProductLinksFromSearchResponse(response: string): string[] {
+  /**
+   * Parses a FreeFind search results page into the result anchor elements, in
+   * FreeFind's ranking order. Returns an empty array when the page reports no
+   * results or the result-count header can't be parsed.
+   *
+   * @param response - The HTML response from FreeFind
+   * @returns The result anchor Elements (consumed by {@link initProductBuilders})
+   * @example
+   * ```typescript
+   * const html = await this.httpGetHtml({ host: this.apiURL, path: "/find.html" });
+   * const elements = this.getSearchResultElements(html ?? "");
+   * const builders = this.initProductBuilders(elements);
+   * ```
+   * @source
+   */
+  private getSearchResultElements(response: string): Element[] {
     const parsedHTML = createDOM(response);
     const noResultsCheck = parsedHTML.querySelector(
       ".search-header-table .search-count > .search-no-results",
     );
     if (noResultsCheck) {
-      this.logger.log("No products found", { response });
+      this.logger.log("No products found", { response, noResultsCheck });
       return [];
     }
 
@@ -145,15 +163,15 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
       ".search-header-table td.search-count > font.search-count",
     )?.textContent;
     if (!resultCount) {
-      this.logger.log("No products found", { response });
+      this.logger.log("No products found", { response, resultCount });
       return [];
     }
 
     const resultCountMatch = resultCount.match(
-      /Found (?<result_count>[0-9]+) items, now showing (?<from>[0-9]+) \- (?<to>[0-9]+)/m,
+      /Found (?<result_count>[0-9]+) items, now showing (?<from>[0-9]+) - (?<to>[0-9]+)/m,
     );
     if (!resultCountMatch) {
-      this.logger.log("No products found", { response });
+      this.logger.log("No products found", { response, resultCountMatch });
       return [];
     }
 
@@ -163,17 +181,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
 
     this.logger.log("Found results", { response, totalResults, startResult, endResult });
 
-    const productLinks = parsedHTML.querySelectorAll("font.search-results > a");
-
-    return mapDefined(Array.from(productLinks), (link: Element) => {
-      const href = link.getAttribute("href");
-      if (!href) {
-        this.logger.error("No URL for product", { link });
-        return;
-      }
-
-      return new URL(href, this.baseURL).toString();
-    });
+    return Array.from(parsedHTML.querySelectorAll("font.search-results > a"));
   }
 
   /**
@@ -222,7 +230,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
     }
 
     const resultCountMatch = resultCount.match(
-      /Found (?<result_count>[0-9]+) items, now showing (?<from>[0-9]+) \- (?<to>[0-9]+)/m,
+      /Found (?<result_count>[0-9]+) items, now showing (?<from>[0-9]+) - (?<to>[0-9]+)/m,
     );
     if (!resultCountMatch) {
       this.logger.log("No products found", { query });
@@ -260,7 +268,6 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
         return acc;
       }
 
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       acc[idx] = Object.assign(obj, { _fuzz: { score, idx }, matchPercentage: score });
       return acc;
     }, []);
@@ -317,11 +324,15 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
   }
 
   /**
-   * Fetches a LiMac product page and extracts the embedded
-   * `mozCatItemMozApi` JavaScript object, which holds the product name, CAS
-   * number (in its `sku` field), currency, and the full variants list. The
-   * first variant is used as the canonical product; the rest are appended
-   * via `addVariant`.
+   * Fetches a LiMac product page and enriches the builder from several
+   * sources on the page:
+   * - the embedded `mozCatItemMozApi` JS object (name, CAS in its `sku`
+   *   field, currency, price, and the full variants list — the first variant
+   *   becomes the canonical product, the rest are appended via `addVariant`),
+   * - the `og:image` meta tag (and `mozCatItemPictures` for the thumbnail),
+   * - the product title (purity, e.g. "min 95%"),
+   * - the `#basic` properties table (molecular formula, molecular weight, and
+   *   a CAS fallback).
    *
    * @param product - Partial product to enrich with detail-page data
    * @returns Promise resolving to the enriched ProductBuilder or void
@@ -330,7 +341,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
    * const builder = await supplier.getProductData(partialBuilder);
    * if (builder) {
    *   const product = await builder.build();
-   *   console.log(product.title, product.cas, product.variants?.length);
+   *   console.log(product.title, product.cas, product.moleform, product.purity);
    * }
    * ```
    * @source
@@ -338,7 +349,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    return this.getProductDataWithCache(product, async (builder) => {
+    const result = await this.getProductDataWithCache(product, async (builder) => {
       if (typeof builder === "undefined") {
         this.logger.error("No products to get data for");
         return;
@@ -355,11 +366,13 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
         return;
       }
 
-      const mozApi = this.extractMozCatItemMozApi(productResponse);
+      const mozApi = this.parseJsObject<MozCatItemMozApi>(productResponse, "mozCatItemMozApi");
       if (!mozApi) {
         this.logger.warn("No mozCatItemMozApi found", { url: builder.get("url") });
         return;
       }
+
+      const dom = createDOM(productResponse);
 
       builder.setData({ title: mozApi.name });
 
@@ -393,8 +406,168 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
         });
       }
 
+      // Purity is baked into the product name, e.g. "Sodium borohydride, min 95%".
+      const purity = parsePurity(mozApi.name);
+      if (purity) builder.setPurity(purity);
+
+      this.applyProductImage(builder, dom, productResponse, mozApi.name);
+      this.applyBasicProperties(builder, dom);
+
       return builder;
     });
+
+    // Secondary fuzz filter. The FreeFind search ranks by coarse category
+    // breadcrumbs, so loosely-relevant products slip through. Now that the
+    // product page has given us the real product name, fuzz-match it against
+    // the query and drop anything below the cutoff. This runs outside the
+    // cache wrapper (which keys on URL, not query) so the filter applies to
+    // the current query for both freshly fetched and cached products.
+    if (!result) return;
+
+    const name = result.get("title");
+    if (typeof name === "string") {
+      const score = this.fuzzyScore(name);
+      if (score < this.minMatchPercentage) {
+        this.logger.debug("Dropping product below fuzz threshold", {
+          name,
+          query: this.query,
+          score,
+          cutoff: this.minMatchPercentage,
+        });
+        return;
+      }
+      result.setMatchPercentage(score);
+    }
+
+    return result;
+  }
+
+  /**
+   * Sets the product image and thumbnail. Prefers the `og:image` meta tag (a
+   * clean absolute URL) for the main image, and the first `mozCatItemPictures`
+   * entry's CDN thumbnail for the thumbnail. When `og:image` is absent, falls
+   * back to the full-size `mozCatItemPictures` image.
+   *
+   * @param builder - The ProductBuilder to apply the image data to
+   * @param dom - The parsed product page Document
+   * @param html - The raw product page HTML (for the embedded picture JS object)
+   * @param altText - Alt text for the image (the product name)
+   * @returns Nothing; mutates the builder in place
+   * @example
+   * ```typescript
+   * this.applyProductImage(builder, dom, html, "Sodium borohydride, min 95%");
+   * // builder.get("imageURL") -> "https://www.limac.lv/files/.../NaBH4-....png"
+   * ```
+   * @source
+   */
+  private applyProductImage(
+    builder: ProductBuilder<Product>,
+    dom: Document,
+    html: string,
+    altText: string,
+  ): void {
+    const ogImage = this.getMetaTags(dom)["og:image"];
+    const pictures = this.parseJsObject<MozCatItemPictures>(html, "mozCatItemPictures");
+    const picture = pictures?.item?.[0];
+
+    if (ogImage) {
+      builder.setImage(ogImage, altText);
+    } else if (picture && pictures) {
+      builder.setImage(`${pictures.cdn}${picture.size_set.m}`, altText);
+    }
+
+    if (picture?.thumb) {
+      builder.setThumbnail(picture.thumb);
+    }
+  }
+
+  /**
+   * Reads the `#basic` properties table on a LiMac product page and applies
+   * the molecular formula, molecular weight, and CAS number (as a fallback
+   * when the `mozCatItemMozApi` SKU didn't yield one) to the builder.
+   *
+   * @param builder - The ProductBuilder to apply the properties to
+   * @param dom - The parsed product page Document
+   * @returns Nothing; mutates the builder in place
+   * @example
+   * ```typescript
+   * this.applyBasicProperties(builder, dom);
+   * // builder.get("moleform") -> "NaBH4", builder.get("moleweight") -> 37.83
+   * ```
+   * @source
+   */
+  private applyBasicProperties(builder: ProductBuilder<Product>, dom: Document): void {
+    const props = this.parseDetailTable(dom, "#basic");
+
+    const moleform = props["Molecular Formula"];
+    if (moleform) builder.setMoleform(moleform);
+
+    const moleweight = props["Molecular Weight"]?.match(/[\d.]+/)?.[0];
+    if (moleweight) builder.setMoleweight(moleweight);
+
+    // CAS is normally taken from mozCatItemMozApi.sku; only fall back to the
+    // table when that didn't produce one.
+    if (!builder.get("cas")) {
+      const tableCas = findCAS(props["CAS No."] ?? "");
+      if (tableCas) builder.setCAS(tableCas);
+    }
+  }
+
+  /**
+   * Reduces all `<meta>` tags on the page into a record keyed by each tag's
+   * `property` attribute (e.g. `og:image`, `og:title`). LiMac emits Open
+   * Graph tags using `property=` rather than `name=`.
+   *
+   * @param dom - The parsed product page Document
+   * @returns A record of meta `property` → `content`
+   * @example
+   * ```typescript
+   * const meta = this.getMetaTags(dom);
+   * console.log(meta["og:image"]); // "https://www.limac.lv/files/.../NaBH4-....png"
+   * ```
+   * @source
+   */
+  private getMetaTags(dom: Document): Record<string, string> {
+    return Array.from(dom.getElementsByTagName("meta")).reduce<Record<string, string>>(
+      (acc, meta) => {
+        const property = meta.getAttribute("property");
+        if (typeof property === "string") {
+          acc[property] = meta.getAttribute("content") ?? "";
+        }
+        return acc;
+      },
+      {},
+    );
+  }
+
+  /**
+   * Parses a two-column properties table (label `<th>` → value `<td>`) into a
+   * record. LiMac product pages render `#basic` and `#properties` tables in
+   * this shape.
+   *
+   * @param dom - The parsed product page Document
+   * @param selector - CSS selector for the table's container element
+   * @returns A record of trimmed row label → trimmed row value
+   * @example
+   * ```typescript
+   * const props = this.parseDetailTable(dom, "#basic");
+   * console.log(props["Molecular Weight"]); // "37.83"
+   * ```
+   * @source
+   */
+  private parseDetailTable(dom: Document, selector: string): Record<string, string> {
+    const container = dom.querySelector(selector);
+    if (!container) return {};
+
+    return Array.from(container.querySelectorAll("tr")).reduce<Record<string, string>>(
+      (acc, row) => {
+        const label = row.querySelector("th")?.textContent?.trim().replace(/\s+/g, " ");
+        const value = row.querySelector("td")?.textContent?.trim().replace(/\s+/g, " ");
+        if (label && value) acc[label] = value;
+        return acc;
+      },
+      {},
+    );
   }
 
   /**
@@ -422,25 +595,27 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
   }
 
   /**
-   * Locates `var mozCatItemMozApi = { … };` inside a LiMac product page and
-   * parses it into an object. The page emits a JS literal (unquoted keys,
-   * trailing commas) rather than valid JSON, so the literal is normalised
-   * via regex (quote keys, strip trailing commas) before `JSON.parse`. This
-   * avoids `eval`/`new Function` so the supplier remains compatible with
-   * extension CSP.
+   * Locates `var {name} = { … };` inside a LiMac product page and parses it
+   * into an object. The page emits JS literals (unquoted keys, trailing
+   * commas) rather than valid JSON, so the literal is normalised via regex
+   * (quote keys, strip trailing commas) before `JSON.parse`. This avoids
+   * `eval`/`new Function` so the supplier remains compatible with extension
+   * CSP. Used for both `mozCatItemMozApi` and `mozCatItemPictures`.
    *
+   * @typeParam R - The expected shape of the parsed object
    * @param html - The full product page HTML
-   * @returns The parsed `mozCatItemMozApi` object, or undefined if missing/malformed
+   * @param name - The JS variable name to locate (e.g., "mozCatItemMozApi")
+   * @returns The parsed object, or undefined if missing/malformed
    * @example
    * ```typescript
    * const html = await this.httpGetHtml({ path: "/catalog/.../item/373337/" });
-   * const api = this.extractMozCatItemMozApi(html ?? "");
+   * const api = this.parseJsObject<MozCatItemMozApi>(html ?? "", "mozCatItemMozApi");
    * console.log(api?.name, api?.sku, api?.variants?.length);
    * ```
    * @source
    */
-  private extractMozCatItemMozApi(html: string): MozCatItemMozApi | undefined {
-    const literal = this.extractJsObjectLiteral(html, "mozCatItemMozApi");
+  private parseJsObject<R>(html: string, name: string): R | undefined {
+    const literal = this.extractJsObjectLiteral(html, name);
     if (!literal) return undefined;
 
     try {
@@ -449,7 +624,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
         .replace(/,(\s*[}\]])/g, "$1");
       return JSON.parse(normalised);
     } catch (error) {
-      this.logger.error("Failed to parse mozCatItemMozApi literal", { error, literal });
+      this.logger.error(`Failed to parse ${name} literal`, { error, literal });
       return undefined;
     }
   }
@@ -523,7 +698,6 @@ interface MozCatItemMozApi {
   brand: string;
   category: string;
   price: number;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   price_undiscounted: number;
   currency: string;
   weight: number | null;
@@ -535,9 +709,21 @@ interface MozCatItemMozApiVariant {
   id: string;
   options: { title: string }[];
   price: number;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   price_undiscounted: number;
   sku: string;
   stock: number | null;
   weight: number | null;
+}
+
+/**
+ * Shape of the `mozCatItemPictures` JS object embedded in LiMac product pages.
+ * Only the fields consumed by {@link SupplierLiMac.getProductData} are typed.
+ * `thumb` is an absolute CDN URL; `size_set` paths are relative to `cdn`.
+ */
+interface MozCatItemPictures {
+  cdn: string;
+  item: {
+    thumb: string;
+    size_set: { st: string; m: string };
+  }[];
 }

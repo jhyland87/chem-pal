@@ -61,13 +61,13 @@ export async function generateRequestHash(url: string, options: any): Promise<st
  * @remarks
  * This is the utility-layer fetch decorator used in `src/utils/`. For the
  * primary application fetch decorator with LRU caching, response aggregation,
- * and richer error handling, see {@link module:helpers/fetch.fetchDecorator}.
+ * and richer error handling, see the `fetchDecorator` in `src/helpers/fetch.ts`.
  *
  * @param url - The URL to fetch
  * @param options - Standard {@link RequestInit} options forwarded to `fetch()`
  * @returns An object spreading the original response with `data` (parsed body)
  *          and `requestHash` (hex hash of the request parameters)
- * @throws {Error} If the response status is not OK (non-2xx)
+ * @throws If the response status is not OK (non-2xx)
  *
  * @example
  * ```typescript

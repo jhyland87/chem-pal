@@ -41,7 +41,7 @@ const FONT_SIZE_PX: Record<FontSize, string> = {
  * component in the project uses `rem`, changing the root size rescales the
  * whole UI proportionally.
  * @param props - Component props.
- * @param props.children - App tree to render under the theme.
+ * - `children` - App tree to render under the theme.
  * @returns The children wrapped in `ThemeContext.Provider` and MUI's theme.
  * @example
  * ```tsx

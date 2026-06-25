@@ -135,5 +135,21 @@ describe("SupplierAmarisChemicalSolutions", () => {
       expect(product?.quantity).toBe(250);
       expect(product?.uom).toBe("ml");
     });
+
+    it("sets url to the Store API endpoint and permalink to the human-facing page", async () => {
+      const supplier = makeSupplier() as unknown as AmarisInternals;
+      const item = baseItem({ name: "Acetone Reagent 250ml" });
+
+      const [builder] = supplier.initProductBuilders([item]);
+      const product = await builder.build();
+
+      // `url` is what ChemPal queried (the Store API endpoint)...
+      expect(product?.url).toContain("/wp-json/wc/store/v1/products/30637");
+      // ...while `permalink` is the page the user opens in the browser.
+      expect(product?.permalink).toBe(
+        "https://amarischemicalsolutions.com/product/aluminium-ammonium-sulphate/",
+      );
+      expect(product?.permalink).not.toBe(product?.url);
+    });
   });
 });
