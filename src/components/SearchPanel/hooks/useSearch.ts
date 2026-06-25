@@ -3,12 +3,14 @@ import { AVAILABILITY_LABEL_MAP, CACHE } from "@/constants/common";
 import { useAppContext } from "@/context";
 import { SearchEvent, emitSearchEvent } from "@/events/searchEvents";
 import { addExcludedProduct } from "@/helpers/excludedProducts";
+import { suggestAlternativeSearch } from "@/helpers/pubchem";
 import { ABORT_SEARCH_EVENT } from "@/hotkeys";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
 import {
   IDB_SEARCH_RESULTS_CLEARED,
   addSearchHistoryEntry,
   clearSearchResults,
+  getSearchHistory,
   getSearchResults,
   setSearchResults as idbSetSearchResults,
   updateSearchHistoryResultCount as idbUpdateHistoryResultCount,
@@ -106,8 +108,29 @@ export async function updateHistoryResultCount(timestamp: number, count: number)
 }
 
 /**
+ * Collects the set of past queries that returned zero results, lowercased. Used to avoid
+ * suggesting an alternative name the user has already tried unsuccessfully (which would
+ * otherwise create A→B→A suggestion loops between synonyms of the same compound).
+ */
+async function getZeroResultQueries(): Promise<Set<string>> {
+  const failed = new Set<string>();
+  try {
+    const history = await getSearchHistory();
+    for (const entry of history) {
+      if (entry.type === "search" && entry.resultCount === 0 && entry.query) {
+        failed.add(entry.query.toLowerCase());
+      }
+    }
+  } catch (error) {
+    console.warn("Failed to load search history for suggestions:", { error });
+  }
+  return failed;
+}
+
+/**
  * Builds the "no results found" message for the results table, optionally suggesting
- * broader filters or a PubChem-normalized alternative name.
+ * broader filters or a simpler PubChem alternative name (falling back to a CAS number).
+ * Only simple common names are suggested, and never one that previously returned no results.
  */
 export async function buildNoResultsMessage(
   query: string,
@@ -119,10 +142,17 @@ export async function buildNoResultsMessage(
     lines.push("Try broadening your search filters in the drawer.");
   }
 
-  // const pubchemSimpleName = await getCompoundNameFromAlias(query);
-  // if (pubchemSimpleName && pubchemSimpleName.toLowerCase() !== query.toLowerCase()) {
-  //   lines.push(`Perhaps try the PubChem name instead: ${pubchemSimpleName}`);
-  // }
+  try {
+    const excluded = await getZeroResultQueries();
+    const { name, cas } = await suggestAlternativeSearch(query, excluded);
+    if (name) {
+      lines.push(`Perhaps try searching for: ${name}`);
+    } else if (cas) {
+      lines.push(`Try searching by CAS number instead: ${cas}`);
+    }
+  } catch (error) {
+    console.warn("Failed to build alternative search suggestion:", { error });
+  }
 
   return lines.join("\n");
 }

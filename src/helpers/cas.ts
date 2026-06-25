@@ -94,7 +94,7 @@ export async function getIUPACName(name: string): Promise<Maybe<string>> {
 export async function getCASByName(name: string): Promise<Maybe<CAS<string>>> {
   try {
     const response = await fetch(
-      `https://cactus.nci.nih.gov/chemical/structure/names/${encodeURIComponent(name)}`,
+      `https://cactus.nci.nih.gov/chemical/structure/${encodeURIComponent(name)}/cas`,
     );
     const data = await response.text();
     if (typeof data === "undefined") return;

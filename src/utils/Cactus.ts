@@ -246,7 +246,10 @@ export class Cactus {
    * @source
    */
   private async queryEndpoint(endpoint: CactusEndpoint): Promise<string | Blob> {
-    let url = `${this.baseURL}/${this.name}/${endpoint}`;
+    // Encode the identifier so structure inputs (e.g. SMILES, which contain
+    // "#", "/", "+") don't break the URL path. The endpoint is a fixed,
+    // URL-safe token (it may carry its own query string) and is left as-is.
+    let url = `${this.baseURL}/${encodeURIComponent(this.name)}/${endpoint}`;
     if (this.formatXML) url += `/xml`;
 
     // Check cache first
@@ -316,8 +319,10 @@ export class Cactus {
 
   /**
    * Filters the names from output of this.getNames() to those that are most likely to
-   * be used in common chemical nomenclature. This is done by just filtering for names
-   * that contain alpha characters only and spaces (no dashes, brackets, paretheses, etc.)
+   * be used in common chemical nomenclature. Parenthetical and bracketed qualifiers are stripped
+   * first (e.g. "Aspirin (JP15/USP)" or "Acetylsalicylsaure [German]" become "Aspirin"/
+   * "Acetylsalicylsaure"), then names are kept only if they contain alpha characters and spaces
+   * (no digits, dashes, etc.), de-duplicated, and ranked.
    *
    * @param limit - The maximum number of names to return (default: 4)
    * @returns Promise resolving to an array of chemical names
@@ -325,10 +330,9 @@ export class Cactus {
    * names that are not likely to be used in common chemical nomenclature. The results are also not sorted in
    * any meaningful way.
    *
-   * For example, "aspirin" would be the obvious desired result when searching for other names for Aspirin (eg:
-   * "2-Acetoxybenzenecarboxylic acid"), but CACTUS returns it as the [12th result](https://cactus.nci.nih.gov/chemical/structure/2-Acetoxybenzenecarboxylic%20acid/names)
-   * (as "Aspirin (JP15/USP)"). I'm not sure what the best way to sort these and return only the values that
-   * are most likely to yield search results.
+   * For example, when searching other names for Aspirin (e.g. "2-Acetoxybenzenecarboxylic acid"), CACTUS
+   * returns the recognizable name only as "Aspirin (JP15/USP)". Stripping the parenthetical qualifier
+   * recovers the plain "Aspirin" so it can rank alongside the other simple names.
    *
    * @todo Implement a better way to sort these and return only the values that are most likely to yield search
    * results.
@@ -346,9 +350,19 @@ export class Cactus {
     if (!names || names.length === 0) {
       return undefined;
     }
-    const simpleNames = names.filter((name) => /^([a-zA-Z][a-z\s]*)$/.test(name));
-    return simpleNames.length > 0
-      ? simpleNames.sort((a, b) => a.length - b.length).slice(0, limit)
+    // Strip parenthetical and bracketed qualifiers (e.g. "Aspirin (JP15/USP)" -> "Aspirin",
+    // "Acetylsalicylsaure [German]" -> "Acetylsalicylsaure") before filtering, so an otherwise-
+    // simple name isn't discarded just because it carries a trailing tag.
+    const cleaned = names.map((name) =>
+      name
+        .replace(/\([^)]*\)|\[[^\]]*\]/g, "")
+        .replace(/\s+/g, " ")
+        .trim(),
+    );
+    const simpleNames = cleaned.filter((name) => /^([a-zA-Z][a-z\s]*)$/.test(name));
+    const uniqueNames = [...new Set(simpleNames)];
+    return uniqueNames.length > 0
+      ? uniqueNames.sort((a, b) => a.length - b.length).slice(0, limit)
       : undefined;
   }
 

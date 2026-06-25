@@ -25,6 +25,16 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App.tsx";
 import "./main.scss";
 import { isTabView } from "./utils/displayContext";
+import { IS_DEV_BUILD } from "./utils/isDevBuild";
+
+// Expose chemistry helpers on window.chempal for manual console testing. Dynamically imported and
+// gated by IS_DEV_BUILD so it (and its dependencies) are tree-shaken out of production builds.
+if (IS_DEV_BUILD) {
+  void (async () => {
+    const { exposeDebugApi } = await import("./utils/debugConsole");
+    exposeDebugApi();
+  })();
+}
 
 (async () => {
   // Tag the document so CSS can drop the popup's fixed dimensions and fill the
