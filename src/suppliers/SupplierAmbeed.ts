@@ -1,3 +1,4 @@
+import { CACHE } from "@/constants/common";
 import { getCookie } from "@/helpers/cookies";
 import { getUserCountryName } from "@/helpers/country";
 import { parsePrice } from "@/helpers/currency";
@@ -5,14 +6,17 @@ import { parseQuantity } from "@/helpers/quantity";
 import {
   base36Timestamp,
   base64EncodeUtf8,
+  getUserLanguage,
   mapDefined,
   md5sum,
   objectToQueryString,
 } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
+import { cstorage } from "@/utils/storage";
 import {
   assertIsAmbeedGetSearchProductAndRecommendedProductsByCASResponse,
   assertIsAmbeedProductListResponse,
+  isAmbeedGetPmsSdsByAmsResponse,
   isAmbeedProductPriceResponse,
 } from "@/utils/typeGuards/ambeed";
 import type { JsonValue } from "type-fest";
@@ -102,6 +106,55 @@ const AMBEED_FONT_MAP: Record<number, string> = {
   0x00a3: "\u2265",
   0x00a1: "I",
   0x0157: "l", // bare vertical stroke: I / l / 1 indistinguishable
+};
+
+// Ambeed's SDS "type" maps, taken from their storefront. The selected type is
+// sent as `request_type` and is the key under `sds_list[<p_am>]` in the
+// response. `getSdsType` resolves the user's country/language to one of these.
+//
+// Non-European countries → `sdsJson` (keyed `SDS-<COUNTRY>`).
+const sdsJson = {
+  "SDS-US": { type: "am" }, // United States
+  "SDS-DE": { type: "am-de-de" }, // Germany
+  "SDS-UK": { type: "am-europe-uk" }, // United Kingdom
+  "SDS-CN": { type: "am-cn" }, // China
+  "SDS-CA": { type: "am-canada" }, // Canada
+  "SDS-EU": { type: "am-europe" }, // Europe
+} as const;
+
+// European countries → `sdsJsonEurope` (keyed `SDS-EU-<LANG>`).
+const sdsJsonEurope = {
+  "SDS-EU-EN": { type: "amgm-europe" },
+  "SDS-UK-EN": { type: "amgm-europe-uk" },
+  "SDS-EU-DE": { type: "amgm-de-de" },
+  "SDS-EU-FR": { type: "amgm-sds-fr-fr" },
+  "SDS-EU-ES": { type: "amgm-sds-es-es" },
+  "SDS-EU-IT": { type: "amgm-sds-it-it" },
+  "SDS-EU-DK": { type: "amgm-sds-da-dk" },
+  "SDS-EU-PT": { type: "amgm-sds-pt-pt" },
+  "SDS-EU-PL": { type: "amgm-sds-pl-pl" },
+  "SDS-EU-SE": { type: "amgm-sds-sv-se" },
+  "SDS-EU-NO": { type: "amgm-sds-no-no" },
+  "SDS-EU-NL": { type: "amgm-sds-nl-nl" },
+} as const;
+
+// English SDS type, the universal fallback always requested alongside the
+// user's preferred type.
+const SDS_TYPE_FALLBACK = "am";
+
+// European country codes (the European subset of `shipsTo`). A user in one of
+// these gets a `sdsJsonEurope` (amgm-*) SDS; everyone else uses `sdsJson`.
+const EUROPEAN_COUNTRY_CODES = new Set([
+  "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU",
+  "IE", "IT", "LV", "LI", "LT", "LU", "MT", "NL", "NO", "PL", "PT", "RO", "SK",
+  "SI", "ES", "SE", "CH", "TR", "GB",
+]);
+
+// Maps a language's primary subtag to the `SDS-EU-<X>` suffix. Needed because
+// the suffixes are country-ish (DK/SE/NO) rather than language codes (da/sv/nb).
+const LANGUAGE_TO_EU_SDS_SUFFIX: Record<string, string> = {
+  en: "EN", de: "DE", fr: "FR", es: "ES", it: "IT", da: "DK", pt: "PT",
+  pl: "PL", sv: "SE", nb: "NO", nn: "NO", no: "NO", nl: "NL",
 };
 
 /**
@@ -330,6 +383,98 @@ export class SupplierAmbeed
   protected makeQueryParams(query: string): Base64String {
     // btoa returns a plain string; cast brands it as Base64String (a nominal Brand type).
     return btoa(JSON.stringify({ keyword: query })) as Base64String;
+  }
+
+  /**
+   * Resolves the SDS document "type" to prefer for the current user, based on
+   * their saved `location` (country) and `language` settings. European users
+   * get a `sdsJsonEurope` (amgm-*) type matched to their language; everyone
+   * else gets the country-specific `sdsJson` type. Falls back to English
+   * (`am`) when there's no match.
+   *
+   * @returns The Ambeed SDS type string (e.g. `"amgm-de-de"`, `"am-cn"`, `"am"`)
+   * @example
+   * ```typescript
+   * await this.getSdsType(); // user in Germany, language "de" -> "amgm-de-de"
+   * ```
+   * @source
+   */
+  private async getSdsType(): Promise<string> {
+    const stored = await cstorage.local.get([CACHE.USER_SETTINGS]);
+    const settings = (stored[CACHE.USER_SETTINGS] ?? {}) as Partial<UserSettings>;
+
+    const country = (settings.location ?? "").toUpperCase();
+    const language = (settings.language ?? getUserLanguage()).split("-")[0].toLowerCase();
+
+    if (EUROPEAN_COUNTRY_CODES.has(country)) {
+      if (country === "GB") {
+        return sdsJsonEurope["SDS-UK-EN"].type;
+      }
+      const suffix = LANGUAGE_TO_EU_SDS_SUFFIX[language] ?? "EN";
+      const key = `SDS-EU-${suffix}` as keyof typeof sdsJsonEurope;
+      return (sdsJsonEurope[key] ?? sdsJsonEurope["SDS-EU-EN"]).type;
+    }
+
+    const key = `SDS-${country}` as keyof typeof sdsJson;
+    return (sdsJson[key] ?? sdsJson["SDS-US"]).type;
+  }
+
+  /**
+   * Fetches SDS documents for many products in a single batch request and
+   * returns a map of AM id (`p_am`) → SDS PDF URL. Requests the user's
+   * preferred SDS type plus English (`am`) as a fallback; for each product the
+   * preferred type's URL wins, falling back to `am`.
+   *
+   * @param amNos - The product AM ids (`p_am`) to fetch SDS documents for
+   * @returns A map of `p_am` → SDS URL (only products with an available SDS)
+   * @example
+   * ```typescript
+   * await this.getSdsUrls(["A491321", "A1159477"]);
+   * // { A491321: "https://.../SDS-A491321.pdf", A1159477: "https://.../SDS-A1159477.pdf" }
+   * ```
+   * @source
+   */
+  private async getSdsUrls(amNos: string[]): Promise<Record<string, string>> {
+    if (amNos.length === 0) {
+      return {};
+    }
+
+    const sdsType = await this.getSdsType();
+    const reqBody = {
+      am_nos: amNos,
+      request_type: Array.from(new Set([sdsType, SDS_TYPE_FALLBACK])),
+    };
+
+    const response = await this.httpPostJson({
+      path: "webapi/v1/getPmsSdsByAms",
+      params: {
+        params: btoa(JSON.stringify(reqBody)),
+      },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+      },
+    });
+
+    if (!isAmbeedGetPmsSdsByAmsResponse(response)) {
+      this.logger.warn("Invalid Ambeed SDS response", { amNos, response });
+      return {};
+    }
+
+    const urls: Record<string, string> = {};
+    for (const [am, byType] of Object.entries(response.value.sds_list)) {
+      const preferred = byType[sdsType];
+      const fallback = byType[SDS_TYPE_FALLBACK];
+      const url =
+        preferred?.status && preferred.url
+          ? preferred.url
+          : fallback?.status && fallback.url
+            ? fallback.url
+            : undefined;
+      if (url) {
+        urls[am] = url;
+      }
+    }
+    return urls;
   }
 
   /**
@@ -576,7 +721,23 @@ export class SupplierAmbeed
 
     const fuzzedResults = this.fuzzyFilter<AmbeedProductListResponseResultItem>(query, products);
 
-    return this.initProductBuilders(fuzzedResults.slice(0, limit));
+    const slice = fuzzedResults.slice(0, limit);
+
+    // Fetch every product's SDS document in a single batch request, then attach
+    // each URL here (before queryProductsWithCache caches the builders) so the
+    // SDS link is keyed/cached with the product. Products are keyed by `p_am`,
+    // which initProductBuilders stores as the builder's UUID.
+    const sdsByAm = await this.getSdsUrls(mapDefined(slice, (product) => product.p_am));
+    const builders = this.initProductBuilders(slice);
+    for (const builder of builders) {
+      const pAm = builder.get("uuid");
+      const sdsUrl = typeof pAm === "string" ? sdsByAm[pAm] : undefined;
+      if (sdsUrl) {
+        builder.setSDSUrl(sdsUrl);
+      }
+    }
+
+    return builders;
   }
 
   /**

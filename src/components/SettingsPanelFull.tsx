@@ -45,7 +45,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { currencies, locations } from "../../config.json";
+import { currencies, languages, locations } from "../../config.json";
 import styles from "./SettingsPanelFull.module.scss";
 
 // SettingAction type is declared globally in types/settings.d.ts
@@ -261,6 +261,26 @@ export default function SettingsPanelFull() {
                   {Object.entries(locations).map(([locationId, { name }]) => (
                     <MenuItem key={locationId} value={locationId}>
                       {name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </ListItem>
+            {/* Language */}
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText primary="Language" />
+              <FormControl>
+                <Select
+                  value={currentSettings.language ?? ""}
+                  onChange={handleInputChange}
+                  name="language"
+                  size="small"
+                  className={styles["settings-panel__input"]}
+                  disabled={isPending}
+                >
+                  {Object.entries(languages).map(([languageId, label]) => (
+                    <MenuItem key={languageId} value={languageId}>
+                      {label}
                     </MenuItem>
                   ))}
                 </Select>

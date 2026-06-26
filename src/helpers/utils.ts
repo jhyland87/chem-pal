@@ -468,6 +468,24 @@ export function getUserLocation(): CountryCode {
 }
 
 /**
+ * Gets the user's preferred UI language locale from the browser's i18n API.
+ * Used to seed the `language` user setting. Falls back to `"en-US"` outside an
+ * extension context (e.g. tests).
+ * @returns The browser UI language locale, e.g. `"en-US"` or `"de-DE"`
+ * @example
+ * ```typescript
+ * getUserLanguage() // Returns "en-US"
+ * ```
+ * @source
+ */
+export function getUserLanguage(): string {
+  if (typeof chrome === "undefined" || typeof chrome.i18n === "undefined") {
+    return "en-US";
+  }
+  return chrome.i18n.getUILanguage();
+}
+
+/**
  * Strips HTML tags from a string.
  *
  * @category Helpers

@@ -11,6 +11,7 @@ import {
   isParsedPrice,
   isProduct,
   isQuantityObject,
+  isSmiles,
 } from "@/utils/typeGuards/common";
 import { isAvailability, isValidVariant } from "@/utils/typeGuards/productbuilder";
 
@@ -115,8 +116,11 @@ export class ProductBuilder<T extends Product> {
    */
   setBasicInfo(title: string, url: string, supplier: string): ProductBuilder<T> {
     this.product.title = title;
-    this.product.url = this.href(url);
     this.product.supplier = supplier;
+    const href = this.href(url);
+    if (href) {
+      this.product.url = href;
+    }
     return this;
   }
 
@@ -131,7 +135,10 @@ export class ProductBuilder<T extends Product> {
    * @source
    */
   setURL(url: string | URL): ProductBuilder<T> {
-    this.product.url = this.href(url);
+    const href = this.href(url);
+    if (href) {
+      this.product.url = href;
+    }
     return this;
   }
 
@@ -146,10 +153,30 @@ export class ProductBuilder<T extends Product> {
    * @source
    */
   setPermalink(permalink: string | URL): ProductBuilder<T> {
-    this.product.permalink = this.href(permalink);
+    const href = this.href(permalink);
+    if (href) {
+      this.product.permalink = href;
+    }
     return this;
   }
 
+  /**
+   * Sets the SDS URL for the product.
+   * @param sdsUrl - The SDS URL to set
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setSDSUrl("https://example.com/sds.pdf");
+   * ```
+   * @source
+   */
+  setSDSUrl(sdsUrl: string | URL): ProductBuilder<T> {
+    const href = this.href(sdsUrl);
+    if (href) {
+      this.product.sdsUrl = this.href(sdsUrl);
+    }
+    return this;
+  }
   /**
    * Sets the image URL for the product.
    * @param imageURL - The image URL to set
@@ -163,8 +190,9 @@ export class ProductBuilder<T extends Product> {
    * @source
    */
   setImage(imageURL: string, imageAltText?: string): ProductBuilder<T> {
-    if (imageURL && typeof imageURL === "string" && imageURL.trim().length > 0) {
-      this.product.imageURL = this.href(imageURL);
+    const href = this.href(imageURL);
+    if (href) {
+      this.product.imageURL = href;
     }
     if (imageAltText && typeof imageAltText === "string" && imageAltText.trim().length > 0) {
       this.product.imageAltText = imageAltText;
@@ -183,8 +211,9 @@ export class ProductBuilder<T extends Product> {
    * @source
    */
   setThumbnail(thumbnail: string): ProductBuilder<T> {
-    if (thumbnail && typeof thumbnail === "string" && thumbnail.trim().length > 0) {
-      this.product.thumbnail = this.href(thumbnail);
+    const href = this.href(thumbnail);
+    if (href) {
+      this.product.thumbnail = href;
     }
     return this;
   }
@@ -754,6 +783,27 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
+   * Sets the SMILES for the product.
+   * @param smiles - The SMILES to set
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setSmiles("C1=CC=CC=C1");
+   * ```
+   * @source
+   */
+  setSmiles(smiles: unknown): ProductBuilder<T> {
+    if (isSmiles(smiles)) {
+      this.product.smiles = smiles;
+    } else {
+      this.logger.warn(`setSmiles| Invalid SMILES: ${smiles}`, {
+        smiles,
+        builder: this,
+      });
+    }
+    return this;
+  }
+  /**
    * Sets the vendor for the product.
    *
    * @param vendor - The vendor name
@@ -978,21 +1028,17 @@ export class ProductBuilder<T extends Product> {
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
-   * builder.setConcentration(98);
+   * builder.setConcentration("98%");
+   * builder.setConcentration("98.5%");
+   * builder.setConcentration("99%");
+   * builder.setConcentration("99.5%");
+   * builder.setConcentration("100%");
+   * builder.setConcentration("1M");
    * ```
    * @source
    */
-  setConcentration(concentration: number | string): ProductBuilder<T> {
+  setConcentration(concentration: string): ProductBuilder<T> {
     if (typeof concentration === "string") {
-      concentration = Number(concentration.replace("%", ""));
-    }
-
-    if (
-      typeof concentration === "number" &&
-      !Number.isNaN(concentration) &&
-      concentration > 0 &&
-      concentration <= 100
-    ) {
       this.product.concentration = concentration;
     }
     return this;
@@ -1018,7 +1064,6 @@ export class ProductBuilder<T extends Product> {
     }
     return this;
   }
-
 
   /**
    * Get a specific property from the product.

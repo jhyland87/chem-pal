@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
+import sdsFixture from "@/suppliers/__fixtures__/ambeed/sds-response.json";
 import {
+  assertIsAmbeedGetPmsSdsByAmsResponse,
   assertIsAmbeedProductListResponse,
+  isAmbeedGetPmsSdsByAmsResponse,
   isAmbeedProductListResponse,
   isAmbeedProductListResponsePriceList,
   isAmbeedProductListResponseResultItem,
@@ -200,6 +203,31 @@ describe("Ambeed Type Guards", () => {
       invalidResponses.forEach((response) => {
         expect(isAmbeedSearchResponseProduct(response)).toBe(false);
       });
+    });
+  });
+
+  describe("isAmbeedGetPmsSdsByAmsResponse", () => {
+    it("should return true for the real SDS response fixture", () => {
+      expect(isAmbeedGetPmsSdsByAmsResponse(sdsFixture)).toBe(true);
+    });
+
+    it("should return false for invalid SDS responses", () => {
+      const invalidResponses = [
+        null,
+        undefined,
+        {},
+        { value: {} }, // missing sds_list/isokk/errmsg
+        { value: { isokk: true, errmsg: "", sds_list: { A1: { am: { url: "x" } } } } }, // entry missing status
+        { value: { isokk: true, errmsg: "", sds_list: { A1: { am: { status: true } } } } }, // entry missing url
+      ];
+      invalidResponses.forEach((response) => {
+        expect(isAmbeedGetPmsSdsByAmsResponse(response)).toBe(false);
+      });
+    });
+
+    it("assert throws on invalid input and narrows on valid", () => {
+      expect(() => assertIsAmbeedGetPmsSdsByAmsResponse({})).toThrow();
+      expect(() => assertIsAmbeedGetPmsSdsByAmsResponse(sdsFixture)).not.toThrow();
     });
   });
 });

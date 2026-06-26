@@ -180,6 +180,8 @@ declare global {
     if_yj: number;
     /** CAS registry number (duplicate of chem_cas) */
     cas: CAS<string>;
+    /** SMILES notation for the chemical structure */
+    smile_code: Smiles<string>;
     /* eslint-enable */
   }
 
@@ -308,6 +310,63 @@ declare global {
   type MacklinSearchResultProducts = MacklinSearchResult<MacklinProduct>;
 
   type MacklinProductDetailsResponse = MacklinSearchResult<MacklinProductDetails[]>;
+
+  /**
+   * `data` payload of the MSDS search endpoint
+   * (`/api/msds/search?keyword=<item_code>`), as returned by `request<T>` after
+   * it unwraps the `{ code, message, data }` envelope. Only the `code: 200`
+   * response carries `data.url`; error responses (e.g. code 1104 "MSDS
+   * temporarily does not exist", code 201 "please enter a valid item number")
+   * return `data: []`, which lacks `url`.
+   *
+   * @example
+   * ```json
+   * { "url": "https://www.macklin.cn/pdf/msds/download?lang=en&id=23884&item_id=819228" }
+   * ```
+   */
+  interface MacklinMsdsSearchResponse {
+    /** SDS document location (present only on a `200` response). */
+    url: string;
+  }
+
+  /**
+   * Item-level data from the product info endpoint (`POST /api/product/info`).
+   * Carries chemistry/physical fields not present in the search results, most
+   * notably the molecular weight (`chem_mw`). Only the fields currently
+   * consumed are typed; the payload includes many more.
+   */
+  interface MacklinProductInfoItem {
+    /* eslint-disable */
+    /** Unique item identifier */
+    item_id: number;
+    /** Product code used in URLs and API calls */
+    item_code: string;
+    /** CAS registry number */
+    chem_cas: CAS<string>;
+    /** Molecular formula (with HTML subscripts) */
+    chem_mf: string;
+    /** Molecular weight, e.g. "252.13" */
+    chem_mw: string;
+    /** MDL number, e.g. "MFCD00040346" */
+    chem_mdl: string;
+    /** Storage conditions, e.g. "2-8°C" */
+    item_storage: string;
+    /** English product name */
+    item_en_name: string;
+    /* eslint-enable */
+  }
+
+  /**
+   * `data` payload of the product info endpoint (`POST /api/product/info`,
+   * body `{ item_code }`). `request<T>` unwraps the envelope and returns this.
+   */
+  interface MacklinProductInfo {
+    /** The item-level chemistry/physical data. */
+    item: MacklinProductInfoItem;
+    /** Bulk packaging products (unused; often empty). */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    bulk_product: unknown[];
+  }
 }
 
 export {};

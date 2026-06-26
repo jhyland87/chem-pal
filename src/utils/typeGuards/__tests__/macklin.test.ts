@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
+import productInfoFixture from "@/suppliers/__fixtures__/macklin/product-info.json";
 import {
   ApiEndpoints,
   AuthRequiredEndpoints,
   isAuthCheckEndpoint,
   isAuthRequiredEndpoint,
   isMacklinApiResponse,
+  isMacklinMsdsSearchResponse,
   isMacklinProductDetails,
   isMacklinProductDetailsResponse,
+  isMacklinProductInfo,
   isMacklinSearchResult,
   isTimestampResponse,
 } from "../macklin";
@@ -443,6 +446,49 @@ describe("Macklin TypeGuards", () => {
 
       nullProps.forEach((details) => {
         expect(isMacklinProductDetails(details)).toBe(false);
+      });
+    });
+  });
+
+  describe("isMacklinMsdsSearchResponse", () => {
+    it("returns true for the unwrapped success data payload (has url)", () => {
+      const success = {
+        url: "https://www.macklin.cn/pdf/msds/download?lang=en&id=23884&item_id=819228&chem_cas=33725-74-5",
+      };
+      expect(isMacklinMsdsSearchResponse(success)).toBe(true);
+    });
+
+    it("returns false for error payloads (data is an empty array) and bad shapes", () => {
+      const errors = [
+        [], // error responses unwrap to data: []
+        null,
+        undefined,
+        {},
+        { url: 123 }, // wrong url type
+      ];
+      errors.forEach((response) => {
+        expect(isMacklinMsdsSearchResponse(response)).toBe(false);
+      });
+    });
+  });
+
+  describe("isMacklinProductInfo", () => {
+    it("returns true for the real product-info data payload (has item.chem_mw)", () => {
+      // request<T> unwraps the envelope, so the guard validates `data`.
+      expect(isMacklinProductInfo(productInfoFixture.data)).toBe(true);
+    });
+
+    it("returns false when item or chem_mw is missing", () => {
+      const invalid = [
+        null,
+        undefined,
+        {},
+        { item: [] }, // list response: item is an empty array/object without chem_mw
+        { item: {} }, // missing chem_mw
+        { item: { chem_mw: 252.13 } }, // chem_mw must be a string
+      ];
+      invalid.forEach((data) => {
+        expect(isMacklinProductInfo(data)).toBe(false);
       });
     });
   });

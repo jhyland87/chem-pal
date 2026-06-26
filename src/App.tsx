@@ -39,7 +39,7 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import { diff } from "./helpers/collectionUtils";
 import { getCountryName } from "./helpers/country";
 import { getCurrencyCodeFromLocation, getCurrencyRate } from "./helpers/currency";
-import { getUserLocation } from "./helpers/utils";
+import { getUserLanguage, getUserLocation } from "./helpers/utils";
 
 const StatsPanel = IS_DEV_BUILD ? lazy(() => import("./components/StatsPanel")) : null;
 
@@ -107,6 +107,7 @@ Object.assign(initialAppState, {
     currency: getCurrencyCodeFromLocation(getUserLocation()),
     location: getUserLocation(),
     country: getCountryName(getUserLocation()),
+    language: getUserLanguage(),
     supplierResultLimit: defaultResultsLimit,
     suppliers: SupplierFactory.supplierList(),
   } satisfies UserSettings,

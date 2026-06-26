@@ -1,15 +1,18 @@
 import { AVAILABILITY } from "@/constants/common";
 import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
-import { mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
+import { isMinimalProduct } from "@/utils/typeGuards/common";
 import {
   isAuthCheckEndpoint,
   isAuthRequiredEndpoint,
   isMacklinApiResponse,
+  isMacklinMsdsSearchResponse,
   isMacklinProductDetailsResponse,
+  isMacklinProductInfo,
   isMacklinSearchResult,
   isTimestampStorage,
 } from "@/utils/typeGuards/macklin";
+import { Queue } from "async-await-queue";
 import { md5 } from "js-md5";
 import { SupplierBase } from "./SupplierBase";
 
@@ -143,6 +146,34 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
   /** The last signature used for the request */
   private lastSignature: string | null = null;
 
+  /**
+   * Memoized batch of `/api/product/list` lookups for the current result set,
+   * keyed by item code. Created once on first access so every product's detail
+   * fetch shares the same bounded list phase (see getProductListBatch).
+   */
+  private productListBatch?: Promise<Map<string, MacklinProductDetails>>;
+
+  /**
+   * Memoized batch of `/api/product/info` lookups for the current result set,
+   * keyed by item code. Created once on first access so every product's detail
+   * fetch shares the same bounded info phase (see getProductInfoBatch).
+   */
+  private productInfoBatch?: Promise<Map<string, MacklinProductInfo>>;
+
+  /**
+   * Memoized one-shot refresh of the server timestamp before the SDS phase. The
+   * MSDS endpoint rejects calls signed with a timestamp that has gone stale by
+   * the time this last phase runs, so — like the website does before an MSDS
+   * call — we re-fetch `/api/timestamp` once before the SDS lookups.
+   */
+  private sdsTimestampRefresh?: Promise<number>;
+
+  /** Highest rate-limit usage tier (50/75/90/100) already logged this window. */
+  private rateLimitTierLogged: number = 0;
+
+  /** Last `X-Ratelimit-Remaining` seen; a rise signals the server window reset. */
+  private rateLimitLastRemaining: number = Number.POSITIVE_INFINITY;
+
   /** HTTP headers used as a basis for all queries. */
   protected headers: MacklinRequestHeaders = {
     /* eslint-disable @typescript-eslint/naming-convention */
@@ -185,6 +216,9 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
       "X-Timestamp": "",
       /* eslint-enable @typescript-eslint/naming-convention */
     };
+
+    console.log("this.localStorage", this.localStorage);
+    console.log("this.headers", this.headers);
   }
 
   /**
@@ -204,6 +238,12 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
     this.limit = limit;
+    // Reset the per-search batches so a new query doesn't reuse the previous
+    // result set's product/list and product/info lookups, nor a stale SDS-phase
+    // timestamp refresh.
+    this.productListBatch = undefined;
+    this.productInfoBatch = undefined;
+    this.sdsTimestampRefresh = undefined;
     const searchRequest: unknown = await this.request<MacklinSearchResultProducts>(
       `/api/item/search`,
       {
@@ -250,58 +290,234 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    const params = { code: product.get("uuid") };
+    const itemCode = product.get("uuid");
     return this.getProductDataWithCache(
       product,
       async (builder) => {
-        const response = await this.request<MacklinProductDetails>("/api/product/list", { params });
-        if (!isMacklinProductDetailsResponse(response)) {
-          this.logger.warn("Invalid API response format for product:", product.get("uuid"));
-          return builder;
+        // Each endpoint is fetched as its own bounded batch shared across all
+        // products (list -> info -> sds), so the requests run in distinct phases
+        // rather than interleaving per product. Interleaving let some products'
+        // list calls get pushed to the very end of the burst, outside the
+        // server's signing window, where they were rejected.
+
+        // `/api/product/list` carries the pricing + pack/unit.
+        const variant = (await this.getProductListBatch()).get(itemCode);
+
+        // Bail with `void` (not the half-built builder) when the list call
+        // yields nothing usable. Returning the builder here would cache a
+        // price-less product (see getProductDataWithCache), poisoning the cache
+        // so the product stays broken on every later search. `void` skips the
+        // cache write and lets the next search retry.
+        if (!variant) {
+          this.logger.warn("No usable product/list data for product:", itemCode);
+          return undefined;
         }
-        const variant = response.list[0];
-        builder.setPricing(variant?.product_price, "CNY", CURRENCY_SYMBOL_MAP.CNY);
-        builder.setQuantity(variant?.product_pack);
-        builder.setUOM(variant?.product_unit);
-        // I think Macklin uses the variant?.product_stock property to determine availability,
+
+        builder.setPricing(variant.product_price, "CNY", CURRENCY_SYMBOL_MAP.CNY);
+        builder.setQuantity(variant.product_pack);
+        builder.setUOM(variant.product_unit);
+        // I think Macklin uses the variant.product_stock property to determine availability,
         // But every one of them say "0.00", even if they have it in stock on their website.
         // Defaulting to IN_STOCK for now.
         builder.setAvailability(AVAILABILITY.IN_STOCK);
-        builder.setDescription(variant?.item_en_specification);
+        builder.setDescription(variant.item_en_specification);
+
+        // Molecular weight comes from `/api/product/info`.
+        const info = (await this.getProductInfoBatch()).get(itemCode);
+        if (info) {
+          builder.setMoleweight(info.item.chem_mw);
+        }
+
+        // SDS lookup runs last — one request, and only for products that
+        // already have the minimum required data (a request spent on a product
+        // that will be dropped anyway is wasted). The server timestamp is
+        // refreshed once before this phase so the MSDS calls aren't signed with
+        // a value that's gone stale across the earlier phases.
+        if (isMinimalProduct(builder.dump())) {
+          await this.refreshTimestampForSds();
+          const sdsUrl = await this.sdsSearch(itemCode);
+          if (sdsUrl) {
+            builder.setSDSUrl(sdsUrl);
+          }
+        }
+
         return builder;
       },
-      params,
+      { code: itemCode },
     );
   }
 
   /**
-   * Creates ProductBuilder instances from Macklin product variants.
-   * This is the final step in the product search process, converting
-   * the API response into a format that can be used by the rest of
-   * the application.
+   * Fetches `/api/product/list` for every product in the current result set as
+   * one bounded, memoized batch keyed by item code, storing the first (cheapest)
+   * variant. Running the list calls as a single phase — rather than letting each
+   * ride the per-product detail queue — keeps every product's list request in
+   * the same burst window; previously the later products' list calls were pushed
+   * to the end of the run (behind the info/SDS phases) and rejected by the
+   * server. The batch is created once and shared.
+   *
+   * @returns A map of item code to its primary product variant (only codes with
+   *   a valid, non-empty list response are present)
+   * @example
+   * ```ts
+   * const variant = (await this.getProductListBatch()).get("T819228");
+   * // variant?.product_price -> "30.00"
+   * ```
+   * @source
+   */
+  private async getProductListBatch(): Promise<Map<string, MacklinProductDetails>> {
+    if (!this.productListBatch) {
+      this.productListBatch = (async () => {
+        const codes = this.products
+          .map((product) => product.get("uuid"))
+          .filter((uuid): uuid is string => typeof uuid === "string");
+        const queue = new Queue(this.maxConcurrentRequests, this.minConcurrentCycle);
+        const variantByCode = new Map<string, MacklinProductDetails>();
+        await Promise.all(
+          codes.map((code) =>
+            queue.run(async () => {
+              const response = await this.request<MacklinProductDetails>("/api/product/list", {
+                params: { code },
+              });
+              if (isMacklinProductDetailsResponse(response) && response.list.length > 0) {
+                variantByCode.set(code, response.list[0]);
+              }
+            }),
+          ),
+        );
+        return variantByCode;
+      })();
+    }
+    return this.productListBatch;
+  }
+
+  /**
+   * Fetches a product's chemistry data from the product info endpoint
+   * (`POST /api/product/info`, body `{ item_code }`). Returns undefined rather
+   * than throwing when the request fails or the response isn't the expected
+   * shape, so a missing info payload never drops the product.
+   *
+   * @param itemCode - The product's item code
+   * @returns The validated product info, or undefined when unavailable
+   * @example
+   * ```ts
+   * const info = await this.getProductInfo("P866188");
+   * // info?.item.chem_mw -> "252.13"
+   * ```
+   * @source
+   */
+  private async getProductInfo(itemCode: string): Promise<MacklinProductInfo | undefined> {
+    try {
+      const data = await this.request<MacklinProductInfo>("/api/product/info", {
+        method: "POST",
+        body: { item_code: itemCode },
+      });
+      return isMacklinProductInfo(data) ? data : undefined;
+    } catch (error: unknown) {
+      this.logger.debug("product/info fetch failed", { itemCode, error });
+      return undefined;
+    }
+  }
+
+  /**
+   * Fetches `/api/product/info` for every product in the current result set as
+   * one bounded, memoized batch keyed by item code. Running the info calls as
+   * their own phase (rather than interleaving a POST after each product's list
+   * GET) keeps the number of concurrently in-flight signed requests inside the
+   * browser's per-host connection limit — interleaved list+info bursts were
+   * pushing the trailing requests outside the server's window, which rejected
+   * them as "Signature failed". The batch is created once and shared, so every
+   * per-product detail fetch awaits the same set of results.
+   *
+   * @returns A map of item code to its product info (only codes with a valid
+   *   info payload are present)
+   * @example
+   * ```ts
+   * const info = (await this.getProductInfoBatch()).get("T819228");
+   * // info?.item.chem_mw -> "252.13"
+   * ```
+   * @source
+   */
+  private async getProductInfoBatch(): Promise<Map<string, MacklinProductInfo>> {
+    if (!this.productInfoBatch) {
+      this.productInfoBatch = (async () => {
+        const codes = this.products
+          .map((product) => product.get("uuid"))
+          .filter((uuid): uuid is string => typeof uuid === "string");
+        const queue = new Queue(this.maxConcurrentRequests, this.minConcurrentCycle);
+        const infoByCode = new Map<string, MacklinProductInfo>();
+        await Promise.all(
+          codes.map((code) =>
+            queue.run(async () => {
+              const info = await this.getProductInfo(code);
+              if (info) {
+                infoByCode.set(code, info);
+              }
+            }),
+          ),
+        );
+        return infoByCode;
+      })();
+    }
+    return this.productInfoBatch;
+  }
+
+  /**
+   * Looks up a product's SDS (MSDS) document URL by its item code. The endpoint
+   * returns `code: 200` with `data.url` when a sheet exists, or an error code
+   * with `data: []` when it doesn't.
+   *
+   * Example request URL:
+   * https://api.macklin.cn/api/msds/search?lang=en&keyword=P866188&timestampe=...
+   *
+   * @param itemCode - The product's item code (the API's `keyword` param)
+   * @returns The SDS document URL, or undefined when none is available
+   * @example
+   * ```ts
+   * const url = await this.sdsSearch("P866188");
+   * // "https://www.macklin.cn/pdf/msds/download?lang=en&id=23884&..."
+   * ```
+   * @source
+   */
+  private async sdsSearch(itemCode: string): Promise<string | undefined> {
+    const response = await this.request<unknown>("/api/msds/search", {
+      params: { keyword: itemCode, lang: "en" },
+    });
+
+    if (isMacklinMsdsSearchResponse(response)) {
+      return response.url;
+    }
+
+    this.logger.debug("No SDS document for item", { itemCode, response });
+    return undefined;
+  }
+
+  /**
+   * Creates ProductBuilder instances from Macklin product variants. This is the
+   * final step in the product search process, converting the API response into
+   * a format that can be used by the rest of the application. Pricing, molecular
+   * weight, and the SDS URL are filled in later, per product, by getProductData.
    *
    * @param data - Array of product variants to convert
    * @returns Array of ProductBuilder instances
    * @source
    */
   protected initProductBuilders(data: MacklinProductVariant[]): ProductBuilder<Product>[] {
-    return mapDefined(data, (product) => {
-      return (
-        new ProductBuilder(this.baseURL)
-          //.addRawData(product)
-          .setBasicInfo(
-            product.item_en_name,
-            `${this.baseURL}/en/products/${product.item_code}`,
-            this.supplierName,
-          )
-          ///.setDescription(product.description)
-          .setID(product.item_id)
-          //.setAvailability(product.available)
-          .setUUID(product.item_code)
-          //.setPricing(product.price.price, product?.currency as string, CURRENCY_SYMBOL_MAP.EUR)
-          .setCAS(product.cas)
-      );
-    });
+    return data.map((product) =>
+      new ProductBuilder(this.baseURL)
+        .setBasicInfo(
+          product.item_en_name,
+          `${this.baseURL}/en/products/${product.item_code}`,
+          this.supplierName,
+        )
+        .setID(product.item_id)
+        .setUUID(product.item_code)
+        .setCAS(product.cas)
+        .setSmiles(product.smile_code)
+        .setFormula(product.chem_mf)
+        .setImage(product.item_upimg)
+        .setConcentration(product.item_specification),
+    );
   }
 
   /**
@@ -423,6 +639,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
       // Create a fresh headers object to avoid any potential array concatenation
       const headers: MacklinRequestHeaders = {
         /* eslint-disable @typescript-eslint/naming-convention */
+        Accept: "application/json, text/plain, */*",
         "X-Agent": "web",
         "X-User-Token": this.ensureStringHeader(this.localStorage.MklUserToken),
         "X-Device-Id": this.ensureStringHeader(this.localStorage.soleId),
@@ -473,13 +690,34 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
       this.logger.debug("Request params:", params);
       this.logger.debug("Request body:", body);
 
-      const response: unknown = await this.httpGetJson({
-        path,
-        headers,
-        params,
-        body: body ? JSON.stringify(body) : undefined,
-        host: this.apiURL,
-      });
+      // GET endpoints carry everything in the query string; POST/PUT/DELETE
+      // send a JSON body. Dispatch to the matching HTTP method. Use the
+      // lower-level helpers (not the *Json variants) so the raw Response — and
+      // its X-Ratelimit-* headers — is available before the body is parsed.
+      const httpResponse =
+        options.method && options.method !== "GET"
+          ? await this.httpPost({
+              path,
+              // eslint-disable-next-line @typescript-eslint/naming-convention
+              headers: { ...headers, "Content-Type": "application/json" },
+              params,
+              body: body ? JSON.stringify(body) : undefined,
+              host: this.apiURL,
+            })
+          : await this.httpGet({
+              path,
+              headers,
+              params,
+              host: this.apiURL,
+            });
+
+      if (!httpResponse) {
+        throw new MacklinApiError("No response from Macklin API");
+      }
+
+      this.trackRateLimit(httpResponse.headers);
+
+      const response: unknown = await httpResponse.json();
 
       if (!isMacklinApiResponse<T>(response)) {
         throw new MacklinApiError("Invalid API response format");
@@ -488,6 +726,17 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
       // Handle authentication errors exactly like api-client.js
       if (isAuthCheckEndpoint(path) && response.code === 1005) {
         throw new MacklinApiError("Authentication required");
+      }
+
+      // Anything other than 200 is a failure (e.g. 504 "Signature failed").
+      // The data payload is empty/invalid in that case; downstream typeguards
+      // drop it, but surface the failure here so it isn't silent.
+      if (response.code !== 200) {
+        this.logger.warn("Macklin API returned a non-success code", {
+          path,
+          code: response.code,
+          message: response.message,
+        });
       }
 
       return response.data;
@@ -499,6 +748,51 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
         throw error;
       }
       throw new MacklinApiError("API request failed", undefined, undefined, error);
+    }
+  }
+
+  /**
+   * Tracks the Macklin API rate limit from a response's `X-Ratelimit-Limit` /
+   * `X-Ratelimit-Remaining` headers. Logs a warning the first time usage crosses
+   * 50%, 75%, and 90%, and an error once the limit is exhausted. Each tier is
+   * logged at most once per server window — the tracking resets when the
+   * remaining count rises again (the window rolled over).
+   *
+   * @param headers - The response headers to read the rate-limit values from
+   * @example
+   * ```ts
+   * this.trackRateLimit(httpResponse.headers);
+   * // console.warn: "Macklin API rate limit: 90/360 remaining (75% used)"
+   * ```
+   * @source
+   */
+  private trackRateLimit(headers: Headers): void {
+    const limit = Number(headers.get("x-ratelimit-limit"));
+    const remaining = Number(headers.get("x-ratelimit-remaining"));
+    if (!Number.isFinite(limit) || !Number.isFinite(remaining) || limit <= 0) {
+      return;
+    }
+
+    // A rise in remaining means the server's rate-limit window reset; allow the
+    // tiers to be reported again.
+    if (remaining > this.rateLimitLastRemaining) {
+      this.rateLimitTierLogged = 0;
+    }
+    this.rateLimitLastRemaining = remaining;
+
+    const usedPct = ((limit - remaining) / limit) * 100;
+    const tier =
+      remaining <= 0 ? 100 : usedPct >= 90 ? 90 : usedPct >= 75 ? 75 : usedPct >= 50 ? 50 : 0;
+    if (tier <= this.rateLimitTierLogged) {
+      return;
+    }
+    this.rateLimitTierLogged = tier;
+
+    const message = `Macklin API rate limit: ${remaining}/${limit} remaining (${Math.round(usedPct)}% used)`;
+    if (tier === 100) {
+      this.logger.error(message);
+    } else {
+      this.logger.warn(message);
     }
   }
 
@@ -536,20 +830,58 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
   }
 
   /**
+   * Refreshes the server timestamp exactly once per search, right before the SDS
+   * phase. The SDS lookups are the last requests in a search, by which point the
+   * timestamp captured at setup has aged across the list and info phases; the
+   * MSDS endpoint rejects calls signed against a stale timestamp (the website
+   * re-fetches `/api/timestamp` before its own MSDS calls for the same reason).
+   * Memoized so the concurrent SDS lookups share a single refresh.
+   *
+   * @returns The refreshed server timestamp
+   * @example
+   * ```ts
+   * await this.refreshTimestampForSds();
+   * const url = await this.sdsSearch("T819228");
+   * ```
+   * @source
+   */
+  private async refreshTimestampForSds(): Promise<number> {
+    if (!this.sdsTimestampRefresh) {
+      this.sdsTimestampRefresh = this.fetchServerTimestamp();
+    }
+    return this.sdsTimestampRefresh;
+  }
+
+  /**
+   * Gets the spec sheet url.
+   * Should return: https://www.macklin.cn/pdf/specification/download?lang=en&item_code=S867696
+   */
+  public getSpecsheetUrl(uuid: string): string {
+    return `${this.baseURL}/pdf/specification/download?lang=en&item_code=${uuid}`;
+  }
+
+  /**
    * Step 4.2: Request Timestamp Generation
    * Generates a unique timestamp for each request using either:
    * - Current time + random numbers (first request)
    * - Current time + digits from previous signature (subsequent requests)
    *
-   * @returns A unique timestamp string for the request
+   * @returns The timestamp string sent verbatim in both GET query strings and
+   *   POST bodies. It must stay a string: the site builds it as
+   *   `Date.now() + signatureDigits` (string concatenation), and the value is
+   *   40+ digits — doing real addition collapses it into scientific notation
+   *   (e.g. `3.9e+43`), which the server rejects with "Signature failed".
    * @source
    */
-  private generateRequestTimestamp(): number {
+  private generateRequestTimestamp(): string {
     if (this.lastSignature) {
-      const digits = this.lastSignature.match(/\d+/g);
-      return Date.now() + (digits ? Number(digits.join("")) : 1);
+      // Mirrors the site's `Date.now() + t.join("")`: string concatenation of
+      // the current time and the previous signature's digits.
+      const digits = this.lastSignature.match(/\d+/g)?.join("") ?? "";
+      return `${Date.now()}${digits}`;
     }
-    return Date.now() + Math.floor(Math.random()) + Math.ceil(Math.random());
+    // First request (no prior signature): plain current time + small offset.
+    return String(Date.now() + Math.floor(Math.random()) + Math.ceil(Math.random()));
   }
 
   /**
