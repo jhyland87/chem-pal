@@ -1,5 +1,7 @@
 import { AVAILABILITY } from "@/constants/common";
 import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
+import { parseQuantity } from "@/helpers/quantity";
+import { mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isMinimalProduct } from "@/utils/typeGuards/common";
 import {
@@ -151,7 +153,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
    * keyed by item code. Created once on first access so every product's detail
    * fetch shares the same bounded list phase (see getProductListBatch).
    */
-  private productListBatch?: Promise<Map<string, MacklinProductDetails>>;
+  private productListBatch?: Promise<Map<string, MacklinProductDetails[]>>;
 
   /**
    * Memoized batch of `/api/product/info` lookups for the current result set,
@@ -159,14 +161,6 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
    * fetch shares the same bounded info phase (see getProductInfoBatch).
    */
   private productInfoBatch?: Promise<Map<string, MacklinProductInfo>>;
-
-  /**
-   * Memoized one-shot refresh of the server timestamp before the SDS phase. The
-   * MSDS endpoint rejects calls signed with a timestamp that has gone stale by
-   * the time this last phase runs, so — like the website does before an MSDS
-   * call — we re-fetch `/api/timestamp` once before the SDS lookups.
-   */
-  private sdsTimestampRefresh?: Promise<number>;
 
   /** Highest rate-limit usage tier (50/75/90/100) already logged this window. */
   private rateLimitTierLogged: number = 0;
@@ -199,7 +193,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
     await this.validateAndUpdateTimestamp();
 
     if (!this.localStorage.soleId) {
-      this.localStorage.soleId = this.generateString(16);
+      this.localStorage.soleId = this.generateString(16, 16);
     }
 
     if (!this.localStorage.MklUserToken) {
@@ -239,11 +233,9 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
   ): Promise<ProductBuilder<Product>[] | void> {
     this.limit = limit;
     // Reset the per-search batches so a new query doesn't reuse the previous
-    // result set's product/list and product/info lookups, nor a stale SDS-phase
-    // timestamp refresh.
+    // result set's product/list and product/info lookups.
     this.productListBatch = undefined;
     this.productInfoBatch = undefined;
-    this.sdsTimestampRefresh = undefined;
     const searchRequest: unknown = await this.request<MacklinSearchResultProducts>(
       `/api/item/search`,
       {
@@ -300,27 +292,41 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
         // list calls get pushed to the very end of the burst, outside the
         // server's signing window, where they were rejected.
 
-        // `/api/product/list` carries the pricing + pack/unit.
-        const variant = (await this.getProductListBatch()).get(itemCode);
+        // `/api/product/list` returns every pack-size variant of the product.
+        const listVariants = (await this.getProductListBatch()).get(itemCode);
 
-        // Bail with `void` (not the half-built builder) when the list call
-        // yields nothing usable. Returning the builder here would cache a
-        // price-less product (see getProductDataWithCache), poisoning the cache
-        // so the product stays broken on every later search. `void` skips the
-        // cache write and lets the next search retry.
-        if (!variant) {
-          this.logger.warn("No usable product/list data for product:", itemCode);
+        // Keep only purchasable variants (in stock), then map each to a Variant.
+        // A product with no in-stock variant has nothing to show.
+        const variants = mapDefined(
+          (listVariants ?? [])
+            .filter((detail) => Number(detail.product_stock) > 0)
+            .sort((a, b) => Number(a.product_price) - Number(b.product_price)),
+          (detail) => {
+            const built = this.toVariant(detail);
+            return built ? { detail, variant: built } : undefined;
+          },
+        );
+
+        // Bail with `void` (not the half-built builder) when there's nothing
+        // usable. Returning the builder here would cache a price-less product
+        // (see getProductDataWithCache), poisoning the cache so the product stays
+        // broken on every later search. `void` skips the cache write and lets the
+        // next search retry.
+        if (variants.length === 0) {
+          this.logger.warn("No in-stock product/list variants for product:", itemCode);
           return undefined;
         }
 
-        builder.setPricing(variant.product_price, "CNY", CURRENCY_SYMBOL_MAP.CNY);
-        builder.setQuantity(variant.product_pack);
-        builder.setUOM(variant.product_unit);
-        // I think Macklin uses the variant.product_stock property to determine availability,
-        // But every one of them say "0.00", even if they have it in stock on their website.
-        // Defaulting to IN_STOCK for now.
+        // The cheapest in-stock variant is the product's headline price/size; the
+        // rest are attached as selectable variants.
+        const [primary] = variants;
+        builder.setPricing(primary.detail.product_price, "CNY", CURRENCY_SYMBOL_MAP.CNY);
+        if (primary.variant.quantity != null && primary.variant.uom != null) {
+          builder.setQuantity(primary.variant.quantity, primary.variant.uom);
+        }
         builder.setAvailability(AVAILABILITY.IN_STOCK);
-        builder.setDescription(variant.item_en_specification);
+        builder.setDescription(primary.detail.item_en_specification);
+        builder.setVariants(variants.map(({ variant }) => variant));
 
         // Molecular weight comes from `/api/product/info`.
         const info = (await this.getProductInfoBatch()).get(itemCode);
@@ -330,11 +336,8 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
 
         // SDS lookup runs last — one request, and only for products that
         // already have the minimum required data (a request spent on a product
-        // that will be dropped anyway is wasted). The server timestamp is
-        // refreshed once before this phase so the MSDS calls aren't signed with
-        // a value that's gone stale across the earlier phases.
+        // that will be dropped anyway is wasted).
         if (isMinimalProduct(builder.dump())) {
-          await this.refreshTimestampForSds();
           const sdsUrl = await this.sdsSearch(itemCode);
           if (sdsUrl) {
             builder.setSDSUrl(sdsUrl);
@@ -348,6 +351,44 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
   }
 
   /**
+   * Converts a single `/api/product/list` variant into a `Partial<Variant>`. The
+   * pack size is parsed from `product_code` (formatted `${item_code}-${quantity}`,
+   * e.g. `I929937-100mg`); the product-level `product_id`/`product_code` become
+   * the variant's `uuid`/`sku`. Returns undefined when the quantity can't be
+   * parsed, so the caller can skip it.
+   *
+   * @param detail - The product-list variant to convert
+   * @returns The variant, or undefined when the pack size can't be parsed
+   * @example
+   * ```ts
+   * this.toVariant({ product_code: "I929937-100mg", item_code: "I929937", ... });
+   * // -> { uuid: 94613254, sku: "I929937-100mg", title: "... 100mg", quantity: 100, uom: "mg", ... }
+   * ```
+   * @source
+   */
+  private toVariant(detail: MacklinProductDetails): Partial<Variant> | undefined {
+    const prefix = `${detail.item_code}-`;
+    const quantityLabel = detail.product_code.startsWith(prefix)
+      ? detail.product_code.slice(prefix.length)
+      : detail.product_code;
+    const quantity = parseQuantity(quantityLabel);
+    if (!quantity) {
+      return undefined;
+    }
+    return {
+      id: detail.product_id,
+      uuid: detail.product_id,
+      sku: detail.product_code,
+      title: `${detail.item_en_name} ${quantityLabel}`,
+      price: Number(detail.product_price),
+      currencyCode: "CNY",
+      currencySymbol: CURRENCY_SYMBOL_MAP.CNY,
+      quantity: quantity.quantity,
+      uom: quantity.uom,
+    };
+  }
+
+  /**
    * Fetches `/api/product/list` for every product in the current result set as
    * one bounded, memoized batch keyed by item code, storing the first (cheapest)
    * variant. Running the list calls as a single phase — rather than letting each
@@ -356,23 +397,23 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
    * to the end of the run (behind the info/SDS phases) and rejected by the
    * server. The batch is created once and shared.
    *
-   * @returns A map of item code to its primary product variant (only codes with
-   *   a valid, non-empty list response are present)
+   * @returns A map of item code to its full list of product variants (only codes
+   *   with a valid, non-empty list response are present)
    * @example
    * ```ts
-   * const variant = (await this.getProductListBatch()).get("T819228");
-   * // variant?.product_price -> "30.00"
+   * const variants = (await this.getProductListBatch()).get("T819228");
+   * // variants?.[0].product_price -> "30.00"
    * ```
    * @source
    */
-  private async getProductListBatch(): Promise<Map<string, MacklinProductDetails>> {
+  private async getProductListBatch(): Promise<Map<string, MacklinProductDetails[]>> {
     if (!this.productListBatch) {
       this.productListBatch = (async () => {
         const codes = this.products
           .map((product) => product.get("uuid"))
           .filter((uuid): uuid is string => typeof uuid === "string");
         const queue = new Queue(this.maxConcurrentRequests, this.minConcurrentCycle);
-        const variantByCode = new Map<string, MacklinProductDetails>();
+        const variantsByCode = new Map<string, MacklinProductDetails[]>();
         await Promise.all(
           codes.map((code) =>
             queue.run(async () => {
@@ -380,12 +421,12 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
                 params: { code },
               });
               if (isMacklinProductDetailsResponse(response) && response.list.length > 0) {
-                variantByCode.set(code, response.list[0]);
+                variantsByCode.set(code, response.list);
               }
             }),
           ),
         );
-        return variantByCode;
+        return variantsByCode;
       })();
     }
     return this.productListBatch;
@@ -506,7 +547,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
     return data.map((product) =>
       new ProductBuilder(this.baseURL)
         .setBasicInfo(
-          product.item_en_name,
+          `${product.item_en_name}, ${product.item_specification}`,
           `${this.baseURL}/en/products/${product.item_code}`,
           this.supplierName,
         )
@@ -634,12 +675,20 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
       if (!isTimestampStorage(this.localStorage.MklTmKey)) {
         throw new Error("Missing or invalid timestamp in localStorage");
       }
-      const timestamp = this.localStorage.MklTmKey.serverTm;
+      // X-Timestamp must track the *current* server time, not the value synced
+      // at setup. The server compares it against its own clock with a tight
+      // tolerance, and the frozen value goes stale across the batched phases
+      // (list -> info -> sds) — by the SDS phase (the last requests) the gap is
+      // large enough that the server rejects the call. Derive the current server
+      // time from the live clock plus the server/client drift measured at sync.
+      // This is equivalent to what the site does by re-fetching /api/timestamp
+      // right before each call, but without the extra round-trips.
+      const tm = this.localStorage.MklTmKey;
+      const timestamp = Math.round(Date.now() / 1000) + (tm.serverTm - tm.clientTm);
 
       // Create a fresh headers object to avoid any potential array concatenation
       const headers: MacklinRequestHeaders = {
         /* eslint-disable @typescript-eslint/naming-convention */
-        Accept: "application/json, text/plain, */*",
         "X-Agent": "web",
         "X-User-Token": this.ensureStringHeader(this.localStorage.MklUserToken),
         "X-Device-Id": this.ensureStringHeader(this.localStorage.soleId),
@@ -827,29 +876,6 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
     this.localStorage.MklTmKey = timestampData;
 
     return timestampData.serverTm;
-  }
-
-  /**
-   * Refreshes the server timestamp exactly once per search, right before the SDS
-   * phase. The SDS lookups are the last requests in a search, by which point the
-   * timestamp captured at setup has aged across the list and info phases; the
-   * MSDS endpoint rejects calls signed against a stale timestamp (the website
-   * re-fetches `/api/timestamp` before its own MSDS calls for the same reason).
-   * Memoized so the concurrent SDS lookups share a single refresh.
-   *
-   * @returns The refreshed server timestamp
-   * @example
-   * ```ts
-   * await this.refreshTimestampForSds();
-   * const url = await this.sdsSearch("T819228");
-   * ```
-   * @source
-   */
-  private async refreshTimestampForSds(): Promise<number> {
-    if (!this.sdsTimestampRefresh) {
-      this.sdsTimestampRefresh = this.fetchServerTimestamp();
-    }
-    return this.sdsTimestampRefresh;
   }
 
   /**
