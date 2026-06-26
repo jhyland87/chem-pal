@@ -300,3 +300,58 @@ export function assertIsAmbeedGetSearchProductAndRecommendedProductsByCASRespons
     throw new Error("assertIsAmbeedGetSearchProductAndRecommendedProductsByCASResponse failed");
   }
 }
+
+const ambeedGetPmsSdsByAmsResponseSchema = z.object({
+  value: z.object({
+    isokk: z.boolean(),
+    errmsg: z.string(),
+    // sds_list[<p_am>][<sdsType>] = { status, url }
+    sds_list: z.record(
+      z.string(),
+      z.record(z.string(), z.object({ status: z.boolean(), url: z.string() })),
+    ),
+  }),
+});
+
+/**
+ * Type guard to validate the `webapi/v1/getPmsSdsByAms` response shape — the
+ * `value.sds_list` map of per-product (AM id) SDS documents keyed by SDS type.
+ *
+ * @category Typeguards
+ * @param data - The response data to validate
+ * @returns Type predicate indicating if the data is a valid AmbeedGetPmsSdsByAmsResponse
+ * @example
+ * ```typescript
+ * if (isAmbeedGetPmsSdsByAmsResponse(data)) {
+ *   console.log(data.value.sds_list["A491321"]["am"].url);
+ * }
+ * ```
+ * @source
+ */
+export function isAmbeedGetPmsSdsByAmsResponse(
+  data: unknown,
+): data is AmbeedGetPmsSdsByAmsResponse {
+  return ambeedGetPmsSdsByAmsResponseSchema.safeParse(data).success;
+}
+
+/**
+ * Type assertion that the given data is a valid AmbeedGetPmsSdsByAmsResponse.
+ * Throws if the data does not match the expected structure.
+ *
+ * @category Typeguards
+ * @param data - The response data to assert
+ * @throws Error if the data is not a valid AmbeedGetPmsSdsByAmsResponse
+ * @example
+ * ```typescript
+ * assertIsAmbeedGetPmsSdsByAmsResponse(response);
+ * console.log(response.value.sds_list);
+ * ```
+ * @source
+ */
+export function assertIsAmbeedGetPmsSdsByAmsResponse(
+  data: unknown,
+): asserts data is AmbeedGetPmsSdsByAmsResponse {
+  if (!isAmbeedGetPmsSdsByAmsResponse(data)) {
+    throw new Error("assertIsAmbeedGetPmsSdsByAmsResponse failed");
+  }
+}

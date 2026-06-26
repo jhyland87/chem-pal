@@ -1,0 +1,76 @@
+{
+  "source": 1000,
+  "code": 200,
+  "lang": "zh_CN",
+  "time": "20260625223022303694",
+  "value": {
+    "data": null,
+    "chemical_info": {
+      "A491321": {
+        "hazard_phrase": "H315-H319-H335",
+        "p_transport_hazard_class": "N/A",
+        "prevention_phrase": "P261-P305+P351+P338",
+        "p_preventioncode": "P261-P305+P351+P338",
+        "p_signalworld": "Warning",
+        "un_num": "N/A",
+        "packaging_group": "N/A",
+        "ghs_flags": "Warning",
+        "p_ghs": "GHS07",
+        "p_un": "N/A",
+        "transport_hazard_class": "N/A",
+        "p_packaginggroup": "N/A",
+        "p_hazardstatement": "H315-H319-H335",
+        "ghs_category": "GHS07"
+      },
+      "A1159477": {
+        "hazard_phrase": "H302-H315-H319-H335",
+        "p_transport_hazard_class": "N/A",
+        "prevention_phrase": "P261-P305+P351+P338",
+        "p_preventioncode": "P261-P305+P351+P338",
+        "p_signalworld": "Warning",
+        "un_num": "N/A",
+        "packaging_group": "N/A",
+        "ghs_flags": "Warning",
+        "p_ghs": "GHS07",
+        "p_un": "N/A",
+        "transport_hazard_class": "N/A",
+        "p_packaginggroup": "N/A",
+        "p_hazardstatement": "H302-H315-H319-H335",
+        "ghs_category": "GHS07"
+      }
+    },
+    "api_data": null,
+    "errmsg": "Error",
+    "sds_list": {
+      "A491321": {
+        "am-de-de": {
+          "url": "https://us-file.ambeed.com/prodsds/amb-sds-de-europe/492/SDS-A491321.pdf",
+          "status": true
+        },
+        "am-europe": {
+          "url": "https://us-file.ambeed.com/prodsds/amb-sds-en-europe/492/SDS-A491321.pdf",
+          "status": true
+        },
+        "am": {
+          "url": "https://us-file.ambeed.com/prodsds/amb-sds-en/492/SDS-A491321.pdf",
+          "status": true
+        }
+      },
+      "A1159477": {
+        "am-de-de": {
+          "url": "https://us-file.ambeed.com/prodsds/amb-sds-de-europe/1160/SDS-A1159477.pdf",
+          "status": true
+        },
+        "am-europe": {
+          "url": "https://us-file.ambeed.com/prodsds/amb-sds-en-europe/1160/SDS-A1159477.pdf",
+          "status": true
+        },
+        "am": {
+          "url": "https://us-file.ambeed.com/prodsds/amb-sds-en/1160/SDS-A1159477.pdf",
+          "status": true
+        }
+      }
+    },
+    "isokk": true
+  }
+}

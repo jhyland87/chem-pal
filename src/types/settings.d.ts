@@ -87,6 +87,14 @@ declare global {
     country?: string;
 
     /**
+     * Preferred language locale. Defaults to `chrome.i18n.getUILanguage()` on
+     * first run. Used to pick the right-language document (e.g. Ambeed SDS
+     * sheets).
+     * @example "en-US"
+     */
+    language?: string;
+
+    /**
      * Currency rate for the user's currency
      * @example 1.0
      */

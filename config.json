@@ -7,6 +7,7 @@
     "autocomplete": true,
     "currency": "USD",
     "location": "US",
+    "language": "en-US",
     "currencyRate": 1.0,
     "fontSize": "medium",
     "theme": "light",
@@ -14,6 +15,19 @@
     "showAllColumns": false,
     "hideColumns": ["description", "uom"],
     "columnFilterConfig": {}
+  },
+  "languages": {
+    "en-US": "English",
+    "de-DE": "Deutsch",
+    "fr-FR": "Français",
+    "es-ES": "Español",
+    "it-IT": "Italiano",
+    "da-DK": "Dansk",
+    "pt-PT": "Português",
+    "pl-PL": "Polski",
+    "sv-SE": "Svenska",
+    "nb-NO": "Norsk",
+    "nl-NL": "Nederlands"
   },
   "locations": {
     "AU": {

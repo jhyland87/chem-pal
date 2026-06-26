@@ -1,6 +1,7 @@
 import { currencies, locations } from "@/../config.json";
 import { CAS_REGEX, SPIN_SPEED, UOM } from "@/constants/common";
 import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "@/constants/currency";
+import { looksLikeSmiles } from "@/helpers/smiles";
 import { zodAddActualValueToIssues } from "@/helpers/utils";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
 //import { currencies } from "price-parser";
@@ -859,4 +860,17 @@ export function isPlainContainer(v: unknown): v is object {
   if (Array.isArray(v)) return true;
   const proto = Object.getPrototypeOf(v);
   return proto === Object.prototype || proto === null;
+}
+
+/**
+ * Type guard to validate if a value is a valid SMILES string.
+ * Checks if the value is a string and if it is a valid SMILES string.
+ *
+ * @category Typeguards
+ * @param smiles - The value to validate
+ * @returns Type predicate indicating if the value is a valid SMILES string
+ * @source
+ */
+export function isSmiles(smiles: unknown): smiles is Smiles<string> {
+  return looksLikeSmiles(String(smiles));
 }

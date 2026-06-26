@@ -234,7 +234,7 @@ declare global {
      * Chemical concentration specification
      * @example "98%"
      */
-    concentration?: number;
+    concentration?: string;
 
     /**
      * Molecular weight of the variant
@@ -436,6 +436,12 @@ declare global {
     docLinks?: string[];
 
     /**
+     * URL to the product's SDS page
+     * @example "https://supplier.com/sds/nacl.pdf"
+     */
+    sdsUrl?: string;
+
+    /**
      * Country of the supplier
      * @example "US"
      */
@@ -464,6 +470,12 @@ declare global {
      * @example 95
      */
     matchPercentage?: number;
+
+    /**
+     * SMILES notation for the product
+     * @example "C1=CC=CC=C1"
+     */
+    smiles?: Smiles<string>;
   }
 
   /**

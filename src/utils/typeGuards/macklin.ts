@@ -76,6 +76,59 @@ export function isMacklinApiResponse<T>(data: unknown): data is MacklinApiRespon
   return macklinApiResponseSchema.safeParse(data).success;
 }
 
+const macklinMsdsSearchResponseSchema = z.object({
+  url: z.string(),
+});
+
+/**
+ * Validates the unwrapped `data` payload of a successful MSDS search. `request`
+ * strips the `{ code, message, data }` envelope, so a success yields `{ url }`
+ * while error responses yield `[]`, which fails the `{ url }` shape — a positive
+ * result therefore means an SDS URL is present.
+ *
+ * @category Typeguards
+ * @param data - The unwrapped response data to validate
+ * @returns Type predicate indicating the data is a successful MacklinMsdsSearchResponse
+ * @example
+ * ```ts
+ * const data = await this.request("/api/msds/search", { params: { keyword } });
+ * if (isMacklinMsdsSearchResponse(data)) {
+ *   console.log(data.url);
+ * }
+ * ```
+ * @source
+ */
+export function isMacklinMsdsSearchResponse(data: unknown): data is MacklinMsdsSearchResponse {
+  return macklinMsdsSearchResponseSchema.safeParse(data).success;
+}
+
+/* eslint-disable @typescript-eslint/naming-convention */
+const macklinProductInfoSchema = z.object({
+  item: z.object({ chem_mw: z.string() }),
+});
+/* eslint-enable @typescript-eslint/naming-convention */
+
+/**
+ * Validates the `data` payload of the product info endpoint
+ * (`POST /api/product/info`). Confirms `item.chem_mw` (the molecular weight) is
+ * present so callers can safely read the chemistry fields.
+ *
+ * @category Typeguards
+ * @param data - The unwrapped response data to validate
+ * @returns Type predicate indicating the data is a valid MacklinProductInfo
+ * @example
+ * ```ts
+ * const data = await this.request("/api/product/info", { method: "POST", body: { item_code } });
+ * if (isMacklinProductInfo(data)) {
+ *   builder.setMoleweight(data.item.chem_mw);
+ * }
+ * ```
+ * @source
+ */
+export function isMacklinProductInfo(data: unknown): data is MacklinProductInfo {
+  return macklinProductInfoSchema.safeParse(data).success;
+}
+
 /**
  * Validates if a URL requires authentication.
  * These endpoints require a valid user token in the X-User-Token header.

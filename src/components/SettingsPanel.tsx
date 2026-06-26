@@ -1,4 +1,4 @@
-import { currencies, defaultSettings, locations } from "@/../config.json";
+import { currencies, defaultSettings, languages, locations } from "@/../config.json";
 import { useAppContext } from "@/components/SearchPanel/hooks/useContext";
 import { ACTION_TYPE } from "@/constants/common";
 import { isButtonElement } from "@/utils/typeGuards/common";
@@ -283,6 +283,29 @@ export default function SettingsPanel() {
               {Object.entries(locations).map(([locationId, { name }]) => (
                 <MenuItem key={locationId} value={locationId}>
                   {name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </ListItem>
+
+        <ListItem sx={displayHelperOnHover}>
+          <ListItemText primary="Language" />
+          <FormControl>
+            <InputLabel id="language-select-label">Language</InputLabel>
+            <Select
+              labelId="language-select-label"
+              value={currentSettings.language ?? ""}
+              onChange={handleInputChange}
+              name="language"
+              label="language"
+              size="small"
+              sx={{ ...inputStyle }}
+              disabled={isPending}
+            >
+              {Object.entries(languages).map(([languageId, label]) => (
+                <MenuItem key={languageId} value={languageId}>
+                  {label}
                 </MenuItem>
               ))}
             </Select>
