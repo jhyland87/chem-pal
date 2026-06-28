@@ -301,6 +301,59 @@ export function assertIsAmbeedGetSearchProductAndRecommendedProductsByCASRespons
   }
 }
 
+const ambeedProductStockResponseSchema = z.object({
+  source: z.number(),
+  code: z.number(),
+  lang: z.string(),
+  time: z.string(),
+  value: z.array(z.object({ size: z.string() }).passthrough()),
+});
+
+/**
+ * Type guard to validate the `webapi/v1/product_stock` response shape — the
+ * `value` array of per-size stock rows (each with a `size`, plus per-warehouse
+ * quantities and an optional aggregate `has_stock` flag). An empty `value`
+ * array is valid (no stock data available).
+ *
+ * @category Typeguards
+ * @param data - The response data to validate
+ * @returns Type predicate indicating if the data is a valid AmbeedProductStockResponse
+ * @example
+ * ```typescript
+ * if (isAmbeedProductStockResponse(data)) {
+ *   console.log(data.value[0].size, data.value[0].has_stock);
+ * }
+ * ```
+ * @source
+ */
+export function isAmbeedProductStockResponse(
+  data: unknown,
+): data is AmbeedProductStockResponse {
+  return ambeedProductStockResponseSchema.safeParse(data).success;
+}
+
+/**
+ * Type assertion that the given data is a valid AmbeedProductStockResponse.
+ * Throws if the data does not match the expected structure.
+ *
+ * @category Typeguards
+ * @param data - The response data to assert
+ * @throws Error if the data is not a valid AmbeedProductStockResponse
+ * @example
+ * ```typescript
+ * assertIsAmbeedProductStockResponse(response);
+ * console.log(response.value);
+ * ```
+ * @source
+ */
+export function assertIsAmbeedProductStockResponse(
+  data: unknown,
+): asserts data is AmbeedProductStockResponse {
+  if (!isAmbeedProductStockResponse(data)) {
+    throw new Error("assertIsAmbeedProductStockResponse failed");
+  }
+}
+
 const ambeedGetPmsSdsByAmsResponseSchema = z.object({
   value: z.object({
     isokk: z.boolean(),

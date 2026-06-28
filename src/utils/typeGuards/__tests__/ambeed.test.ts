@@ -8,6 +8,8 @@ import {
   isAmbeedProductListResponsePriceList,
   isAmbeedProductListResponseResultItem,
   isAmbeedProductListResponseValue,
+  isAmbeedProductStockResponse,
+  assertIsAmbeedProductStockResponse,
   isAmbeedSearchResponseProduct,
 } from "../ambeed";
 
@@ -228,6 +230,46 @@ describe("Ambeed Type Guards", () => {
     it("assert throws on invalid input and narrows on valid", () => {
       expect(() => assertIsAmbeedGetPmsSdsByAmsResponse({})).toThrow();
       expect(() => assertIsAmbeedGetPmsSdsByAmsResponse(sdsFixture)).not.toThrow();
+    });
+  });
+
+  describe("isAmbeedProductStockResponse", () => {
+    const validResponse = {
+      source: 1000,
+      code: 200,
+      lang: "zh_CN",
+      time: "20260629012250285476",
+      value: [
+        { size: "unwrapped", has_stock_quantitychina: 0, rows: [] },
+        { size: "25g", has_stock: 2, has_stock_quantitychina: 1, rows: [] },
+      ],
+    };
+
+    it("should return true for a valid product stock response", () => {
+      expect(isAmbeedProductStockResponse(validResponse)).toBe(true);
+    });
+
+    it("should return true when value is an empty array", () => {
+      expect(isAmbeedProductStockResponse({ ...validResponse, value: [] })).toBe(true);
+    });
+
+    it("should return false for invalid product stock responses", () => {
+      const invalidResponses = [
+        null,
+        undefined,
+        {},
+        { source: 1000, code: 200, lang: "zh_CN", time: "x" }, // missing value
+        { ...validResponse, value: {} }, // value not an array
+        { ...validResponse, value: [{ has_stock: 2 }] }, // row missing size
+      ];
+      invalidResponses.forEach((response) => {
+        expect(isAmbeedProductStockResponse(response)).toBe(false);
+      });
+    });
+
+    it("assert throws on invalid input and narrows on valid", () => {
+      expect(() => assertIsAmbeedProductStockResponse({})).toThrow();
+      expect(() => assertIsAmbeedProductStockResponse(validResponse)).not.toThrow();
     });
   });
 });

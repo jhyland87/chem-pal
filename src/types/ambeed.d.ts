@@ -297,6 +297,8 @@ declare global {
           has_stock_quantityusa: number;
           /** Whether the AM warehouse has stock (`1`/`0`). */
           has_stock_quantityam: number;
+          /** Aggregate stock flag; \> 0 means in stock (absent when out of stock). */
+          has_stock?: number;
           /** Whether the requesting user is logged in (`1`/`0`). */
           is_login: number;
           /** Quantity available for sale. */
