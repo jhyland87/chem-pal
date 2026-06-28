@@ -1,6 +1,6 @@
 import { SUBSCRIPTS, SUPERSCRIPTS } from "@/constants/science";
-import { decodeHTMLEntities, isMoleForm } from "@/helpers/utils";
 import { looksLikeSmiles } from "@/helpers/smiles";
+import { decodeHTMLEntities, isMoleForm } from "@/helpers/utils";
 
 /**
  * @group Helpers
@@ -39,42 +39,68 @@ export const superscript = (str: string) => {
 };
 
 /**
- * Match for a chemical formula (with or without subscript tags) in a string of html.
- * It does not currently work for formulas with parenthesis or brackets.
+ * Match for a chemical formula (with or without subscript tags) in a string of html, converting
+ * `<sub>`/`<sup>` tags to unicode sub/superscripts. Numbers that aren't tagged (e.g. a salt/hydrate
+ * coefficient denoting how many of the whole molecule) are matched but left as regular digits.
  *
- * The function searches for valid chemical element symbols followed by optional subscript numbers.
- * It requires at least two element-number combinations to consider it a valid formula.
+ * Handles:
+ * - multi-digit subscripts (`C<sub>18</sub>…`);
+ * - parenthesised/bracketed groups (`KN(C(O)CH<sub>2</sub>)<sub>2</sub>`);
+ * - salt/hydrate components after a `·`/`•`/`*` separator, with an optional leading coefficient
+ *   that may be a number, a `<sub>`-tagged number, or a variable `x`/`n` (`…O·xH<sub>2</sub>O`,
+ *   `… • <sub>4</sub>K`, `…O<sub>5</sub>·K`).
+ *
+ * Element symbols gate the match — at least two element/bracket "units" are required — so ordinary
+ * prose isn't mistaken for a formula. A clean, subscript-free formula like `KBr` is a single unit
+ * and is intentionally NOT matched here (callers store those verbatim via `isMoleForm`).
  *
  * @param html - The HTML string to search for a formula
- * @returns The HTML that shows the chemical formula only, with proper subscript formatting, or undefined if no formula found
+ * @returns The formula with proper sub/superscript formatting, or undefined if none is found
  * @example
  * ```typescript
- * findFormulaInHtml('foobar K<sub>2</sub>Cr<sub>2</sub>O<sub>7</sub> baz')
- * // Returns "K₂Cr₂O₇"
- *
- * findFormulaInHtml('H<sub>2</sub>SO<sub>4</sub>')
- * // Returns "H₂SO₄"
- *
- * findFormulaInHtml('Just some text')
- * // Returns undefined
+ * findFormulaInHtml('foobar K<sub>2</sub>Cr<sub>2</sub>O<sub>7</sub> baz') // "K₂Cr₂O₇"
+ * findFormulaInHtml('C<sub>18</sub>H<sub>14</sub>N<sub>2</sub>O') // "C₁₈H₁₄N₂O"
+ * findFormulaInHtml('C<sub>20</sub>H<sub>20</sub>O<sub>5</sub>·K') // "C₂₀H₂₀O₅·K"
+ * findFormulaInHtml('Just some text') // undefined
  * ```
  * @see https://regex101.com/r/H6DXwK/6 - Regex pattern explanation
  * @source
  */
 export const findFormulaInHtml = (html: string): string | undefined => {
+  // Valid element symbols. Gates the match so prose isn't read as a formula.
+  const element =
+    "(?:H[eogf]?|L[iau]|B[eari]?|C[arouseld]?|N[eiapdb]?|O[sg]?|F[rle]?|M[gon]|A[lrsgutc]|S[icernmb]?|P[uabotmrd]?|Kr?|T[icebmalh]|V|Z[nr]|G[ade]|R[buhena]|Yb?|I[nr]?|Xe|E[ur]|Dy|W|U)";
+  // A <sub>/<sup>-tagged subscript, and the looser "tagged or inline" subscript.
+  const taggedSub = "<su[bp]>[1-9][0-9]*</su[bp]>";
+  const subPart = `(?:${taggedSub}|[1-9][0-9]*)`;
+  // One "unit": a run of elements/brackets, then any trailing subscripts.
+  const unit = `(?:(?:${element}|[()\\[\\]])+(?:${subPart})*)`;
+  // The head must look like a formula and not prose: either ≥2 element/bracket units, or a single
+  // element carrying a *tagged* subscript (e.g. "H<sub>2</sub>"). A lone bare element, or a single
+  // element with only an inline digit (e.g. "B12" in prose), is intentionally not enough — those
+  // clean cases are handled by isMoleForm upstream.
+  const head = `(?:(?:${unit}){2,}|(?:${element}|[()\\[\\]])+${taggedSub})`;
+  // An optional ionic charge sign. The lookahead (not followed by a letter/digit) keeps it from
+  // grabbing an ordinary hyphen inside a word like "CO-op", while still allowing "K+", "…F₃-.K+".
+  const charge = "(?:[+-](?![A-Za-z0-9]))?";
+  // Salt/hydrate separator: a spaced "·"/"•"/"*", OR a tight "." that is immediately followed by
+  // a component (so it ignores sentence periods and decimal points).
+  const separator = "(?:\\s*[·•*]\\s*|\\.(?=[A-Za-z(\\[]))";
+  // A leading coefficient after a separator: a <sub>number</sub>, an integer or fraction (e.g.
+  // "12", "1/2"), or a variable hydrate count (x/n).
+  const coefficient = "(?:<su[bp]>[1-9][0-9]*</su[bp]>|[1-9][0-9]*(?:/[1-9][0-9]*)?|[xn])";
+  // The whole formula: the head (+optional charge), then any number of
+  // "separator coefficient? units (+optional charge)" salt/hydrate components.
   const pattern = new RegExp(
-    "((?:(?:H[eogf]?|L[iau]|B[eari]?|C[arouseld]?|N[eiapdb]?|O[sg]?" +
-      "|F[rle]?|M[gon]|A[lrsgutc]|S[icernmb]?|P[uabotmrd]?|Kr?|T[icebmalh]|" +
-      "V|Z[nr]|G[ade]|R[buhena]|Yb?|I[nr]?|Xe|E[ur]|Dy|W|U)+" +
-      "(?:(?:<su[bp]>(?:[2-9][0-9]*)</su[bp]>)|[2-9][0-9]*)*){2,})",
+    `((?![^<>]*>)${head}${charge}(?:${separator}(?:${coefficient})?${unit}+${charge})*)`,
   );
   const match = html.match(pattern);
   if (!match) {
     return;
   }
   return match[0]
-    .replace(/<sub>(\d+)<\/sub>/g, (match, p1) => subscript(p1 || ""))
-    .replace(/<sup>(\d+)<\/sup>/g, (match, p1) => superscript(p1 || ""));
+    .replace(/<sub>(\d+)<\/sub>/g, (_match, p1) => subscript(p1 || ""))
+    .replace(/<sup>(\d+)<\/sup>/g, (_match, p1) => superscript(p1 || ""));
 };
 
 /**
@@ -136,7 +162,8 @@ const normalizeSpecText = (html: string): string =>
 // A label followed by an optional separator (":", "-", "#", "=", em/en dashes) and the value.
 const MOLEWEIGHT_REGEX =
   /(?:molecular\s+(?:weight|mass)|mol(?:ecular|\.)?\s+(?:wt|weight|mass)|\bmw\b)\s*[:#=–—-]*\s*(\d+(?:\.\d+)?)/i;
-const FORMULA_REGEX = /(?:molecular\s+formula|\bformula\b)\s*[:#=–—-]*\s*([A-Za-z][A-Za-z0-9()·.]*)/i;
+const FORMULA_REGEX =
+  /(?:molecular\s+formula|\bformula\b)\s*[:#=–—-]*\s*([A-Za-z][A-Za-z0-9()·.]*)/i;
 const SMILES_LABEL_REGEX = /\bsmiles\b\s*[:#=–—-]*\s*(\S+)/i;
 const PURITY_PERCENT_REGEX = /(\d{1,3}(?:\.\d+)?)\s*\+?\s*%/;
 
