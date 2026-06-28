@@ -5,7 +5,7 @@
  * @source
  */
 
-import { locations } from "@/../config.json";
+import { all as countriesByIso2 } from "country-list-js";
 export const COUNTRY_CODES = [
   "AF",
   "AL",
@@ -509,13 +509,14 @@ export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_check
 
 /**
  * Supported countries for location-based features such as currency and shipping filters.
- * Derived from the locations defined in config.json, excluding the "OTHER" fallback entry.
- * Sorted alphabetically by country name.
+ * Sourced from `country-list-js` (full ISO 3166-1 alpha-2 list) and sorted alphabetically
+ * by country name. Codes that the library can't name fall back to the raw code.
  * @source
  */
-export const COUNTRIES = Object.entries(locations)
-  .filter(([code]) => code !== "OTHER")
-  .map(([code, { name }]) => ({ name, code }))
+export const COUNTRIES = Object.entries(
+  countriesByIso2 as Record<string, { name?: string }>,
+)
+  .map(([code, record]) => ({ code, name: record?.name ?? code }))
   .sort((a, b) => a.name.localeCompare(b.name));
 
 /**
@@ -540,14 +541,10 @@ export const AVAILABILITY_OPTIONS = Object.keys(AVAILABILITY_LABEL_MAP);
 
 /**
  * Supplier country options available for filtering in the drawer search panel.
- * Derived from the locations defined in config.json, excluding the "OTHER" fallback entry.
- * Sorted alphabetically by country label.
+ * Derived from {@link COUNTRIES} (already sorted alphabetically by name).
  * @source
  */
-export const SUPPLIER_COUNTRY_OPTIONS = Object.entries(locations)
-  .filter(([code]) => code !== "OTHER")
-  .map(([code, { name }]) => ({ code, label: name }))
-  .sort((a, b) => a.label.localeCompare(b.label));
+export const SUPPLIER_COUNTRY_OPTIONS = COUNTRIES.map(({ code, name }) => ({ code, label: name }));
 
 /**
  * Shipping range options available for filtering in the drawer search panel.

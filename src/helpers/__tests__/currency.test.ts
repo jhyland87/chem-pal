@@ -60,11 +60,15 @@ describe("getCurrencyRate", () => {
   });
 });
 describe("getCurrencyCodeFromSymbol", () => {
+  // Symbols come from country-list-js ("¥" is JPY, CNY is "CN¥", INR is "Rs"),
+  // plus a "₹" -> INR override so scraped rupee prices still resolve.
   test.each([
     ["$", "USD"],
     ["€", "EUR"],
     ["£", "GBP"],
-    ["¥", "CNY"],
+    ["¥", "JPY"],
+    ["CN¥", "CNY"],
+    ["Rs", "INR"],
     ["₹", "INR"],
   ])("should return %s for symbol: %s", (symbol, code) =>
     expect(getCurrencyCodeFromSymbol(symbol as CurrencySymbol)).toBe(code),
@@ -97,6 +101,8 @@ describe("toUSD", () => {
 });
 
 describe("parsePrice", () => {
+  // The "₹" case exercises the fallback path (price-parser doesn't recognize ₹)
+  // plus the foreign number-format swap; the "₹" -> INR override resolves the code.
   test.each([
     ["$1000", "USD", 1000, "$"],
     ["1000€", "EUR", 1000, "€"],
