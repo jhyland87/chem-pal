@@ -9,9 +9,9 @@ import { omit } from "@/helpers/collectionUtils";
 import { getCountryName } from "@/helpers/country";
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
+import SDSIcon from "@/icons/SDSIcon";
+import TDSIcon from "@/icons/TDSIcon";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
-import InfoIcon from "@mui/icons-material/Info";
-import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import { ColumnDef, type CellContext } from "@tanstack/react-table";
 import { hasFlag } from "country-flag-icons";
 import getUnicodeFlagIcon from "country-flag-icons/unicode";
@@ -300,7 +300,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         if (!url) return null;
         return (
           <Link href={url} aria-label="Safety data sheet (SDS)" title="Safety data sheet (SDS)">
-            <LocalHospitalIcon fontSize="small" />
+            <SDSIcon fontSize="small" />
           </Link>
         );
       },
@@ -322,7 +322,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         if (!url) return null;
         return (
           <Link href={url} aria-label="Technical specifications" title="Technical specifications">
-            <InfoIcon fontSize="small" />
+            <TDSIcon fontSize="small" />
           </Link>
         );
       },
