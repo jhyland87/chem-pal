@@ -220,13 +220,12 @@ describe("SupplierLaboratoriumDiscounter getProductData methods", () => {
       );
 
       expect(result).toBe(builder);
-      // `conc` is supplier-local extra data parsed from the description; it is
-      // not part of the shared Product type, so widen the cast here.
-      const dump = builder.dump() as Partial<Product> & { variants?: Variant[]; conc?: string };
+      const dump = builder.dump() as Partial<Product> & { variants?: Variant[] };
       // Description parser overwrites `title` with the first comma-separated chunk.
       expect(dump.title).toBe("4-Nitrophenyl phosphate disodium salt hexahydrate");
       expect(dump.cas).toBe("4264-83-9");
-      expect(dump.conc).toBe("99%");
+      // "min. 99%" from the description is stored as the product concentration.
+      expect(dump.concentration).toBe("99%");
       expect(dump.currencyCode).toBe("EUR");
       expect(dump.currencySymbol).toBe("€");
       expect(dump.availability).toBe("in stock");

@@ -447,7 +447,9 @@ export class SupplierS3Chemicals
       variant.id = productID;
     }
 
-    const sku = details.querySelector('span[itemprop="sku"]')?.textContent?.trim();
+    const sku = details
+      .querySelector('span[itemprop="sku"]:has(>font:not(:empty))')
+      ?.textContent?.trim();
     if (sku) {
       variant.sku = sku;
     }
@@ -523,12 +525,23 @@ export class SupplierS3Chemicals
       const titleText =
         initialDetails.querySelector('h1.product--title[itemprop="name"]')?.textContent?.trim() ??
         "";
-      builder.setCAS(
-        firstMap(
-          (p) => findCAS(p),
-          [titleText, detailDescription ?? "", builder.get("description") ?? ""],
-        ),
-      );
+      builder
+        .setCAS(
+          firstMap(
+            (p) => findCAS(p),
+            [titleText, detailDescription ?? "", builder.get("description") ?? ""],
+          ),
+        )
+        .setSpecSheetUrl(
+          initialDetails.querySelector('a[href*="documents/spezifikation"]')?.getAttribute("href"),
+        )
+        .setSDSUrl(initialDetails.querySelector('a[href*="documents/sdb"]')?.getAttribute("href"))
+        .setImage(
+          initialDetails.querySelector(".image--element")?.getAttribute("data-img-original"),
+        )
+        .setThumbnail(
+          initialDetails.querySelector(".image--element")?.getAttribute("data-img-small"),
+        );
 
       // --- Variant enumeration -------------------------------------------
       const group = this.parseVariantGroup(initialDetails);

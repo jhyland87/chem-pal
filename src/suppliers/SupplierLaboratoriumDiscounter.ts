@@ -1,17 +1,11 @@
 import { AVAILABILITY } from "@/constants/common";
 import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
-import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM, urlencode } from "@/helpers/request";
 import { firstMap, mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
-import {
-  isFullURL,
-  isPopulatedArray,
-  isPopulatedObject,
-  isQuantityObject,
-} from "@/utils/typeGuards/common";
+import { isFullURL, isPopulatedObject, isQuantityObject } from "@/utils/typeGuards/common";
 import {
   isProductObject,
   isSearchResponseOk,
@@ -335,55 +329,45 @@ export class SupplierLaboratoriumDiscounter
       return;
     }
     const parsedHTML = createDOM(productResponse);
-    const productData = Array.from(parsedHTML.querySelectorAll("div[itemscope] > meta")).reduce<
-      Partial<Product>
-    >((acc, meta) => {
+    // Apply each meta tag straight to the builder via its validating setter, rather than
+    // accumulating a plain object and handing it to setData.
+    for (const meta of Array.from(parsedHTML.querySelectorAll("div[itemscope] > meta"))) {
       const property = meta.getAttribute("itemprop");
-      if (!property) return acc;
+      if (!property) continue;
+      const content = meta.getAttribute("content") ?? "";
       switch (property) {
         case "url":
-          acc.url = meta.getAttribute("content") ?? "";
+          builder.setURL(content);
           break;
         case "sku":
-          acc.sku = meta.getAttribute("content") ?? "";
+          builder.setSku(content);
           break;
         case "name":
-          acc.title = meta.getAttribute("content") ?? "";
+          builder.setTitle(content);
           break;
         case "description":
-          acc.description = meta.getAttribute("content") ?? "";
-          const data = acc.description
-            ?.split(", ")
-            .reduce<Record<string, string>>((acc, val, idx) => {
-              if (idx === 0) acc.title = val;
-              else if (val.includes("CAS-No")) acc.cas = findCAS(val.split(" ")[1]) ?? "";
-              // else if ( val.includes('Mol.weight'))
-              //   acc.weight = val.split(' ')[1];
-              else if (val.includes("min.") && val.includes("%"))
-                acc.conc = `${val.split(" ")[1]}%`;
-              return acc;
-            }, {});
-
-          Object.assign(acc, data);
+          builder.setDescription(content);
+          // The description is a comma-separated spec list. Its first chunk is a cleaner title
+          // than the `name` meta (so it intentionally overrides it); later chunks carry the CAS
+          // and a "min. NN%" concentration. setCAS extracts the number from its chunk itself.
+          content.split(", ").forEach((val, idx) => {
+            if (idx === 0) builder.setTitle(val);
+            else if (val.includes("CAS-No")) builder.setCAS(val);
+            else if (val.includes("min.") && val.includes("%"))
+              builder.setConcentration(`${val.split(" ")[1]}%`);
+          });
           break;
         case "price":
-          acc.price = Number(meta.getAttribute("content") ?? "");
+          builder.setPrice(content);
           break;
         case "priceCurrency":
-          acc.currencyCode = meta.getAttribute("content");
-          if (acc.currencyCode) {
-            acc.currencySymbol = CURRENCY_SYMBOL_MAP[acc.currencyCode];
-          }
+          builder.setCurrencyCode(content).setCurrencySymbol(CURRENCY_SYMBOL_MAP[content]);
           break;
         case "availability":
-          acc.availability = this.metaAvailabilityToAvailability(
-            meta.getAttribute("content") ?? "",
-          );
+          builder.setAvailability(this.metaAvailabilityToAvailability(content));
           break;
       }
-
-      return acc;
-    }, {});
+    }
 
     const variants =
       mapDefined(
@@ -411,17 +395,18 @@ export class SupplierLaboratoriumDiscounter
           }) satisfies Variant,
       ) ?? [];
 
-    if (isPopulatedArray(variants)) {
-      Object.assign(productData, variants.shift() ?? {});
+    // Hoist the first variant onto the top-level product — its price/sku/quantity/uom take
+    // precedence over the meta values — and keep the rest as the variant list.
+    const primary = variants.shift();
+    if (primary) {
+      builder.setPrice(primary.price).setSku(primary.sku);
+      if (primary.quantity && primary.uom) {
+        builder.setQuantity(primary.quantity, primary.uom);
+      }
     }
+    builder.setVariants(variants);
 
-    Object.assign(productData, {
-      variants,
-    });
-
-    builder.setData(productData);
-
-    this.logger.debug("getProductDataFromHTML productData:", { builder, productData });
+    this.logger.debug("getProductDataFromHTML", { builder });
     return builder;
   }
 

@@ -1,9 +1,11 @@
 import reactSWC from "@vitejs/plugin-react-swc";
 import path from "node:path";
+import graphqlLoader from "vite-plugin-graphql-loader";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  plugins: [reactSWC()],
+  // graphqlLoader mirrors vite.config.ts so `.gql` imports (e.g. the Wix query) transform in tests too.
+  plugins: [reactSWC(), graphqlLoader()],
   test: {
     root: path.resolve(__dirname, ".."),
     //reporters: ["html", "text","c"],
