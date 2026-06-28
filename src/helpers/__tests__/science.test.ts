@@ -80,9 +80,90 @@ describe("science helpers", () => {
       expect(findFormulaInHtml("Ca<sub>3</sub>PO<sub>4</sub>")).toBe("Ca₃PO₄");
     });
 
-    it("should require at least two element-number combinations", () => {
-      expect(findFormulaInHtml("Na<sub>2</sub>")).toBeUndefined();
-      expect(findFormulaInHtml("H<sub>2</sub>")).toBeUndefined();
+    it("should match a single element that carries a tagged subscript", () => {
+      expect(findFormulaInHtml("H<sub>2</sub>")).toBe("H₂");
+      expect(findFormulaInHtml("Na<sub>2</sub>")).toBe("Na₂");
+    });
+
+    it("should still reject a bare element or an untagged single-element token", () => {
+      // No subscript at all, or only an inline digit, isn't enough for a single element.
+      expect(findFormulaInHtml("Na")).toBeUndefined();
+      expect(findFormulaInHtml("vitamin B12 supplement")).toBeUndefined();
+    });
+
+    it("should handle multi-digit subscripts (10 and above)", () => {
+      expect(
+        findFormulaInHtml(
+          "C<sub>18</sub>H<sub>14</sub>N<sub>2</sub>Na<sub>2</sub>O<sub>8</sub>S<sub>2</sub>",
+        ),
+      ).toBe("C₁₈H₁₄N₂Na₂O₈S₂");
+      expect(findFormulaInHtml("C<sub>12</sub>H<sub>22</sub>O<sub>11</sub>")).toBe("C₁₂H₂₂O₁₁");
+    });
+
+    it("should tolerate trailing markup after the formula", () => {
+      expect(findFormulaInHtml("Summenformel: C<sub>10</sub>H<sub>16</sub>O</span>")).toBe(
+        "C₁₀H₁₆O",
+      );
+    });
+
+    it("should leave untagged inline numbers as regular digits (not subscript)", () => {
+      // Inline atom/molecule counts are matched but never converted — only <sub>/<sup> are.
+      expect(findFormulaInHtml("Compound NaCl2 here")).toBe("NaCl2");
+    });
+
+    it("should keep salt/hydrate components after a separator", () => {
+      expect(findFormulaInHtml("C<sub>20</sub>H<sub>20</sub>FN<sub>6</sub>O<sub>5</sub>·K")).toBe(
+        "C₂₀H₂₀FN₆O₅·K",
+      );
+      expect(findFormulaInHtml("C<sub>23</sub>H<sub>28</sub>ClN<sub>3</sub>O<sub>5</sub>S • K")).toBe(
+        "C₂₃H₂₈ClN₃O₅S • K",
+      );
+    });
+
+    it("should handle a separator with a leading coefficient (tagged or variable)", () => {
+      // A <sub>-tagged coefficient denotes how many of the whole salt; it is still a subscript.
+      expect(
+        findFormulaInHtml("C<sub>4</sub>H<sub>8</sub>N<sub>3</sub>O<sub>5</sub>P • <sub>2</sub>K"),
+      ).toBe("C₄H₈N₃O₅P • ₂K");
+      // A variable hydrate coefficient (x/n) stays a regular letter.
+      expect(findFormulaInHtml("C<sub>10</sub>H<sub>7</sub>KN<sub>6</sub>O·xH<sub>2</sub>O")).toBe(
+        "C₁₀H₇KN₆O·xH₂O",
+      );
+    });
+
+    it("should handle parenthesised / bracketed groups", () => {
+      expect(findFormulaInHtml("KN(C(O)CH<sub>2</sub>)<sub>2</sub>")).toBe("KN(C(O)CH₂)₂");
+    });
+
+    it("should handle a parenthesised group with a multi-digit hydrate coefficient", () => {
+      expect(findFormulaInHtml("AlK(SO<sub>4</sub>)<sub>2</sub>·12H<sub>2</sub>O")).toBe(
+        "AlK(SO₄)₂·12H₂O",
+      );
+    });
+
+    it("should keep a tight '.' separator and ionic charge signs", () => {
+      expect(findFormulaInHtml("C<sub>3</sub>H<sub>2</sub>N<sub>2</sub>O<sub>3</sub>.K")).toBe(
+        "C₃H₂N₂O₃.K",
+      );
+      expect(findFormulaInHtml("CHBF<sub>5</sub>-.K+")).toBe("CHBF₅-.K+");
+      expect(findFormulaInHtml("C<sub>8</sub>H<sub>13</sub>BO<sub>2</sub>F<sub>3</sub>-.K+")).toBe(
+        "C₈H₁₃BO₂F₃-.K+",
+      );
+    });
+
+    it("should keep a fractional hydrate coefficient", () => {
+      expect(findFormulaInHtml("K<sub>2</sub>CO<sub>3</sub>·3/2H<sub>2</sub>O")).toBe(
+        "K₂CO₃·3/2H₂O",
+      );
+      expect(
+        findFormulaInHtml("C<sub>4</sub>H<sub>4</sub>O<sub>6</sub>K<sub>2</sub>·1/2H<sub>2</sub>O"),
+      ).toBe("C₄H₄O₆K₂·1/2H₂O");
+    });
+
+    it("should not treat sentence periods or decimals as a separator", () => {
+      // "." only separates when immediately followed by a component, so prose/decimals are safe.
+      expect(findFormulaInHtml("Contains H<sub>2</sub>O. The product is pure.")).toBe("H₂O");
+      expect(findFormulaInHtml("density 1.5 only")).toBeUndefined();
     });
 
     it("should handle formulas with superscripts", () => {
@@ -92,6 +173,26 @@ describe("science helpers", () => {
     it("should return undefined when given non-existent elements in formula", () => {
       expect(findFormulaInHtml("Fx<sup>2</sup>Hp<sub>3</sub>")).toBeUndefined();
       expect(findFormulaInHtml("Cq<sup>6</sup>SD<sub>4</sub>")).toBeUndefined();
+    });
+
+    it("should extract a formula nested inside other HTML elements", () => {
+      const html =
+        '<P STYLE="margin:0 0 0 0;font-family:Arial;font-size:10pt;">' +
+        '<SPAN STYLE="color:#000000;">Summenformel: ' +
+        "C<sub>18</sub>H<sub>14</sub>N<sub>2</sub>Na<sub>2</sub>O<sub>8</sub>S<sub>2</sub></SPAN></P>";
+      expect(findFormulaInHtml(html)).toBe("C₁₈H₁₄N₂Na₂O₈S₂");
+    });
+
+    it("should not match element-like sequences inside HTML tags", () => {
+      // Tag names and attributes look element-ish ("P", "SPAN", "STYLE" -> S,T,Y,L,E,
+      // "Arial" -> Ar, "color" -> Co) but live inside tags, so they must be ignored.
+      expect(
+        findFormulaInHtml('<P STYLE="font-family:Arial;"><SPAN STYLE="color:#000000;"></SPAN></P>'),
+      ).toBeUndefined();
+      // The real formula is still found even though "STYLE"/"SPAN" precede it inside tags.
+      expect(
+        findFormulaInHtml('<SPAN STYLE="color:#000000;">CO<sub>2</sub></SPAN>'),
+      ).toBe("CO₂");
     });
   });
 

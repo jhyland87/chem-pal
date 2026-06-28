@@ -1,8 +1,7 @@
-import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM } from "@/helpers/request";
-import { firstMap, mapDefined } from "@/helpers/utils";
+import { mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isCurrencyCode } from "@/utils/typeGuards/common";
 import { WRatio } from "fuzzball";
@@ -447,9 +446,7 @@ export class SupplierS3Chemicals
       variant.id = productID;
     }
 
-    const sku = details
-      .querySelector('span[itemprop="sku"]:has(>font:not(:empty))')
-      ?.textContent?.trim();
+    const sku = details.querySelector('span[itemprop="sku"]')?.textContent?.trim();
     if (sku) {
       variant.sku = sku;
     }
@@ -506,12 +503,6 @@ export class SupplierS3Chemicals
       const initialDetails = initialDom.querySelector("div.product--details") ?? initialDom;
 
       // --- Common (product-wide) data from the initial fetch -------------
-      const detailDescription = initialDetails
-        .querySelector('div.product--description[itemprop="description"]')
-        ?.textContent?.trim()
-        .replace(/\s+/g, " ");
-      builder.setDescription(detailDescription);
-
       const availabilityHref = initialDetails
         .querySelector('link[itemprop="availability"]')
         ?.getAttribute("href");
@@ -522,16 +513,37 @@ export class SupplierS3Chemicals
         }
       }
 
+      // The description body is a labelled German spec list ("Summenformel" / "Molare Masse" /
+      // "CAS-Nummer"), not prose — pull the structured fields out of it rather than storing it
+      // as the description.
+      const descriptionBody = initialDetails.querySelector(
+        'div.product--description[itemprop="description"] > div',
+      );
+      for (const line of Array.from(descriptionBody?.querySelectorAll("p") ?? [])) {
+        const text = line.textContent?.trim() ?? "";
+        if (/Summenformel/i.test(text)) {
+          // The formula carries <sub> markup; setFormula -> findFormulaInHtml converts it.
+          builder.setFormula(line.innerHTML.split(/Summenformel\s*:/i)[1] ?? "");
+        } else if (/Molare?\s*Masse|Molmasse/i.test(text)) {
+          // German number formatting: "496,42g/mol" -> 496.42 (thousands ".", decimal ",").
+          const mass = text.replace(/.*Masse\s*:?\s*/i, "").match(/[\d.,]+/)?.[0];
+          if (mass) {
+            builder.setMoleweight(mass.replace(/\./g, "").replace(",", "."));
+          }
+        } else if (/CAS/i.test(text)) {
+          builder.setCAS(text);
+        }
+      }
+
+      // Fall back to the product title for CAS when the spec list didn't carry one.
       const titleText =
         initialDetails.querySelector('h1.product--title[itemprop="name"]')?.textContent?.trim() ??
         "";
+      if (!builder.get("cas")) {
+        builder.setCAS(titleText);
+      }
+
       builder
-        .setCAS(
-          firstMap(
-            (p) => findCAS(p),
-            [titleText, detailDescription ?? "", builder.get("description") ?? ""],
-          ),
-        )
         .setSpecSheetUrl(
           initialDetails.querySelector('a[href*="documents/spezifikation"]')?.getAttribute("href"),
         )
