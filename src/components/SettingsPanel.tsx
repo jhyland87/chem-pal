@@ -1,10 +1,13 @@
-import { currencies, defaultSettings, languages, locations } from "@/../config.json";
+import { defaultSettings, languages } from "@/../config.json";
 import { useAppContext } from "@/components/SearchPanel/hooks/useContext";
-import { ACTION_TYPE } from "@/constants/common";
+import { ACTION_TYPE, COUNTRIES } from "@/constants/common";
+import { CURRENCIES } from "@/constants/currency";
+import { getLanguageName } from "@/helpers/utils";
 import { isButtonElement } from "@/utils/typeGuards/common";
 import TextDecreaseIcon from "@mui/icons-material/TextDecrease";
 import TextFormatIcon from "@mui/icons-material/TextFormat";
 import TextIncreaseIcon from "@mui/icons-material/TextIncrease";
+import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
 import Button from "@mui/material/Button";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import Divider from "@mui/material/Divider";
@@ -27,6 +30,17 @@ const inputStyle = {
   width: 120,
   size: "small",
 };
+
+// Cap the rendered options so the country/currency menus stay short; users
+// narrow the list by typing a name or code.
+const countryFilter = createFilterOptions<{ code: string; name: string }>({
+  limit: 15,
+  stringify: (option) => `${option.name} ${option.code}`,
+});
+const currencyFilter = createFilterOptions<{ code: string; symbol: string }>({
+  limit: 15,
+  stringify: (option) => `${option.code} ${option.symbol}`,
+});
 
 // Show the setting helper text only when that listitem is hovered over.
 const displayHelperOnHover = {
@@ -242,23 +256,25 @@ export default function SettingsPanel() {
           <ListItemText primary="Currency" />
           {/*<FormHelperText>Convert all currency to this</FormHelperText>*/}
           <FormControl>
-            <InputLabel id="currency-select-label">Currency</InputLabel>
-            <Select
-              labelId="currency-select-label"
-              value={currentSettings.currency}
-              onChange={handleInputChange}
-              name="currency"
-              label="currency"
+            <Autocomplete
+              options={CURRENCIES}
+              getOptionLabel={(option) => `${option.code} (${option.symbol})`}
+              isOptionEqualToValue={(option, value) => option.code === value.code}
+              filterOptions={currencyFilter}
+              value={CURRENCIES.find((c) => c.code === currentSettings.currency) ?? undefined}
+              onChange={(_event, option) =>
+                updateSetting({
+                  type: ACTION_TYPE.INPUT_CHANGE,
+                  name: "currency",
+                  value: option?.code ?? "",
+                })
+              }
               size="small"
               sx={{ ...inputStyle }}
               disabled={isPending}
-            >
-              {Object.entries(currencies).map(([currencyId, { symbol }]) => (
-                <MenuItem key={currencyId} value={currencyId}>
-                  {currencyId.toUpperCase()} ({symbol})
-                </MenuItem>
-              ))}
-            </Select>
+              disableClearable
+              renderInput={(params) => <TextField {...params} placeholder="Currency" />}
+            />
           </FormControl>
         </ListItem>
 
@@ -266,26 +282,24 @@ export default function SettingsPanel() {
           <ListItemText primary="Location" />
           {/*<FormHelperText>Your country</FormHelperText>*/}
           <FormControl>
-            <InputLabel id="location-select-label">Location</InputLabel>
-            <Select
-              labelId="location-select-label"
-              value={currentSettings.location}
-              onChange={handleInputChange}
-              name="location"
-              label="location"
+            <Autocomplete
+              options={COUNTRIES}
+              getOptionLabel={(option) => option.name}
+              isOptionEqualToValue={(option, value) => option.code === value.code}
+              filterOptions={countryFilter}
+              value={COUNTRIES.find((c) => c.code === currentSettings.location) ?? null}
+              onChange={(_event, option) =>
+                updateSetting({
+                  type: ACTION_TYPE.INPUT_CHANGE,
+                  name: "location",
+                  value: option?.code ?? "",
+                })
+              }
               size="small"
               sx={{ ...inputStyle }}
               disabled={isPending}
-            >
-              <MenuItem value="">
-                <i>None</i>
-              </MenuItem>
-              {Object.entries(locations).map(([locationId, { name }]) => (
-                <MenuItem key={locationId} value={locationId}>
-                  {name}
-                </MenuItem>
-              ))}
-            </Select>
+              renderInput={(params) => <TextField {...params} placeholder="Country or code" />}
+            />
           </FormControl>
         </ListItem>
 
@@ -303,9 +317,9 @@ export default function SettingsPanel() {
               sx={{ ...inputStyle }}
               disabled={isPending}
             >
-              {Object.entries(languages).map(([languageId, label]) => (
+              {languages.map((languageId) => (
                 <MenuItem key={languageId} value={languageId}>
-                  {label}
+                  {getLanguageName(languageId)}
                 </MenuItem>
               ))}
             </Select>

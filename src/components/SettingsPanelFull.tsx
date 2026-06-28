@@ -1,12 +1,13 @@
 import { useAppContext } from "@/components/SearchPanel/hooks/useContext";
-import { ACTION_TYPE } from "@/constants/common";
+import { ACTION_TYPE, COUNTRIES } from "@/constants/common";
+import { CURRENCIES } from "@/constants/currency";
 import { FUZZ_SCORER_NAMES } from "@/constants/fuzzScorers";
 import {
   loadExcludedProducts,
   removeExcludedProduct,
   type ExcludedProductsMap,
 } from "@/helpers/excludedProducts";
-import { formatTimestamp } from "@/helpers/utils";
+import { formatTimestamp, getLanguageName } from "@/helpers/utils";
 import { clearExcludedProducts } from "@/utils/idbCache";
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import { isButtonElement } from "@/utils/typeGuards/common";
@@ -18,6 +19,7 @@ import TextIncreaseIcon from "@mui/icons-material/TextIncrease";
 import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import AccordionSummary from "@mui/material/AccordionSummary";
+import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import ButtonGroup from "@mui/material/ButtonGroup";
@@ -45,10 +47,21 @@ import {
   useEffect,
   useState,
 } from "react";
-import { currencies, languages, locations } from "../../config.json";
+import { languages } from "../../config.json";
 import styles from "./SettingsPanelFull.module.scss";
 
 // SettingAction type is declared globally in types/settings.d.ts
+
+// Cap the rendered options so the country/currency menus stay short; users
+// narrow the list by typing a name or code.
+const countryFilter = createFilterOptions<{ code: string; name: string }>({
+  limit: 15,
+  stringify: (option) => `${option.name} ${option.code}`,
+});
+const currencyFilter = createFilterOptions<{ code: string; symbol: string }>({
+  limit: 15,
+  stringify: (option) => `${option.code} ${option.symbol}`,
+});
 
 /**
  * The full settings panel shown in the drawer's Settings tab. Renders all user
@@ -226,20 +239,25 @@ export default function SettingsPanelFull() {
               <ListItemText primary="Currency" />
               {/*<FormHelperText>Convert all currency to this</FormHelperText>*/}
               <FormControl>
-                <Select
-                  value={currentSettings.currency}
-                  onChange={handleInputChange}
-                  name="currency"
+                <Autocomplete
+                  options={CURRENCIES}
+                  getOptionLabel={(option) => `${option.code} (${option.symbol})`}
+                  isOptionEqualToValue={(option, value) => option.code === value.code}
+                  filterOptions={currencyFilter}
+                  value={CURRENCIES.find((c) => c.code === currentSettings.currency) ?? undefined}
+                  onChange={(_event, option) =>
+                    updateSetting({
+                      type: ACTION_TYPE.INPUT_CHANGE,
+                      name: "currency",
+                      value: option?.code ?? "",
+                    })
+                  }
                   size="small"
                   className={styles["settings-panel__input"]}
                   disabled={isPending}
-                >
-                  {Object.entries(currencies).map(([currencyId, { symbol }]) => (
-                    <MenuItem key={currencyId} value={currencyId}>
-                      {currencyId.toUpperCase()} ({symbol})
-                    </MenuItem>
-                  ))}
-                </Select>
+                  disableClearable
+                  renderInput={(params) => <TextField {...params} placeholder="Currency" />}
+                />
               </FormControl>
             </ListItem>
             {/* Location */}
@@ -247,23 +265,24 @@ export default function SettingsPanelFull() {
               <ListItemText primary="Location" />
               {/*<FormHelperText>Your country</FormHelperText>*/}
               <FormControl>
-                <Select
-                  value={currentSettings.location}
-                  onChange={handleInputChange}
-                  name="location"
+                <Autocomplete
+                  options={COUNTRIES}
+                  getOptionLabel={(option) => option.name}
+                  isOptionEqualToValue={(option, value) => option.code === value.code}
+                  filterOptions={countryFilter}
+                  value={COUNTRIES.find((c) => c.code === currentSettings.location) ?? null}
+                  onChange={(_event, option) =>
+                    updateSetting({
+                      type: ACTION_TYPE.INPUT_CHANGE,
+                      name: "location",
+                      value: option?.code ?? "",
+                    })
+                  }
                   size="small"
                   className={styles["settings-panel__input"]}
                   disabled={isPending}
-                >
-                  <MenuItem value="">
-                    <i>None</i>
-                  </MenuItem>
-                  {Object.entries(locations).map(([locationId, { name }]) => (
-                    <MenuItem key={locationId} value={locationId}>
-                      {name}
-                    </MenuItem>
-                  ))}
-                </Select>
+                  renderInput={(params) => <TextField {...params} placeholder="Country or code" />}
+                />
               </FormControl>
             </ListItem>
             {/* Language */}
@@ -278,9 +297,9 @@ export default function SettingsPanelFull() {
                   className={styles["settings-panel__input"]}
                   disabled={isPending}
                 >
-                  {Object.entries(languages).map(([languageId, label]) => (
+                  {languages.map((languageId) => (
                     <MenuItem key={languageId} value={languageId}>
-                      {label}
+                      {getLanguageName(languageId)}
                     </MenuItem>
                   ))}
                 </Select>

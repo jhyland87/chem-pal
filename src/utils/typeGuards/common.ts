@@ -1,6 +1,6 @@
-import { currencies, locations } from "@/../config.json";
 import { CAS_REGEX, SPIN_SPEED, UOM } from "@/constants/common";
-import { CURRENCY_CODE_MAP, CURRENCY_SYMBOL_MAP } from "@/constants/currency";
+import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
+import { findCountryByIso2 } from "@/helpers/country";
 import { looksLikeSmiles } from "@/helpers/smiles";
 import { zodAddActualValueToIssues } from "@/helpers/utils";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
@@ -566,14 +566,13 @@ export function isCurrencySymbol(symbol: unknown): symbol is CurrencySymbol {
  * @source
  */
 export function isCurrencyCode(code: unknown): code is CurrencyCode {
-  // CURRENCY_CODE_MAP maps symbol -> code, so its values are the valid codes (e.g. "USD").
-  return typeof code === "string" && Object.values(CURRENCY_CODE_MAP).includes(code);
+  // CURRENCY_SYMBOL_MAP maps code -> symbol, so its keys are the valid codes (e.g. "USD").
+  return typeof code === "string" && code in CURRENCY_SYMBOL_MAP;
 }
 
 /**
  * Type guard to validate if a value is a known ISO 3166-1 alpha-2 country code.
- * Checks the value against the country codes defined in the app config (excluding the
- * catch-all "OTHER", which is not a real country).
+ * Checks the value against `country-list-js` so any real country code is accepted.
  *
  * @category Typeguards
  * @param country - The value to validate
@@ -587,7 +586,7 @@ export function isCurrencyCode(code: unknown): code is CurrencyCode {
  * @source
  */
 export function isCountryCode(country: unknown): country is CountryCode {
-  return typeof country === "string" && country !== "OTHER" && country in locations;
+  return typeof country === "string" && findCountryByIso2(country) !== undefined;
 }
 
 /** The valid {@link ShippingRange} values, mirrored at runtime for {@link isShippingRange}. */
@@ -868,8 +867,15 @@ function buildUserSettingsSchema() {
     doNotCacheEmptyResults: z.boolean().optional(),
     cacheTtlMinutes: z.coerce.number().nonnegative().optional(),
     currencyRate: z.number().optional(),
-    currency: z.enum(Object.keys(currencies)).optional(),
-    location: z.enum(Object.keys(locations)).optional(),
+    currency: z
+      .string()
+      .refine((value) => isCurrencyCode(value), { message: "Invalid currency code" })
+      .optional(),
+    // Allow an empty string for the "None" location option.
+    location: z
+      .string()
+      .refine((value) => value === "" || isCountryCode(value), { message: "Invalid country code" })
+      .optional(),
     theme: z.enum(["light", "dark"]).optional(),
     fontSize: z.enum(["small", "medium", "large"]).optional(),
     suppliers: z.array(z.enum(SupplierFactory.supplierList())).optional(),
