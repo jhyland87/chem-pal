@@ -9,7 +9,8 @@ import { extract } from "fuzzball";
 import { SupplierBase } from "./SupplierBase";
 
 /**
- * Supplier implementation for LiMac Science, a Latvian chemical supplier.
+ * Supplier implementation for LiMac Science, a chemical supplier based in
+ * Ķekava, Latvia that ships worldwide.
  * LiMac delegates product search to FreeFind (a 3rd-party site search engine),
  * so the supplier issues its query against `search.freefind.com` and then
  * fetches each product page on `www.limac.lv` to extract pricing, variants,
@@ -319,6 +320,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
 
       return new ProductBuilder<Product>(this.baseURL)
         .setBasicInfo(title, String(url), this.supplierName)
+        .setSupplierCountry(this.country)
         .setID(id);
     });
   }
@@ -374,9 +376,10 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
 
       const dom = createDOM(productResponse);
 
-      builder.setData({ title: mozApi.name });
-
-      builder.setCAS(findCAS(mozApi.sku ?? ""));
+      builder
+        .setData({ title: mozApi.name })
+        .setSupplierCountry(this.country)
+        .setCAS(findCAS(mozApi.sku ?? ""));
 
       const variants = Array.isArray(mozApi.variants) ? mozApi.variants : [];
       const main = variants[0];
