@@ -1,12 +1,17 @@
 import { UOM } from "@/constants/common";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
+  isCountryCode,
+  isCurrencyCode,
+  isCurrencySymbol,
   isHtmlResponse,
   isHttpResponse,
   isJsonResponse,
   isMinimalProduct,
   isPlainContainer,
+  isPaymentMethod,
   isProduct,
+  isShippingRange,
   isUOM,
   isValidResult,
   isValidUserSettings,
@@ -311,6 +316,84 @@ describe("Common TypeGuards", () => {
       expect(isValidUserSettings(undefined)).toBe(false);
       expect(isValidUserSettings("hi")).toBe(false);
       expect(isValidUserSettings(42)).toBe(false);
+    });
+  });
+
+  describe("isCurrencyCode", () => {
+    it("accepts a known currency code", () => {
+      expect(isCurrencyCode("USD")).toBe(true);
+      expect(isCurrencyCode("EUR")).toBe(true);
+    });
+
+    it("rejects a currency symbol (codes and symbols must not be confused)", () => {
+      expect(isCurrencyCode("$")).toBe(false);
+      expect(isCurrencyCode("€")).toBe(false);
+    });
+
+    it("rejects unknown codes and non-strings", () => {
+      expect(isCurrencyCode("XYZ")).toBe(false);
+      expect(isCurrencyCode(undefined)).toBe(false);
+      expect(isCurrencyCode(840)).toBe(false);
+    });
+  });
+
+  describe("isCurrencySymbol", () => {
+    it("accepts a known currency symbol", () => {
+      expect(isCurrencySymbol("$")).toBe(true);
+      expect(isCurrencySymbol("€")).toBe(true);
+    });
+
+    it("rejects a currency code (codes and symbols must not be confused)", () => {
+      expect(isCurrencySymbol("USD")).toBe(false);
+      expect(isCurrencySymbol("EUR")).toBe(false);
+    });
+
+    it("rejects unknown symbols and non-strings", () => {
+      expect(isCurrencySymbol("zzz")).toBe(false);
+      expect(isCurrencySymbol(undefined)).toBe(false);
+      expect(isCurrencySymbol(36)).toBe(false);
+    });
+  });
+
+  describe("isCountryCode", () => {
+    it("accepts known country codes", () => {
+      expect(isCountryCode("US")).toBe(true);
+      expect(isCountryCode("GB")).toBe(true);
+    });
+
+    it("rejects the catch-all OTHER, unknown codes, and non-strings", () => {
+      expect(isCountryCode("OTHER")).toBe(false);
+      expect(isCountryCode("ZZ")).toBe(false);
+      expect(isCountryCode(undefined)).toBe(false);
+      expect(isCountryCode(1)).toBe(false);
+    });
+  });
+
+  describe("isShippingRange", () => {
+    it("accepts the known shipping ranges", () => {
+      expect(isShippingRange("worldwide")).toBe(true);
+      expect(isShippingRange("domestic")).toBe(true);
+      expect(isShippingRange("international")).toBe(true);
+      expect(isShippingRange("local")).toBe(true);
+    });
+
+    it("rejects unknown ranges and non-strings", () => {
+      expect(isShippingRange("galactic")).toBe(false);
+      expect(isShippingRange(undefined)).toBe(false);
+    });
+  });
+
+  describe("isPaymentMethod", () => {
+    it("accepts known payment methods", () => {
+      expect(isPaymentMethod("visa")).toBe(true);
+      expect(isPaymentMethod("crypto")).toBe(true);
+      expect(isPaymentMethod("other")).toBe(true);
+    });
+
+    it("rejects unknown methods and non-strings", () => {
+      expect(isPaymentMethod("barter")).toBe(false);
+      expect(isPaymentMethod(undefined)).toBe(false);
+      expect(isPaymentMethod(["visa"])).toBe(false);
     });
   });
 });

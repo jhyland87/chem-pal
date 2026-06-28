@@ -2,7 +2,7 @@ import { UOM } from "@/constants/common";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { findFormulaInHtml } from "@/helpers/science";
-import { firstMap, htmlToAscii, mapDefined } from "@/helpers/utils";
+import { firstMap, mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isQuantityObject } from "@/utils/typeGuards/common";
 import { isValidMagento2SearchResponse } from "@/utils/typeGuards/magento2";
@@ -311,9 +311,8 @@ export abstract class SupplierBaseMagento2
       }
 
       const descriptionHtml = item.description?.html ?? item.short_description?.html ?? "";
-      if (descriptionHtml) {
-        builder.setDescription(htmlToAscii(descriptionHtml));
-      }
+      // setDescription runs htmlToAscii itself, so pass the raw HTML straight through.
+      builder.setDescription(descriptionHtml);
 
       if (isQuantityObject(primary.parsedQuantity)) {
         builder.setQuantity(primary.parsedQuantity.quantity, primary.parsedQuantity.uom);
@@ -325,14 +324,7 @@ export abstract class SupplierBaseMagento2
         builder.setQuantity(1, UOM.EA);
       }
 
-      const cas = firstMap(findFormulaInHtml, [
-        item.name,
-        item.image?.label ?? "",
-        descriptionHtml,
-      ]);
-      if (cas) {
-        builder.setCAS(cas);
-      }
+      builder.setCAS(firstMap(findFormulaInHtml, [item.name, item.image?.label ?? "", descriptionHtml]));
 
       for (const { raw, parsedQuantity } of enriched.slice(1)) {
         builder.addVariant({

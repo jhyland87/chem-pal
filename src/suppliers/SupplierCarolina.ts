@@ -192,8 +192,7 @@ export class SupplierCarolina
       );
       const parsedPrice = parsePrice(result.itemPrice);
       if (parsedPrice) builder.setPricing(parsedPrice);
-      const casNo = findCAS(result["product.shortDescription"]);
-      if (typeof casNo === "string") builder.setCAS(casNo);
+      builder.setCAS(findCAS(result["product.shortDescription"]));
       return builder;
       //.setQuantity(result.qtyDiscountAvailable, "1")
       //.setDescription(result.shortDescription)
@@ -436,13 +435,13 @@ export class SupplierCarolina
 
         builder.setQuantity(quantity);
 
-        const casNo = firstMap(findCAS, [
-          atgResponse.displayName,
-          atgResponse.shortDescription,
-          atgResponse.longDescription,
-        ]);
-
-        if (casNo) builder.setCAS(casNo);
+        builder.setCAS(
+          firstMap(findCAS, [
+            atgResponse.displayName,
+            atgResponse.shortDescription,
+            atgResponse.longDescription,
+          ]),
+        );
 
         builder.setDescription(atgResponse.shortDescription);
 

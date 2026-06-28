@@ -441,6 +441,9 @@ declare global {
      */
     sdsUrl?: string;
 
+    /** specsheet */
+    specSheetUrl?: string;
+
     /**
      * Country of the supplier
      * @example "US"

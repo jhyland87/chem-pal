@@ -7,11 +7,17 @@ import { htmlToAscii, isMoleForm } from "@/helpers/utils";
 import { Logger } from "@/utils/Logger";
 import {
   isCAS,
+  isCountryCode,
+  isCurrencyCode,
+  isCurrencySymbol,
   isMinimalProduct,
   isParsedPrice,
+  isPaymentMethod,
   isProduct,
   isQuantityObject,
+  isShippingRange,
   isSmiles,
+  isUOM,
 } from "@/utils/typeGuards/common";
 import { isAvailability, isValidVariant } from "@/utils/typeGuards/productbuilder";
 
@@ -53,9 +59,6 @@ export class ProductBuilder<T extends Product> {
   /** The partial product object being built */
   private product: Partial<T> = {};
 
-  /** The raw data of the product */
-  private rawData: Record<string, unknown> = {};
-
   /** The base URL of the supplier's website */
   private baseURL: string;
 
@@ -93,16 +96,129 @@ export class ProductBuilder<T extends Product> {
    * @source
    */
   setData(data: Partial<T>): ProductBuilder<T> {
-    Object.assign(this.product, data);
+    if (data === null || typeof data !== "object") {
+      return this;
+    }
+    // Route every key through its validating setter instead of a blind Object.assign, so values
+    // can't bypass the per-field checks. `Record<keyof Product, …>` forces this map to stay
+    // exhaustive — adding a Product field without a handler is a compile error. Keys not present
+    // here (i.e. not part of Product) are dropped with a warning.
+    const dispatch: Record<keyof Product, (value: unknown) => void> = {
+      title: (v) => this.setTitle(v),
+      supplier: (v) => this.setSupplier(v),
+      url: (v) => this.setURL(v),
+      permalink: (v) => this.setPermalink(v),
+      description: (v) => this.setDescription(v),
+      shortDescription: (v) => this.setShortDescription(v),
+      manufacturer: (v) => this.setManufacturer(v),
+      vendor: (v) => this.setVendor(v),
+      sku: (v) => this.setSku(v),
+      id: (v) => this.setID(v),
+      uuid: (v) => this.setUUID(v),
+      cas: (v) => this.setCAS(v),
+      formula: (v) => this.setFormula(v),
+      smiles: (v) => this.setSmiles(v),
+      moleweight: (v) => this.setMoleweight(v),
+      purity: (v) => this.setPurity(v),
+      grade: (v) => this.setGrade(v),
+      concentration: (v) => this.setConcentration(v),
+      moles: (v) => this.setMoles(v),
+      price: (v) => this.setPrice(v),
+      usdPrice: (v) => this.setUsdPrice(v),
+      localPrice: (v) => this.setLocalPrice(v),
+      currencyCode: (v) => this.setCurrencyCode(v),
+      currencySymbol: (v) => this.setCurrencySymbol(v),
+      uom: (v) => this.setUOM(v),
+      baseUom: (v) => this.setBaseUom(v),
+      baseQuantity: (v) => this.setBaseQuantity(v),
+      quantity: (v) => this.setQuantityValue(v),
+      rating: (v) => this.setRating(v),
+      reviewCount: (v) => this.setReviewCount(v),
+      status: (v) => this.setStatus(v),
+      statusTxt: (v) => this.setStatusTxt(v),
+      shippingInformation: (v) => this.setShippingInformation(v),
+      attributes: (v) => this.setAttributes(v),
+      availability: (v) => {
+        if (typeof v === "string" || typeof v === "boolean") this.setAvailability(v);
+      },
+      thumbnail: (v) => this.setThumbnail(v),
+      imageURL: (v) => this.setImage(v),
+      imageAltText: (v) => {
+        if (typeof v === "string" && v.trim().length > 0) this.product.imageAltText = v;
+      },
+      sdsUrl: (v) => this.setSDSUrl(v),
+      specSheetUrl: (v) => this.setSpecSheetUrl(v),
+      docLinks: (v) => this.setDocLinks(v),
+      supplierCountry: (v) => this.setSupplierCountry(v),
+      supplierShipping: (v) => this.setSupplierShipping(v),
+      paymentMethods: (v) => this.setSupplierPaymentMethods(v),
+      variants: (v) => {
+        if (Array.isArray(v)) this.setVariants(v);
+      },
+      matchPercentage: (v) => this.setMatchPercentage(v),
+      _fuzz: (v) => {
+        if (this.isFuzzMeta(v)) this.product._fuzz = v;
+      },
+    };
+
+    for (const [key, value] of Object.entries(data)) {
+      const handler = dispatch[key as keyof Product];
+      if (handler) {
+        handler(value);
+      } else {
+        this.logger.warn(`setData| dropping unsupported key "${key}"`, { key, value });
+      }
+    }
     return this;
   }
 
   /**
-   * Sets the basic information for the product including title, URL, and supplier name.
+   * Validates and sets the product quantity from an arbitrary value. Unlike {@link setQuantity},
+   * this sets only the numeric quantity (the UOM is set separately via its own key), so it can be
+   * driven by {@link setData} where each field arrives independently.
+   * @param quantity - The quantity to set, or any value (anything that isn't a positive number is ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setQuantityValue(500);
+   * ```
+   * @source
+   */
+  setQuantityValue(quantity: unknown): ProductBuilder<T> {
+    const value = typeof quantity === "string" ? Number(quantity) : quantity;
+    if (typeof value === "number" && !Number.isNaN(value) && value > 0) {
+      this.product.quantity = value;
+    }
+    return this;
+  }
+
+  /**
+   * Narrows an unknown value to the `{ score: number; idx: number }` shape of {@link Product._fuzz}.
+   * @param value - The value to test
+   * @returns True when the value is a valid fuzz-metadata object
+   * @example
+   * ```typescript
+   * this.isFuzzMeta({ score: 0.9, idx: 3 }); // true
+   * this.isFuzzMeta({ score: "high" });       // false
+   * ```
+   * @source
+   */
+  private isFuzzMeta(value: unknown): value is { score: number; idx: number } {
+    return (
+      typeof value === "object" &&
+      value !== null &&
+      typeof (value as { score?: unknown }).score === "number" &&
+      typeof (value as { idx?: unknown }).idx === "number"
+    );
+  }
+
+  /**
+   * Sets the basic information for the product by delegating to {@link setTitle},
+   * {@link setURL}, and {@link setSupplier}, each of which validates its own input.
    *
-   * @param title - The display name/title of the product
-   * @param url - The URL where the product can be found (can be relative to baseURL)
-   * @param supplier - The name of the supplier/vendor
+   * @param title - The display name/title of the product, or any value (invalid input is ignored)
+   * @param url - The URL where the product can be found (can be relative to baseURL), or any value
+   * @param supplier - The name of the supplier/vendor, or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -114,19 +230,47 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setBasicInfo(title: string, url: string, supplier: string): ProductBuilder<T> {
-    this.product.title = title;
-    this.product.supplier = supplier;
-    const href = this.href(url);
-    if (href) {
-      this.product.url = href;
+  setBasicInfo(title: unknown, url: unknown, supplier: unknown): ProductBuilder<T> {
+    return this.setTitle(title).setURL(url).setSupplier(supplier);
+  }
+
+  /**
+   * Sets the product title. A value that isn't a non-empty string is ignored.
+   * @param title - The display name/title of the product, or any value (invalid input is ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setTitle("Hydrochloric Acid");
+   * ```
+   * @source
+   */
+  setTitle(title: unknown): ProductBuilder<T> {
+    if (typeof title === "string" && title.trim().length > 0) {
+      this.product.title = title;
     }
     return this;
   }
 
   /**
-   * Sets the URL for the product.
-   * @param url - The URL to set
+   * Sets the supplier name. A value that isn't a non-empty string is ignored.
+   * @param supplier - The name of the supplier/vendor, or any value (invalid input is ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setSupplier("ChemSupplier");
+   * ```
+   * @source
+   */
+  setSupplier(supplier: unknown): ProductBuilder<T> {
+    if (typeof supplier === "string" && supplier.trim().length > 0) {
+      this.product.supplier = supplier;
+    }
+    return this;
+  }
+
+  /**
+   * Sets the URL for the product. A value that isn't a usable URL is ignored.
+   * @param url - The URL to set, or any value (non-URLs are ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -134,8 +278,8 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setURL(url: string | URL): ProductBuilder<T> {
-    const href = this.href(url);
+  setURL(url: unknown): ProductBuilder<T> {
+    const href = this.resolveHref(url);
     if (href) {
       this.product.url = href;
     }
@@ -143,8 +287,8 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
-   * Sets the permalink for the product.
-   * @param permalink - The permalink to set
+   * Sets the permalink for the product. A value that isn't a usable URL is ignored.
+   * @param permalink - The permalink to set, or any value (non-URLs are ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -152,8 +296,8 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setPermalink(permalink: string | URL): ProductBuilder<T> {
-    const href = this.href(permalink);
+  setPermalink(permalink: unknown): ProductBuilder<T> {
+    const href = this.resolveHref(permalink);
     if (href) {
       this.product.permalink = href;
     }
@@ -161,26 +305,47 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
-   * Sets the SDS URL for the product.
-   * @param sdsUrl - The SDS URL to set
+   * Sets the SDS URL for the product. Accepts the often-optional result of a parser directly;
+   * a value that isn't a usable URL (undefined, empty, wrong type) is ignored.
+   * @param sdsUrl - The SDS URL to set, or any value (non-URLs are ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
    * builder.setSDSUrl("https://example.com/sds.pdf");
+   * builder.setSDSUrl(findPdfHref(html)); // no-ops when findPdfHref returns undefined
    * ```
    * @source
    */
-  setSDSUrl(sdsUrl: string | URL): ProductBuilder<T> {
-    const href = this.href(sdsUrl);
+  setSDSUrl(sdsUrl: unknown): ProductBuilder<T> {
+    const href = this.resolveHref(sdsUrl);
     if (href) {
-      this.product.sdsUrl = this.href(sdsUrl);
+      this.product.sdsUrl = href;
     }
     return this;
   }
+
   /**
-   * Sets the image URL for the product.
-   * @param imageURL - The image URL to set
-   * @param imageAltText - The alt text for the image
+   * Sets the spec sheet URL for the product. A value that isn't a non-empty string is ignored.
+   * @param specSheetUrl - The spec sheet URL to set, or any value (non-strings are ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setSpecSheetUrl("https://example.com/spec-sheet.pdf");
+   * ```
+   * @source
+   */
+  setSpecSheetUrl(specSheetUrl: unknown): ProductBuilder<T> {
+    if (typeof specSheetUrl === "string" && specSheetUrl.trim().length > 0) {
+      this.product.specSheetUrl = specSheetUrl;
+    }
+    return this;
+  }
+
+  /**
+   * Sets the image URL (and optional alt text) for the product. An imageURL that isn't a usable
+   * URL is ignored; alt text is only applied alongside a valid image.
+   * @param imageURL - The image URL to set, or any value (non-URLs are ignored)
+   * @param imageAltText - The alt text for the image, or any value (non-strings are ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -189,20 +354,21 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setImage(imageURL: string, imageAltText?: string): ProductBuilder<T> {
-    const href = this.href(imageURL);
-    if (href) {
-      this.product.imageURL = href;
+  setImage(imageURL: unknown, imageAltText?: unknown): ProductBuilder<T> {
+    const href = this.resolveHref(imageURL);
+    if (!href) {
+      return this;
     }
-    if (imageAltText && typeof imageAltText === "string" && imageAltText.trim().length > 0) {
+    this.product.imageURL = href;
+    if (typeof imageAltText === "string" && imageAltText.trim().length > 0) {
       this.product.imageAltText = imageAltText;
     }
     return this;
   }
 
   /**
-   * Sets the thumbnail URL for the product.
-   * @param thumbnail - The thumbnail URL to set
+   * Sets the thumbnail URL for the product. A value that isn't a usable URL is ignored.
+   * @param thumbnail - The thumbnail URL to set, or any value (non-URLs are ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -210,8 +376,8 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setThumbnail(thumbnail: string): ProductBuilder<T> {
-    const href = this.href(thumbnail);
+  setThumbnail(thumbnail: unknown): ProductBuilder<T> {
+    const href = this.resolveHref(thumbnail);
     if (href) {
       this.product.thumbnail = href;
     }
@@ -219,9 +385,9 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
-   * Sets the formula for the product.
+   * Sets the formula for the product. A value that isn't a recognizable formula is ignored.
    *
-   * @param formula - The formula to set
+   * @param formula - The formula to set, or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -236,8 +402,8 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setFormula(formula?: string): ProductBuilder<T> {
-    if (!formula || typeof formula !== "string" || formula.trim().length === 0) {
+  setFormula(formula: unknown): ProductBuilder<T> {
+    if (typeof formula !== "string" || formula.trim().length === 0) {
       return this;
     }
     const trimmed = formula.trim();
@@ -259,7 +425,7 @@ export class ProductBuilder<T extends Product> {
    * Sets the grade/purity level of the product.
    * Only sets the grade if a non-empty string is provided.
    *
-   * @param grade - The grade or purity level of the product
+   * @param grade - The grade or purity level of the product, or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -268,8 +434,8 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setGrade(grade: string): ProductBuilder<T> {
-    if (grade && grade?.trim()?.length > 0) {
+  setGrade(grade: unknown): ProductBuilder<T> {
+    if (typeof grade === "string" && grade.trim().length > 0) {
       this.product.grade = grade;
     }
     return this;
@@ -278,7 +444,7 @@ export class ProductBuilder<T extends Product> {
   /**
    * Sets the price for the product. This is useful for if the price and currency are easier
    * to add separately (eg: getting the currency code is done in a different request handler)
-   * @param price - The price to set
+   * @param price - The price to set (a number or numeric string), or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -286,16 +452,22 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setPrice(price: number | string): ProductBuilder<T> {
+  setPrice(price: unknown): ProductBuilder<T> {
     if (typeof price !== "number" && typeof price !== "string") {
-      this.logger.warn(`setPrice| Invalid price: ${price}`, {
-        price,
-        builder: this,
-        product: this.product,
-      });
+      // A non-null, non-numeric value is a genuine misuse worth flagging; absent input is a quiet no-op.
+      if (price != null) {
+        this.logger.warn(`setPrice| Invalid price: ${price}`, {
+          price,
+          builder: this,
+          product: this.product,
+        });
+      }
       return this;
     }
-    this.product.price = Number(price);
+    const value = Number(price);
+    if (!Number.isNaN(value)) {
+      this.product.price = value;
+    }
     return this;
   }
 
@@ -303,7 +475,7 @@ export class ProductBuilder<T extends Product> {
    * Sets the currency symbol for the product. This is useful for if the price and currency are easier
    * to add separately (eg: getting the currency code is done in a different request handler).
    * If no currency symbol is set, then it will be inferred from the currencyCode
-   * @param sign - The currency symbol to set
+   * @param sign - The currency symbol to set, or any value (anything that isn't a known symbol is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -311,23 +483,23 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setCurrencySymbol(sign: CurrencySymbol): ProductBuilder<T> {
-    if (typeof sign !== "string") {
+  setCurrencySymbol(sign: unknown): ProductBuilder<T> {
+    if (isCurrencySymbol(sign)) {
+      this.product.currencySymbol = sign;
+    } else if (sign != null) {
       this.logger.warn(`setCurrencySymbol| Invalid currency symbol: ${sign}`, {
         sign,
         builder: this,
         product: this.product,
       });
-      return this;
     }
-    this.product.currencySymbol = sign;
     return this;
   }
 
   /**
    * Sets the currency code for the product. This is useful for if the price and currency are easier
    * to add separately (eg: getting the currency code is done in a different request handler).
-   * @param code - The currency code to set
+   * @param code - The currency code to set, or any value (anything that isn't a known code is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -335,17 +507,16 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setCurrencyCode(code: CurrencyCode): ProductBuilder<T> {
-    if (typeof code !== "string") {
+  setCurrencyCode(code: unknown): ProductBuilder<T> {
+    if (isCurrencyCode(code)) {
+      this.product.currencyCode = code;
+    } else if (code != null) {
       this.logger.warn(`setCurrencyCode| Invalid currency code: ${code}`, {
         code,
         builder: this,
         product: this.product,
       });
-      return this;
     }
-
-    this.product.currencyCode = code;
     return this;
   }
 
@@ -532,7 +703,7 @@ export class ProductBuilder<T extends Product> {
 
   /**
    * Sets the moles for the product.
-   * @param moles - The moles to set
+   * @param moles - The moles to set, or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -540,7 +711,7 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setMoles(moles: number): ProductBuilder<T> {
+  setMoles(moles: unknown): ProductBuilder<T> {
     if (typeof moles === "number" && !Number.isNaN(moles) && moles > 0) {
       this.product.moles = moles;
     }
@@ -549,7 +720,7 @@ export class ProductBuilder<T extends Product> {
   /**
    * Sets the unit of measure for the product.
    *
-   * @param uom - The unit of measure for the product
+   * @param uom - The unit of measure to set, or any value (anything that isn't a known UOM is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -557,20 +728,19 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setUOM(uom: string): ProductBuilder<T> {
-    if (typeof uom === "string" && uom.trim().length > 0) {
+  setUOM(uom: unknown): ProductBuilder<T> {
+    if (isUOM(uom)) {
       this.product.uom = uom;
-      return this;
+    } else if (uom != null) {
+      this.logger.warn(`Unknown UOM: ${uom}`);
     }
-
-    this.logger.warn(`Unknown UOM: ${uom}`);
     return this;
   }
 
   /**
    * Sets the country of the supplier.
    *
-   * @param country - The country of the supplier
+   * @param country - The country of the supplier, or any value (anything that isn't a known country code is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -578,15 +748,17 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setSupplierCountry(country: CountryCode): ProductBuilder<T> {
-    this.product.supplierCountry = country;
+  setSupplierCountry(country: unknown): ProductBuilder<T> {
+    if (isCountryCode(country)) {
+      this.product.supplierCountry = country;
+    }
     return this;
   }
 
   /**
    * Sets the shipping scope of the supplier.
    *
-   * @param shipping - The shipping scope of the supplier
+   * @param shipping - The shipping scope, or any value (anything that isn't a known shipping range is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -594,15 +766,17 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setSupplierShipping(shipping: ShippingRange): ProductBuilder<T> {
-    this.product.supplierShipping = shipping;
+  setSupplierShipping(shipping: unknown): ProductBuilder<T> {
+    if (isShippingRange(shipping)) {
+      this.product.supplierShipping = shipping;
+    }
     return this;
   }
 
   /**
    * Sets the payment methods accepted by the supplier.
    *
-   * @param paymentMethods - The payment methods accepted by the supplier
+   * @param paymentMethods - A payment method or array of them, or any value (non-payment-method entries are dropped)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -610,20 +784,19 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setSupplierPaymentMethods(paymentMethods: PaymentMethod[]): ProductBuilder<T> {
-    if (Array.isArray(paymentMethods)) {
-      this.product.paymentMethods = paymentMethods;
-    } else if (typeof paymentMethods === "string") {
-      this.product.paymentMethods = [paymentMethods];
+  setSupplierPaymentMethods(paymentMethods: unknown): ProductBuilder<T> {
+    const candidates = Array.isArray(paymentMethods) ? paymentMethods : [paymentMethods];
+    const valid = candidates.filter(isPaymentMethod);
+    if (valid.length > 0) {
+      this.product.paymentMethods = valid;
     }
-
     return this;
   }
 
   /**
    * Sets the product description.
    *
-   * @param description - The detailed description of the product
+   * @param description - The detailed description of the product, or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -633,7 +806,7 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setDescription(description: string): ProductBuilder<T> {
+  setDescription(description: unknown): ProductBuilder<T> {
     if (typeof description === "string" && description.trim().length > 0) {
       this.product.description = htmlToAscii(description);
     }
@@ -642,7 +815,7 @@ export class ProductBuilder<T extends Product> {
 
   /**
    * Sets the short description for the product.
-   * @param shortDescription - The short description to set
+   * @param shortDescription - The short description to set, or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -650,7 +823,7 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setShortDescription(shortDescription: string): ProductBuilder<T> {
+  setShortDescription(shortDescription: unknown): ProductBuilder<T> {
     if (typeof shortDescription === "string" && shortDescription.trim().length > 0) {
       this.product.shortDescription = htmlToAscii(shortDescription);
     }
@@ -659,7 +832,7 @@ export class ProductBuilder<T extends Product> {
 
   /**
    * Sets the rating for the product.
-   * @param rating - The rating to set
+   * @param rating - The rating to set, or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -667,16 +840,19 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setRating(rating: number | string): ProductBuilder<T> {
+  setRating(rating: unknown): ProductBuilder<T> {
     if (typeof rating === "number" || typeof rating === "string") {
-      this.product.rating = Number(rating);
+      const value = Number(rating);
+      if (!Number.isNaN(value)) {
+        this.product.rating = value;
+      }
     }
     return this;
   }
 
   /**
    * Sets the review count for the product.
-   * @param reviewCount - The review count to set
+   * @param reviewCount - The review count to set, or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -684,9 +860,12 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setReviewCount(reviewCount: number | string): ProductBuilder<T> {
+  setReviewCount(reviewCount: unknown): ProductBuilder<T> {
     if (typeof reviewCount === "number" || typeof reviewCount === "string") {
-      this.product.reviewCount = Number(reviewCount);
+      const value = Number(reviewCount);
+      if (!Number.isNaN(value)) {
+        this.product.reviewCount = value;
+      }
     }
     return this;
   }
@@ -695,7 +874,7 @@ export class ProductBuilder<T extends Product> {
    * Sets the CAS (Chemical Abstracts Service) registry number for the product.
    * Validates the CAS number format before setting.
    *
-   * @param cas - The CAS registry number in format "XXXXX-XX-X"
+   * @param cas - The CAS registry number in format "XXXXX-XX-X", or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -706,13 +885,16 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setCAS(cas: string): ProductBuilder<T> {
+  setCAS(cas: unknown): ProductBuilder<T> {
     if (typeof cas !== "string") {
-      this.logger.warn(`setCAS| Invalid CAS number`, {
-        cas,
-        builder: this,
-        product: this.product,
-      });
+      // Only flag a genuine misuse (a non-string value); an absent value is a quiet no-op.
+      if (cas != null) {
+        this.logger.warn(`setCAS| Invalid CAS number`, {
+          cas,
+          builder: this,
+          product: this.product,
+        });
+      }
       return this;
     }
 
@@ -730,7 +912,7 @@ export class ProductBuilder<T extends Product> {
   /**
    * Sets the ID for the product.
    *
-   * @param id - The unique identifier for the product
+   * @param id - The unique identifier for the product, or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -738,7 +920,7 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setID(id?: number | string): ProductBuilder<T> {
+  setID(id: unknown): ProductBuilder<T> {
     if (typeof id === "number" || typeof id === "string") {
       // T["id"] narrows the generic product's id type; the number|string input is the data-model alias for it.
       this.product.id = id as T["id"];
@@ -749,7 +931,7 @@ export class ProductBuilder<T extends Product> {
   /**
    * Sets the UUID for the product.
    *
-   * @param uuid - The UUID string for the product
+   * @param uuid - The UUID string for the product, or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -757,8 +939,8 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setUUID(uuid: string): ProductBuilder<T> {
-    if (uuid && uuid.trim().length > 0) {
+  setUUID(uuid: unknown): ProductBuilder<T> {
+    if (typeof uuid === "string" && uuid.trim().length > 0) {
       this.product.uuid = uuid;
     }
     return this;
@@ -767,7 +949,7 @@ export class ProductBuilder<T extends Product> {
   /**
    * Sets the SKU (Stock Keeping Unit) for the product.
    *
-   * @param sku - The SKU string for the product
+   * @param sku - The SKU string for the product, or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -775,27 +957,29 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setSku(sku: string): ProductBuilder<T> {
-    if (sku && sku.trim().length > 0) {
+  setSku(sku: unknown): ProductBuilder<T> {
+    if (typeof sku === "string" && sku.trim().length > 0) {
       this.product.sku = sku;
     }
     return this;
   }
 
   /**
-   * Sets the SMILES for the product.
-   * @param smiles - The SMILES to set
+   * Sets the SMILES for the product. An absent value (undefined/null/empty) is ignored silently;
+   * a value that is present but fails SMILES validation is ignored and logged as a warning.
+   * @param smiles - The SMILES to set, or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
    * builder.setSmiles("C1=CC=CC=C1");
+   * builder.setSmiles(undefined); // no-op, no warning
    * ```
    * @source
    */
   setSmiles(smiles: unknown): ProductBuilder<T> {
     if (isSmiles(smiles)) {
       this.product.smiles = smiles;
-    } else {
+    } else if (smiles !== undefined && smiles !== null && smiles !== "") {
       this.logger.warn(`setSmiles| Invalid SMILES: ${smiles}`, {
         smiles,
         builder: this,
@@ -806,7 +990,7 @@ export class ProductBuilder<T extends Product> {
   /**
    * Sets the vendor for the product.
    *
-   * @param vendor - The vendor name
+   * @param vendor - The vendor name, or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -814,8 +998,8 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setVendor(vendor?: string): ProductBuilder<T> {
-    if (vendor) {
+  setVendor(vendor: unknown): ProductBuilder<T> {
+    if (typeof vendor === "string" && vendor.trim().length > 0) {
       this.product.vendor = vendor;
     }
     return this;
@@ -901,25 +1085,6 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
-   * Just a place to hold the products original response object.
-   *
-   * @param data - The raw data to add the raw data.
-   * @returns The builder instance for method chaining
-   * @example
-   * ```typescript
-   * builder.addRawData({
-   *   title: 'Sodium Chloride',
-   *   price: 29.99,
-   * });
-   * ```
-   * @source
-   */
-  addRawData(data?: Record<string, unknown>): ProductBuilder<T> {
-    Object.assign(this.rawData, data);
-    return this;
-  }
-
-  /**
    * Adds a single variant to the product.
    *
    * @param variant - The variant object to add
@@ -993,8 +1158,9 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
-   * Sets the purity for the product.
-   * @param purity - The purity to set (can be 99% or just 99)
+   * Sets the purity for the product. Accepts `99`, `"99%"`, or any value; anything that doesn't
+   * resolve to a percentage in the `(0, 100]` range is ignored.
+   * @param purity - The purity to set (e.g. `99` or `"99%"`), or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -1011,7 +1177,7 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setPurity(purity: number | string): ProductBuilder<T> {
+  setPurity(purity: unknown): ProductBuilder<T> {
     if (typeof purity === "string") {
       purity = Number(purity.replace("%", ""));
     }
@@ -1024,7 +1190,7 @@ export class ProductBuilder<T extends Product> {
 
   /**
    * Sets the concentration for the product.
-   * @param concentration - The concentration to set
+   * @param concentration - The concentration to set, or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -1037,16 +1203,17 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setConcentration(concentration: string): ProductBuilder<T> {
-    if (typeof concentration === "string") {
+  setConcentration(concentration: unknown): ProductBuilder<T> {
+    if (typeof concentration === "string" && concentration.trim().length > 0) {
       this.product.concentration = concentration;
     }
     return this;
   }
 
   /**
-   * Sets the molecular weight for the product.
-   * @param moleweight - The molecular weight to set
+   * Sets the molecular weight for the product. A value that doesn't resolve to a positive number
+   * is ignored.
+   * @param moleweight - The molecular weight to set, or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -1054,7 +1221,7 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setMoleweight(moleweight: number | string): ProductBuilder<T> {
+  setMoleweight(moleweight: unknown): ProductBuilder<T> {
     if (typeof moleweight === "string") {
       moleweight = Number(moleweight);
     }
@@ -1089,7 +1256,7 @@ export class ProductBuilder<T extends Product> {
    * Sets the match percentage (Levenshtein result) for the product title
    * compared to the search string.
    *
-   * @param matchPercentage - The match percentage to set
+   * @param matchPercentage - The match percentage to set, or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
@@ -1097,9 +1264,204 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setMatchPercentage(matchPercentage: number): ProductBuilder<T> {
-    if (typeof matchPercentage === "number") {
+  setMatchPercentage(matchPercentage: unknown): ProductBuilder<T> {
+    if (typeof matchPercentage === "number" && !Number.isNaN(matchPercentage)) {
       this.product.matchPercentage = matchPercentage;
+    }
+    return this;
+  }
+
+  /**
+   * Sets the manufacturer name. A value that isn't a non-empty string is ignored.
+   * @param manufacturer - The manufacturer name, or any value (invalid input is ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setManufacturer("Sigma-Aldrich");
+   * ```
+   * @source
+   */
+  setManufacturer(manufacturer: unknown): ProductBuilder<T> {
+    if (typeof manufacturer === "string" && manufacturer.trim().length > 0) {
+      this.product.manufacturer = manufacturer;
+    }
+    return this;
+  }
+
+  /**
+   * Sets the status code of the product. A value that isn't a non-empty string is ignored.
+   * @param status - The status code, or any value (invalid input is ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setStatus("IN_STOCK");
+   * ```
+   * @source
+   */
+  setStatus(status: unknown): ProductBuilder<T> {
+    if (typeof status === "string" && status.trim().length > 0) {
+      this.product.status = status;
+    }
+    return this;
+  }
+
+  /**
+   * Sets the human-readable status text of the product. A non-string value is ignored.
+   * @param statusTxt - The status description, or any value (invalid input is ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setStatusTxt("In Stock");
+   * ```
+   * @source
+   */
+  setStatusTxt(statusTxt: unknown): ProductBuilder<T> {
+    if (typeof statusTxt === "string" && statusTxt.trim().length > 0) {
+      this.product.statusTxt = statusTxt;
+    }
+    return this;
+  }
+
+  /**
+   * Sets special shipping information for the product. A non-string value is ignored.
+   * @param shippingInformation - The shipping note, or any value (invalid input is ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setShippingInformation("Hazardous material - special shipping required");
+   * ```
+   * @source
+   */
+  setShippingInformation(shippingInformation: unknown): ProductBuilder<T> {
+    if (typeof shippingInformation === "string" && shippingInformation.trim().length > 0) {
+      this.product.shippingInformation = shippingInformation;
+    }
+    return this;
+  }
+
+  /**
+   * Sets the product attributes. Accepts an array and keeps only entries shaped like
+   * `{ name: string; value: string }`; anything else is dropped.
+   * @param attributes - The attributes array, or any value (invalid entries are dropped)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setAttributes([{ name: "Size", value: "500g" }]);
+   * ```
+   * @source
+   */
+  setAttributes(attributes: unknown): ProductBuilder<T> {
+    if (!Array.isArray(attributes)) {
+      return this;
+    }
+    const valid = attributes.filter(
+      (entry): entry is { name: string; value: string } =>
+        typeof entry === "object" &&
+        entry !== null &&
+        typeof (entry as { name?: unknown }).name === "string" &&
+        typeof (entry as { value?: unknown }).value === "string",
+    );
+    if (valid.length > 0) {
+      this.product.attributes = valid;
+    }
+    return this;
+  }
+
+  /**
+   * Sets the reference (base) quantity used for unit conversions. A value that doesn't
+   * resolve to a positive number is ignored.
+   * @param baseQuantity - The base quantity, or any value (invalid input is ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setBaseQuantity(500);
+   * ```
+   * @source
+   */
+  setBaseQuantity(baseQuantity: unknown): ProductBuilder<T> {
+    const value = typeof baseQuantity === "string" ? Number(baseQuantity) : baseQuantity;
+    if (typeof value === "number" && !Number.isNaN(value) && value > 0) {
+      this.product.baseQuantity = value;
+    }
+    return this;
+  }
+
+  /**
+   * Sets the reference (base) unit of measure used for conversions. Anything that isn't a
+   * known UOM is ignored.
+   * @param baseUom - The base unit of measure, or any value (invalid input is ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setBaseUom("g");
+   * ```
+   * @source
+   */
+  setBaseUom(baseUom: unknown): ProductBuilder<T> {
+    if (isUOM(baseUom)) {
+      this.product.baseUom = baseUom;
+    }
+    return this;
+  }
+
+  /**
+   * Sets the price converted to USD. A value that doesn't resolve to a non-negative number
+   * is ignored. Note: {@link build} recomputes this from price/currency, so it is normally derived.
+   * @param usdPrice - The USD price, or any value (invalid input is ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setUsdPrice(19.99);
+   * ```
+   * @source
+   */
+  setUsdPrice(usdPrice: unknown): ProductBuilder<T> {
+    const value = typeof usdPrice === "string" ? Number(usdPrice) : usdPrice;
+    if (typeof value === "number" && !Number.isNaN(value) && value >= 0) {
+      this.product.usdPrice = value;
+    }
+    return this;
+  }
+
+  /**
+   * Sets the price converted to the user's local currency. A value that doesn't resolve to a
+   * non-negative number is ignored.
+   * @param localPrice - The local price, or any value (invalid input is ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setLocalPrice(18.5);
+   * ```
+   * @source
+   */
+  setLocalPrice(localPrice: unknown): ProductBuilder<T> {
+    const value = typeof localPrice === "string" ? Number(localPrice) : localPrice;
+    if (typeof value === "number" && !Number.isNaN(value) && value >= 0) {
+      this.product.localPrice = value;
+    }
+    return this;
+  }
+
+  /**
+   * Sets related documentation links (MSDS, SDS, etc.). Accepts an array and keeps only the
+   * non-empty string entries; anything else is dropped.
+   * @param docLinks - The documentation URLs, or any value (invalid entries are dropped)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setDocLinks(["https://supplier.com/msds/nacl.pdf"]);
+   * ```
+   * @source
+   */
+  setDocLinks(docLinks: unknown): ProductBuilder<T> {
+    if (!Array.isArray(docLinks)) {
+      return this;
+    }
+    const valid = docLinks.filter(
+      (link): link is string => typeof link === "string" && link.trim().length > 0,
+    );
+    if (valid.length > 0) {
+      this.product.docLinks = valid;
     }
     return this;
   }
@@ -1138,6 +1500,29 @@ export class ProductBuilder<T extends Product> {
     }
     const urlObj = new URL(path, this.baseURL);
     return String(urlObj);
+  }
+
+  /**
+   * Resolves an unknown value to an absolute URL string, or undefined when it isn't URL-like.
+   * Lets the URL setters accept the often-optional output of a parser (e.g. `findPdfHref`)
+   * directly, without each caller having to null-check first.
+   * @param value - The candidate URL (string or URL), or anything else
+   * @returns The absolute URL as a string, or undefined if the value isn't a usable URL
+   * @example
+   * ```typescript
+   * this.resolveHref("/sds.pdf");  // "https://example.com/sds.pdf"
+   * this.resolveHref(undefined);    // undefined
+   * ```
+   * @source
+   */
+  private resolveHref(value: unknown): string | undefined {
+    if (value instanceof URL) {
+      return this.href(value);
+    }
+    if (typeof value === "string" && value.trim().length > 0) {
+      return this.href(value);
+    }
+    return undefined;
   }
 
   /**

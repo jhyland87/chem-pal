@@ -370,6 +370,29 @@ export function htmlToAscii(html: string): string {
     .trim();
 }
 
+// Matches the href of the first PDF link in a block of HTML.
+const PDF_HREF_REGEX = /href\s*=\s*["']([^"']*\.pdf[^"']*)["']/i;
+
+/**
+ * Finds the href of the first PDF-linking anchor in a block of HTML. Useful for pulling out
+ * linked documents such as Safety Data Sheets or spec sheets that suppliers attach as
+ * `<a href="….pdf">` inside descriptions or info sections.
+ * @category Helpers
+ * @param html - Raw HTML that may contain an anchor linking to a PDF
+ * @returns The PDF URL, or undefined if none is found
+ * @example
+ * ```typescript
+ * findPdfHref('<a href="https://x.com/sds.pdf" target="_blank">Safety Data Sheet</a>')
+ * // "https://x.com/sds.pdf"
+ * findPdfHref("<p>No documents here</p>") // undefined
+ * ```
+ * @source
+ */
+export function findPdfHref(html: string): string | undefined {
+  if (!html || typeof html !== "string") return undefined;
+  return html.match(PDF_HREF_REGEX)?.[1];
+}
+
 /**
  * Tries to parse a JSON string. If it fails, it returns the original string.
  *

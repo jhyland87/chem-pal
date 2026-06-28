@@ -376,8 +376,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
 
       builder.setData({ title: mozApi.name });
 
-      const cas = findCAS(mozApi.sku ?? "");
-      if (cas) builder.setCAS(cas);
+      builder.setCAS(findCAS(mozApi.sku ?? ""));
 
       const variants = Array.isArray(mozApi.variants) ? mozApi.variants : [];
       const main = variants[0];
@@ -407,8 +406,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
       }
 
       // Purity is baked into the product name, e.g. "Sodium borohydride, min 95%".
-      const purity = parsePurity(mozApi.name);
-      if (purity) builder.setPurity(purity);
+      builder.setPurity(parsePurity(mozApi.name));
 
       this.applyProductImage(builder, dom, productResponse, mozApi.name);
       this.applyBasicProperties(builder, dom);
@@ -476,9 +474,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
       builder.setImage(`${pictures.cdn}${picture.size_set.m}`, altText);
     }
 
-    if (picture?.thumb) {
-      builder.setThumbnail(picture.thumb);
-    }
+    builder.setThumbnail(picture?.thumb);
   }
 
   /**
@@ -499,17 +495,13 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
   private applyBasicProperties(builder: ProductBuilder<Product>, dom: Document): void {
     const props = this.parseDetailTable(dom, "#basic");
 
-    const formula = props["Molecular Formula"];
-    if (formula) builder.setFormula(formula);
-
-    const moleweight = props["Molecular Weight"]?.match(/[\d.]+/)?.[0];
-    if (moleweight) builder.setMoleweight(moleweight);
+    builder.setFormula(props["Molecular Formula"]);
+    builder.setMoleweight(props["Molecular Weight"]?.match(/[\d.]+/)?.[0]);
 
     // CAS is normally taken from mozCatItemMozApi.sku; only fall back to the
     // table when that didn't produce one.
     if (!builder.get("cas")) {
-      const tableCas = findCAS(props["CAS No."] ?? "");
-      if (tableCas) builder.setCAS(tableCas);
+      builder.setCAS(findCAS(props["CAS No."] ?? ""));
     }
   }
 

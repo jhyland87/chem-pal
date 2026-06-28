@@ -2,7 +2,6 @@ import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { assertValidSearchResponse } from "@/utils/typeGuards/chemsavers";
-import { isCAS } from "@/utils/typeGuards/common";
 import { SupplierBase } from "./SupplierBase";
 
 /**
@@ -163,7 +162,7 @@ export class SupplierChemsavers
         .setSku(result.sku)
         .setPricing(result.price, "USD", "$")
         .setQuantity(quantity.quantity, quantity.uom)
-        .setCAS(isCAS(result.CAS) ? result.CAS : "");
+        .setCAS(result.CAS);
 
       if (result.variants) {
         builder.setVariants(

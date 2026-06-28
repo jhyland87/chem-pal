@@ -800,26 +800,6 @@ describe("ProductBuilder", () => {
     });
   });
 
-  describe("addRawData", () => {
-    it("should merge raw data correctly", async () => {
-      const rawData1 = { customField1: "value1" };
-      const rawData2 = { customField2: "value2" };
-
-      builder.addRawData(rawData1);
-      builder.addRawData(rawData2);
-
-      expect(builder["rawData"]).toMatchObject({
-        customField1: "value1",
-        customField2: "value2",
-      });
-    });
-
-    it("should handle undefined input", async () => {
-      builder.addRawData(undefined);
-      expect(builder["rawData"]).toEqual({});
-    });
-  });
-
   describe("get", () => {
     it("should return property value if it exists", () => {
       builder.setBasicInfo("Test Product", "/product/123", "Test Supplier");

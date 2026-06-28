@@ -145,16 +145,56 @@ const SDS_TYPE_FALLBACK = "am";
 // European country codes (the European subset of `shipsTo`). A user in one of
 // these gets a `sdsJsonEurope` (amgm-*) SDS; everyone else uses `sdsJson`.
 const EUROPEAN_COUNTRY_CODES = new Set([
-  "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU",
-  "IE", "IT", "LV", "LI", "LT", "LU", "MT", "NL", "NO", "PL", "PT", "RO", "SK",
-  "SI", "ES", "SE", "CH", "TR", "GB",
+  "AT",
+  "BE",
+  "BG",
+  "HR",
+  "CY",
+  "CZ",
+  "DK",
+  "EE",
+  "FI",
+  "FR",
+  "DE",
+  "GR",
+  "HU",
+  "IE",
+  "IT",
+  "LV",
+  "LI",
+  "LT",
+  "LU",
+  "MT",
+  "NL",
+  "NO",
+  "PL",
+  "PT",
+  "RO",
+  "SK",
+  "SI",
+  "ES",
+  "SE",
+  "CH",
+  "TR",
+  "GB",
 ]);
 
 // Maps a language's primary subtag to the `SDS-EU-<X>` suffix. Needed because
 // the suffixes are country-ish (DK/SE/NO) rather than language codes (da/sv/nb).
 const LANGUAGE_TO_EU_SDS_SUFFIX: Record<string, string> = {
-  en: "EN", de: "DE", fr: "FR", es: "ES", it: "IT", da: "DK", pt: "PT",
-  pl: "PL", sv: "SE", nb: "NO", nn: "NO", no: "NO", nl: "NL",
+  en: "EN",
+  de: "DE",
+  fr: "FR",
+  es: "ES",
+  it: "IT",
+  da: "DK",
+  pt: "PT",
+  pl: "PL",
+  sv: "SE",
+  nb: "NO",
+  nn: "NO",
+  no: "NO",
+  nl: "NL",
 };
 
 /**
@@ -478,6 +518,22 @@ export class SupplierAmbeed
   }
 
   /**
+   * Construct spec sheet URL from product id
+   *
+   * @param proid - The product ID
+   * @returns The spec sheet URL
+   * @example
+   * ```js
+   * console.log(this.getSpecSheetUrl("A806610"));
+   * // "/product-details/specification/A806610"
+   * ```
+   * @source
+   */
+  private getSpecSheetUrl(proid: string): string {
+    return this.href(`/product-details/specification/${proid}`);
+  }
+
+  /**
    * Makes the query params for the Ambeed API for product price.
    * @param proid - The product ID
    * @returns The query params
@@ -731,10 +787,7 @@ export class SupplierAmbeed
     const builders = this.initProductBuilders(slice);
     for (const builder of builders) {
       const pAm = builder.get("uuid");
-      const sdsUrl = typeof pAm === "string" ? sdsByAm[pAm] : undefined;
-      if (sdsUrl) {
-        builder.setSDSUrl(sdsUrl);
-      }
+      builder.setSDSUrl(typeof pAm === "string" ? sdsByAm[pAm] : undefined);
     }
 
     return builders;
@@ -799,9 +852,8 @@ export class SupplierAmbeed
         return;
       }
 
-      if (typeof product.p_cas === "string") {
-        productBuilder.setCAS(product.p_cas);
-      }
+      productBuilder.setCAS(product.p_cas);
+      productBuilder.setSpecSheetUrl(this.getSpecSheetUrl(product.p_am));
 
       for (const variant of product.priceList) {
         const parsedPrice = parsePrice(variant.pr_usd);
@@ -840,10 +892,10 @@ export class SupplierAmbeed
         .setBasicInfo(product.p_proper_name3, `/products/${product.s_url}`, this.supplierName)
         .setID(product.p_id)
         .setUUID(product.p_am)
-        .setImage(product.p_proimg ?? "")
-        .setPurity(product.p_purity ?? "")
-        .setMoleweight(product.p_moleweight ?? "")
-        .setFormula(product.p_moleform ?? "")
+        .setImage(product.p_proimg)
+        .setPurity(product.p_purity)
+        .setMoleweight(product.p_moleweight)
+        .setFormula(product.p_moleform)
         .setDescription(product.p_name_en)
         .setSupplierCountry(this.country)
         .setSupplierShipping(this.shipping)

@@ -14,7 +14,7 @@ declare global {
   // arrays, function arguments). It cannot validate a `string` value that only exists at runtime —
   // keep using `looksLikeSmiles` / `resolveSmiles` for that.
 
-  /** Every character legal in a SMILES string (matches SMILES_CHAR_SET in smiles.ts). */
+  /** Every character legal in a SMILES string (matches SMILES_CHAR in smiles.ts). */
   type SmilesChar =
     | "a"
     | "b"

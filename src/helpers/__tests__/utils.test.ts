@@ -3,6 +3,7 @@ import {
   base64EncodeUtf8,
   delayAction,
   deserialize,
+  findPdfHref,
   firstMap,
   getPath,
   mapDefined,
@@ -13,6 +14,25 @@ import {
   zodAddActualValueToIssues,
 } from "@/helpers/utils";
 import { describe, expect, it, vi } from "vitest";
+
+describe("findPdfHref", () => {
+  it("should extract a PDF link from an anchor tag", () => {
+    const html =
+      '<p><a href="https://x.usrfiles.com/ugd/abc_def.pdf" target="_blank">Safety Data Sheet</a></p>';
+    expect(findPdfHref(html)).toBe("https://x.usrfiles.com/ugd/abc_def.pdf");
+  });
+
+  it("should return the first PDF link when several are present", () => {
+    const html =
+      '<a href="https://x.com/first.pdf">SDS</a><a href="https://x.com/second.pdf">Spec</a>';
+    expect(findPdfHref(html)).toBe("https://x.com/first.pdf");
+  });
+
+  it("should return undefined when there is no PDF link", () => {
+    expect(findPdfHref('<a href="https://x.com/page">Info</a>')).toBeUndefined();
+    expect(findPdfHref("")).toBeUndefined();
+  });
+});
 
 describe("md5sum", () => {
   it("should hash strings correctly", () => {

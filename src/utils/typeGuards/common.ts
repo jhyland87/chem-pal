@@ -542,12 +542,13 @@ export function isProduct(product: unknown): product is Product {
  * @source
  */
 export function isCurrencySymbol(symbol: unknown): symbol is CurrencySymbol {
-  return typeof symbol === "string" && Object.values(CURRENCY_CODE_MAP).includes(symbol);
+  // CURRENCY_SYMBOL_MAP maps code -> symbol, so its values are the valid symbols (e.g. "$").
+  return typeof symbol === "string" && Object.values(CURRENCY_SYMBOL_MAP).includes(symbol);
 }
 
 /**
  * Type guard to validate if a value is a valid currency code.
- * Checks if the value is a string and if it is in the CURRENCY_SYMBOL_MAP.
+ * Checks if the value is a string and if it is a known currency code in the CURRENCY_CODE_MAP.
  *
  * @category Typeguards
  * @param code - The value to validate
@@ -565,7 +566,78 @@ export function isCurrencySymbol(symbol: unknown): symbol is CurrencySymbol {
  * @source
  */
 export function isCurrencyCode(code: unknown): code is CurrencyCode {
-  return typeof code === "string" && Object.values(CURRENCY_SYMBOL_MAP).includes(code);
+  // CURRENCY_CODE_MAP maps symbol -> code, so its values are the valid codes (e.g. "USD").
+  return typeof code === "string" && Object.values(CURRENCY_CODE_MAP).includes(code);
+}
+
+/**
+ * Type guard to validate if a value is a known ISO 3166-1 alpha-2 country code.
+ * Checks the value against the country codes defined in the app config (excluding the
+ * catch-all "OTHER", which is not a real country).
+ *
+ * @category Typeguards
+ * @param country - The value to validate
+ * @returns Type predicate indicating if the value is a valid country code
+ * @example
+ * ```typescript
+ * isCountryCode("US") // true
+ * isCountryCode("ZZ") // false
+ * isCountryCode(undefined) // false
+ * ```
+ * @source
+ */
+export function isCountryCode(country: unknown): country is CountryCode {
+  return typeof country === "string" && country !== "OTHER" && country in locations;
+}
+
+/** The valid {@link ShippingRange} values, mirrored at runtime for {@link isShippingRange}. */
+const SHIPPING_RANGES: readonly string[] = ["worldwide", "domestic", "international", "local"];
+
+/**
+ * Type guard to validate if a value is a valid shipping range.
+ *
+ * @category Typeguards
+ * @param shipping - The value to validate
+ * @returns Type predicate indicating if the value is a valid ShippingRange
+ * @example
+ * ```typescript
+ * isShippingRange("worldwide") // true
+ * isShippingRange("galactic") // false
+ * ```
+ * @source
+ */
+export function isShippingRange(shipping: unknown): shipping is ShippingRange {
+  return typeof shipping === "string" && SHIPPING_RANGES.includes(shipping);
+}
+
+/** The valid {@link PaymentMethod} values, mirrored at runtime for {@link isPaymentMethod}. */
+const PAYMENT_METHODS: readonly string[] = [
+  "mastercard",
+  "visa",
+  "paypal",
+  "ach",
+  "cash",
+  "check",
+  "crypto",
+  "moneyorder",
+  "other",
+];
+
+/**
+ * Type guard to validate if a value is a valid payment method.
+ *
+ * @category Typeguards
+ * @param method - The value to validate
+ * @returns Type predicate indicating if the value is a valid PaymentMethod
+ * @example
+ * ```typescript
+ * isPaymentMethod("visa") // true
+ * isPaymentMethod("barter") // false
+ * ```
+ * @source
+ */
+export function isPaymentMethod(method: unknown): method is PaymentMethod {
+  return typeof method === "string" && PAYMENT_METHODS.includes(method);
 }
 
 /**
