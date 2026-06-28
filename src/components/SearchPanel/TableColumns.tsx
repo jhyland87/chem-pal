@@ -10,6 +10,8 @@ import { getCountryName } from "@/helpers/country";
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
+import InfoIcon from "@mui/icons-material/Info";
+import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import { ColumnDef, type CellContext } from "@tanstack/react-table";
 import { hasFlag } from "country-flag-icons";
 import getUnicodeFlagIcon from "country-flag-icons/unicode";
@@ -29,7 +31,8 @@ import styles from "./TableColumns.module.scss";
  * useReactTable({ columns, data, ... });
  * // columns.map(c => c.id) →
  * //   ["expander", "title", "supplier", "country", "shipping",
- * //    "availability", "description", "price", "quantity", "uom"]
+ * //    "availability", "description", "price", "quantity", "uom",
+ * //    "sds", "specs", "formula", "moleweight", "purity", "concentration"]
  * // columns.filter(c => c.meta?.drawer).map(c => c.id) →
  * //   ["supplier", "country", "shipping", "availability", "price"]
  * ```
@@ -289,6 +292,112 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         },
       },
     },
+    {
+      id: "sds",
+      header: "SDS",
+      cell: ({ row }: ProductRow) => {
+        const url = row.original.sdsUrl;
+        if (!url) return null;
+        return (
+          <Link href={url} aria-label="Safety data sheet (SDS)" title="Safety data sheet (SDS)">
+            <LocalHospitalIcon fontSize="small" />
+          </Link>
+        );
+      },
+      enableSorting: false,
+      enableColumnFilter: false,
+      minSize: 40,
+      maxSize: 40,
+      meta: {
+        style: {
+          textAlign: "center",
+        },
+      },
+    },
+    {
+      id: "specs",
+      header: "Specs",
+      cell: ({ row }: ProductRow) => {
+        const url = row.original.specSheetUrl;
+        if (!url) return null;
+        return (
+          <Link href={url} aria-label="Technical specifications" title="Technical specifications">
+            <InfoIcon fontSize="small" />
+          </Link>
+        );
+      },
+      enableSorting: false,
+      enableColumnFilter: false,
+      minSize: 40,
+      maxSize: 40,
+      meta: {
+        style: {
+          textAlign: "center",
+        },
+      },
+    },
+    {
+      id: "formula",
+      header: "Formula",
+      accessorKey: "formula",
+      // The formula is stored with sub/superscripts already converted to
+      // unicode (see ProductBuilder.setFormula), so render it as plain text.
+      cell: (info) => info.getValue(),
+      filterFn: "includeHierarchy",
+      meta: {
+        filterPlaceholder: "Formula...",
+        filterVariant: "text",
+        style: {
+          textAlign: "left",
+        },
+      },
+    },
+    {
+      id: "moleweight",
+      header: "M.W.",
+      accessorKey: "moleweight",
+      cell: (info) => info.getValue(),
+      filterFn: "inNumberRangeHierarchy",
+      meta: {
+        filterPlaceholder: "0 - 1000",
+        filterVariant: "range",
+        style: {
+          textAlign: "left",
+        },
+      },
+    },
+    {
+      id: "purity",
+      header: "Purity",
+      accessorKey: "purity",
+      cell: ({ row }: ProductRow) => {
+        const purity = row.original.purity;
+        if (purity == null) return null;
+        return `${purity}%`;
+      },
+      filterFn: "inNumberRangeHierarchy",
+      meta: {
+        filterPlaceholder: "0 - 100",
+        filterVariant: "range",
+        style: {
+          textAlign: "left",
+        },
+      },
+    },
+    {
+      id: "concentration",
+      header: "Conc.",
+      accessorKey: "concentration",
+      cell: (info) => info.getValue(),
+      filterFn: "includeHierarchy",
+      meta: {
+        filterPlaceholder: "Concentration...",
+        filterVariant: "text",
+        style: {
+          textAlign: "left",
+        },
+      },
+    },
   ];
 }
 
@@ -310,9 +419,13 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
  * //   shipping:     { filterVariant: "select", filterData: [] },
  * //   availability: { filterVariant: "select", filterData: [] },
  * //   description:  { filterVariant: "text",   filterData: [] },
- * //   price:        { filterVariant: "range",  filterData: [] },
- * //   quantity:     { filterVariant: "range",  filterData: [] },
- * //   uom:          { filterVariant: "select", filterData: [] },
+ * //   price:         { filterVariant: "range",  filterData: [] },
+ * //   quantity:      { filterVariant: "range",  filterData: [] },
+ * //   uom:           { filterVariant: "select", filterData: [] },
+ * //   formula:       { filterVariant: "text",   filterData: [] },
+ * //   moleweight:    { filterVariant: "range",  filterData: [] },
+ * //   purity:        { filterVariant: "range",  filterData: [] },
+ * //   concentration: { filterVariant: "text",   filterData: [] },
  * // }
  * ```
  * @source
