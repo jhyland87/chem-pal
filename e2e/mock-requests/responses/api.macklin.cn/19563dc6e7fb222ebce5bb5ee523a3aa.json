@@ -1,0 +1,8 @@
+{
+  "contentType": "application/json",
+  "content": "JTdCJTIyY29kZSUyMiUzQTIwMCUyQyUyMm1lc3NhZ2UlMjIlM0ElMjIlRTYlODglOTAlRTUlOEElOUYlMjIlMkMlMjJkYXRhJTIyJTNBJTVCJTVEJTdE",
+  "_request": {
+    "url": "https://api.macklin.cn/api/product/list?code=G700909&timestampe=17826281758005036702948133706116251845348322432442725765",
+    "method": "GET"
+  }
+}

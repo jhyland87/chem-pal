@@ -178,8 +178,20 @@ export async function setupMockRoutes(page: Page, options: SetupOptions = {}): P
       });
     } else {
       missCount++;
+      // Always surface misses: in "abort" mode an unmocked request is silently dropped, which
+      // quietly changes supplier result counts. A concise host+path line makes it obvious which
+      // supplier request lacks a saved mock; `verbose` adds the full URL + normalized key.
+      const { host, pathname } = (() => {
+        try {
+          const u = new URL(url);
+          return { host: u.host, pathname: u.pathname };
+        } catch {
+          return { host: url, pathname: "" };
+        }
+      })();
+      console.warn(`[MockRoutes] MISS #${missCount}: ${method} ${host}${pathname}`);
       if (verbose) {
-        console.warn(`[MockRoutes] MISS #${missCount}: ${method} ${url}`);
+        console.warn(`  full: ${url}`);
         console.warn(`  normalized: ${normalizedKey}`);
       }
 

@@ -1,0 +1,8 @@
+{
+  "contentType": "application/json",
+  "content": "JTdCJTIyY29kZSUyMiUzQTIwMCUyQyUyMm1lc3NhZ2UlMjIlM0ElMjIlRTYlODglOTAlRTUlOEElOUYlMjIlMkMlMjJkYXRhJTIyJTNBJTVCJTVEJTdE",
+  "_request": {
+    "url": "https://api.macklin.cn/api/product/info",
+    "method": "POST"
+  }
+}

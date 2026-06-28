@@ -1,0 +1,8 @@
+{
+  "contentType": "application/json",
+  "content": "JTdCJTIyY29kZSUyMiUzQTIwMCUyQyUyMm1lc3NhZ2UlMjIlM0ElMjIlRTYlODglOTAlRTUlOEElOUYlMjIlMkMlMjJkYXRhJTIyJTNBJTVCJTVEJTdE",
+  "_request": {
+    "url": "https://api.macklin.cn/api/product/list?code=P700898&timestampe=1782628175478446668602251108903029595360186339863258",
+    "method": "GET"
+  }
+}

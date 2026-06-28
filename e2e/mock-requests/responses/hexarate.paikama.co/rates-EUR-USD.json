@@ -1,0 +1,8 @@
+{
+  "contentType": "application/json",
+  "content": "JTdCJTIyZGF0YSUyMiUzQSU3QiUyMm1pZCUyMiUzQTEuMDglN0QlN0Q=",
+  "_request": {
+    "url": "https://hexarate.paikama.co/api/rates/latest/EUR?target=USD",
+    "method": "GET"
+  }
+}

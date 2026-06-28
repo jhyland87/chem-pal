@@ -1,0 +1,8 @@
+{
+  "contentType": "application/json",
+  "content": "JTdCJTIyY29kZSUyMiUzQTIwMCUyQyUyMm1lc3NhZ2UlMjIlM0ElMjIlRTYlODglOTAlRTUlOEElOUYlMjIlMkMlMjJkYXRhJTIyJTNBJTVCJTVEJTdE",
+  "_request": {
+    "url": "https://api.macklin.cn/api/product/list?code=P795388&timestampe=178262535279816637509883302096629741012379147470128403795",
+    "method": "GET"
+  }
+}

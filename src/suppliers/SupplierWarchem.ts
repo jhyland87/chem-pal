@@ -438,7 +438,7 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
    * "Masa molowa" (molar mass, e.g. "261,06 g/mol").
    *
    * @param builder - The ProductBuilder to enrich.
-   * @param dom - The parsed product page Document.
+   * @param productPageDom - The parsed product page Document.
    * @returns Nothing; mutates the builder in place.
    * @example
    * ```typescript

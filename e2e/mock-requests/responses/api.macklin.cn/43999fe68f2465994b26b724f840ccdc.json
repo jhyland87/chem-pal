@@ -1,0 +1,8 @@
+{
+  "contentType": "application/json",
+  "content": "JTdCJTIyY29kZSUyMiUzQTIwMCUyQyUyMm1lc3NhZ2UlMjIlM0ElMjIlRTYlODglOTAlRTUlOEElOUYlMjIlMkMlMjJkYXRhJTIyJTNBJTVCJTVEJTdE",
+  "_request": {
+    "url": "https://api.macklin.cn/api/product/list?code=P923877&timestampe=17826253530001663750988330209662972209934049603109066",
+    "method": "GET"
+  }
+}
