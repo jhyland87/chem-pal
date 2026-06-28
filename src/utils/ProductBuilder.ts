@@ -407,9 +407,11 @@ export class ProductBuilder<T extends Product> {
       return this;
     }
     const trimmed = formula.trim();
-    // A clean molecular formula with no markup (including ones containing "1"
-    // such as "C12H22O11", which findFormulaInHtml mishandles) is stored as-is.
-    if (!trimmed.includes("<sub>") && isMoleForm(trimmed)) {
+    // Store as-is when the value is already a finished formula: either a clean ASCII formula
+    // (incl. ones containing "1" like "C12H22O11", which findFormulaInHtml mishandles) or one
+    // already display-formatted with unicode subscripts and hydrate notation
+    // (e.g. "NH₄NaC₄H₄O₆ x 4H₂O"). Re-parsing those would corrupt them.
+    if (!trimmed.includes("<sub>") && (isMoleForm(trimmed) || /[₀-₉]/.test(trimmed))) {
       this.product.formula = trimmed;
       return this;
     }

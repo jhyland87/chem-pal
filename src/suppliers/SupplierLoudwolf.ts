@@ -1,4 +1,3 @@
-import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { mapDefined } from "@/helpers/utils";
@@ -270,21 +269,22 @@ export class SupplierLoudwolf extends SupplierBase<Partial<Product>, Product> im
 
       const dataRows = Array.from(dataGrid || []).map((n) => n.innerText);
 
-      const datagridInfo = chunk(dataRows, 2).reduce<Partial<Product>>((acc, [key, value]) => {
+      // Apply each spec row straight to the builder via its validating setter.
+      // (setCAS extracts the number from the cell text itself.)
+      for (const [key, value] of chunk(dataRows, 2)) {
         if (key.match(/CAS/i)) {
-          acc.cas = findCAS(value.trim()) ?? undefined;
+          builder.setCAS(value);
         } else if (key.match(/TOTAL [A-Z]+ OF PRODUCT/i)) {
           const qty = parseQuantity(value);
           if (qty) {
-            Object.assign(acc, qty);
+            builder.setQuantity(qty);
           }
         } else if (key.match(/GRADE/i)) {
-          acc.grade = value;
+          builder.setGrade(value);
         }
-        return acc;
-      }, {});
+      }
 
-      return builder.setData(datagridInfo);
+      return builder;
     });
   }
 
