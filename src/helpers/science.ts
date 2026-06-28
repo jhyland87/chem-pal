@@ -192,7 +192,7 @@ const extractPurity = (lines: string[]): number | undefined => {
  * inside descriptions and additional-info accordions as loosely-labelled bullet lists — labels and
  * separators vary wildly (`MW -`, `Molecular mass :`, `Formula:`), so each field is matched
  * tolerantly and validated before being returned. CAS numbers are intentionally left to
- * {@link findCAS}, which already searches free text robustly.
+ * `findCAS` (in helpers/cas), which already searches free text robustly.
  * @category Helpers
  * @param html - Raw product copy, possibly containing HTML markup
  * @returns The chemical properties found; fields absent or invalid are omitted

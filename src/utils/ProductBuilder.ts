@@ -139,7 +139,10 @@ export class ProductBuilder<T extends Product> {
       shippingInformation: (v) => this.setShippingInformation(v),
       attributes: (v) => this.setAttributes(v),
       availability: (v) => {
-        if (typeof v === "string" || typeof v === "boolean") this.setAvailability(v);
+        // setAvailability is overloaded per type, so a `string | boolean` union won't resolve —
+        // narrow to a single type in each branch before calling.
+        if (typeof v === "string") this.setAvailability(v);
+        else if (typeof v === "boolean") this.setAvailability(v);
       },
       thumbnail: (v) => this.setThumbnail(v),
       imageURL: (v) => this.setImage(v),

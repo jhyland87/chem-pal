@@ -485,15 +485,23 @@ export class SupplierAmbeed
       request_type: Array.from(new Set([sdsType, SDS_TYPE_FALLBACK])),
     };
 
-    const response = await this.httpPostJson({
-      path: "webapi/v1/getPmsSdsByAms",
-      params: {
-        params: btoa(JSON.stringify(reqBody)),
-      },
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-      },
-    });
+    // SDS URLs are enrichment, not core data — a failed/blocked request must not take down the
+    // whole supplier. Degrade to "no SDS links" instead of throwing.
+    let response: unknown;
+    try {
+      response = await this.httpPostJson({
+        path: "webapi/v1/getPmsSdsByAms",
+        params: {
+          params: btoa(JSON.stringify(reqBody)),
+        },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        },
+      });
+    } catch (error) {
+      this.logger.warn("Ambeed SDS request failed; continuing without SDS URLs", { error, amNos });
+      return {};
+    }
 
     if (!isAmbeedGetPmsSdsByAmsResponse(response)) {
       this.logger.warn("Invalid Ambeed SDS response", { amNos, response });
@@ -608,7 +616,7 @@ export class SupplierAmbeed
    *
    * This conversion is just a simple character map lookup, which is stored at this.encodedPriceChars.
    *
-   * @param encoded - The encoded price string
+   * @param str - The encoded price string
    * @returns The decoded price string
    * @example
    * ```js

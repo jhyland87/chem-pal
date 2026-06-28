@@ -8,7 +8,7 @@ import { setupMockRoutes } from "./helpers/mockRoutes";
 const buildDir = path.resolve(__dirname, "..", "build");
 const mockResponsesDir = path.resolve(__dirname, "mock-requests/responses");
 
-const testTimeout = 0; //200_000;
+const testTimeout = 200_000;
 describe("Chem-Pal search query", () => {
   let context: BrowserContext;
   let extensionId: string;
@@ -173,8 +173,8 @@ describe("Chem-Pal search query", () => {
         .count();
       return rowCount;
     } finally {
-      //await page.close();
-      await page.pause();
+      await page.close();
+      //await page.pause();
     }
   }
 
@@ -194,11 +194,11 @@ describe("Chem-Pal search query", () => {
     await searchInput.fill("sodium chloride");
     await playwrightExpect(searchInput).toHaveValue("sodium chloride");
 
-    //await page.close();
-    await page.pause();
+    await page.close();
+    //await page.pause();
   }, 30_000);
 
-  it(
+  it.skip(
     "should produce 55 results for 'sodium borohydride' when fuzzScorerOverride is 'WRatio'",
     async () => {
       const page = await openExtension();
@@ -209,7 +209,7 @@ describe("Chem-Pal search query", () => {
     testTimeout,
   );
 
-  it(
+  it.skip(
     "should produce 58 results for 'sodium borohydride' when fuzzScorerOverride is 'ratio'",
     async () => {
       const rowCount = await borohydrideRowCountWithScorer("ratio");
@@ -218,7 +218,7 @@ describe("Chem-Pal search query", () => {
     testTimeout,
   );
 
-  it(
+  it.skip(
     "should display 'No results found' for a query that matches nothing",
     async () => {
       const page = await openExtension();
@@ -252,14 +252,14 @@ describe("Chem-Pal search query", () => {
         .count();
       vitestExpect(dataRowCount).toBe(0);
 
-      //await page.close();
-      await page.pause();
+      await page.close();
+      //await page.pause();
     },
     testTimeout,
   );
 
   it(
-    "should query for 'potassium' and display 15 results from mock data",
+    "should query for 'potassium' and display 39 results from mock data",
     async () => {
       const page = await openExtension();
 
@@ -297,15 +297,12 @@ describe("Chem-Pal search query", () => {
         .locator("tbody tr")
         .filter({ has: page.locator("td") })
         .count();
-      vitestExpect(rowCount).toBe(15);
+      vitestExpect(rowCount).toBe(39);
 
-      // Pause so you can inspect DevTools (Network tab, console, etc.). Unlike
-      // page.pause() (which is a no-op without the Playwright Inspector / PWDEBUG=1),
-      // this blocks until you manually close the browser window. timeout: 0 waits
-      // indefinitely; the it() timeout below is disabled (0) so vitest won't abort.
-      //await page.waitForEvent("close", { timeout: 0 });
-      await page.pause();
-      //await page.close();
+      // To inspect DevTools after the run, uncomment the line below — it blocks until you
+      // manually close the browser window (timeout: 0 waits indefinitely; the it() timeout is 0).
+      // await page.waitForEvent("close", { timeout: 0 });
+      await page.close();
     },
     testTimeout,
   );

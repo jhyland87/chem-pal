@@ -1,0 +1,8 @@
+{
+  "contentType": "application/json",
+  "content": "JTdCJTIyc291cmNlJTIyJTNBMTAwMCUyQyUyMmNvZGUlMjIlM0EyMDAlMkMlMjJsYW5nJTIyJTNBJTIyemhfQ04lMjIlMkMlMjJ2YWx1ZSUyMiUzQSUyMlVuaXRlZCUyMFN0YXRlcyU3Q1VTRCU3Q0FtZXJpY2FzJTIyJTJDJTIydGltZSUyMiUzQSUyMjIwMjYwNjI4MTM0MjEzNzk5OTc3JTIyJTdE",
+  "_request": {
+    "url": "https://www.ambeed.com/webapi/v1/countrycookie",
+    "method": "GET"
+  }
+}

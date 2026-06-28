@@ -1,0 +1,8 @@
+{
+  "contentType": "application/json",
+  "content": "JTdCJTIyYXBwcyUyMiUzQSU3QiUyMjEzODBiNzAzLWNlODEtZmYwNS1mMTE1LTM5NTcxZDk0ZGZjZCUyMiUzQSU3QiUyMmluc3RhbmNlJTIyJTNBJTIybW9jay1pbnN0YW5jZSUyMiUyQyUyMmludElkJTIyJTNBMSUyQyUyMmFjY2Vzc1Rva2VuJTIyJTNBJTIybW9jay1hY2Nlc3MtdG9rZW4lMjIlN0QlN0QlN0Q=",
+  "_request": {
+    "url": "https://www.ftfscientific.com/_api/v1/access-tokens",
+    "method": "GET"
+  }
+}

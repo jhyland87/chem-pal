@@ -489,14 +489,23 @@ export class SupplierS3Chemicals
 
       // `template=ajax` returns the same `.product--details` block without
       // the surrounding layout — roughly a 95% payload reduction per request.
-      const initialResponse = await this.httpGetHtml({
-        path: baseUrl,
-        params: { template: "ajax" },
-      });
+      // The detail page only *enriches* a product (CAS, formula, SDS, variants); the search
+      // listing already provided title/price/quantity, so a failed/blocked detail fetch keeps the
+      // product with its listing data instead of dropping the whole thing.
+      let initialResponse: Maybe<string>;
+      try {
+        initialResponse = await this.httpGetHtml({
+          path: baseUrl,
+          params: { template: "ajax" },
+        });
+      } catch (error) {
+        this.logger.warn("S3 detail fetch failed; keeping search-listing data", { error, builder });
+        return builder;
+      }
 
       if (!initialResponse) {
         this.logger.warn("No product response", { builder });
-        return;
+        return builder;
       }
 
       const initialDom = createDOM(initialResponse);
