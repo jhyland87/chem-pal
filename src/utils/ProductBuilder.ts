@@ -755,7 +755,10 @@ export class ProductBuilder<T extends Product> {
    */
   setSupplierCountry(country: unknown): ProductBuilder<T> {
     if (isCountryCode(country)) {
+      console.log("IS COUNTRY CODE", country);
       this.product.supplierCountry = country;
+    } else {
+      console.log("NOT COUNTRY CODE", country);
     }
     return this;
   }

@@ -1,4 +1,3 @@
-import { locations } from "@/../config.json";
 import { CountryFlagTooltip } from "@/components/StyledComponents";
 import { default as Link } from "@/components/TabLink";
 import {
@@ -7,6 +6,7 @@ import {
   SUPPLIER_COUNTRY_OPTIONS,
 } from "@/constants/common";
 import { omit } from "@/helpers/collectionUtils";
+import { getCountryName } from "@/helpers/country";
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
@@ -14,10 +14,6 @@ import { ColumnDef, type CellContext } from "@tanstack/react-table";
 import { hasFlag } from "country-flag-icons";
 import getUnicodeFlagIcon from "country-flag-icons/unicode";
 import styles from "./TableColumns.module.scss";
-
-// Narrows a runtime string to a known location key so `locations[code]` can be
-// indexed without a cast.
-const isLocationCode = (code: string): code is keyof typeof locations => code in locations;
 
 /**
  * Defines the column configuration for the product results table. Each
@@ -135,7 +131,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         const country = row.original.supplierCountry;
         if (!country) return null;
         if (!hasFlag(country)) return country;
-        const countryName = isLocationCode(country) ? locations[country].name : country;
+        const countryName = getCountryName(country) ?? country;
         return (
           <CountryFlagTooltip title={countryName} placement="top">
             <span>{getUnicodeFlagIcon(country)}</span>

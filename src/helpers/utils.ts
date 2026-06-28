@@ -1,3 +1,4 @@
+import { languages as iso639Languages } from "countries-list";
 import { md5 } from "js-md5";
 import TurndownService from "turndown";
 
@@ -506,6 +507,29 @@ export function getUserLanguage(): string {
     return "en-US";
   }
   return chrome.i18n.getUILanguage();
+}
+
+/**
+ * Resolves a locale code to a human-readable language name using the
+ * `countries-list` language data. The native name is preferred (e.g. "Deutsch"),
+ * falling back to the English name and finally the raw code.
+ * @param locale - A locale or language code, e.g. `"de-DE"` or `"de"`; undefined yields undefined
+ * @returns The language's display name, or undefined when no locale is given
+ * @example
+ * ```typescript
+ * getLanguageName("en-US") // Returns "English"
+ * getLanguageName("de-DE") // Returns "Deutsch"
+ * getLanguageName(undefined) // Returns undefined
+ * ```
+ * @source
+ */
+export function getLanguageName(locale?: string): string | undefined {
+  if (!locale) {
+    return undefined;
+  }
+  const base = locale.split("-")[0].toLowerCase();
+  const entry = (iso639Languages as Record<string, { name: string; native: string }>)[base];
+  return entry?.native ?? entry?.name ?? locale;
 }
 
 /**
