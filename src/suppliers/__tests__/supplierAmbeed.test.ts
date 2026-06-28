@@ -8,7 +8,10 @@ import sdsFixture from "../__fixtures__/ambeed/sds-response.json";
 type AmbeedSignSupplier = SupplierAmbeed & {
   calculateSignSecret: () => string;
   getSign: (data: Record<string, unknown> | string, mode: 0 | 1) => string;
-  makeProductPriceParams: (proid: string) => string;
+  makeSignedParams: (
+    signedFields: Record<string, unknown>,
+    extraFields?: Record<string, unknown>,
+  ) => string;
 };
 
 type AmbeedSdsSupplier = {
@@ -48,8 +51,8 @@ describe("SupplierAmbeed signing", () => {
     expect(supplier.getSign(json, 0)).toBe(md5sum(json + supplier.calculateSignSecret()));
   });
 
-  it("makeProductPriceParams includes a computed sign", () => {
-    const encoded = supplier.makeProductPriceParams("3255116");
+  it("makeSignedParams (product_price) signs timestamp and proid", () => {
+    const encoded = supplier.makeSignedParams({ proid: "3255116" });
 
     const decoded = JSON.parse(atob(encoded)) as {
       timestamp: number;
@@ -62,6 +65,24 @@ describe("SupplierAmbeed signing", () => {
     expect(decoded.__).toEqual(["timestamp", "proid"]);
     expect(decoded._).toMatch(/^[A-Za-z0-9+/]+=*$/);
     expect(typeof decoded.timestamp).toBe("number");
+  });
+
+  it("makeSignedParams (product_stock) signs bd and carries proid unsigned", () => {
+    const encoded = supplier.makeSignedParams({ bd: "BD21445" }, { proid: "P000325570" });
+
+    const decoded = JSON.parse(atob(encoded)) as {
+      timestamp: number;
+      bd: string;
+      proid: string;
+      _: string;
+      __: string[];
+    };
+
+    expect(decoded.bd).toBe("BD21445");
+    expect(decoded.proid).toBe("P000325570");
+    // Only the signed fields are listed in __; proid rides along unsigned.
+    expect(decoded.__).toEqual(["timestamp", "bd"]);
+    expect(decoded._).toMatch(/^[A-Za-z0-9+/]+=*$/);
   });
 });
 

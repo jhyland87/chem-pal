@@ -1,4 +1,4 @@
-import { CACHE } from "@/constants/common";
+import { AVAILABILITY, CACHE } from "@/constants/common";
 import { getCookie } from "@/helpers/cookies";
 import { getUserCountryName } from "@/helpers/country";
 import { parsePrice } from "@/helpers/currency";
@@ -18,6 +18,7 @@ import {
   assertIsAmbeedProductListResponse,
   isAmbeedGetPmsSdsByAmsResponse,
   isAmbeedProductPriceResponse,
+  isAmbeedProductStockResponse,
 } from "@/utils/typeGuards/ambeed";
 import type { JsonValue } from "type-fest";
 import { SupplierBase } from "./SupplierBase";
@@ -542,37 +543,39 @@ export class SupplierAmbeed
   }
 
   /**
-   * Makes the query params for the Ambeed API for product price.
-   * @param proid - The product ID
-   * @returns The query params
+   * Builds a base64-encoded, signed Ambeed API `params` payload. The `timestamp`
+   * is injected and signed alongside `signedFields`; the signed keys are listed
+   * in `__`. Any `extraFields` ride along unsigned (e.g. `proid` on the stock
+   * request). Used by both `product_price` and `product_stock`.
+   * @param signedFields - Fields to sign (besides the injected `timestamp`)
+   * @param extraFields - Additional fields included unsigned in the payload
+   * @param timestamp - Cache-busting timestamp (defaults to now)
+   * @returns The base64-encoded `params` string
    * @example
    * ```js
-   * console.log(this.makeProductPriceParams("P000640099"));
-   * // "btoa(JSON.stringify({
-   * //   timestamp: "m5x2k1abc4",
-   * //   proid: "P000640099",
-   * //   _: this.getSign({
-   * //     timestamp: "m5x2k1abc4",
-   * //     proid: "P000640099",
-   * //   }, 1),
-   * //   __: ["timestamp", "proid"]
-   * // }))"
+   * // product_price
+   * this.makeSignedParams({ proid: "P000640099" });
+   * // btoa(JSON.stringify({ timestamp, proid, _: "<sign>", __: ["timestamp", "proid"] }))
+   * // product_stock
+   * this.makeSignedParams({ bd: "BD21445" }, { proid: "P000325570" });
+   * // btoa(JSON.stringify({ timestamp, bd, _: "<sign>", __: ["timestamp", "bd"], proid }))
    * ```
    * @source
    */
-  protected makeProductPriceParams(proid: string, timestamp: number = Date.now()): Base64String {
-    const payload = {
-      timestamp,
-      proid,
-    };
-
-    const encodedData = {
-      ...payload,
-      _: this.getSign(payload, 1),
-      __: ["timestamp", "proid"],
-    };
-
-    return btoa(JSON.stringify(encodedData)) as Base64String;
+  protected makeSignedParams(
+    signedFields: Record<string, JsonValue>,
+    extraFields: Record<string, JsonValue> = {},
+    timestamp: number = Date.now(),
+  ): Base64String {
+    const signed = { timestamp, ...signedFields };
+    return btoa(
+      JSON.stringify({
+        ...signed,
+        _: this.getSign(signed, 1),
+        __: Object.keys(signed),
+        ...extraFields,
+      }),
+    ) as Base64String;
   }
 
   /**
@@ -737,6 +740,8 @@ export class SupplierAmbeed
     return {
       ...product,
       /* eslint-disable */
+      p_bd: product.p_bd ?? "",
+      p_id: product.p_id ?? "",
       p_name_en: product.p_name_en?.replace(/<\/?em>/g, ""),
       p_proper_name3: product.p_proper_name3?.replace(/<\/?em>/g, ""),
       p_cas: product.p_cas?.replace(/<\/?em>/g, ""),
@@ -899,6 +904,7 @@ export class SupplierAmbeed
         .setData(mainVariant as Partial<Product>)
         .setBasicInfo(product.p_proper_name3, `/products/${product.s_url}`, this.supplierName)
         .setID(product.p_id)
+        .setSku(product.p_bd)
         .setUUID(product.p_am)
         .setImage(product.p_proimg)
         .setPurity(product.p_purity)
@@ -988,7 +994,8 @@ export class SupplierAmbeed
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     // /webapi/v1/product_price?params=btoa(JSON.stringify({ proid: "P000640099" }))
-    const productPriceParams = this.makeProductPriceParams(product.get("id"));
+    const proid = String(product.get("id"));
+    const productPriceParams = this.makeSignedParams({ proid });
 
     const productPriceResponse = await this.httpPostJson({
       path: `/webapi/v1/product_price`,
@@ -1014,9 +1021,115 @@ export class SupplierAmbeed
 
     const variants = this.getPriceVariants(productPriceResponse.value);
     this.logger.log("Ambeed product price variants", variants);
+
+    const stock = await this.getProductStock(proid, String(product.get("sku")));
+    if (stock) {
+      this.applyStockAvailability(product, stock);
+    }
+
     return product;
   }
 
+  /**
+   * Fetches per-size stock for a product from `webapi/product_stock` (note: this
+   * endpoint is unversioned, unlike `product_price`). Signs the batch id (`bd`)
+   * and carries the product id (`proid`) unsigned. Stock is enrichment, not core
+   * data, so a failed/blocked request degrades to "no stock info" rather than
+   * throwing and taking down the whole product.
+   * @param proid - The product ID (`p_id`)
+   * @param bd - The batch ID (`p_bd`)
+   * @returns The array of per-size stock rows, or undefined if the request fails or is invalid
+   * @example
+   * ```js
+   * const stock = await this.getProductStock("P000325570", "BD21445");
+   * console.log(stock?.[0]); // { size: "25g", has_stock: 2, ... }
+   * ```
+   * @source
+   */
+  private async getProductStock(
+    proid: string,
+    bd: string,
+  ): Promise<AmbeedProductStockResponse["value"] | undefined> {
+    const productStockParams = this.makeSignedParams({ bd }, { proid });
+
+    let response: unknown;
+    try {
+      response = await this.httpPostJson({
+        path: "/webapi/product_stock",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        },
+        body: new URLSearchParams({
+          params: productStockParams,
+          _xsrf: this.xsrfToken,
+        }).toString(),
+      });
+    } catch (error) {
+      this.logger.warn("Ambeed stock request failed; continuing without stock", {
+        error,
+        proid,
+        bd,
+      });
+      return;
+    }
+
+    if (!isAmbeedProductStockResponse(response)) {
+      this.logger.warn("Invalid Ambeed product stock response", {
+        productStockParams,
+        response,
+      });
+      return;
+    }
+
+    return response.value;
+  }
+
+  /**
+   * Applies stock availability to a product's variants and to the product
+   * itself. Builds a set of in-stock size keys (`${quantity}${uom}`) from rows
+   * with `has_stock > 0`, then marks each variant IN_STOCK/OUT_OF_STOCK by
+   * matching its quantity+uom. The product is IN_STOCK if any variant is.
+   * @param product - The product builder to update
+   * @param stock - The per-size stock rows from `getProductStock`
+   * @returns The same product builder, for chaining
+   * @example
+   * ```js
+   * this.applyStockAvailability(builder, [{ size: "25g", has_stock: 2, ... }]);
+   * // builder's "25g" variant -> AVAILABILITY.IN_STOCK
+   * ```
+   * @source
+   */
+  private applyStockAvailability(
+    product: ProductBuilder<Product>,
+    stock: AmbeedProductStockResponse["value"],
+  ): ProductBuilder<Product> {
+    const inStockSizes = new Set<string>();
+    for (const row of stock) {
+      if (typeof row.has_stock === "number" && row.has_stock > 0) {
+        const parsed = parseQuantity(row.size);
+        if (parsed) {
+          inStockSizes.add(`${parsed.quantity}${parsed.uom}`);
+        }
+      }
+    }
+
+    const variants = product.get("variants");
+    if (!Array.isArray(variants)) {
+      return product;
+    }
+
+    let anyInStock = false;
+    const updated = variants.map((variant) => {
+      const inStock = inStockSizes.has(`${variant.quantity}${variant.uom}`);
+      anyInStock ||= inStock;
+      return {
+        ...variant,
+        availability: inStock ? AVAILABILITY.IN_STOCK : AVAILABILITY.OUT_OF_STOCK,
+      };
+    });
+
+    return product.setVariants(updated).setAvailability(anyInStock);
+  }
   /**
    * Fetches the product matched by a CAS number along with Ambeed's recommended
    * products for that CAS.
