@@ -243,6 +243,11 @@ jobs:
             EXTRA_ARGS="--target ${{ github.sha }}"
           fi
 
+          # Flag prerelease tags (any with a suffix like -beta.1 / -rc.1) as GitHub pre-releases.
+          case "$TAG" in
+            *-*) EXTRA_ARGS="$EXTRA_ARGS --prerelease" ;;
+          esac
+
           gh release create "$TAG" \
             --title "$TAG" \
             --generate-notes \
