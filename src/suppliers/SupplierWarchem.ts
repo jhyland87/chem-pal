@@ -5,7 +5,6 @@ import { parseQuantity } from "@/helpers/quantity";
 import { createDOM } from "@/helpers/request";
 import { firstMap, mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
-import { isCAS } from "@/utils/typeGuards/common";
 import priceParser from "price-parser";
 import { SupplierBase } from "./SupplierBase";
 /**
@@ -227,9 +226,9 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
 
       builder
         .setBasicInfo(productName, productUrl, this.supplierName)
-        .setID(productId ?? "")
-        .setImage(itemDiv?.querySelector('link[itemprop="image"]')?.getAttribute("href") ?? "")
-        .setSku(itemDiv?.querySelector('meta[itemprop="sku"]')?.getAttribute("content") ?? "")
+        .setID(productId)
+        .setImage(itemDiv?.querySelector('link[itemprop="image"]')?.getAttribute("href"))
+        .setSku(itemDiv?.querySelector('meta[itemprop="sku"]')?.getAttribute("content"))
         .setAvailability(
           this.getAvailabilityFromLink(
             itemDiv?.querySelector('link[itemprop="availability"]')?.getAttribute("href") ?? "",
@@ -339,43 +338,29 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
         `${productMeta["product:price:amount"]} ${productMeta["product:price:currency"]}`,
       );
 
-      if (priceParsed?.currency) {
-        product.setCurrencySymbol(priceParsed?.currency?.symbols?.at(0));
-      }
+      product.setCurrencySymbol(priceParsed?.currency?.symbols?.at(0));
 
       if (productMeta["product:price:amount"]) {
         product.setPrice(productMeta["product:price:amount"]);
       }
 
-      if (productMeta["product:price:currency"]) {
-        product.setCurrencyCode(productMeta["product:price:currency"]);
-      }
+      product.setCurrencyCode(productMeta["product:price:currency"]);
 
-      if (productMeta["product:retailer_item_id"]) {
-        product.setID(productMeta["product:retailer_item_id"]);
-      }
-
-      if (productMeta["og:description"]) {
-        product.setDescription(productMeta["og:description"]);
-      }
-
-      if (productMeta["og:image"]) {
-        product.setImage(productMeta["og:image"]);
-      }
+      product.setID(productMeta["product:retailer_item_id"]);
+      product.setDescription(productMeta["og:description"]);
+      product.setImage(productMeta["og:image"]);
 
       if (productMeta["product:availability"]) {
         product.setAvailability(productMeta["product:availability"]);
       }
 
-      // findCAS throws on undefined input, so drop any absent meta values first.
-      const cas = firstMap(
-        (p) => findCAS(p),
-        [productMeta["og:title"], productMeta["og:description"]].filter(Boolean),
+      // Sometimes the CAS can be found in the products title or description.
+      product.setCAS(
+        firstMap(
+          (p) => findCAS(p),
+          [productMeta["og:title"], productMeta["og:description"]].filter(Boolean),
+        ),
       );
-
-      if (isCAS(cas)) {
-        product.setCAS(cas);
-      }
 
       const qtyRaw = parsedHTML.querySelector(".CechaProduktu label span")?.textContent;
       if (qtyRaw) {
@@ -384,6 +369,8 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
           product.setQuantity(qty);
         }
       }
+
+      this.setDataFileUrls(product, parsedHTML);
 
       // The meta tags only describe the default pack size; the other sizes and
       // their prices live in the inline `opcje` script + radio inputs.
@@ -405,6 +392,44 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
   }
 
   /**
+   * Set the SDS and specsheet URLs from the product page.
+   * The labels are usually "Karta charakterystyki SDS" for SDS link,
+   * and "Specyfikacja jakościowa SJ" for specsheet link.
+   *
+   * @param product - The ProductBuilder to set the URLs for
+   * @param productPageDom - The product page Document
+   * @returns Nothing; mutates the builder in place.
+   * @example
+   * ```typescript
+   * this.setDataFileUrls(builder, createDOM(productPageHtml));
+   * // builder.get("specSheetUrl") -> "https://example.com/spec-sheet.pdf"
+   * // builder.get("sdsUrl") -> "https://example.com/sds.pdf"
+   * ```
+   * @source
+   */
+  private setDataFileUrls(product: ProductBuilder<Product>, productPageDom: Document): void {
+    const links = Array.from(
+      productPageDom.querySelectorAll(
+        '#TresciZakladek ul li:has(>span.opisPlikLink) > a[rel="nofollow"]',
+      ),
+    );
+
+    this.logger.debug(`Found ${links.length} links when searching for data files`, { links });
+
+    for (const link of links) {
+      const href = link.getAttribute("href");
+      const text = link.textContent;
+      if (href && text) {
+        if (text.match(/\sSJ$/)) {
+          product.setSpecSheetUrl(href);
+        } else if (text.match(/\sSDS$/)) {
+          product.setSDSUrl(href);
+        }
+      }
+    }
+  }
+
+  /**
    * Reads Warchem's product "description" spec table — a two-column
    * label/value `<tr>` grid — and applies the structured fields it carries:
    * the CAS number (a far more reliable source than scraping the title or
@@ -422,12 +447,16 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
    * ```
    * @source
    */
-  private applyDataTable(builder: ProductBuilder<Product>, dom: Document): void {
-    const rows = dom.querySelectorAll(
-      '#TresciZakladek > div[itemprop="description"] > div.FormatEdytor > table > tbody > tr',
+  private applyDataTable(builder: ProductBuilder<Product>, productPageDom: Document): void {
+    const rows = Array.from(
+      productPageDom.querySelectorAll(
+        '#TresciZakladek > div[itemprop="description"] > div.FormatEdytor > table > tbody > tr',
+      ),
     );
 
-    for (const row of Array.from(rows)) {
+    this.logger.debug(`Found ${rows.length} rows when searching for data table`, { rows });
+
+    for (const row of rows) {
       const cells = row.querySelectorAll("td");
       const label = cells[0]?.textContent?.replace(/\s+/g, " ").replace(/:\s*$/, "").trim();
       const value = cells[1]?.textContent?.replace(/\s+/g, " ").trim();
@@ -436,18 +465,27 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
       }
 
       if (label.startsWith("Numer CAS")) {
+        // This should override the CAS that may have been set by a match in the title/description
+        // if there was one.
         const cas = findCAS(value);
-        if (cas) builder.setCAS(cas);
+        if (cas) {
+          if (builder.get("cas") && builder.get("cas") !== cas) {
+            this.logger.warn(
+              `There was a CAS # found in the title or description (${builder.get("cas")}), ` +
+                `but it differs from the one found in the Numer Cas row of the data ` +
+                `table(${cas}).... Weird. Prioritizing the datatable value.`,
+              { builder, datatableCas: cas, parsedCas: value },
+            );
+          }
+          builder.setCAS(cas);
+        }
       } else if (label.startsWith("Wzór chemiczny")) {
         // The table value is already display-formatted (unicode subscripts and
         // hydrate notation), so store it verbatim rather than re-parsing it.
         builder.setData({ formula: value });
       } else if (label.startsWith("Masa molowa")) {
         // e.g. "261,06 g/mol" — Polish decimal comma, strip the unit.
-        const mass = Number(value.replace(/[^\d.,]/g, "").replace(",", "."));
-        if (!Number.isNaN(mass) && mass > 0) {
-          builder.setMoleweight(mass);
-        }
+        builder.setMoleweight(Number(value.replace(/[^\d.,]/g, "").replace(",", ".")));
       }
     }
   }
@@ -467,7 +505,7 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
    * multi-group products use composite `opcje` keys and are skipped.
    *
    * @param html - The raw product page HTML (for the inline `opcje` script).
-   * @param dom - The parsed product page Document (for the radio inputs).
+   * @param productPageDom - The parsed product page Document (for the radio inputs).
    * @returns The parsed variants in DOM (ascending-size) order; empty when the
    *   product exposes no size options.
    * @example
@@ -477,35 +515,38 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
    * ```
    * @source
    */
-  private parseVariants(html: string, dom: Document): Partial<Variant>[] {
+  private parseVariants(html: string, productPageDom: Document): Partial<Variant>[] {
     // Each variant's prices are emitted inline as
     //   opcje['x<feature>-<value>'] = 'netto;brutto;poprzednia_netto;poprzednia_brutto;katalogowa'
     // (quotes may be single or double). Named groups label each PLN field; only
     // the gross (brutto) price is shown, but the rest document the format.
     const opcjePattern = new RegExp(
-      // key: opcje['x<feature>-<value>']
-      "opcje\\[['\"]x(?<featureId>\\d+)-(?<valueId>\\d+)['\"]]\\s*=\\s*" +
-        // value: the five ;-separated PLN price fields
-        "['\"](?<netPrice>\\d+(?:\\.\\d+)?);" +
+      "opcje\\[(?<q1>['\"])(?<optionKey>x(?<featureId>\\d+)-(?<valueId>\\d+))\\k<q1>\\]\\s*=\\s*" +
+        "(?<q2>['\"])(?<netPrice>\\d+(?:\\.\\d+)?);" +
         "(?<grossPrice>\\d+(?:\\.\\d+)?);" +
         "(?<previousNetPrice>\\d+(?:\\.\\d+)?);" +
         "(?<previousGrossPrice>\\d+(?:\\.\\d+)?);" +
-        "(?<catalogPrice>\\d+(?:\\.\\d+)?)['\"]",
+        "(?<catalogPrice>\\d+(?:\\.\\d+)?)\\k<q2>;",
       "g",
     );
 
+    const parsedJsPrices = Array.from(html.matchAll(opcjePattern));
+    this.logger.debug(`Found ${parsedJsPrices.length} matches when searching for prices`, {
+      parsedJsPrices,
+    });
+
     const grossPriceByKey: Record<string, number> = {};
-    for (const match of html.matchAll(opcjePattern)) {
-      const { featureId, valueId, grossPrice } = match.groups ?? {};
+    for (const match of parsedJsPrices) {
+      const { optionKey, featureId, valueId, grossPrice } = match.groups ?? {};
       if (featureId && valueId && grossPrice) {
-        grossPriceByKey[`x${featureId}-${valueId}`] = Number(grossPrice);
+        grossPriceByKey[optionKey] = Number(grossPrice);
       }
     }
     if (Object.keys(grossPriceByKey).length === 0) {
       return [];
     }
 
-    const radios = dom.querySelectorAll('.CechaWyboru input[type="radio"]');
+    const radios = productPageDom.querySelectorAll('.CechaWyboru input[type="radio"]');
     return mapDefined(Array.from(radios), (radio: Element) => {
       const cecha = radio.getAttribute("data-id-cechy");
       const id = radio.getAttribute("data-id");

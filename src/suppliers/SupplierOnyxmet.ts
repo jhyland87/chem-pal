@@ -270,7 +270,7 @@ export class SupplierOnyxmet
       return builder
         .setPricing(price.price, price.currencyCode, price.currencySymbol)
         .setQuantity(quantity.quantity, quantity.uom)
-        .setCAS(cas ?? "")
+        .setCAS(cas)
         .setAvailability(statusTxt ?? "");
     });
   }

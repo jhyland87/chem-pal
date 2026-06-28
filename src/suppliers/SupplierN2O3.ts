@@ -300,12 +300,12 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
       product.setBasicInfo(item.title ?? "", item.href ?? "", this.supplierName);
       if (item.price) product.setPrice(item.price);
       if (item.quantity) product.setQuantity(item.quantity);
-      if (item.uom) product.setUOM(item.uom);
-      if (item.currencyCode) product.setCurrencyCode(item.currencyCode);
-      if (item.currencySymbol) product.setCurrencySymbol(item.currencySymbol);
+      product.setUOM(item.uom);
+      product.setCurrencyCode(item.currencyCode);
+      product.setCurrencySymbol(item.currencySymbol);
       //if (item.currency) product.setCurrency(item.currency);
-      if (item.cas) product.setCAS(item.cas);
-      if (item.grade) product.setGrade(item.grade);
+      product.setCAS(item.cas);
+      product.setGrade(item.grade);
 
       return product;
     });

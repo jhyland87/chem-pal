@@ -11,24 +11,19 @@ describe("Wix TypeGuards", () => {
               totalCount: 1,
               list: [
                 {
+                  id: "prod_123",
+                  name: "Sodium Chloride",
+                  description: "ACS reagent grade",
+                  sku: "NACL-500",
+                  urlPart: "sodium-chloride",
                   price: 29.99,
                   formattedPrice: "$29.99",
-                  name: "Sodium Chloride",
-                  urlPart: "sodium-chloride",
                   productItems: [
                     {
                       id: "item_123",
                       formattedPrice: "$29.99",
                       price: 29.99,
-                      optionsSelections: [
-                        {
-                          id: "opt_1",
-                          value: "500g",
-                          description: "500g Bottle",
-                          key: "size",
-                          inStock: true,
-                        },
-                      ],
+                      optionsSelections: [1],
                     },
                   ],
                   options: [
@@ -137,24 +132,19 @@ describe("Wix TypeGuards", () => {
 
   describe("isWixProduct", () => {
     const validProduct = {
+      id: "prod_123",
+      name: "Sodium Chloride",
+      description: "ACS reagent grade",
+      sku: "NACL-500",
+      urlPart: "sodium-chloride",
       price: 29.99,
       formattedPrice: "$29.99",
-      name: "Sodium Chloride",
-      urlPart: "sodium-chloride",
       productItems: [
         {
           id: "item_123",
           formattedPrice: "$29.99",
           price: 29.99,
-          optionsSelections: [
-            {
-              id: "opt_1",
-              value: "500g",
-              description: "500g Bottle",
-              key: "size",
-              inStock: true,
-            },
-          ],
+          optionsSelections: [1],
         },
       ],
       options: [
@@ -225,15 +215,7 @@ describe("Wix TypeGuards", () => {
       id: "item_123",
       formattedPrice: "$29.99",
       price: 29.99,
-      optionsSelections: [
-        {
-          id: "opt_1",
-          value: "500g",
-          description: "500g Bottle",
-          key: "size",
-          inStock: true,
-        },
-      ],
+      optionsSelections: [1],
     };
 
     it("should return true for a valid product item", () => {
@@ -270,17 +252,20 @@ describe("Wix TypeGuards", () => {
       expect(isProductItem(wrongTypes)).toBe(false);
     });
 
-    it.skip("should return false for invalid options selections array", () => {
+    it("should return false for non-numeric options selections", () => {
       const invalidSelections = {
         ...validItem,
-        optionsSelections: [
-          {
-            // Invalid selection
-            id: 123, // Should be string
-          },
-        ],
+        optionsSelections: [{ id: 123 }], // selection IDs must be numbers
       };
       expect(isProductItem(invalidSelections)).toBe(false);
+    });
+
+    it("should return false for an empty options selections array", () => {
+      const emptySelections = {
+        ...validItem,
+        optionsSelections: [],
+      };
+      expect(isProductItem(emptySelections)).toBe(false);
     });
   });
 

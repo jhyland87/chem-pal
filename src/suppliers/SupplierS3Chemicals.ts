@@ -4,7 +4,7 @@ import { parseQuantity } from "@/helpers/quantity";
 import { createDOM } from "@/helpers/request";
 import { firstMap, mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
-import { isCAS, isCurrencyCode } from "@/utils/typeGuards/common";
+import { isCurrencyCode } from "@/utils/typeGuards/common";
 import { WRatio } from "fuzzball";
 import { SupplierBase } from "./SupplierBase";
 /**
@@ -242,9 +242,7 @@ export class SupplierS3Chemicals
         .querySelector("div.product--description")
         ?.textContent?.trim()
         .replace(/\s+/g, " ");
-      if (description) {
-        builder.setDescription(description);
-      }
+      builder.setDescription(description);
 
       const qtyText = element.querySelector("div.price--unit span.is--nowrap")?.textContent?.trim();
       if (qtyText) {
@@ -255,9 +253,7 @@ export class SupplierS3Chemicals
       }
 
       builder.setBasicInfo(title, String(url), this.supplierName);
-      if (ordernumber) {
-        builder.setID(ordernumber);
-      }
+      builder.setID(ordernumber);
       return builder;
     });
   }
@@ -512,9 +508,7 @@ export class SupplierS3Chemicals
         .querySelector('div.product--description[itemprop="description"]')
         ?.textContent?.trim()
         .replace(/\s+/g, " ");
-      if (detailDescription) {
-        builder.setDescription(detailDescription);
-      }
+      builder.setDescription(detailDescription);
 
       const availabilityHref = initialDetails
         .querySelector('link[itemprop="availability"]')
@@ -529,13 +523,12 @@ export class SupplierS3Chemicals
       const titleText =
         initialDetails.querySelector('h1.product--title[itemprop="name"]')?.textContent?.trim() ??
         "";
-      const cas = firstMap(
-        (p) => findCAS(p),
-        [titleText, detailDescription ?? "", builder.get("description") ?? ""],
+      builder.setCAS(
+        firstMap(
+          (p) => findCAS(p),
+          [titleText, detailDescription ?? "", builder.get("description") ?? ""],
+        ),
       );
-      if (isCAS(cas)) {
-        builder.setCAS(cas);
-      }
 
       // --- Variant enumeration -------------------------------------------
       const group = this.parseVariantGroup(initialDetails);
@@ -588,16 +581,16 @@ export class SupplierS3Chemicals
       // --- Promote the smallest variant to parent-level fields -----------
       const primary = variants[0];
       if (primary) {
-        if (primary.price !== undefined) builder.setPrice(primary.price);
-        if (primary.currencyCode) builder.setCurrencyCode(primary.currencyCode);
-        if (primary.currencySymbol) builder.setCurrencySymbol(primary.currencySymbol);
+        builder.setPrice(primary.price);
+        builder.setCurrencyCode(primary.currencyCode);
+        builder.setCurrencySymbol(primary.currencySymbol);
         if (primary.quantity !== undefined && primary.uom) {
           builder.setQuantity(primary.quantity, primary.uom);
         }
         if (primary.sku !== undefined) builder.setSku(String(primary.sku));
         // Only overwrite the parent ID if the listing card didn't give us
         // the short ordernumber (which is the cleaner identifier).
-        if (!builder.get("id") && primary.id !== undefined) {
+        if (!builder.get("id")) {
           builder.setID(primary.id);
         }
       }

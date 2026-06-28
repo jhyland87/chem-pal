@@ -522,14 +522,8 @@ export class SupplierSynthetika
         productURL,
       });
 
-      if (Object.keys(descriptionProperties).length > 0) {
-        if ("CAS Number" in descriptionProperties) {
-          builder.setCAS(descriptionProperties["CAS Number"]);
-        }
-        if ("Sum Formula" in descriptionProperties) {
-          builder.setFormula(descriptionProperties["Sum Formula"]);
-        }
-      }
+      builder.setCAS(descriptionProperties["CAS Number"]);
+      builder.setFormula(descriptionProperties["Sum Formula"]);
 
       // if (variants.length > 0) {
       //   builder.setVariants(variants);

@@ -274,7 +274,6 @@ export class SupplierLaboratoriumDiscounter
       }
 
       productBuilder
-        //.addRawData(product)
         .setBasicInfo(product.title, product.url, this.supplierName)
         .setDescription(product.description)
         .setID(product.id)
@@ -283,7 +282,8 @@ export class SupplierLaboratoriumDiscounter
         .setUUID(product.code)
         //.setPricing(product.price.price, product?.currency as string, CURRENCY_SYMBOL_MAP.EUR)
         //.setQuantity(product.variant)
-        .setCAS(typeof product.content === "string" ? (findCAS(product.content) ?? "") : "");
+        // setCAS extracts the CAS from free text itself, so pass the description through.
+        .setCAS(typeof product.content === "string" ? product.content : undefined);
       return productBuilder;
     });
   }

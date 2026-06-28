@@ -330,18 +330,13 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
 
         // Molecular weight comes from `/api/product/info`.
         const info = (await this.getProductInfoBatch()).get(itemCode);
-        if (info) {
-          builder.setMoleweight(info.item.chem_mw);
-        }
+        builder.setMoleweight(info?.item.chem_mw);
 
         // SDS lookup runs last — one request, and only for products that
         // already have the minimum required data (a request spent on a product
         // that will be dropped anyway is wasted).
         if (isMinimalProduct(builder.dump())) {
-          const sdsUrl = await this.sdsSearch(itemCode);
-          if (sdsUrl) {
-            builder.setSDSUrl(sdsUrl);
-          }
+          builder.setSDSUrl(await this.sdsSearch(itemCode));
         }
 
         return builder;
@@ -379,7 +374,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
       id: detail.product_id,
       uuid: detail.product_id,
       sku: detail.product_code,
-      title: `${detail.item_en_name} ${quantityLabel}`,
+      title: quantityLabel,
       price: Number(detail.product_price),
       currencyCode: "CNY",
       currencySymbol: CURRENCY_SYMBOL_MAP.CNY,

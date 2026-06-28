@@ -65,9 +65,6 @@ importers:
       fuzzball:
         specifier: ^2.2.2
         version: 2.2.2
-      graphql:
-        specifier: ^16.11.0
-        version: 16.11.0
       htmlparser2:
         specifier: ^10.0.0
         version: 10.0.0
@@ -279,6 +276,9 @@ importers:
       globals:
         specifier: ^16.0.0
         version: 16.2.0
+      graphql:
+        specifier: ^16.11.0
+        version: 16.11.0
       happy-dom:
         specifier: ^17.5.6
         version: 17.5.6
@@ -414,6 +414,9 @@ importers:
       vite-bundle-analyzer:
         specifier: ^0.20.1
         version: 0.20.2
+      vite-plugin-graphql-loader:
+        specifier: ^5.1.1
+        version: 5.1.1(graphql@16.11.0)(vite@6.3.5(@types/node@22.15.29)(sass-embedded@1.89.1)(yaml@2.8.0))
       vite-plugin-static-copy:
         specifier: ^2.3.1
         version: 2.3.1(vite@6.3.5(@types/node@22.15.29)(sass-embedded@1.89.1)(yaml@2.8.0))
@@ -1603,6 +1606,9 @@ packages:
 
   '@jridgewell/sourcemap-codec@1.5.0':
     resolution: {integrity: sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ==}
+
+  '@jridgewell/sourcemap-codec@1.5.5':
+    resolution: {integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==}
 
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
@@ -3529,6 +3535,12 @@ packages:
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
 
+  graphql-tag@2.12.7:
+    resolution: {integrity: sha512-xnE/NFzy+0eIesvAsREJZ284zTl/wYuBAvpsFSDhRGRdRHdnE90M21Q3xAWyYInb0J756c6x0pIQ62+vtvOs1Q==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      graphql: ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
+
   graphql@16.11.0:
     resolution: {integrity: sha512-mS1lbMsxgQj6hge1XZ6p7GPhbrtFwUFYi3wRzXAC/FmYnyXMTvvI3td3rjmQ2u8ewXueaSvRPWaEcgVVOT9Jnw==}
     engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
@@ -4020,6 +4032,9 @@ packages:
 
   magic-string@0.30.17:
     resolution: {integrity: sha512-sNPKHvyjVf7gyjwS4xGTaW/mCnF8wnjtifKBEhxfZ7E/S8tQ0rssrwGNn6q8JH/ohItJfSQp9mBtQYuTlH5QnA==}
+
+  magic-string@0.30.21:
+    resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
   magicast@0.3.5:
     resolution: {integrity: sha512-L0WhttDl+2BOsybvEOLK7fW3UA0OQ0IQ2d6Zl2x/a6vVRs3bAY0ECOSHHeL5jD+SbOpOCUEi0y1DgHEn9Qn1AQ==}
@@ -5320,6 +5335,13 @@ packages:
     resolution: {integrity: sha512-6enNwYnpyDo4hEgytbmc6mYWHXDHYEn0D1/rw4Q+tnHUGtKTJsn8T1YkX6Q18wI5LCrS8CTYlBaiCqxOy2kvUA==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
+
+  vite-plugin-graphql-loader@5.1.1:
+    resolution: {integrity: sha512-J39frk9lGvq8LU3BEkNqeULl8J9Iw2JjRdZdG9ZArvJzR9n+0FrVYN1GDX466AczYHOi05ZgXGEGwPJgr/ZqTQ==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    peerDependencies:
+      graphql: ^16.0.0
+      vite: ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
 
   vite-plugin-static-copy@2.3.1:
     resolution: {integrity: sha512-EfsPcBm3ewg3UMG8RJaC0ADq6/qnUZnokXx4By4+2cAcipjT9i0Y0owIJGqmZI7d6nxk4qB1q5aXOwNuSyPdyA==}
@@ -6975,6 +6997,8 @@ snapshots:
   '@jridgewell/set-array@1.2.1': {}
 
   '@jridgewell/sourcemap-codec@1.5.0': {}
+
+  '@jridgewell/sourcemap-codec@1.5.5': {}
 
   '@jridgewell/trace-mapping@0.3.25':
     dependencies:
@@ -8988,6 +9012,11 @@ snapshots:
 
   graphemer@1.4.0: {}
 
+  graphql-tag@2.12.7(graphql@16.11.0):
+    dependencies:
+      graphql: 16.11.0
+      tslib: 2.8.1
+
   graphql@16.11.0: {}
 
   handlebars@4.7.8:
@@ -9508,6 +9537,10 @@ snapshots:
   magic-string@0.30.17:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.0
+
+  magic-string@0.30.21:
+    dependencies:
+      '@jridgewell/sourcemap-codec': 1.5.5
 
   magicast@0.3.5:
     dependencies:
@@ -10692,6 +10725,13 @@ snapshots:
       - terser
       - tsx
       - yaml
+
+  vite-plugin-graphql-loader@5.1.1(graphql@16.11.0)(vite@6.3.5(@types/node@22.15.29)(sass-embedded@1.89.1)(yaml@2.8.0)):
+    dependencies:
+      graphql: 16.11.0
+      graphql-tag: 2.12.7(graphql@16.11.0)
+      magic-string: 0.30.21
+      vite: 6.3.5(@types/node@22.15.29)(sass-embedded@1.89.1)(yaml@2.8.0)
 
   vite-plugin-static-copy@2.3.1(vite@6.3.5(@types/node@22.15.29)(sass-embedded@1.89.1)(yaml@2.8.0)):
     dependencies:

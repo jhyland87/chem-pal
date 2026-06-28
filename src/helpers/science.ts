@@ -1,4 +1,6 @@
 import { SUBSCRIPTS, SUPERSCRIPTS } from "@/constants/science";
+import { decodeHTMLEntities, isMoleForm } from "@/helpers/utils";
+import { looksLikeSmiles } from "@/helpers/smiles";
 
 /**
  * @group Helpers
@@ -101,4 +103,103 @@ export const parsePurity = (value: string): number | void => {
 
   const purity = Number(match[1]);
   if (!Number.isNaN(purity) && purity > 0 && purity <= 100) return purity;
+};
+
+/**
+ * Structured chemical properties pulled out of a supplier's free-form product copy.
+ * Every field is optional — only the values actually present (and valid) are returned.
+ * @source
+ */
+export interface ChemicalSpecs {
+  /** Purity percentage in the `(0, 100]` range (e.g. `98`). */
+  purity?: number;
+  /** Molecular formula, validated as a plausible formula (e.g. `C2H3KO2`). */
+  formula?: string;
+  /** Molecular weight / mass in g/mol (e.g. `98.14`). */
+  molecularWeight?: number;
+  /** SMILES structure string, validated as plausibly-valid SMILES. */
+  smiles?: string;
+}
+
+// Wix suppliers bury specs in HTML accordions and bullet lists. Flatten that markup to one value
+// per line — break on block/list/break tags, drop remaining tags, decode entities, then collapse
+// runs of non-newline whitespace — so the label/value matchers below work line-by-line.
+const normalizeSpecText = (html: string): string =>
+  decodeHTMLEntities(
+    html
+      .replace(/<\/(?:p|li|ul|ol|div|tr|h[1-6])>/gi, "\n")
+      .replace(/<li\b[^>]*>/gi, "\n")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<[^>]+>/g, " "),
+  ).replace(/[^\S\n]+/g, " ");
+
+// A label followed by an optional separator (":", "-", "#", "=", em/en dashes) and the value.
+const MOLEWEIGHT_REGEX =
+  /(?:molecular\s+(?:weight|mass)|mol(?:ecular|\.)?\s+(?:wt|weight|mass)|\bmw\b)\s*[:#=–—-]*\s*(\d+(?:\.\d+)?)/i;
+const FORMULA_REGEX = /(?:molecular\s+formula|\bformula\b)\s*[:#=–—-]*\s*([A-Za-z][A-Za-z0-9()·.]*)/i;
+const SMILES_LABEL_REGEX = /\bsmiles\b\s*[:#=–—-]*\s*(\S+)/i;
+const PURITY_PERCENT_REGEX = /(\d{1,3}(?:\.\d+)?)\s*\+?\s*%/;
+
+/**
+ * Pulls a purity percentage from messy, multi-line product copy. Unlike {@link parsePurity}, this
+ * only trusts a percentage that sits on a line mentioning "purity" — so a stray "50% brine" in a
+ * description is ignored — and tolerates the `98%+`, `99+%`, and `99-100%` shapes suppliers use.
+ * @param lines - The normalized, line-split product copy
+ * @returns The purity as a number (e.g. `98`), or nothing if none is found
+ * @source
+ */
+const extractPurity = (lines: string[]): number | undefined => {
+  for (const line of lines) {
+    if (!/purity/i.test(line)) continue;
+    const match = line.match(PURITY_PERCENT_REGEX);
+    if (!match) continue;
+    const purity = Number(match[1]);
+    if (!Number.isNaN(purity) && purity > 0 && purity <= 100) return purity;
+  }
+  return undefined;
+};
+
+/**
+ * Extracts structured chemical properties (purity, molecular formula, molecular weight, SMILES)
+ * from a supplier's free-form, HTML-laced product copy. Built for Wix suppliers whose specs live
+ * inside descriptions and additional-info accordions as loosely-labelled bullet lists — labels and
+ * separators vary wildly (`MW -`, `Molecular mass :`, `Formula:`), so each field is matched
+ * tolerantly and validated before being returned. CAS numbers are intentionally left to
+ * {@link findCAS}, which already searches free text robustly.
+ * @category Helpers
+ * @param html - Raw product copy, possibly containing HTML markup
+ * @returns The chemical properties found; fields absent or invalid are omitted
+ * @example
+ * ```typescript
+ * parseChemicalSpecs("<p>Purity: 98%+</p><p>Formula: C5H9KO2</p><p>MW: 140.22g/mol</p>")
+ * // { purity: 98, formula: "C5H9KO2", molecularWeight: 140.22 }
+ * parseChemicalSpecs("<li>MW - 136.169 G/MOL</li><li>SMILES: [K+].CCCCC([O-])=O</li>")
+ * // { molecularWeight: 136.169, smiles: "[K+].CCCCC([O-])=O" }
+ * parseChemicalSpecs("Ships in 4-6 business days") // {}
+ * ```
+ * @source
+ */
+export const parseChemicalSpecs = (html: string): ChemicalSpecs => {
+  if (!html || typeof html !== "string") return {};
+
+  const text = normalizeSpecText(html);
+  const lines = text.split("\n").map((line) => line.trim());
+  const specs: ChemicalSpecs = {};
+
+  const purity = extractPurity(lines);
+  if (purity !== undefined) specs.purity = purity;
+
+  const formulaMatch = text.match(FORMULA_REGEX);
+  if (formulaMatch && isMoleForm(formulaMatch[1])) specs.formula = formulaMatch[1];
+
+  const moleweightMatch = text.match(MOLEWEIGHT_REGEX);
+  if (moleweightMatch) {
+    const moleweight = Number(moleweightMatch[1]);
+    if (!Number.isNaN(moleweight) && moleweight > 0) specs.molecularWeight = moleweight;
+  }
+
+  const smilesMatch = text.match(SMILES_LABEL_REGEX);
+  if (smilesMatch && looksLikeSmiles(smilesMatch[1])) specs.smiles = smilesMatch[1];
+
+  return specs;
 };

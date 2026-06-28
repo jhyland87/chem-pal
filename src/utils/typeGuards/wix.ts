@@ -1,21 +1,35 @@
 import { z } from "zod";
 
+/**
+ * Minimal shape every Wix product must satisfy for the supplier to consume it.
+ * Only the fields actually read while building a product are required — the
+ * Wix response carries many more, but they are optional from our perspective.
+ * `media` and `additionalInfo` (read for image/SDS/chemical properties) are
+ * validated only as arrays — like `productItems`/`options`, their per-item
+ * shape is guarded at the point of use so a stray entry can't reject the whole
+ * response — and stay optional since a product may legitimately carry none.
+ */
+const wixProductSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  sku: z.string(),
+  urlPart: z.string(),
+  price: z.number(),
+  formattedPrice: z.string(),
+  productItems: z.array(z.unknown()),
+  options: z.array(z.unknown()),
+  media: z.array(z.unknown()).optional(),
+  additionalInfo: z.array(z.unknown()).optional(),
+});
+
 const validSearchResponseSchema = z.object({
   data: z.object({
     catalog: z.object({
       category: z.object({
         productsWithMetaData: z.object({
           totalCount: z.number(),
-          list: z.array(
-            z.object({
-              price: z.number(),
-              formattedPrice: z.string(),
-              name: z.string(),
-              urlPart: z.string(),
-              productItems: z.array(z.unknown()),
-              options: z.array(z.unknown()),
-            }),
-          ),
+          list: z.array(wixProductSchema),
         }),
       }),
     }),
@@ -67,15 +81,6 @@ export function isValidSearchResponse(response: unknown): response is QueryRespo
   return validSearchResponseSchema.safeParse(response).success;
 }
 
-const wixProductSchema = z.object({
-  price: z.number(),
-  formattedPrice: z.string(),
-  name: z.string(),
-  urlPart: z.string(),
-  productItems: z.array(z.unknown()),
-  options: z.array(z.unknown()),
-});
-
 /**
  * Type guard to validate if an object is a valid Wix ProductObject.
  * Checks for the presence and correct types of all required product properties
@@ -88,18 +93,19 @@ const wixProductSchema = z.object({
  * ```typescript
  * // Valid product object
  * const validProduct = {
+ *   id: "prod_123",
+ *   name: "Sodium Chloride",
+ *   description: "ACS reagent grade",
+ *   sku: "NACL-500",
+ *   urlPart: "sodium-chloride",
  *   price: 29.99,
  *   formattedPrice: "$29.99",
- *   name: "Sodium Chloride",
- *   urlPart: "sodium-chloride",
  *   productItems: [
  *     {
  *       id: "item_123",
  *       formattedPrice: "$29.99",
  *       price: 29.99,
- *       optionsSelections: [
- *         { id: "opt_1", value: "500g", description: "500g Bottle", key: "size", inStock: true }
- *       ]
+ *       optionsSelections: [1]
  *     }
  *   ],
  *   options: [
@@ -144,7 +150,7 @@ const productItemSchema = z.object({
   id: z.string(),
   formattedPrice: z.string(),
   price: z.number(),
-  optionsSelections: z.array(z.unknown()).min(1),
+  optionsSelections: z.array(z.number()).min(1),
 });
 
 /**
@@ -162,9 +168,7 @@ const productItemSchema = z.object({
  *   id: "item_123",
  *   formattedPrice: "$29.99",
  *   price: 29.99,
- *   optionsSelections: [
- *     { id: "opt_1", value: "500g", description: "500g Bottle", key: "size", inStock: true }
- *   ]
+ *   optionsSelections: [1]
  * };
  *
  * if (isProductItem(validItem)) {

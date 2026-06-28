@@ -1,12 +1,14 @@
 import { UOM } from "@/constants/common";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
-import { findFormulaInHtml } from "@/helpers/science";
-import { firstMap, htmlToAscii, mapDefined } from "@/helpers/utils";
+import { parseChemicalSpecs } from "@/helpers/science";
+import { findPdfHref, htmlToAscii, mapDefined } from "@/helpers/utils";
+import getFilteredProductsWithHasDiscount from "@/queries/wix-product-query.gql";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isParsedPrice } from "@/utils/typeGuards/common";
 import { isValidVariant } from "@/utils/typeGuards/productbuilder";
 import { isProductItem, isProductSelection, isValidSearchResponse } from "@/utils/typeGuards/wix";
+import { print } from "graphql";
 import { SupplierBase } from "./SupplierBase";
 /**
  * SupplierBaseWix class that extends SupplierBase and implements AsyncIterable<Product>.
@@ -26,6 +28,14 @@ export abstract class SupplierBaseWix
 
   /** Access token for Wix API authentication */
   protected accessToken: string = "";
+
+  /** Ecom app ID for Wix API authentication */
+  protected readonly ecomAppId: string = "1380b703-ce81-ff05-f115-39571d94dfcd";
+
+  /** Categories for Wix API */
+  protected readonly categories: Record<string, string> = {
+    all: "00000000-000000-000000-000000000001",
+  };
 
   /** Default values for products */
   protected productDefaults = {
@@ -64,90 +74,12 @@ export abstract class SupplierBaseWix
     });
 
     const data = await accessTokenResponse.json();
-    this.accessToken = data.apps["1380b703-ce81-ff05-f115-39571d94dfcd"].instance;
+    this.accessToken = data.apps[this.ecomAppId].accessToken;
     this.headers = {
       ...this.headers,
       // eslint-disable-next-line @typescript-eslint/naming-convention
       Authorization: this.accessToken,
     };
-  }
-
-  /**
-   * Gets the GraphQL query for fetching filtered products from the Wix API.
-   * The query includes product details like ID, options, price, stock status, etc.
-   * @returns The GraphQL query string
-   * @example
-   * ```typescript
-   * const query = this.getGraphQLQuery();
-   * // Use the query with variables to fetch products
-   * const response = await this.httpGetJson({
-   *   path: "_api/wix-ecommerce-storefront-web/api",
-   *   params: { q: query, v: variables }
-   * });
-   * ```
-   * @source
-   */
-  protected getGraphQLQuery(): string {
-    return `
-    query,getFilteredProductsWithHasDiscount(
-        $mainCollectionId: String!
-        $filters: ProductFilters
-        $sort: ProductSort
-        $offset: Int
-        $limit: Int
-        $withOptions: Boolean = false
-        $withPriceRange: Boolean = false
-      ) {
-        catalog {
-          category(categoryId: $mainCollectionId) {
-            numOfProducts
-            productsWithMetaData(
-              filters: $filters
-              limit: $limit
-              sort: $sort
-              offset: $offset
-              onlyVisible: true
-            ) {
-              totalCount
-              list {
-                id
-                options {
-                  id
-                  key
-                  title @include(if: $withOptions)
-                  optionType @include(if: $withOptions)
-                  selections @include(if: $withOptions) {
-                    id
-                    value
-                    description
-                    key
-                    inStock
-                  }
-                }
-                productItems @include(if: $withOptions) {
-                  id
-                  optionsSelections
-                  price
-                  formattedPrice
-                }
-                productType
-                price
-                sku
-                isInStock
-                urlPart
-                formattedPrice
-                name
-                description
-                brand
-                priceRange(withSubscriptionPriceRange: true) @include(if: $withPriceRange) {
-                  fromPriceFormatted
-                }
-              }
-            }
-          }
-        }
-      }
-    `;
   }
 
   /**
@@ -159,7 +91,7 @@ export abstract class SupplierBaseWix
    */
   protected getGraphQLVariables(query: string): GraphQLQueryVariables {
     return {
-      mainCollectionId: "00000000-000000-000000-000000000001",
+      mainCollectionId: this.categories.all,
       offset: 0,
       limit: 150,
       sort: null,
@@ -170,8 +102,6 @@ export abstract class SupplierBaseWix
           values: [`*${query}*`],
         },
       },
-      withOptions: true,
-      withPriceRange: false,
     } satisfies GraphQLQueryVariables;
   }
 
@@ -187,7 +117,9 @@ export abstract class SupplierBaseWix
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    const graphQLQuery = this.getGraphQLQuery();
+    // The .gql import is a parsed DocumentNode (vite-plugin-graphql-loader);
+    // the Wix endpoint wants the raw query text in the `q` param, so print it.
+    const graphQLQuery = print(getFilteredProductsWithHasDiscount);
 
     const graphQLVariables = this.getGraphQLVariables(query);
 
@@ -350,9 +282,8 @@ export abstract class SupplierBaseWix
       }
 
       const builder = new ProductBuilder<Product>(this.baseURL);
-      const cas = firstMap(findFormulaInHtml, [product.name, product.description, product.urlPart]);
 
-      return builder
+      builder
         .setBasicInfo(
           product.name,
           `${this.baseURL}/product-page/${product.urlPart}`,
@@ -365,11 +296,59 @@ export abstract class SupplierBaseWix
         )
         .setQuantity(parentVariant.quantity, parentVariant.uom)
         .setID(product.id)
-        .setCAS(cas ?? "")
         .setSku(product.sku)
         .setDescription(htmlToAscii(product.description))
         .setVariants(productVariants.filter(isValidVariant));
+
+      this.applyChemicalProperties(builder, product);
+
+      return builder;
     });
+  }
+
+  /**
+   * Populates a product builder with the chemical and media properties that live in a Wix
+   * product's free-form copy. Both Wix suppliers (FTF, BioFuran) scatter these across the
+   * `description` and `additionalInfo` accordions in loosely-structured HTML, so the values are
+   * parsed tolerantly via {@link parseChemicalSpecs} / {@link findPdfHref} and only applied when
+   * found. Image comes from the first photo in the media gallery; CAS is extracted from the
+   * product name and copy by {@link ProductBuilder.setCAS}.
+   *
+   * @param builder - The product builder to populate (mutated in place)
+   * @param product - The raw Wix product object from the search response
+   * @returns Nothing; the builder is mutated in place
+   * @example
+   * ```typescript
+   * const builder = new ProductBuilder<Product>(this.baseURL);
+   * this.applyChemicalProperties(builder, product);
+   * // builder now carries imageURL, sdsUrl, purity, formula, moleweight, smiles and cas
+   * ```
+   * @source
+   */
+  protected applyChemicalProperties(
+    builder: ProductBuilder<Product>,
+    product: ProductObject,
+  ): void {
+    // Specs and SDS links live in the description and/or the additional-info accordions;
+    // parse both together so a supplier's layout (FTF vs BioFuran) doesn't matter.
+    const additionalInfoHtml = (product.additionalInfo ?? [])
+      .map((info) => info.description)
+      .join("\n");
+    const copy = `${product.description ?? ""}\n${additionalInfoHtml}`;
+
+    // The setters ignore undefined/invalid input, so the parser output can be passed straight in.
+    const photo = (product.media ?? []).find((item) => item.mediaType === "PHOTO" && item.fullUrl);
+    const specs = parseChemicalSpecs(copy);
+
+    builder
+      .setImage(photo?.fullUrl, photo?.title ?? product.name)
+      .setSDSUrl(findPdfHref(copy))
+      .setPurity(specs.purity)
+      .setFormula(specs.formula)
+      .setMoleweight(specs.molecularWeight)
+      .setSmiles(specs.smiles)
+      // CAS appears in the product name (BioFuran) and/or the copy (both); setCAS extracts it.
+      .setCAS(`${product.name}\n${copy}`);
   }
 
   /**

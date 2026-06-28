@@ -2,6 +2,7 @@ import react from "@vitejs/plugin-react";
 import { readFileSync } from "node:fs";
 import path from "path";
 import { defineConfig, type Plugin } from "vite";
+import graphqlLoader from "vite-plugin-graphql-loader";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 import { buildManifest } from "./tools/buildManifest.js";
 // https://vite.dev/config/
@@ -19,7 +20,9 @@ function manifestPlugin(target: string): Plugin {
   return {
     name: "chem-pal-manifest",
     generateBundle() {
-      const base = JSON.parse(readFileSync(path.resolve(__dirname, "public/manifest.json"), "utf-8"));
+      const base = JSON.parse(
+        readFileSync(path.resolve(__dirname, "public/manifest.json"), "utf-8"),
+      );
       this.emitFile({
         type: "asset",
         fileName: "manifest.json",
@@ -82,6 +85,7 @@ export default ({ mode }: { mode: string }) => {
     },
     plugins: [
       react(),
+      graphqlLoader(),
       manifestPlugin(browser),
       viteStaticCopy({
         targets: staticCopyTargets,

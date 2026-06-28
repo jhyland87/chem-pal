@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findFormulaInHtml, parsePurity, subscript, superscript } from "../science";
+import { findFormulaInHtml, parseChemicalSpecs, parsePurity, subscript, superscript } from "../science";
 
 describe("science helpers", () => {
   describe("subscript", () => {
@@ -122,6 +122,57 @@ describe("science helpers", () => {
     it("should return nothing for out-of-range percentages", () => {
       expect(parsePurity("120%")).toBeUndefined();
       expect(parsePurity("0%")).toBeUndefined();
+    });
+  });
+
+  describe("parseChemicalSpecs", () => {
+    it("should parse BioFuran-style <p>-delimited specs from a description", () => {
+      const html =
+        "<p>Appearance: colorless powder</p><p>CAS: 19455-21-1</p><p>Purity: 98%+</p>" +
+        "<p>Formula: C5H9KO2</p><p>MW: 140.22g/mol</p><p>SMILES: [K+].CCCCC([O-])=O</p>";
+      expect(parseChemicalSpecs(html)).toEqual({
+        purity: 98,
+        formula: "C5H9KO2",
+        molecularWeight: 140.22,
+        smiles: "[K+].CCCCC([O-])=O",
+      });
+    });
+
+    it("should parse BioFuran-style <br>-delimited bullets with 'Molecular mass'", () => {
+      const html =
+        "<p>White powder<br>•&nbsp;&nbsp; Purity : 99-100%<br>•&nbsp;&nbsp; CAS : 127-08-2" +
+        "<br>•&nbsp;&nbsp; Molecular formula : C2H3KO2<br>•&nbsp;&nbsp; Molecular mass : 98.14g/mol" +
+        "<br>•&nbsp;&nbsp; Mp : 288 - 296°C</p>";
+      expect(parseChemicalSpecs(html)).toEqual({
+        purity: 100,
+        formula: "C2H3KO2",
+        molecularWeight: 98.14,
+      });
+    });
+
+    it("should parse FTF-style <li> bullets with 'MW -' and '+%' purity", () => {
+      const html =
+        "<ul><li>Purity - 99+%</li><li>MW - 136.169 G/MOL</li>" +
+        "<li>Melting point - 197 Celsius</li><li>CAS No - 7646-93-7</li></ul>";
+      expect(parseChemicalSpecs(html)).toEqual({ purity: 99, molecularWeight: 136.169 });
+    });
+
+    it("should ignore percentages that are not purity", () => {
+      const html = "<p>50% brine deicing agent; pH 6.5</p>";
+      expect(parseChemicalSpecs(html)).toEqual({});
+    });
+
+    it("should not mistake melting point ('Mp') for molecular weight", () => {
+      expect(parseChemicalSpecs("<p>Mp : 288 - 296°C</p>")).toEqual({});
+    });
+
+    it("should reject an implausible SMILES value", () => {
+      expect(parseChemicalSpecs("<p>SMILES: water</p>")).toEqual({});
+    });
+
+    it("should return an empty object for non-spec copy", () => {
+      expect(parseChemicalSpecs("<p>Ships in 4-6 business days</p>")).toEqual({});
+      expect(parseChemicalSpecs("")).toEqual({});
     });
   });
 });

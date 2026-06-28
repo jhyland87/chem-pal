@@ -7,6 +7,7 @@ import {
   suggestAlternativeSearch,
 } from "@/helpers/pubchem";
 import {
+  extractSmiles,
   isProbablyValidSmiles,
   looksLikeSmiles,
   parseStructurePrefix,
@@ -25,7 +26,7 @@ function help(): void {
       "ChemPal debug helpers (window.chempal):",
       "",
       "  SMILES:   resolveSmiles, resolveQueryForSearch, looksLikeSmiles,",
-      "            parseStructurePrefix, isProbablyValidSmiles",
+      "            parseStructurePrefix, isProbablyValidSmiles, extractSmiles",
       "  PubChem:  suggestAlternativeSearch, getRankedNamesByName, isSimpleName,",
       "            getCompoundNameFromAlias, executeSDQSearch",
       "  CAS:      getCASByName, getNamesByCAS, getIUPACName, findCAS, isCAS",
@@ -51,6 +52,7 @@ const chempal = {
   looksLikeSmiles,
   parseStructurePrefix,
   isProbablyValidSmiles,
+  extractSmiles,
   // PubChem name suggestions
   suggestAlternativeSearch: (query: string, excluded: Iterable<string> = []) =>
     suggestAlternativeSearch(query, new Set([...excluded].map((value) => value.toLowerCase()))),

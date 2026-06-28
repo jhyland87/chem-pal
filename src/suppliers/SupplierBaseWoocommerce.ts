@@ -235,17 +235,10 @@ export abstract class SupplierBaseWoocommerce
           item.prices.currency_symbol,
         );
 
-      if (item.images && item.images.length > 0) {
-        builder.setImage(item.images[0].src, item.images[0].alt);
+      builder.setImage(item.images?.[0]?.src, item.images?.[0]?.alt);
+      builder.setThumbnail(item.images?.[0]?.thumbnail);
 
-        if (item.images[0].thumbnail) {
-          builder.setThumbnail(item.images[0].thumbnail);
-        }
-      }
-
-      const cas = firstMap(findCAS, [item.description, item.short_description]);
-
-      if (cas) builder.setCAS(cas);
+      builder.setCAS(firstMap(findCAS, [item.description, item.short_description]));
 
       const toParseForQuantity = [
         item.name,

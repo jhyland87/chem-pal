@@ -56,7 +56,6 @@
     "currency-parser": "^1.0.0",
     "currency.js": "^2.0.4",
     "fuzzball": "^2.2.2",
-    "graphql": "^16.11.0",
     "htmlparser2": "^10.0.0",
     "idb": "^8.0.3",
     "lodash": "^4.17.21",
@@ -129,6 +128,7 @@
     "fake-indexeddb": "^6.2.5",
     "fs-extra": "^11.3.4",
     "globals": "^16.0.0",
+    "graphql": "^16.11.0",
     "happy-dom": "^17.5.6",
     "http-status-codes": "^2.3.0",
     "identity-obj-proxy": "^3.0.0",
@@ -174,6 +174,7 @@
     "underscore": "^1.13.7",
     "vite": "^6.3.1",
     "vite-bundle-analyzer": "^0.20.1",
+    "vite-plugin-graphql-loader": "^5.1.1",
     "vite-plugin-static-copy": "^2.3.1",
     "vitest": "^3.1.4",
     "web-ext": "^10.4.0"

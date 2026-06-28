@@ -21,8 +21,32 @@ const RING_CLOSURE = /[A-Za-z]\d/;
 /** A token composed entirely of SMILES organic-subset atoms (e.g. `CCO`, `ClCCl`, `c1` aromatics). */
 const PURE_ORGANIC_ATOMS = /^(Cl|Br|B|C|N|O|P|S|F|I|b|c|n|o|p|s)+$/;
 
-/** Legal SMILES characters — used for a cheap structural sanity check (not a full parser). */
-const SMILES_CHAR_SET = /^[A-Za-z0-9@+\-[\]()=#$:/\\.%*]+$/;
+// SMILES syntax grammar, assembled from atom/bond fragments. It is a structural matcher (a legal
+// token sequence), not a full parser — it does not verify ring-closure pairing, valences, or
+// delimiter balance. The same fragments drive both whole-string validation and in-text extraction.
+const SMILES_BRACKET = String.raw`\[[0-9]*(?:[A-Za-z][a-z]?|\*)[^\]]*\]`;
+const SMILES_ATOM = String.raw`(?:${SMILES_BRACKET}|Cl|Br|[BCNOFPSI]|[bcnops]|\*)`;
+const SMILES_INNER = String.raw`(?:${SMILES_ATOM}|[=#$:/\\\-]|[()]|%[0-9]{2}|[0-9])`;
+const SMILES_ENDING = String.raw`(?:${SMILES_ATOM}|[0-9)])`;
+const SMILES_COMPONENT = String.raw`${SMILES_ATOM}(?:${SMILES_INNER}*${SMILES_ENDING})?`;
+const SMILES_BODY = String.raw`${SMILES_COMPONENT}(?:\.${SMILES_COMPONENT})*`;
+
+/** Character class spanning every legal SMILES character — bounds the extraction guard. */
+const SMILES_CHAR = String.raw`[A-Za-z0-9@+\-\[\]()=#$:/\\.%*]`;
+
+/** "Strong" characters that distinguish a real structure from an ordinary word or name. */
+const SMILES_STRONG_CHAR = String.raw`[=#$\[\]()0-9/\\]`;
+
+/** Matches a string that is, in its entirety, a single SMILES structure. */
+const SMILES_VALIDATE = new RegExp(`^${SMILES_BODY}$`);
+
+// Extracts SMILES embedded in free text: a leading non-word boundary, a lookahead requiring a
+// "strong" character so plain words aren't misread, the structure in a `SMILES` named group, and a
+// trailing non-word boundary. Global so all structures in the text are returned.
+const SMILES_EXTRACT = new RegExp(
+  `(?<![A-Za-z0-9])(?=${SMILES_CHAR}*${SMILES_STRONG_CHAR})(?<SMILES>${SMILES_BODY})(?![A-Za-z0-9])`,
+  "g",
+);
 
 /** Upper bound on SMILES length we attempt to resolve, to avoid pathological URLs/inputs. */
 const MAX_SMILES_LENGTH = 500;
@@ -78,6 +102,8 @@ export function parseStructurePrefix(query: string): { mode: StructureMode; valu
  * @example
  * ```typescript
  * isProbablyValidSmiles("CC(=O)O") // true
+ * isProbablyValidSmiles("[Na+]")   // true  (bracketed single atom)
+ * isProbablyValidSmiles("P")       // false (single character — not assumed to be phosphorus)
  * isProbablyValidSmiles("CC(=O")   // false (unbalanced parenthesis)
  * isProbablyValidSmiles("hello!")  // false (illegal character)
  * ```
@@ -85,9 +111,11 @@ export function parseStructurePrefix(query: string): { mode: StructureMode; valu
  */
 export function isProbablyValidSmiles(smiles: string): boolean {
   const value = smiles.trim();
-  if (!value || value.length > MAX_SMILES_LENGTH) return false;
-  if (!SMILES_CHAR_SET.test(value)) return false;
+  // Reject empty, single-character (a bare `P` is not assumed to be phosphorus), and oversize input.
+  if (value.length < 2 || value.length > MAX_SMILES_LENGTH) return false;
+  if (!SMILES_VALIDATE.test(value)) return false;
 
+  // The grammar does not enforce delimiter balance — verify parens/brackets close cleanly.
   let parens = 0;
   let brackets = 0;
   for (const char of value) {
@@ -98,6 +126,34 @@ export function isProbablyValidSmiles(smiles: string): boolean {
     if (parens < 0 || brackets < 0) return false;
   }
   return parens === 0 && brackets === 0;
+}
+
+/**
+ * Extracts every SMILES structure embedded in a block of free text, in order of appearance. Each
+ * candidate must contain a "strong" structural character (a bond, branch, bracket, or digit) so
+ * ordinary words and chemical names are not misread as structures. Bracketed single atoms such as
+ * `[Na+]` are returned, but bare single-character atoms are not (a stray `P` is not phosphorus).
+ * Because SMILES branch parentheses are indistinguishable from prose parentheses, a structure
+ * wrapped directly in text parentheses may include a trailing `)`.
+ * @category Helpers
+ * @param text - Arbitrary text that may contain one or more SMILES structures
+ * @returns The extracted SMILES strings, in order of appearance (empty if none found)
+ * @example
+ * ```typescript
+ * extractSmiles("The product CC(=O)O forms first.") // ["CC(=O)O"]
+ * extractSmiles("Compare CC(=O)O and CN1C=NC2=C1C(=O)N(C)C(=O)N2C here.")
+ * // ["CC(=O)O", "CN1C=NC2=C1C(=O)N(C)C(=O)N2C"]
+ * extractSmiles("no structures in this sentence") // []
+ * ```
+ * @source
+ */
+export function extractSmiles(text: string): string[] {
+  const found: string[] = [];
+  for (const match of text.matchAll(SMILES_EXTRACT)) {
+    const value = match.groups?.SMILES;
+    if (value) found.push(value);
+  }
+  return found;
 }
 
 /**

@@ -1,0 +1,300 @@
+# Storefront-safe build. Everything ACTIVE below is public-session data.
+# Everything COMMENTED is either owner/admin-gated or has an uncertain argument —
+# these are the likely causes of GQL_QUERY_ANALYSIS_ERROR on an anonymous session.
+# Re-add commented blocks one at a time to confirm which your session is allowed.
+
+query getFilteredProductsWithHasDiscount(
+  $mainCollectionId: String!
+  $filters: ProductFilters
+  $sort: ProductSort
+  $offset: Int
+  $limit: Int
+) {
+  catalog {
+    category(categoryId: $mainCollectionId) {
+      numOfProducts
+      productsWithMetaData(
+        filters: $filters
+        limit: $limit
+        sort: $sort
+        offset: $offset
+        onlyVisible: true
+      ) {
+        totalCount
+        list {
+          # ---------- Core scalars (public) ----------
+          id
+          handleId
+          name
+          description
+          price
+          comparePrice
+          discountedPrice
+          pricePerUnit
+          formattedPrice
+          formattedComparePrice
+          formattedDiscountedPrice
+          formattedPricePerUnit
+          ribbon
+          discountPercentRate
+          currency
+          sku
+          isManageProductItems
+          isVisible
+          isInStock
+          isSellable
+          hasOptions
+          productItemsPreOrderAvailability
+          isTrackingInventory
+          weight
+          #          pageUrl
+          productType
+          seoTitle
+          seoDescription
+          seoJson
+          urlPart
+          creationDate
+          lastUpdated
+          brand
+          mainCategoryId
+          isV3
+          categoryIds
+          formattedMinPriceWithSubscription
+          formattedMinComparePriceWithSubscription
+
+          # Internal / owner-ish scalars — re-add if your session is authorized:
+          # revision
+          # createVersion
+          # nextOptionsSelectionId
+          # taxGroupId
+          # fulfillerId
+          # shippingProductGroupId
+          # readyToSellExternalAppId
+          # printOnDemand
+          # hideFromPos
+          # deliveryProfileId
+          # inventoryLocationIds
+
+          # ---------- CUSTOM PROPERTIES + EXTERNAL DOCS (your target) ----------
+          # SDS / spec-sheet links live as <a href> inside description (HTML) — parse them out.
+          additionalInfo {
+            id
+            title
+            description
+            index
+          }
+          customTextFields {
+            key
+            title
+            value
+            isMandatory
+            inputLimit
+          }
+          tags {
+            publicTagIds
+            privateTagIds
+          }
+          digitalProductFileItems {
+            fileId
+            fileType
+            fileName
+          }
+
+          # ---------- Variants / options ----------
+          options {
+            id
+            key
+            title
+            optionType
+            selections {
+              id
+              value
+              description
+              key
+              inStock
+            }
+          }
+          productItems {
+            id
+            optionsSelections
+            isVisible
+            availableForPreOrder
+            sku
+            surcharge
+            weight
+            price
+            comparePrice
+            discountedPrice
+            pricePerUnit
+            formattedPrice
+            formattedComparePrice
+            formattedDiscountedPrice
+            formattedPricePerUnit
+            isTrackingInventory
+            hasDiscount
+            inventory {
+              status
+              quantity
+            }
+            productDimensions {
+              length
+              width
+              height
+              unit
+            }
+            packageDimensions {
+              length
+              width
+              height
+              unit
+            }
+            # Owner-only — likely analysis-rejected on storefront:
+            # costAndProfitData { itemCost formattedItemCost profit formattedProfit profitMargin }
+            # preOrderInfo { message limit }
+            # automaticDiscount {
+            #   automaticDiscountPrice
+            #   formattedAutomaticDiscountPrice
+            #   automaticDiscountPricePerUnit
+            #   formattedAutomaticDiscountPricePerUnit
+            # }
+            # subscriptionPlans { ... see block at bottom ... }
+          }
+          #           productItemsSummary {
+          #             productItemsCount
+          #             inStockProductItemsCount
+          #             inventoryQuantity
+          #           }
+
+          # ---------- Media (images + video) ----------
+          media {
+            id
+            url
+            fullUrl
+            index
+            mediaType
+            width
+            height
+            title
+            altText
+            videoType
+            videoFiles {
+              url
+              quality
+              width
+              height
+              format
+            }
+          }
+
+          # ---------- Pricing / discounts ----------
+          #           priceRange(withSubscriptionPriceRange: true) {
+          #             fromPrice
+          #             fromPriceFormatted
+          #             toPrice
+          #             toPriceFormatted
+          #             includesSubscriptionPrices
+          #           }
+          discount {
+            mode
+            value
+          }
+          pricePerUnitData {
+            totalQuantity
+            totalMeasurementUnit
+            baseQuantity
+            baseMeasurementUnit
+          }
+          # basePriceRange — unknown whether it requires the withSubscriptionPriceRange arg; test both forms:
+          # basePriceRange { fromPrice fromPriceFormatted toPrice toPriceFormatted includesSubscriptionPrices }
+          # Owner-only:
+          # costAndProfitData { itemCost formattedItemCost profit formattedProfit profitMargin }
+          # itemDiscount {
+          #   discountRuleId discountRuleName priceAfterDiscount priceAfterDiscountAmount
+          #   discountAmount discountAmountValue automaticDiscountPricePerUnit
+          #   formattedAutomaticDiscountPricePerUnit automaticDiscountRuleNames
+          # }
+
+          # ---------- Inventory ----------
+          inventory {
+            status
+            quantity
+            availableForPreOrder
+            preOrderInfoView {
+              preOrder
+              message
+              limit
+            }
+          }
+          productDimensions {
+            length
+            width
+            height
+            unit
+          }
+          packageDimensions {
+            length
+            width
+            height
+            unit
+          }
+
+          # ---------- Ribbons ----------
+          ribbonWithId {
+            id
+            name
+            productAmount
+          }
+          # additionalRibbons { ... }  # element type still unknown (SecondaryMedia guess was null)
+
+          # ---------- Taxonomy ----------
+          #           categories {
+          #             id
+          #             name
+          #             active
+          #           }
+          breadcrumbs {
+            id
+            name
+            slug
+          }
+
+          # ---------- Grouping / min-price variant ----------
+          groupInfo {
+            productGroupId
+            groupingCustomizationId
+            members {
+              productId
+              slug
+              inventoryAvailabilityStatus
+              choice {
+                id
+                value
+                description
+                key
+                inStock
+              }
+            }
+          }
+          minPriceVariant {
+            id
+            sku
+            actualPrice
+            formattedActualPrice
+            compareAtPrice
+            formattedCompareAtPrice
+          }
+
+          # ---------- Subscriptions (now resolvable) ----------
+          # subscriptionPlans {
+          #   list {
+          #     id name tagline price formattedPrice pricePerUnit formattedPricePerUnit
+          #     frequency duration billingCycles interval highlighted visible
+          #     discount { ... }  # PlanDiscount — introspect to expand
+          #   }
+          #   oneTimePurchase { index }
+          # }
+        }
+      }
+    }
+  }
+}

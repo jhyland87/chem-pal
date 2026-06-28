@@ -1,4 +1,5 @@
 import {
+  extractSmiles,
   isProbablyValidSmiles,
   looksLikeSmiles,
   parseStructurePrefix,
@@ -6,8 +7,19 @@ import {
   resolveSmiles,
 } from "@/helpers/smiles";
 import { Cactus } from "@/utils/Cactus";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, test, vi, type Mock } from "vitest";
 import { ETHANOL } from "./fixtures/chemicals";
+
+/** Real-world SMILES corpus (one per line) used to exercise validation and extraction. */
+const SMILES_CORPUS = readFileSync(resolve(__dirname, "./__fixtures__/smiles-examples.txt"), "utf8")
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+
+/** A character that distinguishes a structure from a plain word — mirrors the extractor's guard. */
+const HAS_STRONG_CHAR = /[=#$[\]()0-9/\\]/;
 
 /**
  * Builds a fake fetch that answers Cactus endpoint requests and PubChem SDQ requests.
@@ -77,6 +89,10 @@ describe("SMILES Helpers", () => {
     test.each([
       ["CC(=O)O", true],
       ["[Na+].[Cl-]", true],
+      ["[Na+]", true], // bracketed single atom is allowed
+      ["Cl", true], // two-character single atom is allowed
+      ["P", false], // single character is not assumed to be a structure
+      ["*", false],
       ["CC(=O", false],
       ["C[C", false],
       ["hello!", false],
@@ -84,6 +100,59 @@ describe("SMILES Helpers", () => {
     ])("should return %s for: %s", (input, output) =>
       expect(isProbablyValidSmiles(input)).toBe(output),
     );
+  });
+
+  describe("extractSmiles", () => {
+    test.each([
+      ["The product CC(=O)O forms first.", ["CC(=O)O"]],
+      [
+        "Compare CC(=O)O and CN1C=NC2=C1C(=O)N(C)C(=O)N2C here.",
+        ["CC(=O)O", "CN1C=NC2=C1C(=O)N(C)C(=O)N2C"],
+      ],
+      ["Salt [Na+].[Cl-] dissolves readily.", ["[Na+].[Cl-]"]],
+      ["no structures in this sentence", []], // pure prose, no strong chars
+      ["it contains P and N atoms", []], // bare single characters are ignored
+    ])("should extract %j -> %j", (input, output) =>
+      expect(extractSmiles(input)).toEqual(output),
+    );
+
+    it("extracts a structure surrounded by punctuation", () => {
+      expect(extractSmiles("Result: CC(=O)O, stored.")).toEqual(["CC(=O)O"]);
+    });
+  });
+
+  describe("SMILES corpus (smiles-examples.txt)", () => {
+    it("validates every line in the corpus", () => {
+      const failures = SMILES_CORPUS.filter((smiles) => !isProbablyValidSmiles(smiles));
+      expect(failures).toEqual([]);
+    });
+
+    it("extracts each structure verbatim from surrounding prose", () => {
+      const templates = [
+        (s: string) => `The compound has structure ${s} according to the database.`,
+        (s: string) => `Structure: ${s}`,
+        (s: string) => `We resolved the query and got ${s} as the canonical form.`,
+        (s: string) => `The SMILES is ${s}, which matches.`,
+        (s: string) => `Parsed ${s} successfully and stored it.`,
+        (s: string) => `Result -> ${s}`,
+        (s: string) => `entry: ${s} ; next field`,
+      ];
+      const failures: string[] = [];
+      SMILES_CORPUS.forEach((smiles, index) => {
+        // Pure atom-chains carry no strong char, so the extractor skips them by design.
+        if (!HAS_STRONG_CHAR.test(smiles)) return;
+        const paragraph = templates[index % templates.length](smiles);
+        if (!extractSmiles(paragraph).includes(smiles)) {
+          failures.push(`line ${index + 1}: ${smiles}`);
+        }
+      });
+      expect(failures).toEqual([]);
+    });
+
+    it("extracts multiple structures embedded in one paragraph", () => {
+      const [a, b, c] = [SMILES_CORPUS[18], SMILES_CORPUS[30], SMILES_CORPUS[98]];
+      expect(extractSmiles(`First ${a} then ${b}, finally ${c} done.`)).toEqual([a, b, c]);
+    });
   });
 
   describe("resolveSmiles", () => {
