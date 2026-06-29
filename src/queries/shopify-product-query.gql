@@ -1,0 +1,31 @@
+query searchProducts($query: String!, $first: Int!) {
+  products(first: $first, query: $query) {
+    edges {
+      node {
+        id
+        title
+        handle
+        description
+        onlineStoreUrl
+        productType
+        variants(first: 5) {
+          edges {
+            node {
+              title
+              sku
+              barcode
+              price {
+                amount
+              }
+              weight
+              weightUnit
+              requiresShipping
+              availableForSale
+              currentlyNotInStock
+            }
+          }
+        }
+      }
+    }
+  }
+}
