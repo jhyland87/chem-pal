@@ -169,6 +169,7 @@ export class SupplierFactory<P extends Product> {
   public static supplierDisplayNames(): Record<string, string> {
     const controller = new AbortController();
     return Object.fromEntries(
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       mapDefined(Object.entries(suppliers), ([key, SupplierClass]) => {
         // Trusted static supplier classes; the union of concrete constructors
         // isn't structurally assignable to the generic SupplierConstructor.
@@ -189,6 +190,7 @@ export class SupplierFactory<P extends Product> {
   public static supplierRequiredHosts(): Record<string, string[]> {
     const controller = new AbortController();
     return Object.fromEntries(
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       mapDefined(Object.entries(suppliers), ([key, SupplierClass]) => {
         // Trusted static supplier classes; the union of concrete constructors
         // isn't structurally assignable to the generic SupplierConstructor.

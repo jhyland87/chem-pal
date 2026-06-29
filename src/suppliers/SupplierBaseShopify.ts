@@ -2,9 +2,11 @@ import { UOM } from "@/constants/common";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { firstMap, mapDefined } from "@/helpers/utils";
+import searchProductsQuery from "@/queries/shopify-product-query.gql";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isQuantityObject } from "@/utils/typeGuards/common";
 import { isValidShopifySearchResponse } from "@/utils/typeGuards/shopify";
+import { print } from "graphql";
 import { SupplierBase } from "./SupplierBase";
 
 /**
@@ -45,45 +47,21 @@ export abstract class SupplierBaseShopify
   protected apiVersion: string = "2026-04";
 
   /**
-   * Builds the GraphQL query string for searching products by title.
+   * Builds the GraphQL variables for the `searchProducts` query. The query text itself lives in
+   * `@/queries/shopify-product-query.gql`; only the title search filter and page size vary.
    *
    * @param query - The search term to match against product titles
    * @param limit - Maximum number of products to return
-   * @returns The GraphQL query string
+   * @returns The GraphQL variables for the products query
+   * @example
+   * ```typescript
+   * const variables = this.getGraphQLVariables("gold", 200);
+   * // Returns { query: "title:*gold*", first: 200 }
+   * ```
    * @source
    */
-  protected getGraphQLQuery(query: string, limit: number): string {
-    return `{
-      products(first: ${limit}, query: "title:*${query}*") {
-        edges {
-          node {
-            id,
-            title,
-            handle,
-            description,
-            onlineStoreUrl,
-            productType,
-            variants(first: 5) {
-              edges {
-                node {
-                  title,
-                  sku,
-                  barcode,
-                  price {
-                    amount
-                  },
-                  weight,
-                  weightUnit,
-                  requiresShipping,
-                  availableForSale,
-                  currentlyNotInStock
-                }
-              }
-            }
-          }
-        }
-      }
-    }`;
+  protected getGraphQLVariables(query: string, limit: number): ShopifyQueryVariables {
+    return { query: `title:*${query}*`, first: limit };
   }
 
   /**
@@ -109,17 +87,21 @@ export abstract class SupplierBaseShopify
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
     this.logger.info("queryProducts", { query, limit });
-    const graphQLQuery = this.getGraphQLQuery(query, 200);
+    // The .gql import is a parsed DocumentNode (vite-plugin-graphql-loader); the Shopify endpoint
+    // wants the raw query text, so print it and pass the variables alongside. The `first` over-fetch
+    // (200) gives the fuzzy filter a wide candidate pool before slicing back down to `limit`.
+    const graphQLQuery = print(searchProductsQuery);
+    const graphQLVariables = this.getGraphQLVariables(query, 200);
     this.logger.debug("graphQLQuery", graphQLQuery);
     this.logger.debug("apiURL", this.apiURL);
     this.logger.debug("apiVersion", this.apiVersion);
-    this.logger.debug("body", { query: graphQLQuery });
+    this.logger.debug("body", { query: graphQLQuery, variables: graphQLVariables });
     this.logger.debug("headers", { "Content-Type": "application/json" });
 
     const searchRequest = await this.httpPostJson({
       path: `/api/${this.apiVersion}/graphql.json`,
       host: this.apiURL,
-      body: { query: graphQLQuery },
+      body: { query: graphQLQuery, variables: graphQLVariables },
       headers: {
         "Content-Type": "application/json",
       },

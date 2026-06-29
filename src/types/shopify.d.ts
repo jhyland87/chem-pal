@@ -1,5 +1,21 @@
 declare global {
   /**
+   * Variables accepted by the `searchProducts` Shopify GraphQL query
+   * (`@/queries/shopify-product-query.gql`).
+   *
+   * @example
+   * ```typescript
+   * const variables: ShopifyQueryVariables = { query: "title:*gold*", first: 200 };
+   * ```
+   */
+  interface ShopifyQueryVariables {
+    /** Storefront search filter (e.g. `title:*gold*`) */
+    query: string;
+    /** Maximum number of products to return */
+    first: number;
+  }
+
+  /**
    * Represents a product variant node from the Shopify GraphQL Storefront API.
    * Contains pricing, inventory, and shipping details for a specific product variation.
    *
