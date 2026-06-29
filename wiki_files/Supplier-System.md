@@ -8,7 +8,7 @@ Display names below match each class's `supplierName` constant (what's shown in 
 
 | Supplier | Class | Platform (base class) | Country | Data Strategy |
 |----------|-------|-----------------------|---------|---------------|
-| AladdinSci | `SupplierAladdinSci` | Magento 2 | US | JSON Only |
+| AladdinSci | `SupplierAladdinSci` | Magento 2 | US | Hybrid (GraphQL search + HTML detail) |
 | Alchemie Labs | `SupplierAlchemieLabs` | WooCommerce | US | JSON Only |
 | Ambeed | `SupplierAmbeed` | Custom | CN | JSON Only |
 | BioFuran Chem | `SupplierBioFuranChem` | Wix | US | JSON Only |
@@ -46,15 +46,15 @@ Suppliers follow one of three patterns depending on what the vendor exposes:
 
 ### JSON Only
 The search API returns all product data (title, price, quantity, CAS, etc.) in a single response. No detail page fetch is required.
-- Examples: Wix-based suppliers, Searchanise-based suppliers, Shopify-based suppliers, WooCommerce-based suppliers, Magento 2-based suppliers, Amazon-based suppliers, Ambeed, Chemsavers, Macklin, Synthetika
+- Examples: Wix-based suppliers, Searchanise-based suppliers, Shopify-based suppliers, WooCommerce-based suppliers, Amazon-based suppliers, Ambeed, Chemsavers, Macklin, Synthetika
 
 ### HTML Only
 Both search results and product details are scraped from HTML pages using `DOMParser`.
 - Examples: Loudwolf, Onyxmet, Warchem
 
 ### Hybrid (JSON + HTML)
-Search results come from a JSON/API endpoint, but full product details require fetching and scraping the individual product page.
-- Examples: Carolina, Laboratorium Discounter
+Search results come from a JSON/GraphQL endpoint, but full product details require fetching and scraping the individual product page.
+- Examples: Carolina, Laboratorium Discounter, AladdinSci (Magento 2 — `getProductData()` scrapes the product page for SDS / spec-sheet links, SMILES, IUPAC name, InChIKey, INChI, PubChem CID, molecular weight, and purity, with escalating HTTP 429 backoff)
 
 ## Supplier Lifecycle
 
@@ -83,6 +83,11 @@ queryProducts(query, limit)
 └───────────────────────────────────────────────────┘
 ```
 
+**Detail-fetch resilience.** `getProductData()` is a no-op for JSON-only suppliers but fetches the product page for HTML/Hybrid suppliers. Two safeguards apply to that phase:
+
+- **Search-time budget** — a supplier may set `maxAllowableSearchTime` (overridable via `userSettings.maxAllowableSearchTime`; `SupplierBaseMagento2` defaults to 45s). When it elapses, `execute()` aborts outstanding fetches and yields any remaining products with their basic search-response data. Those incomplete products are **not** cached, so a later search re-fetches and completes them.
+- **Rate-limit handling** — when a detail fetch returns a status in `noCacheStatusCodes` (default `[429]`), that product is left uncached. AladdinSci additionally applies an escalating 429 backoff (pause-all → wait n, 2n, 3n… → probe one → resume) and throttles detail fetches to 2 concurrent, ≥350 ms apart.
+
 ## Platform Base Classes
 
 Common e-commerce platforms have shared base classes that handle platform-specific boilerplate:
@@ -93,7 +98,7 @@ Common e-commerce platforms have shared base classes that handle platform-specif
 | `SupplierBaseSearchanise` | `SupplierBaseSearchanise.ts` | Searchanise API, product JSON parsing (HbarSci, Laballey) |
 | `SupplierBaseShopify` | `SupplierBaseShopify.ts` | Shopify GraphQL Storefront API product queries (BVV, Gold and Silver Testing) |
 | `SupplierBaseWoocommerce` | `SupplierBaseWoocommerce.ts` | WooCommerce REST API product queries (Alchemie Labs, Carolina Chemical, LibertySci) |
-| `SupplierBaseMagento2` | `SupplierBaseMagento2.ts` | Magento 2 REST/GraphQL product queries (AladdinSci) |
+| `SupplierBaseMagento2` | `SupplierBaseMagento2.ts` | Magento 2 GraphQL product search (query in `src/queries/magento2-product-query.gql`); throttled, 429-backoff product-detail fetches with a `maxAllowableSearchTime` budget (AladdinSci) |
 | `SupplierBaseAmazon` | `SupplierBaseAmazon.ts` | Amazon product page scraping (Himedia, Innovating Science) |
 
 ## SupplierFactory

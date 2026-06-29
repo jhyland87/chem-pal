@@ -85,7 +85,7 @@ All suppliers extend `SupplierBase`, which defines the lifecycle: `setup()` → 
 
 ### Two-Level Supplier Caching (IndexedDB)
 - **Query cache** (`supplierQueryCache` store) — caches search result lists per supplier, keyed by `base64(query + supplier)`
-- **Product data cache** (`supplierProductDataCache` store) — caches individual product detail fetches, keyed by `MD5(url + supplier + params)`
+- **Product data cache** (`supplierProductDataCache` store) — caches individual product detail fetches, keyed by `MD5(url + supplier + params)`. A fetch that hit a `noCacheStatusCodes` status (default `429`) or was aborted by `maxAllowableSearchTime` is **not** cached, so the next search retries it.
 
 Both use LRU eviction at 100 entries via IndexedDB indexes. See [Caching](Caching) for details.
 

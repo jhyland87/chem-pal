@@ -11,7 +11,9 @@ This page details the end-to-end search flow from user input through to rendered
 - **Supplier data strategies**: Each supplier implements one of three patterns depending on what the vendor's site exposes:
   - **JSON Only** (e.g. Wix) — GraphQL/REST API provides all product data in the search response; no detail page fetch needed
   - **HTML Only** (e.g. Loudwolf) — Both search results and product details are scraped from HTML pages via `DOMParser`
-  - **Hybrid** (e.g. Onyxmet) — Search results come from a JSON endpoint, but product details require scraping the HTML product page
+  - **Hybrid** (e.g. Onyxmet, AladdinSci) — Search results come from a JSON/GraphQL endpoint, but product details require scraping the HTML product page. AladdinSci (Magento 2) fetches each product's page in `getProductData()` to scrape SDS / spec-sheet links, SMILES, IUPAC name, InChIKey, INChI, PubChem CID, molecular weight, and purity
+- **Search-time budget**: a supplier may set `maxAllowableSearchTime` (overridable via settings; `SupplierBaseMagento2` defaults to 45s). When it elapses, the `AbortController` cancels outstanding detail fetches and the search yields only the products collected so far — un-enriched products still appear with their basic search-response data, and their incomplete enrichment is not cached so a later search retries it
+- **Rate-limit backoff**: when a product-detail fetch hits HTTP 429, Magento/AladdinSci pauses all further detail requests, waits an escalating interval (n, 2n, 3n …), then probes one request before resuming. AladdinSci also throttles detail fetches to 2 concurrent, ≥350 ms apart
 
 ## Diagram
 
