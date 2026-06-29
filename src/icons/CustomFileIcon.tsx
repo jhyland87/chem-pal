@@ -6,7 +6,7 @@ import { FC } from "react";
 export interface CustomFileIconProps extends SvgIconProps {
   /** Text shown on the document's label band (e.g. "SDS", "SPECS"). */
   label: string;
-  /** Font size of the label text, in user units. Defaults to 12. */
+  /** Font size of the label text, in user units. Defaults to 15. */
   labelFontSize?: number;
   /** Letter spacing of the label text. Defaults to ".08em". */
   labelLetterSpacing?: string;
@@ -76,10 +76,10 @@ const getContrastTextColor = (background: string): string => {
  */
 const CustomFileIcon: FC<CustomFileIconProps> = ({
   label,
-  labelFontSize = 12,
-  labelLetterSpacing = ".08em",
+  labelFontSize = 15,
+  labelLetterSpacing = ".04em",
   documentColor = "#ffffff",
-  labelColor = "#e8302a",
+  labelColor = "#000000",
   textColor,
   outlineColor = "currentColor",
   language,
@@ -104,12 +104,12 @@ const CustomFileIcon: FC<CustomFileIconProps> = ({
       </g>
       <text
         x="24"
-        y="29.12"
+        y="30.5"
         textAnchor="middle"
         fill={labelTextColor}
         fontFamily="EMprint-Bold, EMprint, sans-serif"
         fontSize={labelFontSize}
-        fontWeight={700}
+        fontWeight={900}
         letterSpacing={labelLetterSpacing}
       >
         {label}

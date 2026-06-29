@@ -19,7 +19,7 @@ export type SDSIconProps = Omit<CustomFileIconProps, "label">;
  * @source
  */
 const SDSIcon: FC<SDSIconProps> = (props) => {
-  return <CustomFileIcon label="SDS" documentColor="#f2dd2e" {...props} />;
+  return <CustomFileIcon label="SDS" labelColor="#e8302a" {...props} />;
 };
 
 export default SDSIcon;
