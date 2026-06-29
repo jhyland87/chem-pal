@@ -249,10 +249,12 @@ declare global {
     formula?: string;
 
     /**
-     * Purity of the variant
-     * @example 98
+     * Purity of the variant, as a percentage string. Keeps any qualifier the supplier reports,
+     * e.g. comparators (`<`, `>`, `≤`, `≥`) and the `%` sign.
+     * @example "98%"
+     * @example "≥99%"
      */
-    purity?: number;
+    purity?: string;
 
     /**
      * Current status code of the variant

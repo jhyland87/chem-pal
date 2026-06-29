@@ -54,8 +54,8 @@ describe("SupplierLiMac getProductData", () => {
     expect(dump.quantity).toBe(50);
     expect(dump.uom).toBe("g");
 
-    // Purity parsed from the title ("min 95%")
-    expect(dump.purity).toBe(95);
+    // Purity parsed from the title ("min 95%"), stored as a percentage string
+    expect(dump.purity).toBe("95%");
 
     // From the #basic properties table
     expect(dump.formula).toBe("NaBH4");

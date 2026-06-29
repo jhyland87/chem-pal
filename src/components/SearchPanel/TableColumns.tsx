@@ -373,12 +373,13 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       cell: ({ row }: ProductRow) => {
         const purity = row.original.purity;
         if (purity == null) return null;
-        return `${purity}%`;
+        // Purity is already a percentage string (may include a comparator / %), so render as-is.
+        return purity;
       },
-      filterFn: "inNumberRangeHierarchy",
+      filterFn: "includeHierarchy",
       meta: {
-        filterPlaceholder: "0 - 100",
-        filterVariant: "range",
+        filterPlaceholder: "Purity...",
+        filterVariant: "text",
         style: {
           textAlign: "left",
         },
