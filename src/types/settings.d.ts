@@ -60,6 +60,16 @@ declare global {
     cacheTtlMinutes?: number;
 
     /**
+     * HTTP status codes that, when hit while fetching a product's detail/enrichment data,
+     * prevent that product's data from being cached — so a later search retries it instead of
+     * serving the incomplete cached entry. The product is still listed either way. Defaults to
+     * `[429]` (Too Many Requests); set to an empty array to cache regardless of status. Not
+     * exposed in the settings UI — configured via stored settings only.
+     * @example [429, 503]
+     */
+    noCacheStatusCodes?: number[];
+
+    /**
      * Currency rate for the user's currency
      * @example 1.0
      */

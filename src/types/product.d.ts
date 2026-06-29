@@ -479,6 +479,30 @@ declare global {
      * @example "C1=CC=CC=C1"
      */
     smiles?: Smiles<string>;
+
+    /**
+     * IUPAC name for the product
+     * @example "dipotassium;oxalate"
+     */
+    iupacName?: IupacName<string>;
+
+    /**
+     * PubChem Compound ID (CID) for the product
+     * @example 11413
+     */
+    pubchemId?: PubChemCID;
+
+    /**
+     * InChIKey for the product
+     * @example "IRXRGVFLQOSHOH-UHFFFAOYSA-L"
+     */
+    inchiKey?: InChIKey<string>;
+
+    /**
+     * InChI string for the product
+     * @example "1S/C2H2O4.2K/c3-1(4)2(5)6;;/h(H,3,4)(H,5,6);;/q;2*+1/p-2"
+     */
+    inchi?: InChI<string>;
   }
 
   /**

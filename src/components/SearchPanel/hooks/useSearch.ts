@@ -436,6 +436,7 @@ export function useSearch() {
           appContext.userSettings.fuzzScorerOverride,
           appContext.userSettings.doNotCacheEmptyResults,
           appContext.userSettings.cacheTtlMinutes,
+          appContext.userSettings.noCacheStatusCodes,
         );
 
         const startSearchTime = performance.now();

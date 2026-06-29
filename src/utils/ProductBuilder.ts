@@ -10,10 +10,14 @@ import {
   isCountryCode,
   isCurrencyCode,
   isCurrencySymbol,
+  isInChI,
+  isInChIKey,
+  isIupacName,
   isMinimalProduct,
   isParsedPrice,
   isPaymentMethod,
   isProduct,
+  isPubChemCID,
   isQuantityObject,
   isShippingRange,
   isSmiles,
@@ -118,6 +122,10 @@ export class ProductBuilder<T extends Product> {
       cas: (v) => this.setCAS(v),
       formula: (v) => this.setFormula(v),
       smiles: (v) => this.setSmiles(v),
+      iupacName: (v) => this.setIupacName(v),
+      pubchemId: (v) => this.setPubchemId(v),
+      inchiKey: (v) => this.setInChIKey(v),
+      inchi: (v) => this.setInChI(v),
       moleweight: (v) => this.setMoleweight(v),
       purity: (v) => this.setPurity(v),
       grade: (v) => this.setGrade(v),
@@ -990,6 +998,104 @@ export class ProductBuilder<T extends Product> {
     } else if (smiles !== undefined && smiles !== null && smiles !== "") {
       this.logger.warn(`setSmiles| Invalid SMILES: ${smiles}`, {
         smiles,
+        builder: this,
+      });
+    }
+    return this;
+  }
+
+  /**
+   * Sets the IUPAC name for the product. An absent value (undefined/null/empty) is ignored
+   * silently; a value that is present but not a usable name is ignored and logged as a warning.
+   * @param iupacName - The IUPAC name to set, or any value (invalid input is ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setIupacName("dipotassium;oxalate");
+   * builder.setIupacName(undefined); // no-op, no warning
+   * ```
+   * @source
+   */
+  setIupacName(iupacName: unknown): ProductBuilder<T> {
+    if (isIupacName(iupacName)) {
+      this.product.iupacName = iupacName;
+    } else if (iupacName !== undefined && iupacName !== null && iupacName !== "") {
+      this.logger.warn(`setIupacName| Invalid IUPAC name: ${iupacName}`, {
+        iupacName,
+        builder: this,
+      });
+    }
+    return this;
+  }
+
+  /**
+   * Sets the PubChem Compound ID (CID) for the product. Numeric strings are coerced first; an
+   * absent value (undefined/null/empty) is ignored silently; a value that is present but not a
+   * positive integer is ignored and logged as a warning.
+   * @param pubchemId - The PubChem CID to set, or any value (invalid input is ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setPubchemId(11413);
+   * builder.setPubchemId("11413"); // coerced to 11413
+   * ```
+   * @source
+   */
+  setPubchemId(pubchemId: unknown): ProductBuilder<T> {
+    if (isPubChemCID(pubchemId)) {
+      this.product.pubchemId = Number(pubchemId) as PubChemCID;
+    } else if (pubchemId !== undefined && pubchemId !== null && pubchemId !== "") {
+      this.logger.warn(`setPubchemId| Invalid PubChem CID: ${pubchemId}`, {
+        pubchemId,
+        builder: this,
+      });
+    }
+    return this;
+  }
+
+  /**
+   * Sets the InChIKey for the product. An absent value (undefined/null/empty) is ignored silently;
+   * a value that is present but fails InChIKey validation is ignored and logged as a warning.
+   * @param inchiKey - The InChIKey to set, or any value (invalid input is ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setInChIKey("IRXRGVFLQOSHOH-UHFFFAOYSA-L");
+   * builder.setInChIKey(undefined); // no-op, no warning
+   * ```
+   * @source
+   */
+  setInChIKey(inchiKey: unknown): ProductBuilder<T> {
+    if (isInChIKey(inchiKey)) {
+      this.product.inchiKey = inchiKey;
+    } else if (inchiKey !== undefined && inchiKey !== null && inchiKey !== "") {
+      this.logger.warn(`setInChIKey| Invalid InChIKey: ${inchiKey}`, {
+        inchiKey,
+        builder: this,
+      });
+    }
+    return this;
+  }
+
+  /**
+   * Sets the InChI string for the product. An absent value (undefined/null/empty) is ignored
+   * silently; a value that is present but fails InChI validation is ignored and logged as a
+   * warning.
+   * @param inchi - The InChI string to set, or any value (invalid input is ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setInChI("1S/C2H2O4.2K/c3-1(4)2(5)6;;/h(H,3,4)(H,5,6);;/q;2*+1/p-2");
+   * builder.setInChI(undefined); // no-op, no warning
+   * ```
+   * @source
+   */
+  setInChI(inchi: unknown): ProductBuilder<T> {
+    if (isInChI(inchi)) {
+      this.product.inchi = inchi;
+    } else if (inchi !== undefined && inchi !== null && inchi !== "") {
+      this.logger.warn(`setInChI| Invalid InChI: ${inchi}`, {
+        inchi,
         builder: this,
       });
     }

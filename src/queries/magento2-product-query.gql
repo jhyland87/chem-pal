@@ -1,0 +1,139 @@
+query searchProducts($search: String!, $pageSize: Int!) {
+  products(search: $search, sort: { relevance: DESC }, pageSize: $pageSize, currentPage: 1) {
+    items {
+      __typename
+      uid
+      sku
+      name
+      url_key
+      url_suffix
+      canonical_url
+      stock_status
+      only_x_left_in_stock
+      meta_title
+      meta_keyword
+      meta_description
+      short_description {
+        html
+      }
+      description {
+        html
+      }
+      image {
+        url
+        label
+      }
+      media_gallery {
+        url
+        label
+        position
+      }
+      categories {
+        name
+        url_path
+        uid
+        breadcrumbs {
+          category_name
+        }
+      }
+      price_range {
+        minimum_price {
+          regular_price {
+            value
+            currency
+          }
+          final_price {
+            value
+            currency
+          }
+          discount {
+            percent_off
+            amount_off
+          }
+        }
+        maximum_price {
+          regular_price {
+            value
+            currency
+          }
+          final_price {
+            value
+            currency
+          }
+        }
+      }
+      price_tiers {
+        quantity
+        final_price {
+          value
+          currency
+        }
+        discount {
+          amount_off
+          percent_off
+        }
+      }
+
+      ... on GroupedProduct {
+        items {
+          qty
+          product {
+            sku
+            name
+            stock_status
+            price_range {
+              minimum_price {
+                regular_price {
+                  value
+                  currency
+                }
+              }
+            }
+          }
+        }
+      }
+
+      ... on ConfigurableProduct {
+        configurable_options {
+          attribute_code
+          label
+          values {
+            value_index
+            label
+          }
+        }
+        variants {
+          attributes {
+            code
+            label
+            value_index
+          }
+          product {
+            sku
+            name
+            stock_status
+            price_range {
+              minimum_price {
+                regular_price {
+                  value
+                  currency
+                }
+              }
+            }
+          }
+        }
+      }
+
+      ... on DownloadableProduct {
+        downloadable_product_links {
+          title
+          sample_url
+        }
+        downloadable_product_samples {
+          title
+          sample_url
+        }
+      }
+    }
+  }
+}

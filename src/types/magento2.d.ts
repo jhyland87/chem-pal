@@ -123,6 +123,43 @@ declare global {
   }
 
   /**
+   * Single entry in a Magento 2 product's `media_gallery`.
+   *
+   * @example
+   * ```typescript
+   * const entry: Magento2MediaGalleryEntry = {
+   *   url: "https://www.example.com/media/catalog/product/cache/abc/P/6/P693472.jpg",
+   *   label: "Potassiumoxalate - ≥99% CAS No(583-52-8) by Aladdin Scientific",
+   *   position: 1
+   * };
+   * ```
+   */
+  interface Magento2MediaGalleryEntry {
+    /** Absolute URL to the media asset */
+    url: string;
+    /** Human-readable label for the asset */
+    label: string | null;
+    /** Display position of the asset within the gallery */
+    position?: number;
+  }
+
+  /**
+   * Variables accepted by the `searchProducts` GraphQL query
+   * (`@/queries/magento2-product-query.gql`).
+   *
+   * @example
+   * ```typescript
+   * const variables: Magento2QueryVariables = { search: "sodium", pageSize: 20 };
+   * ```
+   */
+  interface Magento2QueryVariables {
+    /** Search term matched against product names */
+    search: string;
+    /** Maximum number of products to return on the first page */
+    pageSize: number;
+  }
+
+  /**
    * Category assigned to a Magento 2 product.
    *
    * @example
@@ -283,6 +320,14 @@ declare global {
     url_key: string;
     /** Optional URL suffix (e.g. ".html") that completes the product URL */
     url_suffix?: string | null;
+    /** Canonical URL of the product page, if exposed */
+    canonical_url?: string | null;
+    /** SEO meta title */
+    meta_title?: string | null;
+    /** SEO meta keywords */
+    meta_keyword?: string | null;
+    /** SEO meta description */
+    meta_description?: string | null;
     /** Stock status string (e.g. "IN_STOCK", "OUT_OF_STOCK") */
     stock_status: string;
     /** Stock count, if exposed by the storefront */
@@ -299,6 +344,8 @@ declare global {
     description?: Magento2ComplexText | null;
     /** Primary product image */
     image?: Magento2Image | null;
+    /** Additional media assets for the product */
+    media_gallery?: Magento2MediaGalleryEntry[] | null;
     /** Categories the product is assigned to */
     categories?: Magento2Category[] | null;
     /** Sub-products for `GroupedProduct` items */

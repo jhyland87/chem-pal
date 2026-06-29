@@ -1,5 +1,4 @@
 import { UOM } from "@/constants/common";
-import type { SupplierCache } from "@/utils";
 import type { ColumnMeta } from "@tanstack/react-table";
 import { Column, Row, RowData } from "@tanstack/react-table";
 
