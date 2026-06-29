@@ -3,9 +3,11 @@ import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { findFormulaInHtml } from "@/helpers/science";
 import { firstMap, mapDefined } from "@/helpers/utils";
+import searchProductsQuery from "@/queries/magento2-product-query.gql";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isQuantityObject } from "@/utils/typeGuards/common";
 import { isValidMagento2SearchResponse } from "@/utils/typeGuards/magento2";
+import { print } from "graphql";
 import { SupplierBase } from "./SupplierBase";
 
 /**
@@ -68,70 +70,37 @@ export abstract class SupplierBaseMagento2
   /** Path to the Magento 2 GraphQL endpoint, relative to {@link baseURL} */
   protected graphQLPath: string = "/graphql";
 
+  protected limit: number = 50;
+
+  // Magento storefronts (e.g. AladdinSci) rate-limit (HTTP 429) bursts of product-page requests.
+  // The SupplierBase default cadence (3 concurrent, 100ms apart) triggered frequent 429s in
+  // testing — the rejections clustered exactly where 3 requests fired at once. Throttle harder
+  // here: at most 2 detail fetches in flight, spaced >=350ms apart. The escalating 429 backoff
+  // remains as a safety net for any stragglers.
+  protected maxConcurrentRequests: number = 2;
+  protected minConcurrentCycle: number = 350;
+
+  // Cap the total search time. The throttled, 429-prone detail phase can otherwise drag on when
+  // the server keeps rate-limiting; once this elapses, outstanding requests are aborted and only
+  // the products collected so far are returned. Tune per Magento supplier as needed.
+  protected maxAllowableSearchTime: number = 45_000;
+
   /**
-   * Builds the GraphQL query string for searching products by relevance.
-   * Includes the inline fragments required to surface `GroupedProduct` and
-   * `ConfigurableProduct` variant data alongside the base product fields.
+   * Builds the GraphQL variables for the `searchProducts` query. The query text itself lives in
+   * `@/queries/magento2-product-query.gql`; only the search term and page size vary per request.
    *
    * @param query - The search term to match against product names
    * @param limit - Maximum number of products to return on the first page
-   * @returns The GraphQL query string
+   * @returns The GraphQL variables for the products query
    * @example
    * ```typescript
-   * const query = this.getGraphQLQuery("sodium", 20);
-   * // Returns a GraphQL query string requesting up to 20 products matching "sodium"
+   * const variables = this.getGraphQLVariables("sodium", 20);
+   * // Returns { search: "sodium", pageSize: 20 }
    * ```
    * @source
    */
-  protected getGraphQLQuery(query: string, limit: number): string {
-    return `{
-      products(
-        search: "${query}"
-        sort: { relevance: DESC }
-        pageSize: ${limit}
-        currentPage: 1
-      ) {
-        items {
-          __typename
-          uid
-          sku
-          name
-          url_key
-          url_suffix
-          stock_status
-          price_range {
-            minimum_price { regular_price { value currency } }
-          }
-          short_description { html }
-          description       { html }
-          image { label }
-
-          ... on GroupedProduct {
-            items {
-              product {
-                sku
-                name
-                price_range {
-                  minimum_price { regular_price { value currency } }
-                }
-              }
-            }
-          }
-
-          ... on ConfigurableProduct {
-            variants {
-              product {
-                sku
-                name
-                price_range {
-                  minimum_price { regular_price { value currency } }
-                }
-              }
-            }
-          }
-        }
-      }
-    }`;
+  protected getGraphQLVariables(query: string, limit: number): Magento2QueryVariables {
+    return { search: query, pageSize: limit };
   }
 
   /**
@@ -156,11 +125,14 @@ export abstract class SupplierBaseMagento2
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    const graphQLQuery = this.getGraphQLQuery(query, 50);
+    // The .gql import is a parsed DocumentNode (vite-plugin-graphql-loader); the Magento 2
+    // endpoint wants the raw query text, so print it and pass the variables alongside.
+    const graphQLQuery = print(searchProductsQuery);
+    const graphQLVariables = this.getGraphQLVariables(query, limit);
 
     const searchRequest = await this.httpPostJson({
       path: this.graphQLPath,
-      body: { query: graphQLQuery },
+      body: { query: graphQLQuery, variables: graphQLVariables },
       headers: {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         "Content-Type": "application/json",
@@ -304,7 +276,11 @@ export abstract class SupplierBaseMagento2
         .setBasicInfo(item.name, productUrl, this.supplierName)
         .setPricing(primaryPrice.price, primary.raw.currency, primaryPrice.currencySymbol)
         .setSku(item.sku)
-        .setID(item.uid);
+        .setID(item.uid)
+        // The picture is the only new field surfaced from the GraphQL search response; the
+        // remaining chemical identifiers are scraped per-supplier in getProductData.
+        .setImage(item.image?.url, item.image?.label ?? undefined)
+        .setPermalink(`${this.baseURL}/${this.storeCode}/${item.url_key}.html`);
 
       if (item.stock_status) {
         builder.setAvailability(item.stock_status);
@@ -324,7 +300,9 @@ export abstract class SupplierBaseMagento2
         builder.setQuantity(1, UOM.EA);
       }
 
-      builder.setCAS(firstMap(findFormulaInHtml, [item.name, item.image?.label ?? "", descriptionHtml]));
+      builder.setCAS(
+        firstMap(findFormulaInHtml, [item.name, item.image?.label ?? "", descriptionHtml]),
+      );
 
       for (const { raw, parsedQuantity } of enriched.slice(1)) {
         builder.addVariant({

@@ -58,6 +58,12 @@ declare global {
     body?: object | string;
     params?: Maybe<RequestParams>;
     headers?: Maybe<Record<string, string>>;
+    /**
+     * When true, a non-abort fetch failure (e.g. an HttpError such as 429) is rethrown instead
+     * of being swallowed and returned as `undefined`. Lets callers implement status-aware
+     * retry/backoff. Defaults to false (the historical swallow-and-return-undefined behavior).
+     */
+    rethrowErrors?: boolean;
   }
 
   /**

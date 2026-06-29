@@ -291,6 +291,18 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   protected minConcurrentCycle: number = 100;
 
   /**
+   * Maximum wall-clock time (in milliseconds) a single supplier's `execute()` search may run.
+   * Once exceeded, any in-flight and pending product-detail requests are aborted and the search
+   * stops yielding new products — only those already collected are returned. Measured from the
+   * start of `execute()`, so it also bounds a slow initial query. Set to `0` (the default) to
+   * disable the limit. Override per supplier for sources that are slow or rate-limit-prone.
+   *
+   * @defaultValue 0 (disabled)
+   * @source
+   */
+  protected maxAllowableSearchTime: number = 0;
+
+  /**
    * HTTP headers used as a basis for all requests to the supplier.
    * These headers are merged with any request-specific headers when
    * making HTTP requests.
@@ -383,6 +395,21 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    */
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   protected cache!: SupplierCache;
+
+  /**
+   * HTTP status codes that, when hit while fetching a product's detail data, prevent that
+   * product from being cached (see {@link shouldCacheProductData}). Mirrors
+   * `userSettings.noCacheStatusCodes`; set by {@link initCache}. Defaults to `[429]`.
+   */
+  protected noCacheStatusCodes: number[] = [429];
+
+  /**
+   * Maps a product's fetch key (permalink, falling back to its processing URL) to the HTTP
+   * status of its last failed detail fetch. Populated by subclasses via {@link recordFetchFailure}
+   * and consulted by {@link shouldCacheProductData}. Per-search, since the factory builds a fresh
+   * supplier instance for each search.
+   */
+  protected readonly failedFetchStatuses: Map<string, number> = new Map();
 
   /**
    * Product-data cache keys the user has explicitly excluded via the "Ignore
@@ -478,6 +505,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     enabled: boolean = true,
     doNotCacheEmptyResults: boolean = false,
     cacheTtlMinutes: number = 0,
+    noCacheStatusCodes: number[] = [429],
   ): void {
     this.cache = new SupplierCache(
       this.supplierName,
@@ -486,6 +514,9 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       doNotCacheEmptyResults,
       cacheTtlMinutes,
     );
+    // Stored on the supplier (not the cache): the decision is made at cache-write time in
+    // getProductData(WithCache), where the per-product fetch status is known.
+    this.noCacheStatusCodes = noCacheStatusCodes ?? [429];
   }
 
   /**
@@ -934,6 +965,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     params,
     headers,
     host,
+    rethrowErrors,
   }: RequestOptions): Promise<Maybe<Response>> {
     // Check if the request has been aborted before proceeding
     if (this.controller.signal.aborted) {
@@ -985,11 +1017,16 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       if (error instanceof Error && error.name === "AbortError") {
         this.logger.warn("Request was aborted", { error, signal: this.controller.signal });
         this.controller.abort();
-      } else {
-        this.logger.error("Error received during fetch:", {
-          error,
-          signal: this.controller.signal,
-        });
+        return;
+      }
+      this.logger.error("Error received during fetch:", {
+        error,
+        signal: this.controller.signal,
+      });
+      // Opt-in: surface the failure (e.g. an HttpError 429) so the caller can apply
+      // status-aware retry/backoff. Default behavior remains swallow-and-return-undefined.
+      if (rethrowErrors) {
+        throw error;
       }
       return;
     }
@@ -1409,71 +1446,105 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     const excludedForSupplier = await countExcludedProductsForSupplier(this.supplierName);
     const fetchLimit = this.limit + excludedForSupplier;
     incrementSearchQueryCount(this.supplierName);
-    const results = await this.queryProductsWithCache(this.query, fetchLimit);
-    if (!results || results.length === 0) {
-      this.logger.log(`No query results found`);
-      return;
-    }
-    // Drop any products the user has ignored, then slice back down to the
-    // user-visible limit. Uses the same key shape as getProductData so
-    // whichever side catches the exclusion first, the check is consistent.
-    const survivors: ProductBuilder<T>[] = [];
-    for (const builder of results) {
-      if (survivors.length >= this.limit) break;
-      const rawUrl = builder.get("url");
-      if (typeof rawUrl !== "string") {
-        survivors.push(builder);
-        continue;
-      }
-      const exclusionUrl = this.href(rawUrl);
-      const exclusionKey = getProductExclusionKey(exclusionUrl, this.supplierName);
-      if (this.excludedProductKeys.has(exclusionKey)) {
-        this.logger.debug("Skipping excluded product (pre-detail)", {
-          url: rawUrl,
-          exclusionUrl,
-          exclusionKey,
-        });
-        continue;
-      }
-      survivors.push(builder);
-    }
-    this.products = survivors;
-    const queue = new Queue(this.maxConcurrentRequests, this.minConcurrentCycle);
 
-    // Create an array of promises, each yielding a product as soon as it's ready
-    const tasks = this.products.map((product) =>
-      queue.run(async () => {
-        try {
-          this.logger.debug(`Product data for ${this.supplierName}:`, product);
-          const builder = await this.getProductData(product);
-          if (!builder) return;
+    // Optional per-supplier search-time budget. When it elapses, abort outstanding requests
+    // (the controller's signal cancels in-flight and future fetches) and stop yielding new
+    // products — whatever has already been yielded still shows. `SEARCH_TIMEOUT` is the race
+    // sentinel that lets the yield loop break promptly instead of waiting on the next task.
+    const SEARCH_TIMEOUT = Symbol("searchTimeout");
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+    const timeoutPromise =
+      this.maxAllowableSearchTime > 0
+        ? new Promise<typeof SEARCH_TIMEOUT>((resolve) => {
+            timeoutHandle = setTimeout(() => {
+              this.logger.warn(
+                `Search exceeded maxAllowableSearchTime (${this.maxAllowableSearchTime}ms); ` +
+                  `aborting outstanding requests and returning collected results`,
+                { supplier: this.supplierName },
+              );
+              this.controller.abort();
+              resolve(SEARCH_TIMEOUT);
+            }, this.maxAllowableSearchTime);
+          })
+        : undefined;
 
-          this.logger.debug(`Builder data for ${this.supplierName}:`, builder);
-          const finished = await this.finishProduct(builder);
-          this.logger.debug(`Finished product data for ${this.supplierName}:`, finished);
-          if (finished) {
-            return finished;
-          }
-        } catch (e: unknown) {
-          this.logger.error("Error processing product", { error: e, product });
-          incrementParseError(this.supplierName);
+    try {
+      const results = await this.queryProductsWithCache(this.query, fetchLimit);
+      if (!results || results.length === 0) {
+        this.logger.log(`No query results found`);
+        return;
+      }
+      // Drop any products the user has ignored, then slice back down to the
+      // user-visible limit. Uses the same key shape as getProductData so
+      // whichever side catches the exclusion first, the check is consistent.
+      const survivors: ProductBuilder<T>[] = [];
+      for (const builder of results) {
+        if (survivors.length >= this.limit) break;
+        const rawUrl = builder.get("url");
+        if (typeof rawUrl !== "string") {
+          survivors.push(builder);
+          continue;
         }
-      }),
-    );
+        const exclusionUrl = this.href(rawUrl);
+        const exclusionKey = getProductExclusionKey(exclusionUrl, this.supplierName);
+        if (this.excludedProductKeys.has(exclusionKey)) {
+          this.logger.debug("Skipping excluded product (pre-detail)", {
+            url: rawUrl,
+            exclusionUrl,
+            exclusionKey,
+          });
+          continue;
+        }
+        survivors.push(builder);
+      }
+      this.products = survivors;
+      const queue = new Queue(this.maxConcurrentRequests, this.minConcurrentCycle);
 
-    // As each promise resolves, yield the product
-    const resultsSet = new Set(tasks);
-    while (resultsSet.size > 0) {
-      const finished = await Promise.race(resultsSet);
-      // Remove the finished promise from the set
-      for (const t of resultsSet) {
-        if ((await Promise.resolve(t)) === finished) {
-          resultsSet.delete(t);
+      // Create an array of promises, each yielding a product as soon as it's ready
+      const tasks = this.products.map((product) =>
+        queue.run(async () => {
+          try {
+            this.logger.debug(`Product data for ${this.supplierName}:`, product);
+            const builder = await this.getProductData(product);
+            if (!builder) return;
+
+            this.logger.debug(`Builder data for ${this.supplierName}:`, builder);
+            const finished = await this.finishProduct(builder);
+            this.logger.debug(`Finished product data for ${this.supplierName}:`, finished);
+            if (finished) {
+              return finished;
+            }
+          } catch (e: unknown) {
+            this.logger.error("Error processing product", { error: e, product });
+            incrementParseError(this.supplierName);
+          }
+        }),
+      );
+
+      // As each promise resolves, yield the product. Race against the optional search-time
+      // budget so an exceeded budget breaks out promptly with whatever has been collected.
+      const resultsSet = new Set(tasks);
+      while (resultsSet.size > 0) {
+        const finished = await Promise.race(
+          timeoutPromise ? [...resultsSet, timeoutPromise] : [...resultsSet],
+        );
+        if (finished === SEARCH_TIMEOUT) {
           break;
         }
+        // Remove the finished promise from the set
+        for (const t of resultsSet) {
+          if ((await Promise.resolve(t)) === finished) {
+            resultsSet.delete(t);
+            break;
+          }
+        }
+        if (finished) {
+          yield finished;
+        }
       }
-      if (finished) {
-        yield finished;
+    } finally {
+      if (timeoutHandle !== undefined) {
+        clearTimeout(timeoutHandle);
       }
     }
   }
@@ -1756,7 +1827,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
         incrementParseError(this.supplierName);
         return undefined;
       }
-      if (resultBuilder) {
+      if (resultBuilder && this.shouldCacheProductData(resultBuilder)) {
         await this.cache.cacheProductData(cacheKey, resultBuilder.dump());
       }
       return resultBuilder;
@@ -1839,7 +1910,9 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       }
       if (resultBuilder) {
         incrementProductCount(this.supplierName);
-        await this.cache.cacheProductData(cacheKey, resultBuilder.dump());
+        if (this.shouldCacheProductData(resultBuilder)) {
+          await this.cache.cacheProductData(cacheKey, resultBuilder.dump());
+        }
       }
       return resultBuilder;
     } catch (outerErr: unknown) {
@@ -1847,6 +1920,66 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       incrementParseError(this.supplierName);
       return undefined;
     }
+  }
+
+  /**
+   * The key under which a product's detail-fetch failures are recorded/looked up: its permalink
+   * if set, otherwise its processing URL. Subclasses that fetch supplemental data should record
+   * failures under this same key so {@link shouldCacheProductData} can match them.
+   *
+   * @param product - The product builder
+   * @returns The fetch key, or undefined when neither permalink nor url is a string
+   * @example
+   * ```typescript
+   * this.productFetchKey(builder); // "https://www.aladdinsci.com/us_en/x.html"
+   * ```
+   * @source
+   */
+  protected productFetchKey(product: ProductBuilder<T>): string | undefined {
+    const key = product.get("permalink") ?? product.get("url");
+    return typeof key === "string" ? key : undefined;
+  }
+
+  /**
+   * Records the HTTP status of a failed product-detail fetch so {@link shouldCacheProductData}
+   * can skip caching it. Non-HTTP failures (no status) are not recorded.
+   *
+   * @param key - The product fetch key (see {@link productFetchKey})
+   * @param httpStatus - The HTTP status of the failure, if it was an HttpError
+   * @returns void
+   * @example
+   * ```typescript
+   * this.recordFetchFailure(permalink, 429);
+   * ```
+   * @source
+   */
+  protected recordFetchFailure(key: string, httpStatus?: number): void {
+    if (typeof httpStatus === "number") {
+      this.failedFetchStatuses.set(key, httpStatus);
+    }
+  }
+
+  /**
+   * Decides whether a freshly-fetched product's detail data should be written to the cache.
+   * Skips caching when the product's last detail fetch failed with a {@link noCacheStatusCodes}
+   * status (default 429), so a later search retries it instead of serving the incomplete cached
+   * entry. The product is still listed regardless.
+   *
+   * @param product - The product builder about to be cached
+   * @returns True to cache the product data, false to skip caching it
+   * @example
+   * ```typescript
+   * this.shouldCacheProductData(builder); // false when the detail fetch hit a 429
+   * ```
+   * @source
+   */
+  protected shouldCacheProductData(product: ProductBuilder<T>): boolean {
+    const key = this.productFetchKey(product);
+    if (key === undefined) {
+      return true;
+    }
+    const failedStatus = this.failedFetchStatuses.get(key);
+    return failedStatus === undefined || !this.noCacheStatusCodes.includes(failedStatus);
   }
 
   /**

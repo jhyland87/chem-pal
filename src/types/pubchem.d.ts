@@ -8,6 +8,14 @@ export {};
 
 declare global {
   /**
+   * PubChem Compound ID (CID) for a product — a positive integer. Lightweight nominal (branded)
+   * type enforced at runtime by the `isPubChemCID` guard in `typeGuards/common.ts`, which narrows
+   * plain values to this type so setters can assign without casts.
+   * @example 11413
+   */
+  type PubChemCID = number & { readonly __pubchemCid: unique symbol };
+
+  /**
    * Valid collection names for SDQ search queries
    */
   type SDQCollection =

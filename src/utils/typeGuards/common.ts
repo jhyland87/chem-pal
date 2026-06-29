@@ -866,6 +866,7 @@ function buildUserSettingsSchema() {
     caching: z.boolean().optional(),
     doNotCacheEmptyResults: z.boolean().optional(),
     cacheTtlMinutes: z.coerce.number().nonnegative().optional(),
+    noCacheStatusCodes: z.array(z.number().int().positive()).optional(),
     currencyRate: z.number().optional(),
     currency: z
       .string()
@@ -951,4 +952,80 @@ export function isPlainContainer(v: unknown): v is object {
  */
 export function isSmiles(smiles: unknown): smiles is Smiles<string> {
   return looksLikeSmiles(String(smiles));
+}
+
+/**
+ * Type guard to validate if a value is a usable IUPAC name (a non-empty string).
+ *
+ * @category Typeguards
+ * @param value - The value to validate
+ * @returns Type predicate indicating if the value is a valid IUPAC name
+ * @example
+ * ```typescript
+ * isIupacName("dipotassium;oxalate") // Returns true
+ * isIupacName("") // Returns false
+ * ```
+ * @source
+ */
+export function isIupacName(value: unknown): value is IupacName<string> {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+/**
+ * Type guard to validate if a value is a PubChem Compound ID (a positive integer).
+ * Numeric strings are accepted and coerced before validation.
+ *
+ * @category Typeguards
+ * @param value - The value to validate
+ * @returns Type predicate indicating if the value is a valid PubChem CID
+ * @example
+ * ```typescript
+ * isPubChemCID(11413) // Returns true
+ * isPubChemCID("11413") // Returns true
+ * isPubChemCID(0) // Returns false
+ * isPubChemCID("abc") // Returns false
+ * ```
+ * @source
+ */
+export function isPubChemCID(value: unknown): value is PubChemCID {
+  if (typeof value !== "number" && typeof value !== "string") return false;
+  const num = typeof value === "string" ? Number(value) : value;
+  return Number.isInteger(num) && num > 0;
+}
+
+/**
+ * Type guard to validate if a value is an InChIKey.
+ * An InChIKey is three hyphen-separated uppercase-letter blocks of 14, 10, and 1 characters.
+ *
+ * @category Typeguards
+ * @param value - The value to validate
+ * @returns Type predicate indicating if the value is a valid InChIKey
+ * @example
+ * ```typescript
+ * isInChIKey("IRXRGVFLQOSHOH-UHFFFAOYSA-L") // Returns true
+ * isInChIKey("not-an-inchikey") // Returns false
+ * ```
+ * @source
+ */
+export function isInChIKey(value: unknown): value is InChIKey<string> {
+  return typeof value === "string" && /^[A-Z]{14}-[A-Z]{10}-[A-Z]$/.test(value);
+}
+
+/**
+ * Type guard to validate if a value is an InChI string. Accepts values with or without the
+ * leading `InChI=` prefix (the version layer `1S/...` or `1/...` must follow).
+ *
+ * @category Typeguards
+ * @param value - The value to validate
+ * @returns Type predicate indicating if the value is a valid InChI string
+ * @example
+ * ```typescript
+ * isInChI("InChI=1S/H2O/h1H2") // Returns true
+ * isInChI("1S/C2H2O4.2K/c3-1(4)2(5)6;;/h(H,3,4)(H,5,6);;/q;2*+1/p-2") // Returns true
+ * isInChI("not an inchi") // Returns false
+ * ```
+ * @source
+ */
+export function isInChI(value: unknown): value is InChI<string> {
+  return typeof value === "string" && /^(InChI=)?1S?\/.+/.test(value);
 }
