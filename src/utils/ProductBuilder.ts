@@ -5,6 +5,7 @@ import { parseQuantity, toBaseQuantity } from "@/helpers/quantity";
 import { findFormulaInHtml } from "@/helpers/science";
 import { htmlToAscii, isMoleForm } from "@/helpers/utils";
 import { Logger } from "@/utils/Logger";
+import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import {
   isCAS,
   isCountryCode,
@@ -69,6 +70,9 @@ export class ProductBuilder<T extends Product> {
   /** The logger for the product builder */
   private logger: Logger;
 
+  /** Whether to show failed validation warnings */
+  private showFailedValidation: boolean = IS_DEV_BUILD;
+
   /**
    * Creates a new ProductBuilder instance.
    * @param baseURL - The base URL of the supplier's website, used for resolving relative URLs
@@ -103,6 +107,9 @@ export class ProductBuilder<T extends Product> {
     if (data === null || typeof data !== "object") {
       return this;
     }
+    //
+    // @todo: This is AI garbage, and I need to clean it up. Too messy.
+    //
     // Route every key through its validating setter instead of a blind Object.assign, so values
     // can't bypass the per-field checks. `Record<keyof Product, …>` forces this map to stay
     // exhaustive — adding a Product field without a handler is a compile error. Keys not present
@@ -177,7 +184,7 @@ export class ProductBuilder<T extends Product> {
       if (handler) {
         handler(value);
       } else {
-        this.logger.warn(`setData| dropping unsupported key "${key}"`, { key, value });
+        this.logger.warn("setData| dropping unsupported key", { key, value });
       }
     }
     return this;
@@ -258,6 +265,8 @@ export class ProductBuilder<T extends Product> {
   setTitle(title: unknown): ProductBuilder<T> {
     if (typeof title === "string" && title.trim().length > 0) {
       this.product.title = title;
+    } else if (title != null && this.showFailedValidation) {
+      this.logger.warn("setTitle| Invalid title value", { title, builder: this });
     }
     return this;
   }
@@ -275,6 +284,8 @@ export class ProductBuilder<T extends Product> {
   setSupplier(supplier: unknown): ProductBuilder<T> {
     if (typeof supplier === "string" && supplier.trim().length > 0) {
       this.product.supplier = supplier;
+    } else if (supplier != null && this.showFailedValidation) {
+      this.logger.warn("setSupplier| Invalid supplier value", { supplier, builder: this });
     }
     return this;
   }
@@ -293,6 +304,8 @@ export class ProductBuilder<T extends Product> {
     const href = this.resolveHref(url);
     if (href) {
       this.product.url = href;
+    } else if (url != null && this.showFailedValidation) {
+      this.logger.warn("setURL| Invalid URL", { url, builder: this });
     }
     return this;
   }
@@ -311,6 +324,8 @@ export class ProductBuilder<T extends Product> {
     const href = this.resolveHref(permalink);
     if (href) {
       this.product.permalink = href;
+    } else if (permalink != null && this.showFailedValidation) {
+      this.logger.warn("setPermalink| Invalid permalink", { permalink, builder: this });
     }
     return this;
   }
@@ -331,6 +346,8 @@ export class ProductBuilder<T extends Product> {
     const href = this.resolveHref(sdsUrl);
     if (href) {
       this.product.sdsUrl = href;
+    } else if (sdsUrl != null && this.showFailedValidation) {
+      this.logger.warn("setSDSUrl| Invalid SDS URL", { sdsUrl, builder: this });
     }
     return this;
   }
@@ -346,8 +363,11 @@ export class ProductBuilder<T extends Product> {
    * @source
    */
   setSpecSheetUrl(specSheetUrl: unknown): ProductBuilder<T> {
-    if (typeof specSheetUrl === "string" && specSheetUrl.trim().length > 0) {
-      this.product.specSheetUrl = specSheetUrl;
+    const href = this.resolveHref(specSheetUrl);
+    if (href) {
+      this.product.specSheetUrl = href;
+    } else if (specSheetUrl != null && this.showFailedValidation) {
+      this.logger.warn("setSpecSheetUrl| Invalid spec sheet URL", { specSheetUrl, builder: this });
     }
     return this;
   }
@@ -368,6 +388,9 @@ export class ProductBuilder<T extends Product> {
   setImage(imageURL: unknown, imageAltText?: unknown): ProductBuilder<T> {
     const href = this.resolveHref(imageURL);
     if (!href) {
+      if (imageURL != null && this.showFailedValidation) {
+        this.logger.warn("setImage| Invalid image URL", { imageURL, builder: this });
+      }
       return this;
     }
     this.product.imageURL = href;
@@ -391,6 +414,8 @@ export class ProductBuilder<T extends Product> {
     const href = this.resolveHref(thumbnail);
     if (href) {
       this.product.thumbnail = href;
+    } else if (thumbnail != null && this.showFailedValidation) {
+      this.logger.warn("Invalid thumbnail URL", { thumbnail, builder: this });
     }
     return this;
   }
@@ -450,6 +475,8 @@ export class ProductBuilder<T extends Product> {
   setGrade(grade: unknown): ProductBuilder<T> {
     if (typeof grade === "string" && grade.trim().length > 0) {
       this.product.grade = grade;
+    } else if (grade != null && this.showFailedValidation) {
+      this.logger.warn("setGrade| Invalid grade value", { grade, builder: this });
     }
     return this;
   }
@@ -468,11 +495,10 @@ export class ProductBuilder<T extends Product> {
   setPrice(price: unknown): ProductBuilder<T> {
     if (typeof price !== "number" && typeof price !== "string") {
       // A non-null, non-numeric value is a genuine misuse worth flagging; absent input is a quiet no-op.
-      if (price != null) {
-        this.logger.warn(`setPrice| Invalid price: ${price}`, {
+      if (price != null && this.showFailedValidation) {
+        this.logger.warn("setPrice| Invalid price", {
           price,
           builder: this,
-          product: this.product,
         });
       }
       return this;
@@ -499,11 +525,10 @@ export class ProductBuilder<T extends Product> {
   setCurrencySymbol(sign: unknown): ProductBuilder<T> {
     if (isCurrencySymbol(sign)) {
       this.product.currencySymbol = sign;
-    } else if (sign != null) {
-      this.logger.warn(`setCurrencySymbol| Invalid currency symbol: ${sign}`, {
+    } else if (sign != null && this.showFailedValidation) {
+      this.logger.warn("setCurrencySymbol| Invalid currency symbol", {
         sign,
         builder: this,
-        product: this.product,
       });
     }
     return this;
@@ -523,11 +548,10 @@ export class ProductBuilder<T extends Product> {
   setCurrencyCode(code: unknown): ProductBuilder<T> {
     if (isCurrencyCode(code)) {
       this.product.currencyCode = code;
-    } else if (code != null) {
-      this.logger.warn(`setCurrencyCode| Invalid currency code: ${code}`, {
+    } else if (code != null && this.showFailedValidation) {
+      this.logger.warn("setCurrencyCode| Invalid currency code", {
         code,
         builder: this,
-        product: this.product,
       });
     }
     return this;
@@ -684,10 +708,9 @@ export class ProductBuilder<T extends Product> {
       const [qty, unit] = quantity.split(/\s(.+)/s);
 
       if (Number.isNaN(Number(qty))) {
-        this.logger.warn(`Unable to parse quantity from string: ${quantity}`, {
+        this.logger.warn(`setQuantity| Unable to parse quantity from string`, {
           quantity,
           builder: this,
-          product: this.product,
         });
         return this;
       }
@@ -703,14 +726,12 @@ export class ProductBuilder<T extends Product> {
       return this;
     }
 
-    this.logger.warn(
-      `Unknown quantity type: ${typeof quantity} - Expected number, string, or QuantityObject`,
-      {
+    if (this.showFailedValidation) {
+      this.logger.warn("setQuantity| Unknown quantity type", {
         quantity,
         builder: this,
-        product: this.product,
-      },
-    );
+      });
+    }
     return this;
   }
 
@@ -727,6 +748,8 @@ export class ProductBuilder<T extends Product> {
   setMoles(moles: unknown): ProductBuilder<T> {
     if (typeof moles === "number" && !Number.isNaN(moles) && moles > 0) {
       this.product.moles = moles;
+    } else if (moles != null && this.showFailedValidation) {
+      this.logger.warn("setMoles| Invalid moles", { moles, builder: this });
     }
     return this;
   }
@@ -744,8 +767,8 @@ export class ProductBuilder<T extends Product> {
   setUOM(uom: unknown): ProductBuilder<T> {
     if (isUOM(uom)) {
       this.product.uom = uom;
-    } else if (uom != null) {
-      this.logger.warn(`Unknown UOM: ${uom}`);
+    } else if (uom != null && this.showFailedValidation) {
+      this.logger.warn("setUOM| Invalid UOM", { uom, builder: this });
     }
     return this;
   }
@@ -763,10 +786,9 @@ export class ProductBuilder<T extends Product> {
    */
   setSupplierCountry(country: unknown): ProductBuilder<T> {
     if (isCountryCode(country)) {
-      console.log("IS COUNTRY CODE", country);
       this.product.supplierCountry = country;
-    } else {
-      console.log("NOT COUNTRY CODE", country);
+    } else if (country != null && this.showFailedValidation) {
+      this.logger.warn("setSupplierCountry| Invalid country value", { country, builder: this });
     }
     return this;
   }
@@ -785,6 +807,8 @@ export class ProductBuilder<T extends Product> {
   setSupplierShipping(shipping: unknown): ProductBuilder<T> {
     if (isShippingRange(shipping)) {
       this.product.supplierShipping = shipping;
+    } else if (shipping != null && this.showFailedValidation) {
+      this.logger.warn("setSupplierShipping| Invalid shipping value", { shipping, builder: this });
     }
     return this;
   }
@@ -805,6 +829,11 @@ export class ProductBuilder<T extends Product> {
     const valid = candidates.filter(isPaymentMethod);
     if (valid.length > 0) {
       this.product.paymentMethods = valid;
+    } else if (paymentMethods != null && this.showFailedValidation) {
+      this.logger.warn("setSupplierPaymentMethods| Invalid payment methods", {
+        paymentMethods,
+        builder: this,
+      });
     }
     return this;
   }
@@ -825,6 +854,8 @@ export class ProductBuilder<T extends Product> {
   setDescription(description: unknown): ProductBuilder<T> {
     if (typeof description === "string" && description.trim().length > 0) {
       this.product.description = htmlToAscii(description);
+    } else if (description != null && this.showFailedValidation) {
+      this.logger.warn("setDescription| Invalid description", { description, builder: this });
     }
     return this;
   }
@@ -842,6 +873,11 @@ export class ProductBuilder<T extends Product> {
   setShortDescription(shortDescription: unknown): ProductBuilder<T> {
     if (typeof shortDescription === "string" && shortDescription.trim().length > 0) {
       this.product.shortDescription = htmlToAscii(shortDescription);
+    } else if (shortDescription != null && this.showFailedValidation) {
+      this.logger.warn("setShortDescription| Invalid short description", {
+        shortDescription,
+        builder: this,
+      });
     }
     return this;
   }
@@ -862,6 +898,8 @@ export class ProductBuilder<T extends Product> {
       if (!Number.isNaN(value)) {
         this.product.rating = value;
       }
+    } else if (rating != null && this.showFailedValidation) {
+      this.logger.warn("setRating| Invalid rating", { rating, builder: this });
     }
     return this;
   }
@@ -882,6 +920,8 @@ export class ProductBuilder<T extends Product> {
       if (!Number.isNaN(value)) {
         this.product.reviewCount = value;
       }
+    } else if (reviewCount != null) {
+      this.logger.warn("setReviewCount| Invalid review count", { reviewCount, builder: this });
     }
     return this;
   }
@@ -908,7 +948,6 @@ export class ProductBuilder<T extends Product> {
         this.logger.warn(`setCAS| Invalid CAS number`, {
           cas,
           builder: this,
-          product: this.product,
         });
       }
       return this;
@@ -940,6 +979,8 @@ export class ProductBuilder<T extends Product> {
     if (typeof id === "number" || typeof id === "string") {
       // T["id"] narrows the generic product's id type; the number|string input is the data-model alias for it.
       this.product.id = id as T["id"];
+    } else if (id != null && this.showFailedValidation) {
+      this.logger.warn("setID| Invalid ID value", { id, builder: this });
     }
     return this;
   }
@@ -958,6 +999,8 @@ export class ProductBuilder<T extends Product> {
   setUUID(uuid: unknown): ProductBuilder<T> {
     if (typeof uuid === "string" && uuid.trim().length > 0) {
       this.product.uuid = uuid;
+    } else if (uuid != null && this.showFailedValidation) {
+      this.logger.warn("setUUID| Invalid UUID value", { uuid, builder: this });
     }
     return this;
   }
@@ -976,6 +1019,8 @@ export class ProductBuilder<T extends Product> {
   setSku(sku: unknown): ProductBuilder<T> {
     if (typeof sku === "string" && sku.trim().length > 0) {
       this.product.sku = sku;
+    } else if (sku != null && this.showFailedValidation) {
+      this.logger.warn("setSku| Invalid SKU value", { sku, builder: this });
     }
     return this;
   }
@@ -995,8 +1040,13 @@ export class ProductBuilder<T extends Product> {
   setSmiles(smiles: unknown): ProductBuilder<T> {
     if (isSmiles(smiles)) {
       this.product.smiles = smiles;
-    } else if (smiles !== undefined && smiles !== null && smiles !== "") {
-      this.logger.warn(`setSmiles| Invalid SMILES: ${smiles}`, {
+    } else if (
+      smiles !== undefined &&
+      smiles !== null &&
+      smiles !== "" &&
+      this.showFailedValidation
+    ) {
+      this.logger.warn("setSmiles| Invalid SMILES", {
         smiles,
         builder: this,
       });
@@ -1019,8 +1069,13 @@ export class ProductBuilder<T extends Product> {
   setIupacName(iupacName: unknown): ProductBuilder<T> {
     if (isIupacName(iupacName)) {
       this.product.iupacName = iupacName;
-    } else if (iupacName !== undefined && iupacName !== null && iupacName !== "") {
-      this.logger.warn(`setIupacName| Invalid IUPAC name: ${iupacName}`, {
+    } else if (
+      iupacName !== undefined &&
+      iupacName !== null &&
+      iupacName !== "" &&
+      this.showFailedValidation
+    ) {
+      this.logger.warn("setIupacName| Invalid IUPAC name", {
         iupacName,
         builder: this,
       });
@@ -1044,8 +1099,13 @@ export class ProductBuilder<T extends Product> {
   setPubchemId(pubchemId: unknown): ProductBuilder<T> {
     if (isPubChemCID(pubchemId)) {
       this.product.pubchemId = Number(pubchemId) as PubChemCID;
-    } else if (pubchemId !== undefined && pubchemId !== null && pubchemId !== "") {
-      this.logger.warn(`setPubchemId| Invalid PubChem CID: ${pubchemId}`, {
+    } else if (
+      pubchemId !== undefined &&
+      pubchemId !== null &&
+      pubchemId !== "" &&
+      this.showFailedValidation
+    ) {
+      this.logger.warn("setPubchemId| Invalid PubChem CID", {
         pubchemId,
         builder: this,
       });
@@ -1068,8 +1128,13 @@ export class ProductBuilder<T extends Product> {
   setInChIKey(inchiKey: unknown): ProductBuilder<T> {
     if (isInChIKey(inchiKey)) {
       this.product.inchiKey = inchiKey;
-    } else if (inchiKey !== undefined && inchiKey !== null && inchiKey !== "") {
-      this.logger.warn(`setInChIKey| Invalid InChIKey: ${inchiKey}`, {
+    } else if (
+      inchiKey !== undefined &&
+      inchiKey !== null &&
+      inchiKey !== "" &&
+      this.showFailedValidation
+    ) {
+      this.logger.warn("setInChIKey| Invalid InChIKey", {
         inchiKey,
         builder: this,
       });
@@ -1093,8 +1158,8 @@ export class ProductBuilder<T extends Product> {
   setInChI(inchi: unknown): ProductBuilder<T> {
     if (isInChI(inchi)) {
       this.product.inchi = inchi;
-    } else if (inchi !== undefined && inchi !== null && inchi !== "") {
-      this.logger.warn(`setInChI| Invalid InChI: ${inchi}`, {
+    } else if (inchi !== undefined && inchi !== null && inchi !== "" && this.showFailedValidation) {
+      this.logger.warn("setInChI| Invalid InChI", {
         inchi,
         builder: this,
       });
@@ -1115,6 +1180,8 @@ export class ProductBuilder<T extends Product> {
   setVendor(vendor: unknown): ProductBuilder<T> {
     if (typeof vendor === "string" && vendor.trim().length > 0) {
       this.product.vendor = vendor;
+    } else if (vendor != null && this.showFailedValidation) {
+      this.logger.warn("setVendor| Invalid vendor value", { vendor, builder: this });
     }
     return this;
   }
@@ -1190,7 +1257,7 @@ export class ProductBuilder<T extends Product> {
     const avail = this.determineAvailability(availability);
 
     if (typeof avail === "undefined") {
-      this.logger.warn(`Unknown availability: ${availability}`);
+      this.logger.warn("Unknown availability", { availability, builder: this });
       return this;
     }
 
@@ -1272,32 +1339,40 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
-   * Sets the purity for the product. Accepts `99`, `"99%"`, or any value; anything that doesn't
-   * resolve to a percentage in the `(0, 100]` range is ignored.
-   * @param purity - The purity to set (e.g. `99` or `"99%"`), or any value (invalid input is ignored)
+   * Sets the purity for the product, stored as a percentage string. A number in the `(0, 100]`
+   * range is normalized to `"<n>%"`. A string is mined for just the percentage token — an optional
+   * comparator (`<`, `>`, `≤`, `≥`, `≈`), digits with optional decimals, and a `%` — so noisy
+   * supplier values keep only the meaningful part. Anything without a valid percentage is ignored.
+   * @param purity - The purity to set (e.g. `99`, `"≥99%"`, `"≥99.995% metals basis"`), or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
-   * builder.setPurity(98);
-   * builder.setPurity(98.5);
-   * builder.setPurity(99);
-   * builder.setPurity(99.5);
-   * builder.setPurity(100);
-   * builder.setPurity("98%");
-   * builder.setPurity("98.5%");
-   * builder.setPurity("99%");
-   * builder.setPurity("99.5%");
-   * builder.setPurity("100%");
+   * builder.setPurity(98);                       // stored as "98%"
+   * builder.setPurity("≥99.995% metals basis");  // stored as "≥99.995%"
+   * builder.setPurity("≥98%(HPLC)");             // stored as "≥98%"
+   * builder.setPurity("60% in Water");           // stored as "60%"
+   * builder.setPurity("ACS reagent");            // ignored
    * ```
    * @source
    */
   setPurity(purity: unknown): ProductBuilder<T> {
-    if (typeof purity === "string") {
-      purity = Number(purity.replace("%", ""));
+    let value: string | undefined;
+    if (typeof purity === "number") {
+      if (!Number.isNaN(purity) && purity > 0 && purity <= 100) {
+        value = `${purity}%`;
+      }
+    } else if (typeof purity === "string") {
+      // Extract just the percentage token from a possibly-noisy value, e.g.
+      // "≥99.995% metals basis", "≥98%(HPLC)", "60% in Water".
+      const token = purity.replace(/\s+/g, "").match(/[<>≤≥≈]?1?\d{0,2}(?:\.\d+)?%/)?.[0];
+      const numeric = Number(token?.match(/\d+(?:\.\d+)?/)?.[0]);
+      if (!Number.isNaN(numeric) && numeric > 0 && numeric <= 100) {
+        value = token;
+      }
     }
 
-    if (typeof purity === "number" && !Number.isNaN(purity) && purity > 0 && purity <= 100) {
-      this.product.purity = purity;
+    if (value !== undefined) {
+      this.product.purity = value;
     }
     return this;
   }
@@ -1514,6 +1589,8 @@ export class ProductBuilder<T extends Product> {
   setBaseUom(baseUom: unknown): ProductBuilder<T> {
     if (isUOM(baseUom)) {
       this.product.baseUom = baseUom;
+    } else if (baseUom != null) {
+      this.logger.warn("Invalid base UOM", { baseUom, builder: this });
     }
     return this;
   }
@@ -1533,6 +1610,8 @@ export class ProductBuilder<T extends Product> {
     const value = typeof usdPrice === "string" ? Number(usdPrice) : usdPrice;
     if (typeof value === "number" && !Number.isNaN(value) && value >= 0) {
       this.product.usdPrice = value;
+    } else if (usdPrice != null) {
+      this.logger.warn("Invalid USD price", { usdPrice, builder: this });
     }
     return this;
   }
@@ -1552,6 +1631,8 @@ export class ProductBuilder<T extends Product> {
     const value = typeof localPrice === "string" ? Number(localPrice) : localPrice;
     if (typeof value === "number" && !Number.isNaN(value) && value >= 0) {
       this.product.localPrice = value;
+    } else if (localPrice != null) {
+      this.logger.warn("Invalid local price", { localPrice, builder: this });
     }
     return this;
   }

@@ -105,6 +105,7 @@ export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplie
         .setInChI(this.cellText(doc, "INCHI"))
         .setPubchemId(this.cellText(doc, "PubChem CID"))
         .setMoleweight(this.molecularWeight(doc))
+        .setPurity(this.getPurity(doc))
         .setSDSUrl(this.safetyGridLink(doc, "SDS"))
         .setSpecSheetUrl(this.safetyGridLink(doc, "Specification Sheet"));
 
@@ -296,6 +297,39 @@ export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplie
   private molecularWeight(doc: Document): string | undefined {
     const raw = this.cellText(doc, "Molecular Weight");
     return raw?.match(/\d+(?:\.\d+)?/)?.[0];
+  }
+
+  /**
+   * Extracts the purity from the `#specifications` table. Prefers the explicit "Purity" row; if
+   * absent, falls back to the combined "Specifications & Purity" row but only when its value is a
+   * percentage. Returns the raw value with any qualifier intact (e.g. "≥99%") — `setPurity`
+   * validates and normalizes it.
+   *
+   * @param doc - The parsed product-page document
+   * @returns The purity value as written (e.g. "≥99%"), or undefined when unavailable
+   * @example
+   * ```typescript
+   * this.getPurity(doc); // "≥99%"
+   * ```
+   * @source
+   */
+  private getPurity(doc: Document): string | undefined {
+    const valueFor = (label: string): string | undefined => {
+      for (const row of doc.querySelectorAll("#specifications .spec-row")) {
+        if (row.querySelector(".k")?.textContent?.trim().toLowerCase() === label.toLowerCase()) {
+          return row.querySelector(".v")?.textContent?.trim();
+        }
+      }
+      return undefined;
+    };
+
+    // Prefer the dedicated "Purity" row; otherwise use "Specifications & Purity" only if it's a %.
+    const raw = valueFor("Purity");
+    if (raw !== undefined) {
+      return raw;
+    }
+    const fallback = valueFor("Specifications & Purity");
+    return fallback?.includes("%") ? fallback : undefined;
   }
 
   /**
