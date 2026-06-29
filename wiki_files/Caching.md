@@ -9,6 +9,7 @@ ChemPal uses a tiered storage architecture to cache search results, product data
 - **Two independent supplier caches**: Query results and product details are cached separately in IndexedDB with different key generation strategies
 - **LRU eviction**: Both supplier caches cap at 100 entries, evicting the least recently used when full (using IndexedDB indexes on `cachedAt` / `timestamp`)
 - **Limit-aware invalidation**: The query cache invalidates entries when a new search requests more results than the cached limit
+- **Status-aware product caching**: A product's detail fetch is **not** written to the product-data cache when it hit a status in `noCacheStatusCodes` (default `[429]`) or when the search was aborted by `maxAllowableSearchTime`. The product is still listed (with whatever data was already gathered), but leaving it uncached lets the next search retry and complete it.
 - **Timestamp refresh on read**: Product data cache updates `timestamp` on hit to prevent active entries from being evicted
 - **Serialization**: `ProductBuilder.dump()` serializes builders for storage; `ProductBuilder.createFromCache()` re-hydrates them
 - **Optional compression**: `src/utils/storage.ts` wraps `chrome.storage` with lz-string (UTF-16) compression, controlled by the `useStorageCompression` flag in `config.json`
@@ -188,9 +189,13 @@ end
 subgraph CacheMiss2["Cache Miss"]
 direction TB
 FETCH["getProductDataWithCache(product, fetcher, params)\ncall supplier-specific fetcher"]
+CACHEABLE{"shouldCacheProductData?\nskip if fetch hit a noCacheStatusCode (429)\nor search aborted (maxAllowableSearchTime)"}
 DUMP2["resultBuilder.dump()\nserialize product data"]
 SAVE2["cache.cacheProductData(key, data)"]
-FETCH --> DUMP2 --> SAVE2
+SKIP2["Skip caching\nproduct still yielded;\nretried on next search"]
+FETCH --> CACHEABLE
+CACHEABLE -->|"yes"| DUMP2 --> SAVE2
+CACHEABLE -->|"no"| SKIP2
 end
 PLOOKUP -->|"hit"| CacheHit2
 PLOOKUP -->|"miss"| CacheMiss2
@@ -235,8 +240,8 @@ class LOCAL,SESSION cstorage
 class QPC,GPD cacheFlow
 class RESTORE,SETDATA,TOUCH hit
 class QP,DUMP1,SAVE1,FETCH,DUMP2,SAVE2 miss
-class QLOOKUP,PLOOKUP,LIMITCHK decision
-class MAX,EVICT,INVALIDATE lru
+class QLOOKUP,PLOOKUP,LIMITCHK,CACHEABLE decision
+class MAX,EVICT,INVALIDATE,SKIP2 lru
 class META meta
 class GCK,GPCK keygen
 ```
@@ -250,7 +255,7 @@ class GCK,GPCK keygen
 | **Key** | `base64(query + supplier)` | `MD5(url + supplier + params)` |
 | **Stored data** | Array of serialized `ProductBuilder` snapshots | Single serialized `ProductBuilder` snapshot |
 | **Invalidation** | Cached limit < requested limit; `__cacheMetadata.version` ≠ `SupplierCache.CACHE_VERSION`; or entry age exceeds `userSettings.cacheTtlMinutes` (when > 0) | LRU eviction only |
-| **Written** | After `queryProducts()` returns results | After `getProductData()` fetches a product page |
+| **Written** | After `queryProducts()` returns results | After `getProductData()` fetches a product page — **skipped** when the fetch hit a `noCacheStatusCodes` status (default `429`) or the search was aborted by `maxAllowableSearchTime` (see `shouldCacheProductData`) |
 | **Max entries** | 100 | 100 |
 | **LRU index** | `cachedAt` | `timestamp` |
 
@@ -275,5 +280,7 @@ Each `supplierQueryCache` record carries a `__cacheMetadata` object alongside th
 | `caching` | `true` | When `false`, every `SupplierCache` instance no-ops on read and write — the cache is bypassed entirely for the search. Surfaced in **Settings → Behavior → Cache Search Results**. |
 | `doNotCacheEmptyResults` | `false` | When `true`, a query that returns zero results from a supplier will not write a cache entry, so the supplier is re-fetched next time. Lets a previously out-of-stock supplier surface fresh results without manually clearing the cache. Surfaced in **Settings → Cache → Do Not Cache Empty Results**. |
 | `cacheTtlMinutes` | `0` | Maximum age (in minutes) of a query cache entry. On read, entries older than this are evicted via `deleteSupplierQueryCacheEntry` and treated as a cache miss, forcing a fresh fetch. `0` (the default) disables TTL expiration — entries then live until LRU eviction, version-mismatch eviction, or limit-mismatch invalidation. Negative or non-finite values are coerced to `0`. Applies to the query cache only; the product-data cache uses LRU only. Surfaced in **Settings → Cache → Cache TTL (minutes)**. |
+| `noCacheStatusCodes` | `[429]` | HTTP statuses that, when hit during a product-detail fetch, stop that product's data from being written to the product-data cache (the product is still listed). Lets a later search retry the fetch instead of serving an incomplete cached entry. Consulted by `SupplierBase.shouldCacheProductData`. Not exposed in the settings UI — configured via stored settings only. |
+| `maxAllowableSearchTime` | per-supplier (`SupplierBaseMagento2` `45000`; others `0` = disabled) | Caps a supplier's total search time in ms. When it elapses, outstanding detail requests are aborted and the search yields only the products collected so far; their incomplete enrichment is **not** cached, so a later search re-fetches it. The user override is surfaced in **Settings → Advanced → Max search time (ms)** (`0` disables, empty keeps the per-supplier default). |
 
-All three settings propagate from `userSettings` through `SupplierFactory` to `SupplierBase.initCache()`, which forwards them to the `SupplierCache` constructor.
+`caching`, `doNotCacheEmptyResults`, `cacheTtlMinutes`, and `noCacheStatusCodes` propagate from `userSettings` through `SupplierFactory` to `SupplierBase.initCache()` (the first three forwarded on to the `SupplierCache` constructor; `noCacheStatusCodes` is stored on the supplier for `shouldCacheProductData`). `maxAllowableSearchTime` is applied per instance via `SupplierBase.setMaxAllowableSearchTime()`.

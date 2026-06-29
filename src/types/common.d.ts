@@ -1,4 +1,7 @@
 import { UOM } from "@/constants/common";
+// Importing SupplierCache just so tsdoc comments work.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { SupplierCache } from "@/utils/SupplierCache";
 import type { ColumnMeta } from "@tanstack/react-table";
 import { Column, Row, RowData } from "@tanstack/react-table";
 

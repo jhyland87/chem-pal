@@ -9,6 +9,11 @@ User settings are managed via React 19's `useActionState` and persisted to `chro
 | Setting | Type | Description |
 |---------|------|-------------|
 | `caching` | `boolean` | Enable/disable supplier result caching |
+| `doNotCacheEmptyResults` | `boolean` | When `true`, a supplier query returning zero results is not cached, so it re-fetches next search |
+| `cacheTtlMinutes` | `number` | Max age (minutes) of a query cache entry before it's evicted on read; `0` disables TTL |
+| `noCacheStatusCodes` | `number[]` | HTTP statuses (default `[429]`) that, when hit during a product-detail fetch, prevent that product from being cached so a later search retries it. Not exposed in the UI |
+| `maxAllowableSearchTime` | `number` | Override (ms) for each supplier's search-time budget; on timeout, outstanding detail fetches are aborted and only collected products are shown. Empty = per-supplier default, `0` = no limit. Set in **Advanced** |
+| `fuzzScorerOverride` | `string` | Overrides each supplier's default fuzzy-match scorer. Set in **Advanced** |
 | `autocomplete` | `boolean` | Enable search input autocomplete suggestions |
 | `currency` | `CurrencyCode` | Preferred currency for price display |
 | `location` | `CountryCode` | User's geographic location |

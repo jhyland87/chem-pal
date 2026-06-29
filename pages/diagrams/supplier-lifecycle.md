@@ -21,19 +21,22 @@ flowchart TD
     H --> I["products"]
     D --> I
     I -->|Empty| J["No results"]
-    I -->|Has results| K["Queue"]
+    I -->|Has results| K["Queue (per-supplier concurrency)"]
     K --> L["getProductData()"]
     L --> M{"Cached?"}
     M -->|Yes| O["finishProduct()"]
-    M -->|No| N["getProductDataWithCache()"]
+    M -->|No| N["getProductDataWithCache()\ncache write skipped if fetch hit a\nnoCacheStatusCode (429) or was aborted"]
     N --> O
     O -->|Valid| P["yield Product"]
     O -->|Invalid| Q["Skip product"]
+    K -.->|"maxAllowableSearchTime elapsed"| TO["Abort outstanding fetches;\nyield remaining products with\nbasic data (uncached)"]
+    TO --> P
 
     style A fill:#4a9eff,color:#fff
     style P fill:#2ecc71,color:#fff
     style J fill:#95a5a6,color:#fff
     style Q fill:#e67e22,color:#fff
+    style TO fill:#e74c3c,color:#fff
 ```
 
 ## Class Hierarchy
@@ -127,7 +130,7 @@ How each data strategy flows from search to finished product.
 
 ```mermaid
 flowchart LR
-    subgraph JSON["JSON Only (16)"]
+    subgraph JSON["JSON Only (15)"]
         direction TB
         J1["queryProducts()
         Fetch JSON / GraphQL"]
@@ -154,14 +157,15 @@ flowchart LR
         H1 --> H2 --> H3 --> H4
     end
 
-    subgraph Hybrid["Hybrid (2)"]
+    subgraph Hybrid["Hybrid (3)"]
         direction TB
         HY1["queryProducts()
-        Fetch JSON endpoint"]
+        Fetch JSON / GraphQL endpoint"]
         HY2["Parse JSON into
         ProductBuilder[]"]
         HY3["getProductData()
-        Fetch HTML detail"]
+        Fetch HTML detail
+        (scrape SDS, specs, SMILES, etc.)"]
         HY4["finishProduct()
         build()"]
         HY1 --> HY2 --> HY3 --> HY4
@@ -207,7 +211,7 @@ All 21 active suppliers by platform, country, and data strategy. Display names m
 - **LibertySci** - US - JSON Only
 
 ### Magento 2 Platform - 1 supplier
-- **AladdinSci** - US - JSON Only
+- **AladdinSci** - US - Hybrid (GraphQL search + HTML product-page scrape)
 
 ### Amazon Platform - 2 suppliers
 - **Himedia** - IN - JSON Only

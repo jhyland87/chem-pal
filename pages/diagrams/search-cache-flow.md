@@ -9,6 +9,7 @@ This diagram details how ChemPal caches search results and product data using **
 - **Two independent supplier caches**: Query results and product details are cached separately in IndexedDB with different key generation strategies
 - **LRU eviction**: Both supplier caches cap at 100 entries, evicting the least recently used when full (using IndexedDB indexes on `cachedAt` / `timestamp`)
 - **Limit-aware invalidation**: The query cache invalidates entries when a new search requests more results than the cached limit
+- **Status-aware product caching**: A product's detail fetch is **not** cached when it hit a status in `noCacheStatusCodes` (default `[429]`) or when the search was aborted by `maxAllowableSearchTime` — the product is still listed, but stays uncached so the next search retries it (`SupplierBase.shouldCacheProductData`)
 - **Timestamp refresh on read**: Product data cache updates `timestamp` on hit to prevent active entries from being evicted
 - **Serialization**: `ProductBuilder.dump()` serializes builders for storage; `ProductBuilder.createFromCache()` re-hydrates them
 - **Optional compression**: `chrome.storage` writes optionally flow through `cstorage` (`src/utils/storage.ts`), which can LZ-compress values at rest via `lz-string` `compressToUTF16` wrapped in an `LzEnvelope` (`{ __lz: 1, d: "..." }`), controlled by `useStorageCompression` in `config.json`. Reads auto-detect the envelope and decompress, falling back to raw values for legacy data. IndexedDB data is **not** compressed via `cstorage`.
@@ -98,9 +99,13 @@ end
 subgraph CacheMiss2["Cache Miss"]
 direction TB
 FETCH["getProductDataWithCache(product, fetcher, params)\ncall supplier-specific fetcher"]
+CACHEABLE{"shouldCacheProductData?\nskip if fetch hit a noCacheStatusCode (429)\nor search aborted (maxAllowableSearchTime)"}
 DUMP2["resultBuilder.dump()\nserialize product data"]
 SAVE2["cache.cacheProductData(key, data)"]
-FETCH --> DUMP2 --> SAVE2
+SKIP2["Skip caching\nproduct still yielded;\nretried on next search"]
+FETCH --> CACHEABLE
+CACHEABLE -->|"yes"| DUMP2 --> SAVE2
+CACHEABLE -->|"no"| SKIP2
 end
 PLOOKUP -->|"hit"| CacheHit2
 PLOOKUP -->|"miss"| CacheMiss2
@@ -164,8 +169,8 @@ class LOCAL,SESSION cstorage
 class QPC,GPD cacheFlow
 class RESTORE,SETDATA,TOUCH hit
 class QP,DUMP1,SAVE1,FETCH,DUMP2,SAVE2 miss
-class QLOOKUP,PLOOKUP,LIMITCHK decision
-class MAX,EVICT,INVALIDATE lru
+class QLOOKUP,PLOOKUP,LIMITCHK,CACHEABLE decision
+class MAX,EVICT,INVALIDATE,SKIP2 lru
 class META meta
 class GCK,GPCK keygen
 class QC1,QC2,QC3,QC4,QC5,PC1,PC2,PC3,PC4,PC5 comp
