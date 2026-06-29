@@ -104,7 +104,7 @@ export default function SettingsPanelFull() {
             showColumnFilters: true,
             showAllColumns: false,
             fontSize: "medium",
-            hideColumns: ["description", "uom", "sds", "specs", "formula", "moleweight", "purity", "concentration"],
+            hideColumns: ["description", "uom", "sds", "specs", "cas", "formula", "moleweight", "purity", "concentration"],
           };
           break;
         default:

@@ -32,7 +32,7 @@ import styles from "./TableColumns.module.scss";
  * // columns.map(c => c.id) →
  * //   ["expander", "title", "supplier", "country", "shipping",
  * //    "availability", "description", "price", "quantity", "uom",
- * //    "sds", "specs", "formula", "moleweight", "purity", "concentration"]
+ * //    "sds", "specs", "cas", "formula", "moleweight", "purity", "concentration"]
  * // columns.filter(c => c.meta?.drawer).map(c => c.id) →
  * //   ["supplier", "country", "shipping", "availability", "price"]
  * ```
@@ -337,6 +337,20 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       meta: {
         style: {
           textAlign: "center",
+        },
+      },
+    },
+    {
+      id: "cas",
+      header: "CAS",
+      accessorKey: "cas",
+      cell: (info) => info.getValue(),
+      filterFn: "includeHierarchy",
+      meta: {
+        filterPlaceholder: "CAS...",
+        filterVariant: "text",
+        style: {
+          textAlign: "left",
         },
       },
     },
