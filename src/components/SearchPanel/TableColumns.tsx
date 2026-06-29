@@ -321,7 +321,11 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         const url = row.original.specSheetUrl;
         if (!url) return null;
         return (
-          <Link href={url} aria-label="Technical specifications" title="Technical specifications">
+          <Link
+            href={url}
+            aria-label="Technical Data Sheet (TDS)"
+            title="Technical Data Sheet (TDS)"
+          >
             <TDSIcon fontSize="small" />
           </Link>
         );
