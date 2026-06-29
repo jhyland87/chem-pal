@@ -867,6 +867,7 @@ function buildUserSettingsSchema() {
     doNotCacheEmptyResults: z.boolean().optional(),
     cacheTtlMinutes: z.coerce.number().nonnegative().optional(),
     noCacheStatusCodes: z.array(z.number().int().positive()).optional(),
+    maxAllowableSearchTime: z.coerce.number().nonnegative().optional(),
     currencyRate: z.number().optional(),
     currency: z
       .string()

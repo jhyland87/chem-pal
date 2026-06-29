@@ -437,6 +437,7 @@ export function useSearch() {
           appContext.userSettings.doNotCacheEmptyResults,
           appContext.userSettings.cacheTtlMinutes,
           appContext.userSettings.noCacheStatusCodes,
+          appContext.userSettings.maxAllowableSearchTime,
         );
 
         const startSearchTime = performance.now();

@@ -548,6 +548,30 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   }
 
   /**
+   * Applies a runtime override for {@link maxAllowableSearchTime}, driven by
+   * `userSettings.maxAllowableSearchTime` (set in the Advanced settings section). Accepts the raw
+   * setting value (which may arrive as a string from the number input). An absent, empty, or
+   * invalid value is ignored so the supplier keeps its class default; a valid non-negative number
+   * (including `0` to disable the limit) replaces it.
+   * @param value - The override in milliseconds, or any value (invalid/empty input is ignored)
+   * @example
+   * ```typescript
+   * supplier.setMaxAllowableSearchTime(60000); // cap searches at 60s
+   * supplier.setMaxAllowableSearchTime("");     // no-op, keep the per-supplier default
+   * ```
+   * @source
+   */
+  public setMaxAllowableSearchTime(value: unknown): void {
+    if (value === undefined || value === null || value === "") {
+      return;
+    }
+    const ms = Number(value);
+    if (!Number.isNaN(ms) && ms >= 0) {
+      this.maxAllowableSearchTime = ms;
+    }
+  }
+
+  /**
    * Placeholder for any setup that needs to be done before the query is made.
    * Override this in subclasses if you need to perform setup (e.g., authentication, token fetching).
    *
@@ -1500,46 +1524,58 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       this.products = survivors;
       const queue = new Queue(this.maxConcurrentRequests, this.minConcurrentCycle);
 
-      // Create an array of promises, each yielding a product as soon as it's ready
-      const tasks = this.products.map((product) =>
-        queue.run(async () => {
-          try {
-            this.logger.debug(`Product data for ${this.supplierName}:`, product);
-            const builder = await this.getProductData(product);
-            if (!builder) return;
-
-            this.logger.debug(`Builder data for ${this.supplierName}:`, builder);
-            const finished = await this.finishProduct(builder);
-            this.logger.debug(`Finished product data for ${this.supplierName}:`, finished);
-            if (finished) {
-              return finished;
+      // Each task fetches a product's detail data and finishes it, tagged with its index so the
+      // yield loop can track which products are still outstanding when the budget elapses.
+      const pending = new Map<number, Promise<{ index: number; finished: Maybe<T> }>>();
+      this.products.forEach((product, index) => {
+        pending.set(
+          index,
+          queue.run(async () => {
+            // If the budget already elapsed, skip the (now-aborted) detail fetch — the timeout
+            // handler below emits this product's basic data directly.
+            if (this.controller.signal.aborted) {
+              return { index, finished: undefined };
             }
-          } catch (e: unknown) {
-            this.logger.error("Error processing product", { error: e, product });
-            incrementParseError(this.supplierName);
-          }
-        }),
-      );
-
-      // As each promise resolves, yield the product. Race against the optional search-time
-      // budget so an exceeded budget breaks out promptly with whatever has been collected.
-      const resultsSet = new Set(tasks);
-      while (resultsSet.size > 0) {
-        const finished = await Promise.race(
-          timeoutPromise ? [...resultsSet, timeoutPromise] : [...resultsSet],
+            try {
+              const builder = await this.getProductData(product);
+              const finished = builder ? await this.finishProduct(builder) : undefined;
+              return { index, finished };
+            } catch (e: unknown) {
+              this.logger.error("Error processing product", { error: e, product });
+              incrementParseError(this.supplierName);
+              return { index, finished: undefined };
+            }
+          }),
         );
-        if (finished === SEARCH_TIMEOUT) {
+      });
+
+      // As each task resolves, yield the product. Race against the optional search-time budget;
+      // when it elapses, emit every not-yet-yielded product with its basic (query-phase) data so
+      // the rows still show — the enrichment for those simply wasn't cached, so a later search
+      // (served from the query cache) re-fetches their detail data.
+      const yielded = new Set<number>();
+      while (pending.size > 0) {
+        const result = await Promise.race(
+          timeoutPromise ? [...pending.values(), timeoutPromise] : [...pending.values()],
+        );
+
+        if (result === SEARCH_TIMEOUT) {
+          for (let index = 0; index < this.products.length; index++) {
+            if (yielded.has(index)) continue;
+            // The builder is enriched in place, so this carries whatever detail data was set
+            // before the abort, falling back to the basic query-phase fields otherwise.
+            const finished = await this.finishProduct(this.products[index]);
+            if (finished) {
+              yield finished;
+            }
+          }
           break;
         }
-        // Remove the finished promise from the set
-        for (const t of resultsSet) {
-          if ((await Promise.resolve(t)) === finished) {
-            resultsSet.delete(t);
-            break;
-          }
-        }
-        if (finished) {
-          yield finished;
+
+        pending.delete(result.index);
+        yielded.add(result.index);
+        if (result.finished) {
+          yield result.finished;
         }
       }
     } finally {
@@ -1827,7 +1863,13 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
         incrementParseError(this.supplierName);
         return undefined;
       }
-      if (resultBuilder && this.shouldCacheProductData(resultBuilder)) {
+      // Don't cache data gathered after the search was aborted (e.g. maxAllowableSearchTime): the
+      // enrichment fetch was cancelled, so the result is incomplete — let a later search retry it.
+      if (
+        resultBuilder &&
+        !this.controller.signal.aborted &&
+        this.shouldCacheProductData(resultBuilder)
+      ) {
         await this.cache.cacheProductData(cacheKey, resultBuilder.dump());
       }
       return resultBuilder;
@@ -1910,7 +1952,9 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       }
       if (resultBuilder) {
         incrementProductCount(this.supplierName);
-        if (this.shouldCacheProductData(resultBuilder)) {
+        // Skip caching when the search was aborted (e.g. maxAllowableSearchTime) — the enrichment
+        // fetch was cancelled, so the data is incomplete and a later search should retry it.
+        if (!this.controller.signal.aborted && this.shouldCacheProductData(resultBuilder)) {
           await this.cache.cacheProductData(cacheKey, resultBuilder.dump());
         }
       }

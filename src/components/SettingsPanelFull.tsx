@@ -580,6 +580,23 @@ export default function SettingsPanelFull() {
                 ))}
               </TextField>
             </Box>
+            <Box sx={{ p: 1 }}>
+              <TextField
+                fullWidth
+                size="small"
+                type="number"
+                name="maxAllowableSearchTime"
+                label="Max search time (ms)"
+                value={currentSettings.maxAllowableSearchTime ?? ""}
+                onChange={handleInputChange}
+                disabled={isPending}
+                helperText="Overrides each supplier's search-time budget. Empty = per-supplier default; 0 = no limit"
+                slotProps={{
+                  formHelperText: { sx: { fontStyle: "italic" } },
+                  htmlInput: { min: 0, step: 1000 },
+                }}
+              />
+            </Box>
           </AccordionDetails>
         </Accordion>
       )}
