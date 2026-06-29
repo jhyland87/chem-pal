@@ -74,6 +74,11 @@ export class SupplierFactory<P extends Product> {
   // user's Advanced-settings choice wins over each supplier class's default.
   private fuzzScorerOverride?: string;
 
+  // Optional global max-search-time override (ms) from userSettings.maxAllowableSearchTime.
+  // When set, applied to every supplier instance so the user's Advanced-settings value
+  // overrides each supplier class's default search-time budget.
+  private maxAllowableSearchTime?: number;
+
   // Logger instance
   private logger: Logger;
 
@@ -95,6 +100,8 @@ export class SupplierFactory<P extends Product> {
    * @param noCacheStatusCodes - HTTP status codes that, when hit during a
    *   product-detail fetch, prevent that product's data from being cached.
    *   Defaults to [429].
+   * @param maxAllowableSearchTime - Optional override (ms) for each supplier's
+   *   search-time budget. Omit to keep per-supplier defaults.
    * @source
    */
   constructor(
@@ -107,6 +114,7 @@ export class SupplierFactory<P extends Product> {
     doNotCacheEmptyResults: boolean = false,
     cacheTtlMinutes: number = 0,
     noCacheStatusCodes: number[] = [429],
+    maxAllowableSearchTime?: number,
   ) {
     this.logger = new Logger("SupplierFactory");
     this.logger.debug("initialized", {
@@ -119,6 +127,7 @@ export class SupplierFactory<P extends Product> {
       doNotCacheEmptyResults,
       cacheTtlMinutes,
       noCacheStatusCodes,
+      maxAllowableSearchTime,
     });
     this.query = query;
     this.limit = limit;
@@ -129,6 +138,7 @@ export class SupplierFactory<P extends Product> {
     this.doNotCacheEmptyResults = doNotCacheEmptyResults;
     this.cacheTtlMinutes = cacheTtlMinutes;
     this.noCacheStatusCodes = noCacheStatusCodes ?? [429];
+    this.maxAllowableSearchTime = maxAllowableSearchTime;
   }
 
   /**
@@ -259,6 +269,7 @@ export class SupplierFactory<P extends Product> {
           this.noCacheStatusCodes,
         );
         instance.setFuzzScorerOverride(this.fuzzScorerOverride);
+        instance.setMaxAllowableSearchTime(this.maxAllowableSearchTime);
         return instance;
       },
     );
@@ -326,6 +337,7 @@ export class SupplierFactory<P extends Product> {
           this.noCacheStatusCodes,
         );
         instance.setFuzzScorerOverride(this.fuzzScorerOverride);
+        instance.setMaxAllowableSearchTime(this.maxAllowableSearchTime);
         return instance;
       },
     );

@@ -70,6 +70,15 @@ declare global {
     noCacheStatusCodes?: number[];
 
     /**
+     * Overrides each supplier's per-class search-time budget (in milliseconds). Once a supplier's
+     * search exceeds this, its outstanding detail requests are aborted and only the products
+     * collected so far are shown. Leave unset to keep per-supplier defaults; set to `0` to disable
+     * the limit entirely. Exposed in the Advanced settings section.
+     * @example 60000
+     */
+    maxAllowableSearchTime?: number;
+
+    /**
      * Currency rate for the user's currency
      * @example 1.0
      */
