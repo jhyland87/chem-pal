@@ -597,6 +597,25 @@ export default function SettingsPanelFull() {
                 }}
               />
             </Box>
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText
+                primary="Disable fuzzy filtering"
+                secondary="Show raw results (plain search) or boolean-only matches (advanced search) without fuzzy scoring"
+                slotProps={{ secondary: { sx: { fontStyle: "italic" } } }}
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={currentSettings.fuzzyFilteringDisabled ?? false}
+                    onChange={handleSwitchChange}
+                    name="fuzzyFilteringDisabled"
+                    disabled={isPending}
+                  />
+                }
+                labelPlacement="start"
+                label=""
+              />
+            </ListItem>
           </AccordionDetails>
         </Accordion>
       )}

@@ -203,5 +203,16 @@ declare global {
      * @example "token_set_ratio"
      */
     fuzzScorerOverride?: string;
+
+    /**
+     * When true, suppliers skip fuzzball fuzzy-match scoring. A plain query then
+     * shows the raw results the supplier returned; an advanced (AND/OR/NOT) query
+     * is filtered only by the boolean predicate using case-insensitive substring
+     * matching. Leave unset/false to keep fuzzy filtering on (the default).
+     *
+     * Surfaced via the "Advanced" drawer accordion, beside the fuzz-scorer override.
+     * @example true
+     */
+    fuzzyFilteringDisabled?: boolean;
   }
 }

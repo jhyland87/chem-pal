@@ -5,6 +5,7 @@ import { parseChemicalSpecs } from "@/helpers/science";
 import { findPdfHref, htmlToAscii, mapDefined } from "@/helpers/utils";
 import getFilteredProductsWithHasDiscount from "@/queries/wix-product-query.gql";
 import { ProductBuilder } from "@/utils/ProductBuilder";
+import { translateAstToWixFilter } from "@/utils/search-query/translators/translateAstToWixFilter";
 import { isParsedPrice } from "@/utils/typeGuards/common";
 import { isValidVariant } from "@/utils/typeGuards/productbuilder";
 import { isProductItem, isProductSelection, isValidSearchResponse } from "@/utils/typeGuards/wix";
@@ -46,6 +47,10 @@ export abstract class SupplierBaseWix
   };
 
   protected readonly minMatchPercentage: number = 45;
+
+  // Wix's catalog filter supports and/or/not, so advanced queries are translated
+  // server-side instead of using the keyword-only fallback.
+  protected readonly supportsNativeAdvancedSearch: boolean = true;
 
   /**
    * Sets up the Wix API access by retrieving and setting the access token.
@@ -90,18 +95,16 @@ export abstract class SupplierBaseWix
    * @source
    */
   protected getGraphQLVariables(query: string): GraphQLQueryVariables {
+    const parsed = this.getAst();
+    const filters: WixFilterNode = parsed.isAdvanced
+      ? translateAstToWixFilter(parsed.ast)
+      : { term: { field: "name", op: "CONTAINS", values: [`*${query}*`] } };
     return {
       mainCollectionId: this.categories.all,
       offset: 0,
       limit: 150,
       sort: null,
-      filters: {
-        term: {
-          field: "name",
-          op: "CONTAINS",
-          values: [`*${query}*`],
-        },
-      },
+      filters,
     } satisfies GraphQLQueryVariables;
   }
 
@@ -145,8 +148,7 @@ export abstract class SupplierBaseWix
       });
     }
 
-    const fuzzResults = this.fuzzyFilter<ProductObject>(
-      query,
+    const fuzzResults = this.fuzzyFilterAst<ProductObject>(
       searchRequest.data.catalog.category.productsWithMetaData.list,
     );
 

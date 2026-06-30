@@ -201,7 +201,7 @@ export abstract class SupplierBaseAmazon
 
     this.logger.debug("Parsed results", { query, results });
 
-    const fuzzedResults = this.fuzzyFilter(query, results, 40);
+    const fuzzedResults = this.fuzzyFilterAst(results, 40);
     this.logger.debug("fuzzedResults", { query, results, fuzzedResults });
 
     return this.initProductBuilders(fuzzedResults);

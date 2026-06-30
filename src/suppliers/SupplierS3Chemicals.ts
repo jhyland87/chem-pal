@@ -180,7 +180,7 @@ export class SupplierS3Chemicals
       return [];
     }
 
-    return this.fuzzyFilter<Element>(query, Array.from(productContainers));
+    return this.fuzzyFilterAst<Element>(Array.from(productContainers));
   }
 
   /**

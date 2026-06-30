@@ -23,12 +23,14 @@ declare global {
     hasOptions: boolean;
     /** Unique identifier for the product */
     id: string;
-    /** Array of product image URLs */
-    images: string[];
+    /** Product images, each with full-size and thumbnail URLs */
+    images: ChemsaversImage[];
     /** Current stock level */
     inventoryLevel: number;
     /** Type of inventory tracking used */
     inventoryTracking: string;
+    /** BigCommerce inventory tracking mode: "none" (untracked, always purchasable), "product", or "variant" */
+    inventory_tracking: string;
     /** Minimum Advertised Price */
     mapPrice: number;
     /** SEO meta description */
@@ -59,6 +61,20 @@ declare global {
   }
 
   type ChemsaversProductVariant = Omit<ChemsaversProductObject, "variants">;
+
+  /** A single product image from the Chemsavers catalog. */
+  interface ChemsaversImage {
+    /** Full-size image URL */
+    urlStandard: string;
+    /** Thumbnail image URL */
+    urlThumbnail: string;
+    /** Whether this image is the product's primary thumbnail */
+    isThumbnail: boolean;
+    /** Display order among the product's images */
+    sortOrder: number;
+    /** Image description / alt text */
+    description: string;
+  }
 
   /**
    * Represents the response structure from the Typesense search API.

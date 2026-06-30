@@ -110,13 +110,20 @@ export const findFormulaInHtml = (html: string): string | undefined => {
  * falls within the valid `(0, 100]` range — matching the values
  * `ProductBuilder.setPurity` accepts. Returns nothing when no valid percentage
  * is present.
+ *
+ * Tolerates the shapes suppliers use around the number: a leading qualifier
+ * (`≥99.8%`), a European comma decimal (`99,5 %`), a trailing "or better" plus
+ * (`99+%`, `99 +%`, `99.9 +%`), and whitespace before the `%`.
  * @param value - The string to extract the purity from
  * @returns The purity as a number (e.g. `95`), or nothing if none is found
  * @example
  * ```typescript
- * parsePurity("Sodium borohydride, min 95%") // Returns 95
- * parsePurity("98.5%") // Returns 98.5
- * parsePurity("120%") // Returns nothing (out of range)
+ * parsePurity("Sodium borohydride, min 95%")   // Returns 95
+ * parsePurity("Hydroquinone ≥99.8%, extra pure") // Returns 99.8
+ * parsePurity("Lithium Carbonate 99+% Extra Pure") // Returns 99
+ * parsePurity("Potassium hydrogen tartrate ≥99,5 %") // Returns 99.5
+ * parsePurity("Sodium carbonate 99.7 +%, pure")  // Returns 99.7
+ * parsePurity("120%")             // Returns nothing (out of range)
  * parsePurity("no percentage here") // Returns nothing
  * ```
  * @source
@@ -124,11 +131,58 @@ export const findFormulaInHtml = (html: string): string | undefined => {
 export const parsePurity = (value: string): number | void => {
   if (!value || typeof value !== "string") return;
 
-  const match = value.match(/(\d+(?:\.\d+)?)\s*%/);
+  // Number (dot or comma decimal), an optional trailing "+" (with optional
+  // spaces), then "%". Anchoring on "%" keeps stray digits (codes like "E515")
+  // from being read as a purity.
+  const match = value.match(/(\d+(?:[.,]\d+)?)\s*\+?\s*%/);
   if (!match) return;
 
-  const purity = Number(match[1]);
+  const purity = Number(match[1].replace(",", "."));
   if (!Number.isNaN(purity) && purity > 0 && purity <= 100) return purity;
+};
+
+/**
+ * Recognized chemical grade / standard designations, in match-priority order. The first
+ * pattern that matches wins, so specific standards (ACS, USP, …) precede the generic
+ * "Reagent"/"Technical" grades they often accompany (e.g. "Reagent (ACS)" → "ACS").
+ * Two-letter pharmacopoeia codes also accept their spelled-out names.
+ */
+const GRADE_PATTERNS: ReadonlyArray<{ label: string; pattern: RegExp }> = [
+  { label: "ACS", pattern: /\bACS\b/i },
+  { label: "AR", pattern: /\bAR\b/i },
+  { label: "USP", pattern: /\bUSP\b|\bUnited States Pharmacop\w+/i },
+  { label: "NF", pattern: /\bNF\b/i },
+  { label: "FCC", pattern: /\bFCC\b/i },
+  { label: "HPLC", pattern: /\bHPLC\b/i },
+  { label: "BP", pattern: /\bBP\b|\bBritish Pharmacop\w+/i },
+  { label: "JP", pattern: /\bJP\b|\bJapanese Pharmacop\w+/i },
+  { label: "Technical", pattern: /\bTechnical\b/i },
+  { label: "Reagent", pattern: /\bReagent\b/i },
+];
+
+/**
+ * Extracts a chemical grade / standard designation from a string (typically a product
+ * title), independent of {@link parsePurity}. Recognizes ACS, AR, USP, NF, FCC, HPLC, BP
+ * (British Pharmacopoeia), JP (Japanese Pharmacopeia), Technical, and Reagent. When a
+ * title carries more than one (e.g. "Reagent (ACS)"), the most specific standard wins.
+ * Use only where grades are known to be meaningful (e.g. Chemsavers), since two-letter
+ * codes are collision-prone in free text.
+ * @param value - The string to extract the grade from
+ * @returns The canonical grade label (e.g. `"ACS"`), or nothing if none is found
+ * @example
+ * ```typescript
+ * parseGrade("SODIUM, REAGENT (ACS) - 500 G")      // Returns "ACS"
+ * parseGrade("SODIUM CHLORITE, 80% TECHNICAL")     // Returns "Technical"
+ * parseGrade("Citric acid, BP/USP")                // Returns "USP"
+ * parseGrade("SODIUM NITRATE, 99.999% - 50 G")     // Returns nothing
+ * ```
+ * @source
+ */
+export const parseGrade = (value: string): string | undefined => {
+  if (!value || typeof value !== "string") return;
+  for (const { label, pattern } of GRADE_PATTERNS) {
+    if (pattern.test(value)) return label;
+  }
 };
 
 /**

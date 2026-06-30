@@ -4,6 +4,7 @@ import { parseQuantity } from "@/helpers/quantity";
 import { firstMap, mapDefined } from "@/helpers/utils";
 import searchProductsQuery from "@/queries/shopify-product-query.gql";
 import { ProductBuilder } from "@/utils/ProductBuilder";
+import { translateAstToShopifyQuery } from "@/utils/search-query/translators/translateAstToShopifyQuery";
 import { isQuantityObject } from "@/utils/typeGuards/common";
 import { isValidShopifySearchResponse } from "@/utils/typeGuards/shopify";
 import { print } from "graphql";
@@ -46,6 +47,10 @@ export abstract class SupplierBaseShopify
   /** Shopify GraphQL API version */
   protected apiVersion: string = "2026-04";
 
+  // Shopify's search DSL supports AND/OR/NOT, so advanced queries are translated
+  // server-side instead of using the keyword-only fallback.
+  protected readonly supportsNativeAdvancedSearch: boolean = true;
+
   /**
    * Builds the GraphQL variables for the `searchProducts` query. The query text itself lives in
    * `@/queries/shopify-product-query.gql`; only the title search filter and page size vary.
@@ -61,7 +66,11 @@ export abstract class SupplierBaseShopify
    * @source
    */
   protected getGraphQLVariables(query: string, limit: number): ShopifyQueryVariables {
-    return { query: `title:*${query}*`, first: limit };
+    const parsed = this.getAst();
+    const queryString = parsed.isAdvanced
+      ? translateAstToShopifyQuery(parsed.ast)
+      : `title:*${query}*`;
+    return { query: queryString, first: limit };
   }
 
   /**
@@ -123,7 +132,7 @@ export abstract class SupplierBaseShopify
 
     this.logger.debug(`Query returned ${products.length} products`, { products });
 
-    const fuzzResults = this.fuzzyFilter<ShopifyProductNode>(query, products);
+    const fuzzResults = this.fuzzyFilterAst<ShopifyProductNode>(products);
     this.logger.debug("fuzzResults", { query, searchRequest, products, fuzzResults });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));

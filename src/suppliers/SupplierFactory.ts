@@ -1,6 +1,8 @@
 import { defaultResultsLimit } from "@/../config.json";
 import { mapDefined, sleep } from "@/helpers/utils";
 import { Logger } from "@/utils/Logger";
+import { parseSearchQuery } from "@/utils/search-query/parseSearchQuery";
+import type { ParsedSearchQuery } from "@/utils/search-query/types";
 import { incrementParseError } from "@/utils/SupplierStatsStore";
 import { Queue } from "async-await-queue";
 import * as suppliers from ".";
@@ -79,6 +81,14 @@ export class SupplierFactory<P extends Product> {
   // overrides each supplier class's default search-time budget.
   private maxAllowableSearchTime?: number;
 
+  // Parsed advanced-search query, derived once from `query` and shared with every
+  // supplier instance so they all see the same AST.
+  private parsedQuery: ParsedSearchQuery;
+
+  // Mirrors userSettings.fuzzyFilteringDisabled. When true, suppliers skip
+  // fuzzball scoring and rely on the boolean predicate (or raw results) instead.
+  private fuzzyFilteringDisabled: boolean;
+
   // Logger instance
   private logger: Logger;
 
@@ -102,6 +112,9 @@ export class SupplierFactory<P extends Product> {
    *   Defaults to [429].
    * @param maxAllowableSearchTime - Optional override (ms) for each supplier's
    *   search-time budget. Omit to keep per-supplier defaults.
+   * @param fuzzyFilteringDisabled - When true (from
+   *   `userSettings.fuzzyFilteringDisabled`), suppliers skip fuzzball scoring and
+   *   show raw / boolean-only results. Defaults to false.
    * @source
    */
   constructor(
@@ -115,6 +128,7 @@ export class SupplierFactory<P extends Product> {
     cacheTtlMinutes: number = 0,
     noCacheStatusCodes: number[] = [429],
     maxAllowableSearchTime?: number,
+    fuzzyFilteringDisabled: boolean = false,
   ) {
     this.logger = new Logger("SupplierFactory");
     this.logger.debug("initialized", {
@@ -128,6 +142,7 @@ export class SupplierFactory<P extends Product> {
       cacheTtlMinutes,
       noCacheStatusCodes,
       maxAllowableSearchTime,
+      fuzzyFilteringDisabled,
     });
     this.query = query;
     this.limit = limit;
@@ -139,6 +154,8 @@ export class SupplierFactory<P extends Product> {
     this.cacheTtlMinutes = cacheTtlMinutes;
     this.noCacheStatusCodes = noCacheStatusCodes ?? [429];
     this.maxAllowableSearchTime = maxAllowableSearchTime;
+    this.fuzzyFilteringDisabled = fuzzyFilteringDisabled;
+    this.parsedQuery = parseSearchQuery(query);
   }
 
   /**
@@ -272,6 +289,8 @@ export class SupplierFactory<P extends Product> {
         );
         instance.setFuzzScorerOverride(this.fuzzScorerOverride);
         instance.setMaxAllowableSearchTime(this.maxAllowableSearchTime);
+        instance.setParsedQuery(this.parsedQuery);
+        instance.setFuzzyFilteringDisabled(this.fuzzyFilteringDisabled);
         return instance;
       },
     );
@@ -340,6 +359,8 @@ export class SupplierFactory<P extends Product> {
         );
         instance.setFuzzScorerOverride(this.fuzzScorerOverride);
         instance.setMaxAllowableSearchTime(this.maxAllowableSearchTime);
+        instance.setParsedQuery(this.parsedQuery);
+        instance.setFuzzyFilteringDisabled(this.fuzzyFilteringDisabled);
         return instance;
       },
     );

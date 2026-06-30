@@ -4,6 +4,7 @@ import { createDOM } from "@/helpers/request";
 import { parsePurity } from "@/helpers/science";
 import { mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
+import { translateAstToFreefind } from "@/utils/search-query/translators/translateAstToFreefind";
 import { isCurrencyCode } from "@/utils/typeGuards/common";
 import { extract } from "fuzzball";
 import { SupplierBase } from "./SupplierBase";
@@ -73,6 +74,10 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
   // The site ID for the FreeFind search engine.
   protected readonly siteId: number = 52187908;
 
+  // FreeFind natively supports refined (boolean) search, so advanced queries are
+  // handed off as FreeFind syntax instead of using the keyword-only fallback.
+  protected readonly supportsNativeAdvancedSearch: boolean = true;
+
   /**
    * No setup is required for LiMac; the FreeFind search endpoint is stateless
    * and the product pages don't depend on any session cookies.
@@ -106,6 +111,10 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
   ): Promise<ProductBuilder<Product>[] | void> {
     this.logger.log("queryProducts:", { query, limit });
 
+    // For an advanced query, hand FreeFind its own refined-search syntax.
+    const parsed = this.getAst();
+    const searchTerm = parsed.isAdvanced ? translateAstToFreefind(parsed.ast) : query;
+
     const searchResponse = await this.httpGetHtml({
       host: this.apiURL,
       path: "/find.html",
@@ -115,7 +124,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
         n: "0",
         _charset_: "UTF-8",
         bcd: "÷",
-        query: encodeURIComponent(query).replaceAll("%20", "+"),
+        query: encodeURIComponent(searchTerm).replaceAll("%20", "+"),
       },
     });
 
@@ -427,12 +436,11 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
 
     const name = result.get("title");
     if (typeof name === "string") {
-      const score = this.fuzzyScore(name);
-      if (score < this.minMatchPercentage) {
+      const score = this.fuzzyScoreAst(name);
+      if (score === null) {
         this.logger.debug("Dropping product below fuzz threshold", {
           name,
           query: this.query,
-          score,
           cutoff: this.minMatchPercentage,
         });
         return;

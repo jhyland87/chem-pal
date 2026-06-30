@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { findFormulaInHtml, parseChemicalSpecs, parsePurity, subscript, superscript } from "../science";
+import {
+  findFormulaInHtml,
+  parseChemicalSpecs,
+  parseGrade,
+  parsePurity,
+  subscript,
+  superscript,
+} from "../science";
 
 describe("science helpers", () => {
   describe("subscript", () => {
@@ -215,6 +222,27 @@ describe("science helpers", () => {
       expect(parsePurity("min 95 %")).toBe(95);
     });
 
+    it("should ignore a leading qualifier like ≥", () => {
+      expect(parsePurity("Hydroquinone ≥99.8%, extra pure")).toBe(99.8);
+      expect(parsePurity("Sodium bicarbonate ≥99 %, Ph.Eur.")).toBe(99);
+    });
+
+    it("should parse a trailing 'or better' plus", () => {
+      expect(parsePurity("Lithium Carbonate 99+% Extra Pure")).toBe(99);
+      expect(parsePurity("Potassium Sulphate 99 +%, Foodgrade")).toBe(99);
+      expect(parsePurity("Sodium carbonate 99.7 +%, pure")).toBe(99.7);
+    });
+
+    it("should parse a European comma decimal", () => {
+      expect(parsePurity("Potassium hydrogen tartrate ≥99,5 %")).toBe(99.5);
+      expect(parsePurity("Sodium acetate trihydrate 99,5+% pure")).toBe(99.5);
+    });
+
+    it("should not read a non-percentage code (E515) as purity", () => {
+      expect(parsePurity("Potassium Sulphate 99 +%, Ph. Eur, E515")).toBe(99);
+      expect(parsePurity("Food Grade, FCC, E500i")).toBeUndefined();
+    });
+
     it("should return nothing when there is no percentage", () => {
       expect(parsePurity("Sodium borohydride")).toBeUndefined();
       expect(parsePurity("")).toBeUndefined();
@@ -223,6 +251,36 @@ describe("science helpers", () => {
     it("should return nothing for out-of-range percentages", () => {
       expect(parsePurity("120%")).toBeUndefined();
       expect(parsePurity("0%")).toBeUndefined();
+    });
+  });
+
+  describe("parseGrade", () => {
+    it("should parse standalone grade abbreviations", () => {
+      expect(parseGrade("Sodium sulfate AR")).toBe("AR");
+      expect(parseGrade("Acetonitrile HPLC - 1 L")).toBe("HPLC");
+      expect(parseGrade("Citric acid USP")).toBe("USP");
+      expect(parseGrade("Magnesium stearate NF")).toBe("NF");
+      expect(parseGrade("Sodium bicarbonate FCC")).toBe("FCC");
+    });
+
+    it("should parse word grades case-insensitively", () => {
+      expect(parseGrade("SODIUM CHLORITE, 80% TECHNICAL - 2.5 KG")).toBe("Technical");
+      expect(parseGrade("sodium chloride reagent grade")).toBe("Reagent");
+    });
+
+    it("should prefer the specific standard when several are present", () => {
+      expect(parseGrade("SODIUM, REAGENT (ACS) - 500 G")).toBe("ACS");
+      expect(parseGrade("Citric acid, BP/USP")).toBe("USP");
+    });
+
+    it("should accept spelled-out pharmacopoeia names", () => {
+      expect(parseGrade("Caffeine, British Pharmacopoeia")).toBe("BP");
+      expect(parseGrade("Glucose, Japanese Pharmacopeia")).toBe("JP");
+    });
+
+    it("should return nothing when no grade is present", () => {
+      expect(parseGrade("SODIUM NITRATE, 99.999% - 50 G")).toBeUndefined();
+      expect(parseGrade("")).toBeUndefined();
     });
   });
 

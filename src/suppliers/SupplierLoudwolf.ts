@@ -140,7 +140,7 @@ export class SupplierLoudwolf extends SupplierBase<Partial<Product>, Product> im
     const products = parsedHTML.querySelectorAll("div.product-layout.product-list");
 
     // Do the fuzzy filtering using the element found when using this.titleSelector()
-    return this.fuzzyFilter<Element>(query, Array.from(products));
+    return this.fuzzyFilterAst<Element>(Array.from(products));
   }
 
   /**
