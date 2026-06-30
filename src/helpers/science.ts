@@ -69,7 +69,7 @@ export const superscript = (str: string) => {
 export const findFormulaInHtml = (html: string): string | undefined => {
   // Valid element symbols. Gates the match so prose isn't read as a formula.
   const element =
-    "(?:H[eogf]?|L[iau]|B[eari]?|C[arouseld]?|N[eiapdb]?|O[sg]?|F[rle]?|M[gon]|A[lrsgutc]|S[icernmb]?|P[uabotmrd]?|Kr?|T[icebmalh]|V|Z[nr]|G[ade]|R[buhena]|Yb?|I[nr]?|Xe|E[ur]|Dy|W|U)";
+    "(?:H[eogsf]?|L[iavru]|B[eahkri]?|C[arofmusenld]?|N[eiahopdb]?|O[sg]?|F[rle]?|M[godtcn]|A[lrsgutmc]|S[icerngmb]?|P[uabotmrd]?|Kr?|T[icebmsalh]|V|Z[nr]|G[ade]|R[buhenagf]|Yb?|I[nr]?|Xe|E[urs]|D[ysb]|W|U)";
   // A <sub>/<sup>-tagged subscript, and the looser "tagged or inline" subscript.
   const taggedSub = "<su[bp]>[1-9][0-9]*</su[bp]>";
   const subPart = `(?:${taggedSub}|[1-9][0-9]*)`;

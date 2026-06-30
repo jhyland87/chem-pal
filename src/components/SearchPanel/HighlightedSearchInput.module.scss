@@ -1,0 +1,161 @@
+// Live syntax-highlighting search input. The real <input> and the colored backdrop are
+// stacked in the same CSS-grid cell with identical box metrics, so the glyphs occupy the
+// exact same pixels. The input's own text is always transparent (only its caret shows) and
+// the backdrop always renders the (optionally colored) text — so engaging highlighting never
+// moves anything; only the colors change.
+
+.wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: grid;
+}
+
+// Shared typography / box model. Both layers occupy the same grid cell.
+.input,
+.backdrop {
+  grid-area: 1 / 1;
+  margin: 0;
+  padding: 4px 0 5px; // MUI InputBase default vertical padding
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  line-height: 1.4375em; // MUI InputBase default
+  letter-spacing: inherit;
+  text-align: left; // don't inherit the home screen's centered text-align
+  white-space: pre; // single line: keep spaces, no wrapping
+}
+
+.input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: transparent; // glyphs come from the backdrop; keep the caret visible
+  caret-color: #cdd6f4; // Catppuccin Mocha text
+
+  &::placeholder {
+    color: #7f849c; // Catppuccin Mocha overlay
+    opacity: 1; // backdrop is empty when there's no text, so the input shows the placeholder
+  }
+}
+
+.backdrop {
+  overflow: hidden;
+  pointer-events: none;
+  color: inherit; // default token (and plain-query) color = normal text
+}
+
+// Error cue on the field (covers the no-inclusive-term case, which has no error token).
+// Inset box-shadow doesn't affect layout, so the field never shifts.
+.wrapper.error .input,
+.wrapper.error .backdrop {
+  box-shadow: inset 0 -2px 0 -1px #e06c75;
+}
+
+@media (prefers-color-scheme: light) {
+  .input {
+    caret-color: #4c4f69; // Catppuccin Latte text
+
+    &::placeholder {
+      color: #8c8fa1; // Catppuccin Latte overlay
+    }
+  }
+}
+
+// Token classes are injected via innerHTML, so they must be global (not module-scoped).
+// Each non-plain token gets a translucent background "tint" plus a saturated text color for
+// contrast. NOTE: only background-color / border-radius / color are safe here — any padding,
+// margin, border, or letter-spacing would change the glyph advance and break alignment with
+// the transparent <input> underneath.
+:global {
+  .hl-keyword,
+  .hl-quoted,
+  .hl-error,
+  .hl-paren-0,
+  .hl-paren-1,
+  .hl-paren-2,
+  .hl-paren-3,
+  .hl-paren-4 {
+    border-radius: 3px;
+  }
+
+  .hl-term {
+    color: inherit; // bare terms read as normal text, no tint
+  }
+
+  // ---- Dark theme (default) — Catppuccin Mocha ----
+  .hl-keyword {
+    color: #cba6f7; // mauve
+    background-color: rgb(203 166 247 / 20%);
+    font-weight: 600;
+  }
+  .hl-quoted {
+    color: #a6e3a1; // green
+    background-color: rgb(166 227 161 / 18%);
+  }
+  .hl-error {
+    color: #f38ba8; // red
+    background-color: rgb(243 139 168 / 20%);
+    text-decoration: underline wavy #f38ba8;
+  }
+
+  // Rainbow parentheses by nesting depth (matched pairs share a depth → same color).
+  .hl-paren-0 {
+    color: #89dceb; // sky
+    background-color: rgb(137 220 235 / 20%);
+  }
+  .hl-paren-1 {
+    color: #fab387; // peach
+    background-color: rgb(250 179 135 / 20%);
+  }
+  .hl-paren-2 {
+    color: #f5c2e7; // pink
+    background-color: rgb(245 194 231 / 20%);
+  }
+  .hl-paren-3 {
+    color: #89b4fa; // blue
+    background-color: rgb(137 180 250 / 20%);
+  }
+  .hl-paren-4 {
+    color: #f9e2af; // yellow
+    background-color: rgb(249 226 175 / 20%);
+  }
+
+  // ---- Light theme — Catppuccin Latte ----
+  @media (prefers-color-scheme: light) {
+    .hl-keyword {
+      color: #8839ef; // mauve
+      background-color: rgb(136 57 239 / 13%);
+    }
+    .hl-quoted {
+      color: #40a02b; // green
+      background-color: rgb(64 160 43 / 14%);
+    }
+    .hl-error {
+      color: #d20f39; // red
+      background-color: rgb(210 15 57 / 12%);
+      text-decoration: underline wavy #d20f39;
+    }
+    .hl-paren-0 {
+      color: #179299; // teal
+      background-color: rgb(23 146 153 / 13%);
+    }
+    .hl-paren-1 {
+      color: #fe640b; // peach
+      background-color: rgb(254 100 11 / 13%);
+    }
+    .hl-paren-2 {
+      color: #ea76cb; // pink
+      background-color: rgb(234 118 203 / 15%);
+    }
+    .hl-paren-3 {
+      color: #1e66f5; // blue
+      background-color: rgb(30 102 245 / 12%);
+    }
+    .hl-paren-4 {
+      color: #df8e1d; // yellow
+      background-color: rgb(223 142 29 / 15%);
+    }
+  }
+}

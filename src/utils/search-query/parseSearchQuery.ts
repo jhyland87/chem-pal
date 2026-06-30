@@ -2,7 +2,7 @@ import { parse as parseLiqe } from "liqe";
 import type { ParsedSearchQuery, SearchAst } from "./types";
 
 /** Bare words that act as boolean operators (case-insensitive). */
-const OPERATOR_WORDS = new Set(["AND", "OR", "NOT"]);
+export const OPERATOR_WORDS = new Set(["AND", "OR", "NOT"]);
 
 /** A token produced by {@link tokenize}. */
 interface Token {
@@ -165,7 +165,7 @@ function normalizeLiqeNode(node: unknown): SearchAst {
  * @returns True when advanced syntax is present.
  * @source
  */
-function hasAdvancedSyntax(input: string): boolean {
+export function hasAdvancedSyntax(input: string): boolean {
   return tokenize(input).some(
     (token) => token.kind === "paren" || isOperatorToken(token),
   );
