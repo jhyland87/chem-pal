@@ -57,11 +57,6 @@ export class SupplierChemsavers
   // server-side instead of using the keyword-only fallback.
   protected readonly supportsNativeAdvancedSearch: boolean = true;
 
-  // Chemsavers titles (e.g. "SODIUM, REAGENT (ACS) - 500 G") are far longer than the
-  // query, so ratio-style scores fall under the cutoff even for clear matches. Rank by
-  // score and take the top results instead of applying a hard threshold.
-  protected readonly fuzzyFilterRankOnly: boolean = true;
-
   // HTTP headers used as a basis for all queries.
   protected headers: HeadersInit = {
     /* eslint-disable */
