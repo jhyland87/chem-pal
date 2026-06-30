@@ -1,6 +1,7 @@
 import { defaultResultsLimit } from "@/../config.json";
 import { UOM } from "@/constants/common";
 import { FUZZ_SCORERS, isFuzzScorerName, type FuzzScorerFn } from "@/constants/fuzzScorers";
+import { backgroundFetch, type BackgroundFetchInit } from "@/helpers/backgroundFetch";
 import { setCookie } from "@/helpers/cookies";
 import { EmptyResponseError, HttpError } from "@/helpers/exceptions";
 import {
@@ -17,6 +18,10 @@ import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import { Logger } from "@/utils/Logger";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { SupplierCache } from "@/utils/SupplierCache";
+import { scoreAstMatch } from "@/utils/search-query/evaluateAst";
+import { extractOrGroups } from "@/utils/search-query/extractPositiveTerms";
+import { parseSearchQuery } from "@/utils/search-query/parseSearchQuery";
+import type { ParsedSearchQuery } from "@/utils/search-query/types";
 import {
   incrementFailure,
   incrementParseError,
@@ -92,6 +97,43 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * by `setFuzzScorerOverride` so it can't be `readonly`.
    */
   protected fuzzScorerOverride?: FuzzScorerFn;
+
+  /**
+   * Parsed advanced-search query, set per-instance by `SupplierFactory` from the
+   * user's input. When absent (e.g. a directly-constructed test supplier),
+   * {@link getAst} lazily parses `this.query` instead.
+   */
+  protected parsedQuery?: ParsedSearchQuery;
+
+  /**
+   * Runtime flag resolved from `userSettings.fuzzyFilteringDisabled`. When true,
+   * `fuzzyFilterAst` skips fuzzball scoring: plain queries return raw supplier
+   * results and advanced queries are filtered only by the boolean predicate via
+   * case-insensitive substring matching.
+   */
+  protected fuzzyFilteringDisabled: boolean = false;
+
+  /**
+   * Opt-in fuzzy strategy. When true, {@link fuzzyFilter}/{@link fuzzyFilterAst} rank
+   * candidates by fuzz score and keep them all (in score order) instead of dropping
+   * anything below {@link minMatchPercentage}; the caller then slices the top N. Use for
+   * suppliers whose titles are much longer than the query (so ratio-style scorers fall
+   * under the cutoff even for clear matches). Defaults to the cutoff behavior.
+   */
+  protected readonly fuzzyFilterRankOnly: boolean = false;
+
+  /** Maximum number of backend search requests the keyword-only fallback issues. */
+  protected readonly maxFallbackQueries: number = 4;
+
+  /**
+   * Whether `queryProducts` handles an advanced (boolean) query natively in a
+   * single request — true for suppliers that translate the AST into a server-side
+   * query (Wix, Shopify, Chemsavers/Typesense, LiMac/FreeFind). When false (the
+   * default), {@link queryProductsWithCache} drives the keyword-only fallback:
+   * one backend search per positive OR-group, unioned and deduped, with the full
+   * boolean predicate enforced client-side by {@link fuzzyFilterAst}.
+   */
+  protected readonly supportsNativeAdvancedSearch: boolean = false;
 
   /**
    * The shipping scope of the supplier. Used to determine the shipping scope
@@ -569,6 +611,51 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     if (!Number.isNaN(ms) && ms >= 0) {
       this.maxAllowableSearchTime = ms;
     }
+  }
+
+  /**
+   * Sets the parsed advanced-search query for this instance. Called by
+   * `SupplierFactory` once per search so every supplier shares the same parse of
+   * the user's input.
+   * @param parsed - The parsed query, or undefined to clear it.
+   * @example
+   * ```typescript
+   * supplier.setParsedQuery(parseSearchQuery("Sodium OR Potassium"));
+   * ```
+   * @source
+   */
+  public setParsedQuery(parsed: ParsedSearchQuery | undefined): void {
+    this.parsedQuery = parsed;
+  }
+
+  /**
+   * Applies a runtime override for {@link fuzzyFilteringDisabled}, driven by
+   * `userSettings.fuzzyFilteringDisabled`. When true, fuzzball scoring is skipped
+   * and only the boolean predicate (substring matching) is applied.
+   * @param value - True to disable fuzzy filtering, false (default) to keep it.
+   * @example
+   * ```typescript
+   * supplier.setFuzzyFilteringDisabled(true); // show raw/boolean-only results
+   * ```
+   * @source
+   */
+  public setFuzzyFilteringDisabled(value: boolean): void {
+    this.fuzzyFilteringDisabled = value === true;
+  }
+
+  /**
+   * Returns the parsed query for this instance, lazily parsing `this.query` when
+   * `SupplierFactory` did not set one (e.g. in unit tests that construct a
+   * supplier directly).
+   * @returns The parsed search query.
+   * @example
+   * ```typescript
+   * const { isAdvanced, ast } = this.getAst();
+   * ```
+   * @source
+   */
+  protected getAst(): ParsedSearchQuery {
+    return this.parsedQuery ?? parseSearchQuery(this.query);
   }
 
   /**
@@ -1180,6 +1267,17 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       this.showFuzzScorerComparisonTable(query, data);
     }
 
+    if (this.fuzzyFilterRankOnly) {
+      // Rank every candidate by score (no cutoff) and return them in score order; the
+      // caller slices the top N. Avoids dropping clear matches whose ratio-style score
+      // falls under minMatchPercentage purely because the title dwarfs the query.
+      return extract(query, data, {
+        scorer: activeScorer,
+        processor: this.titleSelector,
+        sortBySimilarity: true,
+      }).map(([obj, score, idx]) => this.attachFuzz(obj, score, idx));
+    }
+
     const results = extract(query, data, {
       scorer: activeScorer,
       processor: this.titleSelector,
@@ -1211,6 +1309,173 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
 
     // Get rid of any empty items that didn't match closely enough
     return results.filter((item) => !!item);
+  }
+
+  /**
+   * Annotates an item with its fuzz score, returning it as a {@link FuzzyMatchResult}.
+   * Centralizes the metadata shape and keeps the generic typing correct (a direct
+   * `Object.assign` on an unconstrained type parameter widens away `X`).
+   * @param obj - The matched item to annotate.
+   * @param score - The fuzz score (0–100).
+   * @param idx - The item's index in the source list.
+   * @returns `obj` extended with `_fuzz` and `matchPercentage`.
+   * @example
+   * ```typescript
+   * this.attachFuzz({ name: "NaCl" }, 92, 0);
+   * // => { name: "NaCl", _fuzz: { score: 92, idx: 0 }, matchPercentage: 92 }
+   * ```
+   * @source
+   */
+  private attachFuzz<X>(obj: X, score: number, idx: number): FuzzyMatchResult<X> {
+    return { ...obj, _fuzz: { score, idx }, matchPercentage: score };
+  }
+
+  /**
+   * Advanced-search-aware companion to {@link fuzzyFilter}. Filters `data` using
+   * the parsed query ({@link getAst}) so boolean operators (AND/OR/NOT) and
+   * nesting are honored, and respects the `fuzzyFilteringDisabled` toggle.
+   *
+   * Behavior matrix:
+   * - fuzzing on + plain query → delegates to {@link fuzzyFilter} (identical legacy path).
+   * - fuzzing off + plain query → returns `data` unchanged (raw supplier results).
+   * - fuzzing on + advanced query → fuzzy-scores each title against the AST, drops
+   *   non-matches, ranks by score.
+   * - fuzzing off + advanced query → applies the boolean predicate with
+   *   case-insensitive substring matching, original order preserved.
+   *
+   * @param data - Array of raw search-result objects to filter.
+   * @param minMatchPercentage - Minimum leaf match score when fuzzing is on.
+   * @returns The filtered (and, when fuzzing, ranked) subset, each item tagged
+   *   with `_fuzz`/`matchPercentage` like {@link fuzzyFilter}.
+   * @example
+   * ```typescript
+   * // this.query === "Sodium OR Potassium"
+   * const matches = this.fuzzyFilterAst(products);
+   * ```
+   * @source
+   */
+  protected fuzzyFilterAst<X>(
+    data: X[],
+    minMatchPercentage: number = this.minMatchPercentage,
+  ): X[] {
+    const parsed = this.getAst();
+
+    if (!parsed.isAdvanced) {
+      // Plain query: either the legacy fuzzy path, or no filtering when disabled.
+      return this.fuzzyFilteringDisabled
+        ? data
+        : this.fuzzyFilter(parsed.raw.trim(), data, minMatchPercentage);
+    }
+
+    const scorer = this.fuzzScorerOverride ?? this.fuzzScorer;
+    // Rank-only floors the leaf score at 0 so predicate-matching items are never dropped
+    // for a low fuzz score; the sort below still ranks them. Otherwise enforce the cutoff.
+    const threshold = this.fuzzyFilteringDisabled
+      ? 1
+      : this.fuzzyFilterRankOnly
+        ? 0
+        : minMatchPercentage;
+    const fuzzyWords = !this.fuzzyFilteringDisabled;
+
+    const matched = data.reduce<FuzzyMatchResult<X>[]>((acc, obj, idx) => {
+      const title = this.titleSelector(obj) ?? "";
+      const score = scoreAstMatch(title, parsed.ast, { scorer, threshold, fuzzyWords });
+      if (score === null) {
+        return acc;
+      }
+      acc.push(this.attachFuzz(obj, score, idx));
+      return acc;
+    }, []);
+
+    // Rank by relevance when fuzzing; preserve backend order when disabled.
+    if (!this.fuzzyFilteringDisabled) {
+      matched.sort((a, b) => (b.matchPercentage ?? 0) - (a.matchPercentage ?? 0));
+    }
+    return matched;
+  }
+
+  /**
+   * Advanced-search-aware, keep-or-drop companion to {@link fuzzyScore} for
+   * suppliers that re-filter a single title after a detail fetch (e.g. LiMac).
+   * Returns the score to keep the item, or `null` to drop it, honoring both the
+   * parsed query and the `fuzzyFilteringDisabled` toggle:
+   * - fuzzing off → plain query keeps everything (score 100); advanced query
+   *   keeps items satisfying the boolean predicate by substring match.
+   * - fuzzing on → plain query keeps items scoring at/above `minMatchPercentage`;
+   *   advanced query keeps items satisfying the predicate with fuzzy leaf scores.
+   *
+   * @param text - The text (e.g. a detail-page product name) to score.
+   * @returns A 0–100 score to keep the item, or `null` to drop it.
+   * @example
+   * ```typescript
+   * // this.query === "acid AND NOT boric"
+   * this.fuzzyScoreAst("Sulfuric acid"); // a number
+   * this.fuzzyScoreAst("Boric acid");    // null
+   * ```
+   * @source
+   */
+  protected fuzzyScoreAst(text: string): number | null {
+    const parsed = this.getAst();
+
+    if (!parsed.isAdvanced) {
+      if (this.fuzzyFilteringDisabled) {
+        return 100;
+      }
+      const score = this.fuzzyScore(text);
+      return score >= this.minMatchPercentage ? score : null;
+    }
+
+    const scorer = this.fuzzScorerOverride ?? this.fuzzScorer;
+    const threshold = this.fuzzyFilteringDisabled ? 1 : this.minMatchPercentage;
+    return scoreAstMatch(text, parsed.ast, {
+      scorer,
+      threshold,
+      fuzzyWords: !this.fuzzyFilteringDisabled,
+    });
+  }
+
+  /**
+   * Derives the backend search terms for a keyword-only supplier from an
+   * advanced query: one representative term per positive OR-group (the longest —
+   * most selective — token of each AND-group), de-duplicated and capped at
+   * {@link maxFallbackQueries}. Returns an empty array when there are no positive
+   * terms (e.g. a purely negative query), in which case the caller falls back to
+   * a single raw search.
+   *
+   * @returns The de-duplicated, capped list of backend search terms.
+   * @example
+   * ```typescript
+   * // this.query === "(Sodium OR Potassium) AND Hydroxide"
+   * this.deriveFallbackTerms(); // ["Hydroxide", "Hydroxide"] -> ["Hydroxide"] (deduped)
+   * ```
+   * @source
+   */
+  protected deriveFallbackTerms(): string[] {
+    const groups = extractOrGroups(this.getAst().ast);
+
+    // How many AND-groups each term appears in — a term shared across groups (a
+    // common factor, e.g. "Hydroxide" in "(Sodium OR Potassium) AND Hydroxide")
+    // covers more of the query in fewer requests, so prefer it; break ties by
+    // length (more selective). Picking one representative term per group keeps
+    // each request's result set a superset of that group's matches.
+    const frequency = new Map<string, number>();
+    for (const group of groups) {
+      for (const term of new Set(group)) {
+        frequency.set(term, (frequency.get(term) ?? 0) + 1);
+      }
+    }
+
+    const terms = groups
+      .map(
+        (group) =>
+          group.slice().sort((a, b) => {
+            const byFrequency = (frequency.get(b) ?? 0) - (frequency.get(a) ?? 0);
+            return byFrequency !== 0 ? byFrequency : b.length - a.length;
+          })[0],
+      )
+      .filter((term): term is string => Boolean(term));
+
+    return [...new Set(terms)].slice(0, this.maxFallbackQueries);
   }
 
   /**
@@ -1429,7 +1694,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     // in place before `queryProducts` reads it. Memoized, so this is cheap
     // on repeat calls within the same supplier instance.
     await this.ensureSetup();
-    const results = await this.queryProducts(query, limit);
+    const results = await this.queryProductsResolved(query, limit);
     if (results) {
       // Store processed results in cache (dumped/serialized form) and the limit used
       await this.cache.cacheQueryResults(
@@ -1439,6 +1704,66 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       );
     }
     return results;
+  }
+
+  /**
+   * Resolves the supplier's `queryProducts` for the current search, applying the
+   * keyword-only advanced-search fallback when needed. For a plain query, or for
+   * a supplier that handles boolean queries natively
+   * ({@link supportsNativeAdvancedSearch}), this is a single `queryProducts`
+   * call. For an advanced query on a keyword-only backend, it issues one search
+   * per derived OR-group term ({@link deriveFallbackTerms}) and unions the
+   * results, deduping by product URL/ID. Each `queryProducts` batch already
+   * enforces the full boolean predicate via {@link fuzzyFilterAst}, so the union
+   * is the set of products matching the whole query. Honors
+   * `httpRequestHardLimit`; the fetches run inside `execute()`'s existing
+   * `maxAllowableSearchTime` race so an aborted controller cancels them.
+   *
+   * @param query - The raw search query.
+   * @param limit - The per-supplier result limit.
+   * @returns The (possibly unioned) product builders, or void.
+   * @source
+   */
+  protected async queryProductsResolved(
+    query: string,
+    limit: number,
+  ): Promise<ProductBuilder<T>[] | void> {
+    const parsed = this.getAst();
+    if (!parsed.isAdvanced || this.supportsNativeAdvancedSearch) {
+      return this.queryProducts(query, limit);
+    }
+
+    const terms = this.deriveFallbackTerms();
+    if (terms.length <= 1) {
+      // Nothing to union (single positive term, or a purely negative query):
+      // run the raw query once and let fuzzyFilterAst enforce the predicate.
+      return this.queryProducts(terms[0] ?? query, limit);
+    }
+
+    const seen = new Set<string>();
+    const union: ProductBuilder<T>[] = [];
+    for (const term of terms) {
+      if (this.requestCount >= this.httpRequestHardLimit) {
+        this.logger.warn("queryProductsResolved: httpRequestHardLimit reached, stopping fallback", {
+          term,
+          requestCount: this.requestCount,
+        });
+        break;
+      }
+      const batch = await this.queryProducts(term, limit);
+      if (!batch) {
+        continue;
+      }
+      for (const builder of batch) {
+        const key = String(builder.get("url") ?? builder.get("id") ?? builder.get("title") ?? "");
+        if (key === "" || seen.has(key)) {
+          continue;
+        }
+        seen.add(key);
+        union.push(builder);
+      }
+    }
+    return union.length > 0 ? union : undefined;
   }
 
   /**
@@ -2070,6 +2395,36 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
         return newObject;
       })
       .filter((item): item is GroupedItem<R> => item !== undefined);
+  }
+
+  /**
+   * Runs an HTTP request from the extension's background service worker instead of this
+   * (page) context, sidestepping the CORS restrictions that apply to extension pages.
+   * The target host must be granted in the manifest `host_permissions`. Returns a real
+   * {@link Response} (text/JSON bodies only). Independent of {@link fetch} — it does not
+   * share the request counter, hard limit, or WAF retry logic.
+   *
+   * @param url - The absolute URL to request.
+   * @param init - Optional serializable request options (method, headers, body, etc.).
+   * @returns A `Response` reconstructed from the worker's reply.
+   * @example
+   * ```typescript
+   * // Inside a supplier method, e.g. scraping an asset blocked by page CORS:
+   * const homepage = await this.backgroundFetch("https://chemsavers.com/");
+   * const html = await homepage.text();
+   *
+   * const search = await this.backgroundFetch("https://api.example.com/search", {
+   *   method: "POST",
+   *   headers: { "content-type": "application/json" },
+   *   body: JSON.stringify({ q: "acid" }),
+   * });
+   * const results = search.ok ? await search.json() : undefined;
+   * ```
+   * @source
+   */
+  protected async backgroundFetch(url: string, init?: BackgroundFetchInit): Promise<Response> {
+    this.logger.debug(`Background fetching: ${url}`);
+    return backgroundFetch(url, init);
   }
 
   /**

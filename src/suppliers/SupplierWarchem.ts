@@ -173,7 +173,7 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
     }
 
     // Do the fuzzy filtering using the element found when using this.titleSelector()
-    return this.fuzzyFilter<Element>(query, Array.from(productContainers));
+    return this.fuzzyFilterAst<Element>(Array.from(productContainers));
   }
 
   /**

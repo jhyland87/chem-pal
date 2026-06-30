@@ -107,7 +107,7 @@ export abstract class SupplierBaseWoocommerce
 
     this.logger.info("results:", { results });
 
-    const fuzzedResults = this.fuzzyFilter<WooCommerceSearchResponseItem>(query, results);
+    const fuzzedResults = this.fuzzyFilterAst<WooCommerceSearchResponseItem>(results);
     this.logger.info("fuzzedResults:", { query, results, fuzzedResults });
 
     return this.initProductBuilders(fuzzedResults.slice(0, limit));

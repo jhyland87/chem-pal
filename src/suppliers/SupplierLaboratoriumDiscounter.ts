@@ -1,10 +1,12 @@
-import { AVAILABILITY } from "@/constants/common";
+import { AVAILABILITY, CACHE } from "@/constants/common";
 import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM, urlencode } from "@/helpers/request";
-import { firstMap, mapDefined } from "@/helpers/utils";
+import { parseChemicalSpecs, parsePurity } from "@/helpers/science";
+import { firstMap, getUserLanguage, mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
+import { cstorage } from "@/utils/storage";
 import { isFullURL, isPopulatedObject, isQuantityObject } from "@/utils/typeGuards/common";
 import {
   isProductObject,
@@ -84,6 +86,14 @@ export class SupplierLaboratoriumDiscounter
 
   // Override the type of queryResults to use our specific type
   protected queryResults: Array<LaboratoriumDiscounterProductObject> = [];
+
+  // Lightspeed/webshopapp shop id, captured from the search response so product
+  // images can be built from `collection.products[id].image` in the search phase
+  // (the image then survives even if the per-product detail fetch fails).
+  protected shopId?: number;
+
+  // Resolved once per search: the user's two-letter language code for SDS selection.
+  private userLanguageCode?: string;
 
   // Used to keep track of how many requests have been made to the supplier.
   protected httpRequstCount: number = 0;
@@ -191,9 +201,14 @@ export class SupplierLaboratoriumDiscounter
       return;
     }
 
+    // Capture the shop id so product images can be constructed in the search phase.
+    if (typeof searchRequest.shop.id === "number") {
+      this.shopId = searchRequest.shop.id;
+    }
+
     const rawSearchResults = Object.values(searchRequest.collection.products);
 
-    const fuzzFiltered = this.fuzzyFilter<SearchResponseProduct>(query, rawSearchResults);
+    const fuzzFiltered = this.fuzzyFilterAst<SearchResponseProduct>(rawSearchResults);
     this.logger.debug("fuzzFiltered:", { query, searchRequest, rawSearchResults, fuzzFiltered });
     const grouped = this.groupVariants<SearchResponseProduct>(fuzzFiltered);
     this.logger.debug("grouped:", {
@@ -276,8 +291,23 @@ export class SupplierLaboratoriumDiscounter
         .setUUID(product.code)
         //.setPricing(product.price.price, product?.currency as string, CURRENCY_SYMBOL_MAP.EUR)
         //.setQuantity(product.variant)
-        // setCAS extracts the CAS from free text itself, so pass the description through.
-        .setCAS(typeof product.content === "string" ? product.content : undefined);
+        // The search `variant` field embeds the CAS (e.g. "Variant,500 g,CAS,1762-95-4");
+        // setCAS extracts the number from the free text itself.
+        .setCAS(product.variant)
+        // The purity is usually baked into the title (e.g. "Sodium bicarbonate 99% foodgrade").
+        .setPurity(parsePurity(product.title));
+
+      // Build the product image from the shop id + image id in the search response so it is
+      // populated even when the per-product detail fetch later fails.
+      if (this.shopId !== undefined && typeof product.image === "number" && product.image > 0) {
+        productBuilder
+          .setImage(
+            `https://cdn.webshopapp.com/shops/${this.shopId}/files/${product.image}/image.jpeg`,
+          )
+          .setThumbnail(
+            `https://cdn.webshopapp.com/shops/${this.shopId}/files/${product.image}/120x120x2/image.jpeg`,
+          );
+      }
       return productBuilder;
     });
   }
@@ -494,7 +524,124 @@ export class SupplierLaboratoriumDiscounter
         });
       }
     }
+
+    // The product description HTML (`content`) carries the chemical specs (formula, molar mass,
+    // CAS) and the SDS document links — parse what's there onto the builder.
+    if (typeof productData.content === "string" && productData.content.length > 0) {
+      await this.applyContentSpecs(builder, productData.content);
+    }
+
     return builder;
+  }
+
+  /**
+   * Parses the product `content` HTML for chemical specs and SDS documents and applies them to the
+   * builder: the empirical formula, the molar mass (as molecular weight), the CAS number, and the
+   * SDS document in the user's preferred language (falling back to English).
+   *
+   * @param builder - The ProductBuilder to populate.
+   * @param content - The product `content` HTML string from the detail response.
+   * @returns A promise that resolves once the specs have been applied.
+   * @example
+   * ```typescript
+   * await this.applyContentSpecs(builder, productData.content);
+   * // builder now has formula "NaOH", moleweight 40, CAS "1310-73-2", and an SDS URL
+   * ```
+   * @source
+   */
+  private async applyContentSpecs(
+    builder: ProductBuilder<Product>,
+    content: string,
+  ): Promise<void> {
+    const specs = parseChemicalSpecs(content);
+    if (specs.formula) {
+      builder.setFormula(specs.formula);
+    }
+
+    // This catalog labels molecular weight as "Molar mass (M) 40.0 g / mol", which the generic
+    // spec parser doesn't recognize, so pull it out directly.
+    const molarMass = content.match(/molar\s+mass[^\d]*(\d+(?:\.\d+)?)\s*g\s*\/\s*mol/i);
+    if (molarMass) {
+      builder.setMoleweight(molarMass[1]);
+    }
+
+    // setCAS extracts the number from free text (e.g. "CAS No. [1310-73-2]").
+    builder.setCAS(content);
+
+    const sdsUrl = this.pickSdsUrl(content, await this.getUserLanguageCode());
+    if (sdsUrl) {
+      builder.setSDSUrl(sdsUrl);
+    }
+  }
+
+  /**
+   * Picks the best SDS document URL from the product content HTML for the given language. SDS links
+   * are tagged with a language both in their visible text (e.g. "… Pure (EN)") and their filename
+   * (e.g. "sdb-9356-gb-en.pdf"). Returns the match for `language`, else the English document, else
+   * the first SDS found; `undefined` when the content has no SDS links.
+   *
+   * @param content - The product `content` HTML string.
+   * @param language - The two-letter language code to prefer (e.g. "nl", "en").
+   * @returns The chosen SDS URL, or `undefined` when none are present.
+   * @example
+   * ```typescript
+   * this.pickSdsUrl(content, "fr"); // "https://cdn.webshopapp.com/.../sdb-9356-fr-fr.pdf"
+   * this.pickSdsUrl(content, "ja"); // falls back to the English SDS
+   * ```
+   * @source
+   */
+  private pickSdsUrl(content: string, language: string): string | undefined {
+    const byLanguage = new Map<string, string>();
+    for (const match of content.matchAll(/<a[^>]+href="([^"]+\.pdf)"[^>]*>([^<]*)<\/a>/gi)) {
+      const [, href, text] = match;
+      // Only safety-data-sheet links (text says "SDS"/"MSDS", filename uses "sdb"/"sds").
+      if (!/\b(?:m?sds)\b/i.test(text) && !/sd[bs]/i.test(href)) {
+        continue;
+      }
+      // Language comes from the trailing "(XX)" tag, or the second code in the filename
+      // (e.g. "gb-en" -> "en", "nl-nl" -> "nl").
+      const lang = (
+        text.match(/\(([A-Za-z]{2})\)\s*$/)?.[1] ??
+        href.match(/-[a-z]{2}-([a-z]{2})\.pdf$/i)?.[1] ??
+        ""
+      ).toLowerCase();
+      if (lang && !byLanguage.has(lang)) {
+        byLanguage.set(lang, href);
+      }
+    }
+
+    if (byLanguage.size === 0) {
+      return undefined;
+    }
+    return byLanguage.get(language) ?? byLanguage.get("en") ?? [...byLanguage.values()][0];
+  }
+
+  /**
+   * Resolves the user's two-letter language code from their saved settings, falling back to the
+   * browser UI language. Mirrors the approach used by other suppliers that select language-specific
+   * documents.
+   *
+   * @returns A promise resolving to the lowercase two-letter language code (e.g. "en", "nl").
+   * @example
+   * ```typescript
+   * await this.getUserLanguageCode(); // "en"
+   * ```
+   * @source
+   */
+  private async getUserLanguageCode(): Promise<string> {
+    if (this.userLanguageCode !== undefined) {
+      return this.userLanguageCode;
+    }
+    let language = getUserLanguage();
+    try {
+      const stored = await cstorage.local.get([CACHE.USER_SETTINGS]);
+      const settings = (stored?.[CACHE.USER_SETTINGS] ?? {}) as Partial<UserSettings>;
+      language = settings.language ?? language;
+    } catch (error) {
+      this.logger.debug("Failed to read user language setting, falling back", { error });
+    }
+    this.userLanguageCode = language.split("-")[0].toLowerCase();
+    return this.userLanguageCode;
   }
 
   /**

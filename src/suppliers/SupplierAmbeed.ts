@@ -788,7 +788,7 @@ export class SupplierAmbeed
     // Sanitize the products, removing the <em></em> tags and decoding the prices.
     const products = searchRequest.value.result.map(this.sanitizeSearchableFields.bind(this));
 
-    const fuzzedResults = this.fuzzyFilter<AmbeedProductListResponseResultItem>(query, products);
+    const fuzzedResults = this.fuzzyFilterAst<AmbeedProductListResponseResultItem>(products);
 
     const slice = fuzzedResults.slice(0, limit);
 

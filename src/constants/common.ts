@@ -351,6 +351,8 @@ export enum CACHE {
   TABLE_STATE = "table_state",
   /** ID of the ChemPal Favorites bookmarks folder */
   BOOKMARKS_FOLDER_ID = "bookmarks_folder_id",
+  /** Rehydrated Chemsavers Typesense API key (overrides the hardcoded default when present) */
+  CHEMSAVERS_API_KEY = "chemsavers_api_key",
 }
 
 /**

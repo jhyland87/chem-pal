@@ -108,7 +108,7 @@ export class SupplierOnyxmet
 
     this.logger.debug("all search results:", data);
 
-    const fuzzResults = this.fuzzyFilter<OnyxMetSearchResultItem>(query, data);
+    const fuzzResults = this.fuzzyFilterAst<OnyxMetSearchResultItem>(data);
 
     return this.initProductBuilders(fuzzResults.splice(0, limit));
   }

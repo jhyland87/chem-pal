@@ -258,7 +258,7 @@ export class SupplierSynthetika
       if (pageResponse.pages <= i) break;
     }
 
-    const fuzzFiltered = this.fuzzyFilter<SynthetikaProduct>(query, products);
+    const fuzzFiltered = this.fuzzyFilterAst<SynthetikaProduct>(products);
     const grouped = this.groupVariants<SynthetikaProduct>(fuzzFiltered);
     return this.initProductBuilders(grouped);
   }

@@ -251,7 +251,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
     // Flatten the array of arrays into a single array of products
     const products = Object.values(searchRequest.list).map((item) => item[0]);
 
-    const fuzzFiltered = this.fuzzyFilter<MacklinProductVariant>(query, products);
+    const fuzzFiltered = this.fuzzyFilterAst<MacklinProductVariant>(products);
     this.logger.debug("fuzzFiltered:", { query, searchRequest, products, fuzzFiltered });
     const processed = fuzzFiltered.slice(0, limit);
     return this.initProductBuilders(processed);

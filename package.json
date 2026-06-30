@@ -59,6 +59,7 @@
     "fuzzball": "^2.2.2",
     "htmlparser2": "^10.0.0",
     "idb": "^8.0.3",
+    "liqe": "^3.8.7",
     "lodash": "^4.17.21",
     "loglevel": "^1.9.2",
     "loglevel-plugin-prefix": "^0.8.4",

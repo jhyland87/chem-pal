@@ -156,6 +156,8 @@ declare global {
       [key: string]: unknown;
     };
     shop: {
+      /** Lightspeed/webshopapp shop id, used to build CDN image/file URLs */
+      id: number;
       /** Base currency */
       base_currency: string;
       status: string;

@@ -137,7 +137,7 @@ export abstract class SupplierBaseSearchanise
     const validItems = (searchRequest.items ?? []).filter(
       (item): item is ItemListing => item !== null,
     );
-    const fuzzResults = this.fuzzyFilter<ItemListing>(query, validItems);
+    const fuzzResults = this.fuzzyFilterAst<ItemListing>(validItems);
     this.logger.info("fuzzResults", { fuzzResults });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));

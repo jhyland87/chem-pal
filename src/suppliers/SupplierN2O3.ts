@@ -241,7 +241,7 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
     const products = parsedHTML.querySelectorAll("#produkty > .tr1");
 
     // Do the fuzzy filtering using the element found when using this.titleSelector()
-    return this.fuzzyFilter<Element>(query, Array.from(products));
+    return this.fuzzyFilterAst<Element>(Array.from(products));
   }
 
   /**

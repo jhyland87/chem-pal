@@ -149,7 +149,7 @@ export class SupplierCarolina
 
     const results = await this.extractSearchResults(searchRequest);
 
-    const fuzzResults = this.fuzzyFilter<CarolinaSearchResult>(query, results);
+    const fuzzResults = this.fuzzyFilterAst<CarolinaSearchResult>(results);
     this.logger.debug("fuzzResults:", { query, searchRequest, results, fuzzResults });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));

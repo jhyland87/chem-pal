@@ -326,3 +326,65 @@ describe("SupplierLaboratoriumDiscounter getProductData methods", () => {
     });
   });
 });
+
+describe("SupplierLaboratoriumDiscounter content/SDS parsing", () => {
+  // Mirrors the shape of `product.content` from the detail JSON response.
+  const content = [
+    "<p>Empirical formula NaOH<br />Molar mass (M) 40.0 g / mol<br />CAS No. [1310-73-2]</p>",
+    '<tr><td><a href="https://cdn.webshopapp.com/shops/286851/files/1/sdb-9356-nl-nl.pdf">MSDS Natriumhydroxide (NL)</a></td></tr>',
+    '<tr><td><a href="https://cdn.webshopapp.com/shops/286851/files/2/sdb-9356-gb-en.pdf">MSDS Sodium hydroxide (EN)</a></td></tr>',
+    '<tr><td><a href="https://cdn.webshopapp.com/shops/286851/files/3/sdb-9356-fr-fr.pdf">MSDS Hydroxide de sodium (FR)</a></td></tr>',
+  ].join("\n");
+
+  // pickSdsUrl and applyContentSpecs are private; cast to reach them in tests.
+  type Internals = {
+    pickSdsUrl(content: string, language: string): string | undefined;
+    applyContentSpecs(builder: ProductBuilder<Product>, content: string): Promise<void>;
+  };
+  const internals = (): Internals => makeSupplier() as unknown as Internals;
+
+  it("picks the SDS in the requested language", () => {
+    expect(internals().pickSdsUrl(content, "nl")).toContain("sdb-9356-nl-nl.pdf");
+    expect(internals().pickSdsUrl(content, "fr")).toContain("sdb-9356-fr-fr.pdf");
+  });
+
+  it("falls back to English when the language is unavailable", () => {
+    expect(internals().pickSdsUrl(content, "ja")).toContain("sdb-9356-gb-en.pdf");
+  });
+
+  it("returns undefined when there are no SDS links", () => {
+    expect(internals().pickSdsUrl("<p>No documents here</p>", "en")).toBeUndefined();
+  });
+
+  it("applies formula, molar mass, CAS and an SDS url to the builder", async () => {
+    const builder = makeBuilder("sodium-hydroxide.html");
+    await internals().applyContentSpecs(builder, content);
+    expect(builder.get("formula")).toBe("NaOH");
+    expect(builder.get("moleweight")).toBe(40);
+    expect(builder.get("cas")).toBe("1310-73-2");
+    expect(builder.get("sdsUrl")).toContain(".pdf");
+  });
+
+  it("parses the purity from the product title in the search phase", () => {
+    type WithInit = {
+      initProductBuilders(data: unknown[]): ProductBuilder<Product>[];
+    };
+    const make = (title: string): ProductBuilder<Product> => {
+      const product = {
+        title,
+        url: "product.html",
+        description: "",
+        id: 1,
+        available: true,
+        sku: "SKU1",
+        code: "CODE1",
+        variant: "Variant,500 g,CAS,144-55-8",
+        image: 0,
+      };
+      return (makeSupplier() as unknown as WithInit).initProductBuilders([product])[0];
+    };
+    expect(make("Sodium bicarbonate 99% foodgrade").get("purity")).toBe("99%");
+    expect(make("Potassium hydrogen tartrate ≥99,5 %, extra pure").get("purity")).toBe("99.5%");
+    expect(make("Lithium Carbonate 99+% Extra Pure").get("purity")).toBe("99%");
+  });
+});

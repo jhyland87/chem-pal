@@ -387,13 +387,10 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     {
       id: "purity",
       header: "Purity",
-      accessorKey: "purity",
-      cell: ({ row }: ProductRow) => {
-        const purity = row.original.purity;
-        if (purity == null) return null;
-        // Purity is already a percentage string (may include a comparator / %), so render as-is.
-        return purity;
-      },
+      // Prefer the chemical grade (e.g. "ACS"); fall back to the purity % when no grade is
+      // set. Using an accessor keeps the displayed value, sorting, and filtering in sync.
+      accessorFn: (product) => product.grade ?? product.purity,
+      cell: (info) => info.getValue() ?? null,
       filterFn: "includeHierarchy",
       meta: {
         filterPlaceholder: "Purity...",

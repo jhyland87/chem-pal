@@ -5,6 +5,7 @@ import { findFormulaInHtml } from "@/helpers/science";
 import { firstMap, mapDefined } from "@/helpers/utils";
 import searchProductsQuery from "@/queries/magento2-product-query.gql";
 import { ProductBuilder } from "@/utils/ProductBuilder";
+import { extractAllPositiveTerms } from "@/utils/search-query/extractPositiveTerms";
 import { isQuantityObject } from "@/utils/typeGuards/common";
 import { isValidMagento2SearchResponse } from "@/utils/typeGuards/magento2";
 import { print } from "graphql";
@@ -85,9 +86,21 @@ export abstract class SupplierBaseMagento2
   // the products collected so far are returned. Tune per Magento supplier as needed.
   protected maxAllowableSearchTime: number = 45_000;
 
+  // Magento's `products(search:)` full-text field is OR-ish across words, which is a good
+  // candidate pool for an advanced query in a SINGLE request — Magento's structured `filter`
+  // (ProductAttributeFilterInput) can't express arbitrary name-substring OR/NOT (its `in` is
+  // exact-match, same-field conditions AND). So we hand the positive terms to `search` and let
+  // the client-side `fuzzyFilterAst` enforce the exact AND/OR/NOT predicate, rather than the
+  // keyword-only multi-request fallback.
+  protected readonly supportsNativeAdvancedSearch: boolean = true;
+
   /**
    * Builds the GraphQL variables for the `searchProducts` query. The query text itself lives in
    * `@/queries/magento2-product-query.gql`; only the search term and page size vary per request.
+   *
+   * For an advanced (boolean) query, the `search` term is the space-joined set of positive terms
+   * (negated branches dropped) so Magento's full-text search returns a broad candidate pool in one
+   * request; the precise boolean matching is applied client-side in `queryProducts`.
    *
    * @param query - The search term to match against product names
    * @param limit - Maximum number of products to return on the first page
@@ -100,7 +113,11 @@ export abstract class SupplierBaseMagento2
    * @source
    */
   protected getGraphQLVariables(query: string, limit: number): Magento2QueryVariables {
-    return { search: query, pageSize: limit };
+    const parsed = this.getAst();
+    const search = parsed.isAdvanced
+      ? extractAllPositiveTerms(parsed.ast).join(" ") || query
+      : query;
+    return { search, pageSize: limit };
   }
 
   /**
@@ -158,7 +175,7 @@ export abstract class SupplierBaseMagento2
 
     this.logger.debug(`Query returned ${items.length} products`, { items });
 
-    const fuzzResults = this.fuzzyFilter<Magento2ProductItem>(query, items);
+    const fuzzResults = this.fuzzyFilterAst<Magento2ProductItem>(items);
     this.logger.debug("fuzzResults", { query, items, fuzzResults });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));

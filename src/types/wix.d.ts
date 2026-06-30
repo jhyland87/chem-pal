@@ -542,6 +542,28 @@ declare global {
     v: string;
   }
 
+  /** A single field-match condition in a Wix filter tree. */
+  interface WixTermFilter {
+    term: {
+      /** Field to filter on */
+      field: string;
+      /** Operation to perform (e.g. equals, contains) */
+      op: string;
+      /** Values to filter by */
+      values: string[];
+    };
+  }
+
+  /**
+   * A node in a Wix filter tree. Either a leaf {@link WixTermFilter} or a
+   * boolean combinator (`and`/`or`/`not`) used to express advanced searches.
+   */
+  type WixFilterNode =
+    | WixTermFilter
+    | { and: WixFilterNode[] }
+    | { or: WixFilterNode[] }
+    | { not: WixFilterNode };
+
   /**
    * Variables used in GraphQL queries for the Wix product catalog.
    */
@@ -555,16 +577,7 @@ declare global {
     /** Sort criteria for the results */
     sort: string | null;
     /** Filter criteria for the query */
-    filters: {
-      term: {
-        /** Field to filter on */
-        field: string;
-        /** Operation to perform (e.g. equals, contains) */
-        op: string;
-        /** Values to filter by */
-        values: string[];
-      };
-    };
+    filters: WixFilterNode;
   }
 
   /**
