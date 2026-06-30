@@ -114,13 +114,14 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   protected fuzzyFilteringDisabled: boolean = false;
 
   /**
-   * Opt-in fuzzy strategy. When true, {@link fuzzyFilter}/{@link fuzzyFilterAst} rank
-   * candidates by fuzz score and keep them all (in score order) instead of dropping
-   * anything below {@link minMatchPercentage}; the caller then slices the top N. Use for
-   * suppliers whose titles are much longer than the query (so ratio-style scorers fall
-   * under the cutoff even for clear matches). Defaults to the cutoff behavior.
+   * Fuzzy strategy. When true (the default), {@link fuzzyFilter}/{@link fuzzyFilterAst}
+   * rank candidates by fuzz score and keep them all (in score order) instead of dropping
+   * anything below {@link minMatchPercentage}; the base search pipeline then caps the list
+   * to {@link limit}, so the highest-scoring matches survive. This avoids dropping clear
+   * matches whose ratio-style score falls under the cutoff purely because the title dwarfs
+   * the query. Set to `false` on a supplier to restore the hard-cutoff behavior.
    */
-  protected readonly fuzzyFilterRankOnly: boolean = false;
+  protected readonly fuzzyFilterRankOnly: boolean = true;
 
   /** Maximum number of backend search requests the keyword-only fallback issues. */
   protected readonly maxFallbackQueries: number = 4;
@@ -1313,8 +1314,9 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
 
   /**
    * Annotates an item with its fuzz score, returning it as a {@link FuzzyMatchResult}.
-   * Centralizes the metadata shape and keeps the generic typing correct (a direct
-   * `Object.assign` on an unconstrained type parameter widens away `X`).
+   * Mutates `obj` in place (rather than spreading) so non-plain inputs — e.g. DOM
+   * `Element`s fuzzed by HTML-scraping suppliers — keep their prototype and methods. The
+   * `as` is needed because a direct `Object.assign` on an unconstrained `X` widens it away.
    * @param obj - The matched item to annotate.
    * @param score - The fuzz score (0–100).
    * @param idx - The item's index in the source list.
@@ -1327,7 +1329,10 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * @source
    */
   private attachFuzz<X>(obj: X, score: number, idx: number): FuzzyMatchResult<X> {
-    return { ...obj, _fuzz: { score, idx }, matchPercentage: score };
+    const result = obj as FuzzyMatchResult<X>;
+    result._fuzz = { score, idx };
+    result.matchPercentage = score;
+    return result;
   }
 
   /**

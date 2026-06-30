@@ -49,10 +49,13 @@ class TestSupplier extends SupplierBase<TitleItem, Product> {
   }
 }
 
-const make = (query: string, fuzzingDisabled = false): TestSupplier => {
+const make = (query: string, fuzzingDisabled = false, rankOnly = true): TestSupplier => {
   const supplier = new TestSupplier(query, 10, new AbortController());
   supplier.setParsedQuery(parseSearchQuery(query));
   supplier.setFuzzyFilteringDisabled(fuzzingDisabled);
+  // fuzzyFilterRankOnly is protected readonly; override it on the instance for the
+  // opt-out case so we can still exercise the hard-cutoff path.
+  if (!rankOnly) Reflect.set(supplier, "fuzzyFilterRankOnly", false);
   return supplier;
 };
 
@@ -64,8 +67,18 @@ const data: TitleItem[] = [
 ];
 
 describe("fuzzyFilterAst", () => {
-  it("keeps the legacy fuzzy behavior for a plain query", () => {
+  it("ranks a plain query by score without dropping weak matches", () => {
+    // Rank-only (the default): the best match leads, the worst trails, but nothing is
+    // cut — the base search pipeline caps the list to `limit`.
     const titles = make("sodium chloride")
+      .runFuzzyFilterAst(data)
+      .map((d) => d.title);
+    expect(titles[0]).toBe("Sodium Chloride");
+    expect(titles.indexOf("Sodium Chloride")).toBeLessThan(titles.indexOf("Acetone"));
+  });
+
+  it("applies a hard cutoff when a supplier opts out of rank-only", () => {
+    const titles = make("sodium chloride", false, false)
       .runFuzzyFilterAst(data)
       .map((d) => d.title);
     expect(titles[0]).toBe("Sodium Chloride");
