@@ -2,14 +2,11 @@ import { CACHE } from "@/constants/common";
 import { cstorage } from "@/utils/storage";
 import { Science as ScienceIcon, Search as SearchIcon } from "@mui/icons-material";
 import { Box, IconButton } from "@mui/material";
-import { useEffect, FC, FormEvent } from "react";
+import { useEffect, useState, FC, FormEvent } from "react";
 import { useAppContext } from "../context";
+import HighlightedSearchInput from "./SearchPanel/HighlightedSearchInput";
 import styles from "./SearchForm.module.scss";
-import {
-  SearchFormDivider,
-  SearchFormInput,
-  SearchFormPaper,
-} from "./StyledComponents";
+import { SearchFormDivider, SearchFormPaper } from "./StyledComponents";
 
 /**
  * Props for {@link SearchForm}. Controls submit handling, the advanced-options
@@ -58,6 +55,9 @@ export const SearchForm: FC<SearchFormProps> = ({
   const { searchFilters, setSearchFilters } = appContext;
   const query = searchFilters.titleQuery;
 
+  // Set when the typed query is an invalid advanced query; blocks submit until fixed.
+  const [searchError, setSearchError] = useState<string | undefined>(undefined);
+
   // Hydrate the shared title query from the persisted draft in session storage
   // so this field reflects whatever was last typed in any search input — even
   // across popup re-opens. Both this component and DrawerSearchPanel bind to
@@ -91,6 +91,9 @@ export const SearchForm: FC<SearchFormProps> = ({
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    if (searchError) {
+      return;
+    }
     const trimmed = query.trim();
     if (trimmed) {
       // Clear the live draft so re-opening the drawer doesn't show stale text
@@ -112,22 +115,23 @@ export const SearchForm: FC<SearchFormProps> = ({
   return (
     <Box className={styles['search-form-container']}>
       <SearchFormPaper onSubmit={handleSubmit}>
-        <SearchFormInput
-          placeholder={placeholder}
+        <HighlightedSearchInput
           value={query}
-          onChange={(e) => handleChange(e.target.value)}
-          slotProps={{
-            input: {
-              "aria-label": "search for products",
-              autoComplete: "off",
-              autoCorrect: "off",
-              autoCapitalize: "off",
-              spellCheck: "false",
-            },
-          }}
+          onChange={handleChange}
+          placeholder={placeholder}
+          ariaLabel="search for products"
+          onValidityChange={(blocked, message) =>
+            setSearchError(blocked ? (message ?? "Invalid query.") : undefined)
+          }
+          style={{ marginLeft: 16, flex: 1, fontSize: "1.15rem" }}
         />
 
-        <IconButton className={styles['search-form-icon-button']} type="submit" aria-label="search" disabled={!query.trim()}>
+        <IconButton
+          className={styles['search-form-icon-button']}
+          type="submit"
+          aria-label="search"
+          disabled={!query.trim() || Boolean(searchError)}
+        >
           <SearchIcon />
         </IconButton>
 
@@ -142,6 +146,22 @@ export const SearchForm: FC<SearchFormProps> = ({
           <ScienceIcon />
         </IconButton>
       </SearchFormPaper>
+
+      {searchError && (
+        <div
+          role="alert"
+          style={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            marginTop: 4,
+            color: "#e06c75",
+            fontSize: "0.75rem",
+          }}
+        >
+          {searchError}
+        </div>
+      )}
     </Box>
   );
 };

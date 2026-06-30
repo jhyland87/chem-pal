@@ -3,8 +3,9 @@ import ScienceIcon from "@/icons/ScienceIcon";
 import SearchIcon from "@/icons/SearchIcon";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-import InputBase from "@mui/material/InputBase";
 import Paper from "@mui/material/Paper";
+import { FormEvent, useCallback, useState } from "react";
+import HighlightedSearchInput from "./HighlightedSearchInput";
 import styles from "./SearchInput.module.scss";
 import { useSearchInput } from "./useSearchInput.hook";
 
@@ -29,13 +30,29 @@ import { useSearchInput } from "./useSearchInput.hook";
 export default function SearchInput({ onSearch }: SearchInputStates) {
   const { searchInputValue, isLoading, handleSearchInputChange, handleSubmit } = useSearchInput();
 
+  // Set when the typed query is an invalid advanced query (malformed, or no inclusive term);
+  // holds the human-readable reason and blocks the search until fixed.
+  const [searchError, setSearchError] = useState<string | undefined>(undefined);
+
+  const handleValidityChange = useCallback((blocked: boolean, message?: string) => {
+    setSearchError(blocked ? (message ?? "Invalid query.") : undefined);
+  }, []);
+
+  const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
+    if (searchError) {
+      event.preventDefault();
+      return;
+    }
+    handleSubmit(onSearch)(event);
+  };
+
   return (
     <>
       <div className={`${styles['search-input-container']} ${styles.fullwidth}`}>
         <Paper
           className={`${styles.fullwidth} ${styles['search-query-input-form']}`}
           component="form"
-          onSubmit={handleSubmit(onSearch)}
+          onSubmit={handleFormSubmit}
           sx={{
             opacity: isLoading ? 0.7 : 1,
             transition: "opacity 0.2s ease",
@@ -45,13 +62,14 @@ export default function SearchInput({ onSearch }: SearchInputStates) {
             <MenuIcon />
           </IconButton>
 
-          <InputBase
+          <HighlightedSearchInput
             value={searchInputValue}
-            onChange={(e) => handleSearchInputChange(e.target.value)}
+            onChange={handleSearchInputChange}
             className={`${styles['search-query-input']} ${styles.fullwidth}`}
             placeholder={isLoading ? "Searching..." : "Search..."}
             disabled={isLoading}
-            slotProps={{ input: { "aria-label": "Search for chemicals" } }}
+            ariaLabel="Search for chemicals"
+            onValidityChange={handleValidityChange}
           />
 
           <IconButton type="button" disabled={isLoading} aria-label="search">
@@ -63,12 +81,18 @@ export default function SearchInput({ onSearch }: SearchInputStates) {
           <IconButton
             color="primary"
             type="submit"
-            disabled={isLoading || !searchInputValue.trim()}
+            disabled={isLoading || !searchInputValue.trim() || Boolean(searchError)}
             aria-label="execute search"
           >
             <SearchIcon />
           </IconButton>
         </Paper>
+
+        {searchError && (
+          <div role="alert" className={styles['search-error-hint']}>
+            {searchError}
+          </div>
+        )}
 
         {/* Loading indicator */}
         {isLoading && (

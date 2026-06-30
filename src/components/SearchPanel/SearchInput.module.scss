@@ -3,6 +3,7 @@
 #search-results-table-container {
   .search-input-container {
     padding: 0px;
+    position: relative;
 
     .search-query-input-form {
       display: flex;
@@ -12,6 +13,16 @@
         margin-left: 8px;
         //flex: 1;
       }
+    }
+
+    // Absolutely positioned so showing/hiding the error never shifts the search bar.
+    .search-error-hint {
+      position: absolute;
+      top: 100%;
+      left: 8px;
+      margin-top: 2px;
+      font-size: 0.75rem;
+      color: #e06c75;
     }
   }
 }
