@@ -1,0 +1,561 @@
+{
+  "certificatesAvailable": true,
+  "description": "Sulfuric acid 95.0-98.0% ACS",
+  "downloadSDSLink": "https://digitalassets.avantorsciences.com/adaptivemedia/rendition?id=e7661ce77d19f54f2e34a3004927ead3d6b48d91&vid=e7661ce77d19f54f2e34a3004927ead3d6b48d91&prid=original&clid=SAPDAM",
+  "hasItemDetailPage": false,
+  "headers": {
+    "columnNamesMap": {
+      "entry": [
+        {
+          "key": "o_pack_type",
+          "value": "Pack type"
+        },
+        {
+          "key": "o_size",
+          "value": "Size"
+        }
+      ]
+    },
+    "displayOrderMap": [
+      {
+        "key": "o_pack_type",
+        "value": 2
+      },
+      {
+        "key": "o_size",
+        "value": 1004
+      }
+    ],
+    "showSupplierColumn": false
+  },
+  "marketSource": false,
+  "msdsAvailable": true,
+  "noOfVariant": 3,
+  "productRows": [
+    {
+      "avltDays": 0,
+      "blocked": false,
+      "breakQuantity": 0,
+      "catalogNumber": "CA71008-946",
+      "certificatesAvailable": true,
+      "clearance": false,
+      "code": "NA2226459",
+      "colCellMap": {
+        "entry": [
+          {
+            "key": "o_pack_type",
+            "value": "Glass bottle, clear"
+          },
+          {
+            "key": "o_size",
+            "value": "2.5 L"
+          }
+        ]
+      },
+      "dfsID": false,
+      "discontinued": true,
+      "downloadSDSLink": "https://digitalassets.avantorsciences.com/adaptivemedia/rendition?id=e7661ce77d19f54f2e34a3004927ead3d6b48d91&vid=e7661ce77d19f54f2e34a3004927ead3d6b48d91&prid=original&clid=SAPDAM",
+      "inquireForPrice": false,
+      "licenseRequired": false,
+      "licenseType": "DE2",
+      "marketSource": false,
+      "minPurchaseQty": 0,
+      "mocInformation": "",
+      "msdsAvailable": true,
+      "name": "SULFURIC ACID REAGENTACS GLASS 2.5L",
+      "newProduct": false,
+      "prices": [
+        {
+          "breakQuantity": 0,
+          "callForPriceIndicator": false,
+          "catalogNumber": "CA71008-946",
+          "clearancePriceEnabled": false,
+          "currencyCode": "USD",
+          "expertPriceUsed": false,
+          "formattedDisplayPrice": "$231.00",
+          "formattedListPrice": "$231.00",
+          "formattedValue": "$231.00",
+          "listPrice": 231.0,
+          "marketSourceItem": false,
+          "minOrderQty": 108.0,
+          "promoPriceUsed": false,
+          "quantity": 0,
+          "skuId": "CA71008-946EA",
+          "skuUOM": "EA",
+          "unicornInquireForPrice": false,
+          "uomDescription": "Each (2,500ml)"
+        },
+        {
+          "breakQuantity": 0,
+          "callForPriceIndicator": false,
+          "catalogNumber": "CA71008-946",
+          "clearancePriceEnabled": false,
+          "currencyCode": "USD",
+          "expertPriceUsed": false,
+          "formattedDisplayPrice": "$884.07",
+          "formattedListPrice": "$884.07",
+          "formattedValue": "$884.07",
+          "listPrice": 884.07,
+          "marketSourceItem": false,
+          "minOrderQty": 108.0,
+          "promoPriceUsed": false,
+          "quantity": 0,
+          "skuId": "CA71008-946CS",
+          "skuUOM": "CS",
+          "unicornInquireForPrice": false,
+          "uomDescription": "Case of 4 (2,500,ml)"
+        }
+      ],
+      "restricted": true,
+      "restrictedProduct": false,
+      "rowDisplayOrder": 5096,
+      "salesStatus": "",
+      "salesStatusCode": "NO",
+      "sellHold": true,
+      "showFlagSensitiveProduct": false,
+      "showPromo": false,
+      "skuRowSpan": 0,
+      "temperatureCondition": "",
+      "txRestricted": false,
+      "vasCode": 15,
+      "vendorCatalogNumber": "5300-4G250C",
+      "vendorId": "0000032397",
+      "vwrArticleNumber": "ANAC88366-460",
+      "vwrHierarchyCode": "1003901"
+    },
+    {
+      "avltDays": 0,
+      "blocked": false,
+      "breakQuantity": 0,
+      "catalogNumber": "CA71008-948",
+      "certificatesAvailable": true,
+      "clearance": false,
+      "code": "NA2226460",
+      "colCellMap": {
+        "entry": [
+          {
+            "key": "o_pack_type",
+            "value": "Bottle, Polyglass™"
+          },
+          {
+            "key": "o_size",
+            "value": "2.5 L"
+          }
+        ]
+      },
+      "dfsID": false,
+      "discontinued": true,
+      "downloadSDSLink": "https://digitalassets.avantorsciences.com/adaptivemedia/rendition?id=e7661ce77d19f54f2e34a3004927ead3d6b48d91&vid=e7661ce77d19f54f2e34a3004927ead3d6b48d91&prid=original&clid=SAPDAM",
+      "inquireForPrice": false,
+      "licenseRequired": false,
+      "licenseType": "PBP",
+      "marketSource": false,
+      "minPurchaseQty": 0,
+      "mocInformation": "",
+      "msdsAvailable": true,
+      "name": "SULFURIC ACIDREAGENTACS POLYGLASS 2.5L",
+      "newProduct": false,
+      "prices": [
+        {
+          "breakQuantity": 0,
+          "callForPriceIndicator": false,
+          "catalogNumber": "CA71008-948",
+          "clearancePriceEnabled": false,
+          "currencyCode": "USD",
+          "expertPriceUsed": false,
+          "formattedDisplayPrice": "$330.95",
+          "formattedListPrice": "$330.95",
+          "formattedValue": "$330.95",
+          "listPrice": 330.95,
+          "marketSourceItem": false,
+          "minOrderQty": 108.0,
+          "promoPriceUsed": false,
+          "quantity": 0,
+          "skuId": "CA71008-948EA",
+          "skuUOM": "EA",
+          "unicornInquireForPrice": false,
+          "uomDescription": "Each (2,500ml)"
+        },
+        {
+          "breakQuantity": 0,
+          "callForPriceIndicator": false,
+          "catalogNumber": "CA71008-948",
+          "clearancePriceEnabled": false,
+          "currencyCode": "USD",
+          "expertPriceUsed": false,
+          "formattedDisplayPrice": "$1,294.76",
+          "formattedListPrice": "$1,294.76",
+          "formattedValue": "$1,294.76",
+          "listPrice": 1294.76,
+          "marketSourceItem": false,
+          "minOrderQty": 108.0,
+          "promoPriceUsed": false,
+          "quantity": 0,
+          "skuId": "CA71008-948CS",
+          "skuUOM": "CS",
+          "unicornInquireForPrice": false,
+          "uomDescription": "Case of 4 (2,500,ml)"
+        }
+      ],
+      "restricted": true,
+      "restrictedProduct": false,
+      "rowDisplayOrder": 5096,
+      "salesStatus": "",
+      "salesStatusCode": "NO",
+      "sellHold": true,
+      "showFlagSensitiveProduct": false,
+      "showPromo": false,
+      "skuRowSpan": 0,
+      "temperatureCondition": "",
+      "txRestricted": false,
+      "vasCode": 15,
+      "vendorCatalogNumber": "5300-4P250C",
+      "vendorId": "0000032397",
+      "vwrArticleNumber": "ANAC88366-461",
+      "vwrHierarchyCode": "1003301"
+    },
+    {
+      "avltDays": 0,
+      "blocked": false,
+      "breakQuantity": 0,
+      "catalogNumber": "CA71008-950",
+      "certificatesAvailable": true,
+      "clearance": false,
+      "code": "NA2226461",
+      "colCellMap": {
+        "entry": [
+          {
+            "key": "o_pack_type",
+            "value": "Poly bottle"
+          },
+          {
+            "key": "o_size",
+            "value": "2.5 L"
+          }
+        ]
+      },
+      "dfsID": false,
+      "discontinued": true,
+      "downloadSDSLink": "https://digitalassets.avantorsciences.com/adaptivemedia/rendition?id=e7661ce77d19f54f2e34a3004927ead3d6b48d91&vid=e7661ce77d19f54f2e34a3004927ead3d6b48d91&prid=original&clid=SAPDAM",
+      "inquireForPrice": false,
+      "licenseRequired": false,
+      "licenseType": "DE2",
+      "marketSource": false,
+      "minPurchaseQty": 0,
+      "mocInformation": "",
+      "msdsAvailable": true,
+      "name": "SULFURIC ACID REAGENT ACS POLY 2.5L",
+      "newProduct": false,
+      "prices": [
+        {
+          "breakQuantity": 0,
+          "callForPriceIndicator": false,
+          "catalogNumber": "CA71008-950",
+          "clearancePriceEnabled": false,
+          "currencyCode": "USD",
+          "expertPriceUsed": false,
+          "formattedDisplayPrice": "$85.67",
+          "formattedListPrice": "$85.67",
+          "formattedValue": "$85.67",
+          "listPrice": 85.67,
+          "marketSourceItem": false,
+          "minOrderQty": 108.0,
+          "promoPriceUsed": false,
+          "quantity": 0,
+          "skuId": "CA71008-950EA",
+          "skuUOM": "EA",
+          "unicornInquireForPrice": false,
+          "uomDescription": "Each (2,500ml)"
+        },
+        {
+          "breakQuantity": 0,
+          "callForPriceIndicator": false,
+          "catalogNumber": "CA71008-950",
+          "clearancePriceEnabled": false,
+          "currencyCode": "USD",
+          "expertPriceUsed": false,
+          "formattedDisplayPrice": "$328.13",
+          "formattedListPrice": "$328.13",
+          "formattedValue": "$328.13",
+          "listPrice": 328.13,
+          "marketSourceItem": false,
+          "minOrderQty": 108.0,
+          "promoPriceUsed": false,
+          "quantity": 0,
+          "skuId": "CA71008-950CS",
+          "skuUOM": "CS",
+          "unicornInquireForPrice": false,
+          "uomDescription": "Case of 4 (2,500,ml)"
+        }
+      ],
+      "restricted": true,
+      "restrictedProduct": false,
+      "rowDisplayOrder": 5096,
+      "salesStatus": "",
+      "salesStatusCode": "NO",
+      "sellHold": true,
+      "showFlagSensitiveProduct": false,
+      "showPromo": false,
+      "skuRowSpan": 0,
+      "temperatureCondition": "",
+      "txRestricted": false,
+      "vasCode": 15,
+      "vendorCatalogNumber": "5300H-4H250C",
+      "vendorId": "0000032397",
+      "vwrArticleNumber": "ANAC88366-463",
+      "vwrHierarchyCode": "1003301"
+    },
+    {
+      "avltDays": 0,
+      "blocked": false,
+      "breakQuantity": 0,
+      "catalogNumber": "71008-946",
+      "certificatesAvailable": true,
+      "clearance": false,
+      "code": "NA3468473",
+      "colCellMap": {
+        "entry": [
+          {
+            "key": "o_pack_type",
+            "value": "Glass bottle, clear"
+          },
+          {
+            "key": "o_size",
+            "value": "2.5 L"
+          }
+        ]
+      },
+      "dfsID": false,
+      "discontinued": false,
+      "inquireForPrice": false,
+      "licenseRequired": false,
+      "licenseType": "DE2",
+      "marketSource": false,
+      "minPurchaseQty": 0,
+      "mocInformation": "",
+      "msdsAvailable": false,
+      "name": "SULFURIC ACID REAGENT ACS 2500ML",
+      "newProduct": false,
+      "prices": [
+        {
+          "breakQuantity": 0,
+          "callForPriceIndicator": false,
+          "catalogNumber": "71008-946",
+          "clearancePriceEnabled": false,
+          "currencyCode": "USD",
+          "expertPriceUsed": false,
+          "formattedDisplayPrice": "$210.78",
+          "formattedListPrice": "$210.78",
+          "formattedValue": "$210.78",
+          "listPrice": 210.78,
+          "marketSourceItem": false,
+          "minOrderQty": 6.0,
+          "promoPriceUsed": false,
+          "quantity": 0,
+          "skuId": "71008-946EA",
+          "skuUOM": "EA",
+          "unicornInquireForPrice": false,
+          "uomDescription": "Each (2,500ml)"
+        },
+        {
+          "breakQuantity": 0,
+          "callForPriceIndicator": false,
+          "catalogNumber": "71008-946",
+          "clearancePriceEnabled": false,
+          "currencyCode": "USD",
+          "expertPriceUsed": false,
+          "formattedDisplayPrice": "$1,264.45",
+          "formattedListPrice": "$1,264.45",
+          "formattedValue": "$1,264.45",
+          "listPrice": 1264.45,
+          "marketSourceItem": false,
+          "minOrderQty": 1.0,
+          "promoPriceUsed": false,
+          "quantity": 0,
+          "skuId": "71008-946CS",
+          "skuUOM": "CS",
+          "unicornInquireForPrice": false,
+          "uomDescription": "Case of 6 (2,500,ml)"
+        }
+      ],
+      "restricted": true,
+      "restrictedProduct": false,
+      "rowDisplayOrder": 5096,
+      "salesStatus": "",
+      "salesStatusCode": "",
+      "sellHold": false,
+      "showFlagSensitiveProduct": false,
+      "showPromo": false,
+      "skuRowSpan": 0,
+      "temperatureCondition": "",
+      "txRestricted": false,
+      "vasCode": 15,
+      "vendorCatalogNumber": "5300-6G250C",
+      "vendorId": "0000033604",
+      "vwrArticleNumber": "ANAC88366-460_U",
+      "vwrHierarchyCode": "1003901"
+    },
+    {
+      "avltDays": 0,
+      "blocked": false,
+      "breakQuantity": 0,
+      "catalogNumber": "80722-392",
+      "certificatesAvailable": true,
+      "clearance": false,
+      "code": "NA3626344",
+      "colCellMap": {
+        "entry": [
+          {
+            "key": "o_pack_type",
+            "value": "Bottle, Polyglass™"
+          },
+          {
+            "key": "o_size",
+            "value": "2.5 L"
+          }
+        ]
+      },
+      "dfsID": false,
+      "discontinued": false,
+      "inquireForPrice": false,
+      "licenseRequired": false,
+      "licenseType": "DE2",
+      "marketSource": false,
+      "minPurchaseQty": 0,
+      "mocInformation": "",
+      "msdsAvailable": false,
+      "name": "SULFURIC ACID. REAGENT. ACS",
+      "newProduct": false,
+      "prices": [
+        {
+          "breakQuantity": 0,
+          "callForPriceIndicator": false,
+          "catalogNumber": "80722-392",
+          "clearancePriceEnabled": false,
+          "currencyCode": "USD",
+          "expertPriceUsed": false,
+          "formattedDisplayPrice": "$335.55",
+          "formattedListPrice": "$335.55",
+          "formattedValue": "$335.55",
+          "listPrice": 335.55,
+          "marketSourceItem": false,
+          "minOrderQty": 108.0,
+          "promoPriceUsed": false,
+          "quantity": 0,
+          "skuId": "80722-392EA",
+          "skuUOM": "EA",
+          "unicornInquireForPrice": false,
+          "uomDescription": "Each (2,500ml)"
+        }
+      ],
+      "restricted": true,
+      "restrictedProduct": false,
+      "rowDisplayOrder": 5096,
+      "salesStatus": "",
+      "salesStatusCode": "",
+      "sellHold": false,
+      "showFlagSensitiveProduct": false,
+      "showPromo": false,
+      "skuRowSpan": 0,
+      "temperatureCondition": "",
+      "txRestricted": false,
+      "vasCode": 15,
+      "vendorCatalogNumber": "88366-461",
+      "vendorId": "0000033604",
+      "vwrArticleNumber": "ANAC88366-461_U",
+      "vwrHierarchyCode": "1003101"
+    },
+    {
+      "avltDays": 0,
+      "blocked": false,
+      "breakQuantity": 0,
+      "catalogNumber": "CA11024-170",
+      "certificatesAvailable": true,
+      "clearance": false,
+      "code": "NA2684422",
+      "colCellMap": {
+        "entry": [
+          {
+            "key": "o_pack_type",
+            "value": "Poly bottle"
+          },
+          {
+            "key": "o_size",
+            "value": "4 L"
+          }
+        ]
+      },
+      "dfsID": false,
+      "discontinued": false,
+      "inquireForPrice": false,
+      "licenseRequired": false,
+      "licenseType": "DE2",
+      "marketSource": false,
+      "minPurchaseQty": 0,
+      "mocInformation": "",
+      "msdsAvailable": false,
+      "name": "SULFURIC ACID RGT ACS GRD 7664-93-9 4L",
+      "newProduct": false,
+      "prices": [
+        {
+          "breakQuantity": 0,
+          "callForPriceIndicator": false,
+          "catalogNumber": "CA11024-170",
+          "clearancePriceEnabled": false,
+          "currencyCode": "USD",
+          "expertPriceUsed": false,
+          "formattedDisplayPrice": "$89.25",
+          "formattedListPrice": "$89.25",
+          "formattedValue": "$89.25",
+          "listPrice": 89.25,
+          "marketSourceItem": false,
+          "minOrderQty": 1.0,
+          "promoPriceUsed": false,
+          "quantity": 0,
+          "skuId": "CA11024-170EA",
+          "skuUOM": "EA",
+          "unicornInquireForPrice": false,
+          "uomDescription": "Each (4l)"
+        },
+        {
+          "breakQuantity": 0,
+          "callForPriceIndicator": false,
+          "catalogNumber": "CA11024-170",
+          "clearancePriceEnabled": false,
+          "currencyCode": "USD",
+          "expertPriceUsed": false,
+          "formattedDisplayPrice": "$340.67",
+          "formattedListPrice": "$340.67",
+          "formattedValue": "$340.67",
+          "listPrice": 340.67,
+          "marketSourceItem": false,
+          "minOrderQty": 1.0,
+          "promoPriceUsed": false,
+          "quantity": 0,
+          "skuId": "CA11024-170CS",
+          "skuUOM": "CS",
+          "unicornInquireForPrice": false,
+          "uomDescription": "Case of 4 (4l)"
+        }
+      ],
+      "restricted": true,
+      "restrictedProduct": false,
+      "rowDisplayOrder": 5162,
+      "salesStatus": "",
+      "salesStatusCode": "ES",
+      "sellHold": false,
+      "showFlagSensitiveProduct": false,
+      "showPromo": false,
+      "skuRowSpan": 0,
+      "temperatureCondition": "",
+      "txRestricted": false,
+      "vasCode": 15,
+      "vendorCatalogNumber": "88366-543",
+      "vendorId": "0000033604",
+      "vwrArticleNumber": "ANAC88366543_C",
+      "vwrHierarchyCode": "1003301"
+    }
+  ],
+  "specSelectProduct": false,
+  "temperatureCondition": ""
+}

@@ -7,6 +7,7 @@
     "npm": ">=10.9.2",
     "node": ">=22.15.0"
   },
+  "sourceType": "module",
   "scripts": {
     "prebuild": "pnpm run generate-logo-files",
     "dev": "pnpm run generate-logo-files && vite",
@@ -48,6 +49,7 @@
     "@mui/x-data-grid": "^8.1.0",
     "@table-library/react-table-library": "^4.1.15",
     "@tanstack/react-table": "^8.21.3",
+    "acorn": "^8.17.0",
     "async-await-queue": "^2.1.4",
     "axios": "^1.9.0",
     "content-type": "^1.0.5",
@@ -56,6 +58,8 @@
     "country-list-js": "^3.1.8",
     "currency-parser": "^1.0.0",
     "currency.js": "^2.0.4",
+    "estraverse": "^5.3.0",
+    "extract-json-from-string": "^1.0.1",
     "fuzzball": "^2.2.2",
     "htmlparser2": "^10.0.0",
     "idb": "^8.0.3",

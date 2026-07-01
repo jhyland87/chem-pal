@@ -443,6 +443,12 @@ declare global {
      */
     sdsUrl?: string;
 
+    /**
+     * URL to the product's Certificate of Analysis (COA) document
+     * @example "https://supplier.com/coa/nacl.pdf"
+     */
+    coaUrl?: string;
+
     /** specsheet */
     specSheetUrl?: string;
 

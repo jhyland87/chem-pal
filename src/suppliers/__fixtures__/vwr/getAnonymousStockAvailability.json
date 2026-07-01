@@ -1,0 +1,30 @@
+{
+  "articleAvailabilityDetails": {
+    "articleAvailabilityDetail": [
+      {
+        "availability": {
+          "availabilityMessage": "Date provided after order",
+          "stockStatus": "ON_ORDER",
+          "vendorStock": false
+        },
+        "catalogNumber": "71008-946"
+      },
+      {
+        "availability": {
+          "availabilityMessage": "Usually ships next day",
+          "stockStatus": "inStock",
+          "vendorStock": false
+        },
+        "catalogNumber": "80722-392"
+      },
+      {
+        "availability": {
+          "availabilityMessage": "Date provided after order",
+          "stockStatus": "ON_ORDER",
+          "vendorStock": false
+        },
+        "catalogNumber": "CA11024-170"
+      }
+    ]
+  }
+}
