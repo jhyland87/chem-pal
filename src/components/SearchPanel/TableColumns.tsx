@@ -9,6 +9,7 @@ import { omit } from "@/helpers/collectionUtils";
 import { getCountryName } from "@/helpers/country";
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
+import COAIcon from "@/icons/COAIcon";
 import SDSIcon from "@/icons/SDSIcon";
 import TDSIcon from "@/icons/TDSIcon";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
@@ -32,7 +33,7 @@ import styles from "./TableColumns.module.scss";
  * // columns.map(c => c.id) →
  * //   ["expander", "title", "supplier", "country", "shipping",
  * //    "availability", "description", "price", "quantity", "uom",
- * //    "sds", "specs", "cas", "formula", "moleweight", "purity", "concentration"]
+ * //    "sds", "specs", "coa", "cas", "formula", "moleweight", "purity", "concentration"]
  * // columns.filter(c => c.meta?.drawer).map(c => c.id) →
  * //   ["supplier", "country", "shipping", "availability", "price"]
  * ```
@@ -327,6 +328,32 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
             title="Technical Data Sheet (TDS)"
           >
             <TDSIcon fontSize="small" />
+          </Link>
+        );
+      },
+      enableSorting: false,
+      enableColumnFilter: false,
+      minSize: 40,
+      maxSize: 40,
+      meta: {
+        style: {
+          textAlign: "center",
+        },
+      },
+    },
+    {
+      id: "coa",
+      header: "COA",
+      cell: ({ row }: ProductRow) => {
+        const url = row.original.coaUrl;
+        if (!url) return null;
+        return (
+          <Link
+            href={url}
+            aria-label="Certificate of Analysis (COA)"
+            title="Certificate of Analysis (COA)"
+          >
+            <COAIcon fontSize="small" />
           </Link>
         );
       },

@@ -1,4 +1,4 @@
-import { SUBSCRIPTS, SUPERSCRIPTS } from "@/constants/science";
+import { SUBSCRIPTS, SUPERSCRIPTS, SUBSCRIPT_GLYPHS, SUPERSCRIPT_GLYPHS } from "@/constants/science";
 import { looksLikeSmiles } from "@/helpers/smiles";
 import { decodeHTMLEntities, isMoleForm } from "@/helpers/utils";
 
@@ -20,7 +20,7 @@ import { decodeHTMLEntities, isMoleForm } from "@/helpers/utils";
  * @source
  */
 export const subscript = (str: string) => {
-  return str.replace(/[0-9]/g, (match) => SUBSCRIPTS[match] || match);
+  return str.replace(/[0-9]/g, (match) => SUBSCRIPT_GLYPHS[match] || match);
 };
 
 /**
@@ -35,7 +35,154 @@ export const subscript = (str: string) => {
  * @source
  */
 export const superscript = (str: string) => {
-  return str.replace(/[0-9]/g, (match) => SUPERSCRIPTS[match]);
+  return str.replace(/[0-9]/g, (match) => SUPERSCRIPT_GLYPHS[match] || match);
+};
+
+/**
+ * Normalizes Unicode superscript digits already present in `str` to their literal glyph spelling,
+ * mapping each {@link SUPERSCRIPTS} value to its {@link SUPERSCRIPT_GLYPHS} counterpart. Because both
+ * maps resolve the digit keys to identical code points, a string that already contains superscript
+ * characters is returned unchanged — this is a normalization pass, not a converter. It does NOT turn
+ * ASCII digits into superscripts; use {@link superscript} for that.
+ * @param str - The string whose Unicode superscript digits to normalize
+ * @returns The string with superscript digits in glyph form (ASCII digits untouched)
+ * @example
+ * ```typescript
+ * superscriptGlyph("x²") // Returns "x²"
+ * superscriptGlyph("x2") // Returns "x2" (ASCII digits are not converted)
+ * ```
+ * @source
+ */
+export const superscriptGlyph = (str: string) => {
+  for (const key in SUPERSCRIPT_GLYPHS) {
+    str = str.replace(new RegExp(SUPERSCRIPTS[key], "g"), SUPERSCRIPT_GLYPHS[key]);
+  }
+  return str;
+};
+
+/**
+ * Normalizes Unicode subscript digits already present in `str` to their literal glyph spelling,
+ * mapping each {@link SUBSCRIPTS} value to its {@link SUBSCRIPT_GLYPHS} counterpart. Because both maps
+ * resolve the digit keys to identical code points, a string that already contains subscript
+ * characters is returned unchanged — this is a normalization pass, not a converter. It does NOT turn
+ * ASCII digits into subscripts; use {@link subscript} for that.
+ * @param str - The string whose Unicode subscript digits to normalize
+ * @returns The string with subscript digits in glyph form (ASCII digits untouched)
+ * @example
+ * ```typescript
+ * subscriptGlyph("H₂O") // Returns "H₂O"
+ * subscriptGlyph("H2O") // Returns "H2O" (ASCII digits are not converted)
+ * ```
+ * @source
+ */
+export const subscriptGlyph = (str: string) => {
+  for (const key in SUBSCRIPT_GLYPHS) {
+    str = str.replace(new RegExp(SUBSCRIPTS[key], "g"), SUBSCRIPT_GLYPHS[key]);
+  }
+  return str;
+};
+
+/**
+ * Finds the first chemical-formula-like substring in `text` and returns it with `<sub>`/`<sup>` tags
+ * converted to Unicode sub/superscript glyphs, or `undefined` if none is found. Unlike
+ * {@link findFormulaInHtml} (which only understands `<sub>`/`<sup>` markup), this recognizes a
+ * subscript/superscript number written in any of four representations, so it works on raw scraped
+ * text regardless of how the source encoded it:
+ * - literal glyphs — `H₂O`, `x²`;
+ * - `\u` escape text — `H₂O` (e.g. unparsed JSON);
+ * - HTML numeric entities — `H&#8322;O`, `H&#x2082;O` (decimal or hex);
+ * - `<sub>`/`<sup>` tags — `H<sub>2</sub>O`.
+ *
+ * All four forms are *matched* so the formula is found; for the returned string only `<sub>`/`<sup>`
+ * tags are rewritten to glyphs. Glyph input already carries glyphs and passes through unchanged;
+ * entity- and `\u`-escape-encoded numbers are returned in their source encoding. Untagged inline
+ * digits (e.g. a salt/hydrate coefficient like `·12H₂O`, or `2K` after a separator) are matched but
+ * left as regular digits.
+ *
+ * Also handles salts/hydrates joined by `·`/`•`/`*` (or a tight `.`) with optional integer,
+ * fraction, or variable (`x`/`n`) coefficients, and trailing ionic charge signs. Element symbols
+ * gate the match — within a longer string it needs at least two element/bracket "units" (so `KBr`
+ * counts as `K`+`Br`) or a single element carrying a subscript/superscript, so ordinary prose isn't
+ * mistaken for a formula. A lone element (e.g. `Na`, `K+`) is accepted only when it is the entire
+ * trimmed input, so a bare symbol is never pulled out of a sentence.
+ * @param text - The text string to search for a formula
+ * @returns The formula with `<sub>`/`<sup>` tags converted to glyphs, or undefined if none is found
+ * @example
+ * ```typescript
+ * findFormulaInText("C₃₃H₂₅N₃O₁₂S • ₄K")                 // "C₃₃H₂₅N₃O₁₂S • ₄K"
+ * findFormulaInText("K<sub>2</sub>SO<sub>4</sub>")          // "K₂SO₄"
+ * findFormulaInText("Here is a formula: C₁₀H₇KN₆O·xH₂O")  // "C₁₀H₇KN₆O·xH₂O"
+ * findFormulaInText("Na")                                  // "Na" (lone element, whole input)
+ * findFormulaInText("I love Nature")                       // undefined (not pulled from prose)
+ * ```
+ * @see https://regex101.com/r/h3ZnXX/4 - Regex pattern explanation
+ * @source
+ */
+export const findFormulaInText = (text: string): string | undefined => {
+  // Valid element symbols (all 118). Gates the match so prose isn't read as a formula.
+  const element =
+    "(?:H[eogsf]?|L[iavru]|B[eahkri]?|C[arofmusenld]?|N[eiahopdb]?|O[sg]?|F[rlem]?|M[godtcn]|A[lrsgutmc]|S[icerngmb]?|P[uabotmrd]?|Kr?|T[icebmsalh]|V|Z[nr]|G[ade]|R[buhenagf]|Yb?|I[nr]?|Xe|E[urs]|D[ysb]|W|U)";
+
+  // A sub/superscript "number" (no leading zero), in each accepted representation.
+  // Characters are enumerated rather than ranged so engines that don't compute
+  // Unicode ranges (byte-oriented / non-Unicode modes) still match them.
+  const glyphSub = "[₁₂₃₄₅₆₇₈₉][₀₁₂₃₄₅₆₇₈₉]*";
+  const glyphSup = "[¹²³⁴⁵⁶⁷⁸⁹][⁰¹²³⁴⁵⁶⁷⁸⁹]*";
+  // \u escape text (literal backslash-u-XXXX, e.g. before JSON.parse).
+  const escSub = String.raw`\\u208[1-9](?:\\u208[0-9])*`;
+  const escSup = String.raw`(?:\\u00[bB][239]|\\u207[4-9])(?:\\u2070|\\u00[bB][239]|\\u207[4-9])*`;
+  // HTML numeric entities, decimal or hex, with optional leading zeros.
+  const entSub = "&#(?:0*832[1-9]|[xX]0*208[1-9]);(?:&#(?:0*832[0-9]|[xX]0*208[0-9]);)*";
+  const entSup =
+    "&#(?:0*(?:178|179|185|830[89]|831[0-3])|[xX]0*(?:[bB][239]|207[4-9]));(?:&#(?:0*(?:178|179|185|8304|830[89]|831[0-3])|[xX]0*(?:2070|[bB][239]|207[4-9]));)*";
+  // <sub>2</sub> / <sup>2</sup> tags.
+  const tag = "<su[bp]>[1-9][0-9]*</su[bp]>";
+  const subSup = `(?:${glyphSub}|${glyphSup}|${escSub}|${escSup}|${entSub}|${entSup}|${tag})`;
+
+  // The looser "sub/sup or inline digit" count used inside a unit.
+  const subPart = `(?:${subSup}|[1-9][0-9]*)`;
+  // One "unit": a run of elements/brackets, then any trailing subscripts.
+  const unit = `(?:(?:${element}|[()\\[\\]])+(?:${subPart})*)`;
+  // The head must look like a formula and not prose: either ≥2 element/bracket units, or a single
+  // element carrying a subscript/superscript (e.g. "H₂"). A lone bare element, or a single element
+  // with only an inline digit (e.g. "B12" in prose), is intentionally not enough.
+  const head = `(?:(?:${unit}){2,}|(?:${element}|[()\\[\\]])+${subSup})`;
+  // An optional ionic charge sign. The lookahead (not followed by a letter/digit) keeps it from
+  // grabbing an ordinary hyphen inside a word like "CO-op", while still allowing "K+", "…F₃-.K+".
+  const charge = "(?:[+-](?![A-Za-z0-9]))?";
+  // Salt/hydrate separator: a spaced dot ("·"/"•"/"‧"/"∙"/"⋅"/"・"/"･"/"*"), OR a tight "." that is
+  // immediately followed by a component (so it ignores sentence periods and decimal points). The
+  // several dot code points cover the visually identical characters different data sources emit.
+  const separator = "(?:\\s*[·•‧∙⋅・･*]\\s*|\\.(?=[A-Za-z(\\[]))";
+  // A leading coefficient after a separator: a sub/sup number, an integer or fraction (e.g. "12",
+  // "1/2"), or a variable hydrate count (x/n).
+  const coefficient = `(?:${subSup}|[1-9][0-9]*(?:/[1-9][0-9]*)?|[xn])`;
+
+  // A lone element (e.g. "Na", "K+") is a valid formula, but only when it is the entire trimmed
+  // input — anchoring keeps a bare symbol from being pulled out of prose (e.g. "I" from "I love …").
+  const trimmed = text.trim();
+  if (new RegExp(`^${element}${charge}$`).test(trimmed)) {
+    return trimmed;
+  }
+
+  // The whole formula: the head (+optional charge), then any number of
+  // "separator coefficient? units (+optional charge)" salt/hydrate components.
+  const pattern = new RegExp(
+    `((?![^<>]*>)${head}${charge}(?:${separator}(?:${coefficient})?${unit}+${charge})*)`,
+  );
+
+  const match = text.match(pattern);
+  if (!match) {
+    return;
+  }
+  return match[0]
+    .replace(/<sub>(\d+)<\/sub>/g, (_match, p1) => subscript(p1 || ""))
+    .replace(/<sup>(\d+)<\/sup>/g, (_match, p1) => superscript(p1 || ""))
+    .replace(/\\u208[0-9](?:\\u208[0-9])*/g, (match) => subscriptGlyph(match))
+    .replace(
+      /(?:\\u00[bB][239]|\\u207[4-9])(?:\\u2070|\\u00[bB][239]|\\u207[4-9])*/g,
+      (match) => superscriptGlyph(match),
+    );
 };
 
 /**

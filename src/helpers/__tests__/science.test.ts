@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   findFormulaInHtml,
+  findFormulaInText,
   parseChemicalSpecs,
   parseGrade,
   parsePurity,
   subscript,
+  subscriptGlyph,
   superscript,
+  superscriptGlyph,
 } from "../science";
 
 describe("science helpers", () => {
@@ -53,6 +56,112 @@ describe("science helpers", () => {
 
     it("should handle string without numbers", () => {
       expect(superscript("ABC")).toBe("ABC");
+    });
+  });
+
+  describe("subscriptGlyph", () => {
+    it("should leave existing subscript glyphs unchanged", () => {
+      expect(subscriptGlyph("H₂O")).toBe("H₂O");
+      expect(subscriptGlyph("C₆H₁₂O₆")).toBe("C₆H₁₂O₆");
+    });
+
+    it("should not convert ASCII digits (that is subscript's job)", () => {
+      expect(subscriptGlyph("H2O")).toBe("H2O");
+      expect(subscriptGlyph("123")).toBe("123");
+    });
+
+    it("should handle empty string", () => {
+      expect(subscriptGlyph("")).toBe("");
+    });
+  });
+
+  describe("superscriptGlyph", () => {
+    it("should leave existing superscript glyphs unchanged", () => {
+      expect(superscriptGlyph("x²")).toBe("x²");
+      expect(superscriptGlyph("10⁻³")).toBe("10⁻³");
+    });
+
+    it("should not convert ASCII digits (that is superscript's job)", () => {
+      expect(superscriptGlyph("x2")).toBe("x2");
+      expect(superscriptGlyph("123")).toBe("123");
+    });
+
+    it("should handle empty string", () => {
+      expect(superscriptGlyph("")).toBe("");
+    });
+  });
+
+  describe("findFormulaInText", () => {
+    it("should return unicode-glyph formulas unchanged", () => {
+      expect(findFormulaInText("C₂₄H₂₀KN₅O₅S")).toBe("C₂₄H₂₀KN₅O₅S");
+      expect(findFormulaInText("K₂SO₄")).toBe("K₂SO₄");
+    });
+
+    it("should find a glyph formula embedded in surrounding text", () => {
+      expect(findFormulaInText("Here is a chemical formula: C₁₆H₃₃KO₂")).toBe("C₁₆H₃₃KO₂");
+    });
+
+    it("should convert <sub>/<sup> tags to unicode glyphs", () => {
+      expect(findFormulaInText("K<sub>2</sub>SO<sub>4</sub>")).toBe("K₂SO₄");
+      expect(findFormulaInText("Fe<sup>2</sup>O<sub>3</sub>")).toBe("Fe²O₃");
+    });
+
+    it("should convert multi-digit tagged subscripts", () => {
+      expect(findFormulaInText("C<sub>16</sub>H<sub>33</sub>KO<sub>2</sub>")).toBe("C₁₆H₃₃KO₂");
+    });
+
+    it("should handle a tagged salt coefficient after a separator", () => {
+      expect(
+        findFormulaInText(
+          "C<sub>33</sub>H<sub>25</sub>N<sub>3</sub>O<sub>12</sub>S • <sub>4</sub>K",
+        ),
+      ).toBe("C₃₃H₂₅N₃O₁₂S • ₄K");
+    });
+
+    it("should keep salt/hydrate components and variable coefficients", () => {
+      expect(findFormulaInText("C₂₀H₂₀FN₆O₅·K")).toBe("C₂₀H₂₀FN₆O₅·K");
+      expect(findFormulaInText("Here is a chemical formula: C₁₀H₇KN₆O·xH₂O")).toBe(
+        "C₁₀H₇KN₆O·xH₂O",
+      );
+    });
+
+    it("should keep a fractional hydrate coefficient", () => {
+      expect(findFormulaInText("K₂CO₃·3/2H₂O")).toBe("K₂CO₃·3/2H₂O");
+    });
+
+    it("should handle parenthesised / bracketed groups", () => {
+      expect(findFormulaInText("KN(C(O)CH₂)₂")).toBe("KN(C(O)CH₂)₂");
+      expect(findFormulaInText("AlK(SO₄)₂·12H₂O")).toBe("AlK(SO₄)₂·12H₂O");
+    });
+
+    it("should keep tight '.'/'*' separators and ionic charge signs", () => {
+      expect(findFormulaInText("C₃H₂N₂O₃.K")).toBe("C₃H₂N₂O₃.K");
+      expect(findFormulaInText("C₈H₁₃BO₂F₃-.K+")).toBe("C₈H₁₃BO₂F₃-.K+");
+      expect(findFormulaInText("C₉H₁₃O₄*K")).toBe("C₉H₁₃O₄*K");
+    });
+
+    it("should match a formula written with HTML entities but leave them verbatim", () => {
+      // Entities gate the match, but only <sub>/<sup> tags are rewritten — entities pass through.
+      expect(findFormulaInText("H&#8322;O")).toBe("H&#8322;O");
+      expect(findFormulaInText("H&#x2082;O")).toBe("H&#x2082;O");
+    });
+
+    it("should match a clean multi-element formula like KBr", () => {
+      // Two element units (K + Br) clear the gate, so a subscript-free salt is still matched.
+      expect(findFormulaInText("KBr")).toBe("KBr");
+    });
+
+    it("should match a lone element when it is the entire input", () => {
+      expect(findFormulaInText("Na")).toBe("Na");
+      expect(findFormulaInText("  K+  ")).toBe("K+");
+    });
+
+    it("should not pull a lone element out of prose", () => {
+      // "Na" lives inside "Nature", and "I" is a word — neither is the whole input, so both reject.
+      expect(findFormulaInText("I love Nature")).toBeUndefined();
+      expect(findFormulaInText("Just some text")).toBeUndefined();
+      expect(findFormulaInText("vitamin B12 supplement")).toBeUndefined();
+      expect(findFormulaInText("")).toBeUndefined();
     });
   });
 
