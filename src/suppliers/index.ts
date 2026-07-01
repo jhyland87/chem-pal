@@ -26,18 +26,18 @@
 //export { SupplierBunmurraLabs } from "./supplierBunmurraLabs";
 // N2O3 is offline since 01/20/2026
 //export { SupplierN2O3 } from "./SupplierN2O3";
+//export { SupplierAsesChem2 } from "./SupplierAsesChem2";
+//export { SupplierChemsavers } from "./SupplierChemsavers";
 
 export { SupplierAladdinSci } from "./SupplierAladdinSci";
 export { SupplierAlchemieLabs } from "./SupplierAlchemieLabs";
+export { SupplierAmarisChemicalSolutions } from "./SupplierAmarisChemicalSolutions";
 export { SupplierAmbeed } from "./SupplierAmbeed";
 export { SupplierAsesChem } from "./SupplierAsesChem";
-//export { SupplierAsesChem2 } from "./SupplierAsesChem2";
-export { SupplierAmarisChemicalSolutions } from "./SupplierAmarisChemicalSolutions";
 export { SupplierBioFuranChem } from "./SupplierBiofuranChem";
 export { SupplierBVV } from "./SupplierBVV";
 export { SupplierCarolina } from "./SupplierCarolina";
 export { SupplierCarolinaChemical } from "./SupplierCarolinaChemical";
-//export { SupplierChemsavers } from "./SupplierChemsavers";
 export { SupplierFtfScientific } from "./SupplierFtfScientific";
 export { SupplierGoldAndSilverTesting } from "./SupplierGoldAndSilverTesting";
 export { SupplierHbarSci } from "./SupplierHbarSci";
