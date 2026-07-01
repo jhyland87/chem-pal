@@ -7,3 +7,16 @@
 .search-form-icon-button {
   padding: 10px;
 }
+
+.search-error-hint {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: #f38ba8; // Catppuccin Mocha red
+
+  @media (prefers-color-scheme: light) {
+    color: #d20f39; // Catppuccin Latte red
+  }
+}

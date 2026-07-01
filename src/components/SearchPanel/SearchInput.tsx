@@ -7,6 +7,7 @@ import Paper from "@mui/material/Paper";
 import { FormEvent, useCallback, useState } from "react";
 import HighlightedSearchInput from "./HighlightedSearchInput";
 import styles from "./SearchInput.module.scss";
+import { useDelayedError } from "./useDelayedError.hook";
 import { useSearchInput } from "./useSearchInput.hook";
 
 /**
@@ -33,6 +34,8 @@ export default function SearchInput({ onSearch }: SearchInputStates) {
   // Set when the typed query is an invalid advanced query (malformed, or no inclusive term);
   // holds the human-readable reason and blocks the search until fixed.
   const [searchError, setSearchError] = useState<string | undefined>(undefined);
+  // Debounced copy for display only — the message appears after the user pauses typing.
+  const hintMessage = useDelayedError(searchError, searchInputValue, 200);
 
   const handleValidityChange = useCallback((blocked: boolean, message?: string) => {
     setSearchError(blocked ? (message ?? "Invalid query.") : undefined);
@@ -88,9 +91,9 @@ export default function SearchInput({ onSearch }: SearchInputStates) {
           </IconButton>
         </Paper>
 
-        {searchError && (
+        {hintMessage && (
           <div role="alert" className={styles['search-error-hint']}>
-            {searchError}
+            {hintMessage}
           </div>
         )}
 
