@@ -17,11 +17,11 @@ import { deleteSupplierQueryCacheEntry } from "@/utils/idbCache";
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import { Logger } from "@/utils/Logger";
 import { ProductBuilder } from "@/utils/ProductBuilder";
-import { SupplierCache } from "@/utils/SupplierCache";
 import { scoreAstMatch } from "@/utils/search-query/evaluateAst";
 import { extractOrGroups } from "@/utils/search-query/extractPositiveTerms";
 import { parseSearchQuery } from "@/utils/search-query/parseSearchQuery";
 import type { ParsedSearchQuery } from "@/utils/search-query/types";
+import { SupplierCache } from "@/utils/SupplierCache";
 import {
   incrementFailure,
   incrementParseError,
@@ -1608,9 +1608,16 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   protected async httpGetJson({
     path,
     params,
-    headers,
+    headers = {},
     host,
   }: RequestOptions): Promise<Maybe<JsonValue>> {
+    if (
+      typeof headers?.accept === "undefined" ||
+      !Array.isArray(headers?.accept) ||
+      !headers?.accept.includes("application/json")
+    ) {
+      headers.accept = ["application/json", "text/plain", "*/*"].join(",");
+    }
     const httpRequest = await this.httpGet({ path, params, headers, host });
 
     if (!isJsonResponse(httpRequest)) {

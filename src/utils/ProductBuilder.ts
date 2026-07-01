@@ -165,6 +165,7 @@ export class ProductBuilder<T extends Product> {
         if (typeof v === "string" && v.trim().length > 0) this.product.imageAltText = v;
       },
       sdsUrl: (v) => this.setSDSUrl(v),
+      coaUrl: (v) => this.setCoaUrl(v),
       specSheetUrl: (v) => this.setSpecSheetUrl(v),
       docLinks: (v) => this.setDocLinks(v),
       supplierCountry: (v) => this.setSupplierCountry(v),
@@ -348,6 +349,28 @@ export class ProductBuilder<T extends Product> {
       this.product.sdsUrl = href;
     } else if (sdsUrl != null && this.showFailedValidation) {
       this.logger.warn("setSDSUrl| Invalid SDS URL", { sdsUrl, builder: this });
+    }
+    return this;
+  }
+
+  /**
+   * Sets the Certificate of Analysis (COA) URL for the product. Accepts the often-optional result
+   * of a parser directly; a value that isn't a usable URL (undefined, empty, wrong type) is ignored.
+   * @param coaUrl - The COA URL to set, or any value (non-URLs are ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setCoaUrl("https://example.com/coa.pdf");
+   * builder.setCoaUrl(findPdfHref(html)); // no-ops when findPdfHref returns undefined
+   * ```
+   * @source
+   */
+  setCoaUrl(coaUrl: unknown): ProductBuilder<T> {
+    const href = this.resolveHref(coaUrl);
+    if (href) {
+      this.product.coaUrl = href;
+    } else if (coaUrl != null && this.showFailedValidation) {
+      this.logger.warn("setCoaUrl| Invalid COA URL", { coaUrl, builder: this });
     }
     return this;
   }

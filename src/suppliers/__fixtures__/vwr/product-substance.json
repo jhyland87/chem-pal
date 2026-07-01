@@ -1,0 +1,73 @@
+{
+  "chemicalSynonyms": ["Ammonium bicarbonate", "Ammonium bicarbonate"],
+  "ghsSafetyLogos": [
+    {
+      "altText": "GHS07",
+      "filename": "4760633.jpg",
+      "id": "3278528",
+      "url": "/stibo/thumb/4760633.jpg"
+    }
+  ],
+  "substanceAttributes": [
+    {
+      "code": "c_cas",
+      "displayOrder": 0,
+      "name": "CAS",
+      "value": "1066-33-7"
+    },
+    {
+      "code": "c_formula",
+      "displayOrder": 0,
+      "name": "Formula",
+      "value": "NH₄HCO₃"
+    },
+    {
+      "code": "c_mdl",
+      "displayOrder": 0,
+      "name": "MDL",
+      "value": "MFCD00012138"
+    },
+    {
+      "code": "6508622",
+      "displayOrder": 0,
+      "name": "MW_value",
+      "value": "79.06 g/mol"
+    },
+    {
+      "code": "7202246",
+      "displayOrder": 0,
+      "name": "Merck Index_calc",
+      "value": "13,00497"
+    },
+    {
+      "code": "2059079",
+      "displayOrder": 0,
+      "name": "Melting Point_without label",
+      "value": "35 °C"
+    },
+    {
+      "code": "2059081",
+      "displayOrder": 0,
+      "name": "Density_without label",
+      "value": "1.57 g/cm³ (20 °C) "
+    },
+    {
+      "code": "2983176",
+      "displayOrder": 0,
+      "name": "Packaging Conditions",
+      "value": "Management of Change (MOC) category = N"
+    },
+    {
+      "code": "2059063",
+      "displayOrder": 0,
+      "name": "EINECS",
+      "value": "213-911-5"
+    },
+    {
+      "code": "3279033",
+      "displayOrder": 0,
+      "name": "Signalword",
+      "value": "Warning"
+    }
+  ]
+}

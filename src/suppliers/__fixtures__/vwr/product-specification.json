@@ -1,0 +1,30 @@
+[
+  {
+    "name": "Arsenic",
+    "result": "<= 0.0003 %"
+  },
+  {
+    "name": "Fluoride",
+    "result": "<= 0.005 %"
+  },
+  {
+    "name": "Heavy Metals",
+    "result": "<= 0.003 %"
+  },
+  {
+    "name": "Lead",
+    "result": "<= 0.001 %"
+  },
+  {
+    "name": "Loss on Drying",
+    "result": "<= 2.0 %"
+  },
+  {
+    "name": "Magnesium and Alkali Salts",
+    "result": "<= 1.0 %"
+  },
+  {
+    "name": "Purity",
+    "result": "> 98 %"
+  }
+]
