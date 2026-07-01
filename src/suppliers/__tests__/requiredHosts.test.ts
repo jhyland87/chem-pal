@@ -57,10 +57,10 @@ describe("requiredHosts", () => {
   });
 
   describe("auto-detects apiURL property", () => {
-    it("Chemsavers includes its apiURL (Typesense) automatically", () => {
-      const instance = new (suppliers.SupplierChemsavers as any)("", 1, controller);
-      expect(instance.requiredHosts).toContain("https://0ul35zwtpkx14ifhp-1.a1.typesense.net/*");
-      expect(instance.requiredHosts).toContain("https://www.chemsavers.com/*");
+    it("VWR includes its apiURL (Avantor OCC) automatically", () => {
+      const instance = new (suppliers.SupplierVWR as any)("", 1, controller);
+      expect(instance.requiredHosts).toContain("https://occapi.avantorsciences.com/*");
+      expect(instance.requiredHosts).toContain("https://www.vwr.com/*");
       expect(instance.requiredHosts).toHaveLength(2);
     });
 
