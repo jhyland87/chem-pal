@@ -8,16 +8,17 @@ import { translateAstToTypesenseFilter } from "@/utils/search-query/translators/
 import { cstorage } from "@/utils/storage";
 import { assertValidSearchResponse } from "@/utils/typeGuards/chemsavers";
 import { SupplierBase } from "./SupplierBase";
-
+/* @hideconstructor */
+/* @hideden */
 /**
- * Module sed to retrieve products sold on the Chemsavers website.
+ * Module used to retrieve products sold on the Chemsavers website.
  *
  * @remarks
  *
  * Chemsavers does have an exposed GraphQL API which can be used to retrieve product data, but
  * an even easier option is to use the Typesense search API which has all of their products
  * listed and is easily searchable.
- *
+ * @deprecated Chemsavers switched all their products to Restricted, only selling to businesses.
  * @category Suppliers
  * @source
  */
