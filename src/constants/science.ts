@@ -67,3 +67,63 @@ export const SUPERSCRIPTS: { [key: string]: string } = {
   /* eslint-enable */
   /* tslint:enable */
 } as const;
+
+/**
+ * A mapping of ASCII digits to their Unicode subscript glyphs, written as the
+ * literal characters (`₀`–`₉`) rather than the `\uXXXX` escapes used
+ * by {@link SUBSCRIPTS}. The mapped values are identical to `SUBSCRIPTS` for the
+ * digit keys — this is purely the literal-glyph spelling, handy where a source
+ * regex needs the visible characters.
+ * @example
+ * ```typescript
+ * SUBSCRIPT_GLYPHS["2"] // Returns "₂"
+ * const formula = "H" + SUBSCRIPT_GLYPHS["2"] + "O" // Returns "H₂O"
+ * ```
+ * @source
+ */
+export const SUBSCRIPT_GLYPHS: { [key: string]: string } = {
+  /* eslint-disable */
+  /* tslint:disable */
+  "0": "₀",
+  "1": "₁",
+  "2": "₂",
+  "3": "₃",
+  "4": "₄",
+  "5": "₅",
+  "6": "₆",
+  "7": "₇",
+  "8": "₈",
+  "9": "₉",
+  /* eslint-enable */
+  /* tslint:enable */
+} as const;
+
+/**
+ * A mapping of ASCII digits to their Unicode superscript glyphs, written as the
+ * literal characters (`⁰`–`⁹`) rather than the `\uXXXX` escapes used
+ * by {@link SUPERSCRIPTS}. The mapped values are identical to `SUPERSCRIPTS` for
+ * the digit keys — this is purely the literal-glyph spelling, handy where a
+ * source regex needs the visible characters.
+ * @example
+ * ```typescript
+ * SUPERSCRIPT_GLYPHS["2"] // Returns "²"
+ * const squared = "x" + SUPERSCRIPT_GLYPHS["2"] // Returns "x²"
+ * ```
+ * @source
+ */
+export const SUPERSCRIPT_GLYPHS: { [key: string]: string } = {
+  /* eslint-disable */
+  /* tslint:disable */
+  "0": "⁰",
+  "1": "¹",
+  "2": "²",
+  "3": "³",
+  "4": "⁴",
+  "5": "⁵",
+  "6": "⁶",
+  "7": "⁷",
+  "8": "⁸",
+  "9": "⁹",
+  /* eslint-enable */
+  /* tslint:enable */
+} as const;
