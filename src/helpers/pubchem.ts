@@ -258,3 +258,22 @@ export async function suggestAlternativeSearch(
   const cas = ranked.find((entry) => isCAS(entry) && !excluded.has(entry.toLowerCase()));
   return { name, cas };
 }
+
+/**
+ * Gets the PubChem ID from the links in the document.
+ * @param document - The document to search for PubChem links
+ * @returns The PubChem ID, or undefined if not found
+ * @example
+ * ```typescript
+ * const pubchemId = getPubchemIdFromDocument(document);
+ * console.log(pubchemId);
+ * // Outputs: 1234567890
+ * ```
+ */
+export function getPubchemIdFromDocument(doc: Document): number | undefined {
+  const link = doc.querySelector('a[href*="pubchem.ncbi.nlm.nih.gov/substance"]');
+  if (!(link instanceof HTMLAnchorElement)) return undefined;
+  const pubchemId = link.href.split("/").pop();
+  if (!pubchemId || isNaN(Number(pubchemId))) return undefined;
+  return Number(pubchemId);
+}

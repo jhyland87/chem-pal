@@ -3,7 +3,7 @@ import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM, urlencode } from "@/helpers/request";
-import { parseChemicalSpecs, parsePurity } from "@/helpers/science";
+import { formatFormula, parseChemicalSpecs, parsePurity } from "@/helpers/science";
 import { firstMap, getUserLanguage, mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { cstorage } from "@/utils/storage";
@@ -553,16 +553,20 @@ export class SupplierLaboratoriumDiscounter
     builder: ProductBuilder<Product>,
     content: string,
   ): Promise<void> {
+    // parseChemicalSpecs recognizes this catalog's "Molar mass (M) 149,19 g/mol" label (including
+    // the European comma decimal) via findMolarMass, so the formula and molar mass come from it.
     const specs = parseChemicalSpecs(content);
     if (specs.formula) {
-      builder.setFormula(specs.formula);
+      // parseChemicalSpecs strips <sub> markup, so the formula arrives as plain ASCII (e.g.
+      // "C6H15NO3.H3PO4"); format it with subscripts and adduct dots. If a formula ever comes
+      // through still tagged, defer to setFormula's existing HTML handling.
+      const formula = specs.formula.includes("<sub>")
+        ? specs.formula
+        : formatFormula(specs.formula);
+      builder.setFormula(formula);
     }
-
-    // This catalog labels molecular weight as "Molar mass (M) 40.0 g / mol", which the generic
-    // spec parser doesn't recognize, so pull it out directly.
-    const molarMass = content.match(/molar\s+mass[^\d]*(\d+(?:\.\d+)?)\s*g\s*\/\s*mol/i);
-    if (molarMass) {
-      builder.setMoleweight(molarMass[1]);
+    if (specs.molecularWeight !== undefined) {
+      builder.setMoleweight(specs.molecularWeight);
     }
 
     // setCAS extracts the number from free text (e.g. "CAS No. [1310-73-2]").

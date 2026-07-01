@@ -1,3 +1,4 @@
+import { findCAS } from "@/helpers/cas";
 import { HttpError } from "@/helpers/exceptions";
 import { sleep } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
@@ -99,6 +100,7 @@ export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplie
       const doc = new DOMParser().parseFromString(html, "text/html");
 
       builder
+        .setCAS(this.casNumber(doc))
         .setSmiles(this.cellText(doc, "Isomeric SMILES"))
         .setIupacName(this.cellText(doc, "IUPAC Name"))
         .setInChIKey(this.cellText(doc, "InChIKey"))
@@ -263,6 +265,27 @@ export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplie
     this.liftBackoffGate();
     this.liftBackoffGate = undefined;
     this.backoffGate = Promise.resolve();
+  }
+
+  /**
+   * Extracts the CAS number from the product page. Prefers the `.title-meta` "CAS:" span, falling
+   * back to the page title (`.title-row h1`), which also carries the CAS (e.g. "… CAS No.10017-56-8").
+   * The value is run through {@link findCAS}, so only a checksum-valid CAS is returned.
+   *
+   * @param doc - The parsed product-page document
+   * @returns The CAS number, or undefined when none is found
+   * @example
+   * ```typescript
+   * this.casNumber(doc); // "10017-56-8"
+   * ```
+   * @source
+   */
+  private casNumber(doc: Document): string | undefined {
+    const casSpan = Array.from(doc.querySelectorAll(".title-meta > span")).find((span) =>
+      (span.querySelector("strong")?.textContent ?? "").trim().toLowerCase().startsWith("cas"),
+    );
+    const title = doc.querySelector(".title-row h1")?.textContent;
+    return findCAS(casSpan?.textContent ?? "") || findCAS(title ?? "") || undefined;
   }
 
   /**

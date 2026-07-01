@@ -1,4 +1,9 @@
-import { SUBSCRIPTS, SUPERSCRIPTS, SUBSCRIPT_GLYPHS, SUPERSCRIPT_GLYPHS } from "@/constants/science";
+import {
+  SUBSCRIPT_GLYPHS,
+  SUBSCRIPTS,
+  SUPERSCRIPT_GLYPHS,
+  SUPERSCRIPTS,
+} from "@/constants/science";
 import { looksLikeSmiles } from "@/helpers/smiles";
 import { decodeHTMLEntities, isMoleForm } from "@/helpers/utils";
 
@@ -20,7 +25,8 @@ import { decodeHTMLEntities, isMoleForm } from "@/helpers/utils";
  * @source
  */
 export const subscript = (str: string) => {
-  return str.replace(/[0-9]/g, (match) => SUBSCRIPT_GLYPHS[match] || match);
+  // Subscript digits are contiguous from U+2080 (₀), so ₀–₉ is just 0x2080 + the digit.
+  return str.replace(/[0-9]/g, (d) => String.fromCodePoint(0x2080 + Number(d)));
 };
 
 /**
@@ -35,7 +41,15 @@ export const subscript = (str: string) => {
  * @source
  */
 export const superscript = (str: string) => {
-  return str.replace(/[0-9]/g, (match) => SUPERSCRIPT_GLYPHS[match] || match);
+  // Superscript digits aren't contiguous: ¹²³ live in the Latin-1 block (U+00B9/B2/B3), while
+  // ⁰ and ⁴–⁹ are contiguous from U+2070. Special-case the three, compute the rest.
+  return str.replace(/[0-9]/g, (d) => {
+    const n = Number(d);
+    if (n === 1) return "¹";
+    if (n === 2) return "²";
+    if (n === 3) return "³";
+    return String.fromCodePoint(0x2070 + n);
+  });
 };
 
 /**
@@ -179,9 +193,8 @@ export const findFormulaInText = (text: string): string | undefined => {
     .replace(/<sub>(\d+)<\/sub>/g, (_match, p1) => subscript(p1 || ""))
     .replace(/<sup>(\d+)<\/sup>/g, (_match, p1) => superscript(p1 || ""))
     .replace(/\\u208[0-9](?:\\u208[0-9])*/g, (match) => subscriptGlyph(match))
-    .replace(
-      /(?:\\u00[bB][239]|\\u207[4-9])(?:\\u2070|\\u00[bB][239]|\\u207[4-9])*/g,
-      (match) => superscriptGlyph(match),
+    .replace(/(?:\\u00[bB][239]|\\u207[4-9])(?:\\u2070|\\u00[bB][239]|\\u207[4-9])*/g, (match) =>
+      superscriptGlyph(match),
     );
 };
 
@@ -354,6 +367,9 @@ export interface ChemicalSpecs {
 const normalizeSpecText = (html: string): string =>
   decodeHTMLEntities(
     html
+      // Drop sub/sup wrappers without inserting whitespace, so subscripted formulas stay intact
+      // (e.g. C<sub>6</sub>H<sub>15</sub>NO<sub>3</sub> -> C6H15NO3 rather than "C 6 H 15 NO 3").
+      .replace(/<\/?su[bp]\b[^>]*>/gi, "")
       .replace(/<\/(?:p|li|ul|ol|div|tr|h[1-6])>/gi, "\n")
       .replace(/<li\b[^>]*>/gi, "\n")
       .replace(/<br\s*\/?>/gi, "\n")
@@ -361,12 +377,107 @@ const normalizeSpecText = (html: string): string =>
   ).replace(/[^\S\n]+/g, " ");
 
 // A label followed by an optional separator (":", "-", "#", "=", em/en dashes) and the value.
-const MOLEWEIGHT_REGEX =
-  /(?:molecular\s+(?:weight|mass)|mol(?:ecular|\.)?\s+(?:wt|weight|mass)|\bmw\b)\s*[:#=–—-]*\s*(\d+(?:\.\d+)?)/i;
 const FORMULA_REGEX =
   /(?:molecular\s+formula|\bformula\b)\s*[:#=–—-]*\s*([A-Za-z][A-Za-z0-9()·.]*)/i;
 const SMILES_LABEL_REGEX = /\bsmiles\b\s*[:#=–—-]*\s*(\S+)/i;
 const PURITY_PERCENT_REGEX = /(\d{1,3}(?:\.\d+)?)\s*\+?\s*%/;
+
+// --- Molar-mass matching (see findMolarMass) -------------------------------------------------
+// Recognized molar-mass labels: full ("molecular weight/mass", "molar mass"), abbreviated
+// ("mol. wt", "formula weight"), and symbols ("MW", "M.W.", "Mr", "RMM", "RFM", "FW"). Wrapped in
+// letter boundaries at the call sites so short forms aren't matched inside longer words.
+// The bare "mol" alternative only counts as a label when a ":"/"=" follows (as in this catalog's
+// "mol : 247.18"), so it isn't matched inside a unit like "g/mol" or words like "moles".
+const MOLAR_MASS_LABEL =
+  "(?:molecular\\s+(?:weight|mass)|molar\\s+(?:mass|weight|wt)|mol(?:ecular)?\\.?\\s*(?:weight|wt|mass)|formula\\s+(?:weight|wt)|m\\.?\\s*w\\.?|m\\.?\\s*wt\\.?|mr|rmm|rfm|fw|mol(?=\\s*[:=]))";
+// A molar-mass unit in its common spellings: g/mol, g·mol⁻¹, g mol-1, kg/mol, Da/kDa/dalton, amu.
+const MOLAR_MASS_UNIT =
+  "(?:g\\s*[./·⋅]?\\s*mol(?:e|s|ar)?(?:\\s*[-−⁻‑]\\s*(?:1|¹))?|kg\\s*[./·⋅]?\\s*mol(?:e|s)?|k?da(?:ltons?)?|amu)";
+// Between label and value: optional parenthetical (e.g. "(M)"/"(Mr)") and punctuation separators.
+const MOLAR_MASS_SEP = "\\s*(?:\\([^)]*\\))?\\s*[:#=–—-]*\\s*";
+// A numeric value with optional grouping/decimal separators (US or EU), starting and ending on a
+// digit so trailing punctuation isn't captured. parseLocalizedNumber disambiguates "," vs ".".
+const MOLAR_MASS_NUMBER = "(\\d[\\d.,]*\\d|\\d)";
+// Letter boundaries (case-insensitive) so "MW"/"Mr"/"FW" aren't matched mid-word.
+const NOT_LETTER_BEFORE = "(?<![a-z])";
+const NOT_LETTER_AFTER = "(?![a-z])";
+// Tiered by confidence: labelled value with a unit, then a bare "<number> <unit>", then a labelled
+// value without a unit. Earlier tiers are preferred so the most unambiguous reading wins.
+const MOLAR_MASS_LABELED_UNIT = new RegExp(
+  `${NOT_LETTER_BEFORE}${MOLAR_MASS_LABEL}${NOT_LETTER_AFTER}${MOLAR_MASS_SEP}${MOLAR_MASS_NUMBER}\\s*${MOLAR_MASS_UNIT}`,
+  "i",
+);
+const MOLAR_MASS_UNIT_ONLY = new RegExp(`${MOLAR_MASS_NUMBER}\\s*${MOLAR_MASS_UNIT}`, "i");
+const MOLAR_MASS_LABELED = new RegExp(
+  `${NOT_LETTER_BEFORE}${MOLAR_MASS_LABEL}${NOT_LETTER_AFTER}${MOLAR_MASS_SEP}${MOLAR_MASS_NUMBER}`,
+  "i",
+);
+
+/**
+ * Parses a numeric token that may use US or European grouping/decimal conventions into a number.
+ * When both `.` and `,` are present the last-occurring one is treated as the decimal separator and
+ * the other as thousands grouping; a single `,` or `.` is treated as a decimal point (so European
+ * `149,19` reads as `149.19`); repeated separators of one kind are treated as grouping only.
+ * @param raw - The numeric token (e.g. "149,19", "1.234,56", "1,234.56", "40")
+ * @returns The parsed number (may be `NaN` if the token holds no digits)
+ * @example
+ * ```typescript
+ * parseLocalizedNumber("149,19")    // 149.19
+ * parseLocalizedNumber("1.234,56")  // 1234.56
+ * parseLocalizedNumber("1,234.56")  // 1234.56
+ * parseLocalizedNumber("40")        // 40
+ * ```
+ * @source
+ */
+const parseLocalizedNumber = (raw: string): number => {
+  const commaCount = (raw.match(/,/g) ?? []).length;
+  const dotCount = (raw.match(/\./g) ?? []).length;
+  // Both separators present: the last-occurring one is the decimal, the other groups thousands.
+  if (commaCount > 0 && dotCount > 0) {
+    const decimal = raw.lastIndexOf(",") > raw.lastIndexOf(".") ? "," : ".";
+    const grouping = decimal === "," ? /\./g : /,/g;
+    return Number(raw.replace(grouping, "").replace(decimal, "."));
+  }
+  // A single comma or single dot is a decimal separator (handles EU "149,19" and US "140.22").
+  if (commaCount === 1) return Number(raw.replace(",", "."));
+  if (dotCount === 1) return Number(raw);
+  // No separator, or repeated separators used purely for grouping (e.g. "1,234,567").
+  return Number(raw.replace(/[.,]/g, ""));
+};
+
+/**
+ * Finds the first molar mass / molecular weight in a free-form string and returns it as a number.
+ * Built to be run over large, messy scraped text the way {@link findFormulaInText} is: labels,
+ * separators, and unit spellings vary widely across suppliers and locales, so each is matched
+ * tolerantly. Matching is tiered by confidence — a labelled value carrying a unit
+ * (`Molar mass (M) 149,19 g/mol`), then a bare `<number> <unit>` (`58.44 g/mol`), then a labelled
+ * value with no unit (`M.W. 415.6`) — and the value is parsed with {@link parseLocalizedNumber} so
+ * European decimal commas are handled. Returns `undefined` when no plausible molar mass is present,
+ * so unrelated numbers (melting points, densities, prose) are not mistaken for one.
+ * @category Helpers
+ * @param text - Raw text or HTML that may contain a molar mass anywhere within it
+ * @returns The molar mass in g/mol as a positive number, or undefined when none is found
+ * @example
+ * ```typescript
+ * findMolarMass("Molar mass (M) 149,19 g/mol")   // 149.19
+ * findMolarMass("MW - 136.169 G/MOL")            // 136.169
+ * findMolarMass("M.W. 415.6")                    // 415.6
+ * findMolarMass("Mp : 288 - 296°C")              // undefined
+ * ```
+ * @source
+ */
+export const findMolarMass = (text: string): number | undefined => {
+  if (!text || typeof text !== "string") return undefined;
+  // Strip markup and decode entities so labels/values/units match on plain text.
+  const clean = decodeHTMLEntities(text.replace(/<[^>]+>/g, " "));
+  const match =
+    clean.match(MOLAR_MASS_LABELED_UNIT) ??
+    clean.match(MOLAR_MASS_UNIT_ONLY) ??
+    clean.match(MOLAR_MASS_LABELED);
+  if (!match) return undefined;
+  const value = parseLocalizedNumber(match[1]);
+  return Number.isFinite(value) && value > 0 ? value : undefined;
+};
 
 /**
  * Pulls a purity percentage from messy, multi-line product copy. Unlike {@link parsePurity}, this
@@ -417,17 +528,58 @@ export const parseChemicalSpecs = (html: string): ChemicalSpecs => {
   const purity = extractPurity(lines);
   if (purity !== undefined) specs.purity = purity;
 
-  const formulaMatch = text.match(FORMULA_REGEX);
-  if (formulaMatch && isMoleForm(formulaMatch[1])) specs.formula = formulaMatch[1];
-
-  const moleweightMatch = text.match(MOLEWEIGHT_REGEX);
-  if (moleweightMatch) {
-    const moleweight = Number(moleweightMatch[1]);
-    if (!Number.isNaN(moleweight) && moleweight > 0) specs.molecularWeight = moleweight;
+  // Iterate every "…formula…" match and keep the first candidate that validates: the copy may say
+  // "the rough formula is C6H15NO3" (capturing the word "is") before the real "Empirical formula
+  // C6H15NO3", and a single match would stop at the bogus first hit. Clean single formulas (e.g.
+  // "NaOH") are kept verbatim; salts/adducts joined by a dot (e.g. "C6H15NO3.H3PO4") aren't valid
+  // isMoleForm, so fall back to the tolerant finder.
+  for (const formulaMatch of text.matchAll(new RegExp(FORMULA_REGEX.source, "gi"))) {
+    const rawFormula = formulaMatch[1];
+    const formula = isMoleForm(rawFormula) ? rawFormula : findFormulaInText(rawFormula);
+    if (formula) {
+      specs.formula = formula;
+      break;
+    }
   }
+
+  const molecularWeight = findMolarMass(text);
+  if (molecularWeight !== undefined) specs.molecularWeight = molecularWeight;
 
   const smilesMatch = text.match(SMILES_LABEL_REGEX);
   if (smilesMatch && looksLikeSmiles(smilesMatch[1])) specs.smiles = smilesMatch[1];
 
   return specs;
 };
+
+// The adduct/hydrate separator: U+22C5 "DOT OPERATOR".
+const ADDUCT_DOT = "\u22C5";
+
+/**
+ * Formats a plain-ASCII chemical formula with proper Unicode notation: periods that join formula
+ * units become an adduct/hydrate dot (⋅), and atom-count digits become subscripts. Digits that are
+ * leading stoichiometric coefficients — those at the start of a unit, after a space, or right after
+ * the adduct dot — are left full-size, since their preceding character isn't an atom or bracket.
+ * Intended for formulas that arrive as plain text (no `<sub>` markup); tagged formulas should go
+ * through {@link findFormulaInHtml} instead.
+ * @param formula - A plain-ASCII formula, e.g. "C6H15NO3.5H3PO4"
+ * @returns The formula with subscripted atom counts and adduct dots, e.g. "C₆H₁₅NO₃⋅5H₃PO₄"
+ * @example
+ * ```typescript
+ * formatFormula("C6H15NO3")        // "C₆H₁₅NO₃"
+ * formatFormula("C6H15NO3.H3PO4")  // "C₆H₁₅NO₃⋅H₃PO₄"
+ * formatFormula("C6H15NO3.5H3PO4") // "C₆H₁₅NO₃⋅5H₃PO₄"
+ * formatFormula("NaOH")            // "NaOH"
+ * ```
+ * @source
+ */
+export function formatFormula(formula: string): string {
+  return (
+    formula
+      // 1. period(s) between formula units → adduct dot
+      .replace(/\./g, ADDUCT_DOT)
+      // 2. a run of digits directly after an atom (letter), ) or ] → subscript.
+      //    Digits after the start, a space, or the adduct dot are stoichiometric
+      //    coefficients, so their preceding char isn't a letter/bracket → skipped.
+      .replace(/(?<=[A-Za-z)\]])\d+/g, subscript)
+  );
+}

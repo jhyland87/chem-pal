@@ -33,7 +33,8 @@ import styles from "./TableColumns.module.scss";
  * // columns.map(c => c.id) →
  * //   ["expander", "title", "supplier", "country", "shipping",
  * //    "availability", "description", "price", "quantity", "uom",
- * //    "sds", "specs", "coa", "cas", "formula", "moleweight", "purity", "concentration"]
+ * //    "sds", "specs", "coa", "cas", "pubchem", "formula", "moleweight",
+ * //    "purity", "concentration"]
  * // columns.filter(c => c.meta?.drawer).map(c => c.id) →
  * //   ["supplier", "country", "shipping", "availability", "price"]
  * ```
@@ -376,6 +377,30 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       meta: {
         filterPlaceholder: "CAS...",
         filterVariant: "text",
+        style: {
+          textAlign: "left",
+        },
+      },
+    },
+    {
+      id: "pubchem",
+      header: "PubChem",
+      accessorKey: "pubchemId",
+      cell: ({ row }: ProductRow) => {
+        const cid = row.original.pubchemId;
+        if (!cid) return null;
+        return (
+          <Link
+            href={`https://pubchem.ncbi.nlm.nih.gov/compound/${cid}`}
+            aria-label={`PubChem CID ${cid}`}
+            title="View on PubChem"
+          >
+            {cid}
+          </Link>
+        );
+      },
+      enableColumnFilter: false,
+      meta: {
         style: {
           textAlign: "left",
         },
