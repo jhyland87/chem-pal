@@ -75,10 +75,7 @@ export default function HighlightedSearchInput({
   useEffect(syncScroll, [value]);
 
   return (
-    <div
-      className={`${styles.wrapper} ${highlight.state === "error" ? styles.error : ""} ${className ?? ""}`}
-      style={style}
-    >
+    <div className={`${styles.wrapper} ${className ?? ""}`} style={style}>
       <div
         ref={backdropRef}
         className={styles.backdrop}

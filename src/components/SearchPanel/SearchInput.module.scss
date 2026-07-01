@@ -15,14 +15,18 @@
       }
     }
 
-    // Absolutely positioned so showing/hiding the error never shifts the search bar.
+    // Below the whole bar so it never overlaps the input; absolute = no layout shift.
     .search-error-hint {
       position: absolute;
       top: 100%;
       left: 8px;
       margin-top: 2px;
       font-size: 0.75rem;
-      color: #e06c75;
+      color: #f38ba8; // Catppuccin Mocha red
+
+      @media (prefers-color-scheme: light) {
+        color: #d20f39; // Catppuccin Latte red
+      }
     }
   }
 }

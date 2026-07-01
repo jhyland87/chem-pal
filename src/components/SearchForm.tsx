@@ -5,6 +5,7 @@ import { Box, IconButton } from "@mui/material";
 import { useEffect, useState, FC, FormEvent } from "react";
 import { useAppContext } from "../context";
 import HighlightedSearchInput from "./SearchPanel/HighlightedSearchInput";
+import { useDelayedError } from "./SearchPanel/useDelayedError.hook";
 import styles from "./SearchForm.module.scss";
 import { SearchFormDivider, SearchFormPaper } from "./StyledComponents";
 
@@ -57,6 +58,8 @@ export const SearchForm: FC<SearchFormProps> = ({
 
   // Set when the typed query is an invalid advanced query; blocks submit until fixed.
   const [searchError, setSearchError] = useState<string | undefined>(undefined);
+  // Debounced copy for display only — the message appears after the user pauses typing.
+  const hintMessage = useDelayedError(searchError, query, 200);
 
   // Hydrate the shared title query from the persisted draft in session storage
   // so this field reflects whatever was last typed in any search input — even
@@ -147,19 +150,9 @@ export const SearchForm: FC<SearchFormProps> = ({
         </IconButton>
       </SearchFormPaper>
 
-      {searchError && (
-        <div
-          role="alert"
-          style={{
-            position: "absolute",
-            top: "100%",
-            left: 0,
-            marginTop: 4,
-            color: "#e06c75",
-            fontSize: "0.75rem",
-          }}
-        >
-          {searchError}
+      {hintMessage && (
+        <div role="alert" className={styles['search-error-hint']}>
+          {hintMessage}
         </div>
       )}
     </Box>
