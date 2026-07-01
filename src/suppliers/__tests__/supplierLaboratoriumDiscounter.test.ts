@@ -365,6 +365,29 @@ describe("SupplierLaboratoriumDiscounter content/SDS parsing", () => {
     expect(builder.get("sdsUrl")).toContain(".pdf");
   });
 
+  it("parses a subscripted formula and a comma-decimal molar mass", async () => {
+    const builder = makeBuilder("sodium-hydroxide.html");
+    await internals().applyContentSpecs(
+      builder,
+      "<p>Empirical formula C<sub>6</sub>H<sub>15</sub>NO<sub>3</sub><br />" +
+        "Molar mass (M) 149,19 g/mol<br />CAS No. [102-71-6]</p>",
+    );
+    expect(builder.get("formula")).toBe("C₆H₁₅NO₃");
+    expect(builder.get("moleweight")).toBe(149.19);
+    expect(builder.get("cas")).toBe("102-71-6");
+  });
+
+  it("parses a dot-joined salt formula and a bare 'mol :' molar mass", async () => {
+    const builder = makeBuilder("sodium-hydroxide.html");
+    await internals().applyContentSpecs(
+      builder,
+      "CAS : 10017-56-8<br>Formula : C6H15NO3.H3PO4<br>mol : 247.18<br>Melting point : 106°C",
+    );
+    expect(builder.get("formula")).toBe("C₆H₁₅NO₃⋅H₃PO₄");
+    expect(builder.get("moleweight")).toBe(247.18);
+    expect(builder.get("cas")).toBe("10017-56-8");
+  });
+
   it("parses the purity from the product title in the search phase", () => {
     type WithInit = {
       initProductBuilders(data: unknown[]): ProductBuilder<Product>[];

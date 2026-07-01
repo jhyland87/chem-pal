@@ -1,4 +1,5 @@
 import { findCAS } from "@/helpers/cas";
+import { getPubchemIdFromDocument } from "@/helpers/pubchem";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { SupplierBaseShopify } from "./SupplierBaseShopify";
 
@@ -152,8 +153,15 @@ export class SupplierAsesChem extends SupplierBaseShopify implements ISupplier {
       builder.setFormula(formulaSource?.innerHTML);
 
       const pubchemHref = formulaParagraph.querySelector("a")?.getAttribute("href");
-      const cid = pubchemHref?.match(/\/compound\/(\d+)/i)?.[1];
-      builder.setPubchemId(cid);
+      if (pubchemHref) {
+        const cid = pubchemHref?.match(/\/compound\/(\d+)/i)?.[1];
+        builder.setPubchemId(cid);
+      } else {
+        const pubchemLinkSearch = getPubchemIdFromDocument(doc);
+        if (pubchemLinkSearch) {
+          builder.setPubchemId(pubchemLinkSearch);
+        }
+      }
     }
 
     // CAS and molecular weight appear inline in the block text (setCAS validates the checksum).

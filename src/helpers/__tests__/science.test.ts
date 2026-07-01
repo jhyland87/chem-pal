@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   findFormulaInHtml,
   findFormulaInText,
+  findMolarMass,
+  formatFormula,
   parseChemicalSpecs,
   parseGrade,
   parsePurity,
@@ -88,6 +90,37 @@ describe("science helpers", () => {
 
     it("should handle empty string", () => {
       expect(superscriptGlyph("")).toBe("");
+    });
+  });
+
+  describe("formatFormula", () => {
+    it("subscripts atom counts in a simple formula", () => {
+      expect(formatFormula("C6H15NO3")).toBe("C₆H₁₅NO₃");
+      expect(formatFormula("H2O")).toBe("H₂O");
+      expect(formatFormula("C12H22O11")).toBe("C₁₂H₂₂O₁₁");
+    });
+
+    it("turns a period into an adduct dot for a salt with no coefficient", () => {
+      expect(formatFormula("C6H15NO3.H3PO4")).toBe("C₆H₁₅NO₃⋅H₃PO₄");
+    });
+
+    it("keeps a leading hydrate/adduct coefficient full-size", () => {
+      expect(formatFormula("C6H15NO3.5H3PO4")).toBe("C₆H₁₅NO₃⋅5H₃PO₄");
+      expect(formatFormula("CuSO4.5H2O")).toBe("CuSO₄⋅5H₂O");
+    });
+
+    it("subscripts digits after closing brackets but not full-size groups", () => {
+      expect(formatFormula("Ca3(PO4)2")).toBe("Ca₃(PO₄)₂");
+      expect(formatFormula("KN(C(O)CH2)2")).toBe("KN(C(O)CH₂)₂");
+    });
+
+    it("leaves formulas without atom-count digits unchanged", () => {
+      expect(formatFormula("NaOH")).toBe("NaOH");
+      expect(formatFormula("KBr")).toBe("KBr");
+    });
+
+    it("handles an empty string", () => {
+      expect(formatFormula("")).toBe("");
     });
   });
 
@@ -393,6 +426,55 @@ describe("science helpers", () => {
     });
   });
 
+  describe("findMolarMass", () => {
+    it("parses a European comma-decimal value with a parenthetical label", () => {
+      expect(findMolarMass("Molar mass (M) 149,19 g/mol")).toBe(149.19);
+    });
+
+    it("finds the molar mass buried in a larger block of text", () => {
+      const text =
+        "Empirical formula C6H15NO3\nMolar mass (M) 149,19 g/mol\nDensity (D) ca. 1,12\nCAS No.[102-71-6]";
+      expect(findMolarMass(text)).toBe(149.19);
+    });
+
+    it("handles the common label and unit spellings", () => {
+      expect(findMolarMass("MW: 140.22g/mol")).toBe(140.22);
+      expect(findMolarMass("MW - 136.169 G/MOL")).toBe(136.169);
+      expect(findMolarMass("Molecular mass : 98.14 g/mol")).toBe(98.14);
+      expect(findMolarMass("Molecular Weight (MW): 254,32 g·mol⁻¹")).toBe(254.32);
+      expect(findMolarMass("formula weight 100.2 g/mole")).toBe(100.2);
+      expect(findMolarMass("molar mass 18 g mol-1")).toBe(18);
+      expect(findMolarMass("58.44 Da")).toBe(58.44);
+    });
+
+    it("falls back to a labelled value with no unit", () => {
+      expect(findMolarMass("M.W. 415.6")).toBe(415.6);
+      expect(findMolarMass("Mr = 342.30")).toBe(342.3);
+    });
+
+    it("recognizes a bare 'mol :' label (LaboratoriumDiscounter catalog)", () => {
+      expect(findMolarMass("CAS : 10017-56-8\nFormula : C6H15NO3.H3PO4\nmol : 247.18")).toBe(247.18);
+      expect(findMolarMass("mol = 156.98")).toBe(156.98);
+    });
+
+    it("does not treat the 'mol' in a g/mol unit as a bare label", () => {
+      // No colon/equals after "mol", so the bare-mol label must not fire on the unit itself.
+      expect(findMolarMass("dose is 5 moles per litre")).toBeUndefined();
+    });
+
+    it("disambiguates thousands vs decimal separators in both conventions", () => {
+      expect(findMolarMass("1.234,56 g/mol")).toBe(1234.56);
+      expect(findMolarMass("1,234.56 g/mol")).toBe(1234.56);
+    });
+
+    it("does not mistake unrelated numbers for a molar mass", () => {
+      expect(findMolarMass("Mp : 288 - 296°C")).toBeUndefined();
+      expect(findMolarMass("Density (D) ca. 1,12")).toBeUndefined();
+      expect(findMolarMass("Ships in 4-6 business days")).toBeUndefined();
+      expect(findMolarMass("")).toBeUndefined();
+    });
+  });
+
   describe("parseChemicalSpecs", () => {
     it("should parse BioFuran-style <p>-delimited specs from a description", () => {
       const html =
@@ -423,6 +505,47 @@ describe("science helpers", () => {
         "<ul><li>Purity - 99+%</li><li>MW - 136.169 G/MOL</li>" +
         "<li>Melting point - 197 Celsius</li><li>CAS No - 7646-93-7</li></ul>";
       expect(parseChemicalSpecs(html)).toEqual({ purity: 99, molecularWeight: 136.169 });
+    });
+
+    it("should keep subscripted formulas intact instead of stopping at the first element", () => {
+      // LaboratoriumDiscounter renders the formula with <sub> tags; stripping them to whitespace
+      // used to split "C6H15NO3" into "C 6 H 15 NO 3", leaving the parser with just "C".
+      const html =
+        "<p>Empirical formula C<sub>6</sub>H<sub>15</sub>NO<sub>3</sub><br />" +
+        "Molar mass (M) 149,19 g/mol</p>";
+      expect(parseChemicalSpecs(html).formula).toBe("C6H15NO3");
+    });
+
+    it("should parse a dot-joined salt formula and a bare 'mol :' molar mass", () => {
+      const html =
+        "CAS : 10017-56-8<br>Formula : C6H15NO3.H3PO4<br>mol : 247.18<br>Melting point : 106°C";
+      expect(parseChemicalSpecs(html)).toEqual({
+        formula: "C6H15NO3.H3PO4",
+        molecularWeight: 247.18,
+      });
+    });
+
+    it("should skip a shadowing 'formula is X' phrase and use the real Empirical formula", () => {
+      const html =
+        "<p>The rough formula is C6H15NO3.</p>" +
+        "<p>Empirical formula C6H15NO3<br />Molar mass (M) 149,19 g/mol</p>";
+      expect(parseChemicalSpecs(html)).toEqual({
+        formula: "C6H15NO3",
+        molecularWeight: 149.19,
+      });
+    });
+
+    it("should capture a single-element formula that follows a label", () => {
+      expect(parseChemicalSpecs("<p>Empirical formula Na<br />Molar mass (M) 22.99 g/mol</p>")).toEqual(
+        { formula: "Na", molecularWeight: 22.99 },
+      );
+      expect(parseChemicalSpecs("<p>Formula: K</p>")).toEqual({ formula: "K" });
+    });
+
+    it("should not pull a bare element out of surrounding prose (no formula label)", () => {
+      expect(
+        parseChemicalSpecs("<p>Sodium hydroxide is great. Potassium too. Contains Na and K.</p>"),
+      ).toEqual({});
     });
 
     it("should ignore percentages that are not purity", () => {
