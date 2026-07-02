@@ -2,7 +2,7 @@ import { defaultSettings } from "@/../config.json";
 import DrawerSystem from "@/components/DrawerSystem";
 import LoadingBackdrop from "@/components/LoadingBackdrop";
 import resultStyles from "@/components/ResultsPanel.module.scss";
-import { CACHE } from "@/constants/common";
+import { CACHE, DRAWER_INDEX } from "@/constants/common";
 import { generatePageSizes } from "@/helpers/utils";
 import { FOCUS_GLOBAL_FILTER_EVENT, TOGGLE_COLUMN_FILTERS_EVENT } from "@/hotkeys";
 import { SearchEvent, emitSearchEvent } from "@/events/searchEvents";
@@ -447,7 +447,7 @@ export default function ResultsTable({
               <ViewColumnIcon />
             </ColoredIconButton>
             <ColoredIconButton
-              onClick={() => appContext?.toggleDrawer()}
+              onClick={() => appContext?.toggleDrawer(DRAWER_INDEX.SETTINGS)}
               size="small"
               iconColor="#666"
             >

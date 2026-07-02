@@ -1,9 +1,17 @@
 import { findCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
+import { findPurity, parseChemicalSpecs } from "@/helpers/science";
 import { firstMap, mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
-import { isSearchResponse, isSearchResponseItem } from "@/utils/typeGuards/woocommerce";
+import { isSearchResponse } from "@/utils/typeGuards/woocommerce";
 import { SupplierBase } from "./SupplierBase";
+
+/**
+ * Chunk size for the batched variant-detail fetch. The WooCommerce Store API
+ * caps `per_page` at 100, so variant IDs are requested (via `include`) in
+ * groups of at most this many.
+ */
+const VARIANT_BATCH_SIZE = 100;
 
 /**
  * Base class for WooCommerce-based suppliers that provides common functionality for
@@ -69,6 +77,16 @@ export abstract class SupplierBaseWoocommerce
   protected apiKey: string = "";
 
   /**
+   * The default product search filters to use for the WooCommerce API.
+   * Can be overridden by subclasses.
+   * @source
+   */
+  public readonly productSearchFilters: WooCommerceProductSearchParams = {
+    stock_status: ["instock", "onbackorder"],
+    orderby: "title",
+  };
+
+  /**
    * Queries the WooCommerce API for products matching the given search term.
    * Makes a GET request to the WooCommerce Store API v1 products endpoint.
    *
@@ -93,7 +111,7 @@ export abstract class SupplierBaseWoocommerce
     const searchRequest = await this.httpGetJson({
       path: `/wp-json/wc/store/v1/products`,
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      params: { search: query, per_page: 100 },
+      params: { ...this.productSearchFilters, search: query, per_page: 100 },
     });
 
     if (!isSearchResponse(searchRequest)) {
@@ -110,7 +128,127 @@ export abstract class SupplierBaseWoocommerce
     const fuzzedResults = this.fuzzyFilterAst<WooCommerceSearchResponseItem>(results);
     this.logger.info("fuzzedResults:", { query, results, fuzzedResults });
 
-    return this.initProductBuilders(fuzzedResults.slice(0, limit));
+    const builders = this.initProductBuilders(fuzzedResults.slice(0, limit));
+
+    // Enrich all variants here (rather than per-product in getProductData) so
+    // the whole detail fetch collapses into a handful of batched requests. The
+    // enriched builders are cached wholesale by `queryProductsWithCache`, so a
+    // repeat search never re-issues these calls.
+    await this.enrichVariants(builders);
+
+    return builders;
+  }
+
+  /**
+   * Enriches every builder's variants with detail data (title, price,
+   * permalink, description, sku) fetched in bulk. Rather than one request per
+   * variant, all variant IDs across all builders are gathered and requested
+   * from the Store API's `include` endpoint in batches of
+   * {@link VARIANT_BATCH_SIZE}, then mapped back onto each variant by ID.
+   * Variants whose detail data isn't returned are dropped. Mutates the builders
+   * in place.
+   * @param builders - The product builders whose variants should be enriched
+   * @returns A promise that resolves once all variants have been enriched
+   * @example
+   * ```typescript
+   * const builders = this.initProductBuilders(results);
+   * await this.enrichVariants(builders);
+   * // builders now carry fully-populated variants (title, price, ...)
+   * ```
+   * @source
+   */
+  protected async enrichVariants(builders: ProductBuilder<Product>[]): Promise<void> {
+    const variantIds = builders.flatMap((builder) => {
+      const variants = builder.get("variants");
+      if (!Array.isArray(variants)) {
+        return [];
+      }
+      return mapDefined(variants, (variant: Partial<Variant>) =>
+        typeof variant.id === "number" ? variant.id : undefined,
+      );
+    });
+
+    if (variantIds.length === 0) {
+      return;
+    }
+
+    const variantData = await this.fetchVariantData(variantIds);
+
+    for (const builder of builders) {
+      const variants = builder.get("variants");
+      if (!Array.isArray(variants) || variants.length === 0) {
+        continue;
+      }
+
+      const enriched = mapDefined(variants, (variant: Partial<Variant>) => {
+        if (typeof variant.id !== "number") {
+          return;
+        }
+        const data = variantData.get(variant.id);
+        if (!data) {
+          this.logger.warn("No variant data returned for variant:", { id: variant.id });
+          return;
+        }
+
+        variant.title = String(data.name ?? "");
+        variant.price = Number(data.prices.price) / 100;
+        variant.currencyCode = data.prices.currency_code;
+        variant.currencySymbol = data.prices.currency_symbol;
+        // `url` is the Store API endpoint we queried; `permalink` is the
+        // human-facing variant page.
+        variant.url = `/wp-json/wc/store/v1/products/${variant.id}`;
+        variant.permalink = data.permalink;
+        variant.description = data.description;
+        variant.sku = data.sku;
+
+        return variant;
+      });
+
+      builder.setVariants(enriched);
+    }
+  }
+
+  /**
+   * Fetches variant detail data in bulk from the Store API's collection
+   * endpoint, requesting IDs via `include` in batches of
+   * {@link VARIANT_BATCH_SIZE} (the API's `per_page` ceiling). IDs are
+   * de-duplicated first so a variant shared across products is fetched once.
+   * Batches that come back invalid are logged and skipped rather than failing
+   * the whole search.
+   * @param variantIds - The variant (product) IDs to fetch
+   * @returns A map of variant ID to its Store API response item
+   * @example
+   * ```typescript
+   * const data = await this.fetchVariantData([6981, 6982]);
+   * data.get(6981)?.name; // "Sodium Chloride 500g"
+   * ```
+   * @source
+   */
+  protected async fetchVariantData(
+    variantIds: number[],
+  ): Promise<Map<number, WooCommerceSearchResponseItem>> {
+    const uniqueIds = [...new Set(variantIds)];
+    const variantData = new Map<number, WooCommerceSearchResponseItem>();
+
+    for (let offset = 0; offset < uniqueIds.length; offset += VARIANT_BATCH_SIZE) {
+      const chunk = uniqueIds.slice(offset, offset + VARIANT_BATCH_SIZE);
+      const response = await this.httpGetJson({
+        path: `/wp-json/wc/store/v1/products`,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        params: { per_page: VARIANT_BATCH_SIZE, type: "variation", include: chunk.join(",") },
+      });
+
+      if (!isSearchResponse(response)) {
+        this.logger.warn("Invalid variant batch response:", { chunk, response });
+        continue;
+      }
+
+      for (const item of response) {
+        variantData.set(item.id, item);
+      }
+    }
+
+    return variantData;
   }
 
   /**
@@ -211,6 +349,41 @@ export abstract class SupplierBaseWoocommerce
    * ```
    * @source
    */
+  /**
+   * Picks the smallest-width image URL from a `srcset` string. A srcset is a
+   * comma-separated list of `<url> <width>w` candidates; this returns the URL
+   * whose `w` descriptor is smallest — the least-bandwidth image, ideal for a
+   * thumbnail. Candidates without a parseable `w` descriptor are ignored.
+   * @param srcset - The srcset attribute value to parse, or undefined
+   * @returns The smallest-width candidate URL, or undefined when none is usable
+   * @example
+   * ```typescript
+   * this.smallestSrcsetUrl(".../a-300x300.jpg 300w, .../a-100x100.jpg 100w");
+   * // "https://.../a-100x100.jpg"
+   * this.smallestSrcsetUrl(undefined); // undefined
+   * ```
+   * @source
+   */
+  protected smallestSrcsetUrl(srcset: string | undefined): string | undefined {
+    if (!srcset) {
+      return undefined;
+    }
+    let smallest: { url: string; width: number } | undefined;
+    for (const candidate of srcset.split(",")) {
+      const parts = candidate.trim().split(/\s+/);
+      const url = parts[0];
+      const descriptor = /^(\d+)w$/.exec(parts[parts.length - 1] ?? "");
+      if (!url || parts.length < 2 || !descriptor) {
+        continue;
+      }
+      const width = Number(descriptor[1]);
+      if (!smallest || width < smallest.width) {
+        smallest = { url, width };
+      }
+    }
+    return smallest?.url;
+  }
+
   protected initProductBuilders(
     results: WooCommerceSearchResponseItem[],
   ): ProductBuilder<Product>[] {
@@ -235,10 +408,42 @@ export abstract class SupplierBaseWoocommerce
           item.prices.currency_symbol,
         );
 
-      builder.setImage(item.images?.[0]?.src, item.images?.[0]?.alt);
-      builder.setThumbnail(item.images?.[0]?.thumbnail);
+      const image = item.images?.[0];
+      builder.setImage(image?.src, image?.alt);
+      // Use the smallest candidate from the thumbnail srcset (e.g. the 100x100)
+      // rather than the default `thumbnail` (usually 300x300). Fall back to the
+      // main srcset, then to the plain `thumbnail` field.
+      builder.setThumbnail(
+        this.smallestSrcsetUrl(image?.thumbnail_srcset) ??
+          this.smallestSrcsetUrl(image?.srcset) ??
+          image?.thumbnail,
+      );
 
       builder.setCAS(firstMap(findCAS, [item.description, item.short_description]));
+
+      // Formula and molecular weight live in a labelled spec table (e.g. a
+      // "Molecular Formula" / "Molecular Weight" row). parseChemicalSpecs is
+      // label-aware, so — unlike findFormulaInHtml over the raw HTML — it won't
+      // mistake grade codes or UN numbers in the marketing prose (e.g. "USP",
+      // "UN1428") for a formula. Prefer whichever field first yields a value.
+      const specs = firstMap(
+        (html: string) => {
+          const parsed = parseChemicalSpecs(html);
+          return parsed.formula !== undefined || parsed.molecularWeight !== undefined
+            ? parsed
+            : undefined;
+        },
+        [item.short_description, item.description],
+      );
+      if (specs) {
+        builder.setFormula(specs.formula);
+        builder.setMoleweight(specs.molecularWeight);
+      }
+
+      // Suppliers bake purity into the product name as a percentage (e.g.
+      // "… ≥99.8%") or a grade (e.g. "ACS"/"HPLC"); findPurity captures either.
+      // Try the name first, then fall back to the descriptions.
+      builder.setPurity(firstMap(findPurity, [item.name, item.description, item.short_description]));
 
       const toParseForQuantity = [
         item.name,
@@ -294,66 +499,26 @@ export abstract class SupplierBaseWoocommerce
   }
 
   /**
-   * Transforms a WooCommerce product item into the common Product type.
-   * Fetches additional product details, extracts relevant information, and builds a standardized Product object.
-   *
-   * This method:
-   * 1. Validates the input product
-   * 2. Fetches detailed product information
-   * 3. Extracts price, quantity, CAS number, and chemical formula
-   * 4. Builds and returns a standardized Product object
-   *
-   * @param product - WooCommerce product item to transform
-   * @returns Promise resolving to a partial Product object or void if transformation fails
-   *
+   * Returns the product builder unchanged. Every WooCommerce product's detail
+   * data — basic fields from the search response plus fully-enriched variants
+   * (see {@link enrichVariants}) — is resolved up front in
+   * {@link queryProducts}, whose results are cached wholesale by
+   * `queryProductsWithCache`. There is therefore no per-product detail fetch to
+   * perform here. This override is still required because the base
+   * `getProductData` default path self-recurses and must be replaced by every
+   * supplier.
+   * @param product - The product builder to finalize
+   * @returns The same builder, with its variants already populated
    * @example
    * ```typescript
-   * const searchItem = await supplier.queryProducts("sodium");
-   * if (searchItem?.[0]) {
-   *   const product = await supplier.getProductData(searchItem[0]);
-   *   if (product) {
-   *     console.log("Transformed product:", product);
-   *   }
-   * }
+   * const [builder] = await supplier.queryProducts("sodium");
+   * await supplier.getProductData(builder); // returns builder unchanged
    * ```
    * @source
    */
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    return this.getProductDataWithCache(product, async (builder) => {
-      const variantList = builder.get("variants");
-      if (!variantList?.length) {
-        return builder;
-      }
-
-      const variants = await Promise.all(
-        mapDefined(variantList, async (variant: Partial<Variant>) => {
-          const variantResponse = await this.httpGetJson({
-            path: `/wp-json/wc/store/v1/products/${variant.id}`,
-          });
-
-          if (!isSearchResponseItem(variantResponse)) {
-            this.logger.warn("No variant response");
-            return;
-          }
-
-          variant.title = String(variantResponse.name ?? "");
-          variant.price = Number(variantResponse.prices.price) / 100;
-          variant.currencyCode = variantResponse.prices.currency_code;
-          variant.currencySymbol = variantResponse.prices.currency_symbol;
-          // `url` is the Store API endpoint we queried; `permalink` is the
-          // human-facing variant page.
-          variant.url = `/wp-json/wc/store/v1/products/${variant.id}`;
-          variant.permalink = variantResponse.permalink;
-          variant.description = variantResponse.description;
-          variant.sku = variantResponse.sku;
-
-          return variant;
-        }),
-      );
-
-      return builder.setVariants(mapDefined(variants, (variant) => variant));
-    });
+    return product;
   }
 }

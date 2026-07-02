@@ -99,6 +99,15 @@ export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplie
 
       const doc = new DOMParser().parseFromString(html, "text/html");
 
+      // If there is no formula, then this grabs random strings that are not a formula.
+      // const synonyms = this.getSynonyms(doc);
+      // if (synonyms) {
+      //   this.logger.debug(`Found Synonyms: ${synonyms}`, { synonyms });
+      //   const formula = findFormulaInText(synonyms);
+      //   this.logger.debug(`Found Formula: ${formula}`, { formula });
+      //   builder.setFormula(formula ?? undefined);
+      // }
+
       builder
         .setCAS(this.casNumber(doc))
         .setSmiles(this.cellText(doc, "Isomeric SMILES"))
@@ -113,6 +122,15 @@ export class SupplierAladdinSci extends SupplierBaseMagento2 implements ISupplie
 
       return builder;
     });
+  }
+
+  private getSynonyms(doc: Document): string | undefined {
+    return (
+      Array.from(doc.querySelectorAll("#specifications .panel-body > .spec-table > .spec-row"))
+        ?.find((r) => r.querySelector(".k")?.textContent?.toLowerCase().trim() == "synonyms")
+        ?.querySelector(".v")
+        ?.textContent?.trim() ?? undefined
+    );
   }
 
   /**

@@ -4,6 +4,11 @@ import {
   SUPERSCRIPT_GLYPHS,
   SUPERSCRIPTS,
 } from "@/constants/science";
+import {
+  buildFormulaPattern,
+  FORMULA_ELEMENT_PATTERN,
+  pickBestFormula,
+} from "@/helpers/formulaPattern";
 import { looksLikeSmiles } from "@/helpers/smiles";
 import { decodeHTMLEntities, isMoleForm } from "@/helpers/utils";
 
@@ -133,10 +138,6 @@ export const subscriptGlyph = (str: string) => {
  * @source
  */
 export const findFormulaInText = (text: string): string | undefined => {
-  // Valid element symbols (all 118). Gates the match so prose isn't read as a formula.
-  const element =
-    "(?:H[eogsf]?|L[iavru]|B[eahkri]?|C[arofmusenld]?|N[eiahopdb]?|O[sg]?|F[rlem]?|M[godtcn]|A[lrsgutmc]|S[icerngmb]?|P[uabotmrd]?|Kr?|T[icebmsalh]|V|Z[nr]|G[ade]|R[buhenagf]|Yb?|I[nr]?|Xe|E[urs]|D[ysb]|W|U)";
-
   // A sub/superscript "number" (no leading zero), in each accepted representation.
   // Characters are enumerated rather than ranged so engines that don't compute
   // Unicode ranges (byte-oriented / non-Unicode modes) still match them.
@@ -153,43 +154,20 @@ export const findFormulaInText = (text: string): string | undefined => {
   const tag = "<su[bp]>[1-9][0-9]*</su[bp]>";
   const subSup = `(?:${glyphSub}|${glyphSup}|${escSub}|${escSup}|${entSub}|${entSup}|${tag})`;
 
-  // The looser "sub/sup or inline digit" count used inside a unit.
-  const subPart = `(?:${subSup}|[1-9][0-9]*)`;
-  // One "unit": a run of elements/brackets, then any trailing subscripts.
-  const unit = `(?:(?:${element}|[()\\[\\]])+(?:${subPart})*)`;
-  // The head must look like a formula and not prose: either ≥2 element/bracket units, or a single
-  // element carrying a subscript/superscript (e.g. "H₂"). A lone bare element, or a single element
-  // with only an inline digit (e.g. "B12" in prose), is intentionally not enough.
-  const head = `(?:(?:${unit}){2,}|(?:${element}|[()\\[\\]])+${subSup})`;
-  // An optional ionic charge sign. The lookahead (not followed by a letter/digit) keeps it from
-  // grabbing an ordinary hyphen inside a word like "CO-op", while still allowing "K+", "…F₃-.K+".
-  const charge = "(?:[+-](?![A-Za-z0-9]))?";
-  // Salt/hydrate separator: a spaced dot ("·"/"•"/"‧"/"∙"/"⋅"/"・"/"･"/"*"), OR a tight "." that is
-  // immediately followed by a component (so it ignores sentence periods and decimal points). The
-  // several dot code points cover the visually identical characters different data sources emit.
-  const separator = "(?:\\s*[·•‧∙⋅・･*]\\s*|\\.(?=[A-Za-z(\\[]))";
-  // A leading coefficient after a separator: a sub/sup number, an integer or fraction (e.g. "12",
-  // "1/2"), or a variable hydrate count (x/n).
-  const coefficient = `(?:${subSup}|[1-9][0-9]*(?:/[1-9][0-9]*)?|[xn])`;
-
   // A lone element (e.g. "Na", "K+") is a valid formula, but only when it is the entire trimmed
   // input — anchoring keeps a bare symbol from being pulled out of prose (e.g. "I" from "I love …").
   const trimmed = text.trim();
-  if (new RegExp(`^${element}${charge}$`).test(trimmed)) {
+  if (new RegExp(`^${FORMULA_ELEMENT_PATTERN}(?:[+-])?$`).test(trimmed)) {
     return trimmed;
   }
 
-  // The whole formula: the head (+optional charge), then any number of
-  // "separator coefficient? units (+optional charge)" salt/hydrate components.
-  const pattern = new RegExp(
-    `((?![^<>]*>)${head}${charge}(?:${separator}(?:${coefficient})?${unit}+${charge})*)`,
-  );
-
-  const match = text.match(pattern);
-  if (!match) {
+  // Collect every candidate and keep the most likely one, so a real formula isn't shadowed by a
+  // two-letter coincidence earlier in the text (e.g. "IN"/"CS" inside "EINECS 243-669-6").
+  const best = pickBestFormula([...text.matchAll(buildFormulaPattern(subSup))].map((m) => m[0]));
+  if (best === undefined) {
     return;
   }
-  return match[0]
+  return best
     .replace(/<sub>(\d+)<\/sub>/g, (_match, p1) => subscript(p1 || ""))
     .replace(/<sup>(\d+)<\/sup>/g, (_match, p1) => superscript(p1 || ""))
     .replace(/\\u208[0-9](?:\\u208[0-9])*/g, (match) => subscriptGlyph(match))
@@ -227,38 +205,14 @@ export const findFormulaInText = (text: string): string | undefined => {
  * @source
  */
 export const findFormulaInHtml = (html: string): string | undefined => {
-  // Valid element symbols. Gates the match so prose isn't read as a formula.
-  const element =
-    "(?:H[eogsf]?|L[iavru]|B[eahkri]?|C[arofmusenld]?|N[eiahopdb]?|O[sg]?|F[rle]?|M[godtcn]|A[lrsgutmc]|S[icerngmb]?|P[uabotmrd]?|Kr?|T[icebmsalh]|V|Z[nr]|G[ade]|R[buhenagf]|Yb?|I[nr]?|Xe|E[urs]|D[ysb]|W|U)";
-  // A <sub>/<sup>-tagged subscript, and the looser "tagged or inline" subscript.
+  // Collect every candidate and keep the most likely one (see findFormulaInText). The subscript
+  // token here is the HTML-only `<sub>`/`<sup>` tag; the rest of the grammar is shared.
   const taggedSub = "<su[bp]>[1-9][0-9]*</su[bp]>";
-  const subPart = `(?:${taggedSub}|[1-9][0-9]*)`;
-  // One "unit": a run of elements/brackets, then any trailing subscripts.
-  const unit = `(?:(?:${element}|[()\\[\\]])+(?:${subPart})*)`;
-  // The head must look like a formula and not prose: either ≥2 element/bracket units, or a single
-  // element carrying a *tagged* subscript (e.g. "H<sub>2</sub>"). A lone bare element, or a single
-  // element with only an inline digit (e.g. "B12" in prose), is intentionally not enough — those
-  // clean cases are handled by isMoleForm upstream.
-  const head = `(?:(?:${unit}){2,}|(?:${element}|[()\\[\\]])+${taggedSub})`;
-  // An optional ionic charge sign. The lookahead (not followed by a letter/digit) keeps it from
-  // grabbing an ordinary hyphen inside a word like "CO-op", while still allowing "K+", "…F₃-.K+".
-  const charge = "(?:[+-](?![A-Za-z0-9]))?";
-  // Salt/hydrate separator: a spaced "·"/"•"/"*", OR a tight "." that is immediately followed by
-  // a component (so it ignores sentence periods and decimal points).
-  const separator = "(?:\\s*[·•*]\\s*|\\.(?=[A-Za-z(\\[]))";
-  // A leading coefficient after a separator: a <sub>number</sub>, an integer or fraction (e.g.
-  // "12", "1/2"), or a variable hydrate count (x/n).
-  const coefficient = "(?:<su[bp]>[1-9][0-9]*</su[bp]>|[1-9][0-9]*(?:/[1-9][0-9]*)?|[xn])";
-  // The whole formula: the head (+optional charge), then any number of
-  // "separator coefficient? units (+optional charge)" salt/hydrate components.
-  const pattern = new RegExp(
-    `((?![^<>]*>)${head}${charge}(?:${separator}(?:${coefficient})?${unit}+${charge})*)`,
-  );
-  const match = html.match(pattern);
-  if (!match) {
+  const best = pickBestFormula([...html.matchAll(buildFormulaPattern(taggedSub))].map((m) => m[0]));
+  if (best === undefined) {
     return;
   }
-  return match[0]
+  return best
     .replace(/<sub>(\d+)<\/sub>/g, (_match, p1) => subscript(p1 || ""))
     .replace(/<sup>(\d+)<\/sup>/g, (_match, p1) => superscript(p1 || ""));
 };
@@ -299,6 +253,36 @@ export const parsePurity = (value: string): number | void => {
 
   const purity = Number(match[1].replace(",", "."));
   if (!Number.isNaN(purity) && purity > 0 && purity <= 100) return purity;
+};
+
+/**
+ * Extracts a purity/grade descriptor from a string, as a string. Unlike {@link parsePurity} (which
+ * returns only a numeric percentage), this keeps the qualifier — so a comparator percentage like
+ * `"≥99.8%"` or `">99%"` is preserved verbatim — and, when no valid percentage is present, falls
+ * back to a recognized chemical grade (`"ACS"`, `"HPLC"`, …) via {@link parseGrade}. Returns nothing
+ * when neither is found. Built for `ProductBuilder.setPurity`, whose Purity column shows either kind.
+ * @param value - The string to extract a purity/grade from (e.g. a product name)
+ * @returns The percentage token (e.g. `"≥99.8%"`), a grade label (e.g. `"ACS"`), or nothing
+ * @example
+ * ```typescript
+ * findPurity("Sodium Metal ≥99.8%")            // "≥99.8%"
+ * findPurity("Acetonitrile HPLC - 1 L")        // "HPLC" (no percentage, grade fallback)
+ * findPurity("Sodium, Reagent (ACS) - 500 G")  // "ACS"
+ * findPurity("Ships in 4-6 business days")     // undefined
+ * ```
+ * @source
+ */
+export const findPurity = (value: string): string | undefined => {
+  if (!value || typeof value !== "string") return;
+  // Strip HTML first so inline CSS (e.g. style="width: 100%") isn't read as a purity.
+  const clean = value.replace(/<[^>]+>/g, " ");
+  // A percentage (with optional comparator) is the most specific signal, so it wins over a grade.
+  const token = clean.replace(/\s+/g, "").match(/[<>≤≥≈]?1?\d{0,2}(?:\.\d+)?%/)?.[0];
+  const numeric = Number(token?.match(/\d+(?:\.\d+)?/)?.[0]);
+  if (token && !Number.isNaN(numeric) && numeric > 0 && numeric <= 100) {
+    return token;
+  }
+  return parseGrade(clean);
 };
 
 /**

@@ -88,7 +88,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
                 type: "product",
                 data: omit(row.original, "variants"),
               }}
-              href={row.original.url}
+              href={row.original.permalink ?? row.original.url}
             >
               {row.original.title}
             </Link>

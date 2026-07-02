@@ -196,6 +196,14 @@ describe("science helpers", () => {
       expect(findFormulaInText("vitamin B12 supplement")).toBeUndefined();
       expect(findFormulaInText("")).toBeUndefined();
     });
+
+    it("should return the most likely formula when several substrings match", () => {
+      // "EINECS" yields "IN" and "CS"; the real formula "NaOSOCH3" should win.
+      const input =
+        "Methanesulfinic acid sodium salt | A814374 | EINECS 243-669-6 | STR02097 | " +
+        "AC-1087 | Methanesulfinic acid, sodium salt (1:1) | NaOSOCH3 |";
+      expect(findFormulaInText(input)).toBe("NaOSOCH3");
+    });
   });
 
   describe("findFormulaInHtml", () => {

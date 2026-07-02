@@ -10,24 +10,10 @@ declare global {
   }
 
   interface WooCommercePriceRange {
-    /** Minimum price of the product */
-    min_price: string | null;
-    /** Maximum price of the product */
-    max_price: string | null;
-    /** ISO currency code (e.g., 'USD', 'EUR') */
-    currency_code: string | null;
-    /** Currency symbol (e.g., '$', '€') */
-    currency_symbol: string | null;
-    /** Number of decimal places for the currency */
-    currency_minor_unit: number | null;
-    /** Character used as decimal separator */
-    currency_decimal_separator: string | null;
-    /** Character used as thousands separator */
-    currency_thousand_separator: string | null;
-    /** Text to display before the price */
-    currency_prefix: string | null;
-    /** Text to display after the price */
-    currency_suffix: string | null;
+    /** Minimum price in the range, in the currency's minor unit (e.g. cents) */
+    min_amount?: string;
+    /** Maximum price in the range, in the currency's minor unit (e.g. cents) */
+    max_amount?: string;
   }
   /**
    * Search response from WooCommerce API
@@ -231,6 +217,95 @@ declare global {
     /** Variation identifier */
     variation: string;
   }
+
+  type WooCommerceProductSearchParams = {
+    // dev/wp-json-calls/products-args.json
+
+    /** Scope under which the request is made; determines fields present in response. */
+    context?: "view" | "edit" | "embed";
+    /** Current page of the collection. */
+    page?: number;
+    /** Maximum number of items to be returned in result set. */
+    per_page?: number;
+    /** Limit results to those matching a string. */
+    search?: string;
+    /** Limit result set to products with specific slug(s). Use commas to separate. */
+    slug?: string;
+    /** Limit response to resources published after a given ISO8601 compliant date. */
+    after?: string;
+    /** Limit response to resources published before a given ISO8601 compliant date. */
+    before?: string;
+    /** Column to use for ordering results. */
+    date_column?: "date" | "date_gmt" | "modified" | "modified_gmt";
+    /** Exclude products with specific IDs. */
+    exclude?: number[];
+    /** Include products with specific IDs. */
+    include?: number[];
+    /** Offset the result set by a specific number of items. */
+    offset?: number;
+    /** Order sort attribute ascending or descending. */
+    order?: "asc" | "desc";
+    /** Sort collection by object attribute. */
+    orderby?:
+      | "date"
+      | "modified"
+      | "id"
+      | "include"
+      | "title"
+      | "slug"
+      | "price"
+      | "popularity"
+      | "rating"
+      | "menu_order"
+      | "comment_count";
+    /** Limit result set to products with specific parent IDs. */
+    parent?: number[];
+    /** Exclude products with specific parent IDs. */
+    parent_exclude?: number[];
+    /** Limit result set to products with specific type. */
+    type?: "simple" | "variable" | "grouped" | "external" | "variation";
+    /** Limit result set to products with specific SKU. */
+    sku?: string;
+    /** Limit result set to featured products. */
+    featured?: boolean;
+    /** Limit result set to products with specific category. */
+    category?: string;
+    /** Operator to use for category filtering. */
+    category_operator?: "in" | "not_in" | "and";
+    /** Limit result set to products with specific brand. */
+    brand?: string;
+    /** Operator to use for brand filtering. */
+    brand_operator?: "in" | "not_in" | "and";
+    /** Limit result set to products with specific tag. */
+    tag?: string;
+    /** Operator to use for tag filtering. */
+    tag_operator?: "in" | "not_in" | "and";
+    on_sale?: boolean;
+    /** Limit result set to products with minimum price. */
+    min_price?: string;
+    /** Limit result set to products with maximum price. */
+    max_price?: string;
+    stock_status?: Array<"instock" | "outofstock" | "onbackorder">;
+    /** Limit result set to products with specific attributes. */
+    attributes?: {
+      /** Attribute name. */
+      attribute: string;
+      /** Term ID. */
+      term_id: number;
+      /** Limit result set to products with specific slug. */
+      slug?: string[];
+      /** Operator to use for attribute filtering. */
+      operator?: "in" | "not_in" | "and";
+    }[];
+    /** Relation between attributes. */
+    attribute_relation?: "and" | "in";
+    /** Catalog visibility. */
+    catalog_visibility?: "any" | "visible" | "catalog" | "search" | "hidden";
+    /** Limit result set to products with specific rating. */
+    rating?: Array<1 | 2 | 3 | 4 | 5>;
+    /** Limit result set to products with specific related ID. */
+    related?: number;
+  };
 }
 
 // This export is needed to make the file a module
