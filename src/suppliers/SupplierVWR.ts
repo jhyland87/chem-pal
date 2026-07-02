@@ -233,6 +233,9 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
       params: {
         /* eslint-disable @typescript-eslint/naming-convention */
         fields: "FULL",
+        // Search via formula: chemical_formula_adv=Na2SO3
+        // Search via CAS: cas_number=7757-83-7
+        // Search via Keyword: keyword=sodium
         query: `chemical_name=${query}`,
         pageSize: 10,
         currentPage: page,
@@ -418,7 +421,13 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
         path: this.paths.canonicalUrl,
         host: this.apiURL,
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        params: { pageType: "product", id: baseProduct, lang: "en_US", curr: "USD", newStorefront: true },
+        params: {
+          pageType: "product",
+          id: baseProduct,
+          lang: "en_US",
+          curr: "USD",
+          newStorefront: true,
+        },
       });
       if (!response) {
         return undefined;

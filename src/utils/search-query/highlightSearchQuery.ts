@@ -1,3 +1,4 @@
+import { detectTermType } from "./detectTermType";
 import { extractAllPositiveTerms } from "./extractPositiveTerms";
 import { hasAdvancedSyntax, OPERATOR_WORDS, parseSearchQuery } from "./parseSearchQuery";
 
@@ -166,13 +167,29 @@ export function tokenizeWithSpans(input: string): HighlightToken[] {
  * ```
  * @source
  */
-function renderToken(token: HighlightToken): string {
+function renderToken(token: HighlightToken, advanced: boolean): string {
   const text = escapeHtml(token.text);
   if (token.kind === "whitespace") return text;
 
-  const classes = [`hl-${token.kind}`];
+  // A quoted phrase is colored exactly like the equivalent bare term — the
+  // quotes only affect parsing, not the term's type — so both use `hl-term`.
+  const isTermLike = token.kind === "term" || token.kind === "quoted";
+  const classes = [isTermLike ? "hl-term" : `hl-${token.kind}`];
   if (token.kind === "paren" && token.depth !== undefined) {
     classes.push(`hl-paren-${token.depth}`);
+  }
+  // Tint a term by what it looks like — CAS, SMILES, or formula. Detection runs
+  // on the inner text of a quoted token.
+  if (isTermLike) {
+    const inner = token.kind === "quoted" ? token.text.replace(/^"|"$/g, "") : token.text;
+    const termType = detectTermType(inner);
+    if (termType !== "string") {
+      classes.push(`hl-term-${termType}`);
+    } else if (advanced) {
+      // A plain-string term gets its own color, but only inside an advanced
+      // query (a lone plain search stays uncolored).
+      classes.push("hl-term-string");
+    }
   }
   if (token.error) classes.push("hl-error");
 
@@ -199,9 +216,10 @@ function renderToken(token: HighlightToken): string {
  */
 export function highlightSearchQuery(input: string): HighlightResult {
   const tokens = tokenizeWithSpans(input);
-  const html = tokens.map(renderToken).join("");
+  const advanced = hasAdvancedSyntax(input);
+  const html = tokens.map((token) => renderToken(token, advanced)).join("");
 
-  if (!hasAdvancedSyntax(input)) {
+  if (!advanced) {
     return { html, state: "plain" };
   }
 

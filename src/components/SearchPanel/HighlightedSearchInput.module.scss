@@ -63,8 +63,11 @@
 // the transparent <input> underneath.
 :global {
   .hl-keyword,
-  .hl-quoted,
   .hl-error,
+  .hl-term-cas,
+  .hl-term-smiles,
+  .hl-term-formula,
+  .hl-term-string,
   .hl-paren-0,
   .hl-paren-1,
   .hl-paren-2,
@@ -83,14 +86,30 @@
     background-color: rgb(203 166 247 / 20%);
     font-weight: 600;
   }
-  .hl-quoted {
-    color: #a6e3a1; // green
-    background-color: rgb(166 227 161 / 18%);
-  }
   .hl-error {
     color: #f38ba8; // red
     background-color: rgb(243 139 168 / 20%);
     text-decoration: underline wavy #f38ba8;
+  }
+
+  // Detected term types (defined after `.hl-term` so they win the text color).
+  // Text is a darker shade of each hue for readability; backgrounds stay light.
+  .hl-term-cas {
+    color: #3f9ad0; // sapphire (darker)
+    background-color: rgb(116 199 236 / 18%);
+  }
+  .hl-term-smiles {
+    color: #56c3b1; // teal (darker)
+    background-color: rgb(148 226 213 / 18%);
+  }
+  .hl-term-formula {
+    color: #8593f4; // lavender (darker)
+    background-color: rgb(180 190 254 / 18%);
+  }
+  // Plain-string terms in an advanced query get their own (maroon) color.
+  .hl-term-string {
+    color: #d97e90; // maroon (darker)
+    background-color: rgb(235 160 172 / 16%);
   }
 
   // Rainbow parentheses by nesting depth (matched pairs share a depth → same color).
@@ -121,14 +140,26 @@
       color: #8839ef; // mauve
       background-color: rgb(136 57 239 / 13%);
     }
-    .hl-quoted {
-      color: #40a02b; // green
-      background-color: rgb(64 160 43 / 14%);
-    }
     .hl-error {
       color: #d20f39; // red
       background-color: rgb(210 15 57 / 12%);
       text-decoration: underline wavy #d20f39;
+    }
+    .hl-term-cas {
+      color: #187e90; // sapphire (darker)
+      background-color: rgb(32 159 181 / 13%);
+    }
+    .hl-term-smiles {
+      color: #10767c; // teal (darker)
+      background-color: rgb(23 146 153 / 13%);
+    }
+    .hl-term-formula {
+      color: #5568e0; // lavender (darker)
+      background-color: rgb(114 135 253 / 13%);
+    }
+    .hl-term-string {
+      color: #c23a49; // maroon (darker)
+      background-color: rgb(230 69 83 / 12%);
     }
     .hl-paren-0 {
       color: #179299; // teal
