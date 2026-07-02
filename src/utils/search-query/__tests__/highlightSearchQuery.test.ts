@@ -92,13 +92,42 @@ describe("highlightSearchQuery", () => {
   it("wraps tokens in themed spans", () => {
     const html = highlightSearchQuery("a AND b").html;
     expect(html).toContain('<span class="hl-keyword">AND</span>');
-    expect(html).toContain('<span class="hl-term">a</span>');
+    // Plain-string terms in an advanced query carry the string color class.
+    expect(html).toContain('<span class="hl-term hl-term-string">a</span>');
   });
 
   it("colors parens by depth", () => {
     const html = highlightSearchQuery("(a AND (b OR c))").html;
     expect(html).toContain("hl-paren-0");
     expect(html).toContain("hl-paren-1");
+  });
+
+  it("tints a term by detected type (CAS / formula) for a plain query", () => {
+    expect(highlightSearchQuery("7647-14-5").html).toContain('hl-term hl-term-cas');
+    expect(highlightSearchQuery("NaOH").html).toContain('hl-term hl-term-formula');
+    // A plain word carries no type class.
+    expect(highlightSearchQuery("acetone").html).toBe('<span class="hl-term">acetone</span>');
+  });
+
+  it("tints term types inside an advanced query and its quoted phrases", () => {
+    const html = highlightSearchQuery("NaOH OR 7647-14-5").html;
+    expect(html).toContain("hl-term-formula");
+    expect(html).toContain("hl-term-cas");
+    expect(highlightSearchQuery('"O=C=O"').html).toContain("hl-term-smiles");
+  });
+
+  it("colors plain-string terms only inside an advanced query", () => {
+    // Plain query: a bare string stays uncolored.
+    expect(highlightSearchQuery("foo").html).not.toContain("hl-term-string");
+    // Advanced query: string terms get the string color.
+    expect(highlightSearchQuery("foo OR bar").html).toContain("hl-term-string");
+  });
+
+  it("colors a quoted string the same as an unquoted term (no separate quoted color)", () => {
+    const html = highlightSearchQuery('"sodium chloride" OR NaCl').html;
+    // The quoted phrase is a string term → string color, rendered as hl-term (not hl-quoted).
+    expect(html).toContain('<span class="hl-term hl-term-string">&quot;sodium chloride&quot;</span>');
+    expect(html).not.toContain("hl-quoted");
   });
 
   it("escapes HTML in the query and round-trips the text", () => {
