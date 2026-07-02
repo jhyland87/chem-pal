@@ -7,13 +7,6 @@ import { isSearchResponse } from "@/utils/typeGuards/woocommerce";
 import { SupplierBase } from "./SupplierBase";
 
 /**
- * Chunk size for the batched variant-detail fetch. The WooCommerce Store API
- * caps `per_page` at 100, so variant IDs are requested (via `include`) in
- * groups of at most this many.
- */
-const VARIANT_BATCH_SIZE = 100;
-
-/**
  * Base class for WooCommerce-based suppliers that provides common functionality for
  * interacting with WooCommerce REST API endpoints.
  *
@@ -50,8 +43,7 @@ const VARIANT_BATCH_SIZE = 100;
  * }
  * ```
  *
- * @see https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/products.md
- * @see https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/products.md#list-products
+ * @see https://github.com/woocommerce/woocommerce/blob/trunk/docs/apis/store-api/resources-endpoints/products.md
  * @source
  */
 export abstract class SupplierBaseWoocommerce
@@ -75,6 +67,14 @@ export abstract class SupplierBaseWoocommerce
    * @source
    */
   protected apiKey: string = "";
+
+  /**
+   * The maximum number of objects to fetch in a single request.
+   * This is used to limit the number of objects fetched in a single request
+   * to avoid overwhelming the API.
+   * @source
+   */
+  public readonly fetchObjectSizeLimit: number = 100;
 
   /**
    * The default product search filters to use for the WooCommerce API.
@@ -144,7 +144,7 @@ export abstract class SupplierBaseWoocommerce
    * permalink, description, sku) fetched in bulk. Rather than one request per
    * variant, all variant IDs across all builders are gathered and requested
    * from the Store API's `include` endpoint in batches of
-   * {@link VARIANT_BATCH_SIZE}, then mapped back onto each variant by ID.
+   * {@link fetchObjectSizeLimit}, then mapped back onto each variant by ID.
    * Variants whose detail data isn't returned are dropped. Mutates the builders
    * in place.
    * @param builders - The product builders whose variants should be enriched
@@ -211,7 +211,7 @@ export abstract class SupplierBaseWoocommerce
   /**
    * Fetches variant detail data in bulk from the Store API's collection
    * endpoint, requesting IDs via `include` in batches of
-   * {@link VARIANT_BATCH_SIZE} (the API's `per_page` ceiling). IDs are
+   * {@link fetchObjectSizeLimit} (the API's `per_page` ceiling). IDs are
    * de-duplicated first so a variant shared across products is fetched once.
    * Batches that come back invalid are logged and skipped rather than failing
    * the whole search.
@@ -230,12 +230,16 @@ export abstract class SupplierBaseWoocommerce
     const uniqueIds = [...new Set(variantIds)];
     const variantData = new Map<number, WooCommerceSearchResponseItem>();
 
-    for (let offset = 0; offset < uniqueIds.length; offset += VARIANT_BATCH_SIZE) {
-      const chunk = uniqueIds.slice(offset, offset + VARIANT_BATCH_SIZE);
+    for (let offset = 0; offset < uniqueIds.length; offset += this.fetchObjectSizeLimit) {
+      const chunk = uniqueIds.slice(offset, offset + this.fetchObjectSizeLimit);
       const response = await this.httpGetJson({
         path: `/wp-json/wc/store/v1/products`,
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        params: { per_page: VARIANT_BATCH_SIZE, type: "variation", include: chunk.join(",") },
+        params: {
+          per_page: this.fetchObjectSizeLimit,
+          type: "variation",
+          include: chunk.join(","),
+        },
       });
 
       if (!isSearchResponse(response)) {
@@ -443,7 +447,9 @@ export abstract class SupplierBaseWoocommerce
       // Suppliers bake purity into the product name as a percentage (e.g.
       // "… ≥99.8%") or a grade (e.g. "ACS"/"HPLC"); findPurity captures either.
       // Try the name first, then fall back to the descriptions.
-      builder.setPurity(firstMap(findPurity, [item.name, item.description, item.short_description]));
+      builder.setPurity(
+        firstMap(findPurity, [item.name, item.description, item.short_description]),
+      );
 
       const toParseForQuantity = [
         item.name,

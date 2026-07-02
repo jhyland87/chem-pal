@@ -261,7 +261,7 @@ export async function suggestAlternativeSearch(
 
 /**
  * Gets the PubChem ID from the links in the document.
- * @param document - The document to search for PubChem links
+ * @param doc - The document to search for PubChem links
  * @returns The PubChem ID, or undefined if not found
  * @example
  * ```typescript

@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /**
  * @group Constants
- * @groupDescription Amaris Chemical Solutions product categories.
  * @source
  */
-
 export enum ProductCategory {
   ACCELERATORS_RETARDERS = 7330,
   /** Acidulants are food-grade acids used to enhance flavor, regulate pH, and act as preservatives in food and beverage products. Common types include citric acid (from citrus), malic acid (found in apples), tartaric acid (from grapes), and phosphoric acid (used in sodas). These additives provide a tangy or sour taste in candies, soft drinks, jams, and dairy products while also inhibiting microbial growth to extend shelf life. Natural acidulants, like those derived from fruits, align with clean-label trends, while synthetic variants ensure cost-effective production. As versatile and essential ingredients, acidulants help achieve the desired taste, safety, and stability in a wide range of culinary and industrial applications. */
@@ -192,9 +190,9 @@ export enum ProductCategory {
   /** Solvents (Cleaning) are powerful liquid agents designed to dissolve and remove tough residues like grease, oil, adhesives, and stains. They work by breaking down chemical bonds in dirt, making it easy to wipe or rinse away. Common types include alcohols (e.g., isopropyl alcohol), acetone, and eco-friendly options like citrus-based solvents. Ideal for degreasers, paint thinners, and industrial cleaners, solvents act quickly and evaporate without residue. However, some require careful handling due to flammability or fumes. Modern formulations prioritize low toxicity and biodegradability for safer, sustainable cleaning. */
   SOLVENTS_CLEANING = 177,
   /** Laboratory solvents are high-purity liquids used to dissolve, dilute, extract, or purify substances in chemical, biological, and industrial applications. They play a critical role in experiments, chromatography, synthesis, and sample preparation while ensuring safety and reproducibility. */
-  SOLVENTSLAB = 2070,
-  SOLVENTSPAINT = 198,
-  SOLVENTSPHARMACEUTICAL = 136,
+  SOLVENTS_LAB = 2070,
+  SOLVENTS_PAINT = 198,
+  SOLVENTS_PHARMACEUTICAL = 136,
   /** Specialized scientific instruments are advanced, high-precision tools designed for specific research, diagnostic, or industrial applications. These devices enable complex analyses, measurements, and experimental procedures that standard lab equipment cannot perform.Used in pharmaceuticals, nanotechnology, forensics, environmental science, and clinical diagnostics for drug development, material research, and quality control */
   SPECIALIZED_SCIENTIFIC_INSTRUMENTS = 5653,
   SPECIALTY_AND_FINE_CHEMICALS = 179,
@@ -207,10 +205,10 @@ export enum ProductCategory {
   /** Stabilizers (UV, Heat) are additives that protect plastics from sun and heat damage. UV stabilizers (like hindered amines) prevent sunlight-induced fading and cracking, while heat stabilizers (e.g., organotin) maintain integrity during high-temperature processing. Essential for outdoor products (pipes, car parts) and packaging, they extend plastic lifespan under harsh conditions. */
   STABILIZERS_UV_HEAT = 107,
   /** Surfactants (Cleaning) are specialized compounds that form the backbone of most cleaning products, from household detergents to industrial degreasers. These versatile molecules act as nature’s perfect mediators between water and oil – their unique structure features a water-attracting (hydrophilic) head and an oil-attracting (hydrophobic) tail. This dual nature allows surfactants to surround and emulsify grease, dirt, and stains, suspending them in water for easy removal. Whether in your laundry detergent, dish soap, or all-purpose cleaner, surfactants work tirelessly to break down stubborn grime, leaving surfaces clean and residue-free. Their intelligent molecular design makes them indispensable for effective cleaning across countless applications while meeting today’s demands for both performance and environmental responsibility. */
-  SURFACTANTSCLEANING = 173,
+  SURFACTANTS_CLEANING = 173,
   /** Surfactants (Surface-Active Agents) are key ingredients in cosmetics and personal care products, primarily used for their cleansing, foaming, and emulsifying properties. They work by reducing surface tension between water and oils, allowing dirt and sebum to be lifted away from skin and hair. */
-  SURFACTANTSCOSMETIC = 114,
-  SURFACTANTSOIL = 155,
+  SURFACTANTS_COSMETIC = 114,
+  SURFACTANTS_OIL = 155,
   /** Some, like high-fructose corn syrup (HFCS), are processed from natural sources but linked to health concerns. Sweeteners help reduce sugar intake, manage diabetes, and lower calorie content in products like diet sodas, sugar-free snacks, and baked goods. However, debates exist over their long-term health effects, including metabolic impacts and gut health. */
   SWEETENERS = 145,
   TEXTILE_CHEMICALS = 158,

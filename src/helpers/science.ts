@@ -413,7 +413,7 @@ const MOLAR_MASS_LABELED = new RegExp(
  * ```
  * @source
  */
-const parseLocalizedNumber = (raw: string): number => {
+export const parseLocalizedNumber = (raw: string): number => {
   const commaCount = (raw.match(/,/g) ?? []).length;
   const dotCount = (raw.match(/\./g) ?? []).length;
   // Both separators present: the last-occurring one is the decimal, the other groups thousands.
