@@ -128,7 +128,7 @@ export class SupplierAmarisChemicalSolutions extends SupplierBaseWoocommerce imp
       ACSProductCategory.SOLVENTS_PAINT,
       ACSProductCategory.SOLVENTS_PHARMACEUTICAL,
       ACSProductCategory.SPECIALTY_AND_FINE_CHEMICALS,
-      ACSProductCategory.SURFACTANTSCLEANING,
+      ACSProductCategory.SURFACTANTS_CLEANING,
       ACSProductCategory.TEXTILE_CHEMICALS,
       ACSProductCategory.THICKENERS,
       ACSProductCategory.TOPICAL_STEROIDS,
