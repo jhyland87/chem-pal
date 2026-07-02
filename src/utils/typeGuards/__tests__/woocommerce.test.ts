@@ -36,6 +36,22 @@ describe("WooCommerce TypeGuards", () => {
       expect(isSearchResponseItem(validItem)).toBe(true);
     });
 
+    it("should accept a variable product whose prices include a price_range", () => {
+      // The Store API returns price_range as { min_amount, max_amount } for
+      // variable/grouped products (as Carolina Chemical does). This shape must
+      // validate — previously the schema required min_price/max_price and
+      // rejected the entire search response.
+      const withPriceRange = {
+        ...validItem,
+        type: "variable",
+        prices: {
+          ...validItem.prices,
+          price_range: { min_amount: "2900", max_amount: "10750" },
+        },
+      };
+      expect(isSearchResponseItem(withPriceRange)).toBe(true);
+    });
+
     it("should return false for null", () => {
       expect(isSearchResponseItem(null)).toBe(false);
     });

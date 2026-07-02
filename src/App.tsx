@@ -431,10 +431,10 @@ function App() {
     dispatch({ type: APP_ACTION.SET_DRAWER_TAB, tab });
   };
 
-  const handleToggleDrawer = () => {
+  const handleToggleDrawer = (tab: DRAWER_INDEX = DRAWER_INDEX.SEARCH) => {
     dispatch({
       type: APP_ACTION.SET_DRAWER_TAB,
-      tab: appState.drawerTab === DRAWER_INDEX.CLOSED ? DRAWER_INDEX.SEARCH : DRAWER_INDEX.CLOSED,
+      tab: appState.drawerTab === DRAWER_INDEX.CLOSED ? tab : DRAWER_INDEX.CLOSED,
     });
   };
 

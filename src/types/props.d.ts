@@ -137,8 +137,8 @@ declare global {
     setPanel?: (panel: number) => void;
     /** Function to update drawer tab */
     setDrawerTab: (tab: number) => void;
-    /** Function to toggle drawer */
-    toggleDrawer: () => void;
+    /** Function to toggle drawer. Opens to the given tab (defaults to the search tab) when closed. */
+    toggleDrawer: (tab?: number) => void;
     /** Drawer state management - -1 = closed, 0 = search tab, 1 = history tab, 2 = settings tab */
     drawerTab?: number;
     /** Selected Suppliers */

@@ -47,8 +47,17 @@ describe("ProductBuilder setPurity", () => {
     expect(await buildWithPurity("≥ 99.9 % trace")).toMatchObject({ purity: "≥99.9%" });
   });
 
-  it("ignores a string with no percentage", async () => {
-    expect(await buildWithPurity("ACS reagent")).not.toHaveProperty("purity");
+  it("falls back to a recognized grade when there is no percentage", async () => {
+    expect(await buildWithPurity("ACS reagent")).toMatchObject({ purity: "ACS" });
+    expect(await buildWithPurity("Acetonitrile HPLC - 1 L")).toMatchObject({ purity: "HPLC" });
+  });
+
+  it("keeps a bare comparator percentage string", async () => {
+    expect(await buildWithPurity(">99%")).toMatchObject({ purity: ">99%" });
+  });
+
+  it("ignores a string with neither a percentage nor a grade", async () => {
+    expect(await buildWithPurity("Ships in 3 days")).not.toHaveProperty("purity");
   });
 
   it("ignores an out-of-range percentage", async () => {

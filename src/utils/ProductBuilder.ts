@@ -2,7 +2,7 @@ import { AVAILABILITY } from "@/constants/common";
 import { findCAS } from "@/helpers/cas";
 import { parsePrice, toUSD } from "@/helpers/currency";
 import { parseQuantity, toBaseQuantity } from "@/helpers/quantity";
-import { findFormulaInHtml } from "@/helpers/science";
+import { findFormulaInHtml, findPurity } from "@/helpers/science";
 import { htmlToAscii, isMoleForm } from "@/helpers/utils";
 import { Logger } from "@/utils/Logger";
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
@@ -1362,19 +1362,21 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
-   * Sets the purity for the product, stored as a percentage string. A number in the `(0, 100]`
-   * range is normalized to `"<n>%"`. A string is mined for just the percentage token — an optional
-   * comparator (`<`, `>`, `≤`, `≥`, `≈`), digits with optional decimals, and a `%` — so noisy
-   * supplier values keep only the meaningful part. Anything without a valid percentage is ignored.
-   * @param purity - The purity to set (e.g. `99`, `"≥99%"`, `"≥99.995% metals basis"`), or any value (invalid input is ignored)
+   * Sets the purity for the product, stored as a string. A number in the `(0, 100]` range is
+   * normalized to `"<n>%"`. A string is resolved via {@link findPurity}: a percentage token (with an
+   * optional comparator `<`, `>`, `≤`, `≥`, `≈`) is kept when present, otherwise a recognized
+   * chemical grade (`"ACS"`, `"HPLC"`, …) is used — so purity may hold either kind of value. Input
+   * that yields neither is ignored.
+   * @param purity - The purity to set (e.g. `99`, `"≥99%"`, `"ACS reagent"`), or any value (invalid input is ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
    * builder.setPurity(98);                       // stored as "98%"
    * builder.setPurity("≥99.995% metals basis");  // stored as "≥99.995%"
-   * builder.setPurity("≥98%(HPLC)");             // stored as "≥98%"
+   * builder.setPurity("≥98%(HPLC)");             // stored as "≥98%" (percentage wins)
    * builder.setPurity("60% in Water");           // stored as "60%"
-   * builder.setPurity("ACS reagent");            // ignored
+   * builder.setPurity("ACS reagent");            // stored as "ACS" (grade fallback)
+   * builder.setPurity("Ships in 3 days");        // ignored
    * ```
    * @source
    */
@@ -1385,13 +1387,7 @@ export class ProductBuilder<T extends Product> {
         value = `${purity}%`;
       }
     } else if (typeof purity === "string") {
-      // Extract just the percentage token from a possibly-noisy value, e.g.
-      // "≥99.995% metals basis", "≥98%(HPLC)", "60% in Water".
-      const token = purity.replace(/\s+/g, "").match(/[<>≤≥≈]?1?\d{0,2}(?:\.\d+)?%/)?.[0];
-      const numeric = Number(token?.match(/\d+(?:\.\d+)?/)?.[0]);
-      if (!Number.isNaN(numeric) && numeric > 0 && numeric <= 100) {
-        value = token;
-      }
+      value = findPurity(purity);
     }
 
     if (value !== undefined) {

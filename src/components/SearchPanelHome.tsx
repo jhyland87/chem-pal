@@ -1,4 +1,4 @@
-import { CACHE, PANEL } from "@/constants/common";
+import { CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
 import { getSearchResults } from "@/utils/idbCache";
 import { cstorage } from "@/utils/storage";
 import { isTabView, openExtensionTab } from "@/utils/displayContext";
@@ -92,7 +92,7 @@ const SearchPanelHome: FC = () => {
       <SearchPanelHomeTopBar>
         {/* Settings */}
         <SearchPanelHomeSettingsButton
-          onClick={() => appContext.toggleDrawer()}
+          onClick={() => appContext.toggleDrawer(DRAWER_INDEX.SETTINGS)}
           aria-label="Open settings"
         >
           <SettingsIcon />

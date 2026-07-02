@@ -25,12 +25,13 @@ const searchItemPricesSchema = z.object({
   currency_thousand_separator: z.string(),
   currency_prefix: z.string(),
   currency_suffix: z.string(),
+  // The Store API returns price_range as { min_amount, max_amount } for
+  // variable/grouped products. Fields are optional so a partial or evolving
+  // shape can never reject the whole search response.
   price_range: z
     .object({
-      min_price: z.string(),
-      max_price: z.string(),
-      currency_code: z.string(),
-      currency_symbol: z.string(),
+      min_amount: z.string().optional(),
+      max_amount: z.string().optional(),
     })
     .nullable()
     .optional(),
