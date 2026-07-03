@@ -47,6 +47,7 @@ import isEmpty from "lodash/isEmpty";
 import {
   ComponentType,
   Dispatch,
+  Fragment,
   KeyboardEvent,
   ReactElement,
   SetStateAction,
@@ -69,6 +70,7 @@ import {
   PageSizeContainer,
   PageSizeSelect,
   PaginationContainer,
+  ProductDetailPanelCell,
   ResultsCountDisplay,
   ResultsHeaderContainer,
   SearchedQueryLabel,
@@ -80,6 +82,7 @@ import {
   SubRowTableRow,
 } from "../StyledComponents";
 import ContextMenu from "./ContextMenu";
+import { ProductDetailPanel } from "./ProductDetailPanel";
 import { useAppContext } from "./hooks/useContext";
 import { useSearch } from "./hooks/useSearch";
 import RangeColumnFilter from "./Inputs/RangeColumnFilter";
@@ -595,25 +598,40 @@ export default function ResultsTable({
             {/* Table Body */}
             <StyledTableBody>
               {table.getRowModel().rows.length > 0 ? (
-                table.getRowModel().rows.map((row) => (
-                  <SubRowTableRow
-                    key={row.id}
-                    isSubRow={row.depth > 0}
-                    onContextMenu={(e) => handleContextMenu(e, row.original)}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <StyledTableCell
-                        key={cell.id}
-                        className={resultStyles["styled-table-cell"]}
-                        style={{
-                          textAlign: cell.column.columnDef.meta?.style?.textAlign,
-                        }}
+                // Render only top-level rows. Variants still exist as sub-rows in
+                // the model (so hierarchy filtering works), but instead of
+                // rendering them as their own rows we surface them — plus the
+                // product image and detail fields — in an expanded panel below.
+                table
+                  .getRowModel()
+                  .rows.filter((row) => row.depth === 0)
+                  .map((row) => (
+                    <Fragment key={row.id}>
+                      <SubRowTableRow
+                        isSubRow={false}
+                        onContextMenu={(e) => handleContextMenu(e, row.original)}
                       >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </StyledTableCell>
-                    ))}
-                  </SubRowTableRow>
-                ))
+                        {row.getVisibleCells().map((cell) => (
+                          <StyledTableCell
+                            key={cell.id}
+                            className={resultStyles["styled-table-cell"]}
+                            style={{
+                              textAlign: cell.column.columnDef.meta?.style?.textAlign,
+                            }}
+                          >
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </StyledTableCell>
+                        ))}
+                      </SubRowTableRow>
+                      {row.getIsExpanded() && (
+                        <TableRow>
+                          <ProductDetailPanelCell colSpan={row.getVisibleCells().length}>
+                            <ProductDetailPanel row={row} table={table} />
+                          </ProductDetailPanelCell>
+                        </TableRow>
+                      )}
+                    </Fragment>
+                  ))
               ) : (
                 <TableRow className={resultStyles["styled-table-row"]}>
                   <EmptyStateCell colSpan={table.getAllColumns().length}>
