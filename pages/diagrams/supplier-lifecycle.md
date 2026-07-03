@@ -7,7 +7,22 @@ This document provides mermaid diagrams covering the supplier system architectur
 The core pipeline defined in `SupplierBase.execute()`. Every supplier follows this flow.
 
 ```mermaid
+---
+config:
+  layout: elk
+  htmlLabels: true
+  markdownAutoWrap: true
+  look: neo
+  theme: dark
+  elk:
+    mergeEdges: true
+    nodePlacementStrategy: BRANDES_KOEPF
+  flowchart:
+    curve: basis
+---
 flowchart TD
+    linkStyle default stroke-width:4px;
+
     A["execute()"] --> B["setup()"]
     B --> C["queryProductsWithCache()"]
     C -->|Cache hit| D["createFromCache()"]
@@ -134,6 +149,19 @@ classDiagram
 How each data strategy flows from search to finished product.
 
 ```mermaid
+---
+config:
+  layout: elk
+  htmlLabels: true
+  markdownAutoWrap: true
+  look: neo
+  theme: dark
+  elk:
+    mergeEdges: true
+    nodePlacementStrategy: BRANDES_KOEPF
+  flowchart:
+    curve: basis
+---
 flowchart LR
     subgraph JSON["JSON Only (16)"]
         direction TB

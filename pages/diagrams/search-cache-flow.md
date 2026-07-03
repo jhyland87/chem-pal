@@ -35,6 +35,7 @@ separate reference graph at the end.
 ```mermaid
 %%{init: {'theme': 'default', 'config': {'useMaxWidth': false}}}%%
 flowchart LR
+linkStyle default stroke-width:4px;
 classDef init fill:#4A90D9,stroke:#2C5F8A,color:#fff,font-weight:bold
 
 subgraph Init["Cache Initialization"]
@@ -51,7 +52,26 @@ class SB,IC,SC init
 ### Query Results Cache Flow
 
 ```mermaid
+---
+config:
+  layout: elk
+  htmlLabels: true
+  markdownAutoWrap: true
+  look: neo
+  theme: dark
+  elk:
+    mergeEdges: true
+    nodePlacementStrategy: BRANDES_KOEPF
+  flowchart:
+    curve: basis
+---
+%% nodePlacementStrategies: SIMPLE, NETWORK_SIMPLEX, LINEAR_SEGMENTS, BRANDES_KOEPF
+%% layouts: elk, dagre
+%% theme: default, dark, forest, neutral
+%% looks: handDrawn, classic, neo
+%% flowchart.curves: basis, bumpX, bumpY, cardinal, catmullRom, linear, monotoneX, monotoneY, natural, step, stepAfter, and stepBefore.
 flowchart TB
+linkStyle default stroke-width:4px;
 classDef init fill:#4A90D9,stroke:#2C5F8A,color:#fff,font-weight:bold
 classDef idb fill:#E67E22,stroke:#D35400,color:#fff,font-weight:bold
 classDef cacheFlow fill:#5A7D8B,stroke:#3E5A66,color:#fff
@@ -130,7 +150,21 @@ class GCK keygen
 
 
 ```mermaid
+---
+config:
+  layout: elk
+  htmlLabels: true
+  markdownAutoWrap: true
+  look: neo
+  theme: dark
+  elk:
+    mergeEdges: true
+    nodePlacementStrategy: BRANDES_KOEPF
+  flowchart:
+    curve: basis
+---
 flowchart TB
+linkStyle default stroke-width:4px;
 classDef init fill:#4A90D9,stroke:#2C5F8A,color:#fff,font-weight:bold
 classDef idb fill:#E67E22,stroke:#D35400,color:#fff,font-weight:bold
 classDef cacheFlow fill:#5A7D8B,stroke:#3E5A66,color:#fff
@@ -210,6 +244,7 @@ class GPCK keygen
 
 ```mermaid
 flowchart LR
+linkStyle default stroke-width:4px;
 classDef idb fill:#E67E22,stroke:#D35400,color:#fff,font-weight:bold
 classDef cstorage fill:#16A085,stroke:#0E6B57,color:#fff,font-weight:bold
 

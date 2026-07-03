@@ -350,6 +350,22 @@
     );
   }
 
+  // Register the ELK layout engine so diagrams with `layout: elk` in their
+  // frontmatter route the way they do in the VS Code / mermaid.live previews.
+  // ELK ships as a separate package (not in mermaid's core CDN bundle); without
+  // this, `layout: elk` silently falls back to dagre and looks different.
+  async function registerElkLayout() {
+    if (typeof mermaid.registerLayoutLoaders !== "function") return;
+    try {
+      const elk = await import(
+        "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0/dist/mermaid-layout-elk.esm.min.mjs"
+      );
+      mermaid.registerLayoutLoaders(elk.default);
+    } catch (e) {
+      console.warn("[Mermaid] ELK layout failed to load; 'layout: elk' falls back to dagre", e);
+    }
+  }
+
   // Mermaid runs one-time lazy setup on its first render(), so the first real
   // diagram is the one most likely to hit the cold-start layout race. Absorb
   // that cost on a throwaway diagram first; failures here are ignored since the
@@ -394,6 +410,7 @@
     );
     mermaid = mod.default;
     mermaid.initialize({ startOnLoad: false, securityLevel: "loose" });
+    await registerElkLayout();
 
     if (cfg.panZoom) {
       try {
