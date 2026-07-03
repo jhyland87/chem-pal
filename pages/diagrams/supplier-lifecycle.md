@@ -126,12 +126,12 @@ classDiagram
     SupplierBaseWix <|-- BioFuranChem
     SupplierBaseWix <|-- FtfScientific
 
-    SupplierBaseSearchanise <|-- HbarSci
     SupplierBaseSearchanise <|-- Laballey
 
     SupplierBaseShopify <|-- AsesChem
     SupplierBaseShopify <|-- BVV
     SupplierBaseShopify <|-- GoldAndSilverTesting
+    SupplierBaseShopify <|-- TheLabStockroom
 
     SupplierBaseWoocommerce <|-- AlchemieLabs
     SupplierBaseWoocommerce <|-- AmarisChemicalSolutions
@@ -232,14 +232,14 @@ All 25 active suppliers by platform, country, and data strategy. Display names m
 - **BioFuran Chem** - US - JSON Only
 - **FTF Scientific** - US - JSON Only
 
-### Searchanise Platform - 2 suppliers
-- **HbarSci** - US - JSON Only
+### Searchanise Platform - 1 supplier
 - **Laballey** - US - JSON Only
 
-### Shopify Platform - 3 suppliers
+### Shopify Platform - 4 suppliers
 - **AsesChem** - IN - Hybrid (GraphQL search + HTML detail scrape)
 - **BVV** - US - JSON Only
 - **Gold and Silver Testing** - US - JSON Only
+- **The Lab Stockroom** - US - JSON Only
 
 ### WooCommerce Platform - 4 suppliers
 - **Alchemie Labs** - US - JSON Only

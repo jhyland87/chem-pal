@@ -126,6 +126,7 @@ export class ProductBuilder<T extends Product> {
       sku: (v) => this.setSku(v),
       id: (v) => this.setID(v),
       uuid: (v) => this.setUUID(v),
+      cacheKey: (v) => this.setCacheKey(v),
       cas: (v) => this.setCAS(v),
       formula: (v) => this.setFormula(v),
       smiles: (v) => this.setSmiles(v),
@@ -1044,6 +1045,31 @@ export class ProductBuilder<T extends Product> {
       this.product.sku = sku;
     } else if (sku != null && this.showFailedValidation) {
       this.logger.warn("setSku| Invalid SKU value", { sku, builder: this });
+    }
+    return this;
+  }
+
+  /**
+   * Sets the stable per-product cache/exclusion identity (see
+   * {@link Product.cacheKey}). Accepts a non-empty string or a number
+   * (coerced to string, since some suppliers key on a numeric id). Invalid
+   * input is ignored.
+   * @param cacheKey - The identity string/number, or any value (invalid input is ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setCacheKey("FAM_889460");
+   * builder.setCacheKey(12345); // stored as "12345"
+   * ```
+   * @source
+   */
+  setCacheKey(cacheKey: unknown): ProductBuilder<T> {
+    if (typeof cacheKey === "string" && cacheKey.trim().length > 0) {
+      this.product.cacheKey = cacheKey;
+    } else if (typeof cacheKey === "number" && Number.isFinite(cacheKey)) {
+      this.product.cacheKey = String(cacheKey);
+    } else if (cacheKey != null && this.showFailedValidation) {
+      this.logger.warn("setCacheKey| Invalid cache key value", { cacheKey, builder: this });
     }
     return this;
   }

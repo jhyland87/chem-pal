@@ -95,6 +95,21 @@ export abstract class SupplierBaseMagento2
   protected readonly supportsNativeAdvancedSearch: boolean = true;
 
   /**
+   * Derives the unique product key from a Magento 2 product item: its GraphQL
+   * `uid` (the same value passed to `.setID`), stable across query and detail.
+   * @param data - The raw Magento 2 product item
+   * @returns The product's uid
+   * @example
+   * ```typescript
+   * this.getUniqueProductKey(item); // "Mjg1Ng=="
+   * ```
+   * @source
+   */
+  protected getUniqueProductKey(data: Magento2ProductItem): string {
+    return String(data.uid);
+  }
+
+  /**
    * Builds the GraphQL variables for the `searchProducts` query. The query text itself lives in
    * `@/queries/magento2-product-query.gql`; only the search term and page size vary per request.
    *
@@ -294,6 +309,7 @@ export abstract class SupplierBaseMagento2
         .setPricing(primaryPrice.price, primary.raw.currency, primaryPrice.currencySymbol)
         .setSku(item.sku)
         .setID(item.uid)
+        .setCacheKey(this.getUniqueProductKey(item))
         // The picture is the only new field surfaced from the GraphQL search response; the
         // remaining chemical identifiers are scraped per-supplier in getProductData.
         .setImage(item.image?.url, item.image?.label ?? undefined)

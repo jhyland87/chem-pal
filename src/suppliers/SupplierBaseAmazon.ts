@@ -35,7 +35,7 @@ export interface SearchResult {
 
 export type AmazonListing = Pick<
   Product,
-  "id" | "title" | "url" | "price" | "currencySymbol" | "availability"
+  "id" | "title" | "url" | "price" | "currencySymbol" | "availability" | "sku"
 >;
 
 const amazonDomains: CountryDomainMap = {
@@ -111,6 +111,23 @@ export abstract class SupplierBaseAmazon
   protected readonly queryPrefix?: string;
 
   /**
+   * Derives the unique product key from an Amazon listing: its `data-uuid`
+   * (parsed onto `id`), which is stable per product. Falls back to the ASIN
+   * (`sku`) and then the product URL when the uuid is absent, so the key is
+   * always non-empty.
+   * @param data - The raw Amazon listing
+   * @returns The listing's uuid, or its ASIN / product URL as a fallback
+   * @example
+   * ```typescript
+   * this.getUniqueProductKey(item); // "b8f3…-uuid"
+   * ```
+   * @source
+   */
+  protected getUniqueProductKey(data: AmazonListing): string {
+    return String(data.id ?? data.sku ?? this.href(String(data.url)));
+  }
+
+  /**
    * Queries products from Amazon
    * @param query - The query to search for
    * @param limit - The maximum number of products to return
@@ -175,13 +192,22 @@ export abstract class SupplierBaseAmazon
       if (typeof resultPage === "string") {
         const htmlWithoutSearchTerm = resultPage.replaceAll(searchTerm, "");
         const doc = createDOM(htmlWithoutSearchTerm);
-        const resultElements = doc.querySelectorAll(
-          '[data-component-type="s-search-result"][data-asin]',
+        // const resultElements = doc.querySelectorAll(
+        //   '[data-component-type="s-search-result"][data-asin]',
+        // );
+        const resultElements = Array.from(
+          doc.querySelectorAll('[data-component-type="s-search-result"][data-asin]'),
+        ).filter(
+          (li) =>
+            li instanceof HTMLElement &&
+            li.checkVisibility() &&
+            li.getAttribute("data-asin") &&
+            li.getAttribute("data-uuid"),
         );
-        return mapDefined(Array.from(resultElements), (el) => {
-          if (!el.getAttribute("data-asin")) return;
-          return this.parseSearchResult(el.outerHTML, this.baseURL);
-        });
+
+        return mapDefined(resultElements, (el) =>
+          this.parseSearchResult(el.outerHTML, this.baseURL),
+        );
       }
 
       // Old format: response is an array of ["dispatch", "data-main-slot:search-result-N", {html}]
@@ -291,15 +317,20 @@ export abstract class SupplierBaseAmazon
       this.logger.debug("listingDocument", { raw, listingDocument });
 
       const documentBody = listingDocument.body;
-
-      this.logger.debug("documentBody", { raw, documentBody });
-
-      const asin = documentBody.querySelector("[data-asin]")?.getAttribute("data-asin");
-      if (!asin) {
-        this.logger.warn("No ASIN found", { raw, documentBody });
-      } else {
-        this.logger.debug("asin", { raw, documentBody, asin });
+      const productElement = documentBody.querySelector("[data-asin]");
+      if (!productElement) {
+        this.logger.warn("No product element found", { raw, documentBody });
+        return;
       }
+      const asin = productElement.getAttribute("data-asin");
+      const productId = productElement.getAttribute("data-uuid");
+
+      if (!asin || !productId) {
+        this.logger.warn("No ASIN or product ID found", { raw, documentBody, productElement });
+        return;
+      }
+
+      this.logger.debug("documentBody", { raw, documentBody, productElement, asin, productId });
 
       const qid = this.findQID(listingDocument);
       if (!qid) {
@@ -356,12 +387,14 @@ export abstract class SupplierBaseAmazon
       }
 
       // Extracting the product ID (ASIN)
-      const productElement = documentBody.querySelector("[data-asin]");
-      const productId = productElement ? productElement.getAttribute("data-asin") : null;
+      // const productElement = documentBody.querySelector("[data-asin]");
+      // const sku = productElement ? productElement.getAttribute("data-asin") : null;
+      // const productId = productElement ? productElement.getAttribute("data-uuid") : null;
 
       this.logger.debug("matches", {
         productElement,
         productId,
+        asin,
         title,
         originalPrice,
         price,
@@ -373,6 +406,7 @@ export abstract class SupplierBaseAmazon
           productElement,
           productId,
           title,
+          asin,
           price,
           currency,
         });
@@ -389,10 +423,11 @@ export abstract class SupplierBaseAmazon
 
       return {
         id: productId,
+        sku: asin,
         availability: stockElement?.innerText.toLowerCase().includes("order soon")
           ? AVAILABILITY.LIMITED_STOCK
           : AVAILABILITY.IN_STOCK,
-        url: `${amazonBase}/dp/${productId}`,
+        url: `${amazonBase}/dp/${asin}`,
         title,
         currencySymbol: currency,
         price: Number(price),
@@ -437,7 +472,10 @@ export abstract class SupplierBaseAmazon
         .setBasicInfo(item.title, item.url, this.supplierName)
         .setPricing(item.price, getCurrencyCodeFromSymbol(item.currencySymbol), item.currencySymbol)
         .setAvailability(item.availability)
-        .setVendor("Amazon");
+        .setVendor("Amazon")
+        .setID(item.id)
+        .setSku(item.sku)
+        .setCacheKey(this.getUniqueProductKey(item));
 
       const quantity = parseQuantity(item.title);
 

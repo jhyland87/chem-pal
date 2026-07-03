@@ -6,9 +6,7 @@ import { setCookie } from "@/helpers/cookies";
 import { EmptyResponseError, HttpError } from "@/helpers/exceptions";
 import {
   countExcludedProductsForSupplier,
-  getProductExclusionKey,
   loadExcludedProductKeys,
-  shouldExcludeProduct,
 } from "@/helpers/excludedProducts";
 import { fetchDecorator, type FetchDecoratorResponse } from "@/helpers/fetch";
 import { stripQuantityFromString } from "@/helpers/quantity";
@@ -34,7 +32,9 @@ import {
   isHttpResponse,
   isJsonResponse,
   isMinimalProduct,
+  isPopulatedObject,
 } from "@/utils/typeGuards/common";
+import { isCachedProductData } from "@/utils/typeGuards/productbuilder";
 import { Queue } from "async-await-queue";
 import {
   distance,
@@ -135,6 +135,23 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * boolean predicate enforced client-side by {@link fuzzyFilterAst}.
    */
   protected readonly supportsNativeAdvancedSearch: boolean = false;
+
+  /**
+   * Opt-out flag for the per-product detail cache. Left `false` (the default),
+   * every supplier caches its per-product detail data — the safe default, since
+   * forgetting to set this just yields harmless redundant caching, never a
+   * silent cache regression.
+   *
+   * Set `true` only on a supplier that resolves every field in the initial
+   * search (a passthrough `getProductData` with no per-product fetch): for those
+   * the per-product cache saves nothing, so
+   * {@link getProductData}/{@link getProductDataWithCache}/{@link partitionForBatch}
+   * skip the product-detail cache read+write. The query cache still serves
+   * repeat searches, and {@link getUniqueProductKey} is still used for
+   * exclusions. Mark the concrete pure-search *supplier* (not a shared base
+   * class), so a base's fetching subclass keeps caching by default.
+   */
+  protected readonly skipProductDetailCache: boolean = false;
 
   /**
    * The shipping scope of the supplier. Used to determine the shipping scope
@@ -1509,6 +1526,37 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   protected abstract titleSelector(data: unknown): Maybe<string>;
 
   /**
+   * Abstract method to derive a stable, unique key for a product from its raw
+   * search-result item. Every supplier must implement it — the returned string
+   * (an id, uuid, sku, gid, or, for HTML-only sites, a scraped id or href) is
+   * combined with the supplier name (via `getProductIdentityKey`) to key
+   * both the product-detail cache and the "Ignore Product" exclusion store.
+   *
+   * The key must be derivable from the **query-phase** item so it stays stable
+   * across the query→detail transition, and must be unique per product within
+   * the supplier's catalog. Suppliers stamp it onto each builder at parse time
+   * via `ProductBuilder.setCacheKey`; the base reads the stamped value
+   * downstream.
+   *
+   * The parameter is declared `unknown` here for the same reason as
+   * {@link titleSelector}; subclasses override it with their concrete
+   * parsed search-result type (no cast needed), e.g. `MyItem` below.
+   *
+   * @param data - The raw search-result item to derive the key from
+   * @returns A non-empty string uniquely identifying the product
+   * @abstract
+   * @example
+   * ```typescript
+   * // JSON API supplier:
+   * protected getUniqueProductKey(data: MyItem): string {
+   *   return String(data.id);
+   * }
+   * ```
+   * @source
+   */
+  protected abstract getUniqueProductKey(data: unknown): string;
+
+  /**
    * Makes an HTTP GET request and returns the response as a string.
    * Handles request configuration, error handling, and HTML parsing.
    *
@@ -1836,23 +1884,15 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
         return;
       }
       // Drop any products the user has ignored, then slice back down to the
-      // user-visible limit. Uses the same key shape as getProductData so
-      // whichever side catches the exclusion first, the check is consistent.
+      // user-visible limit. Uses the same dual-read (identity + legacy URL) as
+      // getProductData/partitionForBatch so the check is consistent wherever it
+      // fires first.
       const survivors: ProductBuilder<T>[] = [];
       for (const builder of results) {
         if (survivors.length >= this.limit) break;
-        const rawUrl = builder.get("url");
-        if (typeof rawUrl !== "string") {
-          survivors.push(builder);
-          continue;
-        }
-        const exclusionUrl = this.href(rawUrl);
-        const exclusionKey = getProductExclusionKey(exclusionUrl, this.supplierName);
-        if (this.excludedProductKeys.has(exclusionKey)) {
+        if (this.isExcluded(builder)) {
           this.logger.debug("Skipping excluded product (pre-detail)", {
-            url: rawUrl,
-            exclusionUrl,
-            exclusionKey,
+            url: builder.get("url"),
           });
           continue;
         }
@@ -2064,6 +2104,18 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       return;
     }
 
+    // Dev guard: every builder should carry a stamped `cacheKey` (set at parse
+    // time via `setCacheKey(getUniqueProductKey(item))`). A missing key means a
+    // supplier implemented `getUniqueProductKey` but forgot to stamp — it would
+    // silently disable per-product caching and precise exclusion for that
+    // product. Surface it loudly in dev/tests.
+    if (IS_DEV_BUILD && product.get("cacheKey") == null) {
+      this.logger.error("finishProduct| product is missing a stamped cacheKey", {
+        supplier: this.supplierName,
+        url: product.get("url"),
+      });
+    }
+
     // Set the country and shipping scope of the supplier
     // have different restrictions on different products or countries.
     product.setSupplierCountry(this.country);
@@ -2075,6 +2127,124 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
 
     const built = await product.build();
     return built;
+  }
+
+  /**
+   * The stable per-product cache/exclusion key for a builder: the identity
+   * stamped on it at parse time ({@link getUniqueProductKey} →
+   * `setCacheKey`), hashed with the supplier name via
+   * `getProductIdentityKey`. Returns undefined when no identity was
+   * stamped (so callers can skip the identity cache/exclusion path).
+   *
+   * @param product - The product builder
+   * @returns The identity cache key, or undefined when unstamped
+   * @example
+   * ```typescript
+   * const key = this.productIdentityKey(builder); // md5({key, supplier}) or undefined
+   * ```
+   * @source
+   */
+  protected productIdentityKey(product: ProductBuilder<T>): string | undefined {
+    const identity = product.get("cacheKey");
+    if (typeof identity === "string" && identity.length > 0) {
+      return this.cache.getProductIdentityCacheKey(identity);
+    }
+    return undefined;
+  }
+
+  /**
+   * Whether a product is on the user's ignore list, matched by its identity key
+   * ({@link productIdentityKey}) — the same key the "Ignore Product" action
+   * writes.
+   *
+   * @param product - The product builder to check
+   * @returns true if the product matches an ignore-list entry
+   * @example
+   * ```typescript
+   * if (this.isExcluded(builder)) continue; // skip ignored product
+   * ```
+   * @source
+   */
+  protected isExcluded(product: ProductBuilder<T>): boolean {
+    const identityKey = this.productIdentityKey(product);
+    return identityKey !== undefined && this.excludedProductKeys.has(identityKey);
+  }
+
+  /**
+   * Partitions query-phase builders for a **batch** supplier (one that enriches
+   * details up front rather than per-product in {@link getProductData}). Runs a
+   * three-way split: **ignored** products are dropped from both results;
+   * **cache hits** (found in the product-detail cache by their stamped
+   * identity) are hydrated in place via `setData` and kept in `survivors` but
+   * excluded from `misses`; everything else is a **miss**, kept in both. The
+   * caller enriches only `misses`, then caches them, and returns `survivors`.
+   *
+   * Skips the cache lookup entirely when {@link skipProductDetailCache} is true
+   * (pure-search suppliers), so those still drop ignored products but treat
+   * every survivor as needing no enrichment.
+   *
+   * @param products - The query-phase builders (each already `setCacheKey`-stamped)
+   * @returns `{ survivors, misses }` — see above
+   * @example
+   * ```typescript
+   * const { survivors, misses } = await this.partitionForBatch(builders);
+   * await this.enrichVariants(misses);
+   * await this.cacheProductBuilders(misses);
+   * return survivors;
+   * ```
+   * @source
+   */
+  protected async partitionForBatch(
+    products: ProductBuilder<T>[],
+  ): Promise<{ survivors: ProductBuilder<T>[]; misses: ProductBuilder<T>[] }> {
+    const survivors: ProductBuilder<T>[] = [];
+    const misses: ProductBuilder<T>[] = [];
+    for (const product of products) {
+      if (this.isExcluded(product)) {
+        continue;
+      }
+      survivors.push(product);
+      if (this.skipProductDetailCache) {
+        continue;
+      }
+      const key = this.productIdentityKey(product);
+      const cached = key ? await this.cache.getCachedProductData(key) : undefined;
+      if (isCachedProductData<T>(cached)) {
+        product.setData(cached);
+      } else {
+        misses.push(product);
+      }
+    }
+    return { survivors, misses };
+  }
+
+  /**
+   * Writes each enriched builder to the product-detail cache under its stamped
+   * identity key. No-ops for suppliers with {@link skipProductDetailCache} true,
+   * for aborted searches, and for builders {@link shouldCacheProductData}
+   * rejects (e.g. a fetch that hit a `noCacheStatusCode`). Used by batch
+   * suppliers after enriching their `misses`.
+   *
+   * @param products - The enriched builders to persist
+   * @returns A promise that resolves once all writes complete
+   * @example
+   * ```typescript
+   * await this.cacheProductBuilders(misses);
+   * ```
+   * @source
+   */
+  protected async cacheProductBuilders(products: ProductBuilder<T>[]): Promise<void> {
+    if (this.skipProductDetailCache || this.controller.signal.aborted) {
+      return;
+    }
+    await Promise.all(
+      products.map(async (product) => {
+        const key = this.productIdentityKey(product);
+        if (key && this.shouldCacheProductData(product)) {
+          await this.cache.cacheProductData(key, product.dump());
+        }
+      }),
+    );
   }
 
   /**
@@ -2119,15 +2289,46 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     }
 
     if (params && Object.keys(params).length > 0) {
-      href.search = new URLSearchParams(
-        Object.entries(params).reduce<QueryParams>((acc, [key, value]) => {
-          acc[key] = String(value);
-          return acc;
-        }, {}),
-      ).toString();
+      href.search = this.buildSearchParams(params).toString();
     }
 
     return String(href);
+  }
+
+  /**
+   * Recursively serializes an object into `URLSearchParams`, encoding nested
+   * objects with bracket notation (`parent[child]=value`). Fixes the case that
+   * `new URLSearchParams(obj)` mishandles — it stringifies a nested object to
+   * `"[object Object]"` — so a params object with nested filters serializes
+   * correctly. Primitive values (and arrays, which serialize comma-joined like
+   * `URLSearchParams` does) are appended directly.
+   *
+   * @param obj - The params object to serialize
+   * @param params - The `URLSearchParams` to append into (defaults to a fresh instance)
+   * @param prefix - The key prefix used while recursing into nested objects
+   * @returns The populated `URLSearchParams`
+   * @example
+   * ```typescript
+   * this.buildSearchParams({ q: "acid", filter: { size: "500g" } }).toString();
+   * // "q=acid&filter%5Bsize%5D=500g"  (i.e. filter[size]=500g)
+   * ```
+   * @source
+   */
+  protected buildSearchParams(
+    obj: Record<string, unknown>,
+    params: URLSearchParams = new URLSearchParams(),
+    prefix: string = "",
+  ): URLSearchParams {
+    for (const [key, value] of Object.entries(obj)) {
+      // Bracket-nest the key as depth grows: parent[child][grandchild]...
+      const formKey = prefix ? `${prefix}[${key}]` : key;
+      if (isPopulatedObject(value)) {
+        this.buildSearchParams(value, params, formKey);
+      } else {
+        params.append(formKey, String(value));
+      }
+    }
+    return params;
   }
 
   /**
@@ -2153,50 +2354,40 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   protected async getProductData(product: ProductBuilder<T>): Promise<ProductBuilder<T> | void> {
     const url = product.get("url");
     if (typeof url !== "string") {
-      this.logger.error("Invalid URL in product:", { url });
+      this.logger.error("[SupplierBase > getProductData] Invalid URL in product:", { url });
       return undefined;
     }
-    // Normalize the URL the same way ProductBuilder.build() does (line 975
-    // calls `this.href(this.product.url)`) *only* for the exclusion check,
-    // so the md5 matches the absolute URL that the UI's context menu passed
-    // to addExcludedProduct. Suppliers often stage relative paths here
-    // (e.g. "/products/acetone") which would otherwise hash differently than
-    // the absolute URL stored on the built Product.
-    const exclusionUrl = this.href(url);
-    const shouldExclude = await shouldExcludeProduct(exclusionUrl, this.supplierName);
-    if (shouldExclude) {
-      this.logger.debug("Skipping excluded product", {
+    // Skip products the user has ignored (matched by identity key).
+    if (this.isExcluded(product)) {
+      this.logger.debug("[SupplierBase > getProductData] Skipping excluded product", {
         url,
-        exclusionUrl,
         supplierName: this.supplierName,
       });
       return undefined;
     }
-    const cacheKey = this.cache.getProductDataCacheKey(url);
-    this.logger.debug("[SupplierBase] Product detail cache key:", cacheKey, "for url:", url);
-    // Skip products the user has explicitly excluded via the "Ignore Product"
-    // context menu. The exclusion key mirrors getProductDataCacheKey's no-params
-    // shape, so this check catches ignored entries regardless of supplier.
-    if (this.excludedProductKeys.has(cacheKey)) {
-      this.logger.debug("Skipping excluded product", { url, cacheKey });
-      return undefined;
-    }
+    // Key the product-detail cache by the supplier's stable identity, stamped on
+    // the builder at parse time. Absent only if a supplier failed to stamp one,
+    // in which case this product simply isn't cached.
+    const cacheKey = this.productIdentityKey(product);
+    this.logger.debug("[SupplierBase > getProductData] Product detail cache key:", cacheKey, {
+      url,
+    });
     try {
-      const cachedData = await this.cache.getCachedProductData(cacheKey);
-      if (cachedData) {
-        // Safe: cache only stores values previously produced by ProductBuilder<T>.dump(),
-        // so the round-tripped shape is structurally a Partial<T>.
-        product.setData(cachedData as Partial<T>);
-        return product;
+      if (!this.skipProductDetailCache && cacheKey) {
+        const cachedData = await this.cache.getCachedProductData(cacheKey);
+        if (isCachedProductData<T>(cachedData)) {
+          product.setData(cachedData);
+          return product;
+        }
       }
-      // Cache miss: run setup (memoized) so any state subclasses rely on is
-      // ready before the fetcher reads it, then call the fetcher.
+      // Cache miss (or caching skipped): run setup (memoized) so any state
+      // subclasses rely on is ready before the fetcher reads it, then fetch.
       await this.ensureSetup();
       let resultBuilder: ProductBuilder<T> | void = undefined;
       try {
-        resultBuilder = await this.getProductDataWithCache(product, this.getProductData, {});
+        resultBuilder = await this.getProductDataWithCache(product, this.getProductData);
       } catch (err: unknown) {
-        this.logger.error("Error in product detail fetcher:", err);
+        this.logger.error("[SupplierBase > getProductData] Error in product detail fetcher:", err);
         incrementParseError(this.supplierName);
         return undefined;
       }
@@ -2204,6 +2395,8 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       // enrichment fetch was cancelled, so the result is incomplete — let a later search retry it.
       if (
         resultBuilder &&
+        cacheKey &&
+        !this.skipProductDetailCache &&
         !this.controller.signal.aborted &&
         this.shouldCacheProductData(resultBuilder)
       ) {
@@ -2211,7 +2404,10 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       }
       return resultBuilder;
     } catch (outerErr: unknown) {
-      this.logger.error("Error in getProductDataWithCache:", outerErr);
+      this.logger.error(
+        "[SupplierBase > getProductData] Error in getProductDataWithCache:",
+        outerErr,
+      );
       incrementParseError(this.supplierName);
       return undefined;
     }
@@ -2223,7 +2419,6 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    *
    * @param product - The ProductBuilder instance to get data for
    * @param fetcher - The function to use for fetching product data
-   * @param params - Optional parameters to include in the cache key
    * @returns Promise resolving to the updated ProductBuilder or void if fetch fails
    *
    * @example
@@ -2231,14 +2426,12 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * const builder = new ProductBuilder<Product>(this.baseURL);
    * builder.setBasicInfo("Acetone", "/products/acetone", "ChemSupplier");
    *
-   * // Use custom fetcher with additional params
    * const updatedBuilder = await supplier.getProductDataWithCache(
    *   builder,
    *   async (b) => {
    *     // Custom fetching logic
    *     return b;
    *   },
-   *   { version: "2.0" }
    * );
    * ```
    * @source
@@ -2246,44 +2439,49 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   protected async getProductDataWithCache(
     product: ProductBuilder<T>,
     fetcher: (builder: ProductBuilder<T>) => Promise<ProductBuilder<T> | void>,
-    params?: QueryParams,
   ): Promise<ProductBuilder<T> | void> {
     const url = product.get("url");
     if (typeof url !== "string") {
-      this.logger.error("Invalid URL in product:", { url });
+      this.logger.error("[SupplierBase > getProductDataWithCache] Invalid URL in product:", {
+        url,
+      });
       return undefined;
     }
-    // See getProductData above: normalize only for the exclusion key so it
-    // lines up with the absolute URL the UI context menu stores.
-    const exclusionUrl = this.href(url);
-    const shouldExclude = await shouldExcludeProduct(exclusionUrl, this.supplierName);
-    if (shouldExclude) {
-      this.logger.debug("Skipping excluded product", {
+    // Skip products the user has ignored (matched by identity key).
+    if (this.isExcluded(product)) {
+      this.logger.debug("[SupplierBase > getProductDataWithCache] Skipping excluded product", {
         url,
-        exclusionUrl,
         supplierName: this.supplierName,
       });
       return undefined;
     }
 
-    const cacheKey = this.cache.getProductDataCacheKey(url, params);
-    this.logger.debug("[SupplierBase] Product detail cache key:", cacheKey, "for url:", url);
+    // Key by the supplier's stable identity, stamped on the builder at parse
+    // time. Absent only if a supplier failed to stamp one, in which case this
+    // product simply isn't cached.
+    const cacheKey = this.productIdentityKey(product);
+    this.logger.debug("[SupplierBase > getProductDataWithCache] Product detail cache key:", cacheKey, {
+      url,
+    });
     try {
-      const cachedData = await this.cache.getCachedProductData(cacheKey);
-      if (cachedData) {
-        // Safe: cache only stores values previously produced by ProductBuilder<T>.dump(),
-        // so the round-tripped shape is structurally a Partial<T>.
-        product.setData(cachedData as Partial<T>);
-        return product;
+      if (!this.skipProductDetailCache && cacheKey) {
+        const cachedData = await this.cache.getCachedProductData(cacheKey);
+        if (isCachedProductData<T>(cachedData)) {
+          product.setData(cachedData);
+          return product;
+        }
       }
-      // Cache miss: run setup (memoized) so any state subclasses rely on is
-      // ready before the fetcher reads it, then call the fetcher.
+      // Cache miss (or caching skipped): run setup (memoized) so any state
+      // subclasses rely on is ready before the fetcher reads it, then fetch.
       await this.ensureSetup();
       let resultBuilder: ProductBuilder<T> | void = undefined;
       try {
         resultBuilder = await fetcher(product);
       } catch (err: unknown) {
-        this.logger.error("Error in product detail fetcher:", err);
+        this.logger.error(
+          "[SupplierBase > getProductDataWithCache] Error in product detail fetcher:",
+          err,
+        );
         incrementParseError(this.supplierName);
         return undefined;
       }
@@ -2291,13 +2489,21 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
         incrementProductCount(this.supplierName);
         // Skip caching when the search was aborted (e.g. maxAllowableSearchTime) — the enrichment
         // fetch was cancelled, so the data is incomplete and a later search should retry it.
-        if (!this.controller.signal.aborted && this.shouldCacheProductData(resultBuilder)) {
+        if (
+          cacheKey &&
+          !this.skipProductDetailCache &&
+          !this.controller.signal.aborted &&
+          this.shouldCacheProductData(resultBuilder)
+        ) {
           await this.cache.cacheProductData(cacheKey, resultBuilder.dump());
         }
       }
       return resultBuilder;
     } catch (outerErr: unknown) {
-      this.logger.error("Error in getProductDataWithCache:", outerErr);
+      this.logger.error(
+        "[SupplierBase > getProductDataWithCache] Error in getProductDataWithCache:",
+        outerErr,
+      );
       incrementParseError(this.supplierName);
       return undefined;
     }

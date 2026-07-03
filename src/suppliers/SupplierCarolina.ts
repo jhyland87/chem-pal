@@ -193,11 +193,31 @@ export class SupplierCarolina
       const parsedPrice = parsePrice(result.itemPrice);
       if (parsedPrice) builder.setPricing(parsedPrice);
       builder.setCAS(findCAS(result["product.shortDescription"]));
+      // Carolina's search response carries a stable per-row id (product.productId,
+      // e.g. "FAM_889460") — capture it and freeze it as the cache/exclusion key.
+      builder.setID(result["product.productId"]);
+      builder.setCacheKey(this.getUniqueProductKey(result));
       return builder;
       //.setQuantity(result.qtyDiscountAvailable, "1")
       //.setDescription(result.shortDescription)
       //.setCAS(result.casNumber)
     });
+  }
+
+  /**
+   * Derives the unique product key from a Carolina search result: its
+   * `product.productId` (e.g. `"FAM_889460"`), which is unique per result row
+   * and present at query time — unlike the product URL's SKU, which differs.
+   * @param data - The raw Carolina search result
+   * @returns The product's `product.productId`
+   * @example
+   * ```typescript
+   * this.getUniqueProductKey(result); // "FAM_889460"
+   * ```
+   * @source
+   */
+  protected getUniqueProductKey(data: CarolinaSearchResult): string {
+    return String(data["product.productId"]);
   }
 
   /**
@@ -447,7 +467,6 @@ export class SupplierCarolina
 
         return builder;
       },
-      params,
     );
   }
 

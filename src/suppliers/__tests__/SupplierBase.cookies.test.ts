@@ -30,8 +30,8 @@ vi.mock("@/utils/SupplierCache", () => {
         return cacheState.queryHit || null;
       }
       async cacheQueryResults() {}
-      getProductDataCacheKey(url: string) {
-        return `product:${url}`;
+      getProductIdentityCacheKey(identity: string) {
+        return `identity:${identity}`;
       }
       async getCachedProductData() {
         return cacheState.productHit || null;
@@ -43,9 +43,7 @@ vi.mock("@/utils/SupplierCache", () => {
 
 vi.mock("@/helpers/excludedProducts", () => ({
   countExcludedProductsForSupplier: async () => 0,
-  getProductExclusionKey: (url: string) => url,
   loadExcludedProductKeys: async () => new Set<string>(),
-  shouldExcludeProduct: async () => false,
 }));
 
 const tick = (ms = 0) => new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -88,6 +86,10 @@ class TestSupplier extends SupplierBase<unknown, Product> {
 
   protected titleSelector(): Maybe<string> {
     return "";
+  }
+
+  protected getUniqueProductKey(data: unknown): string {
+    return String((data as { id?: unknown })?.id ?? "");
   }
 
   // Capture the Request httpPost builds; return a minimal ok JSON response so
@@ -166,6 +168,10 @@ class RetryTestSupplier extends SupplierBase<unknown, Product> {
 
   protected titleSelector(): Maybe<string> {
     return "";
+  }
+
+  protected getUniqueProductKey(data: unknown): string {
+    return String((data as { id?: unknown })?.id ?? "");
   }
 
   protected async queryProducts(): Promise<ProductBuilder<Product>[] | void> {

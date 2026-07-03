@@ -1,6 +1,6 @@
 import { AVAILABILITY } from "@/constants/common";
 import { describe, expect, it } from "vitest";
-import { isAvailability, isValidVariant } from "../productbuilder";
+import { isAvailability, isCachedProductData, isValidVariant } from "../productbuilder";
 
 describe("ProductBuilder TypeGuards", () => {
   describe("isAvailability", () => {
@@ -144,6 +144,28 @@ describe("ProductBuilder TypeGuards", () => {
 
     it("should return true for empty object (minimal valid variant)", () => {
       expect(isValidVariant({})).toBe(true);
+    });
+  });
+
+  describe("isCachedProductData", () => {
+    it("should return true for a plain product-data object", () => {
+      expect(isCachedProductData({ title: "Acetone", price: 9.99, cacheKey: "id-1" })).toBe(true);
+    });
+
+    it("should return true for an empty object", () => {
+      expect(isCachedProductData({})).toBe(true);
+    });
+
+    it("should return false for null, undefined, and arrays", () => {
+      expect(isCachedProductData(null)).toBe(false);
+      expect(isCachedProductData(undefined)).toBe(false);
+      expect(isCachedProductData([{ title: "x" }])).toBe(false);
+    });
+
+    it("should return false for primitives", () => {
+      [42, "id-1", true].forEach((value) => {
+        expect(isCachedProductData(value)).toBe(false);
+      });
     });
   });
 });

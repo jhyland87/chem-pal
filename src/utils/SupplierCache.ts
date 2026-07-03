@@ -8,7 +8,7 @@ import {
   putSupplierProductDataCacheEntry,
   putSupplierQueryCacheEntry,
 } from "@/utils/idbCache";
-import { md5 } from "js-md5";
+import { getProductIdentityKey } from "@/helpers/productIdentity";
 
 /**
  * Utility class for managing supplier data caching in IndexedDB.
@@ -25,8 +25,10 @@ import { md5 } from "js-md5";
  * @source
  */
 export class SupplierCache {
-  //The version of the cache format.
-  private static readonly CACHE_VERSION = 2;
+  //The version of the cache format. Bumped 2 -> 3 when the product-data cache
+  //moved from URL-based keys to supplier + unique-product-identity keys, so
+  //stale query entries evict on read and repopulate under the new scheme.
+  private static readonly CACHE_VERSION = 3;
 
   // The logger instance.
   private logger: Logger;
@@ -133,18 +135,17 @@ export class SupplierCache {
   }
 
   /**
-   * Generates a cache key for product detail data based on the HTTP request URL,
-   * params, and the bound supplier name.
-   * This ensures that identical detail requests (even from different queries) share the same cache entry.
+   * Generates a cache key for product detail data from the supplier's stable
+   * product identity (`SupplierBase.getUniqueProductKey`) and the bound
+   * supplier name. The key is independent of the product URL, so a product
+   * enriched under one search hydrates any other search that surfaces it — even
+   * when the URL varies between the query and detail phases. Shares its shape
+   * with the exclusion key ({@link getProductIdentityKey}) so cache and
+   * exclusion agree.
    * @source
    */
-  getProductDataCacheKey(url: string, params?: QueryParams): string {
-    const data = {
-      url, // Must match the actual HTTP request URL
-      params: params || {}, // Must match the actual HTTP request params
-      supplier: this.supplierName, // Multi-supplier safety
-    };
-    return md5(JSON.stringify(data));
+  getProductIdentityCacheKey(identity: string): string {
+    return getProductIdentityKey(identity, this.supplierName);
   }
 
   /**

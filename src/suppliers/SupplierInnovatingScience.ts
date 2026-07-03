@@ -22,6 +22,10 @@ export class SupplierInnovatingScience extends SupplierBaseAmazon implements ISu
   // The payment methods accepted by the supplier.
   public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
 
+  // Pure-search supplier: the initial search returns every field and
+  // getProductData is a passthrough, so there's no per-product detail to cache.
+  protected readonly skipProductDetailCache: boolean = true;
+
   // Terms that much be found in the listing (one of these terms must be found)
   protected termsFoundInListing: string[] = ["innovating science", "aldon"];
 

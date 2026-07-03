@@ -105,7 +105,6 @@ suppliers/
 ├── SupplierChemsavers.ts
 ├── SupplierFtfScientific.ts  # FTF Scientific (Wix)
 ├── SupplierGoldAndSilverTesting.ts # Gold and Silver Testing (Shopify)
-├── SupplierHbarSci.ts        # HbarSci (Searchanise)
 ├── SupplierHimedia.ts        # Himedia (Amazon)
 ├── SupplierInnovatingScience.ts # Innovating Science (Amazon)
 ├── SupplierLaballey.ts       # Laballey (Searchanise)
@@ -115,10 +114,12 @@ suppliers/
 ├── SupplierMacklin.ts
 ├── SupplierOnyxmet.ts
 ├── SupplierSynthetika.ts
+├── SupplierTheLabStockroom.ts # The Lab Stockroom, formerly HBar Sci (Shopify)
 ├── SupplierWarchem.ts
 ├── SupplierAkmekem.ts        # Deprecated — not in index.ts (booted from Amazon)
 ├── SupplierBunmurraLabs.ts   # Deprecated — not in index.ts (site under reconstruction)
 ├── SupplierN2O3.ts           # Deprecated — not in index.ts (offline since 2026-01-20)
+├── SupplierTheLabStockroomSearchanise.ts # Deprecated — legacy Searchanise impl (migrated to Shopify)
 ├── base/                     # Platform base-class helpers
 ├── cache/                    # Supplier cache helpers
 ├── queries/                  # Platform query definitions (GraphQL, REST)

@@ -74,6 +74,30 @@ describe("SupplierCache", () => {
     });
   });
 
+  describe("getProductIdentityCacheKey", () => {
+    it("is deterministic for the same identity and supplier", () => {
+      const cache = new SupplierCache("Carolina", "SupplierCarolina");
+      expect(cache.getProductIdentityCacheKey("FAM_889460")).toBe(
+        cache.getProductIdentityCacheKey("FAM_889460"),
+      );
+    });
+
+    it("differs across suppliers for the same identity", () => {
+      const carolina = new SupplierCache("Carolina", "SupplierCarolina");
+      const macklin = new SupplierCache("Macklin", "SupplierMacklin");
+      expect(carolina.getProductIdentityCacheKey("12345")).not.toBe(
+        macklin.getProductIdentityCacheKey("12345"),
+      );
+    });
+
+    it("differs across identities for the same supplier", () => {
+      const cache = new SupplierCache("Carolina", "SupplierCarolina");
+      expect(cache.getProductIdentityCacheKey("FAM_889460")).not.toBe(
+        cache.getProductIdentityCacheKey("FAM_888880"),
+      );
+    });
+  });
+
   describe("getCachedQueryEntry version-mismatch eviction", () => {
     it("returns the entry when the cached version matches the current CACHE_VERSION", async () => {
       const cache = new SupplierCache("Carolina", "SupplierCarolina");

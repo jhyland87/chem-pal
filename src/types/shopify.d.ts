@@ -37,6 +37,8 @@ declare global {
    */
   interface ShopifyVariantNode {
     /* eslint-disable */
+    /** Globally unique variant id, e.g. "gid://shopify/ProductVariant/36127200805031" */
+    id: string;
     /** Display title of the variant (e.g. "Default Title", "500g Bottle") */
     title: string;
     /** Stock Keeping Unit identifier */

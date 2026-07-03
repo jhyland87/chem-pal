@@ -59,6 +59,25 @@ export class SupplierLoudwolf extends SupplierBase<Partial<Product>, Product> im
   protected async setup(): Promise<void> {}
 
   /**
+   * Derives the unique product key from a Loudwolf search-result element: the
+   * `product_id` query param in its product link, the same value
+   * `initProductBuilders` passes to `.setID`. Falls back to the raw href when
+   * no id is present, so the key is always a non-empty string.
+   * @param data - The raw Loudwolf product-listing Element
+   * @returns The product's product_id, or its href when no id is present
+   * @example
+   * ```typescript
+   * this.getUniqueProductKey(element); // "1234"
+   * ```
+   * @source
+   */
+  protected getUniqueProductKey(data: Element): string {
+    const href = data.querySelector("div.caption h4 a")?.getAttribute("href") ?? "";
+    const url = new URL(href, this.baseURL);
+    return url.searchParams.get("product_id") ?? this.href(href);
+  }
+
+  /**
    * Queries Loudwolf products based on a search string.
    * Makes a GET request to the Loudwolf search endpoint and parses the HTML response
    * to extract basic product information.
@@ -205,6 +224,7 @@ export class SupplierLoudwolf extends SupplierBase<Partial<Product>, Product> im
           element.querySelector("div.caption > p:nth-child(2)")?.textContent?.trim() || "",
         )
         .setID(id)
+        .setCacheKey(this.getUniqueProductKey(element))
         .setPricing(price.price, price.currencyCode, price.currencySymbol);
     });
   }

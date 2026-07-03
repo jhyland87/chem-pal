@@ -326,6 +326,21 @@ export class SupplierAmbeed
     /* eslint-enable */
   };
 
+  /**
+   * Derives the unique product key from an Ambeed product item: its `p_id` (the
+   * same value passed to `.setID`), stable across the query→detail transition.
+   * @param data - The raw Ambeed product list item
+   * @returns The product's p_id
+   * @example
+   * ```typescript
+   * this.getUniqueProductKey(product); // "3255116"
+   * ```
+   * @source
+   */
+  protected getUniqueProductKey(data: AmbeedProductListResponseResultItem): string {
+    return String(data.p_id);
+  }
+
   // /**
   //  * Map of encoded price characters to their corresponding decoded characters.
   //  */
@@ -904,6 +919,7 @@ export class SupplierAmbeed
         .setData(mainVariant as Partial<Product>)
         .setBasicInfo(product.p_proper_name3, `/products/${product.s_url}`, this.supplierName)
         .setID(product.p_id)
+        .setCacheKey(this.getUniqueProductKey(product))
         .setSku(product.p_bd)
         .setUUID(product.p_am)
         .setImage(product.p_proimg)

@@ -78,6 +78,21 @@ export class SupplierSynthetika
   /** Used to keep track of how many requests have been made to the supplier */
   protected httpRequstCount: number = 0;
 
+  /**
+   * Derives the unique product key from a Synthetika product: its `id` (the same
+   * value passed to `.setID`), stable across the query→detail transition.
+   * @param data - The raw Synthetika product
+   * @returns The product's id
+   * @example
+   * ```typescript
+   * this.getUniqueProductKey(product); // "975"
+   * ```
+   * @source
+   */
+  protected getUniqueProductKey(data: SynthetikaProduct): string {
+    return String(data.id);
+  }
+
   /** HTTP headers used as a basis for all queries */
   protected headers: HeadersInit = {
     /* eslint-disable */
@@ -343,6 +358,7 @@ export class SupplierSynthetika
         .setBasicInfo(product.name, product.url, this.supplierName)
         .setDescription(product.shortDescription)
         .setID(product.id)
+        .setCacheKey(this.getUniqueProductKey(product))
         .setAvailability(this.availabilityConverter(product.availability.name))
         .setSku(product.code)
         .setUUID(product.code);

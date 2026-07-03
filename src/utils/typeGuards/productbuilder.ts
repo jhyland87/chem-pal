@@ -102,3 +102,32 @@ export function isAvailability(availability: unknown): availability is AVAILABIL
 export function isValidVariant(variant: unknown): variant is Partial<Variant> {
   return variantSchema.safeParse(variant).success;
 }
+
+/**
+ * Type guard for a cached product-data record — the plain object produced by
+ * `ProductBuilder.dump()` and round-tripped through the product-detail cache.
+ * Narrows an `unknown` (or `Record<string, unknown>`) cache read to `Partial<T>`
+ * so it can be handed to `ProductBuilder.setData` without an assertion.
+ *
+ * The check is intentionally structural (a non-null, non-array object) rather
+ * than a full-schema validation: `setData` already routes every key through its
+ * own validating setter and silently drops any field that fails, so validating
+ * individual fields here would only risk rejecting an otherwise-usable product.
+ *
+ * @param value - The value read back from the product-detail cache
+ * @returns Type predicate indicating the value is a `Partial<T>` record
+ * @category Typeguards
+ * @example
+ * ```typescript
+ * const cached = await this.cache.getCachedProductData(key);
+ * if (isCachedProductData<Product>(cached)) {
+ *   product.setData(cached); // cached is Partial<Product>
+ * }
+ * ```
+ * @source
+ */
+export function isCachedProductData<T extends Product = Product>(
+  value: unknown,
+): value is Partial<T> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}

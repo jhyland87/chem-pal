@@ -11,6 +11,7 @@ query searchProducts($query: String!, $first: Int!) {
         variants(first: 5) {
           edges {
             node {
+              id
               title
               sku
               barcode

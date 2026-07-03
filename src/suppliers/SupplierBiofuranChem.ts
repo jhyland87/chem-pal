@@ -28,4 +28,8 @@ export class SupplierBioFuranChem extends SupplierBaseWix implements ISupplier {
 
   // The payment methods accepted by the supplier.
   public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+
+  // Pure-search supplier: the initial search returns every field and
+  // getProductData is a passthrough, so there's no per-product detail to cache.
+  protected readonly skipProductDetailCache: boolean = true;
 }
