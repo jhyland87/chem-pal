@@ -1,6 +1,6 @@
 # Supplier System
 
-ChemPal aggregates results from 21 active chemical supplier websites. Each supplier is a class that extends `SupplierBase` (or a platform-specific base class) and implements a standardized lifecycle for searching, parsing, and yielding products. The canonical list lives in [`src/suppliers/index.ts`](../src/suppliers/index.ts) — the barrel-export there is the source of truth that `SupplierFactory` iterates over.
+ChemPal aggregates results from 25 active chemical supplier websites. Each supplier is a class that extends `SupplierBase` (or a platform-specific base class) and implements a standardized lifecycle for searching, parsing, and yielding products. The canonical list lives in [`src/suppliers/index.ts`](../src/suppliers/index.ts) — the barrel-export there is the source of truth that `SupplierFactory` iterates over.
 
 ## Active Suppliers
 
@@ -10,12 +10,13 @@ Display names below match each class's `supplierName` constant (what's shown in 
 |----------|-------|-----------------------|---------|---------------|
 | AladdinSci | `SupplierAladdinSci` | Magento 2 | US | Hybrid (GraphQL search + HTML detail) |
 | Alchemie Labs | `SupplierAlchemieLabs` | WooCommerce | US | JSON Only |
+| Amaris Chemical Solutions | `SupplierAmarisChemicalSolutions` | WooCommerce | US | JSON Only |
 | Ambeed | `SupplierAmbeed` | Custom | CN | JSON Only |
+| AsesChem | `SupplierAsesChem` | Shopify | IN | Hybrid (GraphQL search + HTML detail) |
 | BioFuran Chem | `SupplierBioFuranChem` | Wix | US | JSON Only |
 | BVV | `SupplierBVV` | Shopify | US | JSON Only |
 | Carolina | `SupplierCarolina` | Custom | US | Hybrid (JSON search + HTML detail) |
 | Carolina Chemical | `SupplierCarolinaChemical` | WooCommerce | US | JSON Only |
-| Chemsavers | `SupplierChemsavers` | Custom | US | JSON Only |
 | FTF Scientific | `SupplierFtfScientific` | Wix | US | JSON Only |
 | Gold and Silver Testing | `SupplierGoldAndSilverTesting` | Shopify | US | JSON Only |
 | HbarSci | `SupplierHbarSci` | Searchanise | US | JSON Only |
@@ -24,10 +25,13 @@ Display names below match each class's `supplierName` constant (what's shown in 
 | Laballey | `SupplierLaballey` | Searchanise | US | JSON Only |
 | Laboratorium Discounter | `SupplierLaboratoriumDiscounter` | Custom | NL | Hybrid (JSON search + HTML/JSON detail) |
 | LibertySci | `SupplierLibertySci` | WooCommerce | US | JSON Only |
+| LiMac | `SupplierLiMac` | Custom (FreeFind) | LV | HTML Only (native advanced search) |
 | Loudwolf | `SupplierLoudwolf` | Custom | US | HTML Only |
 | Macklin | `SupplierMacklin` | Custom | CN | JSON Only |
 | Onyxmet | `SupplierOnyxmet` | Custom | CA | HTML Only |
+| S3 Chemicals | `SupplierS3Chemicals` | Custom | DE | HTML Only |
 | Synthetika | `SupplierSynthetika` | Custom | PL | JSON Only |
+| VWR | `SupplierVWR` | Custom | US | JSON Only (JSON search + JSON detail enrichment) |
 | Warchem | `SupplierWarchem` | Custom | PL | HTML Only |
 
 ## Deprecated Suppliers
@@ -38,6 +42,7 @@ These supplier classes exist in `src/suppliers/` but are commented out of the ba
 |----------|-------|----------|--------|
 | Akmekem | `SupplierAkmekem` | Amazon | Supplier was removed from Amazon |
 | Bunmurra Labs | `SupplierBunmurraLabs` | Wix | Site under reconstruction; new storefront not live |
+| Chemsavers | `SupplierChemsavers` | Custom (Typesense) | Disabled in the barrel export (reason not noted in code) |
 | N2O3 | `SupplierN2O3` | Custom | Site offline since 2026-01-20 |
 
 ## Data Strategies
@@ -45,16 +50,16 @@ These supplier classes exist in `src/suppliers/` but are commented out of the ba
 Suppliers follow one of three patterns depending on what the vendor exposes:
 
 ### JSON Only
-The search API returns all product data (title, price, quantity, CAS, etc.) in a single response. No detail page fetch is required.
-- Examples: Wix-based suppliers, Searchanise-based suppliers, Shopify-based suppliers, WooCommerce-based suppliers, Amazon-based suppliers, Ambeed, Chemsavers, Macklin, Synthetika
+The search API returns all product data (title, price, quantity, CAS, etc.) in the search response, so no HTML detail-page scrape is required. (A JSON-Only supplier may still make a lightweight JSON follow-up — e.g. WooCommerce batch-fetches variant details, VWR enriches the top matches — but it never parses HTML.)
+- Examples: Wix-, Searchanise-, and most Shopify-based suppliers, WooCommerce-based suppliers (Alchemie Labs, Amaris Chemical Solutions, Carolina Chemical, LibertySci), Amazon-based suppliers, Ambeed, Macklin, Synthetika, VWR
 
 ### HTML Only
 Both search results and product details are scraped from HTML pages using `DOMParser`.
-- Examples: Loudwolf, Onyxmet, Warchem
+- Examples: LiMac, Loudwolf, Onyxmet, S3 Chemicals, Warchem
 
 ### Hybrid (JSON + HTML)
-Search results come from a JSON/GraphQL endpoint, but full product details require fetching and scraping the individual product page.
-- Examples: Carolina, Laboratorium Discounter, AladdinSci (Magento 2 — `getProductData()` scrapes the product page for SDS / spec-sheet links, SMILES, IUPAC name, InChIKey, INChI, PubChem CID, molecular weight, and purity, with escalating HTTP 429 backoff)
+Search results come from a JSON/GraphQL endpoint, but full product details require fetching and scraping the individual HTML product page.
+- Examples: AsesChem (Shopify GraphQL search + HTML detail scrape for SDS/COA docs), Carolina, Laboratorium Discounter, AladdinSci (Magento 2 — `getProductData()` scrapes the product page for SDS / spec-sheet links, SMILES, IUPAC name, InChIKey, INChI, PubChem CID, molecular weight, and purity, with escalating HTTP 429 backoff)
 
 ## Supplier Lifecycle
 
@@ -65,12 +70,20 @@ setup()
   │   Supplier-specific initialization (auth tokens, headers, etc.)
   ▼
 queryProductsWithCache(query, limit)
-  │   Check chrome.storage.local cache → fallback to queryProducts()
+  │   Check IndexedDB query cache → fallback to queryProductsResolved()
+  ▼
+queryProductsResolved(query, limit)
+  │   Plain query, or a supplier with supportsNativeAdvancedSearch → one queryProducts() call.
+  │   Keyword-only backend + advanced (boolean) query → one search per positive OR-group term
+  │   (deriveFallbackTerms, capped at maxFallbackQueries), unioned and deduped by URL/ID.
   ▼
 queryProducts(query, limit)
   │   Fetch search results from the supplier's website
-  │   Apply fuzzyFilter() using titleSelector() to filter irrelevant results
+  │   Apply fuzzyFilterAst() — enforce the AND/OR/NOT predicate and rank by fuzz score
+  │   (via titleSelector(); default scorer `ratio`, overridable in settings)
   │   Return ProductBuilder[] instances
+  ▼
+Drop products on the user's "Ignore Product" list, slice back to limit
   ▼
 ┌─ for each ProductBuilder (via async-await-queue) ─┐
 │  getProductData(product)                          │
@@ -96,8 +109,8 @@ Common e-commerce platforms have shared base classes that handle platform-specif
 |------------|------|---------|
 | `SupplierBaseWix` | `SupplierBaseWix.ts` | Wix access token flow, GraphQL product queries (BioFuran Chem, FTF Scientific) |
 | `SupplierBaseSearchanise` | `SupplierBaseSearchanise.ts` | Searchanise API, product JSON parsing (HbarSci, Laballey) |
-| `SupplierBaseShopify` | `SupplierBaseShopify.ts` | Shopify GraphQL Storefront API product queries (BVV, Gold and Silver Testing) |
-| `SupplierBaseWoocommerce` | `SupplierBaseWoocommerce.ts` | WooCommerce REST API product queries (Alchemie Labs, Carolina Chemical, LibertySci) |
+| `SupplierBaseShopify` | `SupplierBaseShopify.ts` | Shopify GraphQL Storefront API product queries (AsesChem, BVV, Gold and Silver Testing) |
+| `SupplierBaseWoocommerce` | `SupplierBaseWoocommerce.ts` | WooCommerce Store API product queries; batches variant-detail fetches via the `include` endpoint (Alchemie Labs, Amaris Chemical Solutions, Carolina Chemical, LibertySci) |
 | `SupplierBaseMagento2` | `SupplierBaseMagento2.ts` | Magento 2 GraphQL product search (query in `src/queries/magento2-product-query.gql`); throttled, 429-backoff product-detail fetches with a `maxAllowableSearchTime` budget (AladdinSci) |
 | `SupplierBaseAmazon` | `SupplierBaseAmazon.ts` | Amazon product page scraping (Himedia, Innovating Science) |
 

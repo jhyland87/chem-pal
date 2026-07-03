@@ -14,14 +14,16 @@ flowchart TD
     A["execute()"] --> B["setup()"]
     B --> C["queryProductsWithCache()"]
     C -->|Cache hit| D["createFromCache()"]
-    C -->|Cache miss| E["queryProducts()"]
-    E --> F["fuzzyFilter()"]
+    C -->|Cache miss| R["queryProductsResolved()\nnative-advanced: 1 query;\nkeyword-only advanced:\nOR-group union + dedupe"]
+    R --> E["queryProducts()"]
+    E --> F["fuzzyFilterAst()\nAST predicate + fuzz rank"]
     F --> G["ProductBuilder array"]
     G --> H["Cache results"]
     H --> I["products"]
     D --> I
     I -->|Empty| J["No results"]
-    I -->|Has results| K["Queue (per-supplier concurrency)"]
+    I -->|Has results| X["Drop excluded products\n(Ignore Product list)"]
+    X --> K["Queue (per-supplier concurrency)"]
     K --> L["getProductData()"]
     L --> M{"Cached?"}
     M -->|Yes| O["finishProduct()"]
@@ -41,7 +43,7 @@ flowchart TD
 
 ## Class Hierarchy
 
-The inheritance tree for all 21 active suppliers.
+The inheritance tree for all 25 active suppliers.
 
 ```mermaid
 classDiagram
@@ -56,8 +58,10 @@ classDiagram
         #setup()
         #queryProducts(query, limit)*
         #titleSelector(data)*
-        #fuzzyFilter(query, data, this.minMatchPercentage)
+        #fuzzyFilterAst(data, minMatchPercentage)
         #queryProductsWithCache(query, limit)
+        #queryProductsResolved(query, limit)
+        #deriveFallbackTerms()
         #getProductData(product)
         #getProductDataWithCache(product)
         #finishProduct(product)
@@ -97,12 +101,14 @@ classDiagram
 
     SupplierBase <|-- Ambeed
     SupplierBase <|-- Carolina
-    SupplierBase <|-- Chemsavers
     SupplierBase <|-- LaboratoriumDiscounter
+    SupplierBase <|-- LiMac
     SupplierBase <|-- Loudwolf
     SupplierBase <|-- Macklin
     SupplierBase <|-- Onyxmet
+    SupplierBase <|-- S3Chemicals
     SupplierBase <|-- Synthetika
+    SupplierBase <|-- VWR
     SupplierBase <|-- Warchem
 
     SupplierBaseWix <|-- BioFuranChem
@@ -111,10 +117,12 @@ classDiagram
     SupplierBaseSearchanise <|-- HbarSci
     SupplierBaseSearchanise <|-- Laballey
 
+    SupplierBaseShopify <|-- AsesChem
     SupplierBaseShopify <|-- BVV
     SupplierBaseShopify <|-- GoldAndSilverTesting
 
     SupplierBaseWoocommerce <|-- AlchemieLabs
+    SupplierBaseWoocommerce <|-- AmarisChemicalSolutions
     SupplierBaseWoocommerce <|-- CarolinaChemical
     SupplierBaseWoocommerce <|-- LibertySci
 
@@ -130,7 +138,7 @@ How each data strategy flows from search to finished product.
 
 ```mermaid
 flowchart LR
-    subgraph JSON["JSON Only (15)"]
+    subgraph JSON["JSON Only (16)"]
         direction TB
         J1["queryProducts()
         Fetch JSON / GraphQL"]
@@ -143,7 +151,7 @@ flowchart LR
         J1 --> J2 --> J3 --> J4
     end
 
-    subgraph HTML["HTML Only (3)"]
+    subgraph HTML["HTML Only (5)"]
         direction TB
         H1["queryProducts()
         Parse HTML via
@@ -157,7 +165,7 @@ flowchart LR
         H1 --> H2 --> H3 --> H4
     end
 
-    subgraph Hybrid["Hybrid (3)"]
+    subgraph Hybrid["Hybrid (4)"]
         direction TB
         HY1["queryProducts()
         Fetch JSON / GraphQL endpoint"]
@@ -180,17 +188,19 @@ flowchart LR
 
 ## Supplier Map
 
-All 21 active suppliers by platform, country, and data strategy. Display names match each class's `supplierName` constant — see [Supplier System](../../wiki_files/Supplier-System.md) for the canonical table.
+All 25 active suppliers by platform, country, and data strategy. Display names match each class's `supplierName` constant — see [Supplier System](../../wiki_files/Supplier-System.md) for the canonical table.
 
-### Direct (SupplierBase) - 9 suppliers
+### Direct (SupplierBase) - 11 suppliers
 - **Ambeed** - CN - JSON Only
 - **Carolina** - US - Hybrid
-- **Chemsavers** - US - JSON Only
 - **Laboratorium Discounter** - NL - Hybrid
+- **LiMac** - LV - HTML Only (FreeFind search + HTML detail; native advanced search)
 - **Loudwolf** - US - HTML Only
 - **Macklin** - CN - JSON Only
 - **Onyxmet** - CA - HTML Only
+- **S3 Chemicals** - DE - HTML Only
 - **Synthetika** - PL - JSON Only
+- **VWR** - US - JSON Only (JSON search + JSON detail enrichment)
 - **Warchem** - PL - HTML Only
 
 ### Wix Platform - 2 suppliers
@@ -201,12 +211,14 @@ All 21 active suppliers by platform, country, and data strategy. Display names m
 - **HbarSci** - US - JSON Only
 - **Laballey** - US - JSON Only
 
-### Shopify Platform - 2 suppliers
+### Shopify Platform - 3 suppliers
+- **AsesChem** - IN - Hybrid (GraphQL search + HTML detail scrape)
 - **BVV** - US - JSON Only
 - **Gold and Silver Testing** - US - JSON Only
 
-### WooCommerce Platform - 3 suppliers
+### WooCommerce Platform - 4 suppliers
 - **Alchemie Labs** - US - JSON Only
+- **Amaris Chemical Solutions** - US - JSON Only
 - **Carolina Chemical** - US - JSON Only
 - **LibertySci** - US - JSON Only
 
@@ -220,6 +232,7 @@ All 21 active suppliers by platform, country, and data strategy. Display names m
 ### Deprecated (not exported by `src/suppliers/index.ts`)
 - **Akmekem** - Amazon - supplier was removed from Amazon
 - **Bunmurra Labs** - Wix - site under reconstruction
+- **Chemsavers** - Custom - disabled in the barrel export (reason not noted in code)
 - **N2O3** - Custom - site offline since 2026-01-20
 
 ## SupplierFactory Orchestration

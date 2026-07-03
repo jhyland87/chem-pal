@@ -8,6 +8,9 @@ This page details the end-to-end search flow from user input through to rendered
 - **Streaming results**: `SupplierFactory.executeAllStream()` yields products as they arrive from any supplier, enabling incremental UI updates
 - **Session persistence**: The Chrome extension persists query state to `chrome.storage.session` (via `cstorage`) and search results to IndexedDB for restore-on-mount
 - **Lifecycle events**: `performSearch` emits typed `CustomEvent`s at each phase — the `SearchEvent` enum (`STARTED`, `RESULTS_COUNT`, `COMPLETED`, `ABORTED`, `FAILED`) — decoupling side-effects like the toolbar badge from the search code. See [Events](Events)
+- **Advanced (boolean) search**: queries support `AND`/`OR`/`NOT` and quoted phrases, parsed into an AST by `parseSearchQuery`. `queryProductsResolved()` resolves each supplier's search against that AST — a plain query, or a supplier that can translate the query server-side (`supportsNativeAdvancedSearch`: Wix, Shopify, Magento 2, LiMac), runs a single `queryProducts()`; a keyword-only backend fans out one search per positive OR-group term (`deriveFallbackTerms`, capped at `maxFallbackQueries`) and unions/dedupes the results. The full boolean predicate is always enforced client-side by `fuzzyFilterAst()`
+- **Fuzzy matching**: each candidate's `titleSelector()` title is scored with `fuzzball` (default scorer `ratio`, user-selectable via `userSettings.fuzzScorerOverride`). By default `fuzzyFilterAst()` ranks candidates by score rather than hard-cutting at `minMatchPercentage`, and the pipeline keeps the top `limit`; `userSettings.fuzzyFilteringDisabled` turns scoring off entirely
+- **Excluded products**: items the user has "Ignore"d (`loadExcludedProductKeys`) are dropped before the detail-fetch phase; `execute()` over-fetches by the excluded count so the removed slots are backfilled
 - **Supplier data strategies**: Each supplier implements one of three patterns depending on what the vendor's site exposes:
   - **JSON Only** (e.g. Wix) — GraphQL/REST API provides all product data in the search response; no detail page fetch needed
   - **HTML Only** (e.g. Loudwolf) — Both search results and product details are scraped from HTML pages via `DOMParser`
@@ -67,15 +70,18 @@ CHAN -->|"per supplier"| EXEC
 
 subgraph SupplierPipeline["SupplierBase.execute - AsyncGenerator Pipeline"]
 direction TB
-EXEC["execute()"]
+EXEC["execute()\nload excluded-product list;\nover-fetch by excluded count"]
 SETUP["setup()\nsupplier-specific init\nauth tokens, headers, etc."]
-QPC["queryProductsWithCache()\ncheck IndexedDB cache\nfallback to queryProducts()"]
+QPC["queryProductsWithCache()\ncheck IndexedDB cache\nfallback to queryProductsResolved()"]
+QPR["queryProductsResolved()\nplain / native-advanced: 1 query\nkeyword-only advanced: 1 search per\nOR-group term, unioned + deduped"]
 QP["queryProducts()\nfetch search results\nsupplier-specific"]
-FUZZ["fuzzyFilter()\nfuzzball WRatio scorer\nvia titleSelector()"]
+FUZZ["fuzzyFilterAst()\nAST-aware (AND/OR/NOT, phrases)\nscore titleSelector() with active\nfuzz scorer (default ratio); rank-only"]
 IPB["initProductBuilders()\nparse raw data into\nProductBuilder instances"]
+EXCL["drop excluded products\n(Ignore Product list),\nslice back to limit"]
 EXEC --> SETUP --> QPC
-QPC -->|"cache miss"| QP
-QP --> FUZZ --> IPB
+QPC -->|"cache miss"| QPR
+QPR --> QP
+QP --> FUZZ --> IPB --> EXCL
 subgraph DetailFetch["Product Detail Fetching - concurrent via async-await-queue"]
 direction TB
 GPDC["getProductDataWithCache()\nper product"]
@@ -83,7 +89,7 @@ GPD["getProductData()\nfetch individual product page\nsupplier-specific"]
 FP["finishProduct()\nvalidate, set country/shipping,\ncall product.build()"]
 GPDC -->|"cache miss"| GPD --> FP
 end
-IPB -->|"for each product builder"| DetailFetch
+EXCL -->|"for each product builder"| DetailFetch
 FP -->|"yield product"| YIELD(("yield"))
 end
 
@@ -141,7 +147,7 @@ class SP,SPH entry
 class SF,SI,USI input
 class ES,PS,SFACT,STREAM,PROCESS exec
 class SFACT2,QUEUE,CHAN factory
-class EXEC,SETUP,QPC,QP,FUZZ,IPB,GPDC,GPD,FP pipeline
+class EXEC,SETUP,QPC,QPR,QP,FUZZ,IPB,EXCL,GPDC,GPD,FP pipeline
 class WS,WQ,WI,WG json
 class LQ,LF,LI,LG html
 class OQ,OF,OI,OG hybrid
