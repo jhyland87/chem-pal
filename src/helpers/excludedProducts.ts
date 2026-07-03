@@ -1,5 +1,5 @@
+import { getProductIdentityKey } from "@/helpers/productIdentity";
 import { getExcludedProducts, putExcludedProducts } from "@/utils/idbCache";
-import { md5 } from "js-md5";
 
 /**
  * Minimal metadata stored for each excluded product so the user can review
@@ -7,8 +7,13 @@ import { md5 } from "js-md5";
  * @source
  */
 export interface ExcludedProductEntry {
-  /** Canonical product URL used to derive the exclusion key. */
-  url: string;
+  /**
+   * Supplier's stable product identity (`SupplierBase.getUniqueProductKey`),
+   * used with the supplier name to derive the exclusion key.
+   */
+  identity?: string;
+  /** Canonical product URL, kept for display. */
+  url?: string;
   /** Supplier name used to derive the exclusion key. */
   supplier: string;
   /** Last-known product title, purely for display. */
@@ -23,70 +28,6 @@ export interface ExcludedProductEntry {
  * @source
  */
 export type ExcludedProductsMap = Record<string, ExcludedProductEntry>;
-
-/**
- * Check whether a given product (identified by URL + supplier name) is on
- * the user's ignore list. Called from the supplier hot-path to drop results
- * the user previously excluded. Returns `false` on any read error so a
- * storage blip can't accidentally hide everything.
- * @param url - Canonical product URL — same URL the supplier fetches.
- * @param supplierName - Supplier name, e.g. `"Loudwolf"`.
- * @returns `true` if an entry exists for this (url, supplier) pair.
- * @example
- * ```ts
- * if (await shouldExcludeProduct("https://example.com/acetone", "Loudwolf")) {
- *   return undefined; // skip this result
- * }
- * // => true  (user previously right-click → Ignore)
- * // => false (not ignored, or read failed)
- * ```
- * @source
- */
-export async function shouldExcludeProduct(url: string, supplierName: string): Promise<boolean> {
-  try {
-    const map = await loadExcludedProducts();
-    const key = getProductExclusionKey(url, supplierName);
-    return map[key] !== undefined;
-  } catch (error) {
-    console.warn("Failed to check if product should be excluded", { error });
-    return false;
-  }
-}
-async function getExcludedProductKeys(): Promise<Set<string>> {
-  try {
-    const map = await loadExcludedProducts();
-    return new Set(Object.keys(map));
-  } catch (error) {
-    console.warn("Failed to get excluded product keys", { error });
-    return new Set();
-  }
-}
-/**
- * Derive the stable exclusion key for a product. This mirrors the key shape
- * used by `SupplierCache.getProductDataCacheKey` (see SupplierBase.ts line
- * 1337) so that exclusion checks performed inside the supplier's product
- * detail path can be compared against entries written from the UI context
- * menu without the two sides drifting.
- *
- * Uses `md5({ url, params: {}, supplier })` — identical to the no-params
- * branch of `getProductDataCacheKey`.
- *
- * @param url - Canonical product URL (same URL the supplier fetches).
- * @param supplierName - Supplier name, e.g. `"Loudwolf"`.
- * @returns MD5 hex digest used as the exclusion key.
- * @example
- * ```ts
- * const key = getProductExclusionKey(
- *   "https://example.com/acetone",
- *   "Loudwolf",
- * );
- * // → "a1b2c3..."
- * ```
- * @source
- */
-export function getProductExclusionKey(url: string, supplierName: string): string {
-  return md5(JSON.stringify({ url, params: {}, supplier: supplierName }));
-}
 
 /**
  * Load the excluded-products map from IndexedDB. Returns an empty object if
@@ -150,32 +91,38 @@ export async function countExcludedProductsForSupplier(supplierName: string): Pr
 }
 
 /**
- * Add a product to the excluded list in IndexedDB. Idempotent: re-excluding
- * an already-ignored product just refreshes its `excludedAt` and last-known
- * title. Returns the exclusion key for the caller's logging convenience.
+ * Add a product to the excluded list in IndexedDB, keyed by the supplier's
+ * stable product identity ({@link getProductIdentityKey}) — the same key that
+ * keys the product-detail cache. Idempotent: re-excluding an already-ignored
+ * product just refreshes its `excludedAt` and last-known title. Returns the
+ * exclusion key for the caller's logging convenience.
  *
- * @param url - Canonical product URL.
+ * @param identity - The product's unique identity (its `cacheKey`), or the URL
+ *   as a fallback when no identity was stamped.
  * @param supplierName - Supplier name.
- * @param meta - Optional extra metadata (e.g. display title).
+ * @param meta - Optional extra metadata: display title and canonical URL (kept
+ *   for display and legacy-key matching).
  * @returns The exclusion key that was written.
  * @example
  * ```ts
- * await addExcludedProduct(product.url, product.supplier, {
+ * await addExcludedProduct(product.cacheKey ?? product.url, product.supplier, {
  *   title: product.title,
+ *   url: product.url,
  * });
  * ```
  * @source
  */
 export async function addExcludedProduct(
-  url: string,
+  identity: string,
   supplierName: string,
-  meta?: { title?: string },
+  meta?: { title?: string; url?: string },
 ): Promise<string> {
-  const key = getProductExclusionKey(url, supplierName);
+  const key = getProductIdentityKey(identity, supplierName);
   try {
     const map = await loadExcludedProducts();
     map[key] = {
-      url,
+      identity,
+      url: meta?.url,
       supplier: supplierName,
       title: meta?.title,
       excludedAt: Date.now(),

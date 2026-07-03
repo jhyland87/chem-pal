@@ -130,13 +130,32 @@ export abstract class SupplierBaseWoocommerce
 
     const builders = this.initProductBuilders(fuzzedResults.slice(0, limit));
 
-    // Enrich all variants here (rather than per-product in getProductData) so
-    // the whole detail fetch collapses into a handful of batched requests. The
-    // enriched builders are cached wholesale by `queryProductsWithCache`, so a
-    // repeat search never re-issues these calls.
-    await this.enrichVariants(builders);
+    // Partition before enriching: drop products the user ignored, hydrate any
+    // whose detail data is already cached under their identity (from a prior,
+    // possibly different, search), and enrich only the misses. This is what lets
+    // a product enriched under one query hydrate a different query — the whole
+    // reason per-product caching exists for batch suppliers.
+    const { survivors, misses } = await this.partitionForBatch(builders);
+    await this.enrichVariants(misses);
+    await this.cacheProductBuilders(misses);
 
-    return builders;
+    return survivors;
+  }
+
+  /**
+   * Derives the unique product key from a WooCommerce search item: its numeric
+   * product `id`. Stable regardless of the query that surfaced it, and the same
+   * id the Store API `include` endpoint keys on.
+   * @param data - The raw WooCommerce search-response item
+   * @returns The product's id as a string
+   * @example
+   * ```typescript
+   * this.getUniqueProductKey(item); // "12345"
+   * ```
+   * @source
+   */
+  protected getUniqueProductKey(data: WooCommerceSearchResponseItem): string {
+    return String(data.id);
   }
 
   /**
@@ -406,6 +425,7 @@ export abstract class SupplierBaseWoocommerce
         .setReviewCount(item.review_count)
         .setID(item.id)
         .setSku(item.sku)
+        .setCacheKey(this.getUniqueProductKey(item))
         .setPricing(
           Number(item.prices.price) / 100,
           item.prices.currency_code,

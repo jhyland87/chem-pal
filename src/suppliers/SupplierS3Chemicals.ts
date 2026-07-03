@@ -74,6 +74,28 @@ export class SupplierS3Chemicals
   protected readonly requiredCookies: SupplierCookieSeed[] = [{ name: "currency", value: "2" }];
 
   /**
+   * Derives the unique product key from an S3 Chemicals search-result card: its
+   * `data-ordernumber` (the Shopware ordernumber, the same value passed to
+   * `.setID`). Falls back to the product page href when the wrapper omits the
+   * ordernumber, so the key is always a non-empty string.
+   * @param data - The raw S3 Chemicals product-card Element
+   * @returns The card's ordernumber, or its href when the ordernumber is absent
+   * @example
+   * ```typescript
+   * this.getUniqueProductKey(element); // "S100210"
+   * ```
+   * @source
+   */
+  protected getUniqueProductKey(data: Element): string {
+    const ordernumber = data.getAttribute("data-ordernumber");
+    if (ordernumber) {
+      return ordernumber;
+    }
+    const href = data.querySelector("a.product--title")?.getAttribute("href") ?? "";
+    return this.href(href);
+  }
+
+  /**
    * Normalizes a Shopware-rendered price string (German locale) into a
    * format that `parsePrice` can consume unambiguously.
    * Shopware serves numbers as `2.449,00 $` (period = thousands,
@@ -253,6 +275,7 @@ export class SupplierS3Chemicals
 
       builder.setBasicInfo(title, String(url), this.supplierName);
       builder.setID(ordernumber);
+      builder.setCacheKey(this.getUniqueProductKey(element));
       return builder;
     });
   }

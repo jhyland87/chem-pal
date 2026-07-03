@@ -44,4 +44,20 @@ export class SupplierFoobar extends SupplierBase<Partial<Product>, Product> impl
   protected titleSelector(data: Partial<Product>): string {
     return data.title ?? "";
   }
+
+  /**
+   * Derives the unique product key from a Foobar product item: its `url` (a
+   * stable per-product identifier). Returns an empty-safe string when the url is
+   * missing.
+   * @param data - The raw Foobar product item
+   * @returns The product's URL
+   * @example
+   * ```typescript
+   * this.getUniqueProductKey({ url: "https://foobar.com/p/1" }); // "https://foobar.com/p/1"
+   * ```
+   * @source
+   */
+  protected getUniqueProductKey(data: Partial<Product>): string {
+    return this.href(String(data.url ?? ""));
+  }
 }

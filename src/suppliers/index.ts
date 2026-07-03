@@ -28,6 +28,9 @@
 //export { SupplierN2O3 } from "./SupplierN2O3";
 //export { SupplierAsesChem2 } from "./SupplierAsesChem2";
 //export { SupplierChemsavers } from "./SupplierChemsavers";
+// The Lab Stockroom (formerly HBar Sci) migrated from Searchanise to Shopify;
+// the legacy Searchanise module is kept but disabled.
+//export { SupplierTheLabStockroomSearchanise } from "./SupplierTheLabStockroomSearchanise";
 
 export { SupplierAladdinSci } from "./SupplierAladdinSci";
 export { SupplierAlchemieLabs } from "./SupplierAlchemieLabs";
@@ -40,7 +43,6 @@ export { SupplierCarolina } from "./SupplierCarolina";
 export { SupplierCarolinaChemical } from "./SupplierCarolinaChemical";
 export { SupplierFtfScientific } from "./SupplierFtfScientific";
 export { SupplierGoldAndSilverTesting } from "./SupplierGoldAndSilverTesting";
-export { SupplierHbarSci } from "./SupplierHbarSci";
 export { SupplierHimedia } from "./SupplierHimedia";
 export { SupplierInnovatingScience } from "./SupplierInnovatingScience";
 export { SupplierLaballey } from "./SupplierLaballey";
@@ -52,5 +54,6 @@ export { SupplierMacklin } from "./SupplierMacklin";
 export { SupplierOnyxmet } from "./SupplierOnyxmet";
 export { SupplierS3Chemicals } from "./SupplierS3Chemicals";
 export { SupplierSynthetika } from "./SupplierSynthetika";
+export { SupplierTheLabStockroom } from "./SupplierTheLabStockroom";
 export { SupplierVWR } from "./SupplierVWR";
 export { SupplierWarchem } from "./SupplierWarchem";

@@ -58,6 +58,26 @@ export class SupplierChemsavers
   // server-side instead of using the keyword-only fallback.
   protected readonly supportsNativeAdvancedSearch: boolean = true;
 
+  // The Typesense search response carries every field (including variants), so
+  // getProductData is a passthrough — there's no per-product detail fetch to
+  // cache. Products are still keyed for exclusions via getUniqueProductKey.
+  protected readonly skipProductDetailCache: boolean = true;
+
+  /**
+   * Derives the unique product key from a Chemsavers product object: its `id`
+   * (the same value passed to `.setID`), stable across query and detail.
+   * @param data - The raw Chemsavers product object
+   * @returns The product's id
+   * @example
+   * ```typescript
+   * this.getUniqueProductKey(result); // "12345"
+   * ```
+   * @source
+   */
+  protected getUniqueProductKey(data: ChemsaversProductObject): string {
+    return String(data.id);
+  }
+
   // HTTP headers used as a basis for all queries.
   protected headers: HeadersInit = {
     /* eslint-disable */
@@ -393,6 +413,7 @@ export class SupplierChemsavers
         .setDescription(result.description)
         .setMatchPercentage(result.matchPercentage)
         .setID(result.id)
+        .setCacheKey(this.getUniqueProductKey(result))
         .setSku(result.sku)
         .setPricing(result.price, "USD", "$")
         .setQuantity(quantity.quantity, quantity.uom)

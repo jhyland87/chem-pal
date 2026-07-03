@@ -655,7 +655,12 @@ export function useSearch() {
     // setSearchResults re-renders the table, which re-emits the count; no
     // direct badge update needed here.
     try {
-      await addExcludedProduct(product.url, product.supplier, { title: product.title });
+      // Key the exclusion by the product's stable identity (same key the
+      // product-detail cache uses); fall back to the URL when unstamped.
+      await addExcludedProduct(product.cacheKey ?? product.url, product.supplier, {
+        title: product.title,
+        url: product.url,
+      });
     } catch (error) {
       console.warn("Failed to persist excluded product:", { error });
     }

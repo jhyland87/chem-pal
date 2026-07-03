@@ -66,6 +66,23 @@ export class SupplierOnyxmet
   }
 
   /**
+   * Derives the unique product key from an Onyxmet search-result item: its
+   * product page href (the same value passed to `.setBasicInfo`), which is
+   * stable across the query→detail transition. Onyxmet exposes no id/sku in the
+   * search JSON, so the href is the stable identifier.
+   * @param data - The raw Onyxmet search-result item
+   * @returns The item's absolute product URL
+   * @example
+   * ```typescript
+   * this.getUniqueProductKey(item); // "https://onyxmet.com/product/sodium-chloride"
+   * ```
+   * @source
+   */
+  protected getUniqueProductKey(data: OnyxMetSearchResultItem): string {
+    return this.href(String(data.href));
+  }
+
+  /**
    * Queries OnyxMet products based on a search string.
    * Makes a GET request to the OnyxMet search endpoint and parses the HTML response
    * to extract basic product information.
@@ -152,6 +169,7 @@ export class SupplierOnyxmet
 
       builder.setBasicInfo(item.label, item.href, this.supplierName);
       builder.setDescription(item.description);
+      builder.setCacheKey(this.getUniqueProductKey(item));
       return builder;
     });
   }

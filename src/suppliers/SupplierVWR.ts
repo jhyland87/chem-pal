@@ -77,6 +77,21 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
   } as const;
 
   /**
+   * Derives the unique product key from a VWR search product: its `code` (the
+   * same value passed to `.setID`), stable across the query→detail transition.
+   * @param data - The raw VWR search product
+   * @returns The product's code
+   * @example
+   * ```typescript
+   * this.getUniqueProductKey(item); // "MFCD00003462"
+   * ```
+   * @source
+   */
+  protected getUniqueProductKey(data: VWRSearchProduct): string {
+    return String(data.code);
+  }
+
+  /**
    * Ensures a valid bearer token is present, fetching a fresh one when it is unset or within the
    * safety margin of expiry. On success the token is cached with its expiry and merged into
    * `this.headers` as an `Authorization` header used by every subsequent request.
@@ -275,6 +290,7 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
         .setBasicInfo(title, this.productUrl(item), this.supplierName)
         .setData(this.productDefaults)
         .setID(item.code)
+        .setCacheKey(this.getUniqueProductKey(item))
         .setSku(item.vwrCatalogNumber ?? item.code)
         .setDescription(item.description);
 

@@ -87,6 +87,25 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
   protected async setup(): Promise<void> {}
 
   /**
+   * Derives the unique product key from a FreeFind result anchor: the numeric
+   * item id embedded in its `href` (`/catalog/.../item/{id}/`), the same value
+   * `initProductBuilders` passes to `.setID`. Falls back to the raw href when
+   * no id is present, so the key is always a non-empty string.
+   * @param data - The raw FreeFind result anchor Element
+   * @returns The product's item id, or its href when no id is present
+   * @example
+   * ```typescript
+   * this.getUniqueProductKey(anchor); // "373337"
+   * ```
+   * @source
+   */
+  protected getUniqueProductKey(data: Element): string {
+    const href = data.getAttribute("href") ?? "";
+    const url = new URL(href, this.baseURL);
+    return url.pathname.match(/\/item\/(\d+)\//)?.[1] ?? this.href(href);
+  }
+
+  /**
    * Queries LiMac products by issuing a GET request against the FreeFind
    * search engine that LiMac is integrated with. Each result links back to
    * a product page on `www.limac.lv` which is followed up later in
@@ -330,7 +349,8 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
       return new ProductBuilder<Product>(this.baseURL)
         .setBasicInfo(title, String(url), this.supplierName)
         .setSupplierCountry(this.country)
-        .setID(id);
+        .setID(id)
+        .setCacheKey(this.getUniqueProductKey(element));
     });
   }
 

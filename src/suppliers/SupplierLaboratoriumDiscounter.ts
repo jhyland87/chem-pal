@@ -118,6 +118,22 @@ export class SupplierLaboratoriumDiscounter
   };
 
   /**
+   * Derives the unique product key from a Laboratorium Discounter product
+   * object: its `id` (the same value passed to `.setID`), stable across the
+   * query→detail transition.
+   * @param data - The raw Laboratorium Discounter search-response product
+   * @returns The product's id
+   * @example
+   * ```typescript
+   * this.getUniqueProductKey(product); // "8901234"
+   * ```
+   * @source
+   */
+  protected getUniqueProductKey(data: LaboratoriumDiscounterSearchResponseProduct): string {
+    return String(data.id);
+  }
+
+  /**
    * Category IDs to include in the search (and including any that aren't in these
    * categories or their sub-categories).
    * @source
@@ -286,6 +302,7 @@ export class SupplierLaboratoriumDiscounter
         .setBasicInfo(product.title, product.url, this.supplierName)
         .setDescription(product.description)
         .setID(product.id)
+        .setCacheKey(this.getUniqueProductKey(product))
         .setAvailability(product.available)
         .setSku(product.sku)
         .setUUID(product.code)
@@ -658,19 +675,15 @@ export class SupplierLaboratoriumDiscounter
   protected async getProductData(
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
-    return this.getProductDataWithCache(
-      product,
-      async (builder) => {
-        const jsonResponse = await this.getProductDataFromJSON(builder);
-        if (jsonResponse) return jsonResponse;
-        this.logger.debug("getProductDataFromJSON failed - falling back to HTML scraping", {
-          builder,
-        });
-        const htmlResponse = await this.getProductDataFromHTML(builder);
-        this.logger.debug("getProductDataFromHTML result:", { htmlResponse });
-        return htmlResponse;
-      },
-      { format: "json" },
-    );
+    return this.getProductDataWithCache(product, async (builder) => {
+      const jsonResponse = await this.getProductDataFromJSON(builder);
+      if (jsonResponse) return jsonResponse;
+      this.logger.debug("getProductDataFromJSON failed - falling back to HTML scraping", {
+        builder,
+      });
+      const htmlResponse = await this.getProductDataFromHTML(builder);
+      this.logger.debug("getProductDataFromHTML result:", { htmlResponse });
+      return htmlResponse;
+    });
   }
 }

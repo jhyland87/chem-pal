@@ -70,15 +70,16 @@ describe("requiredHosts", () => {
       expect(instance.requiredHosts).toContain("https://www.macklin.cn/*");
       expect(instance.requiredHosts).toHaveLength(2);
     });
+
+    it("The Lab Stockroom (Shopify) includes its myshopify.com apiURL automatically", () => {
+      const instance = new (suppliers.SupplierTheLabStockroom as any)("", 1, controller);
+      expect(instance.requiredHosts).toContain("https://hbarsci.myshopify.com/*");
+      expect(instance.requiredHosts).toContain("https://www.thelabstockroom.com/*");
+      expect(instance.requiredHosts).toHaveLength(2);
+    });
   });
 
   describe("Searchanise suppliers include searchserverapi.com", () => {
-    it("HbarSci includes searchserverapi.com", () => {
-      const instance = new (suppliers.SupplierHbarSci as any)("", 1, controller);
-      expect(instance.requiredHosts).toContain("https://searchserverapi.com/*");
-      expect(instance.requiredHosts).toContain("https://www.hbarsci.com/*");
-    });
-
     it("Laballey includes searchserverapi.com", () => {
       const instance = new (suppliers.SupplierLaballey as any)("", 1, controller);
       expect(instance.requiredHosts).toContain("https://searchserverapi.com/*");

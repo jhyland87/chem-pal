@@ -4,9 +4,12 @@ This diagram details how ChemPal caches search results and product data using **
 
 ## Key Concepts
 
-- **IndexedDB for cached data**: Query results, product details, search history, and supplier stats are stored in IndexedDB (`chempal` database, version 2) for better performance and no quota pressure on `chrome.storage`
+- **IndexedDB for cached data**: Query results, product details, search history, and supplier stats are stored in IndexedDB (`chempal` database) for better performance and no quota pressure on `chrome.storage`
 - **chrome.storage for app state**: User settings, table state, excluded products, and session state remain in `chrome.storage.local` / `chrome.storage.session`
 - **Two independent supplier caches**: Query results and product details are cached separately in IndexedDB with different key generation strategies
+- **Identity-keyed product cache (v3)**: The product-detail cache is keyed by the supplier's stable product identity — `md5({ key: <getUniqueProductKey>, supplier })` — **not** by URL. Each supplier implements the required `SupplierBase.getUniqueProductKey(item)` (returning an id / sku / gid / scraped id / href), stamped onto the builder at parse time via `ProductBuilder.setCacheKey`. This lets a product enriched under one search hydrate any other search that surfaces it, even when the URL differs between the query and detail phases
+- **One identity for cache and exclusions**: The same identity keys both the product-detail cache and the "Ignore Product" exclusion store (`getProductIdentityKey`), so ignoring a product matches it across searches by identity
+- **`skipProductDetailCache` flag**: Every supplier caches per-product detail by default (the safe default). A concrete pure-search supplier — one that resolves every field in the initial search with a passthrough `getProductData` (e.g. BVV, Himedia, Chemsavers) — sets `skipProductDetailCache = true` to skip the redundant per-product cache; the query cache already covers repeat searches, and the identity is still used for exclusions. The flag lives on the concrete supplier, never a shared base class, so a base's fetching subclass keeps caching by default
 - **LRU eviction**: Both supplier caches cap at 100 entries, evicting the least recently used when full (using IndexedDB indexes on `cachedAt` / `timestamp`)
 - **Limit-aware invalidation**: The query cache invalidates entries when a new search requests more results than the cached limit
 - **Status-aware product caching**: A product's detail fetch is **not** cached when it hit a status in `noCacheStatusCodes` (default `[429]`) or when the search was aborted by `maxAllowableSearchTime` — the product is still listed, but stays uncached so the next search retries it (`SupplierBase.shouldCacheProductData`)
@@ -131,7 +134,7 @@ SAVE1 -.->|"triggers if full"| LRU
 
 subgraph Metadata["CacheMetadata - per entry"]
 direction LR
-META["cachedAt: timestamp\nversion: 2\nquery: search term\nsupplier: display name\nsupplierModule: class name\nresultCount: number of results\nlimit: requested limit"]
+META["cachedAt: timestamp\nversion: 3\nquery: search term\nsupplier: display name\nsupplierModule: class name\nresultCount: number of results\nlimit: requested limit"]
 end
 SAVE1 -.->|"attached as __cacheMetadata"| Metadata
 
@@ -185,11 +188,14 @@ classDef keygen fill:#1ABC9C,stroke:#148F77,color:#fff
 
 GPD["getProductData(product)\ncalled per product in execute() loop"]
 subgraph KeyGen2["Key Generation"]
-GPCK["getProductDataCacheKey(url, supplierName, params?)\nMD5 hash of url + supplierName + params"]
+GPCK["identity = product.cacheKey\n(stamped from getUniqueProductKey at parse)\ngetProductIdentityCacheKey(identity)\nMD5({ key: identity, supplier })"]
 end
-GPD --> GPCK
-PLOOKUP{"getCachedProductData(key)\nexists?"}
+GPD --> CPD
+CPD{"skipProductDetailCache?"}
+CPD -->|"yes (pure-search)\nskip cache, run fetcher"| FETCH
+CPD -->|"no (default)"| GPCK
 GPCK --> PLOOKUP
+PLOOKUP{"getCachedProductData(key)\nexists?"}
 subgraph CacheHit2["Cache Hit"]
 direction TB
 TOUCH["updateProductDataCacheTimestamp(key)\nrefresh timestamp to prevent\nLRU eviction"]
@@ -210,7 +216,7 @@ end
 PLOOKUP -->|"hit"| CacheHit2
 PLOOKUP -->|"miss"| CacheMiss2
 
-PDS[("supplierProductDataCache\nkey: MD5(url+supplier+params)\nindex: timestamp")]
+PDS[("supplierProductDataCache\nkey: MD5({ key: identity, supplier })\nindex: timestamp")]
 SAVE2 -->|"write"| PDS
 PLOOKUP -.->|"read"| PDS
 TOUCH -.->|"update timestamp"| PDS
@@ -225,7 +231,7 @@ SAVE2 -.->|"triggers if full"| LRU
 
 subgraph Metadata["CacheMetadata - per entry"]
 direction LR
-META["cachedAt: timestamp\nversion: 2\nquery: search term\nsupplier: display name\nsupplierModule: class name\nresultCount: number of results\nlimit: requested limit"]
+META["cachedAt: timestamp\nversion: 3\nquery: search term\nsupplier: display name\nsupplierModule: class name\nresultCount: number of results\nlimit: requested limit"]
 end
 SAVE2 -.->|"attached as __cacheMetadata"| Metadata
 
@@ -234,10 +240,81 @@ class PDS idb
 class GPD cacheFlow
 class SETDATA,TOUCH hit
 class FETCH,DUMP2,SAVE2 miss
-class PLOOKUP,CACHEABLE decision
+class PLOOKUP,CACHEABLE,CPD decision
 class MAX,EVICT,SKIP2 lru
 class META meta
 class GPCK keygen
+```
+
+### Bulk Fetch Cache Flow (WooCommerce)
+
+Batch suppliers (e.g. WooCommerce) enrich product details **up front** in
+`queryProducts()` — one bulk request for all variants — instead of per-product
+in `getProductData()`. Before enriching, `partitionForBatch` looks each product
+up in the identity cache: hits are hydrated from cache (no fetch), ignored
+products are dropped, and only the misses go through the bulk `enrichVariants`
+fetch. The newly-enriched misses are then written back under their identity, so
+a later (different) search that surfaces the same products reuses them.
+
+```mermaid
+---
+config:
+  layout: elk
+  htmlLabels: true
+  look: neo
+  theme: dark
+  flowchart:
+    curve: basis
+---
+flowchart TB
+linkStyle default stroke-width:4px;
+classDef init fill:#4A90D9,stroke:#2C5F8A,color:#fff,font-weight:bold
+classDef idb fill:#E67E22,stroke:#D35400,color:#fff,font-weight:bold
+classDef cacheFlow fill:#5A7D8B,stroke:#3E5A66,color:#fff
+classDef hit fill:#27AE60,stroke:#1E8449,color:#fff
+classDef miss fill:#D97B2A,stroke:#A35D1F,color:#fff
+classDef decision fill:#F5D76E,stroke:#C5A83D,color:#333,font-weight:bold
+classDef drop fill:#E74C3C,stroke:#C0392B,color:#fff
+
+SUBMIT["Search submitted"]
+QUERY["queryProducts(query, limit)\nsingle initial search HTTP request"]
+PARSE["parse search index →\ninitProductBuilders()\nstamp each builder:\nsetCacheKey(getUniqueProductKey(item))"]
+SUBMIT --> QUERY --> PARSE
+
+PART["partitionForBatch(builders)\nper product, by identity"]
+PARSE --> PART
+
+EXCL{"ignored?\n(isExcluded by identity)"}
+PART --> EXCL
+DROP["drop\n(not enriched, not returned)"]
+EXCL -->|"yes"| DROP
+
+LOOKUP{"identity cache hit?\ngetCachedProductData(\nid+supplier)"}
+EXCL -->|"no"| LOOKUP
+HYDRATE["hydrate in place\nproduct.setData(cached)\n→ survivor (no fetch)"]
+MISS["miss → survivor\n+ needs enrichment"]
+LOOKUP -->|"hit"| HYDRATE
+LOOKUP -->|"miss"| MISS
+
+ENRICH["enrichVariants(misses)\nONE bulk request for all\nmisses' variant ids"]
+WRITE["cacheProductBuilders(misses)\nwrite each under its identity"]
+MISS --> ENRICH --> WRITE
+
+RETURN["return survivors\n(hydrated + newly enriched)"]
+HYDRATE --> RETURN
+WRITE --> RETURN
+
+PDS[("supplierProductDataCache\nkey: MD5({ key: identity, supplier })")]
+LOOKUP -.->|"read"| PDS
+WRITE -->|"write"| PDS
+
+class SUBMIT,QUERY,PARSE init
+class PART,RETURN cacheFlow
+class EXCL,LOOKUP decision
+class HYDRATE hit
+class MISS,ENRICH,WRITE miss
+class DROP drop
+class PDS idb
 ```
 
 ### Storage Backend
@@ -248,10 +325,10 @@ linkStyle default stroke-width:4px;
 classDef idb fill:#E67E22,stroke:#D35400,color:#fff,font-weight:bold
 classDef cstorage fill:#16A085,stroke:#0E6B57,color:#fff,font-weight:bold
 
-subgraph IDB["IndexedDB (chempal db, v2)"]
+subgraph IDB["IndexedDB (chempal db)"]
 direction TB
 QCS[("supplierQueryCache\nQuery Results\nkey: base64(query:supplier)\nindex: cachedAt")]
-PDS[("supplierProductDataCache\nProduct Data\nkey: MD5(url+supplier+params)\nindex: timestamp")]
+PDS[("supplierProductDataCache\nProduct Data\nkey: MD5({ key: identity, supplier })\nindex: timestamp")]
 SRS[("searchResults\nCurrent Results\nkey: 'current'")]
 SHS[("searchHistory\nSearch History\nkey: timestamp")]
 SSS[("supplierStats\nSupplier Stats\nkey: YYYY-MM-DD")]
@@ -273,7 +350,8 @@ The two supplier caches store different things and invalidate differently:
 | Aspect | Query Results Cache | Product Data Cache |
 | --- | --- | --- |
 | Storage | IndexedDB `supplierQueryCache` | IndexedDB `supplierProductDataCache` |
-| Key | base64 of `query + supplier` | MD5 of `url + supplier + params` |
+| Key | base64 of `query + supplier` | MD5 of `{ key: identity, supplier }` (identity = `getUniqueProductKey`) |
 | Stored data | Array of serialized `ProductBuilder` snapshots | Single serialized `ProductBuilder` snapshot |
 | Invalidation | When requested limit exceeds cached limit | LRU eviction only (no limit-based invalidation) |
-| Written | After `queryProducts()` returns results | After `getProductData()` fetches product page |
+| Written | After `queryProducts()` returns results | After a per-product detail fetch (or, for batch suppliers, after `partitionForBatch` enriches the misses). Skipped when `skipProductDetailCache` is true |
+| Cross-query reuse | Same `query` only | Any search surfacing the same product (matched by identity) |

@@ -1,4 +1,6 @@
+import { findCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
+import { findMolarity, findMolarMass, findPurity } from "@/helpers/science";
 import { firstMap } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isSearchaniseVariant, isValidSearchResponse } from "@/utils/typeGuards/searchanise";
@@ -56,6 +58,21 @@ export abstract class SupplierBaseSearchanise
   protected apiURL: string = "searchserverapi.com";
 
   /**
+   * Derives the unique product key from a Searchanise item listing: its
+   * `product_code` (the SKU set via `.setSku`), stable across query and detail.
+   * @param data - The raw Searchanise item listing
+   * @returns The product's product_code
+   * @example
+   * ```typescript
+   * this.getUniqueProductKey(item); // "S770339"
+   * ```
+   * @source
+   */
+  protected getUniqueProductKey(data: ItemListing): string {
+    return String(data.product_code);
+  }
+
+  /**
    * Query products from the Searchanise API
    *
    * @param query - The query to search for
@@ -95,11 +112,15 @@ export abstract class SupplierBaseSearchanise
       // made by it.
       /* eslint-disable */
       api_key: this.apiKey,
-      q: query,
+      //q: query,
       maxResults: 200,
       startIndex: 0,
+      sortBy: "relevance",
       items: true,
       pageStartIndex: 0,
+      queryBy: {
+        title: query,
+      },
       pagesMaxResults: 1,
       vendorsMaxResults: 200,
       output: "json",
@@ -135,7 +156,11 @@ export abstract class SupplierBaseSearchanise
     }
 
     const validItems = (searchRequest.items ?? []).filter(
-      (item): item is ItemListing => item !== null,
+      (item): item is ItemListing =>
+        item !== null &&
+        typeof item === "object" &&
+        "quantity" in item &&
+        Number(item.quantity) > 0,
     );
     const fuzzResults = this.fuzzyFilterAst<ItemListing>(validItems);
     this.logger.info("fuzzResults", { fuzzResults });
@@ -180,6 +205,10 @@ export abstract class SupplierBaseSearchanise
     return results
       .map((item) => {
         const builder = new ProductBuilder(this.baseURL);
+        // Searchanise only returns the search-listing fields, so the chemical
+        // details (CAS, molar mass, purity, molarity) are parsed out of the
+        // title and description here. firstMap tries the title first, then the
+        // description, keeping the first value found.
         builder
           .setBasicInfo(item.title, item.link, this.supplierName)
           .setData(this.productDefaults)
@@ -190,7 +219,13 @@ export abstract class SupplierBaseSearchanise
           )
           .setDescription(item.description)
           .setSku(item.product_code)
-          .setVendor(item.vendor);
+          .setVendor(item.vendor)
+          .setImage(item.image_link)
+          .setCAS(firstMap(findCAS, [item.title, item.description]))
+          .setMoleweight(firstMap(findMolarMass, [item.title, item.description]))
+          .setPurity(firstMap(findPurity, [item.title, item.description]))
+          .setConcentration(firstMap(findMolarity, [item.title, item.description]))
+          .setCacheKey(this.getUniqueProductKey(item));
 
         const quantity = firstMap(parseQuantity, [
           item.product_code,

@@ -225,6 +225,15 @@ declare global {
     uuid?: number | string;
 
     /**
+     * Stable per-product cache/exclusion identity, as derived by
+     * `SupplierBase.getUniqueProductKey` and frozen on the builder at parse
+     * time. Combined with the supplier name (via `getProductIdentityKey`) to
+     * key the product-detail cache and the "Ignore Product" exclusion store.
+     * @example "FAM_889460"
+     */
+    cacheKey?: string;
+
+    /**
      * Chemical grade specification (e.g., 'ACS', 'Technical')
      * @example "ACS"
      */

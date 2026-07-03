@@ -42,6 +42,10 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
   // The payment methods accepted by the supplier.
   public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa", "paypal", "ach"];
 
+  // All product fields are scraped from the search listing; getProductData is a
+  // passthrough, so there's no per-product detail fetch to cache.
+  protected readonly skipProductDetailCache: boolean = true;
+
   // Override the type of queryResults to use our specific type
   protected queryResults: Array<Product> = [];
 
@@ -141,6 +145,30 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
     this.logger.log("results:", results);
 
     return this.initProductBuilders(results);
+  }
+
+  /**
+   * Derives the unique product key from a raw search-listing element. N2O3 is a
+   * pure-HTML site with no product id in the markup other than a scraped id
+   * node; when that's absent, falls back to the product href. Combined with the
+   * supplier name downstream so it's unique.
+   * @param data - The raw listing `Element` from the search results
+   * @returns The scraped product id, or the product href as a fallback
+   * @example
+   * ```typescript
+   * this.getUniqueProductKey(element); // "12345" or "https://n2o3.com/product/x"
+   * ```
+   * @source
+   */
+  protected getUniqueProductKey(data: Element): string {
+    const id = data
+      .querySelector("div > div > div:nth-child(2) > span")
+      ?.textContent?.trim();
+    if (id) {
+      return id;
+    }
+    const href = data.querySelector("div a.a2")?.getAttribute("href") ?? "";
+    return this.href(href);
   }
 
   private listingElementToObject(element: Element): Record<string, string | undefined> | undefined {
@@ -306,6 +334,7 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
       //if (item.currency) product.setCurrency(item.currency);
       product.setCAS(item.cas);
       product.setGrade(item.grade);
+      product.setCacheKey(this.getUniqueProductKey(element));
 
       return product;
     });

@@ -52,6 +52,22 @@ export abstract class SupplierBaseShopify
   protected readonly supportsNativeAdvancedSearch: boolean = true;
 
   /**
+   * Derives the unique product key from a Shopify product node: its globally
+   * unique GraphQL id (e.g. `gid://shopify/Product/5710116421799`). Stable
+   * regardless of `onlineStoreUrl` (which can be null for unpublished products).
+   * @param data - The raw Shopify product node
+   * @returns The product's gid
+   * @example
+   * ```typescript
+   * this.getUniqueProductKey(node); // "gid://shopify/Product/5710116421799"
+   * ```
+   * @source
+   */
+  protected getUniqueProductKey(data: ShopifyProductNode): string {
+    return String(data.id);
+  }
+
+  /**
    * Builds the GraphQL variables for the `searchProducts` query. The query text itself lives in
    * `@/queries/shopify-product-query.gql`; only the title search filter and page size vary.
    *
@@ -178,7 +194,8 @@ export abstract class SupplierBaseShopify
         .setPricing(parsedPrice)
         .setDescription(product.description)
         .setSku(primaryVariant.sku)
-        .setID(product.id);
+        .setID(product.id)
+        .setCacheKey(this.getUniqueProductKey(product));
 
       const parseableQuantityStrings = [
         `${primaryVariant.weight} ${primaryVariant.weightUnit}`,
@@ -218,6 +235,7 @@ export abstract class SupplierBaseShopify
         ]);
 
         builder.addVariant({
+          id: variant.id,
           title: variant.title,
           sku: variant.sku,
           price: variantPrice?.price,

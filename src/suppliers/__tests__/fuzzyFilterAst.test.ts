@@ -26,6 +26,10 @@ class TestSupplier extends SupplierBase<TitleItem, Product> {
     return (data as TitleItem).title;
   }
 
+  protected getUniqueProductKey(data: unknown): string {
+    return (data as TitleItem).title;
+  }
+
   protected async queryProducts(): Promise<ProductBuilder<Product>[] | void> {
     return;
   }

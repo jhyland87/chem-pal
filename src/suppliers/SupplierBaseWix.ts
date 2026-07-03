@@ -53,6 +53,21 @@ export abstract class SupplierBaseWix
   protected readonly supportsNativeAdvancedSearch: boolean = true;
 
   /**
+   * Derives the unique product key from a Wix product object: its stable
+   * catalog product id (the same value passed to `.setID`).
+   * @param data - The raw Wix product object
+   * @returns The product's id
+   * @example
+   * ```typescript
+   * this.getUniqueProductKey(product); // "d1e2f3a4-..."
+   * ```
+   * @source
+   */
+  protected getUniqueProductKey(data: ProductObject): string {
+    return String(data.id);
+  }
+
+  /**
    * Sets up the Wix API access by retrieving and setting the access token.
    * This method must be called before making any API requests.
    * @returns Promise that resolves when the access token is set
@@ -300,7 +315,8 @@ export abstract class SupplierBaseWix
         .setID(product.id)
         .setSku(product.sku)
         .setDescription(htmlToAscii(product.description))
-        .setVariants(productVariants.filter(isValidVariant));
+        .setVariants(productVariants.filter(isValidVariant))
+        .setCacheKey(this.getUniqueProductKey(product));
 
       this.applyChemicalProperties(builder, product);
 

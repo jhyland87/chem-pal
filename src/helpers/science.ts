@@ -397,6 +397,15 @@ const MOLAR_MASS_LABELED = new RegExp(
   "i",
 );
 
+// --- Molarity / concentration matching (see findMolarity) ------------------------------------
+// A molar concentration written as "<number> M" or "<number> mol/L", optionally a range
+// ("1-2 M"). Deliberately NOT case-insensitive: the unit must be a capital "M" (molar) so a
+// lowercase "m" (milli, e.g. "500ml") is never mistaken for it, and "mol/L" is matched literally.
+// The number is 1-2 integer digits with an optional decimal, so quantities like "150" (mL) don't
+// start a match. Groups: 1 = low value, 2 = optional high value (range), 3 = unit.
+const MOLARITY_REGEX =
+  /\b([0-9]{1,2}(?:\.[0-9]+)?)\s*(?:(?:-|to)\s*([0-9]{1,2}(?:\.[0-9]+)?)\s*)?(M|mol\/L)\b/;
+
 /**
  * Parses a numeric token that may use US or European grouping/decimal conventions into a number.
  * When both `.` and `,` are present the last-occurring one is treated as the decimal separator and
@@ -461,6 +470,33 @@ export const findMolarMass = (text: string): number | undefined => {
   if (!match) return undefined;
   const value = parseLocalizedNumber(match[1]);
   return Number.isFinite(value) && value > 0 ? value : undefined;
+};
+
+/**
+ * Pulls a molar concentration (molarity) out of free-form product copy — the "1.5M", "0.2M",
+ * "1M", or "1.5 mol/L" that suppliers bake into titles and descriptions — and returns it as a
+ * normalized string suitable for the product's `concentration` field. The unit must be a capital
+ * "M" or literal "mol/L" (see `MOLARITY_REGEX`), so a lowercase "m" (milli, e.g. "500ml") is
+ * never mistaken for molarity. Returns `undefined` when no molarity is present.
+ * @category Helpers
+ * @param text - Raw text (title or description) that may contain a molarity anywhere within it
+ * @returns The molarity as a normalized string (e.g. `"1.5 M"`, `"1-2 M"`), or undefined
+ * @example
+ * ```typescript
+ * findMolarity("Potassium Nitrate: EZ-Prep - Makes 150ml of 1.5M Solution") // "1.5 M"
+ * findMolarity("demo kit with 12% hydrogen peroxide, 0.2M potassium iodate") // "0.2 M"
+ * findMolarity("Potassium Iodide Solution, 1M, 500mL")                       // "1 M"
+ * findMolarity("Sodium chloride, 500 g")                                     // undefined
+ * ```
+ * @source
+ */
+export const findMolarity = (text: string): string | undefined => {
+  if (!text || typeof text !== "string") return undefined;
+  const match = text.match(MOLARITY_REGEX);
+  if (!match) return undefined;
+  const [, low, high, unit] = match;
+  const value = high ? `${low}-${high}` : low;
+  return `${value} ${unit}`;
 };
 
 /**

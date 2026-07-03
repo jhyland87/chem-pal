@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   findFormulaInHtml,
   findFormulaInText,
+  findMolarity,
   findMolarMass,
   formatFormula,
   parseChemicalSpecs,
@@ -480,6 +481,38 @@ describe("science helpers", () => {
       expect(findMolarMass("Density (D) ca. 1,12")).toBeUndefined();
       expect(findMolarMass("Ships in 4-6 business days")).toBeUndefined();
       expect(findMolarMass("")).toBeUndefined();
+    });
+  });
+
+  describe("findMolarity", () => {
+    it("pulls molarity out of the Searchanise title/description examples", () => {
+      expect(
+        findMolarity(
+          "Briggs-Rauscher oscillating-reaction demo kit with 12% hydrogen peroxide, 0.2M potassium iodate",
+        ),
+      ).toBe("0.2 M");
+      expect(findMolarity("Potassium Nitrate: EZ-Prep - Makes 150ml of 1.5M Solution")).toBe(
+        "1.5 M",
+      );
+      expect(findMolarity("Potassium Iodide Solution, 1M, 500mL")).toBe("1 M");
+    });
+
+    it("handles the mol/L unit and a range", () => {
+      expect(findMolarity("Buffer 1.5 mol/L stock")).toBe("1.5 mol/L");
+      expect(findMolarity("Range 1-2 M working solution")).toBe("1-2 M");
+      expect(findMolarity("titrant 0.1 to 0.5 M")).toBe("0.1-0.5 M");
+    });
+
+    it("requires a capital M so a lowercase 'm' (milli) never matches", () => {
+      expect(findMolarity("Makes 150ml total")).toBeUndefined();
+      expect(findMolarity("MAKES 150ML")).toBeUndefined();
+      expect(findMolarity("500mL bottle")).toBeUndefined();
+    });
+
+    it("does not mistake a molar mass or unrelated text for molarity", () => {
+      expect(findMolarity("Molar mass 149 g/mol")).toBeUndefined();
+      expect(findMolarity("Sodium chloride, 500 g")).toBeUndefined();
+      expect(findMolarity("")).toBeUndefined();
     });
   });
 

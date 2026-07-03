@@ -19,7 +19,6 @@ Display names below match each class's `supplierName` constant (what's shown in 
 | Carolina Chemical | `SupplierCarolinaChemical` | WooCommerce | US | JSON Only |
 | FTF Scientific | `SupplierFtfScientific` | Wix | US | JSON Only |
 | Gold and Silver Testing | `SupplierGoldAndSilverTesting` | Shopify | US | JSON Only |
-| HbarSci | `SupplierHbarSci` | Searchanise | US | JSON Only |
 | Himedia | `SupplierHimedia` | Amazon | IN | JSON Only |
 | Innovating Science | `SupplierInnovatingScience` | Amazon | US | JSON Only |
 | Laballey | `SupplierLaballey` | Searchanise | US | JSON Only |
@@ -31,6 +30,7 @@ Display names below match each class's `supplierName` constant (what's shown in 
 | Onyxmet | `SupplierOnyxmet` | Custom | CA | HTML Only |
 | S3 Chemicals | `SupplierS3Chemicals` | Custom | DE | HTML Only |
 | Synthetika | `SupplierSynthetika` | Custom | PL | JSON Only |
+| The Lab Stockroom | `SupplierTheLabStockroom` | Shopify | US | JSON Only |
 | VWR | `SupplierVWR` | Custom | US | JSON Only (JSON search + JSON detail enrichment) |
 | Warchem | `SupplierWarchem` | Custom | PL | HTML Only |
 
@@ -108,8 +108,8 @@ Common e-commerce platforms have shared base classes that handle platform-specif
 | Base Class | File | Handles |
 |------------|------|---------|
 | `SupplierBaseWix` | `SupplierBaseWix.ts` | Wix access token flow, GraphQL product queries (BioFuran Chem, FTF Scientific) |
-| `SupplierBaseSearchanise` | `SupplierBaseSearchanise.ts` | Searchanise API, product JSON parsing (HbarSci, Laballey) |
-| `SupplierBaseShopify` | `SupplierBaseShopify.ts` | Shopify GraphQL Storefront API product queries (AsesChem, BVV, Gold and Silver Testing) |
+| `SupplierBaseSearchanise` | `SupplierBaseSearchanise.ts` | Searchanise API, product JSON parsing (Laballey) |
+| `SupplierBaseShopify` | `SupplierBaseShopify.ts` | Shopify GraphQL Storefront API product queries (AsesChem, BVV, Gold and Silver Testing, The Lab Stockroom) |
 | `SupplierBaseWoocommerce` | `SupplierBaseWoocommerce.ts` | WooCommerce Store API product queries; batches variant-detail fetches via the `include` endpoint (Alchemie Labs, Amaris Chemical Solutions, Carolina Chemical, LibertySci) |
 | `SupplierBaseMagento2` | `SupplierBaseMagento2.ts` | Magento 2 GraphQL product search (query in `src/queries/magento2-product-query.gql`); throttled, 429-backoff product-detail fetches with a `maxAllowableSearchTime` budget (AladdinSci) |
 | `SupplierBaseAmazon` | `SupplierBaseAmazon.ts` | Amazon product page scraping (Himedia, Innovating Science) |

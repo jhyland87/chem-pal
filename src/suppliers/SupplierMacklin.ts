@@ -180,6 +180,22 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
   };
 
   /**
+   * Derives the unique product key from a Macklin product variant: its `item_id`
+   * (the same value passed to `.setID`), stable across the query→detail
+   * transition.
+   * @param data - The raw Macklin product variant
+   * @returns The product's item_id
+   * @example
+   * ```typescript
+   * this.getUniqueProductKey(product); // "12345"
+   * ```
+   * @source
+   */
+  protected getUniqueProductKey(data: MacklinProductVariant): string {
+    return String(data.item_id);
+  }
+
+  /**
    * Sets up the Macklin API client by:
    * 1. Validating and updating the timestamp
    * 2. Generating a device ID if not present
@@ -341,7 +357,6 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
 
         return builder;
       },
-      { code: itemCode },
     );
   }
 
@@ -547,6 +562,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
           this.supplierName,
         )
         .setID(product.item_id)
+        .setCacheKey(this.getUniqueProductKey(product))
         .setUUID(product.item_code)
         .setCAS(product.cas)
         .setSmiles(product.smile_code)

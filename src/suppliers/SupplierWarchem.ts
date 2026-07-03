@@ -61,6 +61,30 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
   protected readonly fuzzScorer: FuzzScorerFn = FUZZ_SCORERS.token_set_ratio;
 
   /**
+   * Derives the unique product key from a Warchem search-result element: the
+   * `id` attribute on the row wrapper (the same value passed to `.setID`), which
+   * is stable across the query→detail transition. Falls back to the product page
+   * href when the row carries no id, so the key is always a non-empty string.
+   * @param data - The raw Warchem product-listing Element
+   * @returns The row's id, or its product href when no id is present
+   * @example
+   * ```typescript
+   * this.getUniqueProductKey(element); // "1234"
+   * ```
+   * @source
+   */
+  protected getUniqueProductKey(data: Element): string {
+    const productId = data.getAttribute("id");
+    if (productId) {
+      return productId;
+    }
+    const href = data
+      .querySelector('div[itemprop="item"] link[itemprop="url"]')
+      ?.getAttribute("href");
+    return this.href(String(href ?? ""));
+  }
+
+  /**
    * Warchem stores the search result limit in the cookies which needs to be set
    * in a POST call before the query.
    * @returns A promise that resolves when the setup is complete.
@@ -227,6 +251,7 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
       builder
         .setBasicInfo(productName, productUrl, this.supplierName)
         .setID(productId)
+        .setCacheKey(this.getUniqueProductKey(element))
         .setImage(itemDiv?.querySelector('link[itemprop="image"]')?.getAttribute("href"))
         .setSku(itemDiv?.querySelector('meta[itemprop="sku"]')?.getAttribute("content"))
         .setAvailability(
