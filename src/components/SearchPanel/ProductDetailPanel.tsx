@@ -1,0 +1,271 @@
+import { default as Link } from "@/components/TabLink";
+import {
+  ProductDetailBody,
+  ProductDetailContent,
+  ProductDetailDescription,
+  ProductDetailDocLinks,
+  ProductDetailFieldRow,
+  ProductDetailFieldsColumn,
+  ProductDetailImageBox,
+  ProductDetailImageColumn,
+  ProductDetailPanelContainer,
+  ProductDetailVariantsColumn,
+} from "@/components/StyledComponents";
+import { omit } from "@/helpers/collectionUtils";
+import { formatDisplayPrice } from "@/helpers/price";
+import { isPresent, resolveProductImage } from "@/helpers/product";
+import COAIcon from "@/icons/COAIcon";
+import SDSIcon from "@/icons/SDSIcon";
+import TDSIcon from "@/icons/TDSIcon";
+import { Typography } from "@mui/material";
+import type { Row, Table } from "@tanstack/react-table";
+import type { ReactElement, ReactNode } from "react";
+
+/**
+ * Props for {@link ProductDetailPanel}.
+ * @source
+ */
+interface ProductDetailPanelProps {
+  /** The expanded top-level product row this panel details. */
+  row: Row<Product>;
+  /** The table instance, used to read `meta.userSettings` for price formatting. */
+  table: Table<Product>;
+}
+
+/** A populated product-detail entry rendered as a label/value pair. */
+interface DetailField {
+  /** Column-style label shown in muted text. */
+  label: string;
+  /** Rendered value (text or a link/icon). */
+  value: ReactNode;
+}
+
+/**
+ * Builds the ordered list of populated detail fields for a product, skipping any
+ * that are empty. Text identifiers render as-is; SDS/TDS/COA and PubChem render
+ * as links so the user can open the underlying documents.
+ * @param product - The product whose details to surface.
+ * @returns The detail fields to render, in display order (empty when none apply).
+ * @example
+ * ```ts
+ * buildDetailFields({ cas: "7647-14-5", formula: "NaCl" } as Product);
+ * // => [{ label: "CAS", value: "7647-14-5" }, { label: "Formula", value: "NaCl" }]
+ * ```
+ * @source
+ */
+function buildDetailFields(product: Product): DetailField[] {
+  const fields: DetailField[] = [];
+  const pushText = (label: string, value: unknown) => {
+    if (isPresent(value)) fields.push({ label, value: String(value) });
+  };
+
+  pushText("CAS", product.cas);
+  pushText("Formula", product.formula);
+  pushText("Molecular Weight", product.moleweight);
+  pushText("IUPAC Name", product.iupacName);
+  pushText("InChIKey", product.inchiKey);
+  pushText("InChI", product.inchi);
+  pushText("SMILES", product.smiles);
+  pushText("Purity", product.purity);
+  pushText("Grade", product.grade);
+  pushText("Concentration", product.concentration);
+  pushText("Manufacturer", product.manufacturer);
+  // Description is rendered in its own full-width band, not as a compact row.
+
+  // PubChem link — truthy check narrows the optional id.
+  const { pubchemId } = product;
+  if (pubchemId) {
+    fields.push({
+      label: "PubChem",
+      value: (
+        <Link
+          href={`https://pubchem.ncbi.nlm.nih.gov/compound/${pubchemId}`}
+          aria-label={`PubChem CID ${pubchemId}`}
+          title="View on PubChem"
+        >
+          {pubchemId}
+        </Link>
+      ),
+    });
+  }
+
+  return fields;
+}
+
+/**
+ * Builds the SDS / TDS / COA document icon links for a product, shown beneath
+ * its image. Each link is included only when its URL is set.
+ * @param product - The product whose document URLs to surface.
+ * @returns The document links in display order (empty when the product has none).
+ * @example
+ * ```tsx
+ * buildDocLinks({ sdsUrl: "https://s.pdf" } as Product); // => [<Link><SDSIcon/></Link>]
+ * ```
+ * @source
+ */
+function buildDocLinks(product: Product): ReactNode[] {
+  const links: ReactNode[] = [];
+  const { sdsUrl, specSheetUrl, coaUrl } = product;
+
+  if (sdsUrl) {
+    links.push(
+      <Link
+        key="sds"
+        href={sdsUrl}
+        aria-label="Safety data sheet (SDS)"
+        title="Safety data sheet (SDS)"
+      >
+        <SDSIcon fontSize="small" />
+      </Link>,
+    );
+  }
+  if (specSheetUrl) {
+    links.push(
+      <Link
+        key="tds"
+        href={specSheetUrl}
+        aria-label="Technical Data Sheet (TDS)"
+        title="Technical Data Sheet (TDS)"
+      >
+        <TDSIcon fontSize="small" />
+      </Link>,
+    );
+  }
+  if (coaUrl) {
+    links.push(
+      <Link
+        key="coa"
+        href={coaUrl}
+        aria-label="Certificate of Analysis (COA)"
+        title="Certificate of Analysis (COA)"
+      >
+        <COAIcon fontSize="small" />
+      </Link>,
+    );
+  }
+
+  return links;
+}
+
+/**
+ * Expanded detail panel rendered beneath a product row in place of variant
+ * sub-rows. Shows (left) the product image or a derived structure depiction,
+ * (middle) every populated detail field, and (right) the product's variants as
+ * links with their price and quantity.
+ *
+ * Variants are sourced from the row's filtered `subRows` so an active filter
+ * narrows the list; when no filter is applied this equals the full variant set.
+ * @param props - The row to detail and the table instance for user settings.
+ * @returns The rendered detail panel.
+ * @example
+ * ```tsx
+ * <ProductDetailPanel row={row} table={table} />
+ * ```
+ * @source
+ */
+export function ProductDetailPanel({ row, table }: ProductDetailPanelProps): ReactElement {
+  const product = row.original;
+  const userSettings = table.options.meta?.userSettings;
+  const image = resolveProductImage(product);
+
+  // Prefer the filtered sub-rows (respecting active filters); fall back to the
+  // raw variants. Product[] is assignable to Variant[] since Product extends it.
+  const variants: Variant[] =
+    row.subRows.length > 0 ? row.subRows.map((sub) => sub.original) : (product.variants ?? []);
+
+  const detailFields = buildDetailFields(product);
+  const docLinks = buildDocLinks(product);
+  const hasVariants = variants.length > 0;
+
+  return (
+    <ProductDetailPanelContainer>
+      {(image || docLinks.length > 0) && (
+        <ProductDetailImageColumn>
+          {image && (
+            <ProductDetailImageBox>
+              <Link href={image.fullSrc} aria-label={`Open full image for ${product.title}`}>
+                <img
+                  src={image.thumbSrc}
+                  alt={product.imageAltText ?? product.title}
+                  // Hide the box on a broken image (e.g. a CACTUS 404 for an
+                  // identifier the resolver couldn't depict).
+                  onError={(e) => {
+                    e.currentTarget.closest("div")?.style.setProperty("display", "none");
+                  }}
+                />
+              </Link>
+            </ProductDetailImageBox>
+          )}
+          {docLinks.length > 0 && <ProductDetailDocLinks>{docLinks}</ProductDetailDocLinks>}
+        </ProductDetailImageColumn>
+      )}
+
+      <ProductDetailContent>
+        {isPresent(product.description) && (
+          <ProductDetailDescription>
+            <span className="detail-value">{product.description}</span>
+          </ProductDetailDescription>
+        )}
+
+        <ProductDetailBody>
+          {detailFields.length > 0 && (
+            <ProductDetailFieldsColumn>
+              {detailFields.map((field) => (
+                <ProductDetailFieldRow key={field.label}>
+                  <span className="detail-label">{field.label}</span>
+                  <span className="detail-value">{field.value}</span>
+                </ProductDetailFieldRow>
+              ))}
+            </ProductDetailFieldsColumn>
+          )}
+
+          {hasVariants && (
+            <ProductDetailVariantsColumn>
+              <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                Variants
+              </Typography>
+              {variants.map((variant, index) => (
+                <ProductDetailFieldRow
+                  key={variant.sku ?? variant.id ?? `${variant.title}-${index}`}
+                >
+                  <span className="detail-value">
+                    <Link
+                      href={variant.permalink ?? variant.url ?? product.permalink ?? product.url}
+                      history={{
+                        type: "product",
+                        data: omit({ ...product, ...variant }, "variants"),
+                      }}
+                    >
+                      {variant.title ?? product.title}
+                    </Link>
+                  </span>
+                  <span className="detail-label" style={{ minWidth: "unset" }}>
+                    {[formatDisplayPrice(variant, userSettings), variantQuantity(variant)]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </span>
+                </ProductDetailFieldRow>
+              ))}
+            </ProductDetailVariantsColumn>
+          )}
+        </ProductDetailBody>
+      </ProductDetailContent>
+    </ProductDetailPanelContainer>
+  );
+}
+
+/**
+ * Formats a variant's quantity and unit for the variants list, e.g. `"500 g"`.
+ * @param variant - The variant to format.
+ * @returns The `"<quantity> <uom>"` string, or `""` when no quantity is set.
+ * @example
+ * ```ts
+ * variantQuantity({ quantity: 500, uom: "g" }); // => "500 g"
+ * variantQuantity({}); // => ""
+ * ```
+ * @source
+ */
+function variantQuantity(variant: Variant): string {
+  if (!isPresent(variant.quantity)) return "";
+  return `${variant.quantity} ${variant.uom ?? ""}`.trim();
+}

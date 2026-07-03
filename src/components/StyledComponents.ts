@@ -412,6 +412,123 @@ export const SubRowTableRow = styled(StyledTableRow, {
   }),
 }));
 
+// === PRODUCT DETAIL PANEL (expanded sub-component) ===
+
+// Fixed image footprint so every product photo / structure depiction renders at
+// the same size regardless of its native dimensions.
+const DETAIL_IMAGE_SIZE = 110;
+
+// The full-width cell hosting the expanded detail panel. Zero padding — the
+// panel container supplies its own spacing.
+export const ProductDetailPanelCell = styled(StyledTableCell)(() => ({
+  padding: 0,
+}));
+
+// The image sits on the left; everything else (description, details, variants)
+// flows in the content area to its right and never overlaps the image.
+export const ProductDetailPanelContainer = styled("div")(({ theme }) => ({
+  display: "flex",
+  alignItems: "flex-start",
+  gap: theme.spacing(2),
+  padding: theme.spacing(1.5, 2),
+  backgroundColor: theme.palette.mode === "light" ? "#f3f3f3" : "#252525",
+}));
+
+// Fixed-size box centering the thumbnail; the nested img is scaled to fit.
+export const ProductDetailImageBox = styled("div")(({ theme }) => ({
+  width: DETAIL_IMAGE_SIZE,
+  height: DETAIL_IMAGE_SIZE,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  flexShrink: 0,
+  borderRadius: theme.shape?.borderRadius ?? 4,
+  overflow: "hidden",
+  backgroundColor: theme.palette.background.paper,
+  "& img": {
+    maxWidth: "100%",
+    maxHeight: "100%",
+    objectFit: "contain",
+  },
+}));
+
+// Left column holding the image and, beneath it, the SDS/TDS/COA doc links.
+export const ProductDetailImageColumn = styled("div")(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: theme.spacing(1),
+  flexShrink: 0,
+}));
+
+// Row of document icon links (SDS / TDS / COA) shown under the image.
+export const ProductDetailDocLinks = styled("div")(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: theme.spacing(1.5),
+}));
+
+// Content area right of the image: fills the remaining width (popup or full
+// browser tab), stacking the description above the details/variants body.
+export const ProductDetailContent = styled("div")(({ theme }) => ({
+  flex: 1,
+  minWidth: 0,
+  display: "flex",
+  flexDirection: "column",
+  gap: theme.spacing(1.5),
+}));
+
+// The description spans the full content width so long copy gets extra room
+// instead of being squeezed into a narrow column.
+export const ProductDetailDescription = styled("div")(({ theme }) => ({
+  fontSize: "0.8rem",
+  lineHeight: 1.5,
+  "& > .detail-value": {
+    color: theme.palette.text.primary,
+    overflowWrap: "anywhere",
+  },
+}));
+
+// Details + variants sit side by side when there's room and stack when narrow,
+// so the panel auto-adapts between the popup and the wider browser tab.
+export const ProductDetailBody = styled("div")(({ theme }) => ({
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+  gap: theme.spacing(2),
+}));
+
+// minWidth:0 lets long identifiers wrap inside the cell instead of forcing the
+// grid columns wider (which would break the layout).
+export const ProductDetailFieldsColumn = styled("div")(() => ({
+  minWidth: 0,
+  display: "flex",
+  flexDirection: "column",
+  gap: 2,
+}));
+
+export const ProductDetailVariantsColumn = styled(ProductDetailFieldsColumn)(() => ({}));
+
+// A single label/value pair. The label is muted and fixed-ish width so values
+// line up; the value wraps rather than overflowing.
+export const ProductDetailFieldRow = styled("div")(({ theme }) => ({
+  display: "flex",
+  gap: theme.spacing(1),
+  fontSize: "0.8rem",
+  lineHeight: 1.5,
+  "& > .detail-label": {
+    color: theme.palette.text.secondary,
+    fontWeight: 600,
+    flexShrink: 0,
+    minWidth: 96,
+  },
+  "& > .detail-value": {
+    color: theme.palette.text.primary,
+    minWidth: 0,
+    overflowWrap: "anywhere",
+  },
+}));
+
 // === SEARCH PANEL HOME COMPONENTS ===
 
 export const SearchPanelHomeContainer = styled(SearchContainer)(() => ({

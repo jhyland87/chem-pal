@@ -1,3 +1,4 @@
+import { hasExpandableDetail } from "@/helpers/product";
 import { type ColumnFiltersState } from "@tanstack/react-table";
 import { useState } from "react";
 import ResultsTable from "./ResultsTable";
@@ -19,7 +20,10 @@ export default function ResultsPanel() {
 
   return (
     <>
-      <ResultsTable columnFilterFns={columnFilterFns} getRowCanExpand={() => true} />
+      <ResultsTable
+        columnFilterFns={columnFilterFns}
+        getRowCanExpand={(row) => hasExpandableDetail(row.original)}
+      />
     </>
   );
 }

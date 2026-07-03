@@ -7,6 +7,7 @@ import {
 } from "@/constants/common";
 import { omit } from "@/helpers/collectionUtils";
 import { getCountryName } from "@/helpers/country";
+import { formatDisplayPrice } from "@/helpers/price";
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
 import COAIcon from "@/icons/COAIcon";
@@ -46,9 +47,8 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       id: "expander",
       header: () => null,
       cell: ({ row }: ProductRow) => {
-        if (!row?.original?.variants || row.original.variants.length === 0) {
-          return;
-        }
+        // `getCanExpand` (backed by hasExpandableDetail) already gates whether
+        // there's anything to show in the panel — image, variants, or details.
         return row.getCanExpand() ? (
           <button
             {...{
@@ -214,35 +214,14 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       id: "price",
       header: "Price",
       accessorKey: "price",
-      cell: ({ row, table }: CellContext<Product, unknown>) => {
-        const { usdPrice, price: rawPrice, currencyCode } = row.original;
-        // Read userSettings from table meta rather than context so
-        // TableColumns() stays hook-free — it's called from both React
-        // renders and non-render code paths (getColumnFilterConfig,
-        // DrawerSearchPanel's useMemo), and calling useAppContext() from
-        // those paths would violate the Rules of Hooks.
-        const userSettings = table.options.meta?.userSettings;
-        const currency = userSettings?.currency ?? "USD";
-        const currencyRate = userSettings?.currencyRate ?? 1;
-
-        // Non-USD product without a USD anchor: we can't convert into the
-        // user's chosen currency, so render the native price as-is.
-        if (currencyCode !== "USD" && usdPrice === undefined) {
-          console.error("Non-USD product is missing USD price", { row });
-          const fallbackCurrency = currencyCode ?? "USD";
-          return new Intl.NumberFormat(fallbackCurrency, {
-            style: "currency",
-            currency: fallbackCurrency,
-          }).format(Number(rawPrice));
-        }
-
-        const priceInUsd = usdPrice ?? Number(rawPrice);
-
-        return new Intl.NumberFormat(currency, {
-          style: "currency",
-          currency,
-        }).format(priceInUsd * currencyRate);
-      },
+      // Read userSettings from table meta rather than context so TableColumns()
+      // stays hook-free — it's called from both React renders and non-render
+      // code paths (getColumnFilterConfig, DrawerSearchPanel's useMemo), where
+      // calling useAppContext() would violate the Rules of Hooks. The shared
+      // formatDisplayPrice helper keeps this in sync with the variant list in
+      // the expanded detail panel.
+      cell: ({ row, table }: CellContext<Product, unknown>) =>
+        formatDisplayPrice(row.original, table.options.meta?.userSettings),
       sortingFn: "priceSortingFn",
       filterFn: "inNumberRangeHierarchy",
       meta: {
