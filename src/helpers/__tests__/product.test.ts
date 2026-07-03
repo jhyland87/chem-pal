@@ -46,7 +46,8 @@ describe("resolveProductImage", () => {
   });
 
   it("url-encodes the identifier for SMILES fallbacks", () => {
-    const image = resolveProductImage({ ...baseProduct, smiles: "[K+].[O-]" } as Product);
+    // Double-cast through unknown: a raw SMILES string doesn't satisfy the branded Smiles<string>.
+    const image = resolveProductImage({ ...baseProduct, smiles: "[K+].[O-]" } as unknown as Product);
     expect(image?.thumbSrc).toBe(
       "https://cactus.nci.nih.gov/chemical/structure/%5BK%2B%5D.%5BO-%5D/image",
     );
@@ -79,6 +80,7 @@ describe("hasExpandableDetail", () => {
   });
 
   it("is false for an empty-string detail field", () => {
-    expect(hasExpandableDetail({ ...baseProduct, cas: "" } as Product)).toBe(false);
+    // Double-cast through unknown: "" doesn't satisfy the branded CAS<string> template type.
+    expect(hasExpandableDetail({ ...baseProduct, cas: "" } as unknown as Product)).toBe(false);
   });
 });
