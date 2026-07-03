@@ -1,3 +1,8 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { RendererEvent } from "typedoc";
+
 /**
  * typedoc-plugin-mermaid-28
  *
@@ -7,10 +12,15 @@
  * Features:
  * - Renders ```mermaid fenced code blocks in JSDoc comments and project documents
  * - Interactive pan & zoom via svg-pan-zoom (scroll to zoom, click-drag to pan)
- * - Zoom controls (+, −, Reset) on each diagram
+ * - Zoom controls (+, −, Reset) and a full-screen toggle on each diagram
  * - Dark mode support (respects TypeDoc's theme toggle)
  * - Configurable mermaid version, container height, and zoom behavior
  * - Zero npm dependencies — mermaid and svg-pan-zoom loaded from CDN at runtime
+ *
+ * The browser-side CSS and JS live in ./mermaid-assets and are copied into the
+ * output's assets/ directory. This module only orchestrates: it registers
+ * options, extracts mermaid code blocks, and injects the <link>/<script> tags
+ * (passing config to the script via data-* attributes).
  *
  * Why this exists:
  * The original typedoc-plugin-mermaid (v1.12.0) only supports TypeDoc ≤0.26.
@@ -22,6 +32,10 @@
  * @param {import("typedoc").Application} app
  */
 export function load(app) {
+  const assetsDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "mermaid-assets");
+  const cssAsset = "mermaid-diagrams.css";
+  const jsAsset = "mermaid-diagrams.js";
+
   // Register custom options
   app.options.addDeclaration({
     name: "mermaidVersion",
@@ -69,171 +83,40 @@ export function load(app) {
     };
   }
 
-  function buildStyle(opts) {
-    return `
-<style>
-.mermaid-block {
-  margin: 1em 0;
-  position: relative;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  overflow: hidden;
-  background: #fafafa;
-}
-:root[data-theme="dark"] .mermaid-block,
-body.dark .mermaid-block {
-  border-color: #444;
-  background: #1e1e1e;
-}
-.mermaid-block .mermaid {
-  min-height: 300px;
-}
-.mermaid-block .mermaid svg {
-  width: 100% !important;
-  height: ${opts.containerHeight}px !important;
-}
-.mermaid-controls {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  display: flex;
-  gap: 4px;
-  z-index: 10;
-}
-.mermaid-controls button {
-  padding: 4px 10px;
-  font-size: 12px;
-  cursor: pointer;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  opacity: 0.8;
-  transition: opacity 0.2s;
-}
-.mermaid-controls button:hover {
-  opacity: 1;
-  background: #f0f0f0;
-}
-:root[data-theme="dark"] .mermaid-controls button,
-body.dark .mermaid-controls button {
-  background: #333;
-  border-color: #555;
-  color: #ddd;
-}
-:root[data-theme="dark"] .mermaid-controls button:hover,
-body.dark .mermaid-controls button:hover {
-  background: #444;
-}
-</style>`;
+  // Relative "../" prefix from a page URL back to the output root, so asset
+  // links resolve at any nesting depth (matches how TypeDoc links its assets).
+  function relativePrefix(url) {
+    const depth = (url || "").split("/").length - 1;
+    return "../".repeat(depth);
   }
 
-  function buildScript(opts) {
-    const panZoomScript = opts.panZoom
-      ? `<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.2/dist/svg-pan-zoom.min.js"><\/script>`
-      : "";
+  function styleLink(prefix) {
+    return `<link rel="stylesheet" href="${prefix}assets/${cssAsset}"/>`;
+  }
 
-    const panZoomInit = opts.panZoom
-      ? `
-        const panZoomInstance = window.svgPanZoom(svgEl, {
-          zoomEnabled: true,
-          controlIconsEnabled: false,
-          fit: true,
-          center: true,
-          minZoom: ${opts.minZoom},
-          maxZoom: ${opts.maxZoom},
-          zoomScaleSensitivity: 0.3,
-        });
-        const block = el.closest(".mermaid-block");
-        if (block) {
-          const resetBtn = block.querySelector(".mermaid-btn-reset");
-          const zoomInBtn = block.querySelector(".mermaid-btn-zoomin");
-          const zoomOutBtn = block.querySelector(".mermaid-btn-zoomout");
-          if (resetBtn) resetBtn.addEventListener("click", () => { panZoomInstance.resetZoom(); panZoomInstance.center(); });
-          if (zoomInBtn) zoomInBtn.addEventListener("click", () => panZoomInstance.zoomIn());
-          if (zoomOutBtn) zoomOutBtn.addEventListener("click", () => panZoomInstance.zoomOut());
-        }
-        const ro = new ResizeObserver(() => { panZoomInstance.resize(); panZoomInstance.fit(); panZoomInstance.center(); });
-        ro.observe(el);`
-      : "";
+  function scriptTag(prefix, opts) {
+    return (
+      `<script src="${prefix}assets/${jsAsset}"` +
+      ` data-mermaid-version="${opts.mermaidVersion}"` +
+      ` data-container-height="${opts.containerHeight}"` +
+      ` data-pan-zoom="${opts.panZoom}"` +
+      ` data-min-zoom="${opts.minZoom}"` +
+      ` data-max-zoom="${opts.maxZoom}"><\/script>`
+    );
+  }
 
-    return `${panZoomScript}
-<script type="module">
-import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@${opts.mermaidVersion}/dist/mermaid.esm.min.mjs";
-
-mermaid.initialize({ startOnLoad: false, securityLevel: "loose" });
-
-// Create an off-screen container for mermaid to render in.
-// This avoids layout issues caused by theme CSS constraining the content area.
-const offscreen = document.createElement("div");
-offscreen.style.cssText = "position:fixed;left:-9999px;top:-9999px;width:4000px;height:4000px;visibility:hidden;";
-document.body.appendChild(offscreen);
-
-async function renderOneDiagram(el, code, maxRetries = 5) {
-  const diagramLabel = code.substring(0, 60).replace(/\\n/g, " ").trim() + "...";
-  console.log("%c[Mermaid] Starting render for: " + diagramLabel, "color: #2196F3; font-weight: bold");
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    const id = "mermaid-" + Math.random().toString(36).slice(2, 10);
-    const t0 = performance.now();
+  // ─── Asset copying ─────────────────────────────────────────────────
+  app.renderer.on(RendererEvent.END, (event) => {
+    const dest = path.join(event.outputDirectory, "assets");
     try {
-      if (attempt > 1) {
-        console.log("%c[Mermaid] Attempt " + attempt + "/" + maxRetries + " (re-initializing...)", "color: #FF9800");
-        mermaid.initialize({ startOnLoad: false, securityLevel: "loose" });
-      } else {
-        console.log("%c[Mermaid] Attempt " + attempt + "/" + maxRetries, "color: #607D8B");
+      fs.mkdirSync(dest, { recursive: true });
+      for (const file of [cssAsset, jsAsset]) {
+        fs.copyFileSync(path.join(assetsDir, file), path.join(dest, file));
       }
-      const { svg } = await mermaid.render(id, code, offscreen);
-      const elapsed = (performance.now() - t0).toFixed(1);
-      console.log("%c[Mermaid] ✓ Rendered successfully on attempt " + attempt + " (" + elapsed + "ms)", "color: #4CAF50; font-weight: bold");
-      el.innerHTML = svg;
-      const svgEl = el.querySelector("svg");
-      if (svgEl) {
-        svgEl.style.width = "100%";
-        svgEl.style.height = "100%";
-        svgEl.removeAttribute("height");
-        ${panZoomInit}
-      }
-      return;
-    } catch (e) {
-      const elapsed = (performance.now() - t0).toFixed(1);
-      console.warn("%c[Mermaid] ✗ Attempt " + attempt + "/" + maxRetries + " failed (" + elapsed + "ms): " + e.message, "color: #F44336; font-weight: bold");
-      const stale = offscreen.querySelector("#d" + id);
-      if (stale) stale.remove();
-      if (attempt === maxRetries) {
-        console.error("%c[Mermaid] ✗ All " + maxRetries + " attempts failed — refresh the page to retry", "color: #F44336; font-weight: bold");
-        el.innerHTML = "<pre style='color:red'>Diagram failed to render. Please refresh the page.<\\/pre>";
-      }
+    } catch (err) {
+      app.logger.error(`[Mermaid Plugin] Failed to copy assets: ${err}`);
     }
-  }
-}
-
-async function renderDiagrams() {
-  const elements = document.querySelectorAll(".mermaid-block .mermaid");
-  console.log("%c[Mermaid] Found " + elements.length + " diagram(s) to render", "color: #2196F3; font-weight: bold");
-  const t0 = performance.now();
-  for (const el of elements) {
-    const code = el.textContent;
-    await renderOneDiagram(el, code);
-  }
-  const elapsed = (performance.now() - t0).toFixed(1);
-  console.log("%c[Mermaid] All diagrams processed in " + elapsed + "ms", "color: #2196F3; font-weight: bold");
-}
-
-// Wait for fonts to load before rendering — dagre measures text via getBBox()
-// and wrong font metrics cause "Could not find a suitable point" layout errors.
-async function waitAndRender() {
-  if (document.readyState === "loading") {
-    await new Promise(resolve => document.addEventListener("DOMContentLoaded", resolve));
-  }
-  if (document.fonts && document.fonts.ready) {
-    await document.fonts.ready;
-    console.log("%c[Mermaid] Fonts loaded, starting render", "color: #2196F3");
-  }
-  await renderDiagrams();
-}
-waitAndRender();
-
-<\/script>`;
-  }
+  });
 
   // ─── Markdown parsing ──────────────────────────────────────────────
   // Store mermaid blocks extracted during markdown parsing.
@@ -261,7 +144,6 @@ waitAndRender();
   app.renderer.on("endPage", (event) => {
     if (!event.contents) return;
 
-    const opts = getOptions();
     let hasBlocks = false;
 
     for (const [id, content] of mermaidBlocks) {
@@ -274,15 +156,8 @@ waitAndRender();
           .replace(/>/g, "&gt;")
           .replace(/"/g, "&quot;");
 
-        const controls = opts.panZoom
-          ? `<div class="mermaid-controls">
-              <button class="mermaid-btn-zoomin" title="Zoom in">+</button>
-              <button class="mermaid-btn-zoomout" title="Zoom out">&minus;</button>
-              <button class="mermaid-btn-reset" title="Reset view">Reset</button>
-            </div>`
-          : "";
-
-        const div = `<div class="mermaid-block">${controls}<div class="mermaid">${escaped}</div></div>`;
+        // Controls are added client-side by mermaid-diagrams.js.
+        const div = `<div class="mermaid-block"><div class="mermaid">${escaped}</div></div>`;
         event.contents = event.contents.replace(placeholder, div);
         mermaidBlocks.delete(id);
       }
@@ -290,19 +165,20 @@ waitAndRender();
 
     if (!hasBlocks) return;
 
+    const opts = getOptions();
+    const prefix = relativePrefix(event.url);
+
     const headClose = event.contents.indexOf("</head>");
     if (headClose !== -1) {
       event.contents =
-        event.contents.slice(0, headClose) +
-        buildStyle(opts) +
-        event.contents.slice(headClose);
+        event.contents.slice(0, headClose) + styleLink(prefix) + event.contents.slice(headClose);
     }
 
     const bodyClose = event.contents.lastIndexOf("</body>");
     if (bodyClose !== -1) {
       event.contents =
         event.contents.slice(0, bodyClose) +
-        buildScript(opts) +
+        scriptTag(prefix, opts) +
         event.contents.slice(bodyClose);
     }
   });

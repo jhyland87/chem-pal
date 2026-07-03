@@ -2,9 +2,6 @@
 
 This document provides mermaid diagrams covering the supplier system architecture: the execution lifecycle, class hierarchy, data strategy patterns, and the SupplierFactory orchestration.
 
-> [!TIP]
-> If the below graphs fail to load, try refreshing without cache (`shift`+`command`+`r` on OSX, `Ctrl`+`F5` on Windows virus)
-
 ## Supplier Execution Lifecycle
 
 The core pipeline defined in `SupplierBase.execute()`. Every supplier follows this flow.

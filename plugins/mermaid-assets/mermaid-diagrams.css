@@ -1,0 +1,134 @@
+/*
+ * Styles for the TypeDoc mermaid plugin.
+ * Injected via <link> on any page that contains a rendered diagram.
+ * The non-maximized diagram height is driven by the --mermaid-container-height
+ * custom property, which mermaid-diagrams.js sets from a build option.
+ */
+
+.mermaid-block {
+  margin: 1em 0;
+  position: relative;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fafafa;
+}
+
+:root[data-theme="dark"] .mermaid-block,
+body.dark .mermaid-block {
+  border-color: #444;
+  background: #1e1e1e;
+}
+
+.mermaid-block .mermaid {
+  min-height: 150px;
+}
+
+/* Height follows each diagram's own aspect ratio (set per-diagram as
+   --mermaid-aspect from its viewBox), capped at the max container height. Short
+   left-to-right charts stay short; tall top-to-bottom flows cap out and pan. */
+.mermaid-block .mermaid svg {
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: var(--mermaid-aspect, 3 / 2);
+  max-height: var(--mermaid-container-height, 600px) !important;
+}
+
+.mermaid-controls {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  z-index: 10;
+}
+
+.mermaid-controls button {
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.mermaid-controls button:hover {
+  opacity: 1;
+  background: #f0f0f0;
+}
+
+:root[data-theme="dark"] .mermaid-controls button,
+body.dark .mermaid-controls button {
+  background: #333;
+  border-color: #555;
+  color: #ddd;
+}
+
+:root[data-theme="dark"] .mermaid-controls button:hover,
+body.dark .mermaid-controls button:hover {
+  background: #444;
+}
+
+.mermaid-controls button svg {
+  display: block;
+}
+
+.mermaid-btn-maximize {
+  padding: 4px 7px;
+}
+
+.mermaid-btn-maximize._active {
+  background: #e0e0e0;
+}
+
+:root[data-theme="dark"] .mermaid-btn-maximize._active,
+body.dark .mermaid-btn-maximize._active {
+  background: #555;
+}
+
+/* Full-screen overlay: expand the diagram to the whole viewport. Sizing uses
+   100vw/100vh (the full window, scrollbar included) rather than inset:0, which
+   would stop short by the width of the document scrollbar. */
+.mermaid-block._maximized {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: #fafafa;
+}
+
+:root[data-theme="dark"] .mermaid-block._maximized,
+body.dark .mermaid-block._maximized {
+  background: #1e1e1e;
+}
+
+.mermaid-block._maximized .mermaid {
+  width: 100vw;
+  height: 100vh;
+}
+
+.mermaid-block._maximized .mermaid svg {
+  width: 100vw !important;
+  height: 100vh !important;
+  /* Mermaid sets an inline max-width to the diagram's natural width; clear it
+     so the svg can fill the full viewport instead of stopping short. */
+  max-width: none !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+}
+
+/* Remove the document scrollbar while maximized so nothing scrolls behind the
+   overlay and 100vw doesn't overflow. Covers both the <body> flag we set and
+   the <html> scroll container. */
+body.mermaid-maximized-open,
+html:has(.mermaid-block._maximized) {
+  overflow: hidden;
+}
