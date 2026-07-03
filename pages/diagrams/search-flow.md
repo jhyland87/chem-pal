@@ -20,8 +20,23 @@ This diagram details the end-to-end search flow from user input through to rende
 ## Diagram
 
 ```mermaid
-flowchart TB
+---
+config:
+  layout: elk
+  htmlLabels: true
+  markdownAutoWrap: true
+  look: neo
+  theme: dark
+  elk:
+    mergeEdges: true
+    nodePlacementStrategy: BRANDES_KOEPF
+  flowchart:
+    curve: basis
+---
 
+
+flowchart TB
+linkStyle default stroke-width:4px;
 subgraph Entry["Entry Points"]
 direction LR
 SP["SearchPage\n(Web App)"]
