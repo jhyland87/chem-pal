@@ -183,6 +183,9 @@
         minZoom: cfg.minZoom,
         maxZoom: cfg.maxZoom,
         zoomScaleSensitivity: 0.3,
+        // Built-in wheel zoom is replaced by our own handler below so that a
+        // trackpad pinch (wheel + ctrlKey) zooms while a two-finger scroll pans.
+        mouseWheelZoomEnabled: false,
       });
     } catch (e) {
       console.warn("[Mermaid] pan/zoom init failed; showing static diagram", e);
@@ -190,6 +193,32 @@
     }
     block._mermaidPanZoom = panZoomInstance;
     limitZoomOut(panZoomInstance);
+
+    // Trackpad-style wheel handling: a pinch gesture arrives as a wheel event
+    // with ctrlKey set → zoom (toward the cursor); a plain two-finger scroll
+    // arrives without ctrlKey → pan in the direction of the gesture.
+    svgEl.addEventListener(
+      "wheel",
+      (ev) => {
+        ev.preventDefault();
+        if (ev.ctrlKey) {
+          // Cursor position in the svg's own coordinate space.
+          const ctm = svgEl.getScreenCTM();
+          if (!ctm) return;
+          const pt = svgEl.createSVGPoint();
+          pt.x = ev.clientX;
+          pt.y = ev.clientY;
+          const local = pt.matrixTransform(ctm.inverse());
+          const factor = Math.pow(1.0022, -ev.deltaY);
+          panZoomInstance.zoomAtPointBy(factor, { x: local.x, y: local.y });
+        } else {
+          // deltaMode 0 = pixels (trackpad); 1 = lines; 2 = pages.
+          const step = ev.deltaMode === 1 ? 16 : ev.deltaMode === 2 ? svgEl.clientHeight : 1;
+          panZoomInstance.panBy({ x: -ev.deltaX * step, y: -ev.deltaY * step });
+        }
+      },
+      { passive: false },
+    );
 
     const controls = buildControls(block);
     controls.querySelector(".mermaid-btn-reset").addEventListener("click", () => {
