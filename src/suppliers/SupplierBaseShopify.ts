@@ -1,7 +1,9 @@
 import { UOM } from "@/constants/common";
+import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
-import { firstMap, mapDefined } from "@/helpers/utils";
+import { findMolarity, parseChemicalSpecs } from "@/helpers/science";
+import { firstMap, htmlToAscii, mapDefined } from "@/helpers/utils";
 import searchProductsQuery from "@/queries/shopify-product-query.gql";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { translateAstToShopifyQuery } from "@/utils/search-query/translators/translateAstToShopifyQuery";
@@ -68,16 +70,18 @@ export abstract class SupplierBaseShopify
   }
 
   /**
-   * Builds the GraphQL variables for the `searchProducts` query. The query text itself lives in
-   * `@/queries/shopify-product-query.gql`; only the title search filter and page size vary.
+   * Builds the GraphQL variables for the `Catalog` query. The query text itself lives in
+   * `@/queries/shopify-product-query.gql`; only the search string and page size vary. An advanced
+   * (boolean) query is translated to Shopify's search DSL (AND/OR/NOT); a plain query is matched as
+   * a title wildcard.
    *
-   * @param query - The search term to match against product titles
+   * @param query - The search term to match
    * @param limit - Maximum number of products to return
    * @returns The GraphQL variables for the products query
    * @example
    * ```typescript
    * const variables = this.getGraphQLVariables("gold", 200);
-   * // Returns { query: "title:*gold*", first: 200 }
+   * // Returns { q: "title:*gold*", n: 200, cursor: null }
    * ```
    * @source
    */
@@ -86,7 +90,7 @@ export abstract class SupplierBaseShopify
     const queryString = parsed.isAdvanced
       ? translateAstToShopifyQuery(parsed.ast)
       : `title:*${query}*`;
-    return { query: queryString, first: limit };
+    return { q: queryString, n: limit, cursor: null };
   }
 
   /**
@@ -189,21 +193,43 @@ export abstract class SupplierBaseShopify
       const parsedPrice = parsePrice(`$${primaryVariant.price.amount}`);
       if (!parsedPrice) return;
 
+      // onlineStoreUrl is null for products not published to the online store;
+      // fall back to the canonical product path built from the handle.
+      const url = product.onlineStoreUrl ?? `${this.baseURL}/products/${product.handle}`;
+      // Description is HTML; keep a plain-text copy for display and for the
+      // chemical-identifier parsing below (the parsers strip markup themselves,
+      // but plain text also feeds findCAS/findMolarity).
+      const descriptionText = htmlToAscii(product.descriptionHtml);
+
       const builder = new ProductBuilder<Product>(this.baseURL);
 
       builder
-        .setBasicInfo(product.title, product.onlineStoreUrl, this.supplierName)
+        .setBasicInfo(product.title, url, this.supplierName)
         .setPricing(parsedPrice)
-        .setDescription(product.description)
+        .setDescription(descriptionText)
         .setSku(primaryVariant.sku)
         .setID(product.id)
+        .setImage(this.primaryImageUrl(product))
         .setCacheKey(this.getUniqueProductKey(product));
+
+      // Parse the chemical identifiers out of the title + description. CAS is
+      // handled by findCAS; parseChemicalSpecs pulls formula, molecular weight,
+      // purity, and SMILES from the (HTML) description; molarity → concentration.
+      const identifierText = `${product.title}\n${descriptionText}`;
+      builder.setCAS(findCAS(identifierText));
+      const specs = parseChemicalSpecs(product.descriptionHtml);
+      builder
+        .setFormula(specs.formula)
+        .setMoleweight(specs.molecularWeight)
+        .setPurity(specs.purity)
+        .setSmiles(specs.smiles)
+        .setConcentration(firstMap(findMolarity, [product.title, descriptionText]));
 
       const parseableQuantityStrings = [
         `${primaryVariant.weight} ${primaryVariant.weightUnit}`,
-        primaryVariant.sku,
+        primaryVariant.sku ?? "",
         product.title,
-        product.description,
+        descriptionText,
       ];
       this.logger.debug("parseableQuantityStrings", { parseableQuantityStrings });
       const quantity = firstMap(parseQuantity, parseableQuantityStrings);
@@ -232,21 +258,40 @@ export abstract class SupplierBaseShopify
 
         const quantity = firstMap(parseQuantity, [
           `${variant.weight} ${variant.weightUnit}`,
-          variant.sku,
+          variant.sku ?? "",
           variant.title,
         ]);
 
         builder.addVariant({
           id: variant.id,
           title: variant.title,
-          sku: variant.sku,
+          sku: variant.sku ?? undefined,
           price: variantPrice?.price,
+          status: variant.currentlyNotInStock ? "out of stock" : "in stock",
           ...(isQuantityObject(quantity) ? quantity : { quantity: 1, uom: UOM.EA }),
         });
       }
 
       return builder;
     });
+  }
+
+  /**
+   * Returns the URL of the product's first image from its `media` connection, or
+   * undefined when the product has no image media.
+   * @param product - The Shopify product node
+   * @returns The first image URL, or undefined
+   * @example
+   * ```typescript
+   * this.primaryImageUrl(product); // "https://cdn.shopify.com/s/files/.../x.jpg"
+   * ```
+   * @source
+   */
+  protected primaryImageUrl(product: ShopifyProductNode): string | undefined {
+    const imageNode = product.media?.edges.find(
+      (edge) => edge.node.mediaContentType === "IMAGE" && edge.node.image?.url,
+    );
+    return imageNode?.node.image?.url;
   }
 
   /**

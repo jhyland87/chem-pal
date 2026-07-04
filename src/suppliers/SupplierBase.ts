@@ -77,7 +77,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   /**
    * Color used to visually tag this supplier's log output (and available for
    * charts/UI). Defaults to a stable palette color derived from the class name
-   * via {@link getSupplierColor}, so no supplier has to set one. Override by
+   * via `getSupplierColor`, so no supplier has to set one. Override by
    * assigning a hex string in a subclass constructor (also call
    * `this.logger.setColor(this.color)` there to recolor the already-built logger).
    */

@@ -6,22 +6,20 @@ import {
 } from "../shopify";
 
 const validVariant = {
+  id: "gid://shopify/ProductVariant/36127200805031",
   title: "Default Title",
   sku: "GTK-001",
-  barcode: "",
-  price: { amount: "14.99" },
+  availableForSale: true,
   weight: 3.0,
   weightUnit: "OUNCES",
-  requiresShipping: true,
-  availableForSale: true,
-  currentlyNotInStock: false,
+  price: { amount: "14.99" },
 };
 
 const validProduct = {
   id: "gid://shopify/Product/6047654445205",
   title: "Gold Testing Kit",
   handle: "gold-test-kit",
-  description: "Professional gold testing kit",
+  descriptionHtml: "<p>Professional gold testing kit</p>",
   onlineStoreUrl: "https://www.example.com/products/gold-test-kit",
   variants: {
     edges: [{ node: validVariant }],
