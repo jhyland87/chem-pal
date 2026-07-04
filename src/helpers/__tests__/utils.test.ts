@@ -1,19 +1,32 @@
 import {
   base36Timestamp,
   base64EncodeUtf8,
+  decodeHTMLEntities,
   delayAction,
   deserialize,
   findPdfHref,
   firstMap,
+  formatFromHtml,
+  formatFromHtmlTurndown,
+  formatTimestamp,
+  generatePageSizes,
+  getLanguageName,
   getPath,
+  getUserLanguage,
+  getUserLocation,
+  htmlToAscii,
+  isMoleForm,
   mapDefined,
   md5sum,
   objectToQueryString,
+  parseJsonFromDirtyString,
   serialize,
   sleep,
+  stripHTML,
+  tryParseJson,
   zodAddActualValueToIssues,
 } from "@/helpers/utils";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 describe("findPdfHref", () => {
   it("should extract a PDF link from an anchor tag", () => {
@@ -72,6 +85,245 @@ describe("base64EncodeUtf8", () => {
 describe("base36Timestamp", () => {
   it("returns a non-empty base-36 string", () => {
     expect(base36Timestamp()).toMatch(/^[a-z0-9]+$/);
+  });
+
+  it("uses the supplied timestamp as the base-36 prefix", () => {
+    const ts = 1_000_000;
+    const out = base36Timestamp(ts);
+    expect(out.startsWith(ts.toString(36))).toBe(true);
+  });
+});
+
+describe("objectToQueryString (edge cases)", () => {
+  it("emits an empty value for null/undefined entries", () => {
+    expect(objectToQueryString({ a: null, b: undefined, c: "x" })).toBe("a=&b=&c=x");
+  });
+
+  it("returns an empty string for an empty object", () => {
+    expect(objectToQueryString({})).toBe("");
+  });
+});
+
+describe("base64EncodeUtf8 (unicode)", () => {
+  it("encodes multibyte characters via the UTF-8 path", () => {
+    const encoded = base64EncodeUtf8("你好");
+    expect(atob(encoded)).toBe(unescape(encodeURIComponent("你好")));
+  });
+});
+
+describe("generatePageSizes", () => {
+  it("doubles up to the total with the default base/limit", () => {
+    expect(generatePageSizes(123)).toEqual([10, 20, 40, 80, 123]);
+  });
+
+  it("honors a custom base and limit", () => {
+    expect(generatePageSizes(500, 10, 4)).toEqual([10, 20, 40, 500]);
+    expect(generatePageSizes(1000, 10, 3)).toEqual([10, 20, 1000]);
+  });
+
+  it("returns just the total when the limit is 1", () => {
+    expect(generatePageSizes(1000, 10, 1)).toEqual([1000]);
+  });
+
+  it("with limit 0, slice(0, -1) drops only the last size (JSDoc says [1000])", () => {
+    // Genuine JSDoc/impl mismatch: `slice(0, limit - 1)` with limit=0 becomes
+    // slice(0, -1), which keeps all-but-last rather than returning empty.
+    expect(generatePageSizes(1000, 10, 0)).toEqual([10, 20, 40, 80, 160, 320, 1000]);
+  });
+
+  it("returns just the total when total is below base", () => {
+    expect(generatePageSizes(5)).toEqual([5]);
+  });
+});
+
+describe("decodeHTMLEntities", () => {
+  it("decodes named entities", () => {
+    expect(decodeHTMLEntities("&lt;div&gt;Hello &amp; World&lt;/div&gt;")).toBe(
+      "<div>Hello & World</div>",
+    );
+  });
+
+  it("decodes numeric entities", () => {
+    expect(decodeHTMLEntities("&#39;Hello&#39;")).toBe("'Hello'");
+  });
+
+  it("leaves unknown named entities untouched", () => {
+    expect(decodeHTMLEntities("&unknownentity;")).toBe("&unknownentity;");
+  });
+
+  it("decodes special symbol entities", () => {
+    expect(decodeHTMLEntities("&euro;&pound;&copy;")).toBe("€£©");
+  });
+});
+
+describe("htmlToAscii", () => {
+  it("converts paragraphs and breaks into newlines and strips tags", () => {
+    expect(htmlToAscii("<p>Hello <b>world</b></p><p>This is a test</p>")).toBe(
+      "Hello world\nThis is a test",
+    );
+  });
+
+  it("decodes basic entities and trims", () => {
+    expect(htmlToAscii("  A &amp; B &lt;x&gt; &quot;q&quot; &#39;s&#39; &nbsp; ")).toBe(
+      "A & B <x> \"q\" 's'",
+    );
+  });
+
+  it("handles br tags", () => {
+    expect(htmlToAscii("line1<br>line2<br/>line3")).toBe("line1\nline2\nline3");
+  });
+});
+
+describe("tryParseJson", () => {
+  it("parses valid JSON", () => {
+    expect(tryParseJson('{"name":"John","age":30}')).toEqual({ name: "John", age: 30 });
+  });
+
+  it("returns undefined for invalid JSON", () => {
+    expect(tryParseJson("not a json string")).toBeUndefined();
+  });
+
+  it("returns undefined for undefined input", () => {
+    expect(tryParseJson(undefined)).toBeUndefined();
+  });
+});
+
+describe("parseJsonFromDirtyString", () => {
+  it("parses an array with trailing junk", () => {
+    expect(parseJsonFromDirtyString('[ "a", "b" ]\n&&&\n')).toEqual(["a", "b"]);
+  });
+
+  it("parses an object with trailing junk", () => {
+    expect(parseJsonFromDirtyString('{"key":"val"} some junk')).toEqual({ key: "val" });
+  });
+
+  it("handles nested structures and strings containing brackets", () => {
+    expect(parseJsonFromDirtyString('{"a":[1,{"b":"]}"}]}###')).toEqual({ a: [1, { b: "]}" }] });
+  });
+
+  it("handles escaped quotes inside strings", () => {
+    expect(parseJsonFromDirtyString('["a\\"b"]xxx')).toEqual(['a"b']);
+  });
+
+  it("throws when there is no JSON open bracket", () => {
+    expect(() => parseJsonFromDirtyString("no json here")).toThrow(
+      "No JSON array or object found in string",
+    );
+  });
+
+  it("throws when the JSON is unterminated", () => {
+    expect(() => parseJsonFromDirtyString('{"a":1')).toThrow("Unterminated JSON in string");
+  });
+});
+
+describe("getUserLocation", () => {
+  const originalChrome = (globalThis as { chrome?: unknown }).chrome;
+  afterEach(() => {
+    (globalThis as { chrome?: unknown }).chrome = originalChrome;
+  });
+
+  it("defaults to US outside an extension context", () => {
+    delete (globalThis as { chrome?: unknown }).chrome;
+    expect(getUserLocation()).toBe("US");
+  });
+
+  it("returns the country code from the i18n locale", () => {
+    (globalThis as { chrome?: unknown }).chrome = {
+      i18n: { getUILanguage: () => "en-GB" },
+    };
+    expect(getUserLocation()).toBe("GB");
+  });
+});
+
+describe("getUserLanguage", () => {
+  const originalChrome = (globalThis as { chrome?: unknown }).chrome;
+  afterEach(() => {
+    (globalThis as { chrome?: unknown }).chrome = originalChrome;
+  });
+
+  it("defaults to en-US outside an extension context", () => {
+    delete (globalThis as { chrome?: unknown }).chrome;
+    expect(getUserLanguage()).toBe("en-US");
+  });
+
+  it("returns the full UI language locale", () => {
+    (globalThis as { chrome?: unknown }).chrome = {
+      i18n: { getUILanguage: () => "de-DE" },
+    };
+    expect(getUserLanguage()).toBe("de-DE");
+  });
+});
+
+describe("getLanguageName", () => {
+  it("returns undefined for undefined input", () => {
+    expect(getLanguageName(undefined)).toBeUndefined();
+  });
+
+  it("resolves a language name from a locale", () => {
+    expect(getLanguageName("en-US")).toBe("English");
+    expect(getLanguageName("de-DE")).toBe("Deutsch");
+  });
+
+  it("falls back to the raw code for an unknown language", () => {
+    expect(getLanguageName("zz")).toBe("zz");
+  });
+});
+
+describe("stripHTML", () => {
+  it("removes HTML tags leaving the text", () => {
+    expect(stripHTML("<p>Hello <b>world</b></p>")).toBe("Hello world");
+  });
+
+  it("returns an empty string for tag-only input", () => {
+    expect(stripHTML("<br/>")).toBe("");
+  });
+});
+
+describe("formatFromHtmlTurndown", () => {
+  it("converts bold html to markdown", () => {
+    expect(formatFromHtmlTurndown("<b>Bold</b>")).toBe("**Bold**");
+  });
+});
+
+describe("formatFromHtml", () => {
+  it("returns text content when there are no child elements", () => {
+    expect(formatFromHtml("just text")).toBe("just text");
+  });
+
+  it("formats paragraphs, lists and links", () => {
+    const html =
+      "<p>Intro</p><ul><li>Item 1</li><li>Item 2</li></ul>" +
+      '<ol><li>First</li><li>Second</li></ol><a href="https://x.com">Link</a>';
+    expect(formatFromHtml(html)).toBe(
+      "Intro\n\n- Item 1\n- Item 2\n1) First\n2) Second\nLink (https://x.com)",
+    );
+  });
+
+  it("falls back to text content for unknown elements", () => {
+    expect(formatFromHtml("<div>plain div</div>")).toBe("plain div");
+  });
+});
+
+describe("formatTimestamp", () => {
+  it("formats an epoch ms value into a short date-time string", () => {
+    const out = formatTimestamp(1711468500000);
+    expect(typeof out).toBe("string");
+    expect(out.length).toBeGreaterThan(0);
+  });
+});
+
+describe("isMoleForm", () => {
+  it("returns true for valid molecular formulas", () => {
+    expect(isMoleForm("C12H22O11")).toBe(true);
+    expect(isMoleForm("C<sub>11</sub>H<sub>8</sub>I<sub>3</sub>N<sub>2</sub>NaO<sub>4</sub>")).toBe(
+      true,
+    );
+  });
+
+  it("returns false for invalid formulas", () => {
+    expect(isMoleForm("12H22O11")).toBe(false);
+    expect(isMoleForm("")).toBe(false);
+    expect(isMoleForm("hello")).toBe(false);
   });
 });
 
@@ -180,6 +432,12 @@ describe("mapDefined", () => {
     const input: FalsyValue[] = ["", 0, false, null, undefined, "test"];
     const fn = (x: FalsyValue) => x;
     expect(mapDefined(input, fn)).toEqual(["", 0, false, "test"]);
+  });
+
+  it("drops mapped results that are empty arrays but keeps non-empty ones", () => {
+    const input = [1, 2, 3];
+    const fn = (x: number) => (x === 2 ? [] : [x]);
+    expect(mapDefined(input, fn)).toEqual([[1], [3]]);
   });
 });
 

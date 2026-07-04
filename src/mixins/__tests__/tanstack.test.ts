@@ -30,6 +30,11 @@ describe("Tanstack Mixins", () => {
       const column = createMockColumn("test", 123);
       expect(getHeaderText(column)).toBe("123");
     });
+
+    it("should return empty string when a function header has no children", () => {
+      const column = createMockColumn("test", () => ({ props: {} }));
+      expect(getHeaderText(column)).toBe("");
+    });
   });
 
   describe("getVisibleUniqueValues", () => {
@@ -61,6 +66,19 @@ describe("Tanstack Mixins", () => {
       const table = createMockTable([]);
       const values = getAllUniqueValues(column, table);
       expect(values).toEqual([]);
+    });
+
+    it("should return an empty array when the column has no accessorKey", () => {
+      const column = { ...createMockColumn("name", "Name"), columnDef: { header: "Name" } };
+      const table = createMockTable(mockData);
+      expect(getAllUniqueValues(column, table)).toEqual([]);
+    });
+
+    it("should sort numeric values numerically, not lexicographically", () => {
+      const data = [{ n: 2 }, { n: 100 }, { n: 30 }];
+      const column = createMockColumn("n", "N");
+      const values = getAllUniqueValues(column, createMockTable(data));
+      expect(values).toEqual([2, 30, 100]);
     });
   });
 
@@ -123,6 +141,15 @@ describe("Tanstack Mixins", () => {
       };
       setColumnVisibility(column, true);
       expect(column.toggleVisibility).not.toHaveBeenCalled();
+    });
+
+    it("should turn a hidden column visible when made visible", () => {
+      const column = {
+        ...createMockColumn("test", "Test"),
+        getIsVisible: () => false,
+      };
+      setColumnVisibility(column, true);
+      expect(column.toggleVisibility).toHaveBeenCalledWith(true);
     });
   });
 });

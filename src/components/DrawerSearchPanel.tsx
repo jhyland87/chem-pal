@@ -157,7 +157,7 @@ const DrawerSearchPanel: FC<{
           onChange={(e) =>
             setUserSettings({
               ...userSettings,
-              supplierResultLimit: parseInt(e.target.value) || undefined,
+              supplierResultLimit: Number(e.target.value) || undefined,
             })
           }
         />

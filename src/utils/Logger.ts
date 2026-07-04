@@ -26,6 +26,9 @@ export enum LogLevel {
 /** Default log level when nothing is set via window/process env. DEBUG in dev, WARN in prod. */
 const DEFAULT_LOG_LEVEL_FOR_BUILD: LogLevel = IS_DEV_BUILD ? LogLevel.DEBUG : LogLevel.WARN;
 
+/** Separator inserted between a parent prefix and a child prefix in `Logger.sub()`. */
+const SUB_LOGGER_SEPARATOR = "|";
+
 /** Narrows an arbitrary string to a `LogLevel` enum member. */
 function isLogLevel(value: string): value is LogLevel {
   return (Object.values(LogLevel) as string[]).includes(value);
@@ -227,6 +230,36 @@ export class Logger {
     this.prefix = prefix;
     this.useEnvOverride = !initialLogLevel;
     this._currentLogLevel = initialLogLevel ?? this.currentLogLevel;
+  }
+
+  /**
+   * Creates a child logger whose prefix is this logger's prefix with `suffix`
+   * appended after a `|` separator. Useful for scoping log lines to a specific
+   * operation without reconstructing a logger or restating the log level.
+   *
+   * The child is a new, independent instance (its own counters/timers/groups) that
+   * inherits this logger's level configuration: an env-synced parent yields an
+   * env-synced child, and a fixed-level parent seeds the child with that same level.
+   * Because `sub()` returns a `Logger`, calls chain to any depth.
+   * @param suffix - The prefix segment to append for the child logger
+   * @returns A new `Logger` whose prefix is the parent prefix, a `|`, then `suffix`
+   * @example
+   * ```typescript
+   * const logger = new Logger('SupplierBase');
+   * const l = logger.sub('httpPostFormData');
+   * l.log('Hello');
+   * // [2024-01-01T00:00:00.000Z] [INFO] [SupplierBase|httpPostFormData] Hello
+   *
+   * logger.sub('a').sub('b').sub('c').info('x');
+   * // [2024-01-01T00:00:00.000Z] [INFO] [SupplierBase|a|b|c] x
+   * ```
+   * @source
+   */
+  public sub(suffix: string): Logger {
+    return new Logger(
+      `${this.prefix}${SUB_LOGGER_SEPARATOR}${suffix}`,
+      this.useEnvOverride ? undefined : this._currentLogLevel,
+    );
   }
 
   /**
