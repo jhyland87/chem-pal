@@ -19,6 +19,7 @@
     "https://www.carolina.com/*",
     "https://carolinachemical.com/*",
     "https://www.chemsavers.com/*",
+    "https://s3.amazonaws.com/*",
     "https://chemsavers.com/*",
     "https://occapi.avantorsciences.com/*",
     "https://*.typesense.net/*",

@@ -364,6 +364,109 @@ describe("Logger", () => {
     });
   });
 
+  describe("colorized output", () => {
+    it("emits a %c format string (time, prefix chip, message) when a color is set", () => {
+      const logger = new Logger("SupplierAmbeed", LogLevel.DEBUG, "#fa938e");
+      logger.info("hi");
+      expect(consoleSpies.info).toHaveBeenCalledWith(
+        // Timestamp is locale-formatted, so match the stable tail rather than the exact time.
+        expect.stringMatching(/^%c.* %cSupplierAmbeed%c hi$/),
+        expect.stringContaining("border-left:5px solid #4d7df2"),
+        expect.stringContaining("background:#fa938e"),
+        expect.stringContaining("color:inherit"),
+      );
+    });
+
+    it("encodes the level as the left border color, not a text tag", () => {
+      const logger = new Logger("Sup", LogLevel.DEBUG, "#fa938e");
+      logger.error("boom");
+      const [format, borderStyle] = consoleSpies.error.mock.calls.at(-1) ?? [];
+      // No level word in the visible text; the border carries the severity color.
+      expect(String(format)).toContain("%cSup%c boom");
+      expect(String(format)).not.toContain("ERROR");
+      expect(String(borderStyle)).toContain("border-left:5px solid #e5484d");
+    });
+
+    it("uses a contrasting chip text color for the prefix", () => {
+      const logger = new Logger("Sup", LogLevel.DEBUG, "#5c6bc0");
+      logger.info("x");
+      expect(consoleSpies.info).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.stringContaining("border-left:5px solid"),
+        expect.stringContaining("color:#ffffff"),
+        expect.anything(),
+      );
+    });
+
+    it("passes extra arguments through after the style args", () => {
+      const logger = new Logger("Sup", LogLevel.DEBUG, "#fa938e");
+      const meta = { a: 1 };
+      logger.warn("w", meta);
+      expect(consoleSpies.warn).toHaveBeenCalledWith(
+        expect.stringContaining("%cSup%c w"),
+        expect.stringContaining("border-left:5px solid #f5a623"),
+        expect.stringContaining("background:#fa938e"),
+        expect.anything(),
+        meta,
+      );
+    });
+
+    it("propagates the color to child loggers via sub()", () => {
+      const child = new Logger("Sup", LogLevel.DEBUG, "#82ca9d").sub("http");
+      child.info("x");
+      expect(consoleSpies.info).toHaveBeenCalledWith(
+        expect.stringContaining("%cSup|http%c x"),
+        expect.anything(),
+        // #82ca9d → rgb(130, 202, 157); the chip is now dimmed (alpha < 1).
+        expect.stringContaining("rgba(130, 202, 157"),
+        expect.anything(),
+      );
+    });
+
+    it("dims the chip a step further for each sub() level", () => {
+      const chipOf = (logger: Logger): string => {
+        logger.info("x");
+        return String(consoleSpies.info.mock.calls.at(-1)?.[2]);
+      };
+      const base = new Logger("Sup", LogLevel.DEBUG, "#82ca9d");
+      // Base is the solid hex; nesting switches to progressively lower alpha.
+      expect(chipOf(base)).toContain("background:#82ca9d");
+      expect(chipOf(base.sub("a"))).toContain("rgba(130, 202, 157, 0.88)");
+      expect(chipOf(base.sub("a").sub("b"))).toContain("rgba(130, 202, 157, 0.76)");
+    });
+
+    it("toggles colorization on and off via setColor", () => {
+      const logger = new Logger("Sup", LogLevel.DEBUG);
+      logger.info("plain");
+      expect(consoleSpies.info).toHaveBeenLastCalledWith(
+        "[2024-01-01T00:00:00.000Z] [INFO] [Sup] plain",
+      );
+
+      logger.setColor("#8884d8");
+      logger.info("colored");
+      expect(consoleSpies.info).toHaveBeenLastCalledWith(
+        expect.stringContaining("%c"),
+        expect.stringContaining("border-left:5px solid"),
+        expect.stringContaining("background:#8884d8"),
+        expect.anything(),
+      );
+
+      logger.setColor(undefined);
+      logger.info("plain again");
+      expect(consoleSpies.info).toHaveBeenLastCalledWith(
+        "[2024-01-01T00:00:00.000Z] [INFO] [Sup] plain again",
+      );
+    });
+
+    it("leaves uncolored loggers as a single plain string", () => {
+      const logger = new Logger("Sup", LogLevel.DEBUG);
+      logger.log("hello");
+      expect(consoleSpies.log.mock.calls.at(-1)).toEqual([
+        "[2024-01-01T00:00:00.000Z] [INFO] [Sup] hello",
+      ]);
+    });
+  });
+
   describe("console-like methods", () => {
     beforeEach(() => {
       vi.spyOn(Date.prototype, "toISOString").mockReturnValue("2024-01-01T00:00:00.000Z");

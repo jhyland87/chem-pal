@@ -1,3 +1,4 @@
+import { getSupplierColor, SUPPLIER_COLORS } from "@/theme/colors";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { type JsonValue } from "type-fest";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -127,5 +128,13 @@ describe("SupplierBaseWoocommerce cross-query hydration", () => {
 
     expect(result).toHaveLength(2);
     expect(supplier.requestedVariantIds.sort()).toEqual([101, 202]);
+  });
+
+  it("defaults color to a stable palette color derived from the class name", () => {
+    const supplier = new TestWoo("q", 10, new AbortController());
+    expect(SUPPLIER_COLORS).toContain(supplier.color);
+    expect(supplier.color).toBe(getSupplierColor("TestWoo"));
+    // Same class → same color on a second instance.
+    expect(new TestWoo("other", 5, new AbortController()).color).toBe(supplier.color);
   });
 });

@@ -117,11 +117,13 @@ export abstract class SupplierBaseShopify
     // (200) gives the fuzzy filter a wide candidate pool before slicing back down to `limit`.
     const graphQLQuery = print(searchProductsQuery);
     const graphQLVariables = this.getGraphQLVariables(query, 200);
-    this.logger.debug("graphQLQuery", graphQLQuery);
-    this.logger.debug("apiURL", this.apiURL);
-    this.logger.debug("apiVersion", this.apiVersion);
-    this.logger.debug("body", { query: graphQLQuery, variables: graphQLVariables });
-    this.logger.debug("headers", { "Content-Type": "application/json" });
+    this.logger.debug("querying for products", {
+      query,
+      limit,
+      graphQLQuery,
+      apiURL: this.apiURL,
+      apiVersion: this.apiVersion,
+    });
 
     const searchRequest = await this.httpPostJson({
       path: `/api/${this.apiVersion}/graphql.json`,

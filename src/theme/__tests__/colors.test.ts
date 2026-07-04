@@ -4,9 +4,13 @@ import {
   drawerWidth,
   getBorderRadius,
   getBoxShadow,
+  getContrastText,
+  getSupplierColor,
   getTransition,
+  hexToRgba,
   lightTheme,
   searchMaxWidth,
+  SUPPLIER_COLORS,
 } from "../colors";
 
 describe("theme/colors constants", () => {
@@ -85,5 +89,67 @@ describe("getTransition", () => {
     expect(getTransition("transform", "0.5s")).toBe(
       "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
     );
+  });
+});
+
+describe("SUPPLIER_COLORS", () => {
+  it("contains only 6-digit hex colors and has no duplicates", () => {
+    for (const color of SUPPLIER_COLORS) {
+      expect(color).toMatch(/^#[0-9a-fA-F]{6}$/);
+    }
+    expect(new Set(SUPPLIER_COLORS).size).toBe(SUPPLIER_COLORS.length);
+  });
+});
+
+describe("getSupplierColor", () => {
+  it("always returns a color from the palette", () => {
+    expect(SUPPLIER_COLORS).toContain(getSupplierColor("SupplierAmbeed"));
+  });
+
+  it("is deterministic for the same key", () => {
+    expect(getSupplierColor("SupplierAmbeed")).toBe(getSupplierColor("SupplierAmbeed"));
+  });
+
+  it("maps different keys to (at least some) different colors", () => {
+    const keys = ["SupplierA", "SupplierB", "SupplierC", "SupplierD", "SupplierE"];
+    const colors = new Set(keys.map(getSupplierColor));
+    expect(colors.size).toBeGreaterThan(1);
+  });
+
+  it("handles the empty string without throwing", () => {
+    expect(SUPPLIER_COLORS).toContain(getSupplierColor(""));
+  });
+});
+
+describe("getContrastText", () => {
+  it("returns black text on a light background", () => {
+    expect(getContrastText("#f0e68c")).toBe("#000000");
+  });
+
+  it("returns white text on a dark background", () => {
+    expect(getContrastText("#5c6bc0")).toBe("#ffffff");
+  });
+
+  it("expands and evaluates 3-digit hex colors", () => {
+    expect(getContrastText("#fff")).toBe("#000000");
+    expect(getContrastText("#000")).toBe("#ffffff");
+  });
+
+  it("falls back to black for non-hex backgrounds", () => {
+    expect(getContrastText("currentColor")).toBe("#000000");
+  });
+});
+
+describe("hexToRgba", () => {
+  it("converts a 6-digit hex color to rgba", () => {
+    expect(hexToRgba("#4db6ac", 0.5)).toBe("rgba(77, 182, 172, 0.5)");
+  });
+
+  it("expands 3-digit hex colors", () => {
+    expect(hexToRgba("#fff", 1)).toBe("rgba(255, 255, 255, 1)");
+  });
+
+  it("returns the input unchanged for non-hex values", () => {
+    expect(hexToRgba("currentColor", 0.5)).toBe("currentColor");
   });
 });

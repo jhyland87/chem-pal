@@ -1,4 +1,5 @@
 import { useAppContext } from "@/context";
+import { hexToRgba, SUPPLIER_COLORS } from "@/theme/colors";
 import { clearStats, getStats } from "@/utils/SupplierStatsStore";
 import { IDB_SUPPLIER_STATS_UPDATED } from "@/utils/idbCache";
 import { Delete as DeleteIcon } from "@mui/icons-material";
@@ -22,48 +23,6 @@ import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import { FC, ReactNode, useEffect, useMemo, useState } from "react";
 import styles from "./StatsPanel.module.scss";
 import { BackButton } from "./StyledComponents";
-
-/** Color palette for suppliers. Indexed cyclically, so extra entries just give more distinct colors before the palette repeats. */
-const SUPPLIER_COLORS = [
-  "#fa938e",
-  "#98bf45",
-  "#51cbcf",
-  "#d397ff",
-  "#ffc658",
-  "#8884d8",
-  "#82ca9d",
-  "#8dd1e1",
-  "#a4de6c",
-  "#ffa07a",
-  "#87ceeb",
-  "#f0e68c",
-  "#e57373",
-  "#f06292",
-  "#ba68c8",
-  "#9575cd",
-  "#7986cb",
-  "#5c6bc0",
-  "#64b5f6",
-  "#4fc3f7",
-  "#4db6ac",
-  "#66bb6a",
-  "#c0ca33",
-  "#d4e157",
-  "#ff7043",
-  "#ffb74d",
-  "#a1887f",
-  "#90a4ae",
-  "#ff8a80",
-  "#b388ff",
-];
-
-/** Convert hex to rgba */
-const hexToRgba = (hex: string, alpha: number): string => {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-};
 
 /** Center label for the pie chart */
 const StyledText = styled("text")(({ theme }) => ({
