@@ -1,37 +1,65 @@
 declare global {
   /**
-   * Variables accepted by the `searchProducts` Shopify GraphQL query
+   * Variables accepted by the `Catalog` Shopify GraphQL query
    * (`@/queries/shopify-product-query.gql`).
    *
    * @example
    * ```typescript
-   * const variables: ShopifyQueryVariables = { query: "title:*gold*", first: 200 };
+   * const variables: ShopifyQueryVariables = { q: "sodium OR potassium", n: 200, cursor: null };
    * ```
    */
   interface ShopifyQueryVariables {
-    /** Storefront search filter (e.g. `title:*gold*`) */
-    query: string;
-    /** Maximum number of products to return */
-    first: number;
+    /** Storefront search query (supports AND/OR/NOT and field filters like `title:*gold*`) */
+    q: string;
+    /** Maximum number of products to return in this page */
+    n: number;
+    /** Relay pagination cursor (`after`); null for the first page */
+    cursor: string | null;
+  }
+
+  /** A Shopify money value: a decimal amount string plus its ISO currency code. */
+  interface ShopifyMoney {
+    /** Numeric value as a string (e.g. "14.99") */
+    amount: string;
+    /** ISO currency code (e.g. "USD") */
+    currencyCode?: string;
+  }
+
+  /**
+   * A media node from the product's `media` connection. Only `MediaImage` nodes
+   * carry an `image`; other media types (video, model3d) leave it undefined.
+   */
+  interface ShopifyMediaNode {
+    /* eslint-disable */
+    id: string;
+    /** Media type discriminator, e.g. "IMAGE", "VIDEO" */
+    mediaContentType: string;
+    /** Alt text (present on MediaImage nodes) */
+    alt?: string | null;
+    /** The image payload (present on MediaImage nodes) */
+    image?: {
+      url: string;
+      width?: number | null;
+      height?: number | null;
+    } | null;
+    /* eslint-enable */
   }
 
   /**
    * Represents a product variant node from the Shopify GraphQL Storefront API.
-   * Contains pricing, inventory, and shipping details for a specific product variation.
    *
    * @example
    * ```typescript
    * const variant: ShopifyVariantNode = {
+   *   id: "gid://shopify/ProductVariant/36127200805031",
    *   title: "Default Title",
    *   sku: "CHEM-001-500G",
-   *   barcode: "123456789012",
-   *   price: { amount: "29.99" },
+   *   availableForSale: true,
    *   weight: 3.0,
    *   weightUnit: "OUNCES",
-
-   *   requiresShipping: true,
-   *   availableForSale: true,
-   *   currentlyNotInStock: false
+   *   price: { amount: "29.99", currencyCode: "USD" },
+   *   compareAtPrice: null,
+   *   selectedOptions: [{ name: "Title", value: "Default Title" }],
    * };
    * ```
    */
@@ -42,32 +70,26 @@ declare global {
     /** Display title of the variant (e.g. "Default Title", "500g Bottle") */
     title: string;
     /** Stock Keeping Unit identifier */
-    sku: string;
-    /** Product barcode (UPC, EAN, etc.) */
-    barcode: string | null;
-    /** Price object containing the amount as a string */
-    price: {
-      /** Numeric price value as a string (e.g. "14.99") */
-      amount: string;
-    };
+    sku: string | null;
+    /** Whether the variant is currently available for purchase */
+    availableForSale: boolean;
     /** Numeric weight value */
     weight: number;
     /** Unit of weight measurement */
     weightUnit: "POUNDS" | "OUNCES" | "GRAMS" | "KILOGRAMS";
-    /** Whether the variant requires physical shipping */
-    requiresShipping: boolean;
-    /** Whether the variant is currently available for purchase */
-    availableForSale: boolean;
-    /** Whether the variant is currently out of stock */
+    /** Selling price */
+    price: ShopifyMoney;
+    /** Compare-at (list) price, or null when not on sale */
+    compareAtPrice: ShopifyMoney | null;
+    /** The option values selected for this variant */
+    selectedOptions: Array<{ name: string; value: string }>;
+    /** Whether the variant is currently in stock */
     currentlyNotInStock: boolean;
-    /** Product type */
-    productType: string | null;
     /* eslint-enable */
   }
 
   /**
    * Represents a product node from the Shopify GraphQL Storefront API.
-   * Contains core product information and nested variant data.
    *
    * @example
    * ```typescript
@@ -75,11 +97,9 @@ declare global {
    *   id: "gid://shopify/Product/6047654445205",
    *   title: "Gold Testing Kit",
    *   handle: "gold-test-kit",
-   *   description: "Professional gold testing kit",
+   *   descriptionHtml: "<p>Professional gold testing kit</p>",
    *   onlineStoreUrl: "https://www.example.com/products/gold-test-kit",
-   *   variants: {
-   *     edges: [{ node: { title: "Default Title", sku: "GTK-001", ... } }]
-   *   }
+   *   variants: { edges: [{ node: { title: "Default Title", sku: "GTK-001" } }] },
    * };
    * ```
    */
@@ -91,17 +111,30 @@ declare global {
     title: string;
     /** URL-friendly slug for the product */
     handle: string;
-    /** Full product description text */
-    description: string;
-    /** Full URL to the product on the online store */
-    onlineStoreUrl: string;
+    /** Manufacturer / brand */
+    vendor?: string;
+    /** Product type / category */
+    productType?: string;
+    /** Storefront tags */
+    tags?: string[];
+    /** Full product description as HTML */
+    descriptionHtml: string;
+    /** Whether any variant is available for sale */
+    availableForSale?: boolean;
+    /** Full URL to the product on the online store (null for unpublished products) */
+    onlineStoreUrl: string | null;
+    /** Min/max variant price range */
+    priceRange?: {
+      minVariantPrice: ShopifyMoney;
+      maxVariantPrice: ShopifyMoney;
+    };
+    /** Product media (images etc.) in relay-style edges/node format */
+    media?: {
+      edges: Array<{ node: ShopifyMediaNode }>;
+    };
     /** Product variants in Shopify's relay-style edges/node format */
     variants: {
-      /** Array of variant edge objects */
-      edges: Array<{
-        /** The variant node data */
-        node: ShopifyVariantNode;
-      }>;
+      edges: Array<{ node: ShopifyVariantNode }>;
     };
     /* eslint-enable */
   }
@@ -109,21 +142,8 @@ declare global {
   /**
    * Represents the full response from a Shopify GraphQL product search query.
    * May contain partial errors (e.g. permission-denied fields) alongside valid data.
-   *
-   * @example
-   * ```typescript
-   * const response: ShopifySearchResponse = {
-   *   data: {
-   *     products: {
-   *       edges: [{ node: { id: "gid://shopify/Product/123", title: "Test", ... } }]
-   *     }
-   *   }
-   * };
-   * ```
    */
   interface ShopifySearchResponse {
-    /** The response object */
-
     /** Array of GraphQL errors (e.g. permission denied for specific fields) */
     errors?: Array<{
       /** Human-readable error message */
@@ -146,6 +166,11 @@ declare global {
     data: {
       /** Product search results in relay-style edges/node format */
       products: {
+        /** Relay pagination info */
+        pageInfo?: {
+          hasNextPage: boolean;
+          endCursor: string | null;
+        };
         /** Array of product edge objects */
         edges: Array<{
           /** The product node data */

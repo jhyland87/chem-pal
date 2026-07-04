@@ -30,7 +30,7 @@ Display names below match each class's `supplierName` constant (what's shown in 
 | Onyxmet | `SupplierOnyxmet` | Custom | CA | HTML Only |
 | S3 Chemicals | `SupplierS3Chemicals` | Custom | DE | HTML Only |
 | Synthetika | `SupplierSynthetika` | Custom | PL | JSON Only |
-| The Lab Stockroom | `SupplierTheLabStockroom` | Shopify | US | JSON Only |
+| The Lab Stockroom | `SupplierTheLabStockroom` | Shopify | US | Hybrid (GraphQL search + per-product SDS probe) |
 | VWR | `SupplierVWR` | Custom | US | JSON Only (JSON search + JSON detail enrichment) |
 | Warchem | `SupplierWarchem` | Custom | PL | HTML Only |
 

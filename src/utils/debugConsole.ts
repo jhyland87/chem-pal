@@ -1,3 +1,5 @@
+import { backgroundFetch as backgroundFetchHelper } from "@/helpers/backgroundFetch";
+import type { BackgroundFetchInit } from "@/helpers/backgroundFetch";
 import { findCAS, getCASByName, getIUPACName, getNamesByCAS, isCAS } from "@/helpers/cas";
 import {
   executeSDQSearch,
@@ -17,6 +19,57 @@ import {
 import { Cactus } from "@/utils/Cactus";
 
 /**
+ * Inspection-friendly view of a proxied response, returned by {@link backgroundFetch}.
+ * @source
+ */
+interface BackgroundFetchResult {
+  ok: boolean;
+  status: number;
+  statusText: string;
+  headers: Record<string, string>;
+  body: string;
+  response: Response;
+}
+
+/**
+ * Triggers a {@link backgroundFetchHelper} request through the extension service worker and returns
+ * an inspection-friendly result for manual console testing. The body is read eagerly from a clone,
+ * so the returned `body` string can be logged directly while `response` stays unconsumed for further
+ * `.json()`/`.text()` calls.
+ * @param url - The absolute URL to request via the background service worker.
+ * @param init - Optional serializable request options (method, headers, body, etc.).
+ * @returns The response `ok`/`status`/`statusText`, flattened `headers`, the already-read `body`
+ *   string, and the untouched `response`.
+ * @example
+ * ```typescript
+ * // In the console:
+ * const res = await chempal.backgroundFetch("https://chemsavers.com/");
+ * res.status; // => 200
+ * res.body;   // => "<!doctype html>…"
+ * ```
+ * @source
+ */
+async function backgroundFetch(
+  url: string,
+  init?: BackgroundFetchInit,
+): Promise<BackgroundFetchResult> {
+  const response = await backgroundFetchHelper(url, init);
+  const body = await response.clone().text();
+  const headers: Record<string, string> = {};
+  response.headers.forEach((value, key) => {
+    headers[key] = value;
+  });
+  return {
+    ok: response.ok,
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+    body,
+    response,
+  };
+}
+
+/**
  * Prints the available debug helpers and a few example calls to the console.
  * @source
  */
@@ -31,11 +84,13 @@ function help(): void {
       "            getCompoundNameFromAlias, executeSDQSearch",
       "  CAS:      getCASByName, getNamesByCAS, getIUPACName, findCAS, isCAS",
       "  Cactus:   new chempal.Cactus('aspirin')",
+      "  Network:  backgroundFetch",
       "",
       "Examples:",
       "  await chempal.resolveSmiles('CCO')",
       "  await chempal.suggestAlternativeSearch('aspirin', ['aspirin'])",
       "  await new chempal.Cactus('CC(=O)Oc1ccccc1C(O)=O').getSimpleNames()",
+      "  await chempal.backgroundFetch('https://chemsavers.com/')",
     ].join("\n"),
   );
 }
@@ -67,6 +122,8 @@ const chempal = {
   findCAS,
   isCAS,
   Cactus,
+  // Background service-worker fetch proxy
+  backgroundFetch,
   help,
 };
 

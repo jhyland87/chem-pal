@@ -2,17 +2,16 @@ import { z } from "zod";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 const shopifyVariantNodeSchema = z.object({
+  id: z.string(),
   title: z.string(),
   sku: z.string().nullable(),
-  barcode: z.string().nullable(),
+  availableForSale: z.boolean(),
+  currentlyNotInStock: z.boolean(),
+  weight: z.number(),
+  weightUnit: z.enum(["POUNDS", "OUNCES", "GRAMS", "KILOGRAMS"]),
   price: z.object({
     amount: z.string(),
   }),
-  weight: z.number(),
-  weightUnit: z.enum(["POUNDS", "OUNCES", "GRAMS", "KILOGRAMS"]),
-  requiresShipping: z.boolean(),
-  availableForSale: z.boolean(),
-  currentlyNotInStock: z.boolean(),
 });
 /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -27,15 +26,13 @@ const shopifyVariantNodeSchema = z.object({
  * @example
  * ```typescript
  * const variant = {
+ *   id: "gid://shopify/ProductVariant/123",
  *   title: "Default Title",
  *   sku: "GTK-001",
- *   barcode: "",
- *   price: { amount: "14.99" },
+ *   availableForSale: true,
  *   weight: 3.0,
  *   weightUnit: "OUNCES",
- *   requiresShipping: true,
- *   availableForSale: true,
- *   currentlyNotInStock: false
+ *   price: { amount: "14.99" }
  * };
  *
  * if (isShopifyVariantNode(variant)) {
@@ -53,8 +50,10 @@ const shopifyProductNodeSchema = z.object({
   id: z.string(),
   title: z.string(),
   handle: z.string(),
-  description: z.string(),
-  onlineStoreUrl: z.string(),
+  descriptionHtml: z.string(),
+  // Null for products not published to the online store; initProductBuilders
+  // falls back to `${baseURL}/products/${handle}`.
+  onlineStoreUrl: z.string().nullable(),
   variants: z.object({
     edges: z.array(
       z.object({
@@ -79,7 +78,7 @@ const shopifyProductNodeSchema = z.object({
  *   id: "gid://shopify/Product/123",
  *   title: "Gold Test Kit",
  *   handle: "gold-test-kit",
- *   description: "A gold testing kit",
+ *   descriptionHtml: "<p>A gold testing kit</p>",
  *   onlineStoreUrl: "https://example.com/products/gold-test-kit",
  *   variants: { edges: [{ node: validVariant }] }
  * };

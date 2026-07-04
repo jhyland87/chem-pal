@@ -1,28 +1,68 @@
-query searchProducts($query: String!, $first: Int!) {
-  products(first: $first, query: $query) {
+query Catalog($q: String, $n: Int!, $cursor: String) {
+  products(first: $n, query: $q, sortKey: RELEVANCE, after: $cursor) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
     edges {
       node {
         id
-        title
         handle
-        description
-        onlineStoreUrl
+        title
+        vendor
         productType
-        variants(first: 5) {
+        tags
+        descriptionHtml
+        availableForSale
+        onlineStoreUrl
+        priceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+          maxVariantPrice {
+            amount
+            currencyCode
+          }
+        }
+        media(first: 10) {
+          edges {
+            node {
+              id
+              mediaContentType
+              ... on MediaImage {
+                alt
+                image {
+                  url
+                  width
+                  height
+                }
+              }
+            }
+          }
+        }
+        variants(first: 100) {
           edges {
             node {
               id
               title
               sku
-              barcode
-              price {
-                amount
-              }
-              weight
-              weightUnit
-              requiresShipping
               availableForSale
               currentlyNotInStock
+              weight
+              weightUnit
+              price {
+                amount
+                currencyCode
+              }
+              compareAtPrice {
+                amount
+                currencyCode
+              }
+              selectedOptions {
+                name
+                value
+              }
             }
           }
         }
