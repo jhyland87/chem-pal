@@ -1,3 +1,4 @@
+import { getContrastText, hexToRgba } from "@/theme/colors";
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 
 /**
@@ -86,6 +87,17 @@ export class Logger {
     [LogLevel.INFO]: 1,
     [LogLevel.WARN]: 2,
     [LogLevel.ERROR]: 3,
+  };
+
+  /**
+   * Text color used for each level tag in colorized (browser) output.
+   * @source
+   */
+  private static readonly levelColors: Record<LogLevel, string> = {
+    [LogLevel.DEBUG]: "#9aa0a6",
+    [LogLevel.INFO]: "#4d7df2",
+    [LogLevel.WARN]: "#f5a623",
+    [LogLevel.ERROR]: "#e5484d",
   };
 
   /**
@@ -181,6 +193,13 @@ export class Logger {
    */
   private prefix: string;
 
+  /**
+   * Optional hex color for this logger. When set, browser output is colorized
+   * with the prefix shown as a chip in this color; unset means plain output.
+   * @source
+   */
+  private color?: string;
+
   private _currentLogLevel: LogLevel;
 
   /**
@@ -214,6 +233,8 @@ export class Logger {
    *                         variables. If not provided, the logger will automatically
    *                         sync with environment variables (`process.env.LOG_LEVEL` or
    *                         `window.LOG_LEVEL`) and update its level when they change.
+   * @param color - Optional hex color (e.g. `"#fa938e"`). When set, browser output is
+   *                colorized with the prefix rendered as a chip in this color.
    *
    * @example
    * ```typescript
@@ -223,13 +244,33 @@ export class Logger {
    * // Fixed level loggers that ignore environment
    * const debugLogger = new Logger('API', LogLevel.DEBUG);
    * const errorLogger = new Logger('DB', LogLevel.ERROR);
+   *
+   * // Colorized logger (prefix shown as a colored chip in the browser console)
+   * const supplierLogger = new Logger('SupplierAmbeed', undefined, '#4db6ac');
    * ```
    * @source
    */
-  constructor(prefix: string, initialLogLevel?: LogLevel) {
+  constructor(prefix: string, initialLogLevel?: LogLevel, color?: string) {
     this.prefix = prefix;
+    this.color = color;
     this.useEnvOverride = !initialLogLevel;
     this._currentLogLevel = initialLogLevel ?? this.currentLogLevel;
+  }
+
+  /**
+   * Sets (or clears) the color used to colorize this logger's browser output.
+   *
+   * @param color - A hex color string, or undefined to disable colorization
+   *
+   * @example
+   * ```typescript
+   * const logger = new Logger('SupplierAmbeed');
+   * logger.setColor('#4db6ac'); // prefix now rendered as a teal chip
+   * ```
+   * @source
+   */
+  public setColor(color?: string): void {
+    this.color = color;
   }
 
   /**
@@ -259,6 +300,7 @@ export class Logger {
     return new Logger(
       `${this.prefix}${SUB_LOGGER_SEPARATOR}${suffix}`,
       this.useEnvOverride ? undefined : this._currentLogLevel,
+      this.color,
     );
   }
 
@@ -336,6 +378,45 @@ export class Logger {
   }
 
   /**
+   * Builds the argument list to spread into a `console` call. For uncolored loggers
+   * (or non-browser consoles that would print `%c` literally) this is the single
+   * plain string from `formatMessage`. When a color is set in a browser, it returns
+   * a `%c` format string plus the CSS style arguments: a muted timestamp carrying a
+   * thick left border in the level's color, the prefix as a chip in the logger's
+   * color (dimmed a step per `sub()` depth), and a reset for the message.
+   *
+   * @param level - The log level for the message
+   * @param message - The message to format
+   * @returns The arguments to spread into `console.log`/`info`/etc.
+   *
+   * @example
+   * ```typescript
+   * // Uncolored: ["[2024-01-01T00:00:00.000Z] [INFO] [MyApp] hi"]
+   * // Colored:   ["%c... %cMyApp%c hi", "border-left:5px solid #4d7df2; ...", ...styles]
+   * console.info(...this.formatArgs(LogLevel.INFO, "hi"));
+   * ```
+   * @source
+   */
+  private formatArgs(level: LogLevel, message: string): unknown[] {
+    if (this.color === undefined || typeof window === "undefined") {
+      return [this.formatMessage(level, message)];
+    }
+    // Short local time reads better than a full ISO string in a live devtools console.
+    const timestamp = new Date().toLocaleTimeString();
+    const indentation = this.groupIndent.repeat(this.groupDepth);
+    // Each sub() adds a `|` segment; dim the chip a step per level of nesting.
+    const subDepth = this.prefix.split(SUB_LOGGER_SEPARATOR).length - 1;
+    const chipAlpha = Math.max(0.4, Math.round((1 - subDepth * 0.12) * 100) / 100);
+    const chipBackground = subDepth <= 0 ? this.color : hexToRgba(this.color, chipAlpha);
+    return [
+      `%c${timestamp} %c${this.prefix}%c ${indentation}${message}`,
+      `border-left:5px solid ${Logger.levelColors[level]}; padding-left:8px; color:#6b7280;`,
+      `background:${chipBackground}; color:${getContrastText(this.color)}; padding:1px 6px; border-radius:4px; font-weight:600;`,
+      "color:inherit; background:transparent; font-weight:normal; padding:0;",
+    ];
+  }
+
+  /**
    * Determines if a message at the given level should be logged based on the current log level.
    * If environment syncing is enabled, checks for environment changes before making the determination.
    *
@@ -397,7 +478,7 @@ export class Logger {
    */
   public debug(message: string, ...args: unknown[]): void {
     if (!this.shouldLog(LogLevel.DEBUG)) return;
-    console.debug(this.formatMessage(LogLevel.DEBUG, message), ...args);
+    console.debug(...this.formatArgs(LogLevel.DEBUG, message), ...args);
   }
 
   /**
@@ -417,7 +498,7 @@ export class Logger {
    */
   public info(message: string, ...args: unknown[]): void {
     if (!this.shouldLog(LogLevel.INFO)) return;
-    console.info(this.formatMessage(LogLevel.INFO, message), ...args);
+    console.info(...this.formatArgs(LogLevel.INFO, message), ...args);
   }
 
   /**
@@ -437,7 +518,7 @@ export class Logger {
    */
   public warn(message: string, ...args: unknown[]): void {
     if (!this.shouldLog(LogLevel.WARN)) return;
-    console.warn(this.formatMessage(LogLevel.WARN, message), ...args);
+    console.warn(...this.formatArgs(LogLevel.WARN, message), ...args);
   }
 
   /**
@@ -470,7 +551,7 @@ export class Logger {
    */
   public error(message: string, ...args: unknown[]): void {
     if (!this.shouldLog(LogLevel.ERROR)) return;
-    console.error(this.formatMessage(LogLevel.ERROR, message), ...args);
+    console.error(...this.formatArgs(LogLevel.ERROR, message), ...args);
   }
 
   /**
@@ -500,7 +581,7 @@ export class Logger {
    */
   public log(message: string, ...args: unknown[]): void {
     if (!this.shouldLog(LogLevel.INFO)) return;
-    console.log(this.formatMessage(LogLevel.INFO, message), ...args);
+    console.log(...this.formatArgs(LogLevel.INFO, message), ...args);
   }
 
   /**
