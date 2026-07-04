@@ -300,6 +300,70 @@ describe("Logger", () => {
     });
   });
 
+  describe("sub / child loggers", () => {
+    beforeEach(() => {
+      vi.spyOn(Date.prototype, "toISOString").mockReturnValue("2024-01-01T00:00:00.000Z");
+    });
+
+    it("should append the suffix to the prefix with a '|' separator", () => {
+      const parent = new Logger("SupplierBase");
+      parent.sub("httpPostFormData").log("Hello");
+      expect(consoleSpies.log).toHaveBeenCalledWith(
+        "[2024-01-01T00:00:00.000Z] [INFO] [SupplierBase|httpPostFormData] Hello",
+      );
+    });
+
+    it("should stack separators when chained to any depth", () => {
+      logger.sub("a").sub("b").sub("c").info("x");
+      expect(consoleSpies.info).toHaveBeenCalledWith(
+        "[2024-01-01T00:00:00.000Z] [INFO] [Test|a|b|c] x",
+      );
+    });
+
+    it("should pass through additional arguments", () => {
+      const additionalArg = { key: "value" };
+      logger.sub("child").info("test message", additionalArg);
+      expect(consoleSpies.info).toHaveBeenCalledWith(
+        "[2024-01-01T00:00:00.000Z] [INFO] [Test|child] test message",
+        additionalArg,
+      );
+    });
+
+    it("should not mutate the parent prefix", () => {
+      logger.sub("child");
+      logger.info("parent message");
+      expect(consoleSpies.info).toHaveBeenCalledWith(
+        "[2024-01-01T00:00:00.000Z] [INFO] [Test] parent message",
+      );
+    });
+
+    it("should inherit env syncing from an env-synced parent", () => {
+      const child = new Logger("Parent").sub("child");
+      (window as ExtendedWindow).LOG_LEVEL = "DEBUG";
+      child.debug("child debug");
+      expect(consoleSpies.debug).toHaveBeenCalledWith(
+        expect.stringContaining("[Parent|child] child debug"),
+      );
+    });
+
+    it("should inherit a fixed level from a fixed-level parent", () => {
+      const child = new Logger("Parent", LogLevel.WARN).sub("child");
+      // A conflicting environment level must be ignored by the fixed-level child.
+      (window as ExtendedWindow).LOG_LEVEL = "DEBUG";
+
+      child.info("suppressed info");
+      child.warn("shown warn");
+
+      expect(consoleSpies.info).not.toHaveBeenCalledWith(
+        expect.stringContaining("[Parent|child] suppressed info"),
+      );
+      expect(consoleSpies.warn).toHaveBeenCalledWith(
+        expect.stringContaining("[Parent|child] shown warn"),
+      );
+      expect(child.getLogLevel()).toBe(LogLevel.WARN);
+    });
+  });
+
   describe("console-like methods", () => {
     beforeEach(() => {
       vi.spyOn(Date.prototype, "toISOString").mockReturnValue("2024-01-01T00:00:00.000Z");
@@ -418,6 +482,148 @@ describe("Logger", () => {
       it("should call console.clear", () => {
         logger.clear();
         expect(consoleSpies.clear).toHaveBeenCalled();
+      });
+    });
+
+    describe("log and debug formatting", () => {
+      it("should format log() output at INFO level", () => {
+        logger.log("app started");
+        expect(consoleSpies.log).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [INFO] [Test] app started",
+        );
+      });
+
+      it("should format debug() output at DEBUG level with pass-through args", () => {
+        const payload = { userId: 123 };
+        logger.debug("processing", payload);
+        expect(consoleSpies.debug).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [DEBUG] [Test] processing",
+          payload,
+        );
+      });
+    });
+
+    describe("count and countReset", () => {
+      it("should increment a named counter on each call", () => {
+        logger.count("api-requests");
+        logger.count("api-requests");
+        expect(consoleSpies.log).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [INFO] [Test] api-requests: 1",
+        );
+        expect(consoleSpies.log).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [INFO] [Test] api-requests: 2",
+        );
+      });
+
+      it("should use the 'default' label when none is provided", () => {
+        logger.count();
+        expect(consoleSpies.log).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [INFO] [Test] default: 1",
+        );
+      });
+
+      it("should restart the count after countReset", () => {
+        logger.count("hits");
+        logger.count("hits");
+        logger.countReset("hits");
+        logger.count("hits");
+        expect(consoleSpies.log).toHaveBeenLastCalledWith(
+          "[2024-01-01T00:00:00.000Z] [INFO] [Test] hits: 1",
+        );
+      });
+
+      it("should not log counts when level is above INFO", () => {
+        logger.setLogLevel(LogLevel.WARN);
+        logger.count("hidden");
+        expect(consoleSpies.log).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("timers", () => {
+      beforeEach(() => {
+        let now = 1000;
+        // Deterministic, monotonically increasing durations for timer output.
+        vi.spyOn(performance, "now").mockImplementation(() => {
+          now += 500;
+          return now;
+        });
+      });
+
+      it("should log a started message when a timer begins", () => {
+        logger.time("task");
+        expect(consoleSpies.debug).toHaveBeenCalledWith(
+          "[2024-01-01T00:00:00.000Z] [DEBUG] [Test] Timer 'task' started",
+        );
+      });
+
+      it("should warn when starting a timer that already exists", () => {
+        logger.time("task");
+        logger.time("task");
+        expect(consoleSpies.warn).toHaveBeenCalledWith(
+          expect.stringContaining("Timer 'task' already exists"),
+        );
+      });
+
+      it("should log the elapsed time on timeEnd", () => {
+        logger.time("task");
+        logger.timeEnd("task");
+        expect(consoleSpies.debug).toHaveBeenCalledWith(
+          expect.stringMatching(/\[DEBUG\] \[Test\] Timer 'task': \d+\.\d{2}ms/),
+        );
+      });
+
+      it("should warn on timeEnd for a non-existent timer", () => {
+        logger.timeEnd("missing");
+        expect(consoleSpies.warn).toHaveBeenCalledWith(
+          expect.stringContaining("Timer 'missing' does not exist"),
+        );
+      });
+
+      it("should log elapsed time without stopping the timer on timeLog", () => {
+        logger.time("task");
+        logger.timeLog("task", { step: 1 });
+        expect(consoleSpies.debug).toHaveBeenCalledWith(
+          expect.stringMatching(/\[DEBUG\] \[Test\] Timer 'task': \d+\.\d{2}ms/),
+          { step: 1 },
+        );
+      });
+
+      it("should warn on timeLog for a non-existent timer", () => {
+        logger.timeLog("missing");
+        expect(consoleSpies.warn).toHaveBeenCalledWith(
+          expect.stringContaining("Timer 'missing' does not exist"),
+        );
+      });
+    });
+
+    describe("timeStamp", () => {
+      it("should log a labeled timestamp at DEBUG level", () => {
+        logger.timeStamp("checkpoint");
+        expect(consoleSpies.debug).toHaveBeenCalledWith(
+          expect.stringContaining("[DEBUG] [Test] Timestamp 'checkpoint':"),
+        );
+      });
+
+      it("should log an unlabeled timestamp at DEBUG level", () => {
+        logger.timeStamp();
+        expect(consoleSpies.debug).toHaveBeenCalledWith(
+          expect.stringMatching(/\[DEBUG\] \[Test\] Timestamp: .+/),
+        );
+      });
+
+      it("should not log when level is above DEBUG", () => {
+        logger.setLogLevel(LogLevel.INFO);
+        logger.timeStamp("checkpoint");
+        expect(consoleSpies.debug).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("setEnvLogLevel", () => {
+      it("should write the level to window and process env so new loggers pick it up", () => {
+        Logger.setEnvLogLevel(LogLevel.ERROR);
+        expect((window as ExtendedWindow).LOG_LEVEL).toBe(LogLevel.ERROR);
+        expect(process.env.LOG_LEVEL).toBe(LogLevel.ERROR);
+        expect(new Logger("Fresh").getLogLevel()).toBe(LogLevel.ERROR);
       });
     });
   });

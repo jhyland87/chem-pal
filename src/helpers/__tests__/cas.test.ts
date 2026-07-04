@@ -1,5 +1,5 @@
 import { CAS_REGEX } from "@/constants/common";
-import { findCAS, getCASByName, getNamesByCAS, isCAS } from "@/helpers/cas";
+import { findCAS, getCASByName, getIUPACName, getNamesByCAS, isCAS } from "@/helpers/cas";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, test, vi, type Mock } from "vitest";
 
 describe("CAS Helpers", () => {
@@ -115,6 +115,70 @@ describe("CAS Helpers", () => {
       } else {
         expect(cas).toContain(output);
       }
+    });
+
+    it("splits and trims multi-line name responses", async () => {
+      (global.fetch as Mock).mockResolvedValueOnce({
+        text: () => Promise.resolve("  acetone \n propanone "),
+      } as unknown as Response);
+      const names = await getNamesByCAS("67-64-1" as `${string}-${string}-${string}`);
+      expect(names).toEqual(["acetone", "propanone"]);
+    });
+
+    it("returns undefined for an empty response body", async () => {
+      (global.fetch as Mock).mockResolvedValueOnce({
+        text: () => Promise.resolve(""),
+      } as unknown as Response);
+      const names = await getNamesByCAS("67-64-1" as `${string}-${string}-${string}`);
+      expect(names).toBeUndefined();
+    });
+
+    it("returns undefined and logs when fetch rejects", async () => {
+      (global.fetch as Mock).mockRejectedValueOnce(new Error("network"));
+      const names = await getNamesByCAS("67-64-1" as `${string}-${string}-${string}`);
+      expect(names).toBeUndefined();
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe("getCASByName (edge cases)", () => {
+    beforeAll(() => {
+      global.fetch = vi.fn() as Mock;
+    });
+    afterEach(() => (global.fetch as Mock).mockReset());
+
+    it("returns undefined when no line is a valid CAS", async () => {
+      (global.fetch as Mock).mockResolvedValueOnce({
+        text: () => Promise.resolve("not-a-cas\nalso-not"),
+      } as unknown as Response);
+      expect(await getCASByName("mystery")).toBeUndefined();
+    });
+
+    it("returns undefined and logs when fetch rejects", async () => {
+      (global.fetch as Mock).mockRejectedValueOnce(new Error("network"));
+      expect(await getCASByName("acetone")).toBeUndefined();
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe("getIUPACName", () => {
+    beforeAll(() => {
+      global.fetch = vi.fn() as Mock;
+    });
+    afterEach(() => (global.fetch as Mock).mockReset());
+
+    it("returns the trimmed IUPAC name", async () => {
+      (global.fetch as Mock).mockResolvedValueOnce({
+        text: () => Promise.resolve("  propan-2-one \n"),
+      } as unknown as Response);
+      expect(await getIUPACName("acetone")).toBe("propan-2-one");
+    });
+
+    it("returns undefined for an empty response", async () => {
+      (global.fetch as Mock).mockResolvedValueOnce({
+        text: () => Promise.resolve(""),
+      } as unknown as Response);
+      expect(await getIUPACName("nope")).toBeUndefined();
     });
   });
 });

@@ -6,10 +6,14 @@ import ArrowRightIcon from "../ArrowRightIcon";
 import AutoDeleteIcon from "../AutoDeleteIcon";
 import BenzeneBlueIcon from "../BenzeneBlueIcon";
 import BenzeneIcon from "../BenzeneIcon";
+import BlockIcon from "../BlockIcon";
 import BookmarkIcon from "../BookmarkIcon";
 import ClearIcon from "../ClearIcon";
+import COAIcon from "../COAIcon";
 import ContrastIcon from "../ContrastIcon";
+import CopyIcon from "../CopyIcon";
 import GitHubIcon from "../GitHubIcon";
+import HttpIcon from "../HttpIcon";
 import HistoryIcon from "../HistoryIcon";
 import InfoOutlineIcon from "../InfoOutlineIcon";
 import KeyboardArrowLeftIcon from "../KeyboardArrowLeftIcon";
@@ -18,9 +22,11 @@ import KeyboardDoubleArrowLeftIcon from "../KeyboardDoubleArrowLeftIcon";
 import KeyboardDoubleArrowRightIcon from "../KeyboardDoubleArrowRightIcon";
 import MenuIcon from "../MenuIcon";
 import ScienceIcon from "../ScienceIcon";
+import SDSIcon from "../SDSIcon";
 import SearchIcon from "../SearchIcon";
 import SettingsIcon from "../SettingsIcon";
 import StoreIcon from "../StoreIcon";
+import TDSIcon from "../TDSIcon";
 import TuneIcon from "../TuneIcon";
 
 // Array of all icons and their components for testing
@@ -31,11 +37,15 @@ const icons = [
   { name: "AutoDelete", component: AutoDeleteIcon },
   { name: "BenzeneBlue", component: BenzeneBlueIcon },
   { name: "Benzene", component: BenzeneIcon },
+  { name: "Block", component: BlockIcon },
   { name: "Bookmark", component: BookmarkIcon },
   { name: "Clear", component: ClearIcon },
+  { name: "COA", component: COAIcon },
   { name: "Contrast", component: ContrastIcon },
+  { name: "Copy", component: CopyIcon },
   { name: "GitHub", component: GitHubIcon },
   { name: "History", component: HistoryIcon },
+  { name: "Http", component: HttpIcon },
   { name: "InfoOutline", component: InfoOutlineIcon },
   { name: "KeyboardArrowLeft", component: KeyboardArrowLeftIcon },
   { name: "KeyboardArrowRight", component: KeyboardArrowRightIcon },
@@ -43,9 +53,11 @@ const icons = [
   { name: "KeyboardDoubleArrowRight", component: KeyboardDoubleArrowRightIcon },
   { name: "Menu", component: MenuIcon },
   { name: "Science", component: ScienceIcon },
+  { name: "SDS", component: SDSIcon },
   { name: "Search", component: SearchIcon },
   { name: "Settings", component: SettingsIcon },
   { name: "Store", component: StoreIcon },
+  { name: "TDS", component: TDSIcon },
   { name: "Tune", component: TuneIcon },
 ];
 

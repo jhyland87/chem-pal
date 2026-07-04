@@ -1,6 +1,52 @@
-import { type Column, type Table } from "@tanstack/react-table";
+import { type Column, type ColumnDef, type Table } from "@tanstack/react-table";
 
-type ColumnDefWithAccessor<TData> = { accessorKey?: keyof TData };
+/**
+ * Narrows an unknown value to the primitive column value types handled here.
+ *
+ * @param value - The value to check
+ * @returns True if `value` is a string or number
+ */
+function isStringOrNumber(value: unknown): value is string | number {
+  return typeof value === "string" || typeof value === "number";
+}
+
+/**
+ * Reads the `accessorKey` from a column definition when it is an accessor column.
+ *
+ * @param columnDef - The column definition to inspect
+ * @returns The accessor key, or undefined for non-accessor columns
+ */
+function getAccessorKey<TData>(columnDef: ColumnDef<TData, unknown>): keyof TData | undefined {
+  if ("accessorKey" in columnDef) {
+    const key = columnDef.accessorKey;
+    if (typeof key === "string" || typeof key === "number" || typeof key === "symbol") {
+      // TanStack types accessorKey as its own deep-key union; narrow to this data's keys.
+      return key as keyof TData;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Extracts the string `children` from the element a functional header returns.
+ *
+ * @param rendered - The value produced by invoking a functional header template
+ * @returns The children string, or an empty string when it isn't a string-children element
+ */
+function getRenderedHeaderText(rendered: unknown): string {
+  if (
+    typeof rendered === "object" &&
+    rendered !== null &&
+    "props" in rendered &&
+    typeof rendered.props === "object" &&
+    rendered.props !== null &&
+    "children" in rendered.props &&
+    typeof rendered.props.children === "string"
+  ) {
+    return rendered.props.children;
+  }
+  return "";
+}
 
 /**
  * Gets the displayable header text for a column.
@@ -16,9 +62,10 @@ export function getHeaderText<TData>(column: Column<TData, unknown>): string {
   if (header === undefined) return "";
   if (typeof header === "string") return header;
   if (typeof header === "function") {
-    // TanStack's header template is typed loosely; cast to read the React element's children prop.
-    const result = (header as () => { props?: { children?: string } })()?.props?.children;
-    return result ?? "";
+    // TanStack's functional header expects a context arg we don't have here; invoke it
+    // defensively and narrow the rendered element with a guard instead of asserting its shape.
+    const rendered: unknown = (header as (...args: unknown[]) => unknown)();
+    return getRenderedHeaderText(rendered);
   }
   return String(header);
 }
@@ -40,9 +87,8 @@ export function getVisibleUniqueValues<TData>(
   const values = new Set<string | number>();
 
   table.getRowModel().rows.forEach((row) => {
-    const value = row.getValue(column.id);
-    // TanStack's row.getValue returns unknown; column values are primitives here.
-    if (value !== undefined && value !== null) values.add(value as string | number);
+    const value: unknown = row.getValue(column.id);
+    if (isStringOrNumber(value)) values.add(value);
   });
 
   return Array.from(values).sort((a, b) => {
@@ -64,13 +110,12 @@ export function getAllUniqueValues<TData>(
   column: Column<TData, unknown>,
   table: Table<TData>,
 ): (string | number)[] {
-  const accessorKey = (column.columnDef as ColumnDefWithAccessor<TData>).accessorKey;
-  if (!accessorKey) return [];
+  const accessorKey = getAccessorKey<TData>(column.columnDef);
+  if (accessorKey === undefined) return [];
 
   const uniqueValues = table.options.data.reduce<(string | number)[]>((accu, row) => {
-    // Narrow the generic TData[keyof TData] member to the primitive column values handled here.
-    const value = row[accessorKey] as string | number;
-    if (value !== undefined && value !== null && !accu.includes(value)) {
+    const value: unknown = row[accessorKey];
+    if (isStringOrNumber(value) && !accu.includes(value)) {
       accu.push(value);
     }
     return accu;

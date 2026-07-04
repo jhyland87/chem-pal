@@ -1,23 +1,60 @@
+import { useAppContext } from "@/context";
+import { clearStats, getStats } from "@/utils/SupplierStatsStore";
+import { IDB_SUPPLIER_STATS_UPDATED } from "@/utils/idbCache";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { Box, IconButton, Paper, Tab, Tabs, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from "@mui/material";
-import { DataGrid, type GridColDef } from "@mui/x-data-grid";
+import {
+  Box,
+  IconButton,
+  Paper,
+  Tab,
+  Tabs,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { useDrawingArea } from "@mui/x-charts/hooks";
-import { useEffect, useMemo, useState, FC, ReactNode } from "react";
-import { useAppContext } from "@/context";
-import { clearStats, getStats } from "@/utils/SupplierStatsStore";
-import { IDB_SUPPLIER_STATS_UPDATED } from "@/utils/idbCache";
-import { BackButton } from "./StyledComponents";
+import { DataGrid, type GridColDef } from "@mui/x-data-grid";
+import { FC, ReactNode, useEffect, useMemo, useState } from "react";
 import styles from "./StatsPanel.module.scss";
+import { BackButton } from "./StyledComponents";
 
-/** Color palette for suppliers */
+/** Color palette for suppliers. Indexed cyclically, so extra entries just give more distinct colors before the palette repeats. */
 const SUPPLIER_COLORS = [
-  "#fa938e", "#98bf45", "#51cbcf", "#d397ff", "#ffc658",
-  "#8884d8", "#82ca9d", "#8dd1e1", "#a4de6c", "#ffa07a",
-  "#87ceeb", "#f0e68c",
+  "#fa938e",
+  "#98bf45",
+  "#51cbcf",
+  "#d397ff",
+  "#ffc658",
+  "#8884d8",
+  "#82ca9d",
+  "#8dd1e1",
+  "#a4de6c",
+  "#ffa07a",
+  "#87ceeb",
+  "#f0e68c",
+  "#e57373",
+  "#f06292",
+  "#ba68c8",
+  "#9575cd",
+  "#7986cb",
+  "#5c6bc0",
+  "#64b5f6",
+  "#4fc3f7",
+  "#4db6ac",
+  "#66bb6a",
+  "#c0ca33",
+  "#d4e157",
+  "#ff7043",
+  "#ffb74d",
+  "#a1887f",
+  "#90a4ae",
+  "#ff8a80",
+  "#b388ff",
 ];
 
 /** Convert hex to rgba */
@@ -112,10 +149,14 @@ const StatsPanel: FC = () => {
 
   // Aggregate stats across all days
   const aggregatedBySupplier = useMemo(() => {
-    const agg: Record<string, { success: number; failure: number; products: number; queries: number; parseErrors: number }> = {};
+    const agg: Record<
+      string,
+      { success: number; failure: number; products: number; queries: number; parseErrors: number }
+    > = {};
     for (const dayStats of Object.values(stats)) {
       for (const [supplier, s] of Object.entries(dayStats)) {
-        if (!agg[supplier]) agg[supplier] = { success: 0, failure: 0, products: 0, queries: 0, parseErrors: 0 };
+        if (!agg[supplier])
+          agg[supplier] = { success: 0, failure: 0, products: 0, queries: 0, parseErrors: 0 };
         agg[supplier].success += s.successCount;
         agg[supplier].failure += s.failureCount;
         agg[supplier].products += s.uniqueProductCount;
@@ -139,7 +180,10 @@ const StatsPanel: FC = () => {
   // ── HTTP Calls view: inner = total HTTP calls per supplier, outer = success vs failure ──
   const httpPieData = useMemo(() => {
     const suppliers = Object.keys(aggregatedBySupplier);
-    const totalCalls = suppliers.reduce((sum, s) => sum + aggregatedBySupplier[s].success + aggregatedBySupplier[s].failure, 0);
+    const totalCalls = suppliers.reduce(
+      (sum, s) => sum + aggregatedBySupplier[s].success + aggregatedBySupplier[s].failure,
+      0,
+    );
 
     const inner: PieDatum[] = suppliers.map((supplier) => {
       const { success, failure } = aggregatedBySupplier[supplier];
@@ -182,7 +226,10 @@ const StatsPanel: FC = () => {
   // ── Parsed Data view: inner = total products + parse errors per supplier, outer = products vs parseErrors ──
   const parsedPieData = useMemo(() => {
     const suppliers = Object.keys(aggregatedBySupplier);
-    const totalParsed = suppliers.reduce((sum, s) => sum + aggregatedBySupplier[s].products + aggregatedBySupplier[s].parseErrors, 0);
+    const totalParsed = suppliers.reduce(
+      (sum, s) => sum + aggregatedBySupplier[s].products + aggregatedBySupplier[s].parseErrors,
+      0,
+    );
 
     const inner: PieDatum[] = suppliers.map((supplier) => {
       const { products, parseErrors } = aggregatedBySupplier[supplier];
@@ -232,7 +279,13 @@ const StatsPanel: FC = () => {
       }
     }
 
-    const series: Array<{ data: number[]; label: string; color: string; showMark: boolean; valueFormatter: (v: number | null) => string }> = [];
+    const series: Array<{
+      data: number[];
+      label: string;
+      color: string;
+      showMark: boolean;
+      valueFormatter: (v: number | null) => string;
+    }> = [];
     let colorIdx = 0;
     for (const supplier of allSuppliers) {
       const color = SUPPLIER_COLORS[colorIdx % SUPPLIER_COLORS.length];
@@ -265,20 +318,25 @@ const StatsPanel: FC = () => {
     { field: "parseErrors", headerName: "Parse Errors", width: 105, type: "number" },
   ];
 
-  const totalsRows = useMemo(() =>
-    Object.entries(aggregatedBySupplier).map(([supplier, s]) => ({
-      id: supplier,
-      supplier,
-      queries: s.queries,
-      success: s.success,
-      failure: s.failure,
-      products: s.products,
-      parseErrors: s.parseErrors,
-    })),
-  [aggregatedBySupplier]);
+  const totalsRows = useMemo(
+    () =>
+      Object.entries(aggregatedBySupplier).map(([supplier, s]) => ({
+        id: supplier,
+        supplier,
+        queries: s.queries,
+        success: s.success,
+        failure: s.failure,
+        products: s.products,
+        parseErrors: s.parseErrors,
+      })),
+    [aggregatedBySupplier],
+  );
 
   const hasData = Object.keys(stats).length > 0;
-  const totalCalls = Object.values(aggregatedBySupplier).reduce((sum, s) => sum + s.success + s.failure, 0);
+  const totalCalls = Object.values(aggregatedBySupplier).reduce(
+    (sum, s) => sum + s.success + s.failure,
+    0,
+  );
 
   const innerRadius = 50;
   const middleRadius = 120;
@@ -286,13 +344,14 @@ const StatsPanel: FC = () => {
   // Select the right pie data based on the toggle
   const activePie = pieView === "http" ? httpPieData : parsedPieData;
   const centerLabel = pieView === "http" ? "HTTP" : "Parsed";
-  const activeTotalForTooltip = pieView === "http" ? httpPieData.totalCalls : parsedPieData.totalParsed;
+  const activeTotalForTooltip =
+    pieView === "http" ? httpPieData.totalCalls : parsedPieData.totalParsed;
 
   return (
-    <div className={styles['stats-panel']}>
+    <div className={styles["stats-panel"]}>
       {/* Header */}
-      <div className={styles['stats-panel__top-header']}>
-        <div className={styles['header-left']}>
+      <div className={styles["stats-panel__top-header"]}>
+        <div className={styles["header-left"]}>
           {appContext?.setPanel && (
             <BackButton
               onClick={() => appContext.setPanel!(0)}
@@ -304,14 +363,18 @@ const StatsPanel: FC = () => {
           )}
           <Typography variant="subtitle2">Supplier Stats</Typography>
         </div>
-        <div className={styles['header-right']}>
+        <div className={styles["header-right"]}>
           <Typography variant="caption" color="text.secondary">
             {totalCalls} call{totalCalls !== 1 ? "s" : ""}
           </Typography>
           {hasData && (
             <Tooltip title="Clear stats">
-              <IconButton size="small" onClick={handleClear} className={styles['stats-panel__clear-btn']}>
-                <DeleteIcon className={styles['stats-panel__clear-icon']} />
+              <IconButton
+                size="small"
+                onClick={handleClear}
+                className={styles["stats-panel__clear-btn"]}
+              >
+                <DeleteIcon className={styles["stats-panel__clear-icon"]} />
               </IconButton>
             </Tooltip>
           )}
@@ -319,7 +382,7 @@ const StatsPanel: FC = () => {
       </div>
 
       {!hasData ? (
-        <Typography variant="body2" color="text.secondary" className={styles['stats-panel__empty']}>
+        <Typography variant="body2" color="text.secondary" className={styles["stats-panel__empty"]}>
           No stats yet. Run a search to start tracking.
         </Typography>
       ) : (
@@ -328,30 +391,32 @@ const StatsPanel: FC = () => {
             value={activeTab}
             onChange={(_e, v) => setActiveTab(v)}
             variant="fullWidth"
-            className={styles['stats-panel__tabs']}
+            className={styles["stats-panel__tabs"]}
           >
             <Tab label="By Supplier" />
             <Tab label="Daily" />
             <Tab label="Totals" />
           </Tabs>
 
-          <Paper className={styles['stats-panel__content']} elevation={2}>
+          <Paper className={styles["stats-panel__content"]} elevation={2}>
             {/* Tab 0: Sunburst pie with toggle */}
             {activeTab === 0 && (
               <>
-                <Box className={styles['stats-panel__toggle-container']}>
+                <Box className={styles["stats-panel__toggle-container"]}>
                   <ToggleButtonGroup
                     color="primary"
                     size="small"
                     value={pieView}
                     exclusive
-                    onChange={(_e, v) => { if (v !== null) setPieView(v); }}
+                    onChange={(_e, v) => {
+                      if (v !== null) setPieView(v);
+                    }}
                   >
                     <ToggleButton value="http">HTTP Calls</ToggleButton>
                     <ToggleButton value="parsed">Parsed Data</ToggleButton>
                   </ToggleButtonGroup>
                 </Box>
-                <Box className={styles['stats-panel__chart-container']}>
+                <Box className={styles["stats-panel__chart-container"]}>
                   <PieChart
                     series={[
                       {
@@ -387,10 +452,13 @@ const StatsPanel: FC = () => {
                   </PieChart>
                 </Box>
                 {/* Custom legend for supplier colors only */}
-                <Box className={styles['stats-panel__legend']}>
+                <Box className={styles["stats-panel__legend"]}>
                   {activePie.inner.map((d) => (
-                    <Box key={d.id} className={styles['stats-panel__legend-item']}>
-                      <Box className={styles['stats-panel__legend-dot']} style={{ backgroundColor: d.color }} />
+                    <Box key={d.id} className={styles["stats-panel__legend-item"]}>
+                      <Box
+                        className={styles["stats-panel__legend-dot"]}
+                        style={{ backgroundColor: d.color }}
+                      />
                       <span>{d.id}</span>
                     </Box>
                   ))}
@@ -400,7 +468,7 @@ const StatsPanel: FC = () => {
 
             {/* Tab 1: Line chart — daily calls per supplier */}
             {activeTab === 1 && (
-              <Box className={styles['stats-panel__chart-container']}>
+              <Box className={styles["stats-panel__chart-container"]}>
                 {lineDates.length > 0 && lineSeries.length > 0 && (
                   <LineChart
                     xAxis={[{ scaleType: "point", data: lineDates }]}
@@ -411,10 +479,13 @@ const StatsPanel: FC = () => {
                   />
                 )}
                 {/* Custom legend */}
-                <Box className={styles['stats-panel__legend']}>
+                <Box className={styles["stats-panel__legend"]}>
                   {lineSeries.map((s) => (
-                    <Box key={s.label} className={styles['stats-panel__legend-item']}>
-                      <Box className={styles['stats-panel__legend-dot']} style={{ backgroundColor: s.color }} />
+                    <Box key={s.label} className={styles["stats-panel__legend-item"]}>
+                      <Box
+                        className={styles["stats-panel__legend-dot"]}
+                        style={{ backgroundColor: s.color }}
+                      />
                       <span>{s.label}</span>
                     </Box>
                   ))}
@@ -424,7 +495,7 @@ const StatsPanel: FC = () => {
 
             {/* Tab 2: Totals table */}
             {activeTab === 2 && (
-              <div className={styles['stats-panel__table-container']}>
+              <div className={styles["stats-panel__table-container"]}>
                 <DataGrid
                   rows={totalsRows}
                   columns={totalsColumns}
@@ -434,7 +505,7 @@ const StatsPanel: FC = () => {
                   initialState={{
                     sorting: { sortModel: [{ field: "success", sort: "desc" }] },
                   }}
-                  className={styles['stats-panel__table']}
+                  className={styles["stats-panel__table"]}
                 />
               </div>
             )}

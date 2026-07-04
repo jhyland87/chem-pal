@@ -8,11 +8,17 @@ export const mockData = [
   { id: 3, name: "Charlie", age: 35, active: true },
 ];
 
-// Mock column and table objects
-export const createMockColumn = (id: string, header: any): Column<any, unknown> =>
+// Mock column and table objects.
+// `accessorKey` defaults to `id` so the range / all-value helpers (which read
+// `columnDef.accessorKey`) resolve against the matching data field.
+export const createMockColumn = (
+  id: string,
+  header: any,
+  accessorKey: string = id,
+): Column<any, unknown> =>
   ({
     id,
-    columnDef: { header },
+    columnDef: { header, accessorKey },
     getCanHide: () => true,
     getIsVisible: () => true,
     toggleVisibility: vi.fn(),

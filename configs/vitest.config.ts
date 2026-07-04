@@ -24,7 +24,6 @@ export default defineConfig({
     exclude: [
       "**/node_modules/**",
       //"**/src/components/**",
-      "src/mixins/__tests__/tanstack.test.ts",
       "src/helpers/__tests__/productBuilder.test.ts",
       "**/dist/**",
       "**/.{idea,git,cache,output,temp}/**",
