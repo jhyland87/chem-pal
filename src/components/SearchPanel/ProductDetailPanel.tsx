@@ -10,16 +10,23 @@ import {
   ProductDetailImageColumn,
   ProductDetailPanelContainer,
   ProductDetailVariantsColumn,
+  ProductImageNavButton,
 } from "@/components/StyledComponents";
 import { omit } from "@/helpers/collectionUtils";
 import { formatDisplayPrice } from "@/helpers/price";
-import { isPresent, resolveProductImage } from "@/helpers/product";
+import { isPresent, resolveProductImages } from "@/helpers/product";
 import COAIcon from "@/icons/COAIcon";
 import SDSIcon from "@/icons/SDSIcon";
 import TDSIcon from "@/icons/TDSIcon";
+import { useCyclingIndex } from "@/shared/hooks/useCyclingIndex.hook";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { Typography } from "@mui/material";
 import type { Row, Table } from "@tanstack/react-table";
-import type { ReactElement, ReactNode } from "react";
+import { useState, type MouseEvent, type ReactElement, type ReactNode } from "react";
+
+/** How long each image is shown before cycling to the next, in milliseconds. */
+const IMAGE_CYCLE_MS = 3000;
 
 /**
  * Props for {@link ProductDetailPanel}.
@@ -148,6 +155,85 @@ function buildDocLinks(product: Product): ReactNode[] {
 }
 
 /**
+ * Props for {@link ProductImageCarousel}.
+ * @source
+ */
+interface ProductImageCarouselProps {
+  /** The resolved images to display, in order. */
+  images: ReturnType<typeof resolveProductImages>;
+  /** Product title, used for the alt/aria fallback text. */
+  title: string;
+}
+
+/**
+ * Renders a product's image in the fixed-size detail box, cycling through the
+ * images every {@link IMAGE_CYCLE_MS} when there is more than one. Hovering the
+ * image reveals semi-transparent prev/next arrows for manual navigation; a click
+ * anywhere else opens the full image in a new tab. Images that fail to load (e.g.
+ * a CACTUS 404) are dropped from the rotation; the box disappears only once every
+ * image has failed.
+ * @param props - The images to show and the product title for fallback text.
+ * @returns The image box, or `null` when there are no loadable images.
+ * @example
+ * ```tsx
+ * <ProductImageCarousel images={resolveProductImages(product)} title={product.title} />
+ * ```
+ * @source
+ */
+function ProductImageCarousel({ images, title }: ProductImageCarouselProps): ReactElement | null {
+  const [broken, setBroken] = useState<ReadonlySet<number>>(new Set());
+
+  const available = images
+    .map((image, index) => ({ image, index }))
+    .filter(({ index }) => !broken.has(index));
+  const { index: position, next, prev } = useCyclingIndex(available.length, IMAGE_CYCLE_MS);
+
+  if (available.length === 0) return null;
+
+  const current = available[Math.min(position, available.length - 1)];
+  const hasMultiple = available.length > 1;
+
+  // Cycle without letting the click bubble to the image's open-in-new-tab link.
+  const navigate = (event: MouseEvent, step: () => void) => {
+    event.preventDefault();
+    event.stopPropagation();
+    step();
+  };
+
+  return (
+    <ProductDetailImageBox>
+      <Link href={current.image.fullSrc} aria-label={`Open full image for ${title}`}>
+        <img
+          src={current.image.thumbSrc}
+          alt={current.image.altText ?? title}
+          onError={() => setBroken((brokenSet) => new Set(brokenSet).add(current.index))}
+        />
+      </Link>
+      {hasMultiple && (
+        <>
+          <ProductImageNavButton
+            type="button"
+            className="image-nav prev"
+            aria-label="Previous image"
+            onClick={(event) => navigate(event, prev)}
+          >
+            <ArrowBackIosNewIcon fontSize="small" />
+          </ProductImageNavButton>
+          <ProductImageNavButton
+            type="button"
+            className="image-nav next"
+            aria-label="Next image"
+            onClick={(event) => navigate(event, next)}
+          >
+            <ArrowForwardIosIcon fontSize="small" />
+          </ProductImageNavButton>
+        </>
+      )}
+    </ProductDetailImageBox>
+  );
+}
+
+/**
  * Expanded detail panel rendered beneath a product row in place of variant
  * sub-rows. Shows (left) the product image or a derived structure depiction,
  * (middle) every populated detail field, and (right) the product's variants as
@@ -166,7 +252,7 @@ function buildDocLinks(product: Product): ReactNode[] {
 export function ProductDetailPanel({ row, table }: ProductDetailPanelProps): ReactElement {
   const product = row.original;
   const userSettings = table.options.meta?.userSettings;
-  const image = resolveProductImage(product);
+  const images = resolveProductImages(product);
 
   // Prefer the filtered sub-rows (respecting active filters); fall back to the
   // raw variants. Product[] is assignable to Variant[] since Product extends it.
@@ -179,23 +265,9 @@ export function ProductDetailPanel({ row, table }: ProductDetailPanelProps): Rea
 
   return (
     <ProductDetailPanelContainer>
-      {(image || docLinks.length > 0) && (
+      {(images.length > 0 || docLinks.length > 0) && (
         <ProductDetailImageColumn>
-          {image && (
-            <ProductDetailImageBox>
-              <Link href={image.fullSrc} aria-label={`Open full image for ${product.title}`}>
-                <img
-                  src={image.thumbSrc}
-                  alt={product.imageAltText ?? product.title}
-                  // Hide the box on a broken image (e.g. a CACTUS 404 for an
-                  // identifier the resolver couldn't depict).
-                  onError={(e) => {
-                    e.currentTarget.closest("div")?.style.setProperty("display", "none");
-                  }}
-                />
-              </Link>
-            </ProductDetailImageBox>
-          )}
+          <ProductImageCarousel images={images} title={product.title} />
           {docLinks.length > 0 && <ProductDetailDocLinks>{docLinks}</ProductDetailDocLinks>}
         </ProductDetailImageColumn>
       )}

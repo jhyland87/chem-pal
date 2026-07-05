@@ -62,10 +62,12 @@ describe("SupplierLiMac getProductData", () => {
     expect(dump.moleweight).toBe(37.83);
 
     // Image from og:image, thumbnail from mozCatItemPictures
-    expect(dump.imageURL).toContain("NaBH4");
-    expect(dump.imageURL?.startsWith("https://www.limac.lv/")).toBe(true);
-    expect(dump.thumbnail).toContain("/thumb/");
-    expect(dump.thumbnail).toContain("NaBH4");
+    const image = dump.images?.find((entry) => entry.type === "image");
+    const thumbnail = dump.images?.find((entry) => entry.type === "thumbnail");
+    expect(image?.href).toContain("NaBH4");
+    expect(image?.href?.startsWith("https://www.limac.lv/")).toBe(true);
+    expect(thumbnail?.href).toContain("/thumb/");
+    expect(thumbnail?.href).toContain("NaBH4");
 
     // Description is intentionally skipped (og:description is too noisy)
     expect(dump.description).toBeUndefined();

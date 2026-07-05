@@ -1,4 +1,4 @@
-query Catalog($q: String, $n: Int!, $cursor: String) {
+query Products($q: String, $n: Int!, $cursor: String) {
   products(first: $n, query: $q, sortKey: RELEVANCE, after: $cursor) {
     pageInfo {
       hasNextPage
@@ -15,6 +15,11 @@ query Catalog($q: String, $n: Int!, $cursor: String) {
         descriptionHtml
         availableForSale
         onlineStoreUrl
+        featuredImage {
+          # Use the transform argument to request a specific thumbnail size
+          url(transform: { maxWidth: 150, maxHeight: 150, crop: CENTER })
+          altText
+        }
         priceRange {
           minVariantPrice {
             amount

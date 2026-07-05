@@ -181,8 +181,7 @@ export class SupplierAsesChem extends SupplierBaseShopify implements ISupplier {
    * @example
    * ```typescript
    * this.applyImages(builder, doc);
-   * // builder.get("imageURL") -> "https://ases.in/cdn/shop/products/Triethanolamine_1024x.jpg?..."
-   * // builder.get("thumbnail") -> "https://ases.in/cdn/shop/products/Triethanolamine_150x.jpg?..."
+   * // builder.get("images") -> [{ url: "https://ases.in/cdn/shop/products/Triethanolamine_1024x.jpg?...", thumbnail: "https://ases.in/cdn/shop/products/Triethanolamine_150x.jpg?..." }]
    * ```
    * @source
    */

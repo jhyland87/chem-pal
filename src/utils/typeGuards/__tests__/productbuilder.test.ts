@@ -1,6 +1,11 @@
 import { AVAILABILITY } from "@/constants/common";
 import { describe, expect, it } from "vitest";
-import { isAvailability, isCachedProductData, isValidVariant } from "../productbuilder";
+import {
+  isAvailability,
+  isCachedProductData,
+  isProductImage,
+  isValidVariant,
+} from "../productbuilder";
 
 describe("ProductBuilder TypeGuards", () => {
   describe("isAvailability", () => {
@@ -144,6 +149,31 @@ describe("ProductBuilder TypeGuards", () => {
 
     it("should return true for empty object (minimal valid variant)", () => {
       expect(isValidVariant({})).toBe(true);
+    });
+  });
+
+  describe("isProductImage", () => {
+    it("should return true for valid image and thumbnail entries", () => {
+      expect(isProductImage({ href: "https://example.com/a.jpg", type: "image" })).toBe(true);
+      expect(isProductImage({ href: "https://example.com/a-t.jpg", type: "thumbnail" })).toBe(true);
+      expect(
+        isProductImage({ href: "https://example.com/a.jpg", type: "image", altText: "front" }),
+      ).toBe(true);
+    });
+
+    it("should return false for an unknown type", () => {
+      expect(isProductImage({ href: "https://example.com/a.jpg", type: "banner" })).toBe(false);
+    });
+
+    it("should return false when href is missing or not a string", () => {
+      expect(isProductImage({ type: "image" })).toBe(false);
+      expect(isProductImage({ href: 42, type: "image" })).toBe(false);
+    });
+
+    it("should return false for null, arrays, and primitives", () => {
+      [null, undefined, [{ href: "a", type: "image" }], "a", 42].forEach((value) => {
+        expect(isProductImage(value)).toBe(false);
+      });
     });
   });
 

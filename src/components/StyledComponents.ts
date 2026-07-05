@@ -435,7 +435,9 @@ export const ProductDetailPanelContainer = styled("div")(({ theme }) => ({
 }));
 
 // Fixed-size box centering the thumbnail; the nested img is scaled to fit.
+// Positioning context for the hover nav arrows overlaid on the image.
 export const ProductDetailImageBox = styled("div")(({ theme }) => ({
+  position: "relative",
   width: DETAIL_IMAGE_SIZE,
   height: DETAIL_IMAGE_SIZE,
   display: "flex",
@@ -449,6 +451,45 @@ export const ProductDetailImageBox = styled("div")(({ theme }) => ({
     maxWidth: "100%",
     maxHeight: "100%",
     objectFit: "contain",
+  },
+  // Reveal the arrows only while hovering the image.
+  "&:hover .image-nav": {
+    opacity: 1,
+  },
+}));
+
+// Semi-transparent prev/next arrow overlaid on the left/right edge of the image.
+// Hidden until the image box is hovered (or the button is keyboard-focused).
+export const ProductImageNavButton = styled("button")(({ theme }) => ({
+  position: "absolute",
+  top: "50%",
+  transform: "translateY(-50%)",
+  zIndex: 1,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 24,
+  height: 24,
+  padding: 0,
+  border: "none",
+  borderRadius: "50%",
+  cursor: "pointer",
+  color: "#fff",
+  backgroundColor: "rgba(0, 0, 0, 0.4)",
+  opacity: 0,
+  transition: "opacity 120ms ease, background-color 120ms ease",
+  "&:hover": {
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+  },
+  "&:focus-visible": {
+    opacity: 1,
+    outline: `2px solid ${theme.palette.primary.main}`,
+  },
+  "&.prev": {
+    left: theme.spacing(0.5),
+  },
+  "&.next": {
+    right: theme.spacing(0.5),
   },
 }));
 
