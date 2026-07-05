@@ -1,0 +1,169 @@
+{
+  "productId": "5DDD5D18-74DD-94A1-F8BB-0A0C6D12954B",
+  "name": "Aceton reinst",
+  "visible": true,
+  "productVariationType": "variation",
+  "productVariationMasterName": "Aceton reinst",
+  "productVariationMasterId": "5DDD5B1C-7826-3EEF-95F5-0A0C6D0CDB0E",
+  "manufacturerProductNumber": null,
+  "productLength": null,
+  "productWidth": null,
+  "productHeight": null,
+  "productVariationSelection": [
+    { "name": "Milliliter", "displayName": "Größe", "value": "500 ml", "displayValue": "500 ml" }
+  ],
+  "shortDescription": "<p> <br /></p><p> <br /></p><ul><li>Synonyme: Dimetyhlketon, 2-Propanon </li><li>Summenformel n. Hill: C3H6O </li><li>Chem. Formel: CH3COCH3 </li><li>Molare Masse: 58,08 g/mol </li><li>Löslichkeit in H2O (20°C): löslich </li><li>Schmelzpunkt: -95,4°C </li><li>Cas-Nr.: 67-41-1 </li><li>EG-Nr.: 2006622 </li><li>Lagerklasse (VCI): 3A </li><li>WGK: 1 </li></ul><p><br /></p><p>Gefahrenhinweise: <br /></p><p> H225: Flüssigkeit und Dampf leicht entzündbar.<br />H319: Verursacht schwere Augenreizung.<br />H336: Kann Schläfrigkeit und Benommenheit verursachen.<br />EUH066: Wiederholter Kontakt kann zu spröder oder rissiger Haut führen. </p>",
+  "deliveryPeriod": null,
+  "description": null,
+  "title": "Aceton reinst - LabChem Röttinger",
+  "productImage": "Symbolbild_Chemikalien.jpeg",
+  "images": [
+    {
+      "url": "https://www.labchem.de/WebRoot/Store31/Shops/87762263/5DDD/5B1C/7826/3EEF/95F5/0A0C/6D0C/DB0E/Symbolbild_Chemikalien_h.jpeg",
+      "classifier": "HotDeal",
+      "isZoomEnabled": false,
+      "width": 126,
+      "height": 150,
+      "fileSize": 4480
+    },
+    {
+      "url": "https://www.labchem.de/WebRoot/Store31/Shops/87762263/5DDD/5B1C/7826/3EEF/95F5/0A0C/6D0C/DB0E/Symbolbild_Chemikalien_m.jpeg",
+      "classifier": "Medium",
+      "isZoomEnabled": false,
+      "width": 420,
+      "height": 500,
+      "fileSize": 29585
+    },
+    {
+      "url": "https://www.labchem.de/WebRoot/Store31/Shops/87762263/5DDD/5B1C/7826/3EEF/95F5/0A0C/6D0C/DB0E/Symbolbild_Chemikalien.jpeg",
+      "classifier": "Large",
+      "isZoomEnabled": false,
+      "width": 907,
+      "height": 1080,
+      "fileSize": 116299
+    },
+    {
+      "url": "https://www.labchem.de/WebRoot/Store31/Shops/87762263/5DDD/5B1C/7826/3EEF/95F5/0A0C/6D0C/DB0E/Symbolbild_Chemikalien_s.jpeg",
+      "classifier": "Small",
+      "isZoomEnabled": false,
+      "width": 84,
+      "height": 100,
+      "fileSize": 2621
+    },
+    {
+      "url": "https://www.labchem.de/WebRoot/Store31/Shops/87762263/5DDD/5B1C/7826/3EEF/95F5/0A0C/6D0C/DB0E/Symbolbild_Chemikalien_xs.jpeg",
+      "classifier": "Thumbnail",
+      "isZoomEnabled": false,
+      "width": 28,
+      "height": 33,
+      "fileSize": 750
+    }
+  ],
+  "priceInfo": {
+    "quantity": { "amount": 1, "unit": "Stück" },
+    "taxClass": {
+      "taxClassId": "5C454E94-9D0B-0992-A63B-0A0C6D0024B7",
+      "name": "normal",
+      "percentage": 19.0
+    },
+    "price": { "taxType": "GROSS", "formatted": "14,16 €", "amount": 14.16, "currency": "EUR" },
+    "depositPrice": null,
+    "ecoParticipationPrice": null,
+    "priceWithDeposits": {
+      "taxType": "GROSS",
+      "formatted": "14,16 €",
+      "amount": 14.16,
+      "currency": "EUR"
+    },
+    "manufacturerPrice": null,
+    "basePrice": null,
+    "lowestPrice": null,
+    "lowestRefPriceFormatted": null,
+    "highestPrice": null
+  },
+  "bulkPriceInfo": [],
+  "customerSpecificPriceInfo": [],
+  "forSale": true,
+  "specialOffer": false,
+  "deliveryWeight": null,
+  "availabilityText": "",
+  "availability": null,
+  "energyLabelsString": null,
+  "energyLabelsMaxEfficiencyString": null,
+  "energyLabelSourceFile": null,
+  "productDataSheet": null,
+  "sfUrl": "http://www.labchem.de/p/5DDD5D18-74DD-94A1-F8BB-0A0C6D12954B",
+  "productNumber": "011700-0500",
+  "isCustomizable": false,
+  "customizableTextLength": 50.0,
+  "customizableHeadlineText": "Personalisierungswunsch",
+  "isProductNumberVisible": true,
+  "isManufacturerPriceRRP": false,
+  "isShippingLinkVisible": true,
+  "isNew": false,
+  "isVATInfoVisible": true,
+  "newnessDate": null,
+  "refAmount": null,
+  "refUnit": null,
+  "refContentAmount": null,
+  "priceQuantity": 1,
+  "orderUnit": "piece",
+  "minOrder": 1,
+  "intervalOrder": 1,
+  "manufacturer": null,
+  "upc": null,
+  "ean": null,
+  "productCode": null,
+  "essentialFeatures": null,
+  "searchKeywords": [],
+  "stocklevel": null,
+  "videos": [],
+  "gpsrInfo": {
+    "responsiblePersonAddress": null,
+    "manufacturerAddress": null,
+    "pictograms": [],
+    "safetyStatements": [],
+    "relevantDocuments": [],
+    "supplemetaryInformation": null
+  },
+  "isInWishlist": false,
+  "minStocklevel": null,
+  "links": [
+    {
+      "rel": "self",
+      "href": "https://www.labchem.de/rs/shops/87762263/products/5DDD5D18-74DD-94A1-F8BB-0A0C6D12954B"
+    },
+    {
+      "rel": "variations",
+      "href": "https://www.labchem.de/rs/shops/87762263/products/5DDD5B1C-7826-3EEF-95F5-0A0C6D0CDB0E/variations"
+    },
+    {
+      "rel": "master",
+      "href": "https://www.labchem.de/rs/shops/87762263/products/5DDD5B1C-7826-3EEF-95F5-0A0C6D0CDB0E"
+    },
+    {
+      "rel": "categories",
+      "href": "https://www.labchem.de/rs/shops/87762263/categories/?productId=5DDD5D18-74DD-94A1-F8BB-0A0C6D12954B"
+    },
+    {
+      "rel": "producttype",
+      "href": "https://www.labchem.de/rs/shops/87762263/producttypes/5DDD10A1-A431-CECE-EB6A-0A0C6D120E7C"
+    },
+    {
+      "rel": "slideshow",
+      "href": "https://www.labchem.de/rs/shops/87762263/products/5DDD5D18-74DD-94A1-F8BB-0A0C6D12954B/slideshow"
+    },
+    {
+      "rel": "custom-attributes",
+      "href": "https://www.labchem.de/rs/shops/87762263/products/5DDD5D18-74DD-94A1-F8BB-0A0C6D12954B/custom-attributes"
+    },
+    {
+      "rel": "main-category",
+      "href": "https://www.labchem.de/rs/shops/87762263/categories/5DDD552E-2FF2-0B15-7176-0A0C6D0C70D4",
+      "title": "A"
+    }
+  ],
+  "isProductAvailabilityNotificationEmailOn": false,
+  "productAvailabilityNotificationLegalText": null,
+  "isOnSale": false
+}
