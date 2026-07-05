@@ -47,6 +47,7 @@ const sampleNode = (): ShopifyProductNode => ({
           title: "Default Title",
           sku: "IS28128",
           availableForSale: true,
+          currentlyNotInStock: false,
           weight: 1.1,
           weightUnit: "POUNDS",
           price: { amount: "12.99", currencyCode: "USD" },
