@@ -580,9 +580,10 @@ export class ProductBuilder<T extends Product> {
    * @source
    */
   private setDefaultImage(image: ProductImage): void {
-    const images = this.product.images ?? [];
-    images.unshift(image);
-    this.product.images = images;
+    if (!this.product.images) {
+      this.product.images = [];
+    }
+    this.product.images.unshift(image);
   }
 
   /**
