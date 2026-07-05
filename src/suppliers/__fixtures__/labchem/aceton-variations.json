@@ -1,0 +1,65 @@
+{
+  "results": 4,
+  "resultsPerPage": 100,
+  "page": 1,
+  "links": [],
+  "variationAttributes": [
+    {
+      "name": "Milliliter",
+      "displayName": "Größe",
+      "values": [
+        { "value": "500 ml", "displayValue": "500 ml" },
+        { "value": "1.000 ml", "displayValue": "1 l" },
+        { "value": "25_l", "displayValue": "2,5 l" },
+        { "value": "5_l", "displayValue": "5 l" }
+      ]
+    }
+  ],
+  "items": [
+    {
+      "link": {
+        "rel": "variation",
+        "href": "https://www.labchem.de/rs/shops/87762263/products/5DDD5D18-74DD-94A1-F8BB-0A0C6D12954B"
+      },
+      "additionalAttributes": { "purchasable": true },
+      "attributeSelection": [
+        {
+          "name": "Milliliter",
+          "displayName": "Größe",
+          "value": "500 ml",
+          "displayValue": "500 ml"
+        }
+      ]
+    },
+    {
+      "link": {
+        "rel": "variation",
+        "href": "https://www.labchem.de/rs/shops/87762263/products/5DDD5D19-0C44-C11A-BCC5-0A0C6D129578"
+      },
+      "additionalAttributes": { "purchasable": true },
+      "attributeSelection": [
+        { "name": "Milliliter", "displayName": "Größe", "value": "1.000 ml", "displayValue": "1 l" }
+      ]
+    },
+    {
+      "link": {
+        "rel": "variation",
+        "href": "https://www.labchem.de/rs/shops/87762263/products/5DDD5D19-9EE3-8CFC-1E03-0A0C6D1295DF"
+      },
+      "additionalAttributes": { "purchasable": true },
+      "attributeSelection": [
+        { "name": "Milliliter", "displayName": "Größe", "value": "25_l", "displayValue": "2,5 l" }
+      ]
+    },
+    {
+      "link": {
+        "rel": "variation",
+        "href": "https://www.labchem.de/rs/shops/87762263/products/5DDD5D19-9755-00DA-1B35-0A0C6D1295F3"
+      },
+      "additionalAttributes": { "purchasable": true },
+      "attributeSelection": [
+        { "name": "Milliliter", "displayName": "Größe", "value": "5_l", "displayValue": "5 l" }
+      ]
+    }
+  ]
+}

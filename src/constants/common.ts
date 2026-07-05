@@ -353,6 +353,8 @@ export enum CACHE {
   BOOKMARKS_FOLDER_ID = "bookmarks_folder_id",
   /** Rehydrated Chemsavers Typesense API key (overrides the hardcoded default when present) */
   CHEMSAVERS_API_KEY = "chemsavers_api_key",
+  /** LabChem full product catalog snapshot, cached for 24h (empty-query search) */
+  LABCHEM_CATALOG = "labchem_catalog",
 }
 
 /**

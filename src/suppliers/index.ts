@@ -46,6 +46,7 @@ export { SupplierGoldAndSilverTesting } from "./SupplierGoldAndSilverTesting";
 export { SupplierHimedia } from "./SupplierHimedia";
 export { SupplierInnovatingScience } from "./SupplierInnovatingScience";
 export { SupplierLaballey } from "./SupplierLaballey";
+export { SupplierLabChem } from "./SupplierLabChem";
 export { SupplierLaboratoriumDiscounter } from "./SupplierLaboratoriumDiscounter";
 export { SupplierLibertySci } from "./SupplierLibertySci";
 export { SupplierLiMac } from "./SupplierLiMac";
