@@ -89,7 +89,7 @@ describe("SupplierVWR", () => {
       expect(dump.currencyCode).toBe("USD");
       expect(dump.id).toBe(firstProduct().code);
       expect(dump.sku).toBe(firstProduct().vwrCatalogNumber);
-      expect(dump.imageURL).toBeDefined();
+      expect(dump.images?.length).toBeGreaterThan(0);
     });
   });
 

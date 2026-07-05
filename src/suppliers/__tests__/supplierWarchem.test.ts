@@ -109,7 +109,9 @@ describe("SupplierWarchem initProductBuilders", () => {
     expect(dump.sku).toBe("44962");
     expect(dump.price).toBe(8);
     expect(dump.currencyCode).toBe("PLN");
-    expect(dump.imageURL).toBe("https://warchem.pl/images/NEW_IMG_31521.jpg");
+    expect(dump.images).toEqual([
+      { href: "https://warchem.pl/images/NEW_IMG_31521.jpg", type: "image" },
+    ]);
     expect(dump.availability).toBe("in stock");
   });
 });
@@ -180,7 +182,9 @@ describe("SupplierWarchem getProductData", () => {
 
     expect(result).toBe(builder);
     const dump = builder.dump();
-    expect(dump.imageURL).toBe("https://warchem.pl/images/NEW_IMG_31521.jpg");
+    expect(dump.images).toEqual([
+      { href: "https://warchem.pl/images/NEW_IMG_31521.jpg", type: "image" },
+    ]);
     expect(dump.price).toBe(8);
     expect(dump.currencyCode).toBe("PLN");
   });

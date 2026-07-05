@@ -485,7 +485,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
    * @example
    * ```typescript
    * this.applyProductImage(builder, dom, html, "Sodium borohydride, min 95%");
-   * // builder.get("imageURL") -> "https://www.limac.lv/files/.../NaBH4-....png"
+   * // builder.get("images") -> [{ url: "https://www.limac.lv/files/.../NaBH4-....png" }]
    * ```
    * @source
    */

@@ -12,6 +12,9 @@ import { isValidShopifySearchResponse } from "@/utils/typeGuards/shopify";
 import { print } from "graphql";
 import { SupplierBase } from "./SupplierBase";
 
+/** Width (px) requested from the Shopify CDN for derived image thumbnails. */
+const SHOPIFY_THUMBNAIL_WIDTH = 200;
+
 /**
  * Base class for Shopify-based suppliers that provides common functionality for
  * interacting with the Shopify GraphQL Storefront API.
@@ -209,7 +212,7 @@ export abstract class SupplierBaseShopify
         .setDescription(descriptionText)
         .setSku(primaryVariant.sku)
         .setID(product.id)
-        .setImage(this.primaryImageUrl(product))
+        .addImages(this.productImages(product))
         .setCacheKey(this.getUniqueProductKey(product));
 
       // Parse the chemical identifiers out of the title + description. CAS is
@@ -277,21 +280,62 @@ export abstract class SupplierBaseShopify
   }
 
   /**
-   * Returns the URL of the product's first image from its `media` connection, or
-   * undefined when the product has no image media.
+   * Maps the product's images to a flat list of {@link ProductImage} entries: one full-size `image`
+   * entry per `IMAGE` node in the `media` connection (in response order), each followed by its
+   * `thumbnail` entry. The primary image's thumbnail is the query's `featuredImage` — Shopify's
+   * pre-transformed thumbnail of that same image — while the rest use a CDN width-derived thumbnail.
+   * Non-image media (video, model3d) and images without a URL are skipped.
    * @param product - The Shopify product node
-   * @returns The first image URL, or undefined
+   * @returns The product's image/thumbnail entries in order, or an empty array when it has none
    * @example
    * ```typescript
-   * this.primaryImageUrl(product); // "https://cdn.shopify.com/s/files/.../x.jpg"
+   * this.productImages(product);
+   * // => [{ href: "https://cdn.shopify.com/s/files/.../x.jpg?v=1", type: "image", altText: "Sodium Chloride" },
+   * //     { href: "https://cdn.shopify.com/s/files/.../x_150x150_crop_center.jpg?v=1", type: "thumbnail" }]
    * ```
    * @source
    */
-  protected primaryImageUrl(product: ShopifyProductNode): string | undefined {
-    const imageNode = product.media?.edges.find(
-      (edge) => edge.node.mediaContentType === "IMAGE" && edge.node.image?.url,
-    );
-    return imageNode?.node.image?.url;
+  protected productImages(product: ShopifyProductNode): ProductImage[] {
+    const featured = product.featuredImage?.url;
+    const images: ProductImage[] = [];
+
+    for (const { node } of product.media?.edges ?? []) {
+      const url = node.image?.url;
+      if (node.mediaContentType !== "IMAGE" || !url) continue;
+
+      const image: ProductImage = { href: url, type: "image" };
+      if (node.alt) image.altText = node.alt;
+      images.push(image);
+
+      // The primary image's thumbnail is Shopify's pre-transformed featuredImage;
+      // the rest fall back to a CDN width-derived thumbnail.
+      const thumbnail = images.length === 1 && featured ? featured : this.thumbnailUrl(url);
+      if (thumbnail) images.push({ href: thumbnail, type: "thumbnail" });
+    }
+    return images;
+  }
+
+  /**
+   * Derives a thumbnail-sized URL for a Shopify CDN image by setting its `width`
+   * query parameter, which the CDN honours to serve a resized image. Returns
+   * undefined for non-Shopify-CDN or unparseable URLs so the caller falls back to
+   * the full image.
+   * @param url - The full-size image URL
+   * @param width - The target thumbnail width in pixels
+   * @returns The resized image URL, or undefined when it can't be derived
+   * @example
+   * ```typescript
+   * this.thumbnailUrl("https://cdn.shopify.com/s/files/1/x.jpg?v=1");
+   * // => "https://cdn.shopify.com/s/files/1/x.jpg?v=1&width=200"
+   * ```
+   * @source
+   */
+  protected thumbnailUrl(url: string, width: number = SHOPIFY_THUMBNAIL_WIDTH): string | undefined {
+    if (!URL.canParse(url)) return undefined;
+    const parsed = new URL(url);
+    if (!parsed.hostname.includes("cdn.shopify")) return undefined;
+    parsed.searchParams.set("width", String(width));
+    return String(parsed);
   }
 
   /**

@@ -24,7 +24,7 @@ import {
   isSmiles,
   isUOM,
 } from "@/utils/typeGuards/common";
-import { isAvailability, isValidVariant } from "@/utils/typeGuards/productbuilder";
+import { isAvailability, isProductImage, isValidVariant } from "@/utils/typeGuards/productbuilder";
 
 /**
  * Builder class for constructing Product objects with a fluent interface.
@@ -160,11 +160,7 @@ export class ProductBuilder<T extends Product> {
         if (typeof v === "string") this.setAvailability(v);
         else if (typeof v === "boolean") this.setAvailability(v);
       },
-      thumbnail: (v) => this.setThumbnail(v),
-      imageURL: (v) => this.setImage(v),
-      imageAltText: (v) => {
-        if (typeof v === "string" && v.trim().length > 0) this.product.imageAltText = v;
-      },
+      images: (v) => this.addImages(v),
       sdsUrl: (v) => this.setSDSUrl(v),
       coaUrl: (v) => this.setCoaUrl(v),
       specSheetUrl: (v) => this.setSpecSheetUrl(v),
@@ -397,8 +393,9 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
-   * Sets the image URL (and optional alt text) for the product. An imageURL that isn't a usable
-   * URL is ignored; alt text is only applied alongside a valid image.
+   * Sets the product's default (primary) full-size image. Placed first among the image-type entries
+   * so it's treated as the default; a previous default set this way is replaced. A value that isn't
+   * a usable URL is ignored; alt text is only applied alongside a valid image.
    * @param imageURL - The image URL to set, or any value (non-URLs are ignored)
    * @param imageAltText - The alt text for the image, or any value (non-strings are ignored)
    * @returns The builder instance for method chaining
@@ -410,38 +407,182 @@ export class ProductBuilder<T extends Product> {
    * @source
    */
   setImage(imageURL: unknown, imageAltText?: unknown): ProductBuilder<T> {
-    const href = this.resolveHref(imageURL);
-    if (!href) {
-      if (imageURL != null && this.showFailedValidation) {
-        this.logger.warn("setImage| Invalid image URL", { imageURL, builder: this });
-      }
-      return this;
-    }
-    this.product.imageURL = href;
-    if (typeof imageAltText === "string" && imageAltText.trim().length > 0) {
-      this.product.imageAltText = imageAltText;
+    const image = this.buildImage(imageURL, "image", imageAltText);
+    if (image) {
+      this.setDefaultImage(image);
+    } else if (imageURL != null && this.showFailedValidation) {
+      this.logger.warn("setImage| Invalid image URL", { imageURL, builder: this });
     }
     return this;
   }
 
   /**
-   * Sets the thumbnail URL for the product. A value that isn't a usable URL is ignored.
+   * Sets the product's default (primary) thumbnail. Placed first among the thumbnail-type entries so
+   * it's treated as the default; a previous default set this way is replaced. A supplier's main
+   * thumbnail is often distinct from its gallery images, so this is kept as its own entry rather than
+   * attached to any image. A value that isn't a usable URL is ignored.
    * @param thumbnail - The thumbnail URL to set, or any value (non-URLs are ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
-   * builder.setThumbnail("https://example.com/thumbnail.jpg/thumbnail.jpg");
+   * builder.setThumbnail("https://example.com/thumb.jpg");
    * ```
    * @source
    */
   setThumbnail(thumbnail: unknown): ProductBuilder<T> {
-    const href = this.resolveHref(thumbnail);
-    if (href) {
-      this.product.thumbnail = href;
+    const image = this.buildImage(thumbnail, "thumbnail");
+    if (image) {
+      this.setDefaultImage(image);
     } else if (thumbnail != null && this.showFailedValidation) {
-      this.logger.warn("Invalid thumbnail URL", { thumbnail, builder: this });
+      this.logger.warn("setThumbnail| Invalid thumbnail URL", { thumbnail, builder: this });
     }
     return this;
+  }
+
+  /**
+   * Appends a full-size image to the product's image list. Unlike {@link setImage}, this doesn't
+   * replace the default — use it for gallery images. A value that isn't a usable URL is ignored.
+   * @param imageURL - The image URL to add, or any value (non-URLs are ignored)
+   * @param imageAltText - The alt text for the image, or any value (non-strings are ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.addImage("https://example.com/a.jpg", "front label");
+   * ```
+   * @source
+   */
+  addImage(imageURL: unknown, imageAltText?: unknown): ProductBuilder<T> {
+    const image = this.buildImage(imageURL, "image", imageAltText);
+    if (image) {
+      this.pushImage(image);
+    } else if (imageURL != null && this.showFailedValidation) {
+      this.logger.warn("addImage| Invalid image URL", { imageURL, builder: this });
+    }
+    return this;
+  }
+
+  /**
+   * Appends a thumbnail to the product's image list. Unlike {@link setThumbnail}, this doesn't
+   * replace the default. A value that isn't a usable URL is ignored.
+   * @param thumbnail - The thumbnail URL to add, or any value (non-URLs are ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.addThumbnail("https://example.com/a-t.jpg");
+   * ```
+   * @source
+   */
+  addThumbnail(thumbnail: unknown): ProductBuilder<T> {
+    const image = this.buildImage(thumbnail, "thumbnail");
+    if (image) {
+      this.pushImage(image);
+    } else if (thumbnail != null && this.showFailedValidation) {
+      this.logger.warn("addThumbnail| Invalid thumbnail URL", { thumbnail, builder: this });
+    }
+    return this;
+  }
+
+  /**
+   * Appends multiple image entries to the product's image list, ignoring any that don't resolve.
+   * Each entry is a `{ href, type, altText? }` object where `type` is `"image"` or `"thumbnail"`.
+   * @param images - An array of {@link ProductImage}-shaped values, or any value (non-arrays are ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.addImages([
+   *   { href: "https://example.com/a.jpg", type: "image" },
+   *   { href: "https://example.com/a-t.jpg", type: "thumbnail" },
+   * ]);
+   * ```
+   * @source
+   */
+  addImages(images: unknown): ProductBuilder<T> {
+    if (Array.isArray(images)) {
+      for (const entry of images) {
+        const resolved = this.resolveImageEntry(entry);
+        if (resolved) this.pushImage(resolved);
+      }
+    }
+    return this;
+  }
+
+  /**
+   * Builds a {@link ProductImage} of the given type from a URL, resolving it to an absolute href, or
+   * `undefined` when the URL isn't usable.
+   * @param url - The image URL.
+   * @param type - Whether the entry is a full-size image or a thumbnail.
+   * @param altText - Optional alt text; applied only when it's a non-empty string.
+   * @returns The built image entry, or `undefined` when the URL doesn't resolve.
+   * @example
+   * ```typescript
+   * this.buildImage("/a.jpg", "image", "front"); // => { href: "https://base/a.jpg", type: "image", altText: "front" }
+   * this.buildImage("", "thumbnail"); // => undefined
+   * ```
+   * @source
+   */
+  private buildImage(url: unknown, type: ProductImageType, altText?: unknown): ProductImage | undefined {
+    const href = this.resolveHref(url);
+    if (!href) {
+      return undefined;
+    }
+    const image: ProductImage = { href, type };
+    if (typeof altText === "string" && altText.trim().length > 0) {
+      image.altText = altText;
+    }
+    return image;
+  }
+
+  /**
+   * Normalizes an unknown `{ href, type, altText? }` value into a {@link ProductImage} with an
+   * absolute href, or `undefined` when it isn't a valid entry or its href doesn't resolve.
+   * @param entry - The candidate image entry.
+   * @returns The resolved image entry, or `undefined` when it's not valid.
+   * @example
+   * ```typescript
+   * this.resolveImageEntry({ href: "/a.jpg", type: "image" }); // => { href: "https://base/a.jpg", type: "image" }
+   * this.resolveImageEntry({ href: "/a.jpg", type: "banner" }); // => undefined
+   * ```
+   * @source
+   */
+  private resolveImageEntry(entry: unknown): ProductImage | undefined {
+    if (!isProductImage(entry)) {
+      return undefined;
+    }
+    return this.buildImage(entry.href, entry.type, entry.altText);
+  }
+
+  /**
+   * Appends an image entry to the product's image list, creating the list on first use.
+   * @param image - The already-resolved image entry to append.
+   * @returns Nothing.
+   * @example
+   * ```typescript
+   * this.pushImage({ href: "https://example.com/a.jpg", type: "image" });
+   * ```
+   * @source
+   */
+  private pushImage(image: ProductImage): void {
+    if (!this.product.images) {
+      this.product.images = [];
+    }
+    this.product.images.push(image);
+  }
+
+  /**
+   * Makes an image entry the default for its type by inserting it at the front of the list, so it's
+   * the first entry of that type. Existing entries (gallery images/thumbnails) are kept.
+   * @param image - The image entry to set as its type's default.
+   * @returns Nothing.
+   * @example
+   * ```typescript
+   * this.setDefaultImage({ href: "https://example.com/a.jpg", type: "image" });
+   * ```
+   * @source
+   */
+  private setDefaultImage(image: ProductImage): void {
+    const images = this.product.images ?? [];
+    images.unshift(image);
+    this.product.images = images;
   }
 
   /**

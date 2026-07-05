@@ -128,6 +128,14 @@ declare global {
       minVariantPrice: ShopifyMoney;
       maxVariantPrice: ShopifyMoney;
     };
+    /**
+     * The product's featured (primary) image, returned already transformed to a
+     * thumbnail size by the query's `url(transform: ...)` argument.
+     */
+    featuredImage?: {
+      url: string;
+      altText?: string | null;
+    } | null;
     /** Product media (images etc.) in relay-style edges/node format */
     media?: {
       edges: Array<{ node: ShopifyMediaNode }>;

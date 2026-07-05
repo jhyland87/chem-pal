@@ -339,7 +339,7 @@ export abstract class SupplierBaseWix
    * ```typescript
    * const builder = new ProductBuilder<Product>(this.baseURL);
    * this.applyChemicalProperties(builder, product);
-   * // builder now carries imageURL, sdsUrl, purity, formula, moleweight, smiles and cas
+   * // builder now carries images, sdsUrl, purity, formula, moleweight, smiles and cas
    * ```
    * @source
    */

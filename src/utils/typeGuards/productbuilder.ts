@@ -21,6 +21,16 @@ const variantSchema = z.looseObject({
   quantity: z.number().optional(),
 });
 
+// Zod schema for a `ProductImage` entry: a string `href` and a `type` that is
+// either "image" or "thumbnail". `altText` is optional. `looseObject` preserves
+// any extra keys. The `href` is validated for shape only (a string); the builder
+// resolves it to an absolute URL afterwards.
+const productImageSchema = z.looseObject({
+  href: z.string(),
+  type: z.enum(["image", "thumbnail"]),
+  altText: z.string().optional(),
+});
+
 /**
  * Type guard to validate if a value is a valid availability status.
  * Checks if the value is a string that matches one of the predefined AVAILABILITY enum values.
@@ -101,6 +111,37 @@ export function isAvailability(availability: unknown): availability is AVAILABIL
  */
 export function isValidVariant(variant: unknown): variant is Partial<Variant> {
   return variantSchema.safeParse(variant).success;
+}
+
+/**
+ * Type guard to validate if a value is a valid product image entry.
+ * Checks for a string `href` and a `type` of either "image" or "thumbnail".
+ * The `href` is only shape-checked here; the builder resolves it to an absolute
+ * URL (and drops the entry when it can't).
+ * @param value - The value to check
+ * @returns Type predicate indicating if the value is a valid ProductImage
+ * @category Typeguards
+ * @example
+ * ```typescript
+ * // Valid image entry
+ * if (isProductImage({ href: "https://example.com/a.jpg", type: "image" })) {
+ *   console.log('Valid product image');
+ * }
+ *
+ * // Invalid — unknown type
+ * if (!isProductImage({ href: "https://example.com/a.jpg", type: "banner" })) {
+ *   console.log('Not a valid product image');
+ * }
+ *
+ * // Invalid — missing href
+ * if (!isProductImage({ type: "thumbnail" })) {
+ *   console.log('Not a valid product image');
+ * }
+ * ```
+ * @source
+ */
+export function isProductImage(value: unknown): value is ProductImage {
+  return productImageSchema.safeParse(value).success;
 }
 
 /**

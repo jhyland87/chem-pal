@@ -302,22 +302,39 @@ declare global {
     moles?: number;
 
     /**
-     * Thumbnail URL
-     * @example "https://example.com/thumbnail.jpg"
+     * Flat list of the product's images. Full-size images and thumbnails are
+     * kept as separate, independent entries distinguished by {@link ProductImage.type}
+     * (a supplier's main image/thumbnail is often not part of its gallery). The
+     * first entry of each type is treated as that type's default.
+     * @example `[{ href: "https://example.com/image.jpg", type: "image" }, { href: "https://example.com/thumb.jpg", type: "thumbnail" }]`
      */
-    thumbnail?: string;
+    images?: ProductImage[];
+  }
 
-    /**
-     * Image URL
-     * @example "https://example.com/image.jpg"
-     */
-    imageURL?: string;
+  /** Whether a {@link ProductImage} is a full-size image or a thumbnail. */
+  type ProductImageType = "image" | "thumbnail";
 
-    /**
-     * Image Alt Text
-     * @example "Sodium Chloride ACS Grade 500g"
-     */
-    imageAltText?: string;
+  /**
+   * A single product image entry: a URL plus whether it's a full-size image or a
+   * thumbnail. Full images and thumbnails are stored as separate entries rather
+   * than paired, so an unrelated thumbnail can't be mistaken for a given image's
+   * downscale.
+   *
+   * @example
+   * ```typescript
+   * const image: ProductImage = { href: "https://example.com/image.jpg", type: "image" };
+   * const thumb: ProductImage = { href: "https://example.com/thumbnail.jpg", type: "thumbnail" };
+   * ```
+   */
+  interface ProductImage {
+    /** The image URL. */
+    href: string;
+
+    /** Whether this entry is a full-size image or a thumbnail. */
+    type: ProductImageType;
+
+    /** Alt text for accessibility (typically only set on full images). */
+    altText?: string;
   }
 
   /**

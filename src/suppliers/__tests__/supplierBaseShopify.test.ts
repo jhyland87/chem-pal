@@ -23,6 +23,10 @@ const sampleNode = (): ShopifyProductNode => ({
   descriptionHtml:
     "<p>Sodium hydroxide 0.1M standardized solution. CAS 1310-73-2. Formula: NaOH. MW: 39.997 g/mol. Purity 99%.</p>",
   onlineStoreUrl: "https://www.thelabstockroom.com/products/is28128",
+  featuredImage: {
+    url: "https://cdn.shopify.com/s/files/1/x_150x150_crop_center.jpg",
+    altText: null,
+  },
   media: {
     edges: [
       {
@@ -82,13 +86,64 @@ describe("SupplierBaseShopify initProductBuilders", () => {
     expect(builder.get("sku")).toBe("IS28128");
     expect(builder.get("id")).toBe("gid://shopify/Product/6609050009792");
     expect(builder.get("cacheKey")).toBe("gid://shopify/Product/6609050009792");
-    // Image comes from the media connection.
-    expect(builder.get("imageURL")).toBe("https://cdn.shopify.com/s/files/1/x.jpg");
+    // Full image from media, followed by the pre-transformed featuredImage as its thumbnail.
+    expect(builder.get("images")).toEqual([
+      { href: "https://cdn.shopify.com/s/files/1/x.jpg", type: "image", altText: "NaOH" },
+      { href: "https://cdn.shopify.com/s/files/1/x_150x150_crop_center.jpg", type: "thumbnail" },
+    ]);
     // Chemical identifiers parsed from title + descriptionHtml.
     expect(builder.get("cas")).toBe("1310-73-2");
     expect(builder.get("concentration")).toBe("0.1 M");
     expect(builder.get("moleweight")).toBe(39.997);
     expect(builder.get("purity")).toBe("99%");
+  });
+
+  it("adds every image from the media connection, skipping non-image and url-less nodes", () => {
+    const node = sampleNode();
+    node.featuredImage = {
+      url: "https://cdn.shopify.com/s/files/1/a_150x150_crop_center.jpg",
+      altText: null,
+    };
+    node.media = {
+      edges: [
+        {
+          node: {
+            id: "gid://shopify/MediaImage/1",
+            mediaContentType: "IMAGE",
+            alt: "front",
+            image: { url: "https://cdn.shopify.com/s/files/1/a.jpg", width: 800, height: 600 },
+          },
+        },
+        {
+          node: {
+            id: "gid://shopify/Video/2",
+            mediaContentType: "VIDEO",
+            alt: "clip",
+            image: null,
+          },
+        },
+        {
+          node: {
+            id: "gid://shopify/MediaImage/3",
+            mediaContentType: "IMAGE",
+            alt: "",
+            image: { url: "https://cdn.shopify.com/s/files/1/b.jpg", width: 800, height: 600 },
+          },
+        },
+      ],
+    };
+
+    const supplier = new TestShopify("q", 5, new AbortController());
+    const [builder] = supplier.callInitProductBuilders([node]);
+
+    expect(builder.get("images")).toEqual([
+      // Primary image, then the pre-transformed featuredImage as its thumbnail.
+      { href: "https://cdn.shopify.com/s/files/1/a.jpg", type: "image", altText: "front" },
+      { href: "https://cdn.shopify.com/s/files/1/a_150x150_crop_center.jpg", type: "thumbnail" },
+      // Additional image, then a CDN width-derived thumbnail.
+      { href: "https://cdn.shopify.com/s/files/1/b.jpg", type: "image" },
+      { href: "https://cdn.shopify.com/s/files/1/b.jpg?width=200", type: "thumbnail" },
+    ]);
   });
 
   it("falls back to a handle-based URL when onlineStoreUrl is null", () => {

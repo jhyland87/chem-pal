@@ -29,7 +29,7 @@ const EXPANDABLE_DETAIL_KEYS = [
 ] as const satisfies readonly (keyof Product)[];
 
 /**
- * The resolved images for a product's detail panel: the source shown in the
+ * A resolved image for a product's detail panel: the source shown in the
  * thumbnail box and the (usually larger) source opened when it's clicked.
  * @source
  */
@@ -38,6 +38,8 @@ interface ResolvedProductImage {
   thumbSrc: string;
   /** Image URL to open in a new tab when the thumbnail is clicked. */
   fullSrc: string;
+  /** Alt text for the image, when the source provided one. */
+  altText?: string;
 }
 
 /**
@@ -63,42 +65,52 @@ export function isPresent(value: unknown): boolean {
 }
 
 /**
- * Resolves the image to display for a product, falling back from a real photo to
- * an NCI CACTUS structure depiction built from the first available chemical
+ * Resolves the images to display for a product, falling back from real photos to
+ * a single NCI CACTUS structure depiction built from the first available chemical
  * identifier (CAS → SMILES → IUPAC name).
- * @param product - The product to resolve an image for.
- * @returns The thumbnail and full-size image sources, or `undefined` when the
- *          product has no photo and no identifier to derive a structure from.
+ * @param product - The product to resolve images for.
+ * @returns The resolved images in display order (thumbnail source, full-size
+ *          source, and optional alt text), or an empty array when the product has
+ *          no photos and no identifier to derive a structure from.
  * @example
  * ```ts
- * resolveProductImage({ thumbnail: "t.jpg", imageURL: "full.jpg" } as Product);
- * // => { thumbSrc: "t.jpg", fullSrc: "full.jpg" }
- * resolveProductImage({ cas: "69-57-8" } as Product);
- * // => { thumbSrc: ".../structure/69-57-8/image", fullSrc: ".../structure/69-57-8/image?width=500&height=500" }
- * resolveProductImage({ title: "x" } as Product);
- * // => undefined
+ * resolveProductImages({
+ *   images: [{ href: "full.jpg", type: "image" }, { href: "t.jpg", type: "thumbnail" }],
+ * } as Product);
+ * // => [{ thumbSrc: "t.jpg", fullSrc: "full.jpg" }]
+ * resolveProductImages({ cas: "69-57-8" } as Product);
+ * // => [{ thumbSrc: ".../structure/69-57-8/image", fullSrc: ".../structure/69-57-8/image?width=500&height=500" }]
+ * resolveProductImages({ title: "x" } as Product);
+ * // => []
  * ```
  * @source
  */
-export function resolveProductImage(product: Product): ResolvedProductImage | undefined {
-  const { thumbnail, imageURL } = product;
+export function resolveProductImages(product: Product): ResolvedProductImage[] {
+  const entries = (product.images ?? []).filter((image) => isPresent(image.href));
+  const { image: fulls = [], thumbnail: thumbs = [] } = Object.groupBy(
+    entries,
+    (image) => image.type,
+  );
 
-  // Real supplier photo: show the thumbnail, open the full image on click.
-  if (isPresent(thumbnail) || isPresent(imageURL)) {
-    const thumb = thumbnail ?? imageURL;
-    const full = imageURL ?? thumbnail;
-    if (thumb !== undefined && full !== undefined) {
-      return { thumbSrc: thumb, fullSrc: full };
-    }
+  // Cycle through the full-size images (or thumbnails when that's all there is),
+  // opening the full source on click. Pair each with a thumbnail by position,
+  // falling back to the default thumbnail, then to the source itself.
+  const sources = fulls.length > 0 ? fulls : thumbs;
+  if (sources.length > 0) {
+    return sources.map((image, index) => ({
+      thumbSrc: (thumbs[index] ?? thumbs[0] ?? image).href,
+      fullSrc: image.href,
+      altText: image.altText,
+    }));
   }
 
   // No photo: derive a 2D structure depiction from a chemical identifier.
   const identifier = [product.cas, product.smiles, product.iupacName].find((id) => isPresent(id));
-  if (identifier === undefined) return undefined;
+  if (identifier === undefined) return [];
 
   const encoded = encodeURIComponent(String(identifier));
   const structureUrl = `${CACTUS_STRUCTURE_BASE}/${encoded}/image`;
-  return { thumbSrc: structureUrl, fullSrc: `${structureUrl}?width=500&height=500` };
+  return [{ thumbSrc: structureUrl, fullSrc: `${structureUrl}?width=500&height=500` }];
 }
 
 /**
@@ -117,7 +129,7 @@ export function resolveProductImage(product: Product): ResolvedProductImage | un
  * @source
  */
 export function hasExpandableDetail(product: Product): boolean {
-  if (resolveProductImage(product) !== undefined) return true;
+  if (resolveProductImages(product).length > 0) return true;
   if ((product.variants?.length ?? 0) > 0) return true;
   return EXPANDABLE_DETAIL_KEYS.some((key) => isPresent(product[key]));
 }
