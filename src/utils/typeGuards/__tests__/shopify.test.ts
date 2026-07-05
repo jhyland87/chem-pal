@@ -10,6 +10,7 @@ const validVariant = {
   title: "Default Title",
   sku: "GTK-001",
   availableForSale: true,
+  currentlyNotInStock: false,
   weight: 3.0,
   weightUnit: "OUNCES",
   price: { amount: "14.99" },
