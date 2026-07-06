@@ -8,6 +8,7 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   NODE_VERSION: 'v22.15.0'
+  NODE_OPTIONS: '--trace-deprecation'
 
 permissions:
   contents: read
