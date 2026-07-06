@@ -1,7 +1,7 @@
 import { UOM } from "@/constants/common";
 import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
-import { parseQuantity } from "@/helpers/quantity";
+import { parseQuantity, standardizeUom, toMetricQuantity } from "@/helpers/quantity";
 import { findMolarity, parseChemicalSpecs } from "@/helpers/science";
 import { firstMap, htmlToAscii, mapDefined } from "@/helpers/utils";
 import searchProductsQuery from "@/queries/shopify-product-query.gql";
@@ -158,9 +158,57 @@ export abstract class SupplierBaseShopify
     this.logger.debug(`Query returned ${products.length} products`, { products });
 
     const fuzzResults = this.fuzzyFilterAst<ShopifyProductNode>(products);
-    this.logger.debug("fuzzResults", { query, searchRequest, products, fuzzResults });
+    const filteredResults = this.filterProducts(fuzzResults);
+    this.logger.debug("fuzzResults", {
+      query,
+      searchRequest,
+      products,
+      fuzzResults,
+      filteredResults,
+    });
 
-    return this.initProductBuilders(fuzzResults.slice(0, limit));
+    return this.initProductBuilders(filteredResults.slice(0, limit));
+  }
+
+  /**
+   * Hook for excluding product nodes after fuzzy matching but before they are
+   * turned into builders. The base implementation is a pass-through; subclasses
+   * override it to drop nodes that shouldn't surface in results (for example,
+   * filtering out non-chemical equipment by its storefront tags).
+   * @param products - The fuzzy-matched Shopify product nodes
+   * @returns The nodes that should be built into products
+   * @example
+   * ```typescript
+   * this.filterProducts(nodes); // Base: returns `nodes` unchanged
+   * ```
+   * @source
+   */
+  protected filterProducts(products: ShopifyProductNode[]): ShopifyProductNode[] {
+    return products;
+  }
+
+  /**
+   * Builds a {@link QuantityObject} directly from a variant's structured
+   * `weight`/`weightUnit` pair, bypassing the string quantity parser. The parser
+   * requires the leading digit of a quantity to be non-zero, so a sub-1 weight
+   * such as `0.3` would be misread as `3`; using the numeric value avoids that.
+   * The unit is standardized (Shopify reports `POUNDS`/`GRAMS`/etc.), and a
+   * missing, non-finite, or non-positive weight yields undefined.
+   * @param weight - The variant's numeric weight
+   * @param weightUnit - The variant's weight unit (e.g. `"POUNDS"`)
+   * @returns The quantity object, or undefined when it can't be derived
+   * @example
+   * ```typescript
+   * this.weightQuantity(0.3, "POUNDS") // Returns { quantity: 0.3, uom: "lb" }
+   * this.weightQuantity(0, "GRAMS")    // Returns undefined
+   * ```
+   * @source
+   */
+  protected weightQuantity(weight: number, weightUnit: string): QuantityObject | undefined {
+    if (!Number.isFinite(weight) || weight <= 0) return undefined;
+    const uom = standardizeUom(weightUnit);
+    if (!uom) return undefined;
+    return { quantity: weight, uom };
   }
 
   /**
@@ -228,17 +276,20 @@ export abstract class SupplierBaseShopify
         .setSmiles(specs.smiles)
         .setConcentration(firstMap(findMolarity, [product.title, descriptionText]));
 
-      const parseableQuantityStrings = [
-        `${primaryVariant.weight} ${primaryVariant.weightUnit}`,
-        primaryVariant.sku ?? "",
-        product.title,
-        descriptionText,
-      ];
+      // Prefer the listed pack size (title, then sku/description), which reflects
+      // the product amount. The variant weight includes packaging and runs high,
+      // so it's only a fallback — and it's read from the structured weight fields
+      // rather than a parsed string to preserve sub-1 values (e.g. 0.3 lb).
+      const parseableQuantityStrings = [product.title, primaryVariant.sku ?? "", descriptionText];
       this.logger.debug("parseableQuantityStrings", { parseableQuantityStrings });
-      const quantity = firstMap(parseQuantity, parseableQuantityStrings);
+      const quantity =
+        firstMap(parseQuantity, parseableQuantityStrings) ??
+        this.weightQuantity(primaryVariant.weight, primaryVariant.weightUnit);
 
       if (isQuantityObject(quantity)) {
-        builder.setQuantity(quantity.quantity, quantity.uom);
+        // Standardize imperial units (e.g. lb/oz) to metric before storing.
+        const standard = toMetricQuantity(quantity);
+        builder.setQuantity(standard.quantity, standard.uom);
       } else {
         this.logger.warn("Failed to parse quantity from primary variant, defaulting to 1 EA", {
           parseableQuantityStrings,
@@ -259,11 +310,12 @@ export abstract class SupplierBaseShopify
         if (!variant.price.amount) continue;
         const variantPrice = parsePrice(`$${variant.price.amount}`);
 
-        const quantity = firstMap(parseQuantity, [
-          `${variant.weight} ${variant.weightUnit}`,
-          variant.sku ?? "",
-          variant.title,
-        ]);
+        const parsedQuantity =
+          firstMap(parseQuantity, [variant.title, variant.sku ?? ""]) ??
+          this.weightQuantity(variant.weight, variant.weightUnit);
+        const quantity = isQuantityObject(parsedQuantity)
+          ? toMetricQuantity(parsedQuantity)
+          : undefined;
 
         builder.addVariant({
           id: variant.id,
@@ -271,12 +323,37 @@ export abstract class SupplierBaseShopify
           sku: variant.sku ?? undefined,
           price: variantPrice?.price,
           status: variant.currentlyNotInStock ? "out of stock" : "in stock",
-          ...(isQuantityObject(quantity) ? quantity : { quantity: 1, uom: UOM.EA }),
+          ...(quantity ?? { quantity: 1, uom: UOM.EA }),
         });
       }
 
+      this.enrichBuilder(builder, product);
+
       return builder;
     });
+  }
+
+  /**
+   * Hook for attaching supplier-specific fields to a freshly built product from
+   * its raw Shopify node, which carries data not stored on the builder (e.g.
+   * `tags`). The base implementation is a no-op; subclasses override it, for
+   * example to derive a purity grade from storefront tags.
+   * @param builder - The product builder being populated
+   * @param product - The raw Shopify product node it was built from
+   * @returns Nothing; the builder is mutated in place
+   * @example
+   * ```typescript
+   * this.enrichBuilder(builder, product); // Base: no-op
+   * ```
+   * @source
+   */
+  protected enrichBuilder(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    builder: ProductBuilder<Product>,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    product: ShopifyProductNode,
+  ): void {
+    // No-op by default; suppliers override to attach fields derived from the node.
   }
 
   /**
