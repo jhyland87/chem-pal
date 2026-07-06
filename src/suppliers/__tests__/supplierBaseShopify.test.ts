@@ -74,6 +74,14 @@ class TestShopify extends SupplierBaseShopify {
       }
     ).initProductBuilders(nodes);
   }
+
+  public callFilterProducts(nodes: ShopifyProductNode[]) {
+    return (
+      this as unknown as {
+        filterProducts: (n: ShopifyProductNode[]) => ShopifyProductNode[];
+      }
+    ).filterProducts(nodes);
+  }
 }
 
 describe("SupplierBaseShopify initProductBuilders", () => {
@@ -153,6 +161,35 @@ describe("SupplierBaseShopify initProductBuilders", () => {
     const [builder] = supplier.callInitProductBuilders([node]);
     expect(builder.get("url")).toBe("https://shop.example/products/is28128");
   });
+
+  it("parses the quantity from the title, ignoring the packaging weight", () => {
+    const supplier = new TestShopify("q", 5, new AbortController());
+    const node = sampleNode();
+    node.title = "Sodium Iodide Reagent, 100g";
+    node.variants.edges[0].node.weight = 0.3;
+    node.variants.edges[0].node.weightUnit = "POUNDS";
+    const [builder] = supplier.callInitProductBuilders([node]);
+    expect(builder.get("quantity")).toBe(100);
+    expect(builder.get("uom")).toBe("g");
+  });
+
+  it("falls back to the variant weight when the title has no quantity, preserving sub-1 values and converting to metric", () => {
+    const supplier = new TestShopify("q", 5, new AbortController());
+    const node = sampleNode();
+    node.title = "Medium Sodium Spoon";
+    node.variants.edges[0].node.weight = 0.4;
+    node.variants.edges[0].node.weightUnit = "POUNDS";
+    const [builder] = supplier.callInitProductBuilders([node]);
+    // 0.4 lb -> 181.44 g (would have been misread as "4 lb" by the string parser).
+    expect(builder.get("quantity")).toBe(181.44);
+    expect(builder.get("uom")).toBe("g");
+  });
+
+  it("filterProducts is a pass-through in the base class", () => {
+    const supplier = new TestShopify("q", 5, new AbortController());
+    const nodes = [sampleNode(), sampleNode()];
+    expect(supplier.callFilterProducts(nodes)).toEqual(nodes);
+  });
 });
 
 /** Exposes applySdsUrl and stubs the background fetcher's HTTP status. */
@@ -170,7 +207,108 @@ class TestLabStockroom extends SupplierTheLabStockroom {
       this as unknown as { applySdsUrl: (b: ProductBuilder<Product>) => Promise<void> }
     ).applySdsUrl(builder);
   }
+
+  public callFilterProducts(nodes: ShopifyProductNode[]) {
+    return (
+      this as unknown as {
+        filterProducts: (n: ShopifyProductNode[]) => ShopifyProductNode[];
+      }
+    ).filterProducts(nodes);
+  }
+
+  public callInitProductBuilders(nodes: ShopifyProductNode[]) {
+    return (
+      this as unknown as {
+        initProductBuilders: (n: ShopifyProductNode[]) => ProductBuilder<Product>[];
+      }
+    ).initProductBuilders(nodes);
+  }
 }
+
+/** Builds a minimal product node with the given title and tags for filter tests. */
+const taggedNode = (title: string, tags: string[]): ShopifyProductNode => ({
+  ...sampleNode(),
+  title,
+  tags,
+});
+
+describe("SupplierTheLabStockroom filterProducts", () => {
+  const supplier = () => new TestLabStockroom("q", 5, new AbortController());
+
+  it("keeps products with a qualifying chemical tag", () => {
+    const node = taggedNode("Sodium Iodide Reagent, 100g", [
+      "Category_Chemicals",
+      "Chemical_Sodium Iodide",
+    ]);
+    expect(supplier().callFilterProducts([node])).toEqual([node]);
+  });
+
+  it("keeps products tagged with any Chemical_ prefix", () => {
+    const node = taggedNode("Something", ["Manufacturer_Eisco", "Chemical_Potassium Chloride"]);
+    expect(supplier().callFilterProducts([node])).toEqual([node]);
+  });
+
+  it("excludes equipment whose tags include none of the chemical tags", () => {
+    const spoon = taggedNode("Medium Sodium Spoon", [
+      "Category_Lab Equipment",
+      "Subcategory_Scoops and Spatulas",
+    ]);
+    expect(supplier().callFilterProducts([spoon])).toEqual([]);
+  });
+
+  it("excludes Category_Lab Equipment even when a chemical tag is also present", () => {
+    const testStrip = taggedNode("Potassium Iodide Indicator Paper, 100-Leaf", [
+      "Category_Lab Equipment",
+      "Chemical_Test Strips",
+      "Chemistry",
+      "Chemistry_Chemicals",
+    ]);
+    expect(supplier().callFilterProducts([testStrip])).toEqual([]);
+  });
+
+  it("keeps an untagged product when its title yields a quantity", () => {
+    const node = taggedNode("Potassium Nitrate 125g", []);
+    expect(supplier().callFilterProducts([node])).toEqual([node]);
+  });
+
+  it("excludes an untagged product when its title has no parseable quantity", () => {
+    const node = taggedNode("Mystery Untagged Gadget", []);
+    expect(supplier().callFilterProducts([node])).toEqual([]);
+  });
+});
+
+describe("SupplierTheLabStockroom grade from tags", () => {
+  const gradeOf = (tags: string[]) => {
+    const supplier = new TestLabStockroom("q", 5, new AbortController());
+    const [builder] = supplier.callInitProductBuilders([taggedNode("Some Reagent, 100g", tags)]);
+    return builder.get("grade");
+  };
+
+  const cases: Array<[string, string]> = [
+    ["Grade__Laboratory-Grade", "Lab Grade"],
+    ["Grade_Lab-Grade", "Lab Grade"],
+    ["Grade_Lab", "Lab Grade"],
+    ["Grade_Reagent-Grade", "Reagent Grade"],
+    ["Grade_Reagent", "Reagent Grade"],
+    ["Grade_ACS-Grade", "ACS Grade"],
+    ["Grade_ACS", "ACS Grade"],
+  ];
+
+  for (const [tag, grade] of cases) {
+    it(`maps ${tag} -> ${grade}`, () => {
+      expect(gradeOf(["Category_Chemicals", tag])).toBe(grade);
+    });
+  }
+
+  it("leaves grade unset when no grade tag is present", () => {
+    expect(gradeOf(["Category_Chemicals", "Chemical_Sodium Iodide"])).toBeUndefined();
+  });
+
+  it("does not read a grade from non-Grade tags containing the keyword", () => {
+    // "Category_Lab Equipment" contains "lab" but isn't a Grade_ tag (and is excluded anyway).
+    expect(gradeOf(["Category_Chemicals", "Subcategory_Lab Supplies"])).toBeUndefined();
+  });
+});
 
 describe("SupplierTheLabStockroom SDS probe", () => {
   const makeBuilder = (sku?: string) => {

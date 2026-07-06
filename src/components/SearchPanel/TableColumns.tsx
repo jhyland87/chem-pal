@@ -290,6 +290,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       minSize: 40,
       maxSize: 40,
       meta: {
+        dataKeys: ["sdsUrl"],
         style: {
           textAlign: "center",
         },
@@ -316,6 +317,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       minSize: 40,
       maxSize: 40,
       meta: {
+        dataKeys: ["specSheetUrl"],
         style: {
           textAlign: "center",
         },
@@ -342,6 +344,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       minSize: 40,
       maxSize: 40,
       meta: {
+        dataKeys: ["coaUrl"],
         style: {
           textAlign: "center",
         },

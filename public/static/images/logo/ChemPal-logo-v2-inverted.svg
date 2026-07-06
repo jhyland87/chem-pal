@@ -6,7 +6,7 @@
   </defs>
   <rect x="24" y="24" width="464" height="464" rx="25" fill="#ffffff" stroke="#2C4060" stroke-width="8" filter="url(#shadow)"/>
   <!-- Top left number -->
-  <text x="50" y="80" font-family="Arial, Helvetica, sans-serif" font-size="40" fill="#3f5270" font-weight="normal">25</text>
+  <text x="50" y="80" font-family="Arial, Helvetica, sans-serif" font-size="40" fill="#3f5270" font-weight="normal">26</text>
   <!-- Center Cp -->
   <text x="50%" y="42%" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="240" fill="#2C4060" font-weight="bold" dominant-baseline="middle">Cp</text>
   <!-- ChemPal label -->

@@ -165,6 +165,63 @@ export function getVisibleRange<TData>(
 }
 
 /**
+ * Determines whether a value counts as data when deciding if a column is empty.
+ *
+ * @param value - The cell/field value to test
+ * @returns False for null/undefined, blank strings, and empty arrays; true
+ *   otherwise (numbers including 0 and booleans count as data)
+ */
+function hasValue(value: unknown): boolean {
+  if (value == null) return false;
+  if (typeof value === "string") return value.trim().length > 0;
+  if (Array.isArray(value)) return value.length > 0;
+  return true;
+}
+
+/**
+ * Returns the ids of hideable columns that contain no data in ANY row — across
+ * variant sub-rows and rows filtered out of the current view, not just the
+ * visible page — so callers can auto-hide columns irrelevant to a result set.
+ * Accessor columns (with `accessorKey` or `accessorFn`) are read via each row's
+ * value; display columns without an accessor are read from the product fields
+ * named in their `meta.dataKeys`. Columns that can't be hidden, and display
+ * columns without `meta.dataKeys` (whose emptiness can't be determined), are
+ * never reported.
+ * @param table - The table instance to inspect
+ * @returns The ids of hideable columns that have no data in any row
+ * @example
+ * ```typescript
+ * // A result set where no product has a CAS number or SDS link:
+ * getEmptyHideableColumnIds(table); // ["cas", "sds"]
+ * ```
+ * @source
+ */
+export function getEmptyHideableColumnIds<TData>(table: Table<TData>): string[] {
+  const rows = table.getCoreRowModel().flatRows;
+  const emptyColumnIds: string[] = [];
+
+  for (const column of table.getAllColumns()) {
+    if (!column.getCanHide()) continue;
+
+    const columnDef = column.columnDef;
+    const isAccessorColumn = "accessorKey" in columnDef || "accessorFn" in columnDef;
+    const dataKeys = columnDef.meta?.dataKeys ?? [];
+    // A display column with no accessor and no declared dataKeys can't be judged.
+    if (!isAccessorColumn && dataKeys.length === 0) continue;
+
+    const hasData = rows.some((row) => {
+      if (isAccessorColumn) return hasValue(row.getValue(column.id));
+      const original = row.original as Record<string, unknown>;
+      return dataKeys.some((key) => hasValue(original[key]));
+    });
+
+    if (!hasData) emptyColumnIds.push(column.id);
+  }
+
+  return emptyColumnIds;
+}
+
+/**
  * Sets the visibility of a column.
  *
  * @param column - The column to set visibility for
