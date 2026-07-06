@@ -1,5 +1,53 @@
+import { parseQuantity } from "@/helpers/quantity";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { SupplierBaseShopify } from "./SupplierBaseShopify";
+
+/** Storefront tag prefix (capital "C") marking a product as a specific chemical, e.g. `Chemical_Sodium Iodide`. */
+const CHEMICAL_TAG_PREFIX = "Chemical_";
+
+/**
+ * Storefront tags that force-exclude a product even when it also carries a
+ * chemical tag. Some equipment (e.g. indicator/test strips) is tagged as both
+ * `Chemical_*` and `Category_Lab Equipment`; the equipment tag wins so those
+ * don't surface as reagents.
+ */
+const EXCLUDED_TAGS: ReadonlySet<string> = new Set(["Category_Lab Equipment"]);
+
+/**
+ * Keyword-to-grade mappings for deriving a purity grade from a `Grade_`/`Grade__`
+ * storefront tag. Matched by substring on the tag (lowercased), so variants
+ * collapse together — `Grade_Lab`, `Grade_Lab-Grade`, and `Grade__Laboratory-Grade`
+ * all yield "Lab Grade". Ordered most-specific first so, e.g., an ACS tag isn't
+ * shadowed by a broader match.
+ */
+const GRADE_TAG_MATCHERS: ReadonlyArray<{ keyword: string; grade: string }> = [
+  { keyword: "acs", grade: "ACS Grade" },
+  { keyword: "reagent", grade: "Reagent Grade" },
+  { keyword: "lab", grade: "Lab Grade" },
+];
+
+/**
+ * Storefront tags that mark a product as a chemical/reagent rather than
+ * equipment. A product is kept when it carries any of these tags or one
+ * prefixed with `CHEMICAL_TAG_PREFIX`. Untagged products are handled
+ * separately (kept only when their title yields a quantity).
+ */
+const CHEMICAL_TAGS: ReadonlySet<string> = new Set([
+  "Category_Chemicals",
+  "Chemistry_Chemicals",
+  "Grade_Reagent-Grade",
+  "Subject_Chemistry",
+  "Chemistry",
+  "Grade_Lab",
+  "Subcategory_Acids and Bases",
+  "Grade_Reagent",
+  "Chemicals_Acids & Bases",
+  "Grade__Laboratory-Grade",
+  "Grade_ACS",
+  "Grade_ACS-Grade",
+  "Chemicals_Organic Compounds",
+  "Chemicals_Solutions",
+]);
 
 /**
  * SupplierTheLabStockroom class that extends SupplierBaseShopify.
@@ -88,7 +136,6 @@ export class SupplierTheLabStockroom extends SupplierBaseShopify implements ISup
     try {
       const response = await this.backgroundFetch(sdsUrl, {
         method: "HEAD",
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         headers: { "content-type": "application/json" },
       });
       if (response.status === 200) {
@@ -99,5 +146,97 @@ export class SupplierTheLabStockroom extends SupplierBaseShopify implements ISup
     } catch (error) {
       this.logger.debug("SDS HEAD probe failed", { sdsUrl, error });
     }
+  }
+
+  /**
+   * Drops non-chemical results (equipment, kits, glassware) so a broad search
+   * like `potassium OR sodium` doesn't surface, e.g., a sodium spoon. A product
+   * is kept when it carries a qualifying chemical tag (see {@link isChemicalProduct}).
+   * @param products - The fuzzy-matched Shopify product nodes
+   * @returns Only the nodes that look like chemicals/reagents
+   * @example
+   * ```typescript
+   * this.filterProducts(nodes); // Drops the "Medium Sodium Spoon" node
+   * ```
+   * @source
+   */
+  protected override filterProducts(products: ShopifyProductNode[]): ShopifyProductNode[] {
+    return products.filter((product) => this.isChemicalProduct(product));
+  }
+
+  /**
+   * Decides whether a product is a chemical/reagent worth showing. A product is
+   * rejected outright when any tag is in `EXCLUDED_TAGS` (equipment wins even
+   * over a chemical tag, e.g. test strips tagged both). Otherwise a tagged
+   * product qualifies when any tag is in `CHEMICAL_TAGS` or is prefixed with
+   * `CHEMICAL_TAG_PREFIX`. An untagged product (many real chemicals
+   * carry no storefront tags) qualifies only when its title yields a parseable
+   * quantity, which keeps untagged chemicals while still excluding untagged
+   * equipment.
+   * @param product - The Shopify product node to classify
+   * @returns True when the product should appear in results
+   * @example
+   * ```typescript
+   * this.isChemicalProduct(sodiumIodideNode) // true  (tag "Category_Chemicals")
+   * this.isChemicalProduct(sodiumSpoonNode)  // false (only equipment tags)
+   * this.isChemicalProduct(testStripNode)    // false (has "Category_Lab Equipment")
+   * this.isChemicalProduct(untaggedKNO3Node) // true  (title "Potassium Nitrate 125g")
+   * ```
+   * @source
+   */
+  private isChemicalProduct(product: ShopifyProductNode): boolean {
+    const tags = product.tags ?? [];
+    if (tags.some((tag) => EXCLUDED_TAGS.has(tag))) {
+      return false;
+    }
+    if (tags.length === 0) {
+      return parseQuantity(product.title) != null;
+    }
+    return tags.some((tag) => tag.startsWith(CHEMICAL_TAG_PREFIX) || CHEMICAL_TAGS.has(tag));
+  }
+
+  /**
+   * Attaches a purity grade to the product when one can be read from its tags.
+   * @param builder - The product builder to enrich
+   * @param product - The raw Shopify product node
+   * @returns Nothing; the builder's grade is set when a grade tag is found
+   * @example
+   * ```typescript
+   * this.enrichBuilder(builder, product); // builder.get("grade") === "Reagent Grade"
+   * ```
+   * @source
+   */
+  protected override enrichBuilder(
+    builder: ProductBuilder<Product>,
+    product: ShopifyProductNode,
+  ): void {
+    builder.setGrade(this.gradeFromTags(product.tags ?? []));
+  }
+
+  /**
+   * Scans the storefront tags for a purity-grade tag (prefixed `Grade_`/`Grade__`)
+   * and maps it to a canonical grade label. Matching is by keyword on the tag's
+   * grade portion, so minor spelling variants collapse together: `Grade_Lab`,
+   * `Grade_Lab-Grade`, and `Grade__Laboratory-Grade` all yield "Lab Grade";
+   * `Grade_Reagent`/`Grade_Reagent-Grade` yield "Reagent Grade"; and
+   * `Grade_ACS`/`Grade_ACS-Grade` yield "ACS Grade".
+   * @param tags - The product's storefront tags
+   * @returns The canonical grade label, or undefined when no grade tag is present
+   * @example
+   * ```typescript
+   * this.gradeFromTags(["Manufacturer_Eisco", "Grade__Laboratory-Grade"]) // "Lab Grade"
+   * this.gradeFromTags(["Grade_ACS-Grade"])                               // "ACS Grade"
+   * this.gradeFromTags(["Category_Chemicals"])                           // undefined
+   * ```
+   * @source
+   */
+  private gradeFromTags(tags: string[]): string | undefined {
+    for (const tag of tags) {
+      const lowerTag = tag.toLowerCase();
+      if (!lowerTag.startsWith("grade")) continue;
+      const match = GRADE_TAG_MATCHERS.find(({ keyword }) => lowerTag.includes(keyword));
+      if (match) return match.grade;
+    }
+    return undefined;
   }
 }

@@ -8,7 +8,6 @@ import {
   setColumnVisibility,
 } from "@/mixins/tanstack";
 import {
-  ColumnDef,
   ColumnFiltersState,
   filterFns,
   getCoreRowModel,

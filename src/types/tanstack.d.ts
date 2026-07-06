@@ -158,6 +158,16 @@ declare module "@tanstack/react-table" {
      * `"US"`) would read better as icons (e.g. a flag).
      */
     renderSelectOption?: (value: string) => import("react").ReactNode;
+
+    /**
+     * Product fields this column's content is derived from. Used by
+     * `getEmptyHideableColumnIds` to decide whether the column has data (for
+     * auto-hiding empty columns after a search). Only needed for display columns
+     * that render from a custom cell rather than an accessor (e.g. the SDS
+     * column reads `sdsUrl`); accessor columns are judged by their value.
+     * @example ["sdsUrl"]
+     */
+    dataKeys?: string[];
   }
 
   // Register our custom sorting functions by augmenting the `SortingFns`
