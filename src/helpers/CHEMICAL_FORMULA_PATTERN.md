@@ -5,7 +5,7 @@ Complex regex pattern meant for matching chemical formula patterns and excluding
 
 @see https://regex101.com/r/h3ZnXX/6
 ```regex
-(?<![^\s])                                                                # LEFT boundary: preceding char must be whitespace, or start-of-string
+(?<![^\s>])                                                               # LEFT boundary: preceding char is whitespace, '>' (end of a tag), or start-of-string
 (                                                                         # capture 1: the whole formula
   (?![^<>]*>)                                                             # guard: don't start inside an HTML tag's attribute list
   (?:                                                                     # ============ HEAD — must look like a formula, not prose ============
@@ -54,5 +54,5 @@ Complex regex pattern meant for matching chemical formula patterns and excluding
     (?:[+-](?![A-Za-z0-9]))?                                               #   optional charge on the component
   )*
 )
-(?![^\s])                                                                 # RIGHT boundary: following char must be whitespace, or end-of-string
+(?![^\s\.<])                                                                # RIGHT boundary: following char is whitespace, '<' (start of a tag), period, or end-of-string
 ```
