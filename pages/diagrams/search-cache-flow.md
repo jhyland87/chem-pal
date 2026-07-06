@@ -36,6 +36,13 @@ separate reference graph at the end.
 
 
 ```mermaid
+---
+config:
+  mermaidPlugin:
+    containerHeight: auto
+    zoomControl: none
+    disableMaximize: true
+---
 %%{init: {'theme': 'default', 'config': {'useMaxWidth': false}}}%%
 flowchart LR
 linkStyle default stroke-width:4px;

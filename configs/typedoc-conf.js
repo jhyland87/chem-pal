@@ -16,7 +16,7 @@ module.exports = {
   ],
   //style: ".tsd-page-toolbar .header__link { color: #dd0fcc; }",
   style:
-    "body { font-size: 12px; } .tsd-page-toolbar .header__project { color: #00c; font-size: 1.2rem; }",
+    "body { font-size: 12px; } .tsd-page-toolbar { z-index:5; } .tsd-page-toolbar .header__project { color: #00c; font-size: 1.2rem; }",
   toolbarBackground: "rgba(255, 197, 197, 0.5)",
   showGoTop: 300,
   createFile: ".nojekyll",

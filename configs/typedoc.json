@@ -25,13 +25,29 @@
     //"typedoc-theme-oxide",
     //"typedoc-unhoax-theme",,
     //"typedoc-plugin-mermaid",
-    "../plugins/typedoc-mermaid-plugin.mjs",
+    "../plugins/typedoc-mermaid-plugin/index.mjs",
     "typedoc-theme-hierarchy"
   ],
-  "ignoredHighlightLanguages": [
-    "mermaid"
+  "highlightLanguages": [
+    "mermaid",
+    "regex",
+    "regexp",
+    "typescript",
+    "javascript",
+    "json",
+    "html",
+    "css",
+    "bash",
+    "shell",
+    "tsx"
   ],
   "logLevel": "Info",
+  "customCss": "./custom.css",
+  "mermaidPlugin": {
+    //"disableMaximize": true
+    //"disablePanZoom": true
+    "zoomControl": "wheel"
+  },
   "theme": "hierarchy",
   "entryPointStrategy": "expand",
   "reactReturnType": [

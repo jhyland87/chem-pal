@@ -1,0 +1,7 @@
+/* Custom overrides for the generated TypeDoc site.
+   This file is copied into docs/assets/ and linked after the theme's
+   style.css, so rules here win over the defaults and survive rebuilds. */
+
+.tsd-page-toolbar {
+  z-index: 10;
+}
