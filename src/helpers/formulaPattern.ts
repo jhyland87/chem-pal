@@ -52,9 +52,9 @@ export function buildFormulaPattern(subToken: string): RegExp {
 
   // Preceding char must be whitespace or start-of-string; the double-negative
   // form makes start/end fall through for free and covers \r\n, \t, etc.
-  const leftBoundary = "(?<![^\\s])";
+  const leftBoundary = "(?<![^\\s>])";
   // Following char must be whitespace or end-of-string.
-  const rightBoundary = "(?![^\\s])";
+  const rightBoundary = "(?![^\\s\\.<])";
 
   return new RegExp(
     `${leftBoundary}((?![^<>]*>)${head}${charge}(?:${separator}(?:${coefficient})?${unit}+${charge})*)${rightBoundary}`,
