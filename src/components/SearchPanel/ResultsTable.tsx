@@ -4,6 +4,7 @@ import LoadingBackdrop from "@/components/LoadingBackdrop";
 import resultStyles from "@/components/ResultsPanel.module.scss";
 import { CACHE, DRAWER_INDEX } from "@/constants/common";
 import { generatePageSizes } from "@/helpers/utils";
+import { getEmptyHideableColumnIds } from "@/mixins/tanstack";
 import { FOCUS_GLOBAL_FILTER_EVENT, TOGGLE_COLUMN_FILTERS_EVENT } from "@/hotkeys";
 import { SearchEvent, emitSearchEvent } from "@/events/searchEvents";
 import { cstorage } from "@/utils/storage";
@@ -254,6 +255,40 @@ export default function ResultsTable({
     }
     prevIsLoadingRef.current = isLoading;
   }, [isLoading]);
+
+  // When a search finishes, auto-hide hideable columns that have no data in any
+  // row (across all results and their variants, not just the visible page), and
+  // restore any column we previously auto-hid once it has data again. Only the
+  // columns we hid are touched, so manual visibility choices and default-hidden
+  // columns are left intact.
+  const autoHiddenColumnsRef = useRef<Set<string>>(new Set());
+  const prevIsLoadingForAutoHideRef = useRef(false);
+  useEffect(() => {
+    const searchJustFinished = prevIsLoadingForAutoHideRef.current && !isLoading;
+    prevIsLoadingForAutoHideRef.current = isLoading;
+    if (!searchJustFinished || searchResults.length === 0) return;
+
+    const emptyColumnIds = new Set(getEmptyHideableColumnIds(table));
+    const defaultVisibility = table.initialState.columnVisibility ?? {};
+
+    setTableState((prev) => {
+      const columnVisibility = { ...prev.columnVisibility };
+      // Restore columns we previously auto-hid that now have data, back to their
+      // default visibility (keeps default-hidden columns like `availability` hidden).
+      for (const id of autoHiddenColumnsRef.current) {
+        if (emptyColumnIds.has(id)) continue;
+        const defaultVisible = defaultVisibility[id];
+        if (defaultVisible === undefined) delete columnVisibility[id];
+        else columnVisibility[id] = defaultVisible;
+      }
+      // Hide columns that have no data in this result set.
+      for (const id of emptyColumnIds) columnVisibility[id] = false;
+      return { ...prev, columnVisibility };
+    });
+    autoHiddenColumnsRef.current = emptyColumnIds;
+    // `table` is a stable instance from useResultsTable; recompute is driven by
+    // the search lifecycle (isLoading) and the resulting data.
+  }, [isLoading, searchResults]);
 
   // Load persisted state once on mount
   useEffect(() => {

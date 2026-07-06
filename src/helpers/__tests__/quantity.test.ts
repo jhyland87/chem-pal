@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { UOM_ALIASES } from "@/constants/common";
-import { parseQuantity, standardizeUom } from "@/helpers/quantity";
+import { parseQuantity, standardizeUom, toMetricQuantity } from "@/helpers/quantity";
 
 describe("standardizeUom", () => {
   for (const [output, testCases] of Object.entries(UOM_ALIASES)) {
@@ -78,5 +78,66 @@ describe("parseQuantity", () => {
       it(`should return ${toExpect} when parsing: ${value}`, () =>
         expect(parseQuantity(value)).toBe(toExpect));
     }
+  }
+});
+
+describe("toMetricQuantity", () => {
+  const cases: Array<[QuantityObject, QuantityObject]> = [
+    // Imperial mass -> grams (normalized up to kg past 1000g)
+    [
+      { quantity: 0.3, uom: "lb" },
+      { quantity: 136.08, uom: "g" },
+    ],
+    [
+      { quantity: 0.4, uom: "lb" },
+      { quantity: 181.44, uom: "g" },
+    ],
+    [
+      { quantity: 1, uom: "lb" },
+      { quantity: 453.59, uom: "g" },
+    ],
+    [
+      { quantity: 3, uom: "lb" },
+      { quantity: 1.36, uom: "kg" },
+    ],
+    [
+      { quantity: 1, uom: "oz" },
+      { quantity: 28.35, uom: "g" },
+    ],
+    // Imperial volume -> millilitres (normalized up to l past 1000ml)
+    [
+      { quantity: 1, uom: "gal" },
+      { quantity: 3.79, uom: "l" },
+    ],
+    [
+      { quantity: 2, uom: "qt" },
+      { quantity: 1.89, uom: "l" },
+    ],
+    [
+      { quantity: 1, uom: "qt" },
+      { quantity: 946.35, uom: "ml" },
+    ],
+    [
+      { quantity: 1, uom: "floz" },
+      { quantity: 29.57, uom: "ml" },
+    ],
+    // Already metric / countable -> unchanged
+    [
+      { quantity: 100, uom: "g" },
+      { quantity: 100, uom: "g" },
+    ],
+    [
+      { quantity: 500, uom: "ml" },
+      { quantity: 500, uom: "ml" },
+    ],
+    [
+      { quantity: 2, uom: "ea" },
+      { quantity: 2, uom: "ea" },
+    ],
+  ];
+
+  for (const [input, expected] of cases) {
+    it(`converts ${input.quantity} ${input.uom} -> ${expected.quantity} ${expected.uom}`, () =>
+      expect(toMetricQuantity(input)).toEqual(expected));
   }
 });

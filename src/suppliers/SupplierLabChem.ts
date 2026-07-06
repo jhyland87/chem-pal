@@ -19,6 +19,7 @@ import {
   isEpagesSearchResponse,
   isEpagesVariationsResponse,
 } from "@/utils/typeGuards/labchem";
+import { type JsonValue } from "type-fest";
 import { SupplierBase } from "./SupplierBase";
 
 /** ePages catalog-search endpoint (relative to `baseURL`). */
@@ -153,7 +154,7 @@ export class SupplierLabChem extends SupplierBase<EpagesSearchProduct, Product> 
    * gate is a case-insensitive substring predicate (honoring AND/OR/NOT), so a partial
    * term like "acet" matches "Aceton" but nothing unrelated. Survivors are then ranked by
    * fuzzy relevance (the supplier's `fuzzScorer`, `ratio` by default) so the closest
-   * titles come first, and capped at {@link MAX_CANDIDATES}. `scoreAstMatch` supplies both:
+   * titles come first, and capped at `MAX_CANDIDATES`. `scoreAstMatch` supplies both:
    * its leaf gate is substring-based regardless of scorer, while its returned score is the
    * scorer's similarity. The `query` argument is unused; the parsed AST is read from
    * {@link getAst}.
@@ -277,7 +278,7 @@ export class SupplierLabChem extends SupplierBase<EpagesSearchProduct, Product> 
   }
 
   /**
-   * Reads a fresh (within {@link CATALOG_TTL_MS}) catalog snapshot from local storage.
+   * Reads a fresh (within `CATALOG_TTL_MS`) catalog snapshot from local storage.
    * @returns The cached products, or undefined when absent or expired
    * @source
    */
@@ -395,7 +396,7 @@ export class SupplierLabChem extends SupplierBase<EpagesSearchProduct, Product> 
   /**
    * Enriches a candidate with live detail data. Fetches the master's variations
    * list, then each purchasable variation's product page (in parallel, capped at
-   * {@link MAX_VARIANTS}), and applies the authoritative price/quantity/permalink and
+   * `MAX_VARIANTS`), and applies the authoritative price/quantity/permalink and
    * images from the cheapest variation, with the remaining sizes added as variants.
    * @param product - The product builder to enrich
    * @returns The enriched builder (or void if it was excluded/uncacheable)
@@ -469,7 +470,7 @@ export class SupplierLabChem extends SupplierBase<EpagesSearchProduct, Product> 
 
   /**
    * Fetches and filters a master's variations list: keeps only entries linked as a
-   * `variation` that aren't flagged `purchasable: false`, capped at {@link MAX_VARIANTS}.
+   * `variation` that aren't flagged `purchasable: false`, capped at `MAX_VARIANTS`.
    * @param masterId - The variation-master product id
    * @returns The purchasable variation items (possibly empty)
    * @source

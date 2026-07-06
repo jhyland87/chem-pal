@@ -232,3 +232,55 @@ export function toBaseQuantity(quantity: number, unit: UOM): number {
       return quantity;
   }
 }
+
+/**
+ * Rounds a number to two decimal places, avoiding floating-point noise from the
+ * conversion factors (e.g. 0.3 lb becomes 136.0776 g, rounded to 136.08 g).
+ * @param value - The number to round
+ * @returns The value rounded to two decimal places
+ * @example
+ * ```typescript
+ * roundToHundredths(136.0776) // Returns 136.08
+ * ```
+ * @source
+ */
+function roundToHundredths(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+/**
+ * Converts a quantity to its "standard" (metric) form, leaving metric and
+ * countable units untouched. Imperial mass (lb, oz) becomes grams (then
+ * normalized up to kg via {@link normalizeQuantity}); imperial volume (gal, qt,
+ * fl oz) becomes millilitres (then normalized up to l). Built on
+ * {@link toBaseQuantity} for the conversion factors so suppliers can present a
+ * single, comparable unit system regardless of how the source lists it.
+ * @param input - The quantity object to convert
+ * @returns The metric-normalized quantity object (unchanged when already metric or countable)
+ * @example
+ * ```typescript
+ * toMetricQuantity({ quantity: 0.3, uom: "lb" })  // Returns { quantity: 136.08, uom: "g" }
+ * toMetricQuantity({ quantity: 2, uom: "lb" })    // Returns { quantity: 907.18, uom: "g" }
+ * toMetricQuantity({ quantity: 1, uom: "gal" })   // Returns { quantity: 3.79, uom: "l" }
+ * toMetricQuantity({ quantity: 100, uom: "g" })   // Returns { quantity: 100, uom: "g" }
+ * ```
+ * @source
+ */
+export function toMetricQuantity(input: QuantityObject): QuantityObject {
+  const uom = standardizeUom(input.uom);
+  if (!uom) return input;
+
+  if (uom === UOM.LB || uom === UOM.OZ) {
+    // toBaseQuantity returns milligrams for mass; step up to grams, then normalize (g -> kg).
+    const grams = toBaseQuantity(input.quantity, uom) / 1000;
+    return normalizeQuantity({ quantity: roundToHundredths(grams), uom: UOM.G });
+  }
+
+  if (uom === UOM.GAL || uom === UOM.QT || uom === UOM.FLOZ) {
+    // toBaseQuantity returns millilitres for volume; normalize (ml -> l).
+    const millilitres = toBaseQuantity(input.quantity, uom);
+    return normalizeQuantity({ quantity: roundToHundredths(millilitres), uom: UOM.ML });
+  }
+
+  return input;
+}

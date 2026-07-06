@@ -1,6 +1,6 @@
 /**
  * Types for the LabChem (`labchem.de`) storefront, which runs on the ePages
- * e-commerce platform. These model only the fields the {@link SupplierLabChem}
+ * e-commerce platform. These model only the fields the `SupplierLabChem`
  * module consumes from the three endpoints it hits: the catalog search, a
  * product's variations list, and a per-variation product page.
  *
