@@ -17,6 +17,26 @@ Open source project aimed at helping amateur chemistry hobbyists find the best d
   <img src="./assets/images/chem-pal-demo.gif" alt="chem-pal example" width="600"/>
 </p>
 
+----
+
+## Features
+- Search up to 26 different suppliers from a single interface
+- Search using the reagent names, chemical formulas, CAS numbers or SMILES.
+- Search using AST (Abstract Syntax Tree). Examples:
+  ```
+  (sodium OR potassium) AND (carbonate OR hydroxide)
+  "sodium borohydride" AND NOT (triacitoxyborohydride)
+  ```
+- Advanced cache management allowing for faster query times
+- Compare prices across suppliers in one sortable, filterable table (prices converted to USD so different currencies line up)
+- Quantities normalized to a common unit, so you can compare price-per-amount fairly no matter how each supplier lists it
+- Auto-detected chemical details: CAS, formula, molecular weight, purity/grade, and concentration
+- One-click links to SDS, TDS, and COA documents when a supplier provides them
+- Works on both Chrome and Firefox, with light and dark themes
+- Viewable from popup or in separate browser tab
+- No account creation required to use extension
+- No data collection
+----
 
 ## Installation
 This is currently in beta, so its not in the Chrome or Firefox stores yet. But you can get the latest release from the [releases page](https://github.com/jhyland87/chem-pal/releases/latest).

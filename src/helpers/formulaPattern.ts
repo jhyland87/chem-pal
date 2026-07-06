@@ -9,6 +9,11 @@
  */
 
 /**
+ * @summary Full formula pattern:
+ * @document ../../REGEXP_PATTERNS.md
+ */
+
+/**
  * Element-symbol alternation (all 118 symbols, folded into per-first-letter character classes).
  * Gates formula matching so ordinary prose isn't read as a formula.
  * @source
@@ -24,7 +29,7 @@ export const FORMULA_ELEMENT_PATTERN =
  *
  * The returned regex is **global**, so callers can collect every candidate (via `matchAll`)
  * and choose the most likely one with {@link pickBestFormula}.
- *
+ * @document ./CHEMICAL_FORMULA_PATTERN.md
  * @param subToken - Regex source matching one real subscript/superscript in the source format
  *   (e.g. `<su[bp]>…</su[bp]>` for HTML, or the union of glyph/escape/entity/tag forms for text).
  * @returns A global RegExp that matches formula candidates.
@@ -38,21 +43,21 @@ export const FORMULA_ELEMENT_PATTERN =
  */
 export function buildFormulaPattern(subToken: string): RegExp {
   const element = FORMULA_ELEMENT_PATTERN;
-  // A subscript inside a unit: a real subscript token, or a plain inline count.
   const subPart = `(?:${subToken}|[1-9][0-9]*)`;
-  // One "unit": a run of elements/brackets, then any trailing subscripts.
   const unit = `(?:(?:${element}|[()\\[\\]])+(?:${subPart})*)`;
-  // The head must look like a formula and not prose: ≥2 units, or one element + a real subscript.
   const head = `(?:(?:${unit}){2,}|(?:${element}|[()\\[\\]])+${subToken})`;
-  // An optional ionic charge sign; the lookahead keeps it from grabbing a hyphen inside a word.
   const charge = "(?:[+-](?![A-Za-z0-9]))?";
-  // Salt/hydrate separator: a spaced dot glyph, or a tight "." immediately followed by a component.
   const separator = "(?:\\s*[·•‧∙⋅・･*]\\s*|\\.(?=[A-Za-z(\\[]))";
-  // A leading coefficient after a separator: a subscript, an integer/fraction, or a variable x/n.
   const coefficient = `(?:${subToken}|[1-9][0-9]*(?:/[1-9][0-9]*)?|[xn])`;
 
+  // Preceding char must be whitespace or start-of-string; the double-negative
+  // form makes start/end fall through for free and covers \r\n, \t, etc.
+  const leftBoundary = "(?<![^\\s])";
+  // Following char must be whitespace or end-of-string.
+  const rightBoundary = "(?![^\\s])";
+
   return new RegExp(
-    `((?![^<>]*>)${head}${charge}(?:${separator}(?:${coefficient})?${unit}+${charge})*)`,
+    `${leftBoundary}((?![^<>]*>)${head}${charge}(?:${separator}(?:${coefficient})?${unit}+${charge})*)${rightBoundary}`,
     "g",
   );
 }

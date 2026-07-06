@@ -1,8 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { RendererEvent } from "typedoc";
+import { ParameterType, RendererEvent } from "typedoc";
+import { escapeHtml, kebabize } from "./utils.mjs";
 
+const PLUGIN_CFG_NAME = "mermaidPlugin";
 /**
  * typedoc-plugin-mermaid-28
  *
@@ -34,53 +36,36 @@ import { RendererEvent } from "typedoc";
 export function load(app) {
   const assetsDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "mermaid-assets");
   const cssAsset = "mermaid-diagrams.css";
-  const jsAsset = "mermaid-diagrams.js";
+  // Frontmatter parser must load before the runtime, which reads the global it
+  // exposes. Order matters — keep it first in the list.
+  const jsAssets = ["mermaid-frontmatter.js", "mermaid-diagrams.js"];
 
-  // Register custom options
+  // Defaults for every mermaidPlugin sub-option. TypeDoc's Object parameter
+  // type shallow-merges user-set keys over these.
+  const defaultOptions = {
+    version: "11", // string: CDN version tag, e.g. "11", "10.9.1", "latest"
+    containerHeight: 600,
+    // "pan": scroll/drag pans, pinch zooms | "wheel": wheel zooms | "none": off
+    zoomControl: "pan",
+    minZoom: 0.3,
+    maxZoom: 10,
+    disableMaximize: false,
+  };
+
+  // Register the single object option. Configure via a `mermaidPlugin` object
+  // in typedoc.json (e.g. { "mermaidPlugin": { "maxZoom": "5" } }) or on the
+  // CLI with dotted keys (e.g. --mermaidPlugin.maxZoom 5).
   app.options.addDeclaration({
-    name: "mermaidVersion",
-    help: "[Mermaid Plugin] Mermaid.js version to load from CDN.",
-    type: 0, // ParameterType.String
-    defaultValue: "11",
+    name: PLUGIN_CFG_NAME,
+    help: `[${PLUGIN_CFG_NAME}] Options object: ${Object.keys(defaultOptions).join(", ")}.`,
+    type: ParameterType.Object,
+    defaultValue: defaultOptions,
   });
 
-  app.options.addDeclaration({
-    name: "mermaidContainerHeight",
-    help: "[Mermaid Plugin] Height of the diagram container in pixels.",
-    type: 0, // ParameterType.String
-    defaultValue: "600",
-  });
-
-  app.options.addDeclaration({
-    name: "mermaidPanZoom",
-    help: "[Mermaid Plugin] Enable pan & zoom on diagrams.",
-    type: 4, // ParameterType.Boolean
-    defaultValue: true,
-  });
-
-  app.options.addDeclaration({
-    name: "mermaidMinZoom",
-    help: "[Mermaid Plugin] Minimum zoom level.",
-    type: 0, // ParameterType.String
-    defaultValue: "0.3",
-  });
-
-  app.options.addDeclaration({
-    name: "mermaidMaxZoom",
-    help: "[Mermaid Plugin] Maximum zoom level.",
-    type: 0, // ParameterType.String
-    defaultValue: "10",
-  });
-
-  // Defer reading options until render time (after all config is loaded)
+  // Defer reading options until render time (after all config is loaded).
+  // Spread over defaults so a partially-merged object still has every key.
   function getOptions() {
-    return {
-      mermaidVersion: app.options.getValue("mermaidVersion"),
-      containerHeight: app.options.getValue("mermaidContainerHeight"),
-      panZoom: app.options.getValue("mermaidPanZoom"),
-      minZoom: app.options.getValue("mermaidMinZoom"),
-      maxZoom: app.options.getValue("mermaidMaxZoom"),
-    };
+    return { ...defaultOptions, ...app.options.getValue(PLUGIN_CFG_NAME) };
   }
 
   // Relative "../" prefix from a page URL back to the output root, so asset
@@ -95,14 +80,19 @@ export function load(app) {
   }
 
   function scriptTag(prefix, opts) {
-    return (
-      `<script src="${prefix}assets/${jsAsset}"` +
-      ` data-mermaid-version="${opts.mermaidVersion}"` +
-      ` data-container-height="${opts.containerHeight}"` +
-      ` data-pan-zoom="${opts.panZoom}"` +
-      ` data-min-zoom="${opts.minZoom}"` +
-      ` data-max-zoom="${opts.maxZoom}"><\/script>`
-    );
+    const dataAttributes = Object.entries(opts)
+      .map(([key, value]) => `data-${kebabize(key)}="${value}"`)
+      .join(" ");
+
+    // Config data-* attributes go on the runtime script (the last one), which
+    // reads them via document.currentScript. Preceding scripts (the frontmatter
+    // parser) load plain, in order.
+    return jsAssets
+      .map((asset, index) => {
+        const attrs = index === jsAssets.length - 1 ? ` ${dataAttributes}` : "";
+        return `<script src="${prefix}assets/${asset}"${attrs}></script>`;
+      })
+      .join("");
   }
 
   // ─── Asset copying ─────────────────────────────────────────────────
@@ -110,11 +100,11 @@ export function load(app) {
     const dest = path.join(event.outputDirectory, "assets");
     try {
       fs.mkdirSync(dest, { recursive: true });
-      for (const file of [cssAsset, jsAsset]) {
+      for (const file of [cssAsset, ...jsAssets]) {
         fs.copyFileSync(path.join(assetsDir, file), path.join(dest, file));
       }
     } catch (err) {
-      app.logger.error(`[Mermaid Plugin] Failed to copy assets: ${err}`);
+      app.logger.error(`[${PLUGIN_CFG_NAME}] Failed to copy assets: ${err}`);
     }
   });
 
@@ -150,14 +140,10 @@ export function load(app) {
       const placeholder = `<!--${id}-->`;
       if (event.contents.includes(placeholder)) {
         hasBlocks = true;
-        const escaped = content
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;");
-
         // Controls are added client-side by mermaid-diagrams.js.
-        const div = `<div class="mermaid-block"><div class="mermaid">${escaped}</div></div>`;
+        const div = `<div class="mermaid-block"><div class="mermaid">${escapeHtml(
+          content,
+        )}</div></div>`;
         event.contents = event.contents.replace(placeholder, div);
         mermaidBlocks.delete(id);
       }
