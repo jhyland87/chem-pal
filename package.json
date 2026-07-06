@@ -35,7 +35,8 @@
     "generate-logo-files": "node tools/generate-logo-files.js",
     "pack": "node tools/pack-extension.js",
     "build:prod": "pnpm run generate-logo-files && vite build --mode=production && node tools/pack-extension.js",
-    "build:prod:firefox": "pnpm run generate-logo-files && BROWSER=firefox vite build --mode=production && node tools/pack-firefox.js"
+    "build:prod:firefox": "pnpm run generate-logo-files && BROWSER=firefox vite build --mode=production && node tools/pack-firefox.js",
+    "show-deprecations": "pnpm outdated --json | jq '.[] | select(.isDeprecated)'"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

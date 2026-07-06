@@ -13,6 +13,7 @@ import { SupplierFactory } from "@/suppliers/SupplierFactory";
 import { useBadgeController } from "@/utils/badgeController";
 import { SearchEvent, emitSearchEvent } from "@/events/searchEvents";
 import { SupplierCache } from "@/utils/SupplierCache";
+import { isTabView } from "@/utils/displayContext";
 import { clearSearchResults, getSearchResults, IDB_SEARCH_RESULTS_CLEARED } from "@/utils/idbCache";
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import { cstorage } from "@/utils/storage";
@@ -304,7 +305,7 @@ function App() {
     const loadFromStorage = async () => {
       try {
         const [sessionData, localData, idbResults] = await Promise.all([
-          cstorage.session.get([CACHE.PANEL]),
+          cstorage.session.get([CACHE.PANEL, CACHE.QUERY, CACHE.SEARCH_IS_NEW_SEARCH]),
           cstorage.local.get([
             CACHE.USER_SETTINGS,
             CACHE.SELECTED_SUPPLIERS,
@@ -323,13 +324,26 @@ function App() {
         const savedPanel =
           savedPanelRaw !== undefined && savedPanelRaw !== null ? Number(savedPanelRaw) : undefined;
 
+        // A search queued before this view mounted — e.g. seeded by the
+        // right-click context menu, which opens a fresh tab. The effect that
+        // executes it lives in ResultsTable, so we must land on the results
+        // panel for that component to mount and pick the search up.
+        const hasPendingSearch = Boolean(
+          sessionData[CACHE.SEARCH_IS_NEW_SEARCH] &&
+            typeof sessionData[CACHE.QUERY] === "string" &&
+            sessionData[CACHE.QUERY].trim(),
+        );
+
         // Panel selection on popup open:
-        //  - If there are cached search results, land on the results table.
+        //  - A pending search always wins (land on results so it can execute).
+        //  - Else if there are cached search results, land on the results table.
         //  - Otherwise, land on the search home.
         //  - Exception: preserve the STATS panel selection (dev-only) so a
         //    developer inspecting stats doesn't get bounced every time the
         //    popup reopens.
-        if (savedPanel === PANEL.STATS) {
+        if (hasPendingSearch) {
+          loadedData.panel = PANEL.RESULTS;
+        } else if (savedPanel === PANEL.STATS) {
           loadedData.panel = PANEL.STATS;
         } else {
           loadedData.panel = hasResults ? PANEL.RESULTS : PANEL.SEARCH_HOME;
@@ -380,6 +394,43 @@ function App() {
     cstorage.onChanged.addListener(listener);
     return () => cstorage.onChanged.removeListener(listener);
   }, []);
+
+  // Context-menu search, already-open-tab path. The service worker writes the
+  // selection to session storage (CACHE.QUERY + CACHE.SEARCH_IS_NEW_SEARCH) and
+  // focuses this tab. A fresh tab picks that up via the useSearch mount effect;
+  // an already-mounted app doesn't, so react to the storage change here.
+  // Gated to the full-tab view so the side panel/popup don't also fire.
+  useEffect(() => {
+    if (!isTabView()) return;
+
+    const listener = async (
+      changes: Record<string, chrome.storage.StorageChange>,
+      areaName: chrome.storage.AreaName,
+    ): Promise<void> => {
+      if (areaName !== "session") return;
+      if (changes[CACHE.SEARCH_IS_NEW_SEARCH]?.newValue !== true) return;
+
+      try {
+        const changed = changes[CACHE.QUERY]?.newValue;
+        const query =
+          typeof changed === "string" ?
+            changed
+          : (await cstorage.session.get([CACHE.QUERY]))[CACHE.QUERY];
+        if (typeof query !== "string" || !query.trim()) return;
+
+        // Clear the flag before navigating so a freshly-mounting SearchPanel's
+        // useSearch mount effect doesn't also read it and double-run the search.
+        await cstorage.session.remove(String(CACHE.SEARCH_IS_NEW_SEARCH));
+        setPendingSearchQuery(query);
+        dispatch({ type: APP_ACTION.SET_PANEL, panel: PANEL.RESULTS });
+      } catch (error) {
+        console.warn("Failed to handle context-menu search", { error });
+      }
+    };
+
+    cstorage.onChanged.addListener(listener);
+    return () => cstorage.onChanged.removeListener(listener);
+  }, [dispatch]);
 
   // While on the results panel, bounce back to SearchPanelHome when results are
   // cleared from anywhere (SpeedDial, another tab). The badge controller clears
