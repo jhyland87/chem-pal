@@ -285,7 +285,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
           </Link>
         );
       },
-      enableSorting: false,
+      //enableSorting: true,
       enableColumnFilter: false,
       minSize: 40,
       maxSize: 40,
@@ -312,7 +312,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
           </Link>
         );
       },
-      enableSorting: false,
+      //enableSorting: true,
       enableColumnFilter: false,
       minSize: 40,
       maxSize: 40,
@@ -339,7 +339,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
           </Link>
         );
       },
-      enableSorting: false,
+      //enableSorting: true,
       enableColumnFilter: false,
       minSize: 40,
       maxSize: 40,
