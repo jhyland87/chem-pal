@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention */
+ 
 declare global {
   /** Base interface for all Ambeed API responses */
   interface AmbeedResponseBase {

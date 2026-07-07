@@ -43,7 +43,7 @@ describe("useOptimisticResults", () => {
     });
 
     await waitFor(() => expect(result.current.results).toHaveLength(1));
-    expect(result.current.results[0]).toMatchObject({ title: "First", id: 0 });
+    expect(result.current.results[0]).toMatchObject({ title: "First", _id: 0 });
 
     await act(async () => {
       gate.release();
@@ -65,7 +65,7 @@ describe("useOptimisticResults", () => {
     });
 
     await waitFor(() => expect(result.current.results).toHaveLength(2));
-    expect(result.current.results.map((r) => r.id)).toEqual([0, 1]);
+    expect(result.current.results.map((r) => r._id)).toEqual([0, 1]);
     expect(result.current.results.map((r) => r.title)).toEqual(["A", "B"]);
 
     await act(async () => {
@@ -95,7 +95,7 @@ describe("useOptimisticResultsWithPending", () => {
     await waitFor(() => expect(result.current.results).toHaveLength(1));
     expect(result.current.results[0]).toMatchObject({
       title: "Pending",
-      id: 0,
+      _id: 0,
       isPending: true,
     });
 
@@ -104,20 +104,20 @@ describe("useOptimisticResultsWithPending", () => {
     });
   });
 
-  it("confirmResult flips isPending to false for the matching id", async () => {
+  it("confirmResult flips isPending to false for the matching _id", async () => {
     const { result } = renderHook(() => useOptimisticResultsWithPending([]));
     const gate = createGate();
 
     act(() => {
       startTransition(async () => {
         result.current.addPendingResult(makeProduct({ title: "P" }));
-        result.current.confirmResult(makeProduct({ title: "P", id: 0 }));
+        result.current.confirmResult(makeProduct({ title: "P", _id: 0 }));
         await gate.promise;
       });
     });
 
     await waitFor(() => expect(result.current.results).toHaveLength(1));
-    expect(result.current.results[0]).toMatchObject({ id: 0, isPending: false });
+    expect(result.current.results[0]).toMatchObject({ _id: 0, isPending: false });
 
     await act(async () => {
       gate.release();
@@ -131,7 +131,7 @@ describe("useOptimisticResultsWithPending", () => {
     act(() => {
       startTransition(async () => {
         result.current.addPendingResult(makeProduct({ title: "P" }));
-        result.current.removeFailedResult(makeProduct({ title: "P", id: 0 }));
+        result.current.removeFailedResult(makeProduct({ title: "P", _id: 0 }));
         await gate.promise;
       });
     });

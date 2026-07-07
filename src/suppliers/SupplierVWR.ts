@@ -113,11 +113,9 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
     }
 
     const body = new URLSearchParams({
-      /* eslint-disable @typescript-eslint/naming-convention */
       client_id: this.clientId,
       client_secret: "",
       grant_type: "client_credentials",
-      /* eslint-enable @typescript-eslint/naming-convention */
     }).toString();
 
     const response = await this.httpPost({
@@ -137,7 +135,6 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
     this.accessTokenExpiresAt = Date.now() + tokenData.expires_in * 1000;
     this.headers = {
       ...this.headers,
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       Authorization: `${tokenData.token_type} ${tokenData.access_token}`,
     };
   }
@@ -246,7 +243,6 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
       body: "{}",
       headers: { "content-type": "application/json" },
       params: {
-        /* eslint-disable @typescript-eslint/naming-convention */
         fields: "FULL",
         // Search via formula: chemical_formula_adv=Na2SO3
         // Search via CAS: cas_number=7757-83-7
@@ -257,7 +253,7 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
         lang: "en_US",
         curr: "USD",
         newStorefront: true,
-        /* eslint-enable @typescript-eslint/naming-convention */
+         
       },
     });
 
@@ -343,18 +339,15 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
       }
 
       const commonParams = {
-        /* eslint-disable @typescript-eslint/naming-convention */
         lang: "en_US",
         curr: "USD",
         newStorefront: true,
-        /* eslint-enable @typescript-eslint/naming-convention */
       };
 
       const [ordertable, assets, substance, specification, canonicalUrl] = await Promise.all([
         this.httpGetJson({
           path: this.paths.ordertable,
           host: this.apiURL,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
           params: { ...commonParams, productId: baseProduct, impressions: "", user: "anonymous" },
         }),
         this.httpGetJson({
@@ -365,13 +358,11 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
         this.httpGetJson({
           path: this.paths.substance,
           host: this.apiURL,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
           params: { ...commonParams, productId: baseProduct, user: "anonymous" },
         }),
         this.httpGetJson({
           path: this.paths.specification,
           host: this.apiURL,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
           params: { ...commonParams, productId: baseProduct, user: "anonymous" },
         }),
         this.fetchCanonicalUrl(baseProduct),
@@ -436,7 +427,6 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
       const response = await this.httpGet({
         path: this.paths.canonicalUrl,
         host: this.apiURL,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         params: {
           pageType: "product",
           id: baseProduct,
@@ -585,12 +575,10 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
       body: catalogNumbers.map((catalogNumber) => ({ catalogNumber })),
       headers: { "content-type": "application/json" },
       params: {
-        /* eslint-disable @typescript-eslint/naming-convention */
         fields: "FULL",
         lang: "en_US",
         curr: "USD",
         newStorefront: true,
-        /* eslint-enable @typescript-eslint/naming-convention */
       },
     });
 

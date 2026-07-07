@@ -16,7 +16,7 @@ import { useOptimistic } from "react";
  * for await (const product of stream) {
  *   addResult(product);   // UI updates immediately
  * }
- * // results => [{ ...product, id: 0 }, { ...product, id: 1 }, ...]
+ * // results => [{ ...product, _id: 0 }, { ...product, _id: 1 }, ...]
  * ```
  * @source
  */
@@ -24,7 +24,8 @@ export function useOptimisticResults(confirmedResults: Product[]) {
   const [optimisticResults, addOptimisticResult] = useOptimistic(
     confirmedResults,
     (state: Product[], newProduct: Product) => {
-      return [...state, { ...newProduct, id: state.length }];
+      // `_id` is the positional row index; the product's real `id` is preserved.
+      return [...state, { ...newProduct, _id: state.length }];
     },
   );
 
@@ -90,15 +91,16 @@ export function useOptimisticResultsWithPending(confirmedResults: Product[]) {
     ) => {
       switch (action.type) {
         case "add":
-          return [...state, { ...action.product, id: state.length, isPending: true }];
+          // `_id` positions the row; confirm/error match on that same positional key.
+          return [...state, { ...action.product, _id: state.length, isPending: true }];
 
         case "confirm":
           return state.map((item) =>
-            item.id === action.product.id ? { ...action.product, isPending: false } : item,
+            item._id === action.product._id ? { ...action.product, isPending: false } : item,
           );
 
         case "error":
-          return state.filter((item) => item.id !== action.product.id);
+          return state.filter((item) => item._id !== action.product._id);
 
         default:
           return state;
@@ -117,7 +119,7 @@ export function useOptimisticResultsWithPending(confirmedResults: Product[]) {
 
   /**
    * Mark a previously pending product as confirmed (`isPending: false`).
-   * @param product - The confirmed product (must have a matching `id`)
+   * @param product - The confirmed product (must have a matching `_id`)
    * @source
    */
   const confirmResult = (product: Product) => {
@@ -126,7 +128,7 @@ export function useOptimisticResultsWithPending(confirmedResults: Product[]) {
 
   /**
    * Remove a product that failed processing from the optimistic list.
-   * @param product - The failed product (must have a matching `id`)
+   * @param product - The failed product (must have a matching `_id`)
    * @source
    */
   const removeFailedResult = (product: Product) => {

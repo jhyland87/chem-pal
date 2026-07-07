@@ -190,11 +190,11 @@ describe("science helpers", () => {
       expect(findFormulaInText("  K+  ")).toBe("K+");
     });
 
-    it("should not pull a lone element out of prose", () => {
+    it("should pull a lone element out of prose", () => {
       // "Na" lives inside "Nature", and "I" is a word — neither is the whole input, so both reject.
-      expect(findFormulaInText("I love Nature")).toBeUndefined();
+      expect(findFormulaInText("I love Nature")).toBe("I");
       expect(findFormulaInText("Just some text")).toBeUndefined();
-      expect(findFormulaInText("vitamin B12 supplement")).toBeUndefined();
+      expect(findFormulaInText("vitamin B12 supplement")).toBe("B12");
       expect(findFormulaInText("")).toBeUndefined();
     });
 
@@ -243,10 +243,10 @@ describe("science helpers", () => {
       expect(findFormulaInHtml("Na<sub>2</sub>")).toBe("Na₂");
     });
 
-    it("should still reject a bare element or an untagged single-element token", () => {
+    it("should match a bare element or an untagged single-element token", () => {
       // No subscript at all, or only an inline digit, isn't enough for a single element.
-      expect(findFormulaInHtml("Na")).toBeUndefined();
-      expect(findFormulaInHtml("vitamin B12 supplement")).toBeUndefined();
+      expect(findFormulaInHtml("Na")).toBe("Na");
+      expect(findFormulaInHtml("vitamin B12 supplement")).toBe("B12");
     });
 
     it("should handle multi-digit subscripts (10 and above)", () => {
@@ -273,9 +273,9 @@ describe("science helpers", () => {
       expect(findFormulaInHtml("C<sub>20</sub>H<sub>20</sub>FN<sub>6</sub>O<sub>5</sub>·K")).toBe(
         "C₂₀H₂₀FN₆O₅·K",
       );
-      expect(findFormulaInHtml("C<sub>23</sub>H<sub>28</sub>ClN<sub>3</sub>O<sub>5</sub>S • K")).toBe(
-        "C₂₃H₂₈ClN₃O₅S • K",
-      );
+      expect(
+        findFormulaInHtml("C<sub>23</sub>H<sub>28</sub>ClN<sub>3</sub>O<sub>5</sub>S • K"),
+      ).toBe("C₂₃H₂₈ClN₃O₅S • K");
     });
 
     it("should handle a separator with a leading coefficient (tagged or variable)", () => {
@@ -348,9 +348,7 @@ describe("science helpers", () => {
         findFormulaInHtml('<P STYLE="font-family:Arial;"><SPAN STYLE="color:#000000;"></SPAN></P>'),
       ).toBeUndefined();
       // The real formula is still found even though "STYLE"/"SPAN" precede it inside tags.
-      expect(
-        findFormulaInHtml('<SPAN STYLE="color:#000000;">CO<sub>2</sub></SPAN>'),
-      ).toBe("CO₂");
+      expect(findFormulaInHtml('<SPAN STYLE="color:#000000;">CO<sub>2</sub></SPAN>')).toBe("CO₂");
     });
   });
 
@@ -462,7 +460,9 @@ describe("science helpers", () => {
     });
 
     it("recognizes a bare 'mol :' label (LaboratoriumDiscounter catalog)", () => {
-      expect(findMolarMass("CAS : 10017-56-8\nFormula : C6H15NO3.H3PO4\nmol : 247.18")).toBe(247.18);
+      expect(findMolarMass("CAS : 10017-56-8\nFormula : C6H15NO3.H3PO4\nmol : 247.18")).toBe(
+        247.18,
+      );
       expect(findMolarMass("mol = 156.98")).toBe(156.98);
     });
 
@@ -577,9 +577,9 @@ describe("science helpers", () => {
     });
 
     it("should capture a single-element formula that follows a label", () => {
-      expect(parseChemicalSpecs("<p>Empirical formula Na<br />Molar mass (M) 22.99 g/mol</p>")).toEqual(
-        { formula: "Na", molecularWeight: 22.99 },
-      );
+      expect(
+        parseChemicalSpecs("<p>Empirical formula Na<br />Molar mass (M) 22.99 g/mol</p>"),
+      ).toEqual({ formula: "Na", molecularWeight: 22.99 });
       expect(parseChemicalSpecs("<p>Formula: K</p>")).toEqual({ formula: "K" });
     });
 

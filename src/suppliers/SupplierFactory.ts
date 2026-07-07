@@ -1,6 +1,13 @@
 import { defaultResultsLimit } from "@/../config.json";
+import {
+  looksLikeSmiles,
+  parseStructurePrefix,
+  resolveSmiles,
+  type ResolvedStructure,
+} from "@/helpers/smiles";
 import { mapDefined, sleep } from "@/helpers/utils";
 import { Logger } from "@/utils/Logger";
+import { extractAllPositiveTerms } from "@/utils/search-query/extractPositiveTerms";
 import { parseSearchQuery } from "@/utils/search-query/parseSearchQuery";
 import type { ParsedSearchQuery } from "@/utils/search-query/types";
 import { incrementParseError } from "@/utils/SupplierStatsStore";
@@ -88,6 +95,11 @@ export class SupplierFactory<P extends Product> {
   // Mirrors userSettings.fuzzyFilteringDisabled. When true, suppliers skip
   // fuzzball scoring and rely on the boolean predicate (or raw results) instead.
   private fuzzyFilteringDisabled: boolean;
+
+  // SMILES/structure query terms resolved to chemical identifiers, keyed by the
+  // raw term. Resolved lazily once per search (see resolveStructuresOnce) and
+  // shared with every supplier instance so none of them re-hit the network.
+  private resolvedStructures?: ReadonlyMap<string, ResolvedStructure>;
 
   // Logger instance
   private logger: Logger;
@@ -256,6 +268,54 @@ export class SupplierFactory<P extends Product> {
   }
 
   /**
+   * Resolves every SMILES/structure term in the query to its chemical identifiers
+   * (name, CAS, InChIKey) exactly once, memoizing the result on the factory so it
+   * is shared with every supplier instead of each supplier re-hitting the network.
+   *
+   * Only positive (non-negated) leaf terms that look like a structure (via
+   * {@link looksLikeSmiles} or an explicit `smiles:`/`inchikey:` prefix) are
+   * resolved, so plain/CAS/formula/name queries make no network calls at all.
+   * Each unique term is resolved once; failures are logged and skipped so a
+   * dead resolver never blocks the search.
+   *
+   * @returns A map of raw search term → resolved structure (empty when none apply).
+   * @example
+   * ```typescript
+   * // query "CCO" -> Map { "CCO" => { name: "ethanol", cas: ["64-17-5"], ... } }
+   * await factory.resolveStructuresOnce();
+   * ```
+   * @source
+   */
+  private async resolveStructuresOnce(): Promise<ReadonlyMap<string, ResolvedStructure>> {
+    if (this.resolvedStructures) {
+      return this.resolvedStructures;
+    }
+
+    const resolved = new Map<string, ResolvedStructure>();
+    for (const term of extractAllPositiveTerms(this.parsedQuery.ast)) {
+      if (resolved.has(term)) {
+        continue;
+      }
+      const { mode, value } = parseStructurePrefix(term);
+      const isStructure = mode === "smiles" || (mode === "auto" && looksLikeSmiles(value));
+      if (!isStructure) {
+        continue;
+      }
+      try {
+        const structure = await resolveSmiles(value);
+        if (structure) {
+          resolved.set(term, structure);
+        }
+      } catch (error) {
+        this.logger.warn("Failed to resolve structure term; skipping", { term, error });
+      }
+    }
+
+    this.resolvedStructures = resolved;
+    return resolved;
+  }
+
+  /**
    * Executes the execute() method on all selected suppliers in parallel using async-await-queue.
    * Results are collected and flattened into a single array.
    *
@@ -270,6 +330,9 @@ export class SupplierFactory<P extends Product> {
    * @source
    */
   public async executeAll(concurrency: number = 3): Promise<P[]> {
+    // Resolve any SMILES/structure terms once up front so every instance shares them.
+    await this.resolveStructuresOnce();
+
     // 1. Instantiate supplier classes
     const supplierInstances: SupplierBase<unknown, P>[] = mapDefined(
       Object.entries(suppliers),
@@ -291,6 +354,7 @@ export class SupplierFactory<P extends Product> {
         instance.setMaxAllowableSearchTime(this.maxAllowableSearchTime);
         instance.setParsedQuery(this.parsedQuery);
         instance.setFuzzyFilteringDisabled(this.fuzzyFilteringDisabled);
+        instance.setResolvedStructures(this.resolvedStructures);
         return instance;
       },
     );
@@ -339,6 +403,9 @@ export class SupplierFactory<P extends Product> {
    * @source
    */
   public async *executeAllStream(concurrency: number = 3): AsyncGenerator<P, void, undefined> {
+    // Resolve any SMILES/structure terms once up front so every instance shares them.
+    await this.resolveStructuresOnce();
+
     const supplierInstances: SupplierBase<unknown, P>[] = mapDefined(
       Object.entries(suppliers),
       ([supplierClassName, supplierClass]) => {
@@ -361,6 +428,7 @@ export class SupplierFactory<P extends Product> {
         instance.setMaxAllowableSearchTime(this.maxAllowableSearchTime);
         instance.setParsedQuery(this.parsedQuery);
         instance.setFuzzyFilteringDisabled(this.fuzzyFilteringDisabled);
+        instance.setResolvedStructures(this.resolvedStructures);
         return instance;
       },
     );

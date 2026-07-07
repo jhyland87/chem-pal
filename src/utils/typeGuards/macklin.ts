@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // Enums
 export enum ApiEndpoints {
-  /* eslint-disable */
+   
   TIMESTAMP = "/api/timestamp",
   SEARCH = "/api/item/search",
   USER_INFO = "/api/user/info",
@@ -10,18 +10,18 @@ export enum ApiEndpoints {
   FAVOURITE_ADD = "/api/favourite/add",
   FRUIT_ADD = "/api/fruit/add",
   QUICK_BUY = "/api/quick/buy",
-  /* eslint-enable */
+   
 }
 
 export enum AuthRequiredEndpoints {
-  /* eslint-disable */
+   
   ORDER_LIST = "/api/center/order_list",
   EXPRESS = "/api/center/express",
   PREPAY = "/api/center/prepay",
   COUPON = "/api/center/coupon",
   ADDRESS_LIST = "/api/address/list",
   FRUIT_ORDER = "/api/fruit/order",
-  /* eslint-enable */
+   
 }
 
 const timestampResponseSchema = z.object({
@@ -102,11 +102,9 @@ export function isMacklinMsdsSearchResponse(data: unknown): data is MacklinMsdsS
   return macklinMsdsSearchResponseSchema.safeParse(data).success;
 }
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const macklinProductInfoSchema = z.object({
   item: z.object({ chem_mw: z.string() }),
 });
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Validates the `data` payload of the product info endpoint
@@ -230,7 +228,6 @@ export function isMacklinProductDetailsResponse(
   return data.list.every(isMacklinProductDetails);
 }
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const macklinProductDetailsSchema = z.object({
   item_id: z.number(),
   item_code: z.string(),
@@ -245,7 +242,6 @@ const macklinProductDetailsSchema = z.object({
   chem_cas: z.string(),
   delivery_desc_show: z.string(),
 });
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Validates if data matches the Macklin product details format.

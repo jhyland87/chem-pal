@@ -1,4 +1,3 @@
-import { default as Link } from "@/components/TabLink";
 import {
   ProductDetailBody,
   ProductDetailContent,
@@ -12,9 +11,11 @@ import {
   ProductDetailVariantsColumn,
   ProductImageNavButton,
 } from "@/components/StyledComponents";
+import { default as Link } from "@/components/TabLink";
 import { omit } from "@/helpers/collectionUtils";
 import { formatDisplayPrice } from "@/helpers/price";
 import { isPresent, resolveProductImages } from "@/helpers/product";
+import { preloadImages } from "@/helpers/utils";
 import COAIcon from "@/icons/COAIcon";
 import SDSIcon from "@/icons/SDSIcon";
 import TDSIcon from "@/icons/TDSIcon";
@@ -23,7 +24,7 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { Typography } from "@mui/material";
 import type { Row, Table } from "@tanstack/react-table";
-import { useState, type MouseEvent, type ReactElement, type ReactNode } from "react";
+import { useEffect, useRef, useState, type MouseEvent, type ReactElement, type ReactNode } from "react";
 
 /** How long each image is shown before cycling to the next, in milliseconds. */
 const IMAGE_CYCLE_MS = 3000;
@@ -182,17 +183,33 @@ interface ProductImageCarouselProps {
  */
 function ProductImageCarousel({ images, title }: ProductImageCarouselProps): ReactElement | null {
   const [broken, setBroken] = useState<ReadonlySet<number>>(new Set());
+  // URLs already handed to the preloader, so we never fetch the same one twice.
+  const preloadedRef = useRef<Set<string>>(new Set());
 
   const available = images
     .map((image, index) => ({ image, index }))
     .filter(({ index }) => !broken.has(index));
+
   const { index: position, next, prev } = useCyclingIndex(available.length, IMAGE_CYCLE_MS);
+
+  // The thumbnails the carousel actually renders, in cycle order. The first is shown
+  // immediately (loaded by the <img> below), so we preload only the rest — ahead of the
+  // automatic rotation — and the key keeps the effect stable across value-equal renders.
+  const thumbnails = available.map(({ image }) => image.thumbSrc).filter(Boolean);
+  const thumbnailKey = thumbnails.join("\n");
+
+  useEffect(() => {
+    const urls = thumbnailKey.length > 0 ? thumbnailKey.split("\n") : [];
+    const pending = urls.slice(1).filter((url) => !preloadedRef.current.has(url));
+    if (pending.length === 0) return;
+    for (const url of pending) preloadedRef.current.add(url);
+    void preloadImages(pending);
+  }, [thumbnailKey]);
 
   if (available.length === 0) return null;
 
   const current = available[Math.min(position, available.length - 1)];
   const hasMultiple = available.length > 1;
-
   // Cycle without letting the click bubble to the image's open-in-new-tab link.
   const navigate = (event: MouseEvent, step: () => void) => {
     event.preventDefault();

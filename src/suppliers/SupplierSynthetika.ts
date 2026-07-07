@@ -95,7 +95,7 @@ export class SupplierSynthetika
 
   /** HTTP headers used as a basis for all queries */
   protected headers: HeadersInit = {
-    /* eslint-disable */
+     
     accept: [
       "text/html",
       "application/xhtml+xml",
@@ -120,7 +120,7 @@ export class SupplierSynthetika
     "sec-fetch-site": "same-origin",
     "sec-gpc": "1",
     "x-requested-with": "XMLHttpRequest",
-    /* eslint-enable */
+     
   };
 
   /**
@@ -224,7 +224,7 @@ export class SupplierSynthetika
   /**
    * Executes a product search query and returns matching products
    * @param query - Search term to look for
-   * @param limit - The maximum number of results to query for
+   * @param _limit - The maximum number of results to query for (currently unused; paging is fixed)
    * @returns Promise resolving to array of product objects or void if search fails
    * @example
    * ```typescript
@@ -244,7 +244,7 @@ export class SupplierSynthetika
    */
   protected async queryProducts(
     query: string,
-    limit: number = this.limit,
+    _limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
     /* The code snippet is performing the following actions: */
     const params = {
@@ -411,8 +411,7 @@ export class SupplierSynthetika
 
       const key = label.slice(0, -1); // strip the colon
 
-      // The value is the text that follows the <strong> inside its parent
-      const parent = strong.parentElement;
+      // The value is the text that follows the <strong> inside its parent.
       let value = "";
 
       // Walk sibling nodes after the <strong>

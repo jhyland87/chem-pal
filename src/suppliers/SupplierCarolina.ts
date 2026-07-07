@@ -77,7 +77,7 @@ export class SupplierCarolina
 
   /** Default headers sent with every request */
   protected headers: HeadersInit = {
-    /* eslint-disable */
+     
     accept: [
       "text/html",
       "application/xhtml+xml",
@@ -102,7 +102,7 @@ export class SupplierCarolina
     "sec-fetch-site": "same-origin",
     "sec-gpc": "1",
     "x-requested-with": "XMLHttpRequest",
-    /* eslint-enable */
+     
   };
 
   /**
@@ -113,7 +113,7 @@ export class SupplierCarolina
    */
   protected makeQueryParams(query: string): CarolinaSearchParams {
     return {
-      /* eslint-disable */
+       
       tab: "p",
       "product.type": "Product",
       "product.productTypes": "chemicals",
@@ -122,7 +122,7 @@ export class SupplierCarolina
       ajax: true,
       viewSize: 300,
       q: query,
-      /* eslint-enable */
+       
     } satisfies CarolinaSearchParams;
   }
 

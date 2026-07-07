@@ -25,7 +25,6 @@
   ],
   "supportForTags": {
     "@document": true,
-    "@description": true,
     "@author": true,
     "@interface": true,
     "@deprecated": true,

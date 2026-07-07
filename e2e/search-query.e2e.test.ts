@@ -299,6 +299,40 @@ describe("Chem-Pal search query", () => {
         .count();
       vitestExpect(rowCount).toBeGreaterThanOrEqual(20);
 
+      // The persisted searchResults must contain each product exactly once. A
+      // doubled search (the bug this guards against) would fire the query twice
+      // and repeat every product — so assert each (supplier, id) is unique in the
+      // `chempal` IndexedDB store.
+      const storedProductKeys = await page.evaluate(async (): Promise<string[]> => {
+        const db = await new Promise<IDBDatabase>((resolve, reject) => {
+          const req = indexedDB.open("chempal");
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+        try {
+          const record = await new Promise<{ data?: Array<{ id?: unknown; supplier?: unknown }> }>(
+            (resolve, reject) => {
+              const getReq = db
+                .transaction("searchResults", "readonly")
+                .objectStore("searchResults")
+                .get("current");
+              getReq.onsuccess = () => resolve(getReq.result);
+              getReq.onerror = () => reject(getReq.error);
+            },
+          );
+          return (record?.data ?? []).map((p) => `${String(p.supplier)}|${String(p.id)}`);
+        } finally {
+          db.close();
+        }
+      });
+
+      console.log("storedProductKeys", storedProductKeys);
+
+      vitestExpect(storedProductKeys.length).toBeGreaterThan(0);
+
+      // Check for duplicates
+      vitestExpect(new Set(storedProductKeys).size).toBe(storedProductKeys.length);
+
       // To inspect DevTools after the run, uncomment the line below — it blocks until you
       // manually close the browser window (timeout: 0 waits indefinitely; the it() timeout is 0).
       // await page.waitForEvent("close", { timeout: 0 });

@@ -12,7 +12,7 @@ declare global {
    */
   interface ExchangeRateResponse {
     /** HTTP status code of the response */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+     
     status_code: StatusCodes;
     /** Exchange rate data */
     data: {

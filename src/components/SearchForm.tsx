@@ -80,7 +80,7 @@ export const SearchForm: FC<SearchFormProps> = ({
     };
     loadSearchInput();
     // Run once on mount; intentionally don't depend on searchFilters to avoid loops.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   const handleChange = async (value: string) => {

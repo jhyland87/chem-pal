@@ -175,6 +175,11 @@ export class ProductBuilder<T extends Product> {
       _fuzz: (v) => {
         if (this.isFuzzMeta(v)) this.product._fuzz = v;
       },
+      // Positional row index (synthetic, like _fuzz) — carried through if present
+      // but never a real identifier.
+      _id: (v) => {
+        if (typeof v === "number") this.product._id = v;
+      },
     };
 
     for (const [key, value] of Object.entries(data)) {
@@ -483,27 +488,71 @@ export class ProductBuilder<T extends Product> {
   }
 
   /**
-   * Appends multiple image entries to the product's image list, ignoring any that don't resolve.
-   * Each entry is a `{ href, type, altText? }` object where `type` is `"image"` or `"thumbnail"`.
-   * @param images - An array of {@link ProductImage}-shaped values, or any value (non-arrays are ignored)
+   * Appends multiple full-size images to the product's image list. Each entry may be a plain URL
+   * string (added via {@link addImage} as an `"image"`) or a pre-built `{ href, type, altText? }`
+   * {@link ProductImage} object (whose explicit `type` is preserved, so mixed image/thumbnail arrays
+   * are supported). Entries that don't resolve are ignored.
+   * @param images - An array of URL strings and/or {@link ProductImage} values, or any value (non-arrays are ignored)
    * @returns The builder instance for method chaining
    * @example
    * ```typescript
-   * builder.addImages([
-   *   { href: "https://example.com/a.jpg", type: "image" },
-   *   { href: "https://example.com/a-t.jpg", type: "thumbnail" },
-   * ]);
+   * builder.addImages(["https://example.com/a.jpg", "https://example.com/b.jpg"]);
+   * builder.addImages([{ href: "https://example.com/a-t.jpg", type: "thumbnail" }]);
    * ```
    * @source
    */
   addImages(images: unknown): ProductBuilder<T> {
-    if (Array.isArray(images)) {
-      for (const entry of images) {
+    this.addImageEntries(images, "image");
+    return this;
+  }
+
+  /**
+   * Appends multiple thumbnails to the product's image list. Each entry may be a plain URL string
+   * (added via {@link addThumbnail} as a `"thumbnail"`) or a pre-built `{ href, type, altText? }`
+   * {@link ProductImage} object (whose explicit `type` is preserved). Entries that don't resolve are
+   * ignored.
+   * @param thumbnails - An array of URL strings and/or {@link ProductImage} values, or any value (non-arrays are ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.addThumbnails(["https://example.com/a-t.jpg", "https://example.com/b-t.jpg"]);
+   * ```
+   * @source
+   */
+  addThumbnails(thumbnails: unknown): ProductBuilder<T> {
+    this.addImageEntries(thumbnails, "thumbnail");
+    return this;
+  }
+
+  /**
+   * Appends each entry of an array to the product's image list. Pre-built {@link ProductImage}
+   * objects are resolved with their explicit `type` preserved; any other entry is treated as a raw
+   * URL and added with `defaultType` via {@link addImage}/{@link addThumbnail}.
+   * @param entries - The array of URL strings and/or {@link ProductImage} values (non-arrays are ignored)
+   * @param defaultType - The `type` to stamp on raw-URL entries
+   * @returns Nothing.
+   * @example
+   * ```typescript
+   * this.addImageEntries(["/a.jpg"], "image"); // adds { href: "https://base/a.jpg", type: "image" }
+   * this.addImageEntries([{ href: "/a-t.jpg", type: "thumbnail" }], "image"); // preserves "thumbnail"
+   * ```
+   * @source
+   */
+  private addImageEntries(entries: unknown, defaultType: ProductImageType): void {
+    if (!Array.isArray(entries)) {
+      return;
+    }
+    const uniqueEntries = [...new Set(entries)];
+    for (const entry of uniqueEntries) {
+      if (isProductImage(entry)) {
         const resolved = this.resolveImageEntry(entry);
         if (resolved) this.pushImage(resolved);
+      } else if (defaultType === "image") {
+        this.addImage(entry);
+      } else {
+        this.addThumbnail(entry);
       }
     }
-    return this;
   }
 
   /**
@@ -520,7 +569,11 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  private buildImage(url: unknown, type: ProductImageType, altText?: unknown): ProductImage | undefined {
+  private buildImage(
+    url: unknown,
+    type: ProductImageType,
+    altText?: unknown,
+  ): ProductImage | undefined {
     const href = this.resolveHref(url);
     if (!href) {
       return undefined;
@@ -2005,7 +2058,7 @@ export class ProductBuilder<T extends Product> {
 
         // Re-populate the variant using the parent product properties as defaults and the current
         // values as overrides.
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
         const { variants: _, ...defaults } = this.product;
 
         Object.assign(variant, defaults, { ...variant });

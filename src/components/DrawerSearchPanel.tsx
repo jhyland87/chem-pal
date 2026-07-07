@@ -86,7 +86,7 @@ const DrawerSearchPanel: FC<{
     };
     loadSearchInput();
     // Run once on mount; we intentionally don't depend on searchFilters to avoid loops.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   const handleTitleQueryChange = async (value: string) => {

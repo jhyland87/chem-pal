@@ -22,19 +22,19 @@ declare global {
    * Product price schema for Synthetika.
    */
   interface SynthetikaProductPrice {
-    /* eslint-disable */
+     
     base: string;
     base_float: number;
     final: string;
     final_float: number;
-    /* eslint-enable */
+     
   }
 
   /**
    * Minimal product schema for Synthetika.
    */
   interface SynthetikaMinimalProduct {
-    /* eslint-disable */
+     
     id: number;
     name: string;
     can_buy: boolean;
@@ -73,21 +73,21 @@ declare global {
     };
     shortDescription: string;
     description: string;
-    /* eslint-enable */
+     
   }
 
   /**
    * Product schema for Synthetika.
    */
   interface SynthetikaProduct extends SynthetikaMinimalProduct {
-    /* eslint-disable */
+     
     options_configuration: Array<{
       values: Array<SynthetikaConfigurationOptionValueSchema>;
       [key: string]: unknown;
     }>;
 
     variants?: omit<SynthetikaProduct, "variants">[];
-    /* eslint-enable */
+     
   }
 }
 

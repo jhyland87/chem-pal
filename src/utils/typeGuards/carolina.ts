@@ -1,5 +1,5 @@
-import { z } from "zod";
 import { StatusCodes } from "http-status-codes";
+import { z } from "zod";
 
 const responseOkSchema = z.object({
   responseStatusCode: z.literal(StatusCodes.OK),
@@ -70,7 +70,6 @@ const validSearchResponseSchema = z.object({
   responseStatusCode: z.literal(StatusCodes.OK),
   "@type": z.string(),
   contents: z.object({
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     ContentFolderZone: z
       .array(
         z.object({
@@ -157,7 +156,6 @@ export function isValidSearchResponse(response: unknown): response is CarolinaSe
   return validSearchResponseSchema.safeParse(response).success;
 }
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const searchResultItemSchema = z.object({
   "product.productId": z.string(),
   "product.productName": z.string(),
@@ -168,7 +166,6 @@ const searchResultItemSchema = z.object({
   productName: z.string(),
   qtyDiscountAvailable: z.boolean(),
 });
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard to validate if an object is a valid Carolina search result item.
@@ -231,7 +228,6 @@ export function isSearchResultItem(result: unknown): result is CarolinaSearchRes
 
 const validProductResponseSchema = z.object({
   contents: z.object({
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     MainContent: z
       .array(
         z.object({

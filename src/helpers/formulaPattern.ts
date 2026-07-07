@@ -45,7 +45,7 @@ export function buildFormulaPattern(subToken: string): RegExp {
   const element = FORMULA_ELEMENT_PATTERN;
   const subPart = `(?:${subToken}|[1-9][0-9]*)`;
   const unit = `(?:(?:${element}|[()\\[\\]])+(?:${subPart})*)`;
-  const head = `(?:(?:${unit}){2,}|(?:${element}|[()\\[\\]])+${subToken})`;
+  const head = `(?:${unit})+`;
   const charge = "(?:[+-](?![A-Za-z0-9]))?";
   const separator = "(?:\\s*[·•‧∙⋅・･*]\\s*|\\.(?=[A-Za-z(\\[]))";
   const coefficient = `(?:${subToken}|[1-9][0-9]*(?:/[1-9][0-9]*)?|[xn])`;

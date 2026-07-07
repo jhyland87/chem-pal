@@ -110,7 +110,7 @@ export abstract class SupplierBaseWoocommerce
   ): Promise<ProductBuilder<Product>[] | void> {
     const searchRequest = await this.httpGetJson({
       path: `/wp-json/wc/store/v1/products`,
-      // eslint-disable-next-line @typescript-eslint/naming-convention
+       
       params: { ...this.productSearchFilters, search: query, per_page: 100 },
     });
 
@@ -253,7 +253,7 @@ export abstract class SupplierBaseWoocommerce
       const chunk = uniqueIds.slice(offset, offset + this.fetchObjectSizeLimit);
       const response = await this.httpGetJson({
         path: `/wp-json/wc/store/v1/products`,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+         
         params: {
           per_page: this.fetchObjectSizeLimit,
           type: "variation",

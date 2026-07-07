@@ -1,5 +1,4 @@
 import type { SupplierBase } from "@/suppliers/SupplierBase";
-import type { SupplierFactory } from "@/suppliers/SupplierFactory";
 
 declare global {
   /**
@@ -303,8 +302,9 @@ declare global {
 
     /**
      * Flat list of the product's images. Full-size images and thumbnails are
-     * kept as separate, independent entries distinguished by {@link ProductImage.type}
-     * (a supplier's main image/thumbnail is often not part of its gallery). The
+     * kept as separate, independent entries distinguished by their `type` field
+     * (see {@link ProductImage}; a supplier's main image/thumbnail is often not
+     * part of its gallery). The
      * first entry of each type is treated as that type's default.
      * @example `[{ href: "https://example.com/image.jpg", type: "image" }, { href: "https://example.com/thumb.jpg", type: "thumbnail" }]`
      */
@@ -346,6 +346,14 @@ declare global {
      * @example 95
      */
     matchPercentage: number;
+    /**
+     * Positional index of the product within the current search-results list,
+     * assigned at render/persist time. This is NOT a stable product identifier
+     * (that is `id`) — it only conveys row position, so consumers that need a
+     * unique row key can use it without clobbering the real product `id`.
+     * @example 0
+     */
+    _id?: number;
   };
 
   /**
@@ -904,7 +912,7 @@ declare global {
   };
 
   /**
-   * Error captured during parallel supplier execution in {@link SupplierFactory.executeAll}.
+   * Error captured during parallel supplier execution in `SupplierFactory.executeAll`.
    * @typeParam P - The product type produced by the supplier
    */
   interface SupplierExecutionError<P> {

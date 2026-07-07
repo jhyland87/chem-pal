@@ -166,9 +166,9 @@ export abstract class SupplierBaseMagento2
       path: this.graphQLPath,
       body: { query: graphQLQuery, variables: graphQLVariables },
       headers: {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+         
         "Content-Type": "application/json",
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+         
         Store: this.storeCode,
       },
     });

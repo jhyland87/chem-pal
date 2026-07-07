@@ -126,12 +126,7 @@ export function useChromeStorageEnhanced<T>(
 export function useReactiveChromeStorage<T>(key: string, defaultValue: T) {
   // Create a promise that resolves and updates when storage changes
   const createStoragePromise = () => {
-    return new Promise<T>(async (resolve) => {
-      // Initial load
-      const data = await cstorage.session.get([key]);
-      // chrome.storage returns untyped data; narrow to the caller's generic T.
-      resolve(data[key] !== undefined ? (data[key] as T) : defaultValue);
-
+    return new Promise<T>((resolve) => {
       // Listen for changes
       const listener = (changes: { [key: string]: chrome.storage.StorageChange }) => {
         if (changes[key]) {
@@ -143,6 +138,15 @@ export function useReactiveChromeStorage<T>(key: string, defaultValue: T) {
       };
 
       cstorage.onChanged.addListener(listener);
+
+      // Initial load. The executor must stay synchronous (no async Promise
+      // executor), so the await runs inside a voided async IIFE; resolve() is
+      // idempotent, so the first value (initial load or an early change) wins.
+      void (async () => {
+        const data = await cstorage.session.get([key]);
+        // chrome.storage returns untyped data; narrow to the caller's generic T.
+        resolve(data[key] !== undefined ? (data[key] as T) : defaultValue);
+      })();
 
       // Cleanup is handled by React's concurrent features
       // This is a simplified example - in practice you'd want proper cleanup

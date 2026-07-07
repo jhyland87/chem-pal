@@ -18,7 +18,7 @@ function tabProps(index: number, name: string) {
   return {
     id: `full-width-tab-${index}`,
     panel: name,
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+     
     "aria-controls": `full-width-tabpanel-${index}`,
   };
 }
@@ -43,7 +43,7 @@ export default function TabHeader({ page, setPage }: TabHeaderProps) {
   return (
     <Tabs
       sx={{
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+         
         "& .MuiTabs-indicator": {
           backgroundColor: "rgba(0, 0, 0, 0.8)",
         },

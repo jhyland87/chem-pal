@@ -15,6 +15,9 @@ declare module "@tanstack/react-table" {
   /**
    * Table interface
    */
+  // TData must match the augmented @tanstack/react-table declaration even though
+  // these added members don't reference it.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Table<TData extends RowData> {
     /** User settings associated with this table */
     userSettings?: UserSettings;
@@ -33,6 +36,9 @@ declare module "@tanstack/react-table" {
   /**
    * Column interface
    */
+  // TData must match the augmented @tanstack/react-table declaration even though
+  // these added members don't reference it (TValue is used below).
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Column<TData extends RowData, TValue> {
     /**
      * Returns a sorted array of unique values from the currently visible rows in the column.

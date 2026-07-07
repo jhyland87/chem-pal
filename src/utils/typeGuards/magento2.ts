@@ -1,12 +1,10 @@
 import { zodAddActualValueToIssues } from "@/helpers/utils";
 import { z } from "zod";
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const magento2MoneySchema = z.object({
   value: z.number(),
   currency: z.string(),
 });
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard to validate if an object is a valid Magento 2 Money payload.
@@ -28,7 +26,6 @@ export function isMagento2Money(value: unknown): value is Magento2Money {
   return magento2MoneySchema.safeParse(value).success;
 }
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const magento2PriceBoundSchema = z.object({
   regular_price: magento2MoneySchema,
   final_price: magento2MoneySchema.optional(),
@@ -100,7 +97,6 @@ const magento2ProductItemSchema = z.object({
   items: z.array(magento2GroupedItemSchema).optional(),
   variants: z.array(magento2ConfigurableVariantSchema).optional(),
 });
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard to validate if an object is a valid Magento 2 product item from a

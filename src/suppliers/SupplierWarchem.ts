@@ -94,7 +94,6 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
     await this.httpPost({
       path: "/szukaj.html",
       body: {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         ilosc_na_stronie: 36,
       },
     });

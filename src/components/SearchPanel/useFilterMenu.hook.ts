@@ -1,4 +1,5 @@
 import { SelectChangeEvent } from "@mui/material/Select";
+import type { Table } from "@tanstack/react-table";
 import { useCallback, useState, SyntheticEvent } from "react";
 import { useAppContext } from "./hooks/useContext";
 
@@ -33,7 +34,7 @@ import { useAppContext } from "./hooks/useContext";
  * ```
  * @source
  */
-export function useFilterMenu(table?: any) {
+export function useFilterMenu(table?: Table<Product>) {
   const appContext = useAppContext();
 
   // Drawer state
@@ -54,7 +55,7 @@ export function useFilterMenu(table?: any) {
 
   // Column visibility state
   const columnStatus =
-    table?.getAllColumns()?.reduce((accu: string[], column: any) => {
+    table?.getAllColumns()?.reduce<string[]>((accu, column) => {
       if (column.getIsVisible() && column.getCanHide()) accu.push(column.id);
       return accu;
     }, []) ?? [];
@@ -112,7 +113,7 @@ export function useFilterMenu(table?: any) {
       const newColumnVisibility = typeof value === "string" ? value.split(",") : value;
       setColumnVisibility(newColumnVisibility);
 
-      table?.getAllColumns().forEach((column: any) => {
+      table?.getAllColumns().forEach((column) => {
         if (typeof column === "undefined") return;
         column.setColumnVisibility?.(
           !column.getCanHide() || newColumnVisibility.includes(column.id),
