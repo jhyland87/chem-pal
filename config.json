@@ -4,6 +4,8 @@
     "caching": true,
     "doNotCacheEmptyResults": false,
     "cacheTtlMinutes": 0,
+    "trackPriceHistory": true,
+    "priceHistoryMaxPoints": 0,
     "autocomplete": true,
     "currency": "USD",
     "location": "US",

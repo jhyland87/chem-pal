@@ -19,10 +19,33 @@ type AmbeedSdsSupplier = {
   getSdsUrls: (amNos: string[]) => Promise<Record<string, string>>;
 };
 
+type AmbeedKeySupplier = {
+  getUniqueProductKey: (data: { p_id?: string; p_am?: string }) => string;
+};
+
 const stubSettings = (settings: Record<string, unknown>) =>
   vi
     .spyOn(cstorage.local, "get")
     .mockResolvedValue({ [CACHE.USER_SETTINGS]: settings } as never);
+
+describe("SupplierAmbeed getUniqueProductKey", () => {
+  const supplier = new SupplierAmbeed("test", 1) as unknown as AmbeedKeySupplier;
+
+  it("keys on p_am (the per-listing article id), not p_id (the shared compound)", () => {
+    expect(supplier.getUniqueProductKey({ p_id: "P000728385", p_am: "A112492" })).toBe("A112492");
+  });
+
+  it("gives distinct keys to two brand listings of the same compound", () => {
+    // Real Ambeed data: one p_id (Hyaluronic acid) listed under multiple p_am/brands.
+    const a = supplier.getUniqueProductKey({ p_id: "P000235130", p_am: "A420964" });
+    const b = supplier.getUniqueProductKey({ p_id: "P000235130", p_am: "A1463898" });
+    expect(a).not.toBe(b);
+  });
+
+  it("falls back to p_id when p_am is missing", () => {
+    expect(supplier.getUniqueProductKey({ p_id: "P000728385" })).toBe("P000728385");
+  });
+});
 
 describe("SupplierAmbeed signing", () => {
   const supplier = new SupplierAmbeed("test", 1) as AmbeedSignSupplier;

@@ -33,6 +33,7 @@ body.dark .mermaid-block {
   height: auto !important;
   aspect-ratio: var(--mermaid-aspect, 3 / 2);
   max-height: var(--mermaid-container-height, 600px) !important;
+  max-width: none !important;
 }
 
 .mermaid-controls {
@@ -115,8 +116,9 @@ body.dark .mermaid-block._maximized {
   height: 100vh;
 }
 
+
 .mermaid-block._maximized .mermaid svg {
-  width: 100vw !important;
+  width: 100% !important;
   height: 100vh !important;
   /* Mermaid sets an inline max-width to the diagram's natural width; clear it
      so the svg can fill the full viewport instead of stopping short. */

@@ -154,6 +154,22 @@ class QLOOKUP,LIMITCHK decision
 class MAX,EVICT,INVALIDATE lru
 class META meta
 class GCK keygen
+
+%% ── Descriptor notes: plain-English descriptions pinned next to key nodes ──
+classDef descriptor fill:#FFF8E1,stroke:#FBC02D,stroke-width:1.5px,color:#5D4037,stroke-dasharray:5 4,font-style:italic
+D_QPC("Where a search checks for an already-cached result set")
+D_GCK("The cache key is just the query plus the supplier name")
+D_LIMITCHK("A cache hit is reused only if it has enough results for the new limit")
+D_SAVE1("Fresh results are stored as serialized builders, not raw pages")
+D_LRU("At 100 entries, the oldest is evicted to make room")
+D_QPC ~~~ QPC
+D_GCK ~~~ GCK
+D_LIMITCHK ~~~ LIMITCHK
+D_SAVE1 ~~~ SAVE1
+D_LRU ~~~ LRU
+class D_QPC,D_GCK,D_LIMITCHK,D_SAVE1,D_LRU descriptor
+%% Hide the connector lines for the descriptor notes (the last 5 links).
+linkStyle 15,16,17,18,19 stroke-width:0px,stroke:transparent
 ```
 
 ### Product Data Cache Flow
@@ -251,6 +267,22 @@ class PLOOKUP,CACHEABLE,CPD decision
 class MAX,EVICT,SKIP2 lru
 class META meta
 class GPCK keygen
+
+%% ── Descriptor notes: plain-English descriptions pinned next to key nodes ──
+classDef descriptor fill:#FFF8E1,stroke:#FBC02D,stroke-width:1.5px,color:#5D4037,stroke-dasharray:5 4,font-style:italic
+D_GPD("Runs once per product to fetch its full detail data")
+D_CPD("Pure-search suppliers already have everything, so they skip this cache")
+D_GPCK("Keyed by the product's identity — reusable across different searches")
+D_CACHEABLE("Don't cache a fetch that was rate-limited or aborted")
+D_TOUCH("A cache hit refreshes the entry's age so active products aren't evicted")
+D_GPD ~~~ GPD
+D_CPD ~~~ CPD
+D_GPCK ~~~ GPCK
+D_CACHEABLE ~~~ CACHEABLE
+D_TOUCH ~~~ TOUCH
+class D_GPD,D_CPD,D_GPCK,D_CACHEABLE,D_TOUCH descriptor
+%% Hide the connector lines for the descriptor notes (the last 5 links).
+linkStyle 17,18,19,20,21 stroke-width:0px,stroke:transparent
 ```
 
 ### Bulk Fetch Cache Flow (WooCommerce)
@@ -322,11 +354,32 @@ class HYDRATE hit
 class MISS,ENRICH,WRITE miss
 class DROP drop
 class PDS idb
+
+%% ── Descriptor notes: plain-English descriptions pinned next to key nodes ──
+classDef descriptor fill:#FFF8E1,stroke:#FBC02D,stroke-width:1.5px,color:#5D4037,stroke-dasharray:5 4,font-style:italic
+D_QUERY("Batch suppliers fetch every product up front in one request")
+D_PART("Sorts products into ignored, already-cached, and needs-fetching")
+D_LOOKUP("Reuse a product cached by any earlier search")
+D_ENRICH("Only the cache-misses go through the one bulk detail fetch")
+D_QUERY ~~~ QUERY
+D_PART ~~~ PART
+D_LOOKUP ~~~ LOOKUP
+D_ENRICH ~~~ ENRICH
+class D_QUERY,D_PART,D_LOOKUP,D_ENRICH descriptor
+%% Hide the connector lines for the descriptor notes (the last 4 links).
+linkStyle 14,15,16,17 stroke-width:0px,stroke:transparent
 ```
 
 ### Storage Backend
 
 ```mermaid
+---
+config:
+  mermaidPlugin:
+    containerHeight: auto
+    zoomControl: none
+    disableMaximize: true
+---
 flowchart LR
 linkStyle default stroke-width:4px;
 classDef idb fill:#E67E22,stroke:#D35400,color:#fff,font-weight:bold

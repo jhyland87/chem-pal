@@ -1,5 +1,6 @@
 import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 import { useAppContext } from "@/context";
+import { i18n } from "@/helpers/i18n";
 import { ExpandMore as ExpandMoreIcon } from "@mui/icons-material";
 import {
   Accordion,
@@ -148,7 +149,7 @@ export default function ColumnDrawerSection({
             renderInput={(params) => (
               <TextField
                 {...params}
-                label={`Filter by ${config.label.toLowerCase()}`}
+                label={i18n("filter_by", [config.label.toLowerCase()])}
                 placeholder={placeholder}
                 helperText={currentValue.length === 0 ? emptyHelperText : undefined}
                 slotProps={{ formHelperText: { sx: { fontStyle: "italic" } } }}
@@ -192,8 +193,7 @@ export default function ColumnDrawerSection({
               return opts.filter(
                 (opt) =>
                   !selectedCodes.includes(opt.code) &&
-                  (opt.label.toLowerCase().includes(term) ||
-                    opt.code.toLowerCase().includes(term)),
+                  (opt.label.toLowerCase().includes(term) || opt.code.toLowerCase().includes(term)),
               );
             }}
             value={currentValue}
@@ -202,7 +202,7 @@ export default function ColumnDrawerSection({
             renderInput={(params) => (
               <TextField
                 {...params}
-                label={`Filter by ${config.label.toLowerCase()}`}
+                label={i18n("filter_by", [config.label.toLowerCase()])}
                 placeholder={placeholder}
                 helperText={selectedCodes.length === 0 ? emptyHelperText : undefined}
                 slotProps={{ formHelperText: { sx: { fontStyle: "italic" } } }}
@@ -263,7 +263,9 @@ export default function ColumnDrawerSection({
     // the user's current currency setting (USD → "$", EUR → "€", etc.).
     const adornment =
       config.adornment === "currency"
-        ? (userSettings.currency ? CURRENCY_SYMBOL_MAP[userSettings.currency] : undefined)
+        ? userSettings.currency
+          ? CURRENCY_SYMBOL_MAP[userSettings.currency]
+          : undefined
         : config.adornment;
 
     const hint =
@@ -277,13 +279,12 @@ export default function ColumnDrawerSection({
           })`
         : undefined;
 
-    const handleNumberChange = (key: keyof UserSettings) =>
-      (e: ChangeEvent<HTMLInputElement>) => {
-        setUserSettings({
-          ...userSettings,
-          [key]: e.target.value ? parseFloat(e.target.value) : undefined,
-        });
-      };
+    const handleNumberChange = (key: keyof UserSettings) => (e: ChangeEvent<HTMLInputElement>) => {
+      setUserSettings({
+        ...userSettings,
+        [key]: e.target.value ? parseFloat(e.target.value) : undefined,
+      });
+    };
 
     return (
       <Accordion expanded={isExpanded} onChange={onAccordionChange(panelId)}>

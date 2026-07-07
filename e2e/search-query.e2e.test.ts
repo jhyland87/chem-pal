@@ -313,8 +313,8 @@ describe("Chem-Pal search query", () => {
           const record = await new Promise<{ data?: Array<{ id?: unknown; supplier?: unknown }> }>(
             (resolve, reject) => {
               const getReq = db
-                .transaction("searchResults", "readonly")
-                .objectStore("searchResults")
+                .transaction("search_results", "readonly")
+                .objectStore("search_results")
                 .get("current");
               getReq.onsuccess = () => resolve(getReq.result);
               getReq.onerror = () => reject(getReq.error);

@@ -8,7 +8,7 @@ import {
   type ExcludedProductsMap,
 } from "@/helpers/excludedProducts";
 import { formatTimestamp, getLanguageName } from "@/helpers/utils";
-import { clearExcludedProducts } from "@/utils/idbCache";
+import { clearExcludedProducts, clearPriceHistory } from "@/utils/idbCache";
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import { isButtonElement } from "@/utils/typeGuards/common";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -101,6 +101,8 @@ export default function SettingsPanelFull() {
             ...currentSettings,
             showHelp: false,
             caching: true,
+            trackPriceHistory: true,
+            priceHistoryMaxPoints: 0,
             showColumnFilters: true,
             showAllColumns: false,
             fontSize: "medium",
@@ -153,6 +155,7 @@ export default function SettingsPanelFull() {
   };
 
   const [excludedProducts, setExcludedProducts] = useState<ExcludedProductsMap>({});
+  const [priceHistoryCleared, setPriceHistoryCleared] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -185,6 +188,15 @@ export default function SettingsPanelFull() {
       setExcludedProducts({});
     } catch (error) {
       console.warn("Failed to clear excluded products:", error);
+    }
+  };
+
+  const handleClearPriceHistory = async () => {
+    try {
+      await clearPriceHistory();
+      setPriceHistoryCleared(true);
+    } catch (error) {
+      console.warn("Failed to clear price history:", error);
     }
   };
 
@@ -372,6 +384,75 @@ export default function SettingsPanelFull() {
                   slotProps={{ htmlInput: { min: 0, step: 1 } }}
                 />
               </FormControl>
+            </ListItem>
+          </List>
+        </AccordionDetails>
+      </Accordion>
+      <Accordion
+        expanded={expanded === "priceHistory"}
+        onChange={handleAccordionChange("priceHistory")}
+        disableGutters
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          className={styles["settings-panel__accordion-summary"]}
+        >
+          <Typography variant="body2" fontWeight={500}>
+            Price History
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails className={styles["settings-panel__accordion-details"]}>
+          <List dense component="nav" aria-labelledby="price-history-list-subheader">
+            {/* Master toggle — on by default */}
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText
+                primary="Track price history"
+                secondary="Record each product's USD price over time so you can see if it's rising or falling."
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={currentSettings.trackPriceHistory ?? true}
+                    onChange={handleSwitchChange}
+                    name="trackPriceHistory"
+                    disabled={isPending}
+                  />
+                }
+                labelPlacement="start"
+                label=""
+              />
+            </ListItem>
+            {/* Max points per product — 0 means unlimited */}
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText primary="Max price points per product (0 = unlimited)" />
+              <FormControl>
+                <TextField
+                  value={currentSettings.priceHistoryMaxPoints ?? 0}
+                  name="priceHistoryMaxPoints"
+                  onChange={handleInputChange}
+                  type="number"
+                  variant="outlined"
+                  size="small"
+                  className={styles["settings-panel__input"]}
+                  disabled={isPending || currentSettings.trackPriceHistory === false}
+                  slotProps={{ htmlInput: { min: 0, step: 1 } }}
+                />
+              </FormControl>
+            </ListItem>
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <Button
+                variant="outlined"
+                color="warning"
+                size="small"
+                onClick={handleClearPriceHistory}
+              >
+                Clear price history
+              </Button>
+              {priceHistoryCleared && (
+                <Typography variant="caption" sx={{ ml: 1 }}>
+                  Price history cleared.
+                </Typography>
+              )}
             </ListItem>
           </List>
         </AccordionDetails>

@@ -331,22 +331,14 @@ export enum CACHE {
   QUERY = "query",
   /** The current search input text */
   SEARCH_INPUT = "search_input",
-  /** Array of product results from the most recent search (stored in IndexedDB) */
-  SEARCH_RESULTS = "search_results",
   /** Flag indicating a new search was submitted from the search home panel */
   SEARCH_IS_NEW_SEARCH = "is_new_search",
-  /** Persisted search history entries (stored in IndexedDB) */
-  SEARCH_HISTORY = "search_history",
   /** Selected suppliers list for search filtering */
   SELECTED_SUPPLIERS = "selected_suppliers",
   /** HTTP LRU cache */
   HTTP_LRU = "httplru",
   /** The current panel (0 = SearchHome, 1 = Results, 2 = Stats) */
   PANEL = "panel",
-  /** Supplier query results cache (stored in IndexedDB) */
-  SUPPLIER_QUERY_CACHE = "supplier_query_cache",
-  /** Supplier product data cache (stored in IndexedDB) */
-  SUPPLIER_PRODUCT_DATA_CACHE = "supplier_product_data_cache",
   /** Persisted TanStack table state (sorting, pagination, expanded rows, column visibility) */
   TABLE_STATE = "table_state",
   /** ID of the ChemPal Favorites bookmarks folder */
@@ -356,6 +348,30 @@ export enum CACHE {
   /** LabChem full product catalog snapshot, cached for 24h (empty-query search) */
   LABCHEM_CATALOG = "labchem_catalog",
 }
+
+/**
+ * IndexedDB object-store names for the ChemPal database. Centralized here so the
+ * store names aren't hardcoded across `idbCache.ts`. Declared as an `as const`
+ * object rather than a string enum because idb's typed store-name API requires
+ * the exact string-literal type, which a TS string-enum member is not assignable
+ * to. Values are snake_case to match the {@link CACHE} storage-key convention.
+ */
+export const IDB_STORE = {
+  /** Current search results (single row keyed `"current"`). */
+  SEARCH_RESULTS: "search_results",
+  /** Persisted search history entries. */
+  SEARCH_HISTORY: "search_history",
+  /** Supplier query-result cache. */
+  SUPPLIER_QUERY_CACHE: "supplier_query_cache",
+  /** Supplier product-detail cache. */
+  SUPPLIER_PRODUCT_DATA_CACHE: "supplier_product_data_cache",
+  /** Daily supplier HTTP stats. */
+  SUPPLIER_STATS: "supplier_stats",
+  /** User's excluded/ignored products (single row keyed `"current"`). */
+  EXCLUDED_PRODUCTS: "excluded_products",
+  /** Per-product/variant USD price history. */
+  PRICE_HISTORY: "price_history",
+} as const;
 
 /**
  * Represents the availability of a product

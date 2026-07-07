@@ -1,0 +1,206 @@
+{
+  "application_description": {
+    "message": "Open source project aimed at helping amateur chemistry hobbyists find the best deals on chemical reagents. There are plenty of similar services out there for businesses, universities and research institutions, but none are available for individuals and hobbyists. ChemPal only searches suppliers that sell to individuals and ship to residences. hobbyists. ChemPal only searches suppliers that sell to individuals and ship to residences.",
+    "description": "The description of the application."
+  },
+  "about_chempal": {
+    "message": "About ChemPal",
+    "description": "The title of the about ChemPal section."
+  },
+  "contributors": {
+    "message": "Contributors",
+    "description": "The title of the contributors section."
+  },
+  "cancel_search": {
+    "message": "Cancel search",
+    "description": "The text of the button to cancel the search."
+  },
+  "aborting_search": {
+    "message": "Aborting...",
+    "description": "The text of the status shown when aborting a search."
+  },
+  "loading_search": {
+    "message": "Loading...",
+    "description": "The text of the status shown when loading a search."
+  },
+  "found_result_single": {
+    "message": "Found $count$ result.",
+    "placeholders": {
+      "count": { "content": "$1" }
+    }
+  },
+  "found_results_one_supplier": {
+    "message": "Found $count$ results from $suppliers$ supplier",
+    "placeholders": {
+      "count": { "content": "$1" },
+      "suppliers": { "content": "$2" }
+    }
+  },
+  "found_results_many_suppliers": {
+    "message": "Found $count$ results from $suppliers$ suppliers",
+    "placeholders": {
+      "count": { "content": "$1" },
+      "suppliers": { "content": "$2" }
+    }
+  },
+  "filter_by": {
+    "message": "Filter by $label$",
+    "placeholders": {
+      "label": { "content": "$1" }
+    }
+  },
+  "chempal_favorites_folder_name": {
+    "message": "ChemPal Favorites",
+    "description": "The name of the ChemPal favorites folder."
+  },
+  "bookmark_already_exists_in_folder": {
+    "message": "Bookmark already exists in $folder$",
+    "placeholders": {
+      "folder": { "content": "$1" }
+    }
+  },
+  "bookmark_created_at_folder": {
+    "message": "Bookmark created at $folder$",
+    "placeholders": { "folder": { "content": "$1" } }
+  },
+  "chemical_product": {
+    "message": "Chemical Product",
+    "description": "The name of the chemical product."
+  },
+  "check_out_chemical_product": {
+    "message": "Check out this chemical product: $product$",
+    "placeholders": { "product": { "content": "$1" } }
+  },
+  "this_product_cant_be_removed_from_the_cache": {
+    "message": "This product can't be removed from the cache",
+    "description": "The message shown when a product can't be removed from the cache."
+  },
+  "copy_product_info_price": {
+    "message": "Price: $price$",
+    "placeholders": { "price": { "content": "$1" } }
+  },
+  "copy_product_info_supplier": {
+    "message": "Supplier: $supplier$",
+    "placeholders": { "supplier": { "content": "$1" } }
+  },
+  "copy_product_info_url": {
+    "message": "URL: $url$",
+    "placeholders": { "url": { "content": "$1" } }
+  },
+  "copy_product_info_description": {
+    "message": "Description: $description$",
+    "placeholders": { "description": { "content": "$1" } }
+  },
+  "context_menu_copy_title": {
+    "message": "Copy Title",
+    "description": "The text of the context menu option to copy the title."
+  },
+  "context_menu_copy_url": {
+    "message": "Copy URL",
+    "description": "The text of the context menu option to copy the URL."
+  },
+  "context_menu_copy_product_info": {
+    "message": "Copy Product Info",
+    "description": "The text of the context menu option to copy the product info."
+  },
+  "context_menu_ignore_product": {
+    "message": "Ignore Product",
+    "description": "The text of the context menu option to ignore the product."
+  },
+  "context_menu_remove_product_from_cache": {
+    "message": "Remove Product from Cache",
+    "description": "The text of the context menu option to remove the product from the cache."
+  },
+  "context_menu_open_in_new_tab": {
+    "message": "Open in New Tab",
+    "description": "The text of the context menu option to open the product in a new tab."
+  },
+  "context_menu_create_bookmark": {
+    "message": "Create Bookmark",
+    "description": "The text of the context menu option to create a bookmark."
+  },
+  "context_menu_search_similar": {
+    "message": "Search Similar",
+    "description": "The text of the context menu option to search for similar products."
+  },
+  "context_menu_share": {
+    "message": "Share",
+    "description": "The text of the context menu option to share the product."
+  },
+  "context_menu_view_details": {
+    "message": "View Details",
+    "description": "The text of the context menu option to view the details of the product."
+  },
+  "filter_component_not_found": {
+    "message": "Filter Component not found: $component$",
+    "placeholders": { "component": { "content": "$1" } }
+  },
+  "context_not_available": {
+    "message": "Context not available",
+    "description": "The message shown when the context is not available."
+  },
+  "supplier_selection": {
+    "message": "Supplier Selection",
+    "description": "The text of the supplier selection component."
+  },
+  "column_visibility": {
+    "message": "Column Visibility",
+    "description": "The text of the column visibility component."
+  },
+  "filter_results_table_placeholder": {
+    "message": "Filter results table..",
+    "description": "The placeholder text for the filter results table input."
+  },
+  "show_page_size": {
+    "message": "Show $pageSize$",
+    "placeholders": { "pageSize": { "content": "$1" } }
+  },
+  "results_table_status_searching": {
+    "message": "Searching...",
+    "description": "The text of the status shown when searching."
+  },
+  "results_table_status_no_search_query": {
+    "message": "No search query",
+    "description": "The text of the status shown when there is no search query."
+  },
+  "results_table_status_no_results_matching_your_filter_values": {
+    "message": "No results matching your filter values",
+    "description": "The text of the status shown when there are no results matching the filter values."
+  },
+  "results_table_status_no_results_found": {
+    "message": "No results found",
+    "description": "The text of the status shown when there are no results found."
+  },
+  "results_table_error": {
+    "message": "Error: $error$",
+    "placeholders": { "error": { "content": "$1" } }
+  },
+  "results_table_retry": {
+    "message": "Retry",
+    "description": "The text of the button to retry the search."
+  },
+  "results_table_show": {
+    "message": "Show",
+    "description": "The text of the label for the results table show selector."
+  },
+  "results_table_all": {
+    "message": "All",
+    "description": "The text of the label for the results table all selector."
+  },
+  "results_table_rows": {
+    "message": "Rows",
+    "description": "The text of the label for the results table rows selector."
+  },
+  "results_table_page_of_total": {
+    "message": "Page $page$ of $total$",
+    "placeholders": { "page": { "content": "$1" }, "total": { "content": "$2" } }
+  },
+  "results_table_total_results": {
+    "message": "($total$ total results)",
+    "placeholders": { "total": { "content": "$1" } }
+  },
+  "results_table_showing_results": {
+    "message": "(Showing $filtered$ of $total$ results)",
+    "placeholders": { "filtered": { "content": "$1" }, "total": { "content": "$2" } }
+  }
+}

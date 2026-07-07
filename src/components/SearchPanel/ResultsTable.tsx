@@ -3,12 +3,13 @@ import DrawerSystem from "@/components/DrawerSystem";
 import LoadingBackdrop from "@/components/LoadingBackdrop";
 import resultStyles from "@/components/ResultsPanel.module.scss";
 import { CACHE, DRAWER_INDEX } from "@/constants/common";
+import { emitSearchEvent, SearchEvent } from "@/events/searchEvents";
+import { i18n } from "@/helpers/i18n";
 import { generatePageSizes } from "@/helpers/utils";
-import { getEmptyHideableColumnIds } from "@/mixins/tanstack";
 import { FOCUS_GLOBAL_FILTER_EVENT, TOGGLE_COLUMN_FILTERS_EVENT } from "@/hotkeys";
-import { SearchEvent, emitSearchEvent } from "@/events/searchEvents";
-import { cstorage } from "@/utils/storage";
+import { getEmptyHideableColumnIds } from "@/mixins/tanstack";
 import { isTabView, openExtensionTab } from "@/utils/displayContext";
+import { cstorage } from "@/utils/storage";
 import { isInputElement } from "@/utils/typeGuards/common";
 import {
   ChevronLeft as ChevronLeftIcon,
@@ -83,12 +84,12 @@ import {
   SubRowTableRow,
 } from "../StyledComponents";
 import ContextMenu from "./ContextMenu";
-import { ProductDetailPanel } from "./ProductDetailPanel";
 import { useAppContext } from "./hooks/useContext";
 import { useSearch } from "./hooks/useSearch";
 import RangeColumnFilter from "./Inputs/RangeColumnFilter";
 import SelectColumnFilter from "./Inputs/SelectColumnFilter";
 import TextColumnFilter from "./Inputs/TextColumnFilter";
+import { ProductDetailPanel } from "./ProductDetailPanel";
 import styles from "./ResultsTable.module.scss";
 import { useAutoColumnSizing } from "./useAutoColumnSizing.hook";
 import { useContextMenu } from "./useContextMenu.hook";
@@ -332,7 +333,7 @@ export default function ResultsTable({
   }));
 
   // Debounced save — only persist the slices we care about restoring
-   
+
   const saveTableState = useCallback(
     debounce(async (s: TableState & { showFilters?: boolean }) => {
       try {
@@ -366,7 +367,6 @@ export default function ResultsTable({
       columnFilters: columnFilterFns[0],
       showFilters,
     });
-     
   }, [tableState, globalFilter, columnFilterFns[0], showFilters, saveTableState]);
 
   // Clamp pageSize synchronously so the MUI Select never renders with an
@@ -672,11 +672,11 @@ export default function ResultsTable({
                   <EmptyStateCell colSpan={table.getAllColumns().length}>
                     {searchResults.length === 0
                       ? isLoading
-                        ? "Searching..."
-                        : tableText || "No search query"
+                        ? i18n("results_table_status_searching")
+                        : tableText || i18n("results_table_status_no_search_query")
                       : table.getState().columnFilters.length > 0 || table.getState().globalFilter
-                        ? "No results matching your filter values"
-                        : "No results found"}
+                        ? i18n("results_table_status_no_results_matching_your_filter_values")
+                        : i18n("results_table_status_no_results_found")}
                   </EmptyStateCell>
                 </TableRow>
               )}
@@ -686,12 +686,12 @@ export default function ResultsTable({
           {/* Enhanced error handling */}
           {error && (
             <ErrorContainer className={resultStyles["error-container"]}>
-              <p>Error: {error}</p>
+              <p>{i18n("results_table_error", [error])}</p>
               <ErrorRetryButton
                 onClick={() => window.location.reload()}
                 className={resultStyles["error-retry-button"]}
               >
-                Retry
+                {i18n("results_table_retry")}
               </ErrorRetryButton>
             </ErrorContainer>
           )}
@@ -701,7 +701,7 @@ export default function ResultsTable({
             <PaginationContainer>
               {/* Page Size Selector */}
               <PageSizeContainer>
-                <Typography variant="body2">Show:</Typography>
+                <Typography variant="body2">{i18n("results_table_show")}:</Typography>
                 <FormControl size="small">
                   <PageSizeSelect
                     value={table.getState().pagination.pageSize}
@@ -710,12 +710,12 @@ export default function ResultsTable({
                   >
                     {generatePageSizes(totalRowCount, 10, 5).map((pageSize) => (
                       <MenuItem key={pageSize} value={pageSize}>
-                        {pageSize === totalRowCount ? "All" : pageSize}
+                        {pageSize === totalRowCount ? i18n("results_table_all") : pageSize}
                       </MenuItem>
                     ))}
                   </PageSizeSelect>
                 </FormControl>
-                <Typography variant="body2">rows</Typography>
+                <Typography variant="body2">{i18n("results_table_rows")}</Typography>
               </PageSizeContainer>
 
               {/* Page Info — "Showing N of M" surfaces the post-filter vs
@@ -723,10 +723,16 @@ export default function ResultsTable({
                   column / global filter. When no filter is active (filtered
                   === total) it collapses back to the plain total form. */}
               <Typography variant="body2">
-                Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+                {i18n("results_table_page_of_total", [
+                  String(table.getState().pagination.pageIndex + 1),
+                  String(table.getPageCount()),
+                ]) + " "}
                 {filteredRowCount === totalRowCount
-                  ? ` (${totalRowCount} total results)`
-                  : ` (Showing ${filteredRowCount} of ${totalRowCount} results)`}
+                  ? i18n("results_table_total_results", [String(totalRowCount)])
+                  : i18n("results_table_showing_results", [
+                      String(filteredRowCount),
+                      String(totalRowCount),
+                    ])}
               </Typography>
 
               {/* Navigation Buttons */}

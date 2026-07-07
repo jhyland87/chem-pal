@@ -34,6 +34,7 @@
 
 export { SupplierAladdinSci } from "./SupplierAladdinSci";
 export { SupplierAlchemieLabs } from "./SupplierAlchemieLabs";
+export { SupplierAllianceChemical } from "./SupplierAllianceChemical";
 export { SupplierAmarisChemicalSolutions } from "./SupplierAmarisChemicalSolutions";
 export { SupplierAmbeed } from "./SupplierAmbeed";
 export { SupplierAsesChem } from "./SupplierAsesChem";

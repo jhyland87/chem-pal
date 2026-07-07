@@ -1,10 +1,15 @@
 import {
+  clearAllCaches,
+  clearPriceHistory,
   clearSearchResults,
   clearSupplierProductDataCache,
   deleteSupplierProductDataCacheEntry,
   findDuplicateProductIds,
+  getPriceSeries,
+  getPriceSeriesByProduct,
   getSearchResults,
   getSupplierProductDataCacheEntry,
+  putPriceSeries,
   putSupplierProductDataCacheEntry,
   setSearchResults,
 } from "@/utils/idbCache";
@@ -94,5 +99,50 @@ describe("deleteSupplierProductDataCacheEntry", () => {
 
   it("is a no-op for a key that isn't cached", async () => {
     await expect(deleteSupplierProductDataCacheEntry("missing")).resolves.toBeUndefined();
+  });
+});
+
+describe("price history store", () => {
+  const entry = (id: string, productKey: string, usd: number) => ({
+    id,
+    productKey,
+    supplier: "Loudwolf",
+    title: "Acetone",
+    points: [{ t: 1, usd }],
+    updatedAt: 1,
+  });
+
+  beforeEach(async () => {
+    await clearPriceHistory();
+  });
+
+  it("round-trips a single series by id", async () => {
+    await putPriceSeries(entry("pk-1", "pk-1", 19.99));
+    expect((await getPriceSeries("pk-1"))?.points).toEqual([{ t: 1, usd: 19.99 }]);
+  });
+
+  it("returns undefined for a series that was never written", async () => {
+    expect(await getPriceSeries("nope")).toBeUndefined();
+  });
+
+  it("fetches a product's base and variant series via the productKey index", async () => {
+    await putPriceSeries(entry("pk-1", "pk-1", 20));
+    await putPriceSeries(entry("pk-1::A", "pk-1", 5));
+    await putPriceSeries(entry("pk-2", "pk-2", 9));
+
+    const series = await getPriceSeriesByProduct("pk-1");
+    expect(series.map((s) => s.id).sort()).toEqual(["pk-1", "pk-1::A"]);
+  });
+
+  it("clearPriceHistory empties the store", async () => {
+    await putPriceSeries(entry("pk-1", "pk-1", 20));
+    await clearPriceHistory();
+    expect(await getPriceSeries("pk-1")).toBeUndefined();
+  });
+
+  it("is preserved by clearAllCaches (price history is user data, not a cache)", async () => {
+    await putPriceSeries(entry("pk-1", "pk-1", 20));
+    await clearAllCaches();
+    expect(await getPriceSeries("pk-1")).toBeDefined();
   });
 });
