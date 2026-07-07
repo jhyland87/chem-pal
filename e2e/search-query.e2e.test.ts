@@ -326,8 +326,6 @@ describe("Chem-Pal search query", () => {
         }
       });
 
-      console.log("storedProductKeys", storedProductKeys);
-
       vitestExpect(storedProductKeys.length).toBeGreaterThan(0);
 
       // Check for duplicates

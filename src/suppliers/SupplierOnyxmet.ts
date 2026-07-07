@@ -179,14 +179,13 @@ export class SupplierOnyxmet
         return;
       }
 
-      const builder = new ProductBuilder<Product>(this.baseURL);
-
-      if (item.image) builder.setImage(item.image);
-      builder.setBasicInfo(item.label, item.href, this.supplierName);
-      builder.setID(productId);
-      builder.setDescription(item.description);
-      builder.setCacheKey(productId);
-      return builder;
+      return new ProductBuilder<Product>(this.baseURL)
+        .setBasicInfo(item.label, item.href, this.supplierName)
+        .setCAS(findCAS(item.description))
+        .setImage(item.image)
+        .setID(productId)
+        .setDescription(item.description.split("\r\n").at(0) || item.label)
+        .setCacheKey(productId);
     });
   }
 
@@ -258,7 +257,6 @@ export class SupplierOnyxmet
         {},
       );
 
-      const cas = findCAS(builder.get("description"));
       const title = content.querySelector("h3.product-title")?.textContent?.trim() || "";
 
       // Array.from(document.querySelectorAll('.product-right > ul > li')).find(e => e.innerText.includes('Product Code')).innerText
@@ -271,7 +269,9 @@ export class SupplierOnyxmet
       const statusTxt = productInfo.Availability || "";
       const productPrice = content.querySelector(".product-price")?.textContent?.trim() || "";
 
-      // @todo More than one product option should result in vartiants being created
+      // Radio labels for the "Available Options" sizes (e.g. "10g (5.00€)"). Used as a
+      // fallback source for the base product's price/quantity; each is also parsed into
+      // its own variant below when there is more than one.
       const productOptions = Array.from(
         content?.querySelectorAll("#product div label:has(input)") ?? [],
       ).map((e) => e.textContent?.trim().replaceAll(/\s+/g, " ") ?? "");
@@ -321,12 +321,78 @@ export class SupplierOnyxmet
         .map((i: Element) => i.getAttribute("src"))
         .filter(Boolean);
 
-      return builder
+      const metaDesc = content
+        .querySelector("meta[name='description']")
+        ?.getAttribute("content")
+        ?.trim();
+
+      if (metaDesc) {
+        builder.setDescription(metaDesc);
+      }
+
+      builder
         .addImages(images)
         .setPricing(price.price, price.currencyCode, price.currencySymbol)
         .setQuantity(quantity.quantity, quantity.uom)
-        .setCAS(cas)
         .setAvailability(statusTxt ?? "");
+
+      // More than one "Available Options" radio means the product is sold in several
+      // sizes — expose each as a variant. A single option is just the base product.
+      const variants = this.parseVariants(content);
+      if (variants.length > 1) {
+        this.logger.debug("Onyxmet variants found", { builder, variants });
+        builder.setVariants(variants);
+      }
+
+      return builder;
+    });
+  }
+
+  /**
+   * Parses the "Available Options" size radios on an Onyxmet product page into variants.
+   * Each option's label reads like `"10g (5.00€)"`: the amount before the parenthesis
+   * gives the quantity/uom and the parenthesized value gives the price. The radio's
+   * `value` attribute is Onyxmet's option id, kept as the variant `id`. Currency is left
+   * unset so each variant inherits the parent product's currency at build time.
+   * @param content - The product page's `#content` element.
+   * @returns The parsed variants in page (ascending-size) order; empty when the page has no options.
+   * @example
+   * ```typescript
+   * // For radios "10g (5.00€)" and "100g (30.00€)":
+   * this.parseVariants(content);
+   * // => [
+   * //   { id: "1416", title: "10g", quantity: 10, uom: "g", price: 5 },
+   * //   { id: "146", title: "100g", quantity: 100, uom: "g", price: 30 },
+   * // ]
+   * ```
+   * @source
+   */
+  private parseVariants(content: Element): Partial<Variant>[] {
+    const optionLabels = Array.from(
+      content.querySelectorAll("#product .form-group label:has(input[type='radio'])"),
+    );
+
+    return mapDefined(optionLabels, (label) => {
+      const fullText = label.textContent?.replaceAll(/\s+/g, " ").trim() ?? "";
+      const priceText = fullText.match(/\(([^)]*)\)/)?.at(1) ?? "";
+      const amountText = fullText.replace(/\s*\([^)]*\)\s*/, " ").trim();
+
+      const quantity = parseQuantity(amountText);
+      const price = parsePrice(priceText);
+      if (!quantity || !price) {
+        this.logger.warn("Skipping Onyxmet option, missing quantity or price", { fullText });
+        return;
+      }
+
+      const id = label.querySelector("input")?.getAttribute("value") ?? undefined;
+
+      return {
+        id,
+        title: amountText,
+        quantity: quantity.quantity,
+        uom: quantity.uom,
+        price: price.price,
+      } satisfies Partial<Variant>;
     });
   }
 
