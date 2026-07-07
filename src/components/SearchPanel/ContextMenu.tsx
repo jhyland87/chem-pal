@@ -2,10 +2,10 @@ import { useStatusBar } from "@/components/StatusBar";
 import { useAppContext } from "@/context";
 import { getProductIdentityKey } from "@/helpers/productIdentity";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
-import AutoDeleteIcon from "@/icons/AutoDeleteIcon";
 import BlockIcon from "@/icons/BlockIcon";
 import BookmarkIcon from "@/icons/BookmarkIcon";
 import CopyIcon from "@/icons/CopyIcon";
+import FolderDeleteIcon from "@/icons/FolderDeleteIcon";
 import HttpIcon from "@/icons/HttpIcon";
 import SettingsIcon from "@/icons/SettingsIcon";
 import { deleteSupplierProductDataCacheEntry } from "@/utils/idbCache";
@@ -457,7 +457,7 @@ export default function ContextMenu({
 
         <MenuItem className={styles["context-menu-item"]} onClick={handleRemoveFromCache}>
           <ListItemIcon>
-            <AutoDeleteIcon fontSize="small" />
+            <FolderDeleteIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText
             className={styles["context-menu-option-text"]}
