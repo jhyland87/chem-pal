@@ -2,11 +2,11 @@ import { CACHE } from "@/constants/common";
 import { cstorage } from "@/utils/storage";
 import { Science as ScienceIcon, Search as SearchIcon } from "@mui/icons-material";
 import { Box, IconButton } from "@mui/material";
-import { useEffect, useState, FC, FormEvent } from "react";
+import { FC, FormEvent, useEffect, useState } from "react";
 import { useAppContext } from "../context";
+import styles from "./SearchForm.module.scss";
 import HighlightedSearchInput from "./SearchPanel/HighlightedSearchInput";
 import { useDelayedError } from "./SearchPanel/useDelayedError.hook";
-import styles from "./SearchForm.module.scss";
 import { SearchFormDivider, SearchFormPaper } from "./StyledComponents";
 
 /**
@@ -80,7 +80,6 @@ export const SearchForm: FC<SearchFormProps> = ({
     };
     loadSearchInput();
     // Run once on mount; intentionally don't depend on searchFilters to avoid loops.
-     
   }, []);
 
   const handleChange = async (value: string) => {
@@ -116,7 +115,7 @@ export const SearchForm: FC<SearchFormProps> = ({
   };
 
   return (
-    <Box className={styles['search-form-container']}>
+    <Box className={styles["search-form-container"]} data-tour="search-form">
       <SearchFormPaper onSubmit={handleSubmit}>
         <HighlightedSearchInput
           value={query}
@@ -130,9 +129,10 @@ export const SearchForm: FC<SearchFormProps> = ({
         />
 
         <IconButton
-          className={styles['search-form-icon-button']}
+          className={styles["search-form-icon-button"]}
           type="submit"
           aria-label="search"
+          data-tour="search-submit"
           disabled={!query.trim() || Boolean(searchError)}
         >
           <SearchIcon />
@@ -140,10 +140,11 @@ export const SearchForm: FC<SearchFormProps> = ({
 
         <SearchFormDivider />
         <IconButton
-          className={styles['search-form-icon-button']}
+          className={styles["search-form-icon-button"]}
           type="button"
           //color="primary"
           aria-label="advanced options"
+          data-tour="advanced-search"
           onClick={handleDrawerToggle}
         >
           <ScienceIcon />
@@ -151,7 +152,7 @@ export const SearchForm: FC<SearchFormProps> = ({
       </SearchFormPaper>
 
       {hintMessage && (
-        <div role="alert" className={styles['search-error-hint']}>
+        <div role="alert" className={styles["search-error-hint"]}>
           {hintMessage}
         </div>
       )}

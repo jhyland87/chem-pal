@@ -8,6 +8,7 @@ import { SupplierCache } from "@/utils/SupplierCache";
 import { clearSearchResults } from "@/utils/idbCache";
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import BarChartIcon from "@mui/icons-material/BarChart";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import SpeedDial from "@mui/material/SpeedDial";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
 import SpeedDialIcon from "@mui/material/SpeedDialIcon";
@@ -93,6 +94,16 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
   const handleAboutOpen = () => setAboutOpen(true);
 
   /**
+   * Replays the first-run guided tour from the current context.
+   * @param event - The click event
+   * @source
+   */
+  const handleTakeTour = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    appContext.startTour?.();
+  };
+
+  /**
    * Handles navigating to the stats panel. No-op in production builds, where
    * the Stats panel is not bundled.
    * @source
@@ -112,6 +123,7 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
     { icon: <ClearIcon />, name: "Clear Results", onClick: handleClearResults },
     { icon: <AutoDeleteIcon />, name: "Clear Cache", onClick: handleClearCache },
     { icon: <ContrastIcon />, name: "Toggle Theme", onClick: handleToggleTheme },
+    { icon: <HelpOutlineIcon />, name: "Take the tour", onClick: handleTakeTour },
     ...(IS_DEV_BUILD ? [{ icon: <BarChartIcon />, name: "Stats", onClick: handleStatsOpen }] : []),
     { icon: <InfoOutlineIcon />, name: "About", onClick: handleAboutOpen },
   ];
@@ -127,7 +139,7 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
         sx={{ position: "fixed", bottom: 6, right: 0 }}
         icon={
           <HelpTooltip text="Bring your cursor to the bottom right corner of the screen to open the menu">
-            <SpeedDialIcon />
+            <SpeedDialIcon data-tour="speed-dial-menu" />
           </HelpTooltip>
         }
       >

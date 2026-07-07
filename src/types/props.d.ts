@@ -157,6 +157,8 @@ declare global {
     bookmarksFolderId?: string | null;
     /** Function to store the bookmarks folder ID */
     setBookmarksFolderId: (id: string | null) => void;
+    /** Starts (or replays) the first-run guided tour */
+    startTour?: () => void;
   }
 
   /**
