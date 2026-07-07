@@ -267,6 +267,60 @@ declare global {
   }
 
   /**
+   * A single observed price for a product/variant at a point in time. Values
+   * are stored in standardized USD so they stay comparable across time and can
+   * be converted to the user's currency at display time.
+   */
+  interface PricePoint {
+    /** Epoch ms timestamp of when this price was observed. */
+    t: number;
+    /** The observed price in USD, rounded to 2 decimals. */
+    usd: number;
+  }
+
+  /**
+   * One price-history series for a product or one of its variants. Each row in
+   * the `priceHistory` IndexedDB store holds the full time-series for a single
+   * identity; a new {@link PricePoint} is appended only when the USD price
+   * differs from the last recorded value (see `recordProductPrices`).
+   *
+   * @example
+   * ```typescript
+   * const entry: PriceHistoryEntry = {
+   *   id: "3f9c2a…",
+   *   productKey: "3f9c2a…",
+   *   supplier: "Loudwolf",
+   *   title: "Acetone 500ml",
+   *   permalink: "https://loudwolf.com/…",
+   *   points: [{ t: 1713301200000, usd: 19.99 }, { t: 1713387600000, usd: 21.5 }],
+   *   updatedAt: 1713387600000,
+   * };
+   * ```
+   */
+  interface PriceHistoryEntry {
+    /** Series id: `${productKey}` for the base product, `${productKey}::${variantKey}` for a variant. */
+    id: string;
+    /** The product's stable identity key (shared by the base row and every variant row). */
+    productKey: string;
+    /** Variant discriminator used in the series id (the variant's own id when it
+     * has one, else title/size); absent on the base product row. */
+    variantKey?: string;
+    /** The variant's own supplier id, when it is genuinely per-variant (distinct
+     * from the parent identity). Lets a variant be looked up by its exact id. */
+    variantId?: string;
+    /** Supplier display name, kept for showing history without a live product. */
+    supplier: string;
+    /** Product/variant title for display. */
+    title: string;
+    /** Human-facing link back to the product, when known. */
+    permalink?: string;
+    /** Observed prices, ascending by time; appended on each USD-price change. */
+    points: PricePoint[];
+    /** Epoch ms timestamp of the last write to this series. */
+    updatedAt: number;
+  }
+
+  /**
    * Represents a faceted search option with text values.
    * Used for filtering and categorizing search results.
    *

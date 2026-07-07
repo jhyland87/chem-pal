@@ -1,7 +1,7 @@
 import react from "@vitejs/plugin-react";
 import { readFileSync } from "node:fs";
 import path from "path";
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig, normalizePath, type Plugin } from "vite";
 import graphqlLoader from "vite-plugin-graphql-loader";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 import { buildManifest } from "./tools/buildManifest.js";
@@ -45,10 +45,15 @@ export default ({ mode }: { mode: string }) => {
 
   if (mode !== "production") {
     staticCopyTargets.push({
-      src: "src/__mocks__/mockServiceWorker.js",
+      src: normalizePath(path.resolve(__dirname, "./src/__mocks__/mockServiceWorker.js")),
       dest: "public",
     });
   }
+  // Add the _locales folder to the build
+  staticCopyTargets.push({
+    src: normalizePath(path.resolve(__dirname, "./src/_locales")),
+    dest: "./",
+  });
 
   const isAggregate = mode === "aggregate";
   const isProd = mode === "production";

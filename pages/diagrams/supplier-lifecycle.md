@@ -51,6 +51,26 @@ flowchart TD
     style J fill:#95a5a6,color:#fff
     style Q fill:#e67e22,color:#fff
     style TO fill:#e74c3c,color:#fff
+
+    %% ── Descriptor notes: plain-English descriptions pinned next to key nodes ──
+    classDef descriptor fill:#FFF8E1,stroke:#FBC02D,stroke-width:1.5px,color:#5D4037,stroke-dasharray:5 4,font-style:italic
+    D_A("The factory calls this to stream one supplier's products")
+    D_C("Checks the query cache first — a repeat search can skip the network")
+    D_F("Ranks results and keeps only the ones that match the query well")
+    D_X("Products the user chose to ignore are removed here")
+    D_K("Each product's details are fetched in parallel, capped per supplier")
+    D_M("Reuse a product's details if we already fetched them in another search")
+    D_TO("If a supplier runs too long, stop and return whatever's ready")
+    D_A ~~~ A
+    D_C ~~~ C
+    D_F ~~~ F
+    D_X ~~~ X
+    D_K ~~~ K
+    D_M ~~~ M
+    D_TO ~~~ TO
+    class D_A,D_C,D_F,D_X,D_K,D_M,D_TO descriptor
+    %% Hide the connector lines for the descriptor notes (the last 7 links).
+    linkStyle 22,23,24,25,26,27,28 stroke-width:0px,stroke:transparent
 ```
 
 ## Class Hierarchy

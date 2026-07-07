@@ -60,6 +60,25 @@ declare global {
     cacheTtlMinutes?: number;
 
     /**
+     * Master switch for price-history tracking. When enabled (the default), each
+     * search records every product's and variant's standardized USD price into the
+     * `priceHistory` IndexedDB store, appending a point only when the price changes.
+     * Lets users see whether a product got cheaper or more expensive since they last
+     * checked. Set to `false` to stop recording entirely. Independent of `caching`.
+     * @example true
+     */
+    trackPriceHistory?: boolean;
+
+    /**
+     * Maximum number of price points retained per product/variant series. When a
+     * series exceeds this, the oldest points are dropped so only the newest N remain.
+     * Set to `0` (the default) for no limit. Only applies while `trackPriceHistory`
+     * is enabled.
+     * @example 30
+     */
+    priceHistoryMaxPoints?: number;
+
+    /**
      * HTTP status codes that, when hit while fetching a product's detail/enrichment data,
      * prevent that product's data from being cached — so a later search retries it instead of
      * serving the incomplete cached entry. The product is still listed either way. Defaults to

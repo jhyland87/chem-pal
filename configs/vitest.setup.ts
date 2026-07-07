@@ -1,6 +1,9 @@
 import "fake-indexeddb/auto";
 import "@testing-library/jest-dom";
 import { vi } from "vitest";
+import enMessages from "../src/_locales/en/messages.json";
+
+const i18nMessages = enMessages as Record<string, { message?: string }>;
 
 // Mock specific MUI CSS file
 vi.mock("@mui/x-data-grid/esm/index.css", () => ({}));
@@ -32,3 +35,18 @@ const fetchMock = vi.fn(() => {
   );
 });
 global.fetch = fetchMock;
+
+// Minimal chrome.i18n stub. `src/helpers/i18n.ts` binds `chrome.i18n.getMessage`
+// at module-eval time, so it must exist before any component that imports it is
+// loaded (jsdom has no `chrome`). getMessage resolves the real English string
+// from `_locales/en/messages.json` (falling back to the key), so components
+// render their true copy under test. Individual tests may still install richer
+// chrome mocks (chromeStorageMock, chromeActionMock) on top of this.
+const globalWithChrome = globalThis as unknown as { chrome?: typeof chrome };
+globalWithChrome.chrome = {
+  ...(globalWithChrome.chrome ?? {}),
+  i18n: {
+    getMessage: (key: string) => i18nMessages[key]?.message ?? key,
+    getUILanguage: () => "en-US",
+  },
+} as unknown as typeof chrome;

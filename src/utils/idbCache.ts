@@ -1,3 +1,4 @@
+import { IDB_STORE } from "@/constants/common";
 import type { ExcludedProductsMap } from "@/helpers/excludedProducts";
 import { Logger } from "@/utils/Logger";
 import { type DBSchema, type IDBPDatabase, openDB } from "idb";
@@ -18,23 +19,23 @@ export const IDB_SUPPLIER_STATS_UPDATED = "idb:supplier-stats-updated";
 const logger = new Logger("idbCache");
 
 const DB_NAME = "chempal";
-const DB_VERSION = 3;
+const DB_VERSION = 5;
 const MAX_SUPPLIER_CACHE_ENTRIES = 100;
 const MAX_HISTORY_ENTRIES = 100;
 
 interface ChemPalDBSchema extends DBSchema {
-  searchResults: {
+  search_results: {
     key: string;
     value: {
       id: string;
       data: Product[];
     };
   };
-  searchHistory: {
+  search_history: {
     key: number;
     value: SearchHistoryEntry;
   };
-  supplierQueryCache: {
+  supplier_query_cache: {
     key: string;
     value: {
       cacheKey: string;
@@ -53,7 +54,7 @@ interface ChemPalDBSchema extends DBSchema {
       cachedAt: number;
     };
   };
-  supplierProductDataCache: {
+  supplier_product_data_cache: {
     key: string;
     value: {
       cacheKey: string;
@@ -64,18 +65,25 @@ interface ChemPalDBSchema extends DBSchema {
       timestamp: number;
     };
   };
-  supplierStats: {
+  supplier_stats: {
     key: string;
     value: {
       dateKey: string;
       suppliers: Record<string, SupplierDayStats>;
     };
   };
-  excludedProducts: {
+  excluded_products: {
     key: string;
     value: {
       id: string;
       map: ExcludedProductsMap;
+    };
+  };
+  price_history: {
+    key: string;
+    value: PriceHistoryEntry;
+    indexes: {
+      productKey: string;
     };
   };
 }
@@ -90,30 +98,35 @@ function getDB(): Promise<IDBPDatabase<ChemPalDBSchema>> {
   if (!dbPromise) {
     dbPromise = openDB<ChemPalDBSchema>(DB_NAME, DB_VERSION, {
       upgrade(db) {
-        if (!db.objectStoreNames.contains("searchResults")) {
-          db.createObjectStore("searchResults", { keyPath: "id" });
+        if (!db.objectStoreNames.contains(IDB_STORE.SEARCH_RESULTS)) {
+          db.createObjectStore(IDB_STORE.SEARCH_RESULTS, { keyPath: "id" });
         }
 
-        if (!db.objectStoreNames.contains("searchHistory")) {
-          db.createObjectStore("searchHistory", { keyPath: "timestamp" });
+        if (!db.objectStoreNames.contains(IDB_STORE.SEARCH_HISTORY)) {
+          db.createObjectStore(IDB_STORE.SEARCH_HISTORY, { keyPath: "timestamp" });
         }
 
-        if (!db.objectStoreNames.contains("supplierQueryCache")) {
-          const sqc = db.createObjectStore("supplierQueryCache", { keyPath: "cacheKey" });
+        if (!db.objectStoreNames.contains(IDB_STORE.SUPPLIER_QUERY_CACHE)) {
+          const sqc = db.createObjectStore(IDB_STORE.SUPPLIER_QUERY_CACHE, { keyPath: "cacheKey" });
           sqc.createIndex("cachedAt", "__cacheMetadata.cachedAt");
         }
 
-        if (!db.objectStoreNames.contains("supplierProductDataCache")) {
-          const spdc = db.createObjectStore("supplierProductDataCache", { keyPath: "cacheKey" });
+        if (!db.objectStoreNames.contains(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE)) {
+          const spdc = db.createObjectStore(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE, { keyPath: "cacheKey" });
           spdc.createIndex("timestamp", "timestamp");
         }
 
-        if (!db.objectStoreNames.contains("supplierStats")) {
-          db.createObjectStore("supplierStats", { keyPath: "dateKey" });
+        if (!db.objectStoreNames.contains(IDB_STORE.SUPPLIER_STATS)) {
+          db.createObjectStore(IDB_STORE.SUPPLIER_STATS, { keyPath: "dateKey" });
         }
 
-        if (!db.objectStoreNames.contains("excludedProducts")) {
-          db.createObjectStore("excludedProducts", { keyPath: "id" });
+        if (!db.objectStoreNames.contains(IDB_STORE.EXCLUDED_PRODUCTS)) {
+          db.createObjectStore(IDB_STORE.EXCLUDED_PRODUCTS, { keyPath: "id" });
+        }
+
+        if (!db.objectStoreNames.contains(IDB_STORE.PRICE_HISTORY)) {
+          const ph = db.createObjectStore(IDB_STORE.PRICE_HISTORY, { keyPath: "id" });
+          ph.createIndex("productKey", "productKey");
         }
       },
     });
@@ -136,7 +149,7 @@ function emitSupplierStatsUpdated(): void {
 export async function getSearchResults(): Promise<Product[]> {
   try {
     const db = await getDB();
-    const record = await db.get("searchResults", "current");
+    const record = await db.get(IDB_STORE.SEARCH_RESULTS, "current");
     return record?.data ?? [];
   } catch (error) {
     logger.error("Failed to get search results from IndexedDB", { error });
@@ -207,7 +220,7 @@ export async function setSearchResults(results: Product[]): Promise<void> {
         total: results.length,
       });
     }
-    await db.put("searchResults", { id: "current", data: results });
+    await db.put(IDB_STORE.SEARCH_RESULTS, { id: "current", data: results });
     if (results.length === 0) {
       emitSearchResultsCleared();
     }
@@ -236,7 +249,7 @@ export async function clearSearchResults(options: { notify?: boolean } = {}): Pr
   const { notify = true } = options;
   try {
     const db = await getDB();
-    await db.delete("searchResults", "current");
+    await db.delete(IDB_STORE.SEARCH_RESULTS, "current");
     if (notify) {
       emitSearchResultsCleared();
     }
@@ -252,7 +265,7 @@ export async function clearSearchResults(options: { notify?: boolean } = {}): Pr
 export async function getSearchHistory(): Promise<SearchHistoryEntry[]> {
   try {
     const db = await getDB();
-    const all = await db.getAll("searchHistory");
+    const all = await db.getAll(IDB_STORE.SEARCH_HISTORY);
     // Return sorted newest-first
     return all.sort((a, b) => b.timestamp - a.timestamp);
   } catch (error) {
@@ -264,8 +277,8 @@ export async function getSearchHistory(): Promise<SearchHistoryEntry[]> {
 export async function addSearchHistoryEntry(entry: SearchHistoryEntry): Promise<void> {
   try {
     const db = await getDB();
-    const tx = db.transaction("searchHistory", "readwrite");
-    const store = tx.objectStore("searchHistory");
+    const tx = db.transaction(IDB_STORE.SEARCH_HISTORY, "readwrite");
+    const store = tx.objectStore(IDB_STORE.SEARCH_HISTORY);
 
     await store.put(entry);
 
@@ -294,8 +307,8 @@ export async function updateSearchHistoryResultCount(
 ): Promise<void> {
   try {
     const db = await getDB();
-    const tx = db.transaction("searchHistory", "readwrite");
-    const store = tx.objectStore("searchHistory");
+    const tx = db.transaction(IDB_STORE.SEARCH_HISTORY, "readwrite");
+    const store = tx.objectStore(IDB_STORE.SEARCH_HISTORY);
     const entry = await store.get(timestamp);
     if (entry) {
       entry.resultCount = count;
@@ -310,7 +323,7 @@ export async function updateSearchHistoryResultCount(
 export async function clearSearchHistory(): Promise<void> {
   try {
     const db = await getDB();
-    await db.clear("searchHistory");
+    await db.clear(IDB_STORE.SEARCH_HISTORY);
   } catch (error) {
     logger.error("Failed to clear search history from IndexedDB", { error });
   }
@@ -325,7 +338,7 @@ export async function getSupplierQueryCacheEntry(
 ): Promise<CachedData<unknown> | undefined> {
   try {
     const db = await getDB();
-    const record = await db.get("supplierQueryCache", cacheKey);
+    const record = await db.get(IDB_STORE.SUPPLIER_QUERY_CACHE, cacheKey);
     if (!record) return undefined;
     return {
       data: record.data,
@@ -343,8 +356,8 @@ export async function putSupplierQueryCacheEntry(
 ): Promise<void> {
   try {
     const db = await getDB();
-    const tx = db.transaction("supplierQueryCache", "readwrite");
-    const store = tx.objectStore("supplierQueryCache");
+    const tx = db.transaction(IDB_STORE.SUPPLIER_QUERY_CACHE, "readwrite");
+    const store = tx.objectStore(IDB_STORE.SUPPLIER_QUERY_CACHE);
 
     // Evict oldest if at capacity
     const count = await store.count();
@@ -377,16 +390,53 @@ export async function putSupplierQueryCacheEntry(
 export async function deleteSupplierQueryCacheEntry(cacheKey: string): Promise<void> {
   try {
     const db = await getDB();
-    await db.delete("supplierQueryCache", cacheKey);
+    await db.delete(IDB_STORE.SUPPLIER_QUERY_CACHE, cacheKey);
   } catch (error) {
     logger.error("Failed to delete supplier query cache entry from IndexedDB", { error });
+  }
+}
+
+/**
+ * Read every entry in the supplier **query** cache — the cached search-result
+ * sets keyed by query+supplier. Intended for manual inspection from the debug
+ * console; each record carries its `cacheKey`, the dumped `data`, and its
+ * `__cacheMetadata` (query, supplier, `cachedAt`, etc.). Returns `[]` on failure.
+ * @returns All stored query-cache records, or `[]` when the read fails.
+ * @example
+ * ```ts
+ * const entries = await getAllSupplierQueryCacheEntries();
+ * entries[0].__cacheMetadata.query; // => "sodium chloride"
+ * ```
+ * @source
+ */
+export async function getAllSupplierQueryCacheEntries(): Promise<
+  Array<{
+    cacheKey: string;
+    data: unknown[];
+    __cacheMetadata: {
+      cachedAt: number;
+      version: number;
+      query: string;
+      supplier: string;
+      supplierModule: string;
+      resultCount: number;
+      limit: number;
+    };
+  }>
+> {
+  try {
+    const db = await getDB();
+    return await db.getAll(IDB_STORE.SUPPLIER_QUERY_CACHE);
+  } catch (error) {
+    logger.error("Failed to get all supplier query cache entries from IndexedDB", { error });
+    return [];
   }
 }
 
 export async function clearSupplierQueryCache(): Promise<void> {
   try {
     const db = await getDB();
-    await db.clear("supplierQueryCache");
+    await db.clear(IDB_STORE.SUPPLIER_QUERY_CACHE);
   } catch (error) {
     logger.error("Failed to clear supplier query cache from IndexedDB", { error });
   }
@@ -401,7 +451,7 @@ export async function getSupplierProductDataCacheEntry(
 ): Promise<CachedProductEntry | undefined> {
   try {
     const db = await getDB();
-    const record = await db.get("supplierProductDataCache", cacheKey);
+    const record = await db.get(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE, cacheKey);
     if (!record) return undefined;
     return {
       data: record.data,
@@ -419,8 +469,8 @@ export async function putSupplierProductDataCacheEntry(
 ): Promise<void> {
   try {
     const db = await getDB();
-    const tx = db.transaction("supplierProductDataCache", "readwrite");
-    const store = tx.objectStore("supplierProductDataCache");
+    const tx = db.transaction(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE, "readwrite");
+    const store = tx.objectStore(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE);
 
     // Evict oldest if at capacity
     const count = await store.count();
@@ -459,16 +509,41 @@ export async function putSupplierProductDataCacheEntry(
 export async function deleteSupplierProductDataCacheEntry(cacheKey: string): Promise<void> {
   try {
     const db = await getDB();
-    await db.delete("supplierProductDataCache", cacheKey);
+    await db.delete(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE, cacheKey);
   } catch (error) {
     logger.error("Failed to delete supplier product data cache entry from IndexedDB", { error });
+  }
+}
+
+/**
+ * Read every entry in the supplier **product-detail** cache — the enriched
+ * per-product data keyed by product identity. Intended for manual inspection
+ * from the debug console; each record carries its `cacheKey`, the cached `data`,
+ * and its last-access `timestamp`. Returns `[]` on failure.
+ * @returns All stored product-detail records, or `[]` when the read fails.
+ * @example
+ * ```ts
+ * const entries = await getAllSupplierProductDataCacheEntries();
+ * entries.length; // => number of cached product-detail rows
+ * ```
+ * @source
+ */
+export async function getAllSupplierProductDataCacheEntries(): Promise<
+  Array<{ cacheKey: string; data: Record<string, unknown>; timestamp: number }>
+> {
+  try {
+    const db = await getDB();
+    return await db.getAll(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE);
+  } catch (error) {
+    logger.error("Failed to get all supplier product data cache entries from IndexedDB", { error });
+    return [];
   }
 }
 
 export async function clearSupplierProductDataCache(): Promise<void> {
   try {
     const db = await getDB();
-    await db.clear("supplierProductDataCache");
+    await db.clear(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE);
   } catch (error) {
     logger.error("Failed to clear supplier product data cache from IndexedDB", { error });
   }
@@ -483,7 +558,7 @@ export async function getSupplierStatsEntry(
 ): Promise<Record<string, SupplierDayStats> | undefined> {
   try {
     const db = await getDB();
-    const record = await db.get("supplierStats", dateKey);
+    const record = await db.get(IDB_STORE.SUPPLIER_STATS, dateKey);
     return record?.suppliers;
   } catch (error) {
     logger.error("Failed to get supplier stats entry from IndexedDB", { error });
@@ -497,7 +572,7 @@ export async function putSupplierStatsEntry(
 ): Promise<void> {
   try {
     const db = await getDB();
-    await db.put("supplierStats", { dateKey, suppliers });
+    await db.put(IDB_STORE.SUPPLIER_STATS, { dateKey, suppliers });
     emitSupplierStatsUpdated();
   } catch (error) {
     logger.error("Failed to put supplier stats entry in IndexedDB", { error });
@@ -507,7 +582,7 @@ export async function putSupplierStatsEntry(
 export async function getAllSupplierStats(): Promise<SupplierStatsData> {
   try {
     const db = await getDB();
-    const all = await db.getAll("supplierStats");
+    const all = await db.getAll(IDB_STORE.SUPPLIER_STATS);
     const result: SupplierStatsData = {};
     for (const record of all) {
       result[record.dateKey] = record.suppliers;
@@ -522,7 +597,7 @@ export async function getAllSupplierStats(): Promise<SupplierStatsData> {
 export async function deleteSupplierStatsEntries(dateKeys: string[]): Promise<void> {
   try {
     const db = await getDB();
-    const tx = db.transaction("supplierStats", "readwrite");
+    const tx = db.transaction(IDB_STORE.SUPPLIER_STATS, "readwrite");
     for (const dateKey of dateKeys) {
       tx.store.delete(dateKey);
     }
@@ -535,7 +610,7 @@ export async function deleteSupplierStatsEntries(dateKeys: string[]): Promise<vo
 export async function clearSupplierStats(): Promise<void> {
   try {
     const db = await getDB();
-    await db.clear("supplierStats");
+    await db.clear(IDB_STORE.SUPPLIER_STATS);
   } catch (error) {
     logger.error("Failed to clear supplier stats from IndexedDB", { error });
   }
@@ -566,7 +641,7 @@ export async function clearSupplierStats(): Promise<void> {
 export async function getExcludedProducts(): Promise<ExcludedProductsMap> {
   try {
     const db = await getDB();
-    const record = await db.get("excludedProducts", "current");
+    const record = await db.get(IDB_STORE.EXCLUDED_PRODUCTS, "current");
     return record?.map ?? {};
   } catch (error) {
     logger.error("Failed to get excluded products from IndexedDB", { error });
@@ -592,7 +667,7 @@ export async function getExcludedProducts(): Promise<ExcludedProductsMap> {
 export async function putExcludedProducts(map: ExcludedProductsMap): Promise<void> {
   try {
     const db = await getDB();
-    await db.put("excludedProducts", { id: "current", map });
+    await db.put(IDB_STORE.EXCLUDED_PRODUCTS, { id: "current", map });
   } catch (error) {
     logger.error("Failed to put excluded products in IndexedDB", { error });
   }
@@ -613,9 +688,110 @@ export async function putExcludedProducts(map: ExcludedProductsMap): Promise<voi
 export async function clearExcludedProducts(): Promise<void> {
   try {
     const db = await getDB();
-    await db.delete("excludedProducts", "current");
+    await db.delete(IDB_STORE.EXCLUDED_PRODUCTS, "current");
   } catch (error) {
     logger.error("Failed to clear excluded products from IndexedDB", { error });
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              Price History                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Read a single price-history series by its id. The id is the product's
+ * identity key for the base row, or `${productKey}::${variantKey}` for a
+ * variant row. Returns `undefined` when no series exists yet (the first time a
+ * product/variant is seen) or when the read fails.
+ * @param id - The series id.
+ * @returns The stored {@link PriceHistoryEntry}, or `undefined` when absent.
+ * @example
+ * ```ts
+ * const series = await getPriceSeries("3f9c2a…");
+ * const last = series?.points.at(-1)?.usd; // most recent USD price
+ * ```
+ * @source
+ */
+export async function getPriceSeries(id: string): Promise<PriceHistoryEntry | undefined> {
+  try {
+    const db = await getDB();
+    return await db.get(IDB_STORE.PRICE_HISTORY, id);
+  } catch (error) {
+    logger.error("Failed to get price series from IndexedDB", { error });
+    return undefined;
+  }
+}
+
+/**
+ * Write a price-history series, overwriting any existing row with the same id.
+ * Callers read via {@link getPriceSeries}, append a point, then pass the whole
+ * entry back — the store holds one row per series (keyed by `id`) so each call
+ * is a complete replacement.
+ * @param entry - The series to persist.
+ * @returns Resolves once the write completes; errors are logged, not thrown.
+ * @example
+ * ```ts
+ * await putPriceSeries({
+ *   id: "3f9c2a…", productKey: "3f9c2a…", supplier: "Loudwolf",
+ *   title: "Acetone 500ml", points: [{ t: Date.now(), usd: 19.99 }],
+ *   updatedAt: Date.now(),
+ * });
+ * ```
+ * @source
+ */
+export async function putPriceSeries(entry: PriceHistoryEntry): Promise<void> {
+  try {
+    const db = await getDB();
+    await db.put(IDB_STORE.PRICE_HISTORY, entry);
+  } catch (error) {
+    logger.error("Failed to put price series in IndexedDB", { error });
+  }
+}
+
+/**
+ * Read every price-history series belonging to a product — its base row plus
+ * one row per tracked variant — via the `productKey` index. Used by the detail
+ * panel to render a product's full price history in one query. Returns `[]`
+ * when the product has no recorded history or the read fails.
+ * @param productKey - The product's identity key (shared by base and variants).
+ * @returns All matching series (order unspecified), or `[]` when none.
+ * @example
+ * ```ts
+ * const series = await getPriceSeriesByProduct("3f9c2a…");
+ * // => [ base series, variant series, … ]
+ * ```
+ * @source
+ */
+export async function getPriceSeriesByProduct(
+  productKey: string,
+): Promise<PriceHistoryEntry[]> {
+  try {
+    const db = await getDB();
+    return await db.getAllFromIndex(IDB_STORE.PRICE_HISTORY, "productKey", productKey);
+  } catch (error) {
+    logger.error("Failed to get price series by product from IndexedDB", { error });
+    return [];
+  }
+}
+
+/**
+ * Delete all price-history series. Exposed via the "Clear price history" button
+ * in the settings panel. Deliberately kept out of {@link clearAllCaches} so a
+ * routine cache clear never destroys the user's accumulated price history.
+ * @returns Resolves once the store is cleared; errors are logged, not thrown.
+ * @example
+ * ```ts
+ * await clearPriceHistory();
+ * const series = await getPriceSeriesByProduct("3f9c2a…"); // => []
+ * ```
+ * @source
+ */
+export async function clearPriceHistory(): Promise<void> {
+  try {
+    const db = await getDB();
+    await db.clear(IDB_STORE.PRICE_HISTORY);
+  } catch (error) {
+    logger.error("Failed to clear price history from IndexedDB", { error });
   }
 }
 
@@ -628,22 +804,22 @@ export async function clearAllCaches(): Promise<void> {
     const db = await getDB();
     const tx = db.transaction(
       [
-        "searchResults",
-        "searchHistory",
-        "supplierQueryCache",
-        "supplierProductDataCache",
-        "supplierStats",
-        "excludedProducts",
+        IDB_STORE.SEARCH_RESULTS,
+        IDB_STORE.SEARCH_HISTORY,
+        IDB_STORE.SUPPLIER_QUERY_CACHE,
+        IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE,
+        IDB_STORE.SUPPLIER_STATS,
+        IDB_STORE.EXCLUDED_PRODUCTS,
       ],
       "readwrite",
     );
     await Promise.all([
-      tx.objectStore("searchResults").clear(),
-      tx.objectStore("searchHistory").clear(),
-      tx.objectStore("supplierQueryCache").clear(),
-      tx.objectStore("supplierProductDataCache").clear(),
-      tx.objectStore("supplierStats").clear(),
-      tx.objectStore("excludedProducts").clear(),
+      tx.objectStore(IDB_STORE.SEARCH_RESULTS).clear(),
+      tx.objectStore(IDB_STORE.SEARCH_HISTORY).clear(),
+      tx.objectStore(IDB_STORE.SUPPLIER_QUERY_CACHE).clear(),
+      tx.objectStore(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE).clear(),
+      tx.objectStore(IDB_STORE.SUPPLIER_STATS).clear(),
+      tx.objectStore(IDB_STORE.EXCLUDED_PRODUCTS).clear(),
       tx.done,
     ]);
     emitSearchResultsCleared();

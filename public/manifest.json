@@ -10,6 +10,7 @@
   "side_panel": {
     "default_path": "index.html"
   },
+  "default_locale": "en",
   "permissions": ["sidePanel", "tabs", "storage", "bookmarks", "cookies", "contextMenus"],
   "background": {
     "service_worker": "service-worker.js"

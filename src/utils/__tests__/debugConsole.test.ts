@@ -48,6 +48,17 @@ describe("exposeDebugApi", () => {
     expect(window.chempal?.Cactus).toBeDefined();
   });
 
+  it("exposes the IndexedDB inspection helpers", () => {
+    exposeDebugApi();
+    expect(typeof window.chempal?.getProductById).toBe("function");
+    expect(typeof window.chempal?.getProductPriceHistory).toBe("function");
+    expect(typeof window.chempal?.getProductCache).toBe("function");
+    expect(typeof window.chempal?.getQueryCache).toBe("function");
+    expect(typeof window.chempal?.getSearchResults).toBe("function");
+    expect(typeof window.chempal?.getSearchHistory).toBe("function");
+    expect(typeof window.chempal?.getExcludedProducts).toBe("function");
+  });
+
   it("logs a readiness banner", () => {
     exposeDebugApi();
     expect(console.info).toHaveBeenCalledWith(

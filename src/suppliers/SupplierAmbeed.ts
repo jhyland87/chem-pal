@@ -331,18 +331,24 @@ export class SupplierAmbeed
   };
 
   /**
-   * Derives the unique product key from an Ambeed product item: its `p_id` (the
-   * same value passed to `.setID`), stable across the query→detail transition.
+   * Derives the unique product key from an Ambeed product item: its `p_am`, the
+   * per-listing article id (the `?am=` in the product URL and the `pr_am` on every
+   * price row). NOT `p_id` — that identifies the *compound* (≈ CAS), which Ambeed
+   * lists under multiple brands, each a distinct `p_am`/URL. Keying on `p_id`
+   * collapses those separate listings onto one key, corrupting the per-product
+   * detail cache and tripping the duplicate-results detector. Size variants remain
+   * distinguished by their own `pr_id` (`variant.id`). Falls back to `p_id` only
+   * when `p_am` is absent.
    * @param data - The raw Ambeed product list item
-   * @returns The product's p_id
+   * @returns The product's `p_am` (per-listing article id)
    * @example
    * ```typescript
-   * this.getUniqueProductKey(product); // "3255116"
+   * this.getUniqueProductKey(product); // "A112492"
    * ```
    * @source
    */
   protected getUniqueProductKey(data: AmbeedProductListResponseResultItem): string {
-    return String(data.p_id);
+    return String(data.p_am || data.p_id);
   }
 
   // /**
@@ -971,7 +977,7 @@ export class SupplierAmbeed
    * @source
    */
   protected titleSelector(data: AmbeedProductListResponseResultItem): string {
-    return data.p_proper_name3;
+    return (data.p_name_en?.trim() || data.p_proper_name3?.trim()) ?? "";
   }
 
   /**
@@ -1013,13 +1019,14 @@ export class SupplierAmbeed
     return mapDefined(data, (product) => {
       const productBuilder = new ProductBuilder(this.baseURL);
 
+      const productTitle = this.titleSelector(product);
       if (typeof product.priceList?.[0]?.pr_usd !== "string") {
-        this.logger.warn(`Ambeed product ${product.p_proper_name3} has no price`, product);
+        this.logger.warn(`Ambeed product ${productTitle} has no price`, product);
         return;
       }
 
       if (typeof product.priceList?.[0]?.pr_size !== "string") {
-        this.logger.warn(`Ambeed product ${product.p_proper_name3} has no size`, product);
+        this.logger.warn(`Ambeed product ${productTitle} has no size`, product);
         return;
       }
 
@@ -1032,7 +1039,7 @@ export class SupplierAmbeed
 
         if (!parsedPrice || !quantity) {
           this.logger.warn(
-            `Failed to parse Ambeed product price for ${product.p_proper_name3}`,
+            `Failed to parse Ambeed product price for ${productTitle}`,
             product,
             variant,
           );
@@ -1040,6 +1047,7 @@ export class SupplierAmbeed
         }
 
         productBuilder.addVariant({
+          title: variant.pr_size,
           price: parsedPrice.price,
           currencyCode: parsedPrice.currencyCode,
           currencySymbol: parsedPrice.currencySymbol,
@@ -1054,13 +1062,13 @@ export class SupplierAmbeed
       const mainVariant = productBuilder.getVariant(0);
 
       if (!mainVariant) {
-        this.logger.warn(`Ambeed product ${product.p_proper_name3} has no main variant`, product);
+        this.logger.warn(`Ambeed product ${productTitle} has no main variant`, product);
         return;
       }
 
       return productBuilder
         .setData(mainVariant as Partial<Product>)
-        .setBasicInfo(product.p_proper_name3, `/products/${product.s_url}`, this.supplierName)
+        .setBasicInfo(productTitle, `/products/${product.s_url}`, this.supplierName)
         .setID(product.p_id)
         .setCacheKey(this.getUniqueProductKey(product))
         .setSku(product.p_bd)

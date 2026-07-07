@@ -1,9 +1,38 @@
+import { i18n } from "@/helpers/i18n";
 import { BenzeneBlueIcon } from "@/icons";
 import Backdrop from "@mui/material/Backdrop";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import IconSpinner from "./IconSpinner";
 import styles from "./LoadingBackdrop.module.scss";
+
+/**
+ * Format the results/loading text based on the abort state and number of
+ * results accumulated thus far.
+ * @param props - The props for the loading backdrop.
+ * @returns The formatted results text.
+ */
+function formatResultsText(props: LoadingBackdropProps): string {
+  if (props.isAborting) {
+    return i18n("aborting_search");
+  }
+  if (!props.resultCount) {
+    return i18n("loading_search");
+  }
+  if (props.resultCount === 1) {
+    return i18n("found_result_single", [String(props.resultCount)]);
+  }
+  if (props.supplierResultsCount === 1) {
+    return i18n("found_results_one_supplier", [
+      String(props.resultCount),
+      String(props.supplierResultsCount),
+    ]);
+  }
+  return i18n("found_results_many_suppliers", [
+    String(props.resultCount),
+    String(props.supplierResultsCount),
+  ]);
+}
 
 /**
  * A full-screen loading overlay component with a spinning benzene molecule and stop button.
@@ -28,16 +57,6 @@ import styles from "./LoadingBackdrop.module.scss";
  * @source
  */
 export default function LoadingBackdrop(props: LoadingBackdropProps) {
-  const supplierCount = props.supplierResultsCount;
-  const supplierLabel = supplierCount === 1 ? "supplier" : "suppliers";
-  const supplierSuffix = supplierCount > 0 ? ` from ${supplierCount} ${supplierLabel}` : "";
-
-  const statusText = props.isAborting
-    ? "Aborting..."
-    : props.resultCount === 0
-      ? "Loading..."
-      : `Found ${props.resultCount} results${supplierSuffix}...`;
-
   return (
     <>
       <Backdrop open={props.open} id="loading-backdrop" role="status" aria-label="search loading">
@@ -47,13 +66,13 @@ export default function LoadingBackdrop(props: LoadingBackdropProps) {
               <BenzeneBlueIcon sx={{ width: 80, height: 80 }} />
             </IconSpinner>
           </Box>
-          <span className={styles["status-text"]}>{statusText}</span>
+          <span className={styles["status-text"]}>{formatResultsText(props)}</span>
           <Button
             className={styles["abort-button"]}
             onClick={props.onClick}
             disabled={props.isAborting}
           >
-            Cancel search
+            {i18n("cancel_search")}
           </Button>
         </Box>
       </Backdrop>

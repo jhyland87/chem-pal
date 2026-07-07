@@ -1,5 +1,6 @@
 import { useStatusBar } from "@/components/StatusBar";
 import { useAppContext } from "@/context";
+import { i18n } from "@/helpers/i18n";
 import { getProductIdentityKey } from "@/helpers/productIdentity";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
 import BlockIcon from "@/icons/BlockIcon";
@@ -212,7 +213,7 @@ export default function ContextMenu({
    * @source
    */
   const handleCreateBookmark = async () => {
-    const FOLDER_NAME = "ChemPal Favorites";
+    const FOLDER_NAME = i18n("chempal_favorites_folder_name");
 
     /**
      * Recursively searches the bookmark tree for a folder matching the given name.
@@ -277,14 +278,14 @@ export default function ContextMenu({
       const duplicate = children.find((node) => node.url === openUrl);
 
       if (duplicate) {
-        flashStatusText(`Bookmark already exists in ${FOLDER_NAME}`);
+        flashStatusText(i18n("bookmark_already_exists_in_folder", [FOLDER_NAME]));
       } else {
         await chrome.bookmarks.create({
           parentId: folderId,
           title: product.title,
           url: openUrl,
         });
-        flashStatusText(`Bookmark created at ${FOLDER_NAME}/${product.title}`);
+        flashStatusText(i18n("bookmark_created_at_folder", [FOLDER_NAME, product.title]));
       }
     } catch (error) {
       console.error("Failed to create bookmark:", { error, product });
@@ -302,8 +303,8 @@ export default function ContextMenu({
     if (navigator.share && openUrl) {
       try {
         await navigator.share({
-          title: product.title || "Chemical Product",
-          text: `Check out this chemical product: ${product.title}`,
+          title: product.title || i18n("chemical_product"),
+          text: i18n("check_out_chemical_product", [product.title]),
           url: openUrl,
         });
       } catch (error) {
@@ -365,7 +366,7 @@ export default function ContextMenu({
    */
   const handleRemoveFromCache = async () => {
     if (!product.cacheKey || !product.supplier) {
-      flashStatusText("This product can't be removed from the cache");
+      flashStatusText(i18n("this_product_cant_be_removed_from_the_cache"));
       onClose();
       return;
     }
@@ -373,7 +374,7 @@ export default function ContextMenu({
     try {
       const cacheKey = getProductIdentityKey(product.cacheKey, product.supplier);
       await deleteSupplierProductDataCacheEntry(cacheKey);
-      flashStatusText(`Removed ${product.title} from cache`);
+      flashStatusText(i18n("removed_product_from_cache", [product.title]));
     } catch (error) {
       console.error("Failed to remove product from cache:", { error, product });
     }
@@ -389,13 +390,13 @@ export default function ContextMenu({
   const handleCopyProductInfo = async () => {
     const productInfo = [
       product.title,
-      `Price: ${product.currencySymbol}${product.price}`,
-      `Supplier: ${product.supplier}`,
-      `URL: ${openUrl}`,
+      i18n("copy_product_info_price", [product.currencySymbol, product.price]),
+      i18n("copy_product_info_supplier", [product.supplier]),
+      i18n("copy_product_info_url", [openUrl]),
     ];
 
     if (product.description) {
-      productInfo.push(`Description: ${product.description}`);
+      productInfo.push(i18n("copy_product_info_description", [product.description]));
     }
 
     try {
@@ -422,7 +423,10 @@ export default function ContextMenu({
           <ListItemIcon>
             <CopyIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText className={styles["context-menu-option-text"]} primary="Copy Title" />
+          <ListItemText
+            className={styles["context-menu-option-text"]}
+            primary={i18n("context_menu_copy_title")}
+          />
         </MenuItem>
 
         <MenuItem
@@ -433,7 +437,10 @@ export default function ContextMenu({
           <ListItemIcon>
             <HttpIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText className={styles["context-menu-option-text"]} primary="Copy URL" />
+          <ListItemText
+            className={styles["context-menu-option-text"]}
+            primary={i18n("context_menu_copy_url")}
+          />
         </MenuItem>
 
         <MenuItem className={styles["context-menu-item"]} onClick={handleCopyProductInfo}>
@@ -442,7 +449,7 @@ export default function ContextMenu({
           </ListItemIcon>
           <ListItemText
             className={styles["context-menu-option-text"]}
-            primary="Copy Product Info"
+            primary={i18n("context_menu_copy_product_info")}
           />
         </MenuItem>
 
@@ -452,7 +459,10 @@ export default function ContextMenu({
           <ListItemIcon>
             <BlockIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText className={styles["context-menu-option-text"]} primary="Ignore Product" />
+          <ListItemText
+            className={styles["context-menu-option-text"]}
+            primary={i18n("context_menu_ignore_product")}
+          />
         </MenuItem>
 
         <MenuItem className={styles["context-menu-item"]} onClick={handleRemoveFromCache}>
@@ -461,7 +471,7 @@ export default function ContextMenu({
           </ListItemIcon>
           <ListItemText
             className={styles["context-menu-option-text"]}
-            primary="Remove Product from Cache"
+            primary={i18n("context_menu_remove_product_from_cache")}
           />
         </MenuItem>
 
@@ -475,14 +485,17 @@ export default function ContextMenu({
           <ListItemIcon>
             <ArrowRightIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText className={styles["context-menu-option-text"]} primary="Open in New Tab" />
+          <ListItemText
+            className={styles["context-menu-option-text"]}
+            primary={i18n("context_menu_open_in_new_tab")}
+          />
         </MenuItem>
 
         {/*  <MenuItem className={styles["context-menu-item"]} onClick={handleViewDetails}>
           <ListItemIcon>
             <InfoOutlineIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText className={styles["context-menu-option-text"]} primary="View Details" />
+          <ListItemText className={styles["context-menu-option-text"]} primary={i18n("context_menu_view_details")} />
         </MenuItem> */}
 
         <Divider />
@@ -491,21 +504,27 @@ export default function ContextMenu({
           <ListItemIcon>
             <BookmarkIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText className={styles["context-menu-option-text"]} primary="Create Bookmark" />
+          <ListItemText
+            className={styles["context-menu-option-text"]}
+            primary={i18n("context_menu_create_bookmark")}
+          />
         </MenuItem>
 
         {/* <MenuItem className={styles["context-menu-item"]} onClick={handleQuickSearch}>
           <ListItemIcon>
             <SearchIcon fontSize="small" />
           </ListItemIcon>
-         <ListItemText className={styles["context-menu-option-text"]} primary="Search Similar" />
+         <ListItemText className={styles["context-menu-option-text"]} primary={i18n("context_menu_search_similar")} />
         </MenuItem>*/}
 
         <MenuItem className={styles["context-menu-item"]} onClick={handleShare} disabled={!openUrl}>
           <ListItemIcon>
             <SettingsIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText className={styles["context-menu-option-text"]} primary="Share" />
+          <ListItemText
+            className={styles["context-menu-option-text"]}
+            primary={i18n("context_menu_share")}
+          />
         </MenuItem>
       </MenuList>
     </Paper>

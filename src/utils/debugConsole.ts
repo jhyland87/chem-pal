@@ -16,7 +16,19 @@ import {
   resolveQueryForSearch,
   resolveSmiles,
 } from "@/helpers/smiles";
+import {
+  getProductPriceHistory as getProductPriceHistorySeries,
+  variantSeriesKey,
+} from "@/helpers/priceHistory";
 import { Cactus } from "@/utils/Cactus";
+import {
+  getAllSupplierProductDataCacheEntries,
+  getAllSupplierQueryCacheEntries,
+  getExcludedProducts,
+  getPriceSeries,
+  getSearchHistory,
+  getSearchResults,
+} from "@/utils/idbCache";
 
 /**
  * Inspection-friendly view of a proxied response, returned by {@link backgroundFetch}.
@@ -70,6 +82,87 @@ async function backgroundFetch(
 }
 
 /**
+ * Finds a product in the current search results by its identity. Matches the
+ * given value against a product's `id`, stamped `cacheKey`, `uuid`, or positional
+ * `_id` (all compared as strings), so any of those printed in the table can be
+ * pasted straight in. Reads the `searchResults` IndexedDB store, so it reflects
+ * whatever the results table currently shows.
+ * @param id - The product id / cacheKey / uuid / _id to look up.
+ * @returns The matching {@link Product}, or `undefined` when none matches.
+ * @example
+ * ```typescript
+ * // In the console:
+ * await chempal.getProductById("A668410");
+ * await chempal.getProductById(3); // positional _id
+ * ```
+ * @source
+ */
+async function getProductById(id: string | number): Promise<Product | undefined> {
+  const results = await getSearchResults();
+  const target = String(id);
+  return results.find(
+    (product) =>
+      String(product.id) === target ||
+      String(product.cacheKey) === target ||
+      String(product.uuid) === target ||
+      String(product._id) === target,
+  );
+}
+
+/**
+ * Returns the recorded USD price-history series for whatever the id points at in
+ * the current results:
+ * - a **product** id / cacheKey / uuid / _id → its base series plus one per variant;
+ * - a **variant** id / sku / title → just that one variant's series (as a 1-item array).
+ *
+ * Each series lists its `points` (`{ t, usd }`, ascending by time). Returns
+ * `undefined` when nothing matches; `[]` when the match has no history recorded yet.
+ * @param id - A product or variant identifier from the results table.
+ * @returns The matching price-history series, or `undefined` when not found.
+ * @example
+ * ```typescript
+ * // In the console:
+ * await chempal.getProductPriceHistory("96a50af4-3e03-97d4-fb1c-bb8c46f180bf"); // whole product
+ * await chempal.getProductPriceHistory("d5de5c76-3f2c-4d6c-9e37-ce840aae4490"); // one variant
+ * ```
+ * @source
+ */
+async function getProductPriceHistory(
+  id: string | number,
+): Promise<PriceHistoryEntry[] | undefined> {
+  const results = await getSearchResults();
+  const target = String(id);
+
+  // Product-level match → the whole product's series (base + variants).
+  const product = results.find(
+    (p) =>
+      String(p.id) === target ||
+      String(p.cacheKey) === target ||
+      String(p.uuid) === target ||
+      String(p._id) === target,
+  );
+  if (product) {
+    const byId = await getProductPriceHistorySeries(product);
+    return [...byId.values()];
+  }
+
+  // Variant-level match → just that variant's series.
+  for (const p of results) {
+    const variant = (p.variants ?? []).find(
+      (v) => String(v.id) === target || String(v.sku) === target || v.title === target,
+    );
+    if (variant) {
+      const key = variantSeriesKey(p, variant);
+      const series = key ? await getPriceSeries(key) : undefined;
+      return series ? [series] : [];
+    }
+  }
+
+  console.warn(`No product or variant in the current results matches id "${id}"`);
+  return undefined;
+}
+
+/**
  * Prints the available debug helpers and a few example calls to the console.
  * @source
  */
@@ -85,12 +178,17 @@ function help(): void {
       "  CAS:      getCASByName, getNamesByCAS, getIUPACName, findCAS, isCAS",
       "  Cactus:   new chempal.Cactus('aspirin')",
       "  Network:  backgroundFetch",
+      "  IndexedDB: getProductById, getProductPriceHistory, getProductCache,",
+      "             getQueryCache, getSearchResults, getSearchHistory,",
+      "             getExcludedProducts",
       "",
       "Examples:",
       "  await chempal.resolveSmiles('CCO')",
       "  await chempal.suggestAlternativeSearch('aspirin', ['aspirin'])",
       "  await new chempal.Cactus('CC(=O)Oc1ccccc1C(O)=O').getSimpleNames()",
       "  await chempal.backgroundFetch('https://chemsavers.com/')",
+      "  await chempal.getProductById('A668410')",
+      "  await chempal.getQueryCache()",
     ].join("\n"),
   );
 }
@@ -124,6 +222,14 @@ const chempal = {
   Cactus,
   // Background service-worker fetch proxy
   backgroundFetch,
+  // IndexedDB inspection (read-only)
+  getProductById,
+  getProductPriceHistory,
+  getProductCache: getAllSupplierProductDataCacheEntries,
+  getQueryCache: getAllSupplierQueryCacheEntries,
+  getSearchResults,
+  getSearchHistory,
+  getExcludedProducts,
   help,
 };
 

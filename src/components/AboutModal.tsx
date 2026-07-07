@@ -1,5 +1,6 @@
-import contributors from "@/data/contributors.json";
 import { default as Link } from "@/components/TabLink";
+import contributors from "@/data/contributors.json";
+import { i18n } from "@/helpers/i18n";
 import GitHubIcon from "@/icons/GitHubIcon";
 import { ThemeContext } from "@/themes";
 import Divider from "@mui/material/Divider";
@@ -69,7 +70,7 @@ export default function AboutModal({
           component="h2"
           className={styles["about-title"]}
         >
-          About ChemPal
+          {i18n("about_chempal")}
           <IconButton
             data-testid="github-button"
             href="https://github.com/justinhyland/chem-pal"
@@ -93,15 +94,11 @@ export default function AboutModal({
           gutterBottom
           sx={{ mt: 0.5, display: "block" }}
         >
-          Open source project aimed at helping amateur chemistry hobbyists find the best deals on
-          chemical reagents. There are plenty of similar services out there for businesses,
-          universities and research institutions, but none are available for individuals and
-          hobbyists. ChemPal only searches suppliers that sell to individuals and ship to
-          residences.
+          {i18n("application_description")}
         </Typography>
         <Divider sx={{ color: "primary.main", my: 2 }}>
           <Typography variant="overline" gutterBottom sx={{ display: "block" }}>
-            Contributors
+            {i18n("contributors")}
           </Typography>
         </Divider>
 

@@ -550,6 +550,43 @@ export const ProductDetailFieldsColumn = styled("div")(() => ({
 
 export const ProductDetailVariantsColumn = styled(ProductDetailFieldsColumn)(() => ({}));
 
+// Aligns the variant rows into shared columns: name | price | quantity | trend.
+// A single grid (not per-row flex) makes every column line up across rows. The
+// grid shrinks to its content (no full-width stretch) so the columns stay
+// grouped together instead of the name floating off to the left; names right-
+// align against the price and prices use tabular figures.
+export const ProductDetailVariantsGrid = styled("div")(({ theme }) => ({
+  display: "grid",
+  gridTemplateColumns: "minmax(0, auto) auto auto auto",
+  width: "fit-content",
+  maxWidth: "100%",
+  columnGap: theme.spacing(1.5),
+  rowGap: 2,
+  fontSize: "0.8rem",
+  lineHeight: 1.5,
+  alignItems: "baseline",
+  "& > .variant-name": {
+    color: theme.palette.text.primary,
+    minWidth: 0,
+    textAlign: "right",
+    overflowWrap: "anywhere",
+  },
+  "& > .variant-price": {
+    color: theme.palette.text.primary,
+    textAlign: "right",
+    fontVariantNumeric: "tabular-nums",
+    whiteSpace: "nowrap",
+  },
+  "& > .variant-qty": {
+    color: theme.palette.text.secondary,
+    whiteSpace: "nowrap",
+  },
+  "& > .variant-trend": {
+    justifySelf: "start",
+    whiteSpace: "nowrap",
+  },
+}));
+
 // A single label/value pair. The label is muted and fixed-ish width so values
 // line up; the value wraps rather than overflowing.
 export const ProductDetailFieldRow = styled("div")(({ theme }) => ({

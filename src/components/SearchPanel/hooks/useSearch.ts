@@ -3,6 +3,7 @@ import { AVAILABILITY_LABEL_MAP, CACHE } from "@/constants/common";
 import { useAppContext } from "@/context";
 import { SearchEvent, emitSearchEvent } from "@/events/searchEvents";
 import { addExcludedProduct } from "@/helpers/excludedProducts";
+import { recordProductPrices } from "@/helpers/priceHistory";
 import { suggestAlternativeSearch } from "@/helpers/pubchem";
 import { ABORT_SEARCH_EVENT } from "@/hotkeys";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
@@ -514,6 +515,10 @@ export function useSearch() {
           setSearchResults(finalResults);
           totalResults = finalResults.length;
 
+          // Record USD price history for the final result set (fire-and-forget;
+          // dedup means unchanged prices add nothing).
+          void recordProductPrices(finalResults, appContext.userSettings);
+
           // Save to Chrome storage and update history with final count
           await saveResultsToSession(finalResults);
           await updateHistoryResultCount(historyTimestamp, finalResults.length);
@@ -547,6 +552,11 @@ export function useSearch() {
               ...result,
               _id: totalResults - 1,
             };
+
+            // Record USD price history for this streamed product (fire-and-forget;
+            // done outside the state updater so it runs once per product, not per
+            // whole-array remap).
+            void recordProductPrices([productWithId], appContext.userSettings);
 
             // Update results immediately using startTransition for better performance
             startTransition(() => {

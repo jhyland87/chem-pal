@@ -311,6 +311,19 @@ describe("Common TypeGuards", () => {
       expect(isValidUserSettings({ fontSize: "enormous" })).toBe(false);
     });
 
+    it("accepts the price-history settings, coercing a string point count", () => {
+      expect(isValidUserSettings({ trackPriceHistory: true })).toBe(true);
+      expect(isValidUserSettings({ priceHistoryMaxPoints: 30 })).toBe(true);
+      // The numeric input persists as a string; the schema coerces it.
+      expect(isValidUserSettings({ priceHistoryMaxPoints: "30" })).toBe(true);
+    });
+
+    it("rejects invalid price-history settings", () => {
+      expect(isValidUserSettings({ trackPriceHistory: "yes" })).toBe(false);
+      expect(isValidUserSettings({ priceHistoryMaxPoints: -1 })).toBe(false);
+      expect(isValidUserSettings({ priceHistoryMaxPoints: 2.5 })).toBe(false);
+    });
+
     it("rejects non-object roots", () => {
       expect(isValidUserSettings(null)).toBe(false);
       expect(isValidUserSettings(undefined)).toBe(false);
