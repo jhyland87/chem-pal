@@ -22,6 +22,8 @@ interface HighlightedSearchInputProps {
   onKeyDown?: (event: KeyboardEvent<HTMLInputElement>) => void;
   /** Notified when validity changes: `blocked` is true (with a `message`) for invalid queries. */
   onValidityChange?: (blocked: boolean, message?: string) => void;
+  /** Value for a `data-tour` attribute on the `<input>`, used to anchor the guided tour. */
+  dataTour?: string;
 }
 
 /**

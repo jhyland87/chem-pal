@@ -24,6 +24,7 @@ import {
   startTransition,
   Suspense,
   useActionState,
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -37,6 +38,9 @@ import SpeedDialMenu from "./components/SpeedDialMenu";
 import StatusBar, { StatusBarProvider, useStatusBar } from "./components/StatusBar";
 import { DevBadge } from "./components/StyledComponents";
 import { ThemeProvider } from "./components/ThemeProvider";
+import { AppTour } from "./tour/AppTour";
+import { TourWelcomeDialog } from "./tour/TourWelcomeDialog";
+import { useAppTour } from "./tour/useAppTour";
 import { diff } from "./helpers/collectionUtils";
 import { getCountryName } from "./helpers/country";
 import { getCurrencyCodeFromLocation, getCurrencyRate } from "./helpers/currency";
@@ -300,6 +304,19 @@ function App() {
     initialAppState,
   );
 
+  // Force the speed-dial FAB open/closed. Stable so the tour hook's handlers
+  // don't churn. Wired to the guided tour, which spotlights the speed dial.
+  const setSpeedDialVisible = useCallback(
+    (visible: boolean) => {
+      dispatch({ type: APP_ACTION.SET_SPEED_DIAL_VISIBILITY, visible });
+    },
+    [dispatch],
+  );
+
+  // First-run guided tour. `isSpeedDialLocked` keeps the speed dial open (below)
+  // while its step is spotlighted; `startTour` is exposed via context for replay.
+  const { tour, welcome, isSpeedDialLocked, startTour } = useAppTour({ setSpeedDialVisible });
+
   // Load initial data from Chrome storage on mount
   useEffect(() => {
     const loadFromStorage = async () => {
@@ -448,6 +465,10 @@ function App() {
 
   // Speed dial visibility logicc
   useEffect(() => {
+    // The tour forces the speed dial open while spotlighting it; don't let the
+    // hover handler fight it (the cursor sits on the centered tooltip).
+    if (isSpeedDialLocked) return;
+
     const cornerThreshold = 30;
 
     const handleMouseMove = (event: MouseEvent) => {
@@ -463,7 +484,7 @@ function App() {
 
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [appState.speedDialVisibility, dispatch]);
+  }, [appState.speedDialVisibility, dispatch, isSpeedDialLocked]);
 
   // Handlers for child components
   const handleSetUserSettings = (settings: UserSettings) => {
@@ -555,6 +576,7 @@ function App() {
     setSearchFilters,
     bookmarksFolderId: appState.bookmarksFolderId,
     setBookmarksFolderId: handleSetBookmarksFolderId,
+    startTour, // Lets the SpeedDial "Take the tour" action replay the guided tour
   };
 
   return (
@@ -583,6 +605,8 @@ function App() {
                 <DrawerSystem />
                 <SpeedDialMenu speedDialVisibility={appState.speedDialVisibility ?? false} />
               </div>
+              <TourWelcomeDialog {...welcome} />
+              <AppTour {...tour} />
               <HotkeyHelpModal open={hotkeyHelpOpen} onClose={() => setHotkeyHelpOpen(false)} />
             </div>
             <StatusBar />

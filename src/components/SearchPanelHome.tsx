@@ -94,6 +94,7 @@ const SearchPanelHome: FC = () => {
         <SearchPanelHomeSettingsButton
           onClick={() => appContext.toggleDrawer(DRAWER_INDEX.SETTINGS)}
           aria-label="Open settings"
+          data-tour="settings"
         >
           <SettingsIcon />
         </SearchPanelHomeSettingsButton>
@@ -116,6 +117,7 @@ const SearchPanelHome: FC = () => {
           <SearchPanelHomeMaximizeButton
             onClick={() => void openExtensionTab()}
             aria-label="Open in tab"
+            data-tour="maximize"
           >
             <OpenInNewIcon />
           </SearchPanelHomeMaximizeButton>

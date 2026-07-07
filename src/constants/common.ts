@@ -355,6 +355,12 @@ export enum CACHE {
   CHEMSAVERS_API_KEY = "chemsavers_api_key",
   /** LabChem full product catalog snapshot, cached for 24h (empty-query search) */
   LABCHEM_CATALOG = "labchem_catalog",
+  /** Permanent flag (local) marking that the first-run guided tour has been shown */
+  HAS_SEEN_TOUR = "has_seen_tour",
+  /** Transient flag (session) set when the popup hands the tour off to a full tab */
+  TOUR_RESUME = "tour_resume",
+  /** Timestamp (local, ms) before which the tour welcome prompt stays snoozed ("Maybe later") */
+  TOUR_SNOOZE_UNTIL = "tour_snooze_until",
 }
 
 /**
