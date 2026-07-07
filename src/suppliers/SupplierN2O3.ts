@@ -54,7 +54,7 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
 
   // HTTP headers used as a basis for all queries.
   protected headers: HeadersInit = {
-    /* eslint-disable */
+     
     accept: [
       "text/html",
       "application/xhtml+xml",
@@ -79,7 +79,7 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
     "sec-fetch-site": "same-origin",
     "sec-gpc": "1",
     "x-requested-with": "XMLHttpRequest",
-    /* eslint-enable */
+     
   };
 
   /**

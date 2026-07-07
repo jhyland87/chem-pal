@@ -12,7 +12,7 @@ Open source project aimed at helping amateur chemistry hobbyists find the best d
 ----
 
 
-### Demo
+## Demo
 <p align="center">
   <img src="./assets/images/chem-pal-demo.gif" alt="chem-pal example" width="600"/>
 </p>

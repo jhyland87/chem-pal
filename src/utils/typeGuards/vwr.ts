@@ -1,12 +1,10 @@
 import { z } from "zod";
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const vwrTokenResponseSchema = z.object({
   access_token: z.string(),
   token_type: z.string(),
   expires_in: z.number(),
 });
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard validating a VWR OAuth token response. Requires a bearer `access_token`,

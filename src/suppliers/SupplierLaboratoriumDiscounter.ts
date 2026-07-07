@@ -100,7 +100,7 @@ export class SupplierLaboratoriumDiscounter
 
   // HTTP headers used as a basis for all queries.
   protected headers: HeadersInit = {
-    /* eslint-disable */
+     
     accept: [
       "text/html",
       "application/xhtml+xml",
@@ -114,7 +114,7 @@ export class SupplierLaboratoriumDiscounter
     "cache-control": "no-cache",
     pragma: "no-cache",
     "x-requested-with": "XMLHttpRequest",
-    /* eslint-enable */
+     
   };
 
   /**

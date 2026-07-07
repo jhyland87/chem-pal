@@ -3,15 +3,21 @@ import { getCookie } from "@/helpers/cookies";
 import { getUserCountryName } from "@/helpers/country";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
+import { looksLikeSmiles } from "@/helpers/smiles";
 import {
   base36Timestamp,
   base64EncodeUtf8,
   getUserLanguage,
+  htmlToAscii,
   mapDefined,
   md5sum,
   objectToQueryString,
 } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
+import { detectTermType } from "@/utils/search-query/detectTermType";
+import { scoreAstMatch } from "@/utils/search-query/evaluateAst";
+import { extractAllPositiveTerms } from "@/utils/search-query/extractPositiveTerms";
+import type { SearchAst } from "@/utils/search-query/types";
 import { cstorage } from "@/utils/storage";
 import {
   assertIsAmbeedGetSearchProductAndRecommendedProductsByCASResponse,
@@ -309,7 +315,6 @@ export class SupplierAmbeed
 
   // HTTP headers used as a basis for all queries.
   protected headers: HeadersInit = {
-    /* eslint-disable */
     accept: [
       "text/html",
       "application/xhtml+xml",
@@ -323,7 +328,6 @@ export class SupplierAmbeed
     "cache-control": "no-cache",
     pragma: "no-cache",
     "x-requested-with": "XMLHttpRequest",
-    /* eslint-enable */
   };
 
   /**
@@ -699,11 +703,9 @@ export class SupplierAmbeed
   ): AmbeedProductListResponsePriceList {
     return {
       ...priceData,
-      /* eslint-disable */
       pr_usd: this.decodeAmbeedFont(priceData.pr_usd),
       vip_usd: this.decodeAmbeedFont(priceData.vip_usd),
       discount_usd: this.decodeAmbeedFont(priceData.discount_usd),
-      /* eslint-enable */
     };
   }
 
@@ -754,13 +756,11 @@ export class SupplierAmbeed
     }
     return {
       ...product,
-      /* eslint-disable */
       p_bd: product.p_bd ?? "",
       p_id: product.p_id ?? "",
       p_name_en: product.p_name_en?.replace(/<\/?em>/g, ""),
       p_proper_name3: product.p_proper_name3?.replace(/<\/?em>/g, ""),
       p_cas: product.p_cas?.replace(/<\/?em>/g, ""),
-      /* eslint-enable */
     };
   }
 
@@ -803,7 +803,9 @@ export class SupplierAmbeed
     // Sanitize the products, removing the <em></em> tags and decoding the prices.
     const products = searchRequest.value.result.map(this.sanitizeSearchableFields.bind(this));
 
-    const fuzzedResults = this.fuzzyFilterAst<AmbeedProductListResponseResultItem>(products);
+    // Filter Ambeed's loose keyword results by the query type (CAS/formula/SMILES),
+    // falling back to fuzzy name matching for plain-string queries.
+    const fuzzedResults = this.filterByStructuredQuery(products);
 
     const slice = fuzzedResults.slice(0, limit);
 
@@ -819,6 +821,147 @@ export class SupplierAmbeed
     }
 
     return builders;
+  }
+
+  /**
+   * Filters Ambeed's loose keyword results down to genuine matches using the
+   * *type* of the query. Ambeed's `productlistbykeyword` matches a term as both a
+   * name substring and (for a valid SMILES) a structure fragment, so a query like
+   * `CCO` returns unrelated compounds. This routes by query type:
+   * - CAS terms match the product `p_cas`,
+   * - formula terms match the (de-HTML'd) `p_moleform`,
+   * - SMILES terms are matched via their resolved CAS/name (resolved once upstream
+   *   by `SupplierFactory` and shared through `resolvedStructures`),
+   * - plain-string queries fall back to the existing fuzzy name filter unchanged.
+   *
+   * Matching reuses the advanced-search AST evaluator, so boolean (AND/OR/NOT)
+   * queries are honored: each item is scored against an augmented target built
+   * from its name, CAS, and formula.
+   *
+   * @param items - The sanitized Ambeed product items to filter.
+   * @returns The items whose identity matches the query, best score first.
+   * @example
+   * ```typescript
+   * // query "1286754-10-6" -> only the item whose p_cas is 1286754-10-6
+   * this.filterByStructuredQuery(items);
+   * ```
+   * @source
+   */
+  protected filterByStructuredQuery(
+    items: AmbeedProductListResponseResultItem[],
+  ): AmbeedProductListResponseResultItem[] {
+    const parsed = this.getAst();
+    const isStructured = extractAllPositiveTerms(parsed.ast).some(
+      (term) => detectTermType(term) !== "string" || looksLikeSmiles(term),
+    );
+
+    // Plain name queries keep today's fuzzy behavior untouched.
+    if (!isStructured) {
+      return this.fuzzyFilterAst<AmbeedProductListResponseResultItem>(items);
+    }
+
+    const ast = this.rewriteStructureLeaves(parsed.ast);
+    const scorer = this.fuzzScorerOverride ?? this.fuzzScorer;
+
+    const scored = mapDefined(items, (item) => {
+      const score = scoreAstMatch(this.buildMatchTarget(item), ast, {
+        scorer,
+        threshold: this.minMatchPercentage,
+        fuzzyWords: false,
+      });
+      return score === null ? undefined : { item, score };
+    });
+
+    scored.sort((a, b) => b.score - a.score);
+    return scored.map((entry) => entry.item);
+  }
+
+  /**
+   * Builds the searchable text an Ambeed item is matched against: its display
+   * name, English name, CAS, formula (`<sub>` markup stripped), and InChIKey.
+   * Combining these lets CAS/formula/SMILES-resolved terms match the field that
+   * actually identifies the compound rather than only the title.
+   * @param item - The Ambeed product item.
+   * @returns A single space-joined string of the item's identifying fields.
+   * @example
+   * ```typescript
+   * this.buildMatchTarget(item); // "Mal-PEG4-AcCOOH 14-(...)acid 1286754-10-6 C14H21NO8 IBIJ..."
+   * ```
+   * @source
+   */
+  private buildMatchTarget(item: AmbeedProductListResponseResultItem): string {
+    return [
+      item.p_proper_name3,
+      item.p_name_en,
+      item.p_cas,
+      item.p_moleform ? htmlToAscii(item.p_moleform) : "",
+      item.p_inchikey,
+    ]
+      .filter((part): part is string => typeof part === "string" && part.length > 0)
+      .join(" ");
+  }
+
+  /**
+   * Returns a copy of the query AST with every SMILES leaf replaced by an OR of
+   * its resolved identifiers (CAS numbers and name), looked up from
+   * `resolvedStructures`. A SMILES leaf with no resolution is left unchanged and a
+   * warning is logged, so matching degrades to the raw term. Non-SMILES leaves
+   * (CAS, formula, plain strings) are returned as-is.
+   * @param ast - The parsed query AST.
+   * @returns A new AST with SMILES leaves rewritten to their resolved identifiers.
+   * @source
+   */
+  private rewriteStructureLeaves(ast: SearchAst): SearchAst {
+    switch (ast.type) {
+      case "term": {
+        if (ast.value === "" || !looksLikeSmiles(ast.value)) {
+          return ast;
+        }
+        const resolved = this.resolvedStructures?.get(ast.value);
+        const identifiers = [...(resolved?.cas ?? []), ...(resolved?.name ? [resolved.name] : [])];
+        if (identifiers.length === 0) {
+          this.logger.warn("No resolved structure for SMILES term; matching raw term", {
+            term: ast.value,
+          });
+          return ast;
+        }
+        return this.orTerms(identifiers);
+      }
+      case "and":
+        return {
+          type: "and",
+          left: this.rewriteStructureLeaves(ast.left),
+          right: this.rewriteStructureLeaves(ast.right),
+        };
+      case "or":
+        return {
+          type: "or",
+          left: this.rewriteStructureLeaves(ast.left),
+          right: this.rewriteStructureLeaves(ast.right),
+        };
+      case "not":
+        return { type: "not", operand: this.rewriteStructureLeaves(ast.operand) };
+      default:
+        return ast;
+    }
+  }
+
+  /**
+   * Combines a non-empty list of phrase strings into a right-leaning OR AST, so a
+   * SMILES term that resolves to several identifiers matches any of them.
+   * @param values - The identifier strings to OR together (must be non-empty).
+   * @returns An OR-tree, or a single term node when only one value is given.
+   * @example
+   * ```typescript
+   * this.orTerms(["64-17-5", "ethanol"]);
+   * // { type: "or", left: {term 64-17-5}, right: {term ethanol} }
+   * ```
+   * @source
+   */
+  private orTerms(values: string[]): SearchAst {
+    return values
+      .map((value): SearchAst => ({ type: "term", value, phrase: false }))
+      .reduce((left, right) => ({ type: "or", left, right }));
   }
 
   /**

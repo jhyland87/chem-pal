@@ -37,7 +37,6 @@ const searchItemPricesSchema = z.object({
     .optional(),
 });
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const searchResponseItemSchema = z.object({
   id: z.number(),
   name: z.string(),
@@ -54,7 +53,6 @@ const searchResponseItemSchema = z.object({
   price_html: z.string().nullable().optional(),
   images: searchItemImagesSchema.nullable().optional(),
 });
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard to validate if an unknown object is a valid SearchResponseItem from WooCommerce.

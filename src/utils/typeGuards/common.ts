@@ -18,8 +18,8 @@ const httpResponseSchema = z.object({
   ok: z.boolean(),
   status: z.number(),
   statusText: z.string(),
-  json: z.custom<Function>((val) => typeof val === "function"),
-  text: z.custom<Function>((val) => typeof val === "function"),
+  json: z.custom<(...args: unknown[]) => unknown>((val) => typeof val === "function"),
+  text: z.custom<(...args: unknown[]) => unknown>((val) => typeof val === "function"),
 });
 
 /**

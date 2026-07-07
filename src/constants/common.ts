@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention */
+ 
 /**
  * @group Constants
  * @groupDescription Application-wide constants and enumerations used throughout the codebase.

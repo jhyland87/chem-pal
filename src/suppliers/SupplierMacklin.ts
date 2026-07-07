@@ -128,14 +128,14 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
   /** Used to keep track of how many requests have been made to the supplier. */
   protected httpRequstCount: number = 0;
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
+   
   private readonly TIMESTAMP_REFRESH_THRESHOLD: number = 800;
 
   /** The salt used to sign requests. */
-  // eslint-disable-next-line @typescript-eslint/naming-convention
+   
   private readonly SALT: string = "ndksyr9834@#$32ndsfu";
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
+   
   private readonly DEFAULT_TIMEOUT: number = 30000;
 
   /**
@@ -170,13 +170,13 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
 
   /** HTTP headers used as a basis for all queries. */
   protected headers: MacklinRequestHeaders = {
-    /* eslint-disable @typescript-eslint/naming-convention */
+     
     "X-Agent": "web",
     "X-User-Token": "",
     "X-Device-Id": "",
     "X-Language": "en",
     "X-Timestamp": "",
-    /* eslint-enable @typescript-eslint/naming-convention */
+     
   };
 
   /**
@@ -218,13 +218,13 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
 
     // Update headers to match api-client.js exactly, using defensive string conversion
     this.headers = {
-      /* eslint-disable @typescript-eslint/naming-convention */
+       
       "X-Agent": "web",
       "X-User-Token": this.ensureStringHeader(this.localStorage.MklUserToken),
       "X-Device-Id": this.ensureStringHeader(this.localStorage.soleId),
       "X-Language": "en",
       "X-Timestamp": "",
-      /* eslint-enable @typescript-eslint/naming-convention */
+       
     };
 
     console.log("this.localStorage", this.localStorage);
@@ -699,13 +699,13 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
 
       // Create a fresh headers object to avoid any potential array concatenation
       const headers: MacklinRequestHeaders = {
-        /* eslint-disable @typescript-eslint/naming-convention */
+         
         "X-Agent": "web",
         "X-User-Token": this.ensureStringHeader(this.localStorage.MklUserToken),
         "X-Device-Id": this.ensureStringHeader(this.localStorage.soleId),
         "X-Language": "en",
         "X-Timestamp": this.ensureStringHeader(timestamp),
-        /* eslint-enable @typescript-eslint/naming-convention */
+         
       };
 
       // Handle auth headers exactly like api-client.js
@@ -758,7 +758,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
         options.method && options.method !== "GET"
           ? await this.httpPost({
               path,
-              // eslint-disable-next-line @typescript-eslint/naming-convention
+               
               headers: { ...headers, "Content-Type": "application/json" },
               params,
               body: body ? JSON.stringify(body) : undefined,

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention */
+ 
 declare global {
   /**
    * Money object returned by the Magento 2 GraphQL API. Used wherever a price

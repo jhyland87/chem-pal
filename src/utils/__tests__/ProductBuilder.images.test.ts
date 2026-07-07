@@ -63,6 +63,36 @@ describe("ProductBuilder images", () => {
     expect(builder.get("images")).toBeUndefined();
   });
 
+  it("adds raw URL strings as full images via addImages", () => {
+    builder.addImages(["https://example.com/a.jpg", "https://example.com/b.jpg"]);
+
+    expect(builder.get("images")).toEqual([
+      { href: "https://example.com/a.jpg", type: "image" },
+      { href: "https://example.com/b.jpg", type: "image" },
+    ]);
+  });
+
+  it("adds raw URL strings as thumbnails via addThumbnails", () => {
+    builder.addThumbnails(["https://example.com/a-t.jpg", "https://example.com/b-t.jpg"]);
+
+    expect(builder.get("images")).toEqual([
+      { href: "https://example.com/a-t.jpg", type: "thumbnail" },
+      { href: "https://example.com/b-t.jpg", type: "thumbnail" },
+    ]);
+  });
+
+  it("preserves the explicit type of pre-built entries mixed with raw URLs", () => {
+    builder.addImages([
+      "https://example.com/a.jpg",
+      { href: "https://example.com/a-t.jpg", type: "thumbnail" },
+    ]);
+
+    expect(builder.get("images")).toEqual([
+      { href: "https://example.com/a.jpg", type: "image" },
+      { href: "https://example.com/a-t.jpg", type: "thumbnail" },
+    ]);
+  });
+
   it("appends typed entries via addImages, skipping invalid ones", () => {
     builder.addImages([
       { href: "https://example.com/a.jpg", type: "image", altText: "front" },

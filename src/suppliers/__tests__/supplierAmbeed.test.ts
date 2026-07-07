@@ -173,3 +173,80 @@ describe("SupplierAmbeed SDS", () => {
     });
   });
 });
+
+type AmbeedFilterSupplier = SupplierAmbeed & {
+  filterByStructuredQuery: (
+    items: AmbeedProductListResponseResultItem[],
+  ) => AmbeedProductListResponseResultItem[];
+};
+
+const ambeedItem = (
+  fields: Partial<AmbeedProductListResponseResultItem>,
+): AmbeedProductListResponseResultItem => fields as AmbeedProductListResponseResultItem;
+
+const ethanol = ambeedItem({
+  p_proper_name3: "Ethanol",
+  p_name_en: "ethanol",
+  p_cas: "64-17-5",
+  p_moleform: "C<sub>2</sub>H<sub>6</sub>O",
+  p_inchikey: "LFQSCWFLJHTTHZ-UHFFFAOYSA-N",
+});
+const malPeg = ambeedItem({
+  p_proper_name3: "Mal-PEG4-AcCOOH",
+  p_name_en: "14-(2,5-Dioxo-2,5-dihydro-1H-pyrrol-1-yl)-3,6,9,12-tetraoxatetradecan-1-oic acid",
+  p_cas: "1286754-10-6",
+  p_moleform: "C<sub>14</sub>H<sub>21</sub>NO<sub>8</sub>",
+  p_inchikey: "IBIJGYJSVGSTQS-UHFFFAOYSA-N",
+});
+const niccolate = ambeedItem({
+  p_proper_name3: "",
+  p_name_en: "Tetrabutylphosphonium bis(1,2-benzenedithiolato)niccolate(III)",
+  p_cas: "112527-20-5",
+  p_moleform: "C<sub>28</sub>H<sub>48</sub>NiPS<sub>4</sub>",
+  p_inchikey: "",
+});
+const items = [ethanol, malPeg, niccolate];
+
+const titlesOf = (results: AmbeedProductListResponseResultItem[]): string[] =>
+  results.map((r) => r.p_proper_name3 || r.p_name_en);
+
+describe("SupplierAmbeed filterByStructuredQuery", () => {
+  it("keeps only the CAS-matching product for a CAS query", () => {
+    const supplier = new SupplierAmbeed("1286754-10-6", 15) as AmbeedFilterSupplier;
+    expect(supplier.filterByStructuredQuery(items)).toEqual([malPeg]);
+  });
+
+  it("keeps only the formula-matching product for a formula query", () => {
+    const supplier = new SupplierAmbeed("C14H21NO8", 15) as AmbeedFilterSupplier;
+    expect(supplier.filterByStructuredQuery(items)).toEqual([malPeg]);
+  });
+
+  it("resolves a SMILES query via the injected structure map and keeps only that compound", () => {
+    const supplier = new SupplierAmbeed("CCO", 15) as AmbeedFilterSupplier;
+    supplier.setResolvedStructures(new Map([["CCO", { name: "ethanol", cas: ["64-17-5"] }]]));
+
+    expect(supplier.filterByStructuredQuery(items)).toEqual([ethanol]);
+  });
+
+  it("honors an advanced CAS-OR-formula query via the augmented target", () => {
+    const supplier = new SupplierAmbeed("64-17-5 OR C14H21NO8", 15) as AmbeedFilterSupplier;
+
+    expect(titlesOf(supplier.filterByStructuredQuery(items)).sort()).toEqual(
+      ["Ethanol", "Mal-PEG4-AcCOOH"].sort(),
+    );
+  });
+
+  it("degrades gracefully (no throw) when a SMILES term has no resolved structure", () => {
+    const supplier = new SupplierAmbeed("CCO", 15) as AmbeedFilterSupplier;
+    // No setResolvedStructures — the SMILES leaf falls back to raw-term matching.
+    const result = supplier.filterByStructuredQuery(items);
+
+    // Ethanol's name contains no "cco", so the raw fallback never keeps it.
+    expect(result).not.toContain(ethanol);
+  });
+
+  it("falls back to fuzzy name filtering for a plain-string query (all results retained)", () => {
+    const supplier = new SupplierAmbeed("ethanol", 15) as AmbeedFilterSupplier;
+    expect(supplier.filterByStructuredQuery(items)).toHaveLength(items.length);
+  });
+});

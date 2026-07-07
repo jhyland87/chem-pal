@@ -4,7 +4,7 @@ declare global {
    * as well as old prices for comparison.
    */
   interface PriceObject {
-    /* eslint-disable */
+     
     /** The current price of the product */
     price: number;
     /** The current price including taxes */
@@ -17,7 +17,7 @@ declare global {
     price_old_incl: number;
     /** The previous price excluding taxes */
     price_old_excl: number;
-    /* eslint-enable */
+     
   }
 
   /**
@@ -26,7 +26,7 @@ declare global {
    */
   interface LaboratoriumDiscounterSearchResponseProduct {
     variants?: Partial<LaboratoriumDiscounterSearchResponseProduct>[];
-    /* eslint-disable */
+     
     /** Unique identifier for the product */
     id: number;
     /** Variant identifier */
@@ -63,11 +63,11 @@ declare global {
     data_01: string;
     /** Index signature for additional properties */
     [key: string]: unknown;
-    /* eslint-enable */
+     
   }
 
   interface VariantObject {
-    /* eslint-disable */
+     
     /** Index signature for additional properties */
     id: number;
     position: number;
@@ -88,7 +88,7 @@ declare global {
       };
       allow_backorders: boolean;
     };
-    /* eslint-enable */
+     
   }
 
   /**
@@ -96,7 +96,7 @@ declare global {
    * Contains page information, request details, and product collection.
    */
   interface SearchResponse {
-    /* eslint-disable */
+     
     /** Page-related information */
     page: {
       /** Search query string */
@@ -173,7 +173,7 @@ declare global {
 
   interface LaboratoriumDiscounterProductObject
     extends LaboratoriumDiscounterSearchResponseProduct {
-    /* eslint-disable */
+     
     product: LaboratoriumDiscounterSearchResponseProduct & {
       variants?: boolean | { [key: string]: VariantObject };
     };
@@ -190,7 +190,7 @@ declare global {
       status: string;
       base_currency: string;
     };
-    /* eslint-enable */
+     
   }
 
   /**

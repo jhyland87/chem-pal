@@ -80,14 +80,14 @@ export class SupplierChemsavers
 
   // HTTP headers used as a basis for all queries.
   protected headers: HeadersInit = {
-    /* eslint-disable */
+     
     accept: ["application/json", "text/plain", "*/*"].join(","),
     "accept-language": "en-US,en;q=0.9",
     "cache-control": "no-cache",
     "content-type": "text/plain",
     pragma: "no-cache",
     priority: "u=1, i",
-    /* eslint-enable */
+     
   };
 
   /**
@@ -286,7 +286,7 @@ export class SupplierChemsavers
       path: `/multi_search`,
       host: this.apiURL,
       params: {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+         
         "x-typesense-api-key": this.apiKey,
       },
       body,
@@ -466,7 +466,7 @@ export class SupplierChemsavers
     const search = parsed.isAdvanced
       ? { q: "*", filter_by: translateAstToTypesenseFilter(parsed.ast) }
       : { q: query };
-    /* eslint-disable */
+     
     return {
       searches: [
         {
@@ -479,7 +479,7 @@ export class SupplierChemsavers
         },
       ],
     };
-    /* eslint-enable */
+     
   }
 
   /**

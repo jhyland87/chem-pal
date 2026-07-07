@@ -43,7 +43,7 @@ export class SupplierAsesChem2 extends SupplierBaseSearchanise implements ISuppl
   // Base search parameters for Typesense search API
   protected baseSearchParams: QueryParams = {
     tab: "products",
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+     
     "restrictBy[filter_ptag_bf51a4bd1f5efe4002b3d50737306113]": "Chemicals",
     //"restrictBy[stock_status]": "In Stock",
     //"restrictBy[vendor]": "aseschem",

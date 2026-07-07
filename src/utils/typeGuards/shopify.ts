@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const shopifyVariantNodeSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -13,7 +12,6 @@ const shopifyVariantNodeSchema = z.object({
     amount: z.string(),
   }),
 });
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard to validate if an object is a valid Shopify variant node.
@@ -45,7 +43,6 @@ export function isShopifyVariantNode(variant: unknown): variant is ShopifyVarian
   return shopifyVariantNodeSchema.safeParse(variant).success;
 }
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const shopifyProductNodeSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -62,7 +59,6 @@ const shopifyProductNodeSchema = z.object({
     ),
   }),
 });
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard to validate if an object is a valid Shopify product node.

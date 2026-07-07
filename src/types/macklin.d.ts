@@ -81,7 +81,7 @@ declare global {
    * by the client.
    */
   interface MacklinRequestHeaders extends HttpHeaders {
-    /* eslint-disable */
+     
     /** Server-synchronized timestamp */
     "X-Timestamp"?: string;
     /** User authentication token */
@@ -90,7 +90,7 @@ declare global {
     "X-Language"?: string;
     /** Request signature generated from headers and params */
     sign?: string;
-    /* eslint-enable */
+     
   }
 
   /**
@@ -137,7 +137,7 @@ declare global {
    * including chemical properties, specifications, and identifiers.
    */
   interface MacklinProductVariant {
-    /* eslint-disable */
+     
     /** CAS registry number for the chemical */
     chem_cas: CAS<string>;
     /** Unique product code used in URLs and API calls */
@@ -182,7 +182,7 @@ declare global {
     cas: CAS<string>;
     /** SMILES notation for the chemical structure */
     smile_code: Smiles<string>;
-    /* eslint-enable */
+     
   }
 
   /**
@@ -192,7 +192,7 @@ declare global {
    * delivery information.
    */
   interface MacklinProductDetails {
-    /* eslint-disable */
+     
     /** Unique product identifier */
     product_id: number;
     /** Product code used in URLs and API calls */
@@ -291,7 +291,7 @@ declare global {
     pre_delivery_desc: string;
     /** Formatted delivery description for display */
     delivery_desc_show: string;
-    /* eslint-enable */
+     
   }
 
   /**
@@ -336,7 +336,7 @@ declare global {
    * consumed are typed; the payload includes many more.
    */
   interface MacklinProductInfoItem {
-    /* eslint-disable */
+     
     /** Unique item identifier */
     item_id: number;
     /** Product code used in URLs and API calls */
@@ -353,7 +353,7 @@ declare global {
     item_storage: string;
     /** English product name */
     item_en_name: string;
-    /* eslint-enable */
+     
   }
 
   /**
@@ -364,7 +364,7 @@ declare global {
     /** The item-level chemistry/physical data. */
     item: MacklinProductInfoItem;
     /** Bulk packaging products (unused; often empty). */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+     
     bulk_product: unknown[];
   }
 }

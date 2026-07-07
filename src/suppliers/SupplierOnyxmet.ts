@@ -1,6 +1,7 @@
 import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
+import { findFormulaInText, formatFormula, parsePurity } from "@/helpers/science";
 import { firstMap, mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { isSearchResultItem } from "@/utils/typeGuards/onyxmet";
@@ -74,12 +75,19 @@ export class SupplierOnyxmet
    * @returns The item's absolute product URL
    * @example
    * ```typescript
-   * this.getUniqueProductKey(item); // "https://onyxmet.com/product/sodium-chloride"
+   * // If item.href is "https://onyxmet.com/index.php?route=product/product&product_id=123",
+   * this.getUniqueProductKey(item); // "123"
    * ```
    * @source
    */
   protected getUniqueProductKey(data: OnyxMetSearchResultItem): string {
-    return this.href(String(data.href));
+    const productId = new URL(data.href).searchParams.get("product_id");
+
+    if (!productId) {
+      this.logger.warn("Product ID not found in href", { data });
+      return "";
+    }
+    return productId;
   }
 
   /**
@@ -165,11 +173,19 @@ export class SupplierOnyxmet
         return;
       }
 
+      const productId = this.getUniqueProductKey(item);
+      if (!productId) {
+        this.logger.warn("Product ID not found in href - Skipping", { item });
+        return;
+      }
+
       const builder = new ProductBuilder<Product>(this.baseURL);
 
+      if (item.image) builder.setImage(item.image);
       builder.setBasicInfo(item.label, item.href, this.supplierName);
+      builder.setID(productId);
       builder.setDescription(item.description);
-      builder.setCacheKey(this.getUniqueProductKey(item));
+      builder.setCacheKey(productId);
       return builder;
     });
   }
@@ -216,11 +232,10 @@ export class SupplierOnyxmet
         return;
       }
 
-      this.logger.debug("productResponse:", productResponse);
-
       const parser = new DOMParser();
       const parsedHTML = parser.parseFromString(productResponse, "text/html");
       const content = parsedHTML.querySelector("#content");
+      this.logger.debug("Products parsedHTML:", parsedHTML);
 
       if (!content) {
         this.logger.warn("No content for product", { builder });
@@ -244,7 +259,8 @@ export class SupplierOnyxmet
       );
 
       const cas = findCAS(builder.get("description"));
-      const title = content?.querySelector("h3.product-title")?.textContent?.trim() || "";
+      const title = content.querySelector("h3.product-title")?.textContent?.trim() || "";
+
       // Array.from(document.querySelectorAll('.product-right > ul > li')).find(e => e.innerText.includes('Product Code')).innerText
       const productCode =
         Array.from(content?.querySelectorAll(".product-right > ul > li") ?? [])
@@ -285,7 +301,28 @@ export class SupplierOnyxmet
         return;
       }
 
+      const productTitleSibling = content.querySelector(".product-title + p");
+      if (productTitleSibling && productTitleSibling.textContent) {
+        const formula = findFormulaInText(productTitleSibling.textContent);
+        if (formula) {
+          builder.setFormula(formatFormula(formula));
+        }
+
+        const purity = firstMap(parsePurity, [
+          productTitleSibling.textContent,
+          content.querySelector(".product-title")?.textContent ?? "",
+        ]);
+        if (purity) {
+          builder.setPurity(purity);
+        }
+      }
+
+      const images = Array.from(content.querySelectorAll("a.elevatezoom-gallery > img") ?? [])
+        .map((i: Element) => i.getAttribute("src"))
+        .filter(Boolean);
+
       return builder
+        .addImages(images)
         .setPricing(price.price, price.currencyCode, price.currencySymbol)
         .setQuantity(quantity.quantity, quantity.uom)
         .setCAS(cas)

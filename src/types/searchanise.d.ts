@@ -15,7 +15,7 @@ declare global {
    * ```
    */
   interface ItemCategory {
-    /* eslint-disable */
+     
     /**
      * Unique identifier for the category.
      * Used to reference this category in collections and filtering.
@@ -50,7 +50,7 @@ declare global {
      * @example "Browse our selection of high-purity laboratory chemicals"
      */
     description: string;
-    /* eslint-enable */
+     
   }
 
   /**
@@ -69,7 +69,7 @@ declare global {
    * ```
    */
   interface StorePage {
-    /* eslint-disable */
+     
     /**
      * Unique identifier for the page.
      * Used in URLs and internal references.
@@ -104,7 +104,7 @@ declare global {
      * @example "Learn about our company's history, mission, and commitment to quality"
      */
     description: string;
-    /* eslint-enable */
+     
   }
 
   /**
@@ -153,7 +153,7 @@ declare global {
    * ```
    */
   interface SearchaniseProductVariant {
-    /* eslint-disable */
+     
     /**
      * Unique identifier for the variant.
      * Used in cart operations and variant selection.
@@ -248,7 +248,7 @@ declare global {
      * @example "/products/sodium-chloride?variant=123456789"
      */
     link: string;
-    /* eslint-enable */
+     
   }
 
   /**
@@ -272,7 +272,7 @@ declare global {
    * ```
    */
   interface ItemListing {
-    /* eslint-disable */
+     
     /**
      * Unique identifier for the product in Searchanise.
      * Used for product operations and URLs.
@@ -402,7 +402,7 @@ declare global {
      * @example "chemicals,laboratory,ACS grade"
      */
     tags: string;
-    /* eslint-enable */
+     
   }
 
   /**
@@ -482,7 +482,7 @@ declare global {
    * ```
    */
   interface QueryParams extends RequestParams {
-    /* eslint-disable */
+     
     /**
      * API key for authentication.
      * Required for accessing the Searchanise API.
@@ -622,14 +622,14 @@ declare global {
      * @example 1625097600000
      */
     _: number;
-    /* eslint-enable */
+     
   }
 
   /**
    * Represents a Searchanise product variant
    */
   interface SearchaniseVariant {
-    /* eslint-disable */
+     
     /**
      * Stock Keeping Unit (SKU) for the variant.
      * A unique identifier assigned by the merchant.
@@ -683,7 +683,7 @@ declare global {
       /** Additional dynamic option key-value pairs */
       [key: string]: unknown;
     };
-    /* eslint-enable */
+     
   }
 }
 

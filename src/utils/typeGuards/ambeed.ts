@@ -57,7 +57,6 @@ export function assertIsAmbeedProductListResponse(
   }
 }
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const ambeedProductListResponseValueSchema = z.object({
   total: z.number(),
   pagenum: z.number(),
@@ -66,7 +65,6 @@ const ambeedProductListResponseValueSchema = z.object({
   result: z.custom<object>((val) => typeof val === "object" && val !== null),
   menu_res: z.custom<object>((val) => typeof val === "object" && val !== null),
 });
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard to validate if data matches the Ambeed product list response value structure.
@@ -90,7 +88,6 @@ export function isAmbeedProductListResponseValue(
   return ambeedProductListResponseValueSchema.safeParse(data).success;
 }
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const ambeedProductListResponseResultItemSchema = z.object({
   p_id: z.string(),
   priceList: z.custom<object>((val) => typeof val === "object" && val !== null),
@@ -100,7 +97,6 @@ const ambeedProductListResponseResultItemSchema = z.object({
   p_name_en: z.string(),
   p_cas: z.string(),
 });
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard to validate if data matches the Ambeed product result item structure.
@@ -127,7 +123,6 @@ export function isAmbeedProductListResponseResultItem(
   return ambeedProductListResponseResultItemSchema.safeParse(data).success;
 }
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const ambeedProductListResponsePriceListSchema = z.object({
   pr_am: z.string(),
   pr_usd: z.string(),
@@ -137,7 +132,6 @@ const ambeedProductListResponsePriceListSchema = z.object({
   vip_usd: z.string(),
   pr_rate: z.number(),
 });
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard to validate if data matches the Ambeed price list item structure.
@@ -185,7 +179,6 @@ export function isAmbeedSearchResponseProduct(data: unknown): data is AmbeedSear
   return ambeedProductListResponseSchema.safeParse(data).success;
 }
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const ambeedProductPriceResponseSchema = z.object({
   source: z.number(),
   code: z.number(),
@@ -195,7 +188,6 @@ const ambeedProductPriceResponseSchema = z.object({
     proInfo: z.custom<object>((val) => typeof val === "object" && val !== null),
   }),
 });
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard to validate if data matches the Ambeed product price API response structure.
@@ -240,7 +232,6 @@ export function assertIsAmbeedProductPriceResponse(
   }
 }
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const ambeedGetSearchProductAndRecommendedProductsByCASResponseSchema = z.object({
   source: z.number(),
   code: z.number(),
@@ -251,7 +242,6 @@ const ambeedGetSearchProductAndRecommendedProductsByCASResponseSchema = z.object
     r_pro_list: z.array(z.unknown()),
   }),
 });
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard to validate if data matches the Ambeed "get search product and recommended
@@ -326,9 +316,7 @@ const ambeedProductStockResponseSchema = z.object({
  * ```
  * @source
  */
-export function isAmbeedProductStockResponse(
-  data: unknown,
-): data is AmbeedProductStockResponse {
+export function isAmbeedProductStockResponse(data: unknown): data is AmbeedProductStockResponse {
   return ambeedProductStockResponseSchema.safeParse(data).success;
 }
 

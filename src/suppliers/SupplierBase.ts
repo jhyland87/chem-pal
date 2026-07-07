@@ -10,6 +10,7 @@ import {
 } from "@/helpers/excludedProducts";
 import { fetchDecorator, type FetchDecoratorResponse } from "@/helpers/fetch";
 import { stripQuantityFromString } from "@/helpers/quantity";
+import type { ResolvedStructure } from "@/helpers/smiles";
 import { sleep } from "@/helpers/utils";
 import { getSupplierColor } from "@/theme/colors";
 import { deleteSupplierQueryCacheEntry } from "@/utils/idbCache";
@@ -114,6 +115,15 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * {@link getAst} lazily parses `this.query` instead.
    */
   protected parsedQuery?: ParsedSearchQuery;
+
+  /**
+   * SMILES/structure query terms resolved to their chemical identifiers, keyed by
+   * the raw search term. Resolved once per search by `SupplierFactory` (network-
+   * bound, via NCI Cactus/PubChem) and shared with every supplier so none of them
+   * re-resolve. Undefined when the query has no structure terms. Only suppliers
+   * that filter by structure (currently Ambeed) read this; others ignore it.
+   */
+  protected resolvedStructures?: ReadonlyMap<string, ResolvedStructure>;
 
   /**
    * Runtime flag resolved from `userSettings.fuzzyFilteringDisabled`. When true,
@@ -463,7 +473,6 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * runs only after `execute()` is called on a factory-built instance, and the
    * factory always calls `initCache()` before handing the instance out.
    */
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   protected cache!: SupplierCache;
 
   /**
@@ -669,6 +678,21 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    */
   public setFuzzyFilteringDisabled(value: boolean): void {
     this.fuzzyFilteringDisabled = value === true;
+  }
+
+  /**
+   * Sets the map of resolved structure terms for this instance. Called by
+   * `SupplierFactory` once per search so every supplier shares one resolution of
+   * any SMILES/structure terms instead of each hitting the network.
+   * @param resolved - Map of raw search term → resolved structure, or undefined when none.
+   * @example
+   * ```typescript
+   * supplier.setResolvedStructures(new Map([["CCO", { name: "ethanol", cas: ["64-17-5"] }]]));
+   * ```
+   * @source
+   */
+  public setResolvedStructures(resolved: ReadonlyMap<string, ResolvedStructure> | undefined): void {
+    this.resolvedStructures = resolved;
   }
 
   /**
@@ -1322,7 +1346,6 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
         return acc;
       }
 
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       acc[idx] = Object.assign(obj, { _fuzz: { score, idx }, matchPercentage: score });
       return acc;
     }, []);
@@ -2470,9 +2493,13 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     // time. Absent only if a supplier failed to stamp one, in which case this
     // product simply isn't cached.
     const cacheKey = this.productIdentityKey(product);
-    this.logger.debug("[SupplierBase > getProductDataWithCache] Product detail cache key:", cacheKey, {
-      url,
-    });
+    this.logger.debug(
+      "[SupplierBase > getProductDataWithCache] Product detail cache key:",
+      cacheKey,
+      {
+        url,
+      },
+    );
     try {
       if (!this.skipProductDetailCache && cacheKey) {
         const cachedData = await this.cache.getCachedProductData(cacheKey);

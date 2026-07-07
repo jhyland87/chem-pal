@@ -29,8 +29,8 @@ export class SupplierFoobar extends SupplierBase<Partial<Product>, Product> impl
   public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
 
   protected async queryProducts(
-    query: string,
-    limit: number = this.limit,
+    _query: string,
+    _limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
     return [];
   }

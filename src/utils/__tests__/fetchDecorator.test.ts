@@ -80,8 +80,9 @@ describe("fetchDecorator", () => {
     );
     const result = await fetchDecorator("https://x.test/bin");
     // Blob comes from undici's realm, so match by shape rather than instanceof.
-    expect(typeof result.data.arrayBuffer).toBe("function");
-    expect(await result.data.text()).toBe("bytes");
+    const data = result.data as Blob;
+    expect(typeof data.arrayBuffer).toBe("function");
+    expect(await data.text()).toBe("bytes");
   });
 
   it("falls back to blob parsing for an unrecognized content type", async () => {
@@ -92,7 +93,7 @@ describe("fetchDecorator", () => {
       }),
     );
     const result = await fetchDecorator("https://x.test/img");
-    expect(typeof result.data.arrayBuffer).toBe("function");
+    expect(typeof (result.data as Blob).arrayBuffer).toBe("function");
   });
 
   it("throws on a non-ok status", async () => {

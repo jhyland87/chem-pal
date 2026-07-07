@@ -40,13 +40,15 @@ function generateSimpleHash(str: string): string {
  * ```
  * @source
  */
-export async function generateRequestHash(url: string, options: any): Promise<string> {
+export async function generateRequestHash(url: string, options: RequestInit): Promise<string> {
   const data = {
     url,
     method: options.method || "GET",
     headers: options.headers || {},
     body: options.body || "",
-    contentType: options.headers?.["content-type"] || "",
+    // headers may be a Headers instance or string[][]; only plain-object headers
+    // expose content-type by index, matching the previous behavior.
+    contentType: (options.headers as Record<string, string> | undefined)?.["content-type"] || "",
   };
 
   const dataString = JSON.stringify(data);
@@ -80,7 +82,10 @@ export async function generateRequestHash(url: string, options: any): Promise<st
  * ```
  * @source
  */
-export async function fetchDecorator(url: string, options: RequestInit = {}): Promise<any> {
+export async function fetchDecorator(
+  url: string,
+  options: RequestInit = {},
+): Promise<Response & { data: unknown; requestHash: string }> {
   const requestHash = await generateRequestHash(url, options);
 
   const response = await fetch(url, options);

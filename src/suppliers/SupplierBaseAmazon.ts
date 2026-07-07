@@ -39,7 +39,7 @@ export type AmazonListing = Pick<
 >;
 
 const amazonDomains: CountryDomainMap = {
-  /* eslint-disable */
+   
   US: "https://www.amazon.com", // United States (default)
   UK: "https://www.amazon.co.uk", // United Kingdom
   DE: "https://www.amazon.de", // Germany
@@ -66,7 +66,7 @@ const amazonDomains: CountryDomainMap = {
   EG: "https://www.amazon.eg", // Egypt
   IE: "https://www.amazon.ie", // Ireland
   ZA: "https://www.amazon.co.za", // South Africa
-  /* eslint-enable */
+   
 };
 
 const userCountry = getUserLocation();
@@ -142,11 +142,11 @@ export abstract class SupplierBaseAmazon
       const response = await this.httpPost({
         path: `/s?k=${paginationQuery}&page=${page}&${this.extraParams || ""}`,
         body: {
-          /* eslint-disable */
+           
           "page-content-type": "atf",
           "prefetch-type": "rq",
           "customer-action": "pagination",
-          /* eslint-enable */
+           
         },
         headers: {
           "Accept-Language": "en-US,en;q=0.6",

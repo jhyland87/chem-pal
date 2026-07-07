@@ -332,7 +332,7 @@ export default function ResultsTable({
   }));
 
   // Debounced save — only persist the slices we care about restoring
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   const saveTableState = useCallback(
     debounce(async (s: TableState & { showFilters?: boolean }) => {
       try {
@@ -366,7 +366,7 @@ export default function ResultsTable({
       columnFilters: columnFilterFns[0],
       showFilters,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [tableState, globalFilter, columnFilterFns[0], showFilters, saveTableState]);
 
   // Clamp pageSize synchronously so the MUI Select never renders with an

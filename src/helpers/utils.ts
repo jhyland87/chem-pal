@@ -79,6 +79,8 @@ export function objectToQueryString(obj: Record<string, unknown>): string {
  * @source
  */
 export function base64EncodeUtf8(str: string): string {
+  // Intentionally matches the ASCII control range (0x00–0x7f) to detect pure-ASCII input.
+  // eslint-disable-next-line no-control-regex
   if (/^[\x00-\x7f]*$/.test(str)) {
     return btoa(str);
   }
@@ -323,7 +325,6 @@ export function mapDefined<T, R>(items: T[], fn: (arg: T) => R | null | undefine
  */
 export function decodeHTMLEntities(text: string): string {
   const entities: Record<string, string> = {
-    /* eslint-disable */
     "&nbsp;": " ",
     "&lt;": "<",
     "&gt;": ">",
@@ -337,7 +338,6 @@ export function decodeHTMLEntities(text: string): string {
     "&euro;": "€",
     "&copy;": "©",
     "&reg;": "®",
-    /* eslint-enable */
   } as const;
 
   return text
@@ -430,7 +430,7 @@ export function tryParseJson(data: unknown): unknown | undefined {
  */
 export function parseJsonFromDirtyString(data: string): unknown {
   const trimmed = data.trim();
-  const openBracket = trimmed.search(/[\[{]/);
+  const openBracket = trimmed.search(/[[{]/);
   if (openBracket === -1) throw new Error("No JSON array or object found in string");
 
   const openChar = trimmed[openBracket];
@@ -731,4 +731,37 @@ export function zodAddActualValueToIssues<T extends PathedIssue>(
 export function isMoleForm(moleform: string): boolean {
   const pattern = new RegExp(/^(?:[A-Z][a-z]?(?:(?:<sub>)?[1-9]\d*(?:<\/sub>)?)?)+$/);
   return pattern.test(moleform);
+}
+
+/**
+ * Preloads a list of images and returns a promise that resolves to an array of results.
+ * @param images - The list of images to preload.
+ * @returns A promise that resolves to an array of images that were successfully preloaded.
+ * @example
+ * ```typescript
+ * preloadImages(["https://example.com/image.jpg"]);
+ * // Returns a promise that resolves to an array of results.
+ * ```
+ * @source
+ */
+export async function preloadImages(images: string[]): Promise<string[]> {
+  const results = await Promise.allSettled(
+    images.map((image) => {
+      return new Promise<string>((resolve, reject) => {
+        const img = new Image();
+        img.src = image;
+        // Resolve with the URL string instead of the Event object
+        img.onload = () => resolve(image);
+        img.onerror = (e: unknown) =>
+          reject(
+            new Error(`Failed to load: ${image}: ${e instanceof Error ? e.message : String(e)}`),
+          );
+      });
+    }),
+  );
+
+  // Filter out failures and map to just the successful string values
+  return results
+    .filter((result): result is PromiseFulfilledResult<string> => result.status === "fulfilled")
+    .map((result) => result.value);
 }

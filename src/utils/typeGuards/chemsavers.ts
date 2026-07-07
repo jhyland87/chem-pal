@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const searchResponseItemSchema = z.object({
   document: z.object({
     //CAS: z.string(),
@@ -16,7 +15,6 @@ const searchResponseItemSchema = z.object({
     url: z.string(),
   }),
 });
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard to validate if an object matches the Chemsavers ProductObject structure.

@@ -71,7 +71,6 @@ const synthetikaProductPriceSchema = z.object({
   final_float: z.number(),
 });
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const synthetikaConfigurationOptionValueSchema = z.object({
   id: z.string(),
   order: z.string(),
@@ -109,8 +108,6 @@ const synthetikaProductResponseSchema = z.object({
   description: z.string(),
   options_configuration: z.array(synthetikaConfigurationOptionSchema).optional(),
 });
-
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * This can be used to typeguard a SynthetikaProduct

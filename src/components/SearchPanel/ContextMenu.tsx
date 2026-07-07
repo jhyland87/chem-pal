@@ -1,13 +1,14 @@
 import { useStatusBar } from "@/components/StatusBar";
 import { useAppContext } from "@/context";
+import { getProductIdentityKey } from "@/helpers/productIdentity";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
+import AutoDeleteIcon from "@/icons/AutoDeleteIcon";
 import BlockIcon from "@/icons/BlockIcon";
 import BookmarkIcon from "@/icons/BookmarkIcon";
 import CopyIcon from "@/icons/CopyIcon";
 import HttpIcon from "@/icons/HttpIcon";
-import InfoOutlineIcon from "@/icons/InfoOutlineIcon";
-import SearchIcon from "@/icons/SearchIcon";
 import SettingsIcon from "@/icons/SettingsIcon";
+import { deleteSupplierProductDataCacheEntry } from "@/utils/idbCache";
 import Divider from "@mui/material/Divider";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
@@ -321,22 +322,22 @@ export default function ContextMenu({
    * Currently logs to console - needs integration with details modal/panel.
    * @source
    */
-  const handleViewDetails = () => {
-    // TODO: Implement product details modal/panel
-    console.log("Viewing details", { product });
-    onClose();
-  };
+  // const handleViewDetails = () => {
+  //   // TODO: Implement product details modal/panel
+  //   console.log("Viewing details", { product });
+  //   onClose();
+  // };
 
-  /**
-   * Handles quick search for similar products.
-   * Currently logs to console - needs integration with search system.
-   * @source
-   */
-  const handleQuickSearch = () => {
-    // TODO: Implement quick search for similar products
-    console.log("Quick search", { product });
-    onClose();
-  };
+  // /**
+  //  * Handles quick search for similar products.
+  //  * Currently logs to console - needs integration with search system.
+  //  * @source
+  //  */
+  // const handleQuickSearch = () => {
+  //   // TODO: Implement quick search for similar products
+  //   console.log("Quick search", { product });
+  //   onClose();
+  // };
 
   /**
    * Delegates the "Ignore Product" action to the parent via the
@@ -351,6 +352,32 @@ export default function ContextMenu({
     } catch (error) {
       console.warn("Failed to ignore product:", { error });
     }
+    onClose();
+  };
+
+  /**
+   * Evicts this product's cached detail data from the supplier product-detail
+   * cache. The product stays in the table and search results — only its cache
+   * entry is removed, so the next search that surfaces it fetches fresh data
+   * instead of serving the cached copy. The cache key is derived the same way
+   * the supplier writes it: `getProductIdentityKey(cacheKey, supplier)`.
+   * @source
+   */
+  const handleRemoveFromCache = async () => {
+    if (!product.cacheKey || !product.supplier) {
+      flashStatusText("This product can't be removed from the cache");
+      onClose();
+      return;
+    }
+
+    try {
+      const cacheKey = getProductIdentityKey(product.cacheKey, product.supplier);
+      await deleteSupplierProductDataCacheEntry(cacheKey);
+      flashStatusText(`Removed ${product.title} from cache`);
+    } catch (error) {
+      console.error("Failed to remove product from cache:", { error, product });
+    }
+
     onClose();
   };
 
@@ -428,6 +455,16 @@ export default function ContextMenu({
           <ListItemText className={styles["context-menu-option-text"]} primary="Ignore Product" />
         </MenuItem>
 
+        <MenuItem className={styles["context-menu-item"]} onClick={handleRemoveFromCache}>
+          <ListItemIcon>
+            <AutoDeleteIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText
+            className={styles["context-menu-option-text"]}
+            primary="Remove Product from Cache"
+          />
+        </MenuItem>
+
         <Divider />
 
         <MenuItem
@@ -441,12 +478,12 @@ export default function ContextMenu({
           <ListItemText className={styles["context-menu-option-text"]} primary="Open in New Tab" />
         </MenuItem>
 
-        <MenuItem className={styles["context-menu-item"]} onClick={handleViewDetails}>
+        {/*  <MenuItem className={styles["context-menu-item"]} onClick={handleViewDetails}>
           <ListItemIcon>
             <InfoOutlineIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText className={styles["context-menu-option-text"]} primary="View Details" />
-        </MenuItem>
+        </MenuItem> */}
 
         <Divider />
 
@@ -457,18 +494,14 @@ export default function ContextMenu({
           <ListItemText className={styles["context-menu-option-text"]} primary="Create Bookmark" />
         </MenuItem>
 
-        <MenuItem className={styles["context-menu-item"]} onClick={handleQuickSearch}>
+        {/* <MenuItem className={styles["context-menu-item"]} onClick={handleQuickSearch}>
           <ListItemIcon>
             <SearchIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText className={styles["context-menu-option-text"]} primary="Search Similar" />
-        </MenuItem>
+         <ListItemText className={styles["context-menu-option-text"]} primary="Search Similar" />
+        </MenuItem>*/}
 
-        <MenuItem
-          className={styles["context-menu-item"]}
-          onClick={handleShare}
-          disabled={!openUrl}
-        >
+        <MenuItem className={styles["context-menu-item"]} onClick={handleShare} disabled={!openUrl}>
           <ListItemIcon>
             <SettingsIcon fontSize="small" />
           </ListItemIcon>

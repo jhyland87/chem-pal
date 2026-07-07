@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const searchResponseOkSchema = z.object({
   page: z.object({
     search: z.string(),
@@ -19,7 +18,6 @@ const searchResponseOkSchema = z.object({
     products: z.record(z.string(), z.unknown()),
   }),
 });
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard to validate if a response from the Laboratorium Discounter search API is valid.
@@ -118,7 +116,6 @@ export function isSearchResponseOk(response: unknown): response is SearchRespons
   );
 }
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const priceObjectSchema = z.object({
   price: z.number(),
   price_incl: z.number(),
@@ -127,7 +124,6 @@ const priceObjectSchema = z.object({
   price_old_incl: z.number(),
   price_old_excl: z.number(),
 });
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard to validate if an object has the correct structure for a Laboratorium Discounter price object.
@@ -197,7 +193,6 @@ export function isPriceObject(price: unknown): price is PriceObject {
   return priceObjectSchema.safeParse(price).success;
 }
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const searchResponseProductSchema = z.object({
   id: z.number(),
   vid: z.number(),
@@ -217,7 +212,6 @@ const searchResponseProductSchema = z.object({
   data_01: z.string(),
   price: priceObjectSchema,
 });
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard to validate if an object has the correct structure for a Laboratorium Discounter search response product.
@@ -272,7 +266,9 @@ export function isSearchResponseProduct(product: unknown): product is SearchResp
 const productObjectSchema = z.object({
   product: z
     .record(z.string(), z.unknown())
-    .refine((val) => "variants" in val && (typeof val.variants === "object" || val.variants === false)),
+    .refine(
+      (val) => "variants" in val && (typeof val.variants === "object" || val.variants === false),
+    ),
   shop: z.object({
     currencies: z.record(z.string(), z.unknown()),
     currency: z.string(),

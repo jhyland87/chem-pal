@@ -26,12 +26,12 @@ declare global {
     ? CS<R, Add<F, S>, Add<A, S>>
     : Add<A, S>;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   type Len<T extends string, A extends unknown[] = []> = T extends `${infer _}${infer R}`
     ? Len<R, [0, ...A]>
     : A["length"];
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   type Trunc<T, A extends unknown[], O extends string = ""> = A extends [infer _, ...infer RA]
     ? T extends `${infer F}${infer R}`
       ? Trunc<R, RA, `${O}${F}`>

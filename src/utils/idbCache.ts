@@ -39,7 +39,6 @@ interface ChemPalDBSchema extends DBSchema {
     value: {
       cacheKey: string;
       data: unknown[];
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       __cacheMetadata: {
         cachedAt: number;
         version: number;
@@ -145,9 +144,69 @@ export async function getSearchResults(): Promise<Product[]> {
   }
 }
 
+/**
+ * Derives a stable per-product identity used to detect duplicates, independent
+ * of the positional `_id`. Prefers the supplier-stable `cacheKey`, then the real
+ * product `id`, and finally the `supplier`+`url` pair.
+ * @param product - The product to key.
+ * @returns A string identity unique to the underlying product.
+ * @example
+ * ```ts
+ * productIdentity({ cacheKey: "P000805666", ... }); // "ck:P000805666"
+ * ```
+ * @source
+ */
+function productIdentity(product: Product): string {
+  if (product.cacheKey) {
+    return `ck:${product.cacheKey}`;
+  }
+  if (product.id != null) {
+    return `id:${String(product.id)}`;
+  }
+  return `su:${product.supplier}:${product.url}`;
+}
+
+/**
+ * Finds product identities that appear more than once, keyed by
+ * {@link productIdentity} (ignoring the positional `_id`). This is detection, not
+ * repair: the same product appearing twice means the search almost certainly ran
+ * twice, so callers surface it rather than silently removing the duplicates.
+ * @param results - The products to scan.
+ * @returns The duplicated identities (empty when every product is unique).
+ * @example
+ * ```ts
+ * findDuplicateProductIds([{ id: "A" }, { id: "A" }, { id: "B" }]); // ["id:A"]
+ * ```
+ * @source
+ */
+export function findDuplicateProductIds(results: Product[]): string[] {
+  const seen = new Set<string>();
+  const duplicates = new Set<string>();
+  for (const product of results) {
+    const key = productIdentity(product);
+    if (seen.has(key)) {
+      duplicates.add(key);
+    } else {
+      seen.add(key);
+    }
+  }
+  return [...duplicates];
+}
+
 export async function setSearchResults(results: Product[]): Promise<void> {
   try {
     const db = await getDB();
+    // Detect (do NOT silently remove) duplicates before persisting. The same
+    // product appearing twice means the search almost certainly fired twice —
+    // surface that loudly instead of masking the underlying double-search bug.
+    const duplicateIds = findDuplicateProductIds(results);
+    if (duplicateIds.length > 0) {
+      logger.warn("Duplicate products in search results — the search likely fired twice", {
+        duplicateCount: duplicateIds.length,
+        duplicateIds,
+        total: results.length,
+      });
+    }
     await db.put("searchResults", { id: "current", data: results });
     if (results.length === 0) {
       emitSearchResultsCleared();
@@ -382,6 +441,27 @@ export async function putSupplierProductDataCacheEntry(
     await tx.done;
   } catch (error) {
     logger.error("Failed to put supplier product data cache entry in IndexedDB", { error });
+  }
+}
+
+/**
+ * Deletes a single product-detail cache entry by its identity key. Used to evict
+ * one product from the cache (e.g. the "Remove Product from Cache" context-menu
+ * action) so its detail data is re-fetched fresh the next time it is surfaced,
+ * without touching the visible results.
+ * @param cacheKey - The product-detail cache key, from `getProductIdentityKey`.
+ * @example
+ * ```ts
+ * await deleteSupplierProductDataCacheEntry(getProductIdentityKey(product.cacheKey, product.supplier));
+ * ```
+ * @source
+ */
+export async function deleteSupplierProductDataCacheEntry(cacheKey: string): Promise<void> {
+  try {
+    const db = await getDB();
+    await db.delete("supplierProductDataCache", cacheKey);
+  } catch (error) {
+    logger.error("Failed to delete supplier product data cache entry from IndexedDB", { error });
   }
 }
 

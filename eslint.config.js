@@ -122,7 +122,7 @@ export default tseslint.config(
         },
         {
           selector: "enumMember",
-          format: ["PascalCase"],
+          format: ["PascalCase", "UPPER_CASE"],
         },
         {
           selector: "enum",
@@ -141,7 +141,14 @@ export default tseslint.config(
         },
       ],*/
       "@typescript-eslint/no-explicit-any": "error",
-      "@typescript-eslint/no-unused-vars": "error",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
       "@typescript-eslint/no-unused-expressions": "error",
     },
     plugins: {

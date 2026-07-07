@@ -97,7 +97,7 @@ export abstract class SupplierBaseWix
     this.accessToken = data.apps[this.ecomAppId].accessToken;
     this.headers = {
       ...this.headers,
-      // eslint-disable-next-line @typescript-eslint/naming-convention
+       
       Authorization: this.accessToken,
     };
   }

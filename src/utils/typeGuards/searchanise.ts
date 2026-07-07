@@ -56,7 +56,6 @@ export function isValidSearchResponse(response: unknown): response is SearchResp
   return parsed.data.items.every((item) => isItemListing(item));
 }
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const searchaniseVariantSchema = z.object({
   sku: z.string(),
   price: z.string(),
@@ -65,7 +64,6 @@ const searchaniseVariantSchema = z.object({
   quantity_total: z.union([z.string(), z.number()]),
   options: z.record(z.string(), z.unknown()),
 });
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard to validate if an object is a valid Searchanise product variant.
@@ -98,7 +96,6 @@ export function isSearchaniseVariant(variant: unknown): variant is SearchaniseVa
   return searchaniseVariantSchema.safeParse(variant).success;
 }
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const itemListingSchema = z.object({
   title: z.string(),
   price: z.union([z.string(), z.number()]),
@@ -111,7 +108,6 @@ const itemListingSchema = z.object({
   original_product_id: z.string(),
   list_price: z.string(),
 });
-/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard to validate if an object is a valid Searchanise item listing.
