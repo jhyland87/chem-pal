@@ -977,7 +977,7 @@ export class SupplierAmbeed
    * @source
    */
   protected titleSelector(data: AmbeedProductListResponseResultItem): string {
-    return (data.p_name_en?.trim() || data.p_proper_name3?.trim()) ?? "";
+    return (data.p_proper_name3?.trim() || data.p_name_en?.trim()) ?? "";
   }
 
   /**

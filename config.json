@@ -15,6 +15,7 @@
     "theme": "light",
     "showColumnFilters": true,
     "showAllColumns": false,
+    "excludeNonShippingSuppliers": true,
     "hideColumns": ["description", "uom", "sds", "specs", "coa", "cas", "formula", "moleweight", "purity", "concentration"],
     "columnFilterConfig": {}
   },

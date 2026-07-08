@@ -1,17 +1,20 @@
 import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 import { useAppContext } from "@/context";
 import { i18n } from "@/helpers/i18n";
+import { SupplierFactory } from "@/suppliers/SupplierFactory";
 import { ExpandMore as ExpandMoreIcon } from "@mui/icons-material";
 import {
   Accordion,
   Autocomplete,
   Box,
+  Checkbox,
   Chip,
+  FormControlLabel,
   InputAdornment,
   TextField,
   Typography,
 } from "@mui/material";
-import { ChangeEvent, ReactNode, SyntheticEvent } from "react";
+import { ChangeEvent, ReactNode, SyntheticEvent, useMemo } from "react";
 import styles from "./DrawerSearchPanel.module.scss";
 import { StyledAccordionDetails, StyledAccordionSummary } from "./StyledComponents";
 
@@ -90,6 +93,26 @@ export default function ColumnDrawerSection({
     setUserSettings,
   } = useAppContext();
 
+  // Supplier keys the ship-to filter will exclude, so the supplier autocomplete
+  // can grey out + italicize (and disable) suppliers that won't ship to the
+  // user's location. Empty unless this is the supplier selector and the filter
+  // is active — recomputed only when the location or toggle changes.
+  const excludeSuppliers = userSettings.excludeNonShippingSuppliers ?? true;
+  const { location } = userSettings;
+  const isSupplierSelector =
+    config.widget === "autocompleteStrings" && config.bind.kind === "selectedSuppliers";
+  const excludedSuppliers = useMemo(() => {
+    if (!isSupplierSelector || !excludeSuppliers || !location) {
+      return new Set<string>();
+    }
+    const shipsToMap = SupplierFactory.supplierShipsTo(location as CountryCode);
+    return new Set(
+      Object.entries(shipsToMap)
+        .filter(([, ships]) => !ships)
+        .map(([key]) => key),
+    );
+  }, [isSupplierSelector, excludeSuppliers, location]);
+
   const panelId = `search-${columnId}`;
   const isExpanded = expandedAccordion === panelId;
   const summary = (hint?: ReactNode) => (
@@ -146,6 +169,22 @@ export default function ColumnDrawerSection({
             }}
             value={currentValue}
             onChange={handleChange}
+            getOptionDisabled={(option) => excludedSuppliers.has(option)}
+            renderOption={(props, option) => {
+              // MUI passes `key` inside props; pull it out to set it explicitly.
+              const { key, ...optionProps } = props;
+              const excluded = excludedSuppliers.has(option);
+              return (
+                <Box
+                  component="li"
+                  key={key}
+                  {...optionProps}
+                  sx={excluded ? { fontStyle: "italic", color: "text.disabled" } : undefined}
+                >
+                  {optionLabels?.[option] ?? option}
+                </Box>
+              );
+            }}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -156,6 +195,24 @@ export default function ColumnDrawerSection({
               />
             )}
           />
+          {isSupplierSelector && (
+            <FormControlLabel
+              sx={{ mt: 1 }}
+              control={
+                <Checkbox
+                  size="small"
+                  checked={excludeSuppliers}
+                  onChange={(e) =>
+                    setUserSettings({
+                      ...userSettings,
+                      excludeNonShippingSuppliers: e.target.checked,
+                    })
+                  }
+                />
+              }
+              label="Only suppliers that ship to my location"
+            />
+          )}
         </StyledAccordionDetails>
       </Accordion>
     );

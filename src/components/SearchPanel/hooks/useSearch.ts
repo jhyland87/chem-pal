@@ -460,6 +460,8 @@ export function useSearch() {
           appContext.userSettings.noCacheStatusCodes,
           appContext.userSettings.maxAllowableSearchTime,
           appContext.userSettings.fuzzyFilteringDisabled,
+          appContext.userSettings.location,
+          appContext.userSettings.excludeNonShippingSuppliers ?? true,
         );
 
         const startSearchTime = performance.now();
@@ -587,7 +589,11 @@ export function useSearch() {
 
         // If no results were found, then try to suggest alternative search terms using cactus.nci.nih.gov API.
         if (totalResults === 0) {
-          const message = await buildNoResultsMessage(query, filtersActive);
+          // When the shipping filter alone emptied the supplier set, explain that
+          // directly instead of the generic "no products" suggestion flow.
+          const message = productQueryFactory.shippingExcludedAll
+            ? "No suppliers ship to your location. Turn off “Only suppliers that ship to my location” in the search drawer to include them."
+            : await buildNoResultsMessage(query, filtersActive);
           setTableText(message);
           logger.debug("setting table text", { tableText: message });
         } else {

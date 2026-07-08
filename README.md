@@ -28,14 +28,17 @@ Open source project aimed at helping amateur chemistry hobbyists find the best d
   "sodium borohydride" AND NOT (triacitoxyborohydride)
   ```
 - Advanced cache management allowing for faster query times
+- Constrain searches to suppliers that ship to your country
 - Compare prices across suppliers in one sortable, filterable table (prices converted to USD so different currencies line up)
 - Quantities normalized to a common unit, so you can compare price-per-amount fairly no matter how each supplier lists it
 - Auto-detected chemical details: CAS, formula, molecular weight, purity/grade, and concentration
 - One-click links to SDS, TDS, and COA documents when a supplier provides them
 - Works on both Chrome and Firefox, with light and dark themes
 - Viewable from popup or in separate browser tab
+- [Price tracking](https://github.com/jhyland87/chem-pal/blob/main/public/static/images/demo/price-tracking.png) on all products and variants
 - No account creation required to use extension
 - No data collection
+
 ----
 
 ## Installation

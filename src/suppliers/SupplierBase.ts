@@ -222,6 +222,43 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   }
 
   /**
+   * Determines whether this supplier ships to the given country. Prefers the
+   * explicit `shipsTo` allowlist when the supplier declares one; otherwise falls
+   * back to the coarse `shipping` scope — `"worldwide"`/`"international"` ship
+   * anywhere, while `"domestic"`/`"local"` ship only within the supplier's own
+   * `country`.
+   * @param location - The user's location as an ISO 3166-1 alpha-2 country code.
+   * @returns True if the supplier ships to `location`, false otherwise.
+   * @example
+   * ```typescript
+   * // Supplier with shipsTo = ["US", "CA"]:
+   * supplier.shipsToCountry("US"); // true
+   * supplier.shipsToCountry("DE"); // false
+   * // Domestic US supplier (no shipsTo):
+   * supplier.shipsToCountry("US"); // true
+   * supplier.shipsToCountry("DE"); // false
+   * // Worldwide supplier (no shipsTo):
+   * supplier.shipsToCountry("DE"); // true
+   * ```
+   * @source
+   */
+  public shipsToCountry(location: CountryCode): boolean {
+    if (this.shipsTo) {
+      return this.shipsTo.includes(location);
+    }
+    switch (this.shipping) {
+      case "worldwide":
+      case "international":
+        return true;
+      case "domestic":
+      case "local":
+        return this.country === location;
+      default:
+        return true;
+    }
+  }
+
+  /**
    * String to query for (product name, CAS, etc.). The search term that will
    * be used to find products. Set during construction and used throughout the
    * supplier's lifecycle.
