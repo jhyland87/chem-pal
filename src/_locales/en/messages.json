@@ -185,6 +185,20 @@
     "description": "Drawer accordion label for the price-range filter."
   },
 
+  "shipping_worldwide": { "message": "Worldwide", "description": "Shipping range value." },
+  "shipping_international": { "message": "International", "description": "Shipping range value." },
+  "shipping_domestic": { "message": "Domestic", "description": "Shipping range value." },
+  "shipping_local": { "message": "Local", "description": "Shipping range value." },
+
+  "availability_in_stock": { "message": "In Stock", "description": "Availability value." },
+  "availability_limited_stock": { "message": "Limited Stock", "description": "Availability value." },
+  "availability_out_of_stock": { "message": "Out of Stock", "description": "Availability value." },
+  "availability_preorder": { "message": "Pre-order", "description": "Availability value." },
+  "availability_backorder": { "message": "Backorder", "description": "Availability value." },
+  "availability_discontinued": { "message": "Discontinued", "description": "Availability value." },
+  "availability_unavailable": { "message": "Unavailable", "description": "Availability value." },
+  "availability_unknown": { "message": "Unknown", "description": "Availability value." },
+
   "filter_by_label": {
     "message": "Filter by $label$",
     "placeholders": { "label": { "content": "$1" } }

@@ -1463,6 +1463,8 @@ export class ProductBuilder<T extends Product> {
         case "instock":
         case "available":
           return AVAILABILITY.IN_STOCK;
+        case "limitedstock":
+          return AVAILABILITY.LIMITED_STOCK;
         case "unavailable":
         case "outofstock":
           return AVAILABILITY.OUT_OF_STOCK;

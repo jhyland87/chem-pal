@@ -201,6 +201,19 @@
     "message": "Zakres cen",
     "description": "Drawer accordion label for the price-range filter."
   },
+  "shipping_worldwide": { "message": "Ogólnoświatowa", "description": "Shipping range value." },
+  "shipping_international": { "message": "Międzynarodowa", "description": "Shipping range value." },
+  "shipping_domestic": { "message": "Krajowa", "description": "Shipping range value." },
+  "shipping_local": { "message": "Lokalna", "description": "Shipping range value." },
+
+  "availability_in_stock": { "message": "Dostępny", "description": "Availability value." },
+  "availability_limited_stock": { "message": "Ograniczona dostępność", "description": "Availability value." },
+  "availability_out_of_stock": { "message": "Brak w magazynie", "description": "Availability value." },
+  "availability_preorder": { "message": "Przedsprzedaż", "description": "Availability value." },
+  "availability_backorder": { "message": "Na zamówienie", "description": "Availability value." },
+  "availability_discontinued": { "message": "Wycofany", "description": "Availability value." },
+  "availability_unavailable": { "message": "Niedostępny", "description": "Availability value." },
+  "availability_unknown": { "message": "Nieznany", "description": "Availability value." },
   "filter_by_label": {
     "message": "Filtruj wg $label$",
     "placeholders": {

@@ -2,6 +2,7 @@ import { CountryFlagTooltip } from "@/components/StyledComponents";
 import { default as Link } from "@/components/TabLink";
 import {
   AVAILABILITY_OPTIONS,
+  isShippingRange,
   SHIPPING_OPTIONS,
   SUPPLIER_COUNTRY_OPTIONS,
 } from "@/constants/common";
@@ -15,10 +16,42 @@ import COAIcon from "@/icons/COAIcon";
 import SDSIcon from "@/icons/SDSIcon";
 import TDSIcon from "@/icons/TDSIcon";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
+import { isAvailability } from "@/utils/typeGuards/productbuilder";
 import { ColumnDef, type CellContext } from "@tanstack/react-table";
 import { hasFlag } from "country-flag-icons";
 import getUnicodeFlagIcon from "country-flag-icons/unicode";
 import styles from "./TableColumns.module.scss";
+
+/**
+ * Localized label for a supplier {@link ShippingRange} (worldwide/international/
+ * domestic/local). Falls back to the raw value for anything outside the known set.
+ * @param range - The shipping range value.
+ * @returns The translated label, or the raw value if unrecognized.
+ * @example
+ * ```ts
+ * shippingLabel("worldwide"); // => "Worldwide" (en) / "Ogólnoświatowa" (pl)
+ * ```
+ * @source
+ */
+function shippingLabel(range: string): string {
+  return isShippingRange(range) ? i18n(`shipping_${range}`) : range;
+}
+
+/**
+ * Localized label for an {@link AVAILABILITY} value. Also covers the drawer's
+ * grouped filter codes (`in_stock`, `out_of_stock`, …), which are a subset of the
+ * enum values. Falls back to the raw value for anything outside the known set.
+ * @param value - The availability value.
+ * @returns The translated label, or the raw value if unrecognized.
+ * @example
+ * ```ts
+ * availabilityLabel("in_stock"); // => "In Stock" (en) / "Dostępny" (pl)
+ * ```
+ * @source
+ */
+function availabilityLabel(value: string): string {
+  return isAvailability(value) ? i18n(`availability_${value}`) : value;
+}
 
 /**
  * Defines the column configuration for the product results table. Each
@@ -166,16 +199,20 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       id: "shipping",
       header: i18n("column_shipping"),
       accessorKey: "supplierShipping",
-      cell: (info) => info.getValue(),
+      cell: ({ row }: ProductRow) => {
+        const shipping = row.original.supplierShipping;
+        return shipping ? shippingLabel(shipping) : null;
+      },
       filterFn: "multiSelect",
       meta: {
         filterPlaceholder: i18n("filter_placeholder_shipping"),
         filterVariant: "select",
+        renderSelectOption: (value) => shippingLabel(value),
         drawer: {
           label: i18n("drawer_shipping_label"),
           widget: "chips",
           options: SHIPPING_OPTIONS,
-          formatChipLabel: (option) => option.charAt(0).toUpperCase() + option.slice(1),
+          formatChipLabel: (option) => shippingLabel(option),
           bind: { kind: "searchFilters", key: "shippingType" },
         },
       },
@@ -184,11 +221,15 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       id: "availability",
       header: i18n("column_availability"),
       accessorKey: "availability",
-      cell: (info) => info.getValue(),
+      cell: ({ row }: ProductRow) => {
+        const availability = row.original.availability;
+        return availability ? availabilityLabel(availability) : null;
+      },
       filterFn: "multiSelect",
       meta: {
         filterPlaceholder: i18n("filter_placeholder_availability"),
         filterVariant: "select",
+        renderSelectOption: (value) => availabilityLabel(value),
         style: {
           textAlign: "left",
         },
@@ -196,6 +237,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
           label: i18n("drawer_availability_label"),
           widget: "chips",
           options: AVAILABILITY_OPTIONS,
+          formatChipLabel: (option) => availabilityLabel(option),
           bind: { kind: "searchFilters", key: "availability" },
         },
       },
