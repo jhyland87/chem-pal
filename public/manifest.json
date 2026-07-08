@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Chem Pal",
+  "name": "__MSG_app_name__",
   "version": "0.0.13",
   "version_name": "0.0.13-beta.3",
-  "description": "Search and compare laboratory chemical product listings across supported supplier websites from a side panel.",
+  "description": "__MSG_app_description__",
   "action": {
     "default_popup": "index.html"
   },

@@ -1,4 +1,5 @@
 import { CACHE } from "@/constants/common";
+import { i18n } from "@/helpers/i18n";
 import { cstorage } from "@/utils/storage";
 import { Science as ScienceIcon, Search as SearchIcon } from "@mui/icons-material";
 import { Box, IconButton } from "@mui/material";
@@ -50,7 +51,7 @@ interface SearchFormProps {
 export const SearchForm: FC<SearchFormProps> = ({
   onSearch,
   onDrawerToggle,
-  placeholder = "Search for products...",
+  placeholder = i18n("search_placeholder"),
 }) => {
   const appContext = useAppContext();
   const { searchFilters, setSearchFilters } = appContext;
@@ -122,9 +123,9 @@ export const SearchForm: FC<SearchFormProps> = ({
           value={query}
           onChange={handleChange}
           placeholder={placeholder}
-          ariaLabel="search for products"
+          ariaLabel={i18n("search_form_aria")}
           onValidityChange={(blocked, message) =>
-            setSearchError(blocked ? (message ?? "Invalid query.") : undefined)
+            setSearchError(blocked ? (message ?? i18n("search_invalid_query")) : undefined)
           }
           style={{ marginLeft: 16, flex: 1, fontSize: "1.15rem" }}
         />
@@ -132,7 +133,7 @@ export const SearchForm: FC<SearchFormProps> = ({
         <IconButton
           className={styles['search-form-icon-button']}
           type="submit"
-          aria-label="search"
+          aria-label={i18n("search_submit")}
           disabled={!query.trim() || Boolean(searchError)}
         >
           <SearchIcon />
@@ -143,7 +144,7 @@ export const SearchForm: FC<SearchFormProps> = ({
           className={styles['search-form-icon-button']}
           type="button"
           //color="primary"
-          aria-label="advanced options"
+          aria-label={i18n("search_advanced_options")}
           onClick={handleDrawerToggle}
         >
           <ScienceIcon />

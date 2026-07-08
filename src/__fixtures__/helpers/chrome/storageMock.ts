@@ -13,8 +13,10 @@ const mockChrome = {
   storage: storageMaps,
 };
 
-// Assign mock to global
-Object.assign(global, { chrome: mockChrome });
+// Assign mock to global, preserving any existing chrome members (e.g. the
+// chrome.i18n stub installed by the vitest setup) so importing this fixture
+// doesn't wipe out i18n and break `@/helpers/i18n`.
+Object.assign(global, { chrome: { ...(global as typeof globalThis).chrome, ...mockChrome } });
 
 /**
  * Creates a mock implementation for Chrome storage methods that actually stores and retrieves data.

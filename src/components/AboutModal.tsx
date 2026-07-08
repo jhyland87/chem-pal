@@ -1,22 +1,27 @@
 import { default as Link } from "@/components/TabLink";
-import contributors from "@/data/contributors.json";
 import { i18n } from "@/helpers/i18n";
+import { isUpdateAvailable } from "@/helpers/updates";
 import GitHubIcon from "@/icons/GitHubIcon";
 import { ThemeContext } from "@/themes";
+import ArticleIcon from "@mui/icons-material/Article";
+import BrowserUpdatedIcon from "@mui/icons-material/BrowserUpdated";
+import BugReportIcon from "@mui/icons-material/BugReport";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ErrorIcon from "@mui/icons-material/Error";
+import SignalWifiConnectedNoInternet4Icon from "@mui/icons-material/SignalWifiConnectedNoInternet4";
+import WebIcon from "@mui/icons-material/Web";
 import Divider from "@mui/material/Divider";
-import IconButton from "@mui/material/IconButton";
 import Modal from "@mui/material/Modal";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import styles from "./AboutModal.module.scss";
-import { AboutContributorItem, AboutModalBox } from "./StyledComponents";
-
-interface Contributor {
-  name: string;
-  github: string;
-  testId: string;
-}
+import {
+  AboutContributorItem,
+  AboutModalBox,
+  AboutModalLink,
+  AboutModalLinkContainer,
+} from "./StyledComponents";
 
 /**
  * AboutModal component that displays information about the application.
@@ -47,13 +52,33 @@ export default function AboutModal({
   setAboutOpen: (open: boolean) => void;
 }) {
   // Trusted static build-time JSON whose shape matches Contributor.
-  const entries = contributors as Contributor[];
+  const entries = __APP_CONTRIBUTORS__;
   const themeContext = useContext(ThemeContext);
+  const [updateIcon, setUpdateIcon] = useState<React.ReactNode>(
+    <BrowserUpdatedIcon sx={{ fontSize: 16 }} />,
+  );
   const logoSrc =
     themeContext?.mode === "dark"
       ? "/static/images/logo/ChemPal-logo-v2-inverted.svg"
       : "/static/images/logo/ChemPal-logo-v2.svg";
 
+  const handleCheckForUpdates = () => {
+    (async () => {
+      try {
+        const isUpdateAvailableResult = await isUpdateAvailable();
+        if (isUpdateAvailableResult) {
+          setUpdateIcon(<CheckCircleIcon sx={{ fontSize: 16, color: "success.main" }} />);
+        } else {
+          setUpdateIcon(<ErrorIcon sx={{ fontSize: 16, color: "warning.main" }} />);
+        }
+      } catch (error) {
+        console.error("Failed to check for updates:", { error });
+        setUpdateIcon(
+          <SignalWifiConnectedNoInternet4Icon sx={{ fontSize: 16, color: "error.main" }} />,
+        );
+      }
+    })();
+  };
   return (
     <Modal
       data-testid="about-modal"
@@ -63,42 +88,75 @@ export default function AboutModal({
       aria-describedby="application-description"
     >
       <AboutModalBox className={styles["about-box"]} onClick={(e) => e.stopPropagation()}>
-        <img src={logoSrc} alt="ChemPal logo" className={styles["about-logo"]} />
+        <img src={logoSrc} alt={i18n("about_logo_alt")} className={styles["about-logo"]} />
         <Typography
           id="application-title"
           variant="h6"
           component="h2"
           className={styles["about-title"]}
         >
-          {i18n("about_chempal")}
-          <IconButton
+          {i18n("about_title")}
+        </Typography>
+        <Typography
+          variant="subtitle2"
+          gutterBottom
+          sx={{ alignItems: "center", textAlign: "center" }}
+        >
+          {__APP_VERSION__}{" "}
+          <Link
+            href="#"
+            onClick={handleCheckForUpdates}
+            sx={{ marginLeft: 1, verticalAlign: "top" }}
+          >
+            {updateIcon}
+          </Link>
+        </Typography>
+
+        <AboutModalLinkContainer>
+          <AboutModalLink
             data-testid="github-button"
-            href="https://github.com/justinhyland/chem-pal"
+            href={__APP_REPOSITORY__}
             target="_blank"
             rel="noopener noreferrer"
-            sx={{
-              ml: 1.25,
-              color: "text.secondary",
-              "&:hover": {
-                color: "primary.main",
-                backgroundColor: "action.hover",
-              },
-            }}
           >
             <GitHubIcon />
-          </IconButton>
-        </Typography>
+          </AboutModalLink>
+          <AboutModalLink
+            data-testid="homepage-button"
+            href={__APP_HOMEPAGE__}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <WebIcon />
+          </AboutModalLink>
+          <AboutModalLink
+            data-testid="wiki-button"
+            href={__APP_WIKI__}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <ArticleIcon />
+          </AboutModalLink>
+          <AboutModalLink
+            data-testid="bugs-button"
+            href={__APP_BUGS__}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <BugReportIcon />
+          </AboutModalLink>
+        </AboutModalLinkContainer>
         <Typography
           id="application-description"
           variant="subtitle2"
           gutterBottom
           sx={{ mt: 0.5, display: "block" }}
         >
-          {i18n("application_description")}
+          {i18n("about_description")}
         </Typography>
         <Divider sx={{ color: "primary.main", my: 2 }}>
           <Typography variant="overline" gutterBottom sx={{ display: "block" }}>
-            {i18n("contributors")}
+            {i18n("about_contributors")}
           </Typography>
         </Divider>
 
@@ -109,8 +167,8 @@ export default function AboutModal({
           sx={{ gap: 2 }}
         >
           {entries.map((entry) => (
-            <AboutContributorItem key={entry.testId}>
-              <Link data-testid={entry.testId} href={entry.github}>
+            <AboutContributorItem key={entry.name}>
+              <Link data-testid={entry.name} href={entry.url}>
                 <Typography
                   sx={{ color: "text.secondary" }}
                   className={styles["about-contributor-link"]}

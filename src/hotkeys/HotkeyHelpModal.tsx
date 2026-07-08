@@ -3,6 +3,7 @@ import Modal from "@mui/material/Modal";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import Typography from "@mui/material/Typography";
+import { i18n } from "@/helpers/i18n";
 import { useEffect, useMemo, useState, type SyntheticEvent } from "react";
 import { formatBindingTokens } from "./matcher";
 import styles from "./HotkeyHelpModal.module.scss";
@@ -38,6 +39,30 @@ function groupByGroup(configs: HotkeyConfig[]): Map<string, HotkeyConfig[]> {
     }
   }
   return groups;
+}
+
+/**
+ * Localized tab label for a hotkey group, keyed by the lowercased group name
+ * (e.g. `hotkeys_group_search`). Falls back to the raw group when no message
+ * is defined.
+ * @param group - The raw group name from `config.json`.
+ * @returns The localized group label.
+ * @source
+ */
+function localizeGroup(group: string): string {
+  return i18n(`hotkeys_group_${group.toLowerCase()}`) || group;
+}
+
+/**
+ * Localized description for a hotkey, keyed by the lowercased hotkey id
+ * (e.g. `hotkeys_desc_gotosearch`). Falls back to the English `description`
+ * declared in `config.json`.
+ * @param config - The hotkey config entry.
+ * @returns The localized description.
+ * @source
+ */
+function localizeDescription(config: HotkeyConfig): string {
+  return i18n(`hotkeys_desc_${config.id.toLowerCase()}`) || config.description;
 }
 
 /**
@@ -96,7 +121,7 @@ export default function HotkeyHelpModal({ open, onClose }: HotkeyHelpModalProps)
           className={styles["hotkey-help-title"]}
           sx={{ mb: 0.5 }}
         >
-          Keyboard Shortcuts
+          {i18n("hotkeys_title")}
         </Typography>
         <Tabs
           value={activeGroup}
@@ -107,7 +132,7 @@ export default function HotkeyHelpModal({ open, onClose }: HotkeyHelpModalProps)
           className={styles["hotkey-tabs"]}
         >
           {groupNames.map((group) => (
-            <Tab key={group} label={group} value={group} />
+            <Tab key={group} label={localizeGroup(group)} value={group} />
           ))}
         </Tabs>
         <Divider />
@@ -122,7 +147,7 @@ export default function HotkeyHelpModal({ open, onClose }: HotkeyHelpModalProps)
                 ))}
               </HotkeyComboGroup>
               <Typography variant="body2" className={styles["hotkey-description"]}>
-                {entry.description}
+                {localizeDescription(entry)}
               </Typography>
             </HotkeyRow>
           ))}

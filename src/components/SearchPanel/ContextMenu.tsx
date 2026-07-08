@@ -213,7 +213,7 @@ export default function ContextMenu({
    * @source
    */
   const handleCreateBookmark = async () => {
-    const FOLDER_NAME = i18n("chempal_favorites_folder_name");
+    const FOLDER_NAME = i18n("bookmark_favorites_folder");
 
     /**
      * Recursively searches the bookmark tree for a folder matching the given name.
@@ -278,14 +278,14 @@ export default function ContextMenu({
       const duplicate = children.find((node) => node.url === openUrl);
 
       if (duplicate) {
-        flashStatusText(i18n("bookmark_already_exists_in_folder", [FOLDER_NAME]));
+        flashStatusText(i18n("bookmark_already_exists", [FOLDER_NAME]));
       } else {
         await chrome.bookmarks.create({
           parentId: folderId,
           title: product.title,
           url: openUrl,
         });
-        flashStatusText(i18n("bookmark_created_at_folder", [FOLDER_NAME, product.title]));
+        flashStatusText(i18n("bookmark_created", [FOLDER_NAME]));
       }
     } catch (error) {
       console.error("Failed to create bookmark:", { error, product });
@@ -303,8 +303,8 @@ export default function ContextMenu({
     if (navigator.share && openUrl) {
       try {
         await navigator.share({
-          title: product.title || i18n("chemical_product"),
-          text: i18n("check_out_chemical_product", [product.title]),
+          title: product.title || i18n("share_fallback_title"),
+          text: i18n("share_text", [product.title]),
           url: openUrl,
         });
       } catch (error) {
@@ -366,7 +366,7 @@ export default function ContextMenu({
    */
   const handleRemoveFromCache = async () => {
     if (!product.cacheKey || !product.supplier) {
-      flashStatusText(i18n("this_product_cant_be_removed_from_the_cache"));
+      flashStatusText(i18n("context_menu_cache_remove_unavailable"));
       onClose();
       return;
     }
@@ -374,7 +374,7 @@ export default function ContextMenu({
     try {
       const cacheKey = getProductIdentityKey(product.cacheKey, product.supplier);
       await deleteSupplierProductDataCacheEntry(cacheKey);
-      flashStatusText(i18n("removed_product_from_cache", [product.title]));
+      flashStatusText(i18n("context_menu_removed_from_cache", [product.title]));
     } catch (error) {
       console.error("Failed to remove product from cache:", { error, product });
     }
@@ -390,13 +390,13 @@ export default function ContextMenu({
   const handleCopyProductInfo = async () => {
     const productInfo = [
       product.title,
-      i18n("copy_product_info_price", [product.currencySymbol, product.price]),
-      i18n("copy_product_info_supplier", [product.supplier]),
-      i18n("copy_product_info_url", [openUrl]),
+      i18n("copy_info_price", [product.currencySymbol, product.price]),
+      i18n("copy_info_supplier", [product.supplier]),
+      i18n("copy_info_url", [openUrl]),
     ];
 
     if (product.description) {
-      productInfo.push(i18n("copy_product_info_description", [product.description]));
+      productInfo.push(i18n("copy_info_description", [product.description]));
     }
 
     try {

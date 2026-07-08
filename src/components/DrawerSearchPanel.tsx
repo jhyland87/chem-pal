@@ -1,6 +1,7 @@
 import TableColumns from "@/components/SearchPanel/TableColumns";
 import { CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
 import { useAppContext } from "@/context";
+import { i18n } from "@/helpers/i18n";
 import { cstorage } from "@/utils/storage";
 import { ExpandMore as ExpandMoreIcon, Search as SearchIcon } from "@mui/icons-material";
 import { Accordion, Box, Button, TextField, Typography } from "@mui/material";
@@ -141,10 +142,11 @@ const DrawerSearchPanel: FC<{
     >
       <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Typography>
-          Results Limit
+          {i18n("drawer_results_limit")}
           {userSettings.supplierResultLimit != null && (
             <span className={styles["accordion-hint"]}>
-              ({userSettings.supplierResultLimit} per supplier)
+              {" "}
+              {i18n("drawer_results_limit_hint", [String(userSettings.supplierResultLimit)])}
             </span>
           )}
         </Typography>
@@ -152,7 +154,7 @@ const DrawerSearchPanel: FC<{
       <StyledAccordionDetails>
         <TextField
           style={{ width: "100%" }}
-          label="Results Limit (per Supplier)"
+          label={i18n("drawer_results_limit_label")}
           value={userSettings.supplierResultLimit}
           onChange={(e) =>
             setUserSettings({
@@ -171,7 +173,7 @@ const DrawerSearchPanel: FC<{
       <Box sx={{ p: "12px 16px" }}>
         <TextField
           fullWidth
-          label="Product name or keyword"
+          label={i18n("drawer_product_name_label")}
           size="small"
           value={searchFilters.titleQuery}
           onChange={(e) => handleTitleQueryChange(e.target.value)}
@@ -204,7 +206,7 @@ const DrawerSearchPanel: FC<{
           onClick={() => void handleSearch()}
           disabled={!searchFilters.titleQuery.trim()}
         >
-          Search
+          {i18n("drawer_search_button")}
         </Button>
       </Box>
     </Box>

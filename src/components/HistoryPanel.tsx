@@ -1,5 +1,6 @@
 import { DRAWER_INDEX, PANEL } from "@/constants/common";
 import { useAppContext } from "@/context";
+import { i18n } from "@/helpers/i18n";
 import { formatTimestamp } from "@/helpers/utils";
 import { clearSearchHistory, getSearchHistory } from "@/utils/idbCache";
 import { Delete as DeleteIcon, FilterList as FilterListIcon } from "@mui/icons-material";
@@ -101,14 +102,14 @@ const HistoryPanel: FC = () => {
     const parts: string[] = [];
     if (entry.filters) {
       if (entry.filters.availability.length > 0)
-        parts.push(`Availability: ${entry.filters.availability.join(", ")}`);
+        parts.push(i18n("history_filter_availability", [entry.filters.availability.join(", ")]));
       if (entry.filters.country.length > 0)
-        parts.push(`Country: ${entry.filters.country.join(", ")}`);
+        parts.push(i18n("history_filter_country", [entry.filters.country.join(", ")]));
       if (entry.filters.shippingType.length > 0)
-        parts.push(`Shipping: ${entry.filters.shippingType.join(", ")}`);
+        parts.push(i18n("history_filter_shipping", [entry.filters.shippingType.join(", ")]));
     }
     if (entry.selectedSuppliers && entry.selectedSuppliers.length > 0) {
-      parts.push(`Suppliers: ${entry.selectedSuppliers.length} selected`);
+      parts.push(i18n("history_filter_suppliers", [String(entry.selectedSuppliers.length)]));
     }
     return parts.length > 0 ? parts.join("\n") : null;
   };
@@ -117,10 +118,12 @@ const HistoryPanel: FC = () => {
     <Box className={styles["history-panel"]}>
       <Box className={styles["history-panel__header"]}>
         <Typography variant="caption" color="text.secondary">
-          {history.length} {history.length === 1 ? "search" : "searches"}
+          {history.length === 1
+            ? i18n("history_count_single", [String(history.length)])
+            : i18n("history_count_plural", [String(history.length)])}
         </Typography>
         {history.length > 0 && (
-          <Tooltip title="Clear history">
+          <Tooltip title={i18n("history_clear")}>
             <IconButton
               size="small"
               onClick={handleClearHistory}
@@ -137,7 +140,7 @@ const HistoryPanel: FC = () => {
           color="text.secondary"
           className={styles["history-panel__empty"]}
         >
-          No search history yet.
+          {i18n("history_empty")}
         </Typography>
       ) : (
         <List dense disablePadding>
@@ -166,7 +169,11 @@ const HistoryPanel: FC = () => {
                     )}
                   </Box>
                 }
-                secondary={`${formatTimestamp(entry.timestamp)} — ${entry.resultCount} result${entry.resultCount !== 1 ? "s" : ""}`}
+                secondary={`${formatTimestamp(entry.timestamp)} — ${
+                  entry.resultCount === 1
+                    ? i18n("history_result_single", [String(entry.resultCount)])
+                    : i18n("history_result_plural", [String(entry.resultCount)])
+                }`}
                 slotProps={{
                   secondary: {
                     variant: "caption",

@@ -11,6 +11,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import Link from "@mui/material/Link";
 import { styled } from "@mui/material/styles";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -805,6 +806,32 @@ export const AboutModalBox = styled(Box)(({ theme }) => ({
   padding: theme.spacing(4),
 }));
 
+// Container for the about modal link buttons.
+export const AboutModalLinkContainer = styled(Box)(({ theme }) => ({
+  display: "flex",
+  gap: theme.spacing(1),
+  justifyContent: "center",
+}));
+
+// Link button for the about modal.
+export const AboutModalLink = styled(Link)(({ theme }) => ({
+  color: theme.palette.text.secondary,
+  marginLeft: theme.spacing(1.25),
+  marginRight: theme.spacing(1.25),
+  "&:hover": {
+    color: theme.palette.primary.main,
+    backgroundColor: theme.palette.action.hover,
+  },
+  "&:focus": {
+    outline: "none",
+  },
+  "&:active": {
+    outline: "none",
+  },
+  "&:focus-visible": {
+    outline: "none",
+  },
+}));
 // Paper tile for each contributor entry in the AboutModal. Theme-aware for
 // typography, color, and padding; the static text alignment lives in the
 // AboutModal.module.scss `.about-contributor-link` class.

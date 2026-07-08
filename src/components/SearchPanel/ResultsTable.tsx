@@ -456,13 +456,13 @@ export default function ResultsTable({
               <BackButton
                 onClick={() => appContext.setPanel!(0)}
                 size="small"
-                aria-label="Back to search home"
+                aria-label={i18n("common_back_to_search")}
               >
                 <ArrowBackIcon />
               </BackButton>
             )}
             {executedQuery && (
-              <SearchedQueryLabel variant="body2" title={`Searched for: ${executedQuery}`}>
+              <SearchedQueryLabel variant="body2" title={i18n("results_searched_for", [executedQuery])}>
                 {executedQuery}
               </SearchedQueryLabel>
             )}
@@ -497,7 +497,7 @@ export default function ResultsTable({
                 onClick={() => void openExtensionTab()}
                 size="small"
                 iconColor="#666"
-                aria-label="Open in tab"
+                aria-label={i18n("common_open_in_tab")}
               >
                 <OpenInNewIcon />
               </ColoredIconButton>
@@ -509,8 +509,9 @@ export default function ResultsTable({
 
         <ResultsHeaderContainer>
           <ResultsCountDisplay>
-            Results: {filteredRowCount}
-            {filteredRowCount !== totalRowCount && ` of ${totalRowCount}`}
+            {filteredRowCount === totalRowCount
+              ? i18n("results_count", [String(filteredRowCount)])
+              : i18n("results_count_filtered", [String(filteredRowCount), String(totalRowCount)])}
           </ResultsCountDisplay>
           {/* Only show the global filter if there are results. Based on
               searchResults (not the filtered row model) so the input doesn't
@@ -519,14 +520,14 @@ export default function ResultsTable({
             <GlobalFilterTextField
               size="small"
               variant="outlined"
-              placeholder="Filter results..."
+              placeholder={i18n("results_filter_placeholder")}
               value={globalFilter}
               onChange={(e) => setGlobalFilter(e.target.value)}
               inputRef={globalFilterInputRef}
               slotProps={{
                 input: {
                   onKeyDown: handleKeyPress,
-                  "aria-label": "Filter results",
+                  "aria-label": i18n("results_filter_aria"),
                 },
               }}
             />
@@ -604,11 +605,11 @@ export default function ResultsTable({
                               cellWidth={27.5}
                               sx={{ flexShrink: 0 }}
                             >
-                              <Tooltip title="Clear all filters">
+                              <Tooltip title={i18n("results_clear_filters")}>
                                 <IconButton
                                   size="small"
                                   onClick={() => columnFilterFns[1]([])}
-                                  aria-label="Clear all filters"
+                                  aria-label={i18n("results_clear_filters")}
                                   sx={{ flexShrink: 0 }}
                                 >
                                   <SearchOffIcon fontSize="small" sx={{ flexShrink: 0 }} />
@@ -672,11 +673,11 @@ export default function ResultsTable({
                   <EmptyStateCell colSpan={table.getAllColumns().length}>
                     {searchResults.length === 0
                       ? isLoading
-                        ? i18n("results_table_status_searching")
-                        : tableText || i18n("results_table_status_no_search_query")
+                        ? i18n("results_status_searching")
+                        : tableText || i18n("results_status_no_search_query")
                       : table.getState().columnFilters.length > 0 || table.getState().globalFilter
-                        ? i18n("results_table_status_no_results_matching_your_filter_values")
-                        : i18n("results_table_status_no_results_found")}
+                        ? i18n("results_status_no_results_filtered")
+                        : i18n("results_status_no_results_found")}
                   </EmptyStateCell>
                 </TableRow>
               )}
@@ -686,12 +687,12 @@ export default function ResultsTable({
           {/* Enhanced error handling */}
           {error && (
             <ErrorContainer className={resultStyles["error-container"]}>
-              <p>{i18n("results_table_error", [error])}</p>
+              <p>{i18n("results_error", [error])}</p>
               <ErrorRetryButton
                 onClick={() => window.location.reload()}
                 className={resultStyles["error-retry-button"]}
               >
-                {i18n("results_table_retry")}
+                {i18n("results_retry")}
               </ErrorRetryButton>
             </ErrorContainer>
           )}
@@ -701,21 +702,21 @@ export default function ResultsTable({
             <PaginationContainer>
               {/* Page Size Selector */}
               <PageSizeContainer>
-                <Typography variant="body2">{i18n("results_table_show")}:</Typography>
+                <Typography variant="body2">{i18n("results_show")}:</Typography>
                 <FormControl size="small">
                   <PageSizeSelect
                     value={table.getState().pagination.pageSize}
                     onChange={(e) => table.setPageSize(Number(e.target.value))}
-                    aria-label="rows per page"
+                    aria-label={i18n("results_rows_per_page_aria")}
                   >
                     {generatePageSizes(totalRowCount, 10, 5).map((pageSize) => (
                       <MenuItem key={pageSize} value={pageSize}>
-                        {pageSize === totalRowCount ? i18n("results_table_all") : pageSize}
+                        {pageSize === totalRowCount ? i18n("results_all") : pageSize}
                       </MenuItem>
                     ))}
                   </PageSizeSelect>
                 </FormControl>
-                <Typography variant="body2">{i18n("results_table_rows")}</Typography>
+                <Typography variant="body2">{i18n("results_rows")}</Typography>
               </PageSizeContainer>
 
               {/* Page Info — "Showing N of M" surfaces the post-filter vs
@@ -723,13 +724,13 @@ export default function ResultsTable({
                   column / global filter. When no filter is active (filtered
                   === total) it collapses back to the plain total form. */}
               <Typography variant="body2">
-                {i18n("results_table_page_of_total", [
+                {i18n("results_page_of_total", [
                   String(table.getState().pagination.pageIndex + 1),
                   String(table.getPageCount()),
                 ]) + " "}
                 {filteredRowCount === totalRowCount
-                  ? i18n("results_table_total_results", [String(totalRowCount)])
-                  : i18n("results_table_showing_results", [
+                  ? i18n("results_total", [String(totalRowCount)])
+                  : i18n("results_showing", [
                       String(filteredRowCount),
                       String(totalRowCount),
                     ])}

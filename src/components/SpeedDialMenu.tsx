@@ -1,5 +1,6 @@
 import { PANEL } from "@/constants/common";
 import { useAppContext } from "@/context";
+import { i18n } from "@/helpers/i18n";
 import AutoDeleteIcon from "@/icons/AutoDeleteIcon";
 import ClearIcon from "@/icons/ClearIcon";
 import ContrastIcon from "@/icons/ContrastIcon";
@@ -109,11 +110,13 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
    * @source
    */
   const actions = [
-    { icon: <ClearIcon />, name: "Clear Results", onClick: handleClearResults },
-    { icon: <AutoDeleteIcon />, name: "Clear Cache", onClick: handleClearCache },
-    { icon: <ContrastIcon />, name: "Toggle Theme", onClick: handleToggleTheme },
-    ...(IS_DEV_BUILD ? [{ icon: <BarChartIcon />, name: "Stats", onClick: handleStatsOpen }] : []),
-    { icon: <InfoOutlineIcon />, name: "About", onClick: handleAboutOpen },
+    { icon: <ClearIcon />, name: i18n("speed_dial_clear_results"), onClick: handleClearResults },
+    { icon: <AutoDeleteIcon />, name: i18n("speed_dial_clear_cache"), onClick: handleClearCache },
+    { icon: <ContrastIcon />, name: i18n("speed_dial_toggle_theme"), onClick: handleToggleTheme },
+    ...(IS_DEV_BUILD
+      ? [{ icon: <BarChartIcon />, name: i18n("speed_dial_stats"), onClick: handleStatsOpen }]
+      : []),
+    { icon: <InfoOutlineIcon />, name: i18n("speed_dial_about"), onClick: handleAboutOpen },
   ];
 
   return (
@@ -123,10 +126,10 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
         id="speed-dial-menu"
         className={speedDialVisibility ? "speed-dial-menu open" : "speed-dial-menu"}
         FabProps={{ size: "small" }}
-        ariaLabel="SpeedDial Menu"
+        ariaLabel={i18n("speed_dial_aria")}
         sx={{ position: "fixed", bottom: 6, right: 0 }}
         icon={
-          <HelpTooltip text="Bring your cursor to the bottom right corner of the screen to open the menu">
+          <HelpTooltip text={i18n("speed_dial_hint")}>
             <SpeedDialIcon />
           </HelpTooltip>
         }

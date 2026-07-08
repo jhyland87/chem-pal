@@ -1,35 +1,61 @@
-import { defaultSettings, languages } from "@/../config.json";
 import { useAppContext } from "@/components/SearchPanel/hooks/useContext";
 import { ACTION_TYPE, COUNTRIES } from "@/constants/common";
 import { CURRENCIES } from "@/constants/currency";
-import { getLanguageName } from "@/helpers/utils";
+import { FUZZ_SCORER_NAMES } from "@/constants/fuzzScorers";
+import {
+  loadExcludedProducts,
+  removeExcludedProduct,
+  type ExcludedProductsMap,
+} from "@/helpers/excludedProducts";
+import { i18n } from "@/helpers/i18n";
+import { formatTimestamp, getLanguageName } from "@/helpers/utils";
+import { clearExcludedProducts, clearPriceHistory } from "@/utils/idbCache";
+import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import { isButtonElement } from "@/utils/typeGuards/common";
+import DeleteIcon from "@mui/icons-material/Delete";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import TextDecreaseIcon from "@mui/icons-material/TextDecrease";
 import TextFormatIcon from "@mui/icons-material/TextFormat";
 import TextIncreaseIcon from "@mui/icons-material/TextIncrease";
+import Accordion from "@mui/material/Accordion";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import AccordionSummary from "@mui/material/AccordionSummary";
 import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import ButtonGroup from "@mui/material/ButtonGroup";
-import Divider from "@mui/material/Divider";
 import FormControl from "@mui/material/FormControl";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import FormGroup from "@mui/material/FormGroup";
-import InputLabel from "@mui/material/InputLabel";
+//import FormHelperText from "@mui/material/FormHelperText";
+import IconButton from "@mui/material/IconButton";
+import Link from "@mui/material/Link";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
-import ListSubheader from "@mui/material/ListSubheader";
 import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
 import Switch from "@mui/material/Switch";
 import TextField from "@mui/material/TextField";
-import { ChangeEvent, MouseEvent, startTransition, useActionState } from "react";
+import Tooltip from "@mui/material/Tooltip";
+import Typography from "@mui/material/Typography";
+import {
+  ChangeEvent,
+  MouseEvent,
+  SyntheticEvent,
+  startTransition,
+  useActionState,
+  useEffect,
+  useState,
+} from "react";
+import { getAvailableLocales } from "@/helpers/locales";
+import styles from "./SettingsPanel.module.scss";
 
-const inputStyle = {
-  width: 120,
-  size: "small",
-};
+// Languages the extension ships a translation (`messages.json`) for. Derived at
+// build time from src/_locales, so adding a locale folder adds a dropdown option.
+const AVAILABLE_LOCALES = getAvailableLocales();
+
+// SettingAction type is declared globally in types/settings.d.ts
 
 // Cap the rendered options so the country/currency menus stay short; users
 // narrow the list by typing a name or code.
@@ -42,132 +68,67 @@ const currencyFilter = createFilterOptions<{ code: string; symbol: string }>({
   stringify: (option) => `${option.code} ${option.symbol}`,
 });
 
-// Show the setting helper text only when that listitem is hovered over.
-const displayHelperOnHover = {
-   
-  "& > .MuiFormHelperText-root": {
-    transition: "visibility 0s, opacity 0.5s linear",
-    visibility: "hidden",
-    paddingRight: 3,
-    opacity: 0,
-  },
-  "&:hover > .MuiFormHelperText-root": {
-    visibility: "visible",
-    opacity: 1,
-  },
-  "&:focus > .MuiFormHelperText-root": {
-    visibility: "visible",
-    opacity: 1,
-  },
-   
-};
-
 /**
- * Enhanced SettingsPanel component using React v19 features for improved form management.
- *
- * Key improvements over original SettingsPanel.tsx:
- * - useActionState for consolidated form state management
- * - use() hook for simpler context access
- * - Unified event handlers for different input types
- * - Better error handling and loading states
- * - Reduced re-renders through optimized state management
- *
- * COMPARISON WITH ORIGINAL:
- *
- * Original (multiple separate handlers):
- * ```typescript
- * const handleSwitchChange = (event: ChangeEvent<HTMLInputElement>) => {...};
- * const handleInputChange = (event: SelectChangeEvent | ChangeEvent<...>) => {...};
- * const handleButtonClick = (event: MouseEvent<HTMLDivElement>) => {...};
- * // Each directly calls appContext.setUserSettings
- * ```
- *
- * React v19 Version:
- * ```typescript
- * const [formState, updateSetting, isPending] = useActionState(settingsAction, userSettings);
- * // Single action handler that batches updates and provides loading states
- * ```
- *
- * BENEFITS:
- * 1. Consolidated form state management with useActionState
- * 2. Built-in loading states for settings updates
- * 3. Better error handling for failed updates
- * 4. Automatic batching of rapid setting changes
- * 5. Simpler context access with use() hook
+ * The full settings panel shown in the drawer's Settings tab. Renders all user
+ * preference controls (currencies, locations, toggles, numeric limits, excluded
+ * products, etc.) and persists changes to `userSettings` via app context.
  * @returns The settings panel element.
  * @example
  * ```tsx
- * // Standalone settings view (React v19 useActionState-based).
+ * // Rendered inside the Settings drawer tab.
  * <SettingsPanel />
  * ```
  * @source
  */
 export default function SettingsPanel() {
-  // React v19's use() hook simplifies context access
   const appContext = useAppContext();
+  const [expanded, setExpanded] = useState<string | false>("behavior");
 
   if (!appContext) {
-    return <div>Loading settings...</div>;
+    return <div>{i18n("settings_loading")}</div>;
   }
 
-  // React v19's useActionState for form management
   const [formState, updateSetting, isPending] = useActionState(
     (currentSettings: UserSettings, action: SettingAction): UserSettings => {
-      console.debug("Settings action", { action, currentSettings });
-
       let newSettings: UserSettings;
-
       switch (action.type) {
         case ACTION_TYPE.SWITCH_CHANGE:
-          newSettings = {
-            ...currentSettings,
-            [action.name]: action.checked,
-          };
+          newSettings = { ...currentSettings, [action.name]: action.checked };
           break;
-
         case ACTION_TYPE.INPUT_CHANGE:
-          newSettings = {
-            ...currentSettings,
-            [action.name]: action.value,
-          };
+          newSettings = { ...currentSettings, [action.name]: action.value };
           break;
-
         case ACTION_TYPE.BUTTON_CLICK:
-          newSettings = {
-            ...currentSettings,
-            [action.name]: action.value,
-          };
+          newSettings = { ...currentSettings, [action.name]: action.value };
           break;
-
         case ACTION_TYPE.RESTORE_DEFAULTS:
-          // Restore to default settings. Trusted static config.json; JSON widens
-          // string literals (e.g. fontSize) so assert to the model type.
           newSettings = {
-            ...(defaultSettings as UserSettings),
             ...currentSettings,
+            showHelp: false,
+            caching: true,
+            trackPriceHistory: true,
+            priceHistoryMaxPoints: 0,
+            showColumnFilters: true,
+            showAllColumns: false,
+            fontSize: "medium",
+            hideColumns: ["description", "uom", "sds", "specs", "coa", "cas", "pubchem", "formula", "moleweight", "purity", "concentration"],
           };
           break;
-
         default:
           return currentSettings;
       }
-
-      // Handle async operations with startTransition
       startTransition(() => {
         try {
-          // Update the app context - this will handle Chrome storage automatically
           appContext.setUserSettings(newSettings);
         } catch (error) {
           console.error("Failed to update settings:", error);
         }
       });
-
       return newSettings;
     },
     appContext.userSettings,
   );
 
-  // Unified event handlers using the action dispatcher
   const handleSwitchChange = (event: ChangeEvent<HTMLInputElement>) => {
     updateSetting({
       type: ACTION_TYPE.SWITCH_CHANGE,
@@ -198,248 +159,591 @@ export default function SettingsPanel() {
     updateSetting({ type: ACTION_TYPE.RESTORE_DEFAULTS });
   };
 
-  // Use formState for current values, falling back to appContext
+  const [excludedProducts, setExcludedProducts] = useState<ExcludedProductsMap>({});
+  const [priceHistoryCleared, setPriceHistoryCleared] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const map = await loadExcludedProducts();
+        setExcludedProducts(map);
+      } catch (error) {
+        console.warn("Failed to load excluded products:", error);
+      }
+    };
+    load();
+  }, []);
+
+  const handleRemoveExcluded = async (key: string) => {
+    try {
+      await removeExcludedProduct(key);
+      setExcludedProducts((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+    } catch (error) {
+      console.warn("Failed to remove excluded product:", error);
+    }
+  };
+
+  const handleClearAllExcluded = async () => {
+    try {
+      await clearExcludedProducts();
+      setExcludedProducts({});
+    } catch (error) {
+      console.warn("Failed to clear excluded products:", error);
+    }
+  };
+
+  const handleClearPriceHistory = async () => {
+    try {
+      await clearPriceHistory();
+      setPriceHistoryCleared(true);
+    } catch (error) {
+      console.warn("Failed to clear price history:", error);
+    }
+  };
+
+  const excludedEntries = Object.entries(excludedProducts).sort(
+    ([, a], [, b]) => b.excludedAt - a.excludedAt,
+  );
+  const excludedCount = excludedEntries.length;
+
   const currentSettings = formState || appContext.userSettings;
 
+  // The language setting may be stored as a full locale (e.g. "en-US") while the
+  // dropdown lists base locale codes ("en", "pl") that have a translation. Match
+  // on the base code, and fall back to empty when the stored language has no
+  // shipped translation so the Select doesn't render an out-of-range value.
+  const currentLanguageBase = (currentSettings.language ?? "").split("-")[0];
+  const selectedLanguage = AVAILABLE_LOCALES.includes(currentLanguageBase)
+    ? currentLanguageBase
+    : "";
+
+  const handleAccordionChange =
+    (panel: string) => (_event: SyntheticEvent, isExpanded: boolean) => {
+      setExpanded(isExpanded ? panel : false);
+    };
+
   return (
-    <FormGroup>
-      {/* Loading indicator when settings are updating */}
-      {isPending && (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 2,
-            backgroundColor: "#1976d2",
-            animation: "pulse 1s infinite",
-            zIndex: 1000,
-          }}
-        />
-      )}
-
-      <List
-        sx={{
-          width: "100%",
-          bgcolor: "background.paper",
-          color: "text.primary",
-          opacity: isPending ? 0.7 : 1,
-          transition: "opacity 0.2s ease",
-        }}
-        component="nav"
-        aria-labelledby="nested-list-subheader"
-        subheader={
-          <ListSubheader component="label" id="nested-list-subheader">
-            Behavior
-          </ListSubheader>
-        }
+    <Box>
+      <Accordion
+        expanded={expanded === "behavior"}
+        onChange={handleAccordionChange("behavior")}
+        disableGutters
       >
-        <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Cache Search Results" />
-          {/* <FormHelperText>Improves performance</FormHelperText> */}
-          <FormControlLabel
-            control={
-              <Switch
-                checked={currentSettings.caching}
-                onChange={handleSwitchChange}
-                name="caching"
-                disabled={isPending}
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          className={styles["settings-panel__accordion-summary"]}
+        >
+          <Typography variant="body2" fontWeight={500}>
+            {i18n("settings_section_behavior")}
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails className={styles["settings-panel__accordion-details"]}>
+          <List dense component="nav" aria-labelledby="behavior-list-subheader">
+            {/* Caching */}
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText primary={i18n("settings_cache_results")} />
+              {/*<FormHelperText>Improves performance</FormHelperText>*/}
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={currentSettings.caching}
+                    onChange={handleSwitchChange}
+                    name="caching"
+                    disabled={isPending}
+                  />
+                }
+                labelPlacement="start"
+                label=""
               />
-            }
-            labelPlacement="start"
-            label=""
-          />
-        </ListItem>
+            </ListItem>
+            {/* Currency */}
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText primary={i18n("settings_currency")} />
+              {/*<FormHelperText>Convert all currency to this</FormHelperText>*/}
+              <FormControl>
+                <Autocomplete
+                  options={CURRENCIES}
+                  getOptionLabel={(option) => `${option.code} (${option.symbol})`}
+                  isOptionEqualToValue={(option, value) => option.code === value.code}
+                  filterOptions={currencyFilter}
+                  value={CURRENCIES.find((c) => c.code === currentSettings.currency) ?? undefined}
+                  onChange={(_event, option) =>
+                    updateSetting({
+                      type: ACTION_TYPE.INPUT_CHANGE,
+                      name: "currency",
+                      value: option?.code ?? "",
+                    })
+                  }
+                  size="small"
+                  className={styles["settings-panel__input"]}
+                  disabled={isPending}
+                  disableClearable
+                  renderInput={(params) => (
+                    <TextField {...params} placeholder={i18n("settings_currency")} />
+                  )}
+                />
+              </FormControl>
+            </ListItem>
+            {/* Location */}
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText primary={i18n("settings_location")} />
+              {/*<FormHelperText>Your country</FormHelperText>*/}
+              <FormControl>
+                <Autocomplete
+                  options={COUNTRIES}
+                  getOptionLabel={(option) => option.name}
+                  isOptionEqualToValue={(option, value) => option.code === value.code}
+                  filterOptions={countryFilter}
+                  value={COUNTRIES.find((c) => c.code === currentSettings.location) ?? null}
+                  onChange={(_event, option) =>
+                    updateSetting({
+                      type: ACTION_TYPE.INPUT_CHANGE,
+                      name: "location",
+                      value: option?.code ?? "",
+                    })
+                  }
+                  size="small"
+                  className={styles["settings-panel__input"]}
+                  disabled={isPending}
+                  renderInput={(params) => (
+                    <TextField {...params} placeholder={i18n("settings_location_placeholder")} />
+                  )}
+                />
+              </FormControl>
+            </ListItem>
+            {/* Language */}
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText primary={i18n("settings_language")} />
+              <FormControl>
+                <Select
+                  value={selectedLanguage}
+                  onChange={handleInputChange}
+                  name="language"
+                  size="small"
+                  className={styles["settings-panel__input"]}
+                  disabled={isPending}
+                >
+                  {AVAILABLE_LOCALES.map((localeCode) => (
+                    <MenuItem key={localeCode} value={localeCode}>
+                      {getLanguageName(localeCode)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </ListItem>
 
-        <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Currency" />
-          {/*<FormHelperText>Convert all currency to this</FormHelperText>*/}
-          <FormControl>
-            <Autocomplete
-              options={CURRENCIES}
-              getOptionLabel={(option) => `${option.code} (${option.symbol})`}
-              isOptionEqualToValue={(option, value) => option.code === value.code}
-              filterOptions={currencyFilter}
-              value={CURRENCIES.find((c) => c.code === currentSettings.currency) ?? undefined}
-              onChange={(_event, option) =>
-                updateSetting({
-                  type: ACTION_TYPE.INPUT_CHANGE,
-                  name: "currency",
-                  value: option?.code ?? "",
-                })
-              }
-              size="small"
-              sx={{ ...inputStyle }}
-              disabled={isPending}
-              disableClearable
-              renderInput={(params) => <TextField {...params} placeholder="Currency" />}
-            />
-          </FormControl>
-        </ListItem>
-
-        <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Location" />
-          {/*<FormHelperText>Your country</FormHelperText>*/}
-          <FormControl>
-            <Autocomplete
-              options={COUNTRIES}
-              getOptionLabel={(option) => option.name}
-              isOptionEqualToValue={(option, value) => option.code === value.code}
-              filterOptions={countryFilter}
-              value={COUNTRIES.find((c) => c.code === currentSettings.location) ?? null}
-              onChange={(_event, option) =>
-                updateSetting({
-                  type: ACTION_TYPE.INPUT_CHANGE,
-                  name: "location",
-                  value: option?.code ?? "",
-                })
-              }
-              size="small"
-              sx={{ ...inputStyle }}
-              disabled={isPending}
-              renderInput={(params) => <TextField {...params} placeholder="Country or code" />}
-            />
-          </FormControl>
-        </ListItem>
-
-        <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Language" />
-          <FormControl>
-            <InputLabel id="language-select-label">Language</InputLabel>
-            <Select
-              labelId="language-select-label"
-              value={currentSettings.language ?? ""}
-              onChange={handleInputChange}
-              name="language"
-              label="language"
-              size="small"
-              sx={{ ...inputStyle }}
-              disabled={isPending}
+            {/* Foo Example */}
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText primary={i18n("settings_currency_rate")} />
+              {/*<FormHelperText>Just an input example</FormHelperText>*/}
+              <FormControl>
+                <TextField
+                  value={currentSettings.currencyRate}
+                  name="currencyRate"
+                  onChange={handleInputChange}
+                  variant="outlined"
+                  size="small"
+                  className={styles["settings-panel__input"]}
+                  disabled={isPending}
+                />
+              </FormControl>
+            </ListItem>
+          </List>
+        </AccordionDetails>
+      </Accordion>
+      <Accordion
+        expanded={expanded === "cache"}
+        onChange={handleAccordionChange("cache")}
+        disableGutters
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          className={styles["settings-panel__accordion-summary"]}
+        >
+          <Typography variant="body2" fontWeight={500}>
+            {i18n("settings_section_cache")}
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails className={styles["settings-panel__accordion-details"]}>
+          <List dense component="nav" aria-labelledby="cache-list-subheader">
+            {/* Do Not Cache Empty Results */}
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText primary={i18n("settings_do_not_cache_empty")} />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={Boolean(currentSettings.doNotCacheEmptyResults)}
+                    onChange={handleSwitchChange}
+                    name="doNotCacheEmptyResults"
+                    disabled={isPending}
+                  />
+                }
+                labelPlacement="start"
+                label=""
+              />
+            </ListItem>
+            {/* Cache TTL (minutes) — 0 disables expiration */}
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText primary={i18n("settings_cache_ttl")} />
+              <FormControl>
+                <TextField
+                  value={currentSettings.cacheTtlMinutes ?? 0}
+                  name="cacheTtlMinutes"
+                  onChange={handleInputChange}
+                  type="number"
+                  variant="outlined"
+                  size="small"
+                  className={styles["settings-panel__input"]}
+                  disabled={isPending}
+                  slotProps={{ htmlInput: { min: 0, step: 1 } }}
+                />
+              </FormControl>
+            </ListItem>
+          </List>
+        </AccordionDetails>
+      </Accordion>
+      <Accordion
+        expanded={expanded === "priceHistory"}
+        onChange={handleAccordionChange("priceHistory")}
+        disableGutters
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          className={styles["settings-panel__accordion-summary"]}
+        >
+          <Typography variant="body2" fontWeight={500}>
+            {i18n("settings_section_price_history")}
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails className={styles["settings-panel__accordion-details"]}>
+          <List dense component="nav" aria-labelledby="price-history-list-subheader">
+            {/* Master toggle — on by default */}
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText
+                primary={i18n("settings_track_price_history")}
+                secondary={i18n("settings_track_price_history_desc")}
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={currentSettings.trackPriceHistory ?? true}
+                    onChange={handleSwitchChange}
+                    name="trackPriceHistory"
+                    disabled={isPending}
+                  />
+                }
+                labelPlacement="start"
+                label=""
+              />
+            </ListItem>
+            {/* Max points per product — 0 means unlimited */}
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText primary={i18n("settings_max_price_points")} />
+              <FormControl>
+                <TextField
+                  value={currentSettings.priceHistoryMaxPoints ?? 0}
+                  name="priceHistoryMaxPoints"
+                  onChange={handleInputChange}
+                  type="number"
+                  variant="outlined"
+                  size="small"
+                  className={styles["settings-panel__input"]}
+                  disabled={isPending || currentSettings.trackPriceHistory === false}
+                  slotProps={{ htmlInput: { min: 0, step: 1 } }}
+                />
+              </FormControl>
+            </ListItem>
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <Button
+                variant="outlined"
+                color="warning"
+                size="small"
+                onClick={handleClearPriceHistory}
+              >
+                {i18n("settings_clear_price_history")}
+              </Button>
+              {priceHistoryCleared && (
+                <Typography variant="caption" sx={{ ml: 1 }}>
+                  {i18n("settings_price_history_cleared")}
+                </Typography>
+              )}
+            </ListItem>
+          </List>
+        </AccordionDetails>
+      </Accordion>
+      <Accordion
+        expanded={expanded === "display"}
+        onChange={handleAccordionChange("display")}
+        disableGutters
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          className={styles["settings-panel__accordion-summary"]}
+        >
+          <Typography variant="body2" fontWeight={500}>
+            {i18n("settings_section_display")}
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails className={styles["settings-panel__accordion-details"]}>
+          <List dense component="nav" aria-labelledby="display-list-subheader">
+            {/* Font Size */}
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText primary={i18n("settings_font_size")} />
+              {/*<FormHelperText>Popup size</FormHelperText>*/}
+              <FormControl>
+                <ButtonGroup
+                  variant="contained"
+                  aria-label={i18n("settings_font_size")}
+                  onClick={handleButtonClick}
+                  disabled={isPending}
+                >
+                  <Button
+                    name="fontSize"
+                    value="small"
+                    size="small"
+                    aria-label={i18n("settings_font_small")}
+                    title={i18n("settings_font_small")}
+                    variant={currentSettings.fontSize === "small" ? "contained" : "text"}
+                    disabled={isPending}
+                  >
+                    <TextDecreaseIcon fontSize="small" sx={{ pointerEvents: "none" }} />
+                  </Button>
+                  <Button
+                    name="fontSize"
+                    value="medium"
+                    size="small"
+                    aria-label={i18n("settings_font_medium")}
+                    title={i18n("settings_font_medium")}
+                    variant={currentSettings.fontSize === "medium" ? "contained" : "text"}
+                    disabled={isPending}
+                  >
+                    <TextFormatIcon fontSize="small" sx={{ pointerEvents: "none" }} />
+                  </Button>
+                  <Button
+                    name="fontSize"
+                    value="large"
+                    size="small"
+                    aria-label={i18n("settings_font_large")}
+                    title={i18n("settings_font_large")}
+                    variant={currentSettings.fontSize === "large" ? "contained" : "text"}
+                    disabled={isPending}
+                  >
+                    <TextIncreaseIcon fontSize="small" sx={{ pointerEvents: "none" }} />
+                  </Button>
+                </ButtonGroup>
+              </FormControl>
+            </ListItem>
+          </List>
+        </AccordionDetails>
+      </Accordion>
+      <Accordion
+        expanded={expanded === "excluded"}
+        onChange={handleAccordionChange("excluded")}
+        disableGutters
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          className={styles["settings-panel__accordion-summary"]}
+        >
+          <Typography variant="body2" fontWeight={500}>
+            {i18n("settings_section_excluded")}
+            {excludedCount > 0 && (
+              <Typography
+                component="span"
+                variant="caption"
+                color="text.secondary"
+                sx={{ ml: 0.5 }}
+              >
+                ({excludedCount})
+              </Typography>
+            )}
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails className={styles["settings-panel__accordion-details"]}>
+          {excludedCount === 0 ? (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              className={styles["settings-panel__excluded-empty"]}
             >
-              {languages.map((languageId) => (
-                <MenuItem key={languageId} value={languageId}>
-                  {getLanguageName(languageId)}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </ListItem>
-
-        <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Currency Rate" />
-          {/*<FormHelperText>Just an input example</FormHelperText>*/}
-          <FormControl>
-            <TextField
-              value={currentSettings.currencyRate}
-              label="Currency Rate"
-              name="currencyRate"
-              onChange={handleInputChange}
-              variant="filled"
-              size="small"
-              sx={{ ...inputStyle }}
-              disabled={isPending}
-            />
-          </FormControl>
-        </ListItem>
-
-        <Divider variant="middle" component="li" />
-        <ListSubheader component="label" id="nested-list-subheader">
-          Display
-        </ListSubheader>
-
-        <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Font Size" />
-          {/*<FormHelperText>Popup size</FormHelperText>*/}
-          <FormControl>
-            <ButtonGroup
-              variant="contained"
-              aria-label="Font size"
-              onClick={handleButtonClick}
-              disabled={isPending}
-            >
-              <Button
-                name="fontSize"
-                value="small"
-                size="small"
-                aria-label="Small"
-                title="Small"
-                variant={currentSettings.fontSize === "small" ? "contained" : "text"}
-                disabled={isPending}
-              >
-                <TextDecreaseIcon fontSize="small" sx={{ pointerEvents: "none" }} />
-              </Button>
-              <Button
-                name="fontSize"
-                value="medium"
-                size="small"
-                aria-label="Medium"
-                title="Medium"
-                variant={currentSettings.fontSize === "medium" ? "contained" : "text"}
-                disabled={isPending}
-              >
-                <TextFormatIcon fontSize="small" sx={{ pointerEvents: "none" }} />
-              </Button>
-              <Button
-                name="fontSize"
-                value="large"
-                size="small"
-                aria-label="Large"
-                title="Large"
-                variant={currentSettings.fontSize === "large" ? "contained" : "text"}
-                disabled={isPending}
-              >
-                <TextIncreaseIcon fontSize="small" sx={{ pointerEvents: "none" }} />
-              </Button>
-            </ButtonGroup>
-          </FormControl>
-        </ListItem>
-
-        <ListItem sx={displayHelperOnHover}>
-          <ListItemText primary="Show Helpful Tips" />
-          {/*<FormHelperText id="some-setting-helper-text">Show help in tooltips</FormHelperText>*/}
-          <Switch
-            checked={currentSettings.showHelp}
-            onChange={handleSwitchChange}
-            name="showHelp"
-            disabled={isPending}
-          />
-        </ListItem>
-
-        <Divider component="li" />
-        <ListItem>
-          <Stack
-            spacing={2}
-            direction="row"
-            sx={{ display: "block", marginLeft: "auto", marginRight: "auto" }}
+              {i18n("settings_excluded_empty")}
+            </Typography>
+          ) : (
+            <>
+              <List dense disablePadding>
+                {excludedEntries.map(([key, entry]) => (
+                  <ListItem
+                    key={key}
+                    divider
+                    className={styles["settings-panel__excluded-item"]}
+                    secondaryAction={
+                      <Tooltip title={i18n("settings_remove")}>
+                        <IconButton
+                          edge="end"
+                          size="small"
+                          onClick={() => handleRemoveExcluded(key)}
+                          className={styles["settings-panel__excluded-delete-btn"]}
+                          aria-label={i18n("settings_remove_item", [entry.title || entry.url || ""])}
+                        >
+                          <DeleteIcon className={styles["settings-panel__excluded-delete-icon"]} />
+                        </IconButton>
+                      </Tooltip>
+                    }
+                  >
+                    <ListItemText
+                      primary={
+                        <Link
+                          href={entry.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          variant="body2"
+                          className={styles["settings-panel__excluded-link"]}
+                        >
+                          {entry.title || entry.url}
+                        </Link>
+                      }
+                      secondary={`${entry.supplier} — ${formatTimestamp(entry.excludedAt)}`}
+                      slotProps={{
+                        secondary: {
+                          variant: "caption",
+                          className: styles["settings-panel__excluded-secondary-text"],
+                        },
+                      }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+              <Box className={styles["settings-panel__excluded-actions"]}>
+                <Button
+                  variant="outlined"
+                  color="warning"
+                  size="small"
+                  onClick={handleClearAllExcluded}
+                >
+                  {i18n("settings_clear_all")}
+                </Button>
+              </Box>
+            </>
+          )}
+        </AccordionDetails>
+      </Accordion>
+      {/* Dev-only Advanced section. `IS_DEV_BUILD` is a Vite-replaced string
+          literal, so the entire block is tree-shaken from prod bundles — no
+          config flag or runtime check reaches production users. */}
+      {IS_DEV_BUILD && (
+        <Accordion
+          expanded={expanded === "advanced"}
+          onChange={handleAccordionChange("advanced")}
+          disableGutters
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            className={styles["settings-panel__accordion-summary"]}
           >
-            <Button variant="outlined" onClick={handleRestoreDefaults} disabled={isPending}>
-              {isPending ? "Restoring..." : "Restore Defaults"}
+            <Typography variant="body2" fontWeight={500}>
+              {i18n("settings_section_advanced")}
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails className={styles["settings-panel__accordion-details"]}>
+            {/* Mirrors the search drawer's single-select filter-input style:
+                full-width labeled outlined TextField with italic helper text.
+                Using `TextField select` (rather than the horizontal
+                ListItem + Select pattern the rest of this panel uses) gives
+                long scorer names like `partial_token_similarity_sort_ratio`
+                room to render, and keeps the visual consistent with the
+                search drawer filters. */}
+            <Box sx={{ p: 1 }}>
+              <TextField
+                select
+                fullWidth
+                size="small"
+                name="fuzzScorerOverride"
+                label={i18n("settings_fuzz_scorer")}
+                value={currentSettings.fuzzScorerOverride ?? ""}
+                onChange={handleInputChange}
+                disabled={isPending}
+                helperText={i18n("settings_fuzz_scorer_helper")}
+                slotProps={{ formHelperText: { sx: { fontStyle: "italic" } } }}
+              >
+                <MenuItem value="">
+                  <em>{i18n("settings_fuzz_scorer_default")}</em>
+                </MenuItem>
+                {FUZZ_SCORER_NAMES.map((name) => (
+                  <MenuItem key={name} value={name}>
+                    {name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Box>
+            <Box sx={{ p: 1 }}>
+              <TextField
+                fullWidth
+                size="small"
+                type="number"
+                name="maxAllowableSearchTime"
+                label={i18n("settings_max_search_time")}
+                value={currentSettings.maxAllowableSearchTime ?? ""}
+                onChange={handleInputChange}
+                disabled={isPending}
+                helperText={i18n("settings_max_search_time_helper")}
+                slotProps={{
+                  formHelperText: { sx: { fontStyle: "italic" } },
+                  htmlInput: { min: 0, step: 1000 },
+                }}
+              />
+            </Box>
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText
+                primary={i18n("settings_disable_fuzzy")}
+                secondary={i18n("settings_disable_fuzzy_desc")}
+                slotProps={{ secondary: { sx: { fontStyle: "italic" } } }}
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={currentSettings.fuzzyFilteringDisabled ?? false}
+                    onChange={handleSwitchChange}
+                    name="fuzzyFilteringDisabled"
+                    disabled={isPending}
+                  />
+                }
+                labelPlacement="start"
+                label=""
+              />
+            </ListItem>
+          </AccordionDetails>
+        </Accordion>
+      )}
+      <Accordion
+        expanded={expanded === "actions"}
+        onChange={handleAccordionChange("actions")}
+        disableGutters
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          className={styles["settings-panel__accordion-summary"]}
+        >
+          <Typography variant="body2" fontWeight={500}>
+            {i18n("settings_section_actions")}
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails className={styles["settings-panel__accordion-details--actions"]}>
+          <Stack direction="row" spacing={2}>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={handleRestoreDefaults}
+              disabled={isPending}
+            >
+              {i18n("settings_restore_defaults")}
             </Button>
           </Stack>
-        </ListItem>
-      </List>
-    </FormGroup>
+        </AccordionDetails>
+      </Accordion>
+    </Box>
   );
 }
-
-/**
- * MIGRATION GUIDE:
- *
- * To migrate from SettingsPanel.tsx to this React v19 version:
- *
- * 1. Replace useAppContext with useAppContextV19 (use() hook)
- * 2. Replace multiple handlers with single useActionState
- * 3. Add loading states and disabled states during updates
- * 4. Use action dispatcher pattern for all form updates
- * 5. Add restore defaults functionality
- * 6. Add visual feedback for pending operations
- *
- * PERFORMANCE BENEFITS:
- * - Consolidated form state reduces re-renders
- * - Built-in loading states improve UX
- * - Better error handling for failed updates
- * - Automatic batching of rapid changes
- * - Optimistic updates with rollback capability
- * @source
- */

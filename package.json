@@ -7,6 +7,37 @@
     "npm": ">=10.9.2",
     "node": ">=22.15.0"
   },
+  "homepage": "https://jhyland87.github.io/chem-pal/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jhyland87/chem-pal"
+  },
+  "bugs": {
+    "url": "https://github.com/jhyland87/chem-pal/issues"
+  },
+  "config": {
+    "links": {
+      "wiki": "https://github.com/jhyland87/chem-pal/wiki"
+    },
+    "github": {
+      "owner": "jhyland87",
+      "repo": "chem-pal"
+    }
+  },
+  "contributors": [
+    {
+      "name": "Justin Hyland",
+      "role": "Lead Developer",
+      "email": "jhyland87@gmail.com",
+      "url": "https://github.com/jhyland87"
+    },
+    {
+      "name": "Maui3",
+      "role": "Design, Original Creator",
+      "email": "YourHeatingMantle@gmail.com",
+      "url": "https://github.com/YourHeatingMantle"
+    }
+  ],
   "sourceType": "module",
   "scripts": {
     "prebuild": "pnpm run generate-logo-files",
@@ -81,6 +112,7 @@
     "react-router-dom": "^7.6.2",
     "react-svg-credit-card-payment-icons": "^3.1.1",
     "react-virtuoso": "^4.12.7",
+    "semver": "^7.8.5",
     "svg2img": "1.0.0-beta.2",
     "tornado-xsrf": "^1.2.0",
     "turndown": "^7.2.0",
@@ -117,6 +149,7 @@
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@types/react-list": "^0.8.12",
+    "@types/semver": "^7.7.1",
     "@types/turndown": "^5.0.5",
     "@types/wicg-file-system-access": "^2023.10.6",
     "@typescript-eslint/eslint-plugin": "^8.32.1",

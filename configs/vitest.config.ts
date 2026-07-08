@@ -2,10 +2,14 @@ import reactSWC from "@vitejs/plugin-react-swc";
 import path from "node:path";
 import graphqlLoader from "vite-plugin-graphql-loader";
 import { defineConfig } from "vitest/config";
+import pkg from "../package.json" with { type: "json" };
+import { buildDefines } from "../tools/buildDefines.js";
 
 export default defineConfig({
   // graphqlLoader mirrors vite.config.ts so `.gql` imports (e.g. the Wix query) transform in tests too.
   plugins: [reactSWC(), graphqlLoader()],
+  // Mirror vite.config.ts's build-time constants so `__APP_*__` globals resolve under test.
+  define: buildDefines(pkg),
   test: {
     root: path.resolve(__dirname, ".."),
     //reporters: ["html", "text","c"],

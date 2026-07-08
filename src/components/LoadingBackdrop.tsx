@@ -14,21 +14,21 @@ import styles from "./LoadingBackdrop.module.scss";
  */
 function formatResultsText(props: LoadingBackdropProps): string {
   if (props.isAborting) {
-    return i18n("aborting_search");
+    return i18n("loading_aborting");
   }
   if (!props.resultCount) {
-    return i18n("loading_search");
+    return i18n("loading_loading");
   }
   if (props.resultCount === 1) {
-    return i18n("found_result_single", [String(props.resultCount)]);
+    return i18n("loading_found_single", [String(props.resultCount)]);
   }
   if (props.supplierResultsCount === 1) {
-    return i18n("found_results_one_supplier", [
+    return i18n("loading_found_one_supplier", [
       String(props.resultCount),
       String(props.supplierResultsCount),
     ]);
   }
-  return i18n("found_results_many_suppliers", [
+  return i18n("loading_found_many_suppliers", [
     String(props.resultCount),
     String(props.supplierResultsCount),
   ]);
@@ -59,7 +59,7 @@ function formatResultsText(props: LoadingBackdropProps): string {
 export default function LoadingBackdrop(props: LoadingBackdropProps) {
   return (
     <>
-      <Backdrop open={props.open} id="loading-backdrop" role="status" aria-label="search loading">
+      <Backdrop open={props.open} id="loading-backdrop" role="status" aria-label={i18n("loading_aria")}>
         <Box className={styles["loading-backdrop-box"]}>
           <Box className={styles["spinner-box"]}>
             <IconSpinner>
@@ -72,7 +72,7 @@ export default function LoadingBackdrop(props: LoadingBackdropProps) {
             onClick={props.onClick}
             disabled={props.isAborting}
           >
-            {i18n("cancel_search")}
+            {i18n("loading_cancel")}
           </Button>
         </Box>
       </Backdrop>
