@@ -4,7 +4,10 @@ import path from "path";
 import { defineConfig, normalizePath, type Plugin } from "vite";
 import graphqlLoader from "vite-plugin-graphql-loader";
 import { viteStaticCopy } from "vite-plugin-static-copy";
+import pkg from "./package.json" with { type: "json" };
+import { buildDefines } from "./tools/buildDefines.js";
 import { buildManifest } from "./tools/buildManifest.js";
+
 // https://vite.dev/config/
 
 /**
@@ -59,11 +62,7 @@ export default ({ mode }: { mode: string }) => {
   const isProd = mode === "production";
 
   return defineConfig({
-    define: {
-      "process.env.NODE_ENV": JSON.stringify("development"),
-      //"process.env": JSON.stringify(env),
-      __RESPONSE_AGGREGATE__: JSON.stringify(isAggregate),
-    },
+    define: buildDefines(pkg, { isAggregate }),
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),

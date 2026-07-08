@@ -14,6 +14,7 @@ import {
 } from "@/components/StyledComponents";
 import { default as Link } from "@/components/TabLink";
 import { omit } from "@/helpers/collectionUtils";
+import { i18n } from "@/helpers/i18n";
 import { formatDisplayPrice } from "@/helpers/price";
 import {
   describeTrend,
@@ -82,29 +83,29 @@ function buildDetailFields(product: Product): DetailField[] {
     if (isPresent(value)) fields.push({ label, value: String(value) });
   };
 
-  pushText("CAS", product.cas);
-  pushText("Formula", product.formula);
-  pushText("Molecular Weight", product.moleweight);
-  pushText("IUPAC Name", product.iupacName);
-  pushText("InChIKey", product.inchiKey);
-  pushText("InChI", product.inchi);
-  pushText("SMILES", product.smiles);
-  pushText("Purity", product.purity);
-  pushText("Grade", product.grade);
-  pushText("Concentration", product.concentration);
-  pushText("Manufacturer", product.manufacturer);
+  pushText(i18n("product_detail_cas"), product.cas);
+  pushText(i18n("product_detail_formula"), product.formula);
+  pushText(i18n("product_detail_molecular_weight"), product.moleweight);
+  pushText(i18n("product_detail_iupac_name"), product.iupacName);
+  pushText(i18n("product_detail_inchikey"), product.inchiKey);
+  pushText(i18n("product_detail_inchi"), product.inchi);
+  pushText(i18n("product_detail_smiles"), product.smiles);
+  pushText(i18n("product_detail_purity"), product.purity);
+  pushText(i18n("product_detail_grade"), product.grade);
+  pushText(i18n("product_detail_concentration"), product.concentration);
+  pushText(i18n("product_detail_manufacturer"), product.manufacturer);
   // Description is rendered in its own full-width band, not as a compact row.
 
   // PubChem link — truthy check narrows the optional id.
   const { pubchemId } = product;
   if (pubchemId) {
     fields.push({
-      label: "PubChem",
+      label: i18n("product_detail_pubchem"),
       value: (
         <Link
           href={`https://pubchem.ncbi.nlm.nih.gov/compound/${pubchemId}`}
-          aria-label={`PubChem CID ${pubchemId}`}
-          title="View on PubChem"
+          aria-label={i18n("product_detail_pubchem_cid", [String(pubchemId)])}
+          title={i18n("product_detail_pubchem_view")}
         >
           {pubchemId}
         </Link>
@@ -135,8 +136,8 @@ function buildDocLinks(product: Product): ReactNode[] {
       <Link
         key="sds"
         href={sdsUrl}
-        aria-label="Safety data sheet (SDS)"
-        title="Safety data sheet (SDS)"
+        aria-label={i18n("product_detail_sds")}
+        title={i18n("product_detail_sds")}
       >
         <SDSIcon fontSize="small" />
       </Link>,
@@ -147,8 +148,8 @@ function buildDocLinks(product: Product): ReactNode[] {
       <Link
         key="tds"
         href={specSheetUrl}
-        aria-label="Technical Data Sheet (TDS)"
-        title="Technical Data Sheet (TDS)"
+        aria-label={i18n("product_detail_tds")}
+        title={i18n("product_detail_tds")}
       >
         <TDSIcon fontSize="small" />
       </Link>,
@@ -159,8 +160,8 @@ function buildDocLinks(product: Product): ReactNode[] {
       <Link
         key="coa"
         href={coaUrl}
-        aria-label="Certificate of Analysis (COA)"
-        title="Certificate of Analysis (COA)"
+        aria-label={i18n("product_detail_coa")}
+        title={i18n("product_detail_coa")}
       >
         <COAIcon fontSize="small" />
       </Link>,
@@ -234,7 +235,7 @@ function ProductImageCarousel({ images, title }: ProductImageCarouselProps): Rea
 
   return (
     <ProductDetailImageBox>
-      <Link href={current.image.fullSrc} aria-label={`Open full image for ${title}`}>
+      <Link href={current.image.fullSrc} aria-label={i18n("product_detail_open_full_image", [title])}>
         <img
           src={current.image.thumbSrc}
           alt={current.image.altText ?? title}
@@ -246,7 +247,7 @@ function ProductImageCarousel({ images, title }: ProductImageCarouselProps): Rea
           <ProductImageNavButton
             type="button"
             className="image-nav prev"
-            aria-label="Previous image"
+            aria-label={i18n("product_detail_prev_image")}
             onClick={(event) => navigate(event, prev)}
           >
             <ArrowBackIosNewIcon fontSize="small" />
@@ -254,7 +255,7 @@ function ProductImageCarousel({ images, title }: ProductImageCarouselProps): Rea
           <ProductImageNavButton
             type="button"
             className="image-nav next"
-            aria-label="Next image"
+            aria-label={i18n("product_detail_next_image")}
             onClick={(event) => navigate(event, next)}
           >
             <ArrowForwardIosIcon fontSize="small" />
@@ -325,7 +326,7 @@ function PriceSparkline({ points }: { points: readonly PricePoint[] }): ReactEle
       height={height}
       viewBox={`0 0 ${width} ${height}`}
       role="img"
-      aria-label="Price history sparkline"
+      aria-label={i18n("product_detail_sparkline_aria")}
       style={{ display: "block" }}
     >
       <polyline
@@ -404,7 +405,7 @@ function ProductPriceHistory({
 
   return (
     <ProductDetailFieldRow>
-      <span className="detail-label">Price history</span>
+      <span className="detail-label">{i18n("product_detail_price_history")}</span>
       <span className="detail-value">
         {hasTrend ? (
           <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -413,12 +414,12 @@ function ProductPriceHistory({
             </span>
             <PriceTrend points={series.points} userSettings={userSettings} />
             <Typography component="span" variant="caption" color="text.secondary">
-              {series.points.length} points
+              {i18n("product_detail_points", [String(series.points.length)])}
             </Typography>
           </span>
         ) : (
           <Typography component="span" variant="caption" color="text.secondary">
-            No history yet
+            {i18n("product_detail_no_history")}
           </Typography>
         )}
       </span>
@@ -509,7 +510,7 @@ export function ProductDetailPanel({ row, table }: ProductDetailPanelProps): Rea
           {hasVariants && (
             <ProductDetailVariantsColumn>
               <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                Variants
+                {i18n("product_detail_variants")}
               </Typography>
               <ProductDetailVariantsGrid>
                 {variants.map((variant, index) => {

@@ -174,7 +174,7 @@ Two safeguards back this up:
 
 ## Settings
 
-Two optional user settings control tracking (defaults in `config.json`, validated in `typeGuards/common.ts`, edited in the **Price History** section of `SettingsPanelFull`):
+Two optional user settings control tracking (defaults in `config.json`, validated in `typeGuards/common.ts`, edited in the **Price History** section of `SettingsPanel`):
 
 | Setting | Type | Default | Meaning |
 | --- | --- | --- | --- |

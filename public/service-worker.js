@@ -31,7 +31,8 @@ function createContextMenu() {
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({
       id: CONTEXT_MENU_ID,
-      title: 'Search "%s" in Chem Pal',
+      // %s is substituted with the selected text by the contextMenus API.
+      title: chrome.i18n.getMessage("context_menu_search_selection"),
       contexts: ["selection"],
     });
   });

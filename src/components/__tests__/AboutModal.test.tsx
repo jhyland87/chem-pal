@@ -54,13 +54,40 @@ describe("AboutModal", () => {
     }
   });
 
+  it("renders Homepage link with correct attributes", () => {
+    render(<AboutModal aboutOpen={true} setAboutOpen={mockSetAboutOpen} />);
+
+    const homepageButton = screen.getByTestId("homepage-button");
+    expect(homepageButton).toHaveAttribute("href", __APP_HOMEPAGE__);
+    expect(homepageButton).toHaveAttribute("target", "_blank");
+    expect(homepageButton).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
   it("renders GitHub link with correct attributes", () => {
     render(<AboutModal aboutOpen={true} setAboutOpen={mockSetAboutOpen} />);
 
     const githubButton = screen.getByTestId("github-button");
-    expect(githubButton).toHaveAttribute("href", "https://github.com/justinhyland/chem-pal");
+    expect(githubButton).toHaveAttribute("href", __APP_REPOSITORY__);
     expect(githubButton).toHaveAttribute("target", "_blank");
     expect(githubButton).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
+  it("renders Wiki link with correct attributes", () => {
+    render(<AboutModal aboutOpen={true} setAboutOpen={mockSetAboutOpen} />);
+
+    const wikiButton = screen.getByTestId("wiki-button");
+    expect(wikiButton).toHaveAttribute("href", __APP_WIKI__);
+    expect(wikiButton).toHaveAttribute("target", "_blank");
+    expect(wikiButton).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
+  it("renders Bugs link with correct attributes", () => {
+    render(<AboutModal aboutOpen={true} setAboutOpen={mockSetAboutOpen} />);
+
+    const bugsButton = screen.getByTestId("bugs-button");
+    expect(bugsButton).toHaveAttribute("href", __APP_BUGS__);
+    expect(bugsButton).toHaveAttribute("target", "_blank");
+    expect(bugsButton).toHaveAttribute("rel", "noopener noreferrer");
   });
 
   it("has correct ARIA attributes", () => {

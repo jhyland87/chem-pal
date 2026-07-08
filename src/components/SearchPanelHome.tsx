@@ -1,4 +1,5 @@
 import { CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
+import { i18n } from "@/helpers/i18n";
 import { getSearchResults } from "@/utils/idbCache";
 import { cstorage } from "@/utils/storage";
 import { isTabView, openExtensionTab } from "@/utils/displayContext";
@@ -93,7 +94,7 @@ const SearchPanelHome: FC = () => {
         {/* Settings */}
         <SearchPanelHomeSettingsButton
           onClick={() => appContext.toggleDrawer(DRAWER_INDEX.SETTINGS)}
-          aria-label="Open settings"
+          aria-label={i18n("search_open_settings")}
         >
           <SettingsIcon />
         </SearchPanelHomeSettingsButton>
@@ -102,7 +103,7 @@ const SearchPanelHome: FC = () => {
         {hasStoredResults && appContext.setPanel && (
           <SearchPanelHomeForwardButton
             onClick={() => appContext.setPanel!(PANEL.RESULTS)}
-            aria-label="Go to results"
+            aria-label={i18n("search_go_to_results")}
             isDarkTheme={mode === "dark"}
           >
             <Badge badgeContent={resultCount} color="primary">
@@ -115,7 +116,7 @@ const SearchPanelHome: FC = () => {
         {!isTabView() && (
           <SearchPanelHomeMaximizeButton
             onClick={() => void openExtensionTab()}
-            aria-label="Open in tab"
+            aria-label={i18n("common_open_in_tab")}
           >
             <OpenInNewIcon />
           </SearchPanelHomeMaximizeButton>
@@ -127,12 +128,12 @@ const SearchPanelHome: FC = () => {
           <img
             className={styles["search-panel-home-logo"]}
             src={logoSrc}
-            alt="Supplier Search Logo"
+            alt={i18n("search_logo_alt")}
           />
         </div>
         <SearchForm
           onSearch={handleSearch}
-          placeholder="Search for products..."
+          placeholder={i18n("search_placeholder")}
           showAdvancedButton={false}
         />
       </div>

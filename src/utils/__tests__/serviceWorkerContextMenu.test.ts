@@ -60,6 +60,7 @@ function makeChromeMock() {
     tabs: { query: tabsQuery, update: tabsUpdate, create: tabsCreate },
     windows: { update: windowsUpdate },
     storage: { session: { set: sessionSet } },
+    i18n: { getMessage: (key: string) => key },
   };
 
   return {

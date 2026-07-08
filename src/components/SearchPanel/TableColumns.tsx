@@ -7,6 +7,7 @@ import {
 } from "@/constants/common";
 import { omit } from "@/helpers/collectionUtils";
 import { getCountryName } from "@/helpers/country";
+import { i18n } from "@/helpers/i18n";
 import { formatDisplayPrice } from "@/helpers/price";
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
@@ -76,7 +77,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     {
       id: "title",
       accessorKey: "title",
-      header: "Title",
+      header: i18n("column_title"),
       cell: ({ row }: ProductRow) => {
         // Indent variant rows so the hierarchy is visually obvious — 16px per
         // depth level, matching the chevron column width.
@@ -98,7 +99,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       enableHiding: false,
       filterFn: "includeHierarchy",
       meta: {
-        filterPlaceholder: "Title...",
+        filterPlaceholder: i18n("filter_placeholder_title"),
         filterVariant: "text",
         style: {
           textAlign: "left",
@@ -107,30 +108,30 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       id: "supplier",
-      header: "Supplier",
+      header: i18n("column_supplier"),
       accessorKey: "supplier",
       cell: (info) => info.getValue(),
       filterFn: "multiSelect",
       meta: {
-        filterPlaceholder: "BVV, HiMedia, etc...",
+        filterPlaceholder: i18n("filter_placeholder_supplier"),
         filterVariant: "select",
         style: {
           textAlign: "left",
         },
         drawer: {
-          label: "Search Suppliers",
+          label: i18n("drawer_supplier_label"),
           widget: "autocompleteStrings",
           options: SupplierFactory.supplierList(),
           optionLabels: SupplierFactory.supplierDisplayNames(),
-          emptyHelperText: "All suppliers included by default",
-          placeholder: "Type supplier name",
+          emptyHelperText: i18n("drawer_supplier_empty_helper"),
+          placeholder: i18n("drawer_supplier_placeholder"),
           bind: { kind: "selectedSuppliers" },
         },
       },
     },
     {
       id: "country",
-      header: "Country",
+      header: i18n("column_country"),
       accessorKey: "supplierCountry",
       cell: ({ row }: ProductRow) => {
         const country = row.original.supplierCountry;
@@ -145,33 +146,33 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       },
       filterFn: "multiSelect",
       meta: {
-        filterPlaceholder: "🇺🇸 🇨🇳 …",
+        filterPlaceholder: i18n("filter_placeholder_country"),
         filterVariant: "select",
         style: {
           textAlign: "center",
         },
         renderSelectOption: (code) => (hasFlag(code) ? getUnicodeFlagIcon(code) : code),
         drawer: {
-          label: "Country",
+          label: i18n("drawer_country_label"),
           widget: "autocompleteObjects",
           options: SUPPLIER_COUNTRY_OPTIONS,
-          emptyHelperText: "All countries included by default",
-          placeholder: "Type country or code",
+          emptyHelperText: i18n("drawer_country_empty_helper"),
+          placeholder: i18n("drawer_country_placeholder"),
           bind: { kind: "searchFilters", key: "country" },
         },
       },
     },
     {
       id: "shipping",
-      header: "Shipping",
+      header: i18n("column_shipping"),
       accessorKey: "supplierShipping",
       cell: (info) => info.getValue(),
       filterFn: "multiSelect",
       meta: {
-        filterPlaceholder: "Shipping...",
+        filterPlaceholder: i18n("filter_placeholder_shipping"),
         filterVariant: "select",
         drawer: {
-          label: "Shipping Type",
+          label: i18n("drawer_shipping_label"),
           widget: "chips",
           options: SHIPPING_OPTIONS,
           formatChipLabel: (option) => option.charAt(0).toUpperCase() + option.slice(1),
@@ -181,18 +182,18 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       id: "availability",
-      header: "Availability",
+      header: i18n("column_availability"),
       accessorKey: "availability",
       cell: (info) => info.getValue(),
       filterFn: "multiSelect",
       meta: {
-        filterPlaceholder: "Availability...",
+        filterPlaceholder: i18n("filter_placeholder_availability"),
         filterVariant: "select",
         style: {
           textAlign: "left",
         },
         drawer: {
-          label: "Availability",
+          label: i18n("drawer_availability_label"),
           widget: "chips",
           options: AVAILABILITY_OPTIONS,
           bind: { kind: "searchFilters", key: "availability" },
@@ -201,9 +202,9 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       accessorKey: "description",
-      header: "Description",
+      header: i18n("column_description"),
       meta: {
-        filterPlaceholder: "Description...",
+        filterPlaceholder: i18n("filter_placeholder_description"),
         filterVariant: "text",
         style: {
           textAlign: "left",
@@ -212,7 +213,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       id: "price",
-      header: "Price",
+      header: i18n("column_price"),
       accessorKey: "price",
       // Read userSettings from table meta rather than context so TableColumns()
       // stays hook-free — it's called from both React renders and non-render
@@ -225,13 +226,13 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       sortingFn: "priceSortingFn",
       filterFn: "inNumberRangeHierarchy",
       meta: {
-        filterPlaceholder: "1.00 - 1000.00",
+        filterPlaceholder: i18n("filter_placeholder_price"),
         filterVariant: "range",
         style: {
           textAlign: "left",
         },
         drawer: {
-          label: "Price Range",
+          label: i18n("drawer_price_label"),
           widget: "numberRange",
           adornment: "currency",
           bind: {
@@ -244,10 +245,10 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       id: "quantity",
-      header: "Qty",
+      header: i18n("column_quantity"),
       accessorKey: "quantity",
       meta: {
-        filterPlaceholder: "1 - 100",
+        filterPlaceholder: i18n("filter_placeholder_quantity"),
         filterVariant: "range",
         style: {
           textAlign: "left",
@@ -262,11 +263,11 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       id: "uom",
-      header: "Unit",
+      header: i18n("column_unit"),
       accessorKey: "uom",
       filterFn: "multiSelect",
       meta: {
-        filterPlaceholder: "Unit",
+        filterPlaceholder: i18n("filter_placeholder_unit"),
         filterVariant: "select",
         style: {
           textAlign: "left",
@@ -275,12 +276,16 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       id: "sds",
-      header: "SDS",
+      header: i18n("column_sds"),
       cell: ({ row }: ProductRow) => {
         const url = row.original.sdsUrl;
         if (!url) return null;
         return (
-          <Link href={url} aria-label="Safety data sheet (SDS)" title="Safety data sheet (SDS)">
+          <Link
+            href={url}
+            aria-label={i18n("product_detail_sds")}
+            title={i18n("product_detail_sds")}
+          >
             <SDSIcon fontSize="small" />
           </Link>
         );
@@ -298,15 +303,15 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       id: "specs",
-      header: "Specs",
+      header: i18n("column_specs"),
       cell: ({ row }: ProductRow) => {
         const url = row.original.specSheetUrl;
         if (!url) return null;
         return (
           <Link
             href={url}
-            aria-label="Technical Data Sheet (TDS)"
-            title="Technical Data Sheet (TDS)"
+            aria-label={i18n("product_detail_tds")}
+            title={i18n("product_detail_tds")}
           >
             <TDSIcon fontSize="small" />
           </Link>
@@ -325,15 +330,15 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       id: "coa",
-      header: "COA",
+      header: i18n("column_coa"),
       cell: ({ row }: ProductRow) => {
         const url = row.original.coaUrl;
         if (!url) return null;
         return (
           <Link
             href={url}
-            aria-label="Certificate of Analysis (COA)"
-            title="Certificate of Analysis (COA)"
+            aria-label={i18n("product_detail_coa")}
+            title={i18n("product_detail_coa")}
           >
             <COAIcon fontSize="small" />
           </Link>
@@ -352,12 +357,12 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       id: "cas",
-      header: "CAS",
+      header: i18n("column_cas"),
       accessorKey: "cas",
       cell: (info) => info.getValue(),
       filterFn: "includeHierarchy",
       meta: {
-        filterPlaceholder: "CAS...",
+        filterPlaceholder: i18n("filter_placeholder_cas"),
         filterVariant: "text",
         style: {
           textAlign: "left",
@@ -366,7 +371,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       id: "pubchem",
-      header: "PubChem",
+      header: i18n("column_pubchem"),
       accessorKey: "pubchemId",
       cell: ({ row }: ProductRow) => {
         const cid = row.original.pubchemId;
@@ -374,8 +379,8 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         return (
           <Link
             href={`https://pubchem.ncbi.nlm.nih.gov/compound/${cid}`}
-            aria-label={`PubChem CID ${cid}`}
-            title="View on PubChem"
+            aria-label={i18n("product_detail_pubchem_cid", [String(cid)])}
+            title={i18n("product_detail_pubchem_view")}
           >
             {cid}
           </Link>
@@ -390,14 +395,14 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       id: "formula",
-      header: "Formula",
+      header: i18n("column_formula"),
       accessorKey: "formula",
       // The formula is stored with sub/superscripts already converted to
       // unicode (see ProductBuilder.setFormula), so render it as plain text.
       cell: (info) => info.getValue(),
       filterFn: "includeHierarchy",
       meta: {
-        filterPlaceholder: "Formula...",
+        filterPlaceholder: i18n("filter_placeholder_formula"),
         filterVariant: "text",
         style: {
           textAlign: "left",
@@ -406,12 +411,12 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       id: "moleweight",
-      header: "M.W.",
+      header: i18n("column_moleweight"),
       accessorKey: "moleweight",
       cell: (info) => info.getValue(),
       filterFn: "inNumberRangeHierarchy",
       meta: {
-        filterPlaceholder: "0 - 1000",
+        filterPlaceholder: i18n("filter_placeholder_moleweight"),
         filterVariant: "range",
         style: {
           textAlign: "left",
@@ -420,14 +425,14 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       id: "purity",
-      header: "Purity",
+      header: i18n("column_purity"),
       // Prefer the chemical grade (e.g. "ACS"); fall back to the purity % when no grade is
       // set. Using an accessor keeps the displayed value, sorting, and filtering in sync.
       accessorFn: (product) => product.grade ?? product.purity,
       cell: (info) => info.getValue() ?? null,
       filterFn: "includeHierarchy",
       meta: {
-        filterPlaceholder: "Purity...",
+        filterPlaceholder: i18n("filter_placeholder_purity"),
         filterVariant: "text",
         style: {
           textAlign: "left",
@@ -436,12 +441,12 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       id: "concentration",
-      header: "Conc.",
+      header: i18n("column_concentration"),
       accessorKey: "concentration",
       cell: (info) => info.getValue(),
       filterFn: "includeHierarchy",
       meta: {
-        filterPlaceholder: "Concentration...",
+        filterPlaceholder: i18n("filter_placeholder_concentration"),
         filterVariant: "text",
         style: {
           textAlign: "left",

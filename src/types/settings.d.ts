@@ -1,5 +1,5 @@
 /**
- * Action types for the settings reducer used by SettingsPanel and SettingsPanelFull.
+ * Action types for the settings reducer used by SettingsPanel.
  */
 
 import { ACTION_TYPE } from "@/constants/common";

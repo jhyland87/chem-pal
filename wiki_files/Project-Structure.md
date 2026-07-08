@@ -66,8 +66,7 @@ components/
 │       ├── SelectColumnFilter.tsx
 │       ├── TextColumnFilter.tsx
 │       └── SupplierResultLimit.tsx
-├── SettingsPanel.tsx         # Popup settings panel
-├── SettingsPanelFull.tsx     # Full-page settings
+├── SettingsPanel.tsx         # Settings drawer panel
 ├── SuppliersPanel.tsx        # Supplier enable/disable
 ├── StatsPanel.tsx            # Search statistics
 ├── DrawerSystem.tsx          # Drawer-based navigation

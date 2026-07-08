@@ -1,6 +1,7 @@
 import { defaultResultsLimit, defaultSettings } from "@/../config.json";
 import { APP_ACTION, CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
 import { AppContext } from "@/context";
+import { emitSearchEvent, SearchEvent } from "@/events/searchEvents";
 import {
   ABORT_SEARCH_EVENT,
   FOCUS_GLOBAL_FILTER_EVENT,
@@ -10,9 +11,8 @@ import {
   type HotkeyHandlers,
 } from "@/hotkeys";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
-import { useBadgeController } from "@/utils/badgeController";
-import { SearchEvent, emitSearchEvent } from "@/events/searchEvents";
 import { SupplierCache } from "@/utils/SupplierCache";
+import { useBadgeController } from "@/utils/badgeController";
 import { isTabView } from "@/utils/displayContext";
 import { clearSearchResults, getSearchResults, IDB_SEARCH_RESULTS_CLEARED } from "@/utils/idbCache";
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
@@ -40,6 +40,7 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import { diff } from "./helpers/collectionUtils";
 import { getCountryName } from "./helpers/country";
 import { getCurrencyCodeFromLocation, getCurrencyRate } from "./helpers/currency";
+import { i18n } from "./helpers/i18n";
 import { getUserLanguage, getUserLocation } from "./helpers/utils";
 
 const StatsPanel = IS_DEV_BUILD ? lazy(() => import("./components/StatsPanel")) : null;
@@ -139,7 +140,10 @@ function HotkeyLayer({ handlers }: { handlers: HotkeyHandlers }) {
   const { flashStatusText } = useStatusBar();
   useHotkeys(handlers, {
     onTriggered: (config) => {
-      if (config.flash) flashStatusText(config.flash);
+      if (!config.flash) return;
+      // Prefer a localized flash keyed by the (lowercased) hotkey id; fall back
+      // to the English text declared in config.json.
+      flashStatusText(i18n(`hotkeys_flash_${config.id.toLowerCase()}`) || config.flash);
     },
   });
   return null;
@@ -413,9 +417,9 @@ function App() {
       try {
         const changed = changes[CACHE.QUERY]?.newValue;
         const query =
-          typeof changed === "string" ?
-            changed
-          : (await cstorage.session.get([CACHE.QUERY]))[CACHE.QUERY];
+          typeof changed === "string"
+            ? changed
+            : (await cstorage.session.get([CACHE.QUERY]))[CACHE.QUERY];
         if (typeof query !== "string" || !query.trim()) return;
 
         // Clear the flag before navigating so a freshly-mounting SearchPanel's
@@ -558,7 +562,7 @@ function App() {
   };
 
   return (
-    <ErrorBoundary fallback={<p>Something went wrong</p>}>
+    <ErrorBoundary fallback={<p>{i18n("app_error_generic")}</p>}>
       <AppContext.Provider value={appContextValue}>
         <ThemeProvider>
           <StatusBarProvider>
@@ -576,9 +580,6 @@ function App() {
                 </Suspense>
               )}
               {IS_DEV_BUILD && <DevBadge>DEV BUILD</DevBadge>}
-              {/* {appState.panel === 3 && <FavoritesPanel />}
-              {appState.panel === 4 && <HistoryPanel />}
-              {appState.panel === 5 && <SettingsPanel />} */}
               <div className="main-content">
                 <DrawerSystem />
                 <SpeedDialMenu speedDialVisibility={appState.speedDialVisibility ?? false} />

@@ -1,5 +1,6 @@
 import { DRAWER_INDEX } from "@/constants/common";
 import { useAppContext } from "@/context";
+import { i18n } from "@/helpers/i18n";
 import {
   History as HistoryIcon,
   Search as SearchIcon,
@@ -10,7 +11,7 @@ import { useState, FC, SyntheticEvent } from "react";
 import DrawerSearchPanel from "./DrawerSearchPanel";
 import styles from "./DrawerSystem.module.scss";
 import HistoryPanel from "./HistoryPanel";
-import SettingsPanelFull from "./SettingsPanelFull";
+import SettingsPanel from "./SettingsPanel";
 
 // TabPanelProps is declared globally in types/props.d.ts
 
@@ -96,9 +97,9 @@ const DrawerSystem: FC = () => {
             variant="fullWidth"
             className={styles["drawer-tabs"]}
           >
-            <Tab icon={<SearchIcon />} label="SEARCH" iconPosition="start" />
-            <Tab icon={<HistoryIcon />} label="HISTORY" iconPosition="start" />
-            <Tab icon={<SettingsIcon />} label="SETTINGS" iconPosition="start" />
+            <Tab icon={<SearchIcon />} label={i18n("drawer_tab_search")} iconPosition="start" />
+            <Tab icon={<HistoryIcon />} label={i18n("drawer_tab_history")} iconPosition="start" />
+            <Tab icon={<SettingsIcon />} label={i18n("drawer_tab_settings")} iconPosition="start" />
           </Tabs>
         )}
 
@@ -114,7 +115,7 @@ const DrawerSystem: FC = () => {
         </TabPanel>
 
         <TabPanel value={appContext.drawerTab ?? DRAWER_INDEX.CLOSED} index={DRAWER_INDEX.SETTINGS}>
-          <SettingsPanelFull />
+          <SettingsPanel />
         </TabPanel>
       </div>
     </Drawer>

@@ -23,6 +23,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.tsx";
+import { i18n } from "./helpers/i18n";
 import "./main.scss";
 import { isTabView } from "./utils/displayContext";
 import { IS_DEV_BUILD } from "./utils/isDevBuild";
@@ -37,6 +38,8 @@ if (IS_DEV_BUILD) {
 }
 
 (async () => {
+  document.title = i18n("app_title");
+
   // Tag the document so CSS can drop the popup's fixed dimensions and fill the
   // window when the extension is opened in a full browser tab. Done pre-render
   // to avoid a resize flash.

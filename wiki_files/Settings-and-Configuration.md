@@ -41,8 +41,7 @@ Settings changes are dispatched as actions through a reducer:
 ```mermaid
 flowchart TB
 subgraph Components["UI Components"]
-SP["SettingsPanel\n(popup)"]
-SPF["SettingsPanelFull\n(full page)"]
+SP["SettingsPanel\n(drawer)"]
 SUP["SuppliersPanel\n(supplier toggle)"]
 end
 
@@ -56,7 +55,6 @@ CS[("chrome.storage.local\nvia cstorage wrapper\nuser settings, table state")]
 end
 
 SP --> AR
-SPF --> AR
 SUP --> AR
 AR --> CTX
 AR -.->|"auto-persist"| CS
@@ -66,7 +64,7 @@ classDef component fill:#4A90D9,stroke:#2C5F8A,color:#fff
 classDef state fill:#27AE60,stroke:#1E8449,color:#fff
 classDef storage fill:#E8A838,stroke:#B8841F,color:#fff
 
-class SP,SPF,SUP component
+class SP,SUP component
 class AR,CTX state
 class CS storage
 ```

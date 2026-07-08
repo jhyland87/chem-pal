@@ -1,4 +1,5 @@
 import { useAppContext } from "@/context";
+import { i18n } from "@/helpers/i18n";
 import { hexToRgba, SUPPLIER_COLORS } from "@/theme/colors";
 import { clearStats, getStats } from "@/utils/SupplierStatsStore";
 import { IDB_SUPPLIER_STATS_UPDATED } from "@/utils/idbCache";
@@ -164,14 +165,14 @@ const StatsPanel: FC = () => {
       return [
         {
           id: `${supplier}-success`,
-          label: "Successes",
+          label: i18n("stats_successes"),
           value: success,
           percentage: supplierTotal > 0 ? (success / supplierTotal) * 100 : 0,
           color: baseColor,
         },
         {
           id: `${supplier}-failure`,
-          label: "Fails",
+          label: i18n("stats_fails"),
           value: failure,
           percentage: supplierTotal > 0 ? (failure / supplierTotal) * 100 : 0,
           color: hexToRgba(baseColor, 0.4),
@@ -209,14 +210,14 @@ const StatsPanel: FC = () => {
       return [
         {
           id: `${supplier}-parsed`,
-          label: "Successes",
+          label: i18n("stats_successes"),
           value: products,
           percentage: supplierTotal > 0 ? (products / supplierTotal) * 100 : 0,
           color: baseColor,
         },
         {
           id: `${supplier}-parseError`,
-          label: "Fails",
+          label: i18n("stats_fails"),
           value: parseErrors,
           percentage: supplierTotal > 0 ? (parseErrors / supplierTotal) * 100 : 0,
           color: hexToRgba(baseColor, 0.4),
@@ -256,10 +257,7 @@ const StatsPanel: FC = () => {
         label: supplier,
         color,
         showMark: true,
-        valueFormatter: (v) => {
-          if (!v) return "0 calls";
-          return `${v} calls`;
-        },
+        valueFormatter: (v) => i18n("stats_calls", [String(v ?? 0)]),
       });
       colorIdx++;
     }
@@ -269,12 +267,12 @@ const StatsPanel: FC = () => {
 
   // Totals table
   const totalsColumns: GridColDef[] = [
-    { field: "supplier", headerName: "Supplier", flex: 1, minWidth: 130 },
-    { field: "queries", headerName: "Queries", width: 80, type: "number" },
-    { field: "success", headerName: "Success", width: 80, type: "number" },
-    { field: "failure", headerName: "Failure", width: 80, type: "number" },
-    { field: "products", headerName: "Products", width: 85, type: "number" },
-    { field: "parseErrors", headerName: "Parse Errors", width: 105, type: "number" },
+    { field: "supplier", headerName: i18n("stats_col_supplier"), flex: 1, minWidth: 130 },
+    { field: "queries", headerName: i18n("stats_col_queries"), width: 80, type: "number" },
+    { field: "success", headerName: i18n("stats_col_success"), width: 80, type: "number" },
+    { field: "failure", headerName: i18n("stats_col_failure"), width: 80, type: "number" },
+    { field: "products", headerName: i18n("stats_col_products"), width: 85, type: "number" },
+    { field: "parseErrors", headerName: i18n("stats_col_parse_errors"), width: 105, type: "number" },
   ];
 
   const totalsRows = useMemo(
@@ -302,7 +300,7 @@ const StatsPanel: FC = () => {
 
   // Select the right pie data based on the toggle
   const activePie = pieView === "http" ? httpPieData : parsedPieData;
-  const centerLabel = pieView === "http" ? "HTTP" : "Parsed";
+  const centerLabel = pieView === "http" ? i18n("stats_center_http") : i18n("stats_center_parsed");
   const activeTotalForTooltip =
     pieView === "http" ? httpPieData.totalCalls : parsedPieData.totalParsed;
 
@@ -315,19 +313,21 @@ const StatsPanel: FC = () => {
             <BackButton
               onClick={() => appContext.setPanel!(0)}
               size="small"
-              aria-label="Back to search home"
+              aria-label={i18n("common_back_to_search")}
             >
               <ArrowBackIcon />
             </BackButton>
           )}
-          <Typography variant="subtitle2">Supplier Stats</Typography>
+          <Typography variant="subtitle2">{i18n("stats_title")}</Typography>
         </div>
         <div className={styles["header-right"]}>
           <Typography variant="caption" color="text.secondary">
-            {totalCalls} call{totalCalls !== 1 ? "s" : ""}
+            {totalCalls === 1
+              ? i18n("stats_call_single", [String(totalCalls)])
+              : i18n("stats_calls", [String(totalCalls)])}
           </Typography>
           {hasData && (
-            <Tooltip title="Clear stats">
+            <Tooltip title={i18n("stats_clear")}>
               <IconButton
                 size="small"
                 onClick={handleClear}
@@ -342,7 +342,7 @@ const StatsPanel: FC = () => {
 
       {!hasData ? (
         <Typography variant="body2" color="text.secondary" className={styles["stats-panel__empty"]}>
-          No stats yet. Run a search to start tracking.
+          {i18n("stats_empty")}
         </Typography>
       ) : (
         <>
@@ -352,9 +352,9 @@ const StatsPanel: FC = () => {
             variant="fullWidth"
             className={styles["stats-panel__tabs"]}
           >
-            <Tab label="By Supplier" />
-            <Tab label="Daily" />
-            <Tab label="Totals" />
+            <Tab label={i18n("stats_tab_by_supplier")} />
+            <Tab label={i18n("stats_tab_daily")} />
+            <Tab label={i18n("stats_tab_totals")} />
           </Tabs>
 
           <Paper className={styles["stats-panel__content"]} elevation={2}>
@@ -371,8 +371,8 @@ const StatsPanel: FC = () => {
                       if (v !== null) setPieView(v);
                     }}
                   >
-                    <ToggleButton value="http">HTTP Calls</ToggleButton>
-                    <ToggleButton value="parsed">Parsed Data</ToggleButton>
+                    <ToggleButton value="http">{i18n("stats_toggle_http")}</ToggleButton>
+                    <ToggleButton value="parsed">{i18n("stats_toggle_parsed")}</ToggleButton>
                   </ToggleButtonGroup>
                 </Box>
                 <Box className={styles["stats-panel__chart-container"]}>
@@ -383,7 +383,15 @@ const StatsPanel: FC = () => {
                         outerRadius: middleRadius,
                         data: activePie.inner.map((d) => ({ ...d, label: d.id })),
                         valueFormatter: ({ value }) =>
-                          `${value} of ${activeTotalForTooltip} (${activeTotalForTooltip > 0 ? ((value / activeTotalForTooltip) * 100).toFixed(0) : 0}%)`,
+                          i18n("stats_pie_inner_tooltip", [
+                            String(value),
+                            String(activeTotalForTooltip),
+                            String(
+                              activeTotalForTooltip > 0
+                                ? ((value / activeTotalForTooltip) * 100).toFixed(0)
+                                : 0,
+                            ),
+                          ]),
                         highlightScope: { fade: "global", highlight: "item" },
                         highlighted: { additionalRadius: 2 },
                         cornerRadius: 3,
@@ -396,7 +404,10 @@ const StatsPanel: FC = () => {
                         valueFormatter: (item) =>
                           // MUI's pie item type omits our custom PieDatum fields; the runtime
                           // data is the PieDatum[] we passed, so reading `percentage` is safe.
-                          `${item.value} (${((item as unknown as PieDatum).percentage ?? 0).toFixed(0)}%)`,
+                          i18n("stats_pie_outer_tooltip", [
+                            String(item.value),
+                            String((item as unknown as PieDatum).percentage?.toFixed(0) ?? 0),
+                          ]),
                         highlightScope: { fade: "global", highlight: "item" },
                         highlighted: { additionalRadius: 2 },
                         cornerRadius: 3,

@@ -1,206 +1,661 @@
 {
-  "application_description": {
-    "message": "Open source project aimed at helping amateur chemistry hobbyists find the best deals on chemical reagents. There are plenty of similar services out there for businesses, universities and research institutions, but none are available for individuals and hobbyists. ChemPal only searches suppliers that sell to individuals and ship to residences. hobbyists. ChemPal only searches suppliers that sell to individuals and ship to residences.",
+  "app_name": {
+    "message": "Chem Pal",
+    "description": "The extension name shown in the browser and web store."
+  },
+  "app_description": {
+    "message": "Search and compare laboratory chemical product listings across supported supplier websites from a side panel.",
+    "description": "The extension description shown in the browser and web store."
+  },
+  "app_title": {
+    "message": "ChemPal - Chemical Reagent Search Engine",
+    "description": "The browser tab title."
+  },
+  "app_error_generic": {
+    "message": "Something went wrong",
+    "description": "Fallback message shown when the app crashes."
+  },
+
+  "common_open_in_tab": {
+    "message": "Open in tab",
+    "description": "Accessible label for the button that opens the extension in a full browser tab."
+  },
+  "common_back_to_search": {
+    "message": "Back to search home",
+    "description": "Accessible label for the back button that returns to the search home."
+  },
+
+  "about_title": {
+    "message": "About ChemPal",
+    "description": "The title of the About ChemPal section."
+  },
+  "about_description": {
+    "message": "Open source project aimed at helping amateur chemistry hobbyists find the best deals on chemical reagents. There are plenty of similar services out there for businesses, universities and research institutions, but none are available for individuals and hobbyists. ChemPal only searches suppliers that sell to individuals and ship to residences.",
     "description": "The description of the application."
   },
-  "about_chempal": {
-    "message": "About ChemPal",
-    "description": "The title of the about ChemPal section."
-  },
-  "contributors": {
+  "about_contributors": {
     "message": "Contributors",
     "description": "The title of the contributors section."
   },
-  "cancel_search": {
+  "about_logo_alt": {
+    "message": "ChemPal logo",
+    "description": "Alt text for the ChemPal logo in the About modal."
+  },
+
+  "loading_cancel": {
     "message": "Cancel search",
     "description": "The text of the button to cancel the search."
   },
-  "aborting_search": {
+  "loading_aborting": {
     "message": "Aborting...",
-    "description": "The text of the status shown when aborting a search."
+    "description": "Status shown when aborting a search."
   },
-  "loading_search": {
+  "loading_loading": {
     "message": "Loading...",
-    "description": "The text of the status shown when loading a search."
+    "description": "Status shown when loading a search."
   },
-  "found_result_single": {
+  "loading_aria": {
+    "message": "search loading",
+    "description": "Accessible label for the loading backdrop."
+  },
+  "loading_found_single": {
     "message": "Found $count$ result.",
-    "placeholders": {
-      "count": { "content": "$1" }
-    }
+    "placeholders": { "count": { "content": "$1" } }
   },
-  "found_results_one_supplier": {
+  "loading_found_one_supplier": {
     "message": "Found $count$ results from $suppliers$ supplier",
-    "placeholders": {
-      "count": { "content": "$1" },
-      "suppliers": { "content": "$2" }
-    }
+    "placeholders": { "count": { "content": "$1" }, "suppliers": { "content": "$2" } }
   },
-  "found_results_many_suppliers": {
+  "loading_found_many_suppliers": {
     "message": "Found $count$ results from $suppliers$ suppliers",
-    "placeholders": {
-      "count": { "content": "$1" },
-      "suppliers": { "content": "$2" }
-    }
+    "placeholders": { "count": { "content": "$1" }, "suppliers": { "content": "$2" } }
   },
-  "filter_by": {
+
+  "search_open_settings": {
+    "message": "Open settings",
+    "description": "Accessible label for the settings button on the search home."
+  },
+  "search_go_to_results": {
+    "message": "Go to results",
+    "description": "Accessible label for the button that jumps to cached search results."
+  },
+  "search_logo_alt": {
+    "message": "Supplier Search Logo",
+    "description": "Alt text for the search home logo."
+  },
+  "search_placeholder": {
+    "message": "Search for products...",
+    "description": "Placeholder text for the main search input."
+  },
+  "search_form_aria": {
+    "message": "search for products",
+    "description": "Accessible label for the main search input."
+  },
+  "search_submit": {
+    "message": "search",
+    "description": "Accessible label for the search submit button."
+  },
+  "search_advanced_options": {
+    "message": "advanced options",
+    "description": "Accessible label for the advanced-options (drawer) button."
+  },
+  "search_invalid_query": {
+    "message": "Invalid query.",
+    "description": "Fallback error hint shown when a search query is invalid."
+  },
+
+  "drawer_tab_search": {
+    "message": "SEARCH",
+    "description": "Label for the Search tab in the side drawer."
+  },
+  "drawer_tab_history": {
+    "message": "HISTORY",
+    "description": "Label for the History tab in the side drawer."
+  },
+  "drawer_tab_settings": {
+    "message": "SETTINGS",
+    "description": "Label for the Settings tab in the side drawer."
+  },
+  "drawer_product_name_label": {
+    "message": "Product name or keyword",
+    "description": "Label for the product-name field in the search drawer."
+  },
+  "drawer_search_button": {
+    "message": "Search",
+    "description": "Label for the search button in the search drawer."
+  },
+  "drawer_results_limit": {
+    "message": "Results Limit",
+    "description": "Accordion title for the per-supplier results limit."
+  },
+  "drawer_results_limit_hint": {
+    "message": "($count$ per supplier)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "drawer_results_limit_label": {
+    "message": "Results Limit (per Supplier)",
+    "description": "Field label for the per-supplier results limit."
+  },
+  "drawer_range_min": {
+    "message": "Min",
+    "description": "Label for the minimum value of a numeric range input."
+  },
+  "drawer_range_max": {
+    "message": "Max",
+    "description": "Label for the maximum value of a numeric range input."
+  },
+  "drawer_only_shipping_suppliers": {
+    "message": "Only suppliers that ship to my location",
+    "description": "Checkbox label to hide suppliers that do not ship to the user's location."
+  },
+  "drawer_supplier_label": {
+    "message": "Search Suppliers",
+    "description": "Drawer accordion label for the supplier selector."
+  },
+  "drawer_supplier_empty_helper": {
+    "message": "All suppliers included by default",
+    "description": "Helper text shown when no supplier is selected."
+  },
+  "drawer_supplier_placeholder": {
+    "message": "Type supplier name",
+    "description": "Placeholder for the supplier selector input."
+  },
+  "drawer_country_label": {
+    "message": "Country",
+    "description": "Drawer accordion label for the country selector."
+  },
+  "drawer_country_empty_helper": {
+    "message": "All countries included by default",
+    "description": "Helper text shown when no country is selected."
+  },
+  "drawer_country_placeholder": {
+    "message": "Type country or code",
+    "description": "Placeholder for the country selector input."
+  },
+  "drawer_shipping_label": {
+    "message": "Shipping Type",
+    "description": "Drawer accordion label for the shipping-type filter."
+  },
+  "drawer_availability_label": {
+    "message": "Availability",
+    "description": "Drawer accordion label for the availability filter."
+  },
+  "drawer_price_label": {
+    "message": "Price Range",
+    "description": "Drawer accordion label for the price-range filter."
+  },
+
+  "filter_by_label": {
     "message": "Filter by $label$",
-    "placeholders": {
-      "label": { "content": "$1" }
-    }
+    "placeholders": { "label": { "content": "$1" } }
   },
-  "chempal_favorites_folder_name": {
-    "message": "ChemPal Favorites",
-    "description": "The name of the ChemPal favorites folder."
+  "filter_range_aria": {
+    "message": "$header$ range",
+    "placeholders": { "header": { "content": "$1" } }
   },
-  "bookmark_already_exists_in_folder": {
-    "message": "Bookmark already exists in $folder$",
-    "placeholders": {
-      "folder": { "content": "$1" }
-    }
+  "filter_placeholder_title": {
+    "message": "Title...",
+    "description": "Placeholder for the Title column filter."
   },
-  "bookmark_created_at_folder": {
-    "message": "Bookmark created at $folder$",
-    "placeholders": { "folder": { "content": "$1" } }
+  "filter_placeholder_supplier": {
+    "message": "BVV, HiMedia, etc...",
+    "description": "Placeholder for the Supplier column filter."
   },
-  "chemical_product": {
-    "message": "Chemical Product",
-    "description": "The name of the chemical product."
+  "filter_placeholder_country": {
+    "message": "🇺🇸 🇨🇳 …",
+    "description": "Placeholder for the Country column filter."
   },
-  "check_out_chemical_product": {
-    "message": "Check out this chemical product: $product$",
-    "placeholders": { "product": { "content": "$1" } }
+  "filter_placeholder_shipping": {
+    "message": "Shipping...",
+    "description": "Placeholder for the Shipping column filter."
   },
-  "this_product_cant_be_removed_from_the_cache": {
-    "message": "This product can't be removed from the cache",
-    "description": "The message shown when a product can't be removed from the cache."
+  "filter_placeholder_availability": {
+    "message": "Availability...",
+    "description": "Placeholder for the Availability column filter."
   },
-  "copy_product_info_price": {
-    "message": "Price: $price$",
-    "placeholders": { "price": { "content": "$1" } }
+  "filter_placeholder_description": {
+    "message": "Description...",
+    "description": "Placeholder for the Description column filter."
   },
-  "copy_product_info_supplier": {
-    "message": "Supplier: $supplier$",
-    "placeholders": { "supplier": { "content": "$1" } }
+  "filter_placeholder_price": {
+    "message": "1.00 - 1000.00",
+    "description": "Placeholder for the Price column filter."
   },
-  "copy_product_info_url": {
-    "message": "URL: $url$",
-    "placeholders": { "url": { "content": "$1" } }
+  "filter_placeholder_quantity": {
+    "message": "1 - 100",
+    "description": "Placeholder for the Quantity column filter."
   },
-  "copy_product_info_description": {
-    "message": "Description: $description$",
-    "placeholders": { "description": { "content": "$1" } }
+  "filter_placeholder_unit": {
+    "message": "Unit",
+    "description": "Placeholder for the Unit column filter."
   },
-  "context_menu_copy_title": {
-    "message": "Copy Title",
-    "description": "The text of the context menu option to copy the title."
+  "filter_placeholder_cas": {
+    "message": "CAS...",
+    "description": "Placeholder for the CAS column filter."
   },
-  "context_menu_copy_url": {
-    "message": "Copy URL",
-    "description": "The text of the context menu option to copy the URL."
+  "filter_placeholder_formula": {
+    "message": "Formula...",
+    "description": "Placeholder for the Formula column filter."
   },
-  "context_menu_copy_product_info": {
-    "message": "Copy Product Info",
-    "description": "The text of the context menu option to copy the product info."
+  "filter_placeholder_moleweight": {
+    "message": "0 - 1000",
+    "description": "Placeholder for the Molecular Weight column filter."
   },
-  "context_menu_ignore_product": {
-    "message": "Ignore Product",
-    "description": "The text of the context menu option to ignore the product."
+  "filter_placeholder_purity": {
+    "message": "Purity...",
+    "description": "Placeholder for the Purity column filter."
   },
-  "context_menu_remove_product_from_cache": {
-    "message": "Remove Product from Cache",
-    "description": "The text of the context menu option to remove the product from the cache."
+  "filter_placeholder_concentration": {
+    "message": "Concentration...",
+    "description": "Placeholder for the Concentration column filter."
   },
-  "context_menu_open_in_new_tab": {
-    "message": "Open in New Tab",
-    "description": "The text of the context menu option to open the product in a new tab."
+
+  "column_title": { "message": "Title", "description": "Table column header." },
+  "column_supplier": { "message": "Supplier", "description": "Table column header." },
+  "column_country": { "message": "Country", "description": "Table column header." },
+  "column_shipping": { "message": "Shipping", "description": "Table column header." },
+  "column_availability": { "message": "Availability", "description": "Table column header." },
+  "column_description": { "message": "Description", "description": "Table column header." },
+  "column_price": { "message": "Price", "description": "Table column header." },
+  "column_quantity": { "message": "Qty", "description": "Table column header." },
+  "column_unit": { "message": "Unit", "description": "Table column header." },
+  "column_sds": { "message": "SDS", "description": "Table column header." },
+  "column_specs": { "message": "Specs", "description": "Table column header." },
+  "column_coa": { "message": "COA", "description": "Table column header." },
+  "column_cas": { "message": "CAS", "description": "Table column header." },
+  "column_pubchem": { "message": "PubChem", "description": "Table column header." },
+  "column_formula": { "message": "Formula", "description": "Table column header." },
+  "column_moleweight": { "message": "M.W.", "description": "Table column header." },
+  "column_purity": { "message": "Purity", "description": "Table column header." },
+  "column_concentration": { "message": "Conc.", "description": "Table column header." },
+
+  "results_searched_for": {
+    "message": "Searched for: $query$",
+    "placeholders": { "query": { "content": "$1" } }
   },
-  "context_menu_create_bookmark": {
-    "message": "Create Bookmark",
-    "description": "The text of the context menu option to create a bookmark."
+  "results_count": {
+    "message": "Results: $count$",
+    "placeholders": { "count": { "content": "$1" } }
   },
-  "context_menu_search_similar": {
-    "message": "Search Similar",
-    "description": "The text of the context menu option to search for similar products."
+  "results_count_filtered": {
+    "message": "Results: $filtered$ of $total$",
+    "placeholders": { "filtered": { "content": "$1" }, "total": { "content": "$2" } }
   },
-  "context_menu_share": {
-    "message": "Share",
-    "description": "The text of the context menu option to share the product."
+  "results_filter_placeholder": {
+    "message": "Filter results...",
+    "description": "Placeholder for the global results filter input."
   },
-  "context_menu_view_details": {
-    "message": "View Details",
-    "description": "The text of the context menu option to view the details of the product."
+  "results_filter_aria": {
+    "message": "Filter results",
+    "description": "Accessible label for the global results filter input."
   },
-  "filter_component_not_found": {
-    "message": "Filter Component not found: $component$",
-    "placeholders": { "component": { "content": "$1" } }
+  "results_clear_filters": {
+    "message": "Clear all filters",
+    "description": "Tooltip/label for the button that clears all column filters."
   },
-  "context_not_available": {
-    "message": "Context not available",
-    "description": "The message shown when the context is not available."
+  "results_rows_per_page_aria": {
+    "message": "rows per page",
+    "description": "Accessible label for the page-size selector."
   },
-  "supplier_selection": {
-    "message": "Supplier Selection",
-    "description": "The text of the supplier selection component."
-  },
-  "column_visibility": {
-    "message": "Column Visibility",
-    "description": "The text of the column visibility component."
-  },
-  "filter_results_table_placeholder": {
-    "message": "Filter results table..",
-    "description": "The placeholder text for the filter results table input."
-  },
-  "show_page_size": {
-    "message": "Show $pageSize$",
-    "placeholders": { "pageSize": { "content": "$1" } }
-  },
-  "results_table_status_searching": {
+  "results_status_searching": {
     "message": "Searching...",
-    "description": "The text of the status shown when searching."
+    "description": "Status shown while a search is running."
   },
-  "results_table_status_no_search_query": {
+  "results_status_no_search_query": {
     "message": "No search query",
-    "description": "The text of the status shown when there is no search query."
+    "description": "Status shown when there is no search query."
   },
-  "results_table_status_no_results_matching_your_filter_values": {
+  "results_status_no_results_filtered": {
     "message": "No results matching your filter values",
-    "description": "The text of the status shown when there are no results matching the filter values."
+    "description": "Status shown when filters exclude all results."
   },
-  "results_table_status_no_results_found": {
+  "results_status_no_results_found": {
     "message": "No results found",
-    "description": "The text of the status shown when there are no results found."
+    "description": "Status shown when a search returns nothing."
   },
-  "results_table_error": {
+  "results_error": {
     "message": "Error: $error$",
     "placeholders": { "error": { "content": "$1" } }
   },
-  "results_table_retry": {
+  "results_retry": {
     "message": "Retry",
-    "description": "The text of the button to retry the search."
+    "description": "Label for the retry button."
   },
-  "results_table_show": {
+  "results_show": {
     "message": "Show",
-    "description": "The text of the label for the results table show selector."
+    "description": "Label preceding the page-size selector."
   },
-  "results_table_all": {
+  "results_all": {
     "message": "All",
-    "description": "The text of the label for the results table all selector."
+    "description": "Page-size option that shows all rows."
   },
-  "results_table_rows": {
+  "results_rows": {
     "message": "Rows",
-    "description": "The text of the label for the results table rows selector."
+    "description": "Label following the page-size selector."
   },
-  "results_table_page_of_total": {
+  "results_page_of_total": {
     "message": "Page $page$ of $total$",
     "placeholders": { "page": { "content": "$1" }, "total": { "content": "$2" } }
   },
-  "results_table_total_results": {
+  "results_total": {
     "message": "($total$ total results)",
     "placeholders": { "total": { "content": "$1" } }
   },
-  "results_table_showing_results": {
+  "results_showing": {
     "message": "(Showing $filtered$ of $total$ results)",
     "placeholders": { "filtered": { "content": "$1" }, "total": { "content": "$2" } }
-  }
+  },
+
+  "history_count_single": {
+    "message": "$count$ search",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "history_count_plural": {
+    "message": "$count$ searches",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "history_clear": {
+    "message": "Clear history",
+    "description": "Tooltip/label for the clear-history button."
+  },
+  "history_empty": {
+    "message": "No search history yet.",
+    "description": "Empty-state text for the history panel."
+  },
+  "history_result_single": {
+    "message": "$count$ result",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "history_result_plural": {
+    "message": "$count$ results",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "history_filter_availability": {
+    "message": "Availability: $value$",
+    "placeholders": { "value": { "content": "$1" } }
+  },
+  "history_filter_country": {
+    "message": "Country: $value$",
+    "placeholders": { "value": { "content": "$1" } }
+  },
+  "history_filter_shipping": {
+    "message": "Shipping: $value$",
+    "placeholders": { "value": { "content": "$1" } }
+  },
+  "history_filter_suppliers": {
+    "message": "Suppliers: $count$ selected",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+
+  "settings_loading": {
+    "message": "Loading settings...",
+    "description": "Fallback shown while the settings panel loads."
+  },
+  "settings_section_behavior": { "message": "Behavior", "description": "Settings section header." },
+  "settings_section_cache": { "message": "Cache", "description": "Settings section header." },
+  "settings_section_price_history": { "message": "Price History", "description": "Settings section header." },
+  "settings_section_display": { "message": "Display", "description": "Settings section header." },
+  "settings_section_excluded": { "message": "Excluded Products", "description": "Settings section header." },
+  "settings_section_advanced": { "message": "Advanced", "description": "Settings section header." },
+  "settings_section_actions": { "message": "Actions", "description": "Settings section header." },
+  "settings_cache_results": { "message": "Cache Search Results", "description": "Setting label." },
+  "settings_currency": { "message": "Currency", "description": "Setting label / placeholder." },
+  "settings_location": { "message": "Location", "description": "Setting label." },
+  "settings_location_placeholder": { "message": "Country or code", "description": "Placeholder for the location input." },
+  "settings_language": { "message": "Language", "description": "Setting label." },
+  "settings_currency_rate": { "message": "Currency Rate", "description": "Setting label." },
+  "settings_do_not_cache_empty": { "message": "Do Not Cache Empty Results", "description": "Setting label." },
+  "settings_cache_ttl": { "message": "Cache TTL (minutes)", "description": "Setting label." },
+  "settings_track_price_history": { "message": "Track price history", "description": "Setting label." },
+  "settings_track_price_history_desc": {
+    "message": "Record each product's USD price over time so you can see if it's rising or falling.",
+    "description": "Description for the track-price-history setting."
+  },
+  "settings_max_price_points": { "message": "Max price points per product (0 = unlimited)", "description": "Setting label." },
+  "settings_clear_price_history": { "message": "Clear price history", "description": "Button label." },
+  "settings_price_history_cleared": { "message": "Price history cleared.", "description": "Confirmation text." },
+  "settings_font_size": { "message": "Font Size", "description": "Setting label." },
+  "settings_font_small": { "message": "Small", "description": "Font-size option." },
+  "settings_font_medium": { "message": "Medium", "description": "Font-size option." },
+  "settings_font_large": { "message": "Large", "description": "Font-size option." },
+  "settings_excluded_empty": { "message": "No excluded products.", "description": "Empty-state text." },
+  "settings_remove": { "message": "Remove", "description": "Tooltip for the remove button." },
+  "settings_remove_item": {
+    "message": "Remove $item$",
+    "placeholders": { "item": { "content": "$1" } }
+  },
+  "settings_clear_all": { "message": "Clear All", "description": "Button label." },
+  "settings_fuzz_scorer": { "message": "Fuzz match method", "description": "Setting label (dev)." },
+  "settings_fuzz_scorer_helper": { "message": "Overrides each supplier's default scorer", "description": "Helper text (dev)." },
+  "settings_fuzz_scorer_default": { "message": "Default (per supplier)", "description": "Default scorer option (dev)." },
+  "settings_max_search_time": { "message": "Max search time (ms)", "description": "Setting label (dev)." },
+  "settings_max_search_time_helper": {
+    "message": "Overrides each supplier's search-time budget. Empty = per-supplier default; 0 = no limit",
+    "description": "Helper text (dev)."
+  },
+  "settings_disable_fuzzy": { "message": "Disable fuzzy filtering", "description": "Setting label (dev)." },
+  "settings_disable_fuzzy_desc": {
+    "message": "Show raw results (plain search) or boolean-only matches (advanced search) without fuzzy scoring",
+    "description": "Description for the disable-fuzzy setting (dev)."
+  },
+  "settings_restore_defaults": { "message": "Restore Defaults", "description": "Button label." },
+
+  "speed_dial_clear_results": { "message": "Clear Results", "description": "Speed-dial action." },
+  "speed_dial_clear_cache": { "message": "Clear Cache", "description": "Speed-dial action." },
+  "speed_dial_toggle_theme": { "message": "Toggle Theme", "description": "Speed-dial action." },
+  "speed_dial_stats": { "message": "Stats", "description": "Speed-dial action (dev)." },
+  "speed_dial_about": { "message": "About", "description": "Speed-dial action." },
+  "speed_dial_aria": { "message": "SpeedDial Menu", "description": "Accessible label for the speed dial." },
+  "speed_dial_hint": {
+    "message": "Bring your cursor to the bottom right corner of the screen to open the menu",
+    "description": "Help tooltip explaining how to open the speed dial."
+  },
+
+  "context_menu_copy_title": {
+    "message": "Copy Title",
+    "description": "Context menu option to copy the title."
+  },
+  "context_menu_copy_url": {
+    "message": "Copy URL",
+    "description": "Context menu option to copy the URL."
+  },
+  "context_menu_copy_product_info": {
+    "message": "Copy Product Info",
+    "description": "Context menu option to copy the product info."
+  },
+  "context_menu_ignore_product": {
+    "message": "Ignore Product",
+    "description": "Context menu option to ignore the product."
+  },
+  "context_menu_remove_product_from_cache": {
+    "message": "Remove Product from Cache",
+    "description": "Context menu option to remove the product from the cache."
+  },
+  "context_menu_open_in_new_tab": {
+    "message": "Open in New Tab",
+    "description": "Context menu option to open the product in a new tab."
+  },
+  "context_menu_create_bookmark": {
+    "message": "Create Bookmark",
+    "description": "Context menu option to create a bookmark."
+  },
+  "context_menu_search_similar": {
+    "message": "Search Similar",
+    "description": "Context menu option to search for similar products."
+  },
+  "context_menu_share": {
+    "message": "Share",
+    "description": "Context menu option to share the product."
+  },
+  "context_menu_view_details": {
+    "message": "View Details",
+    "description": "Context menu option to view the details of the product."
+  },
+  "context_menu_cache_remove_unavailable": {
+    "message": "This product can't be removed from the cache",
+    "description": "Shown when a product can't be removed from the cache."
+  },
+  "context_menu_removed_from_cache": {
+    "message": "Removed $product$ from cache",
+    "placeholders": { "product": { "content": "$1" } }
+  },
+  "context_menu_search_selection": {
+    "message": "Search \"%s\" in Chem Pal",
+    "description": "Right-click context menu label; %s is the selected text (substituted by Chrome)."
+  },
+
+  "copy_info_price": {
+    "message": "Price: $price$",
+    "placeholders": { "price": { "content": "$1" } }
+  },
+  "copy_info_supplier": {
+    "message": "Supplier: $supplier$",
+    "placeholders": { "supplier": { "content": "$1" } }
+  },
+  "copy_info_url": {
+    "message": "URL: $url$",
+    "placeholders": { "url": { "content": "$1" } }
+  },
+  "copy_info_description": {
+    "message": "Description: $description$",
+    "placeholders": { "description": { "content": "$1" } }
+  },
+
+  "share_fallback_title": {
+    "message": "Chemical Product",
+    "description": "Fallback title used when sharing a product with no title."
+  },
+  "share_text": {
+    "message": "Check out this chemical product: $product$",
+    "placeholders": { "product": { "content": "$1" } }
+  },
+
+  "bookmark_favorites_folder": {
+    "message": "ChemPal Favorites",
+    "description": "Name of the ChemPal favorites bookmark folder."
+  },
+  "bookmark_already_exists": {
+    "message": "Bookmark already exists in $folder$",
+    "placeholders": { "folder": { "content": "$1" } }
+  },
+  "bookmark_created": {
+    "message": "Bookmark created at $folder$",
+    "placeholders": { "folder": { "content": "$1" } }
+  },
+
+  "product_detail_cas": { "message": "CAS", "description": "Product detail field label." },
+  "product_detail_formula": { "message": "Formula", "description": "Product detail field label." },
+  "product_detail_molecular_weight": { "message": "Molecular Weight", "description": "Product detail field label." },
+  "product_detail_iupac_name": { "message": "IUPAC Name", "description": "Product detail field label." },
+  "product_detail_inchikey": { "message": "InChIKey", "description": "Product detail field label." },
+  "product_detail_inchi": { "message": "InChI", "description": "Product detail field label." },
+  "product_detail_smiles": { "message": "SMILES", "description": "Product detail field label." },
+  "product_detail_purity": { "message": "Purity", "description": "Product detail field label." },
+  "product_detail_grade": { "message": "Grade", "description": "Product detail field label." },
+  "product_detail_concentration": { "message": "Concentration", "description": "Product detail field label." },
+  "product_detail_manufacturer": { "message": "Manufacturer", "description": "Product detail field label." },
+  "product_detail_pubchem": { "message": "PubChem", "description": "Product detail field label." },
+  "product_detail_pubchem_cid": {
+    "message": "PubChem CID $cid$",
+    "placeholders": { "cid": { "content": "$1" } }
+  },
+  "product_detail_pubchem_view": {
+    "message": "View on PubChem",
+    "description": "Title for the PubChem link."
+  },
+  "product_detail_sds": {
+    "message": "Safety data sheet (SDS)",
+    "description": "Label/title for the SDS document link."
+  },
+  "product_detail_tds": {
+    "message": "Technical Data Sheet (TDS)",
+    "description": "Label/title for the TDS document link."
+  },
+  "product_detail_coa": {
+    "message": "Certificate of Analysis (COA)",
+    "description": "Label/title for the COA document link."
+  },
+  "product_detail_open_full_image": {
+    "message": "Open full image for $title$",
+    "placeholders": { "title": { "content": "$1" } }
+  },
+  "product_detail_prev_image": {
+    "message": "Previous image",
+    "description": "Accessible label for the previous-image button."
+  },
+  "product_detail_next_image": {
+    "message": "Next image",
+    "description": "Accessible label for the next-image button."
+  },
+  "product_detail_sparkline_aria": {
+    "message": "Price history sparkline",
+    "description": "Accessible label for the price-history sparkline."
+  },
+  "product_detail_price_history": {
+    "message": "Price history",
+    "description": "Label for the price-history row."
+  },
+  "product_detail_points": {
+    "message": "$count$ points",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "product_detail_no_history": {
+    "message": "No history yet",
+    "description": "Shown when a product has no recorded price history."
+  },
+  "product_detail_variants": {
+    "message": "Variants",
+    "description": "Heading for the product variants list."
+  },
+
+  "stats_title": { "message": "Supplier Stats", "description": "Stats panel title." },
+  "stats_calls": {
+    "message": "$count$ calls",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "stats_call_single": {
+    "message": "$count$ call",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "stats_clear": { "message": "Clear stats", "description": "Tooltip for the clear-stats button." },
+  "stats_empty": { "message": "No stats yet. Run a search to start tracking.", "description": "Stats empty state." },
+  "stats_tab_by_supplier": { "message": "By Supplier", "description": "Stats tab label." },
+  "stats_tab_daily": { "message": "Daily", "description": "Stats tab label." },
+  "stats_tab_totals": { "message": "Totals", "description": "Stats tab label." },
+  "stats_toggle_http": { "message": "HTTP Calls", "description": "Stats pie view toggle." },
+  "stats_toggle_parsed": { "message": "Parsed Data", "description": "Stats pie view toggle." },
+  "stats_center_http": { "message": "HTTP", "description": "Stats pie center label." },
+  "stats_center_parsed": { "message": "Parsed", "description": "Stats pie center label." },
+  "stats_successes": { "message": "Successes", "description": "Stats pie segment label." },
+  "stats_fails": { "message": "Fails", "description": "Stats pie segment label." },
+  "stats_pie_inner_tooltip": {
+    "message": "$value$ of $total$ ($percent$%)",
+    "placeholders": { "value": { "content": "$1" }, "total": { "content": "$2" }, "percent": { "content": "$3" } }
+  },
+  "stats_pie_outer_tooltip": {
+    "message": "$value$ ($percent$%)",
+    "placeholders": { "value": { "content": "$1" }, "percent": { "content": "$2" } }
+  },
+  "stats_col_supplier": { "message": "Supplier", "description": "Stats table column header." },
+  "stats_col_queries": { "message": "Queries", "description": "Stats table column header." },
+  "stats_col_success": { "message": "Success", "description": "Stats table column header." },
+  "stats_col_failure": { "message": "Failure", "description": "Stats table column header." },
+  "stats_col_products": { "message": "Products", "description": "Stats table column header." },
+  "stats_col_parse_errors": { "message": "Parse Errors", "description": "Stats table column header." },
+
+  "hotkeys_title": { "message": "Keyboard Shortcuts", "description": "Title of the keyboard shortcuts modal." },
+  "hotkeys_group_general": { "message": "General", "description": "Hotkey group name." },
+  "hotkeys_group_search": { "message": "Search", "description": "Hotkey group name." },
+  "hotkeys_group_navigation": { "message": "Navigation", "description": "Hotkey group name." },
+  "hotkeys_group_results": { "message": "Results", "description": "Hotkey group name." },
+  "hotkeys_desc_showhotkeyhelp": { "message": "Show this list of hotkeys", "description": "Hotkey description." },
+  "hotkeys_desc_clearandretrysearch": { "message": "Clear cache, clear results, and re-run the current search", "description": "Hotkey description." },
+  "hotkeys_desc_gotosearch": { "message": "Go to the search panel", "description": "Hotkey description." },
+  "hotkeys_desc_openhistory": { "message": "Open search history in the side drawer", "description": "Hotkey description." },
+  "hotkeys_desc_focusglobalfilter": { "message": "Focus the global filter on the results panel", "description": "Hotkey description." },
+  "hotkeys_desc_togglecolumnfilters": { "message": "Toggle the column filters in the results table", "description": "Hotkey description." },
+  "hotkeys_desc_abortsearch": { "message": "Abort the currently-running search", "description": "Hotkey description." },
+  "hotkeys_flash_clearandretrysearch": { "message": "Cache cleared, search re-triggered", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_openhistory": { "message": "Search history opened", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_abortsearch": { "message": "Search aborted", "description": "Hotkey status-bar flash." }
 }

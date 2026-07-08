@@ -1,4 +1,3 @@
- 
 /**
  * @group Constants
  * @groupDescription Application-wide constants and enumerations used throughout the codebase.
@@ -260,7 +259,7 @@ export const COUNTRY_CODES = [
 
 /**
  * Action types for settings panel form state management.
- * Used by both SettingsPanel and SettingsPanelFull components.
+ * Used by the SettingsPanel component.
  * @source
  */
 export enum ACTION_TYPE {
@@ -533,9 +532,7 @@ export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_check
  * by country name. Codes that the library can't name fall back to the raw code.
  * @source
  */
-export const COUNTRIES = Object.entries(
-  countriesByIso2 as Record<string, { name?: string }>,
-)
+export const COUNTRIES = Object.entries(countriesByIso2 as Record<string, { name?: string }>)
   .map(([code, record]) => ({ code, name: record?.name ?? code }))
   .sort((a, b) => a.name.localeCompare(b.name));
 

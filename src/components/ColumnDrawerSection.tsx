@@ -188,7 +188,7 @@ export default function ColumnDrawerSection({
             renderInput={(params) => (
               <TextField
                 {...params}
-                label={i18n("filter_by", [config.label.toLowerCase()])}
+                label={i18n("filter_by_label", [config.label.toLowerCase()])}
                 placeholder={placeholder}
                 helperText={currentValue.length === 0 ? emptyHelperText : undefined}
                 slotProps={{ formHelperText: { sx: { fontStyle: "italic" } } }}
@@ -210,7 +210,7 @@ export default function ColumnDrawerSection({
                   }
                 />
               }
-              label="Only suppliers that ship to my location"
+              label={i18n("drawer_only_shipping_suppliers")}
             />
           )}
         </StyledAccordionDetails>
@@ -259,7 +259,7 @@ export default function ColumnDrawerSection({
             renderInput={(params) => (
               <TextField
                 {...params}
-                label={i18n("filter_by", [config.label.toLowerCase()])}
+                label={i18n("filter_by_label", [config.label.toLowerCase()])}
                 placeholder={placeholder}
                 helperText={selectedCodes.length === 0 ? emptyHelperText : undefined}
                 slotProps={{ formHelperText: { sx: { fontStyle: "italic" } } }}
@@ -349,7 +349,7 @@ export default function ColumnDrawerSection({
         <StyledAccordionDetails>
           <Box sx={{ display: "flex", gap: 2 }}>
             <TextField
-              label="Min"
+              label={i18n("drawer_range_min")}
               type="number"
               size="small"
               value={minValue ?? ""}
@@ -364,7 +364,7 @@ export default function ColumnDrawerSection({
               }}
             />
             <TextField
-              label="Max"
+              label={i18n("drawer_range_max")}
               type="number"
               size="small"
               value={maxValue ?? ""}
