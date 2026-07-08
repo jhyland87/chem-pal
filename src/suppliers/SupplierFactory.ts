@@ -96,6 +96,16 @@ export class SupplierFactory<P extends Product> {
   // fuzzball scoring and rely on the boolean predicate (or raw results) instead.
   private fuzzyFilteringDisabled: boolean;
 
+  // User's location (ISO 3166-1 alpha-2 country code) from userSettings.location.
+  // Used together with excludeNonShippingSuppliers to drop suppliers that don't
+  // ship to the user. Empty/undefined disables shipping filtering.
+  private location?: string;
+
+  // Mirrors userSettings.excludeNonShippingSuppliers. When true (and a location
+  // is set), suppliers that don't ship to the user's location are filtered out
+  // before their queries run. Defaults to false so existing callers are unaffected.
+  private excludeNonShippingSuppliers: boolean;
+
   // SMILES/structure query terms resolved to chemical identifiers, keyed by the
   // raw term. Resolved lazily once per search (see resolveStructuresOnce) and
   // shared with every supplier instance so none of them re-hit the network.
@@ -103,6 +113,11 @@ export class SupplierFactory<P extends Product> {
 
   // Logger instance
   private logger: Logger;
+
+  // Set true by executeAll/executeAllStream when there were candidate suppliers
+  // but shipping filtering removed every one of them (i.e. no selected supplier
+  // ships to the user's location). Lets the UI explain an empty result set.
+  public shippingExcludedAll: boolean = false;
 
   /**
    * Factory class for querying all suppliers.
@@ -127,6 +142,13 @@ export class SupplierFactory<P extends Product> {
    * @param fuzzyFilteringDisabled - When true (from
    *   `userSettings.fuzzyFilteringDisabled`), suppliers skip fuzzball scoring and
    *   show raw / boolean-only results. Defaults to false.
+   * @param location - The user's location (ISO 3166-1 alpha-2 country code) from
+   *   `userSettings.location`. Combined with `excludeNonShippingSuppliers` to
+   *   drop suppliers that don't ship to the user. Omit to disable shipping filtering.
+   * @param excludeNonShippingSuppliers - When true (from
+   *   `userSettings.excludeNonShippingSuppliers`) and a `location` is set,
+   *   suppliers that don't ship to the user's location are excluded from the
+   *   search. Defaults to false.
    * @source
    */
   constructor(
@@ -141,6 +163,8 @@ export class SupplierFactory<P extends Product> {
     noCacheStatusCodes: number[] = [429],
     maxAllowableSearchTime?: number,
     fuzzyFilteringDisabled: boolean = false,
+    location?: string,
+    excludeNonShippingSuppliers: boolean = false,
   ) {
     this.logger = new Logger("SupplierFactory");
     this.logger.debug("initialized", {
@@ -155,6 +179,8 @@ export class SupplierFactory<P extends Product> {
       noCacheStatusCodes,
       maxAllowableSearchTime,
       fuzzyFilteringDisabled,
+      location,
+      excludeNonShippingSuppliers,
     });
     this.query = query;
     this.limit = limit;
@@ -167,6 +193,8 @@ export class SupplierFactory<P extends Product> {
     this.noCacheStatusCodes = noCacheStatusCodes ?? [429];
     this.maxAllowableSearchTime = maxAllowableSearchTime;
     this.fuzzyFilteringDisabled = fuzzyFilteringDisabled;
+    this.location = location;
+    this.excludeNonShippingSuppliers = excludeNonShippingSuppliers;
     this.parsedQuery = parseSearchQuery(query);
   }
 
@@ -205,6 +233,36 @@ export class SupplierFactory<P extends Product> {
         const ConcreteClass = SupplierClass as unknown as SupplierConstructor<Product>;
         const instance = new ConcreteClass("", 1, controller);
         return [key, instance.supplierName];
+      }),
+    );
+  }
+
+  /**
+   * Get a map of supplier class names to whether they ship to the given location.
+   * Creates throwaway instances and delegates to
+   * {@link SupplierBase.shipsToCountry}, so it applies the same `shipsTo`/scope
+   * heuristic used at search time. Lets the UI grey out suppliers that won't ship
+   * to the user.
+   *
+   * @param location - The user's location as an ISO 3166-1 alpha-2 country code.
+   * @returns Record mapping supplier class names to a ships-to boolean.
+   * @example
+   * ```typescript
+   * const map = SupplierFactory.supplierShipsTo("US");
+   * // { SupplierCarolina: true, SupplierWarchem: false, ... }
+   * ```
+   * @source
+   */
+  public static supplierShipsTo(location: CountryCode): Record<string, boolean> {
+    const controller = new AbortController();
+    return Object.fromEntries(
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      mapDefined(Object.entries(suppliers), ([key, SupplierClass]) => {
+        // Trusted static supplier classes; the union of concrete constructors
+        // isn't structurally assignable to the generic SupplierConstructor.
+        const ConcreteClass = SupplierClass as unknown as SupplierConstructor<Product>;
+        const instance = new ConcreteClass("", 1, controller);
+        return [key, instance.shipsToCountry(location)];
       }),
     );
   }
@@ -265,6 +323,26 @@ export class SupplierFactory<P extends Product> {
       }),
     );
     return results.filter((r) => r.granted).map((r) => r.instance);
+  }
+
+  /**
+   * Filters supplier instances to only those that ship to the user's location.
+   * A no-op (returns all instances) when shipping filtering is disabled or no
+   * location is set. Synchronous — unlike {@link filterByPermissions}, it only
+   * reads in-memory supplier metadata via {@link SupplierBase.shipsToCountry}.
+   *
+   * @param instances - Array of supplier instances to check.
+   * @returns The subset of instances that ship to the user's location.
+   * @source
+   */
+  private filterByShipping<P extends Product>(
+    instances: SupplierBase<unknown, P>[],
+  ): SupplierBase<unknown, P>[] {
+    if (!this.excludeNonShippingSuppliers || !this.location) {
+      return instances;
+    }
+    const location = this.location as CountryCode;
+    return instances.filter((instance) => instance.shipsToCountry(location));
   }
 
   /**
@@ -359,8 +437,11 @@ export class SupplierFactory<P extends Product> {
       },
     );
 
-    // 2. Filter to only suppliers with granted host permissions
-    const permittedInstances = await this.filterByPermissions(supplierInstances);
+    // 2. Drop suppliers that don't ship to the user's location, then keep only
+    // those with granted host permissions.
+    const shippableInstances = this.filterByShipping(supplierInstances);
+    this.shippingExcludedAll = supplierInstances.length > 0 && shippableInstances.length === 0;
+    const permittedInstances = await this.filterByPermissions(shippableInstances);
 
     // 3. Use async-await-queue for parallel execution
     const queue = new Queue(concurrency, 100);
@@ -433,8 +514,11 @@ export class SupplierFactory<P extends Product> {
       },
     );
 
-    // Filter to only suppliers with granted host permissions
-    const permittedInstances = await this.filterByPermissions(supplierInstances);
+    // Drop suppliers that don't ship to the user's location, then keep only
+    // those with granted host permissions.
+    const shippableInstances = this.filterByShipping(supplierInstances);
+    this.shippingExcludedAll = supplierInstances.length > 0 && shippableInstances.length === 0;
+    const permittedInstances = await this.filterByPermissions(shippableInstances);
     console.log("After filtering by permissions", { permittedInstances });
     const queue = new Queue(concurrency, 100);
 

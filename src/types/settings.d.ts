@@ -152,6 +152,15 @@ declare global {
     suppliers?: Array<string>;
 
     /**
+     * When true (the default), searches exclude any supplier that does not ship
+     * to the user's `location`. Toggled via the checkbox under Suppliers in the
+     * search drawer. Ship-to is decided by the supplier's `shipsTo` list when
+     * present, otherwise by its `ShippingRange` scope.
+     * @example true
+     */
+    excludeNonShippingSuppliers?: boolean;
+
+    /**
      * Selected UI theme identifier
      * @example "light"
      */
