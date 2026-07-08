@@ -200,7 +200,7 @@ describe("SupplierVWR", () => {
       expect(dump.coaUrl).toContain("digitalassets.avantorsciences.com");
 
       // Availability from the batched stock call (catalog 80722-392 -> inStock).
-      expect(dump.availability).toBe("in stock");
+      expect(dump.availability).toBe("in_stock");
       expect(dump.statusTxt).toBe("Usually ships next day");
 
       // One variant per ordertable row.

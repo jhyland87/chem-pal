@@ -228,7 +228,7 @@ describe("SupplierLaboratoriumDiscounter getProductData methods", () => {
       expect(dump.concentration).toBe("99%");
       expect(dump.currencyCode).toBe("EUR");
       expect(dump.currencySymbol).toBe("€");
-      expect(dump.availability).toBe("in stock");
+      expect(dump.availability).toBe("in_stock");
       // Variant data is merged into the top-level product (Object.assign with variants[0]),
       // so price, sku, quantity and uom reflect the first parsed variant — not the meta price.
       expect(dump.sku).toBe("4165.1");

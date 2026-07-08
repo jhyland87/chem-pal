@@ -1,7 +1,7 @@
 import TableColumns from "@/components/SearchPanel/TableColumns";
 import { CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
 import { useAppContext } from "@/context";
-import { i18n } from "@/helpers/i18n";
+import { i18n, useLocale } from "@/helpers/i18n";
 import { cstorage } from "@/utils/storage";
 import { ExpandMore as ExpandMoreIcon, Search as SearchIcon } from "@mui/icons-material";
 import { Accordion, Box, Button, TextField, Typography } from "@mui/material";
@@ -58,16 +58,20 @@ const DrawerSearchPanel: FC<{
     setPanel,
   } = useAppContext();
 
+  // Re-render (and rebuild the memoized drawer configs below) when the UI
+  // language changes, so the translated column/drawer labels update live.
+  const locale = useLocale();
+
   // Collect columns that declared a drawer section in their meta, preserving
-  // the order they appear in TableColumns(). Memoized per-render only —
-  // TableColumns() is pure and cheap.
+  // the order they appear in TableColumns(). The drawer configs carry i18n'd
+  // labels, so recompute them when the locale changes.
   const drawerColumns = useMemo(
     () =>
       TableColumns().flatMap((column) => {
         const drawer = column.meta?.drawer;
         return drawer && column.id ? [{ id: column.id, drawer }] : [];
       }),
-    [],
+    [locale],
   );
 
   // Hydrate the title query field from the shared live search input value so

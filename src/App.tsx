@@ -40,7 +40,7 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import { diff } from "./helpers/collectionUtils";
 import { getCountryName } from "./helpers/country";
 import { getCurrencyCodeFromLocation, getCurrencyRate } from "./helpers/currency";
-import { i18n } from "./helpers/i18n";
+import { i18n, setLocale, useLocale } from "./helpers/i18n";
 import { getUserLanguage, getUserLocation } from "./helpers/utils";
 
 const StatsPanel = IS_DEV_BUILD ? lazy(() => import("./components/StatsPanel")) : null;
@@ -156,6 +156,11 @@ function HotkeyLayer({ handlers }: { handlers: HotkeyHandlers }) {
 function App() {
   // Single owner of all extension-badge updates (reacts to search events).
   useBadgeController();
+
+  // Subscribe to the active UI locale. This is the single high-in-the-tree
+  // subscriber that makes a language switch re-render the whole app — bare
+  // i18n() calls in descendants then resolve to the newly-selected language.
+  const activeLocale = useLocale();
 
   // Search results state - separate from main app state for better performance
   const [searchResults, setSearchResults] = useState<Product[]>([]);
@@ -303,6 +308,20 @@ function App() {
     },
     initialAppState,
   );
+
+  // Drive the active UI locale from the user's language setting. The stored
+  // value may be a full locale ("en-US"); the message tables are keyed by base
+  // code ("en"), so switch on the base. Runs on hydration and on every change,
+  // so picking a language in Settings updates the whole UI immediately.
+  const settingsLanguage = appState.userSettings?.language;
+  useEffect(() => {
+    if (settingsLanguage) setLocale(settingsLanguage.split("-")[0]);
+  }, [settingsLanguage]);
+
+  // Keep the document title in sync with the active locale.
+  useEffect(() => {
+    document.title = i18n("app_title");
+  }, [activeLocale]);
 
   // Load initial data from Chrome storage on mount
   useEffect(() => {

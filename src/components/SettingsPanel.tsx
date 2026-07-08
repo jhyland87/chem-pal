@@ -7,7 +7,7 @@ import {
   removeExcludedProduct,
   type ExcludedProductsMap,
 } from "@/helpers/excludedProducts";
-import { i18n } from "@/helpers/i18n";
+import { getAvailableLocales, i18n } from "@/helpers/i18n";
 import { formatTimestamp, getLanguageName } from "@/helpers/utils";
 import { clearExcludedProducts, clearPriceHistory } from "@/utils/idbCache";
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
@@ -48,7 +48,6 @@ import {
   useEffect,
   useState,
 } from "react";
-import { getAvailableLocales } from "@/helpers/locales";
 import styles from "./SettingsPanel.module.scss";
 
 // Languages the extension ships a translation (`messages.json`) for. Derived at

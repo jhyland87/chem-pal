@@ -378,9 +378,9 @@ export const IDB_STORE = {
  * @source
  */
 export enum AVAILABILITY {
-  IN_STOCK = "in stock",
-  LIMITED_STOCK = "limited stock",
-  OUT_OF_STOCK = "out of stock",
+  IN_STOCK = "in_stock",
+  LIMITED_STOCK = "limited_stock",
+  OUT_OF_STOCK = "out_of_stock",
   PRE_ORDER = "preorder",
   BACKORDER = "backorder",
   DISCONTINUED = "discontinued",
@@ -537,16 +537,17 @@ export const COUNTRIES = Object.entries(countriesByIso2 as Record<string, { name
   .sort((a, b) => a.name.localeCompare(b.name));
 
 /**
- * Maps user-facing availability labels to product availability values
- * used in the {@link AVAILABILITY} enum.
+ * Maps availability group codes (used as filter chip values and i18n keys) to the
+ * {@link AVAILABILITY} enum values each group represents. A group may collapse
+ * several enum values (e.g. `out_of_stock` covers OUT_OF_STOCK and BACKORDER).
  * @source
  */
 export const AVAILABILITY_LABEL_MAP: Record<string, string[]> = {
-  "In Stock": [AVAILABILITY.IN_STOCK],
-  "Limited Stock": [AVAILABILITY.LIMITED_STOCK],
-  "Out of Stock": [AVAILABILITY.OUT_OF_STOCK, AVAILABILITY.BACKORDER],
-  "Pre-order": [AVAILABILITY.PRE_ORDER],
-  Unavailable: [AVAILABILITY.UNAVAILABLE, AVAILABILITY.DISCONTINUED],
+  in_stock: [AVAILABILITY.IN_STOCK],
+  limited_stock: [AVAILABILITY.LIMITED_STOCK],
+  out_of_stock: [AVAILABILITY.OUT_OF_STOCK, AVAILABILITY.BACKORDER],
+  preorder: [AVAILABILITY.PRE_ORDER],
+  unavailable: [AVAILABILITY.UNAVAILABLE, AVAILABILITY.DISCONTINUED],
 };
 
 /**
@@ -574,3 +575,18 @@ export const SHIPPING_OPTIONS: ShippingRange[] = [
   "domestic",
   "local",
 ];
+
+/**
+ * Type guard for whether a string is a valid {@link ShippingRange}.
+ * @param value - The value to test.
+ * @returns True when `value` is one of {@link SHIPPING_OPTIONS}.
+ * @example
+ * ```ts
+ * isShippingRange("worldwide"); // => true
+ * isShippingRange("mars"); // => false
+ * ```
+ * @source
+ */
+export function isShippingRange(value: string): value is ShippingRange {
+  return SHIPPING_OPTIONS.some((option) => option === value);
+}

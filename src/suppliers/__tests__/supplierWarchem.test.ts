@@ -112,7 +112,7 @@ describe("SupplierWarchem initProductBuilders", () => {
     expect(dump.images).toEqual([
       { href: "https://warchem.pl/images/NEW_IMG_31521.jpg", type: "image" },
     ]);
-    expect(dump.availability).toBe("in stock");
+    expect(dump.availability).toBe("in_stock");
   });
 });
 
