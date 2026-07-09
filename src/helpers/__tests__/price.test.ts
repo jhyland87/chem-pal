@@ -39,6 +39,15 @@ describe("formatDisplayPrice", () => {
     expect(errorSpy).toHaveBeenCalledOnce();
   });
 
+  it("uses the currency symbol, not the code, for currencies Intl renders as a code", () => {
+    // ANG's Intl currency symbol is "ANG"; the symbol map has the proper glyph "ƒ".
+    const result = formatDisplayPrice(
+      { price: 43.5, usdPrice: 43.5, currencyCode: "USD" },
+      { currency: "ANG", currencyRate: 1 },
+    );
+    expect(result).toBe("ƒ43.50");
+  });
+
   it("returns an empty string when neither price nor usdPrice is present", () => {
     expect(formatDisplayPrice({ currencyCode: "USD" }, { currency: "USD", currencyRate: 1 })).toBe(
       "",

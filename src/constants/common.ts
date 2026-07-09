@@ -305,6 +305,8 @@ export enum DRAWER_INDEX {
 export enum APP_ACTION {
   /** Applies new user settings and persists them to chrome.storage.local */
   UPDATE_SETTINGS = "UPDATE_SETTINGS",
+  /** Stores the fetched USD→currency conversion rate for the selected currency */
+  SET_CURRENCY_RATE = "SET_CURRENCY_RATE",
   /** Switches the active panel (0 = SearchHome, 1 = Results, 2 = Stats) */
   SET_PANEL = "SET_PANEL",
   /** Toggles the SpeedDial FAB visibility based on mouse proximity */

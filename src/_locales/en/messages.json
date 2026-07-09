@@ -270,7 +270,11 @@
   "column_shipping": { "message": "Shipping", "description": "Table column header." },
   "column_availability": { "message": "Availability", "description": "Table column header." },
   "column_description": { "message": "Description", "description": "Table column header." },
-  "column_price": { "message": "Price", "description": "Table column header." },
+  "column_price": { "message": "Price", "description": "Table column header / column-visibility menu label." },
+  "column_price_currency": {
+    "message": "Price ($currency$)",
+    "placeholders": { "currency": { "content": "$1" } }
+  },
   "column_quantity": { "message": "Qty", "description": "Table column header." },
   "column_unit": { "message": "Unit", "description": "Table column header." },
   "column_sds": { "message": "SDS", "description": "Table column header." },
@@ -417,7 +421,10 @@
   "settings_location": { "message": "Location", "description": "Setting label." },
   "settings_location_placeholder": { "message": "Country or code", "description": "Placeholder for the location input." },
   "settings_language": { "message": "Language", "description": "Setting label." },
-  "settings_currency_rate": { "message": "Currency Rate", "description": "Setting label." },
+  "settings_currency_rate_hint": {
+    "message": "1 USD = $rate$ $currency$",
+    "placeholders": { "rate": { "content": "$1" }, "currency": { "content": "$2" } }
+  },
   "settings_do_not_cache_empty": { "message": "Do Not Cache Empty Results", "description": "Setting label." },
   "settings_cache_ttl": { "message": "Cache TTL (minutes)", "description": "Setting label." },
   "settings_track_price_history": { "message": "Track price history", "description": "Setting label." },
@@ -605,9 +612,9 @@
     "message": "Price history sparkline",
     "description": "Accessible label for the price-history sparkline."
   },
-  "product_detail_price_history": {
-    "message": "Price history",
-    "description": "Label for the price-history row."
+  "product_detail_price_history_currency": {
+    "message": "Price history ($currency$)",
+    "placeholders": { "currency": { "content": "$1" } }
   },
   "product_detail_points": {
     "message": "$count$ points",
@@ -617,9 +624,9 @@
     "message": "No history yet",
     "description": "Shown when a product has no recorded price history."
   },
-  "product_detail_variants": {
-    "message": "Variants",
-    "description": "Heading for the product variants list."
+  "product_detail_variants_currency": {
+    "message": "Variants ($currency$)",
+    "placeholders": { "currency": { "content": "$1" } }
   },
 
   "stats_title": { "message": "Supplier Stats", "description": "Stats panel title." },

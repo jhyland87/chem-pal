@@ -775,6 +775,28 @@ export async function getPriceSeriesByProduct(
 }
 
 /**
+ * Read every stored price-history series (all base rows and variant rows across
+ * every product). The app reads per-product via {@link getPriceSeriesByProduct};
+ * this full-store read backs dev/debug tooling that needs the whole set.
+ * @returns All price-history series, or `[]` when none / on error.
+ * @example
+ * ```ts
+ * const all = await getAllPriceSeries();
+ * all.length; // total number of tracked series
+ * ```
+ * @source
+ */
+export async function getAllPriceSeries(): Promise<PriceHistoryEntry[]> {
+  try {
+    const db = await getDB();
+    return await db.getAll(IDB_STORE.PRICE_HISTORY);
+  } catch (error) {
+    logger.error("Failed to get all price series from IndexedDB", { error });
+    return [];
+  }
+}
+
+/**
  * Delete all price-history series. Exposed via the "Clear price history" button
  * in the settings panel. Deliberately kept out of {@link clearAllCaches} so a
  * routine cache clear never destroys the user's accumulated price history.

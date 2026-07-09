@@ -405,7 +405,9 @@ function ProductPriceHistory({
 
   return (
     <ProductDetailFieldRow>
-      <span className="detail-label">{i18n("product_detail_price_history")}</span>
+      <span className="detail-label">
+        {i18n("product_detail_price_history_currency", [userSettings?.currency ?? "USD"])}
+      </span>
       <span className="detail-value">
         {hasTrend ? (
           <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -510,7 +512,7 @@ export function ProductDetailPanel({ row, table }: ProductDetailPanelProps): Rea
           {hasVariants && (
             <ProductDetailVariantsColumn>
               <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                {i18n("product_detail_variants")}
+                {i18n("product_detail_variants_currency", [userSettings?.currency ?? "USD"])}
               </Typography>
               <ProductDetailVariantsGrid>
                 {variants.map((variant, index) => {

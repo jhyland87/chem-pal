@@ -781,19 +781,29 @@ export default function ResultsTable({
           {table
             .getAllLeafColumns()
             .filter((column) => column.getCanHide())
-            .map((column) => (
-              <ColumnMenuItemContainer key={column.id}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={column.getIsVisible()}
-                      onChange={column.getToggleVisibilityHandler()}
-                    />
-                  }
-                  label={<ListItemText primary={String(column.columnDef.header || column.id)} />}
-                />
-              </ColumnMenuItemContainer>
-            ))}
+            .map((column) => {
+              // Read the header off the column definition (present for hidden
+              // columns too, unlike getFlatHeaders which only covers visible ones).
+              // String headers are already localized; the price column's function
+              // header falls back to its plain i18n label so it isn't stringified
+              // into JS source or dropped to the raw lowercase column id.
+              const headerDef = column.columnDef.header;
+              const label =
+                typeof headerDef === "string" ? headerDef : i18n(`column_${column.id}`);
+              return (
+                <ColumnMenuItemContainer key={column.id}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={column.getIsVisible()}
+                        onChange={column.getToggleVisibilityHandler()}
+                      />
+                    }
+                    label={<ListItemText primary={label} />}
+                  />
+                </ColumnMenuItemContainer>
+              );
+            })}
         </Menu>
 
         {/* Context Menu */}
