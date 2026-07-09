@@ -161,6 +161,16 @@ declare global {
     excludeNonShippingSuppliers?: boolean;
 
     /**
+     * When true (the default), searches hide products the user cannot buy — either
+     * because the product is not shipped to the user's `location`, or because it is
+     * restricted to business/government/professional buyers. Toggled via the checkbox
+     * under Suppliers in the search drawer. Restrictions are parsed per-product from
+     * the supplier's product text.
+     * @example true
+     */
+    hideRestrictedProducts?: boolean;
+
+    /**
      * Selected UI theme identifier
      * @example "light"
      */

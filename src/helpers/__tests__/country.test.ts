@@ -10,7 +10,9 @@ vi.mock("@/utils/storage", () => ({
   },
 }));
 
-const { findCountryByIso2, getCountryName, getUserCountryName } = await import("@/helpers/country");
+const { findCountryByIso2, findCountryByName, getCountryName, getUserCountryName } = await import(
+  "@/helpers/country"
+);
 
 describe("findCountryByIso2", () => {
   it("returns a typed record for a known code", () => {
@@ -40,6 +42,23 @@ describe("getCountryName", () => {
 
   it("returns undefined for an unknown code", () => {
     expect(getCountryName("ZZ")).toBeUndefined();
+  });
+});
+
+describe("findCountryByName", () => {
+  it("resolves names regardless of casing", () => {
+    expect(findCountryByName("Germany")).toBe("DE");
+    expect(findCountryByName("germany")).toBe("DE");
+    expect(findCountryByName("GERMANY")).toBe("DE");
+  });
+
+  it("resolves multi-word names", () => {
+    expect(findCountryByName("United States")).toBe("US");
+  });
+
+  it("returns undefined for unknown names and library aliases it doesn't index", () => {
+    expect(findCountryByName("USA")).toBeUndefined();
+    expect(findCountryByName("Narnia")).toBeUndefined();
   });
 });
 

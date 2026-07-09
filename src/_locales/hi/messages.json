@@ -143,6 +143,10 @@
     "message": "केवल वे आपूर्तिकर्ता जो मेरे स्थान पर शिपिंग करते हैं",
     "description": "Checkbox label to hide suppliers that do not ship to the user's location."
   },
+  "drawer_hide_restricted_products": {
+    "message": "वे उत्पाद छिपाएँ जिन्हें मैं नहीं खरीद सकता",
+    "description": "Checkbox label to hide products restricted by region or to business/government buyers."
+  },
   "drawer_supplier_label": {
     "message": "आपूर्तिकर्ता खोजें",
     "description": "Drawer accordion label for the supplier selector."
@@ -609,6 +613,14 @@
   "product_detail_no_history": {
     "message": "अभी तक कोई इतिहास नहीं",
     "description": "Shown when a product has no recorded price history."
+  },
+  "product_detail_price_history_col_date": {
+    "message": "दिनांक",
+    "description": "Column header for the date of a price-history point in the variant trend popover."
+  },
+  "product_detail_price_history_col_price": {
+    "message": "मूल्य",
+    "description": "Column header for the price of a price-history point in the variant trend popover."
   },
   "product_detail_variants_currency": {
     "message": "विकल्प ($currency$)",

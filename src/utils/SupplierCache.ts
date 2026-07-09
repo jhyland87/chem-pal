@@ -27,8 +27,10 @@ import { getProductIdentityKey } from "@/helpers/productIdentity";
 export class SupplierCache {
   //The version of the cache format. Bumped 2 -> 3 when the product-data cache
   //moved from URL-based keys to supplier + unique-product-identity keys, so
-  //stale query entries evict on read and repopulate under the new scheme.
-  private static readonly CACHE_VERSION = 3;
+  //stale query entries evict on read and repopulate under the new scheme. Bumped
+  //3 -> 4 when per-product purchaseRestriction parsing was added, so pre-feature
+  //entries (which lack it and would show as unrestricted) evict and re-parse.
+  private static readonly CACHE_VERSION = 4;
 
   // The logger instance.
   private logger: Logger;

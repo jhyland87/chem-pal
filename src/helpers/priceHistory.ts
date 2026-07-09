@@ -399,3 +399,78 @@ export function describeTrend(points: readonly PricePoint[]): PriceTrend {
   const direction: TrendDirection = deltaUsd > 0 ? "up" : deltaUsd < 0 ? "down" : "flat";
   return { direction, deltaUsd, pctChange };
 }
+
+/**
+ * The most recent point at or before a timestamp, or `undefined` when the
+ * series hasn't started by then. Assumes points are ascending by time.
+ * @param points - The series points, ascending by time.
+ * @param t - The epoch-ms cutoff to look back from.
+ * @returns The last point with `t` at or before the cutoff, else `undefined`.
+ * @example
+ * ```ts
+ * lastPointAtOrBefore([{ t: 1, usd: 20 }, { t: 3, usd: 22 }], 2); // { t: 1, usd: 20 }
+ * ```
+ * @source
+ */
+function lastPointAtOrBefore(points: readonly PricePoint[], t: number): PricePoint | undefined {
+  let result: PricePoint | undefined;
+  for (const point of points) {
+    if (point.t <= t) {
+      result = point;
+    } else {
+      break;
+    }
+  }
+  return result;
+}
+
+/**
+ * Collapse several price series into one synthetic mean-price series so a
+ * group (e.g. all of a product's variants) can be summarized by a single
+ * trend. At each recorded timestamp the mean is taken over every series that
+ * has started by then (forward-filling each series' last-known price), and
+ * consecutive-equal means are deduped so {@link describeTrend}'s last two
+ * points reflect an actual move. Empty in ⇒ empty out.
+ * @param seriesList - The series to aggregate; each carries ascending points.
+ * @returns The mean-price series, ascending by time.
+ * @example
+ * ```ts
+ * buildAggregateSeries([
+ *   { points: [{ t: 1, usd: 10 }, { t: 3, usd: 8 }] },
+ *   { points: [{ t: 1, usd: 20 }, { t: 3, usd: 18 }] },
+ * ]);
+ * // => [{ t: 1, usd: 15 }, { t: 3, usd: 13 }]
+ * ```
+ * @source
+ */
+export function buildAggregateSeries(seriesList: readonly PriceHistoryEntry[]): PricePoint[] {
+  const withPoints = seriesList.filter((series) => series.points.length > 0);
+  if (withPoints.length === 0) {
+    return [];
+  }
+  const times = Array.from(
+    new Set(withPoints.flatMap((series) => series.points.map((point) => point.t))),
+  ).sort((a, b) => a - b);
+
+  const aggregate: PricePoint[] = [];
+  for (const t of times) {
+    let sum = 0;
+    let count = 0;
+    for (const series of withPoints) {
+      const point = lastPointAtOrBefore(series.points, t);
+      if (point !== undefined) {
+        sum += point.usd;
+        count += 1;
+      }
+    }
+    if (count === 0) {
+      continue;
+    }
+    const usd = round2(sum / count);
+    if (aggregate.at(-1)?.usd === usd) {
+      continue;
+    }
+    aggregate.push({ t, usd });
+  }
+  return aggregate;
+}

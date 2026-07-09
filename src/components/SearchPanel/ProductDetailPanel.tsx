@@ -11,19 +11,21 @@ import {
   ProductDetailVariantsColumn,
   ProductDetailVariantsGrid,
   ProductImageNavButton,
+  PriceHistoryTooltip,
 } from "@/components/StyledComponents";
 import { default as Link } from "@/components/TabLink";
 import { omit } from "@/helpers/collectionUtils";
 import { i18n } from "@/helpers/i18n";
 import { formatDisplayPrice } from "@/helpers/price";
 import {
+  buildAggregateSeries,
   describeTrend,
   getProductPriceHistory,
   productSeriesKey,
   variantSeriesKey,
 } from "@/helpers/priceHistory";
-import { isPresent, resolveProductImages } from "@/helpers/product";
-import { preloadImages } from "@/helpers/utils";
+import { isPresent, resolveProductImages, samePurchasableUnit } from "@/helpers/product";
+import { formatTimestamp, preloadImages } from "@/helpers/utils";
 import COAIcon from "@/icons/COAIcon";
 import SDSIcon from "@/icons/SDSIcon";
 import TDSIcon from "@/icons/TDSIcon";
@@ -379,26 +381,128 @@ function PriceTrend({
 }
 
 /**
+ * Per-entry trend badge for the price-history popover: a colored arrow and
+ * signed percent comparing this point to the previous one (rising = red).
+ * Renders nothing for the baseline point, which has no prior to compare to.
+ * @param props - The previous point (if any) and the current point.
+ * @returns The badge element, or `null` for the baseline point.
+ * @example
+ * ```tsx
+ * <EntryTrend prev={{ t: 1, usd: 20 }} curr={{ t: 2, usd: 22 }} />; // ▲ +10.0%
+ * ```
+ * @source
+ */
+function EntryTrend({ prev, curr }: { prev?: PricePoint; curr: PricePoint }): ReactElement | null {
+  if (prev === undefined) return null;
+  const trend = describeTrend([prev, curr]);
+  const sign = trend.deltaUsd > 0 ? "+" : trend.deltaUsd < 0 ? "−" : "";
+  const paletteKey =
+    trend.direction === "up" ? "error" : trend.direction === "down" ? "success" : undefined;
+  return (
+    <Typography
+      component="span"
+      variant="caption"
+      sx={(theme) => ({
+        whiteSpace: "nowrap",
+        fontWeight: 600,
+        fontSize: "inherit",
+        // Brighten the arrows on the dark popover surface (green especially reads
+        // dim there); keep the standard shade on the light surface.
+        color:
+          paletteKey === undefined
+            ? theme.palette.text.secondary
+            : theme.palette[paletteKey][theme.palette.mode === "dark" ? "light" : "main"],
+      })}
+    >
+      {TREND_GLYPH[trend.direction]}
+      {trend.direction !== "flat" && ` ${sign}${Math.abs(trend.pctChange).toFixed(1)}%`}
+    </Typography>
+  );
+}
+
+/**
+ * Popover contents for a variant's price history: a sparkline on top (left to
+ * right, oldest → newest) followed by a dated list of its recorded points
+ * newest-first, each with its price and a trend badge comparing it to the
+ * previous (older) entry, formatted in the user's currency.
+ * @param props - The variant's series points and the user's currency settings.
+ * @returns The card element, or `null` when there aren't two points to show.
+ * @example
+ * ```tsx
+ * <VariantPriceHistoryCard points={variantSeries.points} userSettings={userSettings} />
+ * ```
+ * @source
+ */
+function VariantPriceHistoryCard({
+  points,
+  userSettings,
+}: {
+  points: readonly PricePoint[];
+  userSettings?: PriceHistorySettings;
+}): ReactElement | null {
+  if (points.length < 2) return null;
+  return (
+    <div style={{ minWidth: 180 }}>
+      <div style={{ color: "inherit", marginBottom: 6 }}>
+        <PriceSparkline points={points} />
+      </div>
+      <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "0.72rem" }}>
+        <thead>
+          <tr>
+            <th style={{ textAlign: "left", paddingRight: 12, opacity: 0.7, fontWeight: 600 }}>
+              {i18n("product_detail_price_history_col_date")}
+            </th>
+            <th style={{ textAlign: "right", opacity: 0.7, fontWeight: 600 }}>
+              {i18n("product_detail_price_history_col_price")}
+            </th>
+            <th aria-hidden />
+          </tr>
+        </thead>
+        <tbody>
+          {/* Build rows oldest→newest so each trend compares to the prior (older)
+              point, then reverse for display so the newest sits at the top. */}
+          {points
+            .map((point, index) => (
+              <tr key={point.t}>
+                <td style={{ textAlign: "left", paddingRight: 12, whiteSpace: "nowrap" }}>
+                  {formatTimestamp(point.t)}
+                </td>
+                <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                  {formatUsd(point.usd, userSettings)}
+                </td>
+                <td style={{ textAlign: "right", paddingLeft: 12, whiteSpace: "nowrap" }}>
+                  <EntryTrend prev={points[index - 1]} curr={point} />
+                </td>
+              </tr>
+            ))
+            .reverse()}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/**
  * The base product's price-history block: current price, trend, and a sparkline
  * with the recorded-point count. Falls back to a "No history yet" note while
  * tracking is enabled but fewer than two points exist; renders nothing when
  * tracking is disabled and no history was ever recorded.
- * @param props - The product's base series and the user's settings.
+ * @param props - The aggregated price points to summarize and the user's settings.
  * @returns The history block, or `null` when there's nothing to show.
  * @example
  * ```tsx
- * <ProductPriceHistory series={baseSeries} userSettings={userSettings} />
+ * <ProductPriceHistory points={aggregatePoints} userSettings={userSettings} />
  * ```
  * @source
  */
 function ProductPriceHistory({
-  series,
+  points,
   userSettings,
 }: {
-  series?: PriceHistoryEntry;
+  points?: readonly PricePoint[];
   userSettings?: PriceHistorySettings;
 }): ReactElement | null {
-  const hasTrend = series !== undefined && series.points.length >= 2;
+  const hasTrend = points !== undefined && points.length >= 2;
   if (!hasTrend && userSettings?.trackPriceHistory === false) {
     return null;
   }
@@ -412,11 +516,11 @@ function ProductPriceHistory({
         {hasTrend ? (
           <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <span style={{ color: "inherit" }}>
-              <PriceSparkline points={series.points} />
+              <PriceSparkline points={points} />
             </span>
-            <PriceTrend points={series.points} userSettings={userSettings} />
+            <PriceTrend points={points} userSettings={userSettings} />
             <Typography component="span" variant="caption" color="text.secondary">
-              {i18n("product_detail_points", [String(series.points.length)])}
+              {i18n("product_detail_points", [String(points.length)])}
             </Typography>
           </span>
         ) : (
@@ -465,22 +569,45 @@ export function ProductDetailPanel({ row, table }: ProductDetailPanelProps): Rea
       cancelled = true;
     };
   }, [product, productKey]);
-  // The product-level summary shows the default variant's series — the variant
-  // whose price is the product's headline price — since recording folds the base
-  // price into that variant. A variant-less product falls back to its own base
-  // series (keyed by productKey).
-  const defaultVariant = (product.variants ?? []).find((v) => v.usdPrice === product.usdPrice);
-  const baseSeriesKey = defaultVariant ? variantSeriesKey(product, defaultVariant) : productKey;
-  const baseSeries = baseSeriesKey !== undefined ? priceHistory.get(baseSeriesKey) : undefined;
-
   // Prefer the filtered sub-rows (respecting active filters); fall back to the
   // raw variants. Product[] is assignable to Variant[] since Product extends it.
   const variants: Variant[] =
     row.subRows.length > 0 ? row.subRows.map((sub) => sub.original) : (product.variants ?? []);
 
+  // Always include the parent product itself as a row, unless a supplier already
+  // lists it as a variant. Match on identity first (variantSeriesKey folds in the
+  // genuine-vs-inherited id, then title/quantity/sku); but some suppliers (e.g.
+  // Ambeed) give the parent its own product-level id/sku that differs from the
+  // matching variant's, so also treat a variant as the parent when it's the same
+  // purchasable unit (quantity + uom, or price when size is unknown).
+  const parentKey = variantSeriesKey(product, product);
+  const parentAlreadyListed = variants.some(
+    (v) =>
+      (parentKey !== undefined && variantSeriesKey(product, v) === parentKey) ||
+      samePurchasableUnit(product, v),
+  );
+  const displayedVariants: Variant[] = parentAlreadyListed ? variants : [product, ...variants];
+
+  // Resolve a row's recorded series: the parent's history lives under the base
+  // productKey, every other variant under its own variant key.
+  const seriesFor = (variant: Variant): PriceHistoryEntry | undefined => {
+    const key = variant === product ? productKey : variantSeriesKey(product, variant);
+    return key !== undefined ? priceHistory.get(key) : undefined;
+  };
+
+  // The product-level summary aggregates the *displayed* rows into one mean-price
+  // series, so it can never contradict the rows below it. Falls back to the base
+  // series when nothing is recorded yet.
+  const displayedSeries = displayedVariants
+    .map(seriesFor)
+    .filter((series): series is PriceHistoryEntry => series !== undefined);
+  const basePoints = productKey !== undefined ? priceHistory.get(productKey)?.points : undefined;
+  const aggregatePoints =
+    displayedSeries.length > 0 ? buildAggregateSeries(displayedSeries) : basePoints;
+
   const detailFields = buildDetailFields(product);
   const docLinks = buildDocLinks(product);
-  const hasVariants = variants.length > 0;
+  const hasVariants = displayedVariants.length > 0;
 
   return (
     <ProductDetailPanelContainer>
@@ -506,19 +633,23 @@ export function ProductDetailPanel({ row, table }: ProductDetailPanelProps): Rea
                 <span className="detail-value">{field.value}</span>
               </ProductDetailFieldRow>
             ))}
-            <ProductPriceHistory series={baseSeries} userSettings={userSettings} />
+            <ProductPriceHistory points={aggregatePoints} userSettings={userSettings} />
           </ProductDetailFieldsColumn>
 
           {hasVariants && (
             <ProductDetailVariantsColumn>
-              <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                {i18n("product_detail_variants_currency", [userSettings?.currency ?? "USD"])}
-              </Typography>
               <ProductDetailVariantsGrid>
-                {variants.map((variant, index) => {
+                <Typography
+                  className="variant-header"
+                  variant="caption"
+                  color="text.secondary"
+                  fontWeight={600}
+                >
+                  {i18n("product_detail_variants_currency", [userSettings?.currency ?? "USD"])}
+                </Typography>
+                {displayedVariants.map((variant, index) => {
                   const variantId = variantSeriesKey(product, variant);
-                  const variantSeries =
-                    variantId !== undefined ? priceHistory.get(variantId) : undefined;
+                  const variantSeries = seriesFor(variant);
                   return (
                     <Fragment key={`${variantId ?? variant.title ?? "variant"}-${index}`}>
                       <span className="variant-name">
@@ -539,8 +670,23 @@ export function ProductDetailPanel({ row, table }: ProductDetailPanelProps): Rea
                       </span>
                       <span className="variant-qty">{variantQuantity(variant)}</span>
                       <span className="variant-trend">
-                        {variantSeries && (
-                          <PriceTrend points={variantSeries.points} userSettings={userSettings} />
+                        {variantSeries && variantSeries.points.length >= 2 && (
+                          <PriceHistoryTooltip
+                            arrow
+                            title={
+                              <VariantPriceHistoryCard
+                                points={variantSeries.points}
+                                userSettings={userSettings}
+                              />
+                            }
+                          >
+                            <span style={{ display: "inline-flex" }}>
+                              <PriceTrend
+                                points={variantSeries.points}
+                                userSettings={userSettings}
+                              />
+                            </span>
+                          </PriceHistoryTooltip>
                         )}
                       </span>
                     </Fragment>

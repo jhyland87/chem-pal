@@ -101,6 +101,9 @@ export const subscriptGlyph = (str: string) => {
   return str;
 };
 
+/** Polymer repeat-unit index letters mapped to their subscript glyphs (see {@link findFormulaInText}). */
+const REPEAT_INDEX_GLYPHS: Record<string, string> = { n: "ₙ", m: "ₘ", x: "ₓ" };
+
 /**
  * Finds the first chemical-formula-like substring in `text` and returns it with `<sub>`/`<sup>` tags
  * converted to Unicode sub/superscript glyphs, or `undefined` if none is found. Unlike
@@ -154,6 +157,12 @@ export const findFormulaInText = (text: string): string | undefined => {
   const tag = "<su[bp]>[1-9][0-9]*</su[bp]>";
   const subSup = `(?:${glyphSub}|${glyphSup}|${escSub}|${escSup}|${entSub}|${entSup}|${tag})`;
 
+  // Polymer / repeat-unit index: a variable subscript (n, m, x), not a number — as in "(C₃H₃NaO₂)ₙ".
+  // Glyph form (ₙ ₘ ₓ) or the <sub>n</sub> HTML form. Unambiguous → no prose-word risk.
+  const repeatIndex = "(?:[ₙₘₓ]|<su[bp]>[nmx]</su[bp]>)";
+  // Everything that can trail a unit as a "count": a real sub/sup number, or a repeat index.
+  const trailingCount = `(?:${subSup}|${repeatIndex})`;
+
   // A lone element (e.g. "Na", "K+") is a valid formula, but only when it is the entire trimmed
   // input — anchoring keeps a bare symbol from being pulled out of prose (e.g. "I" from "I love …").
   const trimmed = text.trim();
@@ -163,17 +172,26 @@ export const findFormulaInText = (text: string): string | undefined => {
 
   // Collect every candidate and keep the most likely one, so a real formula isn't shadowed by a
   // two-letter coincidence earlier in the text (e.g. "IN"/"CS" inside "EINECS 243-669-6").
-  const best = pickBestFormula([...text.matchAll(buildFormulaPattern(subSup))].map((m) => m[0]));
+  const best = pickBestFormula(
+    [...text.matchAll(buildFormulaPattern(trailingCount))].map((m) => m[0]),
+  );
   if (best === undefined) {
     return;
   }
-  return best
-    .replace(/<sub>(\d+)<\/sub>/g, (_match, p1) => subscript(p1 || ""))
-    .replace(/<sup>(\d+)<\/sup>/g, (_match, p1) => superscript(p1 || ""))
-    .replace(/\\u208[0-9](?:\\u208[0-9])*/g, (match) => subscriptGlyph(match))
-    .replace(/(?:\\u00[bB][239]|\\u207[4-9])(?:\\u2070|\\u00[bB][239]|\\u207[4-9])*/g, (match) =>
-      superscriptGlyph(match),
-    );
+  return (
+    best
+      .replace(/<sub>(\d+)<\/sub>/g, (_match, p1) => subscript(p1 || ""))
+      .replace(/<sup>(\d+)<\/sup>/g, (_match, p1) => superscript(p1 || ""))
+      // Repeat-index tag → glyph, mirroring the digit-tag handling above.
+      .replace(
+        /<su[bp]>([nmx])<\/su[bp]>/g,
+        (_match, p1: string) => REPEAT_INDEX_GLYPHS[p1] ?? p1,
+      )
+      .replace(/\\u208[0-9](?:\\u208[0-9])*/g, (match) => subscriptGlyph(match))
+      .replace(/(?:\\u00[bB][239]|\\u207[4-9])(?:\\u2070|\\u00[bB][239]|\\u207[4-9])*/g, (match) =>
+        superscriptGlyph(match),
+      )
+  );
 };
 
 /**
@@ -345,6 +363,23 @@ export interface ChemicalSpecs {
   smiles?: string;
 }
 
+// Unicode subscript digit glyphs (₀–₉) mapped to ASCII so a formula written with real subscript
+// characters (e.g. C₆H₅Na₃O₇) is captured whole rather than truncated at the first non-ASCII glyph
+// ("C"). The variable repeat-unit indices (ₙ/ₘ/ₓ) are deliberately left as glyphs so
+// findFormulaInText recognizes them as polymer repeat units; superscripts (charges) too.
+const SUBSCRIPT_GLYPH_TO_ASCII: Record<string, string> = {
+  "₀": "0",
+  "₁": "1",
+  "₂": "2",
+  "₃": "3",
+  "₄": "4",
+  "₅": "5",
+  "₆": "6",
+  "₇": "7",
+  "₈": "8",
+  "₉": "9",
+};
+
 // Wix suppliers bury specs in HTML accordions and bullet lists. Flatten that markup to one value
 // per line — break on block/list/break tags, drop remaining tags, decode entities, then collapse
 // runs of non-newline whitespace — so the label/value matchers below work line-by-line.
@@ -358,11 +393,16 @@ const normalizeSpecText = (html: string): string =>
       .replace(/<li\b[^>]*>/gi, "\n")
       .replace(/<br\s*\/?>/gi, "\n")
       .replace(/<[^>]+>/g, " "),
-  ).replace(/[^\S\n]+/g, " ");
+  )
+    .replace(/[₀-₉]/g, (glyph) => SUBSCRIPT_GLYPH_TO_ASCII[glyph] ?? glyph)
+    .replace(/[^\S\n]+/g, " ");
 
-// A label followed by an optional separator (":", "-", "#", "=", em/en dashes) and the value.
+// A label — optionally carrying a parenthetical qualifier, e.g. "Chemical Formula (Repeating
+// Unit)" — followed by an optional separator (":", "-", "#", "=", em/en dashes) and the value.
+// The value may start with "(" and end in a repeat-unit index glyph (ₙ/ₘ/ₓ), so a parenthesized
+// polymer repeating unit (e.g. "(C3H3NaO2)ₙ") is captured whole for findFormulaInText to validate.
 const FORMULA_REGEX =
-  /(?:molecular\s+formula|\bformula\b)\s*[:#=–—-]*\s*([A-Za-z][A-Za-z0-9()·.]*)/i;
+  /(?:molecular\s+formula|\bformula\b)(?:\s*\([^)]*\))?\s*[:#=–—-]*\s*([A-Za-z(][A-Za-z0-9()·.ₙₘₓ]*)/i;
 const SMILES_LABEL_REGEX = /\bsmiles\b\s*[:#=–—-]*\s*(\S+)/i;
 const PURITY_PERCENT_REGEX = /(\d{1,3}(?:\.\d+)?)\s*\+?\s*%/;
 
@@ -385,6 +425,7 @@ const MOLAR_MASS_NUMBER = "(\\d[\\d.,]*\\d|\\d)";
 // Letter boundaries (case-insensitive) so "MW"/"Mr"/"FW" aren't matched mid-word.
 const NOT_LETTER_BEFORE = "(?<![a-z])";
 const NOT_LETTER_AFTER = "(?![a-z])";
+
 // Tiered by confidence: labelled value with a unit, then a bare "<number> <unit>", then a labelled
 // value without a unit. Earlier tiers are preferred so the most unambiguous reading wins.
 const MOLAR_MASS_LABELED_UNIT = new RegExp(

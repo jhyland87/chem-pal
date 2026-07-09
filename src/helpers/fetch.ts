@@ -1,8 +1,6 @@
 import { HttpError } from "@/helpers/exceptions";
 import { addCapturedResponse, initConsoleApi } from "@/helpers/responseAggregate";
 
-declare const __RESPONSE_AGGREGATE__: boolean;
-
 /**
  * Response type that extends the standard Response with additional properties
  * for data and request hash tracking.

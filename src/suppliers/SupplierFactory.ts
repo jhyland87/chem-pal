@@ -5,6 +5,7 @@ import {
   resolveSmiles,
   type ResolvedStructure,
 } from "@/helpers/smiles";
+import { filterRestrictedProduct } from "@/helpers/purchaseRestriction";
 import { mapDefined, sleep } from "@/helpers/utils";
 import { Logger } from "@/utils/Logger";
 import { extractAllPositiveTerms } from "@/utils/search-query/extractPositiveTerms";
@@ -21,6 +22,42 @@ type SupplierConstructor<P extends Product> = new (
   limit: number,
   controller: AbortController,
 ) => SupplierBase<unknown, P>;
+
+/**
+ * Options for constructing a {@link SupplierFactory}. `controller` is required; every other field
+ * is optional and falls back to a sensible default. Most fields mirror the corresponding
+ * `userSettings` value.
+ * @source
+ */
+export interface SupplierFactoryOptions {
+  /** Fetch controller (can be used to terminate the query). */
+  controller: AbortController;
+  /** Maximum number of results per supplier. Defaults to `defaultResultsLimit`. */
+  limit?: number;
+  /** Suppliers to query; empty (the default) queries all. */
+  suppliers?: Array<string>;
+  /** Whether to read from / write to the supplier caches. Defaults to true. */
+  caching?: boolean;
+  /** Fuzz-scorer name (from `FUZZ_SCORERS`) overriding each supplier's default. */
+  fuzzScorerOverride?: string;
+  /** When true, suppliers returning zero results skip writing a cache entry. Defaults to false. */
+  doNotCacheEmptyResults?: boolean;
+  /** Max age (minutes) of a query cache entry before eviction on read; 0 disables. Defaults to 0. */
+  cacheTtlMinutes?: number;
+  /** HTTP statuses that prevent a product-detail fetch from being cached. Defaults to [429]. */
+  noCacheStatusCodes?: number[];
+  /** Override (ms) for each supplier's search-time budget. Omit to keep per-supplier defaults. */
+  maxAllowableSearchTime?: number;
+  /** When true, suppliers skip fuzzball scoring and show raw/boolean-only results. Defaults to false. */
+  fuzzyFilteringDisabled?: boolean;
+  /** User's ISO 3166-1 alpha-2 location; enables the shipping/restriction filters below. */
+  location?: string;
+  /** When true (with a `location`), drop suppliers that don't ship to the user. Defaults to false. */
+  excludeNonShippingSuppliers?: boolean;
+  /** When true, hide products the user can't buy (region/buyer restrictions). Defaults to false. */
+  hideRestrictedProducts?: boolean;
+}
+
 /**
  * Factory class for querying multiple chemical suppliers simultaneously.
  * This class provides a unified interface to search across multiple supplier implementations.
@@ -29,14 +66,13 @@ type SupplierConstructor<P extends Product> = new (
  * @example
  * ```typescript
  * // Create a factory to search all suppliers
- * const factory = new SupplierFactory("sodium chloride", new AbortController());
+ * const factory = new SupplierFactory("sodium chloride", { controller: new AbortController() });
  *
  * // Create a factory to search specific suppliers
- * const factory = new SupplierFactory(
- *   "sodium chloride",
- *   new AbortController(),
- *   ["SupplierCarolina", "SupplierLaballey"]
- * );
+ * const factory = new SupplierFactory("sodium chloride", {
+ *   controller: new AbortController(),
+ *   suppliers: ["SupplierCarolina", "SupplierLaballey"],
+ * });
  *
  * // Iterate over results from all selected suppliers
  * for await (const product of factory) {
@@ -106,6 +142,11 @@ export class SupplierFactory<P extends Product> {
   // before their queries run. Defaults to false so existing callers are unaffected.
   private excludeNonShippingSuppliers: boolean;
 
+  // Mirrors userSettings.hideRestrictedProducts. When true (the default), each
+  // yielded product is run through filterRestrictedProduct: options the user can't
+  // buy (region/buyer/etc.) are pruned, and fully-restricted products are dropped.
+  private hideRestrictedProducts: boolean;
+
   // SMILES/structure query terms resolved to chemical identifiers, keyed by the
   // raw term. Resolved lazily once per search (see resolveStructuresOnce) and
   // shared with every supplier instance so none of them re-hit the network.
@@ -123,49 +164,27 @@ export class SupplierFactory<P extends Product> {
    * Factory class for querying all suppliers.
    *
    * @param query - Value to query for
-   * @param limit - Maximum number of results for each supplier
-   * @param controller - Fetch controller (can be used to terminate the query)
-   * @param suppliers - Array of suppliers to query (empty is the same as querying all)
-   * @param caching - Whether to read from / write to the supplier caches. Defaults to true.
-   * @param fuzzScorerOverride - Optional fuzz scorer name (from `FUZZ_SCORERS`)
-   *   that overrides each supplier's default `fuzzScorer`. Omit or pass
-   *   `undefined` to respect per-supplier defaults.
-   * @param doNotCacheEmptyResults - When true, suppliers that return zero
-   *   results for the query will skip writing a cache entry. Defaults to false.
-   * @param cacheTtlMinutes - Maximum age (in minutes) of a query cache entry
-   *   before it is evicted on read. 0 disables TTL expiration. Defaults to 0.
-   * @param noCacheStatusCodes - HTTP status codes that, when hit during a
-   *   product-detail fetch, prevent that product's data from being cached.
-   *   Defaults to [429].
-   * @param maxAllowableSearchTime - Optional override (ms) for each supplier's
-   *   search-time budget. Omit to keep per-supplier defaults.
-   * @param fuzzyFilteringDisabled - When true (from
-   *   `userSettings.fuzzyFilteringDisabled`), suppliers skip fuzzball scoring and
-   *   show raw / boolean-only results. Defaults to false.
-   * @param location - The user's location (ISO 3166-1 alpha-2 country code) from
-   *   `userSettings.location`. Combined with `excludeNonShippingSuppliers` to
-   *   drop suppliers that don't ship to the user. Omit to disable shipping filtering.
-   * @param excludeNonShippingSuppliers - When true (from
-   *   `userSettings.excludeNonShippingSuppliers`) and a `location` is set,
-   *   suppliers that don't ship to the user's location are excluded from the
-   *   search. Defaults to false.
+   * @param options - Factory configuration; see {@link SupplierFactoryOptions}. `controller` is
+   *   required, everything else is optional with sensible defaults.
    * @source
    */
-  constructor(
-    query: string,
-    limit: number = this.limit,
-    controller: AbortController,
-    suppliers: Array<string> = [],
-    caching: boolean = true,
-    fuzzScorerOverride?: string,
-    doNotCacheEmptyResults: boolean = false,
-    cacheTtlMinutes: number = 0,
-    noCacheStatusCodes: number[] = [429],
-    maxAllowableSearchTime?: number,
-    fuzzyFilteringDisabled: boolean = false,
-    location?: string,
-    excludeNonShippingSuppliers: boolean = false,
-  ) {
+  constructor(query: string, options: SupplierFactoryOptions) {
+    const {
+      controller,
+      limit = defaultResultsLimit,
+      suppliers = [],
+      caching = true,
+      fuzzScorerOverride,
+      doNotCacheEmptyResults = false,
+      cacheTtlMinutes = 0,
+      noCacheStatusCodes = [429],
+      maxAllowableSearchTime,
+      fuzzyFilteringDisabled = false,
+      location,
+      excludeNonShippingSuppliers = false,
+      hideRestrictedProducts = false,
+    } = options;
+
     this.logger = new Logger("SupplierFactory");
     this.logger.debug("initialized", {
       query,
@@ -181,6 +200,7 @@ export class SupplierFactory<P extends Product> {
       fuzzyFilteringDisabled,
       location,
       excludeNonShippingSuppliers,
+      hideRestrictedProducts,
     });
     this.query = query;
     this.limit = limit;
@@ -190,11 +210,12 @@ export class SupplierFactory<P extends Product> {
     this.fuzzScorerOverride = fuzzScorerOverride;
     this.doNotCacheEmptyResults = doNotCacheEmptyResults;
     this.cacheTtlMinutes = cacheTtlMinutes;
-    this.noCacheStatusCodes = noCacheStatusCodes ?? [429];
+    this.noCacheStatusCodes = noCacheStatusCodes;
     this.maxAllowableSearchTime = maxAllowableSearchTime;
     this.fuzzyFilteringDisabled = fuzzyFilteringDisabled;
     this.location = location;
     this.excludeNonShippingSuppliers = excludeNonShippingSuppliers;
+    this.hideRestrictedProducts = hideRestrictedProducts;
     this.parsedQuery = parseSearchQuery(query);
   }
 
@@ -209,7 +230,7 @@ export class SupplierFactory<P extends Product> {
    * // Returns: ["SupplierCarolina", "SupplierLaballey", "SupplierBioFuranChem", ...]
    *
    * // Use these names to create a targeted factory
-   * const factory = new SupplierFactory("acid", controller, suppliers);
+   * const factory = new SupplierFactory("acid", { controller, suppliers });
    * ```
    * @source
    */
@@ -346,6 +367,23 @@ export class SupplierFactory<P extends Product> {
   }
 
   /**
+   * Applies per-product purchase-restriction filtering to a single result. A no-op
+   * (returns the product unchanged) when `hideRestrictedProducts` is off; otherwise
+   * delegates to {@link filterRestrictedProduct}, which prunes options the user can't
+   * buy and returns undefined when the whole product is unbuyable.
+   *
+   * @param product - The product to filter.
+   * @returns The product (possibly with restricted variants pruned), or undefined to drop it.
+   * @source
+   */
+  private applyRestrictionFilter<Q extends Product>(product: Q): Q | undefined {
+    if (this.hideRestrictedProducts !== true) {
+      return product;
+    }
+    return filterRestrictedProduct(product, this.location);
+  }
+
+  /**
    * Resolves every SMILES/structure term in the query to its chemical identifiers
    * (name, CAS, InChIKey) exactly once, memoizing the result on the factory so it
    * is shared with every supplier instead of each supplier re-hitting the network.
@@ -401,7 +439,7 @@ export class SupplierFactory<P extends Product> {
    * @returns Promise resolving to an array of all products from all suppliers
    * @example
    * ```typescript
-   * const factory = new SupplierFactory("acetone", 5, new AbortController());
+   * const factory = new SupplierFactory("acetone", { limit: 5, controller: new AbortController() });
    * const allProducts = await factory.executeAll(3); // 3 suppliers in parallel
    * console.log(allProducts);
    * ```
@@ -452,7 +490,10 @@ export class SupplierFactory<P extends Product> {
       queue.run(async () => {
         try {
           for await (const product of supplier.execute()) {
-            allResults.push(product);
+            const filtered = this.applyRestrictionFilter(product);
+            if (filtered !== undefined) {
+              allResults.push(filtered);
+            }
           }
         } catch (e) {
           this.logger.error("Error executing supplier", { error: e, supplier });
@@ -531,7 +572,10 @@ export class SupplierFactory<P extends Product> {
         try {
           const iterator = supplier.execute();
           for await (const product of iterator) {
-            channel.push(product);
+            const filtered = this.applyRestrictionFilter(product);
+            if (filtered !== undefined) {
+              channel.push(filtered);
+            }
           }
         } catch (e) {
           this.logger.error("Error executing supplier", { error: e, supplier });

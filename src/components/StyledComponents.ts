@@ -12,7 +12,7 @@ import {
   Typography,
 } from "@mui/material";
 import Link from "@mui/material/Link";
-import { styled } from "@mui/material/styles";
+import { lighten, styled } from "@mui/material/styles";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -566,6 +566,13 @@ export const ProductDetailVariantsGrid = styled("div")(({ theme }) => ({
   fontSize: "0.8rem",
   lineHeight: 1.5,
   alignItems: "baseline",
+  // The header spans every column so it centers over the whole table width
+  // (names | prices | qty | trend), not just the first column.
+  "& > .variant-header": {
+    gridColumn: "1 / -1",
+    textAlign: "center",
+    marginBottom: 2,
+  },
   "& > .variant-name": {
     color: theme.palette.text.primary,
     minWidth: 0,
@@ -793,6 +800,31 @@ export const CountryFlagTooltip = styled(Tooltip)(() => ({
     fontSize: "0.7em",
   },
 }));
+
+// Rich tooltip for a variant's price-history popover: a light card wide enough
+// for the sparkline + points table (the theme default caps tooltips at 200px).
+export const PriceHistoryTooltip = styled(Tooltip)(({ theme }) => {
+  // Lift the dark surface a notch so the trend colors read clearly against it.
+  const surface =
+    theme.palette.mode === "dark"
+      ? lighten(theme.palette.background.paper, 0.15)
+      : theme.palette.background.paper;
+  return {
+    "& .MuiTooltip-tooltip": {
+      maxWidth: 320,
+      backgroundColor: surface,
+      color: theme.palette.text.primary,
+      textAlign: "left",
+      padding: theme.spacing(1),
+      border: `1px solid ${theme.palette.divider}`,
+      borderRadius: Number(theme.shape.borderRadius),
+      boxShadow: theme.shadows[6],
+    },
+    "& .MuiTooltip-arrow": {
+      color: surface,
+    },
+  };
+});
 
 // === ABOUT MODAL ===
 
