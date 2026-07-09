@@ -97,7 +97,6 @@ export abstract class SupplierBaseWix
     this.accessToken = data.apps[this.ecomAppId].accessToken;
     this.headers = {
       ...this.headers,
-       
       Authorization: this.accessToken,
     };
   }
@@ -208,6 +207,9 @@ export abstract class SupplierBaseWix
   protected initProductBuilders(results: ProductObject[]): ProductBuilder<Product>[] {
     return mapDefined(results, (product) => {
       if (!product.price) {
+        this.logger.warn("Dropping product: no price", {
+          product,
+        });
         return;
       }
 
@@ -238,6 +240,10 @@ export abstract class SupplierBaseWix
 
         const parsedPrice = parsePrice(item.formattedPrice ?? product.formattedPrice);
         if (!isParsedPrice(parsedPrice)) {
+          this.logger.warn("Dropping product item: unparseable formattedPrice", {
+            item,
+            product,
+          });
           return;
         }
 
@@ -248,6 +254,10 @@ export abstract class SupplierBaseWix
 
         const quantityInfo = resolvedQuantities.find((q) => q && "uom" in q);
         if (!quantityInfo) {
+          this.logger.warn("Dropping product item: no quantityInfo", {
+            item,
+            product,
+          });
           return;
         }
 
@@ -286,6 +296,12 @@ export abstract class SupplierBaseWix
       });
 
       if (!isParsedPrice(parentParsedPrice)) {
+        this.logger.warn("Dropping product: unparseable formattedPrice", {
+          id: product.id,
+          name: product.name,
+          formattedPrice: product.formattedPrice,
+          product,
+        });
         return;
       }
 
@@ -295,6 +311,18 @@ export abstract class SupplierBaseWix
         productVariants.find((v) => v.price === parentParsedPrice.price) ?? productVariants[0];
 
       if (!parentVariant || !("quantity" in parentVariant) || !("uom" in parentVariant)) {
+        // No quantity/uom could be derived from Wix options or productItems. Suppliers
+        // that store the size only in the product name (e.g. "Adrafinil 100 grams") land
+        // here and are dropped, since this method never parses the name for quantity.
+        this.logger.warn("Dropping product: no quantity/uom from Wix options or productItems", {
+          id: product.id,
+          name: product.name,
+          optionCount: product.options?.length ?? 0,
+          productItemCount: product.productItems?.length ?? 0,
+          variantCount: productVariants.length,
+          product,
+          productVariants,
+        });
         return;
       }
 

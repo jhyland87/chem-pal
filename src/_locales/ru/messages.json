@@ -1,0 +1,1133 @@
+{
+  "app_name": {
+    "message": "Chem Pal",
+    "description": "The extension name shown in the browser and web store."
+  },
+  "app_description": {
+    "message": "Ищите и сравнивайте предложения лабораторных химических реактивов на поддерживаемых сайтах поставщиков прямо из боковой панели.",
+    "description": "The extension description shown in the browser and web store."
+  },
+  "app_title": {
+    "message": "ChemPal — поисковая система химических реактивов",
+    "description": "The browser tab title."
+  },
+  "app_error_generic": {
+    "message": "Что-то пошло не так",
+    "description": "Fallback message shown when the app crashes."
+  },
+  "common_open_in_tab": {
+    "message": "Открыть во вкладке",
+    "description": "Accessible label for the button that opens the extension in a full browser tab."
+  },
+  "common_back_to_search": {
+    "message": "Вернуться на главную поиска",
+    "description": "Accessible label for the back button that returns to the search home."
+  },
+  "about_title": {
+    "message": "О ChemPal",
+    "description": "The title of the About ChemPal section."
+  },
+  "about_description": {
+    "message": "Проект с открытым исходным кодом, цель которого — помочь химикам-любителям находить лучшие предложения на химические реактивы. Существует множество похожих сервисов для компаний, университетов и научно-исследовательских учреждений, но ни один из них не доступен частным лицам и любителям. ChemPal ищет только у поставщиков, которые продают частным лицам и доставляют по домашним адресам.",
+    "description": "The description of the application."
+  },
+  "about_contributors": {
+    "message": "Участники",
+    "description": "The title of the contributors section."
+  },
+  "about_logo_alt": {
+    "message": "Логотип ChemPal",
+    "description": "Alt text for the ChemPal logo in the About modal."
+  },
+  "loading_cancel": {
+    "message": "Отменить поиск",
+    "description": "The text of the button to cancel the search."
+  },
+  "loading_aborting": {
+    "message": "Прерывание...",
+    "description": "Status shown when aborting a search."
+  },
+  "loading_loading": {
+    "message": "Загрузка...",
+    "description": "Status shown when loading a search."
+  },
+  "loading_aria": {
+    "message": "загрузка поиска",
+    "description": "Accessible label for the loading backdrop."
+  },
+  "loading_found_single": {
+    "message": "Найден $count$ результат.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "loading_found_one_supplier": {
+    "message": "Найдено $count$ результатов от $suppliers$ поставщика",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "suppliers": {
+        "content": "$2"
+      }
+    }
+  },
+  "loading_found_many_suppliers": {
+    "message": "Найдено $count$ результатов от $suppliers$ поставщиков",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "suppliers": {
+        "content": "$2"
+      }
+    }
+  },
+  "search_open_settings": {
+    "message": "Открыть настройки",
+    "description": "Accessible label for the settings button on the search home."
+  },
+  "search_go_to_results": {
+    "message": "Перейти к результатам",
+    "description": "Accessible label for the button that jumps to cached search results."
+  },
+  "search_logo_alt": {
+    "message": "Логотип поиска по поставщикам",
+    "description": "Alt text for the search home logo."
+  },
+  "search_placeholder": {
+    "message": "Поиск товаров...",
+    "description": "Placeholder text for the main search input."
+  },
+  "search_form_aria": {
+    "message": "поиск товаров",
+    "description": "Accessible label for the main search input."
+  },
+  "search_submit": {
+    "message": "поиск",
+    "description": "Accessible label for the search submit button."
+  },
+  "search_advanced_options": {
+    "message": "расширенные параметры",
+    "description": "Accessible label for the advanced-options (drawer) button."
+  },
+  "search_invalid_query": {
+    "message": "Неверный запрос.",
+    "description": "Fallback error hint shown when a search query is invalid."
+  },
+  "drawer_tab_search": {
+    "message": "ПОИСК",
+    "description": "Label for the Search tab in the side drawer."
+  },
+  "drawer_tab_history": {
+    "message": "ИСТОРИЯ",
+    "description": "Label for the History tab in the side drawer."
+  },
+  "drawer_tab_settings": {
+    "message": "НАСТРОЙКИ",
+    "description": "Label for the Settings tab in the side drawer."
+  },
+  "drawer_product_name_label": {
+    "message": "Название товара или ключевое слово",
+    "description": "Label for the product-name field in the search drawer."
+  },
+  "drawer_search_button": {
+    "message": "Поиск",
+    "description": "Label for the search button in the search drawer."
+  },
+  "drawer_results_limit": {
+    "message": "Лимит результатов",
+    "description": "Accordion title for the per-supplier results limit."
+  },
+  "drawer_results_limit_hint": {
+    "message": "($count$ на поставщика)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "drawer_results_limit_label": {
+    "message": "Лимит результатов (на поставщика)",
+    "description": "Field label for the per-supplier results limit."
+  },
+  "drawer_range_min": {
+    "message": "Мин",
+    "description": "Label for the minimum value of a numeric range input."
+  },
+  "drawer_range_max": {
+    "message": "Макс",
+    "description": "Label for the maximum value of a numeric range input."
+  },
+  "drawer_only_shipping_suppliers": {
+    "message": "Только поставщики с доставкой в мой регион",
+    "description": "Checkbox label to hide suppliers that do not ship to the user's location."
+  },
+  "drawer_supplier_label": {
+    "message": "Поиск поставщиков",
+    "description": "Drawer accordion label for the supplier selector."
+  },
+  "drawer_supplier_empty_helper": {
+    "message": "По умолчанию включены все поставщики",
+    "description": "Helper text shown when no supplier is selected."
+  },
+  "drawer_supplier_placeholder": {
+    "message": "Введите название поставщика",
+    "description": "Placeholder for the supplier selector input."
+  },
+  "drawer_country_label": {
+    "message": "Страна",
+    "description": "Drawer accordion label for the country selector."
+  },
+  "drawer_country_empty_helper": {
+    "message": "По умолчанию включены все страны",
+    "description": "Helper text shown when no country is selected."
+  },
+  "drawer_country_placeholder": {
+    "message": "Введите страну или код",
+    "description": "Placeholder for the country selector input."
+  },
+  "drawer_shipping_label": {
+    "message": "Тип доставки",
+    "description": "Drawer accordion label for the shipping-type filter."
+  },
+  "drawer_availability_label": {
+    "message": "Наличие",
+    "description": "Drawer accordion label for the availability filter."
+  },
+  "drawer_price_label": {
+    "message": "Диапазон цен",
+    "description": "Drawer accordion label for the price-range filter."
+  },
+  "shipping_worldwide": { "message": "По всему миру", "description": "Shipping range value." },
+  "shipping_international": { "message": "Международная", "description": "Shipping range value." },
+  "shipping_domestic": { "message": "Внутри страны", "description": "Shipping range value." },
+  "shipping_local": { "message": "Местная", "description": "Shipping range value." },
+
+  "availability_in_stock": { "message": "В наличии", "description": "Availability value." },
+  "availability_limited_stock": { "message": "Ограниченное наличие", "description": "Availability value." },
+  "availability_out_of_stock": { "message": "Нет в наличии", "description": "Availability value." },
+  "availability_preorder": { "message": "Предзаказ", "description": "Availability value." },
+  "availability_backorder": { "message": "Под заказ", "description": "Availability value." },
+  "availability_discontinued": { "message": "Снят с производства", "description": "Availability value." },
+  "availability_unavailable": { "message": "Недоступен", "description": "Availability value." },
+  "availability_unknown": { "message": "Неизвестно", "description": "Availability value." },
+
+  "filter_by_label": {
+    "message": "Фильтр по $label$",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "filter_range_aria": {
+    "message": "Диапазон $header$",
+    "placeholders": {
+      "header": {
+        "content": "$1"
+      }
+    }
+  },
+  "filter_placeholder_title": {
+    "message": "Название...",
+    "description": "Placeholder for the Title column filter."
+  },
+  "filter_placeholder_supplier": {
+    "message": "BVV, HiMedia и т. д...",
+    "description": "Placeholder for the Supplier column filter."
+  },
+  "filter_placeholder_country": {
+    "message": "🇺🇸 🇨🇳 …",
+    "description": "Placeholder for the Country column filter."
+  },
+  "filter_placeholder_shipping": {
+    "message": "Доставка...",
+    "description": "Placeholder for the Shipping column filter."
+  },
+  "filter_placeholder_availability": {
+    "message": "Наличие...",
+    "description": "Placeholder for the Availability column filter."
+  },
+  "filter_placeholder_description": {
+    "message": "Описание...",
+    "description": "Placeholder for the Description column filter."
+  },
+  "filter_placeholder_price": {
+    "message": "1.00 - 1000.00",
+    "description": "Placeholder for the Price column filter."
+  },
+  "filter_placeholder_quantity": {
+    "message": "1 - 100",
+    "description": "Placeholder for the Quantity column filter."
+  },
+  "filter_placeholder_unit": {
+    "message": "Единица",
+    "description": "Placeholder for the Unit column filter."
+  },
+  "filter_placeholder_cas": {
+    "message": "CAS...",
+    "description": "Placeholder for the CAS column filter."
+  },
+  "filter_placeholder_formula": {
+    "message": "Формула...",
+    "description": "Placeholder for the Formula column filter."
+  },
+  "filter_placeholder_moleweight": {
+    "message": "0 - 1000",
+    "description": "Placeholder for the Molecular Weight column filter."
+  },
+  "filter_placeholder_purity": {
+    "message": "Чистота...",
+    "description": "Placeholder for the Purity column filter."
+  },
+  "filter_placeholder_concentration": {
+    "message": "Концентрация...",
+    "description": "Placeholder for the Concentration column filter."
+  },
+  "column_title": {
+    "message": "Название",
+    "description": "Table column header."
+  },
+  "column_supplier": {
+    "message": "Поставщик",
+    "description": "Table column header."
+  },
+  "column_country": {
+    "message": "Страна",
+    "description": "Table column header."
+  },
+  "column_shipping": {
+    "message": "Доставка",
+    "description": "Table column header."
+  },
+  "column_availability": {
+    "message": "Наличие",
+    "description": "Table column header."
+  },
+  "column_description": {
+    "message": "Описание",
+    "description": "Table column header."
+  },
+  "column_price": { "message": "Цена", "description": "Table column header / column-visibility menu label." },
+  "column_price_currency": {
+    "message": "Цена ($currency$)",
+    "placeholders": { "currency": { "content": "$1" } }
+  },
+  "column_quantity": {
+    "message": "Кол-во",
+    "description": "Table column header."
+  },
+  "column_unit": {
+    "message": "Ед.",
+    "description": "Table column header."
+  },
+  "column_sds": {
+    "message": "SDS",
+    "description": "Table column header."
+  },
+  "column_specs": {
+    "message": "Хар-ки",
+    "description": "Table column header."
+  },
+  "column_coa": {
+    "message": "COA",
+    "description": "Table column header."
+  },
+  "column_cas": {
+    "message": "CAS",
+    "description": "Table column header."
+  },
+  "column_pubchem": {
+    "message": "PubChem",
+    "description": "Table column header."
+  },
+  "column_formula": {
+    "message": "Формула",
+    "description": "Table column header."
+  },
+  "column_moleweight": {
+    "message": "M.W.",
+    "description": "Table column header."
+  },
+  "column_purity": {
+    "message": "Чистота",
+    "description": "Table column header."
+  },
+  "column_concentration": {
+    "message": "Конц.",
+    "description": "Table column header."
+  },
+  "results_searched_for": {
+    "message": "Запрос: $query$",
+    "placeholders": {
+      "query": {
+        "content": "$1"
+      }
+    }
+  },
+  "results_count": {
+    "message": "Результаты: $count$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "results_count_filtered": {
+    "message": "Результаты: $filtered$ из $total$",
+    "placeholders": {
+      "filtered": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "results_filter_placeholder": {
+    "message": "Фильтр результатов...",
+    "description": "Placeholder for the global results filter input."
+  },
+  "results_filter_aria": {
+    "message": "Фильтр результатов",
+    "description": "Accessible label for the global results filter input."
+  },
+  "results_clear_filters": {
+    "message": "Очистить все фильтры",
+    "description": "Tooltip/label for the button that clears all column filters."
+  },
+  "results_rows_per_page_aria": {
+    "message": "строк на странице",
+    "description": "Accessible label for the page-size selector."
+  },
+  "results_status_searching": {
+    "message": "Поиск...",
+    "description": "Status shown while a search is running."
+  },
+  "results_status_no_search_query": {
+    "message": "Нет поискового запроса",
+    "description": "Status shown when there is no search query."
+  },
+  "results_status_no_results_filtered": {
+    "message": "Нет результатов, соответствующих фильтрам",
+    "description": "Status shown when filters exclude all results."
+  },
+  "results_status_no_results_found": {
+    "message": "Результаты не найдены",
+    "description": "Status shown when a search returns nothing."
+  },
+  "results_error": {
+    "message": "Ошибка: $error$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "results_retry": {
+    "message": "Повторить",
+    "description": "Label for the retry button."
+  },
+  "results_show": {
+    "message": "Показать",
+    "description": "Label preceding the page-size selector."
+  },
+  "results_all": {
+    "message": "Все",
+    "description": "Page-size option that shows all rows."
+  },
+  "results_rows": {
+    "message": "строк",
+    "description": "Label following the page-size selector."
+  },
+  "results_page_of_total": {
+    "message": "Страница $page$ из $total$",
+    "placeholders": {
+      "page": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "results_total": {
+    "message": "(всего результатов: $total$)",
+    "placeholders": {
+      "total": {
+        "content": "$1"
+      }
+    }
+  },
+  "results_showing": {
+    "message": "(Показано $filtered$ из $total$ результатов)",
+    "placeholders": {
+      "filtered": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "history_count_single": {
+    "message": "$count$ поиск",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "history_count_plural": {
+    "message": "$count$ поисков",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "history_clear": {
+    "message": "Очистить историю",
+    "description": "Tooltip/label for the clear-history button."
+  },
+  "history_empty": {
+    "message": "История поиска пока пуста.",
+    "description": "Empty-state text for the history panel."
+  },
+  "history_result_single": {
+    "message": "$count$ результат",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "history_result_plural": {
+    "message": "$count$ результатов",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "history_filter_availability": {
+    "message": "Наличие: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "history_filter_country": {
+    "message": "Страна: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "history_filter_shipping": {
+    "message": "Доставка: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "history_filter_suppliers": {
+    "message": "Поставщики: выбрано $count$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_loading": {
+    "message": "Загрузка настроек...",
+    "description": "Fallback shown while the settings panel loads."
+  },
+  "settings_section_behavior": {
+    "message": "Поведение",
+    "description": "Settings section header."
+  },
+  "settings_section_cache": {
+    "message": "Кэш",
+    "description": "Settings section header."
+  },
+  "settings_section_price_history": {
+    "message": "История цен",
+    "description": "Settings section header."
+  },
+  "settings_section_display": {
+    "message": "Отображение",
+    "description": "Settings section header."
+  },
+  "settings_section_excluded": {
+    "message": "Исключённые товары",
+    "description": "Settings section header."
+  },
+  "settings_section_advanced": {
+    "message": "Дополнительно",
+    "description": "Settings section header."
+  },
+  "settings_section_actions": {
+    "message": "Действия",
+    "description": "Settings section header."
+  },
+  "settings_cache_results": {
+    "message": "Кэшировать результаты поиска",
+    "description": "Setting label."
+  },
+  "settings_currency": {
+    "message": "Валюта",
+    "description": "Setting label / placeholder."
+  },
+  "settings_location": {
+    "message": "Местоположение",
+    "description": "Setting label."
+  },
+  "settings_location_placeholder": {
+    "message": "Страна или код",
+    "description": "Placeholder for the location input."
+  },
+  "settings_language": {
+    "message": "Язык",
+    "description": "Setting label."
+  },
+  "settings_currency_rate_hint": {
+    "message": "1 USD = $rate$ $currency$",
+    "placeholders": { "rate": { "content": "$1" }, "currency": { "content": "$2" } }
+  },
+  "settings_do_not_cache_empty": {
+    "message": "Не кэшировать пустые результаты",
+    "description": "Setting label."
+  },
+  "settings_cache_ttl": {
+    "message": "Время жизни кэша (минуты)",
+    "description": "Setting label."
+  },
+  "settings_track_price_history": {
+    "message": "Отслеживать историю цен",
+    "description": "Setting label."
+  },
+  "settings_track_price_history_desc": {
+    "message": "Записывать цену каждого товара в USD с течением времени, чтобы видеть, растёт она или падает.",
+    "description": "Description for the track-price-history setting."
+  },
+  "settings_max_price_points": {
+    "message": "Макс. число точек цены на товар (0 = без ограничений)",
+    "description": "Setting label."
+  },
+  "settings_clear_price_history": {
+    "message": "Очистить историю цен",
+    "description": "Button label."
+  },
+  "settings_price_history_cleared": {
+    "message": "История цен очищена.",
+    "description": "Confirmation text."
+  },
+  "settings_font_size": {
+    "message": "Размер шрифта",
+    "description": "Setting label."
+  },
+  "settings_font_small": {
+    "message": "Мелкий",
+    "description": "Font-size option."
+  },
+  "settings_font_medium": {
+    "message": "Средний",
+    "description": "Font-size option."
+  },
+  "settings_font_large": {
+    "message": "Крупный",
+    "description": "Font-size option."
+  },
+  "settings_excluded_empty": {
+    "message": "Нет исключённых товаров.",
+    "description": "Empty-state text."
+  },
+  "settings_remove": {
+    "message": "Удалить",
+    "description": "Tooltip for the remove button."
+  },
+  "settings_remove_item": {
+    "message": "Удалить $item$",
+    "placeholders": {
+      "item": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_clear_all": {
+    "message": "Очистить всё",
+    "description": "Button label."
+  },
+  "settings_fuzz_scorer": {
+    "message": "Метод нечёткого сопоставления",
+    "description": "Setting label (dev)."
+  },
+  "settings_fuzz_scorer_helper": {
+    "message": "Заменяет алгоритм по умолчанию для каждого поставщика",
+    "description": "Helper text (dev)."
+  },
+  "settings_fuzz_scorer_default": {
+    "message": "По умолчанию (для каждого поставщика)",
+    "description": "Default scorer option (dev)."
+  },
+  "settings_max_search_time": {
+    "message": "Макс. время поиска (мс)",
+    "description": "Setting label (dev)."
+  },
+  "settings_max_search_time_helper": {
+    "message": "Заменяет лимит времени поиска для каждого поставщика. Пусто = значение по умолчанию для поставщика; 0 = без ограничений",
+    "description": "Helper text (dev)."
+  },
+  "settings_disable_fuzzy": {
+    "message": "Отключить нечёткую фильтрацию",
+    "description": "Setting label (dev)."
+  },
+  "settings_disable_fuzzy_desc": {
+    "message": "Показывать необработанные результаты (простой поиск) или только логические совпадения (расширенный поиск) без нечёткой оценки",
+    "description": "Description for the disable-fuzzy setting (dev)."
+  },
+  "settings_restore_defaults": {
+    "message": "Восстановить по умолчанию",
+    "description": "Button label."
+  },
+  "speed_dial_clear_results": {
+    "message": "Очистить результаты",
+    "description": "Speed-dial action."
+  },
+  "speed_dial_clear_cache": {
+    "message": "Очистить кэш",
+    "description": "Speed-dial action."
+  },
+  "speed_dial_toggle_theme": {
+    "message": "Переключить тему",
+    "description": "Speed-dial action."
+  },
+  "speed_dial_stats": {
+    "message": "Статистика",
+    "description": "Speed-dial action (dev)."
+  },
+  "speed_dial_about": {
+    "message": "О приложении",
+    "description": "Speed-dial action."
+  },
+  "speed_dial_aria": {
+    "message": "Меню SpeedDial",
+    "description": "Accessible label for the speed dial."
+  },
+  "speed_dial_hint": {
+    "message": "Наведите курсор в правый нижний угол экрана, чтобы открыть меню",
+    "description": "Help tooltip explaining how to open the speed dial."
+  },
+  "context_menu_copy_title": {
+    "message": "Копировать название",
+    "description": "Context menu option to copy the title."
+  },
+  "context_menu_copy_url": {
+    "message": "Копировать URL",
+    "description": "Context menu option to copy the URL."
+  },
+  "context_menu_copy_product_info": {
+    "message": "Копировать информацию о товаре",
+    "description": "Context menu option to copy the product info."
+  },
+  "context_menu_ignore_product": {
+    "message": "Игнорировать товар",
+    "description": "Context menu option to ignore the product."
+  },
+  "context_menu_remove_product_from_cache": {
+    "message": "Удалить товар из кэша",
+    "description": "Context menu option to remove the product from the cache."
+  },
+  "context_menu_open_in_new_tab": {
+    "message": "Открыть в новой вкладке",
+    "description": "Context menu option to open the product in a new tab."
+  },
+  "context_menu_create_bookmark": {
+    "message": "Создать закладку",
+    "description": "Context menu option to create a bookmark."
+  },
+  "context_menu_search_similar": {
+    "message": "Искать похожие",
+    "description": "Context menu option to search for similar products."
+  },
+  "context_menu_share": {
+    "message": "Поделиться",
+    "description": "Context menu option to share the product."
+  },
+  "context_menu_view_details": {
+    "message": "Посмотреть подробности",
+    "description": "Context menu option to view the details of the product."
+  },
+  "context_menu_cache_remove_unavailable": {
+    "message": "Этот товар нельзя удалить из кэша",
+    "description": "Shown when a product can't be removed from the cache."
+  },
+  "context_menu_removed_from_cache": {
+    "message": "$product$ удалён из кэша",
+    "placeholders": {
+      "product": {
+        "content": "$1"
+      }
+    }
+  },
+  "context_menu_search_selection": {
+    "message": "Искать «%s» в Chem Pal",
+    "description": "Right-click context menu label; %s is the selected text (substituted by Chrome)."
+  },
+  "copy_info_price": {
+    "message": "Цена: $price$",
+    "placeholders": {
+      "price": {
+        "content": "$1"
+      }
+    }
+  },
+  "copy_info_supplier": {
+    "message": "Поставщик: $supplier$",
+    "placeholders": {
+      "supplier": {
+        "content": "$1"
+      }
+    }
+  },
+  "copy_info_url": {
+    "message": "URL: $url$",
+    "placeholders": {
+      "url": {
+        "content": "$1"
+      }
+    }
+  },
+  "copy_info_description": {
+    "message": "Описание: $description$",
+    "placeholders": {
+      "description": {
+        "content": "$1"
+      }
+    }
+  },
+  "share_fallback_title": {
+    "message": "Химический товар",
+    "description": "Fallback title used when sharing a product with no title."
+  },
+  "share_text": {
+    "message": "Посмотрите этот химический товар: $product$",
+    "placeholders": {
+      "product": {
+        "content": "$1"
+      }
+    }
+  },
+  "bookmark_favorites_folder": {
+    "message": "Избранное ChemPal",
+    "description": "Name of the ChemPal favorites bookmark folder."
+  },
+  "bookmark_already_exists": {
+    "message": "Закладка уже существует в $folder$",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "bookmark_created": {
+    "message": "Закладка создана в $folder$",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "product_detail_cas": {
+    "message": "CAS",
+    "description": "Product detail field label."
+  },
+  "product_detail_formula": {
+    "message": "Формула",
+    "description": "Product detail field label."
+  },
+  "product_detail_molecular_weight": {
+    "message": "Молекулярная масса",
+    "description": "Product detail field label."
+  },
+  "product_detail_iupac_name": {
+    "message": "Название IUPAC",
+    "description": "Product detail field label."
+  },
+  "product_detail_inchikey": {
+    "message": "InChIKey",
+    "description": "Product detail field label."
+  },
+  "product_detail_inchi": {
+    "message": "InChI",
+    "description": "Product detail field label."
+  },
+  "product_detail_smiles": {
+    "message": "SMILES",
+    "description": "Product detail field label."
+  },
+  "product_detail_purity": {
+    "message": "Чистота",
+    "description": "Product detail field label."
+  },
+  "product_detail_grade": {
+    "message": "Категория",
+    "description": "Product detail field label."
+  },
+  "product_detail_concentration": {
+    "message": "Концентрация",
+    "description": "Product detail field label."
+  },
+  "product_detail_manufacturer": {
+    "message": "Производитель",
+    "description": "Product detail field label."
+  },
+  "product_detail_pubchem": {
+    "message": "PubChem",
+    "description": "Product detail field label."
+  },
+  "product_detail_pubchem_cid": {
+    "message": "PubChem CID $cid$",
+    "placeholders": {
+      "cid": {
+        "content": "$1"
+      }
+    }
+  },
+  "product_detail_pubchem_view": {
+    "message": "Открыть в PubChem",
+    "description": "Title for the PubChem link."
+  },
+  "product_detail_sds": {
+    "message": "Паспорт безопасности (SDS)",
+    "description": "Label/title for the SDS document link."
+  },
+  "product_detail_tds": {
+    "message": "Технический паспорт (TDS)",
+    "description": "Label/title for the TDS document link."
+  },
+  "product_detail_coa": {
+    "message": "Сертификат анализа (COA)",
+    "description": "Label/title for the COA document link."
+  },
+  "product_detail_open_full_image": {
+    "message": "Открыть полное изображение для $title$",
+    "placeholders": {
+      "title": {
+        "content": "$1"
+      }
+    }
+  },
+  "product_detail_prev_image": {
+    "message": "Предыдущее изображение",
+    "description": "Accessible label for the previous-image button."
+  },
+  "product_detail_next_image": {
+    "message": "Следующее изображение",
+    "description": "Accessible label for the next-image button."
+  },
+  "product_detail_sparkline_aria": {
+    "message": "График истории цен",
+    "description": "Accessible label for the price-history sparkline."
+  },
+  "product_detail_price_history_currency": {
+    "message": "История цен ($currency$)",
+    "placeholders": { "currency": { "content": "$1" } }
+  },
+  "product_detail_points": {
+    "message": "$count$ точек",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "product_detail_no_history": {
+    "message": "История пока отсутствует",
+    "description": "Shown when a product has no recorded price history."
+  },
+  "product_detail_variants_currency": {
+    "message": "Варианты ($currency$)",
+    "placeholders": { "currency": { "content": "$1" } }
+  },
+  "stats_title": {
+    "message": "Статистика поставщиков",
+    "description": "Stats panel title."
+  },
+  "stats_calls": {
+    "message": "$count$ вызовов",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "stats_call_single": {
+    "message": "$count$ вызов",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "stats_clear": {
+    "message": "Очистить статистику",
+    "description": "Tooltip for the clear-stats button."
+  },
+  "stats_empty": {
+    "message": "Статистики пока нет. Запустите поиск, чтобы начать отслеживание.",
+    "description": "Stats empty state."
+  },
+  "stats_tab_by_supplier": {
+    "message": "По поставщику",
+    "description": "Stats tab label."
+  },
+  "stats_tab_daily": {
+    "message": "По дням",
+    "description": "Stats tab label."
+  },
+  "stats_tab_totals": {
+    "message": "Итого",
+    "description": "Stats tab label."
+  },
+  "stats_toggle_http": {
+    "message": "Вызовы HTTP",
+    "description": "Stats pie view toggle."
+  },
+  "stats_toggle_parsed": {
+    "message": "Обработанные данные",
+    "description": "Stats pie view toggle."
+  },
+  "stats_center_http": {
+    "message": "HTTP",
+    "description": "Stats pie center label."
+  },
+  "stats_center_parsed": {
+    "message": "Обработано",
+    "description": "Stats pie center label."
+  },
+  "stats_successes": {
+    "message": "Успешно",
+    "description": "Stats pie segment label."
+  },
+  "stats_fails": {
+    "message": "Ошибки",
+    "description": "Stats pie segment label."
+  },
+  "stats_pie_inner_tooltip": {
+    "message": "$value$ из $total$ ($percent$%)",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      },
+      "percent": {
+        "content": "$3"
+      }
+    }
+  },
+  "stats_pie_outer_tooltip": {
+    "message": "$value$ ($percent$%)",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      },
+      "percent": {
+        "content": "$2"
+      }
+    }
+  },
+  "stats_col_supplier": {
+    "message": "Поставщик",
+    "description": "Stats table column header."
+  },
+  "stats_col_queries": {
+    "message": "Запросы",
+    "description": "Stats table column header."
+  },
+  "stats_col_success": {
+    "message": "Успешно",
+    "description": "Stats table column header."
+  },
+  "stats_col_failure": {
+    "message": "Ошибки",
+    "description": "Stats table column header."
+  },
+  "stats_col_products": {
+    "message": "Товары",
+    "description": "Stats table column header."
+  },
+  "stats_col_parse_errors": {
+    "message": "Ошибки обработки",
+    "description": "Stats table column header."
+  },
+  "hotkeys_title": {
+    "message": "Горячие клавиши",
+    "description": "Title of the keyboard shortcuts modal."
+  },
+  "hotkeys_group_general": {
+    "message": "Общие",
+    "description": "Hotkey group name."
+  },
+  "hotkeys_group_search": {
+    "message": "Поиск",
+    "description": "Hotkey group name."
+  },
+  "hotkeys_group_navigation": {
+    "message": "Навигация",
+    "description": "Hotkey group name."
+  },
+  "hotkeys_group_results": {
+    "message": "Результаты",
+    "description": "Hotkey group name."
+  },
+  "hotkeys_desc_showhotkeyhelp": {
+    "message": "Показать этот список горячих клавиш",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_clearandretrysearch": {
+    "message": "Очистить кэш, очистить результаты и повторить текущий поиск",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_gotosearch": {
+    "message": "Перейти к панели поиска",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_openhistory": {
+    "message": "Открыть историю поиска в боковой панели",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_focusglobalfilter": {
+    "message": "Установить фокус на глобальном фильтре в панели результатов",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_togglecolumnfilters": {
+    "message": "Переключить фильтры столбцов в таблице результатов",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_abortsearch": {
+    "message": "Прервать текущий поиск",
+    "description": "Hotkey description."
+  },
+  "hotkeys_flash_clearandretrysearch": {
+    "message": "Кэш очищен, поиск запущен повторно",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_openhistory": {
+    "message": "История поиска открыта",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_abortsearch": {
+    "message": "Поиск прерван",
+    "description": "Hotkey status-bar flash."
+  }
+}
