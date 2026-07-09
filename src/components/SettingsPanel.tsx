@@ -2,6 +2,7 @@ import { useAppContext } from "@/components/SearchPanel/hooks/useContext";
 import { ACTION_TYPE, COUNTRIES } from "@/constants/common";
 import { CURRENCIES } from "@/constants/currency";
 import { FUZZ_SCORER_NAMES } from "@/constants/fuzzScorers";
+import { getCurrencyRate } from "@/helpers/currency";
 import {
   loadExcludedProducts,
   removeExcludedProduct,
@@ -56,14 +57,15 @@ const AVAILABLE_LOCALES = getAvailableLocales();
 
 // SettingAction type is declared globally in types/settings.d.ts
 
-// Cap the rendered options so the country/currency menus stay short; users
-// narrow the list by typing a name or code.
+// Cap the country menu (250+ entries) so it stays short; users narrow by typing.
 const countryFilter = createFilterOptions<{ code: string; name: string }>({
   limit: 15,
   stringify: (option) => `${option.name} ${option.code}`,
 });
+// No limit for currency: with a 15-cap the alphabetical first page (AED…BHD) hid
+// common codes like USD unless the user knew to type them. The full list stays
+// scrollable and still narrows on type.
 const currencyFilter = createFilterOptions<{ code: string; symbol: string }>({
-  limit: 15,
   stringify: (option) => `${option.code} ${option.symbol}`,
 });
 
@@ -220,6 +222,41 @@ export default function SettingsPanel() {
     ? currentLanguageBase
     : "";
 
+  // Fetch the live USD→currency rate for the selected currency and show it under
+  // the dropdown. Fetched directly (not read from stored settings) so the hint
+  // always reflects the current selection; getCurrencyRate is LRU-cached, so this
+  // returns the same value the price table converts with. Hidden for USD (rate 1).
+  const selectedCurrency = currentSettings.currency;
+  const [displayRate, setDisplayRate] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    if (!selectedCurrency || selectedCurrency === "USD") {
+      setDisplayRate(undefined);
+      return;
+    }
+    let cancelled = false;
+    const loadRate = async () => {
+      try {
+        const rate = await getCurrencyRate("USD", selectedCurrency);
+        if (!cancelled) setDisplayRate(rate);
+      } catch (error) {
+        console.error("Failed to fetch currency rate for display", { error });
+        if (!cancelled) setDisplayRate(undefined);
+      }
+    };
+    void loadRate();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCurrency]);
+
+  const currencyRateHint =
+    selectedCurrency && selectedCurrency !== "USD" && displayRate !== undefined
+      ? i18n("settings_currency_rate_hint", [
+          new Intl.NumberFormat(undefined, { maximumFractionDigits: 4 }).format(displayRate),
+          selectedCurrency,
+        ])
+      : undefined;
+
   const handleAccordionChange =
     (panel: string) => (_event: SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false);
@@ -259,33 +296,48 @@ export default function SettingsPanel() {
                 label=""
               />
             </ListItem>
-            {/* Currency */}
-            <ListItem className={styles["settings-panel__helper-on-hover"]}>
-              <ListItemText primary={i18n("settings_currency")} />
-              {/*<FormHelperText>Convert all currency to this</FormHelperText>*/}
-              <FormControl>
-                <Autocomplete
-                  options={CURRENCIES}
-                  getOptionLabel={(option) => `${option.code} (${option.symbol})`}
-                  isOptionEqualToValue={(option, value) => option.code === value.code}
-                  filterOptions={currencyFilter}
-                  value={CURRENCIES.find((c) => c.code === currentSettings.currency) ?? undefined}
-                  onChange={(_event, option) =>
-                    updateSetting({
-                      type: ACTION_TYPE.INPUT_CHANGE,
-                      name: "currency",
-                      value: option?.code ?? "",
-                    })
-                  }
-                  size="small"
-                  className={styles["settings-panel__input"]}
-                  disabled={isPending}
-                  disableClearable
-                  renderInput={(params) => (
-                    <TextField {...params} placeholder={i18n("settings_currency")} />
-                  )}
-                />
-              </FormControl>
+            {/* Currency — laid out as a column so the rate hint sits on its own
+                right-aligned row below the dropdown (no wrap, and the label/dropdown
+                row above it doesn't shift when the hint appears). */}
+            <ListItem
+              className={styles["settings-panel__helper-on-hover"]}
+              sx={{ flexDirection: "column", alignItems: "stretch", rowGap: 0.5 }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
+                <ListItemText primary={i18n("settings_currency")} />
+                <FormControl>
+                  <Autocomplete
+                    options={CURRENCIES}
+                    getOptionLabel={(option) => `${option.code} (${option.symbol})`}
+                    isOptionEqualToValue={(option, value) => option.code === value.code}
+                    filterOptions={currencyFilter}
+                    value={CURRENCIES.find((c) => c.code === currentSettings.currency) ?? undefined}
+                    onChange={(_event, option) =>
+                      updateSetting({
+                        type: ACTION_TYPE.INPUT_CHANGE,
+                        name: "currency",
+                        value: option?.code ?? "",
+                      })
+                    }
+                    size="small"
+                    className={styles["settings-panel__input"]}
+                    disabled={isPending}
+                    disableClearable
+                    renderInput={(params) => (
+                      <TextField {...params} placeholder={i18n("settings_currency")} />
+                    )}
+                  />
+                </FormControl>
+              </Box>
+              {currencyRateHint && (
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ alignSelf: "flex-end", whiteSpace: "nowrap" }}
+                >
+                  {currencyRateHint}
+                </Typography>
+              )}
             </ListItem>
             {/* Location */}
             <ListItem className={styles["settings-panel__helper-on-hover"]}>
@@ -335,22 +387,6 @@ export default function SettingsPanel() {
               </FormControl>
             </ListItem>
 
-            {/* Foo Example */}
-            <ListItem className={styles["settings-panel__helper-on-hover"]}>
-              <ListItemText primary={i18n("settings_currency_rate")} />
-              {/*<FormHelperText>Just an input example</FormHelperText>*/}
-              <FormControl>
-                <TextField
-                  value={currentSettings.currencyRate}
-                  name="currencyRate"
-                  onChange={handleInputChange}
-                  variant="outlined"
-                  size="small"
-                  className={styles["settings-panel__input"]}
-                  disabled={isPending}
-                />
-              </FormControl>
-            </ListItem>
           </List>
         </AccordionDetails>
       </Accordion>

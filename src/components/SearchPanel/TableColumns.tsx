@@ -17,7 +17,7 @@ import SDSIcon from "@/icons/SDSIcon";
 import TDSIcon from "@/icons/TDSIcon";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
 import { isAvailability } from "@/utils/typeGuards/productbuilder";
-import { ColumnDef, type CellContext } from "@tanstack/react-table";
+import { ColumnDef, type CellContext, type HeaderContext } from "@tanstack/react-table";
 import { hasFlag } from "country-flag-icons";
 import getUnicodeFlagIcon from "country-flag-icons/unicode";
 import styles from "./TableColumns.module.scss";
@@ -255,7 +255,11 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     },
     {
       id: "price",
-      header: i18n("column_price"),
+      // Prices are all converted to the user's selected currency, so surface that
+      // code in the header — it disambiguates symbols shared across currencies
+      // (e.g. "£" = GBP/GIP/…, "$" = USD/SRD).
+      header: ({ table }: HeaderContext<Product, unknown>) =>
+        i18n("column_price_currency", [table.options.meta?.userSettings?.currency ?? "USD"]),
       accessorKey: "price",
       // Read userSettings from table meta rather than context so TableColumns()
       // stays hook-free — it's called from both React renders and non-render

@@ -122,6 +122,7 @@ Object.assign(initialAppState, {
 
 type AppAction =
   | { type: APP_ACTION.UPDATE_SETTINGS; settings: UserSettings }
+  | { type: APP_ACTION.SET_CURRENCY_RATE; rate: number }
   | { type: APP_ACTION.SET_PANEL; panel: PANEL }
   | { type: APP_ACTION.SET_SPEED_DIAL_VISIBILITY; visible: boolean }
   | { type: APP_ACTION.LOAD_FROM_STORAGE; data: Partial<AppState> }
@@ -195,15 +196,9 @@ function App() {
           startTransition(() => {
             (async () => {
               try {
-                const currencyRate = await getCurrencyRate("USD", newSettings.currency);
-                const updatedSettings = { ...newSettings, currencyRate };
-                try {
-                  await cstorage.local.set({ [CACHE.USER_SETTINGS]: updatedSettings });
-                } catch (error) {
-                  console.error("Failed to update settings:", { error });
-                }
+                await cstorage.local.set({ [CACHE.USER_SETTINGS]: newSettings });
               } catch (error) {
-                console.error("Failed to get currency rate:", { error });
+                console.error("Failed to update settings:", { error });
               }
             })();
           });
@@ -211,6 +206,31 @@ function App() {
           return {
             ...currentState,
             userSettings: newSettings,
+          };
+        }
+
+        // Merges the freshly-fetched USD→currency rate into state and persists it.
+        // Dispatched from the currency-watching effect (the rate is async, so it
+        // can't be resolved inside UPDATE_SETTINGS); this is what makes the price
+        // column reconvert immediately when the user changes currency.
+        case APP_ACTION.SET_CURRENCY_RATE: {
+          const current = currentState.userSettings;
+          if (!current || current.currencyRate === action.rate) return currentState;
+          const updatedSettings: UserSettings = { ...current, currencyRate: action.rate };
+
+          startTransition(() => {
+            (async () => {
+              try {
+                await cstorage.local.set({ [CACHE.USER_SETTINGS]: updatedSettings });
+              } catch (error) {
+                console.error("Failed to persist currency rate:", { error });
+              }
+            })();
+          });
+
+          return {
+            ...currentState,
+            userSettings: updatedSettings,
           };
         }
 
@@ -317,6 +337,27 @@ function App() {
   useEffect(() => {
     if (settingsLanguage) setLocale(settingsLanguage.split("-")[0]);
   }, [settingsLanguage]);
+
+  // Fetch the USD→currency conversion rate whenever the selected currency changes
+  // and write it into state, so the price column reconverts right away. The rate
+  // is async (LRU-cached), so it can't be resolved inside the settings reducer.
+  const selectedCurrency = appState.userSettings?.currency;
+  useEffect(() => {
+    if (!selectedCurrency) return;
+    let cancelled = false;
+    const loadRate = async () => {
+      try {
+        const rate = await getCurrencyRate("USD", selectedCurrency);
+        if (!cancelled) dispatch({ type: APP_ACTION.SET_CURRENCY_RATE, rate });
+      } catch (error) {
+        console.error("Failed to get currency rate:", { error });
+      }
+    };
+    void loadRate();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCurrency, dispatch]);
 
   // Keep the document title in sync with the active locale.
   useEffect(() => {

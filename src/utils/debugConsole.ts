@@ -22,12 +22,14 @@ import {
 } from "@/helpers/priceHistory";
 import { Cactus } from "@/utils/Cactus";
 import {
+  getAllPriceSeries,
   getAllSupplierProductDataCacheEntries,
   getAllSupplierQueryCacheEntries,
   getExcludedProducts,
   getPriceSeries,
   getSearchHistory,
   getSearchResults,
+  putPriceSeries,
 } from "@/utils/idbCache";
 
 /**
@@ -163,6 +165,65 @@ async function getProductPriceHistory(
 }
 
 /**
+ * Dev-only: nudges one existing point of every stored price-history series by a
+ * random ±1–8% (random direction), editing it in place so the detail panel's
+ * trend and sparkline change. `stepsBack` selects which point, counting back from
+ * the latest: `0` (default) the latest price, `1` the one before it, `2` two
+ * before, and so on. Series without enough points for the requested offset are
+ * skipped. Writes through the app's own storage layer (the `price_history`
+ * store), so it keeps working if the IndexedDB store name/shape changes; each
+ * value stays positive and is forced to move by at least $0.01 so the change shows.
+ * @param stepsBack - How many points back from the latest to nudge (`0` = latest). Default `0`.
+ * @returns The number of series that were nudged.
+ * @example
+ * ```typescript
+ * // In the console:
+ * await chempal.nudgePriceHistory(); // nudge the latest price of every series
+ * await chempal.nudgePriceHistory(2); // nudge the price two entries behind the latest
+ * ```
+ * @source
+ */
+async function nudgePriceHistory(stepsBack: number = 0): Promise<number> {
+  const SWING_MIN = 0.01;
+  const SWING_MAX = 0.08;
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+  const steps = Math.max(0, Math.trunc(stepsBack));
+
+  const all = await getAllPriceSeries();
+  if (all.length === 0) {
+    console.warn("price_history is empty — run a search with price tracking enabled first.");
+    return 0;
+  }
+
+  let changed = 0;
+  let skipped = 0;
+  for (const entry of all) {
+    const points = entry.points;
+    const index = (points?.length ?? 0) - 1 - steps;
+    if (index < 0) {
+      skipped++;
+      continue;
+    }
+    const point = points[index];
+    const dir = Math.random() < 0.5 ? -1 : 1;
+    const pct = SWING_MIN + Math.random() * (SWING_MAX - SWING_MIN);
+    let usd = round2(point.usd * (1 + dir * pct));
+    if (usd <= 0) usd = round2(point.usd * (1 + pct)); // keep positive
+    if (usd === point.usd) usd = round2(point.usd + dir * 0.01); // force a visible change
+    entry.points = points.map((p, i) => (i === index ? { ...p, usd } : p));
+    entry.updatedAt = Math.max(Date.now(), points[points.length - 1].t);
+    await putPriceSeries(entry);
+    changed++;
+  }
+
+  const skippedNote = skipped > 0 ? ` (${skipped} skipped — fewer than ${steps + 1} points)` : "";
+  console.log(
+    `✅ Nudged ${changed} price series at ${steps} back from latest${skippedNote}. Re-open a product's detail panel to see it.`,
+  );
+  return changed;
+}
+
+/**
  * Prints the available debug helpers and a few example calls to the console.
  * @source
  */
@@ -181,6 +242,8 @@ function help(): void {
       "  IndexedDB: getProductById, getProductPriceHistory, getProductCache,",
       "             getQueryCache, getSearchResults, getSearchHistory,",
       "             getExcludedProducts",
+      "  Testing:  nudgePriceHistory(stepsBack=0) (mutates price_history — nudges",
+      "            one point per series by a random ±1–8%; 0=latest, 1=one back, …)",
       "",
       "Examples:",
       "  await chempal.resolveSmiles('CCO')",
@@ -189,6 +252,7 @@ function help(): void {
       "  await chempal.backgroundFetch('https://chemsavers.com/')",
       "  await chempal.getProductById('A668410')",
       "  await chempal.getQueryCache()",
+      "  await chempal.nudgePriceHistory(2) // nudge the price 2 entries back",
     ].join("\n"),
   );
 }
@@ -230,6 +294,8 @@ const chempal = {
   getSearchResults,
   getSearchHistory,
   getExcludedProducts,
+  // Testing / fixtures (mutates IndexedDB)
+  nudgePriceHistory,
   help,
 };
 

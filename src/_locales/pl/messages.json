@@ -310,9 +310,10 @@
     "message": "Opis",
     "description": "Table column header."
   },
-  "column_price": {
-    "message": "Cena",
-    "description": "Table column header."
+  "column_price": { "message": "Cena", "description": "Table column header / column-visibility menu label." },
+  "column_price_currency": {
+    "message": "Cena ($currency$)",
+    "placeholders": { "currency": { "content": "$1" } }
   },
   "column_quantity": {
     "message": "Ilość",
@@ -595,9 +596,9 @@
     "message": "Język",
     "description": "Setting label."
   },
-  "settings_currency_rate": {
-    "message": "Kurs waluty",
-    "description": "Setting label."
+  "settings_currency_rate_hint": {
+    "message": "1 USD = $rate$ $currency$",
+    "placeholders": { "rate": { "content": "$1" }, "currency": { "content": "$2" } }
   },
   "settings_do_not_cache_empty": {
     "message": "Nie zapisuj pustych wyników",
@@ -935,9 +936,9 @@
     "message": "Wykres historii cen",
     "description": "Accessible label for the price-history sparkline."
   },
-  "product_detail_price_history": {
-    "message": "Historia cen",
-    "description": "Label for the price-history row."
+  "product_detail_price_history_currency": {
+    "message": "Historia cen ($currency$)",
+    "placeholders": { "currency": { "content": "$1" } }
   },
   "product_detail_points": {
     "message": "$count$ punktów",
@@ -951,9 +952,9 @@
     "message": "Brak historii",
     "description": "Shown when a product has no recorded price history."
   },
-  "product_detail_variants": {
-    "message": "Warianty",
-    "description": "Heading for the product variants list."
+  "product_detail_variants_currency": {
+    "message": "Warianty ($currency$)",
+    "placeholders": { "currency": { "content": "$1" } }
   },
   "stats_title": {
     "message": "Statystyki dostawców",

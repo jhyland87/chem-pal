@@ -5,11 +5,39 @@
  * @source
  */
 
+import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
+
 /** The product/variant price fields {@link formatDisplayPrice} needs to format a value. */
 type PriceFields = Pick<Variant, "price" | "usdPrice" | "currencyCode">;
 
 /** The user settings {@link formatDisplayPrice} reads for currency conversion. */
 type PriceSettings = Pick<UserSettings, "currency" | "currencyRate">;
+
+/**
+ * Formats an amount with its currency symbol (from {@link CURRENCY_SYMBOL_MAP}),
+ * e.g. `"ƒ43.50"`. Uses the symbol map rather than `Intl`'s `currency` style so
+ * currencies whose `Intl` symbol is their code (e.g. ANG → "ANG") still render the
+ * proper glyph (ANG → "ƒ"), matching the drawer's price-range adornment. The number
+ * is grouped/decimal-formatted in the runtime locale; falls back to the raw code
+ * when no symbol is known.
+ * @param currency - The ISO currency code (e.g. `"ANG"`).
+ * @param amount - The numeric amount to format.
+ * @returns The symbol-prefixed amount, e.g. `"€18.00"`.
+ * @example
+ * ```ts
+ * formatWithSymbol("USD", 19.99); // => "$19.99"
+ * formatWithSymbol("ANG", 43.5); // => "ƒ43.50"
+ * ```
+ * @source
+ */
+function formatWithSymbol(currency: string, amount: number): string {
+  const symbol = CURRENCY_SYMBOL_MAP[currency] ?? currency;
+  const formatted = new Intl.NumberFormat(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+  return `${symbol}${formatted}`;
+}
 
 /**
  * Formats a product or variant price for display, converting into the user's
@@ -53,16 +81,10 @@ export function formatDisplayPrice(
   if (currencyCode !== "USD" && usdPrice === undefined) {
     console.error("Non-USD product is missing USD price", { product });
     const fallbackCurrency = currencyCode ?? "USD";
-    return new Intl.NumberFormat(fallbackCurrency, {
-      style: "currency",
-      currency: fallbackCurrency,
-    }).format(Number(rawPrice));
+    return formatWithSymbol(fallbackCurrency, Number(rawPrice));
   }
 
   const priceInUsd = usdPrice ?? Number(rawPrice);
 
-  return new Intl.NumberFormat(currency, {
-    style: "currency",
-    currency,
-  }).format(priceInUsd * currencyRate);
+  return formatWithSymbol(currency, priceInUsd * currencyRate);
 }

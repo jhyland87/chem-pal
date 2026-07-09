@@ -51,7 +51,7 @@
     "lint": "eslint src --ignore-pattern '**/__tests__/**' --ignore-pattern '**/__fixtures__/**' --ignore-pattern '**/__mocks__/**' --ignore-pattern '**/*.test.*' --ignore-pattern '**/*.spec.*' --ignore-pattern '**/*[Mm]ock*'",
     "preview": "vite preview",
     "test": "vitest run --config configs/vitest.config.ts",
-    "test:full": "pnpm run test:all && pnpm run lint && pnpm run docs",
+    "test:full": "pnpm run lint && pnpm run test:all && pnpm run docs",
     "test:all": "pnpm test && pnpm test:e2e",
     "test:ui": "vitest --ui --coverage --open=true --config configs/vitest.config.ts",
     "test:ui:open": "vitest --ui --coverage --open=true --config configs/vitest.config.ts",
