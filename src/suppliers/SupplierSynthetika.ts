@@ -1,7 +1,9 @@
 import { AVAILABILITY } from "@/constants/common";
+import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
-import { createDOM, urlencode } from "@/helpers/request";
+import { urlencode } from "@/helpers/request";
+import { findMolarity, parseChemicalSpecs } from "@/helpers/science";
 import { firstMap, mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import {
@@ -9,6 +11,7 @@ import {
   isSynthetikaProduct,
 } from "@/utils/typeGuards/synthetika";
 import { SupplierBase } from "./SupplierBase";
+import { parseSynthetikaRestrictions } from "./synthetikaRestrictions";
 
 /**
  * Supplier implementation for Synthetika
@@ -361,7 +364,10 @@ export class SupplierSynthetika
         .setCacheKey(this.getUniqueProductKey(product))
         .setAvailability(this.availabilityConverter(product.availability.name))
         .setSku(product.code)
-        .setUUID(product.code);
+        .setUUID(product.code)
+        .setRating(product.rate)
+        .setReviewCount(product.votes)
+        .setPurchaseRestriction(parseSynthetikaRestrictions(product.shortDescription));
 
       const quantity = firstMap(parseQuantity, [
         product.name,
@@ -384,6 +390,7 @@ export class SupplierSynthetika
               quantity: parseQuantity(v.name ?? "")?.quantity ?? 0,
               uom: parseQuantity(v.name ?? "")?.uom ?? "",
               url: v.url,
+              purchaseRestriction: parseSynthetikaRestrictions(v.shortDescription),
             };
           }),
         );
@@ -391,46 +398,6 @@ export class SupplierSynthetika
 
       return productBuilder;
     });
-  }
-
-  /**
-   * Parses the description HTML and returns a record of properties
-   * @param descriptionHTML - The description HTML to parse
-   * @returns A record of properties
-   * @source
-   */
-  protected parseDescriptionHTML(descriptionHTML: string): Record<string, string> {
-    const descriptionDOM = createDOM(descriptionHTML);
-
-    const properties: Record<string, string> = {};
-
-    // Find all <strong> elements that end with ":"
-    descriptionDOM.querySelectorAll("strong").forEach((strong) => {
-      const label = strong.textContent?.trim();
-      if (!label || !label.endsWith(":")) return;
-
-      const key = label.slice(0, -1); // strip the colon
-
-      // The value is the text that follows the <strong> inside its parent.
-      let value = "";
-
-      // Walk sibling nodes after the <strong>
-      let node = strong.nextSibling;
-      while (node) {
-        if (node.nodeType === Node.TEXT_NODE) {
-          value += node.textContent;
-        } else if (node.nodeName === "BR") {
-          break; // stop at line break — next field starts here
-        } else {
-          value += node.textContent;
-        }
-        node = node.nextSibling;
-      }
-
-      properties[key] = value.trim();
-    });
-
-    return properties;
   }
 
   /**
@@ -529,16 +496,46 @@ export class SupplierSynthetika
         builder.setPricing(price.price, price.currencyCode, price.currencySymbol);
       }
 
-      const descriptionProperties = this.parseDescriptionHTML(productResponse.description);
-      console.log("[synthetika] descriptionProperties", {
-        descriptionProperties,
-        builder,
-        product,
-        productURL,
-      });
+      // Synthetika descriptions aren't consistently formatted (labels may sit in <strong>,
+      // spans, or plain text, with unicode-subscript formulas), so extract with the tolerant
+      // free-text helpers rather than a fixed DOM structure.
+      const specs = parseChemicalSpecs(productResponse.description);
+      const cas = findCAS(productResponse.description);
+      if (cas) {
+        builder.setCAS(cas);
+      }
+      if (specs.formula) {
+        builder.setFormula(specs.formula);
+      }
+      if (specs.molecularWeight !== undefined) {
+        builder.setMoleweight(specs.molecularWeight);
+      }
+      if (specs.purity !== undefined) {
+        builder.setPurity(specs.purity);
+      }
+      if (specs.smiles) {
+        builder.setSmiles(specs.smiles);
+      }
 
-      builder.setCAS(descriptionProperties["CAS Number"]);
-      builder.setFormula(descriptionProperties["Sum Formula"]);
+      // Molarity (e.g. "1.5M") shows up in the name/description for solution products.
+      const molarity =
+        findMolarity(productResponse.name) ?? findMolarity(productResponse.description);
+      if (molarity !== undefined) {
+        builder.setConcentration(molarity);
+      }
+
+      // Images: the response gives gfx asset ids (main_image + the images array). Dedupe them
+      // and map each to its full-size gfx URL.
+      const imageIds = [
+        ...new Set(
+          [productResponse.main_image, ...(productResponse.images ?? [])].filter(
+            (id): id is string => typeof id === "string" && id.length > 0,
+          ),
+        ),
+      ];
+      if (imageIds.length > 0) {
+        builder.addImages(imageIds.map((id) => this.href(`/userdata/public/gfx/${id}/${id}.jpg`)));
+      }
 
       // if (variants.length > 0) {
       //   builder.setVariants(variants);

@@ -30,6 +30,7 @@ export const FORMULA_ELEMENT_PATTERN =
  * The returned regex is **global**, so callers can collect every candidate (via `matchAll`)
  * and choose the most likely one with {@link pickBestFormula}.
  * @document ./CHEMICAL_FORMULA_PATTERN.md
+ * @see https://regex101.com/r/YBovln/4
  * @param subToken - Regex source matching one real subscript/superscript in the source format
  *   (e.g. `<su[bp]>…</su[bp]>` for HTML, or the union of glyph/escape/entity/tag forms for text).
  * @returns A global RegExp that matches formula candidates.

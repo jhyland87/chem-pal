@@ -44,6 +44,8 @@ declare global {
       name: string;
       floating_point: boolean;
     };
+    rate: number;
+    votes: number;
     stockId: number;
     url: string;
     category: {
@@ -73,7 +75,11 @@ declare global {
     };
     shortDescription: string;
     description: string;
-     
+    /** Primary image id (the gfx asset key), e.g. `"15767"`. */
+    main_image?: string;
+    /** Gallery image ids (gfx asset keys). */
+    images?: string[];
+
   }
 
   /**

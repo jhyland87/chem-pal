@@ -1,6 +1,6 @@
 import { CACHE } from "@/constants/common";
 import { cstorage } from "@/utils/storage";
-import { findByIso2 } from "country-list-js";
+import { findByIso2, findByName } from "country-list-js";
 
 /**
  * @group Helpers
@@ -70,6 +70,22 @@ export function findCountryByIso2(iso2: string): CountryRecord | undefined {
 }
 
 /**
+ * Narrows a string to a {@link CountryCode} by confirming `country-list-js` knows it. Kept local to
+ * this module (rather than importing `isCountryCode` from typeGuards) to avoid a module cycle.
+ * @param value - The candidate ISO 3166-1 alpha-2 code
+ * @returns Whether `value` is a known country code
+ * @example
+ * ```typescript
+ * isKnownCountryCode("US") // true
+ * isKnownCountryCode("ZZ") // false
+ * ```
+ * @source
+ */
+function isKnownCountryCode(value: string): value is CountryCode {
+  return findCountryByIso2(value) !== undefined;
+}
+
+/**
  * Resolves the full country name for a two-letter location code.
  *
  * @category Helpers
@@ -88,6 +104,41 @@ export function getCountryName(location?: string): string | undefined {
     return undefined;
   }
   return findCountryByIso2(location)?.name;
+}
+
+/**
+ * Resolves a country's ISO 3166-1 alpha-2 code from its full English name.
+ * Wraps the untyped `country-list-js` `findByName` (whose record nests the code as
+ * `{ code: { iso2 } }`), title-casing the input first since the library matches only
+ * Title Case. Returns undefined for unknown names (including short aliases like "USA"
+ * that the library doesn't index — callers handle those separately).
+ *
+ * @category Helpers
+ * @param name - A country name (any casing), e.g. `"germany"`, `"United States"`
+ * @returns The matching ISO alpha-2 code, or undefined if the name is unknown
+ * @example
+ * ```typescript
+ * findCountryByName("germany") // "DE"
+ * findCountryByName("United States") // "US"
+ * findCountryByName("Narnia") // undefined
+ * ```
+ * @source
+ */
+export function findCountryByName(name: string): CountryCode | undefined {
+  const titleCased = name
+    .trim()
+    .toLowerCase()
+    .replace(/\b[a-z]/g, (c) => c.toUpperCase());
+  const result: unknown = findByName(titleCased);
+  if (typeof result !== "object" || result === null || !("code" in result)) {
+    return undefined;
+  }
+  const code: unknown = result.code;
+  if (typeof code !== "object" || code === null || !("iso2" in code)) {
+    return undefined;
+  }
+  const iso2: unknown = code.iso2;
+  return typeof iso2 === "string" && isKnownCountryCode(iso2) ? iso2 : undefined;
 }
 
 /**

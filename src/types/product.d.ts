@@ -92,6 +92,59 @@ declare global {
   }
 
   /**
+   * Per-option purchase restriction parsed from a supplier's product text, used to
+   * hide products a given user cannot legally or logistically buy. Every field is a
+   * restriction signal; an absent field means "not restricted in that way".
+   *
+   * @example
+   * ```typescript
+   * const r: PurchaseRestriction = { excludedCountries: ["US", "DE"], buyerRestricted: true };
+   * ```
+   */
+  interface PurchaseRestriction {
+    /**
+     * ISO 3166-1 alpha-2 codes this option cannot ship to. A user whose location is
+     * in this list cannot buy it.
+     * @example ["US", "DE"]
+     */
+    excludedCountries?: CountryCode[];
+
+    /**
+     * True when the option ships only within the EU (an allowlist ≈ EU). Users
+     * outside the EU cannot buy it.
+     * @example true
+     */
+    euOnly?: boolean;
+
+    /**
+     * True when a delivery restriction was detected but could not be resolved to a
+     * specific country or the EU. Excluded for everyone to be safe.
+     * @example true
+     */
+    restrictedDelivery?: boolean;
+
+    /**
+     * True when the option is limited to company/business/government/professional
+     * buyers. Excluded for everyone.
+     * @example true
+     */
+    buyerRestricted?: boolean;
+
+    /**
+     * True when a declaration of (intended) use is required to purchase. Informational
+     * only — this never excludes the product.
+     * @example true
+     */
+    declarationOfUseRequired?: boolean;
+
+    /**
+     * The original human-readable restriction sentence(s), preserved for display.
+     * @example "We do not ship this product to: US, DE"
+     */
+    note?: string;
+  }
+
+  /**
    * Represents a specific variation of a product with its unique characteristics and pricing.
    * Used to model different versions or package sizes of the same product.
    *
@@ -281,6 +334,12 @@ declare global {
      * @example "Hazardous material - special shipping required"
      */
     shippingInformation?: string;
+
+    /**
+     * Parsed purchase restrictions (region/buyer/etc.) used to hide options a given
+     * user cannot buy. See {@link PurchaseRestriction}.
+     */
+    purchaseRestriction?: PurchaseRestriction;
 
     /**
      * Availability of the variant

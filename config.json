@@ -16,22 +16,10 @@
     "showColumnFilters": true,
     "showAllColumns": false,
     "excludeNonShippingSuppliers": true,
+    "hideRestrictedProducts": true,
     "hideColumns": ["description", "uom", "sds", "specs", "coa", "cas", "formula", "moleweight", "purity", "concentration"],
     "columnFilterConfig": {}
   },
-  "languages": [
-    "en-US",
-    "de-DE",
-    "fr-FR",
-    "es-ES",
-    "it-IT",
-    "da-DK",
-    "pt-PT",
-    "pl-PL",
-    "sv-SE",
-    "nb-NO",
-    "nl-NL"
-  ],
   "defaultResultsLimit": 5,
   "useStorageCompression": false,
   "hotkeys": [

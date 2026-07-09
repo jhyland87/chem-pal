@@ -1,4 +1,9 @@
-import { hasExpandableDetail, isPresent, resolveProductImages } from "@/helpers/product";
+import {
+  hasExpandableDetail,
+  isPresent,
+  resolveProductImages,
+  samePurchasableUnit,
+} from "@/helpers/product";
 import { describe, expect, it } from "vitest";
 
 /** Minimal base product with only the required fields populated. */
@@ -133,5 +138,54 @@ describe("hasExpandableDetail", () => {
   it("is false for an empty-string detail field", () => {
     // Double-cast through unknown: "" doesn't satisfy the branded CAS<string> template type.
     expect(hasExpandableDetail({ ...baseProduct, cas: "" } as unknown as Product)).toBe(false);
+  });
+});
+
+describe("samePurchasableUnit", () => {
+  it("matches the same size, case-insensitive on uom", () => {
+    expect(
+      samePurchasableUnit({ quantity: 1, uom: "mg" } as Variant, {
+        quantity: 1,
+        uom: "MG",
+      } as Variant),
+    ).toBe(true);
+  });
+
+  it("does not match a different quantity or uom", () => {
+    expect(
+      samePurchasableUnit({ quantity: 1, uom: "mg" } as Variant, {
+        quantity: 5,
+        uom: "mg",
+      } as Variant),
+    ).toBe(false);
+    expect(
+      samePurchasableUnit({ quantity: 1, uom: "mg" } as Variant, {
+        quantity: 1,
+        uom: "g",
+      } as Variant),
+    ).toBe(false);
+  });
+
+  it("detects a supplier-listed parent whose id/sku differ (Ambeed case)", () => {
+    // Parent P001064386/sku BD01081502 vs variant 3272919/sku A1159477 — ids differ,
+    // but both are the 1 mg unit, so the parent is a duplicate of the 1 mg variant.
+    const parent = { quantity: 1, uom: "mg", usdPrice: 29, id: "P001064386" } as Variant;
+    const oneMg = { quantity: 1, uom: "mg", usdPrice: 29, id: "3272919" } as Variant;
+    const fiveMg = { quantity: 5, uom: "mg", usdPrice: 74, id: "3272918" } as Variant;
+    expect(samePurchasableUnit(parent, oneMg)).toBe(true);
+    expect(samePurchasableUnit(parent, fiveMg)).toBe(false);
+  });
+
+  it("falls back to rounded USD price when a size is missing", () => {
+    expect(samePurchasableUnit({ usdPrice: 29 } as Variant, { usdPrice: 29.004 } as Variant)).toBe(
+      true,
+    );
+    expect(samePurchasableUnit({ usdPrice: 29 } as Variant, { usdPrice: 74 } as Variant)).toBe(
+      false,
+    );
+  });
+
+  it("is false when neither size nor price is available", () => {
+    expect(samePurchasableUnit({ title: "a" } as Variant, { title: "b" } as Variant)).toBe(false);
   });
 });

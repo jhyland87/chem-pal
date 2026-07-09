@@ -885,6 +885,8 @@ function buildUserSettingsSchema() {
     suppliers: z.array(z.enum(SupplierFactory.supplierList())).optional(),
     showColumnFilters: z.boolean().optional(),
     showAllColumns: z.boolean().optional(),
+    excludeNonShippingSuppliers: z.boolean().optional(),
+    hideRestrictedProducts: z.boolean().optional(),
     hideColumns: z.array(z.string()).optional(),
     fuzzScorerOverride: z.string().optional(),
   });

@@ -86,21 +86,12 @@ describe("SupplierFactory.filterByShipping", () => {
   ];
 
   const makeFactory = (location?: string, exclude: boolean = false) =>
-    new SupplierFactory<Product>(
-      "test",
-      5,
-      new AbortController(),
-      [],
-      true,
-      undefined,
-      false,
-      0,
-      [429],
-      undefined,
-      false,
+    new SupplierFactory<Product>("test", {
+      limit: 5,
+      controller: new AbortController(),
       location,
-      exclude,
-    );
+      excludeNonShippingSuppliers: exclude,
+    });
 
   it("keeps only suppliers that ship to the location when enabled", () => {
     const factory = makeFactory("US", true);

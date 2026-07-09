@@ -129,7 +129,7 @@ describe("SupplierFactory.filterByPermissions", () => {
   let factory: SupplierFactory<Product>;
 
   beforeEach(() => {
-    factory = new SupplierFactory("test", 5, new AbortController());
+    factory = new SupplierFactory("test", { limit: 5, controller: new AbortController() });
 
     if (!global.chrome) {
       global.chrome = {} as typeof chrome;

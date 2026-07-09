@@ -153,6 +153,7 @@ export class ProductBuilder<T extends Product> {
       status: (v) => this.setStatus(v),
       statusTxt: (v) => this.setStatusTxt(v),
       shippingInformation: (v) => this.setShippingInformation(v),
+      purchaseRestriction: (v) => this.setPurchaseRestriction(v),
       attributes: (v) => this.setAttributes(v),
       availability: (v) => {
         // setAvailability is overloaded per type, so a `string | boolean` union won't resolve —
@@ -662,11 +663,12 @@ export class ProductBuilder<T extends Product> {
       return this;
     }
     const trimmed = formula.trim();
-    // Store as-is when the value is already a finished formula: either a clean ASCII formula
-    // (incl. ones containing "1" like "C12H22O11", which findFormulaInHtml mishandles) or one
-    // already display-formatted with unicode subscripts and hydrate notation
-    // (e.g. "NH₄NaC₄H₄O₆ x 4H₂O"). Re-parsing those would corrupt them.
-    if (!trimmed.includes("<sub>") && (isMoleForm(trimmed) || /[₀-₉]/.test(trimmed))) {
+    // Store as-is when the value is already a finished formula: a clean ASCII formula (incl. ones
+    // containing "1" like "C12H22O11", which findFormulaInHtml mishandles), or one already
+    // display-formatted with unicode subscripts / hydrate notation (e.g. "NH₄NaC₄H₄O₆ x 4H₂O"), or
+    // a polymer repeating unit carrying a variable subscript index (e.g. "(C3H3NaO2)ₙ"). Re-parsing
+    // those would corrupt them.
+    if (!trimmed.includes("<sub>") && (isMoleForm(trimmed) || /[₀-₉ₙₘₓ]/.test(trimmed))) {
       this.product.formula = trimmed;
       return this;
     }
@@ -1766,6 +1768,51 @@ export class ProductBuilder<T extends Product> {
   setShippingInformation(shippingInformation: unknown): ProductBuilder<T> {
     if (typeof shippingInformation === "string" && shippingInformation.trim().length > 0) {
       this.product.shippingInformation = shippingInformation;
+    }
+    return this;
+  }
+
+  /**
+   * Sets the parsed purchase restrictions for the product. Accepts an object shaped like
+   * {@link PurchaseRestriction} and keeps only the recognized, well-typed fields
+   * (`excludedCountries` is filtered to valid country codes); anything else is dropped.
+   * The restriction is stored only when at least one meaningful field survives.
+   * @param restriction - The purchase restriction object, or any value (invalid input is ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setPurchaseRestriction({ excludedCountries: ["US", "DE"], buyerRestricted: true });
+   * ```
+   * @source
+   */
+  setPurchaseRestriction(restriction: unknown): ProductBuilder<T> {
+    if (typeof restriction !== "object" || restriction === null) {
+      return this;
+    }
+    const result: PurchaseRestriction = {};
+
+    if ("excludedCountries" in restriction && Array.isArray(restriction.excludedCountries)) {
+      const codes = restriction.excludedCountries.filter(isCountryCode);
+      if (codes.length > 0) {
+        result.excludedCountries = codes;
+      }
+    }
+    if ("euOnly" in restriction && restriction.euOnly === true) result.euOnly = true;
+    if ("restrictedDelivery" in restriction && restriction.restrictedDelivery === true) {
+      result.restrictedDelivery = true;
+    }
+    if ("buyerRestricted" in restriction && restriction.buyerRestricted === true) {
+      result.buyerRestricted = true;
+    }
+    if ("declarationOfUseRequired" in restriction && restriction.declarationOfUseRequired === true) {
+      result.declarationOfUseRequired = true;
+    }
+    if ("note" in restriction && typeof restriction.note === "string" && restriction.note.trim()) {
+      result.note = restriction.note.trim();
+    }
+
+    if (Object.keys(result).length > 0) {
+      this.product.purchaseRestriction = result;
     }
     return this;
   }

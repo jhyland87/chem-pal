@@ -1,8 +1,6 @@
 import { getCachableResponse } from "@/helpers/request";
 import JSZip from "jszip";
 
-declare const __RESPONSE_AGGREGATE__: boolean;
-
 interface CapturedEntry {
   contentType: string;
   content: string;

@@ -148,6 +148,10 @@
     "message": "Solo proveedores que envían a mi ubicación",
     "description": "Checkbox label to hide suppliers that do not ship to the user's location."
   },
+  "drawer_hide_restricted_products": {
+    "message": "Ocultar productos que no puedo comprar",
+    "description": "Checkbox label to hide products restricted by region or to business/government buyers."
+  },
   "drawer_supplier_label": {
     "message": "Buscar proveedores",
     "description": "Drawer accordion label for the supplier selector."
@@ -623,6 +627,14 @@
   "product_detail_no_history": {
     "message": "Aún no hay historial",
     "description": "Shown when a product has no recorded price history."
+  },
+  "product_detail_price_history_col_date": {
+    "message": "Fecha",
+    "description": "Column header for the date of a price-history point in the variant trend popover."
+  },
+  "product_detail_price_history_col_price": {
+    "message": "Precio",
+    "description": "Column header for the price of a price-history point in the variant trend popover."
   },
   "product_detail_variants_currency": {
     "message": "Variantes ($currency$)",

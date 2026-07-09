@@ -351,7 +351,6 @@ export function useSearch() {
       }
     };
     loadSearchData();
-     
   }, []);
 
   // Listen for external clears of search results (e.g. SpeedDial "Clear Results")
@@ -448,21 +447,21 @@ export function useSearch() {
       try {
         // Create the search factory object, which sets the query, supplier search limits,
         // and the abort controller for the search.
-        const productQueryFactory = new SupplierFactory(
-          query,
-          fetchLimit,
-          fetchControllerRef.current,
-          appContext.selectedSuppliers,
-          appContext.userSettings.caching,
-          appContext.userSettings.fuzzScorerOverride,
-          appContext.userSettings.doNotCacheEmptyResults,
-          appContext.userSettings.cacheTtlMinutes,
-          appContext.userSettings.noCacheStatusCodes,
-          appContext.userSettings.maxAllowableSearchTime,
-          appContext.userSettings.fuzzyFilteringDisabled,
-          appContext.userSettings.location,
-          appContext.userSettings.excludeNonShippingSuppliers ?? true,
-        );
+        const productQueryFactory = new SupplierFactory(query, {
+          limit: fetchLimit,
+          controller: fetchControllerRef.current,
+          suppliers: appContext.selectedSuppliers,
+          caching: appContext.userSettings.caching,
+          fuzzScorerOverride: appContext.userSettings.fuzzScorerOverride,
+          doNotCacheEmptyResults: appContext.userSettings.doNotCacheEmptyResults,
+          cacheTtlMinutes: appContext.userSettings.cacheTtlMinutes,
+          noCacheStatusCodes: appContext.userSettings.noCacheStatusCodes,
+          maxAllowableSearchTime: appContext.userSettings.maxAllowableSearchTime,
+          fuzzyFilteringDisabled: appContext.userSettings.fuzzyFilteringDisabled,
+          location: appContext.userSettings.location,
+          excludeNonShippingSuppliers: appContext.userSettings.excludeNonShippingSuppliers ?? true,
+          hideRestrictedProducts: appContext.userSettings.hideRestrictedProducts ?? true,
+        });
 
         const startSearchTime = performance.now();
 
@@ -582,10 +581,14 @@ export function useSearch() {
         const endSearchTime = performance.now();
         const searchTime = endSearchTime - startSearchTime;
 
-        logger.debug(
-          `Found ${totalResults} products in ${searchTime} milliseconds`,
-          { query, fetchLimit, productQueryResults, startSearchTime, endSearchTime, searchTime },
-        );
+        logger.debug(`Found ${totalResults} products in ${searchTime} milliseconds`, {
+          query,
+          fetchLimit,
+          productQueryResults,
+          startSearchTime,
+          endSearchTime,
+          searchTime,
+        });
 
         // If no results were found, then try to suggest alternative search terms using cactus.nci.nih.gov API.
         if (totalResults === 0) {

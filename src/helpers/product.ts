@@ -65,6 +65,36 @@ export function isPresent(value: unknown): boolean {
 }
 
 /**
+ * Reports whether two variants represent the same purchasable unit — used to
+ * detect a supplier-listed parent among the variants when their ids/skus differ.
+ * Compares pack size (quantity + case-insensitive uom); when either lacks a size,
+ * falls back to rounded USD price equality.
+ * @param a - The first variant (typically the parent product).
+ * @param b - The second variant to compare against.
+ * @returns `true` when they are the same size (or, sizeless, the same USD price).
+ * @example
+ * ```ts
+ * samePurchasableUnit({ quantity: 1, uom: "mg" }, { quantity: 1, uom: "MG" }); // => true
+ * samePurchasableUnit({ quantity: 1, uom: "mg" }, { quantity: 5, uom: "mg" }); // => false
+ * ```
+ * @source
+ */
+export function samePurchasableUnit(a: Variant, b: Variant): boolean {
+  if (isPresent(a.quantity) && isPresent(b.quantity)) {
+    return (
+      a.quantity === b.quantity &&
+      (a.uom ?? "").trim().toLowerCase() === (b.uom ?? "").trim().toLowerCase()
+    );
+  }
+  // typeof narrows `number | undefined` to `number` (unlike isPresent, which isn't a type guard);
+  // a NaN price compares false either way, so this keeps isPresent's effective behavior.
+  if (typeof a.usdPrice === "number" && typeof b.usdPrice === "number") {
+    return Math.round(a.usdPrice * 100) === Math.round(b.usdPrice * 100);
+  }
+  return false;
+}
+
+/**
  * Resolves the images to display for a product, falling back from real photos to
  * a single NCI CACTUS structure depiction built from the first available chemical
  * identifier (CAS → SMILES → IUPAC name).

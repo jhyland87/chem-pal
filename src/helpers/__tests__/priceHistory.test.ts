@@ -1,4 +1,5 @@
 import {
+  buildAggregateSeries,
   describeTrend,
   getProductPriceHistory,
   productSeriesKey,
@@ -274,5 +275,85 @@ describe("describeTrend", () => {
     expect(trend.direction).toBe("down");
     expect(trend.deltaUsd).toBe(-5);
     expect(trend.pctChange).toBeCloseTo(-25);
+  });
+});
+
+describe("buildAggregateSeries", () => {
+  const entry = (points: PricePoint[], id = "s"): PriceHistoryEntry => ({
+    id,
+    productKey: "pk",
+    supplier: "Loudwolf",
+    title: "t",
+    points,
+    updatedAt: 0,
+  });
+
+  it("returns an empty series for no input or point-less series", () => {
+    expect(buildAggregateSeries([])).toEqual([]);
+    expect(buildAggregateSeries([entry([])])).toEqual([]);
+  });
+
+  it("mirrors a single series unchanged", () => {
+    const points: PricePoint[] = [
+      { t: 1, usd: 10 },
+      { t: 2, usd: 12 },
+    ];
+    expect(buildAggregateSeries([entry(points)])).toEqual(points);
+  });
+
+  it("trends down when every variant's last move is down (the reported bug)", () => {
+    const aggregate = buildAggregateSeries([
+      entry(
+        [
+          { t: 1, usd: 10 },
+          { t: 2, usd: 8 },
+        ],
+        "a",
+      ),
+      entry(
+        [
+          { t: 1, usd: 20 },
+          { t: 2, usd: 18 },
+        ],
+        "b",
+      ),
+    ]);
+    expect(aggregate).toEqual([
+      { t: 1, usd: 15 },
+      { t: 2, usd: 13 },
+    ]);
+    expect(describeTrend(aggregate).direction).toBe("down");
+  });
+
+  it("forward-fills without letting a later-starting series move earlier means", () => {
+    const aggregate = buildAggregateSeries([
+      entry(
+        [
+          { t: 1, usd: 10 },
+          { t: 3, usd: 10 },
+        ],
+        "a",
+      ),
+      entry([{ t: 2, usd: 30 }], "b"),
+    ]);
+    // t1: only A (10). t2: mean(10, 30) = 20. t3: mean(10, 30 filled) = 20 → deduped.
+    expect(aggregate).toEqual([
+      { t: 1, usd: 10 },
+      { t: 2, usd: 20 },
+    ]);
+  });
+
+  it("dedupes consecutive-equal means", () => {
+    const aggregate = buildAggregateSeries([
+      entry([
+        { t: 1, usd: 10 },
+        { t: 2, usd: 10 },
+        { t: 3, usd: 12 },
+      ]),
+    ]);
+    expect(aggregate).toEqual([
+      { t: 1, usd: 10 },
+      { t: 3, usd: 12 },
+    ]);
   });
 });

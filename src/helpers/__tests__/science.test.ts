@@ -557,6 +557,24 @@ describe("science helpers", () => {
       expect(parseChemicalSpecs(html).formula).toBe("C6H15NO3");
     });
 
+    it("should normalize unicode subscript glyphs so the whole formula is captured", () => {
+      // Synthetika renders formulas with real subscript characters (₆₅₃₇); without normalization
+      // FORMULA_REGEX stops at the first glyph and returns just "C".
+      const html =
+        "<p>CAS Number: 6132-04-3<br>Sum Formula: C₆H₅Na₃O₇<br>Molar Mass: 258.06 g/mol</p>";
+      expect(parseChemicalSpecs(html)).toEqual({
+        formula: "C6H5Na3O7",
+        molecularWeight: 258.06,
+      });
+    });
+
+    it("should capture a polymer repeating unit under a parenthetical-qualified label", () => {
+      // Synthetika's Sodium Polyacrylate: the label carries "(Repeating Unit)" and the value is a
+      // parenthesized repeat unit with a trailing variable subscript.
+      const html = "<p><strong>Chemical Formula (Repeating Unit)</strong>: (C₃H₃NaO₂)ₙ</p>";
+      expect(parseChemicalSpecs(html).formula).toBe("(C3H3NaO2)ₙ");
+    });
+
     it("should parse a dot-joined salt formula and a bare 'mol :' molar mass", () => {
       const html =
         "CAS : 10017-56-8<br>Formula : C6H15NO3.H3PO4<br>mol : 247.18<br>Melting point : 106°C";

@@ -7,10 +7,10 @@ import {
   Accordion,
   Autocomplete,
   Box,
-  Checkbox,
   Chip,
   FormControlLabel,
   InputAdornment,
+  Switch,
   TextField,
   Typography,
 } from "@mui/material";
@@ -199,7 +199,7 @@ export default function ColumnDrawerSection({
             <FormControlLabel
               sx={{ mt: 1 }}
               control={
-                <Checkbox
+                <Switch
                   size="small"
                   checked={excludeSuppliers}
                   onChange={(e) =>
@@ -211,6 +211,24 @@ export default function ColumnDrawerSection({
                 />
               }
               label={i18n("drawer_only_shipping_suppliers")}
+            />
+          )}
+          {isSupplierSelector && (
+            <FormControlLabel
+              sx={{ mt: 1 }}
+              control={
+                <Switch
+                  size="small"
+                  checked={userSettings.hideRestrictedProducts ?? true}
+                  onChange={(e) =>
+                    setUserSettings({
+                      ...userSettings,
+                      hideRestrictedProducts: e.target.checked,
+                    })
+                  }
+                />
+              }
+              label={i18n("drawer_hide_restricted_products")}
             />
           )}
         </StyledAccordionDetails>
