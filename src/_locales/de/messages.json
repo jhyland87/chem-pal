@@ -355,6 +355,18 @@
     "message": "Alle Filter löschen",
     "description": "Tooltip/label for the button that clears all column filters."
   },
+  "results_toggle_filters": {
+    "message": "Spaltenfilter umschalten",
+    "description": "Accessible label for the header button that shows/hides the per-column filter row."
+  },
+  "results_column_visibility": {
+    "message": "Spalten ein-/ausblenden",
+    "description": "Accessible label for the header button that opens the column-visibility menu."
+  },
+  "results_open_options": {
+    "message": "Optionen öffnen",
+    "description": "Accessible label for the header button that opens the search/settings options drawer."
+  },
   "results_rows_per_page_aria": {
     "message": "Zeilen pro Seite",
     "description": "Accessible label for the page-size selector."

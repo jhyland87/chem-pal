@@ -50,7 +50,7 @@
     "build:full": "pnpm type-check && pnpm build",
     "lint": "eslint src --ignore-pattern '**/__tests__/**' --ignore-pattern '**/__fixtures__/**' --ignore-pattern '**/__mocks__/**' --ignore-pattern '**/*.test.*' --ignore-pattern '**/*.spec.*' --ignore-pattern '**/*[Mm]ock*'",
     "preview": "vite preview",
-    "demo": "pnpm build && playwright test --config configs/playwright.demo.config.ts",
+    "demo": "pnpm run generate-logo-files && vite build --mode=production && playwright test --config configs/playwright.demo.config.ts",
     "test": "vitest run --config configs/vitest.config.ts",
     "test:full": "pnpm run lint && pnpm run test:all && pnpm run docs",
     "test:all": "pnpm test && pnpm test:e2e",

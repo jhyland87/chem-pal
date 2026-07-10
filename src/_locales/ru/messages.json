@@ -443,6 +443,18 @@
     "message": "Очистить все фильтры",
     "description": "Tooltip/label for the button that clears all column filters."
   },
+  "results_toggle_filters": {
+    "message": "Переключить фильтры столбцов",
+    "description": "Accessible label for the header button that shows/hides the per-column filter row."
+  },
+  "results_column_visibility": {
+    "message": "Показать или скрыть столбцы",
+    "description": "Accessible label for the header button that opens the column-visibility menu."
+  },
+  "results_open_options": {
+    "message": "Открыть параметры",
+    "description": "Accessible label for the header button that opens the search/settings options drawer."
+  },
   "results_rows_per_page_aria": {
     "message": "строк на странице",
     "description": "Accessible label for the page-size selector."

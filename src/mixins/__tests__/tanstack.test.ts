@@ -37,6 +37,15 @@ describe("Tanstack Mixins", () => {
       const column = createMockColumn("test", () => ({ props: {} }));
       expect(getHeaderText(column)).toBe("");
     });
+
+    it("should not throw when a function header reads its context", () => {
+      // Mirrors the real `price` column header `({ table }) => ...`, which
+      // throws when invoked without a HeaderContext. getHeaderText must guard
+      // the call and fall back to a string label instead of crashing.
+      const column = createMockColumn("price", ({ table }: { table: { id: string } }) => table.id);
+      expect(() => getHeaderText(column)).not.toThrow();
+      expect(typeof getHeaderText(column)).toBe("string");
+    });
   });
 
   describe("getVisibleUniqueValues", () => {
