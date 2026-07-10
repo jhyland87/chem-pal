@@ -87,9 +87,9 @@
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
   "icons": {
-    "16": "static/images/logo/logo-icon.png",
-    "32": "static/images/logo/logo-icon-32.png",
-    "48": "static/images/logo/logo-icon-48.png",
-    "128": "static/images/logo/logo-icon-128.png"
+    "16": "static/images/logo/ChemPal-logo-v2.png",
+    "32": "static/images/logo/ChemPal-logo-v2.png",
+    "48": "static/images/logo/ChemPal-logo-v2.png",
+    "128": "static/images/logo/ChemPal-logo-v2.png"
   }
 }
