@@ -47,6 +47,46 @@
     "message": "रोका जा रहा है...",
     "description": "Status shown when aborting a search."
   },
+  "search_status_fetching": {
+    "message": "परिणाम प्राप्त हो रहे हैं... ($count$ मिले)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "search_status_found_one": {
+    "message": "$count$ परिणाम मिला...",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "search_status_found_other": {
+    "message": "$count$ परिणाम मिले...",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "search_status_aborted": {
+    "message": "खोज रद्द की गई",
+    "description": "Status/table text when the user aborts a search."
+  },
+  "search_error_failed": {
+    "message": "खोज विफल",
+    "description": "Fallback error text when a search fails without a specific message."
+  },
+  "search_no_shipping_suppliers": {
+    "message": "आपके स्थान पर कोई आपूर्तिकर्ता शिपिंग नहीं करता। उन्हें शामिल करने के लिए खोज ड्रॉअर में “केवल वे आपूर्तिकर्ता जो मेरे स्थान पर शिपिंग करते हैं” बंद करें।",
+    "description": "Shown when the ship-to filter excludes every supplier."
+  },
+  "search_no_results_for": {
+    "message": "\"$query$\" के लिए कोई परिणाम नहीं मिला",
+    "placeholders": { "query": { "content": "$1" } }
+  },
+  "search_try_broaden": {
+    "message": "ड्रॉअर में अपने खोज फ़िल्टर को व्यापक बनाने का प्रयास करें।",
+    "description": "No-results hint when filters are active."
+  },
+  "search_suggest_name": {
+    "message": "शायद इसे खोजने का प्रयास करें: $name$",
+    "placeholders": { "name": { "content": "$1" } }
+  },
+  "search_suggest_cas": {
+    "message": "इसके बजाय CAS संख्या से खोजें: $cas$",
+    "placeholders": { "cas": { "content": "$1" } }
+  },
   "loading_loading": {
     "message": "लोड हो रहा है...",
     "description": "Status shown when loading a search."

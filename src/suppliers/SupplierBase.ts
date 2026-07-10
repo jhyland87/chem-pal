@@ -856,7 +856,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     } catch (error: unknown) {
       if (error instanceof Error && error.name === "AbortError") {
         this.logger.warn("Request was aborted", { error, signal: this.controller.signal });
-        this.controller.abort();
+        this.controller.abort("Abort signal detected");
       } else {
         this.logger.error("Error received during fetch:", {
           error,
@@ -1216,7 +1216,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     } catch (error: unknown) {
       if (error instanceof Error && error.name === "AbortError") {
         this.logger.warn("Request was aborted", { error, signal: this.controller.signal });
-        this.controller.abort();
+        this.controller.abort("Abort signal detected");
         return;
       }
       this.logger.error("Error received during fetch:", {
@@ -1897,6 +1897,58 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   }
 
   /**
+   * Arms the optional per-supplier search-time budget raced by {@link execute}.
+   *
+   * When `maxAllowableSearchTime` is positive, returns a promise that resolves to `sentinel`
+   * once the budget elapses. On elapse it also aborts `this.controller` (cancelling in-flight
+   * and future fetches) and logs a warning; {@link execute} races this promise against the
+   * outstanding product-detail fetches, and when it wins the race flushes any not-yet-yielded
+   * products with their basic query-phase data so those rows still show.
+   *
+   * It is deliberately a race sentinel rather than an `AbortSignal.timeout()` on the fetches:
+   * a bare abort signal would only reject the detail fetches, dropping those rows instead of
+   * surfacing their basic data. The returned `handle` must be passed to `clearTimeout` when the
+   * search settles so the timer doesn't leak.
+   *
+   * @param sentinel - Unique symbol the returned promise resolves to on timeout.
+   * @returns `{ promise, handle }`; both `undefined` when no budget is set (`maxAllowableSearchTime <= 0`).
+   * @example
+   * ```typescript
+   * const SEARCH_TIMEOUT = Symbol("searchTimeout");
+   * const { promise, handle } = this.armSearchTimeout(SEARCH_TIMEOUT);
+   * try {
+   *   const winner = await Promise.race(promise ? [task, promise] : [task]);
+   *   if (winner === SEARCH_TIMEOUT) { ... flush collected products ... }
+   * } finally {
+   *   if (handle !== undefined) clearTimeout(handle);
+   * }
+   * ```
+   * @source
+   */
+  private armSearchTimeout<S extends symbol>(
+    sentinel: S,
+  ): { promise?: Promise<S>; handle?: ReturnType<typeof setTimeout> } {
+    if (this.maxAllowableSearchTime <= 0) {
+      return {};
+    }
+    let handle: ReturnType<typeof setTimeout> | undefined;
+    const promise = new Promise<S>((resolve) => {
+      handle = setTimeout(() => {
+        this.logger.warn(
+          `Search exceeded maxAllowableSearchTime (${this.maxAllowableSearchTime}ms); ` +
+            `aborting outstanding requests and returning collected results`,
+          { supplier: this.supplierName },
+        );
+        this.controller.abort(
+          `Search exceeded maxAllowableSearchTime (${this.maxAllowableSearchTime}ms)`,
+        );
+        resolve(sentinel);
+      }, this.maxAllowableSearchTime);
+    });
+    return { promise, handle };
+  }
+
+  /**
    * Executes the supplier's search query and returns the results.
    * This method will execute all results concurrently (to the limits set in the supplier
    * class), and resolve to an array of product objects.
@@ -1926,26 +1978,11 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     const fetchLimit = this.limit + excludedForSupplier;
     incrementSearchQueryCount(this.supplierName);
 
-    // Optional per-supplier search-time budget. When it elapses, abort outstanding requests
-    // (the controller's signal cancels in-flight and future fetches) and stop yielding new
-    // products — whatever has already been yielded still shows. `SEARCH_TIMEOUT` is the race
-    // sentinel that lets the yield loop break promptly instead of waiting on the next task.
+    // Optional per-supplier search-time budget; see armSearchTimeout. When it elapses the
+    // race below wins via SEARCH_TIMEOUT and flushes any not-yet-yielded products.
     const SEARCH_TIMEOUT = Symbol("searchTimeout");
-    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
-    const timeoutPromise =
-      this.maxAllowableSearchTime > 0
-        ? new Promise<typeof SEARCH_TIMEOUT>((resolve) => {
-            timeoutHandle = setTimeout(() => {
-              this.logger.warn(
-                `Search exceeded maxAllowableSearchTime (${this.maxAllowableSearchTime}ms); ` +
-                  `aborting outstanding requests and returning collected results`,
-                { supplier: this.supplierName },
-              );
-              this.controller.abort();
-              resolve(SEARCH_TIMEOUT);
-            }, this.maxAllowableSearchTime);
-          })
-        : undefined;
+    const { promise: timeoutPromise, handle: timeoutHandle } =
+      this.armSearchTimeout(SEARCH_TIMEOUT);
 
     try {
       const results = await this.queryProductsWithCache(this.query, fetchLimit);

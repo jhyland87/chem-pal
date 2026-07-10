@@ -252,6 +252,8 @@ describe("useBadgeController (integration with the chrome.action mock)", () => {
     await flush();
     emitSearchEvent(SearchEvent.ABORTED);
     await flush();
+    emitSearchEvent(SearchEvent.ABORTED, { reason: "Request was aborted" });
+    await flush();
 
     expect(mockChromeAction._state.badgeText).toBe("");
     unmount();

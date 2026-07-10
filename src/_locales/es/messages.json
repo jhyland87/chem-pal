@@ -50,6 +50,46 @@
     "message": "Cancelando...",
     "description": "Status shown when aborting a search."
   },
+  "search_status_fetching": {
+    "message": "Obteniendo resultados... ($count$ encontrados)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "search_status_found_one": {
+    "message": "$count$ resultado encontrado...",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "search_status_found_other": {
+    "message": "$count$ resultados encontrados...",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "search_status_aborted": {
+    "message": "Búsqueda cancelada",
+    "description": "Status/table text when the user aborts a search."
+  },
+  "search_error_failed": {
+    "message": "La búsqueda falló",
+    "description": "Fallback error text when a search fails without a specific message."
+  },
+  "search_no_shipping_suppliers": {
+    "message": "Ningún proveedor envía a tu ubicación. Desactiva «Solo proveedores que envían a mi ubicación» en el panel de búsqueda para incluirlos.",
+    "description": "Shown when the ship-to filter excludes every supplier."
+  },
+  "search_no_results_for": {
+    "message": "No se encontraron resultados para «$query$»",
+    "placeholders": { "query": { "content": "$1" } }
+  },
+  "search_try_broaden": {
+    "message": "Intenta ampliar los filtros de búsqueda en el panel.",
+    "description": "No-results hint when filters are active."
+  },
+  "search_suggest_name": {
+    "message": "Quizás pruebes a buscar: $name$",
+    "placeholders": { "name": { "content": "$1" } }
+  },
+  "search_suggest_cas": {
+    "message": "Prueba a buscar por número CAS: $cas$",
+    "placeholders": { "cas": { "content": "$1" } }
+  },
   "loading_loading": {
     "message": "Cargando...",
     "description": "Status shown when loading a search."
