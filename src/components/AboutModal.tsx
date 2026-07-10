@@ -8,6 +8,7 @@ import BrowserUpdatedIcon from "@mui/icons-material/BrowserUpdated";
 import BugReportIcon from "@mui/icons-material/BugReport";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorIcon from "@mui/icons-material/Error";
+import PrivacyTipIcon from "@mui/icons-material/PrivacyTip";
 import SignalWifiConnectedNoInternet4Icon from "@mui/icons-material/SignalWifiConnectedNoInternet4";
 import WebIcon from "@mui/icons-material/Web";
 import Divider from "@mui/material/Divider";
@@ -136,6 +137,14 @@ export default function AboutModal({
             rel="noopener noreferrer"
           >
             <ArticleIcon />
+          </AboutModalLink>
+          <AboutModalLink
+            data-testid="privacy-button"
+            href={__APP_PRIVACY__}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <PrivacyTipIcon />
           </AboutModalLink>
           <AboutModalLink
             data-testid="bugs-button"

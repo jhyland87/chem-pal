@@ -12,8 +12,10 @@ import {
 } from "./StyledComponents";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 
-// TODO: Replace with local logo assets if available
-import { default as darkLogo, default as lightLogo } from "../assets/react.svg";
+/** Landing-page logo served from the extension's static assets (see `public/static/images/logo`). */
+const LIGHT_MODE_LOGO = "/static/images/logo/ChemPal-logo-v2.svg";
+/** Inverted variant used on the dark theme so the badge stays legible. */
+const DARK_MODE_LOGO = "/static/images/logo/ChemPal-logo-v2-inverted.svg";
 
 /**
  * Props for {@link SearchPage}.
@@ -52,7 +54,7 @@ const SearchPage: FC<SearchPageProps> = ({ onSearch, onDrawerToggle }) => {
   const navigate = useNavigate();
   const { mode } = useTheme();
 
-  const logo = mode === "light" ? lightLogo : darkLogo;
+  const logo = mode === "light" ? LIGHT_MODE_LOGO : DARK_MODE_LOGO;
 
   const handleSearch = (query: string) => {
     onSearch(query);

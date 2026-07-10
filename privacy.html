@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="index, follow" />
+    <title>Chem Pal — Privacy Policy</title>
+    <style>
+      :root {
+        --brand: #2c4060;
+        --brand-accent: #3f6aa8;
+        --bg: #ffffff;
+        --surface: #f5f7fa;
+        --text: #1c2733;
+        --muted: #556070;
+        --border: #dbe2ea;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --brand: #9db8e0;
+          --brand-accent: #7fa3d8;
+          --bg: #0f1620;
+          --surface: #17202c;
+          --text: #e6ecf3;
+          --muted: #9aa7b6;
+          --border: #26313f;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap { max-width: 780px; margin: 0 auto; padding: 40px 24px 80px; }
+      header {
+        border-bottom: 3px solid var(--brand);
+        padding-bottom: 18px;
+        margin-bottom: 8px;
+      }
+      h1 { color: var(--brand); font-size: 1.9rem; margin: 0 0 4px; }
+      h2 {
+        color: var(--brand);
+        font-size: 1.25rem;
+        margin: 2.2em 0 0.4em;
+        padding-top: 0.3em;
+      }
+      h3 { font-size: 1.02rem; margin: 1.4em 0 0.3em; }
+      .effective { color: var(--muted); font-size: 0.92rem; margin: 0; }
+      .tldr {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-left: 4px solid var(--brand-accent);
+        border-radius: 8px;
+        padding: 16px 20px;
+        margin: 24px 0;
+      }
+      .tldr strong { color: var(--brand); }
+      a { color: var(--brand-accent); }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 12px 0;
+        font-size: 0.94rem;
+      }
+      th, td {
+        text-align: left;
+        padding: 9px 12px;
+        border: 1px solid var(--border);
+        vertical-align: top;
+      }
+      th { background: var(--surface); color: var(--brand); white-space: nowrap; }
+      code {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 5px;
+        font-size: 0.88em;
+      }
+      .table-scroll { overflow-x: auto; }
+      footer {
+        margin-top: 48px;
+        padding-top: 18px;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Chem Pal — Privacy Policy</h1>
+        <p class="effective">Effective date: July 10, 2026</p>
+      </header>
+
+      <p>
+        Chem Pal (“the extension”) is a browser extension that lets you search and compare
+        laboratory chemical product listings across supported supplier websites from a side
+        panel. This policy explains what data the extension handles, where it goes, and why.
+      </p>
+
+      <div class="tldr">
+        <strong>Short version:</strong> Chem Pal has no backend server of its own. It does not
+        collect, sell, or transmit your data to the developer. It contains no analytics,
+        tracking, or advertising code. The only data that leaves your browser is the search
+        terms and chemical identifiers you enter, which are sent directly to the third-party
+        supplier and public chemistry services you choose to search — the same way your browser
+        would send them if you visited those sites yourself.
+      </div>
+
+      <h2>1. Who provides this extension</h2>
+      <p>
+        Chem Pal is an independent, open-source project maintained by Justin Hyland. There is no
+        company, hosted service, or third-party data processor operated by the developer.
+      </p>
+      <ul>
+        <li>Source code: <a href="https://github.com/jhyland87/chem-pal">github.com/jhyland87/chem-pal</a></li>
+        <li>Contact: <a href="mailto:jhyland87@gmail.com">jhyland87@gmail.com</a></li>
+      </ul>
+
+      <h2>2. Data the extension handles</h2>
+
+      <h3>2.1 Search terms and chemical identifiers (sent to third parties)</h3>
+      <p>
+        When you run a search, the extension sends your query — a product name, CAS number,
+        chemical formula, or similar identifier — directly to the supplier websites and public
+        chemistry services you have enabled, in order to retrieve and display matching product
+        listings and pricing.
+      </p>
+      <p>
+        Because these are ordinary web requests, the receiving third party also sees the standard
+        technical information any website receives (such as your IP address and browser
+        user-agent). Chem Pal does not add any identifier of its own to these requests. The
+        developer does not receive, log, or store your searches.
+      </p>
+
+      <h3>2.2 Cookies on supplier domains</h3>
+      <p>
+        Some suppliers require an active session to return search results. For those suppliers,
+        the extension reads and sets cookies <strong>on that supplier's own domain</strong> solely
+        to establish the session needed to perform your search. These cookies are used only for
+        the supplier's normal site functionality; the extension does not use cookies to profile or
+        track you, and does not share cookie data with the developer or any unrelated party.
+      </p>
+
+      <h3>2.3 Data stored locally in your browser</h3>
+      <p>
+        The extension stores the following <strong>locally on your device</strong> (via the
+        browser's extension storage and IndexedDB). This data never leaves your browser and is not
+        transmitted to the developer:
+      </p>
+      <ul>
+        <li><strong>Settings and preferences</strong> — theme, enabled suppliers, display options, and similar configuration.</li>
+        <li><strong>Favorites</strong> — products you save for later.</li>
+        <li><strong>Search and price history</strong> — recent searches and price snapshots used to show price trends.</li>
+      </ul>
+
+      <h3>2.4 Bookmarks</h3>
+      <p>
+        If you save a product as a favorite, the extension may create and use a bookmarks folder
+        (e.g. “ChemPal Favorites”) in your browser to store it. The extension accesses your
+        bookmarks only to provide this feature and does not read or transmit your other bookmarks
+        to any external party.
+      </p>
+
+      <h3>2.5 Browser tab information</h3>
+      <p>
+        The extension reads limited information about your current browser tab (such as the page
+        URL) to provide context for opening product pages, search selections, and related links.
+        This information is used only at the moment you take an action and is not logged or
+        transmitted to the developer.
+      </p>
+
+      <h2>3. Third-party services the extension contacts</h2>
+      <p>
+        Depending on which suppliers you enable and which features you use, the extension may send
+        requests to:
+      </p>
+      <ul>
+        <li>
+          <strong>Chemical supplier websites and their search/product APIs</strong> — to retrieve
+          product listings and pricing for your query. Each supplier receives only the search you
+          direct at it.
+        </li>
+        <li>
+          <strong>Public chemistry databases</strong> — the U.S. National Institutes of Health
+          services PubChem (<code>pubchem.ncbi.nlm.nih.gov</code>) and the CACTUS chemical resolver
+          (<code>cactus.nci.nih.gov</code>) — to resolve chemical names, CAS numbers, and formulas.
+          Only the chemical identifier you are looking up is sent.
+        </li>
+        <li>
+          <strong>A currency exchange-rate service</strong> — to convert supplier prices into your
+          chosen currency. Only the rate request is sent; none of your personal data is included.
+        </li>
+        <li>
+          <strong>GitHub</strong> (<code>api.github.com</code>) — to check whether a newer version
+          of the extension is available. No personal data is sent.
+        </li>
+      </ul>
+      <p>
+        Each of these third parties handles the data it receives under its own privacy policy.
+        Chem Pal has no control over, and takes no responsibility for, the data practices of these
+        independent services.
+      </p>
+
+      <h2>4. What the extension does NOT do</h2>
+      <ul>
+        <li>It does <strong>not</strong> collect, store, or transmit your data to the developer or any developer-operated server (there is none).</li>
+        <li>It does <strong>not</strong> include analytics, telemetry, crash reporting, advertising, or any third-party tracking SDKs.</li>
+        <li>It does <strong>not</strong> sell or share your data with third parties for advertising or any unrelated purpose.</li>
+        <li>It does <strong>not</strong> collect personal information such as your name, email address, or payment details.</li>
+      </ul>
+
+      <h2>5. Permissions and why they are used</h2>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Permission</th><th>Why the extension requests it</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>storage</code></td><td>Save your settings, favorites, and search/price history locally.</td></tr>
+            <tr><td><code>cookies</code></td><td>Establish the session cookies certain suppliers require to return search results, on those suppliers' own domains.</td></tr>
+            <tr><td><code>bookmarks</code></td><td>Create and manage the favorites folder used to save products.</td></tr>
+            <tr><td><code>tabs</code></td><td>Read the current tab's context to open product pages and search links, and to power the right-click “search selection” action.</td></tr>
+            <tr><td><code>contextMenus</code></td><td>Add a right-click menu item to search selected text with Chem Pal.</td></tr>
+            <tr><td><code>sidePanel</code></td><td>Display the extension in the browser side panel.</td></tr>
+            <tr><td>Host permissions (supplier domains, PubChem, etc.)</td><td>Send search and lookup requests to the supplier and chemistry services you enable.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>6. Data retention and deletion</h2>
+      <p>
+        All data the extension keeps is stored locally in your browser. You remain in control of it
+        at all times:
+      </p>
+      <ul>
+        <li>Clear favorites, history, and settings from within the extension's settings.</li>
+        <li>Remove all locally stored data by uninstalling the extension.</li>
+        <li>Cookies set on supplier domains can be cleared through your browser's normal cookie/site-data controls.</li>
+      </ul>
+      <p>
+        Because the developer never receives your data, there is nothing for the developer to
+        retain or delete on your behalf.
+      </p>
+
+      <h2>7. Children's privacy</h2>
+      <p>
+        Chem Pal is a tool intended for laboratory, educational, and professional use. It is not
+        directed to children under 13 and does not knowingly collect any information from them.
+      </p>
+
+      <h2>8. Changes to this policy</h2>
+      <p>
+        This policy may be updated as the extension evolves. Material changes will be reflected by
+        updating the effective date above and publishing the revised policy in the extension's
+        repository. Continued use of the extension after an update constitutes acceptance of the
+        revised policy.
+      </p>
+
+      <h2>9. Contact</h2>
+      <p>
+        Questions about this policy or the extension's data practices can be directed to:
+      </p>
+      <p>
+        <strong>Justin Hyland</strong> — <a href="mailto:jhyland87@gmail.com">jhyland87@gmail.com</a><br />
+        <a href="https://github.com/jhyland87/chem-pal">github.com/jhyland87/chem-pal</a>
+      </p>
+
+      <footer>
+        Chem Pal is free, open-source software. This policy is also available as
+        <a href="https://github.com/jhyland87/chem-pal/blob/main/PRIVACY.md">PRIVACY.md</a>
+        in the source repository.
+      </footer>
+    </div>
+  </body>
+</html>

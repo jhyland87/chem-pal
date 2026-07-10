@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "__MSG_app_name__",
-  "version": "0.0.13",
-  "version_name": "0.0.13-beta.3",
+  "version": "1.0.0",
+  "version_name": "1.0.0",
   "description": "__MSG_app_description__",
   "action": {
     "default_popup": "index.html"
@@ -87,8 +87,9 @@
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
   "icons": {
-    "32": "static/images/logo/ChemPal-logo-v2-inverted.png",
-    "48": "static/images/logo/ChemPal-logo-v2-inverted.png",
-    "128": "static/images/logo/ChemPal-logo-v2-inverted.png"
+    "16": "static/images/logo/logo-icon.png",
+    "32": "static/images/logo/logo-icon-32.png",
+    "48": "static/images/logo/logo-icon-48.png",
+    "128": "static/images/logo/logo-icon-128.png"
   }
 }

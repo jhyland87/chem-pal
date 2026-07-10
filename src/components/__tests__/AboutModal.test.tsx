@@ -81,6 +81,15 @@ describe("AboutModal", () => {
     expect(wikiButton).toHaveAttribute("rel", "noopener noreferrer");
   });
 
+  it("renders Privacy link with correct attributes", () => {
+    render(<AboutModal aboutOpen={true} setAboutOpen={mockSetAboutOpen} />);
+
+    const privacyButton = screen.getByTestId("privacy-button");
+    expect(privacyButton).toHaveAttribute("href", __APP_PRIVACY__);
+    expect(privacyButton).toHaveAttribute("target", "_blank");
+    expect(privacyButton).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
   it("renders Bugs link with correct attributes", () => {
     render(<AboutModal aboutOpen={true} setAboutOpen={mockSetAboutOpen} />);
 
