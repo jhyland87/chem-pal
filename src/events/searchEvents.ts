@@ -43,7 +43,7 @@ export interface SearchEventDetailMap {
   [SearchEvent.STARTED]: { query: string };
   [SearchEvent.RESULTS_COUNT]: { count: number };
   [SearchEvent.COMPLETED]: { count: number };
-  [SearchEvent.ABORTED]: undefined;
+  [SearchEvent.ABORTED]: Maybe<{ reason?: string }>;
   [SearchEvent.FAILED]: { error?: string };
 }
 
@@ -58,7 +58,8 @@ export type SearchEventType = keyof SearchEventDetailMap;
  * ```ts
  * emitSearchEvent(SearchEvent.STARTED, { query: "acetone" });
  * emitSearchEvent(SearchEvent.RESULTS_COUNT, { count: 12 });
- * emitSearchEvent(SearchEvent.ABORTED);
+ * emitSearchEvent(SearchEvent.ABORTED, { reason: "Request was aborted" });
+ * emitSearchEvent(SearchEvent.ABORTED); // No reason provided
  * ```
  * @source
  */

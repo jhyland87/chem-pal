@@ -3,6 +3,7 @@ import { AVAILABILITY_LABEL_MAP, CACHE } from "@/constants/common";
 import { useAppContext } from "@/context";
 import { SearchEvent, emitSearchEvent } from "@/events/searchEvents";
 import { addExcludedProduct } from "@/helpers/excludedProducts";
+import { i18n } from "@/helpers/i18n";
 import { recordProductPrices } from "@/helpers/priceHistory";
 import { suggestAlternativeSearch } from "@/helpers/pubchem";
 import { ABORT_SEARCH_EVENT } from "@/hotkeys";
@@ -140,19 +141,19 @@ export async function buildNoResultsMessage(
   query: string,
   filtersActive: boolean,
 ): Promise<string> {
-  const lines = [`No results found for "${query}"`];
+  const lines = [i18n("search_no_results_for", [query])];
 
   if (filtersActive) {
-    lines.push("Try broadening your search filters in the drawer.");
+    lines.push(i18n("search_try_broaden"));
   }
 
   try {
     const excluded = await getZeroResultQueries();
     const { name, cas } = await suggestAlternativeSearch(query, excluded);
     if (name) {
-      lines.push(`Perhaps try searching for: ${name}`);
+      lines.push(i18n("search_suggest_name", [name]));
     } else if (cas) {
-      lines.push(`Try searching by CAS number instead: ${cas}`);
+      lines.push(i18n("search_suggest_cas", [cas]));
     }
   } catch (error) {
     logger.warn("Failed to build alternative search suggestion:", { error });
@@ -403,7 +404,7 @@ export function useSearch() {
       setState({
         isLoading: true,
         isAborting: false,
-        status: "Searching...",
+        status: i18n("results_status_searching"),
         error: undefined,
         resultCount: 0,
       });
@@ -490,7 +491,7 @@ export function useSearch() {
             startTransition(() => {
               setState((prev) => ({
                 ...prev,
-                status: `Fetching results... (${allResults.length} found)`,
+                status: i18n("search_status_fetching", [String(allResults.length)]),
               }));
             });
           }
@@ -542,7 +543,10 @@ export function useSearch() {
               setState((prev) => ({
                 ...prev,
                 resultCount: totalResults,
-                status: `Found ${totalResults} result${totalResults !== 1 ? "s" : ""}...`,
+                status: i18n(
+                  totalResults === 1 ? "search_status_found_one" : "search_status_found_other",
+                  [String(totalResults)],
+                ),
               }));
             });
 
@@ -597,7 +601,7 @@ export function useSearch() {
           // When the shipping filter alone emptied the supplier set, explain that
           // directly instead of the generic "no products" suggestion flow.
           const message = productQueryFactory.shippingExcludedAll
-            ? "No suppliers ship to your location. Turn off “Only suppliers that ship to my location” in the search drawer to include them."
+            ? i18n("search_no_shipping_suppliers")
             : await buildNoResultsMessage(query, filtersActive);
           setTableText(message);
           logger.debug("setting table text", { tableText: message });
@@ -626,25 +630,25 @@ export function useSearch() {
         // after an abort, when in-flight requests have finished settling — so
         // this is where isLoading/isAborting reset and the overlay closes.
         if (error instanceof Error && error.name === "AbortError") {
-          emitSearchEvent(SearchEvent.ABORTED);
+          emitSearchEvent(SearchEvent.ABORTED, { reason: error.message });
           setState((prev) => ({
             ...prev,
             isLoading: false,
             isAborting: false,
-            status: "Search aborted",
+            status: i18n("search_status_aborted"),
             error: undefined,
           }));
-          setTableText("Search aborted");
+          setTableText(i18n("search_status_aborted"));
         } else {
           emitSearchEvent(SearchEvent.FAILED, {
-            error: error instanceof Error ? error.message : "Search failed",
+            error: error instanceof Error ? error.message : i18n("search_error_failed"),
           });
           setState((prev) => ({
             ...prev,
             isLoading: false,
             isAborting: false,
             status: false,
-            error: error instanceof Error ? error.message : "Search failed",
+            error: error instanceof Error ? error.message : i18n("search_error_failed"),
           }));
         }
       } finally {
@@ -722,12 +726,12 @@ export function useSearch() {
     // keep streaming back until the supplier streams settle. Flip into the
     // "Aborting..." state now; performSearch resets isLoading/isAborting once the
     // stream finishes draining, which is what actually closes the overlay.
-    fetchControllerRef.current.abort();
+    fetchControllerRef.current.abort("Request was aborted by user");
     startTransition(() => {
       setState((prev) => ({
         ...prev,
         isAborting: true,
-        status: "Aborting...",
+        status: i18n("loading_aborting"),
       }));
     });
   }, []);

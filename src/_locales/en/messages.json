@@ -50,6 +50,46 @@
     "message": "Aborting...",
     "description": "Status shown when aborting a search."
   },
+  "search_status_fetching": {
+    "message": "Fetching results... ($count$ found)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "search_status_found_one": {
+    "message": "Found $count$ result...",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "search_status_found_other": {
+    "message": "Found $count$ results...",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "search_status_aborted": {
+    "message": "Search aborted",
+    "description": "Status/table text when the user aborts a search."
+  },
+  "search_error_failed": {
+    "message": "Search failed",
+    "description": "Fallback error text when a search fails without a specific message."
+  },
+  "search_no_shipping_suppliers": {
+    "message": "No suppliers ship to your location. Turn off “Only suppliers that ship to my location” in the search drawer to include them.",
+    "description": "Shown when the ship-to filter excludes every supplier."
+  },
+  "search_no_results_for": {
+    "message": "No results found for \"$query$\"",
+    "placeholders": { "query": { "content": "$1" } }
+  },
+  "search_try_broaden": {
+    "message": "Try broadening your search filters in the drawer.",
+    "description": "No-results hint when filters are active."
+  },
+  "search_suggest_name": {
+    "message": "Perhaps try searching for: $name$",
+    "placeholders": { "name": { "content": "$1" } }
+  },
+  "search_suggest_cas": {
+    "message": "Try searching by CAS number instead: $cas$",
+    "placeholders": { "cas": { "content": "$1" } }
+  },
   "loading_loading": {
     "message": "Loading...",
     "description": "Status shown when loading a search."

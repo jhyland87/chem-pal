@@ -47,6 +47,46 @@
     "message": "Прерывание...",
     "description": "Status shown when aborting a search."
   },
+  "search_status_fetching": {
+    "message": "Получение результатов... (найдено $count$)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "search_status_found_one": {
+    "message": "Найден $count$ результат...",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "search_status_found_other": {
+    "message": "Найдено $count$ результатов...",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "search_status_aborted": {
+    "message": "Поиск прерван",
+    "description": "Status/table text when the user aborts a search."
+  },
+  "search_error_failed": {
+    "message": "Ошибка поиска",
+    "description": "Fallback error text when a search fails without a specific message."
+  },
+  "search_no_shipping_suppliers": {
+    "message": "Ни один поставщик не доставляет в ваше местоположение. Отключите «Только поставщики, доставляющие в моё местоположение» на панели поиска, чтобы включить их.",
+    "description": "Shown when the ship-to filter excludes every supplier."
+  },
+  "search_no_results_for": {
+    "message": "Нет результатов для «$query$»",
+    "placeholders": { "query": { "content": "$1" } }
+  },
+  "search_try_broaden": {
+    "message": "Попробуйте расширить фильтры поиска на панели.",
+    "description": "No-results hint when filters are active."
+  },
+  "search_suggest_name": {
+    "message": "Возможно, попробуйте найти: $name$",
+    "placeholders": { "name": { "content": "$1" } }
+  },
+  "search_suggest_cas": {
+    "message": "Попробуйте поиск по номеру CAS: $cas$",
+    "placeholders": { "cas": { "content": "$1" } }
+  },
   "loading_loading": {
     "message": "Загрузка...",
     "description": "Status shown when loading a search."

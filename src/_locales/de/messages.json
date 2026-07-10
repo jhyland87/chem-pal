@@ -50,6 +50,46 @@
     "message": "Wird abgebrochen...",
     "description": "Status shown when aborting a search."
   },
+  "search_status_fetching": {
+    "message": "Ergebnisse werden abgerufen... ($count$ gefunden)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "search_status_found_one": {
+    "message": "$count$ Ergebnis gefunden...",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "search_status_found_other": {
+    "message": "$count$ Ergebnisse gefunden...",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "search_status_aborted": {
+    "message": "Suche abgebrochen",
+    "description": "Status/table text when the user aborts a search."
+  },
+  "search_error_failed": {
+    "message": "Suche fehlgeschlagen",
+    "description": "Fallback error text when a search fails without a specific message."
+  },
+  "search_no_shipping_suppliers": {
+    "message": "Keine Lieferanten liefern an Ihren Standort. Deaktivieren Sie „Nur Lieferanten, die an meinen Standort liefern“ in der Suchleiste, um sie einzuschließen.",
+    "description": "Shown when the ship-to filter excludes every supplier."
+  },
+  "search_no_results_for": {
+    "message": "Keine Ergebnisse für „$query$“",
+    "placeholders": { "query": { "content": "$1" } }
+  },
+  "search_try_broaden": {
+    "message": "Versuchen Sie, Ihre Suchfilter in der Leiste zu erweitern.",
+    "description": "No-results hint when filters are active."
+  },
+  "search_suggest_name": {
+    "message": "Vielleicht versuchen Sie es mit: $name$",
+    "placeholders": { "name": { "content": "$1" } }
+  },
+  "search_suggest_cas": {
+    "message": "Versuchen Sie stattdessen die Suche nach CAS-Nummer: $cas$",
+    "placeholders": { "cas": { "content": "$1" } }
+  },
   "loading_loading": {
     "message": "Wird geladen...",
     "description": "Status shown when loading a search."
