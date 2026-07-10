@@ -572,6 +572,14 @@
     "message": "Wykluczone produkty",
     "description": "Settings section header."
   },
+  "settings_section_supplier_status": {
+    "message": "Status dostawców",
+    "description": "Settings section header."
+  },
+  "settings_supplier_status_desc": {
+    "message": "Wyłączenie dostawcy w tym miejscu usuwa go ze wszystkich wyszukiwań oraz z filtrów wyboru dostawców.",
+    "description": "Description at the top of the Supplier Status settings list."
+  },
   "settings_section_advanced": {
     "message": "Zaawansowane",
     "description": "Settings section header."

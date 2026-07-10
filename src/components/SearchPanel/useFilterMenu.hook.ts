@@ -49,8 +49,8 @@ export function useFilterMenu(table?: Table<Product>) {
   // Supplier selection state - use context instead of local state.
   // `selectedSuppliers` is optional in AppContextProps; coalesce so the hook
   // body can treat it as a concrete array throughout.
-  const selectedSuppliers: string[] = appContext?.selectedSuppliers ?? [];
-  const setSelectedSuppliers: (suppliers: string[]) => void =
+  const selectedSuppliers: SupplierClassName[] = appContext?.selectedSuppliers ?? [];
+  const setSelectedSuppliers: (suppliers: SupplierClassName[]) => void =
     appContext?.setSelectedSuppliers ?? (() => undefined);
 
   // Column visibility state
@@ -95,7 +95,7 @@ export function useFilterMenu(table?: Table<Product>) {
 
   // Supplier selection handlers
   const handleSupplierSelect = useCallback(
-    (supplierName: string) => {
+    (supplierName: SupplierClassName) => {
       const newChecked = selectedSuppliers.includes(supplierName)
         ? selectedSuppliers.filter((s) => s !== supplierName)
         : [...selectedSuppliers, supplierName];

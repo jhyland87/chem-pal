@@ -35,7 +35,7 @@ export default function SuppliersPanel() {
    * @returns A callback function that handles the toggle action
    * @source
    */
-  const handleToggle = (supplierName: string) => () => {
+  const handleToggle = (supplierName: SupplierClassName) => () => {
     // `suppliers` is optional on UserSettings; fall back to an empty list so
     // toggling works even before App.tsx's mount effect seeds the default
     // supplier set.
@@ -57,7 +57,7 @@ export default function SuppliersPanel() {
 
   const handleToggleAll = (e: ChangeEvent<HTMLInputElement>) => {
     console.log("handleToggleAll", e.target.checked);
-    let newChecked: string[] = [];
+    let newChecked: SupplierClassName[] = [];
     if (e.target.checked === true) {
       newChecked = [...SupplierFactory.supplierList()];
     }

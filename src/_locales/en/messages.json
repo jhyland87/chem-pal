@@ -418,6 +418,8 @@
   "settings_section_price_history": { "message": "Price History", "description": "Settings section header." },
   "settings_section_display": { "message": "Display", "description": "Settings section header." },
   "settings_section_excluded": { "message": "Excluded Products", "description": "Settings section header." },
+  "settings_section_supplier_status": { "message": "Supplier Status", "description": "Settings section header." },
+  "settings_supplier_status_desc": { "message": "Disabling a supplier here removes it from all searches and from the supplier selection filters.", "description": "Description at the top of the Supplier Status settings list." },
   "settings_section_advanced": { "message": "Advanced", "description": "Settings section header." },
   "settings_section_actions": { "message": "Actions", "description": "Settings section header." },
   "settings_cache_results": { "message": "Cache Search Results", "description": "Setting label." },

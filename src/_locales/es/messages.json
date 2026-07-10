@@ -418,6 +418,8 @@
   "settings_section_price_history": { "message": "Historial de precios", "description": "Settings section header." },
   "settings_section_display": { "message": "Visualización", "description": "Settings section header." },
   "settings_section_excluded": { "message": "Productos excluidos", "description": "Settings section header." },
+  "settings_section_supplier_status": { "message": "Estado de proveedores", "description": "Settings section header." },
+  "settings_supplier_status_desc": { "message": "Deshabilitar un proveedor aquí lo excluye de todas las búsquedas y de los filtros de selección de proveedores.", "description": "Description at the top of the Supplier Status settings list." },
   "settings_section_advanced": { "message": "Avanzado", "description": "Settings section header." },
   "settings_section_actions": { "message": "Acciones", "description": "Settings section header." },
   "settings_cache_results": { "message": "Guardar resultados de búsqueda en caché", "description": "Setting label." },

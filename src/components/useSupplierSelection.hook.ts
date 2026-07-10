@@ -36,7 +36,7 @@ export function useSupplierSelection() {
 
   // `suppliers` is optional on UserSettings — coalesce so the hook's toggle
   // logic below can treat it as a concrete array without undefined-checks.
-  const selectedSuppliers: string[] = appContext.userSettings.suppliers ?? [];
+  const selectedSuppliers: SupplierClassName[] = appContext.userSettings.suppliers ?? [];
   const allSuppliers = SupplierFactory.supplierList();
 
   /**
@@ -45,7 +45,7 @@ export function useSupplierSelection() {
    * @source
    */
   const handleToggle = useCallback(
-    (supplierName: string) => {
+    (supplierName: SupplierClassName) => {
       return () => {
         const currentIndex = selectedSuppliers.indexOf(supplierName);
         const newChecked = [...selectedSuppliers];
@@ -71,7 +71,7 @@ export function useSupplierSelection() {
    */
   const handleToggleAll = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      const newChecked: string[] = e.target.checked ? [...allSuppliers] : [];
+      const newChecked: SupplierClassName[] = e.target.checked ? [...allSuppliers] : [];
 
       appContext.setUserSettings({
         ...appContext.userSettings,

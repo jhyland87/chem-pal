@@ -56,6 +56,11 @@ export const darkPalette = {
 
 // Global component overrides that both themes will use
 const globalComponentOverrides = {
+  MuiSwitch: {
+    defaultProps: {
+      size: "small" as const,
+    },
+  },
   MuiDrawer: {
     styleOverrides: {
       paper: {

@@ -121,9 +121,13 @@ function SupplierSelection() {
   const selectedSuppliers = appContext.selectedSuppliers ?? [];
   const { setSelectedSuppliers } = appContext;
 
-  const handleSupplierSelect = (supplierName: string) => {
+  // Suppliers the user has turned off in settings are hidden from this list entirely
+  // (they're also excluded from the search itself by SupplierFactory).
+  const disabledSuppliers = appContext.userSettings.disabledSuppliers ?? [];
+
+  const handleSupplierSelect = (supplierName: SupplierClassName) => {
     const newChecked = selectedSuppliers.includes(supplierName)
-      ? selectedSuppliers.filter((s: string) => s !== supplierName)
+      ? selectedSuppliers.filter((s) => s !== supplierName)
       : [...selectedSuppliers, supplierName];
 
     setSelectedSuppliers(newChecked);
@@ -133,7 +137,9 @@ function SupplierSelection() {
     <FormControl component="fieldset" variant="standard">
       {/*<FormLabel component="legend">Supplier Selection</FormLabel>*/}
       <List className={styles['filter-menu__supplier-list']}>
-        {SupplierFactory.supplierList().map((supplierName) => {
+        {SupplierFactory.supplierList()
+          .filter((supplierName) => !disabledSuppliers.includes(supplierName))
+          .map((supplierName) => {
           const labelId = `checkbox-list-label-${supplierName}`;
 
           return (

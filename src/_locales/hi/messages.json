@@ -409,6 +409,8 @@
   "settings_section_price_history": { "message": "मूल्य इतिहास", "description": "Settings section header." },
   "settings_section_display": { "message": "प्रदर्शन", "description": "Settings section header." },
   "settings_section_excluded": { "message": "बहिष्कृत उत्पाद", "description": "Settings section header." },
+  "settings_section_supplier_status": { "message": "आपूर्तिकर्ता स्थिति", "description": "Settings section header." },
+  "settings_supplier_status_desc": { "message": "यहाँ किसी आपूर्तिकर्ता को अक्षम करने पर वह सभी खोजों और आपूर्तिकर्ता चयन फ़िल्टर से हटा दिया जाता है।", "description": "Description at the top of the Supplier Status settings list." },
   "settings_section_advanced": { "message": "उन्नत", "description": "Settings section header." },
   "settings_section_actions": { "message": "क्रियाएँ", "description": "Settings section header." },
   "settings_cache_results": { "message": "खोज परिणाम कैश करें", "description": "Setting label." },
