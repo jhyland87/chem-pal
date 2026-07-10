@@ -3,7 +3,17 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { setupMockRoutes } from "../e2e/helpers/mockRoutes";
-import { clearHighlight, closeDemoPopover, highlight, showDemoPopover } from "./helpers";
+import {
+  clearGroupHighlight,
+  clearHighlight,
+  closeDemoPopover,
+  highlight,
+  highlightGroup,
+  showDemoPopover,
+  typeInto,
+} from "./helpers";
+import { seedPriceHistoryFromResults } from "./seedPriceHistory";
+import { expandFirstProductDetail } from "./expandDetail";
 import { expect, test } from "./fixtures";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -55,14 +65,18 @@ function stitchClips(popupClip: string | undefined, tabClip: string | undefined)
  * there — all while the fixture records video.
  *
  * Note on sizing: the popup renders `#root` at min-width 800px (`src/App.scss`),
- * so the "popup" stage uses 800x600 (a 360px window would force horizontal
- * scroll and look broken); the tab stage scales up to 1280x800. The recording
- * canvas is fixed by the fixture's `recordVideo.size` (800x600), so the tab clip
- * shows the desktop layout scaled to fit — the handoff is still clearly visible.
+ * so the "popup" stage sizes its page to 800x600 (a 360px window would force
+ * horizontal scroll and look broken); the tab stage scales up to 1280x800.
+ *
+ * Skipped by default — the main demo runs entirely in the browser-tab view
+ * (see app-walkthrough.demo.ts). Kept here for the popup→tab handoff if needed;
+ * remove `.skip` to run it.
  */
-test("ChemPal popup-to-tab walkthrough", async ({ context, extensionId }) => {
+test.skip("ChemPal popup-to-tab walkthrough", async ({ context, extensionId }) => {
   // --- STAGE 1: the "popup" ---
   const popupPage = await context.newPage();
+  // Size this page down to popup dimensions (the fixture defaults to desktop).
+  await popupPage.setViewportSize({ width: 800, height: 600 });
   // Grab the Video handle now; its path is read after the page closes below.
   const popupVideo = popupPage.video();
   await setupMockRoutes(popupPage, { responsesDir: mockResponsesDir, fallback: "abort" });
@@ -76,7 +90,7 @@ test("ChemPal popup-to-tab walkthrough", async ({ context, extensionId }) => {
   await highlight(popupSearch);
   await showDemoPopover(popupPage, popupSearch, "The popup — quick searches live here");
   await popupPage.waitForTimeout(1800);
-  await popupSearch.fill("sodium borohydride");
+  await typeInto(popupSearch, "sodium borohydride");
   await popupPage.waitForTimeout(600);
   await closeDemoPopover(popupPage);
   await clearHighlight(popupSearch);
@@ -111,7 +125,7 @@ test("ChemPal popup-to-tab walkthrough", async ({ context, extensionId }) => {
   await highlight(tabSearch);
   await showDemoPopover(appTab, tabSearch, "Same search, now full-width");
   await appTab.waitForTimeout(1500);
-  await tabSearch.fill("sodium borohydride");
+  await typeInto(tabSearch, "sodium borohydride");
   await closeDemoPopover(appTab);
   await clearHighlight(tabSearch);
 
@@ -131,6 +145,33 @@ test("ChemPal popup-to-tab walkthrough", async ({ context, extensionId }) => {
   await appTab.waitForTimeout(2500);
   await closeDemoPopover(appTab);
   await clearHighlight(resultsTable);
+
+  // Enrich the recorded price series to 2–4 points each, then expand a product
+  // to show the price-history sparkline in the full-width detail panel.
+  const seeded = await seedPriceHistoryFromResults(appTab);
+  console.log(`[demo] Seeded price history: ${seeded.series} series, ${seeded.points} points`);
+
+  const priceHistoryLabel = await expandFirstProductDetail(appTab);
+  await priceHistoryLabel.scrollIntoViewIfNeeded();
+
+  // Product-level average trend: the sparkline + percentage next to the label.
+  const avgTrend = priceHistoryLabel.locator(
+    "xpath=following-sibling::span[contains(@class,'detail-value')]",
+  );
+  await highlight(avgTrend);
+  await showDemoPopover(appTab, avgTrend, "Average price trend across the product & its variants");
+  await appTab.waitForTimeout(2500);
+  await closeDemoPopover(appTab);
+  await clearHighlight(avgTrend);
+
+  // Per-variant trends: each variant carries its own tracked trend.
+  const variantTrends = appTab.locator(".variant-trend").filter({ hasText: "%" });
+  await variantTrends.first().scrollIntoViewIfNeeded();
+  await highlightGroup(appTab, variantTrends);
+  await showDemoPopover(appTab, variantTrends.first(), "Every variant has its trend monitored too");
+  await appTab.waitForTimeout(2500);
+  await closeDemoPopover(appTab);
+  await clearGroupHighlight(appTab);
 
   await appTab.screenshot({ path: path.join(screenshotDir, "popup-to-tab-results.png") });
   await appTab.waitForTimeout(1000);

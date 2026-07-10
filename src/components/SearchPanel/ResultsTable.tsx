@@ -474,6 +474,7 @@ export default function ResultsTable({
               isActive={showFilters}
               activeColor="#007bff"
               textColor="#666"
+              aria-label={i18n("results_toggle_filters")}
             >
               <FilterListIcon />
             </FilterIconButton>
@@ -481,6 +482,7 @@ export default function ResultsTable({
               onClick={(e) => setColumnMenuAnchor(e.currentTarget)}
               size="small"
               iconColor="#666"
+              aria-label={i18n("results_column_visibility")}
             >
               <ViewColumnIcon />
             </ColoredIconButton>
@@ -488,6 +490,7 @@ export default function ResultsTable({
               onClick={() => appContext?.toggleDrawer(DRAWER_INDEX.SETTINGS)}
               size="small"
               iconColor="#666"
+              aria-label={i18n("results_open_options")}
             >
               <SettingsIcon />
             </ColoredIconButton>

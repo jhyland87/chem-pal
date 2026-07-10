@@ -7,13 +7,11 @@ const buildDir = path.resolve(dirname, "..", "build");
 const videoDir = path.resolve(dirname, "..", "demo-results", "videos");
 
 /**
- * Popup dimensions. The toolbar popup renders `#root` at `min-width: 800px;
- * max-height: 600px` (`src/App.scss`), so an 800x600 window reproduces the
- * popup faithfully — this is the workaround that lets the demo show the UI
- * "as if" it were the toolbar popup (a real action popup is a transient window
- * Playwright can't drive).
+ * Desktop viewport / recording canvas for the demo, which runs in the full
+ * browser-tab view (`index.html?view=tab`). The popup-to-tab demo, when
+ * re-enabled, sets its own smaller size for the popup stage.
  */
-const POPUP_SIZE = { width: 800, height: 600 };
+const DEMO_SIZE = { width: 1280, height: 800 };
 
 interface DemoFixtures {
   context: BrowserContext;
@@ -42,10 +40,10 @@ export const test = base.extend<DemoFixtures>({
       headless: false,
       // Watchable pace so an audience can follow each action.
       slowMo: 700,
-      // Simulate the popup window (see POPUP_SIZE).
-      viewport: POPUP_SIZE,
+      // Desktop-sized tab view (see DEMO_SIZE).
+      viewport: DEMO_SIZE,
       // Record the whole session; the .webm is flushed on context.close().
-      recordVideo: { dir: videoDir, size: POPUP_SIZE },
+      recordVideo: { dir: videoDir, size: DEMO_SIZE },
       args: [
         `--disable-extensions-except=${buildDir}`,
         `--load-extension=${buildDir}`,

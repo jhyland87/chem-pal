@@ -442,6 +442,18 @@
     "message": "Wyczyść wszystkie filtry",
     "description": "Tooltip/label for the button that clears all column filters."
   },
+  "results_toggle_filters": {
+    "message": "Przełącz filtry kolumn",
+    "description": "Accessible label for the header button that shows/hides the per-column filter row."
+  },
+  "results_column_visibility": {
+    "message": "Pokaż lub ukryj kolumny",
+    "description": "Accessible label for the header button that opens the column-visibility menu."
+  },
+  "results_open_options": {
+    "message": "Otwórz opcje",
+    "description": "Accessible label for the header button that opens the search/settings options drawer."
+  },
   "results_rows_per_page_aria": {
     "message": "wiersze na stronę",
     "description": "Accessible label for the page-size selector."

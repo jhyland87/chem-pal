@@ -1,4 +1,5 @@
 import { type Column, type ColumnDef, type Table } from "@tanstack/react-table";
+import { i18n } from "@/helpers/i18n";
 
 /**
  * Narrows an unknown value to the primitive column value types handled here.
@@ -62,10 +63,17 @@ export function getHeaderText<TData>(column: Column<TData, unknown>): string {
   if (header === undefined) return "";
   if (typeof header === "string") return header;
   if (typeof header === "function") {
-    // TanStack's functional header expects a context arg we don't have here; invoke it
-    // defensively and narrow the rendered element with a guard instead of asserting its shape.
-    const rendered: unknown = (header as (...args: unknown[]) => unknown)();
-    return getRenderedHeaderText(rendered);
+    // TanStack's functional header expects a `HeaderContext` we don't have here.
+    // Some headers read it (e.g. the price column derives its currency from
+    // `table.options.meta`) and throw when invoked context-free, so guard the
+    // call and fall back to the column-id label — the same label the
+    // column-visibility menu uses for functional headers.
+    try {
+      const rendered: unknown = (header as (...args: unknown[]) => unknown)();
+      return getRenderedHeaderText(rendered);
+    } catch {
+      return i18n(`column_${column.id}`);
+    }
   }
   return String(header);
 }
