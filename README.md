@@ -1,9 +1,5 @@
-> [!NOTE]
-> WORK IN PROGRESS - Plenty of bugs exist and were working on them as time permits.
-
-
 <p align="center">
-  <img src="./public/static/images/logo/ChemPal-logo-v2.png" alt="chem-pal example" width="200"/>
+  <img src="./public/static/images/logo/ChemPal-logo-v2.png" alt="chem-pal logo" width="200"/>
 </p>
 
 
@@ -37,12 +33,12 @@ Open source project aimed at helping amateur chemistry hobbyists find the best d
 - Viewable from popup or in separate browser tab
 - [Price tracking](https://github.com/jhyland87/chem-pal/blob/main/public/static/images/demo/price-tracking.png) on all products and variants
 - No account creation required to use extension
-- No data collection
+- No data collection by the developer — see the [Privacy Policy](PRIVACY.md) for exactly what stays local on your device and what is sent to the suppliers you search
 
 ----
 
 ## Installation
-This is currently in beta, so its not in the Chrome or Firefox stores yet. But you can get the latest release from the [releases page](https://github.com/jhyland87/chem-pal/releases/latest).
+You can install the latest release from the [releases page](https://github.com/jhyland87/chem-pal/releases/latest). Official Chrome Web Store and Firefox Add-ons listings are on the way.
 
 ### Chrome
 Download the `chem-pal.crx` asset, then go to your Chrome extensions, and click "Load Packed", then select the .crx file and import it.

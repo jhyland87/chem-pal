@@ -12,21 +12,25 @@
  * @param pkg - The parsed `package.json` contents.
  * @param options - Build-mode flags that vary per environment.
  * @param options.isAggregate - Whether the `aggregate` build mode is active.
+ * @param options.isProd - Whether this is a production build; drives `NODE_ENV`
+ *   so React/MUI ship in production mode (smaller, no dev warnings). Tests and
+ *   dev builds leave it unset and get `development`.
  * @returns A `define` map ready to spread into a Vite/Vitest config.
  * @example
- * buildDefines(pkg, { isAggregate: false })
- * // => { __APP_VERSION__: '"1.2.3"', __RESPONSE_AGGREGATE__: 'false', ... }
+ * buildDefines(pkg, { isAggregate: false, isProd: true })
+ * // => { 'process.env.NODE_ENV': '"production"', __APP_VERSION__: '"1.2.3"', ... }
  * @source
  */
-export function buildDefines(pkg, { isAggregate = false } = {}) {
+export function buildDefines(pkg, { isAggregate = false, isProd = false } = {}) {
   return {
-    "process.env.NODE_ENV": JSON.stringify("development"),
+    "process.env.NODE_ENV": JSON.stringify(isProd ? "production" : "development"),
     __RESPONSE_AGGREGATE__: JSON.stringify(isAggregate),
     __APP_VERSION__: JSON.stringify(pkg.version),
     __APP_REPOSITORY__: JSON.stringify(pkg.repository.url),
     __APP_NAME__: JSON.stringify(pkg.name),
     __APP_HOMEPAGE__: JSON.stringify(pkg.homepage),
     __APP_WIKI__: JSON.stringify(pkg.config.links.wiki),
+    __APP_PRIVACY__: JSON.stringify(pkg.config.links.privacy),
     __APP_BUGS__: JSON.stringify(pkg.bugs.url),
     __APP_CONTRIBUTORS__: JSON.stringify(pkg.contributors),
     __GITHUB_OWNER__: JSON.stringify(pkg.config.github.owner),

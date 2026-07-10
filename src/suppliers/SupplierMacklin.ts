@@ -224,11 +224,8 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
       "X-Device-Id": this.ensureStringHeader(this.localStorage.soleId),
       "X-Language": "en",
       "X-Timestamp": "",
-       
-    };
 
-    console.log("this.localStorage", this.localStorage);
-    console.log("this.headers", this.headers);
+    };
   }
 
   /**

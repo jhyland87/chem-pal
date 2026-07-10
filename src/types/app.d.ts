@@ -39,6 +39,8 @@ declare const __APP_REPOSITORY__: string;
 declare const __APP_HOMEPAGE__: string;
 /** Wiki URL, from `package.json` `config.links.wiki`. */
 declare const __APP_WIKI__: string;
+/** Privacy policy URL, from `package.json` `config.links.privacy`. */
+declare const __APP_PRIVACY__: string;
 /** Bug-tracker URL, from `package.json` `bugs.url`. */
 declare const __APP_BUGS__: string;
 /** Project contributors, from `package.json` `contributors`. */

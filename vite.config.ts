@@ -62,7 +62,14 @@ export default ({ mode }: { mode: string }) => {
   const isProd = mode === "production";
 
   return defineConfig({
-    define: buildDefines(pkg, { isAggregate }),
+    define: buildDefines(pkg, { isAggregate, isProd }),
+    // In prod, drop noisy debug logging (console.log/info/debug/trace) so it
+    // doesn't ship to the store — including calls that bypass Logger. warn/error
+    // are kept so genuine problems still surface; `debugger` is stripped too.
+    esbuild: {
+      pure: isProd ? ["console.log", "console.info", "console.debug", "console.trace"] : [],
+      drop: isProd ? ["debugger"] : [],
+    },
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),

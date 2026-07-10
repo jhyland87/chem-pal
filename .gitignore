@@ -14,6 +14,7 @@ dist
 dist-ssr
 dev
 *.local
+.env
 html
 html-report
 
@@ -39,5 +40,6 @@ ChemPal.pem
 chem-pal.pem
 *.crx
 chem-pal-firefox.zip
+chem-pal-*-unpacked.zip
 
 public/mockServiceWorker.js
