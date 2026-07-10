@@ -89,7 +89,7 @@ The zip file will be downloaded with the directory structure ready to extract.
 
 ```bash
 # Extract the downloaded zip into this directory
-unzip ~/Downloads/response-aggregate-*.zip -d e2e/mock-requests/responses/
+unzip ~/Downloads/response-aggregate-\*.zip -d e2e/mock-requests/responses/
 ```
 
 ### Step 5: Use in Tests

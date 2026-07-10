@@ -146,7 +146,7 @@ class B,L,S,C,E step
    window.__responseAggregate.download() // Download as zip
    window.__responseAggregate.clear()   // Reset
    ```
-5. **Extract**: `unzip ~/Downloads/response-aggregate-*.zip -d e2e/mock-requests/responses/`
+5. **Extract**: `unzip ~/Downloads/response-aggregate-\*.zip -d e2e/mock-requests/responses/`
 
 ### Using Mocks in Tests
 

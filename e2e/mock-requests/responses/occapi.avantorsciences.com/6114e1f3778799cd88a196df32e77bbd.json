@@ -1,0 +1,8 @@
+{
+  "contentType": "application/json",
+  "content": "JTdCJTdE",
+  "_request": {
+    "url": "https://occapi.avantorsciences.com/occ/v2/us.vwr.com/products/39029116/assetreferences?lang=en_US&curr=USD&newStorefront=true&fields=DEFAULT",
+    "method": "GET"
+  }
+}

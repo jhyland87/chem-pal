@@ -41,9 +41,8 @@ describe("Chem-Pal context-menu search", () => {
       ],
     });
 
-    const swTarget =
-      context.serviceWorkers().length ?
-        context.serviceWorkers()[0]
+    const swTarget = context.serviceWorkers().length
+      ? context.serviceWorkers()[0]
       : await context.waitForEvent("serviceworker");
     extensionId = swTarget.url().split("/")[2];
   }, 60_000);
@@ -110,25 +109,21 @@ describe("Chem-Pal context-menu search", () => {
       .count();
   }
 
-  it(
-    "grants the contextMenus permission to the loaded extension",
-    async () => {
-      const page = await context.newPage();
-      try {
-        await page.goto(`chrome-extension://${extensionId}/index.html`);
-        const granted = await page.evaluate(
-          () =>
-            new Promise<boolean>((resolve) =>
-              chrome.permissions.contains({ permissions: ["contextMenus"] }, resolve),
-            ),
-        );
-        vitestExpect(granted).toBe(true);
-      } finally {
-        await page.close();
-      }
-    },
-    30_000,
-  );
+  it("grants the contextMenus permission to the loaded extension", async () => {
+    const page = await context.newPage();
+    try {
+      await page.goto(`chrome-extension://${extensionId}/index.html`);
+      const granted = await page.evaluate(
+        () =>
+          new Promise<boolean>((resolve) =>
+            chrome.permissions.contains({ permissions: ["contextMenus"] }, resolve),
+          ),
+      );
+      vitestExpect(granted).toBe(true);
+    } finally {
+      await page.close();
+    }
+  }, 30_000);
 
   it(
     "runs the seeded search when the tab view is opened fresh (mount path)",
@@ -138,12 +133,16 @@ describe("Chem-Pal context-menu search", () => {
       // navigation so the auto-fired search is intercepted from the start.
       const seed = await context.newPage();
       await seed.goto(`chrome-extension://${extensionId}/index.html`);
-      await seedPendingSearch(seed, "potassium");
+      await seedPendingSearch(seed, "sodium borohydride");
       await seed.close();
 
       const page = await context.newPage();
       try {
-        await setupMockRoutes(page, { responsesDir: mockResponsesDir, fallback: "abort" });
+        await setupMockRoutes(page, {
+          responsesDir: mockResponsesDir,
+          fallback: "abort",
+          verbose: false,
+        });
         await page.goto(`chrome-extension://${extensionId}/index.html?view=tab`);
 
         // App.loadFromStorage should see the pending search, land on the results
@@ -163,7 +162,11 @@ describe("Chem-Pal context-menu search", () => {
       const page = await context.newPage();
       try {
         await page.goto(`chrome-extension://${extensionId}/index.html?view=tab`);
-        await setupMockRoutes(page, { responsesDir: mockResponsesDir, fallback: "abort" });
+        await setupMockRoutes(page, {
+          responsesDir: mockResponsesDir,
+          fallback: "abort",
+          verbose: false,
+        });
 
         // App boots on the home panel with no pending search.
         const searchInput = page.getByRole("textbox", { name: "search for products" });

@@ -1,0 +1,8 @@
+{
+  "contentType": "application/json",
+  "content": "JTVCJTdCJTIybmFtZSUyMiUzQSUyMkFwcGVhcmFuY2UlMjIlMkMlMjJyZXN1bHQlMjIlM0ElMjJXaGl0ZSUyMFBlbGxldHMlMjIlN0QlMkMlN0IlMjJuYW1lJTIyJTNBJTIyQXNzYXklMjIlMkMlMjJyZXN1bHQlMjIlM0ElMjIlRTIlODklQTU5Ny41JTIwJTI1JTIwKE5hQkg0KSUyMiU3RCU1RA==",
+  "_request": {
+    "url": "https://occapi.avantorsciences.com/occ/v2/us.vwr.com/api/product/chemical/specification?lang=en_US&curr=USD&newStorefront=true&productId=39029118&user=anonymous",
+    "method": "GET"
+  }
+}

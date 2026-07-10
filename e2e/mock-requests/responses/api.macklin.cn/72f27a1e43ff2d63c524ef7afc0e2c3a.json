@@ -1,0 +1,8 @@
+{
+  "contentType": "application/json",
+  "content": "JTdCJTIyY29kZSUyMiUzQTIwMCUyQyUyMm1lc3NhZ2UlMjIlM0ElMjIlRTYlOTAlOUMlRTclQjQlQTJtc2RzJUU2JTg4JTkwJUU1JThBJTlGJTIyJTJDJTIyZGF0YSUyMiUzQSU3QiUyMnVybCUyMiUzQSUyMmh0dHBzJTNBJTJGJTJGd3d3Lm1hY2tsaW4uY24lMkZwZGYlMkZtc2RzJTJGZG93bmxvYWQlM0ZsYW5nJTNEZW4lMjZpZCUzRDMxNjA5JTI2aXRlbV9pZCUzRDgzNjA2NSUyNmNoZW1fY2FzJTNEMTIxNzktMDItMSUyMiU3RCU3RA==",
+  "_request": {
+    "url": "https://api.macklin.cn/api/msds/search?keyword=S836065&lang=en&timestampe=17836687787394396300938914408420860990031371815752623",
+    "method": "GET"
+  }
+}

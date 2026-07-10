@@ -1,0 +1,8 @@
+{
+  "contentType": "application/json",
+  "content": "JTVCJTdCJTIybmFtZSUyMiUzQSUyMkFzc2F5JTIyJTJDJTIycmVzdWx0JTIyJTNBJTIyODUlMjUlMjIlN0QlNUQ=",
+  "_request": {
+    "url": "https://occapi.avantorsciences.com/occ/v2/us.vwr.com/api/product/chemical/specification?lang=en_US&curr=USD&newStorefront=true&productId=16900470&user=anonymous",
+    "method": "GET"
+  }
+}

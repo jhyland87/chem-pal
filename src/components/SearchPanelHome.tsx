@@ -62,16 +62,24 @@ const SearchPanelHome: FC = () => {
   }, [appContext.searchResults]);
 
   const handleSearch = async (query: string) => {
-    // Commit the submitted query to session storage and clear the live
-    // in-progress value — once a search is submitted, CACHE.QUERY becomes the
-    // source of truth and CACHE.SEARCH_INPUT (the unsubmitted draft) should
-    // reset so the next visit to any search field starts empty.
+    // Persist the submitted query (source of truth for the results header label
+    // and reopen restore) and reset CACHE.SEARCH_INPUT (the unsubmitted draft) so
+    // the next visit to any search field starts empty.
+    //
+    // Deliberately NOT setting CACHE.SEARCH_IS_NEW_SEARCH: that flag routes the
+    // trigger through a shared-storage inbox that only App.tsx's onChanged bridge
+    // (full-tab view only) consumes, so whichever context isn't the tab never runs
+    // the search, and the consuming context can starve the submitting one (e.g. a
+    // popup submit clears the tab but not the popup). Instead trigger locally via
+    // pendingSearchQuery — the same path the drawer and history panels use — so the
+    // submitting context reliably clears and runs its own search.
     await cstorage.session.set({
       [CACHE.QUERY]: query,
       [CACHE.SEARCH_INPUT]: "",
-      [CACHE.SEARCH_IS_NEW_SEARCH]: true, // Flag to indicate this is a new search submission
     });
-    // Switch to the results panel
+    appContext.setPendingSearchQuery(query);
+    // Show the results panel; SearchPanel (re)mounts and its useSearch effect picks
+    // up the pending query set above.
     if (typeof appContext.setPanel === "function") {
       appContext.setPanel(PANEL.RESULTS);
     } else if (typeof appContext.setUserSettings === "function") {

@@ -1,0 +1,8 @@
+{
+  "contentType": "application/json",
+  "content": "JTVCJTdCJTIybmFtZSUyMiUzQSUyMlZhcG9yJTIwRGVuc2l0eSUyMiUyQyUyMnJlc3VsdCUyMiUzQSUyMiUzRTElMjAodnMlMjBhaXIpJTIyJTdEJTJDJTdCJTIybmFtZSUyMiUzQSUyMkFzc2F5JTIyJTJDJTIycmVzdWx0JTIyJTNBJTIyTWluLiUyMDk4LjAlMjAlMjUlMjIlN0QlMkMlN0IlMjJuYW1lJTIyJTNBJTIyQXNzYXklMjBvZiUyME5hJUUyJTgyJTgyQ08lRTIlODIlODMlMjIlMkMlMjJyZXN1bHQlMjIlM0ElMjJNYXguJTIwMS4wJTIwJTI1JTIyJTdEJTJDJTdCJTIybmFtZSUyMiUzQSUyMkFwcGVhcmFuY2UlMjBvZiUyMHRoZSUyMHNvbHV0aW9uJTIyJTJDJTIycmVzdWx0JTIyJTNBJTIyY29tcGx5aW5nJTIyJTdEJTJDJTdCJTIybmFtZSUyMiUzQSUyMlR1cmJpZGl0eSUyMG9mJTIwc29sdXRpb24lMjIlMkMlMjJyZXN1bHQlMjIlM0ElMjJNYXguJTIwMy41JTIwTlRVJTIyJTdEJTJDJTdCJTIybmFtZSUyMiUzQSUyMlZhcG9yJTIwUHJlc3N1cmUlMjIlMkMlMjJyZXN1bHQlMjIlM0ElMjIzJTIwbW1IZyUyMCglMjAzNyUyMCVDMiVCMEMpJTIyJTdEJTVE",
+  "_request": {
+    "url": "https://occapi.avantorsciences.com/occ/v2/us.vwr.com/api/product/chemical/specification?lang=en_US&curr=USD&newStorefront=true&productId=26203660&user=anonymous",
+    "method": "GET"
+  }
+}
