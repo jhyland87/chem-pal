@@ -17,6 +17,7 @@
     "showAllColumns": false,
     "excludeNonShippingSuppliers": true,
     "hideRestrictedProducts": true,
+    "disabledSuppliers": [],
     "hideColumns": ["description", "uom", "sds", "specs", "coa", "cas", "formula", "moleweight", "purity", "concentration"],
     "columnFilterConfig": {}
   },

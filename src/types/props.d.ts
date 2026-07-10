@@ -142,9 +142,9 @@ declare global {
     /** Drawer state management - -1 = closed, 0 = search tab, 1 = history tab, 2 = settings tab */
     drawerTab?: number;
     /** Selected Suppliers */
-    selectedSuppliers?: string[];
+    selectedSuppliers?: SupplierClassName[];
     /** Function to update selected suppliers */
-    setSelectedSuppliers: (suppliers: string[]) => void;
+    setSelectedSuppliers: (suppliers: SupplierClassName[]) => void;
     /** Pending search query set from history panel (consumed by ResultsTable) */
     pendingSearchQuery: string | null;
     /** Function to set a pending search query */

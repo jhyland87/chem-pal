@@ -143,7 +143,8 @@ export default function ColumnDrawerSection({
 
     const handleChange = (_event: SyntheticEvent, newValue: string[]) => {
       if (config.bind.kind === "selectedSuppliers") {
-        setSelectedSuppliers(newValue);
+        // Autocomplete yields plain strings; keep only valid supplier names.
+        setSelectedSuppliers(newValue.filter(SupplierFactory.isSupplierClassName));
       } else if (config.bind.kind === "searchFilters") {
         setSearchFilters({ ...searchFilters, [config.bind.key]: newValue });
       }

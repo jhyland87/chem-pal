@@ -11,6 +11,7 @@ declare global {
     | { type: ACTION_TYPE.SWITCH_CHANGE; name: string; checked: boolean }
     | { type: ACTION_TYPE.INPUT_CHANGE; name: string; value: string }
     | { type: ACTION_TYPE.BUTTON_CLICK; name: string; value: string }
+    | { type: ACTION_TYPE.SUPPLIER_TOGGLE; value: Array<SupplierClassName> }
     | { type: ACTION_TYPE.RESTORE_DEFAULTS };
 
   /**
@@ -146,10 +147,19 @@ declare global {
     fontSize?: "small" | "medium" | "large";
 
     /**
-     * List of supplier IDs that are enabled for searching
-     * @example ["supplier1", "supplier2"]
+     * List of supplier class names that are enabled for searching
+     * @example ["SupplierCarolina", "SupplierLaballey"]
      */
-    suppliers?: Array<string>;
+    suppliers?: Array<SupplierClassName>;
+
+    /**
+     * Supplier class names (e.g. "SupplierCarolina") the user has disabled. Any supplier
+     * in this list is excluded from every search, regardless of the enabled-supplier
+     * selection, and is hidden from the supplier list in the search filter menu. Toggled
+     * in the Suppliers section of the settings panel.
+     * @example ["SupplierCarolina", "SupplierLaballey"]
+     */
+    disabledSuppliers?: Array<SupplierClassName>;
 
     /**
      * When true (the default), searches exclude any supplier that does not ship

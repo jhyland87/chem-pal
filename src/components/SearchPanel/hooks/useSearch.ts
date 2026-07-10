@@ -83,7 +83,7 @@ export async function createInitialHistoryEntry(
   query: string,
   timestamp: number,
   filters: SearchFilters,
-  selectedSuppliers: string[],
+  selectedSuppliers: SupplierClassName[],
 ): Promise<void> {
   try {
     await addSearchHistoryEntry({
@@ -217,9 +217,10 @@ function passesSearchFilters(
  * Groups products by supplier and takes the first N from each.
  */
 function applyPerSupplierLimit(products: Product[], limit: number): Product[] {
-  const supplierCounts: Record<string, number> = {};
+  const supplierCounts: Partial<Record<SupplierClassName, number>> = {};
   return products.filter((product) => {
-    const supplier = product.supplier;
+    if (!SupplierFactory.isSupplierClassName(product.supplier)) return false;
+    const supplier = product.supplier as SupplierClassName;
     supplierCounts[supplier] = (supplierCounts[supplier] ?? 0) + 1;
     return supplierCounts[supplier] <= limit;
   });
@@ -461,6 +462,7 @@ export function useSearch() {
           location: appContext.userSettings.location,
           excludeNonShippingSuppliers: appContext.userSettings.excludeNonShippingSuppliers ?? true,
           hideRestrictedProducts: appContext.userSettings.hideRestrictedProducts ?? true,
+          disabledSuppliers: appContext.userSettings.disabledSuppliers,
         });
 
         const startSearchTime = performance.now();

@@ -10,8 +10,8 @@ import {
 } from "@/helpers/excludedProducts";
 import { getAvailableLocales, i18n } from "@/helpers/i18n";
 import { formatTimestamp, getLanguageName } from "@/helpers/utils";
+import { SupplierFactory } from "@/suppliers/SupplierFactory";
 import { clearExcludedProducts, clearPriceHistory } from "@/utils/idbCache";
-import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import { isButtonElement } from "@/utils/typeGuards/common";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -102,6 +102,9 @@ export default function SettingsPanel() {
         case ACTION_TYPE.BUTTON_CLICK:
           newSettings = { ...currentSettings, [action.name]: action.value };
           break;
+        case ACTION_TYPE.SUPPLIER_TOGGLE:
+          newSettings = { ...currentSettings, disabledSuppliers: action.value };
+          break;
         case ACTION_TYPE.RESTORE_DEFAULTS:
           newSettings = {
             ...currentSettings,
@@ -112,6 +115,7 @@ export default function SettingsPanel() {
             showColumnFilters: true,
             showAllColumns: false,
             fontSize: "medium",
+            disabledSuppliers: [],
             hideColumns: ["description", "uom", "sds", "specs", "coa", "cas", "pubchem", "formula", "moleweight", "purity", "concentration"],
           };
           break;
@@ -212,6 +216,16 @@ export default function SettingsPanel() {
   const excludedCount = excludedEntries.length;
 
   const currentSettings = formState || appContext.userSettings;
+
+  // Toggles a supplier's disabled state. Switch on = enabled, so toggling off adds the
+  // supplier's class name to the disabledSuppliers deny-list and toggling on removes it.
+  const handleSupplierToggle = (supplierClassName: SupplierClassName) => () => {
+    const disabled = currentSettings.disabledSuppliers ?? [];
+    const next = disabled.includes(supplierClassName)
+      ? disabled.filter((name) => name !== supplierClassName)
+      : [...disabled, supplierClassName];
+    updateSetting({ type: ACTION_TYPE.SUPPLIER_TOGGLE, value: next });
+  };
 
   // The language setting may be stored as a full locale (e.g. "en-US") while the
   // dropdown lists base locale codes ("en", "pl") that have a translation. Match
@@ -666,15 +680,58 @@ export default function SettingsPanel() {
           )}
         </AccordionDetails>
       </Accordion>
-      {/* Dev-only Advanced section. `IS_DEV_BUILD` is a Vite-replaced string
-          literal, so the entire block is tree-shaken from prod bundles — no
-          config flag or runtime check reaches production users. */}
-      {IS_DEV_BUILD && (
-        <Accordion
-          expanded={expanded === "advanced"}
-          onChange={handleAccordionChange("advanced")}
-          disableGutters
+      {/* Per-supplier enable/disable. Each switch on = supplier enabled; toggling
+          off adds it to the disabledSuppliers deny-list, excluding it from every
+          search and hiding it from the search filter menu. */}
+      <Accordion
+        expanded={expanded === "suppliers"}
+        onChange={handleAccordionChange("suppliers")}
+        disableGutters
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          className={styles["settings-panel__accordion-summary"]}
         >
+          <Typography variant="body2" fontWeight={500}>
+            {i18n("settings_section_supplier_status")}
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails className={styles["settings-panel__accordion-details"]}>
+          <Typography
+            variant="caption"
+            sx={{ px: 2, py: 1, display: "block", fontStyle: "italic", color: "text.secondary" }}
+          >
+            {i18n("settings_supplier_status_desc")}
+          </Typography>
+          <List dense sx={{ width: "100%" }}>
+            {SupplierFactory.supplierList().map((supplierClassName) => (
+              <ListItem
+                key={supplierClassName}
+                className={styles["settings-panel__helper-on-hover"]}
+              >
+                <ListItemText primary={supplierClassName.replace(/^Supplier/, "")} />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={!(currentSettings.disabledSuppliers ?? []).includes(supplierClassName)}
+                      onChange={handleSupplierToggle(supplierClassName)}
+                      name={supplierClassName}
+                      disabled={isPending}
+                    />
+                  }
+                  labelPlacement="start"
+                  label=""
+                />
+              </ListItem>
+            ))}
+          </List>
+        </AccordionDetails>
+      </Accordion>
+      <Accordion
+        expanded={expanded === "advanced"}
+        onChange={handleAccordionChange("advanced")}
+        disableGutters
+      >
           <AccordionSummary
             expandIcon={<ExpandMoreIcon />}
             className={styles["settings-panel__accordion-summary"]}
@@ -752,7 +809,6 @@ export default function SettingsPanel() {
             </ListItem>
           </AccordionDetails>
         </Accordion>
-      )}
       <Accordion
         expanded={expanded === "actions"}
         onChange={handleAccordionChange("actions")}

@@ -124,7 +124,7 @@ describe("useSearch helpers", () => {
         shippingType: [],
       } as unknown as SearchFilters;
 
-      await createInitialHistoryEntry("acetone", timestamp, filters, ["Carolina"]);
+      await createInitialHistoryEntry("acetone", timestamp, filters, ["SupplierCarolina"]);
 
       const history = await getSearchHistory();
 
@@ -134,7 +134,7 @@ describe("useSearch helpers", () => {
         timestamp,
         resultCount: 0,
         type: "search",
-        selectedSuppliers: ["Carolina"],
+        selectedSuppliers: ["SupplierCarolina"],
       });
       expect(history[0].filters).toEqual(filters);
     });

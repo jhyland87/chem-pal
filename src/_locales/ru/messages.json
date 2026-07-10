@@ -573,6 +573,14 @@
     "message": "Исключённые товары",
     "description": "Settings section header."
   },
+  "settings_section_supplier_status": {
+    "message": "Статус поставщиков",
+    "description": "Settings section header."
+  },
+  "settings_supplier_status_desc": {
+    "message": "Отключение поставщика здесь исключает его из всех поисков и из фильтров выбора поставщиков.",
+    "description": "Description at the top of the Supplier Status settings list."
+  },
   "settings_section_advanced": {
     "message": "Дополнительно",
     "description": "Settings section header."

@@ -1,11 +1,11 @@
 import { defaultResultsLimit } from "@/../config.json";
+import { filterRestrictedProduct } from "@/helpers/purchaseRestriction";
 import {
   looksLikeSmiles,
   parseStructurePrefix,
   resolveSmiles,
   type ResolvedStructure,
 } from "@/helpers/smiles";
-import { filterRestrictedProduct } from "@/helpers/purchaseRestriction";
 import { mapDefined, sleep } from "@/helpers/utils";
 import { Logger } from "@/utils/Logger";
 import { extractAllPositiveTerms } from "@/utils/search-query/extractPositiveTerms";
@@ -35,7 +35,7 @@ export interface SupplierFactoryOptions {
   /** Maximum number of results per supplier. Defaults to `defaultResultsLimit`. */
   limit?: number;
   /** Suppliers to query; empty (the default) queries all. */
-  suppliers?: Array<string>;
+  suppliers?: Array<SupplierClassName>;
   /** Whether to read from / write to the supplier caches. Defaults to true. */
   caching?: boolean;
   /** Fuzz-scorer name (from `FUZZ_SCORERS`) overriding each supplier's default. */
@@ -56,6 +56,8 @@ export interface SupplierFactoryOptions {
   excludeNonShippingSuppliers?: boolean;
   /** When true, hide products the user can't buy (region/buyer restrictions). Defaults to false. */
   hideRestrictedProducts?: boolean;
+  /** Supplier class names to exclude from the search entirely, regardless of `suppliers`. Defaults to []. */
+  disabledSuppliers?: Array<SupplierClassName>;
 }
 
 /**
@@ -88,8 +90,16 @@ export class SupplierFactory<P extends Product> {
   // Abort controller for fetch control
   private controller: AbortController;
 
-  // List of supplier class names to include in query results
+  // List of supplier class names to include in query results. Held as plain strings
+  // because it's compared against the runtime string keys of the suppliers barrel; the
+  // public option is typed SupplierClassName[] for authoring convenience.
   private suppliers: Array<string>;
+
+  // Mirrors userSettings.disabledSuppliers. Supplier class names the user has turned
+  // off; excluded from every search before the include-list is even consulted, so the
+  // deny-list wins even when `suppliers` is empty (which otherwise means "query all").
+  // Held as plain strings for the same reason as `suppliers` above.
+  private disabledSuppliers: Array<string>;
 
   // Maximum number of results for each supplier
   private limit: number = defaultResultsLimit;
@@ -183,6 +193,7 @@ export class SupplierFactory<P extends Product> {
       location,
       excludeNonShippingSuppliers = false,
       hideRestrictedProducts = false,
+      disabledSuppliers = [],
     } = options;
 
     this.logger = new Logger("SupplierFactory");
@@ -201,7 +212,9 @@ export class SupplierFactory<P extends Product> {
       location,
       excludeNonShippingSuppliers,
       hideRestrictedProducts,
+      disabledSuppliers,
     });
+
     this.query = query;
     this.limit = limit;
     this.controller = controller;
@@ -216,6 +229,7 @@ export class SupplierFactory<P extends Product> {
     this.location = location;
     this.excludeNonShippingSuppliers = excludeNonShippingSuppliers;
     this.hideRestrictedProducts = hideRestrictedProducts;
+    this.disabledSuppliers = disabledSuppliers;
     this.parsedQuery = parseSearchQuery(query);
   }
 
@@ -234,8 +248,25 @@ export class SupplierFactory<P extends Product> {
    * ```
    * @source
    */
-  public static supplierList(): Array<string> {
-    return Object.keys(suppliers);
+  public static supplierList(): Array<SupplierClassName> {
+    return Object.keys(suppliers) as unknown as Array<SupplierClassName>;
+  }
+
+  /**
+   * Type guard narrowing an arbitrary string to a known {@link SupplierClassName}. Use at
+   * runtime boundaries (persisted values, UI inputs) where a plain string needs to be
+   * confirmed as one of the barrel-exported supplier names before it's stored or searched.
+   * @param value - Candidate string to test.
+   * @returns True (and narrows `value` to `SupplierClassName`) when it names an exported supplier.
+   * @example
+   * ```typescript
+   * ["SupplierCarolina", "Nope"].filter(SupplierFactory.isSupplierClassName);
+   * // => ["SupplierCarolina"]
+   * ```
+   * @source
+   */
+  public static isSupplierClassName(value: string): value is SupplierClassName {
+    return SupplierFactory.supplierList().some((name) => name === value);
   }
 
   /**
@@ -453,6 +484,7 @@ export class SupplierFactory<P extends Product> {
     const supplierInstances: SupplierBase<unknown, P>[] = mapDefined(
       Object.entries(suppliers),
       ([supplierClassName, supplierClass]) => {
+        if (this.disabledSuppliers.includes(supplierClassName)) return;
         if (!(this.suppliers.length === 0 || this.suppliers.includes(supplierClassName))) return;
 
         this.logger.debug("Initializing supplier class:", supplierClassName);
@@ -531,6 +563,7 @@ export class SupplierFactory<P extends Product> {
     const supplierInstances: SupplierBase<unknown, P>[] = mapDefined(
       Object.entries(suppliers),
       ([supplierClassName, supplierClass]) => {
+        if (this.disabledSuppliers.includes(supplierClassName)) return;
         if (!(this.suppliers.length === 0 || this.suppliers.includes(supplierClassName))) return;
 
         this.logger.debug("Initializing supplier class", { supplierClassName });

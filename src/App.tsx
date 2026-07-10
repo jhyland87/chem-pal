@@ -93,7 +93,7 @@ interface AppState {
   panel: PANEL;
   speedDialVisibility: boolean;
   drawerTab: DRAWER_INDEX;
-  selectedSuppliers: string[];
+  selectedSuppliers: SupplierClassName[];
   bookmarksFolderId: string | null;
 }
 
@@ -127,7 +127,7 @@ type AppAction =
   | { type: APP_ACTION.SET_SPEED_DIAL_VISIBILITY; visible: boolean }
   | { type: APP_ACTION.LOAD_FROM_STORAGE; data: Partial<AppState> }
   | { type: APP_ACTION.SET_DRAWER_TAB; tab: DRAWER_INDEX }
-  | { type: APP_ACTION.SET_SELECTED_SUPPLIERS; suppliers: string[] }
+  | { type: APP_ACTION.SET_SELECTED_SUPPLIERS; suppliers: SupplierClassName[] }
   | { type: APP_ACTION.SET_BOOKMARKS_FOLDER_ID; id: string | null };
 
 /**
@@ -538,7 +538,7 @@ function App() {
     dispatch({ type: APP_ACTION.SET_PANEL, panel });
   };
 
-  const handleSetSelectedSuppliers = (suppliers: string[]) => {
+  const handleSetSelectedSuppliers = (suppliers: SupplierClassName[]) => {
     dispatch({ type: APP_ACTION.SET_SELECTED_SUPPLIERS, suppliers });
   };
 

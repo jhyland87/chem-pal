@@ -43,7 +43,7 @@
     "prebuild": "pnpm run generate-logo-files",
     "dev": "pnpm run generate-logo-files && vite",
     "dev-mock": "vite --mode=mock",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc -b",
     "build": "vite build --mode=development",
     "build:firefox": "BROWSER=firefox vite build --mode=development",
     "build:aggregate": "vite build --mode=aggregate",

@@ -6,7 +6,8 @@
     "../src/**/*.spec.ts",
     "../src/**/*.spec.tsx",
     "../src/**/__tests__/**/*",
-    "../src/types/**/*.d.ts"
+    "../src/types/**/*.d.ts",
+    "../src/vite-env.d.ts"
   ],
   "exclude": []
 }
