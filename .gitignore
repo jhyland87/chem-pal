@@ -17,6 +17,10 @@ dev
 html
 html-report
 
+# Playwright demo artifacts
+demo-results
+demo-report
+
 # Editor directories and files
 
 .idea
