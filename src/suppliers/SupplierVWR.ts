@@ -253,7 +253,6 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
         lang: "en_US",
         curr: "USD",
         newStorefront: true,
-         
       },
     });
 
@@ -603,7 +602,7 @@ export class SupplierVWR extends SupplierBase<VWRSearchProduct, Product> impleme
    * @source
    */
   private rowSize(row: VWRProductRow): string | undefined {
-    return row.colCellMap?.entry.find((cell) => cell.key === "o_size")?.value;
+    return row.colCellMap?.entry?.find((cell) => cell.key === "o_size")?.value ?? undefined;
   }
 
   /**

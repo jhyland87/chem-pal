@@ -1,0 +1,8 @@
+{
+  "contentType": "application/json",
+  "content": "JTdCJTIyYWNjZXNzX3Rva2VuJTIyJTNBJTIyaFlrMmFGalFtVkxmV2ZZVm56Tl9CZ3JraEZRJTIyJTJDJTIydG9rZW5fdHlwZSUyMiUzQSUyMmJlYXJlciUyMiUyQyUyMmV4cGlyZXNfaW4lMjIlM0EyMDI5NiUyQyUyMnNjb3BlJTIyJTNBJTIyb3BlbmlkJTIyJTdE",
+  "_request": {
+    "url": "https://occapi.avantorsciences.com/authorizationserver/oauth/token",
+    "method": "POST"
+  }
+}

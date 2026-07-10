@@ -309,7 +309,15 @@ export function useSearch() {
             sessionData[CACHE.QUERY].trim(),
         );
 
-        if (!hasPendingSearch && cachedResults.length > 0) {
+        // In the full-tab view, App.tsx's storage.onChanged bridge consumes (and
+        // removes) the SEARCH_IS_NEW_SEARCH flag and sets pendingSearchQuery *before*
+        // this freshly-mounted effect runs. So the inbox flag alone can already be gone
+        // while a search is still imminent — a live pendingSearchQuery also means "search
+        // pending". Gate the cached-results rehydrate on both, otherwise a home-box search
+        // that remounts this panel repaints the previous search's rows over the new one.
+        const searchPending = hasPendingSearch || Boolean(appContext.pendingSearchQuery?.trim());
+
+        if (!searchPending && cachedResults.length > 0) {
           logger.debug("Loading previous search results from IndexedDB", {
             length: cachedResults.length,
             results: cachedResults,

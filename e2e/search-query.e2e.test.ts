@@ -210,7 +210,7 @@ describe("Chem-Pal search query", () => {
   );
 
   it.skip(
-    "should produce 58 results for 'sodium borohydride' when fuzzScorerOverride is 'ratio'",
+    "should produce 10 results for 'sodium borohydride' when fuzzScorerOverride is 'ratio'",
     async () => {
       const rowCount = await borohydrideRowCountWithScorer("ratio");
       vitestExpect(rowCount).toBe(24);
@@ -259,7 +259,7 @@ describe("Chem-Pal search query", () => {
   );
 
   it(
-    "should query for 'potassium' and return at least 20 results from mock data",
+    "should query for 'sodium borohydride' and return at least 20 results from mock data",
     async () => {
       const page = await openExtension();
 
@@ -268,7 +268,7 @@ describe("Chem-Pal search query", () => {
       const searchInput = page.getByRole("textbox", {
         name: "search for products",
       });
-      await searchInput.fill("potassium");
+      await searchInput.fill("sodium borohydride");
       await page.getByRole("button", { name: "search" }).click();
 
       // Wait for search to complete: the #loading-backdrop overlay is visible
