@@ -124,6 +124,33 @@ test(
     await closeDemoPopover(page);
     await clearHighlight(resultsTable);
 
+    // --- Shrink the display font (Settings → Display → Small) ---
+    const settingsBtn = page.getByRole("button", { name: "Open options" });
+    await highlight(settingsBtn);
+    await showDemoPopover(page, settingsBtn, "Open settings to tune the display");
+    await page.waitForTimeout(1200);
+    await closeDemoPopover(page);
+    await clearHighlight(settingsBtn);
+    await settingsBtn.click();
+
+    // Expand the Display section, then switch to the small font size.
+    const displaySection = page.locator("#drawer-tabpanel-2").getByRole("button", { name: "Display" });
+    await expect(displaySection).toBeVisible({ timeout: 5_000 });
+    await displaySection.click();
+    await page.waitForTimeout(700);
+    const smallFont = page.locator("#drawer-tabpanel-2").getByRole("button", { name: "Small" });
+    await expect(smallFont).toBeVisible({ timeout: 5_000 });
+    await highlight(smallFont);
+    await showDemoPopover(page, smallFont, "Switch to a smaller font to fit more on screen");
+    await page.waitForTimeout(1400);
+    await smallFont.click();
+    await page.waitForTimeout(1600);
+    await closeDemoPopover(page);
+    await clearHighlight(smallFont);
+    // Close the drawer.
+    await page.mouse.click(30, 400);
+    await page.waitForTimeout(700);
+
     // --- Column visibility ---
     const columnsButton = page.getByRole("button", { name: "Show or hide columns" });
     await highlight(columnsButton);
@@ -240,27 +267,31 @@ test(
     await expect(historyTab).toBeVisible({ timeout: 5_000 });
     await historyTab.click();
     await page.waitForTimeout(700);
-    const historyPanel = page.locator("#drawer-tabpanel-1");
-    await expect(historyPanel).toBeVisible({ timeout: 5_000 });
-    await highlight(historyPanel);
+    const historyEntry = page.locator("#drawer-tabpanel-1 li").first();
+    await expect(historyEntry).toBeVisible({ timeout: 5_000 });
+    await highlight(historyEntry);
     await showDemoPopover(
       page,
-      historyPanel,
-      "Every search you run is saved here — one click re-runs it",
+      historyEntry,
+      "Clicking on a history record will repeat the search",
     );
     await page.waitForTimeout(2200);
     await closeDemoPopover(page);
-    await clearHighlight(historyPanel);
+    await clearHighlight(historyEntry);
 
     // Switch to Settings and change currency — watch every price convert live.
     await page.getByRole("tab", { name: "SETTINGS" }).click();
     await page.waitForTimeout(600);
     const currencyInput = page.locator("#drawer-tabpanel-2").getByPlaceholder("Currency");
     await expect(currencyInput).toBeVisible({ timeout: 5_000 });
-    await highlight(currencyInput);
+    // Highlight the whole selector (the TextField), not just the input.
+    const currencyField = currencyInput.locator(
+      "xpath=ancestor::div[contains(@class, 'MuiTextField-root')][1]",
+    );
+    await highlight(currencyField);
     await showDemoPopover(
       page,
-      currencyInput,
+      currencyField,
       "Switch currency — every price on screen converts instantly",
     );
     await page.waitForTimeout(1200);
@@ -282,7 +313,7 @@ test(
     await page.waitForTimeout(1800);
 
     await closeDemoPopover(page);
-    await clearHighlight(currencyInput);
+    await clearHighlight(currencyField);
     // Close the drawer by clicking the backdrop (to the left of the right-anchored drawer).
     await page.mouse.click(30, 400);
     await page.waitForTimeout(700);
@@ -306,30 +337,37 @@ test(
     await ignoreItem.click();
     await page.waitForTimeout(1200);
 
-    // --- Second search: refine suppliers via the right-hand side panel ---
-    const optionsButton = page.getByRole("button", { name: "Open options" });
-    await highlight(optionsButton);
-    await showDemoPopover(page, optionsButton, "Open the side panel to refine your search");
-    await page.waitForTimeout(1500);
+    // --- Second search: open Advanced Search via the new ScienceIcon (flask) ---
+    const advancedBtn = page.getByRole("button", { name: "advanced options" });
+    await expect(advancedBtn).toBeVisible({ timeout: 5_000 });
+    await highlight(advancedBtn);
+    await showDemoPopover(
+      page,
+      advancedBtn,
+      "The flask opens Advanced Search — refine suppliers, filters, and options",
+    );
+    await page.waitForTimeout(1800);
     await closeDemoPopover(page);
-    await clearHighlight(optionsButton);
-    await optionsButton.click();
+    await clearHighlight(advancedBtn);
+    await advancedBtn.click();
 
-    // The drawer opens on Settings; switch to the Search tab.
-    const searchTab = page.getByRole("tab", { name: "SEARCH" });
-    await expect(searchTab).toBeVisible({ timeout: 5_000 });
-    await searchTab.click();
+    // The ScienceIcon opens the drawer straight to the Search (advanced) tab.
+    await expect(page.locator("#drawer-tabpanel-0")).toBeVisible({ timeout: 5_000 });
     await page.waitForTimeout(600);
 
     // Expand the supplier section and pick a single supplier.
     await page.getByRole("button", { name: /search suppliers/i }).click();
     const supplierInput = page.getByRole("combobox", { name: "Filter by search suppliers" });
     await expect(supplierInput).toBeVisible({ timeout: 5_000 });
-    await highlight(supplierInput);
-    await showDemoPopover(page, supplierInput, "Narrow the search to a single supplier");
+    // Highlight the whole input (the MuiInputBase-root), not just the combobox.
+    const supplierField = supplierInput.locator(
+      "xpath=ancestor::div[contains(@class, 'MuiInputBase-root')][1]",
+    );
+    await highlight(supplierField);
+    await showDemoPopover(page, supplierField, "Narrow the search to a single supplier");
     await page.waitForTimeout(1400);
     await closeDemoPopover(page);
-    await clearHighlight(supplierInput);
+    await clearHighlight(supplierField);
     await typeInto(supplierInput, "AladdinSci");
     await page.getByRole("option", { name: "AladdinSci" }).first().click();
     await page.waitForTimeout(500);
