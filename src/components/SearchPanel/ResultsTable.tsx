@@ -16,6 +16,7 @@ import {
   FilterList as FilterListIcon,
   FirstPage as FirstPageIcon,
   LastPage as LastPageIcon,
+  Science as ScienceIcon,
   Settings as SettingsIcon,
   ViewColumn as ViewColumnIcon,
 } from "@mui/icons-material";
@@ -465,6 +466,16 @@ export default function ResultsTable({
             )}
           </div>
           <div className={resultStyles["header-right"]}>
+            {/* Advanced search: opens the drawer's Search tab (mirrors the home
+                page's ScienceIcon). First icon, to the left of the others. */}
+            <ColoredIconButton
+              onClick={() => appContext?.toggleDrawer(DRAWER_INDEX.SEARCH)}
+              size="small"
+              iconColor="#666"
+              aria-label={i18n("search_advanced_options")}
+            >
+              <ScienceIcon />
+            </ColoredIconButton>
             <FilterIconButton
               onClick={toggleFilters}
               size="small"
