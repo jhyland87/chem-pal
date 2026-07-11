@@ -1,7 +1,7 @@
 import { test as base, type BrowserContext, chromium, type Page } from "@playwright/test";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { addSfxToVideo, installSfxCapture, startSfxTimeline } from "./sfx";
+import { addIntroOutro, addSfxToVideo, installSfxCapture, startSfxTimeline } from "./sfx";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const buildDir = path.resolve(dirname, "..", "build");
@@ -64,10 +64,14 @@ export const test = base.extend<DemoFixtures>({
     await use(context);
     await context.close();
 
-    // The video is finalized on close; add sound to the first page's recording.
+    // The video is finalized on close; add sound to the first page's recording,
+    // then wrap it with the logo intro/outro.
     const video = pages[0]?.video();
     if (video) {
-      await addSfxToVideo(await video.path());
+      const sfxMp4 = await addSfxToVideo(await video.path());
+      if (sfxMp4) {
+        await addIntroOutro(sfxMp4);
+      }
     }
   },
   extensionId: async ({ context }, use) => {
