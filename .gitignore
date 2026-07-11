@@ -21,7 +21,9 @@ html-report
 # Playwright demo artifacts
 demo-results
 demo-report
-demo/output
+# Keep the generated demo (mp4, screenshots, report) in the repo, but not the
+# large intermediate raw recordings Playwright writes with hashed names.
+demo/output/videos/*.webm
 
 # Editor directories and files
 
