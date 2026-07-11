@@ -1,4 +1,6 @@
 import { isCAS } from "@/helpers/cas";
+import { withTtlCache } from "@/helpers/requestCache";
+import { isPubChemCID } from "@/utils/typeGuards/common";
 
 /**
  * SDQ (Structure Data Query) agent from PubChem API
@@ -8,6 +10,390 @@ import { isCAS } from "@/helpers/cas";
  * SDQ types are declared globally in types/pubchem.d.ts
  * @source
  */
+
+/**
+ * Base URL for PubChem's PUG-REST API.
+ * @see https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest
+ * @source
+ */
+const PUG_REST_BASE = "https://pubchem.ncbi.nlm.nih.gov/rest/pug";
+
+/**
+ * Compound property fields requested from PUG-REST's `/property` operation. Uses the current
+ * `SMILES` field (PubChem retired `CanonicalSMILES` in 2025).
+ * @source
+ */
+const COMPOUND_PROPERTY_FIELDS =
+  "MolecularFormula,MolecularWeight,IUPACName,SMILES,InChI,InChIKey,Title";
+
+/**
+ * A subset of PubChem compound properties, normalized to friendly camelCase field names.
+ * Every field is optional because PUG-REST omits properties it cannot compute for a compound.
+ * @source
+ */
+export interface PubChemProperties {
+  /** The compound's CID. */
+  cid?: PubChemCID;
+  /** Molecular formula, e.g. `"C3H6O"`. */
+  molecularFormula?: string;
+  /** Molecular weight in g/mol. PubChem returns this as a string, e.g. `"58.08"`. */
+  molecularWeight?: string;
+  /** IUPAC systematic name. */
+  iupacName?: string;
+  /** Canonical SMILES string. */
+  smiles?: string;
+  /** InChI string. */
+  inchi?: string;
+  /** InChIKey (hashed InChI). */
+  inchiKey?: string;
+  /** PubChem's preferred title/name for the compound. */
+  title?: string;
+}
+
+/**
+ * A compound's textual description from PUG-REST's `/description` operation.
+ * @source
+ */
+export interface PubChemDescription {
+  /** The compound title, if provided. */
+  title?: string;
+  /** The description text. */
+  description?: string;
+  /** Human-readable name of the description's source. */
+  source?: string;
+  /** URL of the description's source. */
+  url?: string;
+}
+
+/**
+ * Extracts the CID list from a PUG-REST `IdentifierList` response, narrowing the parsed JSON
+ * without type assertions.
+ * @param data - The parsed JSON response body
+ * @returns The array of CID numbers, or undefined if the shape is unexpected/empty
+ * @source
+ */
+function extractCids(data: unknown): number[] | undefined {
+  if (typeof data !== "object" || data === null) return undefined;
+  const identifierList = Reflect.get(data, "IdentifierList");
+  if (typeof identifierList !== "object" || identifierList === null) return undefined;
+  const cid = Reflect.get(identifierList, "CID");
+  if (!Array.isArray(cid)) return undefined;
+  const nums = cid.filter((entry): entry is number => typeof entry === "number");
+  return nums.length > 0 ? nums : undefined;
+}
+
+/**
+ * Extracts the first compound-property record from a PUG-REST `PropertyTable` response and maps it
+ * to a {@link PubChemProperties}, narrowing every field without type assertions.
+ * @param data - The parsed JSON response body
+ * @returns The normalized properties, or undefined if the shape is unexpected/empty
+ * @source
+ */
+function extractProperties(data: unknown): PubChemProperties | undefined {
+  if (typeof data !== "object" || data === null) return undefined;
+  const table = Reflect.get(data, "PropertyTable");
+  if (typeof table !== "object" || table === null) return undefined;
+  const properties = Reflect.get(table, "Properties");
+  if (!Array.isArray(properties) || properties.length === 0) return undefined;
+  const first = properties[0];
+  if (typeof first !== "object" || first === null) return undefined;
+
+  const readString = (key: string): string | undefined => {
+    const value = Reflect.get(first, key);
+    return typeof value === "string" ? value : undefined;
+  };
+
+  const cidValue = Reflect.get(first, "CID");
+  const weight = Reflect.get(first, "MolecularWeight");
+
+  return {
+    cid: isPubChemCID(cidValue) ? cidValue : undefined,
+    molecularFormula: readString("MolecularFormula"),
+    // PubChem usually returns MolecularWeight as a string, but tolerate a numeric payload too.
+    molecularWeight:
+      typeof weight === "string"
+        ? weight
+        : typeof weight === "number"
+          ? String(weight)
+          : undefined,
+    iupacName: readString("IUPACName"),
+    smiles: readString("SMILES"),
+    inchi: readString("InChI"),
+    inchiKey: readString("InChIKey"),
+    title: readString("Title"),
+  };
+}
+
+/**
+ * Extracts a compound description from a PUG-REST `InformationList` response. PubChem often splits
+ * the description text and its source across separate entries, so fields are merged across all
+ * entries. Narrows every field without type assertions.
+ * @param data - The parsed JSON response body
+ * @returns The merged description, or undefined when no description text is present
+ * @source
+ */
+function extractDescription(data: unknown): PubChemDescription | undefined {
+  if (typeof data !== "object" || data === null) return undefined;
+  const list = Reflect.get(data, "InformationList");
+  if (typeof list !== "object" || list === null) return undefined;
+  const information = Reflect.get(list, "Information");
+  if (!Array.isArray(information)) return undefined;
+
+  const readString = (entry: object, key: string): string | undefined => {
+    const value = Reflect.get(entry, key);
+    return typeof value === "string" ? value : undefined;
+  };
+
+  let title: string | undefined;
+  let description: string | undefined;
+  let source: string | undefined;
+  let url: string | undefined;
+  for (const entry of information) {
+    if (typeof entry !== "object" || entry === null) continue;
+    title ??= readString(entry, "Title");
+    description ??= readString(entry, "Description");
+    source ??= readString(entry, "DescriptionSourceName");
+    url ??= readString(entry, "DescriptionURL");
+  }
+
+  if (!description) return undefined;
+  return { title, description, source, url };
+}
+
+/**
+ * Network implementation for {@link getCidsByCas}; see it for details.
+ * @param cas - The CAS registry number to look up
+ * @returns The matching CIDs, or undefined if none
+ * @source
+ */
+async function getCidsByCasUncached(cas: CAS<string>): Promise<PubChemCID[] | undefined> {
+  try {
+    const response = await fetch(
+      `${PUG_REST_BASE}/compound/xref/rn/${encodeURIComponent(cas)}/cids/JSON`,
+    );
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    const cids = extractCids(data);
+    if (!cids) return undefined;
+    const valid = cids.filter(isPubChemCID);
+    return valid.length > 0 ? valid : undefined;
+  } catch (error) {
+    console.error("Error fetching PubChem CIDs by CAS:", error);
+    return undefined;
+  }
+}
+
+/**
+ * Retrieves the PubChem CIDs registered for a CAS number via PUG-REST's xref/registry-number
+ * lookup. A single CAS number can map to multiple CIDs (e.g. different salt or hydrate forms).
+ * Results are cached for {@link THREE_DAYS_MS}; unknown CAS numbers resolve to undefined.
+ * @param cas - The CAS registry number to look up
+ * @returns The matching CIDs, or undefined if PubChem has no cross-reference
+ * @example
+ * ```typescript
+ * await getCidsByCas("15681-89-7");
+ * // Returns: [4311764, 22959485, 23673181]
+ * await getCidsByCas("0000-00-0");
+ * // Returns: undefined
+ * ```
+ * @source
+ */
+export const getCidsByCas = withTtlCache(getCidsByCasUncached, { namespace: "cidsByCas" });
+
+/**
+ * Network implementation for {@link getCidByName}; see it for details.
+ * @param name - The chemical name to look up
+ * @returns The first matching CID, or undefined
+ * @source
+ */
+async function getCidByNameUncached(name: string): Promise<PubChemCID | undefined> {
+  try {
+    const response = await fetch(
+      `${PUG_REST_BASE}/compound/name/${encodeURIComponent(name)}/cids/JSON`,
+    );
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    const first = extractCids(data)?.[0];
+    return isPubChemCID(first) ? first : undefined;
+  } catch (error) {
+    console.error("Error fetching PubChem CID by name:", error);
+    return undefined;
+  }
+}
+
+/**
+ * Resolves a chemical name to its best-matching PubChem CID via PUG-REST. Returns the first
+ * (highest-ranked) CID PubChem reports. Results are cached for {@link THREE_DAYS_MS}.
+ * @param name - The chemical name to look up
+ * @returns The best-matching CID, or undefined if PubChem has no match
+ * @example
+ * ```typescript
+ * await getCidByName("aspirin");
+ * // Returns: 2244
+ * ```
+ * @source
+ */
+export const getCidByName = withTtlCache(getCidByNameUncached, { namespace: "cidByName" });
+
+/**
+ * Network implementation for {@link getCompoundProperties}; see it for details.
+ * @param cid - The compound's CID
+ * @returns The normalized properties, or undefined
+ * @source
+ */
+async function getCompoundPropertiesUncached(
+  cid: PubChemCID,
+): Promise<PubChemProperties | undefined> {
+  try {
+    const response = await fetch(
+      `${PUG_REST_BASE}/compound/cid/${cid}/property/${COMPOUND_PROPERTY_FIELDS}/JSON`,
+    );
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return extractProperties(data);
+  } catch (error) {
+    console.error("Error fetching PubChem compound properties:", error);
+    return undefined;
+  }
+}
+
+/**
+ * Fetches core physical/chemical properties for a compound (formula, molecular weight, IUPAC name,
+ * SMILES, InChI, InChIKey, title) via PUG-REST. These map directly onto ChemPal's product fields,
+ * so this is the primary way to enrich a product once its CID is known. Cached for
+ * {@link THREE_DAYS_MS}.
+ * @param cid - The compound's CID
+ * @returns The compound's properties, or undefined if the CID is unknown
+ * @example
+ * ```typescript
+ * await getCompoundProperties(180);
+ * // Returns: { cid: 180, molecularFormula: "C3H6O", molecularWeight: "58.08",
+ * //           iupacName: "propan-2-one", smiles: "CC(C)=O", inchiKey: "CSCPPACGZOOCGX-UHFFFAOYSA-N", ... }
+ * ```
+ * @source
+ */
+export const getCompoundProperties = withTtlCache(getCompoundPropertiesUncached, {
+  namespace: "properties",
+});
+
+/**
+ * Network implementation for {@link getSynonymsByCid}; see it for details.
+ * @param cid - The compound's CID
+ * @returns The synonym list, or undefined
+ * @source
+ */
+async function getSynonymsByCidUncached(cid: PubChemCID): Promise<string[] | undefined> {
+  try {
+    const response = await fetch(`${PUG_REST_BASE}/compound/cid/${cid}/synonyms/JSON`);
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return extractSynonyms(data);
+  } catch (error) {
+    console.error("Error fetching PubChem synonyms by CID:", error);
+    return undefined;
+  }
+}
+
+/**
+ * Fetches PubChem's popularity-ranked synonyms for a compound by CID via PUG-REST. Prefer this
+ * over {@link getRankedNamesByName} when the CID is already known, as it avoids an ambiguous
+ * name lookup. Cached for {@link THREE_DAYS_MS}.
+ * @param cid - The compound's CID
+ * @returns The ranked synonym list, or undefined if the CID is unknown
+ * @example
+ * ```typescript
+ * await getSynonymsByCid(180);
+ * // Returns: ["acetone", "propan-2-one", "67-64-1", "2-propanone", ...]
+ * ```
+ * @source
+ */
+export const getSynonymsByCid = withTtlCache(getSynonymsByCidUncached, {
+  namespace: "synonymsByCid",
+});
+
+/**
+ * Network implementation for {@link getCompoundDescription}; see it for details.
+ * @param cid - The compound's CID
+ * @returns The merged description, or undefined
+ * @source
+ */
+async function getCompoundDescriptionUncached(
+  cid: PubChemCID,
+): Promise<PubChemDescription | undefined> {
+  try {
+    const response = await fetch(`${PUG_REST_BASE}/compound/cid/${cid}/description/JSON`);
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return extractDescription(data);
+  } catch (error) {
+    console.error("Error fetching PubChem description:", error);
+    return undefined;
+  }
+}
+
+/**
+ * Fetches a short human-readable description of a compound (with its source) by CID via PUG-REST.
+ * Useful for surfacing a plain-language blurb in the product detail view. Cached for
+ * {@link THREE_DAYS_MS}.
+ * @param cid - The compound's CID
+ * @returns The description and its source, or undefined if none is available
+ * @example
+ * ```typescript
+ * await getCompoundDescription(180);
+ * // Returns: { title: "Acetone", description: "Acetone is a manufactured chemical...",
+ * //           source: "NCI Thesaurus", url: "https://..." }
+ * ```
+ * @source
+ */
+export const getCompoundDescription = withTtlCache(getCompoundDescriptionUncached, {
+  namespace: "descriptionByCid",
+});
+
+/**
+ * Builds the URL of a compound's PubChem summary page from its CID.
+ * @param cid - The compound's CID
+ * @returns The PubChem compound page URL
+ * @example
+ * ```typescript
+ * pubchemCompoundUrl(180);
+ * // Returns: "https://pubchem.ncbi.nlm.nih.gov/compound/180"
+ * ```
+ * @source
+ */
+export function pubchemCompoundUrl(cid: PubChemCID): string {
+  return `https://pubchem.ncbi.nlm.nih.gov/compound/${cid}`;
+}
+
+/**
+ * Builds a PubChem search URL for a CAS number. Use this when the exact CID is unknown — PubChem's
+ * search lands the user on the matching compound (or a short result list) for the CAS number.
+ * @param cas - The CAS registry number
+ * @returns The PubChem search URL for the CAS number
+ * @example
+ * ```typescript
+ * pubchemCasSearchUrl("67-64-1");
+ * // Returns: "https://pubchem.ncbi.nlm.nih.gov/#query=67-64-1"
+ * ```
+ * @source
+ */
+export function pubchemCasSearchUrl(cas: string): string {
+  return `https://pubchem.ncbi.nlm.nih.gov/#query=${encodeURIComponent(cas)}`;
+}
+
+/**
+ * Builds the URL of a compound's 2D structure image (PNG) from its CID.
+ * @param cid - The compound's CID
+ * @returns The PUG-REST PNG image URL
+ * @example
+ * ```typescript
+ * pubchemStructureImageUrl(180);
+ * // Returns: "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/180/PNG"
+ * ```
+ * @source
+ */
+export function pubchemStructureImageUrl(cid: PubChemCID): string {
+  return `${PUG_REST_BASE}/compound/cid/${cid}/PNG`;
+}
 
 /**
  * Type guard to assert that data is a valid SDQResponse
@@ -35,22 +421,12 @@ function assertIsSDQWhere(where: unknown): asserts where is SDQWhere {
 }
 
 /**
- * Query the SDQ agent for a compound name from a synonym.
- * @param cmpdsynonym - The synonym to query the SDQ agent for.
- * @returns The compound name from the SDQ agent.
- * @example
- * ```typescript
- * const cmpd = await executeSDQSearch({
- *   where: { cmpdsynonym: "2-Acetoxybenzenecarboxylic acid" },
- *   select: ["cid", "cmpdname"],
- *   limit: 1,
- * });
- * console.log(cmpd);
- * // Outputs: Aspirin
- * ```
+ * Network implementation for {@link executeSDQSearch}; see it for details.
+ * @param query - The SDQ agent query (where clause, select fields, limit)
+ * @returns The matching SDQ result rows, or undefined
  * @source
  */
-export async function executeSDQSearch({
+async function executeSDQSearchUncached({
   where,
   select = "*",
   limit = 10,
@@ -109,6 +485,25 @@ export async function executeSDQSearch({
 }
 
 /**
+ * Query the SDQ agent for a compound name from a synonym. Results are cached for
+ * {@link THREE_DAYS_MS}.
+ * @param query - The SDQ agent query (where clause, select fields, limit)
+ * @returns The compound name from the SDQ agent.
+ * @example
+ * ```typescript
+ * const cmpd = await executeSDQSearch({
+ *   where: { cmpdsynonym: "2-Acetoxybenzenecarboxylic acid" },
+ *   select: ["cid", "cmpdname"],
+ *   limit: 1,
+ * });
+ * console.log(cmpd);
+ * // Outputs: Aspirin
+ * ```
+ * @source
+ */
+export const executeSDQSearch = withTtlCache(executeSDQSearchUncached, { namespace: "sdqSearch" });
+
+/**
  * Get the compound name from a synonym.
  * @param cmpdsynonym - The synonym to get the compound name from.
  * @returns The compound name from the synonym.
@@ -159,22 +554,15 @@ function extractSynonyms(data: unknown): string[] | undefined {
 }
 
 /**
- * Fetches PubChem's popularity-ranked synonyms for a chemical name via PUG-REST. The leading
- * entries are the most commonly used names, and CAS numbers appear inline among them. Returns
- * undefined when PubChem has no match (e.g. a 404 for an unknown or misspelled name).
+ * Network implementation for {@link getRankedNamesByName}; see it for details.
  * @param name - The chemical name to look up
- * @returns The ranked synonym list, or undefined if not found
- * @example
- * ```typescript
- * await getRankedNamesByName("acetone");
- * // Returns: ["acetone", "2-propanone", "67-64-1", "propanone", ...]
- * ```
+ * @returns The ranked synonym list, or undefined
  * @source
  */
-export async function getRankedNamesByName(name: string): Promise<string[] | undefined> {
+async function getRankedNamesByNameUncached(name: string): Promise<string[] | undefined> {
   try {
     const response = await fetch(
-      `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${encodeURIComponent(name)}/synonyms/JSON`,
+      `${PUG_REST_BASE}/compound/name/${encodeURIComponent(name)}/synonyms/JSON`,
     );
     if (!response.ok) return undefined;
     const data = await response.json();
@@ -184,6 +572,23 @@ export async function getRankedNamesByName(name: string): Promise<string[] | und
     return undefined;
   }
 }
+
+/**
+ * Fetches PubChem's popularity-ranked synonyms for a chemical name via PUG-REST, caching results
+ * for {@link THREE_DAYS_MS}. The leading entries are the most commonly used names, and CAS numbers
+ * appear inline among them. Returns undefined when PubChem has no match.
+ * @param name - The chemical name to look up
+ * @returns The ranked synonym list, or undefined if not found
+ * @example
+ * ```typescript
+ * await getRankedNamesByName("acetone");
+ * // Returns: ["acetone", "2-propanone", "67-64-1", "propanone", ...]
+ * ```
+ * @source
+ */
+export const getRankedNamesByName = withTtlCache(getRankedNamesByNameUncached, {
+  namespace: "rankedNames",
+});
 
 /**
  * Tidies a chemical name for display in a suggestion. PubChem often returns common names in all
