@@ -113,6 +113,19 @@ interface SetupOptions {
   fallback?: "abort" | "passthrough";
   /** Log all intercepted requests for debugging. Defaults to false. */
   verbose?: boolean;
+  /**
+   * Let unmocked image requests (resourceType "image") reach their real host
+   * even in "abort" mode. Product photos and structure depictions carry no
+   * supplier search data, so this keeps supplier APIs hermetic while images
+   * render (used by the demo). Defaults to false.
+   */
+  allowImages?: boolean;
+  /**
+   * Hosts whose unmocked requests are allowed through (route.continue) instead
+   * of aborted — matched exactly or as a subdomain suffix. Use for non-supplier
+   * services the demo needs live, e.g. the currency-rate API. Defaults to none.
+   */
+  allowHosts?: string[];
 }
 
 /**
@@ -132,6 +145,8 @@ export async function setupMockRoutes(page: Page, options: SetupOptions = {}): P
     responsesDir = join(process.cwd(), "e2e/mock-requests/responses"),
     fallback = "abort",
     verbose = false,
+    allowImages = false,
+    allowHosts = [],
   } = options;
 
   const { byHash, byUrl } = loadMockResponses(responsesDir);
@@ -177,6 +192,27 @@ export async function setupMockRoutes(page: Page, options: SetupOptions = {}): P
         },
       });
     } else {
+      // Let allowed image/host requests reach the real network even in "abort"
+      // mode (product photos, or a whitelisted service like the currency-rate
+      // API for the demo). These carry no supplier search data, so supplier APIs
+      // stay hermetic.
+      if (allowImages && request.resourceType() === "image") {
+        await route.continue();
+        return;
+      }
+      if (allowHosts.length > 0) {
+        let reqHost = "";
+        try {
+          reqHost = new URL(url).host;
+        } catch {
+          reqHost = "";
+        }
+        if (allowHosts.some((h) => reqHost === h || reqHost.endsWith(`.${h}`))) {
+          await route.continue();
+          return;
+        }
+      }
+
       missCount++;
       // Always surface misses: in "abort" mode an unmocked request is silently dropped, which
       // quietly changes supplier result counts. A concise host+path line makes it obvious which

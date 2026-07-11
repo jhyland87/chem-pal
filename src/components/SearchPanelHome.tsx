@@ -92,8 +92,8 @@ const SearchPanelHome: FC = () => {
   // Use only Cp7 for light and Cp6 for dark
   const logoSrc =
     mode === "dark"
-      ? "/static/images/logo/ChemPal-logo-v2-inverted.png"
-      : "/static/images/logo/ChemPal-logo-v2.png";
+      ? "/static/images/logo/ChemPal-logo-inverted.png"
+      : "/static/images/logo/ChemPal-logo.png";
 
   return (
     <SearchPanelHomeContainer>

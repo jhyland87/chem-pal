@@ -9,10 +9,12 @@ import {
   Select,
   TextField,
   Tooltip,
+  type TooltipProps,
   Typography,
 } from "@mui/material";
 import Link from "@mui/material/Link";
 import { lighten, styled } from "@mui/material/styles";
+import { createElement } from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -803,7 +805,14 @@ export const CountryFlagTooltip = styled(Tooltip)(() => ({
 
 // Rich tooltip for a variant's price-history popover: a light card wide enough
 // for the sparkline + points table (the theme default caps tooltips at 200px).
-export const PriceHistoryTooltip = styled(Tooltip)(({ theme }) => {
+//
+// The wrapper routes styled()'s className onto the tooltip's `popper` slot. In
+// MUI v7 a plain `styled(Tooltip)` puts the class on the anchor child, not the
+// portaled popper, so `& .MuiTooltip-tooltip` rules (incl. maxWidth) never apply
+// and the box falls back to the 200px theme cap — clipping the points table.
+export const PriceHistoryTooltip = styled(({ className, ...props }: TooltipProps) =>
+  createElement(Tooltip, { ...props, classes: { popper: className } }),
+)(({ theme }) => {
   // Lift the dark surface a notch so the trend colors read clearly against it.
   const surface =
     theme.palette.mode === "dark"

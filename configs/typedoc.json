@@ -43,6 +43,7 @@
   ],
   "logLevel": "Info",
   "customCss": "./custom.css",
+  "favicon": "../public/static/images/logo/favicon.svg",
   "mermaidPlugin": {
     //"disableMaximize": true
     //"disablePanZoom": true

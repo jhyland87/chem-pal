@@ -8,6 +8,8 @@ import {
   highlight,
   highlightGroup,
   showDemoPopover,
+  smoothScrollIntoView,
+  smoothScrollToTop,
   typeInto,
 } from "./helpers";
 import { seedPriceHistoryFromResults } from "./seedPriceHistory";
@@ -31,6 +33,10 @@ test("ChemPal search walkthrough", async ({ context, extensionId }) => {
     responsesDir: mockResponsesDir,
     fallback: "abort",
     verbose: false,
+    // Supplier API calls stay hermetic (aborted), but let product images and the
+    // currency-rate API through so photos render and currency switching works live.
+    allowImages: true,
+    allowHosts: ["hexarate.paikama.co"],
   });
 
   // Full browser-tab view (?view=tab): fills the desktop window.
@@ -59,18 +65,44 @@ test("ChemPal search walkthrough", async ({ context, extensionId }) => {
   await closeDemoPopover(page);
   await searchButton.click();
 
-  // 4. Wait for the search to complete: the backdrop appears while suppliers
-  // stream in, then disappears once every supplier finishes.
+  // 4. The loading backdrop appears while suppliers stream in and shows a Cancel
+  // button; it disappears once every supplier finishes.
   const backdrop = page.locator("#loading-backdrop");
-  await expect(backdrop).toBeVisible({ timeout: 10_000 });
+  // Plain CSS on the DOM <button> — getByRole can miss it inside the backdrop's
+  // a11y subtree. Wait on the button directly so we catch it while it's up.
+  const cancelSearch = backdrop.locator("button");
+
+  // While the search is still loading, point out the Cancel button (without
+  // clicking it). Guarded so a fast-finishing search can't fail the demo.
+  try {
+    await expect(cancelSearch).toBeVisible({ timeout: 10_000 });
+    await highlight(cancelSearch);
+    await showDemoPopover(
+      page,
+      cancelSearch,
+      "Canceling the current search will preserve any results that have already been found",
+    );
+    await page.waitForTimeout(2200);
+    await closeDemoPopover(page);
+    await clearHighlight(cancelSearch);
+  } catch (error) {
+    console.warn("[demo] Cancel-button highlight skipped:", error);
+    await closeDemoPopover(page);
+  }
+
   await expect(backdrop).toBeHidden({ timeout: 120_000 });
 
-  // 5. Show all rows (skip pagination) and highlight the results.
-  await page.locator('[aria-label="rows per page"]').click();
-  await page.getByRole("option", { name: "All" }).click();
-
+  // 5. Ease down to the pagination controls, switch to showing every result on
+  // one page, then ease back up to the top — smooth scrolls, not jumps.
   const resultsTable = page.locator("table").nth(1);
   await expect(resultsTable.locator("tbody tr td").first()).toBeVisible({ timeout: 5_000 });
+
+  const rowsPerPage = page.locator('[aria-label="rows per page"]');
+  await smoothScrollIntoView(page, rowsPerPage, "end");
+  await rowsPerPage.click();
+  await page.getByRole("option", { name: "All" }).click();
+  await page.waitForTimeout(700);
+  await smoothScrollToTop(page, resultsTable);
 
   const rowCount = await resultsTable
     .locator("tbody tr")
@@ -160,6 +192,82 @@ test("ChemPal search walkthrough", async ({ context, extensionId }) => {
   await page.waitForTimeout(1500);
   await closeDemoPopover(page);
   await clearGroupHighlight(page);
+
+  // Hover a variant's trend to reveal its price-history popover — a sparkline
+  // and the dated list of previous prices — then highlight and explain it.
+  const hoverTrend = variantTrends.first();
+  await hoverTrend.scrollIntoViewIfNeeded();
+  await hoverTrend.hover();
+  const trendPopup = page.locator(".MuiTooltip-tooltip").first();
+  await expect(trendPopup).toBeVisible({ timeout: 5_000 });
+  await page.waitForTimeout(700);
+  await highlight(trendPopup);
+  await showDemoPopover(
+    page,
+    trendPopup,
+    "The previous prices are viewable when hovering over it",
+  );
+  await page.waitForTimeout(2200);
+  await page.screenshot({ path: path.join(screenshotDir, "walkthrough-variant-trend-hover.png") });
+  await closeDemoPopover(page);
+  await clearHighlight(trendPopup);
+  // Move the mouse away so the hover popover dismisses before the next step.
+  await page.mouse.move(2, 2);
+  await page.waitForTimeout(500);
+
+  // --- Drawer: History tab + live currency switching (detail panel still open) ---
+  const optionsBtn = page.getByRole("button", { name: "Open options" });
+  await highlight(optionsBtn);
+  await showDemoPopover(page, optionsBtn, "Open the side panel for history and settings");
+  await page.waitForTimeout(1200);
+  await closeDemoPopover(page);
+  await clearHighlight(optionsBtn);
+  await optionsBtn.click();
+
+  // Open the History tab to reveal past searches — but don't click an entry
+  // (that would re-run that search).
+  const historyTab = page.getByRole("tab", { name: "HISTORY" });
+  await expect(historyTab).toBeVisible({ timeout: 5_000 });
+  await historyTab.click();
+  await page.waitForTimeout(700);
+  const historyPanel = page.locator("#drawer-tabpanel-1");
+  await expect(historyPanel).toBeVisible({ timeout: 5_000 });
+  await highlight(historyPanel);
+  await showDemoPopover(page, historyPanel, "Every search you run is saved here — one click re-runs it");
+  await page.waitForTimeout(2200);
+  await closeDemoPopover(page);
+  await clearHighlight(historyPanel);
+
+  // Switch to Settings and change currency — watch every price convert live.
+  await page.getByRole("tab", { name: "SETTINGS" }).click();
+  await page.waitForTimeout(600);
+  const currencyInput = page.locator("#drawer-tabpanel-2").getByPlaceholder("Currency");
+  await expect(currencyInput).toBeVisible({ timeout: 5_000 });
+  await highlight(currencyInput);
+  await showDemoPopover(page, currencyInput, "Switch currency — every price on screen converts instantly");
+  await page.waitForTimeout(1200);
+
+  // USD → PLN
+  await currencyInput.click();
+  await currencyInput.fill("PLN");
+  const plnOption = page.getByRole("option", { name: "PLN (zł)" }).first();
+  await expect(plnOption).toBeVisible({ timeout: 5_000 });
+  await plnOption.click();
+  await page.waitForTimeout(2200);
+
+  // PLN → USD
+  await currencyInput.click();
+  await currencyInput.fill("USD");
+  const usdOption = page.getByRole("option", { name: "USD ($)" }).first();
+  await expect(usdOption).toBeVisible({ timeout: 5_000 });
+  await usdOption.click();
+  await page.waitForTimeout(1800);
+
+  await closeDemoPopover(page);
+  await clearHighlight(currencyInput);
+  // Close the drawer by clicking the backdrop (to the left of the right-anchored drawer).
+  await page.mouse.click(30, 400);
+  await page.waitForTimeout(700);
 
   // --- Ignore a product (right-click → Ignore Product) ---
   const ignoreRow = resultsTable.locator("tbody tr").first();

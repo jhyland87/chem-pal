@@ -237,6 +237,14 @@ export function useResultsTable({
     // Variants are built Product-shaped by the suppliers but typed as Variant[];
     // reinterpret them as the table's row type. This is a data-model alias of
     // trusted internal data, not untrusted input, so no runtime guard applies.
+    getRowId: (row, index, parent) => {
+      // Track rows by product identity, not array index, so row expansion and
+      // selection survive re-indexing when a product is ignored/removed. Mirrors
+      // the exclusion key (supplier + cacheKey), falling back to url then index;
+      // variant sub-rows are namespaced under their parent's id.
+      const base = row.cacheKey ? `${row.supplier}:${row.cacheKey}` : (row.url ?? String(index));
+      return parent ? `${parent.id}>${base}` : base;
+    },
     getSubRows: (row) => row?.variants as Product[],
     getRowCanExpand: (row: Row<Product>) => getRowCanExpand(row),
     getCoreRowModel: getCoreRowModel(),

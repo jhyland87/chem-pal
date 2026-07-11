@@ -1,5 +1,4 @@
 import { defaultSettings } from "@/../config.json";
-import DrawerSystem from "@/components/DrawerSystem";
 import LoadingBackdrop from "@/components/LoadingBackdrop";
 import resultStyles from "@/components/ResultsPanel.module.scss";
 import { CACHE, DRAWER_INDEX } from "@/constants/common";
@@ -447,8 +446,6 @@ export default function ResultsTable({
         isAborting={isAborting}
         onClick={handleStopSearch}
       />
-      <DrawerSystem />
-
       <div className={resultStyles["results-container"]}>
         <div className={resultStyles["results-header"]}>
           <div className={resultStyles["header-left"]}>

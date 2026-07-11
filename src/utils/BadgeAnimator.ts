@@ -162,8 +162,8 @@ export class BadgeAnimator {
  * ```ts
  * chrome.action.setIcon({
  *   path: {
- *     16: 'static/images/logo/ChemPal-logo-v2.png',
- *     32: 'static/images/logo/ChemPal-logo-v2.png',
+ *     16: 'static/images/logo/ChemPal-logo.png',
+ *     32: 'static/images/logo/ChemPal-logo.png',
  *   },
  * });
  * ```
