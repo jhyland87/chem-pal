@@ -5,7 +5,7 @@ import { addIntroOutro, addSfxToVideo, installSfxCapture, startSfxTimeline } fro
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const buildDir = path.resolve(dirname, "..", "build");
-const videoDir = path.resolve(dirname, "..", "demo-results", "videos");
+const videoDir = path.resolve(dirname, "output", "videos");
 
 /**
  * Desktop viewport / recording canvas for the demo, which runs in the full
@@ -68,7 +68,9 @@ export const test = base.extend<DemoFixtures>({
     // then wrap it with the logo intro/outro.
     const video = pages[0]?.video();
     if (video) {
-      const sfxMp4 = await addSfxToVideo(await video.path());
+      // Stable output name in demo/output/videos (only the walkthrough records).
+      const finalMp4 = path.resolve(videoDir, "chempal-demo-sfx.mp4");
+      const sfxMp4 = await addSfxToVideo(await video.path(), finalMp4);
       if (sfxMp4) {
         await addIntroOutro(sfxMp4);
       }

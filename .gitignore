@@ -21,6 +21,7 @@ html-report
 # Playwright demo artifacts
 demo-results
 demo-report
+demo/output
 
 # Editor directories and files
 

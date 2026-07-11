@@ -18,7 +18,7 @@ import { seedPriceHistoryFromResults } from "./seedPriceHistory";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const mockResponsesDir = path.resolve(dirname, "..", "e2e", "mock-requests", "responses");
-const screenshotDir = path.resolve(dirname, "..", "demo-results", "screenshots");
+const screenshotDir = path.resolve(dirname, "output", "screenshots");
 
 /**
  * Guided walkthrough that opens the extension in the full browser-tab view

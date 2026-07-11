@@ -430,13 +430,17 @@ async function probeDurationSec(file: string): Promise<number | undefined> {
  * ffmpeg is missing, or the sound files are absent, and swallows any ffmpeg
  * error so it never fails the demo run.
  * @param webmPath - Path to the Playwright-recorded silent `.webm`.
+ * @param targetMp4 - Optional output path; defaults to `<webm>-sfx.mp4`.
  * @returns The output `.mp4` path when written, otherwise `undefined`.
  * @example
- * const mp4 = await addSfxToVideo("demo-results/videos/abc.webm");
- * // => "demo-results/videos/abc-sfx.mp4"
+ * const mp4 = await addSfxToVideo("demo/output/videos/abc.webm");
+ * // => "demo/output/videos/abc-sfx.mp4"
  * @source
  */
-export async function addSfxToVideo(webmPath: string): Promise<string | undefined> {
+export async function addSfxToVideo(
+  webmPath: string,
+  targetMp4?: string,
+): Promise<string | undefined> {
   const clicksMs = events
     .filter((e) => e.kind === "click")
     .map((e) => e.atMs + SFX_SYNC_OFFSET_MS)
@@ -470,7 +474,7 @@ export async function addSfxToVideo(webmPath: string): Promise<string | undefine
     return undefined;
   }
 
-  const outMp4Path = webmPath.replace(/\.webm$/i, "-sfx.mp4");
+  const outMp4Path = targetMp4 ?? webmPath.replace(/\.webm$/i, "-sfx.mp4");
   try {
     const durationSec = await probeDurationSec(webmPath);
     const args = [
