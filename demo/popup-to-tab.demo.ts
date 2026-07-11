@@ -18,8 +18,8 @@ import { expect, test } from "./fixtures";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const mockResponsesDir = path.resolve(dirname, "..", "e2e", "mock-requests", "responses");
-const screenshotDir = path.resolve(dirname, "..", "demo-results", "screenshots");
-const stitchedVideo = path.resolve(dirname, "..", "demo-results", "popup-to-tab-full.webm");
+const screenshotDir = path.resolve(dirname, "output", "screenshots");
+const stitchedVideo = path.resolve(dirname, "output", "videos", "popup-to-tab-full.webm");
 
 /**
  * Concatenate the popup clip and the tab clip into one continuous video with
