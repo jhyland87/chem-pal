@@ -73,33 +73,11 @@ test(
     await closeDemoPopover(page);
     await searchButton.click();
 
-    // 4. The loading backdrop appears while suppliers stream in and shows a Cancel
-    // button; it disappears once every supplier finishes.
+    // 4. Wait for the first search to finish — the loading backdrop shows while
+    // suppliers stream in, then disappears once every supplier is done. (Cancel
+    // is demonstrated on the second search below.)
     const backdrop = page.locator("#loading-backdrop");
-    // Plain CSS on the DOM <button> — getByRole can miss it inside the backdrop's
-    // a11y subtree. Wait on the button directly so we catch it while it's up.
-    const cancelSearch = backdrop.locator("button");
-
-    // While the search is still loading, point out the Cancel button (without
-    // clicking it). Guarded so a fast-finishing search can't fail the demo.
-    try {
-      await expect(cancelSearch, "Cancel Search button should be visible").toBeVisible({
-        timeout: 10_000,
-      });
-      await highlight(cancelSearch);
-      await showDemoPopover(
-        page,
-        cancelSearch,
-        "Canceling the current search will preserve any results that have already been found",
-      );
-      await page.waitForTimeout(2200);
-      await closeDemoPopover(page);
-      await clearHighlight(cancelSearch);
-    } catch (error) {
-      console.warn("[demo] Cancel-button highlight skipped:", error);
-      await closeDemoPopover(page);
-    }
-
+    await expect(backdrop, "Loading backdrop should be visible").toBeVisible({ timeout: 10_000 });
     await expect(backdrop, "Loading backdrop should be hidden").toBeHidden({ timeout: 120_000 });
 
     // 5. Ease down to the pagination controls, switch to showing every result on
@@ -160,7 +138,7 @@ test(
     await page.mouse.click(30, 400);
     await page.waitForTimeout(700);
 
-    // --- Column visibility ---
+    // --- Column visibility: make sure PubChem + CAS are shown, then point them out ---
     const columnsButton = page.getByRole("button", { name: "Show or hide columns" });
     await highlight(columnsButton);
     await showDemoPopover(page, columnsButton, "Show or hide any column");
@@ -169,14 +147,59 @@ test(
     await clearHighlight(columnsButton);
     await columnsButton.click();
 
-    // Toggle the PubChem column off, then back on, so the effect is visible.
-    const pubchemToggle = page.getByRole("checkbox", { name: "PubChem" });
-    await expect(pubchemToggle, "PubChem column should be visible").toBeVisible({ timeout: 5_000 });
-    await pubchemToggle.click();
-    await page.waitForTimeout(1200);
-    await pubchemToggle.click();
-    await page.waitForTimeout(800);
+    // Ensure the PubChem and CAS columns are visible (check them if unchecked).
+    for (const col of ["PubChem", "CAS"]) {
+      const toggle = page.getByRole("checkbox", { name: col, exact: true });
+      if ((await toggle.count()) > 0 && !(await toggle.first().isChecked())) {
+        await toggle.first().click();
+        await page.waitForTimeout(400);
+      }
+    }
+    await page.waitForTimeout(500);
     await page.keyboard.press("Escape");
+    await page.waitForTimeout(400);
+
+    // Point out a PubChem cell — clicking a CID opens that compound on PubChem.
+    try {
+      const pubchemCell = page
+        .getByRole("link", { name: /PubChem CID/i })
+        .first()
+        .locator("xpath=ancestor::td[1]");
+      await expect(pubchemCell, "A populated PubChem cell should exist").toBeVisible({
+        timeout: 8_000,
+      });
+      await pubchemCell.scrollIntoViewIfNeeded();
+      await highlight(pubchemCell);
+      await showDemoPopover(
+        page,
+        pubchemCell,
+        "Click a PubChem ID to open that compound's page on PubChem",
+      );
+      await page.waitForTimeout(2400);
+      await closeDemoPopover(page);
+      await clearHighlight(pubchemCell);
+    } catch (error) {
+      console.warn("[demo] no populated PubChem cell to highlight:", error);
+      await closeDemoPopover(page);
+    }
+
+    // Point out a CAS cell — clicking a CAS number goes to PubChem as well.
+    try {
+      const casCell = page
+        .getByRole("link", { name: /View on PubChem/i })
+        .first()
+        .locator("xpath=ancestor::td[1]");
+      await expect(casCell, "A CAS cell should exist").toBeVisible({ timeout: 8_000 });
+      await casCell.scrollIntoViewIfNeeded();
+      await highlight(casCell);
+      await showDemoPopover(page, casCell, "Clicking a CAS number takes you to PubChem too");
+      await page.waitForTimeout(2400);
+      await closeDemoPopover(page);
+      await clearHighlight(casCell);
+    } catch (error) {
+      console.warn("[demo] no CAS cell to highlight:", error);
+      await closeDemoPopover(page);
+    }
 
     // --- Column filters ---
     const filterButton = page.getByRole("button", { name: "Toggle column filters" });
@@ -372,7 +395,7 @@ test(
     });
     await page.waitForTimeout(600);
 
-    // Expand the supplier section and pick a single supplier.
+    // Expand the supplier section and pick a few suppliers.
     await page.getByRole("button", { name: /search suppliers/i }).click();
     const supplierInput = page.getByRole("combobox", { name: "Filter by search suppliers" });
     await expect(supplierInput, "Supplier input should be visible").toBeVisible({ timeout: 5_000 });
@@ -381,13 +404,17 @@ test(
       "xpath=ancestor::div[contains(@class, 'MuiInputBase-root')][1]",
     );
     await highlight(supplierField);
-    await showDemoPopover(page, supplierField, "Narrow the search to a single supplier");
+    await showDemoPopover(page, supplierField, "Narrow the search to a few chosen suppliers");
     await page.waitForTimeout(1400);
     await closeDemoPopover(page);
     await clearHighlight(supplierField);
-    await typeInto(supplierInput, "AladdinSci");
-    await page.getByRole("option", { name: "AladdinSci" }).first().click();
-    await page.waitForTimeout(500);
+
+    // Pick three suppliers (each selection clears the input for the next one).
+    for (const name of ["Loudwolf", "Carolina", "Synthetika"]) {
+      await typeInto(supplierInput, name);
+      await page.getByRole("option", { name, exact: true }).first().click();
+      await page.waitForTimeout(400);
+    }
     // Dismiss the still-open supplier dropdown (Escape only closes the popup, not
     // the drawer) so it doesn't overlap the query field.
     await page.keyboard.press("Escape");
@@ -401,7 +428,7 @@ test(
       .getByRole("textbox", { name: "Product name or keyword" })
       .first();
     await drawerQuery.fill("");
-    await typeInto(drawerQuery, "Sodium Borohydride");
+    await typeInto(drawerQuery, "potassium");
     const drawerSearch = page.getByRole("button", { name: "Search", exact: true });
     await highlight(drawerSearch);
     await showDemoPopover(page, drawerSearch, "Run the search again with these suppliers");
@@ -410,15 +437,28 @@ test(
     await clearHighlight(drawerSearch);
     await drawerSearch.click();
 
-    // The drawer closes and the supplier-scoped search runs.
+    // The drawer closes and the supplier-scoped search runs. Let results stream
+    // in for ~2s, then cancel — showing that canceling keeps what's already found.
     const backdrop2 = page.locator("#loading-backdrop");
     await expect(backdrop2, "Loading backdrop should be visible").toBeVisible({ timeout: 10_000 });
-    await expect(backdrop2, "Loading backdrop should be hidden").toBeHidden({ timeout: 120_000 });
+    await page.waitForTimeout(2000);
+    if (await backdrop2.isVisible()) {
+      await backdrop2.locator("button").click();
+    }
+    await expect(backdrop2, "Loading backdrop should be hidden after cancel").toBeHidden({
+      timeout: 30_000,
+    });
+
+    // The results found before canceling remain on screen.
     await expect(
       resultsTable.locator("tbody tr td").first(),
-      "First result should be visible",
+      "Results kept after canceling should be visible",
     ).toBeVisible({ timeout: 5_000 });
-    await page.waitForTimeout(800);
+    await highlight(resultsTable);
+    await showDemoPopover(page, resultsTable, "Canceling kept the results found so far");
+    await page.waitForTimeout(2400);
+    await closeDemoPopover(page);
+    await clearHighlight(resultsTable);
     await page.screenshot({ path: path.join(screenshotDir, "walkthrough-supplier-search.png") });
 
     // Final beauty shot for the deck.

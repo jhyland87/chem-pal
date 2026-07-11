@@ -10,6 +10,7 @@ import { omit } from "@/helpers/collectionUtils";
 import { getCountryName } from "@/helpers/country";
 import { i18n } from "@/helpers/i18n";
 import { formatDisplayPrice } from "@/helpers/price";
+import { pubchemCasSearchUrl, pubchemCompoundUrl } from "@/helpers/pubchem";
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
 import COAIcon from "@/icons/COAIcon";
@@ -405,7 +406,23 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       id: "cas",
       header: i18n("column_cas"),
       accessorKey: "cas",
-      cell: (info) => info.getValue(),
+      // Link the CAS number to PubChem: straight to the compound page when the CID is known,
+      // otherwise to a CAS search that resolves to the matching compound.
+      cell: ({ row }: ProductRow) => {
+        const cas = row.original.cas;
+        if (!cas) return null;
+        const cid = row.original.pubchemId;
+        const href = cid ? pubchemCompoundUrl(cid) : pubchemCasSearchUrl(cas);
+        return (
+          <Link
+            href={href}
+            title={i18n("product_detail_pubchem_view")}
+            aria-label={`${cas} — ${i18n("product_detail_pubchem_view")}`}
+          >
+            {cas}
+          </Link>
+        );
+      },
       filterFn: "includeHierarchy",
       meta: {
         filterPlaceholder: i18n("filter_placeholder_cas"),
@@ -424,7 +441,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         if (!cid) return null;
         return (
           <Link
-            href={`https://pubchem.ncbi.nlm.nih.gov/compound/${cid}`}
+            href={pubchemCompoundUrl(cid)}
             aria-label={i18n("product_detail_pubchem_cid", [String(cid)])}
             title={i18n("product_detail_pubchem_view")}
           >
