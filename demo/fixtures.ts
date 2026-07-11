@@ -1,6 +1,7 @@
-import { test as base, type BrowserContext, chromium } from "@playwright/test";
+import { test as base, type BrowserContext, chromium, type Page } from "@playwright/test";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { addSfxToVideo, installSfxCapture, startSfxTimeline } from "./sfx";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const buildDir = path.resolve(dirname, "..", "build");
@@ -52,8 +53,22 @@ export const test = base.extend<DemoFixtures>({
         "--no-default-browser-check",
       ],
     });
+
+    // Stamp the recording start and capture real click/keystroke events so we
+    // can mux matching sounds into an .mp4 after the video is flushed.
+    startSfxTimeline();
+    await installSfxCapture(context);
+    const pages: Page[] = [];
+    context.on("page", (page) => pages.push(page));
+
     await use(context);
     await context.close();
+
+    // The video is finalized on close; add sound to the first page's recording.
+    const video = pages[0]?.video();
+    if (video) {
+      await addSfxToVideo(await video.path());
+    }
   },
   extensionId: async ({ context }, use) => {
     // The service worker's URL is `chrome-extension://<id>/service-worker.js`.

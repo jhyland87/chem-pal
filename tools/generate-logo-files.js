@@ -26,14 +26,26 @@ const __rootDir = path.resolve(__dirname, "..");
 /**
  * Constants (specific to this script)
  */
-const logoTemplate = "public/static/images/logo/ChemPal-logo-v2-template.xml";
+const logoTemplate = "public/static/images/logo/ChemPal-logo-template.xml";
+
+/**
+ * Square pixel sizes to render PNG icon variants at, from the same SVG template.
+ * Each is emitted alongside the full-size PNG as `<name>-<size>.png`
+ * (e.g. ChemPal-logo-16.png) for use as manifest icons.
+ */
+const ICON_SIZES = [16, 32, 48, 128];
 
 /**
  * Helper functions
  */
+// Get the real path of a file relative to the root directory
 const _realpath = (filename) => path.resolve(__rootDir, filename);
+// Get the basename of a file
 const _basename = (filename) => path.basename(filename);
+// Promisify the svg2img function
 const svg2imgPromisified = util.promisify(svg2img);
+// Simple function to read a utf8 encoded file
+const _readFile = async (filename) => await fs.readFile(filename, "utf8");
 
 // Using ASCII color codes instead of chalk because these show up in github actions output.
 const _r = (text) => `\x1b[31m${text}\x1b[0m`; // red
@@ -48,12 +60,15 @@ const _w = (text) => `\x1b[37m${text}\x1b[0m`; // white
  * Get the number of suppliers by counting uncommented export lines
  * in src/suppliers/index.ts.
  *
- * @returns {number} The number of active suppliers
+ * @returns {string[]} The list of active suppliers
  */
-async function getNumberOfSuppliers() {
-  const indexPath = path.resolve(__dirname, "../src/suppliers/index.ts");
-  const content = await fs.readFile(indexPath, "utf8");
-  return content.split("\n").filter((line) => /^export\s/.test(line.trim())).length;
+async function getSupplierList() {
+  const indexPath = _realpath("./src/suppliers/index.ts");
+  const content = await _readFile(indexPath);
+  const supplierMatches = content.matchAll(/^(?:export\s{\sSupplier(?<supplier>\w+)\s}\sfrom)/gm);
+  return Array.from(supplierMatches)
+    .map((match) => match.groups?.supplier)
+    .filter(Boolean);
 }
 
 /**
@@ -73,21 +88,41 @@ function getPluginVersion() {
  * @todo Try to grab the color themes from the existing theme files (eg: pull
  * from src/theme/colors.ts)
  */
-const numberOfSuppliers = await getNumberOfSuppliers();
+const supplierList = await getSupplierList();
+const numberOfSuppliers = supplierList.length;
+console.log("Details:");
+console.log(`  Suppliers (${_y(numberOfSuppliers)}): ${_c(supplierList.join(", "))}`);
+console.log(`  Plugin version: ${_c(getPluginVersion())}`);
+console.log(`  Icon sizes (px):  ${_c(ICON_SIZES.join(", "))}`);
+console.log("");
+
 const svgFilesToConvert = {
-  "public/static/images/logo/ChemPal-logo-v2.svg": {
+  "public/static/images/logo/ChemPal-logo.svg": {
     backgroundColor: "#2C4060",
     primaryColor: "#ffffff",
     secondaryColor: "#D6E3F3",
     atomicNumber: numberOfSuppliers,
     pluginVersion: getPluginVersion(),
+    iconSizes: ICON_SIZES,
   },
-  "public/static/images/logo/ChemPal-logo-v2-inverted.svg": {
+  "public/static/images/logo/ChemPal-logo-inverted.svg": {
     backgroundColor: "#ffffff",
     primaryColor: "#2C4060",
     secondaryColor: "#3f5270",
     atomicNumber: numberOfSuppliers,
     pluginVersion: getPluginVersion(),
+    iconSizes: ICON_SIZES,
+  },
+  // Browser-tab favicon: the main ChemPal badge, emitted as an SVG plus 16/32px
+  // PNGs only (no full-size PNG). Referenced by index.html and the TypeDoc site.
+  "public/static/images/logo/favicon.svg": {
+    backgroundColor: "#2C4060",
+    primaryColor: "#ffffff",
+    secondaryColor: "#D6E3F3",
+    atomicNumber: supplierList.length,
+    pluginVersion: getPluginVersion(),
+    iconSizes: [16, 32],
+    fullSize: false,
   },
 };
 
@@ -98,7 +133,7 @@ if (!(await fs.stat(logoTemplatePath))) {
   process.exit(1);
 }
 
-const templateRaw = await fs.readFile(logoTemplatePath, "utf8");
+const templateRaw = await _readFile(logoTemplatePath);
 
 /**
  * Create an SVG file from the template and the data
@@ -117,14 +152,22 @@ async function createSvgFile(svgFile, svgFileData) {
 }
 
 /**
- * Create a PNG file from the SVG file
+ * Create a PNG file from the SVG file.
  * @param {string} svgFile - The path to the SVG file to convert
+ * @param {number} [size] - Optional square pixel size. When provided, the PNG is
+ *   rendered at `size`×`size` and written as `<name>-<size>.png`; otherwise it is
+ *   rendered at the template's intrinsic size and written as `<name>.png`.
  */
-async function createPngFile(svgFile) {
+async function createPngFile(svgFile, size) {
   try {
-    const pngFilename = svgFile.replace(".svg", ".png");
+    const pngFilename = size
+      ? svgFile.replace(".svg", `-${size}.png`)
+      : svgFile.replace(".svg", ".png");
+    // svg2img (>=1.0) renders via resvg-js; scale with fitTo (aspect ratio is
+    // preserved, so a square template yields a square icon).
+    const options = size ? { resvg: { fitTo: { mode: "width", value: size } } } : {};
 
-    const buffer = await svg2imgPromisified(_realpath(svgFile));
+    const buffer = await svg2imgPromisified(_realpath(svgFile), options);
     await fs.writeFile(_realpath(pngFilename), buffer);
     console.log(`  ${_y(_basename(pngFilename))} created from ${_y(_basename(svgFile))}`);
   } catch (error) {
@@ -137,5 +180,13 @@ for (const [svgFile, svgFileData] of Object.entries(svgFilesToConvert)) {
   console.log("");
   console.log(`Generating ${_c(svgFile)}...`);
   await createSvgFile(svgFile, svgFileData);
-  await createPngFile(svgFile);
+  // Skip the full-size PNG for entries that only need sized variants (favicon).
+  if (svgFileData.fullSize !== false) {
+    await createPngFile(svgFile);
+  }
+  if (Array.isArray(svgFileData.iconSizes)) {
+    for (const size of svgFileData.iconSizes) {
+      await createPngFile(svgFile, size);
+    }
+  }
 }

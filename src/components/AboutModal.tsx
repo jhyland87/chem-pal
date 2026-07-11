@@ -60,8 +60,8 @@ export default function AboutModal({
   );
   const logoSrc =
     themeContext?.mode === "dark"
-      ? "/static/images/logo/ChemPal-logo-v2-inverted.svg"
-      : "/static/images/logo/ChemPal-logo-v2.svg";
+      ? "/static/images/logo/ChemPal-logo-inverted.svg"
+      : "/static/images/logo/ChemPal-logo.svg";
 
   const handleCheckForUpdates = () => {
     (async () => {

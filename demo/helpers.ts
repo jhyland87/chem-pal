@@ -22,6 +22,68 @@ export async function typeInto(locator: Locator, text: string, delayMs = 70): Pr
 }
 
 /**
+ * Smoothly scrolls an element into view (animated) and waits for the scroll to
+ * settle, so the demo eases to it instead of snapping — easier on the eye in the
+ * recording. Uses the element's own scroll container, so it works whether the
+ * page or an inner region scrolls.
+ * @param page - The page, used to pace the settle wait.
+ * @param locator - The element to bring into view.
+ * @param block - Where to align the element vertically once in view.
+ * @param settleMs - How long to wait for the smooth scroll to finish.
+ * @returns A promise that resolves once the scroll has settled.
+ * @example
+ * ```ts
+ * await smoothScrollIntoView(page, paginationControl, "end");
+ * ```
+ * @source
+ */
+export async function smoothScrollIntoView(
+  page: Page,
+  locator: Locator,
+  block: "start" | "center" | "end" | "nearest" = "center",
+  settleMs = 1200,
+): Promise<void> {
+  await locator.evaluate((el, b) => {
+    el.scrollIntoView({ behavior: "smooth", block: b, inline: "nearest" });
+  }, block);
+  await page.waitForTimeout(settleMs);
+}
+
+/**
+ * Smoothly scrolls all the way back to the top. Walks up from `anchor` to the
+ * nearest scrollable ancestor and scrolls it to 0 (falling back to the window),
+ * so the top of the view — including anything above the anchor, like a toolbar —
+ * comes fully into frame, rather than stopping at the anchor's own top edge.
+ * @param page - The page, used to pace the settle wait.
+ * @param anchor - An element inside the scroll container to return to the top of.
+ * @param settleMs - How long to wait for the smooth scroll to finish.
+ * @returns A promise that resolves once the scroll has settled.
+ * @example
+ * ```ts
+ * await smoothScrollToTop(page, resultsTable);
+ * ```
+ * @source
+ */
+export async function smoothScrollToTop(page: Page, anchor: Locator, settleMs = 1400): Promise<void> {
+  await anchor.evaluate((el) => {
+    const isScrollable = (node: Element): boolean => {
+      const style = getComputedStyle(node);
+      return /(auto|scroll)/.test(style.overflowY) && node.scrollHeight > node.clientHeight + 1;
+    };
+    let node: Element | null = el.parentElement;
+    while (node) {
+      if (isScrollable(node)) {
+        node.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      node = node.parentElement;
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+  await page.waitForTimeout(settleMs);
+}
+
+/**
  * Draws a glowing outline around an element to draw the audience's eye.
  * @param locator - The element to highlight.
  * @returns A promise that resolves once the outline is applied.

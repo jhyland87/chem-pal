@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./public/static/images/logo/ChemPal-logo-v2.png" alt="chem-pal logo" width="200"/>
+  <img src="./public/static/images/logo/ChemPal-logo.png" alt="chem-pal logo" width="200"/>
 </p>
 
 
