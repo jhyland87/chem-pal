@@ -12,6 +12,8 @@
  *     and cut to that run's length — never stretched or looped;
  *   - the scroll sound plays for each scroll run (smooth scrolls), likewise cut
  *     to the run's length.
+ * Finally {@link addIntroOutro} wraps the result with a white ChemPal-logo card
+ * that crossfades into the demo at the start and back out at the end.
  * Every step degrades gracefully — a missing ffmpeg, missing sound files, no
  * events, or a mux error only logs a warning and never fails the demo.
  *
@@ -68,6 +70,22 @@ const SCROLL_GAP_MS = 350;
 const SCROLL_TAIL_MS = 120;
 /** Minimum span for a scroll run to play a sound — filters out instant `scrollIntoView` blips. */
 const SCROLL_MIN_SPAN_MS = 250;
+
+/** Intro/outro card logo (centered on a white background). */
+const CARD_LOGO = path.resolve(
+  moduleDir,
+  "..",
+  "public",
+  "static",
+  "images",
+  "logo",
+  "ChemPal-logo.png",
+);
+/** Seconds the intro/outro card is shown (including the crossfade). */
+const INTRO_SEC = 2;
+const OUTRO_SEC = 2;
+/** Crossfade duration (s) between the card and the demo. */
+const XFADE_SEC = 0.8;
 
 /** The name of the page binding the init script calls to report an event. */
 const BINDING_NAME = "__chempalSfxRecord";
@@ -498,5 +516,192 @@ export async function addSfxToVideo(webmPath: string): Promise<string | undefine
   } catch (error) {
     console.warn("[demo] SFX mux failed:", error);
     return undefined;
+  }
+}
+
+/**
+ * Reads a video's pixel dimensions via ffprobe.
+ * @param file - Path to the video.
+ * @returns The `{ width, height }`, or `undefined` if they can't be read.
+ * @example
+ * await probeVideoSize("run.mp4"); // => { width: 1280, height: 800 }
+ * @source
+ */
+async function probeVideoSize(file: string): Promise<{ width: number; height: number } | undefined> {
+  try {
+    const { stdout } = await execFileAsync("ffprobe", [
+      "-v",
+      "error",
+      "-select_streams",
+      "v:0",
+      "-show_entries",
+      "stream=width,height",
+      "-of",
+      "csv=p=0",
+      file,
+    ]);
+    const [width, height] = stdout.trim().split(",").map(Number);
+    if (Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0) {
+      return { width, height };
+    }
+  } catch {
+    // fall through
+  }
+  return undefined;
+}
+
+/**
+ * Whether a file has an audio stream.
+ * @param file - Path to the media file.
+ * @returns `true` if an audio stream is present.
+ * @example
+ * await hasAudioStream("run.mp4"); // => true
+ * @source
+ */
+async function hasAudioStream(file: string): Promise<boolean> {
+  try {
+    const { stdout } = await execFileAsync("ffprobe", [
+      "-v",
+      "error",
+      "-select_streams",
+      "a:0",
+      "-show_entries",
+      "stream=codec_type",
+      "-of",
+      "csv=p=0",
+      file,
+    ]);
+    return stdout.trim().length > 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Renders the intro/outro card — the ChemPal logo centered on a white
+ * background at the given size — to a PNG.
+ * @param cardPath - Where to write the card image.
+ * @param width - Card width (matches the video).
+ * @param height - Card height (matches the video).
+ * @returns Resolves once the PNG is written.
+ * @example
+ * await generateCard("card.png", 1280, 800);
+ * @source
+ */
+async function generateCard(cardPath: string, width: number, height: number): Promise<void> {
+  const logoSize = Math.round(Math.min(width, height) * 0.5);
+  await execFileAsync("ffmpeg", [
+    "-y",
+    "-f",
+    "lavfi",
+    "-i",
+    `color=c=white:s=${width}x${height}`,
+    "-i",
+    CARD_LOGO,
+    "-filter_complex",
+    `[1]scale=${logoSize}:-1[lg];[0][lg]overlay=(W-w)/2:(H-h)/2`,
+    "-frames:v",
+    "1",
+    cardPath,
+  ]);
+}
+
+/**
+ * Wraps a demo video with an intro and outro: it opens on a white card with the
+ * centered ChemPal logo, crossfades into the demo, and crossfades back to the
+ * card at the end. Rewrites the file in place. No-ops (with a warning, keeping
+ * the original) when ffmpeg is missing, the logo/probe is unavailable, or the
+ * ffmpeg pass errors — so it never fails the demo run. The demo's audio is
+ * delayed to stay in sync and padded with silence over the card segments.
+ * @param videoPath - Path to the demo `.mp4` to wrap (overwritten on success).
+ * @returns The `videoPath` when wrapped, otherwise `undefined`.
+ * @example
+ * await addIntroOutro("demo-results/videos/abc-sfx.mp4");
+ * @source
+ */
+export async function addIntroOutro(videoPath: string): Promise<string | undefined> {
+  if (!(await hasBinary("ffmpeg"))) {
+    console.warn("[demo] ffmpeg not found; skipping intro/outro");
+    return undefined;
+  }
+  const durationSec = await probeDurationSec(videoPath);
+  if (durationSec === undefined) {
+    console.warn("[demo] could not probe demo duration; skipping intro/outro");
+    return undefined;
+  }
+
+  const size = (await probeVideoSize(videoPath)) ?? { width: 1280, height: 800 };
+  const withAudio = await hasAudioStream(videoPath);
+  const cardPath = videoPath.replace(/\.mp4$/i, ".card.png");
+  const tmpPath = videoPath.replace(/\.mp4$/i, ".io.tmp.mp4");
+
+  // Crossfade start offsets and the padded total duration.
+  const off1 = INTRO_SEC - XFADE_SEC;
+  const off2 = INTRO_SEC + durationSec - 2 * XFADE_SEC;
+  const totalSec = INTRO_SEC + durationSec + OUTRO_SEC - 2 * XFADE_SEC;
+  const audioDelayMs = Math.round(off1 * 1000);
+
+  const norm = (input: string, out: string): string =>
+    `[${input}]fps=30,scale=${size.width}:${size.height},setsar=1,format=yuv420p,settb=AVTB[${out}]`;
+  const filterParts = [
+    norm("1:v", "intro"),
+    norm("2:v", "outro"),
+    norm("0:v", "demo"),
+    `[intro][demo]xfade=transition=fade:duration=${XFADE_SEC}:offset=${off1.toFixed(3)}[iv]`,
+    `[iv][outro]xfade=transition=fade:duration=${XFADE_SEC}:offset=${off2.toFixed(3)}[v]`,
+  ];
+  if (withAudio) {
+    filterParts.push(`[0:a]adelay=${audioDelayMs}|${audioDelayMs},apad,atrim=0:${totalSec.toFixed(3)}[a]`);
+  }
+
+  try {
+    await generateCard(cardPath, size.width, size.height);
+    const args = [
+      "-y",
+      "-i",
+      videoPath,
+      "-loop",
+      "1",
+      "-t",
+      String(INTRO_SEC),
+      "-i",
+      cardPath,
+      "-loop",
+      "1",
+      "-t",
+      String(OUTRO_SEC),
+      "-i",
+      cardPath,
+      "-filter_complex",
+      filterParts.join(";"),
+      "-map",
+      "[v]",
+    ];
+    if (withAudio) {
+      args.push("-map", "[a]", "-c:a", "aac", "-b:a", "160k");
+    }
+    args.push(
+      "-c:v",
+      "libx264",
+      "-pix_fmt",
+      "yuv420p",
+      "-preset",
+      "veryfast",
+      "-crf",
+      "20",
+      "-movflags",
+      "+faststart",
+      tmpPath,
+    );
+    await execFileAsync("ffmpeg", args);
+    await fs.rename(tmpPath, videoPath);
+    console.log(`[demo] added intro/outro to ${videoPath}`);
+    return videoPath;
+  } catch (error) {
+    console.warn("[demo] intro/outro failed:", error);
+    return undefined;
+  } finally {
+    await fs.rm(cardPath, { force: true });
+    await fs.rm(tmpPath, { force: true });
   }
 }
