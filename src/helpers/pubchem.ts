@@ -186,7 +186,7 @@ async function getCidsByCasUncached(cas: CAS<string>): Promise<PubChemCID[] | un
 /**
  * Retrieves the PubChem CIDs registered for a CAS number via PUG-REST's xref/registry-number
  * lookup. A single CAS number can map to multiple CIDs (e.g. different salt or hydrate forms).
- * Results are cached for {@link THREE_DAYS_MS}; unknown CAS numbers resolve to undefined.
+ * Results are cached for three days; unknown CAS numbers resolve to undefined.
  * @param cas - The CAS registry number to look up
  * @returns The matching CIDs, or undefined if PubChem has no cross-reference
  * @example
@@ -198,7 +198,10 @@ async function getCidsByCasUncached(cas: CAS<string>): Promise<PubChemCID[] | un
  * ```
  * @source
  */
-export const getCidsByCas = withTtlCache(getCidsByCasUncached, { namespace: "cidsByCas" });
+export const getCidsByCas: (cas: CAS<string>) => Promise<PubChemCID[] | undefined> = withTtlCache(
+  getCidsByCasUncached,
+  { namespace: "cidsByCas" },
+);
 
 /**
  * Network implementation for {@link getCidByName}; see it for details.
@@ -223,7 +226,7 @@ async function getCidByNameUncached(name: string): Promise<PubChemCID | undefine
 
 /**
  * Resolves a chemical name to its best-matching PubChem CID via PUG-REST. Returns the first
- * (highest-ranked) CID PubChem reports. Results are cached for {@link THREE_DAYS_MS}.
+ * (highest-ranked) CID PubChem reports. Results are cached for three days.
  * @param name - The chemical name to look up
  * @returns The best-matching CID, or undefined if PubChem has no match
  * @example
@@ -233,7 +236,10 @@ async function getCidByNameUncached(name: string): Promise<PubChemCID | undefine
  * ```
  * @source
  */
-export const getCidByName = withTtlCache(getCidByNameUncached, { namespace: "cidByName" });
+export const getCidByName: (name: string) => Promise<PubChemCID | undefined> = withTtlCache(
+  getCidByNameUncached,
+  { namespace: "cidByName" },
+);
 
 /**
  * Network implementation for {@link getCompoundProperties}; see it for details.
@@ -261,7 +267,7 @@ async function getCompoundPropertiesUncached(
  * Fetches core physical/chemical properties for a compound (formula, molecular weight, IUPAC name,
  * SMILES, InChI, InChIKey, title) via PUG-REST. These map directly onto ChemPal's product fields,
  * so this is the primary way to enrich a product once its CID is known. Cached for
- * {@link THREE_DAYS_MS}.
+ * three days.
  * @param cid - The compound's CID
  * @returns The compound's properties, or undefined if the CID is unknown
  * @example
@@ -272,7 +278,9 @@ async function getCompoundPropertiesUncached(
  * ```
  * @source
  */
-export const getCompoundProperties = withTtlCache(getCompoundPropertiesUncached, {
+export const getCompoundProperties: (
+  cid: PubChemCID,
+) => Promise<PubChemProperties | undefined> = withTtlCache(getCompoundPropertiesUncached, {
   namespace: "properties",
 });
 
@@ -297,7 +305,7 @@ async function getSynonymsByCidUncached(cid: PubChemCID): Promise<string[] | und
 /**
  * Fetches PubChem's popularity-ranked synonyms for a compound by CID via PUG-REST. Prefer this
  * over {@link getRankedNamesByName} when the CID is already known, as it avoids an ambiguous
- * name lookup. Cached for {@link THREE_DAYS_MS}.
+ * name lookup. Cached for three days.
  * @param cid - The compound's CID
  * @returns The ranked synonym list, or undefined if the CID is unknown
  * @example
@@ -307,9 +315,10 @@ async function getSynonymsByCidUncached(cid: PubChemCID): Promise<string[] | und
  * ```
  * @source
  */
-export const getSynonymsByCid = withTtlCache(getSynonymsByCidUncached, {
-  namespace: "synonymsByCid",
-});
+export const getSynonymsByCid: (cid: PubChemCID) => Promise<string[] | undefined> = withTtlCache(
+  getSynonymsByCidUncached,
+  { namespace: "synonymsByCid" },
+);
 
 /**
  * Network implementation for {@link getCompoundDescription}; see it for details.
@@ -334,7 +343,7 @@ async function getCompoundDescriptionUncached(
 /**
  * Fetches a short human-readable description of a compound (with its source) by CID via PUG-REST.
  * Useful for surfacing a plain-language blurb in the product detail view. Cached for
- * {@link THREE_DAYS_MS}.
+ * three days.
  * @param cid - The compound's CID
  * @returns The description and its source, or undefined if none is available
  * @example
@@ -345,7 +354,9 @@ async function getCompoundDescriptionUncached(
  * ```
  * @source
  */
-export const getCompoundDescription = withTtlCache(getCompoundDescriptionUncached, {
+export const getCompoundDescription: (
+  cid: PubChemCID,
+) => Promise<PubChemDescription | undefined> = withTtlCache(getCompoundDescriptionUncached, {
   namespace: "descriptionByCid",
 });
 
@@ -486,7 +497,7 @@ async function executeSDQSearchUncached({
 
 /**
  * Query the SDQ agent for a compound name from a synonym. Results are cached for
- * {@link THREE_DAYS_MS}.
+ * three days.
  * @param query - The SDQ agent query (where clause, select fields, limit)
  * @returns The compound name from the SDQ agent.
  * @example
@@ -501,7 +512,8 @@ async function executeSDQSearchUncached({
  * ```
  * @source
  */
-export const executeSDQSearch = withTtlCache(executeSDQSearchUncached, { namespace: "sdqSearch" });
+export const executeSDQSearch: (query: SDQAgentQuery) => Promise<SDQResultItem[] | undefined> =
+  withTtlCache(executeSDQSearchUncached, { namespace: "sdqSearch" });
 
 /**
  * Get the compound name from a synonym.
@@ -575,7 +587,7 @@ async function getRankedNamesByNameUncached(name: string): Promise<string[] | un
 
 /**
  * Fetches PubChem's popularity-ranked synonyms for a chemical name via PUG-REST, caching results
- * for {@link THREE_DAYS_MS}. The leading entries are the most commonly used names, and CAS numbers
+ * for three days. The leading entries are the most commonly used names, and CAS numbers
  * appear inline among them. Returns undefined when PubChem has no match.
  * @param name - The chemical name to look up
  * @returns The ranked synonym list, or undefined if not found
@@ -586,9 +598,10 @@ async function getRankedNamesByNameUncached(name: string): Promise<string[] | un
  * ```
  * @source
  */
-export const getRankedNamesByName = withTtlCache(getRankedNamesByNameUncached, {
-  namespace: "rankedNames",
-});
+export const getRankedNamesByName: (name: string) => Promise<string[] | undefined> = withTtlCache(
+  getRankedNamesByNameUncached,
+  { namespace: "rankedNames" },
+);
 
 /**
  * Tidies a chemical name for display in a suggestion. PubChem often returns common names in all

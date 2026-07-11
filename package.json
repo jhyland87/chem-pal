@@ -18,7 +18,7 @@
   "config": {
     "links": {
       "wiki": "https://github.com/jhyland87/chem-pal/wiki",
-      "privacy": "https://jhyland87.github.io/chem-pal/privacy.html"
+      "privacy": "https://jhyland87.github.io/chem-pal/documents/PRIVACY.html"
     },
     "github": {
       "owner": "jhyland87",
@@ -63,7 +63,7 @@
     "test:e2e:chrome": "vitest run --config configs/vitest.e2e.config.ts",
     "test:e2e:firefox": "vitest run --config configs/vitest.e2e.firefox.config.ts",
     "lint:firefox": "web-ext lint --source-dir build-firefox",
-    "docs": "typedoc --options configs/typedoc.json && cp themes/typedoc-theme-hierarchy/packages/plugin/dist/assets/hierarchy.css themes/typedoc-theme-hierarchy/packages/plugin/dist/assets/hierarchy-theme.js docs/assets/ && cp privacy.html docs/privacy.html",
+    "docs": "typedoc --options configs/typedoc.json && cp themes/typedoc-theme-hierarchy/packages/plugin/dist/assets/hierarchy.css themes/typedoc-theme-hierarchy/packages/plugin/dist/assets/hierarchy-theme.js docs/assets/",
     "docs:www": "pnpm run docs && npx http-server -p 8080 docs",
     "validate-docs": "tsc --noEmit",
     "generate-logo-files": "node tools/generate-logo-files.js",
