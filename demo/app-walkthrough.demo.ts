@@ -51,7 +51,7 @@ test(
     await page.goto(`chrome-extension://${extensionId}/index.html?view=tab`);
 
     const searchInput = page.getByRole("textbox", { name: "search for products" });
-    await expect(searchInput).toBeVisible({ timeout: 10_000 });
+    await expect(searchInput, "Search input should be visible").toBeVisible({ timeout: 10_000 });
     await page.waitForTimeout(1000);
 
     // 1. Point out the search box.
@@ -83,7 +83,9 @@ test(
     // While the search is still loading, point out the Cancel button (without
     // clicking it). Guarded so a fast-finishing search can't fail the demo.
     try {
-      await expect(cancelSearch).toBeVisible({ timeout: 10_000 });
+      await expect(cancelSearch, "Cancel Search button should be visible").toBeVisible({
+        timeout: 10_000,
+      });
       await highlight(cancelSearch);
       await showDemoPopover(
         page,
@@ -98,12 +100,15 @@ test(
       await closeDemoPopover(page);
     }
 
-    await expect(backdrop).toBeHidden({ timeout: 120_000 });
+    await expect(backdrop, "Loading backdrop should be hidden").toBeHidden({ timeout: 120_000 });
 
     // 5. Ease down to the pagination controls, switch to showing every result on
     // one page, then ease back up to the top — smooth scrolls, not jumps.
     const resultsTable = page.locator("table").nth(1);
-    await expect(resultsTable.locator("tbody tr td").first()).toBeVisible({ timeout: 5_000 });
+    await expect(
+      resultsTable.locator("tbody tr td").first(),
+      "First result should be visible",
+    ).toBeVisible({ timeout: 5_000 });
 
     const rowsPerPage = page.locator('[aria-label="rows per page"]');
     await smoothScrollIntoView(page, rowsPerPage, "end");
@@ -116,7 +121,7 @@ test(
       .locator("tbody tr")
       .filter({ has: page.locator("td") })
       .count();
-    expect(rowCount).toBeGreaterThanOrEqual(20);
+    expect(rowCount, "There are at least 20 results").toBeGreaterThanOrEqual(20);
 
     await highlight(resultsTable);
     await showDemoPopover(page, resultsTable, "Live results from many suppliers, ranked by match");
@@ -134,12 +139,16 @@ test(
     await settingsBtn.click();
 
     // Expand the Display section, then switch to the small font size.
-    const displaySection = page.locator("#drawer-tabpanel-2").getByRole("button", { name: "Display" });
-    await expect(displaySection).toBeVisible({ timeout: 5_000 });
+    const displaySection = page
+      .locator("#drawer-tabpanel-2")
+      .getByRole("button", { name: "Display" });
+    await expect(displaySection, "Display section should be visible").toBeVisible({
+      timeout: 5_000,
+    });
     await displaySection.click();
     await page.waitForTimeout(700);
     const smallFont = page.locator("#drawer-tabpanel-2").getByRole("button", { name: "Small" });
-    await expect(smallFont).toBeVisible({ timeout: 5_000 });
+    await expect(smallFont, "Small font size should be visible").toBeVisible({ timeout: 5_000 });
     await highlight(smallFont);
     await showDemoPopover(page, smallFont, "Switch to a smaller font to fit more on screen");
     await page.waitForTimeout(1400);
@@ -162,7 +171,7 @@ test(
 
     // Toggle the PubChem column off, then back on, so the effect is visible.
     const pubchemToggle = page.getByRole("checkbox", { name: "PubChem" });
-    await expect(pubchemToggle).toBeVisible({ timeout: 5_000 });
+    await expect(pubchemToggle, "PubChem column should be visible").toBeVisible({ timeout: 5_000 });
     await pubchemToggle.click();
     await page.waitForTimeout(1200);
     await pubchemToggle.click();
@@ -180,7 +189,7 @@ test(
 
     // Type into the Title column's filter to narrow the results.
     const titleFilter = page.getByPlaceholder("Title...");
-    await expect(titleFilter).toBeVisible({ timeout: 5_000 });
+    await expect(titleFilter, "Title filter should be visible").toBeVisible({ timeout: 5_000 });
     await highlight(titleFilter);
     await showDemoPopover(page, titleFilter, "Filter by product name");
     await page.waitForTimeout(1200);
@@ -234,7 +243,7 @@ test(
     await hoverTrend.scrollIntoViewIfNeeded();
     await hoverTrend.hover();
     const trendPopup = page.locator(".MuiTooltip-tooltip").first();
-    await expect(trendPopup).toBeVisible({ timeout: 5_000 });
+    await expect(trendPopup, "Trend popup should be visible").toBeVisible({ timeout: 5_000 });
     await page.waitForTimeout(700);
     await highlight(trendPopup);
     await showDemoPopover(
@@ -264,11 +273,13 @@ test(
     // Open the History tab to reveal past searches — but don't click an entry
     // (that would re-run that search).
     const historyTab = page.getByRole("tab", { name: "HISTORY" });
-    await expect(historyTab).toBeVisible({ timeout: 5_000 });
+    await expect(historyTab, "History tab should be visible").toBeVisible({ timeout: 5_000 });
     await historyTab.click();
     await page.waitForTimeout(700);
     const historyEntry = page.locator("#drawer-tabpanel-1 li").first();
-    await expect(historyEntry).toBeVisible({ timeout: 5_000 });
+    await expect(historyEntry, "First history entry should be visible").toBeVisible({
+      timeout: 5_000,
+    });
     await highlight(historyEntry);
     await showDemoPopover(
       page,
@@ -283,7 +294,7 @@ test(
     await page.getByRole("tab", { name: "SETTINGS" }).click();
     await page.waitForTimeout(600);
     const currencyInput = page.locator("#drawer-tabpanel-2").getByPlaceholder("Currency");
-    await expect(currencyInput).toBeVisible({ timeout: 5_000 });
+    await expect(currencyInput, "Currency input should be visible").toBeVisible({ timeout: 5_000 });
     // Highlight the whole selector (the TextField), not just the input.
     const currencyField = currencyInput.locator(
       "xpath=ancestor::div[contains(@class, 'MuiTextField-root')][1]",
@@ -300,7 +311,7 @@ test(
     await currencyInput.click();
     await currencyInput.fill("PLN");
     const plnOption = page.getByRole("option", { name: "PLN (zł)" }).first();
-    await expect(plnOption).toBeVisible({ timeout: 5_000 });
+    await expect(plnOption, "PLN option should be visible").toBeVisible({ timeout: 5_000 });
     await plnOption.click();
     await page.waitForTimeout(2200);
 
@@ -308,7 +319,7 @@ test(
     await currencyInput.click();
     await currencyInput.fill("USD");
     const usdOption = page.getByRole("option", { name: "USD ($)" }).first();
-    await expect(usdOption).toBeVisible({ timeout: 5_000 });
+    await expect(usdOption, "USD option should be visible").toBeVisible({ timeout: 5_000 });
     await usdOption.click();
     await page.waitForTimeout(1800);
 
@@ -329,7 +340,9 @@ test(
     await ignoreRow.click({ button: "right" });
 
     const ignoreItem = page.getByRole("menuitem", { name: "Ignore Product" });
-    await expect(ignoreItem).toBeVisible({ timeout: 5_000 });
+    await expect(ignoreItem, "Ignore Product item should be visible").toBeVisible({
+      timeout: 5_000,
+    });
     await highlight(ignoreItem);
     await showDemoPopover(page, ignoreItem, "…to hide it from the results");
     await page.waitForTimeout(1800);
@@ -339,7 +352,9 @@ test(
 
     // --- Second search: open Advanced Search via the new ScienceIcon (flask) ---
     const advancedBtn = page.getByRole("button", { name: "advanced options" });
-    await expect(advancedBtn).toBeVisible({ timeout: 5_000 });
+    await expect(advancedBtn, "Advanced options button should be visible").toBeVisible({
+      timeout: 5_000,
+    });
     await highlight(advancedBtn);
     await showDemoPopover(
       page,
@@ -352,13 +367,15 @@ test(
     await advancedBtn.click();
 
     // The ScienceIcon opens the drawer straight to the Search (advanced) tab.
-    await expect(page.locator("#drawer-tabpanel-0")).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator("#drawer-tabpanel-0"), "Search tab should be visible").toBeVisible({
+      timeout: 5_000,
+    });
     await page.waitForTimeout(600);
 
     // Expand the supplier section and pick a single supplier.
     await page.getByRole("button", { name: /search suppliers/i }).click();
     const supplierInput = page.getByRole("combobox", { name: "Filter by search suppliers" });
-    await expect(supplierInput).toBeVisible({ timeout: 5_000 });
+    await expect(supplierInput, "Supplier input should be visible").toBeVisible({ timeout: 5_000 });
     // Highlight the whole input (the MuiInputBase-root), not just the combobox.
     const supplierField = supplierInput.locator(
       "xpath=ancestor::div[contains(@class, 'MuiInputBase-root')][1]",
@@ -395,9 +412,12 @@ test(
 
     // The drawer closes and the supplier-scoped search runs.
     const backdrop2 = page.locator("#loading-backdrop");
-    await expect(backdrop2).toBeVisible({ timeout: 10_000 });
-    await expect(backdrop2).toBeHidden({ timeout: 120_000 });
-    await expect(resultsTable.locator("tbody tr td").first()).toBeVisible({ timeout: 5_000 });
+    await expect(backdrop2, "Loading backdrop should be visible").toBeVisible({ timeout: 10_000 });
+    await expect(backdrop2, "Loading backdrop should be hidden").toBeHidden({ timeout: 120_000 });
+    await expect(
+      resultsTable.locator("tbody tr td").first(),
+      "First result should be visible",
+    ).toBeVisible({ timeout: 5_000 });
     await page.waitForTimeout(800);
     await page.screenshot({ path: path.join(screenshotDir, "walkthrough-supplier-search.png") });
 
