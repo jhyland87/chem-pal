@@ -432,7 +432,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
           </Link>
         );
       },
-      enableColumnFilter: false,
+      enableColumnFilter: true,
       meta: {
         style: {
           textAlign: "left",
