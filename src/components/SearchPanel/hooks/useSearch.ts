@@ -5,6 +5,7 @@ import { SearchEvent, emitSearchEvent } from "@/events/searchEvents";
 import { addExcludedProduct } from "@/helpers/excludedProducts";
 import { i18n } from "@/helpers/i18n";
 import { recordProductPrices } from "@/helpers/priceHistory";
+import { dedupeProducts, getProductDedupeKey } from "@/helpers/productIdentity";
 import { suggestAlternativeSearch } from "@/helpers/pubchem";
 import { ABORT_SEARCH_EVENT } from "@/hotkeys";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
@@ -486,6 +487,11 @@ export function useSearch() {
         // stream drains can spuriously report 0 — see the no-results check below.
         let totalResults = 0;
 
+        // Tracks supplier-scoped identities already emitted this search so the
+        // streaming branch can skip a product that arrives more than once,
+        // keeping duplicates out of both the live table and storage.
+        const seenKeys = new Set<string>();
+
         // When filters are active, collect all results first, then filter and limit.
         // When no filters are active, stream results directly for immediate UI feedback.
         if (filtersActive) {
@@ -504,8 +510,13 @@ export function useSearch() {
             });
           }
 
+          // Drop products that streamed in more than once (same supplier-scoped
+          // identity) before filtering, so duplicates never reach state/storage
+          // and the per-supplier limit counts unique products.
+          const uniqueResults = dedupeProducts(allResults);
+
           // Apply pre-search filters
-          const filtered = allResults.filter((product) =>
+          const filtered = uniqueResults.filter((product) =>
             passesSearchFilters(product, searchFilters, appContext.userSettings),
           );
 
@@ -544,6 +555,14 @@ export function useSearch() {
           // No filters active — stream results directly; ResultsTable re-emits
           // the count per appended row, so no direct badge update is needed here.
           for await (const result of productQueryResults) {
+            // Skip a product whose identity already streamed in this search, so
+            // the same product is never appended (and persisted) twice.
+            const dedupeKey = getProductDedupeKey(result);
+            if (dedupeKey !== undefined) {
+              if (seenKeys.has(dedupeKey)) continue;
+              seenKeys.add(dedupeKey);
+            }
+
             totalResults += 1;
 
             // Update state with current count using startTransition for better performance

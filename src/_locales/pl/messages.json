@@ -672,6 +672,19 @@
     "message": "Czas życia pamięci podręcznej (minuty)",
     "description": "Setting label."
   },
+  "settings_cache_stats": {
+    "message": "$count$ rekordów w pamięci podręcznej · $size$",
+    "placeholders": { "count": { "content": "$1" }, "size": { "content": "$2" } },
+    "description": "Small stats line under the cache section showing record count and storage size."
+  },
+  "settings_clear_cache": {
+    "message": "Wyczyść pamięć podręczną",
+    "description": "Button label."
+  },
+  "settings_cache_cleared": {
+    "message": "Pamięć podręczna wyczyszczona.",
+    "description": "Confirmation text."
+  },
   "settings_track_price_history": {
     "message": "Śledź historię cen",
     "description": "Setting label."
@@ -691,6 +704,15 @@
   "settings_price_history_cleared": {
     "message": "Historia cen wyczyszczona.",
     "description": "Confirmation text."
+  },
+  "settings_price_history_stats": {
+    "message": "$products$ produktów · $points$ punktów danych · $size$",
+    "placeholders": {
+      "products": { "content": "$1" },
+      "points": { "content": "$2" },
+      "size": { "content": "$3" }
+    },
+    "description": "Small stats line under the price history section showing tracked products, total data points, and storage size."
   },
   "settings_font_size": {
     "message": "Rozmiar czcionki",
@@ -811,6 +833,14 @@
   "context_menu_open_in_new_tab": {
     "message": "Otwórz w nowej karcie",
     "description": "Context menu option to open the product in a new tab."
+  },
+  "context_menu_expand_all": {
+    "message": "Rozwiń wszystkie widoczne wiersze",
+    "description": "Context menu option to expand every visible row in the results table."
+  },
+  "context_menu_collapse_all": {
+    "message": "Zwiń wszystkie widoczne wiersze",
+    "description": "Context menu option to collapse every visible row in the results table."
   },
   "context_menu_create_bookmark": {
     "message": "Utwórz zakładkę",

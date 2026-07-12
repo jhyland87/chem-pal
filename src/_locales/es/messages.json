@@ -485,6 +485,13 @@
   },
   "settings_do_not_cache_empty": { "message": "No guardar en caché los resultados vacíos", "description": "Setting label." },
   "settings_cache_ttl": { "message": "TTL de la caché (minutos)", "description": "Setting label." },
+  "settings_cache_stats": {
+    "message": "$count$ registros en caché · $size$",
+    "placeholders": { "count": { "content": "$1" }, "size": { "content": "$2" } },
+    "description": "Small stats line under the cache section showing record count and storage size."
+  },
+  "settings_clear_cache": { "message": "Borrar caché", "description": "Button label." },
+  "settings_cache_cleared": { "message": "Caché borrada.", "description": "Confirmation text." },
   "settings_track_price_history": { "message": "Registrar historial de precios", "description": "Setting label." },
   "settings_track_price_history_desc": {
     "message": "Registra el precio en USD de cada producto a lo largo del tiempo para ver si sube o baja.",
@@ -493,6 +500,15 @@
   "settings_max_price_points": { "message": "Máx. puntos de precio por producto (0 = ilimitado)", "description": "Setting label." },
   "settings_clear_price_history": { "message": "Borrar historial de precios", "description": "Button label." },
   "settings_price_history_cleared": { "message": "Historial de precios borrado.", "description": "Confirmation text." },
+  "settings_price_history_stats": {
+    "message": "$products$ productos · $points$ puntos de datos · $size$",
+    "placeholders": {
+      "products": { "content": "$1" },
+      "points": { "content": "$2" },
+      "size": { "content": "$3" }
+    },
+    "description": "Small stats line under the price history section showing tracked products, total data points, and storage size."
+  },
   "settings_font_size": { "message": "Tamaño de fuente", "description": "Setting label." },
   "settings_font_small": { "message": "Pequeña", "description": "Font-size option." },
   "settings_font_medium": { "message": "Mediana", "description": "Font-size option." },
@@ -553,6 +569,14 @@
   "context_menu_open_in_new_tab": {
     "message": "Abrir en una nueva pestaña",
     "description": "Context menu option to open the product in a new tab."
+  },
+  "context_menu_expand_all": {
+    "message": "Expandir todas las filas visibles",
+    "description": "Context menu option to expand every visible row in the results table."
+  },
+  "context_menu_collapse_all": {
+    "message": "Contraer todas las filas visibles",
+    "description": "Context menu option to collapse every visible row in the results table."
   },
   "context_menu_create_bookmark": {
     "message": "Crear marcador",

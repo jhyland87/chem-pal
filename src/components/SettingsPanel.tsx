@@ -1,5 +1,5 @@
 import { useAppContext } from "@/components/SearchPanel/hooks/useContext";
-import { ACTION_TYPE, COUNTRIES } from "@/constants/common";
+import { ACTION_TYPE, COUNTRIES, IDB_STORE } from "@/constants/common";
 import { CURRENCIES } from "@/constants/currency";
 import { FUZZ_SCORER_NAMES } from "@/constants/fuzzScorers";
 import { getCurrencyRate } from "@/helpers/currency";
@@ -9,9 +9,16 @@ import {
   type ExcludedProductsMap,
 } from "@/helpers/excludedProducts";
 import { getAvailableLocales, i18n } from "@/helpers/i18n";
-import { formatTimestamp, getLanguageName } from "@/helpers/utils";
+import { formatBytes, formatTimestamp, getLanguageName } from "@/helpers/utils";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
-import { clearExcludedProducts, clearPriceHistory } from "@/utils/idbCache";
+import {
+  clearExcludedProducts,
+  clearPriceHistory,
+  clearSupplierProductDataCache,
+  clearSupplierQueryCache,
+  getAllPriceSeries,
+  getIdbStorageBreakdown,
+} from "@/utils/idbCache";
 import { isButtonElement } from "@/utils/typeGuards/common";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -68,6 +75,32 @@ const countryFilter = createFilterOptions<{ code: string; name: string }>({
 const currencyFilter = createFilterOptions<{ code: string; symbol: string }>({
   stringify: (option) => `${option.code} ${option.symbol}`,
 });
+
+/**
+ * Compute a factor that scales a store's serialized JSON size up to its real
+ * on-disk footprint. It's the origin's actual storage usage (from
+ * `navigator.storage.estimate()`) divided by the summed JSON size of every
+ * IndexedDB store, so multiplying a store's JSON bytes by it apportions the true
+ * usage (indexes, keys, encoding overhead) proportionally. Falls back to `1`
+ * when the estimate is unavailable, yielding the raw JSON size.
+ * @param jsonTotalBytes - Summed JSON byte size across all IndexedDB stores.
+ * @returns The usage-to-JSON scale factor, or `1` when no estimate is available.
+ * @example
+ * ```ts
+ * const scale = await getStorageUsageScale(50_000); // e.g. 1.4 when usage is 70 KB
+ * ```
+ * @source
+ */
+async function getStorageUsageScale(jsonTotalBytes: number): Promise<number> {
+  if (jsonTotalBytes <= 0) return 1;
+  try {
+    const usage = (await navigator.storage?.estimate?.())?.usage;
+    if (usage && usage > 0) return usage / jsonTotalBytes;
+  } catch (error) {
+    console.warn("Failed to read storage estimate:", error);
+  }
+  return 1;
+}
 
 /**
  * The full settings panel shown in the drawer's Settings tab. Renders all user
@@ -166,6 +199,9 @@ export default function SettingsPanel() {
 
   const [excludedProducts, setExcludedProducts] = useState<ExcludedProductsMap>({});
   const [priceHistoryCleared, setPriceHistoryCleared] = useState(false);
+  const [cacheCleared, setCacheCleared] = useState(false);
+  const [cacheStats, setCacheStats] = useState<{ records: number; bytes: number }>();
+  const [priceStats, setPriceStats] = useState<{ products: number; points: number; bytes: number }>();
 
   useEffect(() => {
     const load = async () => {
@@ -177,6 +213,40 @@ export default function SettingsPanel() {
       }
     };
     load();
+  }, []);
+
+  // Loads cache + price-history stats in one pass. Sizes are the stores' JSON
+  // byte sizes scaled by the origin's real storage usage, so they reflect the
+  // true on-disk footprint rather than the raw serialized size. Cache records
+  // combine the query and product-detail caches (variants live inline in product
+  // entries, so they're counted within the product cache, not a separate store).
+  const loadStorageStats = async () => {
+    try {
+      const [breakdown, series] = await Promise.all([
+        getIdbStorageBreakdown(),
+        getAllPriceSeries(),
+      ]);
+      const scale = await getStorageUsageScale(breakdown.totalBytes);
+
+      const queryStore = breakdown.byStore[IDB_STORE.SUPPLIER_QUERY_CACHE];
+      const productStore = breakdown.byStore[IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE];
+      setCacheStats({
+        records: queryStore.count + productStore.count,
+        bytes: Math.round((queryStore.bytes + productStore.bytes) * scale),
+      });
+
+      setPriceStats({
+        products: new Set(series.map((entry) => entry.productKey)).size,
+        points: series.reduce((sum, entry) => sum + entry.points.length, 0),
+        bytes: Math.round(breakdown.byStore[IDB_STORE.PRICE_HISTORY].bytes * scale),
+      });
+    } catch (error) {
+      console.warn("Failed to load storage stats:", error);
+    }
+  };
+
+  useEffect(() => {
+    void loadStorageStats();
   }, []);
 
   const handleRemoveExcluded = async (key: string) => {
@@ -205,8 +275,21 @@ export default function SettingsPanel() {
     try {
       await clearPriceHistory();
       setPriceHistoryCleared(true);
+      await loadStorageStats();
     } catch (error) {
       console.warn("Failed to clear price history:", error);
+    }
+  };
+
+  // Clears the supplier query cache and product-detail cache (leaving price
+  // history and other stores untouched), then refreshes the displayed stats.
+  const handleClearCache = async () => {
+    try {
+      await Promise.all([clearSupplierQueryCache(), clearSupplierProductDataCache()]);
+      setCacheCleared(true);
+      await loadStorageStats();
+    } catch (error) {
+      console.warn("Failed to clear cache:", error);
     }
   };
 
@@ -452,6 +535,35 @@ export default function SettingsPanel() {
                 />
               </FormControl>
             </ListItem>
+            {/* Cache stats + clear button */}
+            <ListItem
+              className={styles["settings-panel__helper-on-hover"]}
+              sx={{ flexDirection: "column", alignItems: "flex-start", rowGap: 0.5 }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Button
+                  variant="outlined"
+                  color="warning"
+                  size="small"
+                  onClick={handleClearCache}
+                >
+                  {i18n("settings_clear_cache")}
+                </Button>
+                {cacheCleared && (
+                  <Typography variant="caption" sx={{ ml: 1 }}>
+                    {i18n("settings_cache_cleared")}
+                  </Typography>
+                )}
+              </Box>
+              {cacheStats && (
+                <Typography variant="caption" color="text.secondary">
+                  {i18n("settings_cache_stats", [
+                    cacheStats.records.toLocaleString(),
+                    formatBytes(cacheStats.bytes),
+                  ])}
+                </Typography>
+              )}
+            </ListItem>
           </List>
         </AccordionDetails>
       </Accordion>
@@ -506,18 +618,32 @@ export default function SettingsPanel() {
                 />
               </FormControl>
             </ListItem>
-            <ListItem className={styles["settings-panel__helper-on-hover"]}>
-              <Button
-                variant="outlined"
-                color="warning"
-                size="small"
-                onClick={handleClearPriceHistory}
-              >
-                {i18n("settings_clear_price_history")}
-              </Button>
-              {priceHistoryCleared && (
-                <Typography variant="caption" sx={{ ml: 1 }}>
-                  {i18n("settings_price_history_cleared")}
+            <ListItem
+              className={styles["settings-panel__helper-on-hover"]}
+              sx={{ flexDirection: "column", alignItems: "flex-start", rowGap: 0.5 }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Button
+                  variant="outlined"
+                  color="warning"
+                  size="small"
+                  onClick={handleClearPriceHistory}
+                >
+                  {i18n("settings_clear_price_history")}
+                </Button>
+                {priceHistoryCleared && (
+                  <Typography variant="caption" sx={{ ml: 1 }}>
+                    {i18n("settings_price_history_cleared")}
+                  </Typography>
+                )}
+              </Box>
+              {priceStats && (
+                <Typography variant="caption" color="text.secondary">
+                  {i18n("settings_price_history_stats", [
+                    priceStats.products.toLocaleString(),
+                    priceStats.points.toLocaleString(),
+                    formatBytes(priceStats.bytes),
+                  ])}
                 </Typography>
               )}
             </ListItem>

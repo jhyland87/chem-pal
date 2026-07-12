@@ -823,6 +823,7 @@ export default function ResultsTable({
             x={contextMenu.x}
             y={contextMenu.y}
             product={contextMenu.product}
+            table={table}
             onClose={handleCloseContextMenu}
             onExcludeProduct={excludeProduct}
           />

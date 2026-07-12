@@ -476,6 +476,13 @@
   },
   "settings_do_not_cache_empty": { "message": "खाली परिणाम कैश न करें", "description": "Setting label." },
   "settings_cache_ttl": { "message": "कैश TTL (मिनट)", "description": "Setting label." },
+  "settings_cache_stats": {
+    "message": "$count$ कैश किए गए रिकॉर्ड · $size$",
+    "placeholders": { "count": { "content": "$1" }, "size": { "content": "$2" } },
+    "description": "Small stats line under the cache section showing record count and storage size."
+  },
+  "settings_clear_cache": { "message": "कैश साफ़ करें", "description": "Button label." },
+  "settings_cache_cleared": { "message": "कैश साफ़ कर दिया गया।", "description": "Confirmation text." },
   "settings_track_price_history": { "message": "मूल्य इतिहास ट्रैक करें", "description": "Setting label." },
   "settings_track_price_history_desc": {
     "message": "समय के साथ प्रत्येक उत्पाद की USD कीमत रिकॉर्ड करें ताकि आप देख सकें कि यह बढ़ रही है या घट रही है।",
@@ -484,6 +491,15 @@
   "settings_max_price_points": { "message": "प्रति उत्पाद अधिकतम मूल्य बिंदु (0 = असीमित)", "description": "Setting label." },
   "settings_clear_price_history": { "message": "मूल्य इतिहास साफ़ करें", "description": "Button label." },
   "settings_price_history_cleared": { "message": "मूल्य इतिहास साफ़ कर दिया गया।", "description": "Confirmation text." },
+  "settings_price_history_stats": {
+    "message": "$products$ उत्पाद · $points$ डेटा बिंदु · $size$",
+    "placeholders": {
+      "products": { "content": "$1" },
+      "points": { "content": "$2" },
+      "size": { "content": "$3" }
+    },
+    "description": "Small stats line under the price history section showing tracked products, total data points, and storage size."
+  },
   "settings_font_size": { "message": "फ़ॉन्ट आकार", "description": "Setting label." },
   "settings_font_small": { "message": "छोटा", "description": "Font-size option." },
   "settings_font_medium": { "message": "मध्यम", "description": "Font-size option." },
@@ -543,6 +559,14 @@
   "context_menu_open_in_new_tab": {
     "message": "नए टैब में खोलें",
     "description": "Context menu option to open the product in a new tab."
+  },
+  "context_menu_expand_all": {
+    "message": "सभी दृश्यमान पंक्तियाँ विस्तृत करें",
+    "description": "Context menu option to expand every visible row in the results table."
+  },
+  "context_menu_collapse_all": {
+    "message": "सभी दृश्यमान पंक्तियाँ संक्षिप्त करें",
+    "description": "Context menu option to collapse every visible row in the results table."
   },
   "context_menu_create_bookmark": {
     "message": "बुकमार्क बनाएँ",

@@ -633,6 +633,31 @@ export function formatTimestamp(epochMs: number): string {
 }
 
 /**
+ * Format a byte count as a short, human-readable size string using binary
+ * (1024-based) units. Used by the settings panel to show how much storage the
+ * caches and price history occupy.
+ * @param bytes - The number of bytes.
+ * @returns A compact size string such as `"0 B"`, `"1.5 KB"`, or `"2.3 MB"`.
+ * @example
+ * ```ts
+ * formatBytes(0);       // => "0 B"
+ * formatBytes(1536);    // => "1.5 KB"
+ * formatBytes(2411724); // => "2.3 MB"
+ * ```
+ * @source
+ */
+export function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes <= 0) {
+    return "0 B";
+  }
+  const units = ["B", "KB", "MB", "GB"];
+  const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  const value = bytes / Math.pow(1024, exponent);
+  const formatted = exponent === 0 ? String(value) : value.toFixed(1);
+  return `${formatted} ${units[exponent]}`;
+}
+
+/**
  * Resolves a value out of a nested object/array using a key path.
  *
  * Traversal is forgiving: if any segment is `null` or `undefined` (or the

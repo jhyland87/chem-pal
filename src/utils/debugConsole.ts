@@ -20,12 +20,14 @@ import {
   getProductPriceHistory as getProductPriceHistorySeries,
   variantSeriesKey,
 } from "@/helpers/priceHistory";
+import { formatBytes } from "@/helpers/utils";
 import { Cactus } from "@/utils/Cactus";
 import {
   getAllPriceSeries,
   getAllSupplierProductDataCacheEntries,
   getAllSupplierQueryCacheEntries,
   getExcludedProducts,
+  getIdbStorageBreakdown,
   getPriceSeries,
   getSearchHistory,
   getSearchResults,
@@ -224,6 +226,94 @@ async function nudgePriceHistory(stepsBack: number = 0): Promise<number> {
 }
 
 /**
+ * Structured storage report returned by {@link storageBreakdown}, mirroring what
+ * the settings panel shows but broken out per store.
+ * @source
+ */
+interface StorageBreakdownReport {
+  byStore: Record<string, { records: number; jsonBytes: number; estimatedBytes: number; share: number }>;
+  totalJsonBytes: number;
+  estimatedUsageBytes?: number;
+  quotaBytes?: number;
+  usedPercent?: number;
+  scale: number;
+}
+
+/**
+ * Measures every IndexedDB store and prints a `console.table` of each store's
+ * record count, serialized JSON size, estimated on-disk size, and share of the
+ * total. The estimated size scales each store's JSON size by the origin's real
+ * usage from `navigator.storage.estimate()` divided by the summed JSON size, so
+ * it reflects IndexedDB's index/key/encoding overhead; it falls back to the raw
+ * JSON size (`scale` = 1) when no estimate is available. Returns the same numbers
+ * as a structured object for further inspection.
+ * @returns A per-store report plus totals, the origin usage/quota, the percent of quota used, and the scale factor.
+ * @example
+ * ```typescript
+ * // In the console:
+ * await chempal.storageBreakdown();
+ * // ┌─────────────────────────────┬─────────┬──────────┬───────────────┬─────────┐
+ * // │ (index)                     │ records │ jsonSize │ estimatedSize │ share   │
+ * // ├─────────────────────────────┼─────────┼──────────┼───────────────┼─────────┤
+ * // │ supplier_product_data_cache │ 42      │ '1.2 MB' │ '1.6 MB'      │ '78.4%' │
+ * // │ price_history               │ 7       │ '88 KB'  │ '120 KB'      │ '5.6%'  │
+ * // └─────────────────────────────┴─────────┴──────────┴───────────────┴─────────┘
+ * ```
+ * @source
+ */
+async function storageBreakdown(): Promise<StorageBreakdownReport> {
+  const breakdown = await getIdbStorageBreakdown();
+
+  let usage: number | undefined;
+  let quota: number | undefined;
+  try {
+    const estimate = await navigator.storage?.estimate?.();
+    usage = estimate?.usage;
+    quota = estimate?.quota;
+  } catch (error) {
+    console.warn("navigator.storage.estimate() failed:", error);
+  }
+
+  const total = breakdown.totalBytes;
+  const scale = usage && total > 0 ? usage / total : 1;
+  const usedPercent = usage !== undefined && quota ? (usage / quota) * 100 : undefined;
+
+  const byStore: StorageBreakdownReport["byStore"] = {};
+  const rows: Record<string, { records: number; jsonSize: string; estimatedSize: string; share: string }> = {};
+  for (const [store, { count, bytes }] of Object.entries(breakdown.byStore)) {
+    const estimatedBytes = Math.round(bytes * scale);
+    const share = total > 0 ? bytes / total : 0;
+    byStore[store] = { records: count, jsonBytes: bytes, estimatedBytes, share };
+    rows[store] = {
+      records: count,
+      jsonSize: formatBytes(bytes),
+      estimatedSize: formatBytes(estimatedBytes),
+      share: `${(share * 100).toFixed(1)}%`,
+    };
+  }
+
+  console.table(rows);
+  console.log(
+    [
+      `Total JSON size:   ${formatBytes(total)}`,
+      `Origin usage:      ${usage === undefined ? "unavailable" : formatBytes(usage)}`,
+      `Origin quota:      ${quota === undefined ? "unavailable" : formatBytes(quota)}`,
+      `Quota used:        ${usedPercent === undefined ? "unavailable" : `${usedPercent.toFixed(2)}% of quota`}`,
+      `Scale factor:      ${scale.toFixed(3)}× (usage ÷ total JSON)`,
+    ].join("\n"),
+  );
+
+  return {
+    byStore,
+    totalJsonBytes: total,
+    estimatedUsageBytes: usage,
+    quotaBytes: quota,
+    usedPercent,
+    scale,
+  };
+}
+
+/**
  * Prints the available debug helpers and a few example calls to the console.
  * @source
  */
@@ -241,7 +331,7 @@ function help(): void {
       "  Network:  backgroundFetch",
       "  IndexedDB: getProductById, getProductPriceHistory, getProductCache,",
       "             getQueryCache, getSearchResults, getSearchHistory,",
-      "             getExcludedProducts",
+      "             getExcludedProducts, storageBreakdown",
       "  Testing:  nudgePriceHistory(stepsBack=0) (mutates price_history — nudges",
       "            one point per series by a random ±1–8%; 0=latest, 1=one back, …)",
       "",
@@ -252,6 +342,7 @@ function help(): void {
       "  await chempal.backgroundFetch('https://chemsavers.com/')",
       "  await chempal.getProductById('A668410')",
       "  await chempal.getQueryCache()",
+      "  await chempal.storageBreakdown() // per-store record counts + sizes",
       "  await chempal.nudgePriceHistory(2) // nudge the price 2 entries back",
     ].join("\n"),
   );
@@ -294,6 +385,7 @@ const chempal = {
   getSearchResults,
   getSearchHistory,
   getExcludedProducts,
+  storageBreakdown,
   // Testing / fixtures (mutates IndexedDB)
   nudgePriceHistory,
   help,
