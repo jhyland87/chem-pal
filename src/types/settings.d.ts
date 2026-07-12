@@ -134,12 +134,6 @@ declare global {
     language?: string;
 
     /**
-     * Currency rate for the user's currency
-     * @example 1.0
-     */
-    currencyRate?: number;
-
-    /**
      * UI font size scale. Controls the root `html` font-size so every `rem`-based
      * style (MUI defaults and styled components) scales proportionally.
      * @example "medium"
@@ -209,26 +203,6 @@ declare global {
      * @example ["price", "quantity"]
      */
     hideColumns?: Array<string>;
-
-    /**
-     * Controls visibility of column filter UI elements.
-     * Defaults to false.
-     */
-    showColumnFilters?: boolean;
-
-    /**
-     * Configuration object for individual column filter settings.
-     * @example
-     * ```typescript
-     * {
-     *   price: {
-     *     filterVariant: "range",
-     *     rangeValues: [0, 1000]
-     *   }
-     * }
-     * ```
-     */
-    columnFilterConfig?: Record<string, ColumnMeta>;
 
     /**
      * Number of results to display per supplier
