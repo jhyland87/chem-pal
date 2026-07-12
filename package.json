@@ -140,6 +140,7 @@
     "@types/chance": "^1.1.6",
     "@types/chrome": "^0.0.317",
     "@types/content-type": "^1.1.8",
+    "@types/country-list-js": "^3.1.5",
     "@types/debug": "^4.1.12",
     "@types/fs-extra": "^11.0.4",
     "@types/js-md5": "^0.7.2",

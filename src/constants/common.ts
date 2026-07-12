@@ -4,19 +4,32 @@
  * @source
  */
 
-import { all as countriesByIso2 } from "country-list-js";
-
 /**
  * Action types for settings panel form state management.
  * Used by the SettingsPanel component.
  * @source
  */
 export enum ACTION_TYPE {
+  /** A toggle Switch changed; writes `checked` to the named setting */
   SWITCH_CHANGE = "SWITCH_CHANGE",
+  /** A text field or Select changed; writes `value` to the named setting */
   INPUT_CHANGE = "INPUT_CHANGE",
+  /** A button-group option was clicked (e.g. font size); writes `value` to the named setting */
   BUTTON_CLICK = "BUTTON_CLICK",
+  /** A supplier was enabled/disabled; replaces the disabled-suppliers list */
   SUPPLIER_TOGGLE = "SUPPLIER_TOGGLE",
+  /** Resets the settings to their defaults */
   RESTORE_DEFAULTS = "RESTORE_DEFAULTS",
+}
+
+/**
+ * Discriminators for `chrome.runtime` messages exchanged between extension
+ * contexts (pages/side panel) and the background service worker.
+ * @source
+ */
+export enum MESSAGE_TYPE {
+  /** Proxied fetch request handled by the background worker; see helpers/backgroundFetch.ts. */
+  BACKGROUND_FETCH = "BACKGROUND_FETCH",
 }
 
 /**
@@ -130,13 +143,21 @@ export const IDB_STORE = {
  * @source
  */
 export enum AVAILABILITY {
+  /** In stock and ready to ship */
   IN_STOCK = "in_stock",
+  /** Available but in limited quantity */
   LIMITED_STOCK = "limited_stock",
+  /** Currently out of stock */
   OUT_OF_STOCK = "out_of_stock",
+  /** Not yet released; orderable ahead of availability */
   PRE_ORDER = "preorder",
+  /** Out of stock but orderable, shipping when restocked */
   BACKORDER = "backorder",
+  /** No longer sold */
   DISCONTINUED = "discontinued",
+  /** Cannot be purchased (e.g. restricted or delisted) */
   UNAVAILABLE = "unavailable",
+  /** Availability could not be determined */
   UNKNOWN = "unknown",
 }
 
@@ -279,38 +300,21 @@ export const UOM_ALIASES: UOMAliases = {
 export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_checksum>\d)/;
 
 /**
- * Supported countries for location-based features such as currency and shipping filters.
- * Sourced from `country-list-js` (full ISO 3166-1 alpha-2 list) and sorted alphabetically
- * by country name. Codes that the library can't name fall back to the raw code.
- * @source
- */
-export const COUNTRIES = Object.entries(countriesByIso2 as Record<string, { name?: string }>)
-  .map(([code, record]) => ({ code, name: record?.name ?? code }))
-  .sort((a, b) => a.name.localeCompare(b.name));
-
-/**
- * ISO 3166-1 alpha-2 codes of the 27 EU member states. `country-list-js` exposes
- * geographic continent, not EU membership, so this legally-defined set is hardcoded.
- * Used to evaluate "EU-only" purchase restrictions: a user whose location is not in
- * this set cannot buy an EU-only product.
- * @source
- */
-export const EU_COUNTRY_CODES: ReadonlySet<string> = new Set([
-  "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU",
-  "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE",
-]);
-
-/**
  * Maps availability group codes (used as filter chip values and i18n keys) to the
  * {@link AVAILABILITY} enum values each group represents. A group may collapse
  * several enum values (e.g. `out_of_stock` covers OUT_OF_STOCK and BACKORDER).
  * @source
  */
 export const AVAILABILITY_LABEL_MAP: Record<string, string[]> = {
+  /** In-stock group */
   in_stock: [AVAILABILITY.IN_STOCK],
+  /** Limited-stock group */
   limited_stock: [AVAILABILITY.LIMITED_STOCK],
+  /** Out-of-stock group; also covers backordered items */
   out_of_stock: [AVAILABILITY.OUT_OF_STOCK, AVAILABILITY.BACKORDER],
+  /** Pre-order group */
   preorder: [AVAILABILITY.PRE_ORDER],
+  /** Unavailable group; also covers discontinued items */
   unavailable: [AVAILABILITY.UNAVAILABLE, AVAILABILITY.DISCONTINUED],
 };
 
@@ -320,13 +324,6 @@ export const AVAILABILITY_LABEL_MAP: Record<string, string[]> = {
  * @source
  */
 export const AVAILABILITY_OPTIONS = Object.keys(AVAILABILITY_LABEL_MAP);
-
-/**
- * Supplier country options available for filtering in the drawer search panel.
- * Derived from {@link COUNTRIES} (already sorted alphabetically by name).
- * @source
- */
-export const SUPPLIER_COUNTRY_OPTIONS = COUNTRIES.map(({ code, name }) => ({ code, label: name }));
 
 /**
  * Shipping range options available for filtering in the drawer search panel.

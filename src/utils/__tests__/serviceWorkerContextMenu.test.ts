@@ -2,10 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
  * Unit tests for the "Search selection in Chem Pal" context menu in the
- * background service worker (public/service-worker.js).
+ * background service worker (src/service-worker.ts).
  *
- * The worker is plain JS that registers its listeners at import time, so each
- * test installs a fresh fake `chrome`, imports the worker (capturing the
+ * The worker registers its listeners at import time, so each test installs a
+ * fresh fake `chrome`, imports the worker (capturing the
  * registered listeners), and then invokes a listener directly — there's no way
  * to fire a real right-click from a unit test, but the click handler's logic
  * (which storage keys it writes, and whether it focuses an existing tab vs
@@ -35,10 +35,16 @@ function makeChromeMock() {
   const onInstalled: OnInstalled[] = [];
   const onStartup: Array<() => void> = [];
   const onClicked: OnClicked[] = [];
+  const actionClicked: Array<() => unknown> = [];
+  const storageChanged: Array<
+    (changes: Record<string, unknown>, areaName: string) => void
+  > = [];
 
   const removeAll = vi.fn((cb?: () => void) => cb?.());
   const create = vi.fn();
   const sessionSet = vi.fn(async () => {});
+  const localGet = vi.fn(async (): Promise<Record<string, unknown>> => ({}));
+  const setPopup = vi.fn(async () => {});
   const tabsQuery = vi.fn(async (): Promise<Array<Partial<chrome.tabs.Tab>>> => []);
   const tabsUpdate = vi.fn(async () => ({}));
   const tabsCreate = vi.fn(async () => ({}));
@@ -52,6 +58,10 @@ function makeChromeMock() {
       onStartup: { addListener: (fn: () => void) => onStartup.push(fn) },
       onMessage: { addListener: vi.fn() },
     },
+    action: {
+      setPopup,
+      onClicked: { addListener: (fn: () => unknown) => actionClicked.push(fn) },
+    },
     contextMenus: {
       removeAll,
       create,
@@ -59,7 +69,14 @@ function makeChromeMock() {
     },
     tabs: { query: tabsQuery, update: tabsUpdate, create: tabsCreate },
     windows: { update: windowsUpdate },
-    storage: { session: { set: sessionSet } },
+    storage: {
+      session: { set: sessionSet },
+      local: { get: localGet },
+      onChanged: {
+        addListener: (fn: (changes: Record<string, unknown>, areaName: string) => void) =>
+          storageChanged.push(fn),
+      },
+    },
     i18n: { getMessage: (key: string) => key },
   };
 
@@ -68,9 +85,13 @@ function makeChromeMock() {
     onInstalled,
     onStartup,
     onClicked,
+    actionClicked,
+    storageChanged,
     removeAll,
     create,
     sessionSet,
+    localGet,
+    setPopup,
     tabsQuery,
     tabsUpdate,
     tabsCreate,
@@ -79,14 +100,13 @@ function makeChromeMock() {
 }
 
 /**
- * Imports the plain-JS service worker for its listener-registration side
- * effects. Modules are reset before each import so the worker re-runs against
- * the current fake chrome.
+ * Imports the service worker for its listener-registration side effects. Modules
+ * are reset before each import so the worker re-runs against the current fake
+ * chrome.
  * @source
  */
 async function loadServiceWorker(): Promise<void> {
-  // @ts-expect-error - untyped plain-JS module, imported for side effects only
-  await import("../../../public/service-worker.js");
+  await import("../../service-worker");
 }
 
 describe("service worker context-menu search", () => {
@@ -165,5 +185,71 @@ describe("service worker context-menu search", () => {
 
     expect(mock.sessionSet).not.toHaveBeenCalled();
     expect(mock.tabsCreate).not.toHaveBeenCalled();
+  });
+});
+
+describe("service worker toolbar-icon behavior", () => {
+  let mock: ReturnType<typeof makeChromeMock>;
+
+  beforeEach(async () => {
+    vi.resetModules();
+    mock = makeChromeMock();
+    vi.stubGlobal("chrome", mock.chromeMock);
+    await loadServiceWorker();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("clears the action popup on install when openInTab is enabled", async () => {
+    mock.localGet.mockResolvedValueOnce({ user_settings: { openInTab: true } });
+
+    for (const listener of mock.onInstalled) await listener({ reason: "install" });
+
+    expect(mock.setPopup).toHaveBeenCalledWith({ popup: "" });
+  });
+
+  it("keeps the default popup when openInTab is off or absent", async () => {
+    mock.localGet.mockResolvedValueOnce({ user_settings: { fontSize: "medium" } });
+
+    for (const listener of mock.onStartup) await listener();
+
+    expect(mock.setPopup).toHaveBeenCalledWith({ popup: "index.html" });
+  });
+
+  it("falls back to the popup when settings are an unreadable LZ envelope", async () => {
+    mock.localGet.mockResolvedValueOnce({ user_settings: { __lz: 1, d: "compressed" } });
+
+    for (const listener of mock.onInstalled) await listener({ reason: "install" });
+
+    expect(mock.setPopup).toHaveBeenCalledWith({ popup: "index.html" });
+  });
+
+  it("re-applies the popup state when user settings change", async () => {
+    mock.localGet.mockResolvedValueOnce({ user_settings: { openInTab: true } });
+
+    const [onChanged] = mock.storageChanged;
+    onChanged({ user_settings: { newValue: { openInTab: true } } }, "local");
+    // Let the async applyActionBehavior settle.
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mock.setPopup).toHaveBeenCalledWith({ popup: "" });
+  });
+
+  it("ignores storage changes to other keys or areas", () => {
+    const [onChanged] = mock.storageChanged;
+    onChanged({ some_other_key: { newValue: 1 } }, "local");
+    onChanged({ user_settings: { newValue: {} } }, "session");
+
+    expect(mock.setPopup).not.toHaveBeenCalled();
+  });
+
+  it("opens or focuses the full tab when the toolbar icon is clicked", async () => {
+    const [actionClicked] = mock.actionClicked;
+    await actionClicked();
+
+    expect(mock.tabsCreate).toHaveBeenCalledWith({ url: TAB_VIEW_URL, active: true });
   });
 });

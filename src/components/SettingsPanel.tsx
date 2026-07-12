@@ -1,5 +1,6 @@
 import { useAppContext } from "@/components/SearchPanel/hooks/useContext";
-import { ACTION_TYPE, COUNTRIES, IDB_STORE } from "@/constants/common";
+import { ACTION_TYPE, IDB_STORE } from "@/constants/common";
+import { COUNTRIES } from "@/constants/countries";
 import { CURRENCIES } from "@/constants/currency";
 import { FUZZ_SCORER_NAMES } from "@/constants/fuzzScorers";
 import { getCurrencyRate } from "@/helpers/currency";
@@ -146,8 +147,9 @@ export default function SettingsPanel() {
             trackPriceHistory: true,
             priceHistoryMaxPoints: 0,
             showColumnFilters: true,
-            showAllColumns: false,
             fontSize: "medium",
+            openInTab: false,
+            autoHideEmptyColumns: true,
             disabledSuppliers: [],
             hideColumns: ["description", "uom", "sds", "specs", "coa", "cas", "pubchem", "formula", "moleweight", "purity", "concentration"],
           };
@@ -711,6 +713,46 @@ export default function SettingsPanel() {
                   </Button>
                 </ButtonGroup>
               </FormControl>
+            </ListItem>
+            {/* Open in tab — when on, clicking the toolbar icon opens the full-tab
+                view instead of the popup (enforced by the service worker). */}
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText
+                primary={i18n("settings_open_in_tab")}
+                secondary={i18n("settings_open_in_tab_desc")}
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={currentSettings.openInTab ?? false}
+                    onChange={handleSwitchChange}
+                    name="openInTab"
+                    disabled={isPending}
+                  />
+                }
+                labelPlacement="start"
+                label=""
+              />
+            </ListItem>
+            {/* Auto hide empty columns — when on, columns with no data in the
+                current result set are hidden automatically (see ResultsTable). */}
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText
+                primary={i18n("settings_auto_hide_empty_columns")}
+                secondary={i18n("settings_auto_hide_empty_columns_desc")}
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={currentSettings.autoHideEmptyColumns ?? true}
+                    onChange={handleSwitchChange}
+                    name="autoHideEmptyColumns"
+                    disabled={isPending}
+                  />
+                }
+                labelPlacement="start"
+                label=""
+              />
             </ListItem>
           </List>
         </AccordionDetails>

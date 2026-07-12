@@ -513,6 +513,10 @@
   "settings_font_small": { "message": "Pequeña", "description": "Font-size option." },
   "settings_font_medium": { "message": "Mediana", "description": "Font-size option." },
   "settings_font_large": { "message": "Grande", "description": "Font-size option." },
+  "settings_open_in_tab": { "message": "Abrir en una pestaña", "description": "Setting label." },
+  "settings_open_in_tab_desc": { "message": "Al hacer clic en el icono de la barra de herramientas, Chem Pal se abre en una pestaña completa del navegador en lugar del popup.", "description": "Setting description." },
+  "settings_auto_hide_empty_columns": { "message": "Ocultar columnas vacías automáticamente", "description": "Setting label." },
+  "settings_auto_hide_empty_columns_desc": { "message": "Ocultar automáticamente las columnas de resultados que no tienen datos para la búsqueda actual.", "description": "Setting description." },
   "settings_excluded_empty": { "message": "No hay productos excluidos.", "description": "Empty-state text." },
   "settings_remove": { "message": "Quitar", "description": "Tooltip for the remove button." },
   "settings_remove_item": {

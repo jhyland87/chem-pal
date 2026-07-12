@@ -504,6 +504,10 @@
   "settings_font_small": { "message": "छोटा", "description": "Font-size option." },
   "settings_font_medium": { "message": "मध्यम", "description": "Font-size option." },
   "settings_font_large": { "message": "बड़ा", "description": "Font-size option." },
+  "settings_open_in_tab": { "message": "टैब में खोलें", "description": "Setting label." },
+  "settings_open_in_tab_desc": { "message": "टूलबार आइकन पर क्लिक करने पर Chem Pal पॉपअप के बजाय पूरे ब्राउज़र टैब में खुलता है।", "description": "Setting description." },
+  "settings_auto_hide_empty_columns": { "message": "खाली कॉलम स्वतः छिपाएँ", "description": "Setting label." },
+  "settings_auto_hide_empty_columns_desc": { "message": "वर्तमान खोज के लिए जिन परिणाम कॉलमों में कोई डेटा नहीं है, उन्हें स्वचालित रूप से छिपाएँ।", "description": "Setting description." },
   "settings_excluded_empty": { "message": "कोई बहिष्कृत उत्पाद नहीं।", "description": "Empty-state text." },
   "settings_remove": { "message": "हटाएँ", "description": "Tooltip for the remove button." },
   "settings_remove_item": {

@@ -1,7 +1,7 @@
 import react from "@vitejs/plugin-react";
 import { readFileSync } from "node:fs";
 import path from "path";
-import { defineConfig, normalizePath, type Plugin } from "vite";
+import { defineConfig, normalizePath, build as viteBuild, type Plugin } from "vite";
 import graphqlLoader from "vite-plugin-graphql-loader";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 import pkg from "./package.json" with { type: "json" };
@@ -9,6 +9,8 @@ import { buildDefines } from "./tools/buildDefines.js";
 import { buildManifest } from "./tools/buildManifest.js";
 
 // https://vite.dev/config/
+
+const _resolve = (p: string) => path.resolve(__dirname, p);
 
 /**
  * Emits a browser-specific `manifest.json` into the build output, derived from
@@ -23,13 +25,60 @@ function manifestPlugin(target: string): Plugin {
   return {
     name: "chem-pal-manifest",
     generateBundle() {
-      const base = JSON.parse(
-        readFileSync(path.resolve(__dirname, "public/manifest.json"), "utf-8"),
-      );
+      const base = JSON.parse(readFileSync(_resolve("public/manifest.json"), "utf-8"));
       this.emitFile({
         type: "asset",
         fileName: "manifest.json",
         source: JSON.stringify(buildManifest(base, target), null, 2),
+      });
+    },
+  };
+}
+
+/**
+ * Builds the background service worker as its own self-contained IIFE, emitted
+ * alongside the main bundle. Running it as a separate lib build (rather than a
+ * second rollup input) guarantees a single file with the shared TS constants
+ * inlined and no runtime imports — so it works as both a Chrome MV3 worker and a
+ * Firefox background script. Runs in `closeBundle`, after the main build has
+ * populated (and emptied) the output directory.
+ * @param options - The resolved browser/mode flags from the main config.
+ * @returns A Vite plugin that emits `service-worker.js` into the build output.
+ * @source
+ */
+function serviceWorkerBuildPlugin(options: {
+  browser: string;
+  mode: string;
+  isProd: boolean;
+  isAggregate: boolean;
+}): Plugin {
+  const { browser, mode, isProd, isAggregate } = options;
+  return {
+    name: "chem-pal-service-worker",
+    apply: "build",
+    async closeBundle() {
+      await viteBuild({
+        configFile: false,
+        mode,
+        logLevel: "warn",
+        define: buildDefines(pkg, { isAggregate, isProd }),
+        resolve: { alias: { "@": _resolve("./src") } },
+        esbuild: {
+          pure: isProd ? ["console.log", "console.info", "console.debug", "console.trace"] : [],
+          drop: isProd ? ["debugger"] : [],
+        },
+        build: {
+          outDir: browser === "firefox" ? "build-firefox" : "build",
+          emptyOutDir: false,
+          sourcemap: !isProd,
+          minify: isProd ? "esbuild" : false,
+          lib: {
+            entry: _resolve("./src/service-worker.ts"),
+            formats: ["iife"],
+            name: "chemPalServiceWorker",
+            fileName: () => "service-worker.js",
+          },
+        },
       });
     },
   };
@@ -48,13 +97,13 @@ export default ({ mode }: { mode: string }) => {
 
   if (mode !== "production") {
     staticCopyTargets.push({
-      src: normalizePath(path.resolve(__dirname, "./src/__mocks__/mockServiceWorker.js")),
+      src: normalizePath(_resolve("./src/__mocks__/mockServiceWorker.js")),
       dest: "public",
     });
   }
   // Add the _locales folder to the build
   staticCopyTargets.push({
-    src: normalizePath(path.resolve(__dirname, "./src/_locales")),
+    src: normalizePath(_resolve("./src/_locales")),
     dest: "./",
   });
 
@@ -72,9 +121,8 @@ export default ({ mode }: { mode: string }) => {
     },
     resolve: {
       alias: {
-        "@": path.resolve(__dirname, "./src"),
-        "react-svg-credit-card-payment-icons": path.resolve(
-          __dirname,
+        "@": _resolve("./src"),
+        "react-svg-credit-card-payment-icons": _resolve(
           "node_modules/react-svg-credit-card-payment-icons/dist/index.js",
         ),
       },
@@ -98,6 +146,7 @@ export default ({ mode }: { mode: string }) => {
       react(),
       graphqlLoader(),
       manifestPlugin(browser),
+      serviceWorkerBuildPlugin({ browser, mode, isProd, isAggregate }),
       viteStaticCopy({
         targets: staticCopyTargets,
       }),
