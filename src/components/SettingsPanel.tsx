@@ -146,7 +146,6 @@ export default function SettingsPanel() {
             caching: true,
             trackPriceHistory: true,
             priceHistoryMaxPoints: 0,
-            showColumnFilters: true,
             fontSize: "medium",
             openInTab: false,
             autoHideEmptyColumns: true,

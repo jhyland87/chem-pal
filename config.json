@@ -6,7 +6,6 @@
     "cacheTtlMinutes": 0,
     "trackPriceHistory": true,
     "priceHistoryMaxPoints": 0,
-    "autocomplete": true,
     "currency": "USD",
     "location": "US",
     "language": "en-US",
@@ -15,7 +14,6 @@
     "openInTab": true,
     "autoHideEmptyColumns": true,
     "theme": "light",
-    "showColumnFilters": true,
     "excludeNonShippingSuppliers": true,
     "hideRestrictedProducts": true,
     "disabledSuppliers": [],
@@ -30,8 +28,7 @@
       "moleweight",
       "purity",
       "concentration"
-    ],
-    "columnFilterConfig": {}
+    ]
   },
   "defaultResultsLimit": 5,
   "useStorageCompression": false,
