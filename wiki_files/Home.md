@@ -1,4 +1,4 @@
-# ChemPal User Guide
+## ChemPal User Guide
 
 **ChemPal** is a free, open-source browser extension (Chrome & Firefox) that helps
 amateur chemistry hobbyists find the best deals on chemical reagents. Search **27

@@ -1,5 +1,3 @@
-# Caching
-
 To keep searches fast, ChemPal **remembers recent results**. The first time you
 search for something, ChemPal contacts every supplier — which takes a moment.
 Search for it again soon after and ChemPal can serve the saved results

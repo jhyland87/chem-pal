@@ -1,5 +1,3 @@
-# Advanced (Boolean) Search
-
 The home search bar isn't just for single terms — it understands **boolean logic**.
 Combine words with `AND`, `OR`, and `NOT`, group them with parentheses, and match
 exact phrases with quotes. This lets you cast a wide net or zero in precisely,

@@ -1,5 +1,3 @@
-# Search Types
-
 You can search ChemPal however you naturally think about a chemical. All of these
 go into the **same search bar** — there's no "search by" dropdown to set first.
 

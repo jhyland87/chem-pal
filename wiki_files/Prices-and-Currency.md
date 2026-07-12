@@ -1,5 +1,3 @@
-# Prices & Currency
-
 Comparing prices across suppliers is only fair if you're comparing like with like.
 ChemPal does two things automatically so you can trust the **Price** and **Qty**
 columns side-by-side.

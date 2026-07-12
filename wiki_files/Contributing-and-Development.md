@@ -1,5 +1,3 @@
-# Contributing & Development
-
 This wiki is a **user guide**. If you want to build, extend, or contribute to
 ChemPal, here's where to go.
 
