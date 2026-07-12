@@ -818,6 +818,61 @@ export async function clearPriceHistory(): Promise<void> {
 }
 
 /* -------------------------------------------------------------------------- */
+/*                              Storage stats                                 */
+/* -------------------------------------------------------------------------- */
+
+/** The name of one IndexedDB object store in the ChemPal database. */
+export type IdbStoreName = (typeof IDB_STORE)[keyof typeof IDB_STORE];
+
+/** Per-store record count + serialized JSON size, plus the summed total. */
+export interface IdbStorageBreakdown {
+  byStore: Record<IdbStoreName, { count: number; bytes: number }>;
+  totalBytes: number;
+}
+
+/**
+ * Measure every IndexedDB object store: the number of records it holds and the
+ * byte size of its contents when serialized to JSON. Used by the settings panel
+ * to show cache/price-history sizes; the summed `totalBytes` can be paired with
+ * `navigator.storage.estimate()` to scale each store's JSON size up to its true
+ * on-disk footprint (indexes, keys, structured-clone overhead). Returns all-zero
+ * counts on failure.
+ * @returns A per-store breakdown of record counts and JSON byte sizes, plus the total.
+ * @example
+ * ```ts
+ * const { byStore, totalBytes } = await getIdbStorageBreakdown();
+ * byStore["price_history"].count; // => number of price series
+ * totalBytes;                     // => summed JSON bytes across all stores
+ * ```
+ * @source
+ */
+export async function getIdbStorageBreakdown(): Promise<IdbStorageBreakdown> {
+  const byStore: Record<IdbStoreName, { count: number; bytes: number }> = {
+    [IDB_STORE.SEARCH_RESULTS]: { count: 0, bytes: 0 },
+    [IDB_STORE.SEARCH_HISTORY]: { count: 0, bytes: 0 },
+    [IDB_STORE.SUPPLIER_QUERY_CACHE]: { count: 0, bytes: 0 },
+    [IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE]: { count: 0, bytes: 0 },
+    [IDB_STORE.SUPPLIER_STATS]: { count: 0, bytes: 0 },
+    [IDB_STORE.EXCLUDED_PRODUCTS]: { count: 0, bytes: 0 },
+    [IDB_STORE.PRICE_HISTORY]: { count: 0, bytes: 0 },
+  };
+  try {
+    const db = await getDB();
+    for (const store of Object.values(IDB_STORE)) {
+      const entries = await db.getAll(store);
+      byStore[store] = {
+        count: entries.length,
+        bytes: new Blob([JSON.stringify(entries)]).size,
+      };
+    }
+  } catch (error) {
+    logger.error("Failed to compute IndexedDB storage breakdown", { error });
+  }
+  const totalBytes = Object.values(byStore).reduce((sum, entry) => sum + entry.bytes, 0);
+  return { byStore, totalBytes };
+}
+
+/* -------------------------------------------------------------------------- */
 /*                                 Bulk                                       */
 /* -------------------------------------------------------------------------- */
 

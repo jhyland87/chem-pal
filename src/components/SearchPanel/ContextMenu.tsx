@@ -2,6 +2,8 @@ import { useStatusBar } from "@/components/StatusBar";
 import { useAppContext } from "@/context";
 import { i18n } from "@/helpers/i18n";
 import { getProductIdentityKey } from "@/helpers/productIdentity";
+import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
+import ArrowDropUpIcon from "@/icons/ArrowDropUpIcon";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
 import BlockIcon from "@/icons/BlockIcon";
 import BookmarkIcon from "@/icons/BookmarkIcon";
@@ -10,6 +12,7 @@ import FolderDeleteIcon from "@/icons/FolderDeleteIcon";
 import HttpIcon from "@/icons/HttpIcon";
 import SettingsIcon from "@/icons/SettingsIcon";
 import { deleteSupplierProductDataCacheEntry } from "@/utils/idbCache";
+import type { Table } from "@tanstack/react-table";
 import Divider from "@mui/material/Divider";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
@@ -32,6 +35,11 @@ interface ContextMenuProps {
   onClose: () => void;
   /** Product data to display actions for */
   product: Product;
+  /**
+   * The results table instance, used to expand/collapse all currently visible
+   * (top-level, expandable) rows from the menu.
+   */
+  table: Table<Product>;
   /**
    * Called when the user selects "Ignore Product". Responsible for both
    * persisting the exclusion and removing the row from the visible results.
@@ -78,6 +86,7 @@ export default function ContextMenu({
   y,
   onClose,
   product,
+  table,
   onExcludeProduct,
 }: ContextMenuProps) {
   const { flashStatusText } = useStatusBar();
@@ -149,6 +158,36 @@ export default function ContextMenu({
   // for scraped suppliers where the two are the same. Product exclusion keeps
   // using `product.url` (the processing identity), not this.
   const openUrl = product.permalink ?? product.url;
+
+  // Currently visible, expandable rows (top-level rows on the current page that
+  // have detail to show). Drives which of the expand/collapse-all items appear:
+  // all collapsed → only Expand; all expanded → only Collapse; mixed → both.
+  const expandableRows = table
+    .getRowModel()
+    .rows.filter((row) => row.depth === 0 && row.getCanExpand());
+  const allExpanded =
+    expandableRows.length > 0 && expandableRows.every((row) => row.getIsExpanded());
+  const anyExpanded = expandableRows.some((row) => row.getIsExpanded());
+  const showExpandAll = expandableRows.length > 0 && !allExpanded;
+  const showCollapseAll = anyExpanded;
+
+  /**
+   * Expands every currently visible expandable row, then closes the menu.
+   * @source
+   */
+  const handleExpandAllVisible = () => {
+    expandableRows.forEach((row) => row.toggleExpanded(true));
+    onClose();
+  };
+
+  /**
+   * Collapses every currently visible expandable row, then closes the menu.
+   * @source
+   */
+  const handleCollapseAllVisible = () => {
+    expandableRows.forEach((row) => row.toggleExpanded(false));
+    onClose();
+  };
 
   /**
    * Handles copying the product title to clipboard.
@@ -490,6 +529,32 @@ export default function ContextMenu({
             primary={i18n("context_menu_open_in_new_tab")}
           />
         </MenuItem>
+
+        {(showExpandAll || showCollapseAll) && <Divider />}
+
+        {showExpandAll && (
+          <MenuItem className={styles["context-menu-item"]} onClick={handleExpandAllVisible}>
+            <ListItemIcon>
+              <ArrowDropDownIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText
+              className={styles["context-menu-option-text"]}
+              primary={i18n("context_menu_expand_all")}
+            />
+          </MenuItem>
+        )}
+
+        {showCollapseAll && (
+          <MenuItem className={styles["context-menu-item"]} onClick={handleCollapseAllVisible}>
+            <ListItemIcon>
+              <ArrowDropUpIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText
+              className={styles["context-menu-option-text"]}
+              primary={i18n("context_menu_collapse_all")}
+            />
+          </MenuItem>
+        )}
 
         {/*  <MenuItem className={styles["context-menu-item"]} onClick={handleViewDetails}>
           <ListItemIcon>

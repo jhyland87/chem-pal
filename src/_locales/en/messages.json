@@ -485,6 +485,13 @@
   },
   "settings_do_not_cache_empty": { "message": "Do Not Cache Empty Results", "description": "Setting label." },
   "settings_cache_ttl": { "message": "Cache TTL (minutes)", "description": "Setting label." },
+  "settings_cache_stats": {
+    "message": "$count$ cached records · $size$",
+    "placeholders": { "count": { "content": "$1" }, "size": { "content": "$2" } },
+    "description": "Small stats line under the cache section showing record count and storage size."
+  },
+  "settings_clear_cache": { "message": "Clear cache", "description": "Button label." },
+  "settings_cache_cleared": { "message": "Cache cleared.", "description": "Confirmation text." },
   "settings_track_price_history": { "message": "Track price history", "description": "Setting label." },
   "settings_track_price_history_desc": {
     "message": "Record each product's USD price over time so you can see if it's rising or falling.",
@@ -493,6 +500,15 @@
   "settings_max_price_points": { "message": "Max price points per product (0 = unlimited)", "description": "Setting label." },
   "settings_clear_price_history": { "message": "Clear price history", "description": "Button label." },
   "settings_price_history_cleared": { "message": "Price history cleared.", "description": "Confirmation text." },
+  "settings_price_history_stats": {
+    "message": "$products$ products · $points$ data points · $size$",
+    "placeholders": {
+      "products": { "content": "$1" },
+      "points": { "content": "$2" },
+      "size": { "content": "$3" }
+    },
+    "description": "Small stats line under the price history section showing tracked products, total data points, and storage size."
+  },
   "settings_font_size": { "message": "Font Size", "description": "Setting label." },
   "settings_font_small": { "message": "Small", "description": "Font-size option." },
   "settings_font_medium": { "message": "Medium", "description": "Font-size option." },
@@ -553,6 +569,14 @@
   "context_menu_open_in_new_tab": {
     "message": "Open in New Tab",
     "description": "Context menu option to open the product in a new tab."
+  },
+  "context_menu_expand_all": {
+    "message": "Expand all visible rows",
+    "description": "Context menu option to expand every visible row in the results table."
+  },
+  "context_menu_collapse_all": {
+    "message": "Collapse all visible rows",
+    "description": "Context menu option to collapse every visible row in the results table."
   },
   "context_menu_create_bookmark": {
     "message": "Create Bookmark",

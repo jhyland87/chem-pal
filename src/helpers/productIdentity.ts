@@ -26,3 +26,59 @@ import { md5 } from "js-md5";
 export function getProductIdentityKey(identity: string, supplierName: string): string {
   return md5(JSON.stringify({ key: identity, supplier: supplierName }));
 }
+
+/**
+ * Derive a supplier-scoped dedupe key for a product, used to drop the same
+ * product appearing more than once in a single search's result set. Prefers the
+ * supplier-stable `cacheKey`, then `id`, `uuid`, and finally `url`, all mixed
+ * with the supplier name so two suppliers that share an identity string (e.g. a
+ * numeric `id` like `6981`) never collide. Returns `undefined` when the product
+ * carries no usable identity, so callers keep it rather than merging unknowns.
+ * @param product - The product to key.
+ * @returns A stable dedupe key, or `undefined` when no identity is available.
+ * @example
+ * ```ts
+ * getProductDedupeKey({ supplier: "Carolina Chemical", cacheKey: "6981" }); // "3f9c2a…"
+ * getProductDedupeKey({ supplier: "ACME" }); // undefined (no identity)
+ * ```
+ * @source
+ */
+export function getProductDedupeKey(product: Product): string | undefined {
+  const identity =
+    product.cacheKey ??
+    (product.id != null ? String(product.id) : undefined) ??
+    (product.uuid != null ? String(product.uuid) : undefined) ??
+    product.url;
+  if (!identity) return undefined;
+  return getProductIdentityKey(identity, product.supplier ?? "");
+}
+
+/**
+ * Remove duplicate products from a result set, keeping the first occurrence of
+ * each identity as determined by {@link getProductDedupeKey}. Products with no
+ * usable identity are always kept (never merged with each other). Order is
+ * preserved.
+ * @param products - The products to de-duplicate.
+ * @returns A new array with later duplicates of each product identity removed.
+ * @example
+ * ```ts
+ * dedupeProducts([
+ *   { supplier: "Carolina Chemical", cacheKey: "6981" },
+ *   { supplier: "Carolina Chemical", cacheKey: "6981" },
+ * ]).length; // 1
+ * ```
+ * @source
+ */
+export function dedupeProducts(products: readonly Product[]): Product[] {
+  const seen = new Set<string>();
+  const result: Product[] = [];
+  for (const product of products) {
+    const key = getProductDedupeKey(product);
+    if (key !== undefined) {
+      if (seen.has(key)) continue;
+      seen.add(key);
+    }
+    result.push(product);
+  }
+  return result;
+}
