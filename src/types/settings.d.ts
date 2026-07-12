@@ -147,6 +147,24 @@ declare global {
     fontSize?: "small" | "medium" | "large";
 
     /**
+     * When true, clicking the toolbar icon opens Chem Pal in a full browser tab
+     * (`index.html?view=tab`) instead of the popup. The service worker enforces
+     * this by clearing the action popup (`chrome.action.setPopup`) and handling
+     * `chrome.action.onClicked` to open/focus the tab. Defaults to false (popup).
+     * @example true
+     */
+    openInTab?: boolean;
+
+    /**
+     * When true (the default), the results table auto-hides hideable columns that
+     * have no data in the current result set (across all rows and variants), and
+     * restores them once a later search populates them. Set to false to keep every
+     * column visible regardless of whether it has data.
+     * @example true
+     */
+    autoHideEmptyColumns?: boolean;
+
+    /**
      * List of supplier class names that are enabled for searching
      * @example ["SupplierCarolina", "SupplierLaballey"]
      */
@@ -185,12 +203,6 @@ declare global {
      * @example "light"
      */
     theme?: "light" | "dark";
-
-    /**
-     * Controls visibility of all available table columns.
-     * Defaults to true.
-     */
-    showAllColumns?: boolean;
 
     /**
      * List of column identifiers that should be hidden from view

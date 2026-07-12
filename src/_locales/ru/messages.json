@@ -731,6 +731,22 @@
     "message": "Крупный",
     "description": "Font-size option."
   },
+  "settings_open_in_tab": {
+    "message": "Открывать во вкладке",
+    "description": "Setting label."
+  },
+  "settings_open_in_tab_desc": {
+    "message": "При клике по значку на панели инструментов Chem Pal открывается в полной вкладке браузера вместо всплывающего окна.",
+    "description": "Setting description."
+  },
+  "settings_auto_hide_empty_columns": {
+    "message": "Автоматически скрывать пустые столбцы",
+    "description": "Setting label."
+  },
+  "settings_auto_hide_empty_columns_desc": {
+    "message": "Автоматически скрывать столбцы результатов, в которых нет данных для текущего поиска.",
+    "description": "Setting description."
+  },
   "settings_excluded_empty": {
     "message": "Нет исключённых товаров.",
     "description": "Empty-state text."

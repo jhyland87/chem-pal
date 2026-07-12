@@ -9,7 +9,7 @@ import { FOCUS_GLOBAL_FILTER_EVENT, TOGGLE_COLUMN_FILTERS_EVENT } from "@/hotkey
 import { getEmptyHideableColumnIds } from "@/mixins/tanstack";
 import { isTabView, openExtensionTab } from "@/utils/displayContext";
 import { cstorage } from "@/utils/storage";
-import { isInputElement } from "@/utils/typeGuards/common";
+import { isInputElement, isValidUserSettings } from "@/utils/typeGuards/common";
 import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
@@ -101,6 +101,15 @@ type FilterVariant = "text" | "range" | "select";
 const isFilterVariant = (value: unknown): value is FilterVariant =>
   value === "text" || value === "range" || value === "select";
 
+// defaultSettings from config.json is static, but its JSON-inferred type widens
+// string literals (e.g. `fontSize: string`), so it isn't structurally a
+// UserSettings. Validate it once via the schema guard so it narrows without a
+// cast; falls back to an empty object (all UserSettings fields are optional) if
+// config.json is ever malformed.
+const DEFAULT_USER_SETTINGS: UserSettings = isValidUserSettings(defaultSettings)
+  ? defaultSettings
+  : {};
+
 /**
  * Maps a column's `meta.filterVariant` to the input component that renders
  * inside the header filter row. `text` is the fallback so columns without
@@ -123,10 +132,7 @@ function FilterVariantCell({ header }: { header: Header<Product, unknown> }) {
   const variant: FilterVariant = isFilterVariant(rawVariant) ? rawVariant : "text";
   const Component = filterComponentMap[variant];
   if (!Component) return null;
-  // header.column is a base TanStack Column; the filter inputs expect the
-  // CustomColumn augmentation our columns carry. Safe: every column rendered
-  // here is built by TableColumns() with that shape.
-  return <Component column={header.column as CustomColumn<Product, unknown>} />;
+  return <Component column={header.column} />;
 }
 
 /**
@@ -231,10 +237,7 @@ export default function ResultsTable({
     columnFilterFns,
     globalFilterFns: [globalFilter, setGlobalFilter],
     getRowCanExpand,
-    // defaultSettings is config.json's canonical UserSettings default; its
-    // JSON-inferred literals widen to `string`, so a cast (not a runtime guard)
-    // is appropriate for this trusted static config.
-    userSettings: appContext?.userSettings ?? (defaultSettings as UserSettings),
+    userSettings: appContext?.userSettings ?? DEFAULT_USER_SETTINGS,
   });
 
   // ── Table state persistence ──────────────────────────────────────────
@@ -261,12 +264,33 @@ export default function ResultsTable({
   // row (across all results and their variants, not just the visible page), and
   // restore any column we previously auto-hid once it has data again. Only the
   // columns we hid are touched, so manual visibility choices and default-hidden
-  // columns are left intact.
+  // columns are left intact. Gated by the `autoHideEmptyColumns` setting (default
+  // on); when off, no columns are auto-hidden and any we previously hid are
+  // restored so the toggle takes effect immediately.
+  const autoHideEmptyColumns = appContext?.userSettings?.autoHideEmptyColumns ?? true;
   const autoHiddenColumnsRef = useRef<Set<string>>(new Set());
   const prevIsLoadingForAutoHideRef = useRef(false);
   useEffect(() => {
     const searchJustFinished = prevIsLoadingForAutoHideRef.current && !isLoading;
     prevIsLoadingForAutoHideRef.current = isLoading;
+
+    // Feature disabled: restore anything we auto-hid, then do nothing further.
+    if (!autoHideEmptyColumns) {
+      if (autoHiddenColumnsRef.current.size === 0) return;
+      const defaultVisibility = table.initialState.columnVisibility ?? {};
+      setTableState((prev) => {
+        const columnVisibility = { ...prev.columnVisibility };
+        for (const id of autoHiddenColumnsRef.current) {
+          const defaultVisible = defaultVisibility[id];
+          if (defaultVisible === undefined) delete columnVisibility[id];
+          else columnVisibility[id] = defaultVisible;
+        }
+        return { ...prev, columnVisibility };
+      });
+      autoHiddenColumnsRef.current = new Set();
+      return;
+    }
+
     if (!searchJustFinished || searchResults.length === 0) return;
 
     const emptyColumnIds = new Set(getEmptyHideableColumnIds(table));
@@ -288,8 +312,8 @@ export default function ResultsTable({
     });
     autoHiddenColumnsRef.current = emptyColumnIds;
     // `table` is a stable instance from useResultsTable; recompute is driven by
-    // the search lifecycle (isLoading) and the resulting data.
-  }, [isLoading, searchResults]);
+    // the search lifecycle (isLoading), the resulting data, and the toggle.
+  }, [isLoading, searchResults, autoHideEmptyColumns]);
 
   // Load persisted state once on mount
   useEffect(() => {

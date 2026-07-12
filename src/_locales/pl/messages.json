@@ -730,6 +730,22 @@
     "message": "Duża",
     "description": "Font-size option."
   },
+  "settings_open_in_tab": {
+    "message": "Otwórz w karcie",
+    "description": "Setting label."
+  },
+  "settings_open_in_tab_desc": {
+    "message": "Kliknięcie ikony na pasku narzędzi otwiera Chem Pal w pełnej karcie przeglądarki zamiast w wyskakującym okienku.",
+    "description": "Setting description."
+  },
+  "settings_auto_hide_empty_columns": {
+    "message": "Automatycznie ukrywaj puste kolumny",
+    "description": "Setting label."
+  },
+  "settings_auto_hide_empty_columns_desc": {
+    "message": "Automatycznie ukrywaj kolumny wyników, które nie zawierają danych dla bieżącego wyszukiwania.",
+    "description": "Setting description."
+  },
   "settings_excluded_empty": {
     "message": "Brak wykluczonych produktów.",
     "description": "Empty-state text."

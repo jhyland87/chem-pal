@@ -27,6 +27,12 @@
       "@/*": [
         "./src/*"
       ],
+      // country-list-js@3.1.8 ships an inadequate index.d.ts (`all: {}`) that
+      // shadows @types/country-list-js. Point type resolution at the @types
+      // declarations instead; runtime resolution (Vite) still uses the real JS.
+      "country-list-js": [
+        "./node_modules/@types/country-list-js/index.d.ts"
+      ],
     },
     /* Linting */
     "strict": true,

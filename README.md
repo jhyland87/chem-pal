@@ -33,7 +33,7 @@ Open source project aimed at helping amateur chemistry hobbyists find the best d
 - Viewable from popup or in separate browser tab
 - [Price tracking](https://github.com/jhyland87/chem-pal/blob/main/public/static/images/demo/price-tracking.png) on all products and variants
 - No account creation required to use extension
-- No data collection by the developer — see the [Privacy Policy](PRIVACY.md) for exactly what stays local on your device and what is sent to the suppliers you search
+- No data collection by the developer — see the [Privacy Policy](pages/PRIVACY.md) for exactly what stays local on your device and what is sent to the suppliers you search
 
 ----
 

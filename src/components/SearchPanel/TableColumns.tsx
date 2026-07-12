@@ -1,11 +1,7 @@
 import { CountryFlagTooltip } from "@/components/StyledComponents";
 import { default as Link } from "@/components/TabLink";
-import {
-  AVAILABILITY_OPTIONS,
-  isShippingRange,
-  SHIPPING_OPTIONS,
-  SUPPLIER_COUNTRY_OPTIONS,
-} from "@/constants/common";
+import { AVAILABILITY_OPTIONS, isShippingRange, SHIPPING_OPTIONS } from "@/constants/common";
+import { SUPPLIER_COUNTRY_OPTIONS } from "@/constants/countries";
 import { omit } from "@/helpers/collectionUtils";
 import { getCountryName } from "@/helpers/country";
 import { i18n } from "@/helpers/i18n";

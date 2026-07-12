@@ -1,10 +1,9 @@
 // Client side of the background-worker fetch proxy. The matching message handler
-// lives in `public/service-worker.js`. Routing a request through the service worker
+// lives in `src/service-worker.ts`. Routing a request through the service worker
 // sidesteps the page CORS restrictions that apply to extension pages (e.g. the side
 // panel), as long as the target host is granted in the manifest `host_permissions`.
 
-/** Message type discriminator shared with the service-worker handler. */
-const BACKGROUND_FETCH = "BACKGROUND_FETCH";
+import { MESSAGE_TYPE } from "@/constants/common";
 
 /**
  * Serializable subset of `RequestInit` accepted by {@link backgroundFetch}. Only
@@ -24,7 +23,7 @@ export interface BackgroundFetchInit {
 
 /** Message sent to the service worker. Mirrors the contract documented in the worker. */
 interface BackgroundFetchMessage {
-  type: typeof BACKGROUND_FETCH;
+  type: MESSAGE_TYPE.BACKGROUND_FETCH;
   url: string;
   init?: Omit<BackgroundFetchInit, "headers"> & { headers?: Record<string, string> };
 }
@@ -125,7 +124,7 @@ export async function backgroundFetch(
   init?: BackgroundFetchInit,
 ): Promise<Response> {
   const message: BackgroundFetchMessage = {
-    type: BACKGROUND_FETCH,
+    type: MESSAGE_TYPE.BACKGROUND_FETCH,
     url,
     init: init ? { ...init, headers: normalizeHeaders(init.headers) } : undefined,
   };

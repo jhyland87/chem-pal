@@ -1,4 +1,4 @@
-import { EU_COUNTRY_CODES } from "@/constants/common";
+import { EU_COUNTRY_CODES } from "@/constants/countries";
 
 /**
  * @group Helpers

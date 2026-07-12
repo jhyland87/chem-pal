@@ -293,7 +293,6 @@ describe("Common TypeGuards", () => {
           theme: "light",
           fontSize: "medium",
           showColumnFilters: true,
-          showAllColumns: false,
           hideColumns: ["description"],
           fuzzScorerOverride: "ratio",
         }),
