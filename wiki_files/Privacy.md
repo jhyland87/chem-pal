@@ -1,5 +1,3 @@
-# Privacy
-
 ChemPal is built to stay out of your business. There's **no account, no sign-up,
 and no data collection by the developer**.
 

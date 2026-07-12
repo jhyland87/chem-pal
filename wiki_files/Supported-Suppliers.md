@@ -1,5 +1,3 @@
-# Supported Suppliers
-
 ChemPal searches **27 chemical suppliers**, all chosen because they **sell to
 individuals and ship to residences**. A single search queries every enabled
 supplier at once.

@@ -1,5 +1,3 @@
-# Settings
-
 Open settings with the **⚙️ gear icon** (top-right of the search bar, or in the
 results toolbar). Settings open in the side panel, organized into collapsible
 sections. Below is every section and what each control does.

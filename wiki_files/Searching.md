@@ -1,5 +1,3 @@
-# Searching
-
 The fastest way to use ChemPal is the **home search bar**. Type what you're
 looking for, press search, and results stream in from every enabled supplier.
 

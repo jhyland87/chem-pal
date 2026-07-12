@@ -1,5 +1,3 @@
-# The Results Table
-
 Every search lands here. The results table shows one row per product, gathered
 from all your suppliers, and gives you the tools to sort, filter, and dig into each
 one.

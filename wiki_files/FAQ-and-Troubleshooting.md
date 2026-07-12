@@ -1,5 +1,3 @@
-# FAQ & Troubleshooting
-
 Common questions and quick fixes. If none of these help, see
 [reporting an issue](#reporting-a-problem).
 

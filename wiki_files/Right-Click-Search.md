@@ -1,5 +1,3 @@
-# Right-Click Search
-
 You don't have to open ChemPal to start a search. Come across a chemical name, CAS
 number, or formula on **any web page** — a forum post, a Wikipedia article, a
 supplier's own site — and you can search it in one step.

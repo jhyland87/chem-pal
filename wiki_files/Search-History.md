@@ -1,5 +1,3 @@
-# Search History
-
 ChemPal keeps a list of your past searches so you can jump back to one without
 retyping it — including all the filters and suppliers you had set at the time.
 

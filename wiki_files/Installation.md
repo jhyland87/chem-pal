@@ -1,5 +1,3 @@
-# Installation
-
 ChemPal runs on **Chrome** and **Firefox**. Official Chrome Web Store and Firefox
 Add-ons (AMO) listings are on the way; until then you can install the latest
 release directly, or build it yourself.

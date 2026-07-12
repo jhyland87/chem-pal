@@ -1,5 +1,3 @@
-# Price Tracking
-
 ChemPal quietly remembers the prices it sees, so over time you can tell whether a
 product is getting cheaper or more expensive — and time your purchase accordingly.
 
