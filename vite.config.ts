@@ -61,6 +61,10 @@ function serviceWorkerBuildPlugin(options: {
         configFile: false,
         mode,
         logLevel: "warn",
+        // Don't re-copy public/ here: the main build already emitted the
+        // per-browser manifest (via manifestPlugin), and copying public/ again
+        // would clobber it with the untransformed base manifest.json.
+        publicDir: false,
         define: buildDefines(pkg, { isAggregate, isProd }),
         resolve: { alias: { "@": _resolve("./src") } },
         esbuild: {
