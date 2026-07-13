@@ -770,7 +770,19 @@
   "hotkeys_desc_focusglobalfilter": { "message": "Focus the global filter on the results panel", "description": "Hotkey description." },
   "hotkeys_desc_togglecolumnfilters": { "message": "Toggle the column filters in the results table", "description": "Hotkey description." },
   "hotkeys_desc_abortsearch": { "message": "Abort the currently-running search", "description": "Hotkey description." },
+  "hotkeys_desc_expandallrows": { "message": "Expand all rows in the results table", "description": "Hotkey description." },
+  "hotkeys_desc_collapseallrows": { "message": "Collapse all rows in the results table", "description": "Hotkey description." },
+  "hotkeys_desc_scrollresultstotop": { "message": "Scroll the results table to the top", "description": "Hotkey description." },
+  "hotkeys_desc_showallrows": { "message": "Show all rows on one page", "description": "Hotkey description." },
+  "hotkeys_desc_clearcolumnfilters": { "message": "Clear all column filters", "description": "Hotkey description." },
+  "hotkeys_desc_konami": { "message": "Say hello", "description": "Hotkey description." },
   "hotkeys_flash_clearandretrysearch": { "message": "Cache cleared, search re-triggered", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_openhistory": { "message": "Search history opened", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_abortsearch": { "message": "Search aborted", "description": "Hotkey status-bar flash." }
+  "hotkeys_flash_abortsearch": { "message": "Search aborted", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_expandallrows": { "message": "All rows expanded", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_collapseallrows": { "message": "All rows collapsed", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_showallrows": { "message": "Showing all rows", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_clearcolumnfilters": { "message": "Column filters cleared", "description": "Hotkey status-bar flash." },
+  "hotkeys_search_placeholder": { "message": "Search shortcuts…", "description": "Placeholder for the hotkey modal search box." },
+  "hotkeys_no_matches": { "message": "No matching shortcuts", "description": "Shown when a hotkey search returns nothing." }
 }

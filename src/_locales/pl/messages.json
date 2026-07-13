@@ -1235,6 +1235,30 @@
     "message": "Przerwij bieżące wyszukiwanie",
     "description": "Hotkey description."
   },
+  "hotkeys_desc_expandallrows": {
+    "message": "Rozwiń wszystkie wiersze w tabeli wyników",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_collapseallrows": {
+    "message": "Zwiń wszystkie wiersze w tabeli wyników",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_scrollresultstotop": {
+    "message": "Przewiń tabelę wyników na górę",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_showallrows": {
+    "message": "Pokaż wszystkie wiersze na jednej stronie",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_clearcolumnfilters": {
+    "message": "Wyczyść wszystkie filtry kolumn",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_konami": {
+    "message": "Przywitaj się",
+    "description": "Hotkey description."
+  },
   "hotkeys_flash_clearandretrysearch": {
     "message": "Wyczyszczono pamięć podręczną, ponowiono wyszukiwanie",
     "description": "Hotkey status-bar flash."
@@ -1246,5 +1270,29 @@
   "hotkeys_flash_abortsearch": {
     "message": "Przerwano wyszukiwanie",
     "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_expandallrows": {
+    "message": "Rozwinięto wszystkie wiersze",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_collapseallrows": {
+    "message": "Zwinięto wszystkie wiersze",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_showallrows": {
+    "message": "Wyświetlanie wszystkich wierszy",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_clearcolumnfilters": {
+    "message": "Wyczyszczono filtry kolumn",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_search_placeholder": {
+    "message": "Szukaj skrótów…",
+    "description": "Placeholder for the hotkey modal search box."
+  },
+  "hotkeys_no_matches": {
+    "message": "Brak pasujących skrótów",
+    "description": "Shown when a hotkey search returns nothing."
   }
 }

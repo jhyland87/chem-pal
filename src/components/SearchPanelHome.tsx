@@ -1,13 +1,13 @@
 import { CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
 import { i18n } from "@/helpers/i18n";
+import { isTabView, openExtensionTab } from "@/utils/displayContext";
 import { getSearchResults } from "@/utils/idbCache";
 import { cstorage } from "@/utils/storage";
-import { isTabView, openExtensionTab } from "@/utils/displayContext";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import SettingsIcon from "@mui/icons-material/Settings";
 import Badge from "@mui/material/Badge";
-import { useEffect, useState, FC } from "react";
+import { FC, useEffect, useState } from "react";
 import { useAppContext } from "../context";
 import { useTheme as useCustomTheme } from "../themes";
 import { SearchForm } from "./SearchForm";

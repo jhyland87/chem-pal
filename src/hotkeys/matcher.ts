@@ -51,6 +51,38 @@ const MOD_ALIASES: Record<string, ModifierFlag> = {
 };
 
 /**
+ * Maps friendly key aliases used in sequential bindings to the lowercased
+ * `KeyboardEvent.key` value they should match against. Anything not listed
+ * matches its own lowercased token (e.g. `a` → `"a"`).
+ */
+const KEY_ALIASES: Record<string, string> = {
+  up: "arrowup",
+  uparrow: "arrowup",
+  down: "arrowdown",
+  downarrow: "arrowdown",
+  left: "arrowleft",
+  leftarrow: "arrowleft",
+  right: "arrowright",
+  rightarrow: "arrowright",
+  esc: "escape",
+  enter: "enter",
+  return: "enter",
+  space: " ",
+  spacebar: " ",
+};
+
+/** Display symbols for sequence keys that read better than the raw name. */
+const SEQUENCE_SYMBOLS: Record<string, string> = {
+  arrowup: "↑",
+  arrowdown: "↓",
+  arrowleft: "←",
+  arrowright: "→",
+  escape: "Esc",
+  enter: "Enter",
+  " ": "Space",
+};
+
+/**
  * Parses a key-binding string such as `"mod+shift+r"` into a `ParsedBinding`.
  * The final `+`-separated token is treated as the key; earlier tokens are
  * modifiers. The `mod` token expands to `meta` on macOS and `ctrl` elsewhere.
@@ -91,7 +123,7 @@ export function parseBinding(binding: string): ParsedBinding {
     if (flag) parsed[flag] = true;
   }
 
-  parsed.key = last;
+  parsed.key = normalizeKey(last);
   return parsed;
 }
 
@@ -117,7 +149,67 @@ export function matches(event: KeyboardEvent, binding: ParsedBinding): boolean {
   // `?` is produced by Shift+/ — event.key is already "?", so don't require shift
   // separately. For other keys, enforce the shift flag strictly.
   if (binding.key !== "?" && event.shiftKey !== binding.shift) return false;
-  return event.key.toLowerCase() === binding.key.toLowerCase();
+  return normalizeKey(event.key) === binding.key;
+}
+
+/**
+ * Normalizes a single binding token (e.g. `"UpArrow"`, `"Esc"`, `"A"`) to the
+ * lowercased `KeyboardEvent.key` value it should match. Unknown tokens map to
+ * their own lowercased form.
+ * @param token - A raw key token from a binding string.
+ * @returns The normalized key, comparable against a lowercased `event.key`.
+ * @example
+ * ```ts
+ * normalizeKey("UpArrow"); // "arrowup"
+ * normalizeKey("Esc");     // "escape"
+ * normalizeKey("A");       // "a"
+ * ```
+ * @source
+ */
+export function normalizeKey(token: string): string {
+  const lower = token.trim().toLowerCase();
+  return KEY_ALIASES[lower] ?? lower;
+}
+
+/**
+ * Parses a sequential binding string such as `"up+up+down+down+left+right"`
+ * into an ordered array of normalized keys. Unlike {@link parseBinding}, every
+ * token is a key in the sequence — there are no modifiers.
+ * @param binding - The sequence binding string. Tokens are case-insensitive.
+ * @returns The ordered, normalized keys the user must press in turn.
+ * @example
+ * ```ts
+ * parseSequence("up+up+down+down+left+right");
+ * // => ["arrowup", "arrowup", "arrowdown", "arrowdown", "arrowleft", "arrowright"]
+ * ```
+ * @source
+ */
+export function parseSequence(binding: string): string[] {
+  return binding
+    .split("+")
+    .map((t) => t.trim())
+    .filter(Boolean)
+    .map(normalizeKey);
+}
+
+/**
+ * Formats a sequential binding into per-step display labels for the help
+ * modal — arrows become `↑ ↓ ← →`, named keys are title-cased, and single
+ * characters are upper-cased.
+ * @param binding - The sequence binding string (same shape as in config).
+ * @returns Labels in press order, e.g. `["↑", "↑", "↓", "↓", "←", "→"]`.
+ * @example
+ * ```ts
+ * formatSequenceTokens("up+up+down+down+left+right"); // ["↑","↑","↓","↓","←","→"]
+ * ```
+ * @source
+ */
+export function formatSequenceTokens(binding: string): string[] {
+  return parseSequence(binding).map((key) => {
+    const symbol = SEQUENCE_SYMBOLS[key];
+    if (symbol) return symbol;
+    return key.length === 1 ? key.toUpperCase() : key.charAt(0).toUpperCase() + key.slice(1);
+  });
 }
 
 /**
@@ -184,7 +276,9 @@ export function formatBindingTokens(binding: KeyBinding): string[] {
       };
 
   const modifiers = tokens.map((t) => symbols[t] ?? t);
+  const normalizedKey = normalizeKey(last);
   const keyLabel =
-    last.length === 1 ? last.toUpperCase() : last.charAt(0).toUpperCase() + last.slice(1);
+    SEQUENCE_SYMBOLS[normalizedKey] ??
+    (last.length === 1 ? last.toUpperCase() : last.charAt(0).toUpperCase() + last.slice(1));
   return [...modifiers, keyLabel];
 }

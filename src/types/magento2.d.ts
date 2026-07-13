@@ -1,4 +1,3 @@
- 
 declare global {
   /**
    * Money object returned by the Magento 2 GraphQL API. Used wherever a price
@@ -283,6 +282,29 @@ declare global {
   }
 
   /**
+   * URL rewrite for a Magento 2 product.
+   *
+   * @example
+   * ```typescript
+   * const rewrite: Magento2UrlRewrite = {
+   *   url: "https://www.example.com/product/123",
+   *   parameters: [{ name: "id", value: "123" }]
+   * };
+   * ```
+   */
+  interface Magento2UrlRewrite {
+    /** URL of the rewrite */
+    url: string;
+    /** Parameters of the rewrite */
+    parameters: {
+      /** Name of the parameter */
+      name: string;
+      /** Value of the parameter */
+      value: string;
+    }[];
+  }
+
+  /**
    * A single product item in the Magento 2 GraphQL `products.items` array.
    * The `__typename` field discriminates between the concrete product types
    * (Simple, Grouped, Configurable, Bundle), with `items`/`variants` populated
@@ -316,6 +338,8 @@ declare global {
     sku: string;
     /** Display name of the product */
     name: string;
+    /** URL rewrites for the product */
+    url_rewrites: Magento2UrlRewrite[];
     /** URL slug used to build the product page URL */
     url_key: string;
     /** Optional URL suffix (e.g. ".html") that completes the product URL */

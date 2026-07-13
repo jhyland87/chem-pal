@@ -150,7 +150,19 @@ export default function SettingsPanel() {
             openInTab: false,
             autoHideEmptyColumns: true,
             disabledSuppliers: [],
-            hideColumns: ["description", "uom", "sds", "specs", "coa", "cas", "pubchem", "formula", "moleweight", "purity", "concentration"],
+            hideColumns: [
+              "description",
+              "uom",
+              "sds",
+              "specs",
+              "coa",
+              "cas",
+              "pubchem",
+              "formula",
+              "moleweight",
+              "purity",
+              "concentration",
+            ],
           };
           break;
         default:
@@ -202,7 +214,11 @@ export default function SettingsPanel() {
   const [priceHistoryCleared, setPriceHistoryCleared] = useState(false);
   const [cacheCleared, setCacheCleared] = useState(false);
   const [cacheStats, setCacheStats] = useState<{ records: number; bytes: number }>();
-  const [priceStats, setPriceStats] = useState<{ products: number; points: number; bytes: number }>();
+  const [priceStats, setPriceStats] = useState<{
+    products: number;
+    points: number;
+    bytes: number;
+  }>();
 
   useEffect(() => {
     const load = async () => {
@@ -484,7 +500,6 @@ export default function SettingsPanel() {
                 </Select>
               </FormControl>
             </ListItem>
-
           </List>
         </AccordionDetails>
       </Accordion>
@@ -542,12 +557,7 @@ export default function SettingsPanel() {
               sx={{ flexDirection: "column", alignItems: "flex-start", rowGap: 0.5 }}
             >
               <Box sx={{ display: "flex", alignItems: "center" }}>
-                <Button
-                  variant="outlined"
-                  color="warning"
-                  size="small"
-                  onClick={handleClearCache}
-                >
+                <Button variant="outlined" color="warning" size="small" onClick={handleClearCache}>
                   {i18n("settings_clear_cache")}
                 </Button>
                 {cacheCleared && (
@@ -803,7 +813,9 @@ export default function SettingsPanel() {
                           size="small"
                           onClick={() => handleRemoveExcluded(key)}
                           className={styles["settings-panel__excluded-delete-btn"]}
-                          aria-label={i18n("settings_remove_item", [entry.title || entry.url || ""])}
+                          aria-label={i18n("settings_remove_item", [
+                            entry.title || entry.url || "",
+                          ])}
                         >
                           <DeleteIcon className={styles["settings-panel__excluded-delete-icon"]} />
                         </IconButton>
@@ -880,7 +892,9 @@ export default function SettingsPanel() {
                 <FormControlLabel
                   control={
                     <Switch
-                      checked={!(currentSettings.disabledSuppliers ?? []).includes(supplierClassName)}
+                      checked={
+                        !(currentSettings.disabledSuppliers ?? []).includes(supplierClassName)
+                      }
                       onChange={handleSupplierToggle(supplierClassName)}
                       name={supplierClassName}
                       disabled={isPending}
@@ -899,83 +913,83 @@ export default function SettingsPanel() {
         onChange={handleAccordionChange("advanced")}
         disableGutters
       >
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            className={styles["settings-panel__accordion-summary"]}
-          >
-            <Typography variant="body2" fontWeight={500}>
-              {i18n("settings_section_advanced")}
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails className={styles["settings-panel__accordion-details"]}>
-            {/* Mirrors the search drawer's single-select filter-input style:
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          className={styles["settings-panel__accordion-summary"]}
+        >
+          <Typography variant="body2" fontWeight={500}>
+            {i18n("settings_section_advanced")}
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails className={styles["settings-panel__accordion-details"]}>
+          {/* Mirrors the search drawer's single-select filter-input style:
                 full-width labeled outlined TextField with italic helper text.
                 Using `TextField select` (rather than the horizontal
                 ListItem + Select pattern the rest of this panel uses) gives
                 long scorer names like `partial_token_similarity_sort_ratio`
                 room to render, and keeps the visual consistent with the
                 search drawer filters. */}
-            <Box sx={{ p: 1 }}>
-              <TextField
-                select
-                fullWidth
-                size="small"
-                name="fuzzScorerOverride"
-                label={i18n("settings_fuzz_scorer")}
-                value={currentSettings.fuzzScorerOverride ?? ""}
-                onChange={handleInputChange}
-                disabled={isPending}
-                helperText={i18n("settings_fuzz_scorer_helper")}
-                slotProps={{ formHelperText: { sx: { fontStyle: "italic" } } }}
-              >
-                <MenuItem value="">
-                  <em>{i18n("settings_fuzz_scorer_default")}</em>
+          <Box sx={{ p: 1 }}>
+            <TextField
+              select
+              fullWidth
+              size="small"
+              name="fuzzScorerOverride"
+              label={i18n("settings_fuzz_scorer")}
+              value={currentSettings.fuzzScorerOverride ?? ""}
+              onChange={handleInputChange}
+              disabled={isPending}
+              helperText={i18n("settings_fuzz_scorer_helper")}
+              slotProps={{ formHelperText: { sx: { fontStyle: "italic" } } }}
+            >
+              <MenuItem value="">
+                <em>{i18n("settings_fuzz_scorer_default")}</em>
+              </MenuItem>
+              {FUZZ_SCORER_NAMES.map((name) => (
+                <MenuItem key={name} value={name}>
+                  {name}
                 </MenuItem>
-                {FUZZ_SCORER_NAMES.map((name) => (
-                  <MenuItem key={name} value={name}>
-                    {name}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Box>
-            <Box sx={{ p: 1 }}>
-              <TextField
-                fullWidth
-                size="small"
-                type="number"
-                name="maxAllowableSearchTime"
-                label={i18n("settings_max_search_time")}
-                value={currentSettings.maxAllowableSearchTime ?? ""}
-                onChange={handleInputChange}
-                disabled={isPending}
-                helperText={i18n("settings_max_search_time_helper")}
-                slotProps={{
-                  formHelperText: { sx: { fontStyle: "italic" } },
-                  htmlInput: { min: 0, step: 1000 },
-                }}
-              />
-            </Box>
-            <ListItem className={styles["settings-panel__helper-on-hover"]}>
-              <ListItemText
-                primary={i18n("settings_disable_fuzzy")}
-                secondary={i18n("settings_disable_fuzzy_desc")}
-                slotProps={{ secondary: { sx: { fontStyle: "italic" } } }}
-              />
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={currentSettings.fuzzyFilteringDisabled ?? false}
-                    onChange={handleSwitchChange}
-                    name="fuzzyFilteringDisabled"
-                    disabled={isPending}
-                  />
-                }
-                labelPlacement="start"
-                label=""
-              />
-            </ListItem>
-          </AccordionDetails>
-        </Accordion>
+              ))}
+            </TextField>
+          </Box>
+          <Box sx={{ p: 1 }}>
+            <TextField
+              fullWidth
+              size="small"
+              type="number"
+              name="maxAllowableSearchTime"
+              label={i18n("settings_max_search_time")}
+              value={currentSettings.maxAllowableSearchTime ?? ""}
+              onChange={handleInputChange}
+              disabled={isPending}
+              helperText={i18n("settings_max_search_time_helper")}
+              slotProps={{
+                formHelperText: { sx: { fontStyle: "italic" } },
+                htmlInput: { min: 0, step: 1000 },
+              }}
+            />
+          </Box>
+          <ListItem className={styles["settings-panel__helper-on-hover"]}>
+            <ListItemText
+              primary={i18n("settings_disable_fuzzy")}
+              secondary={i18n("settings_disable_fuzzy_desc")}
+              slotProps={{ secondary: { sx: { fontStyle: "italic" } } }}
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={currentSettings.fuzzyFilteringDisabled ?? false}
+                  onChange={handleSwitchChange}
+                  name="fuzzyFilteringDisabled"
+                  disabled={isPending}
+                />
+              }
+              labelPlacement="start"
+              label=""
+            />
+          </ListItem>
+        </AccordionDetails>
+      </Accordion>
       <Accordion
         expanded={expanded === "actions"}
         onChange={handleAccordionChange("actions")}

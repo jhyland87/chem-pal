@@ -7,7 +7,7 @@ import { i18n } from "@/helpers/i18n";
 import { recordProductPrices } from "@/helpers/priceHistory";
 import { dedupeProducts, getProductDedupeKey } from "@/helpers/productIdentity";
 import { suggestAlternativeSearch } from "@/helpers/pubchem";
-import { ABORT_SEARCH_EVENT } from "@/hotkeys";
+import { HotkeyEvent } from "@/hotkeys";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
 import {
   IDB_SEARCH_RESULTS_CLEARED,
@@ -768,8 +768,8 @@ export function useSearch() {
   // AbortController ref without threading it through context.
   useEffect(() => {
     const handler = () => handleStopSearch();
-    window.addEventListener(ABORT_SEARCH_EVENT, handler);
-    return () => window.removeEventListener(ABORT_SEARCH_EVENT, handler);
+    window.addEventListener(HotkeyEvent.ABORT_SEARCH, handler);
+    return () => window.removeEventListener(HotkeyEvent.ABORT_SEARCH, handler);
   }, [handleStopSearch]);
 
   return {

@@ -822,7 +822,7 @@ export async function clearPriceHistory(): Promise<void> {
 /* -------------------------------------------------------------------------- */
 
 /** The name of one IndexedDB object store in the ChemPal database. */
-export type IdbStoreName = (typeof IDB_STORE)[keyof typeof IDB_STORE];
+export type IdbStoreName = IDB_STORE;
 
 /** Per-store record count + serialized JSON size, plus the summed total. */
 export interface IdbStorageBreakdown {

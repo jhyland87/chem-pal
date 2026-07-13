@@ -770,7 +770,19 @@
   "hotkeys_desc_focusglobalfilter": { "message": "Den globalen Filter im Ergebnispanel fokussieren", "description": "Hotkey description." },
   "hotkeys_desc_togglecolumnfilters": { "message": "Spaltenfilter in der Ergebnistabelle umschalten", "description": "Hotkey description." },
   "hotkeys_desc_abortsearch": { "message": "Die aktuell laufende Suche abbrechen", "description": "Hotkey description." },
+  "hotkeys_desc_expandallrows": { "message": "Alle Zeilen in der Ergebnistabelle ausklappen", "description": "Hotkey description." },
+  "hotkeys_desc_collapseallrows": { "message": "Alle Zeilen in der Ergebnistabelle einklappen", "description": "Hotkey description." },
+  "hotkeys_desc_scrollresultstotop": { "message": "Ergebnistabelle nach oben scrollen", "description": "Hotkey description." },
+  "hotkeys_desc_showallrows": { "message": "Alle Zeilen auf einer Seite anzeigen", "description": "Hotkey description." },
+  "hotkeys_desc_clearcolumnfilters": { "message": "Alle Spaltenfilter löschen", "description": "Hotkey description." },
+  "hotkeys_desc_konami": { "message": "Hallo sagen", "description": "Hotkey description." },
   "hotkeys_flash_clearandretrysearch": { "message": "Cache geleert, Suche erneut ausgelöst", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_openhistory": { "message": "Suchverlauf geöffnet", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_abortsearch": { "message": "Suche abgebrochen", "description": "Hotkey status-bar flash." }
+  "hotkeys_flash_abortsearch": { "message": "Suche abgebrochen", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_expandallrows": { "message": "Alle Zeilen ausgeklappt", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_collapseallrows": { "message": "Alle Zeilen eingeklappt", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_showallrows": { "message": "Alle Zeilen werden angezeigt", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_clearcolumnfilters": { "message": "Spaltenfilter gelöscht", "description": "Hotkey status-bar flash." },
+  "hotkeys_search_placeholder": { "message": "Kürzel suchen…", "description": "Placeholder for the hotkey modal search box." },
+  "hotkeys_no_matches": { "message": "Keine passenden Kürzel", "description": "Shown when a hotkey search returns nothing." }
 }

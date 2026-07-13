@@ -11,9 +11,37 @@
   outline: none;
 }
 
+.hotkey-help-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
 .hotkey-help-title {
-  text-align: center;
+  flex: 1 1 auto;
   font-weight: 600;
+}
+
+.hotkey-search {
+  flex: 0 0 auto;
+  width: 180px;
+}
+
+.hotkey-section-heading {
+  display: block;
+  margin-top: 8px;
+  margin-bottom: 2px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.65;
+}
+
+.hotkey-no-matches {
+  padding: 12px 4px;
+  text-align: center;
+  opacity: 0.7;
 }
 
 .hotkey-tabs {
@@ -39,7 +67,7 @@
 
 .hotkey-combo-group {
   flex: 0 0 auto;
-  min-width: 90px;
+  min-width: 150px;
 }
 
 .hotkey-combo {

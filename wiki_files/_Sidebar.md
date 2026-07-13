@@ -23,6 +23,10 @@
 - [Settings](Settings)
 - [Caching](Caching)
 
+**Interface & Shortcuts**
+- [Speed Dial Menu](Speed-Dial-Menu)
+- [Keyboard Shortcuts](Keyboard-Shortcuts)
+
 **Help**
 - [Privacy](Privacy)
 - [FAQ & Troubleshooting](FAQ-and-Troubleshooting)

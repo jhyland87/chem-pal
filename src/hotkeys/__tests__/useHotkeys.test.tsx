@@ -135,6 +135,28 @@ describe("useHotkeys", () => {
     }).not.toThrow();
   });
 
+  it("fires onTriggered for a flash-only hotkey with no registered handler", () => {
+    // clearAndRetrySearch (ctrl+shift+r) declares a flash in config.json; even
+    // with no handler it should still notify so the flash message shows.
+    const onTriggered = vi.fn();
+    renderHook(() => useHotkeys({}, { onTriggered }));
+
+    dispatchKey({ key: "r", ctrlKey: true, shiftKey: true });
+
+    expect(onTriggered).toHaveBeenCalledTimes(1);
+    expect(onTriggered.mock.calls[0][0]).toMatchObject({ id: "clearAndRetrySearch" });
+  });
+
+  it("does not fire onTriggered for a hotkey with neither handler nor flash", () => {
+    // showHotkeyHelp has no flash; with no handler it stays a no-op.
+    const onTriggered = vi.fn();
+    renderHook(() => useHotkeys({}, { onTriggered }));
+
+    dispatchKey({ key: "?", shiftKey: true });
+
+    expect(onTriggered).not.toHaveBeenCalled();
+  });
+
   it("calls onTriggered with the matched config after a sync handler", () => {
     const onTriggered = vi.fn();
     const showHotkeyHelp = vi.fn();
@@ -204,5 +226,52 @@ describe("useHotkeys", () => {
     dispatchKey({ key: "z" });
 
     expect(handler).not.toHaveBeenCalled();
+  });
+
+  describe("sequential hotkeys", () => {
+    const KONAMI = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight"];
+
+    it("fires a sequential hotkey when keys are entered in order", () => {
+      const konami = vi.fn();
+      renderHook(() => useHotkeys({ konami }));
+
+      KONAMI.forEach((key) => dispatchKey({ key }));
+
+      expect(konami).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not fire when the sequence order is wrong", () => {
+      const konami = vi.fn();
+      renderHook(() => useHotkeys({ konami }));
+
+      // Swap the first two directions.
+      ["ArrowDown", "ArrowUp", "ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight"].forEach((key) =>
+        dispatchKey({ key }),
+      );
+
+      expect(konami).not.toHaveBeenCalled();
+    });
+
+    it("still completes when the correct sequence follows stray keys", () => {
+      const konami = vi.fn();
+      renderHook(() => useHotkeys({ konami }));
+
+      dispatchKey({ key: "x" });
+      KONAMI.forEach((key) => dispatchKey({ key }));
+
+      expect(konami).toHaveBeenCalledTimes(1);
+    });
+
+    it("fires the arrow chord binding (mod+shift+up) without touching the sequence", () => {
+      const scrollResultsToTop = vi.fn();
+      const konami = vi.fn();
+      renderHook(() => useHotkeys({ scrollResultsToTop, konami }));
+
+      // mod resolves to ctrl off macOS.
+      dispatchKey({ key: "ArrowUp", ctrlKey: true, shiftKey: true });
+
+      expect(scrollResultsToTop).toHaveBeenCalledTimes(1);
+      expect(konami).not.toHaveBeenCalled();
+    });
   });
 });

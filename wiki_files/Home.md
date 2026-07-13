@@ -49,6 +49,8 @@ searches suppliers that **sell to individuals and ship to residences**.
 | [Supported Suppliers](Supported-Suppliers) | The full list of suppliers ChemPal searches |
 | [Settings](Settings) | Every setting, explained |
 | [Caching](Caching) | Why repeat searches are faster, and how to clear the cache |
+| [Speed Dial Menu](Speed-Dial-Menu) | The corner button for clearing results/cache and switching themes |
+| [Keyboard Shortcuts](Keyboard-Shortcuts) | Every keyboard shortcut, and how to search them in-app |
 | [Privacy](Privacy) | What stays on your device |
 | [FAQ & Troubleshooting](FAQ-and-Troubleshooting) | Common questions and fixes |
 | [Contributing & Development](Contributing-and-Development) | For developers |

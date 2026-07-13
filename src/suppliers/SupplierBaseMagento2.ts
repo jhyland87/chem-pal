@@ -95,6 +95,27 @@ export abstract class SupplierBaseMagento2
   protected readonly supportsNativeAdvancedSearch: boolean = true;
 
   /**
+   * Derives the product URL from a Magento 2 product item. The product item can bave URL
+   * rewrites (which take precedence over the default URL key + suffix).
+   *
+   * @param item - The Magento 2 product item
+   * @returns The product URL
+   * @example
+   * ```typescript
+   * const url = this.getProductUrl(item);
+   * // Returns "https://www.example.com/product/123"
+   * ```
+   * @source
+   */
+  protected getProductUrl(item: Magento2ProductItem): string {
+    const url = item.url_rewrites?.[0]?.url;
+    if (url) {
+      return url;
+    }
+    return `${item.url_key}${item.url_suffix ?? ".html"}`;
+  }
+
+  /**
    * Derives the unique product key from a Magento 2 product item: its GraphQL
    * `uid` (the same value passed to `.setID`), stable across query and detail.
    * @param data - The raw Magento 2 product item
@@ -289,7 +310,7 @@ export abstract class SupplierBaseMagento2
         .sort((a, b) => a.raw.price - b.raw.price);
 
       const primary = enriched[0];
-      const productUrl = `${item.url_key}${item.url_suffix ?? ".html"}`;
+      const productUrl = this.getProductUrl(item);
 
       const builder = new ProductBuilder<Product>(this.baseURL);
 
@@ -312,7 +333,7 @@ export abstract class SupplierBaseMagento2
         // The picture is the only new field surfaced from the GraphQL search response; the
         // remaining chemical identifiers are scraped per-supplier in getProductData.
         .setImage(item.image?.url, item.image?.label ?? undefined)
-        .setPermalink(`${this.baseURL}/${this.storeCode}/${item.url_key}.html`);
+        .setPermalink(`${this.baseURL}/${this.storeCode}/${productUrl}`);
 
       if (item.stock_status) {
         builder.setAvailability(item.stock_status);

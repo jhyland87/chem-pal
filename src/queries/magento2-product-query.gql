@@ -6,8 +6,16 @@ query searchProducts($search: String!, $pageSize: Int!) {
       sku
       name
       url_key
+      url_path
       url_suffix
       canonical_url
+      url_rewrites {
+        url
+        parameters {
+          name
+          value
+        }
+      }
       stock_status
       only_x_left_in_stock
       meta_title
