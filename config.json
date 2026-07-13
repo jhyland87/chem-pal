@@ -32,6 +32,7 @@
   },
   "defaultResultsLimit": 5,
   "useStorageCompression": false,
+  "sequenceResetMs": 1500,
   "hotkeys": [
     {
       "id": "showHotkeyHelp",
@@ -77,6 +78,49 @@
       "description": "Abort the currently-running search",
       "group": "Search",
       "flash": "Search aborted"
+    },
+    {
+      "id": "expandAllRows",
+      "keys": "mod+shift+e",
+      "description": "Expand all rows in the results table",
+      "group": "Results",
+      "flash": "All rows expanded"
+    },
+    {
+      "id": "collapseAllRows",
+      "keys": "mod+shift+c",
+      "description": "Collapse all rows in the results table",
+      "group": "Results",
+      "flash": "All rows collapsed"
+    },
+    {
+      "id": "scrollResultsToTop",
+      "keys": "mod+shift+up",
+      "description": "Scroll the results table to the top",
+      "group": "Results"
+    },
+    {
+      "id": "showAllRows",
+      "keys": "mod+shift+a",
+      "description": "Show all rows on one page (no pagination)",
+      "group": "Results",
+      "flash": "Showing all rows"
+    },
+    {
+      "id": "clearColumnFilters",
+      "keys": "mod+shift+backspace",
+      "description": "Clear all column filters in the results table",
+      "group": "Results",
+      "flash": "Column filters cleared"
+    },
+    {
+      "id": "konami",
+      "keys": "upArrow+upArrow+downArrow+downArrow+leftArrow+rightArrow",
+      "description": "Say hello",
+      "group": "General",
+      "flash": "Hello World!",
+      "sequential": true,
+      "unlisted": true
     }
   ]
 }

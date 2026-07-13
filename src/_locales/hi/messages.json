@@ -755,7 +755,19 @@
   "hotkeys_desc_focusglobalfilter": { "message": "परिणाम पैनल पर वैश्विक फ़िल्टर पर फ़ोकस करें", "description": "Hotkey description." },
   "hotkeys_desc_togglecolumnfilters": { "message": "परिणाम तालिका में कॉलम फ़िल्टर टॉगल करें", "description": "Hotkey description." },
   "hotkeys_desc_abortsearch": { "message": "वर्तमान में चल रही खोज रोकें", "description": "Hotkey description." },
+  "hotkeys_desc_expandallrows": { "message": "परिणाम तालिका की सभी पंक्तियाँ विस्तृत करें", "description": "Hotkey description." },
+  "hotkeys_desc_collapseallrows": { "message": "परिणाम तालिका की सभी पंक्तियाँ संक्षिप्त करें", "description": "Hotkey description." },
+  "hotkeys_desc_scrollresultstotop": { "message": "परिणाम तालिका को ऊपर स्क्रॉल करें", "description": "Hotkey description." },
+  "hotkeys_desc_showallrows": { "message": "सभी पंक्तियाँ एक पृष्ठ पर दिखाएँ", "description": "Hotkey description." },
+  "hotkeys_desc_clearcolumnfilters": { "message": "सभी स्तंभ फ़िल्टर साफ़ करें", "description": "Hotkey description." },
+  "hotkeys_desc_konami": { "message": "नमस्ते कहें", "description": "Hotkey description." },
   "hotkeys_flash_clearandretrysearch": { "message": "कैश साफ़ किया गया, खोज पुनः शुरू की गई", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_openhistory": { "message": "खोज इतिहास खोला गया", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_abortsearch": { "message": "खोज रोकी गई", "description": "Hotkey status-bar flash." }
+  "hotkeys_flash_abortsearch": { "message": "खोज रोकी गई", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_expandallrows": { "message": "सभी पंक्तियाँ विस्तृत की गईं", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_collapseallrows": { "message": "सभी पंक्तियाँ संक्षिप्त की गईं", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_showallrows": { "message": "सभी पंक्तियाँ दिखाई जा रही हैं", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_clearcolumnfilters": { "message": "स्तंभ फ़िल्टर साफ़ किए गए", "description": "Hotkey status-bar flash." },
+  "hotkeys_search_placeholder": { "message": "शॉर्टकट खोजें…", "description": "Placeholder for the hotkey modal search box." },
+  "hotkeys_no_matches": { "message": "कोई मिलान वाला शॉर्टकट नहीं", "description": "Shown when a hotkey search returns nothing." }
 }

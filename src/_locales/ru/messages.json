@@ -1236,6 +1236,30 @@
     "message": "Прервать текущий поиск",
     "description": "Hotkey description."
   },
+  "hotkeys_desc_expandallrows": {
+    "message": "Развернуть все строки в таблице результатов",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_collapseallrows": {
+    "message": "Свернуть все строки в таблице результатов",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_scrollresultstotop": {
+    "message": "Прокрутить таблицу результатов вверх",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_showallrows": {
+    "message": "Показать все строки на одной странице",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_clearcolumnfilters": {
+    "message": "Очистить все фильтры столбцов",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_konami": {
+    "message": "Поздороваться",
+    "description": "Hotkey description."
+  },
   "hotkeys_flash_clearandretrysearch": {
     "message": "Кэш очищен, поиск запущен повторно",
     "description": "Hotkey status-bar flash."
@@ -1247,5 +1271,29 @@
   "hotkeys_flash_abortsearch": {
     "message": "Поиск прерван",
     "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_expandallrows": {
+    "message": "Все строки развёрнуты",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_collapseallrows": {
+    "message": "Все строки свёрнуты",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_showallrows": {
+    "message": "Показаны все строки",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_clearcolumnfilters": {
+    "message": "Фильтры столбцов очищены",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_search_placeholder": {
+    "message": "Поиск сочетаний…",
+    "description": "Placeholder for the hotkey modal search box."
+  },
+  "hotkeys_no_matches": {
+    "message": "Нет подходящих сочетаний",
+    "description": "Shown when a hotkey search returns nothing."
   }
 }

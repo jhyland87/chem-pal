@@ -30,7 +30,9 @@ describe("HotkeyHelpModal", () => {
   it("shows the descriptions for the first group's entries", () => {
     const configs = getHotkeyConfigs();
     const firstGroup = configs[0].group || "General";
-    const firstGroupEntries = configs.filter((c) => (c.group || "General") === firstGroup);
+    const firstGroupEntries = configs.filter(
+      (c) => (c.group || "General") === firstGroup && !c.unlisted,
+    );
 
     render(<HotkeyHelpModal open={true} onClose={onClose} />);
 
@@ -83,6 +85,67 @@ describe("HotkeyHelpModal", () => {
     fireEvent.click(screen.getByText("Keyboard Shortcuts"));
 
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it("surfaces matches from non-active groups when searching", async () => {
+    render(<HotkeyHelpModal open={true} onClose={onClose} />);
+
+    // A Results-group entry is hidden on the default (first) tab.
+    expect(
+      screen.queryByText("Focus the global filter on the results panel"),
+    ).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByPlaceholderText(/search shortcuts/i), {
+      target: { value: "global filter" },
+    });
+
+    // The search is debounced; findBy polls until it appears.
+    expect(
+      await screen.findByText("Focus the global filter on the results panel"),
+    ).toBeInTheDocument();
+    // A non-matching entry is not shown while filtering.
+    expect(screen.queryByText("Go to the search panel")).not.toBeInTheDocument();
+  });
+
+  it("never renders an unlisted hotkey, even when searching", async () => {
+    const unlisted = getHotkeyConfigs().filter((c) => c.unlisted);
+    // Guard: this test is only meaningful if an unlisted hotkey exists.
+    expect(unlisted.length).toBeGreaterThan(0);
+    const hidden = unlisted[0];
+
+    render(<HotkeyHelpModal open={true} onClose={onClose} />);
+
+    expect(screen.queryByText(hidden.description)).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByPlaceholderText(/search shortcuts/i), {
+      target: { value: hidden.description },
+    });
+
+    expect(await screen.findByText("No matching shortcuts")).toBeInTheDocument();
+    expect(screen.queryByText(hidden.description)).not.toBeInTheDocument();
+  });
+
+  it("shows a no-matches message when nothing matches", async () => {
+    render(<HotkeyHelpModal open={true} onClose={onClose} />);
+
+    fireEvent.change(screen.getByPlaceholderText(/search shortcuts/i), {
+      target: { value: "zzz-nothing-matches" },
+    });
+
+    expect(await screen.findByText("No matching shortcuts")).toBeInTheDocument();
+  });
+
+  it("clears the search when reopened", () => {
+    const { rerender } = render(<HotkeyHelpModal open={true} onClose={onClose} />);
+
+    const input = screen.getByPlaceholderText(/search shortcuts/i);
+    fireEvent.change(input, { target: { value: "expand" } });
+    expect(input).toHaveValue("expand");
+
+    rerender(<HotkeyHelpModal open={false} onClose={onClose} />);
+    rerender(<HotkeyHelpModal open={true} onClose={onClose} />);
+
+    expect(screen.getByPlaceholderText(/search shortcuts/i)).toHaveValue("");
   });
 
   it("resets to the first tab each time it reopens", () => {

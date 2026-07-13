@@ -770,7 +770,19 @@
   "hotkeys_desc_focusglobalfilter": { "message": "Kohdista yleissuodattimeen tulospaneelissa", "description": "Hotkey description." },
   "hotkeys_desc_togglecolumnfilters": { "message": "Näytä/piilota sarakesuodattimet tulostaulukossa", "description": "Hotkey description." },
   "hotkeys_desc_abortsearch": { "message": "Keskeytä parhaillaan käynnissä oleva haku", "description": "Hotkey description." },
+  "hotkeys_desc_expandallrows": { "message": "Laajenna kaikki rivit tulostaulukossa", "description": "Hotkey description." },
+  "hotkeys_desc_collapseallrows": { "message": "Tiivistä kaikki rivit tulostaulukossa", "description": "Hotkey description." },
+  "hotkeys_desc_scrollresultstotop": { "message": "Vieritä tulostaulukko ylös", "description": "Hotkey description." },
+  "hotkeys_desc_showallrows": { "message": "Näytä kaikki rivit yhdellä sivulla", "description": "Hotkey description." },
+  "hotkeys_desc_clearcolumnfilters": { "message": "Tyhjennä kaikki sarakesuodattimet", "description": "Hotkey description." },
+  "hotkeys_desc_konami": { "message": "Sano hei", "description": "Hotkey description." },
   "hotkeys_flash_clearandretrysearch": { "message": "Välimuisti tyhjennetty, haku käynnistetty uudelleen", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_openhistory": { "message": "Hakuhistoria avattu", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_abortsearch": { "message": "Haku keskeytetty", "description": "Hotkey status-bar flash." }
+  "hotkeys_flash_abortsearch": { "message": "Haku keskeytetty", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_expandallrows": { "message": "Kaikki rivit laajennettu", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_collapseallrows": { "message": "Kaikki rivit tiivistetty", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_showallrows": { "message": "Näytetään kaikki rivit", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_clearcolumnfilters": { "message": "Sarakesuodattimet tyhjennetty", "description": "Hotkey status-bar flash." },
+  "hotkeys_search_placeholder": { "message": "Hae pikanäppäimiä…", "description": "Placeholder for the hotkey modal search box." },
+  "hotkeys_no_matches": { "message": "Ei osumia pikanäppäimiin", "description": "Shown when a hotkey search returns nothing." }
 }

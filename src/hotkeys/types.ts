@@ -39,6 +39,19 @@ export interface HotkeyConfig {
    * modal) so we don't spam redundant feedback.
    */
   flash?: string;
+  /**
+   * When `true`, `keys` is interpreted as an ordered **sequence** — the
+   * `+`-separated tokens must be pressed one after another (e.g.
+   * `up+up+down+down+left+right`) rather than as a simultaneous chord.
+   * Defaults to `false`/absent (chord matching).
+   */
+  sequential?: boolean;
+  /**
+   * When `true`, the hotkey is hidden from the help modal (and any other UI
+   * that lists shortcuts) but stays fully functional. Useful for easter eggs
+   * or power-user shortcuts. Defaults to `false`/absent (listed).
+   */
+  unlisted?: boolean;
 }
 
 /**

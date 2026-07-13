@@ -2,14 +2,7 @@ import { defaultResultsLimit, defaultSettings } from "@/../config.json";
 import { APP_ACTION, CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
 import { AppContext } from "@/context";
 import { emitSearchEvent, SearchEvent } from "@/events/searchEvents";
-import {
-  ABORT_SEARCH_EVENT,
-  FOCUS_GLOBAL_FILTER_EVENT,
-  HotkeyHelpModal,
-  TOGGLE_COLUMN_FILTERS_EVENT,
-  useHotkeys,
-  type HotkeyHandlers,
-} from "@/hotkeys";
+import { HotkeyEvent, HotkeyHelpModal, useHotkeys, type HotkeyHandlers } from "@/hotkeys";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
 import { SupplierCache } from "@/utils/SupplierCache";
 import { useBadgeController } from "@/utils/badgeController";
@@ -572,14 +565,32 @@ function App() {
         dispatch({ type: APP_ACTION.SET_DRAWER_TAB, tab: DRAWER_INDEX.HISTORY });
       },
       focusGlobalFilter: () => {
-        window.dispatchEvent(new CustomEvent(FOCUS_GLOBAL_FILTER_EVENT));
+        window.dispatchEvent(new CustomEvent(HotkeyEvent.FOCUS_GLOBAL_FILTER));
       },
       toggleColumnFilters: () => {
-        window.dispatchEvent(new CustomEvent(TOGGLE_COLUMN_FILTERS_EVENT));
+        window.dispatchEvent(new CustomEvent(HotkeyEvent.TOGGLE_COLUMN_FILTERS));
       },
       abortSearch: () => {
-        window.dispatchEvent(new CustomEvent(ABORT_SEARCH_EVENT));
+        window.dispatchEvent(new CustomEvent(HotkeyEvent.ABORT_SEARCH));
       },
+      expandAllRows: () => {
+        window.dispatchEvent(new CustomEvent(HotkeyEvent.EXPAND_ALL_ROWS));
+      },
+      collapseAllRows: () => {
+        window.dispatchEvent(new CustomEvent(HotkeyEvent.COLLAPSE_ALL_ROWS));
+      },
+      scrollResultsToTop: () => {
+        window.dispatchEvent(new CustomEvent(HotkeyEvent.SCROLL_RESULTS_TO_TOP));
+      },
+      showAllRows: () => {
+        window.dispatchEvent(new CustomEvent(HotkeyEvent.SHOW_ALL_ROWS));
+      },
+      clearColumnFilters: () => {
+        window.dispatchEvent(new CustomEvent(HotkeyEvent.CLEAR_COLUMN_FILTERS));
+      },
+      // konami: () => {
+      //   window.alert("Hello World");
+      // },
       clearAndRetrySearch: async () => {
         const data = await cstorage.session.get([CACHE.QUERY]);
         const query = data[CACHE.QUERY];

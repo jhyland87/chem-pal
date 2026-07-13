@@ -55,4 +55,4 @@ default** and recommended for most people.
 
 ---
 
-**Related:** [Settings](Settings) · [Price Tracking](Price-Tracking) · [Privacy](Privacy)
+**Related:** [Settings](Settings) · [Speed Dial Menu](Speed-Dial-Menu) · [Price Tracking](Price-Tracking) · [Privacy](Privacy)

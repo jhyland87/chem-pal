@@ -1,7 +1,18 @@
-import { hotkeys as hotkeysConfig } from "@/../config.json";
-import { useEffect, useMemo } from "react";
-import { matches, parseBinding, resolveBinding } from "./matcher";
+import { hotkeys as hotkeysConfig, sequenceResetMs } from "@/../config.json";
+import { useEffect, useMemo, useRef } from "react";
+import { matches, normalizeKey, parseBinding, parseSequence, resolveBinding } from "./matcher";
 import type { HotkeyConfig, HotkeyHandlers, ParsedBinding } from "./types";
+
+/**
+ * Idle window (ms) after which an in-progress key sequence is abandoned.
+ * Pressing the next key of a sequence more than this long after the previous
+ * one resets the buffer, so a stale partial press can't complete a sequence
+ * later. Sourced from `config.json` (`sequenceResetMs`).
+ */
+const SEQUENCE_RESET_MS = sequenceResetMs;
+
+/** Keys that are modifiers on their own; excluded from the sequence buffer. */
+const MODIFIER_KEYS = new Set(["meta", "control", "alt", "shift"]);
 
 /**
  * Returns `true` when the event originated from an editable element
@@ -17,16 +28,32 @@ function isEditableTarget(event: KeyboardEvent): boolean {
   return false;
 }
 
-interface CompiledHotkey {
+interface CompiledChord {
   config: HotkeyConfig;
   binding: ParsedBinding;
 }
 
-function compile(configs: HotkeyConfig[]): CompiledHotkey[] {
-  return configs.map((config) => ({
-    config,
-    binding: parseBinding(resolveBinding(config.keys)),
-  }));
+interface CompiledSequence {
+  config: HotkeyConfig;
+  sequence: string[];
+}
+
+interface CompiledHotkeys {
+  chords: CompiledChord[];
+  sequences: CompiledSequence[];
+}
+
+function compile(configs: HotkeyConfig[]): CompiledHotkeys {
+  const chords: CompiledChord[] = [];
+  const sequences: CompiledSequence[] = [];
+  for (const config of configs) {
+    if (config.sequential) {
+      sequences.push({ config, sequence: parseSequence(resolveBinding(config.keys)) });
+    } else {
+      chords.push({ config, binding: parseBinding(resolveBinding(config.keys)) });
+    }
+  }
+  return { chords, sequences };
 }
 
 /**
@@ -63,35 +90,95 @@ export interface UseHotkeysOptions {
  * ```
  * @source
  */
+/**
+ * Invokes a matched hotkey's handler (when one is registered) and notifies
+ * `onTriggered`. A hotkey with only a `flash` and no handler still notifies,
+ * so a flash-only shortcut shows its status message. `onTriggered` is skipped
+ * when the handler throws, so a failed action doesn't flash a confirmation.
+ */
+function invokeHandler(
+  config: HotkeyConfig,
+  handlers: HotkeyHandlers,
+  onTriggered?: (config: HotkeyConfig) => void,
+): void {
+  const handler = handlers[config.id];
+  if (handler) {
+    try {
+      const result = handler();
+      if (result instanceof Promise) {
+        result.catch((error) => {
+          console.error(`Hotkey handler "${config.id}" failed`, { error });
+        });
+      }
+    } catch (error) {
+      console.error(`Hotkey handler "${config.id}" threw`, { error });
+      return;
+    }
+  }
+  onTriggered?.(config);
+}
+
+/**
+ * A hotkey does something worth firing for if it has a registered handler or a
+ * `flash` message (flash-only shortcuts). Hotkeys with neither are skipped so
+ * their key combo isn't swallowed for no effect.
+ */
+function isActionable(config: HotkeyConfig, handlers: HotkeyHandlers): boolean {
+  return Boolean(handlers[config.id]) || Boolean(config.flash);
+}
+
 export function useHotkeys(handlers: HotkeyHandlers, options: UseHotkeysOptions = {}): void {
   // Trusted static config: JSON import infers literal types that don't widen to
   // HotkeyConfig[]; shape is validated by config.json's authored structure.
   const compiled = useMemo(() => compile(hotkeysConfig as HotkeyConfig[]), []);
   const { onTriggered } = options;
 
+  // Rolling buffer of recently pressed keys, for matching sequential hotkeys.
+  const sequenceBuffer = useRef<string[]>([]);
+  const lastKeyTime = useRef<number>(0);
+
   useEffect(() => {
+    const { chords, sequences } = compiled;
+    const maxSequenceLength = sequences.reduce((max, s) => Math.max(max, s.sequence.length), 0);
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (isEditableTarget(event)) return;
 
-      for (const { config, binding } of compiled) {
+      // Chord hotkeys: single-event modifier combos matched strictly.
+      for (const { config, binding } of chords) {
         if (!matches(event, binding)) continue;
-        const handler = handlers[config.id];
-        if (!handler) continue;
-
+        if (!isActionable(config, handlers)) continue;
         event.preventDefault();
         event.stopPropagation();
+        invokeHandler(config, handlers, onTriggered);
+        return;
+      }
 
-        try {
-          const result = handler();
-          if (result instanceof Promise) {
-            result.catch((error) => {
-              console.error(`Hotkey handler "${config.id}" failed`, { error });
-            });
-          }
-          onTriggered?.(config);
-        } catch (error) {
-          console.error(`Hotkey handler "${config.id}" threw`, { error });
-        }
+      // Sequential hotkeys: keys pressed one after another (e.g. konami code).
+      if (sequences.length === 0) return;
+      const key = normalizeKey(event.key);
+      if (MODIFIER_KEYS.has(key)) return; // ignore lone modifier presses
+
+      const now = Date.now();
+      if (now - lastKeyTime.current > SEQUENCE_RESET_MS) {
+        sequenceBuffer.current = [];
+      }
+      lastKeyTime.current = now;
+
+      sequenceBuffer.current.push(key);
+      if (sequenceBuffer.current.length > maxSequenceLength) {
+        sequenceBuffer.current = sequenceBuffer.current.slice(-maxSequenceLength);
+      }
+
+      for (const { config, sequence } of sequences) {
+        if (!isActionable(config, handlers)) continue;
+        const tail = sequenceBuffer.current.slice(-sequence.length);
+        if (tail.length !== sequence.length) continue;
+        if (!tail.every((k, i) => k === sequence[i])) continue;
+        event.preventDefault();
+        event.stopPropagation();
+        invokeHandler(config, handlers, onTriggered);
+        sequenceBuffer.current = [];
         return;
       }
     };

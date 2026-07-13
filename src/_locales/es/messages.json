@@ -770,7 +770,19 @@
   "hotkeys_desc_focusglobalfilter": { "message": "Enfocar el filtro global en el panel de resultados", "description": "Hotkey description." },
   "hotkeys_desc_togglecolumnfilters": { "message": "Alternar los filtros de columna en la tabla de resultados", "description": "Hotkey description." },
   "hotkeys_desc_abortsearch": { "message": "Cancelar la búsqueda en curso", "description": "Hotkey description." },
+  "hotkeys_desc_expandallrows": { "message": "Expandir todas las filas de la tabla de resultados", "description": "Hotkey description." },
+  "hotkeys_desc_collapseallrows": { "message": "Contraer todas las filas de la tabla de resultados", "description": "Hotkey description." },
+  "hotkeys_desc_scrollresultstotop": { "message": "Desplazar la tabla de resultados hacia arriba", "description": "Hotkey description." },
+  "hotkeys_desc_showallrows": { "message": "Mostrar todas las filas en una página", "description": "Hotkey description." },
+  "hotkeys_desc_clearcolumnfilters": { "message": "Borrar todos los filtros de columna", "description": "Hotkey description." },
+  "hotkeys_desc_konami": { "message": "Saludar", "description": "Hotkey description." },
   "hotkeys_flash_clearandretrysearch": { "message": "Caché borrada, búsqueda reejecutada", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_openhistory": { "message": "Historial de búsqueda abierto", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_abortsearch": { "message": "Búsqueda cancelada", "description": "Hotkey status-bar flash." }
+  "hotkeys_flash_abortsearch": { "message": "Búsqueda cancelada", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_expandallrows": { "message": "Todas las filas expandidas", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_collapseallrows": { "message": "Todas las filas contraídas", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_showallrows": { "message": "Mostrando todas las filas", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_clearcolumnfilters": { "message": "Filtros de columna borrados", "description": "Hotkey status-bar flash." },
+  "hotkeys_search_placeholder": { "message": "Buscar atajos…", "description": "Placeholder for the hotkey modal search box." },
+  "hotkeys_no_matches": { "message": "No hay atajos coincidentes", "description": "Shown when a hotkey search returns nothing." }
 }

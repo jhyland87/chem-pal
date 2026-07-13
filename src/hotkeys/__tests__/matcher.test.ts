@@ -2,9 +2,12 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   formatBinding,
   formatBindingTokens,
+  formatSequenceTokens,
   isMac,
   matches,
+  normalizeKey,
   parseBinding,
+  parseSequence,
   resolveBinding,
 } from "../matcher";
 
@@ -197,6 +200,67 @@ describe("matches", () => {
     expect(matches(makeEvent({ key: "?", shiftKey: true }), b)).toBe(true);
     expect(matches(makeEvent({ key: "?", shiftKey: false }), b)).toBe(true);
   });
+
+  it("matches an arrow-key binding via normalization (up -> ArrowUp)", () => {
+    setPlatform("Win32");
+    const b = parseBinding("ctrl+shift+up");
+    expect(matches(makeEvent({ key: "ArrowUp", ctrlKey: true, shiftKey: true }), b)).toBe(true);
+  });
+});
+
+describe("normalizeKey", () => {
+  it("maps arrow aliases to their event.key values", () => {
+    expect(normalizeKey("UpArrow")).toBe("arrowup");
+    expect(normalizeKey("up")).toBe("arrowup");
+    expect(normalizeKey("Down")).toBe("arrowdown");
+    expect(normalizeKey("left")).toBe("arrowleft");
+    expect(normalizeKey("right")).toBe("arrowright");
+  });
+
+  it("maps esc / return / space aliases", () => {
+    expect(normalizeKey("Esc")).toBe("escape");
+    expect(normalizeKey("Return")).toBe("enter");
+    expect(normalizeKey("Space")).toBe(" ");
+  });
+
+  it("lowercases and passes through unknown tokens", () => {
+    expect(normalizeKey("A")).toBe("a");
+    expect(normalizeKey(" Enter ")).toBe("enter");
+  });
+});
+
+describe("parseSequence", () => {
+  it("splits and normalizes a konami sequence", () => {
+    expect(parseSequence("up+up+down+down+left+right")).toEqual([
+      "arrowup",
+      "arrowup",
+      "arrowdown",
+      "arrowdown",
+      "arrowleft",
+      "arrowright",
+    ]);
+  });
+
+  it("trims whitespace and drops empty tokens", () => {
+    expect(parseSequence("  a + + b ")).toEqual(["a", "b"]);
+  });
+});
+
+describe("formatSequenceTokens", () => {
+  it("renders arrow keys as symbols", () => {
+    expect(formatSequenceTokens("up+up+down+down+left+right")).toEqual([
+      "↑",
+      "↑",
+      "↓",
+      "↓",
+      "←",
+      "→",
+    ]);
+  });
+
+  it("title-cases named keys and uppercases single characters", () => {
+    expect(formatSequenceTokens("a+enter")).toEqual(["A", "Enter"]);
+  });
 });
 
 describe("formatBindingTokens", () => {
@@ -267,6 +331,11 @@ describe("formatBindingTokens", () => {
   it("preserves the special '?' key symbol", () => {
     setPlatform("MacIntel");
     expect(formatBindingTokens("shift+?")).toEqual(["⇧", "?"]);
+  });
+
+  it("renders an arrow key as its symbol", () => {
+    setPlatform("Win32");
+    expect(formatBindingTokens("mod+shift+up")).toEqual(["Ctrl", "Shift", "↑"]);
   });
 });
 

@@ -1,9 +1,14 @@
-export {
-  ABORT_SEARCH_EVENT,
-  FOCUS_GLOBAL_FILTER_EVENT,
-  TOGGLE_COLUMN_FILTERS_EVENT,
-} from "./events";
+export { HotkeyEvent } from "./events";
 export { default as HotkeyHelpModal } from "./HotkeyHelpModal";
-export { formatBinding, isMac, matches, parseBinding, resolveBinding } from "./matcher";
+export {
+  formatBinding,
+  formatSequenceTokens,
+  isMac,
+  matches,
+  normalizeKey,
+  parseBinding,
+  parseSequence,
+  resolveBinding,
+} from "./matcher";
 export type { HotkeyConfig, HotkeyHandlers, KeyBinding, ParsedBinding } from "./types";
 export { getHotkeyConfigs, useHotkeys } from "./useHotkeys";

@@ -5,24 +5,23 @@ import { CACHE, DRAWER_INDEX } from "@/constants/common";
 import { emitSearchEvent, SearchEvent } from "@/events/searchEvents";
 import { i18n } from "@/helpers/i18n";
 import { generatePageSizes } from "@/helpers/utils";
-import { FOCUS_GLOBAL_FILTER_EVENT, TOGGLE_COLUMN_FILTERS_EVENT } from "@/hotkeys";
+import { HotkeyEvent } from "@/hotkeys";
 import { getEmptyHideableColumnIds } from "@/mixins/tanstack";
 import { isTabView, openExtensionTab } from "@/utils/displayContext";
 import { cstorage } from "@/utils/storage";
 import { isInputElement, isValidUserSettings } from "@/utils/typeGuards/common";
-import {
-  ChevronLeft as ChevronLeftIcon,
-  ChevronRight as ChevronRightIcon,
-  FilterList as FilterListIcon,
-  FirstPage as FirstPageIcon,
-  LastPage as LastPageIcon,
-  Science as ScienceIcon,
-  Settings as SettingsIcon,
-  ViewColumn as ViewColumnIcon,
-} from "@mui/icons-material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import FirstPageIcon from "@mui/icons-material/FirstPage";
+import LastPageIcon from "@mui/icons-material/LastPage";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import ScienceIcon from "@mui/icons-material/Science";
 import SearchOffIcon from "@mui/icons-material/SearchOff";
+import SettingsIcon from "@mui/icons-material/Settings";
+import ViewColumnIcon from "@mui/icons-material/ViewColumn";
+
 import {
   Box,
   Checkbox,
@@ -174,6 +173,7 @@ export default function ResultsTable({
   const [columnMenuAnchor, setColumnMenuAnchor] = useState<null | HTMLElement>(null);
   const [globalFilter, setGlobalFilter] = useState("");
   const globalFilterInputRef = useRef<HTMLInputElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Bridge hotkeys (fired from App.tsx) into local state/refs.
   useEffect(() => {
@@ -184,11 +184,11 @@ export default function ResultsTable({
       el.select();
     };
     const onToggle = () => setShowFilters((v) => !v);
-    window.addEventListener(FOCUS_GLOBAL_FILTER_EVENT, onFocus);
-    window.addEventListener(TOGGLE_COLUMN_FILTERS_EVENT, onToggle);
+    window.addEventListener(HotkeyEvent.FOCUS_GLOBAL_FILTER, onFocus);
+    window.addEventListener(HotkeyEvent.TOGGLE_COLUMN_FILTERS, onToggle);
     return () => {
-      window.removeEventListener(FOCUS_GLOBAL_FILTER_EVENT, onFocus);
-      window.removeEventListener(TOGGLE_COLUMN_FILTERS_EVENT, onToggle);
+      window.removeEventListener(HotkeyEvent.FOCUS_GLOBAL_FILTER, onFocus);
+      window.removeEventListener(HotkeyEvent.TOGGLE_COLUMN_FILTERS, onToggle);
     };
   }, []);
 
@@ -411,6 +411,41 @@ export default function ResultsTable({
     emitSearchEvent(SearchEvent.RESULTS_COUNT, { count: totalRowCount });
   }, [filteredRowCount, totalRowCount]);
 
+  // Bridge the results-table hotkeys (fired from App.tsx) into the table API.
+  // `table` is a stable instance, so row counts are read fresh at event time.
+  const setColumnFilters = columnFilterFns[1];
+  useEffect(() => {
+    const onExpandAll = () => {
+      // Expand only rows that can actually expand — setting the global
+      // `expanded: true` flag would render an empty detail panel for every
+      // non-expandable row, since the row render only guards on getIsExpanded().
+      const expanded: Record<string, boolean> = {};
+      for (const row of table.getRowModel().rows) {
+        if (row.getCanExpand()) expanded[row.id] = true;
+      }
+      table.setExpanded(expanded);
+    };
+    const onCollapseAll = () => table.setExpanded({});
+    const onScrollToTop = () => scrollContainerRef.current?.scrollTo({ top: 0 });
+    const onShowAll = () => {
+      const rowCount = table.getFilteredRowModel().rows.length;
+      if (rowCount > 0) table.setPageSize(rowCount);
+    };
+    const onClearColumnFilters = () => setColumnFilters([]);
+    window.addEventListener(HotkeyEvent.EXPAND_ALL_ROWS, onExpandAll);
+    window.addEventListener(HotkeyEvent.COLLAPSE_ALL_ROWS, onCollapseAll);
+    window.addEventListener(HotkeyEvent.SCROLL_RESULTS_TO_TOP, onScrollToTop);
+    window.addEventListener(HotkeyEvent.SHOW_ALL_ROWS, onShowAll);
+    window.addEventListener(HotkeyEvent.CLEAR_COLUMN_FILTERS, onClearColumnFilters);
+    return () => {
+      window.removeEventListener(HotkeyEvent.EXPAND_ALL_ROWS, onExpandAll);
+      window.removeEventListener(HotkeyEvent.COLLAPSE_ALL_ROWS, onCollapseAll);
+      window.removeEventListener(HotkeyEvent.SCROLL_RESULTS_TO_TOP, onScrollToTop);
+      window.removeEventListener(HotkeyEvent.SHOW_ALL_ROWS, onShowAll);
+      window.removeEventListener(HotkeyEvent.CLEAR_COLUMN_FILTERS, onClearColumnFilters);
+    };
+  }, [table, setColumnFilters]);
+
   // Compute valid page sizes from the *filter-applied total* (totalRowCount)
   // rather than the page-visible count (filteredRowCount) — feeding the
   // page-visible count here creates a self-reinforcing collapse when a prior
@@ -484,7 +519,10 @@ export default function ResultsTable({
               </BackButton>
             )}
             {executedQuery && (
-              <SearchedQueryLabel variant="body2" title={i18n("results_searched_for", [executedQuery])}>
+              <SearchedQueryLabel
+                variant="body2"
+                title={i18n("results_searched_for", [executedQuery])}
+              >
                 {executedQuery}
               </SearchedQueryLabel>
             )}
@@ -570,6 +608,7 @@ export default function ResultsTable({
         </ResultsHeaderContainer>
 
         <Box
+          ref={scrollContainerRef}
           className={`${resultStyles["results-paper"]} ${resultStyles["results-paper-container"]}`}
         >
           {/* Hidden measurement table for auto-sizing */}
@@ -765,10 +804,7 @@ export default function ResultsTable({
                 ]) + " "}
                 {filteredRowCount === totalRowCount
                   ? i18n("results_total", [String(totalRowCount)])
-                  : i18n("results_showing", [
-                      String(filteredRowCount),
-                      String(totalRowCount),
-                    ])}
+                  : i18n("results_showing", [String(filteredRowCount), String(totalRowCount)])}
               </Typography>
 
               {/* Navigation Buttons */}
@@ -823,8 +859,7 @@ export default function ResultsTable({
               // header falls back to its plain i18n label so it isn't stringified
               // into JS source or dropped to the raw lowercase column id.
               const headerDef = column.columnDef.header;
-              const label =
-                typeof headerDef === "string" ? headerDef : i18n(`column_${column.id}`);
+              const label = typeof headerDef === "string" ? headerDef : i18n(`column_${column.id}`);
               return (
                 <ColumnMenuItemContainer key={column.id}>
                   <FormControlLabel

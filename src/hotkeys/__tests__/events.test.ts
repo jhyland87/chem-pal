@@ -1,29 +1,21 @@
 import { describe, expect, it } from "vitest";
-import {
-  ABORT_SEARCH_EVENT,
-  FOCUS_GLOBAL_FILTER_EVENT,
-  TOGGLE_COLUMN_FILTERS_EVENT,
-} from "../events";
+import { HotkeyEvent } from "../events";
 
-describe("hotkey event name constants", () => {
+describe("HotkeyEvent enum", () => {
   it("exposes the focus-global-filter event name", () => {
-    expect(FOCUS_GLOBAL_FILTER_EVENT).toBe("chempal:focus-global-filter");
+    expect(HotkeyEvent.FOCUS_GLOBAL_FILTER).toBe("chempal:focus-global-filter");
   });
 
   it("exposes the toggle-column-filters event name", () => {
-    expect(TOGGLE_COLUMN_FILTERS_EVENT).toBe("chempal:toggle-column-filters");
+    expect(HotkeyEvent.TOGGLE_COLUMN_FILTERS).toBe("chempal:toggle-column-filters");
   });
 
   it("exposes the abort-search event name", () => {
-    expect(ABORT_SEARCH_EVENT).toBe("chempal:abort-search");
+    expect(HotkeyEvent.ABORT_SEARCH).toBe("chempal:abort-search");
   });
 
   it("uses a unique name per event", () => {
-    const names = [
-      FOCUS_GLOBAL_FILTER_EVENT,
-      TOGGLE_COLUMN_FILTERS_EVENT,
-      ABORT_SEARCH_EVENT,
-    ];
+    const names = Object.values(HotkeyEvent);
     expect(new Set(names).size).toBe(names.length);
   });
 });

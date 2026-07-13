@@ -115,27 +115,25 @@ export enum CACHE {
 
 /**
  * IndexedDB object-store names for the ChemPal database. Centralized here so the
- * store names aren't hardcoded across `idbCache.ts`. Declared as an `as const`
- * object rather than a string enum because idb's typed store-name API requires
- * the exact string-literal type, which a TS string-enum member is not assignable
- * to. Values are snake_case to match the {@link CACHE} storage-key convention.
+ * store names aren't hardcoded across `idbCache.ts`. Values are snake_case to
+ * match the {@link CACHE} storage-key convention.
  */
-export const IDB_STORE = {
+export enum IDB_STORE {
   /** Current search results (single row keyed `"current"`). */
-  SEARCH_RESULTS: "search_results",
+  SEARCH_RESULTS = "search_results",
   /** Persisted search history entries. */
-  SEARCH_HISTORY: "search_history",
+  SEARCH_HISTORY = "search_history",
   /** Supplier query-result cache. */
-  SUPPLIER_QUERY_CACHE: "supplier_query_cache",
+  SUPPLIER_QUERY_CACHE = "supplier_query_cache",
   /** Supplier product-detail cache. */
-  SUPPLIER_PRODUCT_DATA_CACHE: "supplier_product_data_cache",
+  SUPPLIER_PRODUCT_DATA_CACHE = "supplier_product_data_cache",
   /** Daily supplier HTTP stats. */
-  SUPPLIER_STATS: "supplier_stats",
+  SUPPLIER_STATS = "supplier_stats",
   /** User's excluded/ignored products (single row keyed `"current"`). */
-  EXCLUDED_PRODUCTS: "excluded_products",
+  EXCLUDED_PRODUCTS = "excluded_products",
   /** Per-product/variant USD price history. */
-  PRICE_HISTORY: "price_history",
-} as const;
+  PRICE_HISTORY = "price_history",
+}
 
 /**
  * Represents the availability of a product
