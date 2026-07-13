@@ -1,8 +1,14 @@
-ChemPal runs on **Chrome** and **Firefox**. Official Chrome Web Store and Firefox
-Add-ons (AMO) listings are on the way; until then you can install the latest
-release directly, or build it yourself.
+ChemPal runs on **Chrome** and **Firefox**. Chrome users can install directly
+from the Chrome Web Store; a Firefox Add-ons (AMO) listing is on the way. You can
+also install the latest release directly, or build it yourself.
 
-## Install from a release (recommended)
+## Install from the Chrome Web Store (recommended for Chrome)
+
+Install ChemPal from the
+[Chrome Web Store](https://chromewebstore.google.com/detail/facakdliomkjhegdhjimfjlcggfnpfnd?utm_source=item-share-cb),
+then click **Add to Chrome**. The ChemPal icon appears in your toolbar.
+
+## Install from a release
 
 Grab the latest build from the
 [Releases page](https://github.com/jhyland87/chem-pal/releases/latest).

@@ -1,0 +1,776 @@
+{
+  "app_name": {
+    "message": "Chem Pal",
+    "description": "The extension name shown in the browser and web store."
+  },
+  "app_description": {
+    "message": "Hae ja vertaile laboratoriokemikaalien tuotelistauksia tuetuilta toimittajien verkkosivustoilta sivupaneelista.",
+    "description": "The extension description shown in the browser and web store."
+  },
+  "app_title": {
+    "message": "ChemPal – kemiallisten reagenssien hakukone",
+    "description": "The browser tab title."
+  },
+  "app_error_generic": {
+    "message": "Jokin meni pieleen",
+    "description": "Fallback message shown when the app crashes."
+  },
+
+  "common_open_in_tab": {
+    "message": "Avaa välilehdessä",
+    "description": "Accessible label for the button that opens the extension in a full browser tab."
+  },
+  "common_back_to_search": {
+    "message": "Takaisin haun aloitussivulle",
+    "description": "Accessible label for the back button that returns to the search home."
+  },
+
+  "about_title": {
+    "message": "Tietoja ChemPalista",
+    "description": "The title of the About ChemPal section."
+  },
+  "about_description": {
+    "message": "Avoimen lähdekoodin projekti, jonka tavoitteena on auttaa kemian harrastajia löytämään parhaat tarjoukset kemiallisista reagensseista. Yrityksille, yliopistoille ja tutkimuslaitoksille on tarjolla runsaasti vastaavia palveluita, mutta yksityishenkilöille ja harrastajille ei ole yhtään. ChemPal hakee vain toimittajilta, jotka myyvät yksityishenkilöille ja toimittavat koteihin.",
+    "description": "The description of the application."
+  },
+  "about_contributors": {
+    "message": "Osallistujat",
+    "description": "The title of the contributors section."
+  },
+  "about_logo_alt": {
+    "message": "ChemPal-logo",
+    "description": "Alt text for the ChemPal logo in the About modal."
+  },
+
+  "loading_cancel": {
+    "message": "Peruuta haku",
+    "description": "The text of the button to cancel the search."
+  },
+  "loading_aborting": {
+    "message": "Keskeytetään...",
+    "description": "Status shown when aborting a search."
+  },
+  "search_status_fetching": {
+    "message": "Haetaan tuloksia... ($count$ löytynyt)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "search_status_found_one": {
+    "message": "Löytyi $count$ tulos...",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "search_status_found_other": {
+    "message": "Löytyi $count$ tulosta...",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "search_status_aborted": {
+    "message": "Haku keskeytetty",
+    "description": "Status/table text when the user aborts a search."
+  },
+  "search_error_failed": {
+    "message": "Haku epäonnistui",
+    "description": "Fallback error text when a search fails without a specific message."
+  },
+  "search_no_shipping_suppliers": {
+    "message": "Yksikään toimittaja ei toimita sijaintiisi. Poista käytöstä ”Vain toimittajat, jotka toimittavat sijaintiini” hakupaneelista ottaaksesi ne mukaan.",
+    "description": "Shown when the ship-to filter excludes every supplier."
+  },
+  "search_no_results_for": {
+    "message": "Ei tuloksia haulle ”$query$”",
+    "placeholders": { "query": { "content": "$1" } }
+  },
+  "search_try_broaden": {
+    "message": "Kokeile laajentaa hakusuodattimia paneelissa.",
+    "description": "No-results hint when filters are active."
+  },
+  "search_suggest_name": {
+    "message": "Kokeile ehkä hakea: $name$",
+    "placeholders": { "name": { "content": "$1" } }
+  },
+  "search_suggest_cas": {
+    "message": "Kokeile hakea CAS-numerolla: $cas$",
+    "placeholders": { "cas": { "content": "$1" } }
+  },
+  "loading_loading": {
+    "message": "Ladataan...",
+    "description": "Status shown when loading a search."
+  },
+  "loading_aria": {
+    "message": "haku latautuu",
+    "description": "Accessible label for the loading backdrop."
+  },
+  "loading_found_single": {
+    "message": "Löytyi $count$ tulos.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "loading_found_one_supplier": {
+    "message": "Löytyi $count$ tulosta $suppliers$ toimittajalta",
+    "placeholders": { "count": { "content": "$1" }, "suppliers": { "content": "$2" } }
+  },
+  "loading_found_many_suppliers": {
+    "message": "Löytyi $count$ tulosta $suppliers$ toimittajalta",
+    "placeholders": { "count": { "content": "$1" }, "suppliers": { "content": "$2" } }
+  },
+
+  "search_open_settings": {
+    "message": "Avaa asetukset",
+    "description": "Accessible label for the settings button on the search home."
+  },
+  "search_go_to_results": {
+    "message": "Siirry tuloksiin",
+    "description": "Accessible label for the button that jumps to cached search results."
+  },
+  "search_logo_alt": {
+    "message": "Toimittajahaun logo",
+    "description": "Alt text for the search home logo."
+  },
+  "search_placeholder": {
+    "message": "Hae tuotteita...",
+    "description": "Placeholder text for the main search input."
+  },
+  "search_form_aria": {
+    "message": "hae tuotteita",
+    "description": "Accessible label for the main search input."
+  },
+  "search_submit": {
+    "message": "hae",
+    "description": "Accessible label for the search submit button."
+  },
+  "search_advanced_options": {
+    "message": "lisäasetukset",
+    "description": "Accessible label for the advanced-options (drawer) button."
+  },
+  "search_invalid_query": {
+    "message": "Virheellinen hakukysely.",
+    "description": "Fallback error hint shown when a search query is invalid."
+  },
+
+  "drawer_tab_search": {
+    "message": "HAKU",
+    "description": "Label for the Search tab in the side drawer."
+  },
+  "drawer_tab_history": {
+    "message": "HISTORIA",
+    "description": "Label for the History tab in the side drawer."
+  },
+  "drawer_tab_settings": {
+    "message": "ASETUKSET",
+    "description": "Label for the Settings tab in the side drawer."
+  },
+  "drawer_product_name_label": {
+    "message": "Tuotteen nimi tai avainsana",
+    "description": "Label for the product-name field in the search drawer."
+  },
+  "drawer_search_button": {
+    "message": "Hae",
+    "description": "Label for the search button in the search drawer."
+  },
+  "drawer_results_limit": {
+    "message": "Tulosraja",
+    "description": "Accordion title for the per-supplier results limit."
+  },
+  "drawer_results_limit_hint": {
+    "message": "($count$ toimittajaa kohti)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "drawer_results_limit_label": {
+    "message": "Tulosraja (toimittajaa kohti)",
+    "description": "Field label for the per-supplier results limit."
+  },
+  "drawer_range_min": {
+    "message": "Min",
+    "description": "Label for the minimum value of a numeric range input."
+  },
+  "drawer_range_max": {
+    "message": "Maks",
+    "description": "Label for the maximum value of a numeric range input."
+  },
+  "drawer_only_shipping_suppliers": {
+    "message": "Vain toimittajat, jotka toimittavat sijaintiini",
+    "description": "Checkbox label to hide suppliers that do not ship to the user's location."
+  },
+  "drawer_hide_restricted_products": {
+    "message": "Piilota tuotteet, joita en voi ostaa",
+    "description": "Checkbox label to hide products restricted by region or to business/government buyers."
+  },
+  "drawer_supplier_label": {
+    "message": "Hae toimittajia",
+    "description": "Drawer accordion label for the supplier selector."
+  },
+  "drawer_supplier_empty_helper": {
+    "message": "Kaikki toimittajat mukana oletuksena",
+    "description": "Helper text shown when no supplier is selected."
+  },
+  "drawer_supplier_placeholder": {
+    "message": "Kirjoita toimittajan nimi",
+    "description": "Placeholder for the supplier selector input."
+  },
+  "drawer_country_label": {
+    "message": "Maa",
+    "description": "Drawer accordion label for the country selector."
+  },
+  "drawer_country_empty_helper": {
+    "message": "Kaikki maat mukana oletuksena",
+    "description": "Helper text shown when no country is selected."
+  },
+  "drawer_country_placeholder": {
+    "message": "Kirjoita maa tai koodi",
+    "description": "Placeholder for the country selector input."
+  },
+  "drawer_shipping_label": {
+    "message": "Toimitustyyppi",
+    "description": "Drawer accordion label for the shipping-type filter."
+  },
+  "drawer_availability_label": {
+    "message": "Saatavuus",
+    "description": "Drawer accordion label for the availability filter."
+  },
+  "drawer_price_label": {
+    "message": "Hintahaarukka",
+    "description": "Drawer accordion label for the price-range filter."
+  },
+
+  "shipping_worldwide": { "message": "Maailmanlaajuinen", "description": "Shipping range value." },
+  "shipping_international": { "message": "Kansainvälinen", "description": "Shipping range value." },
+  "shipping_domestic": { "message": "Kotimainen", "description": "Shipping range value." },
+  "shipping_local": { "message": "Paikallinen", "description": "Shipping range value." },
+
+  "availability_in_stock": { "message": "Varastossa", "description": "Availability value." },
+  "availability_limited_stock": { "message": "Rajallinen varasto", "description": "Availability value." },
+  "availability_out_of_stock": { "message": "Loppunut varastosta", "description": "Availability value." },
+  "availability_preorder": { "message": "Ennakkotilaus", "description": "Availability value." },
+  "availability_backorder": { "message": "Jälkitoimitus", "description": "Availability value." },
+  "availability_discontinued": { "message": "Poistettu valikoimasta", "description": "Availability value." },
+  "availability_unavailable": { "message": "Ei saatavilla", "description": "Availability value." },
+  "availability_unknown": { "message": "Tuntematon", "description": "Availability value." },
+
+  "filter_by_label": {
+    "message": "Suodata: $label$",
+    "placeholders": { "label": { "content": "$1" } }
+  },
+  "filter_range_aria": {
+    "message": "$header$-haarukka",
+    "placeholders": { "header": { "content": "$1" } }
+  },
+  "filter_placeholder_title": {
+    "message": "Otsikko...",
+    "description": "Placeholder for the Title column filter."
+  },
+  "filter_placeholder_supplier": {
+    "message": "BVV, HiMedia, jne...",
+    "description": "Placeholder for the Supplier column filter."
+  },
+  "filter_placeholder_country": {
+    "message": "🇺🇸 🇨🇳 …",
+    "description": "Placeholder for the Country column filter."
+  },
+  "filter_placeholder_shipping": {
+    "message": "Toimitus...",
+    "description": "Placeholder for the Shipping column filter."
+  },
+  "filter_placeholder_availability": {
+    "message": "Saatavuus...",
+    "description": "Placeholder for the Availability column filter."
+  },
+  "filter_placeholder_description": {
+    "message": "Kuvaus...",
+    "description": "Placeholder for the Description column filter."
+  },
+  "filter_placeholder_price": {
+    "message": "1.00 - 1000.00",
+    "description": "Placeholder for the Price column filter."
+  },
+  "filter_placeholder_quantity": {
+    "message": "1 - 100",
+    "description": "Placeholder for the Quantity column filter."
+  },
+  "filter_placeholder_unit": {
+    "message": "Yksikkö",
+    "description": "Placeholder for the Unit column filter."
+  },
+  "filter_placeholder_cas": {
+    "message": "CAS...",
+    "description": "Placeholder for the CAS column filter."
+  },
+  "filter_placeholder_formula": {
+    "message": "Kaava...",
+    "description": "Placeholder for the Formula column filter."
+  },
+  "filter_placeholder_moleweight": {
+    "message": "0 - 1000",
+    "description": "Placeholder for the Molecular Weight column filter."
+  },
+  "filter_placeholder_purity": {
+    "message": "Puhtaus...",
+    "description": "Placeholder for the Purity column filter."
+  },
+  "filter_placeholder_concentration": {
+    "message": "Pitoisuus...",
+    "description": "Placeholder for the Concentration column filter."
+  },
+
+  "column_title": { "message": "Otsikko", "description": "Table column header." },
+  "column_supplier": { "message": "Toimittaja", "description": "Table column header." },
+  "column_country": { "message": "Maa", "description": "Table column header." },
+  "column_shipping": { "message": "Toimitus", "description": "Table column header." },
+  "column_availability": { "message": "Saatavuus", "description": "Table column header." },
+  "column_description": { "message": "Kuvaus", "description": "Table column header." },
+  "column_price": { "message": "Hinta", "description": "Table column header / column-visibility menu label." },
+  "column_price_currency": {
+    "message": "Hinta ($currency$)",
+    "placeholders": { "currency": { "content": "$1" } }
+  },
+  "column_quantity": { "message": "Määrä", "description": "Table column header." },
+  "column_unit": { "message": "Yksikkö", "description": "Table column header." },
+  "column_sds": { "message": "KTT", "description": "Table column header." },
+  "column_specs": { "message": "Tekn. tiedot", "description": "Table column header." },
+  "column_coa": { "message": "COA", "description": "Table column header." },
+  "column_cas": { "message": "CAS", "description": "Table column header." },
+  "column_pubchem": { "message": "PubChem", "description": "Table column header." },
+  "column_formula": { "message": "Kaava", "description": "Table column header." },
+  "column_moleweight": { "message": "M.M.", "description": "Table column header." },
+  "column_purity": { "message": "Puhtaus", "description": "Table column header." },
+  "column_concentration": { "message": "Pitoisuus", "description": "Table column header." },
+
+  "results_searched_for": {
+    "message": "Haettiin: $query$",
+    "placeholders": { "query": { "content": "$1" } }
+  },
+  "results_count": {
+    "message": "Tuloksia: $count$",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "results_count_filtered": {
+    "message": "Tuloksia: $filtered$ / $total$",
+    "placeholders": { "filtered": { "content": "$1" }, "total": { "content": "$2" } }
+  },
+  "results_filter_placeholder": {
+    "message": "Suodata tuloksia...",
+    "description": "Placeholder for the global results filter input."
+  },
+  "results_filter_aria": {
+    "message": "Suodata tuloksia",
+    "description": "Accessible label for the global results filter input."
+  },
+  "results_clear_filters": {
+    "message": "Tyhjennä kaikki suodattimet",
+    "description": "Tooltip/label for the button that clears all column filters."
+  },
+  "results_toggle_filters": {
+    "message": "Näytä/piilota sarakesuodattimet",
+    "description": "Accessible label for the header button that shows/hides the per-column filter row."
+  },
+  "results_column_visibility": {
+    "message": "Näytä tai piilota sarakkeita",
+    "description": "Accessible label for the header button that opens the column-visibility menu."
+  },
+  "results_open_options": {
+    "message": "Avaa asetukset",
+    "description": "Accessible label for the header button that opens the search/settings options drawer."
+  },
+  "results_rows_per_page_aria": {
+    "message": "riviä sivulla",
+    "description": "Accessible label for the page-size selector."
+  },
+  "results_status_searching": {
+    "message": "Haetaan...",
+    "description": "Status shown while a search is running."
+  },
+  "results_status_no_search_query": {
+    "message": "Ei hakukyselyä",
+    "description": "Status shown when there is no search query."
+  },
+  "results_status_no_results_filtered": {
+    "message": "Ei suodatusehtojasi vastaavia tuloksia",
+    "description": "Status shown when filters exclude all results."
+  },
+  "results_status_no_results_found": {
+    "message": "Ei tuloksia",
+    "description": "Status shown when a search returns nothing."
+  },
+  "results_error": {
+    "message": "Virhe: $error$",
+    "placeholders": { "error": { "content": "$1" } }
+  },
+  "results_retry": {
+    "message": "Yritä uudelleen",
+    "description": "Label for the retry button."
+  },
+  "results_show": {
+    "message": "Näytä",
+    "description": "Label preceding the page-size selector."
+  },
+  "results_all": {
+    "message": "Kaikki",
+    "description": "Page-size option that shows all rows."
+  },
+  "results_rows": {
+    "message": "Riviä",
+    "description": "Label following the page-size selector."
+  },
+  "results_page_of_total": {
+    "message": "Sivu $page$ / $total$",
+    "placeholders": { "page": { "content": "$1" }, "total": { "content": "$2" } }
+  },
+  "results_total": {
+    "message": "($total$ tulosta yhteensä)",
+    "placeholders": { "total": { "content": "$1" } }
+  },
+  "results_showing": {
+    "message": "(Näytetään $filtered$ / $total$ tulosta)",
+    "placeholders": { "filtered": { "content": "$1" }, "total": { "content": "$2" } }
+  },
+
+  "history_count_single": {
+    "message": "$count$ haku",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "history_count_plural": {
+    "message": "$count$ hakua",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "history_clear": {
+    "message": "Tyhjennä historia",
+    "description": "Tooltip/label for the clear-history button."
+  },
+  "history_empty": {
+    "message": "Ei vielä hakuhistoriaa.",
+    "description": "Empty-state text for the history panel."
+  },
+  "history_result_single": {
+    "message": "$count$ tulos",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "history_result_plural": {
+    "message": "$count$ tulosta",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "history_filter_availability": {
+    "message": "Saatavuus: $value$",
+    "placeholders": { "value": { "content": "$1" } }
+  },
+  "history_filter_country": {
+    "message": "Maa: $value$",
+    "placeholders": { "value": { "content": "$1" } }
+  },
+  "history_filter_shipping": {
+    "message": "Toimitus: $value$",
+    "placeholders": { "value": { "content": "$1" } }
+  },
+  "history_filter_suppliers": {
+    "message": "Toimittajat: $count$ valittu",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+
+  "settings_loading": {
+    "message": "Ladataan asetuksia...",
+    "description": "Fallback shown while the settings panel loads."
+  },
+  "settings_section_behavior": { "message": "Toiminta", "description": "Settings section header." },
+  "settings_section_cache": { "message": "Välimuisti", "description": "Settings section header." },
+  "settings_section_price_history": { "message": "Hintahistoria", "description": "Settings section header." },
+  "settings_section_display": { "message": "Näyttö", "description": "Settings section header." },
+  "settings_section_excluded": { "message": "Poissuljetut tuotteet", "description": "Settings section header." },
+  "settings_section_supplier_status": { "message": "Toimittajien tila", "description": "Settings section header." },
+  "settings_supplier_status_desc": { "message": "Toimittajan poistaminen käytöstä täällä poistaa sen kaikista hauista ja toimittajien valintasuodattimista.", "description": "Description at the top of the Supplier Status settings list." },
+  "settings_section_advanced": { "message": "Lisäasetukset", "description": "Settings section header." },
+  "settings_section_actions": { "message": "Toiminnot", "description": "Settings section header." },
+  "settings_cache_results": { "message": "Tallenna hakutulokset välimuistiin", "description": "Setting label." },
+  "settings_currency": { "message": "Valuutta", "description": "Setting label / placeholder." },
+  "settings_location": { "message": "Sijainti", "description": "Setting label." },
+  "settings_location_placeholder": { "message": "Maa tai koodi", "description": "Placeholder for the location input." },
+  "settings_language": { "message": "Kieli", "description": "Setting label." },
+  "settings_currency_rate_hint": {
+    "message": "1 USD = $rate$ $currency$",
+    "placeholders": { "rate": { "content": "$1" }, "currency": { "content": "$2" } }
+  },
+  "settings_do_not_cache_empty": { "message": "Älä tallenna tyhjiä tuloksia välimuistiin", "description": "Setting label." },
+  "settings_cache_ttl": { "message": "Välimuistin voimassaoloaika (minuuttia)", "description": "Setting label." },
+  "settings_cache_stats": {
+    "message": "$count$ välimuistitietuetta · $size$",
+    "placeholders": { "count": { "content": "$1" }, "size": { "content": "$2" } },
+    "description": "Small stats line under the cache section showing record count and storage size."
+  },
+  "settings_clear_cache": { "message": "Tyhjennä välimuisti", "description": "Button label." },
+  "settings_cache_cleared": { "message": "Välimuisti tyhjennetty.", "description": "Confirmation text." },
+  "settings_track_price_history": { "message": "Seuraa hintahistoriaa", "description": "Setting label." },
+  "settings_track_price_history_desc": {
+    "message": "Tallenna kunkin tuotteen USD-hinta ajan mittaan, jotta näet, nouseeko vai laskeeko se.",
+    "description": "Description for the track-price-history setting."
+  },
+  "settings_max_price_points": { "message": "Hintapisteiden enimmäismäärä tuotetta kohti (0 = rajoittamaton)", "description": "Setting label." },
+  "settings_clear_price_history": { "message": "Tyhjennä hintahistoria", "description": "Button label." },
+  "settings_price_history_cleared": { "message": "Hintahistoria tyhjennetty.", "description": "Confirmation text." },
+  "settings_price_history_stats": {
+    "message": "$products$ tuotetta · $points$ datapistettä · $size$",
+    "placeholders": {
+      "products": { "content": "$1" },
+      "points": { "content": "$2" },
+      "size": { "content": "$3" }
+    },
+    "description": "Small stats line under the price history section showing tracked products, total data points, and storage size."
+  },
+  "settings_font_size": { "message": "Fonttikoko", "description": "Setting label." },
+  "settings_font_small": { "message": "Pieni", "description": "Font-size option." },
+  "settings_font_medium": { "message": "Keskikokoinen", "description": "Font-size option." },
+  "settings_font_large": { "message": "Suuri", "description": "Font-size option." },
+  "settings_open_in_tab": { "message": "Avaa välilehdessä", "description": "Setting label." },
+  "settings_open_in_tab_desc": { "message": "Työkalurivin kuvakkeen napsauttaminen avaa Chem Palin koko selaimen välilehteen ponnahdusikkunan sijaan.", "description": "Setting description." },
+  "settings_auto_hide_empty_columns": { "message": "Piilota tyhjät sarakkeet automaattisesti", "description": "Setting label." },
+  "settings_auto_hide_empty_columns_desc": { "message": "Piilota automaattisesti tulossarakkeet, joissa ei ole tietoja nykyiselle haulle.", "description": "Setting description." },
+  "settings_excluded_empty": { "message": "Ei poissuljettuja tuotteita.", "description": "Empty-state text." },
+  "settings_remove": { "message": "Poista", "description": "Tooltip for the remove button." },
+  "settings_remove_item": {
+    "message": "Poista $item$",
+    "placeholders": { "item": { "content": "$1" } }
+  },
+  "settings_clear_all": { "message": "Tyhjennä kaikki", "description": "Button label." },
+  "settings_fuzz_scorer": { "message": "Sumea täsmäysmenetelmä", "description": "Setting label (dev)." },
+  "settings_fuzz_scorer_helper": { "message": "Ohittaa kunkin toimittajan oletuspisteyttäjän", "description": "Helper text (dev)." },
+  "settings_fuzz_scorer_default": { "message": "Oletus (toimittajakohtainen)", "description": "Default scorer option (dev)." },
+  "settings_max_search_time": { "message": "Haun enimmäisaika (ms)", "description": "Setting label (dev)." },
+  "settings_max_search_time_helper": {
+    "message": "Ohittaa kunkin toimittajan hakuajan budjetin. Tyhjä = toimittajakohtainen oletus; 0 = ei rajaa",
+    "description": "Helper text (dev)."
+  },
+  "settings_disable_fuzzy": { "message": "Poista sumea suodatus käytöstä", "description": "Setting label (dev)." },
+  "settings_disable_fuzzy_desc": {
+    "message": "Näytä raakatulokset (tavallinen haku) tai vain totuusarvotäsmäykset (tarkennettu haku) ilman sumeaa pisteytystä",
+    "description": "Description for the disable-fuzzy setting (dev)."
+  },
+  "settings_restore_defaults": { "message": "Palauta oletukset", "description": "Button label." },
+
+  "speed_dial_clear_results": { "message": "Tyhjennä tulokset", "description": "Speed-dial action." },
+  "speed_dial_clear_cache": { "message": "Tyhjennä välimuisti", "description": "Speed-dial action." },
+  "speed_dial_toggle_theme": { "message": "Vaihda teemaa", "description": "Speed-dial action." },
+  "speed_dial_stats": { "message": "Tilastot", "description": "Speed-dial action (dev)." },
+  "speed_dial_about": { "message": "Tietoja", "description": "Speed-dial action." },
+  "speed_dial_aria": { "message": "SpeedDial-valikko", "description": "Accessible label for the speed dial." },
+  "speed_dial_hint": {
+    "message": "Vie kursori näytön oikeaan alakulmaan avataksesi valikon",
+    "description": "Help tooltip explaining how to open the speed dial."
+  },
+
+  "context_menu_copy_title": {
+    "message": "Kopioi otsikko",
+    "description": "Context menu option to copy the title."
+  },
+  "context_menu_copy_url": {
+    "message": "Kopioi URL-osoite",
+    "description": "Context menu option to copy the URL."
+  },
+  "context_menu_copy_product_info": {
+    "message": "Kopioi tuotetiedot",
+    "description": "Context menu option to copy the product info."
+  },
+  "context_menu_ignore_product": {
+    "message": "Ohita tuote",
+    "description": "Context menu option to ignore the product."
+  },
+  "context_menu_remove_product_from_cache": {
+    "message": "Poista tuote välimuistista",
+    "description": "Context menu option to remove the product from the cache."
+  },
+  "context_menu_open_in_new_tab": {
+    "message": "Avaa uudessa välilehdessä",
+    "description": "Context menu option to open the product in a new tab."
+  },
+  "context_menu_expand_all": {
+    "message": "Laajenna kaikki näkyvät rivit",
+    "description": "Context menu option to expand every visible row in the results table."
+  },
+  "context_menu_collapse_all": {
+    "message": "Kutista kaikki näkyvät rivit",
+    "description": "Context menu option to collapse every visible row in the results table."
+  },
+  "context_menu_create_bookmark": {
+    "message": "Luo kirjanmerkki",
+    "description": "Context menu option to create a bookmark."
+  },
+  "context_menu_search_similar": {
+    "message": "Hae samankaltaisia",
+    "description": "Context menu option to search for similar products."
+  },
+  "context_menu_share": {
+    "message": "Jaa",
+    "description": "Context menu option to share the product."
+  },
+  "context_menu_view_details": {
+    "message": "Näytä tiedot",
+    "description": "Context menu option to view the details of the product."
+  },
+  "context_menu_cache_remove_unavailable": {
+    "message": "Tätä tuotetta ei voi poistaa välimuistista",
+    "description": "Shown when a product can't be removed from the cache."
+  },
+  "context_menu_removed_from_cache": {
+    "message": "Poistettiin $product$ välimuistista",
+    "placeholders": { "product": { "content": "$1" } }
+  },
+  "context_menu_search_selection": {
+    "message": "Hae ”%s” Chem Palissa",
+    "description": "Right-click context menu label; %s is the selected text (substituted by Chrome)."
+  },
+
+  "copy_info_price": {
+    "message": "Hinta: $price$",
+    "placeholders": { "price": { "content": "$1" } }
+  },
+  "copy_info_supplier": {
+    "message": "Toimittaja: $supplier$",
+    "placeholders": { "supplier": { "content": "$1" } }
+  },
+  "copy_info_url": {
+    "message": "URL: $url$",
+    "placeholders": { "url": { "content": "$1" } }
+  },
+  "copy_info_description": {
+    "message": "Kuvaus: $description$",
+    "placeholders": { "description": { "content": "$1" } }
+  },
+
+  "share_fallback_title": {
+    "message": "Kemiallinen tuote",
+    "description": "Fallback title used when sharing a product with no title."
+  },
+  "share_text": {
+    "message": "Katso tämä kemiallinen tuote: $product$",
+    "placeholders": { "product": { "content": "$1" } }
+  },
+
+  "bookmark_favorites_folder": {
+    "message": "ChemPal-suosikit",
+    "description": "Name of the ChemPal favorites bookmark folder."
+  },
+  "bookmark_already_exists": {
+    "message": "Kirjanmerkki on jo kansiossa $folder$",
+    "placeholders": { "folder": { "content": "$1" } }
+  },
+  "bookmark_created": {
+    "message": "Kirjanmerkki luotu kansioon $folder$",
+    "placeholders": { "folder": { "content": "$1" } }
+  },
+
+  "product_detail_cas": { "message": "CAS", "description": "Product detail field label." },
+  "product_detail_formula": { "message": "Kaava", "description": "Product detail field label." },
+  "product_detail_molecular_weight": { "message": "Moolimassa", "description": "Product detail field label." },
+  "product_detail_iupac_name": { "message": "IUPAC-nimi", "description": "Product detail field label." },
+  "product_detail_inchikey": { "message": "InChIKey", "description": "Product detail field label." },
+  "product_detail_inchi": { "message": "InChI", "description": "Product detail field label." },
+  "product_detail_smiles": { "message": "SMILES", "description": "Product detail field label." },
+  "product_detail_purity": { "message": "Puhtaus", "description": "Product detail field label." },
+  "product_detail_grade": { "message": "Laatuluokka", "description": "Product detail field label." },
+  "product_detail_concentration": { "message": "Pitoisuus", "description": "Product detail field label." },
+  "product_detail_manufacturer": { "message": "Valmistaja", "description": "Product detail field label." },
+  "product_detail_pubchem": { "message": "PubChem", "description": "Product detail field label." },
+  "product_detail_pubchem_cid": {
+    "message": "PubChem CID $cid$",
+    "placeholders": { "cid": { "content": "$1" } }
+  },
+  "product_detail_pubchem_view": {
+    "message": "Näytä PubChemissä",
+    "description": "Title for the PubChem link."
+  },
+  "product_detail_sds": {
+    "message": "Käyttöturvallisuustiedote (KTT)",
+    "description": "Label/title for the SDS document link."
+  },
+  "product_detail_tds": {
+    "message": "Tekninen tiedote (TDS)",
+    "description": "Label/title for the TDS document link."
+  },
+  "product_detail_coa": {
+    "message": "Analyysitodistus (COA)",
+    "description": "Label/title for the COA document link."
+  },
+  "product_detail_open_full_image": {
+    "message": "Avaa koko kuva kohteelle $title$",
+    "placeholders": { "title": { "content": "$1" } }
+  },
+  "product_detail_prev_image": {
+    "message": "Edellinen kuva",
+    "description": "Accessible label for the previous-image button."
+  },
+  "product_detail_next_image": {
+    "message": "Seuraava kuva",
+    "description": "Accessible label for the next-image button."
+  },
+  "product_detail_sparkline_aria": {
+    "message": "Hintahistorian sparkline-kaavio",
+    "description": "Accessible label for the price-history sparkline."
+  },
+  "product_detail_price_history_currency": {
+    "message": "Hintahistoria ($currency$)",
+    "placeholders": { "currency": { "content": "$1" } }
+  },
+  "product_detail_points": {
+    "message": "$count$ pistettä",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "product_detail_no_history": {
+    "message": "Ei vielä historiaa",
+    "description": "Shown when a product has no recorded price history."
+  },
+  "product_detail_price_history_col_date": {
+    "message": "Päivämäärä",
+    "description": "Column header for the date of a price-history point in the variant trend popover."
+  },
+  "product_detail_price_history_col_price": {
+    "message": "Hinta",
+    "description": "Column header for the price of a price-history point in the variant trend popover."
+  },
+  "product_detail_variants_currency": {
+    "message": "Variantit ($currency$)",
+    "placeholders": { "currency": { "content": "$1" } }
+  },
+
+  "stats_title": { "message": "Toimittajatilastot", "description": "Stats panel title." },
+  "stats_calls": {
+    "message": "$count$ kutsua",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "stats_call_single": {
+    "message": "$count$ kutsu",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "stats_clear": { "message": "Tyhjennä tilastot", "description": "Tooltip for the clear-stats button." },
+  "stats_empty": { "message": "Ei vielä tilastoja. Suorita haku aloittaaksesi seurannan.", "description": "Stats empty state." },
+  "stats_tab_by_supplier": { "message": "Toimittajittain", "description": "Stats tab label." },
+  "stats_tab_daily": { "message": "Päivittäin", "description": "Stats tab label." },
+  "stats_tab_totals": { "message": "Yhteensä", "description": "Stats tab label." },
+  "stats_toggle_http": { "message": "HTTP-kutsut", "description": "Stats pie view toggle." },
+  "stats_toggle_parsed": { "message": "Jäsennetty data", "description": "Stats pie view toggle." },
+  "stats_center_http": { "message": "HTTP", "description": "Stats pie center label." },
+  "stats_center_parsed": { "message": "Jäsennetty", "description": "Stats pie center label." },
+  "stats_successes": { "message": "Onnistumiset", "description": "Stats pie segment label." },
+  "stats_fails": { "message": "Epäonnistumiset", "description": "Stats pie segment label." },
+  "stats_pie_inner_tooltip": {
+    "message": "$value$ / $total$ ($percent$ %)",
+    "placeholders": { "value": { "content": "$1" }, "total": { "content": "$2" }, "percent": { "content": "$3" } }
+  },
+  "stats_pie_outer_tooltip": {
+    "message": "$value$ ($percent$ %)",
+    "placeholders": { "value": { "content": "$1" }, "percent": { "content": "$2" } }
+  },
+  "stats_col_supplier": { "message": "Toimittaja", "description": "Stats table column header." },
+  "stats_col_queries": { "message": "Kyselyt", "description": "Stats table column header." },
+  "stats_col_success": { "message": "Onnistui", "description": "Stats table column header." },
+  "stats_col_failure": { "message": "Epäonnistui", "description": "Stats table column header." },
+  "stats_col_products": { "message": "Tuotteet", "description": "Stats table column header." },
+  "stats_col_parse_errors": { "message": "Jäsennysvirheet", "description": "Stats table column header." },
+
+  "hotkeys_title": { "message": "Pikanäppäimet", "description": "Title of the keyboard shortcuts modal." },
+  "hotkeys_group_general": { "message": "Yleiset", "description": "Hotkey group name." },
+  "hotkeys_group_search": { "message": "Haku", "description": "Hotkey group name." },
+  "hotkeys_group_navigation": { "message": "Navigointi", "description": "Hotkey group name." },
+  "hotkeys_group_results": { "message": "Tulokset", "description": "Hotkey group name." },
+  "hotkeys_desc_showhotkeyhelp": { "message": "Näytä tämä pikanäppäinluettelo", "description": "Hotkey description." },
+  "hotkeys_desc_clearandretrysearch": { "message": "Tyhjennä välimuisti ja tulokset ja suorita nykyinen haku uudelleen", "description": "Hotkey description." },
+  "hotkeys_desc_gotosearch": { "message": "Siirry hakupaneeliin", "description": "Hotkey description." },
+  "hotkeys_desc_openhistory": { "message": "Avaa hakuhistoria sivupaneelissa", "description": "Hotkey description." },
+  "hotkeys_desc_focusglobalfilter": { "message": "Kohdista yleissuodattimeen tulospaneelissa", "description": "Hotkey description." },
+  "hotkeys_desc_togglecolumnfilters": { "message": "Näytä/piilota sarakesuodattimet tulostaulukossa", "description": "Hotkey description." },
+  "hotkeys_desc_abortsearch": { "message": "Keskeytä parhaillaan käynnissä oleva haku", "description": "Hotkey description." },
+  "hotkeys_flash_clearandretrysearch": { "message": "Välimuisti tyhjennetty, haku käynnistetty uudelleen", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_openhistory": { "message": "Hakuhistoria avattu", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_abortsearch": { "message": "Haku keskeytetty", "description": "Hotkey status-bar flash." }
+}
