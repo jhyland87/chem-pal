@@ -38,9 +38,13 @@ Open source project aimed at helping amateur chemistry hobbyists find the best d
 ----
 
 ## Installation
-You can install the latest release from the [releases page](https://github.com/jhyland87/chem-pal/releases/latest). Official Chrome Web Store and Firefox Add-ons listings are on the way.
 
-### Chrome
+### Chrome Web Store (recommended for Chrome)
+Install ChemPal directly from the [Chrome Web Store](https://chromewebstore.google.com/detail/facakdliomkjhegdhjimfjlcggfnpfnd?utm_source=item-share-cb) and click **Add to Chrome**.
+
+You can also install the latest release from the [releases page](https://github.com/jhyland87/chem-pal/releases/latest). A Firefox Add-ons listing is on the way.
+
+### Chrome (from a release)
 Download the `chem-pal.crx` asset, then go to your Chrome extensions, and click "Load Packed", then select the .crx file and import it.
 
 ### Firefox
