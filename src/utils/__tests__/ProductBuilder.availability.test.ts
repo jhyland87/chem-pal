@@ -1,4 +1,4 @@
-import { AVAILABILITY } from "@/constants/common";
+import { AVAILABILITY, type Availability } from "@/constants/common";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { describe, expect, it } from "vitest";
 
@@ -8,7 +8,7 @@ const setAvailability = (value: string) =>
 describe("ProductBuilder availability — schema.org ItemAvailability labels", () => {
   // The full https://schema.org/ItemAvailability set, as it arrives from a
   // schema.org URL suffix (e.g. ".../SoldOut" -> "SoldOut").
-  const cases: Array<[string, AVAILABILITY]> = [
+  const cases: Array<[string, Availability]> = [
     ["BackOrder", AVAILABILITY.BACKORDER],
     ["Discontinued", AVAILABILITY.DISCONTINUED],
     ["InStock", AVAILABILITY.IN_STOCK],

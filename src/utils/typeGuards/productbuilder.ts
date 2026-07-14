@@ -1,9 +1,9 @@
-import { AVAILABILITY } from "@/constants/common";
+import { AVAILABILITY, type Availability } from "@/constants/common";
 import { z } from "zod";
 
 // `z.enum` requires a non-empty tuple type, which `Object.values` (typed as a plain
 // array) cannot express. The enum always has at least one member, so the cast is safe.
-const availabilityValues = Object.values(AVAILABILITY) as [AVAILABILITY, ...AVAILABILITY[]];
+const availabilityValues = Object.values(AVAILABILITY) as [Availability, ...Availability[]];
 
 // Zod schema that accepts any string whose lowercased form matches an `AVAILABILITY`
 // enum value. Non-string inputs are rejected outright.
@@ -58,7 +58,7 @@ const productImageSchema = z.looseObject({
  * ```
  * @source
  */
-export function isAvailability(availability: unknown): availability is AVAILABILITY {
+export function isAvailability(availability: unknown): availability is Availability {
   return availabilitySchema.safeParse(availability).success;
 }
 

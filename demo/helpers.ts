@@ -64,7 +64,11 @@ export async function smoothScrollIntoView(
  * ```
  * @source
  */
-export async function smoothScrollToTop(page: Page, anchor: Locator, settleMs = 1400): Promise<void> {
+export async function smoothScrollToTop(
+  page: Page,
+  anchor: Locator,
+  settleMs = 1400,
+): Promise<void> {
   await anchor.evaluate((el) => {
     const isScrollable = (node: Element): boolean => {
       const style = getComputedStyle(node);
@@ -210,11 +214,7 @@ export async function clearGroupHighlight(page: Page): Promise<void> {
  * ```
  * @source
  */
-export async function showDemoPopover(
-  page: Page,
-  target: Locator,
-  message: string,
-): Promise<void> {
+export async function showDemoPopover(page: Page, target: Locator, message: string): Promise<void> {
   const box = await target.boundingBox();
   if (!box) return;
 
@@ -225,7 +225,7 @@ export async function showDemoPopover(
 
       const popover = document.createElement("div");
       popover.id = id;
-      popover.innerText = text;
+      popover.textContent = text;
       Object.assign(popover.style, {
         position: "absolute",
         left: "0px",
@@ -257,7 +257,10 @@ export async function showDemoPopover(
       const top = (placeBelow ? y + height + margin : y - popH - margin) + window.scrollY;
 
       // Center on the target, clamped so the bubble stays on screen.
-      const clampedLeft = Math.max(edge, Math.min(centerX - popW / 2, window.innerWidth - popW - edge));
+      const clampedLeft = Math.max(
+        edge,
+        Math.min(centerX - popW / 2, window.innerWidth - popW - edge),
+      );
       popover.style.left = `${clampedLeft + window.scrollX}px`;
       popover.style.top = `${top}px`;
       popover.style.visibility = "visible";

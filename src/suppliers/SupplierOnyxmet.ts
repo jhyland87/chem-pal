@@ -259,7 +259,6 @@ export class SupplierOnyxmet
 
       const title = content.querySelector("h3.product-title")?.textContent?.trim() || "";
 
-      // Array.from(document.querySelectorAll('.product-right > ul > li')).find(e => e.innerText.includes('Product Code')).innerText
       const productCode =
         Array.from(content?.querySelectorAll(".product-right > ul > li") ?? [])
           .find((e) => e.textContent?.includes("Product Code"))

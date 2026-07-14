@@ -6,6 +6,38 @@ import type { ColumnMeta } from "@tanstack/react-table";
 import { Column, Row, RowData } from "@tanstack/react-table";
 
 declare global {
+  /**
+   * A JSON scalar: the leaf value of any parsed JSON / JSON-LD tree.
+   * @example
+   * ```ts
+   * const values: JsonPrimitive[] = ["CHEM027", 5.8, true, null];
+   * ```
+   */
+  type JsonPrimitive = string | number | boolean | null;
+
+  /**
+   * Any value that can appear in parsed JSON: a {@link JsonPrimitive}, an array
+   * of values, or a nested {@link JsonObject}. Mirrors the recursive shape of
+   * `JSON.parse` output.
+   * @example
+   * ```ts
+   * const v: JsonValue = { name: "Potassium hydroxide", images: ["a.jpg", "b.jpg"] };
+   * ```
+   */
+  type JsonValue = JsonPrimitive | JsonValue[] | JsonObject;
+
+  /**
+   * A JSON object with string keys and {@link JsonValue} members. The structural
+   * base for every schema.org node.
+   * @example
+   * ```ts
+   * const offer: JsonObject = { "@type": "Offer", price: "5.8", priceCurrency: "EUR" };
+   * ```
+   */
+  interface JsonObject {
+    [key: string]: JsonValue;
+  }
+
   // Custom types for unit of measurements
   type WeightUnit = "kg" | "g" | "mg" | "lb" | "oz";
   type VolumeUnit = "L" | "mL" | "gal" | "qt" | "pt" | "fl oz";

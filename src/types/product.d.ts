@@ -1,3 +1,4 @@
+import type { Availability, Uom } from "@/constants/common";
 import type { SupplierBase } from "@/suppliers/SupplierBase";
 
 declare global {
@@ -59,10 +60,6 @@ declare global {
     readonly paymentMethods: PaymentMethod[];
   }
 
-  /**
-   * Unit of measurement type
-   */
-  //export type UOM = string;
 
   /**
    * Represents a quantity measurement with a numeric value and unit.
@@ -231,7 +228,7 @@ declare global {
      * Reference unit of measurement for conversions
      * @example "g"
      */
-    baseUom?: UOM;
+    baseUom?: Uom;
 
     /**
      * Price converted to USD for comparison
@@ -345,7 +342,7 @@ declare global {
      * Availability of the variant
      * @example "IN_STOCK"
      */
-    availability?: AVAILABILITY;
+    availability?: Availability;
 
     /**
      * Attributes of the variant
@@ -493,7 +490,7 @@ declare global {
      * Standardized unit of measurement
      * @example "g"
      */
-    uom: valueof<typeof UOM>;
+    uom: string;
 
     /**
      * Detailed product description

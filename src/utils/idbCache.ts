@@ -1,4 +1,4 @@
-import { IDB_STORE } from "@/constants/common";
+import { IDB_STORE, type IdbStore } from "@/constants/common";
 import type { ExcludedProductsMap } from "@/helpers/excludedProducts";
 import { Logger } from "@/utils/Logger";
 import { type DBSchema, type IDBPDatabase, openDB } from "idb";
@@ -821,12 +821,9 @@ export async function clearPriceHistory(): Promise<void> {
 /*                              Storage stats                                 */
 /* -------------------------------------------------------------------------- */
 
-/** The name of one IndexedDB object store in the ChemPal database. */
-export type IdbStoreName = IDB_STORE;
-
 /** Per-store record count + serialized JSON size, plus the summed total. */
 export interface IdbStorageBreakdown {
-  byStore: Record<IdbStoreName, { count: number; bytes: number }>;
+  byStore: Record<IdbStore, { count: number; bytes: number }>;
   totalBytes: number;
 }
 
@@ -847,7 +844,7 @@ export interface IdbStorageBreakdown {
  * @source
  */
 export async function getIdbStorageBreakdown(): Promise<IdbStorageBreakdown> {
-  const byStore: Record<IdbStoreName, { count: number; bytes: number }> = {
+  const byStore: Record<IdbStore, { count: number; bytes: number }> = {
     [IDB_STORE.SEARCH_RESULTS]: { count: 0, bytes: 0 },
     [IDB_STORE.SEARCH_HISTORY]: { count: 0, bytes: 0 },
     [IDB_STORE.SUPPLIER_QUERY_CACHE]: { count: 0, bytes: 0 },

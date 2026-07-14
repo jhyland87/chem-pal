@@ -1,4 +1,4 @@
-import { AVAILABILITY } from "@/constants/common";
+import { AVAILABILITY, type Availability } from "@/constants/common";
 import { findCAS } from "@/helpers/cas";
 import { parsePrice, toUSD } from "@/helpers/currency";
 import { parseQuantity, toBaseQuantity } from "@/helpers/quantity";
@@ -1451,7 +1451,7 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  determineAvailability(availability?: AVAILABILITY | boolean | string): Maybe<AVAILABILITY> {
+  determineAvailability(availability?: Availability | boolean | string): Maybe<Availability> {
     if (typeof availability === "undefined") return;
 
     if (isAvailability(availability)) {
@@ -1521,10 +1521,10 @@ export class ProductBuilder<T extends Product> {
    * ```
    * @source
    */
-  setAvailability(availability: AVAILABILITY): ProductBuilder<T>;
+  setAvailability(availability: Availability): ProductBuilder<T>;
   setAvailability(availability: boolean): ProductBuilder<T>;
   setAvailability(availability: string): ProductBuilder<T>;
-  setAvailability(availability: AVAILABILITY | boolean | string): ProductBuilder<T> {
+  setAvailability(availability: Availability | boolean | string): ProductBuilder<T> {
     const avail = this.determineAvailability(availability);
 
     if (typeof avail === "undefined") {

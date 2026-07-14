@@ -36,27 +36,6 @@ declare global {
     attributes?: Record<string, LeroChemAttribute>;
   }
 
-  /** The `offers` node of a LeroChem product schema.org `ld+json` block. */
-  interface LeroChemProductOffer {
-    price?: string;
-    priceCurrency?: string;
-    /** schema.org availability URL, e.g. "https://schema.org/PreOrder". */
-    availability?: string;
-  }
-
-  /**
-   * The schema.org `"@type": "Product"` `ld+json` block embedded on LeroChem
-   * product pages.
-   */
-  interface LeroChemProductLd {
-    "@type"?: string;
-    name?: string;
-    /** Equal to the numeric product id. */
-    sku?: string;
-    image?: string | string[];
-    offers?: LeroChemProductOffer;
-  }
-
   /**
    * Response shape of the PrestaShop product `refresh` AJAX endpoint
    * (`controller=product&action=refresh`) used to price a non-default size.

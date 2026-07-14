@@ -1,4 +1,4 @@
-import { AVAILABILITY, CACHE } from "@/constants/common";
+import { AVAILABILITY, CACHE, type Availability } from "@/constants/common";
 import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
@@ -329,7 +329,7 @@ export class SupplierLaboratoriumDiscounter
     });
   }
 
-  private metaAvailabilityToAvailability(availability: string): AVAILABILITY {
+  private metaAvailabilityToAvailability(availability: string): Availability {
     switch (availability) {
       case "http://schema.org/InStock":
         return AVAILABILITY.IN_STOCK;

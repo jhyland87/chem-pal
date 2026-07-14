@@ -1,25 +1,6 @@
 import { isPopulatedObject } from "./common";
 
 /**
- * Type guard for the schema.org Product `ld+json` block on a LeroChem product
- * page. Narrows an unknown parsed value to {@link LeroChemProductLd} by checking
- * it is an object whose `@type` is "Product".
- * @param value - The parsed `ld+json` value to test
- * @returns True when `value` is a schema.org Product object
- * @example
- * ```typescript
- * const parsed: unknown = JSON.parse(scriptText);
- * if (isLeroChemProductLd(parsed)) {
- *   console.log(parsed.offers?.price); // typed access
- * }
- * ```
- * @source
- */
-export function isLeroChemProductLd(value: unknown): value is LeroChemProductLd {
-  return isPopulatedObject(value) && value["@type"] === "Product";
-}
-
-/**
  * Type guard for the `#product-details` `data-product` dataset (a PrestaShop
  * product combination). Narrows an unknown parsed value to
  * {@link LeroChemDataProduct}; only requires that it be a populated object, as

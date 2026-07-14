@@ -3,18 +3,12 @@ import { FUZZ_SCORERS, type FuzzScorerFn } from "@/constants/fuzzScorers";
 import { findCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM } from "@/helpers/request";
+import { SchemaOrgData } from "@/helpers/schema-org";
 import { findFormulaInHtml, formatFormula, parseLocalizedNumber } from "@/helpers/science";
-import { firstMap, htmlToAscii, mapDefined } from "@/helpers/utils";
+import { firstMap, htmlToAscii, mapDefined, tryParseJson } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
-import {
-  isLeroChemDataProduct,
-  isLeroChemProductLd,
-  isLeroChemVariantRefresh,
-} from "@/utils/typeGuards/lerochem";
+import { isLeroChemDataProduct, isLeroChemVariantRefresh } from "@/utils/typeGuards/lerochem";
 import { SupplierBase } from "./SupplierBase";
-
-/** Hard safety cap on pages fetched per query, independent of the reported total. */
-const MAX_SEARCH_PAGES = 20;
 
 /**
  * Supplier implementation for LeroChem, a Lithuania-based chemical supplier
@@ -98,7 +92,7 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
   /**
    * Extracts the numeric PrestaShop product id from a LeroChem product URL — the
    * leading digits of the last path segment (e.g.
-   * ".../pagrindinis/126-abs-acid-labsa-96-l.html" -> "126"). Used as a backup
+   * ".../pagrindinis/126-abs-acid-labsa-96-l.html" -&gt; "126"). Used as a backup
    * source for the product id when the `data-id-product` attribute is absent.
    * @param url - The product URL (absolute or relative), or null/undefined
    * @returns The numeric product id, or undefined when the URL has no id segment
@@ -135,7 +129,7 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
    * Queries LeroChem products for a search term. Fetches the first PrestaShop
    * search-results page, reads how many pages the pagination reports, then
    * fetches further pages only while more fuzzy matches are still needed (never
-   * beyond the reported total or {@link MAX_SEARCH_PAGES}). The collected cards
+   * beyond the reported total or the {@link httpRequestHardLimit} request cap). The collected cards
    * are fuzzy-filtered and turned into product builders for the top matches.
    * @param query - The search term to query products for
    * @param limit - The maximum number of results to return
@@ -162,7 +156,7 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
     }
 
     const cards: Element[] = this.parseSearchCards(firstPage);
-    const totalPages = Math.min(this.parseTotalPages(firstPage), MAX_SEARCH_PAGES);
+    const totalPages = Math.min(this.parseTotalPages(firstPage), this.httpRequestHardLimit);
     this.logger.info("Search pagination", { query, totalPages });
 
     for (let page = 2; page <= totalPages && this.fuzzyFilterAst(cards).length < limit; page++) {
@@ -358,21 +352,26 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
       const dom = createDOM(productResponse);
 
       // schema.org Product ld+json: sku, image, price, currency, availability.
-      const productLd = this.parseProductLd(dom);
-      if (productLd) {
-        builder.setSku(productLd.sku);
+      const schema = SchemaOrgData.fromDocument(dom);
+      const product = schema.first("Product");
+      const offer = schema.all("Offer")[0];
+      if (product) {
+        builder.setSku(product.sku);
         // The ld+json sku/mpn equal the numeric product id — a backup for the id set from the card.
-        builder.setID(productLd.sku);
-        builder.setImage(Array.isArray(productLd.image) ? productLd.image.at(0) : productLd.image);
-        if (productLd.offers?.price) {
-          builder.setPrice(productLd.offers.price);
+        builder.setID(product.sku);
+        builder.setImage(Array.isArray(product.image) ? product.image[0] : product.image);
+      }
+      if (offer) {
+        if (offer.price != null) {
+          builder.setPrice(offer.price);
         }
-        const currencyCode = productLd.offers?.priceCurrency ?? "EUR";
+        const currencyCode = typeof offer.priceCurrency === "string" ? offer.priceCurrency : "EUR";
         builder.setCurrencyCode(currencyCode);
         builder.setCurrencySymbol(CURRENCY_SYMBOL_MAP[currencyCode]);
-        // schema.org availability is a URL (".../PreOrder"); the last segment is
-        // the label setAvailability -> determineAvailability normalizes.
-        builder.setAvailability(productLd.offers?.availability?.split("/").pop() ?? "");
+        // SchemaOrgData already strips the schema.org enum prefix (".../PreOrder" -> "PreOrder").
+        if (typeof offer.availability === "string") {
+          builder.setAvailability(offer.availability);
+        }
       }
 
       // #product-details data-product: authoritative price, default size, description.
@@ -387,7 +386,8 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
           this.descriptionToText(dataProduct.description) ?? dataProduct.meta_description,
         );
         builder.setShortDescription(
-          dataProduct.meta_description ?? this.shortDescriptionToText(dataProduct.description_short),
+          dataProduct.meta_description ??
+            this.shortDescriptionToText(dataProduct.description_short),
         );
         const defaultQty = this.defaultSizeQuantity(dataProduct);
         if (defaultQty) {
@@ -448,27 +448,6 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
   }
 
   /**
-   * Finds and parses the schema.org `Product` `ld+json` block on a product page.
-   * @param dom - The parsed product page Document
-   * @returns The Product object, or undefined when no valid block is present
-   * @example
-   * ```typescript
-   * this.parseProductLd(dom)?.sku; // "126"
-   * ```
-   * @source
-   */
-  private parseProductLd(dom: Document): Maybe<LeroChemProductLd> {
-    const scripts = Array.from(dom.querySelectorAll('script[type="application/ld+json"]'));
-    for (const script of scripts) {
-      const parsed = this.tryParseJson(script.textContent);
-      if (isLeroChemProductLd(parsed)) {
-        return parsed;
-      }
-    }
-    return undefined;
-  }
-
-  /**
    * Reads and parses the `#product-details` `data-product` dataset from a
    * product page or a `refresh` response fragment.
    * @param dom - The parsed Document containing a `#product-details` element
@@ -481,7 +460,7 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
    */
   private parseDataProduct(dom: Document): Maybe<LeroChemDataProduct> {
     const raw = dom.querySelector("#product-details")?.getAttribute("data-product");
-    const parsed = this.tryParseJson(raw);
+    const parsed = tryParseJson(raw);
     return isLeroChemDataProduct(parsed) ? parsed : undefined;
   }
 
@@ -757,29 +736,5 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
 
     const dataProduct = this.parseDataProduct(createDOM(response.product_details ?? ""));
     return typeof dataProduct?.price_amount === "number" ? dataProduct.price_amount : undefined;
-  }
-
-  /**
-   * Safely parses a JSON string, returning undefined on empty input or a parse
-   * error instead of throwing.
-   * @param raw - The JSON text to parse (or null/undefined)
-   * @returns The parsed value, or undefined when parsing fails
-   * @example
-   * ```typescript
-   * this.tryParseJson('{"a":1}'); // { a: 1 }
-   * this.tryParseJson("nope");    // undefined
-   * ```
-   * @source
-   */
-  private tryParseJson(raw: string | null | undefined): unknown {
-    if (!raw) {
-      return undefined;
-    }
-    try {
-      return JSON.parse(raw);
-    } catch (error) {
-      this.logger.warn("Failed to parse JSON", { error });
-      return undefined;
-    }
   }
 }

@@ -1,4 +1,4 @@
-import type { UOM } from "@/constants/common";
+import type { Uom } from "@/constants/common";
 
 declare global {
   /**
@@ -40,7 +40,7 @@ declare global {
   interface ProductDefaults {
     currencyCode?: CurrencyCode;
     currencySymbol?: CurrencySymbol;
-    uom?: UOM;
+    uom?: Uom;
     quantity?: number;
   }
 }

@@ -1,4 +1,4 @@
-import { AVAILABILITY } from "@/constants/common";
+import { AVAILABILITY, type Availability } from "@/constants/common";
 import { FUZZ_SCORERS, type FuzzScorerFn } from "@/constants/fuzzScorers";
 import { findCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
@@ -279,7 +279,7 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
     });
   }
 
-  private getAvailabilityFromLink(link: string): AVAILABILITY {
+  private getAvailabilityFromLink(link: string): Availability {
     const availability = link.split("/").pop();
     switch (availability) {
       case "InStock":
@@ -619,7 +619,7 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
       this.logger.error("No data for product", { data });
       return undefined;
     }
-    // document.querySelectorAll('div.ListingWierszeKontener > div.Wiersz')[1].querySelector('div.ProdCena > h3 > a').innerText
+    // document.querySelectorAll('div.ListingWierszeKontener > div.Wiersz')[1].querySelector('div.ProdCena > h3 > a').textContent
     const title = data.querySelector("div.ProdCena > h3 > a")?.textContent?.trim();
     if (title === null) {
       this.logger.error("No title for product", { data });

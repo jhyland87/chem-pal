@@ -287,7 +287,7 @@ export class SupplierLoudwolf extends SupplierBase<Partial<Product>, Product> im
         .find((element) => element.textContent?.trim().match(/CAS/i))
         ?.querySelectorAll("p");
 
-      const dataRows = Array.from(dataGrid || []).map((n) => n.innerText);
+      const dataRows = Array.from(dataGrid || []).map((n) => n.textContent?.trim() ?? "");
 
       // Apply each spec row straight to the builder via its validating setter.
       // (setCAS extracts the number from the cell text itself.)
