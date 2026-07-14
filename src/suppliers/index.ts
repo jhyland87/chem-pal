@@ -49,6 +49,7 @@ export { SupplierInnovatingScience } from "./SupplierInnovatingScience";
 export { SupplierLaballey } from "./SupplierLaballey";
 export { SupplierLabChem } from "./SupplierLabChem";
 export { SupplierLaboratoriumDiscounter } from "./SupplierLaboratoriumDiscounter";
+export { SupplierLeroChem } from "./SupplierLeroChem";
 export { SupplierLibertySci } from "./SupplierLibertySci";
 export { SupplierLiMac } from "./SupplierLiMac";
 export { SupplierLoudwolf } from "./SupplierLoudwolf";

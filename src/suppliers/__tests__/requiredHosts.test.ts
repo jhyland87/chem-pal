@@ -91,6 +91,7 @@ describe("requiredHosts", () => {
     const singleHostSuppliers = [
       ["SupplierAmbeed", "https://www.ambeed.com/*"],
       ["SupplierCarolina", "https://www.carolina.com/*"],
+      ["SupplierLeroChem", "https://lerochem.eu/*"],
       ["SupplierLoudwolf", "https://www.loudwolf.com/*"],
       ["SupplierOnyxmet", "https://onyxmet.com/*"],
       ["SupplierWarchem", "https://warchem.pl/*"],
