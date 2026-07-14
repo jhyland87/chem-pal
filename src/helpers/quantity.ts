@@ -1,4 +1,4 @@
-import { UOM, UOM_ALIASES } from "@/constants/common";
+import { UOM, UOM_ALIASES, type Uom } from "@/constants/common";
 
 /**
  * @categoryDescription Helpers
@@ -164,7 +164,7 @@ export function stripQuantityFromString(value: string): string {
  * ```
  * @source
  */
-export function standardizeUom(uom: string): UOM | void {
+export function standardizeUom(uom: string): Uom | void {
   const uomMap: Record<string, string> = { [uom]: uom };
   for (const [canonical, aliases] of Object.entries(UOM_ALIASES)) {
     for (const alias of aliases) {
@@ -174,7 +174,7 @@ export function standardizeUom(uom: string): UOM | void {
 
   const normalized = uom.toLowerCase();
   // uomMap values are canonical UOM enum strings, widened to string by Record<string, string>.
-  if (normalized in uomMap) return uomMap[normalized] as UOM;
+  if (normalized in uomMap) return uomMap[normalized] as Uom;
 }
 
 /**
@@ -194,7 +194,7 @@ export function standardizeUom(uom: string): UOM | void {
  * ```
  * @source
  */
-export function toBaseQuantity(quantity: number, unit: UOM): number {
+export function toBaseQuantity(quantity: number, unit: string): number {
   if (typeof quantity !== "number") return quantity;
 
   switch (unit) {

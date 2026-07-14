@@ -145,7 +145,7 @@ chrome.action.onClicked.addListener(() => {
 
 /** Message the background fetch proxy accepts; mirrors src/helpers/backgroundFetch.ts. */
 interface BackgroundFetchRequest {
-  type: MESSAGE_TYPE.BACKGROUND_FETCH;
+  type: typeof MESSAGE_TYPE.BACKGROUND_FETCH;
   url: string;
   init?: RequestInit;
 }

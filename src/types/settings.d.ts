@@ -8,11 +8,11 @@ export {};
 
 declare global {
   type SettingAction =
-    | { type: ACTION_TYPE.SWITCH_CHANGE; name: string; checked: boolean }
-    | { type: ACTION_TYPE.INPUT_CHANGE; name: string; value: string }
-    | { type: ACTION_TYPE.BUTTON_CLICK; name: string; value: string }
-    | { type: ACTION_TYPE.SUPPLIER_TOGGLE; value: Array<SupplierClassName> }
-    | { type: ACTION_TYPE.RESTORE_DEFAULTS };
+    | { type: typeof ACTION_TYPE.SWITCH_CHANGE; name: string; checked: boolean }
+    | { type: typeof ACTION_TYPE.INPUT_CHANGE; name: string; value: string }
+    | { type: typeof ACTION_TYPE.BUTTON_CLICK; name: string; value: string }
+    | { type: typeof ACTION_TYPE.SUPPLIER_TOGGLE; value: Array<SupplierClassName> }
+    | { type: typeof ACTION_TYPE.RESTORE_DEFAULTS };
 
   /**
    * Application configuration settings that control various features and behaviors.

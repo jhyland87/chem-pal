@@ -1,4 +1,4 @@
-import { CAS_REGEX, SPIN_SPEED, UOM } from "@/constants/common";
+import { CAS_REGEX, SPIN_SPEED, UOM, type Uom } from "@/constants/common";
 import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 import { findCountryByIso2 } from "@/helpers/country";
 import { looksLikeSmiles } from "@/helpers/smiles";
@@ -75,7 +75,7 @@ export function isHttpResponse(value: unknown): value is Response {
  * ```
  * @source
  */
-export function isUOM(uom: unknown): uom is UOM {
+export function isUOM(uom: unknown): uom is Uom {
   // Widen the enum-value array to string[] so includes() accepts an arbitrary string.
   return typeof uom === "string" && (Object.values(UOM) as string[]).includes(uom);
 }

@@ -23,7 +23,7 @@ export interface BackgroundFetchInit {
 
 /** Message sent to the service worker. Mirrors the contract documented in the worker. */
 interface BackgroundFetchMessage {
-  type: MESSAGE_TYPE.BACKGROUND_FETCH;
+  type: typeof MESSAGE_TYPE.BACKGROUND_FETCH;
   url: string;
   init?: Omit<BackgroundFetchInit, "headers"> & { headers?: Record<string, string> };
 }

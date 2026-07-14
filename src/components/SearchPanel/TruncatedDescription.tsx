@@ -1,7 +1,7 @@
 import { descriptionPreviewLength } from "@/../config.json";
 import { DescriptionToggleLink } from "@/components/StyledComponents";
 import { i18n } from "@/helpers/i18n";
-import { type KeyboardEvent, useState } from "react";
+import { type KeyboardEvent, type ReactElement, useState } from "react";
 
 interface TruncatedDescriptionProps {
   /** The full description text to render. */
@@ -27,7 +27,7 @@ interface TruncatedDescriptionProps {
 export function TruncatedDescription({
   text,
   limit = descriptionPreviewLength,
-}: TruncatedDescriptionProps): JSX.Element | null {
+}: TruncatedDescriptionProps): ReactElement | null {
   const [expanded, setExpanded] = useState(false);
 
   if (!text) {

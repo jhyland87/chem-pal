@@ -1,4 +1,4 @@
-import { AVAILABILITY } from "@/constants/common";
+import { AVAILABILITY, type Availability } from "@/constants/common";
 import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
@@ -307,7 +307,7 @@ export class SupplierSynthetika
    * console.log(availabilityEnum);
    * ```
    */
-  protected availabilityConverter(availability: string): AVAILABILITY {
+  protected availabilityConverter(availability: string): Availability {
     switch (availability.toLowerCase().trim()) {
       case "na wyczerpaniu":
         return AVAILABILITY.LIMITED_STOCK;
@@ -345,10 +345,8 @@ export class SupplierSynthetika
       const productBuilder = new ProductBuilder(this.baseURL);
 
       const availability = this.availabilityConverter(product.availability.name);
-      if (
-        [AVAILABILITY.LIMITED_STOCK, AVAILABILITY.IN_STOCK].includes(availability) === false ||
-        product.can_buy === false
-      ) {
+      const inStockStatuses: Availability[] = [AVAILABILITY.LIMITED_STOCK, AVAILABILITY.IN_STOCK];
+      if (inStockStatuses.includes(availability) === false || product.can_buy === false) {
         this.logger.warn("Product not in stock - Skipping", {
           availability,
           product,

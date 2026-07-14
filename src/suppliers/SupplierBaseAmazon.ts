@@ -39,7 +39,6 @@ export type AmazonListing = Pick<
 >;
 
 const amazonDomains: CountryDomainMap = {
-   
   US: "https://www.amazon.com", // United States (default)
   UK: "https://www.amazon.co.uk", // United Kingdom
   DE: "https://www.amazon.de", // Germany
@@ -66,7 +65,6 @@ const amazonDomains: CountryDomainMap = {
   EG: "https://www.amazon.eg", // Egypt
   IE: "https://www.amazon.ie", // Ireland
   ZA: "https://www.amazon.co.za", // South Africa
-   
 };
 
 const userCountry = getUserLocation();
@@ -142,11 +140,9 @@ export abstract class SupplierBaseAmazon
       const response = await this.httpPost({
         path: `/s?k=${paginationQuery}&page=${page}&${this.extraParams || ""}`,
         body: {
-           
           "page-content-type": "atf",
           "prefetch-type": "rq",
           "customer-action": "pagination",
-           
         },
         headers: {
           "Accept-Language": "en-US,en;q=0.6",
@@ -240,7 +236,7 @@ export abstract class SupplierBaseAmazon
    * @source
    */
   protected checkRequirementsForListing(result: HTMLElement): boolean {
-    const resultText = result.innerText.toLowerCase();
+    const resultText = result.textContent?.toLowerCase() ?? "";
     const searchList = [...(this.termsFoundInListing ?? []), this.supplierName];
 
     const matchedString = searchList.some((term) => {
@@ -339,7 +335,7 @@ export abstract class SupplierBaseAmazon
         this.logger.debug("qid", { raw, listingDocument, qid });
       }
 
-      // Check if the listing meets the requirements. Use innerText because many of the hyperlinks
+      // Check if the listing meets the requirements. Use textContent because many of the hyperlinks
       // will have the search term saved in the href attribute.
       if (!this.checkRequirementsForListing(documentBody)) {
         return;
@@ -365,8 +361,6 @@ export abstract class SupplierBaseAmazon
       // Extracting the currency
       const currencyElement = documentBody.querySelector("span.a-price-symbol");
       let currency = currencyElement ? currencyElement.textContent?.trim() : null;
-
-      // Array.from(documentBody.querySelectorAll('span, div')).map(e => e.innerText).find(e => /^\$\d+\.\d+$/.test(e))
 
       // Extracting the original price
       const originalPriceElement = documentBody.querySelector("span.a-text-price span.a-offscreen");
@@ -424,7 +418,7 @@ export abstract class SupplierBaseAmazon
       return {
         id: productId,
         sku: asin,
-        availability: stockElement?.innerText.toLowerCase().includes("order soon")
+        availability: stockElement?.textContent?.toLowerCase().includes("order soon")
           ? AVAILABILITY.LIMITED_STOCK
           : AVAILABILITY.IN_STOCK,
         url: `${amazonBase}/dp/${asin}`,
@@ -471,7 +465,7 @@ export abstract class SupplierBaseAmazon
       builder
         .setBasicInfo(item.title, item.url, this.supplierName)
         .setPricing(item.price, getCurrencyCodeFromSymbol(item.currencySymbol), item.currencySymbol)
-        .setAvailability(item.availability)
+        .setAvailability(item.availability ?? AVAILABILITY.UNKNOWN)
         .setVendor("Amazon")
         .setID(item.id)
         .setSku(item.sku)
