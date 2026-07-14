@@ -1454,7 +1454,16 @@ export class ProductBuilder<T extends Product> {
   determineAvailability(availability?: AVAILABILITY | boolean | string): Maybe<AVAILABILITY> {
     if (typeof availability === "undefined") return;
 
-    if (isAvailability(availability)) return availability;
+    if (isAvailability(availability)) {
+      // isAvailability accepts strings case-insensitively, so normalize to the
+      // canonical lowercase enum member rather than storing the raw input
+      // (e.g. schema.org's "PreOrder" -> "preorder").
+      if (typeof availability === "string") {
+        const normalized = availability.toLowerCase();
+        return isAvailability(normalized) ? normalized : availability;
+      }
+      return availability;
+    }
 
     if (typeof availability === "boolean")
       return availability ? AVAILABILITY.IN_STOCK : AVAILABILITY.OUT_OF_STOCK;
@@ -1466,14 +1475,28 @@ export class ProductBuilder<T extends Product> {
         case "available":
           return AVAILABILITY.IN_STOCK;
         case "limitedstock":
+        case "limitedavailability":
           return AVAILABILITY.LIMITED_STOCK;
         case "unavailable":
+          return AVAILABILITY.UNAVAILABLE;
         case "outofstock":
           return AVAILABILITY.OUT_OF_STOCK;
+        case "soldout":
+          return AVAILABILITY.SOLD_OUT;
         case "preorder":
           return AVAILABILITY.PRE_ORDER;
+        case "presale":
+          return AVAILABILITY.PRE_SALE;
+        case "madetoorder":
+          return AVAILABILITY.MADE_TO_ORDER;
         case "backorder":
           return AVAILABILITY.BACKORDER;
+        case "reserved":
+          return AVAILABILITY.RESERVED;
+        case "onlineonly":
+          return AVAILABILITY.ONLINE_ONLY;
+        case "instoreonly":
+          return AVAILABILITY.IN_STORE_ONLY;
         case "discontinued":
           return AVAILABILITY.DISCONTINUED;
         default:

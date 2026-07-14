@@ -345,21 +345,29 @@ export function decodeHTMLEntities(text: string): string {
     .replace(/&#(\d+);/gi, (match, dec) => String.fromCharCode(dec));
 }
 
+// Block-level tags whose closing tag should become a line break, so their text
+// doesn't run into the following block (e.g. a heading against the next paragraph).
+const BLOCK_CLOSE_REGEX =
+  /<\/(?:p|div|h[1-6]|li|ul|ol|dl|dd|dt|tr|td|th|blockquote|section|article|header|footer|figcaption|pre|address)>/gi;
+
 /**
- * Converts HTML to ASCII.
+ * Converts HTML to ASCII. Closing block-level tags (paragraphs, headings, list
+ * items, table rows/cells, …) and `<br>` become line breaks; every other tag is
+ * stripped and the common HTML entities are decoded. Runs of blank lines left by
+ * empty or nested blocks are collapsed to a single line break.
  * @category Helpers
  * @param html - The HTML string to convert
  * @returns The ASCII string
  * @example
  * ```typescript
- * htmlToAscii("<p>Hello <b>world</b></p><p>This is a test</p>")
- * // Returns "Hello world\nThis is a test"
+ * htmlToAscii("<h2>Title</h2><p>Hello <b>world</b></p><ul><li>one</li><li>two</li></ul>")
+ * // Returns "Title\nHello world\none\ntwo"
  * ```
  * @source
  */
 export function htmlToAscii(html: string): string {
   return html
-    .replace(/<\/p>/gi, "\n")
+    .replace(BLOCK_CLOSE_REGEX, "\n")
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<[^>]+>/g, "")
     .replace(/&amp;/g, "&")
@@ -368,6 +376,9 @@ export function htmlToAscii(html: string): string {
     .replace(/&nbsp;/g, " ")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
+    // Trim trailing spaces per line and collapse blank-line runs from empty blocks.
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{2,}/g, "\n")
     .trim();
 }
 

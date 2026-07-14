@@ -28,6 +28,8 @@ type LeroChemInternals = {
   titleSelector: (el: Element) => string | undefined;
   applyDataTable: (b: ProductBuilder<Product>, dom: Document) => void;
   applyDocumentLinks: (b: ProductBuilder<Product>, dom: Document) => void;
+  descriptionToText: (html: unknown) => string | undefined;
+  shortDescriptionToText: (html: unknown) => string | undefined;
   gradeFromName: (name: unknown) => string | undefined;
   parseVariants: (b: ProductBuilder<Product>, dom: Document) => Promise<Partial<Variant>[]>;
   parseTotalPages: (html: string) => number;
@@ -104,6 +106,51 @@ describe("SupplierLeroChem applyDataTable", () => {
     expect(dump.iupacName).toBe("Dodecylbenzenesulphonic acid");
     // "326,49" -> 326.49 (decimal comma).
     expect(dump.moleweight).toBe(326.49);
+  });
+});
+
+describe("SupplierLeroChem descriptionToText", () => {
+  it("strips every table and returns tag-free plain text", () => {
+    const supplier = makeSupplier() as unknown as LeroChemInternals;
+    const html =
+      "<h2>ABS acid</h2>" +
+      "<table><tbody><tr><td>Formula</td><td>KOH</td></tr></tbody></table>" +
+      "<p>An anionic surfactant.</p>" +
+      "<table><tbody><tr><td>Signal word: DANGER</td></tr></tbody></table>" +
+      "<p>Harmful if swallowed.</p>";
+
+    const out = supplier.descriptionToText(html);
+
+    expect(out).toContain("An anionic surfactant.");
+    expect(out).toContain("Harmful if swallowed.");
+    // Both tables removed.
+    expect(out).not.toContain("Formula");
+    expect(out).not.toContain("KOH");
+    expect(out).not.toContain("DANGER");
+    // No HTML tags remain.
+    expect(out).not.toMatch(/<[^>]+>/);
+  });
+
+  it("returns undefined for empty/absent input", () => {
+    const supplier = makeSupplier() as unknown as LeroChemInternals;
+    expect(supplier.descriptionToText(undefined)).toBeUndefined();
+    expect(supplier.descriptionToText("")).toBeUndefined();
+  });
+});
+
+describe("SupplierLeroChem shortDescriptionToText", () => {
+  it("removes the COA/Declaration links and returns plain text", () => {
+    const supplier = makeSupplier() as unknown as LeroChemInternals;
+    const html =
+      '<p><strong><a href="https://lerochem.eu/img/cms/EN%20COA/COA%20ABS.pdf">CERTIFICATE OF ANALYSIS</a></strong></p>' +
+      '<p><strong><a href="https://lerochem.eu/img/cms/PARSISIUNTIMAI/DECLARATION%20ABS.pdf">DECLARATION</a></strong></p>' +
+      "<p>Alkyl benzene sulfonic acid, CAS 27176-87-0.</p>";
+
+    const out = supplier.shortDescriptionToText(html);
+
+    expect(out).toBe("Alkyl benzene sulfonic acid, CAS 27176-87-0.");
+    expect(out).not.toContain("CERTIFICATE");
+    expect(out).not.toContain("DECLARATION");
   });
 });
 

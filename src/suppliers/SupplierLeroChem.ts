@@ -1,11 +1,10 @@
-import { AVAILABILITY } from "@/constants/common";
 import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 import { FUZZ_SCORERS, type FuzzScorerFn } from "@/constants/fuzzScorers";
 import { findCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM } from "@/helpers/request";
 import { findFormulaInHtml, formatFormula, parseLocalizedNumber } from "@/helpers/science";
-import { firstMap, mapDefined } from "@/helpers/utils";
+import { firstMap, htmlToAscii, mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import {
   isLeroChemDataProduct,
@@ -371,7 +370,9 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
         const currencyCode = productLd.offers?.priceCurrency ?? "EUR";
         builder.setCurrencyCode(currencyCode);
         builder.setCurrencySymbol(CURRENCY_SYMBOL_MAP[currencyCode]);
-        builder.setAvailability(this.getAvailabilityFromLink(productLd.offers?.availability ?? ""));
+        // schema.org availability is a URL (".../PreOrder"); the last segment is
+        // the label setAvailability -> determineAvailability normalizes.
+        builder.setAvailability(productLd.offers?.availability?.split("/").pop() ?? "");
       }
 
       // #product-details data-product: authoritative price, default size, description.
@@ -382,8 +383,12 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
         if (typeof dataProduct.price_amount === "number") {
           builder.setPrice(dataProduct.price_amount);
         }
-        builder.setDescription(dataProduct.description ?? dataProduct.meta_description);
-        builder.setShortDescription(dataProduct.description_short ?? dataProduct.meta_description);
+        builder.setDescription(
+          this.descriptionToText(dataProduct.description) ?? dataProduct.meta_description,
+        );
+        builder.setShortDescription(
+          dataProduct.meta_description ?? this.shortDescriptionToText(dataProduct.description_short),
+        );
         const defaultQty = this.defaultSizeQuantity(dataProduct);
         if (defaultQty) {
           builder.setQuantity(defaultQty);
@@ -497,29 +502,60 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
   }
 
   /**
-   * Maps a schema.org availability URL to the internal {@link AVAILABILITY}
-   * enum, defaulting to UNKNOWN for unrecognised values.
-   * @param link - The schema.org availability URL (e.g. ".../PreOrder")
-   * @returns The corresponding AVAILABILITY value
+   * Converts the `data-product` `description` HTML into plain text: strips every
+   * `<table>` (LeroChem embeds a spec table that duplicates the detail fields, and
+   * a hazard table) and runs the remainder through {@link htmlToAscii}.
+   * @param html - The raw description HTML (or any value)
+   * @returns The plain-text description, or undefined when empty/absent
    * @example
    * ```typescript
-   * this.getAvailabilityFromLink("https://schema.org/PreOrder"); // AVAILABILITY.PRE_ORDER
+   * this.descriptionToText("<table>…</table><p>Some acid.</p>"); // "Some acid."
    * ```
    * @source
    */
-  private getAvailabilityFromLink(link: string): AVAILABILITY {
-    switch (link.split("/").pop()) {
-      case "InStock":
-        return AVAILABILITY.IN_STOCK;
-      case "OutOfStock":
-        return AVAILABILITY.OUT_OF_STOCK;
-      case "PreOrder":
-        return AVAILABILITY.PRE_ORDER;
-      case "BackOrder":
-        return AVAILABILITY.BACKORDER;
-      default:
-        return AVAILABILITY.UNKNOWN;
+  private descriptionToText(html: Maybe<string>): Maybe<string> {
+    if (typeof html !== "string" || html.length === 0) {
+      return undefined;
     }
+    const dom = createDOM(html);
+    for (const table of Array.from(dom.querySelectorAll("table"))) {
+      table.remove();
+    }
+    const text = htmlToAscii(dom.body?.innerHTML ?? html);
+    return text.length > 0 ? text : undefined;
+  }
+
+  /**
+   * Converts the `data-product` `description_short` HTML into plain text: removes
+   * the COA/Declaration document links (they are surfaced separately as
+   * `coaUrl`/`sdsUrl`) and runs the remainder through {@link htmlToAscii}.
+   * @param html - The raw short-description HTML (or any value)
+   * @returns The plain-text short description, or undefined when empty/absent
+   * @example
+   * ```typescript
+   * this.shortDescriptionToText(
+   *   '<p><a href="/COA.pdf">CERTIFICATE OF ANALYSIS</a></p><p>ABS acid.</p>',
+   * ); // "ABS acid."
+   * ```
+   * @source
+   */
+  private shortDescriptionToText(html: Maybe<string>): Maybe<string> {
+    if (typeof html !== "string" || html.length === 0) {
+      return undefined;
+    }
+    const dom = createDOM(html);
+    for (const anchor of Array.from(dom.querySelectorAll("a[href]"))) {
+      const text = anchor.textContent ?? "";
+      const href = anchor.getAttribute("href") ?? "";
+      if (
+        /certificate of analysis|declaration/i.test(text) ||
+        /\/COA[\s%/]|declaration/i.test(href)
+      ) {
+        (anchor.closest("p") ?? anchor).remove();
+      }
+    }
+    const text = htmlToAscii(dom.body?.innerHTML ?? html);
+    return text.length > 0 ? text : undefined;
   }
 
   /**

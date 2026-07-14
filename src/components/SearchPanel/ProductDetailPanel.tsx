@@ -1,4 +1,6 @@
+import { TruncatedDescription } from "@/components/SearchPanel/TruncatedDescription";
 import {
+  PriceHistoryTooltip,
   ProductDetailBody,
   ProductDetailContent,
   ProductDetailDescription,
@@ -11,7 +13,6 @@ import {
   ProductDetailVariantsColumn,
   ProductDetailVariantsGrid,
   ProductImageNavButton,
-  PriceHistoryTooltip,
 } from "@/components/StyledComponents";
 import { default as Link } from "@/components/TabLink";
 import { omit } from "@/helpers/collectionUtils";
@@ -237,7 +238,10 @@ function ProductImageCarousel({ images, title }: ProductImageCarouselProps): Rea
 
   return (
     <ProductDetailImageBox>
-      <Link href={current.image.fullSrc} aria-label={i18n("product_detail_open_full_image", [title])}>
+      <Link
+        href={current.image.fullSrc}
+        aria-label={i18n("product_detail_open_full_image", [title])}
+      >
         <img
           src={current.image.thumbSrc}
           alt={current.image.altText ?? title}
@@ -621,7 +625,7 @@ export function ProductDetailPanel({ row, table }: ProductDetailPanelProps): Rea
       <ProductDetailContent>
         {isPresent(product.description) && (
           <ProductDetailDescription>
-            <span className="detail-value">{product.description}</span>
+            <TruncatedDescription text={product.description} />
           </ProductDetailDescription>
         )}
 

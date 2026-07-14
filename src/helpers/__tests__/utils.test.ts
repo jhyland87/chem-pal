@@ -172,6 +172,16 @@ describe("htmlToAscii", () => {
   it("handles br tags", () => {
     expect(htmlToAscii("line1<br>line2<br/>line3")).toBe("line1\nline2\nline3");
   });
+
+  it("breaks on headings and list items so blocks don't run together", () => {
+    expect(
+      htmlToAscii("<h2>Title</h2><p>Hello <b>world</b></p><ul><li>one</li><li>two</li></ul>"),
+    ).toBe("Title\nHello world\none\ntwo");
+  });
+
+  it("collapses blank-line runs left by empty or nested blocks", () => {
+    expect(htmlToAscii("<h2>Title</h2><div></div><p>Body</p>")).toBe("Title\nBody");
+  });
 });
 
 describe("tryParseJson", () => {

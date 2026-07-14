@@ -19,6 +19,14 @@
     "message": "Открыть во вкладке",
     "description": "Accessible label for the button that opens the extension in a full browser tab."
   },
+  "common_show_more": {
+    "message": "ещё",
+    "description": "Inline link label to expand a truncated product description."
+  },
+  "common_show_less": {
+    "message": "меньше",
+    "description": "Inline link label to collapse an expanded product description."
+  },
   "common_back_to_search": {
     "message": "Вернуться на главную поиска",
     "description": "Accessible label for the back button that returns to the search home."
