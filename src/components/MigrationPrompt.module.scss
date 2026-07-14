@@ -1,0 +1,22 @@
+.migration-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(460px, 90vw);
+  max-height: 85vh;
+  overflow-y: auto;
+  outline: none;
+}
+
+.migration-title {
+  text-align: center;
+}
+
+.migration-steps {
+  margin: 0.75rem 0;
+}
+
+.migration-actions {
+  margin-top: 1.5rem;
+}

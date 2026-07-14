@@ -32,6 +32,8 @@
   },
   "defaultResultsLimit": 5,
   "descriptionPreviewLength": 300,
+  "maxSupplierCacheEntries": 100,
+  "maxHistoryEntries": 100,
   "useStorageCompression": false,
   "sequenceResetMs": 1500,
   "hotkeys": [

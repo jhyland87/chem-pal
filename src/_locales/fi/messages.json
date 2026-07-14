@@ -792,5 +792,40 @@
   "hotkeys_flash_showallrows": { "message": "Näytetään kaikki rivit", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_clearcolumnfilters": { "message": "Sarakesuodattimet tyhjennetty", "description": "Hotkey status-bar flash." },
   "hotkeys_search_placeholder": { "message": "Hae pikanäppäimiä…", "description": "Placeholder for the hotkey modal search box." },
-  "hotkeys_no_matches": { "message": "Ei osumia pikanäppäimiin", "description": "Shown when a hotkey search returns nothing." }
+  "hotkeys_no_matches": { "message": "Ei osumia pikanäppäimiin", "description": "Shown when a hotkey search returns nothing." },
+  "migration_title": {
+    "message": "Version päivitys havaittu",
+    "description": "Title of the cache version-update prompt shown on open."
+  },
+  "migration_body": {
+    "message": "Nykyiseen versioosi on otettava käyttöön uusia ominaisuuksia ja muutoksia. Napsauta ”Ota päivitykset käyttöön” ottaaksesi ne käyttöön nyt tai ”Peruuta” tyhjentääksesi välimuistin ja aloittaaksesi alusta.",
+    "description": "Body text of the cache version-update prompt."
+  },
+  "migration_apply": {
+    "message": "Ota päivitykset käyttöön",
+    "description": "Button that applies the pending cache migrations."
+  },
+  "migration_cancel": {
+    "message": "Peruuta",
+    "description": "Button that clears the cache and starts fresh."
+  },
+  "migration_step": {
+    "message": "$from$ → $to$: $description$",
+    "placeholders": {
+      "from": {
+        "content": "$1"
+      },
+      "to": {
+        "content": "$2"
+      },
+      "description": {
+        "content": "$3"
+      }
+    },
+    "description": "One pending migration line: from-version, to-version, description."
+  },
+  "migration_error": {
+    "message": "Päivitysten käyttöönotossa tapahtui virhe. Voit yrittää uudelleen tai napsauttaa ”Peruuta” tyhjentääksesi välimuistin ja aloittaaksesi alusta.",
+    "description": "Shown when applying the cache migrations failed."
+  }
 }

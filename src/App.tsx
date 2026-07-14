@@ -3,6 +3,13 @@ import { APP_ACTION, CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
 import { AppContext } from "@/context";
 import { emitSearchEvent, SearchEvent } from "@/events/searchEvents";
 import { HotkeyEvent, HotkeyHelpModal, useHotkeys, type HotkeyHandlers } from "@/hotkeys";
+import {
+  applyPendingMigrations,
+  getMigrationStatus,
+  resetToCurrentVersion,
+  seedVersionIfUnset,
+} from "@/migrations/registry";
+import type { Migration } from "@/migrations/types";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
 import { SupplierCache } from "@/utils/SupplierCache";
 import { useBadgeController } from "@/utils/badgeController";
@@ -17,6 +24,7 @@ import {
   startTransition,
   Suspense,
   useActionState,
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -24,6 +32,7 @@ import {
 import "./App.scss";
 import DrawerSystem from "./components/DrawerSystem";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { MigrationPrompt } from "./components/MigrationPrompt";
 import SearchPanel from "./components/SearchPanel/SearchPanel";
 import SearchPanelHome from "./components/SearchPanelHome";
 import SpeedDialMenu from "./components/SpeedDialMenu";
@@ -160,6 +169,11 @@ function App() {
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   // Controls the HotkeyHelpModal visibility (shift+? opens it)
   const [hotkeyHelpOpen, setHotkeyHelpOpen] = useState(false);
+  // Pending cache migrations detected on open. A non-empty list shows the
+  // MigrationPrompt and defers loading cached data until the user decides.
+  const [migrationSteps, setMigrationSteps] = useState<Migration[]>([]);
+  const [migrationBusy, setMigrationBusy] = useState(false);
+  const [migrationError, setMigrationError] = useState<string>();
   // Pending search query - set by HistoryPanel, consumed by ResultsTable
   const [pendingSearchQuery, setPendingSearchQuery] = useState<string | null>(null);
   // Pre-search filters - set by DrawerSearchPanel, consumed by useSearch
@@ -357,76 +371,124 @@ function App() {
     document.title = i18n("app_title");
   }, [activeLocale]);
 
-  // Load initial data from Chrome storage on mount
-  useEffect(() => {
-    const loadFromStorage = async () => {
-      try {
-        const [sessionData, localData, idbResults] = await Promise.all([
-          cstorage.session.get([CACHE.PANEL, CACHE.QUERY, CACHE.SEARCH_IS_NEW_SEARCH]),
-          cstorage.local.get([
-            CACHE.USER_SETTINGS,
-            CACHE.SELECTED_SUPPLIERS,
-            CACHE.BOOKMARKS_FOLDER_ID,
-          ]),
-          getSearchResults(),
-        ]);
-        const loadedData: Partial<AppState> = {};
+  // Load initial data from Chrome storage. Lifted out of the mount effect so the
+  // migration handlers can re-run it once the user resolves the update prompt.
+  const loadFromStorage = useCallback(async () => {
+    try {
+      const [sessionData, localData, idbResults] = await Promise.all([
+        cstorage.session.get([CACHE.PANEL, CACHE.QUERY, CACHE.SEARCH_IS_NEW_SEARCH]),
+        cstorage.local.get([
+          CACHE.USER_SETTINGS,
+          CACHE.SELECTED_SUPPLIERS,
+          CACHE.BOOKMARKS_FOLDER_ID,
+        ]),
+        getSearchResults(),
+      ]);
+      const loadedData: Partial<AppState> = {};
 
-        const hasResults = idbResults.length > 0;
+      const hasResults = idbResults.length > 0;
 
-        // Sync the badge with the restored count on open (controller clears it if 0).
-        emitSearchEvent(SearchEvent.RESULTS_COUNT, { count: idbResults.length });
+      // Sync the badge with the restored count on open (controller clears it if 0).
+      emitSearchEvent(SearchEvent.RESULTS_COUNT, { count: idbResults.length });
 
-        const savedPanelRaw = sessionData[CACHE.PANEL];
-        const savedPanel =
-          savedPanelRaw !== undefined && savedPanelRaw !== null ? Number(savedPanelRaw) : undefined;
+      const savedPanelRaw = sessionData[CACHE.PANEL];
+      const savedPanel =
+        savedPanelRaw !== undefined && savedPanelRaw !== null ? Number(savedPanelRaw) : undefined;
 
-        // A search queued before this view mounted — e.g. seeded by the
-        // right-click context menu, which opens a fresh tab. The effect that
-        // executes it lives in ResultsTable, so we must land on the results
-        // panel for that component to mount and pick the search up.
-        const hasPendingSearch = Boolean(
-          sessionData[CACHE.SEARCH_IS_NEW_SEARCH] &&
-            typeof sessionData[CACHE.QUERY] === "string" &&
-            sessionData[CACHE.QUERY].trim(),
-        );
+      // A search queued before this view mounted — e.g. seeded by the
+      // right-click context menu, which opens a fresh tab. The effect that
+      // executes it lives in ResultsTable, so we must land on the results
+      // panel for that component to mount and pick the search up.
+      const hasPendingSearch = Boolean(
+        sessionData[CACHE.SEARCH_IS_NEW_SEARCH] &&
+          typeof sessionData[CACHE.QUERY] === "string" &&
+          sessionData[CACHE.QUERY].trim(),
+      );
 
-        // Panel selection on popup open:
-        //  - A pending search always wins (land on results so it can execute).
-        //  - Else if there are cached search results, land on the results table.
-        //  - Otherwise, land on the search home.
-        //  - Exception: preserve the STATS panel selection (dev-only) so a
-        //    developer inspecting stats doesn't get bounced every time the
-        //    popup reopens.
-        if (hasPendingSearch) {
-          loadedData.panel = PANEL.RESULTS;
-        } else if (savedPanel === PANEL.STATS) {
-          loadedData.panel = PANEL.STATS;
-        } else {
-          loadedData.panel = hasResults ? PANEL.RESULTS : PANEL.SEARCH_HOME;
-        }
-
-        if (localData[CACHE.USER_SETTINGS]) {
-          loadedData.userSettings = { ...localData[CACHE.USER_SETTINGS] };
-        }
-
-        if (localData[CACHE.SELECTED_SUPPLIERS]) {
-          loadedData.selectedSuppliers = localData[CACHE.SELECTED_SUPPLIERS];
-        }
-
-        if (localData[CACHE.BOOKMARKS_FOLDER_ID]) {
-          loadedData.bookmarksFolderId = localData[CACHE.BOOKMARKS_FOLDER_ID];
-        }
-
-        if (Object.keys(loadedData).length > 0) {
-          dispatch({ type: APP_ACTION.LOAD_FROM_STORAGE, data: loadedData });
-        }
-      } catch (error) {
-        console.error("Failed to load from Chrome storage:", { error });
+      // Panel selection on popup open:
+      //  - A pending search always wins (land on results so it can execute).
+      //  - Else if there are cached search results, land on the results table.
+      //  - Otherwise, land on the search home.
+      //  - Exception: preserve the STATS panel selection (dev-only) so a
+      //    developer inspecting stats doesn't get bounced every time the
+      //    popup reopens.
+      if (hasPendingSearch) {
+        loadedData.panel = PANEL.RESULTS;
+      } else if (savedPanel === PANEL.STATS) {
+        loadedData.panel = PANEL.STATS;
+      } else {
+        loadedData.panel = hasResults ? PANEL.RESULTS : PANEL.SEARCH_HOME;
       }
-    };
-    loadFromStorage();
+
+      if (localData[CACHE.USER_SETTINGS]) {
+        loadedData.userSettings = { ...localData[CACHE.USER_SETTINGS] };
+      }
+
+      if (localData[CACHE.SELECTED_SUPPLIERS]) {
+        loadedData.selectedSuppliers = localData[CACHE.SELECTED_SUPPLIERS];
+      }
+
+      if (localData[CACHE.BOOKMARKS_FOLDER_ID]) {
+        loadedData.bookmarksFolderId = localData[CACHE.BOOKMARKS_FOLDER_ID];
+      }
+
+      if (Object.keys(loadedData).length > 0) {
+        dispatch({ type: APP_ACTION.LOAD_FROM_STORAGE, data: loadedData });
+      }
+    } catch (error) {
+      console.error("Failed to load from Chrome storage:", { error });
+    }
   }, [dispatch]);
+
+  // On open, check whether the cache needs migrating before loading it. If steps
+  // are pending, show the MigrationPrompt and defer the load until the user picks
+  // Apply or Cancel; otherwise seed the version marker and load as usual.
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const status = await getMigrationStatus();
+        if (status.pending.length > 0) {
+          setMigrationSteps(status.pending);
+          return;
+        }
+        await seedVersionIfUnset();
+      } catch (error) {
+        console.error("Migration check failed:", { error });
+      }
+      await loadFromStorage();
+    };
+    void init();
+  }, [loadFromStorage]);
+
+  // Apply the pending migrations in place, then load the (now-current) cache. On
+  // failure the prompt stays open with an error so the user can retry or Cancel.
+  const handleApplyMigrations = useCallback(async () => {
+    setMigrationBusy(true);
+    setMigrationError(undefined);
+    try {
+      await applyPendingMigrations();
+      setMigrationSteps([]);
+      await loadFromStorage();
+    } catch (error) {
+      console.error("Failed to apply migrations:", { error });
+      setMigrationError(i18n("migration_error"));
+      setMigrationBusy(false);
+    }
+  }, [loadFromStorage]);
+
+  // Clear the cache and start fresh at the current version, then load.
+  const handleCancelMigrations = useCallback(async () => {
+    setMigrationBusy(true);
+    setMigrationError(undefined);
+    try {
+      await resetToCurrentVersion();
+    } catch (error) {
+      console.error("Failed to reset caches:", { error });
+    }
+    setMigrationSteps([]);
+    setMigrationBusy(false);
+    await loadFromStorage();
+  }, [loadFromStorage]);
 
   // Debug watcher: log decoded values when any of the watched storage keys change.
   // cstorage.onChanged auto-decodes LZ envelopes, so change.newValue / oldValue
@@ -656,6 +718,14 @@ function App() {
                 <SpeedDialMenu speedDialVisibility={appState.speedDialVisibility ?? false} />
               </div>
               <HotkeyHelpModal open={hotkeyHelpOpen} onClose={() => setHotkeyHelpOpen(false)} />
+              <MigrationPrompt
+                open={migrationSteps.length > 0}
+                steps={migrationSteps}
+                busy={migrationBusy}
+                error={migrationError}
+                onApply={() => void handleApplyMigrations()}
+                onCancel={() => void handleCancelMigrations()}
+              />
             </div>
             <StatusBar />
           </StatusBarProvider>

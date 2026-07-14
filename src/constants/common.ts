@@ -146,6 +146,8 @@ export const IDB_STORE = {
   EXCLUDED_PRODUCTS: "excluded_products",
   /** Per-product/variant USD price history. */
   PRICE_HISTORY: "price_history",
+  /** App metadata — single row keyed `"current"` recording the app version that last wrote/migrated the cache. */
+  APP_META: "app_meta",
 } as const;
 
 export type IdbStore = (typeof IDB_STORE)[keyof typeof IDB_STORE];

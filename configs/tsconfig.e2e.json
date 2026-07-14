@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "../node_modules/.tmp/tsconfig.e2e.tsbuildinfo",
+    "types": ["node", "chrome"]
+  },
+  // vite-env.d.ts carries `/// <reference types="vite/client" />`, augmenting
+  // import.meta.env for src files pulled in transitively (e.g. isDevBuild.ts via
+  // @/utils/Logger). app.json gets it from its `../src` include; add it here too.
+  "include": ["../e2e/**/*.ts", "../src/vite-env.d.ts"]
+}

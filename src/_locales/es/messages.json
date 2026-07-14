@@ -792,5 +792,40 @@
   "hotkeys_flash_showallrows": { "message": "Mostrando todas las filas", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_clearcolumnfilters": { "message": "Filtros de columna borrados", "description": "Hotkey status-bar flash." },
   "hotkeys_search_placeholder": { "message": "Buscar atajos…", "description": "Placeholder for the hotkey modal search box." },
-  "hotkeys_no_matches": { "message": "No hay atajos coincidentes", "description": "Shown when a hotkey search returns nothing." }
+  "hotkeys_no_matches": { "message": "No hay atajos coincidentes", "description": "Shown when a hotkey search returns nothing." },
+  "migration_title": {
+    "message": "Se detectó una actualización de versión",
+    "description": "Title of the cache version-update prompt shown on open."
+  },
+  "migration_body": {
+    "message": "Hay nuevas funciones y cambios que deben aplicarse a tu versión actual. Pulsa «Aplicar actualizaciones» para aplicarlos ahora, o «Cancelar» para borrar los datos en caché y empezar de nuevo.",
+    "description": "Body text of the cache version-update prompt."
+  },
+  "migration_apply": {
+    "message": "Aplicar actualizaciones",
+    "description": "Button that applies the pending cache migrations."
+  },
+  "migration_cancel": {
+    "message": "Cancelar",
+    "description": "Button that clears the cache and starts fresh."
+  },
+  "migration_step": {
+    "message": "$from$ → $to$: $description$",
+    "placeholders": {
+      "from": {
+        "content": "$1"
+      },
+      "to": {
+        "content": "$2"
+      },
+      "description": {
+        "content": "$3"
+      }
+    },
+    "description": "One pending migration line: from-version, to-version, description."
+  },
+  "migration_error": {
+    "message": "Se produjo un error al aplicar las actualizaciones. Puedes intentarlo de nuevo o pulsar «Cancelar» para borrar los datos en caché y empezar de nuevo.",
+    "description": "Shown when applying the cache migrations failed."
+  }
 }

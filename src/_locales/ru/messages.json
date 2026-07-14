@@ -1303,5 +1303,40 @@
   "hotkeys_no_matches": {
     "message": "Нет подходящих сочетаний",
     "description": "Shown when a hotkey search returns nothing."
+  },
+  "migration_title": {
+    "message": "Обнаружено обновление версии",
+    "description": "Title of the cache version-update prompt shown on open."
+  },
+  "migration_body": {
+    "message": "Появились новые функции и изменения, которые необходимо применить к вашей текущей версии. Нажмите «Применить обновления», чтобы применить их сейчас, или «Отмена», чтобы очистить кэшированные данные и начать заново.",
+    "description": "Body text of the cache version-update prompt."
+  },
+  "migration_apply": {
+    "message": "Применить обновления",
+    "description": "Button that applies the pending cache migrations."
+  },
+  "migration_cancel": {
+    "message": "Отмена",
+    "description": "Button that clears the cache and starts fresh."
+  },
+  "migration_step": {
+    "message": "$from$ → $to$: $description$",
+    "placeholders": {
+      "from": {
+        "content": "$1"
+      },
+      "to": {
+        "content": "$2"
+      },
+      "description": {
+        "content": "$3"
+      }
+    },
+    "description": "One pending migration line: from-version, to-version, description."
+  },
+  "migration_error": {
+    "message": "При применении обновлений произошла ошибка. Вы можете повторить попытку или нажать «Отмена», чтобы очистить кэшированные данные и начать заново.",
+    "description": "Shown when applying the cache migrations failed."
   }
 }
