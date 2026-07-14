@@ -233,7 +233,7 @@ flowchart LR
 
 ## Supplier Map
 
-All 25 active suppliers by platform, country, and data strategy. Display names match each class's `supplierName` constant — see [Supplier System](../../wiki_files/Supplier-System.md) for the canonical table.
+All 25 active suppliers by platform, country, and data strategy. Display names match each class's `supplierName` constant — see [Supported Suppliers](../../wiki_files/Supported-Suppliers.md) for the canonical table.
 
 ### Direct (SupplierBase) - 11 suppliers
 - **Ambeed** - CN - JSON Only

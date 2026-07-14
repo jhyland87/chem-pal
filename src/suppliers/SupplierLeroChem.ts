@@ -12,7 +12,7 @@ import { SupplierBase } from "./SupplierBase";
 
 /**
  * Supplier implementation for LeroChem, a Lithuania-based chemical supplier
- * running on PrestaShop (lerochem.eu). Like {@link SupplierWarchem} it is
+ * running on PrestaShop (lerochem.eu). Like the Warchem supplier it is
  * HTML-based, but the pages embed rich JSON: search results are parsed from the
  * `article.product-miniature` cards, and each product page carries a schema.org
  * `Product` `ld+json` block plus a `#product-details` `data-product` dataset.
