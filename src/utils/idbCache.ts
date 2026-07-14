@@ -1,3 +1,4 @@
+import { maxHistoryEntries, maxSupplierCacheEntries } from "@/../config.json";
 import { IDB_STORE, type IdbStore } from "@/constants/common";
 import type { ExcludedProductsMap } from "@/helpers/excludedProducts";
 import { Logger } from "@/utils/Logger";
@@ -19,9 +20,13 @@ export const IDB_SUPPLIER_STATS_UPDATED = "idb:supplier-stats-updated";
 const logger = new Logger("idbCache");
 
 const DB_NAME = "chempal";
-const DB_VERSION = 5;
-const MAX_SUPPLIER_CACHE_ENTRIES = 100;
-const MAX_HISTORY_ENTRIES = 100;
+const DB_VERSION = 6;
+
+/** Single-row key used by the `app_meta` store (mirrors the `"current"` pattern of `search_results`). */
+const APP_META_KEY = "current";
+// Cache-capacity caps live in config.json alongside the other build-time tunables.
+const MAX_SUPPLIER_CACHE_ENTRIES = maxSupplierCacheEntries;
+const MAX_HISTORY_ENTRIES = maxHistoryEntries;
 
 interface ChemPalDBSchema extends DBSchema {
   search_results: {
@@ -86,6 +91,14 @@ interface ChemPalDBSchema extends DBSchema {
       productKey: string;
     };
   };
+  app_meta: {
+    key: string;
+    value: {
+      id: string;
+      appVersion: string;
+      updatedAt: number;
+    };
+  };
 }
 
 let dbPromise: Promise<IDBPDatabase<ChemPalDBSchema>> | null = null;
@@ -112,7 +125,9 @@ function getDB(): Promise<IDBPDatabase<ChemPalDBSchema>> {
         }
 
         if (!db.objectStoreNames.contains(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE)) {
-          const spdc = db.createObjectStore(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE, { keyPath: "cacheKey" });
+          const spdc = db.createObjectStore(IDB_STORE.SUPPLIER_PRODUCT_DATA_CACHE, {
+            keyPath: "cacheKey",
+          });
           spdc.createIndex("timestamp", "timestamp");
         }
 
@@ -127,6 +142,10 @@ function getDB(): Promise<IDBPDatabase<ChemPalDBSchema>> {
         if (!db.objectStoreNames.contains(IDB_STORE.PRICE_HISTORY)) {
           const ph = db.createObjectStore(IDB_STORE.PRICE_HISTORY, { keyPath: "id" });
           ph.createIndex("productKey", "productKey");
+        }
+
+        if (!db.objectStoreNames.contains(IDB_STORE.APP_META)) {
+          db.createObjectStore(IDB_STORE.APP_META, { keyPath: "id" });
         }
       },
     });
@@ -762,9 +781,7 @@ export async function putPriceSeries(entry: PriceHistoryEntry): Promise<void> {
  * ```
  * @source
  */
-export async function getPriceSeriesByProduct(
-  productKey: string,
-): Promise<PriceHistoryEntry[]> {
+export async function getPriceSeriesByProduct(productKey: string): Promise<PriceHistoryEntry[]> {
   try {
     const db = await getDB();
     return await db.getAllFromIndex(IDB_STORE.PRICE_HISTORY, "productKey", productKey);
@@ -818,6 +835,79 @@ export async function clearPriceHistory(): Promise<void> {
 }
 
 /* -------------------------------------------------------------------------- */
+/*                                App Meta                                    */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Read the app version that last wrote or migrated the cache, from the single
+ * `app_meta` row keyed `"current"`. Returns `undefined` on a fresh install (the
+ * row has never been written) or when the read fails — callers treat `undefined`
+ * as "no marker yet" and seed the current version instead of migrating.
+ * @returns The stored semver string (e.g. `"1.0.0"`), or `undefined` when unset.
+ * @example
+ * ```ts
+ * const from = await getStoredAppVersion(); // => "1.0.0" | undefined
+ * ```
+ * @source
+ */
+export async function getStoredAppVersion(): Promise<string | undefined> {
+  try {
+    const db = await getDB();
+    const record = await db.get(IDB_STORE.APP_META, APP_META_KEY);
+    return record?.appVersion;
+  } catch (error) {
+    logger.error("Failed to get stored app version from IndexedDB", { error });
+    return undefined;
+  }
+}
+
+/**
+ * Record the app version that now owns the cache, overwriting the single
+ * `app_meta` row. Called after migrations complete, after a fresh-install seed,
+ * and after a Cancel/reset, so the stored marker always reflects the version
+ * whose data shape is currently in IndexedDB.
+ * @param appVersion - The semver string to persist (typically `__APP_VERSION__`).
+ * @returns Resolves once the write completes; errors are logged, not thrown.
+ * @example
+ * ```ts
+ * await setStoredAppVersion("1.1.0");
+ * await getStoredAppVersion(); // => "1.1.0"
+ * ```
+ * @source
+ */
+export async function setStoredAppVersion(appVersion: string): Promise<void> {
+  try {
+    const db = await getDB();
+    await db.put(IDB_STORE.APP_META, {
+      id: APP_META_KEY,
+      appVersion,
+      updatedAt: Date.now(),
+    });
+  } catch (error) {
+    logger.error("Failed to set stored app version in IndexedDB", { error });
+  }
+}
+
+/**
+ * Open the ChemPal database as an **untyped** `idb` handle for migration steps.
+ * Unlike {@link getDB}, this returns `IDBPDatabase` without the schema generic, so
+ * step code can read and write records in stores whose current-schema shape no
+ * longer matches the data on disk (renamed stores, old record shapes) using plain
+ * `string` store names — no type assertions required. The structural schema is
+ * still owned by {@link getDB}'s `upgrade`; this connection never upgrades.
+ * @returns A fresh untyped connection to the same `chempal` database.
+ * @example
+ * ```ts
+ * const db = await getMigrationDb();
+ * const rows = await db.getAll("supplier_query_cache");
+ * ```
+ * @source
+ */
+export async function getMigrationDb(): Promise<IDBPDatabase> {
+  return openDB(DB_NAME, DB_VERSION);
+}
+
+/* -------------------------------------------------------------------------- */
 /*                              Storage stats                                 */
 /* -------------------------------------------------------------------------- */
 
@@ -852,6 +942,7 @@ export async function getIdbStorageBreakdown(): Promise<IdbStorageBreakdown> {
     [IDB_STORE.SUPPLIER_STATS]: { count: 0, bytes: 0 },
     [IDB_STORE.EXCLUDED_PRODUCTS]: { count: 0, bytes: 0 },
     [IDB_STORE.PRICE_HISTORY]: { count: 0, bytes: 0 },
+    [IDB_STORE.APP_META]: { count: 0, bytes: 0 },
   };
   try {
     const db = await getDB();

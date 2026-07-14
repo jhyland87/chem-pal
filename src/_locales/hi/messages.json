@@ -777,5 +777,40 @@
   "hotkeys_flash_showallrows": { "message": "सभी पंक्तियाँ दिखाई जा रही हैं", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_clearcolumnfilters": { "message": "स्तंभ फ़िल्टर साफ़ किए गए", "description": "Hotkey status-bar flash." },
   "hotkeys_search_placeholder": { "message": "शॉर्टकट खोजें…", "description": "Placeholder for the hotkey modal search box." },
-  "hotkeys_no_matches": { "message": "कोई मिलान वाला शॉर्टकट नहीं", "description": "Shown when a hotkey search returns nothing." }
+  "hotkeys_no_matches": { "message": "कोई मिलान वाला शॉर्टकट नहीं", "description": "Shown when a hotkey search returns nothing." },
+  "migration_title": {
+    "message": "संस्करण अपडेट का पता चला",
+    "description": "Title of the cache version-update prompt shown on open."
+  },
+  "migration_body": {
+    "message": "आपके वर्तमान संस्करण पर लागू करने के लिए नई सुविधाएँ और बदलाव उपलब्ध हैं। उन्हें अभी लागू करने के लिए ‘अपडेट लागू करें’ दबाएँ, या कैश किया गया डेटा हटाकर नए सिरे से शुरू करने के लिए ‘रद्द करें’ दबाएँ।",
+    "description": "Body text of the cache version-update prompt."
+  },
+  "migration_apply": {
+    "message": "अपडेट लागू करें",
+    "description": "Button that applies the pending cache migrations."
+  },
+  "migration_cancel": {
+    "message": "रद्द करें",
+    "description": "Button that clears the cache and starts fresh."
+  },
+  "migration_step": {
+    "message": "$from$ → $to$: $description$",
+    "placeholders": {
+      "from": {
+        "content": "$1"
+      },
+      "to": {
+        "content": "$2"
+      },
+      "description": {
+        "content": "$3"
+      }
+    },
+    "description": "One pending migration line: from-version, to-version, description."
+  },
+  "migration_error": {
+    "message": "अपडेट लागू करते समय कुछ गड़बड़ी हो गई। आप फिर से कोशिश कर सकते हैं, या कैश किया गया डेटा हटाकर नए सिरे से शुरू करने के लिए ‘रद्द करें’ दबाएँ।",
+    "description": "Shown when applying the cache migrations failed."
+  }
 }

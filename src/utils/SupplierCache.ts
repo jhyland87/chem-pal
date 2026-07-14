@@ -30,6 +30,13 @@ export class SupplierCache {
   //stale query entries evict on read and repopulate under the new scheme. Bumped
   //3 -> 4 when per-product purchaseRestriction parsing was added, so pre-feature
   //entries (which lack it and would show as unrestricted) evict and re-parse.
+  //
+  //Deprecated as the invalidation lever: do NOT bump this for future format
+  //changes. Cache-format changes are now expressed as migration steps under
+  //src/migrations/steps (e.g. a step that calls clearSupplierQueryCache). The
+  //read-time guard below is kept only as a lazy safety net for pre-migration
+  //caches on existing installs, and can be removed once the app_meta version
+  //marker is universally present.
   private static readonly CACHE_VERSION = 4;
 
   // The logger instance.

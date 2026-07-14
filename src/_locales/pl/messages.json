@@ -1302,5 +1302,40 @@
   "hotkeys_no_matches": {
     "message": "Brak pasujących skrótów",
     "description": "Shown when a hotkey search returns nothing."
+  },
+  "migration_title": {
+    "message": "Wykryto aktualizację wersji",
+    "description": "Title of the cache version-update prompt shown on open."
+  },
+  "migration_body": {
+    "message": "Dostępne są nowe funkcje i zmiany, które należy zastosować do Twojej bieżącej wersji. Kliknij „Zastosuj aktualizacje”, aby zastosować je teraz, lub „Anuluj”, aby wyczyścić dane z pamięci podręcznej i zacząć od nowa.",
+    "description": "Body text of the cache version-update prompt."
+  },
+  "migration_apply": {
+    "message": "Zastosuj aktualizacje",
+    "description": "Button that applies the pending cache migrations."
+  },
+  "migration_cancel": {
+    "message": "Anuluj",
+    "description": "Button that clears the cache and starts fresh."
+  },
+  "migration_step": {
+    "message": "$from$ → $to$: $description$",
+    "placeholders": {
+      "from": {
+        "content": "$1"
+      },
+      "to": {
+        "content": "$2"
+      },
+      "description": {
+        "content": "$3"
+      }
+    },
+    "description": "One pending migration line: from-version, to-version, description."
+  },
+  "migration_error": {
+    "message": "Podczas stosowania aktualizacji wystąpił błąd. Możesz spróbować ponownie lub kliknąć „Anuluj”, aby wyczyścić dane z pamięci podręcznej i zacząć od nowa.",
+    "description": "Shown when applying the cache migrations failed."
   }
 }

@@ -792,5 +792,40 @@
   "hotkeys_flash_showallrows": { "message": "Alle Zeilen werden angezeigt", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_clearcolumnfilters": { "message": "Spaltenfilter gelöscht", "description": "Hotkey status-bar flash." },
   "hotkeys_search_placeholder": { "message": "Kürzel suchen…", "description": "Placeholder for the hotkey modal search box." },
-  "hotkeys_no_matches": { "message": "Keine passenden Kürzel", "description": "Shown when a hotkey search returns nothing." }
+  "hotkeys_no_matches": { "message": "Keine passenden Kürzel", "description": "Shown when a hotkey search returns nothing." },
+  "migration_title": {
+    "message": "Versionsaktualisierung erkannt",
+    "description": "Title of the cache version-update prompt shown on open."
+  },
+  "migration_body": {
+    "message": "Es gibt neue Funktionen und Änderungen, die auf Ihre aktuelle Version angewendet werden müssen. Klicken Sie auf „Updates anwenden“, um sie jetzt anzuwenden, oder auf „Abbrechen“, um die zwischengespeicherten Daten zu löschen und neu zu beginnen.",
+    "description": "Body text of the cache version-update prompt."
+  },
+  "migration_apply": {
+    "message": "Updates anwenden",
+    "description": "Button that applies the pending cache migrations."
+  },
+  "migration_cancel": {
+    "message": "Abbrechen",
+    "description": "Button that clears the cache and starts fresh."
+  },
+  "migration_step": {
+    "message": "$from$ → $to$: $description$",
+    "placeholders": {
+      "from": {
+        "content": "$1"
+      },
+      "to": {
+        "content": "$2"
+      },
+      "description": {
+        "content": "$3"
+      }
+    },
+    "description": "One pending migration line: from-version, to-version, description."
+  },
+  "migration_error": {
+    "message": "Beim Anwenden der Updates ist ein Fehler aufgetreten. Sie können es erneut versuchen oder auf „Abbrechen“ klicken, um die zwischengespeicherten Daten zu löschen und neu zu beginnen.",
+    "description": "Shown when applying the cache migrations failed."
+  }
 }

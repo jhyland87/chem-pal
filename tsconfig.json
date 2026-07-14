@@ -11,6 +11,11 @@
     },
     {
       "path": "./configs/tsconfig.test.json"
+    },
+    {
+      // tsconfig.e2e.json type-checks the Playwright E2E suite under e2e/
+      // (its own tests aren't covered by app/test configs).
+      "path": "./configs/tsconfig.e2e.json"
     }
   ],
   "compilerOptions": {
