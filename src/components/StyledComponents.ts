@@ -534,6 +534,16 @@ export const ProductDetailDescription = styled("div")(({ theme }) => ({
   },
 }));
 
+// Inline "[more]" / "[less]" toggle for a truncated product description.
+export const DescriptionToggleLink = styled("span")(({ theme }) => ({
+  color: theme.palette.primary.main,
+  cursor: "pointer",
+  whiteSpace: "nowrap",
+  userSelect: "none",
+  marginLeft: theme.spacing(0.5),
+  "&:hover": { textDecoration: "underline" },
+}));
+
 // Details + variants sit side by side when there's room and stack when narrow,
 // so the panel auto-adapts between the popup and the wider browser tab.
 export const ProductDetailBody = styled("div")(({ theme }) => ({

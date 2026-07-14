@@ -19,6 +19,14 @@
     "message": "टैब में खोलें",
     "description": "Accessible label for the button that opens the extension in a full browser tab."
   },
+  "common_show_more": {
+    "message": "अधिक",
+    "description": "Inline link label to expand a truncated product description."
+  },
+  "common_show_less": {
+    "message": "कम",
+    "description": "Inline link label to collapse an expanded product description."
+  },
   "common_back_to_search": {
     "message": "खोज होम पर वापस जाएँ",
     "description": "Accessible label for the back button that returns to the search home."

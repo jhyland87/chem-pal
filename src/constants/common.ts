@@ -9,18 +9,38 @@
  * Used by the SettingsPanel component.
  * @source
  */
-export enum ACTION_TYPE {
+// export enum ACTION_TYPE {
+//   /** A toggle Switch changed; writes `checked` to the named setting */
+//   SWITCH_CHANGE = "SWITCH_CHANGE",
+//   /** A text field or Select changed; writes `value` to the named setting */
+//   INPUT_CHANGE = "INPUT_CHANGE",
+//   /** A button-group option was clicked (e.g. font size); writes `value` to the named setting */
+//   BUTTON_CLICK = "BUTTON_CLICK",
+//   /** A supplier was enabled/disabled; replaces the disabled-suppliers list */
+//   SUPPLIER_TOGGLE = "SUPPLIER_TOGGLE",
+//   /** Resets the settings to their defaults */
+//   RESTORE_DEFAULTS = "RESTORE_DEFAULTS",
+// }
+
+/**
+ * Action types for settings panel form state management.
+ * Used by the SettingsPanel component.
+ * @source
+ */
+export const ACTION_TYPE = {
   /** A toggle Switch changed; writes `checked` to the named setting */
-  SWITCH_CHANGE = "SWITCH_CHANGE",
+  SWITCH_CHANGE: "SWITCH_CHANGE",
   /** A text field or Select changed; writes `value` to the named setting */
-  INPUT_CHANGE = "INPUT_CHANGE",
+  INPUT_CHANGE: "INPUT_CHANGE",
   /** A button-group option was clicked (e.g. font size); writes `value` to the named setting */
-  BUTTON_CLICK = "BUTTON_CLICK",
+  BUTTON_CLICK: "BUTTON_CLICK",
   /** A supplier was enabled/disabled; replaces the disabled-suppliers list */
-  SUPPLIER_TOGGLE = "SUPPLIER_TOGGLE",
+  SUPPLIER_TOGGLE: "SUPPLIER_TOGGLE",
   /** Resets the settings to their defaults */
-  RESTORE_DEFAULTS = "RESTORE_DEFAULTS",
-}
+  RESTORE_DEFAULTS: "RESTORE_DEFAULTS",
+} as const;
+
+export type ActionType = (typeof ACTION_TYPE)[keyof typeof ACTION_TYPE];
 
 /**
  * Discriminators for `chrome.runtime` messages exchanged between extension
@@ -143,14 +163,26 @@ export enum IDB_STORE {
 export enum AVAILABILITY {
   /** In stock and ready to ship */
   IN_STOCK = "in_stock",
-  /** Available but in limited quantity */
+  /** Available but in limited quantity (schema.org LimitedAvailability) */
   LIMITED_STOCK = "limited_stock",
   /** Currently out of stock */
   OUT_OF_STOCK = "out_of_stock",
   /** Not yet released; orderable ahead of availability */
   PRE_ORDER = "preorder",
+  /** Offered for sale ahead of general availability (schema.org PreSale) */
+  PRE_SALE = "pre_sale",
   /** Out of stock but orderable, shipping when restocked */
   BACKORDER = "backorder",
+  /** Produced only once ordered (schema.org MadeToOrder) */
+  MADE_TO_ORDER = "made_to_order",
+  /** Sold out (schema.org SoldOut) */
+  SOLD_OUT = "sold_out",
+  /** Held/reserved and not currently purchasable (schema.org Reserved) */
+  RESERVED = "reserved",
+  /** Purchasable online only (schema.org OnlineOnly) */
+  ONLINE_ONLY = "online_only",
+  /** Purchasable in physical stores only (schema.org InStoreOnly) */
+  IN_STORE_ONLY = "in_store_only",
   /** No longer sold */
   DISCONTINUED = "discontinued",
   /** Cannot be purchased (e.g. restricted or delisted) */
@@ -304,16 +336,21 @@ export const CAS_REGEX: RegExp = /(?<seg_a>\d{2,7})-(?<seg_b>\d{2})-(?<seg_check
  * @source
  */
 export const AVAILABILITY_LABEL_MAP: Record<string, string[]> = {
-  /** In-stock group */
-  in_stock: [AVAILABILITY.IN_STOCK],
+  /** In-stock group; also covers online-only listings */
+  in_stock: [AVAILABILITY.IN_STOCK, AVAILABILITY.ONLINE_ONLY],
   /** Limited-stock group */
   limited_stock: [AVAILABILITY.LIMITED_STOCK],
-  /** Out-of-stock group; also covers backordered items */
-  out_of_stock: [AVAILABILITY.OUT_OF_STOCK, AVAILABILITY.BACKORDER],
-  /** Pre-order group */
-  preorder: [AVAILABILITY.PRE_ORDER],
-  /** Unavailable group; also covers discontinued items */
-  unavailable: [AVAILABILITY.UNAVAILABLE, AVAILABILITY.DISCONTINUED],
+  /** Out-of-stock group; also covers backordered and sold-out items */
+  out_of_stock: [AVAILABILITY.OUT_OF_STOCK, AVAILABILITY.BACKORDER, AVAILABILITY.SOLD_OUT],
+  /** Pre-order group; also covers pre-sale and made-to-order items */
+  preorder: [AVAILABILITY.PRE_ORDER, AVAILABILITY.PRE_SALE, AVAILABILITY.MADE_TO_ORDER],
+  /** Unavailable group; also covers discontinued, reserved, and in-store-only items */
+  unavailable: [
+    AVAILABILITY.UNAVAILABLE,
+    AVAILABILITY.DISCONTINUED,
+    AVAILABILITY.RESERVED,
+    AVAILABILITY.IN_STORE_ONLY,
+  ],
 };
 
 /**

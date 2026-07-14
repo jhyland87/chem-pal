@@ -31,6 +31,7 @@
     ]
   },
   "defaultResultsLimit": 5,
+  "descriptionPreviewLength": 300,
   "useStorageCompression": false,
   "sequenceResetMs": 1500,
   "hotkeys": [
