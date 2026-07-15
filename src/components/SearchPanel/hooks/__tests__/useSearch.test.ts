@@ -8,6 +8,7 @@ import {
   clearSearchResults,
   getSearchHistory,
   getSearchResults,
+  getSearchResultsRecord,
 } from "@/utils/idbCache";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -101,6 +102,15 @@ describe("useSearch helpers", () => {
 
       const stored = await getSearchResults();
       expect(stored).toEqual(results);
+    });
+
+    it("persists the query alongside the results when provided", async () => {
+      const results = [{ id: 1, title: "Widget" }] as unknown as Product[];
+      await saveResultsToSession(results, "acetone");
+
+      const record = await getSearchResultsRecord();
+      expect(record.query).toBe("acetone");
+      expect(record.data).toEqual(results);
     });
 
     it("does not throw when IndexedDB write fails", async () => {

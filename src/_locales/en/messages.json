@@ -343,6 +343,10 @@
     "message": "Searched for: $query$",
     "placeholders": { "query": { "content": "$1" } }
   },
+  "results_query": {
+    "message": "Query: $query$",
+    "placeholders": { "query": { "content": "$1" } }
+  },
   "results_count": {
     "message": "Results: $count$",
     "placeholders": { "count": { "content": "$1" } }

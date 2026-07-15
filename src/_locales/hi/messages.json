@@ -336,6 +336,10 @@
     "message": "खोजा गया: $query$",
     "placeholders": { "query": { "content": "$1" } }
   },
+  "results_query": {
+    "message": "क्वेरी: $query$",
+    "placeholders": { "query": { "content": "$1" } }
+  },
   "results_count": {
     "message": "परिणाम: $count$",
     "placeholders": { "count": { "content": "$1" } }

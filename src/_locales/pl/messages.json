@@ -419,6 +419,14 @@
       }
     }
   },
+  "results_query": {
+    "message": "Zapytanie: $query$",
+    "placeholders": {
+      "query": {
+        "content": "$1"
+      }
+    }
+  },
   "results_count": {
     "message": "Wyniki: $count$",
     "placeholders": {
