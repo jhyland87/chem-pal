@@ -85,6 +85,8 @@ export const APP_ACTION = {
   SET_SPEED_DIAL_VISIBILITY: "SET_SPEED_DIAL_VISIBILITY",
   /** Hydrates app state from chrome.storage on initial mount */
   LOAD_FROM_STORAGE: "LOAD_FROM_STORAGE",
+  /** Re-hydrates user settings from an external storage change (no write-back) */
+  HYDRATE_SETTINGS: "HYDRATE_SETTINGS",
   /** Opens a specific drawer tab or closes the drawer (tab = -1) */
   SET_DRAWER_TAB: "SET_DRAWER_TAB",
   /** Updates the selected suppliers list for search filtering */

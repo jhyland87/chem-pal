@@ -171,6 +171,7 @@ export default ({ mode }: { mode: string }) => {
         external: ["chrome", "data/currency", "data/quantity", "data/types", "data/helpers"],
         input: {
           main: "./index.html",
+          options: "./options.html",
         },
         output: {
           sourcemapExcludeSources: false, //!isDev, // Include source content in dev
