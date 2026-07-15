@@ -570,9 +570,7 @@ export class SupplierFactory<P extends Product> {
         // Trusted static supplier classes; the union of concrete constructors
         // isn't structurally assignable to the generic SupplierConstructor<P>.
         const ConcreteSupplierClass = supplierClass as unknown as SupplierConstructor<P>;
-        console.log("Initializing supplier class...", { supplierClassName, ConcreteSupplierClass });
         const instance = new ConcreteSupplierClass(this.query, this.limit, this.controller);
-        console.log("After initializing supplier class", { supplierClassName, instance });
         instance.initCache(
           this.caching,
           this.doNotCacheEmptyResults,
@@ -593,14 +591,12 @@ export class SupplierFactory<P extends Product> {
     const shippableInstances = this.filterByShipping(supplierInstances);
     this.shippingExcludedAll = supplierInstances.length > 0 && shippableInstances.length === 0;
     const permittedInstances = await this.filterByPermissions(shippableInstances);
-    console.log("After filtering by permissions", { permittedInstances });
     const queue = new Queue(concurrency, 100);
 
     const channel: P[] = [];
     let doneCount = 0;
 
     permittedInstances.forEach((supplier) => {
-      console.log("Running queue", { supplier });
       queue.run(async () => {
         try {
           const iterator = supplier.execute();

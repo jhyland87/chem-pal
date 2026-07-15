@@ -93,17 +93,16 @@ export class HttpLru {
       return HttpLru.#instance;
     }
     const data = await cstorage.local.get([CACHE.HTTP_LRU]);
-    if (data[CACHE.HTTP_LRU]) {
-      const httplru = new HttpLru(capacity);
-      httplru.cache = new Map(Object.entries(data[CACHE.HTTP_LRU].cache));
-      httplru.head = data[CACHE.HTTP_LRU].head;
-      httplru.tail = data[CACHE.HTTP_LRU].tail;
-      HttpLru.#instance = httplru;
-      return httplru;
-    } else {
+    if (!data[CACHE.HTTP_LRU]) {
       HttpLru.#instance = new HttpLru(capacity);
       return HttpLru.#instance;
     }
+    const httplru = new HttpLru(capacity);
+    httplru.cache = new Map(Object.entries(data[CACHE.HTTP_LRU].cache));
+    httplru.head = data[CACHE.HTTP_LRU].head;
+    httplru.tail = data[CACHE.HTTP_LRU].tail;
+    HttpLru.#instance = httplru;
+    return httplru;
   }
 
   /**

@@ -843,12 +843,12 @@ export class Logger {
    */
   public table(tabularData: unknown, properties?: readonly string[]): void {
     if (!this.shouldLog(LogLevel.INFO)) return;
-    if (typeof tabularData === "object" && tabularData !== null) {
-      console.log(this.formatMessage(LogLevel.INFO, "Table Output:"));
-      console.table(tabularData, properties);
-    } else {
+    if (typeof tabularData !== "object" || tabularData === null) {
       console.log(this.formatMessage(LogLevel.INFO, "Invalid data for table display"));
+      return;
     }
+    console.log(this.formatMessage(LogLevel.INFO, "Table Output:"));
+    console.table(tabularData, properties);
   }
 
   /**

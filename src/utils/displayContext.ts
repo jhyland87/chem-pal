@@ -48,25 +48,28 @@ export function isTabView(): boolean {
  */
 export async function openExtensionTab(): Promise<void> {
   const path = `index.html?${VIEW_PARAM}=${TAB_VIEW}`;
-  if (typeof chrome?.tabs !== "undefined" && typeof chrome?.runtime?.getURL === "function") {
-    const url = chrome.runtime.getURL(path);
-    try {
-      const existing = await findExtensionTab(url);
-      if (existing?.id != null) {
-        await chrome.tabs.update(existing.id, { active: true });
-        if (typeof chrome.windows !== "undefined" && existing.windowId != null) {
-          await chrome.windows.update(existing.windowId, { focused: true });
-        }
-      } else {
-        await chrome.tabs.create({ url, active: true });
-      }
-    } catch (error) {
-      console.error("Failed to open extension tab:", { error });
-    }
-    window.close();
-  } else {
+
+  // Outside the extension runtime (e.g. dev preview): fall back to a plain tab.
+  if (typeof chrome?.tabs === "undefined" || typeof chrome?.runtime?.getURL !== "function") {
     window.open(`/${path}`, "_blank");
+    return;
   }
+
+  const url = chrome.runtime.getURL(path);
+  try {
+    const existing = await findExtensionTab(url);
+    if (existing?.id == null) {
+      await chrome.tabs.create({ url, active: true });
+    } else {
+      await chrome.tabs.update(existing.id, { active: true });
+      if (typeof chrome.windows !== "undefined" && existing.windowId != null) {
+        await chrome.windows.update(existing.windowId, { focused: true });
+      }
+    }
+  } catch (error) {
+    console.error("Failed to open extension tab:", { error });
+  }
+  window.close();
 }
 
 /**
