@@ -88,9 +88,13 @@ export async function smoothScrollToTop(
 }
 
 /**
- * Draws a glowing outline around an element to draw the audience's eye.
- * @param locator - The element to highlight.
- * @returns A promise that resolves once the outline is applied.
+ * Glides the demo cursor overlay onto an element's center so the pointer rests
+ * on whatever is being pointed out (before any later click). Moving the overlay
+ * — not Playwright's real mouse — means no premature hover tooltips fire; the
+ * visual hook is a no-op if the overlay isn't installed. No outline is drawn:
+ * the resting cursor (and any popover) is the callout.
+ * @param locator - The element to point the cursor at.
+ * @returns A promise that resolves once the cursor has been aimed.
  * @example
  * ```ts
  * await highlight(page.getByRole("textbox", { name: "search for products" }));
@@ -99,9 +103,11 @@ export async function smoothScrollToTop(
  */
 export async function highlight(locator: Locator): Promise<void> {
   await locator.evaluate((el) => {
-    el.style.outline = "3px solid #ff0055";
-    el.style.outlineOffset = "2px";
-    el.style.borderRadius = "6px";
+    const r = el.getBoundingClientRect();
+    const moveCursor = Reflect.get(window, "__chempalCursorMoveTo");
+    if (typeof moveCursor === "function") {
+      moveCursor(r.left + r.width / 2, r.top + r.height / 2);
+    }
   });
 }
 
@@ -125,14 +131,14 @@ export async function clearHighlight(locator: Locator): Promise<void> {
 const GROUP_HIGHLIGHT_ID = "playwright-demo-group-highlight";
 
 /**
- * Draws ONE outline around the combined bounding box of every element a locator
- * matches — e.g. a single box around all the variant price trends rather than a
- * cluttered outline per cell. Uses a fixed-position overlay (no per-element
- * styling), so it wraps the whole group tightly.
- * @param page - The page to draw the overlay on.
+ * Points the demo cursor at the center of the combined bounding box of every
+ * element a locator matches — e.g. rests the pointer on the middle of all the
+ * variant price trends rather than a single cell. No outline is drawn; the
+ * resting cursor (and any popover) is the callout.
+ * @param page - The page whose cursor overlay to aim.
  * @param locator - The locator matching the elements to enclose.
- * @returns A promise that resolves once the overlay is drawn (no-op if nothing
- *   matches or the matches have no size).
+ * @returns A promise that resolves once the cursor has been aimed (no-op if
+ *   nothing matches or the matches have no size).
  * @example
  * ```ts
  * await highlightGroup(page, page.locator(".variant-trend"));
@@ -157,27 +163,13 @@ export async function highlightGroup(page: Page, locator: Locator): Promise<void
     bottom: Math.max(...boxes.map((b) => b.bottom)),
   };
 
-  await page.evaluate(
-    ({ left, top, right, bottom, id }) => {
-      const pad = 4;
-      const box = document.createElement("div");
-      box.id = id;
-      Object.assign(box.style, {
-        position: "fixed",
-        left: `${left - pad}px`,
-        top: `${top - pad}px`,
-        width: `${right - left + pad * 2}px`,
-        height: `${bottom - top + pad * 2}px`,
-        border: "3px solid #ff0055",
-        borderRadius: "6px",
-        boxSizing: "border-box",
-        pointerEvents: "none",
-        zIndex: "999998",
-      });
-      document.body.appendChild(box);
-    },
-    { ...rect, id: GROUP_HIGHLIGHT_ID },
-  );
+  await page.evaluate(({ left, top, right, bottom }) => {
+    // Rest the demo cursor on the group's center.
+    const moveCursor = Reflect.get(window, "__chempalCursorMoveTo");
+    if (typeof moveCursor === "function") {
+      moveCursor((left + right) / 2, (top + bottom) / 2);
+    }
+  }, rect);
 }
 
 /**
@@ -194,6 +186,122 @@ export async function clearGroupHighlight(page: Page): Promise<void> {
   await page.evaluate((id) => {
     document.getElementById(id)?.remove();
   }, GROUP_HIGHLIGHT_ID);
+}
+
+/**
+ * Flashes the given key labels as on-screen keycaps (via the keycap overlay's
+ * `window.__chempalShowKeys` hook) and then fires the app's hotkey action by
+ * dispatching the matching `window` CustomEvent — the exact event ChemPal's own
+ * hotkey handler dispatches. Driving the event (rather than a raw key chord)
+ * keeps the action deterministic across platform modifier / focus differences,
+ * while the keycaps still show the viewer which keys do it.
+ * @param page - The page to fire the shortcut on.
+ * @param eventName - The `window` CustomEvent name to dispatch (e.g. `"chempal:expand-all-rows"`).
+ * @param keys - The key labels to display as keycaps (e.g. `["⌘","⇧","E"]`).
+ * @returns A promise that resolves once the event has been dispatched.
+ * @example
+ * ```ts
+ * await fireHotkeyEvent(page, "chempal:expand-all-rows", ["⌘", "⇧", "E"]);
+ * ```
+ * @source
+ */
+export async function fireHotkeyEvent(
+  page: Page,
+  eventName: string,
+  keys: string[],
+): Promise<void> {
+  await page.evaluate((labels) => {
+    const show = Reflect.get(window, "__chempalShowKeys");
+    if (typeof show === "function") {
+      show(labels);
+    }
+  }, keys);
+  await page.waitForTimeout(340);
+  await page.evaluate((name) => {
+    window.dispatchEvent(new CustomEvent(name));
+  }, eventName);
+}
+
+/** DOM id for the spotlight overlay so teardown can find and fade it. */
+const SPOTLIGHT_ID = "playwright-demo-spotlight";
+
+/**
+ * Softly blurs and dims everything except the target element to draw the eye to
+ * it during an explanatory callout — used for "this is a link" style call-outs
+ * the cursor points at but doesn't click. Builds four fixed panels around the
+ * target's rect (leaving a small padded hole), so the target, its popover, and
+ * the cursor all stay sharp above them, then fades the panels in. Pair with
+ * {@link clearSpotlight}. No-op if the target has no box.
+ * @param page - The page to draw on.
+ * @param target - The element to keep in focus.
+ * @returns A promise that resolves once the panels are drawn and fading in.
+ * @example
+ * ```ts
+ * await spotlight(page, page.locator(".variant-name a").first());
+ * ```
+ * @source
+ */
+export async function spotlight(page: Page, target: Locator): Promise<void> {
+  const box = await target.boundingBox();
+  if (!box) return;
+  await page.evaluate(
+    ({ x, y, width, height, id }) => {
+      document.getElementById(id)?.remove();
+      const pad = 6;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const l = Math.max(0, x - pad);
+      const t = Math.max(0, y - pad);
+      const r = Math.min(vw, x + width + pad);
+      const b = Math.min(vh, y + height + pad);
+
+      const container = document.createElement("div");
+      container.id = id;
+      container.style.cssText =
+        "position:fixed;left:0;top:0;width:100%;height:100%;" +
+        "pointer-events:none;z-index:999900;opacity:0;transition:opacity 300ms ease;";
+
+      const panel = (left: number, top: number, w: number, h: number): void => {
+        const p = document.createElement("div");
+        p.style.cssText =
+          `position:fixed;left:${left}px;top:${top}px;` +
+          `width:${Math.max(0, w)}px;height:${Math.max(0, h)}px;` +
+          "backdrop-filter:blur(2.5px);-webkit-backdrop-filter:blur(2.5px);" +
+          "background-color:rgba(18,20,28,0.22);";
+        container.appendChild(p);
+      };
+      panel(0, 0, vw, t); // above
+      panel(0, b, vw, vh - b); // below
+      panel(0, t, l, b - t); // left
+      panel(r, t, vw - r, b - t); // right
+
+      document.body.appendChild(container);
+      requestAnimationFrame(() => {
+        container.style.opacity = "1";
+      });
+    },
+    { x: box.x, y: box.y, width: box.width, height: box.height, id: SPOTLIGHT_ID },
+  );
+}
+
+/**
+ * Fades out and removes the spotlight overlay drawn by {@link spotlight}, if
+ * present.
+ * @param page - The page the overlay was drawn on.
+ * @returns A promise that resolves once the fade-out has been started.
+ * @example
+ * ```ts
+ * await clearSpotlight(page);
+ * ```
+ * @source
+ */
+export async function clearSpotlight(page: Page): Promise<void> {
+  await page.evaluate((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.opacity = "0";
+    window.setTimeout(() => el.remove(), 320);
+  }, SPOTLIGHT_ID);
 }
 
 /**

@@ -49,6 +49,14 @@ const SCROLL_VOLUME = 1;
  */
 const SFX_SYNC_OFFSET_MS = 0;
 
+/**
+ * Extra delay (ms) applied to click sounds only, so the click lands once the
+ * gliding on-screen pointer has reached the click point rather than a beat
+ * before it. Kept in step with the ripple delay (`RIPPLE_DELAY_MS` in
+ * `cursor.ts`) so the sound and the ripple appear together, on the pointer.
+ */
+const CLICK_LAG_MS = 190;
+
 /** Keystrokes more than this far apart start a new typing run. */
 const TYPING_GAP_MS = 500;
 /** Extra time added past the last keystroke of a run so it doesn't cut abruptly. */
@@ -443,7 +451,7 @@ export async function addSfxToVideo(
 ): Promise<string | undefined> {
   const clicksMs = events
     .filter((e) => e.kind === "click")
-    .map((e) => e.atMs + SFX_SYNC_OFFSET_MS)
+    .map((e) => e.atMs + SFX_SYNC_OFFSET_MS + CLICK_LAG_MS)
     .filter((t) => t >= 0);
   const keyTimesMs = events
     .filter((e) => e.kind === "key")
@@ -531,7 +539,9 @@ export async function addSfxToVideo(
  * await probeVideoSize("run.mp4"); // => { width: 1280, height: 800 }
  * @source
  */
-async function probeVideoSize(file: string): Promise<{ width: number; height: number } | undefined> {
+async function probeVideoSize(
+  file: string,
+): Promise<{ width: number; height: number } | undefined> {
   try {
     const { stdout } = await execFileAsync("ffprobe", [
       "-v",
@@ -655,7 +665,9 @@ export async function addIntroOutro(videoPath: string): Promise<string | undefin
     `[iv][outro]xfade=transition=fade:duration=${XFADE_SEC}:offset=${off2.toFixed(3)}[v]`,
   ];
   if (withAudio) {
-    filterParts.push(`[0:a]adelay=${audioDelayMs}|${audioDelayMs},apad,atrim=0:${totalSec.toFixed(3)}[a]`);
+    filterParts.push(
+      `[0:a]adelay=${audioDelayMs}|${audioDelayMs},apad,atrim=0:${totalSec.toFixed(3)}[a]`,
+    );
   }
 
   try {
