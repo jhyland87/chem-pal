@@ -4,7 +4,7 @@
  * The manifest ships the main navy logo as the default action icon; this swaps
  * to the inverted white logo whenever the browser reports a dark color scheme,
  * so the icon stays legible against the toolbar. Detection runs from the
- * extension page context (popup / side panel) because a service worker has no
+ * extension page context (popup) because a service worker has no
  * `matchMedia`; `chrome.action.setIcon` persists the chosen icon for the
  * browser session and otherwise falls back to the manifest default.
  *

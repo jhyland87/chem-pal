@@ -18,9 +18,7 @@ const FIREFOX_MIN_VERSION = "115.0";
  * target. The base is never mutated — a structured clone is returned.
  *
  * Firefox differences applied:
- *  - `side_panel` → `sidebar_action` (Firefox has no Side Panel API)
  *  - `background.service_worker` → `background.scripts` (event page, not SW)
- *  - drop the Chrome-only `sidePanel` permission
  *  - add `browser_specific_settings.gecko` (id + `strict_min_version`)
  *
  * @param base - The parsed `public/manifest.json` object.
@@ -29,8 +27,8 @@ const FIREFOX_MIN_VERSION = "115.0";
  * @example
  * ```ts
  * const ff = buildManifest(base, "firefox");
- * ff.sidebar_action; // => { default_panel: "index.html", default_title: "Chem Pal" }
- * ff.side_panel;     // => undefined
+ * ff.background; // => { scripts: ["service-worker.js"] }
+ * ff.browser_specific_settings.gecko.id; // => "chem-pal@jhyland87"
  * ```
  * @source
  */
@@ -44,20 +42,8 @@ export function buildManifest(base, target) {
   // `version_name` is Chrome-only; Firefox warns on it.
   delete manifest.version_name;
 
-  // Side panel → sidebar.
-  delete manifest.side_panel;
-  manifest.sidebar_action = {
-    default_panel: "index.html",
-    default_title: manifest.name ?? "Chem Pal",
-  };
-
   // Service worker → background script (Firefox MV3 uses an event page).
   manifest.background = { scripts: ["service-worker.js"] };
-
-  // `sidePanel` permission is Chrome-only; everything else is supported.
-  if (Array.isArray(manifest.permissions)) {
-    manifest.permissions = manifest.permissions.filter((perm) => perm !== "sidePanel");
-  }
 
   manifest.browser_specific_settings = {
     gecko: {

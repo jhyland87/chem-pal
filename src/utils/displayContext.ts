@@ -1,8 +1,8 @@
 /**
  * Helpers for detecting and switching the extension's display context.
  *
- * The same `index.html` is rendered as the toolbar popup, the side panel, and
- * (via {@link openExtensionTab}) a full browser tab. A `?view=tab` query param
+ * The same `index.html` is rendered as the toolbar popup and (via
+ * {@link openExtensionTab}) a full browser tab. A `?view=tab` query param
  * marks the tab view so the UI can resize to fill the window and hide
  * popup-only controls such as the maximize button.
  * @module displayContext
@@ -16,7 +16,7 @@ export const TAB_VIEW = "tab";
 
 /**
  * Reports whether the current document is rendered in a full browser tab
- * (as opposed to the toolbar popup or side panel), based on the `?view=tab`
+ * (as opposed to the toolbar popup), based on the `?view=tab`
  * query param set by {@link openExtensionTab}.
  * @returns `true` when running in the full-tab view, otherwise `false`.
  * @example

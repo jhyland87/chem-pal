@@ -31,7 +31,7 @@ export type ActionType = (typeof ACTION_TYPE)[keyof typeof ACTION_TYPE];
 
 /**
  * Discriminators for `chrome.runtime` messages exchanged between extension
- * contexts (pages/side panel) and the background service worker.
+ * contexts (pages) and the background service worker.
  * @source
  */
 export const MESSAGE_TYPE = {

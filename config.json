@@ -64,6 +64,13 @@
       "flash": "Search history opened"
     },
     {
+      "id": "openSearchDrawer",
+      "keys": "alt+s",
+      "description": "Open the search filters drawer",
+      "group": "Navigation",
+      "flash": "Search filters opened"
+    },
+    {
       "id": "focusGlobalFilter",
       "keys": "mod+f",
       "description": "Focus the global filter on the results panel",

@@ -4,7 +4,7 @@
     "description": "The extension name shown in the browser and web store."
   },
   "app_description": {
-    "message": "Search and compare laboratory chemical product listings across supported supplier websites from a side panel.",
+    "message": "Search and compare laboratory chemical product listings across supported supplier websites.",
     "description": "The extension description shown in the browser and web store."
   },
   "app_title": {
@@ -775,6 +775,7 @@
   "hotkeys_desc_clearandretrysearch": { "message": "Clear cache, clear results, and re-run the current search", "description": "Hotkey description." },
   "hotkeys_desc_gotosearch": { "message": "Go to the search panel", "description": "Hotkey description." },
   "hotkeys_desc_openhistory": { "message": "Open search history in the side drawer", "description": "Hotkey description." },
+  "hotkeys_desc_opensearchdrawer": { "message": "Open the search filters drawer", "description": "Hotkey description." },
   "hotkeys_desc_focusglobalfilter": { "message": "Focus the global filter on the results panel", "description": "Hotkey description." },
   "hotkeys_desc_togglecolumnfilters": { "message": "Toggle the column filters in the results table", "description": "Hotkey description." },
   "hotkeys_desc_abortsearch": { "message": "Abort the currently-running search", "description": "Hotkey description." },
@@ -786,6 +787,7 @@
   "hotkeys_desc_konami": { "message": "Say hello", "description": "Hotkey description." },
   "hotkeys_flash_clearandretrysearch": { "message": "Cache cleared, search re-triggered", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_openhistory": { "message": "Search history opened", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_opensearchdrawer": { "message": "Search filters opened", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_abortsearch": { "message": "Search aborted", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_expandallrows": { "message": "All rows expanded", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_collapseallrows": { "message": "All rows collapsed", "description": "Hotkey status-bar flash." },

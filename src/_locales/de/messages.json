@@ -4,7 +4,7 @@
     "description": "The extension name shown in the browser and web store."
   },
   "app_description": {
-    "message": "Durchsuchen und vergleichen Sie Angebote für Laborchemikalien auf unterstützten Anbieter-Websites über ein Seitenpanel.",
+    "message": "Durchsuchen und vergleichen Sie Angebote für Laborchemikalien auf unterstützten Anbieter-Websites.",
     "description": "The extension description shown in the browser and web store."
   },
   "app_title": {
@@ -775,6 +775,7 @@
   "hotkeys_desc_clearandretrysearch": { "message": "Cache leeren, Ergebnisse löschen und die aktuelle Suche erneut ausführen", "description": "Hotkey description." },
   "hotkeys_desc_gotosearch": { "message": "Zum Suchpanel wechseln", "description": "Hotkey description." },
   "hotkeys_desc_openhistory": { "message": "Suchverlauf im Seitenpanel öffnen", "description": "Hotkey description." },
+  "hotkeys_desc_opensearchdrawer": { "message": "Suchfilter im Seitenpanel öffnen", "description": "Hotkey description." },
   "hotkeys_desc_focusglobalfilter": { "message": "Den globalen Filter im Ergebnispanel fokussieren", "description": "Hotkey description." },
   "hotkeys_desc_togglecolumnfilters": { "message": "Spaltenfilter in der Ergebnistabelle umschalten", "description": "Hotkey description." },
   "hotkeys_desc_abortsearch": { "message": "Die aktuell laufende Suche abbrechen", "description": "Hotkey description." },
@@ -786,6 +787,7 @@
   "hotkeys_desc_konami": { "message": "Hallo sagen", "description": "Hotkey description." },
   "hotkeys_flash_clearandretrysearch": { "message": "Cache geleert, Suche erneut ausgelöst", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_openhistory": { "message": "Suchverlauf geöffnet", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_opensearchdrawer": { "message": "Suchfilter geöffnet", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_abortsearch": { "message": "Suche abgebrochen", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_expandallrows": { "message": "Alle Zeilen ausgeklappt", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_collapseallrows": { "message": "Alle Zeilen eingeklappt", "description": "Hotkey status-bar flash." },
