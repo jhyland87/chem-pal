@@ -997,6 +997,24 @@ export function isPubChemCID(value: unknown): value is PubChemCID {
 }
 
 /**
+ * Normalizes a value already validated by {@link isPubChemCID} into the branded
+ * {@link PubChemCID} number, coercing a numeric string to its number form. The
+ * assertion is unavoidable and lives here as the single sanctioned construction
+ * point: a nominal brand can't be minted from `Number()` without one.
+ * @param value - A number or numeric string already confirmed by {@link isPubChemCID}.
+ * @returns The CID as a branded number.
+ * @example
+ * ```typescript
+ * if (isPubChemCID(raw)) product.pubchemId = toPubChemCID(raw);
+ * toPubChemCID("11413"); // 11413
+ * ```
+ * @source
+ */
+export function toPubChemCID(value: number | string): PubChemCID {
+  return Number(value) as PubChemCID;
+}
+
+/**
  * Type guard to validate if a value is an InChIKey.
  * An InChIKey is three hyphen-separated uppercase-letter blocks of 14, 10, and 1 characters.
  *

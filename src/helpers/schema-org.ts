@@ -386,13 +386,14 @@ export class SchemaOrgData {
         value.forEach(visit);
         return;
       }
-      if (isPlainObject(value)) {
-        if (isSchemaContext(value["@context"])) {
-          found.push(value); // take the node whole; don't descend into it
-          return;
-        }
-        for (const key of Object.keys(value)) visit(value[key]);
+      if (!isPlainObject(value)) {
+        return;
       }
+      if (isSchemaContext(value["@context"])) {
+        found.push(value); // take the node whole; don't descend into it
+        return;
+      }
+      for (const key of Object.keys(value)) visit(value[key]);
     };
     visit(data as JsonValue);
     return new SchemaOrgData(found);
@@ -498,12 +499,13 @@ export class SchemaOrgData {
         value.forEach(visit);
         return;
       }
-      if (isPlainObject(value)) {
-        if ("@type" in value && (type === undefined || typeList(value).includes(type))) {
-          found.push(value);
-        }
-        for (const key of Object.keys(value)) visit(value[key]);
+      if (!isPlainObject(value)) {
+        return;
       }
+      if ("@type" in value && (type === undefined || typeList(value).includes(type))) {
+        found.push(value);
+      }
+      for (const key of Object.keys(value)) visit(value[key]);
     };
     this.nodes.forEach(visit);
     return found;

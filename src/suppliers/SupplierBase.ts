@@ -1802,21 +1802,19 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
     const cached = await this.cache.getCachedQueryEntry(key);
     this.logger.debug("queryProductsWithCache: cache hit:", !!cached, "key:", key);
     if (cached) {
-      // If the cached limit is less than the requested limit, invalidate the cache
-      if (
-        typeof cached.__cacheMetadata.limit === "number" &&
-        cached.__cacheMetadata.limit < limit
-      ) {
-        this.logger.debug("Invalidating query cache due to insufficient limit", {
-          cachedLimit: cached.__cacheMetadata.limit,
-          requestedLimit: limit,
-        });
-        await deleteSupplierQueryCacheEntry(key);
-      } else {
+      const cachedLimit = cached.__cacheMetadata.limit;
+      const insufficientLimit = typeof cachedLimit === "number" && cachedLimit < limit;
+      if (!insufficientLimit) {
         this.logger.debug("Returning cached query results");
         // Re-initialize product builders from cached processed data
         return ProductBuilder.createFromCache<T>(this.baseURL, cached.data.slice(0, limit));
       }
+      // Cached entry was built with a smaller limit than requested — drop it and re-query below.
+      this.logger.debug("Invalidating query cache due to insufficient limit", {
+        cachedLimit,
+        requestedLimit: limit,
+      });
+      await deleteSupplierQueryCacheEntry(key);
     }
 
     // If not in cache, perform the actual query. Run setup first so any

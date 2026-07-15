@@ -23,6 +23,7 @@ import {
   isShippingRange,
   isSmiles,
   isUOM,
+  toPubChemCID,
 } from "@/utils/typeGuards/common";
 import { isAvailability, isProductImage, isValidVariant } from "@/utils/typeGuards/productbuilder";
 
@@ -183,13 +184,16 @@ export class ProductBuilder<T extends Product> {
       },
     };
 
+    // `Object.entries` widens each key to `string`; narrow it back to a dispatch
+    // key via `in` (dispatch is keyed by every `keyof Product`) so no cast is needed.
+    const isProductKey = (key: string): key is keyof Product => key in dispatch;
+
     for (const [key, value] of Object.entries(data)) {
-      const handler = dispatch[key as keyof Product];
-      if (handler) {
-        handler(value);
-      } else {
+      if (!isProductKey(key)) {
         this.logger.warn("setData| dropping unsupported key", { key, value });
+        continue;
       }
+      dispatch[key](value);
     }
     return this;
   }
@@ -229,8 +233,10 @@ export class ProductBuilder<T extends Product> {
     return (
       typeof value === "object" &&
       value !== null &&
-      typeof (value as { score?: unknown }).score === "number" &&
-      typeof (value as { idx?: unknown }).idx === "number"
+      "score" in value &&
+      typeof value.score === "number" &&
+      "idx" in value &&
+      typeof value.idx === "number"
     );
   }
 
@@ -1198,8 +1204,7 @@ export class ProductBuilder<T extends Product> {
    */
   setID(id: unknown): ProductBuilder<T> {
     if (typeof id === "number" || typeof id === "string") {
-      // T["id"] narrows the generic product's id type; the number|string input is the data-model alias for it.
-      this.product.id = id as T["id"];
+      this.product.id = id;
     } else if (id != null && this.showFailedValidation) {
       this.logger.warn("setID| Invalid ID value", { id, builder: this });
     }
@@ -1344,7 +1349,7 @@ export class ProductBuilder<T extends Product> {
    */
   setPubchemId(pubchemId: unknown): ProductBuilder<T> {
     if (isPubChemCID(pubchemId)) {
-      this.product.pubchemId = Number(pubchemId) as PubChemCID;
+      this.product.pubchemId = toPubChemCID(pubchemId);
     } else if (
       pubchemId !== undefined &&
       pubchemId !== null &&
@@ -1859,8 +1864,10 @@ export class ProductBuilder<T extends Product> {
       (entry): entry is { name: string; value: string } =>
         typeof entry === "object" &&
         entry !== null &&
-        typeof (entry as { name?: unknown }).name === "string" &&
-        typeof (entry as { value?: unknown }).value === "string",
+        "name" in entry &&
+        typeof entry.name === "string" &&
+        "value" in entry &&
+        typeof entry.value === "string",
     );
     if (valid.length > 0) {
       this.product.attributes = valid;
