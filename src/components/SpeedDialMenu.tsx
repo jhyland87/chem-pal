@@ -38,9 +38,11 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
   const [aboutOpen, setAboutOpen] = useState(false);
 
   /**
-   * Handles clearing all search results.
-   * Updates the session storage and triggers a settings update.
-   *
+   * Handles clearing all search results. Clears the persisted results, empties
+   * the in-memory results, and also resets the search query text so the search
+   * box the user returns to isn't left showing the previous query. Clearing the
+   * results bounces the app back to the home search panel, whose input is
+   * controlled by `searchFilters.titleQuery`, so resetting that empties the box.
    * @param event - The click event
    * @source
    */
@@ -56,6 +58,8 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
     appContext.setUserSettings({ ...appContext.userSettings });
 
     appContext.setSearchResults([]);
+    // Reset the query text so the home search box doesn't keep the old query.
+    appContext.setSearchFilters({ ...appContext.searchFilters, titleQuery: "" });
   };
 
   /**

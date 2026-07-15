@@ -6,12 +6,15 @@ import { expect, test } from "./fixtures";
 import {
   clearGroupHighlight,
   clearHighlight,
+  clearSpotlight,
   closeDemoPopover,
+  fireHotkeyEvent,
   highlight,
   highlightGroup,
   showDemoPopover,
   smoothScrollIntoView,
   smoothScrollToTop,
+  spotlight,
   typeInto,
 } from "./helpers";
 import { seedPriceHistoryFromResults } from "./seedPriceHistory";
@@ -107,6 +110,12 @@ test(
     await closeDemoPopover(page);
     await clearHighlight(resultsTable);
 
+    // Give every result series a few backdated points now — before the "expand
+    // all rows" demo below — so every row's detail panel shows a real
+    // price-history sparkline for its product and variants.
+    const seeded = await seedPriceHistoryFromResults(page, { minPoints: 3, maxPoints: 5 });
+    console.log(`[demo] Seeded price history: ${seeded.series} series, ${seeded.points} points`);
+
     // --- Shrink the display font (Settings → Display → Small) ---
     const settingsBtn = page.getByRole("button", { name: "Open options" });
     await highlight(settingsBtn);
@@ -137,6 +146,44 @@ test(
     // Close the drawer.
     await page.mouse.click(30, 400);
     await page.waitForTimeout(700);
+
+    // --- Keyboard shortcuts: open the help modal, find the "expand all rows"
+    // shortcut, then use it to expand every row and collapse them again. Done
+    // after shrinking the font so more rows fit on screen at once. ---
+    await page.keyboard.press("?"); // Shift+/ opens the hotkey help modal
+    const hotkeyTitle = page.getByRole("heading", { name: "Keyboard Shortcuts" });
+    await expect(hotkeyTitle, "Hotkey help modal should open").toBeVisible({ timeout: 5_000 });
+    await page.waitForTimeout(700);
+    await showDemoPopover(page, hotkeyTitle, "ChemPal has lots of handy keyboard shortcuts");
+    await page.waitForTimeout(1900);
+    await closeDemoPopover(page);
+
+    // Filter the shortcut list down to the "expand all" shortcut.
+    const hotkeySearch = page.getByPlaceholder("Search shortcuts…");
+    await expect(hotkeySearch, "Hotkey search box should be visible").toBeVisible({
+      timeout: 5_000,
+    });
+    await highlight(hotkeySearch);
+    await typeInto(hotkeySearch, "expand");
+    await page.waitForTimeout(800);
+    const expandRow = page.getByText("Expand all rows in the results table");
+    await expect(expandRow, "Expand-all shortcut row should be visible").toBeVisible({
+      timeout: 5_000,
+    });
+    await highlight(expandRow);
+    await showDemoPopover(page, expandRow, "This one expands every visible row at once");
+    await page.waitForTimeout(2200);
+    await closeDemoPopover(page);
+
+    // Close the modal, then fire the shortcut — showing the keys — to expand
+    // every row, hold a moment, and collapse them again.
+    await page.keyboard.press("Escape");
+    await expect(hotkeyTitle, "Hotkey help modal should close").toBeHidden({ timeout: 5_000 });
+    await page.waitForTimeout(700);
+    await fireHotkeyEvent(page, "chempal:expand-all-rows", ["⌘", "⇧", "E"]);
+    await page.waitForTimeout(3000);
+    await fireHotkeyEvent(page, "chempal:collapse-all-rows", ["⌘", "⇧", "C"]);
+    await page.waitForTimeout(1500);
 
     // --- Column visibility: make sure PubChem + CAS are shown, then point them out ---
     const columnsButton = page.getByRole("button", { name: "Show or hide columns" });
@@ -228,16 +275,42 @@ test(
     await filterButton.click();
     await page.waitForTimeout(800);
 
-    // Give the just-recorded price series 2–4 points each, then expand a product
-    // to reveal the price-history sparkline in its detail panel.
-    const seeded = await seedPriceHistoryFromResults(page);
-    console.log(`[demo] Seeded price history: ${seeded.series} series, ${seeded.points} points`);
-
+    // Expand a product to reveal its detail panel: the product/variant name
+    // links, the price-history sparkline, and the per-variant trends.
     const priceHistoryLabel = await expandFirstProductDetail(page);
-    await priceHistoryLabel.scrollIntoViewIfNeeded();
+
+    // Right after expanding: the product name is a link — clicking it opens that
+    // product in a new tab.
+    const firstProductName = resultsTable.locator("tbody tr td:nth-child(2) a").first();
+    await firstProductName.scrollIntoViewIfNeeded();
+    await highlight(firstProductName);
+    await spotlight(page, firstProductName);
+    await showDemoPopover(
+      page,
+      firstProductName,
+      "Click a product name to open it in a new browser tab",
+    );
+    await page.waitForTimeout(2600);
+    await closeDemoPopover(page);
+    await clearSpotlight(page);
+
+    // Variant names are links too — clicking one opens that variant in a new tab.
+    const firstVariantName = page.locator(".variant-name a").first();
+    await firstVariantName.scrollIntoViewIfNeeded();
+    await highlight(firstVariantName);
+    await spotlight(page, firstVariantName);
+    await showDemoPopover(
+      page,
+      firstVariantName,
+      "Click a variant name to open that variant in a new tab",
+    );
+    await page.waitForTimeout(2600);
+    await closeDemoPopover(page);
+    await clearSpotlight(page);
 
     // Product-level: the sparkline + percentage next to the label — the average
     // trend across the product and all its variants.
+    await priceHistoryLabel.scrollIntoViewIfNeeded();
     const avgTrend = priceHistoryLabel.locator(
       "xpath=following-sibling::span[contains(@class,'detail-value')]",
     );
@@ -460,6 +533,50 @@ test(
     await closeDemoPopover(page);
     await clearHighlight(resultsTable);
     await page.screenshot({ path: path.join(screenshotDir, "walkthrough-supplier-search.png") });
+
+    // --- Finish on the quick-actions speed dial: reveal it in the corner, point
+    // out the actions, then Clear Results to land back on the search page. ---
+    const viewport = page.viewportSize();
+    if (viewport) {
+      // Bring the cursor to the bottom-right corner to reveal the speed dial.
+      await page.mouse.move(viewport.width - 6, viewport.height - 6);
+      const speedDialFab = page.getByRole("button", { name: "SpeedDial Menu" });
+      await expect(speedDialFab, "Speed dial should slide into the corner").toBeVisible({
+        timeout: 5_000,
+      });
+      // Hovering the FAB expands it (and keeps it visible).
+      await speedDialFab.hover();
+      const clearResultsAction = page.getByRole("menuitem", { name: "Clear Results" });
+      await expect(clearResultsAction, "Speed dial should expand its actions").toBeVisible({
+        timeout: 5_000,
+      });
+      await page.waitForTimeout(700);
+      await showDemoPopover(
+        page,
+        speedDialFab,
+        "Quick actions live here — clear results, clear the cache, toggle the theme, and more",
+      );
+      await page.waitForTimeout(2600);
+      await closeDemoPopover(page);
+
+      // Clear the results — this drops us back to the search page, a clean finish.
+      await highlight(clearResultsAction);
+      await showDemoPopover(
+        page,
+        clearResultsAction,
+        "Clearing the results takes you back to the search page",
+      );
+      await page.waitForTimeout(1800);
+      await closeDemoPopover(page);
+      await clearResultsAction.click();
+
+      // Back on the search home screen — and the query box is cleared too.
+      await expect(searchInput, "Search box should be back after clearing results").toBeVisible({
+        timeout: 8_000,
+      });
+      await expect(searchInput, "Search box should be empty after clearing results").toHaveValue("");
+      await page.waitForTimeout(1500);
+    }
 
     // Final beauty shot for the deck.
     await page.screenshot({ path: path.join(screenshotDir, "walkthrough-results.png") });
