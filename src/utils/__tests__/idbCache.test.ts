@@ -8,6 +8,7 @@ import {
   getPriceSeries,
   getPriceSeriesByProduct,
   getSearchResults,
+  getSearchResultsRecord,
   getSupplierProductDataCacheEntry,
   putPriceSeries,
   putSupplierProductDataCacheEntry,
@@ -79,6 +80,37 @@ describe("setSearchResults duplicate detection", () => {
     // the regression is visible rather than masked by a silent dedupe.
     expect(warn).toHaveBeenCalled();
     expect((await getSearchResults()).map((p) => p.id)).toEqual(["P1", "P2", "P1", "P2"]);
+  });
+});
+
+describe("search_results query round-trip", () => {
+  beforeEach(async () => {
+    await clearSearchResults({ notify: false });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("persists the query alongside the results and reads both back", async () => {
+    await setSearchResults([product({ id: "P1", _id: 0 })], "acetone");
+
+    const record = await getSearchResultsRecord();
+    expect(record.query).toBe("acetone");
+    expect(record.data.map((p) => p.id)).toEqual(["P1"]);
+  });
+
+  it("returns an undefined query when results are stored without one", async () => {
+    await setSearchResults([product({ id: "P1", _id: 0 })]);
+
+    const record = await getSearchResultsRecord();
+    expect(record.query).toBeUndefined();
+    expect(record.data).toHaveLength(1);
+  });
+
+  it("returns empty data and no query when nothing is stored", async () => {
+    const record = await getSearchResultsRecord();
+    expect(record).toEqual({ data: [], query: undefined });
   });
 });
 

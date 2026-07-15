@@ -14,7 +14,7 @@ import {
   addSearchHistoryEntry,
   clearSearchResults,
   getSearchHistory,
-  getSearchResults,
+  getSearchResultsRecord,
   setSearchResults as idbSetSearchResults,
   updateSearchHistoryResultCount as idbUpdateHistoryResultCount,
 } from "@/utils/idbCache";
@@ -66,11 +66,22 @@ export function updateColumnFilterFromResult(config: ColumnFilterConfig, result:
 }
 
 /**
- * Persists search results to cstorage.session, logging (but not throwing on) errors.
+ * Persists search results (and the query that produced them) to IndexedDB,
+ * logging (but not throwing on) errors.
+ * @param results - The products to persist.
+ * @param query - The originating search query, stored alongside the results so the
+ * header label survives a session-storage loss. Omit when re-persisting without a
+ * query context.
+ * @returns A promise that resolves once the write settles (or is swallowed on error).
+ * @example
+ * ```ts
+ * await saveResultsToSession(finalResults, "acetone");
+ * ```
+ * @source
  */
-export async function saveResultsToSession(results: Product[]): Promise<void> {
+export async function saveResultsToSession(results: Product[], query?: string): Promise<void> {
   try {
-    await idbSetSearchResults(results);
+    await idbSetSearchResults(results, query);
   } catch (error) {
     logger.warn("Failed to save search results to IndexedDB:", { error });
   }
@@ -299,10 +310,11 @@ export function useSearch() {
         // the previous search's rows into the table for a frame before the new
         // search's setSearchResults([]) clears them. Read both in parallel so
         // we don't add a serial round-trip to the hot path.
-        const [cachedResults, sessionData] = await Promise.all([
-          getSearchResults(),
+        const [cachedRecord, sessionData] = await Promise.all([
+          getSearchResultsRecord(),
           cstorage.session.get([CACHE.QUERY, CACHE.SEARCH_IS_NEW_SEARCH]),
         ]);
+        const cachedResults = cachedRecord.data;
 
         const hasPendingSearch = Boolean(
           sessionData[CACHE.SEARCH_IS_NEW_SEARCH] &&
@@ -329,10 +341,15 @@ export function useSearch() {
             resultCount: cachedResults.length,
             status: false, // Don't show status when loading from storage
           }));
-          // Restore the query label shown in the results header so it
-          // survives a popup reopen.
-          if (typeof sessionData[CACHE.QUERY] === "string") {
-            setExecutedQuery(sessionData[CACHE.QUERY]);
+          // Restore the query label shown in the results header so it survives a
+          // popup reopen. Prefer the query persisted alongside the results (always
+          // in sync with them); fall back to the session copy for legacy rows
+          // written before the query was stored in IndexedDB.
+          const restoredQuery =
+            cachedRecord.query ??
+            (typeof sessionData[CACHE.QUERY] === "string" ? sessionData[CACHE.QUERY] : "");
+          if (restoredQuery) {
+            setExecutedQuery(restoredQuery);
           }
         }
 
@@ -543,7 +560,7 @@ export function useSearch() {
           void recordProductPrices(finalResults, appContext.userSettings);
 
           // Save to Chrome storage and update history with final count
-          await saveResultsToSession(finalResults);
+          await saveResultsToSession(finalResults, query);
           await updateHistoryResultCount(historyTimestamp, finalResults.length);
 
           logger.debug("Fetched results", {
@@ -601,7 +618,7 @@ export function useSearch() {
 
                 // Persist and update history live (fire and forget)
                 void (async () => {
-                  await saveResultsToSession(indexedResults);
+                  await saveResultsToSession(indexedResults, query);
                   await updateHistoryResultCount(historyTimestamp, newResults.length);
                 })();
 
@@ -743,9 +760,10 @@ export function useSearch() {
     } catch (error) {
       logger.warn("Failed to persist excluded product:", { error });
     }
-    // Persist the updated results so a reload doesn't resurrect the row.
-    await saveResultsToSession(nextResults);
-  }, []);
+    // Persist the updated results so a reload doesn't resurrect the row. Keep the
+    // current query so removing a row doesn't drop the header label.
+    await saveResultsToSession(nextResults, executedQuery);
+  }, [executedQuery]);
 
   const handleStopSearch = useCallback(() => {
     logger.debug("triggering abort..");

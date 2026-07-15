@@ -74,7 +74,6 @@ import {
   ProductDetailPanelCell,
   ResultsCountDisplay,
   ResultsHeaderContainer,
-  SearchedQueryLabel,
   SearchResultsTable,
   StickyHeaderCell,
   StyledTableBody,
@@ -518,14 +517,6 @@ export default function ResultsTable({
                 <ArrowBackIcon />
               </BackButton>
             )}
-            {executedQuery && (
-              <SearchedQueryLabel
-                variant="body2"
-                title={i18n("results_searched_for", [executedQuery])}
-              >
-                {executedQuery}
-              </SearchedQueryLabel>
-            )}
           </div>
           <div className={resultStyles["header-right"]}>
             {/* Advanced search: opens the drawer's Search tab (mirrors the home
@@ -581,10 +572,12 @@ export default function ResultsTable({
         {/* <div className="results-title">Search Results ({searchResults.length} found)</div> */}
 
         <ResultsHeaderContainer>
-          <ResultsCountDisplay>
-            {filteredRowCount === totalRowCount
-              ? i18n("results_count", [String(filteredRowCount)])
-              : i18n("results_count_filtered", [String(filteredRowCount), String(totalRowCount)])}
+          {/* Show the originating query here; the result count lives in the
+              pagination footer below. */}
+          <ResultsCountDisplay
+            title={executedQuery ? i18n("results_searched_for", [executedQuery]) : undefined}
+          >
+            {executedQuery ? i18n("results_query", [executedQuery]) : ""}
           </ResultsCountDisplay>
           {/* Only show the global filter if there are results. Based on
               searchResults (not the filtered row model) so the input doesn't

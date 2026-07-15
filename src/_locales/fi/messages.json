@@ -343,6 +343,10 @@
     "message": "Haettiin: $query$",
     "placeholders": { "query": { "content": "$1" } }
   },
+  "results_query": {
+    "message": "Haku: $query$",
+    "placeholders": { "query": { "content": "$1" } }
+  },
   "results_count": {
     "message": "Tuloksia: $count$",
     "placeholders": { "count": { "content": "$1" } }

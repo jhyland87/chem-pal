@@ -34,6 +34,7 @@ interface ChemPalDBSchema extends DBSchema {
     value: {
       id: string;
       data: Product[];
+      query?: string;
     };
   };
   search_history: {
@@ -177,6 +178,30 @@ export async function getSearchResults(): Promise<Product[]> {
 }
 
 /**
+ * Reads the persisted `search_results` row as a whole, returning both the product
+ * `data` and the `query` that produced it. Use this (instead of {@link getSearchResults})
+ * when the caller also needs the originating query — e.g. to rehydrate the results
+ * header label so it stays in sync with the persisted results.
+ * @returns The persisted results and query. `data` is `[]` and `query` is `undefined`
+ * when no row exists (or the row predates the `query` field).
+ * @example
+ * ```ts
+ * await getSearchResultsRecord(); // { data: [{ id: "A", ... }], query: "acetone" }
+ * ```
+ * @source
+ */
+export async function getSearchResultsRecord(): Promise<{ data: Product[]; query?: string }> {
+  try {
+    const db = await getDB();
+    const record = await db.get(IDB_STORE.SEARCH_RESULTS, "current");
+    return { data: record?.data ?? [], query: record?.query };
+  } catch (error) {
+    logger.error("Failed to get search results record from IndexedDB", { error });
+    return { data: [] };
+  }
+}
+
+/**
  * Derives a stable per-product identity used to detect duplicates, independent
  * of the positional `_id`. Prefers the supplier-stable `cacheKey`, then the real
  * product `id`, and finally the `supplier`+`url` pair.
@@ -225,7 +250,22 @@ export function findDuplicateProductIds(results: Product[]): string[] {
   return [...duplicates];
 }
 
-export async function setSearchResults(results: Product[]): Promise<void> {
+/**
+ * Persists the current search results (and the query that produced them) to the
+ * single `"current"` `search_results` row. Storing the `query` alongside `data`
+ * keeps the two in lockstep, so the results header can rehydrate the query even
+ * when the transient session copy is gone. Duplicate products are logged (not
+ * removed); an empty result set dispatches {@link IDB_SEARCH_RESULTS_CLEARED}.
+ * @param results - The products to persist.
+ * @param query - The originating search query. Omitted for callers with no query
+ * context; stored as `undefined` in that case.
+ * @example
+ * ```ts
+ * await setSearchResults([{ id: "A", ... }], "acetone");
+ * ```
+ * @source
+ */
+export async function setSearchResults(results: Product[], query?: string): Promise<void> {
   try {
     const db = await getDB();
     // Detect (do NOT silently remove) duplicates before persisting. The same
@@ -239,7 +279,7 @@ export async function setSearchResults(results: Product[]): Promise<void> {
         total: results.length,
       });
     }
-    await db.put(IDB_STORE.SEARCH_RESULTS, { id: "current", data: results });
+    await db.put(IDB_STORE.SEARCH_RESULTS, { id: "current", data: results, query });
     if (results.length === 0) {
       emitSearchResultsCleared();
     }

@@ -420,6 +420,14 @@
       }
     }
   },
+  "results_query": {
+    "message": "Запрос: $query$",
+    "placeholders": {
+      "query": {
+        "content": "$1"
+      }
+    }
+  },
   "results_count": {
     "message": "Результаты: $count$",
     "placeholders": {
