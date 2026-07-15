@@ -128,6 +128,7 @@ type AppAction =
   | { type: typeof APP_ACTION.SET_PANEL; panel: PANEL }
   | { type: typeof APP_ACTION.SET_SPEED_DIAL_VISIBILITY; visible: boolean }
   | { type: typeof APP_ACTION.LOAD_FROM_STORAGE; data: Partial<AppState> }
+  | { type: typeof APP_ACTION.HYDRATE_SETTINGS; settings: UserSettings }
   | { type: typeof APP_ACTION.SET_DRAWER_TAB; tab: DRAWER_INDEX }
   | { type: typeof APP_ACTION.SET_SELECTED_SUPPLIERS; suppliers: SupplierClassName[] }
   | { type: typeof APP_ACTION.SET_BOOKMARKS_FOLDER_ID; id: string | null };
@@ -277,6 +278,22 @@ function App() {
             ...currentState,
             ...action.data,
           };
+
+        // Re-hydrates user settings when they change in another extension surface
+        // (e.g. the options page writes user_settings while this popup is open).
+        // Unlike UPDATE_SETTINGS this does NOT write back to storage — doing so
+        // would echo the change and loop. Early-return when nothing actually
+        // changed so the surface that made the edit doesn't re-render on its own
+        // storage echo. The currency-rate and locale effects key off
+        // userSettings.currency/.language, so they only re-run on real changes.
+        case APP_ACTION.HYDRATE_SETTINGS: {
+          const current = currentState.userSettings;
+          if (current && diff(current, action.settings).length === 0) return currentState;
+          return {
+            ...currentState,
+            userSettings: action.settings,
+          };
+        }
 
         // Opens a specific drawer tab or closes the drawer (tab = -1).
         // Used by setDrawerTab() for direct tab selection and toggleDrawer()
@@ -490,9 +507,10 @@ function App() {
     await loadFromStorage();
   }, [loadFromStorage]);
 
-  // Debug watcher: log decoded values when any of the watched storage keys change.
-  // cstorage.onChanged auto-decodes LZ envelopes, so change.newValue / oldValue
-  // are already the real objects — no manual decompression required.
+  // Watch shared storage so edits made in another extension surface (the options
+  // page, or another open popup/tab) reflect live here. cstorage.onChanged
+  // auto-decodes LZ envelopes, so change.newValue / oldValue are already the real
+  // objects — no manual decompression required.
   useEffect(() => {
     const watchedKeys = new Set<string>([CACHE.USER_SETTINGS, CACHE.SELECTED_SUPPLIERS]);
 
@@ -507,12 +525,19 @@ function App() {
           newValue: change.newValue,
           diff: diff(change.oldValue, change.newValue),
         });
+
+        // Re-hydrate settings on external writes so the UI (theme, font size,
+        // currency, columns) updates live. The reducer skips no-op changes, so
+        // this surface's own writes echo back harmlessly.
+        if (key === CACHE.USER_SETTINGS && isValidUserSettings(change.newValue)) {
+          dispatch({ type: APP_ACTION.HYDRATE_SETTINGS, settings: change.newValue });
+        }
       }
     };
 
     cstorage.onChanged.addListener(listener);
     return () => cstorage.onChanged.removeListener(listener);
-  }, []);
+  }, [dispatch]);
 
   // Context-menu search, already-open-tab path. The service worker writes the
   // selection to session storage (CACHE.QUERY + CACHE.SEARCH_IS_NEW_SEARCH) and

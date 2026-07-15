@@ -16,6 +16,10 @@
   "side_panel": {
     "default_path": "index.html"
   },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
   "default_locale": "en",
   "permissions": ["sidePanel", "tabs", "storage", "bookmarks", "cookies", "contextMenus"],
   "background": {
