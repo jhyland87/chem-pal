@@ -176,6 +176,7 @@ const DrawerSearchPanel: FC<{
       {/* Title / Search Query */}
       <Box sx={{ p: "12px 16px" }}>
         <TextField
+          autoFocus
           fullWidth
           label={i18n("drawer_product_name_label")}
           size="small"

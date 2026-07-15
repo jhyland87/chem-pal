@@ -543,7 +543,7 @@ function App() {
   // selection to session storage (CACHE.QUERY + CACHE.SEARCH_IS_NEW_SEARCH) and
   // focuses this tab. A fresh tab picks that up via the useSearch mount effect;
   // an already-mounted app doesn't, so react to the storage change here.
-  // Gated to the full-tab view so the side panel/popup don't also fire.
+  // Gated to the full-tab view so the popup doesn't also fire.
   useEffect(() => {
     if (!isTabView()) return;
 
@@ -650,6 +650,9 @@ function App() {
       },
       openHistory: () => {
         dispatch({ type: APP_ACTION.SET_DRAWER_TAB, tab: DRAWER_INDEX.HISTORY });
+      },
+      openSearchDrawer: () => {
+        dispatch({ type: APP_ACTION.SET_DRAWER_TAB, tab: DRAWER_INDEX.SEARCH });
       },
       focusGlobalFilter: () => {
         window.dispatchEvent(new CustomEvent(HotkeyEvent.FOCUS_GLOBAL_FILTER));

@@ -4,7 +4,7 @@
     "description": "The extension name shown in the browser and web store."
   },
   "app_description": {
-    "message": "साइड पैनल से समर्थित आपूर्तिकर्ता वेबसाइटों पर प्रयोगशाला रासायनिक उत्पादों की लिस्टिंग खोजें और तुलना करें।",
+    "message": "समर्थित आपूर्तिकर्ता वेबसाइटों पर प्रयोगशाला रासायनिक उत्पादों की लिस्टिंग खोजें और तुलना करें।",
     "description": "The extension description shown in the browser and web store."
   },
   "app_title": {
@@ -760,6 +760,7 @@
   "hotkeys_desc_clearandretrysearch": { "message": "कैश साफ़ करें, परिणाम साफ़ करें, और वर्तमान खोज पुनः चलाएँ", "description": "Hotkey description." },
   "hotkeys_desc_gotosearch": { "message": "खोज पैनल पर जाएँ", "description": "Hotkey description." },
   "hotkeys_desc_openhistory": { "message": "साइड ड्रॉअर में खोज इतिहास खोलें", "description": "Hotkey description." },
+  "hotkeys_desc_opensearchdrawer": { "message": "साइड ड्रॉअर में खोज फ़िल्टर खोलें", "description": "Hotkey description." },
   "hotkeys_desc_focusglobalfilter": { "message": "परिणाम पैनल पर वैश्विक फ़िल्टर पर फ़ोकस करें", "description": "Hotkey description." },
   "hotkeys_desc_togglecolumnfilters": { "message": "परिणाम तालिका में कॉलम फ़िल्टर टॉगल करें", "description": "Hotkey description." },
   "hotkeys_desc_abortsearch": { "message": "वर्तमान में चल रही खोज रोकें", "description": "Hotkey description." },
@@ -771,6 +772,7 @@
   "hotkeys_desc_konami": { "message": "नमस्ते कहें", "description": "Hotkey description." },
   "hotkeys_flash_clearandretrysearch": { "message": "कैश साफ़ किया गया, खोज पुनः शुरू की गई", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_openhistory": { "message": "खोज इतिहास खोला गया", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_opensearchdrawer": { "message": "खोज फ़िल्टर खोले गए", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_abortsearch": { "message": "खोज रोकी गई", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_expandallrows": { "message": "सभी पंक्तियाँ विस्तृत की गईं", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_collapseallrows": { "message": "सभी पंक्तियाँ संक्षिप्त की गईं", "description": "Hotkey status-bar flash." },

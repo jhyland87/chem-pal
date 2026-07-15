@@ -4,7 +4,7 @@
     "description": "The extension name shown in the browser and web store."
   },
   "app_description": {
-    "message": "Hae ja vertaile laboratoriokemikaalien tuotelistauksia tuetuilta toimittajien verkkosivustoilta sivupaneelista.",
+    "message": "Hae ja vertaile laboratoriokemikaalien tuotelistauksia tuetuilta toimittajien verkkosivustoilta.",
     "description": "The extension description shown in the browser and web store."
   },
   "app_title": {
@@ -775,6 +775,7 @@
   "hotkeys_desc_clearandretrysearch": { "message": "Tyhjennä välimuisti ja tulokset ja suorita nykyinen haku uudelleen", "description": "Hotkey description." },
   "hotkeys_desc_gotosearch": { "message": "Siirry hakupaneeliin", "description": "Hotkey description." },
   "hotkeys_desc_openhistory": { "message": "Avaa hakuhistoria sivupaneelissa", "description": "Hotkey description." },
+  "hotkeys_desc_opensearchdrawer": { "message": "Avaa hakusuodattimet sivupaneelissa", "description": "Hotkey description." },
   "hotkeys_desc_focusglobalfilter": { "message": "Kohdista yleissuodattimeen tulospaneelissa", "description": "Hotkey description." },
   "hotkeys_desc_togglecolumnfilters": { "message": "Näytä/piilota sarakesuodattimet tulostaulukossa", "description": "Hotkey description." },
   "hotkeys_desc_abortsearch": { "message": "Keskeytä parhaillaan käynnissä oleva haku", "description": "Hotkey description." },
@@ -786,6 +787,7 @@
   "hotkeys_desc_konami": { "message": "Sano hei", "description": "Hotkey description." },
   "hotkeys_flash_clearandretrysearch": { "message": "Välimuisti tyhjennetty, haku käynnistetty uudelleen", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_openhistory": { "message": "Hakuhistoria avattu", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_opensearchdrawer": { "message": "Hakusuodattimet avattu", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_abortsearch": { "message": "Haku keskeytetty", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_expandallrows": { "message": "Kaikki rivit laajennettu", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_collapseallrows": { "message": "Kaikki rivit tiivistetty", "description": "Hotkey status-bar flash." },

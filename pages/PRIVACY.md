@@ -3,9 +3,8 @@
 **Effective date:** July 10, 2026
 
 Chem Pal ("the extension") is a browser extension that lets you search and compare
-laboratory chemical product listings across supported supplier websites from a
-side panel. This policy explains what data the extension handles, where it goes,
-and why.
+laboratory chemical product listings across supported supplier websites. This
+policy explains what data the extension handles, where it goes, and why.
 
 **Short version:** Chem Pal has no backend server of its own. It does not collect,
 sell, or transmit your data to the developer. It contains no analytics, tracking,
@@ -124,7 +123,6 @@ practices of these independent services.
 | `bookmarks` | Create and manage the favorites folder used to save products. |
 | `tabs` | Read the current tab's context to open product pages and search links, and to power the right‑click "search selection" action. |
 | `contextMenus` | Add a right‑click menu item to search selected text with Chem Pal. |
-| `sidePanel` | Display the extension in the browser side panel. |
 | Host permissions (supplier domains, PubChem, etc.) | Send search and lookup requests to the supplier and chemistry services you enable. |
 
 ---

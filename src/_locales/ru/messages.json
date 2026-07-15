@@ -4,7 +4,7 @@
     "description": "The extension name shown in the browser and web store."
   },
   "app_description": {
-    "message": "Ищите и сравнивайте предложения лабораторных химических реактивов на поддерживаемых сайтах поставщиков прямо из боковой панели.",
+    "message": "Ищите и сравнивайте предложения лабораторных химических реактивов на поддерживаемых сайтах поставщиков.",
     "description": "The extension description shown in the browser and web store."
   },
   "app_title": {
@@ -1232,6 +1232,10 @@
     "message": "Открыть историю поиска в боковой панели",
     "description": "Hotkey description."
   },
+  "hotkeys_desc_opensearchdrawer": {
+    "message": "Открыть фильтры поиска в боковой панели",
+    "description": "Hotkey description."
+  },
   "hotkeys_desc_focusglobalfilter": {
     "message": "Установить фокус на глобальном фильтре в панели результатов",
     "description": "Hotkey description."
@@ -1274,6 +1278,10 @@
   },
   "hotkeys_flash_openhistory": {
     "message": "История поиска открыта",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_opensearchdrawer": {
+    "message": "Фильтры поиска открыты",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_flash_abortsearch": {

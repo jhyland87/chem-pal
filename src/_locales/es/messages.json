@@ -4,7 +4,7 @@
     "description": "The extension name shown in the browser and web store."
   },
   "app_description": {
-    "message": "Busca y compara listados de productos químicos de laboratorio en los sitios web de proveedores compatibles desde un panel lateral.",
+    "message": "Busca y compara listados de productos químicos de laboratorio en los sitios web de proveedores compatibles.",
     "description": "The extension description shown in the browser and web store."
   },
   "app_title": {
@@ -775,6 +775,7 @@
   "hotkeys_desc_clearandretrysearch": { "message": "Borrar la caché, borrar los resultados y volver a ejecutar la búsqueda actual", "description": "Hotkey description." },
   "hotkeys_desc_gotosearch": { "message": "Ir al panel de búsqueda", "description": "Hotkey description." },
   "hotkeys_desc_openhistory": { "message": "Abrir el historial de búsqueda en el panel lateral", "description": "Hotkey description." },
+  "hotkeys_desc_opensearchdrawer": { "message": "Abrir los filtros de búsqueda en el panel lateral", "description": "Hotkey description." },
   "hotkeys_desc_focusglobalfilter": { "message": "Enfocar el filtro global en el panel de resultados", "description": "Hotkey description." },
   "hotkeys_desc_togglecolumnfilters": { "message": "Alternar los filtros de columna en la tabla de resultados", "description": "Hotkey description." },
   "hotkeys_desc_abortsearch": { "message": "Cancelar la búsqueda en curso", "description": "Hotkey description." },
@@ -786,6 +787,7 @@
   "hotkeys_desc_konami": { "message": "Saludar", "description": "Hotkey description." },
   "hotkeys_flash_clearandretrysearch": { "message": "Caché borrada, búsqueda reejecutada", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_openhistory": { "message": "Historial de búsqueda abierto", "description": "Hotkey status-bar flash." },
+  "hotkeys_flash_opensearchdrawer": { "message": "Filtros de búsqueda abiertos", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_abortsearch": { "message": "Búsqueda cancelada", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_expandallrows": { "message": "Todas las filas expandidas", "description": "Hotkey status-bar flash." },
   "hotkeys_flash_collapseallrows": { "message": "Todas las filas contraídas", "description": "Hotkey status-bar flash." },

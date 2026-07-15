@@ -4,7 +4,7 @@
     "description": "The extension name shown in the browser and web store."
   },
   "app_description": {
-    "message": "Wyszukuj i porównuj oferty laboratoryjnych odczynników chemicznych na obsługiwanych stronach dostawców z poziomu panelu bocznego.",
+    "message": "Wyszukuj i porównuj oferty laboratoryjnych odczynników chemicznych na obsługiwanych stronach dostawców.",
     "description": "The extension description shown in the browser and web store."
   },
   "app_title": {
@@ -1231,6 +1231,10 @@
     "message": "Otwórz historię wyszukiwania w bocznym panelu",
     "description": "Hotkey description."
   },
+  "hotkeys_desc_opensearchdrawer": {
+    "message": "Otwórz filtry wyszukiwania w bocznym panelu",
+    "description": "Hotkey description."
+  },
   "hotkeys_desc_focusglobalfilter": {
     "message": "Ustaw fokus na filtrze globalnym w panelu wyników",
     "description": "Hotkey description."
@@ -1273,6 +1277,10 @@
   },
   "hotkeys_flash_openhistory": {
     "message": "Otwarto historię wyszukiwania",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_opensearchdrawer": {
+    "message": "Otwarto filtry wyszukiwania",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_flash_abortsearch": {

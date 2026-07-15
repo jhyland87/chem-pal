@@ -13,15 +13,12 @@
       "128": "static/images/logo/ChemPal-logo-128.png"
     }
   },
-  "side_panel": {
-    "default_path": "index.html"
-  },
   "options_ui": {
     "page": "options.html",
     "open_in_tab": false
   },
   "default_locale": "en",
-  "permissions": ["sidePanel", "tabs", "storage", "bookmarks", "cookies", "contextMenus"],
+  "permissions": ["tabs", "storage", "bookmarks", "cookies", "contextMenus"],
   "background": {
     "service_worker": "service-worker.js"
   },

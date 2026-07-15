@@ -165,7 +165,7 @@ function isBackgroundFetchRequest(message: unknown): message is BackgroundFetchR
   );
 }
 
-// Generic fetch proxy. Extension pages (side panel) are subject to page CORS for
+// Generic fetch proxy. Extension pages are subject to page CORS for
 // cross-origin requests, but the background service worker is not (given matching
 // host_permissions). Any context can run a request here by sending a
 // BackgroundFetchRequest and gets back a serialized response (Response objects

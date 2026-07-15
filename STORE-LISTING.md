@@ -30,11 +30,6 @@ Not published anywhere (kept out of `pages/`, so TypeDoc doesn't render it).
 > chrome.storage. This lets ChemPal remember preferences between sessions and avoid re-running
 > identical searches. All data stays on the user's device; nothing is sent to a server we control.
 
-**sidePanel**
-> ChemPal's main interface runs as a Chrome side panel so users can search and compare chemical
-> prices alongside the page they're on without navigating away. The permission is required to
-> register and open that side panel.
-
 **tabs**
 > Used to open ChemPal's full-page view in a browser tab and to focus an already-open ChemPal tab
 > instead of opening a duplicate. chrome.tabs.query is used only to locate ChemPal's own tab by
