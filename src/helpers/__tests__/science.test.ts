@@ -405,31 +405,32 @@ describe("science helpers", () => {
 
   describe("parseGrade", () => {
     it("should parse standalone grade abbreviations", () => {
-      expect(parseGrade("Sodium sulfate AR")).toBe("AR");
-      expect(parseGrade("Acetonitrile HPLC - 1 L")).toBe("HPLC");
-      expect(parseGrade("Citric acid USP")).toBe("USP");
-      expect(parseGrade("Magnesium stearate NF")).toBe("NF");
-      expect(parseGrade("Sodium bicarbonate FCC")).toBe("FCC");
+      expect(parseGrade("Sodium sulfate AR")).toBe("AR Grade");
+      expect(parseGrade("Acetonitrile HPLC - 1 L")).toBe("HPLC Grade");
+      expect(parseGrade("Citric acid USP")).toBe("USP Grade");
+      expect(parseGrade("Magnesium stearate NF")).toBe("NF Grade");
+      expect(parseGrade("Sodium bicarbonate FCC")).toBe("FCC Grade");
     });
 
     it("should parse word grades case-insensitively", () => {
-      expect(parseGrade("SODIUM CHLORITE, 80% TECHNICAL - 2.5 KG")).toBe("Technical");
-      expect(parseGrade("sodium chloride reagent grade")).toBe("Reagent");
+      expect(parseGrade("SODIUM CHLORITE, 80% TECHNICAL - 2.5 KG")).toBe("Technical Grade");
+      expect(parseGrade("SODIUM CHLORITE, 90% Technical Grade - 2.5 KG")).toBe("Technical Grade");
+      expect(parseGrade("sodium chloride reagent grade")).toBe("Reagent Grade");
     });
 
     it("should prefer the specific standard when several are present", () => {
-      expect(parseGrade("SODIUM, REAGENT (ACS) - 500 G")).toBe("ACS");
-      expect(parseGrade("Citric acid, BP/USP")).toBe("USP");
+      expect(parseGrade("SODIUM, REAGENT (ACS) - 500 G")).toBe("ACS Grade");
+      expect(parseGrade("Citric acid, BP/USP")).toBe("USP Grade");
     });
 
     it("should accept spelled-out pharmacopoeia names", () => {
-      expect(parseGrade("Caffeine, British Pharmacopoeia")).toBe("BP");
-      expect(parseGrade("Glucose, Japanese Pharmacopeia")).toBe("JP");
+      expect(parseGrade("Caffeine, British Pharmacopoeia")).toBe("BP Grade");
+      expect(parseGrade("Glucose, Japanese Pharmacopeia")).toBe("JP Grade");
     });
 
-    it("should return nothing when no grade is present", () => {
-      expect(parseGrade("SODIUM NITRATE, 99.999% - 50 G")).toBeUndefined();
-      expect(parseGrade("")).toBeUndefined();
+    it("should return 'Ungraded' when no grade is present", () => {
+      expect(parseGrade("SODIUM NITRATE, 99.999% - 50 G")).toBe("Ungraded");
+      expect(parseGrade("")).toBe("Ungraded");
     });
   });
 
