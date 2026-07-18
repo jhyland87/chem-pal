@@ -3,6 +3,30 @@ import { md5 } from "js-md5";
 import TurndownService from "turndown";
 
 /**
+ * Converts the first character of a string to uppercase.
+ * @param str - The string to convert.
+ * @returns The string with the first character converted to uppercase.
+ * @example
+ * ```typescript
+ * ucfirst("hello") // Returns "Hello"
+ * ucfirst("world") // Returns "World"
+ * ucfirst("") // Returns ""
+ * ucfirst(null) // Returns null
+ * ucfirst(undefined) // Returns undefined
+ * ucfirst("123") // Returns "123"
+ * ucfirst("123abc") // Returns "123abc"
+ * ucfirst("123ABC") // Returns "123ABC"
+ * ucfirst("123abcABC") // Returns "123abcABC"
+ * ucfirst("123abcABC") // Returns "123abcABC"
+ * ```
+ * @source
+ */
+export function ucfirst(str: string): string {
+  if (!str) return str; // Handles empty strings or null safely
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/**
  * MD5 hash function that handles various input types.
  * Converts input to string representation before hashing.
  *
@@ -366,20 +390,22 @@ const BLOCK_CLOSE_REGEX =
  * @source
  */
 export function htmlToAscii(html: string): string {
-  return html
-    .replace(BLOCK_CLOSE_REGEX, "\n")
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    // Trim trailing spaces per line and collapse blank-line runs from empty blocks.
-    .replace(/[ \t]+\n/g, "\n")
-    .replace(/\n{2,}/g, "\n")
-    .trim();
+  return (
+    html
+      .replace(BLOCK_CLOSE_REGEX, "\n")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<[^>]+>/g, "")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      // Trim trailing spaces per line and collapse blank-line runs from empty blocks.
+      .replace(/[ \t]+\n/g, "\n")
+      .replace(/\n{2,}/g, "\n")
+      .trim()
+  );
 }
 
 // Matches the href of the first PDF link in a block of HTML.

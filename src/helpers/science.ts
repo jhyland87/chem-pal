@@ -183,10 +183,7 @@ export const findFormulaInText = (text: string): string | undefined => {
       .replace(/<sub>(\d+)<\/sub>/g, (_match, p1) => subscript(p1 || ""))
       .replace(/<sup>(\d+)<\/sup>/g, (_match, p1) => superscript(p1 || ""))
       // Repeat-index tag → glyph, mirroring the digit-tag handling above.
-      .replace(
-        /<su[bp]>([nmx])<\/su[bp]>/g,
-        (_match, p1: string) => REPEAT_INDEX_GLYPHS[p1] ?? p1,
-      )
+      .replace(/<su[bp]>([nmx])<\/su[bp]>/g, (_match, p1: string) => REPEAT_INDEX_GLYPHS[p1] ?? p1)
       .replace(/\\u208[0-9](?:\\u208[0-9])*/g, (match) => subscriptGlyph(match))
       .replace(/(?:\\u00[bB][239]|\\u207[4-9])(?:\\u2070|\\u00[bB][239]|\\u207[4-9])*/g, (match) =>
         superscriptGlyph(match),
@@ -303,24 +300,284 @@ export const findPurity = (value: string): string | undefined => {
   return parseGrade(clean);
 };
 
+const buildGradeRegex = (): RegExp => {
+  // ci("grade") -> "[Gg][Rr][Aa][Dd][Ee]"
+  // Case-insensitive char classes, so words match any casing without the (?i:)
+  // flag (which older V8 builds reject).
+  const ci = (word: string) =>
+    [...word]
+      .map((c) => (/[a-zA-Z]/i.test(c) ? `[${c.toUpperCase()}${c.toLowerCase()}]` : c))
+      .join("");
+
+  // acronym("ACS") -> "(?:ACS(?!\.)|A\.C\.S\.)"
+  // Plain form (not followed by a dot, so "ACS." is rejected) OR dotted "A.C.S.".
+  // Wrapped in (?:...) so the internal | can't leak into the surrounding
+  // alternation — this is what makes the "BP/USP" combos parse correctly.
+  const acronym = (word: string) => `(?:${word}(?!\\.)|${word.replaceAll(/([A-Z])/g, "$1\\.")})`;
+
+  // ── Core reusable tokens ────────────────────────────────────────────────────
+  const gradeTxt = ci("grade");
+  const purityTxt = ci("purity");
+  const reagentTxt = ci("reagent");
+
+  // Optional trailing " grade" (lets "AR" also match "AR Grade").
+  const optionalGrade = String.raw`(?:\s+${gradeTxt})?`;
+
+  // Flexible "reagent"/"grade" tail in EITHER order.
+  const rgFlex = String.raw`(?:${reagentTxt}(?:\s+${gradeTxt})?|${gradeTxt}(?:\s+${reagentTxt})?)`;
+
+  // Pharmacopeia stem: pharma | pharmacop | pharmacopeia | pharmacopoeia.
+  const pharma = String.raw`${ci("pharma")}(?:${ci("cop")}(?:[Oo]?${ci("eia")})?)?`;
+
+  // ── Per-grade group bodies ──────────────────────────────────────────────────
+  const bodies = {
+    AR_Grade: String.raw`(?:${acronym("AR")}|${ci("analytical")}(?:\s*${reagentTxt})?)${optionalGrade}`,
+    ACS_Grade: String.raw`(?:${acronym("ACS")}|${ci("acs")}\s+${gradeTxt}|${ci("american")}\s+${ci("chem")}(?:${ci("ical")})?\s+${ci("society")})${optionalGrade}`,
+    Guaranteed_Grade: String.raw`${ci("guaranteed")}\s+${rgFlex}`,
+    Cosmetic_Grade: String.raw`${ci("cosmetic")}\s+${rgFlex}`,
+    Extraction_Grade: String.raw`${ci("extraction")}\s+${rgFlex}`,
+    NF_Grade: String.raw`(?:${acronym("NF")}|${ci("nf")}\s+${gradeTxt}|${ci("national")}\s+${ci("formulary")})${optionalGrade}`,
+    FCC_Grade: String.raw`(?:${acronym("FCC")}|${ci("fcc")}\s+${gradeTxt}|${ci("food")}\s+(?:${ci("chem")}(?:${ci("icals")})?\s+${ci("codex")}|${rgFlex}))${optionalGrade}`,
+    Practical_Grade: String.raw`${ci("practical")}\s+${rgFlex}`,
+    Industrial_Grade: String.raw`${ci("ind")}[IiUu]${ci("strial")}\s+${rgFlex}`,
+    // "tech"/"technical" + flexible tail (any case), OR bare fully-uppercase
+    // "TECHNICAL" / "TECHNICAL GRADE" (all-caps product titles).
+    Technical_Grade: String.raw`(?:${ci("tech")}(?:${ci("nical")})?\s+${rgFlex}|TECHNICAL(?:\s+GRADE)?)`,
+    // Bare "reagent grade". Qualifier-prefixed forms ("Practical/Technical/Pure/…
+    // Reagent Grade") are claimed by those groups, which all consume the reagent
+    // tail — so ordering keeps this from firing on them, no lookbehind needed.
+    Reagent_Grade: String.raw`${reagentTxt}\s+${gradeTxt}`,
+    // "BP"/"B.P." — decline when "/USP" or "/U.S.P." follows so the combo routes
+    // to USP. Or "britt?ish pharmacop..." (t? absorbs the "Brittish" typo).
+    BP_Grade: String.raw`(?:${acronym("BP")}(?!\s*/\s*${acronym("USP")})|${ci("brit")}[Tt]?${ci("ish")}\s+${pharma})${optionalGrade}`,
+    JP_Grade: String.raw`(?:${acronym("JP")}|${ci("japanese")}\s+${pharma})${optionalGrade}`,
+    // Combined designations FIRST (so the whole "BP/USP" is captured), then
+    // "USP"/"U.S.P." / "usp grade" / "United States|US pharmacop...".
+    USP_Grade: String.raw`(?:${acronym("BP")}\s*/\s*${acronym("USP")}|${acronym("USP")}\s*/\s*${acronym("BP")}|${acronym("USP")}|${ci("usp")}\s+${gradeTxt}|(?:${ci("united")}\s+${ci("states")}|${acronym("US")})\s+${pharma})${optionalGrade}`,
+    HPLC_Grade: String.raw`(?:${acronym("HPLC")}|${ci("hplc")}\s+${gradeTxt}|${ci("gradient")}\s+${gradeTxt}|${ci("high")}[-\s]+${ci("performance")}\s+${ci("liquid")}\s+${ci("chromatography")})${optionalGrade}`,
+    Lab_Grade: String.raw`(?:${acronym("LR")}|${ci("lab")}(?:${ci("oratory")}|${ci("oratiry")}|${ci("pratory")})?\s+${rgFlex})`,
+    Pure_Grade: String.raw`${ci("pur")}(?:${ci("e")}|${ci("ified")})\s+${rgFlex}`,
+    Pharma_Grade: String.raw`${pharma}\s+${rgFlex}`,
+    Low_Grade: String.raw`${ci("low")}\s+(?:${rgFlex}|${purityTxt})`,
+    Impure: String.raw`${ci("impure")}(?:\s+${reagentTxt})?`,
+    Ungraded: String.raw`${ci("ungraded")}(?:\s+${ci("purity")})?(?:\s+${reagentTxt})?`,
+  };
+
+  // ── Assembly ────────────────────────────────────────────────────────────────
+  // Order matters only for the BP -> USP fallthrough (BP declines "/USP" via the
+  // lookahead, so USP wins). Other groups have distinct leading tokens.
+  const order = [
+    "AR_Grade",
+    "ACS_Grade",
+    "Guaranteed_Grade",
+    "Cosmetic_Grade",
+    "Extraction_Grade",
+    "NF_Grade",
+    "FCC_Grade",
+    "Practical_Grade",
+    "Industrial_Grade",
+    "Technical_Grade",
+    "Reagent_Grade",
+    "BP_Grade",
+    "JP_Grade",
+    "USP_Grade",
+    "HPLC_Grade",
+    "Lab_Grade",
+    "Pure_Grade",
+    "Pharma_Grade",
+    "Low_Grade",
+    "Impure",
+    "Ungraded",
+  ] as const;
+
+  const namedGroups = order.map((name) => `(?<${name}>${bodies[name]})`).join("|");
+
+  // \b...(?!\w): matches a grade token anywhere. (?!\w) — rather than a trailing
+  // \b — lets a token end on a dot ("A.R.", "U.S.P."). Swap the \b for ^ and the
+  // (?!\w) for $ for a strict full-string match.
+  const result = new RegExp(String.raw`\b(?:${namedGroups})(?!\w)`);
+
+  return result;
+};
+
+/**
+ * The compiled classifier regex (built once).
+ * @document ./REAGENT_GRADE_PATTERN.md
+ * @see https://regex101.com/r/KpgeRo/2
+ */
+export const GRADE_REGEX = buildGradeRegex();
+
+/**
+ * The regex source string — paste into regex101 (ECMAScript flavor) to inspect.
+ * @document ./REAGENT_GRADE_PATTERN.md
+ * @see https://regex101.com/r/KpgeRo/2
+ */
+export const GRADE_REGEX_SOURCE = GRADE_REGEX.source;
+
+/**
+ * Extracts a chemical grade from a string.
+ * @see https://regex101.com/r/KpgeRo/2
+ * @document ./REAGENT_GRADE_PATTERN.md
+ * @param value - The string to extract the grade from
+ * @returns The grade label (e.g. `"ACS"`), or nothing if none is found
+ * @example
+ * ```typescript
+ * parseGrade("SODIUM, REAGENT (ACS) - 500 G")      // Returns "ACS Grade"
+ * parseGrade("SODIUM CHLORITE, 80% TECHNICAL")     // Returns "Technical Grade"
+ * parseGrade("Citric acid, BP/USP")                // Returns "USP Grade"
+ * parseGrade("SODIUM, REAGENT (ACS) - 500 G")      // Returns "ACS Grade"
+ * parseGrade("SODIUM CHLORITE, 80% TECHNICAL")     // Returns "Technical Grade"
+ * parseGrade("Citric acid, Cosmetic Grade")        // Returns "Cosmetic Grade"
+ * parseGrade("Sodium, Reagent (AR) - 500 G")       // Returns "AR Grade"
+ * parseGrade("Sodium, Reagent (NF) - 500 G")       // Returns "NF Grade"
+ * parseGrade("Sodium, Reagent (FCC) - 500 G")      // Returns "FCC Grade"
+ * parseGrade("SODIUM NITRATE, 99.999% - 50 G")     // Returns undefined
+ * ```
+ * @source
+ */
+export const parseGrade = (value: string): string => {
+  const matches = GRADE_REGEX.exec(value.trim());
+  if (!matches || !matches.groups) return "Ungraded";
+
+  const hits = Object.entries(matches.groups).filter(([, v]) => Boolean(v));
+  if (hits.length === 0) return "Ungraded";
+  if (hits.length > 1) {
+    console.warn(
+      `Multiple grades found in "${value}": ${hits.map(([k]) => k).join(", ")}, returning first`,
+    );
+  }
+
+  return hits[0][0].replace(/_/g, " ");
+};
+
+/**
+ * Converts a purity grade to a representative percentage.
+ *
+ * NOTE: chemical grades are *specifications*, not fixed purities — the real
+ * assay minimum for a given grade varies by chemical, and the lower grades
+ * (lab/pure/practical/technical) have no formally defined standard at all.
+ * These values are therefore representative figures chosen to rank grades in
+ * the correct order, intended only for sorting/comparison — not as assays.
+ * Ties within a tier are intentional (e.g. USP/BP/JP/NF are ~equivalent).
+ *
+ * Ordering follows the standard hierarchy (highest→lowest):
+ * ACS ≈ Reagent ≈ AR &gt; USP ≈ BP ≈ JP ≈ NF &gt; Pharma ≈ FCC &gt; Lab &gt; Pure/Practical &gt; Technical/Industrial
+ *
+ * @param grade - The grade label (as returned by `parseGrade`, e.g. "ACS Grade")
+ * @returns A representative purity %, or `undefined` if unrecognised
+ * @example
+ * ```typescript
+ * purityGradeToPercentage("ACS Grade")       // 99.8
+ * purityGradeToPercentage("USP Grade")       // 99.5
+ * purityGradeToPercentage("Technical Grade") // 90
+ * purityGradeToPercentage("Ungraded")        // undefined
+ * ```
+ */
+export const purityGradeToPercentage = (grade: string): number | undefined => {
+  switch (grade) {
+    // ── Instrumental / analytical: highest purity ──
+    case "HPLC Grade": // low interfering impurities; solvents typically ≥99.9%
+      return 99.9;
+    case "ACS Grade": // meets/exceeds ACS reagent specs — top of the standard hierarchy
+      return 99.8;
+    case "AR Grade": // Analytical Reagent — high purity, ≈ ACS
+    case "Guaranteed Grade": // "Guaranteed Reagent" (GR) — high purity, ≈ ACS
+    case "Reagent Grade": // almost as stringent as ACS
+      return 99.7;
+
+    // ── Pharmacopeia (food/drug-acceptable) ──
+    case "USP Grade": // meets US Pharmacopeia; equivalent to ACS for many drugs
+    case "BP Grade": // British Pharmacopoeia
+    case "JP Grade": // Japanese Pharmacopoeia
+    case "NF Grade": // National Formulary
+      return 99.5;
+    case "Pharma Grade": // generic pharmaceutical
+    case "FCC Grade": // Food Chemicals Codex — food-safe
+      return 99.0;
+
+    // ── Intermediate: good quality, no strict assay floor ──
+    case "Cosmetic Grade":
+    case "Extraction Grade": // rough guess — not part of a formal purity hierarchy
+    case "Lab Grade": // high quality, exact impurities unknown; education use
+      return 98.0;
+
+    // ── No official standard ──
+    case "Pure Grade": // "pure"/"purified" — good quality, meets no official standard
+    case "Practical Grade": // same tier as purified
+      return 95.0;
+
+    // ── Commercial / industrial: lowest ──
+    case "Technical Grade": // industrial/processing use; not for food/drug
+    case "Industrial Grade":
+      return 90.0;
+
+    case "Low Grade":
+      return 50.0;
+
+    case "Impure":
+      return 0.0;
+    // "Ungraded" and anything unrecognised fall through to undefined.
+    default:
+      return undefined;
+  }
+};
+
 /**
  * Recognized chemical grade / standard designations, in match-priority order. The first
  * pattern that matches wins, so specific standards (ACS, USP, …) precede the generic
  * "Reagent"/"Technical" grades they often accompany (e.g. "Reagent (ACS)" → "ACS").
  * Two-letter pharmacopoeia codes also accept their spelled-out names.
  */
-const GRADE_PATTERNS: ReadonlyArray<{ label: string; pattern: RegExp }> = [
-  { label: "ACS", pattern: /\bACS\b/i },
-  { label: "AR", pattern: /\bAR\b/i },
-  { label: "USP", pattern: /\bUSP\b|\bUnited States Pharmacop\w+/i },
-  { label: "NF", pattern: /\bNF\b/i },
-  { label: "FCC", pattern: /\bFCC\b/i },
-  { label: "HPLC", pattern: /\bHPLC\b/i },
-  { label: "BP", pattern: /\bBP\b|\bBritish Pharmacop\w+/i },
-  { label: "JP", pattern: /\bJP\b|\bJapanese Pharmacop\w+/i },
-  { label: "Technical", pattern: /\bTechnical\b/i },
-  { label: "Reagent", pattern: /\bReagent\b/i },
-];
+// const GRADE_PATTERNS: ReadonlyArray<{ label: string; pattern: RegExp }> = [
+//   // ACS - Highest purity; often equals or exceeds the latest purity standards
+//   // set by the American Chemical Society (ACS). This is the only universally
+//   // accepted standard. Chemicals are of the highest purity attainable.
+//   // @see https://regex101.com/r/K7K8pJ/1
+//   { label: "ACS", pattern: /\bACS(?:\s+grade)?\b/i },
+//   // AR grade chemicals, also known as Analytical Reagent grade chemicals, are
+//   // chemicals that meet the specifications outlined for analytical applications
+//   // in laboratories.
+//   // @see https://regex101.com/r/aFQ8GL/1
+//   { label: "AR", pattern: /\b(?:AR|(?:analytical(?:\s*reagent)?))(?:\s+grade)?\b/ },
+//   // USP grade meets the purity levels set by the United States Pharmacopeia
+//   // (USP). USP grade is equivalent to the ACS grade for many drugs.
+//   // @see https://regex101.com/r/CcKeAu/1
+//   {
+//     label: "USP",
+//     pattern: /\b(?:USP|(?:(?:united\s+states)|US)\s+(?:pharma(?:copeia)?))(?:\s+grade)?\b/,
+//   },
+//   // NF grade is a purity grade set by the National Formulary (NF). NF grade
+//   // is equivalent to the ACS grade for many drugs.
+//   // @see https://regex101.com/r/pDoGJH/1
+//   { label: "NF", pattern: /\b(?:NF|national\s+formulary)(?:\s+grade)?\b/ },
+//   // FCC Products meet the strength specifications and maximum impurity limit
+//   // indicated in the Food Chemicals Codex (FCC) which is an internationally
+//   // recognized purity and quality standard.
+//   // @see https://regex101.com/r/12d90l/1
+//   {
+//     label: "FCC",
+//     pattern: /\b(?:FCC|(?:fcc\s+grade)|(?:food\s+chem(?:icals)?\s+codex))(?:\s+grade)?\b/,
+//   },
+//   { label: "HPLC", pattern: /\bHPLC(?:\s+grade)?\b/i },
+//   // British Pharmacopoeia: Meets or exceeds requirements set by the British
+//   // Pharmacopoeia (BP). Can be used for food, drug, and medical purposes,
+//   // and also for most laboratory purposes.
+//   // @see https://regex101.com/r/sHLZka/2
+//   { label: "BP", pattern: /\b(?:BP|(?:british\s+pharma(?:cop(?:o?eia)?)?))(?:\s+grade)?\b/ },
+//   // Japanese Pharmacopeia: Meets or exceeds requirements set by the Japanese
+//   // Pharmacopoeia (JP). Can be used for food, drug, and medical purposes, and
+//   // also for most laboratory purposes.
+//   // @ see https://regex101.com/r/zlAyX4/2
+//   { label: "JP", pattern: /\b(?:JP|(?:japanese\s+pharma(?:cop(?:o?eia)?)?))(?:\s+grade|Grade)?\b/ },
+//   // Good quality chemical grade used for many commercial and industrial purposes.
+//   // @see https://regex101.com/r/O7DQWN/1
+//   { label: "Technical", pattern: /\b(?:tech(?:nical)?(?:\s+grade)?)\b/i },
+//   // Reagent grade is almost as stringent as the ACS grade.
+//   { label: "Reagent", pattern: /\b(?:Reagent|Reagent Grade)\b/i },
+//   // LR grade chemicals refer to chemicals that meet the specifications outlined
+//   // by the Laboratory Reagent (LR) grade
+//   { label: "Laboratory", pattern: /\bL(ab(oratory)|R)?\b/ },
+// ];
 
 /**
  * Extracts a chemical grade / standard designation from a string (typically a product
@@ -340,12 +597,12 @@ const GRADE_PATTERNS: ReadonlyArray<{ label: string; pattern: RegExp }> = [
  * ```
  * @source
  */
-export const parseGrade = (value: string): string | undefined => {
-  if (!value || typeof value !== "string") return;
-  for (const { label, pattern } of GRADE_PATTERNS) {
-    if (pattern.test(value)) return label;
-  }
-};
+// export const parseGrade = (value: string): string | undefined => {
+//   if (!value || typeof value !== "string") return;
+//   for (const { label, pattern } of GRADE_PATTERNS) {
+//     if (pattern.test(value)) return label;
+//   }
+// };
 
 /**
  * Structured chemical properties pulled out of a supplier's free-form product copy.
@@ -488,6 +745,7 @@ export const parseLocalizedNumber = (raw: string): number => {
  * value with no unit (`M.W. 415.6`) — and the value is parsed with {@link parseLocalizedNumber} so
  * European decimal commas are handled. Returns `undefined` when no plausible molar mass is present,
  * so unrelated numbers (melting points, densities, prose) are not mistaken for one.
+ * @see https://regex101.com/r/8rqk6N/1
  * @category Helpers
  * @param text - Raw text or HTML that may contain a molar mass anywhere within it
  * @returns The molar mass in g/mol as a positive number, or undefined when none is found
@@ -519,6 +777,7 @@ export const findMolarMass = (text: string): number | undefined => {
  * normalized string suitable for the product's `concentration` field. The unit must be a capital
  * "M" or literal "mol/L" (see `MOLARITY_REGEX`), so a lowercase "m" (milli, e.g. "500ml") is
  * never mistaken for molarity. Returns `undefined` when no molarity is present.
+ * @see https://regex101.com/r/8rqk6N/1
  * @category Helpers
  * @param text - Raw text (title or description) that may contain a molarity anywhere within it
  * @returns The molarity as a normalized string (e.g. `"1.5 M"`, `"1-2 M"`), or undefined
@@ -643,4 +902,30 @@ export function formatFormula(formula: string): string {
       //    coefficients, so their preceding char isn't a letter/bracket → skipped.
       .replace(/(?<=[A-Za-z)\]])\d+/g, subscript)
   );
+}
+
+/**
+ * Converts a purity grade to a sortable number.
+ * @param grade - The grade to convert
+ * @returns The sortable number
+ * @example
+ * ```typescript
+ * sortablePurityGrade("95%") // Returns 95
+ * sortablePurityGrade("ACS Grade") // Returns 99.8
+ * sortablePurityGrade("99.9%") // Returns 99.9
+ * sortablePurityGrade("USP Grade") // Returns 99.9
+ * sortablePurityGrade("99.9+%") // Returns 99.9
+ * sortablePurityGrade("99.9-100%") // Returns 99.9
+ * sortablePurityGrade("99.9-100%") // Returns 99.9
+ * ```
+ * @source
+ */
+export function sortablePurityGrade(grade: string): number {
+  if (grade.endsWith(" Grade")) return purityGradeToPercentage(grade) ?? 0;
+  const strippedGrade = grade.replaceAll(/[^0-9.]+/g, "");
+  if (typeof strippedGrade === "undefined") return 0;
+  const num = Number(strippedGrade);
+  if (isNaN(num) || num < 0) return 0;
+  if (num > 100) return 100;
+  return num;
 }

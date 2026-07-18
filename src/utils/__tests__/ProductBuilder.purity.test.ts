@@ -48,8 +48,10 @@ describe("ProductBuilder setPurity", () => {
   });
 
   it("falls back to a recognized grade when there is no percentage", async () => {
-    expect(await buildWithPurity("ACS reagent")).toMatchObject({ purity: "ACS" });
-    expect(await buildWithPurity("Acetonitrile HPLC - 1 L")).toMatchObject({ purity: "HPLC" });
+    expect(await buildWithPurity("ACS reagent")).toMatchObject({ purity: "ACS Grade" });
+    expect(await buildWithPurity("Acetonitrile HPLC - 1 L")).toMatchObject({
+      purity: "HPLC Grade",
+    });
   });
 
   it("keeps a bare comparator percentage string", async () => {
@@ -57,15 +59,15 @@ describe("ProductBuilder setPurity", () => {
   });
 
   it("ignores a string with neither a percentage nor a grade", async () => {
-    expect(await buildWithPurity("Ships in 3 days")).not.toHaveProperty("purity");
+    expect(await buildWithPurity("Ships in 3 days")).toMatchObject({ purity: "Ungraded" });
   });
 
   it("ignores an out-of-range percentage", async () => {
-    expect(await buildWithPurity("150%")).not.toHaveProperty("purity");
+    expect(await buildWithPurity("150%")).toMatchObject({ purity: "Ungraded" });
   });
 
   it("ignores 0%", async () => {
-    expect(await buildWithPurity("0%")).not.toHaveProperty("purity");
+    expect(await buildWithPurity("0%")).toMatchObject({ purity: "Ungraded" });
   });
 
   it("ignores undefined", async () => {
