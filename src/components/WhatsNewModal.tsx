@@ -8,17 +8,24 @@ import { AboutModalBox } from "./StyledComponents";
 import styles from "./WhatsNewModal.module.scss";
 
 /**
+ * The subset of an update notice this modal renders. Accepts both a pending
+ * update and an already-installed one; `source` is only present on the former.
+ */
+type WhatsNewNotice = Pick<UpdateNotice, "version" | "notes"> & Partial<Pick<UpdateNotice, "source">>;
+
+/**
  * Props for {@link WhatsNewModal}.
- * - `notice` - The pending update whose notes are shown; `undefined` renders nothing.
+ * - `notice` - The release whose notes are shown; `undefined` renders nothing.
  * - `open` - Whether the modal is visible.
  * - `onClose` - Invoked when the user closes without applying.
- * - `onApply` - Invoked when the user takes the call to action.
+ * - `onApply` - Call to action for a pending update. Omit for notes about an
+ *   already-installed release, which leaves a single acknowledging button.
  */
 interface WhatsNewModalProps {
-  notice: UpdateNotice | undefined;
+  notice: WhatsNewNotice | undefined;
   open: boolean;
   onClose: () => void;
-  onApply: () => void;
+  onApply?: () => void;
 }
 
 /**
@@ -90,12 +97,22 @@ export function WhatsNewModal({ notice, open, onClose, onApply }: WhatsNewModalP
           justifyContent="flex-end"
           className={styles["whats-new-actions"]}
         >
-          <Button data-testid="whats-new-close" onClick={onClose} color="inherit">
-            {i18n("update_later")}
-          </Button>
-          <Button data-testid="whats-new-apply" onClick={onApply} variant="contained">
-            {actionLabel}
-          </Button>
+          {onApply ? (
+            <>
+              <Button data-testid="whats-new-close" onClick={onClose} color="inherit">
+                {i18n("update_later")}
+              </Button>
+              <Button data-testid="whats-new-apply" onClick={onApply} variant="contained">
+                {actionLabel}
+              </Button>
+            </>
+          ) : (
+            // Already installed — there's nothing to apply, so one button that
+            // just acknowledges the notes.
+            <Button data-testid="whats-new-close" onClick={onClose} variant="contained">
+              {i18n("update_got_it")}
+            </Button>
+          )}
         </Stack>
       </AboutModalBox>
     </Modal>

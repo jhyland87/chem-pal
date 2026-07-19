@@ -1457,6 +1457,19 @@
     "message": "Не удалось загрузить примечания к выпуску.",
     "description": "Shown in the what's-new modal when the release notes could not be fetched."
   },
+  "update_installed_message": {
+    "message": "Chem Pal обновлён до версии v$version$.",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    },
+    "description": "Snackbar text shown after the extension updates itself; the placeholder is the new version number."
+  },
+  "update_got_it": {
+    "message": "Понятно",
+    "description": "Button that acknowledges the what's-new notes for an already-installed release."
+  },
   "update_available_message": {
     "message": "Chem Pal v$version$ доступен.",
     "placeholders": {

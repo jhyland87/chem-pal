@@ -55,3 +55,9 @@ declare const __GITHUB_REPO__: string;
  * release's notes; see `chempal.simulateUpdate()`.
  */
 declare const __CHANGELOG_UNRELEASED__: string;
+/**
+ * Raw markdown of this build's own `CHANGELOG.md` section, or `""` when there
+ * isn't one. Lets the extension show "what's new" after an update with no
+ * network call; see `useJustUpdated`.
+ */
+declare const __CHANGELOG_CURRENT__: string;

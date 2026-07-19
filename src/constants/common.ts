@@ -123,6 +123,8 @@ export const CACHE = {
   UPDATE_CHECK: "update_check",
   /** Service-worker-owned: a Web Store update staged and awaiting a reload */
   UPDATE_PENDING: "update_pending",
+  /** Last app version this profile has opened; drives the post-update what's-new prompt */
+  LAST_SEEN_VERSION: "last_seen_version",
 } as const;
 
 export type Cache = (typeof CACHE)[keyof typeof CACHE];

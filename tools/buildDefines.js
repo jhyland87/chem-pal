@@ -39,7 +39,27 @@ export function buildDefines(pkg, { isAggregate = false, isProd = false, isAnaly
     __GITHUB_OWNER__: JSON.stringify(pkg.config.github.owner),
     __GITHUB_REPO__: JSON.stringify(pkg.config.github.repo),
     __CHANGELOG_UNRELEASED__: JSON.stringify(readUnreleasedSection()),
+    __CHANGELOG_CURRENT__: JSON.stringify(readVersionSection(pkg.version)),
   };
+}
+
+/**
+ * Reads this build's own `CHANGELOG.md` section, so the extension can show
+ * "what's new" after an update without a network call — the build that lands on
+ * the user's machine already carries its release notes.
+ * @param version - The version being built, from `package.json`.
+ * @returns The raw markdown of that version's section, or `""` when absent.
+ * @example
+ * readVersionSection("1.3.0"); // "### Added\n\n- Update prompt: …"
+ * @source
+ */
+function readVersionSection(version) {
+  try {
+    return readSection(version) ?? "";
+  } catch {
+    // A missing or unreadable changelog must never fail the build.
+    return "";
+  }
 }
 
 /**
