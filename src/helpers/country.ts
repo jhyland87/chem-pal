@@ -22,6 +22,7 @@ interface CountryCurrency {
 
 /**
  * The subset of a `country-list-js` country record that this app consumes.
+ * @category Country Helpers
  */
 interface CountryRecord {
   name: string;

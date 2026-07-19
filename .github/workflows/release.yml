@@ -232,6 +232,21 @@ jobs:
         run: |
           cd build && zip -r "../chem-pal-${{ steps.version.outputs.version_name }}-unpacked.zip" . && cd ..
 
+      - name: Extract release notes from CHANGELOG.md
+        id: notes
+        run: |
+          # --generate-notes builds its content from merged pull requests, so a
+          # release whose commits landed straight on main gets nothing but a
+          # compare link. Prefer the hand-written CHANGELOG.md section, and fall
+          # back to the generated notes when the version has no section yet.
+          if node tools/extractChangelog.js "${{ steps.version.outputs.version_name }}" release-notes.md; then
+            echo "has_notes=true" >> "$GITHUB_OUTPUT"
+            echo "Using CHANGELOG.md section for ${{ steps.version.outputs.version_name }}"
+          else
+            echo "has_notes=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::No CHANGELOG.md section for ${{ steps.version.outputs.version_name }}; falling back to --generate-notes"
+          fi
+
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -249,9 +264,15 @@ jobs:
             *-*) EXTRA_ARGS="$EXTRA_ARGS --prerelease" ;;
           esac
 
+          if [ "${{ steps.notes.outputs.has_notes }}" = "true" ]; then
+            NOTES_ARGS="--notes-file release-notes.md"
+          else
+            NOTES_ARGS="--generate-notes"
+          fi
+
           gh release create "$TAG" \
             --title "$TAG" \
-            --generate-notes \
+            $NOTES_ARGS \
             $EXTRA_ARGS \
             chem-pal.crx \
             chem-pal-firefox.zip \

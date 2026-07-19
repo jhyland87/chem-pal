@@ -2,6 +2,7 @@ import { expect as playwrightExpect } from "@playwright/test";
 import { execSync } from "node:child_process";
 import path from "node:path";
 import { type BrowserContext, type Page, chromium } from "playwright";
+import { extensionLaunchOptions } from "./helpers/launchOptions";
 import { afterAll, beforeAll, beforeEach, describe, it, expect as vitestExpect } from "vitest";
 import { setupMockRoutes } from "./helpers/mockRoutes";
 
@@ -30,16 +31,7 @@ describe("Chem-Pal context-menu search", () => {
   beforeAll(async () => {
     execSync("pnpm build:e2e", { cwd: path.resolve(__dirname, ".."), stdio: "inherit" });
 
-    context = await chromium.launchPersistentContext("", {
-      headless: false, // Extensions require headed mode in Chromium
-      args: [
-        `--disable-extensions-except=${buildDir}`,
-        `--load-extension=${buildDir}`,
-        "--no-first-run",
-        "--disable-gpu",
-        "--no-default-browser-check",
-      ],
-    });
+    context = await chromium.launchPersistentContext("", extensionLaunchOptions(buildDir));
 
     const swTarget = context.serviceWorkers().length
       ? context.serviceWorkers()[0]

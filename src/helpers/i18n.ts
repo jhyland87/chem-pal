@@ -85,6 +85,7 @@ function resolveMessage(locale: string, key: string, substitutions?: string | st
  * Translates a message key into the currently-active locale. Drop-in replacement
  * for `chrome.i18n.getMessage(key, subs)`, but reads the app's own locale so the
  * UI can switch language live (see {@link setLocale}).
+ * @category Helpers
  * @param key - The message key, e.g. `"results_retry"`.
  * @param substitutions - Positional substitution value(s) for `$name$` placeholders.
  * @returns The translated, substituted string (or the key if unknown).
@@ -100,6 +101,7 @@ export function i18n(key: string, substitutions?: string | string[]): string {
 
 /**
  * The locale codes that ship a `messages.json`, sorted alphabetically.
+ * @category Helpers
  * @returns The available locale codes, e.g. `["en", "pl"]`.
  * @example
  * ```ts
@@ -113,6 +115,7 @@ export function getAvailableLocales(): string[] {
 
 /**
  * The currently-active locale code that {@link i18n} resolves against.
+ * @category Helpers
  * @returns The active locale code, e.g. `"en"`.
  * @example
  * ```ts
@@ -128,6 +131,7 @@ export function getLocale(): string {
  * Switches the active UI locale and notifies subscribers so the React tree
  * re-renders with the new language. A locale without a bundled `messages.json`
  * falls back to the default; a no-op when the locale is unchanged.
+ * @category Helpers
  * @param locale - The target locale code (e.g. `"pl"`).
  * @returns Nothing.
  * @example
@@ -160,6 +164,7 @@ function subscribeLocale(listener: () => void): () => void {
  * React hook that re-renders the calling component whenever the active locale
  * changes. Subscribe near the app root so a language switch cascades to the
  * whole tree; bare `i18n()` calls in descendants then resolve to the new locale.
+ * @category Helpers
  * @returns The active locale code.
  * @example
  * ```tsx

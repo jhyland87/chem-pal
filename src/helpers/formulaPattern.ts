@@ -16,6 +16,8 @@
 /**
  * Element-symbol alternation (all 118 symbols, folded into per-first-letter character classes).
  * Gates formula matching so ordinary prose isn't read as a formula.
+ * @category Science Helpers
+ * @group Regex Patterns
  * @source
  */
 export const FORMULA_ELEMENT_PATTERN =
@@ -29,6 +31,7 @@ export const FORMULA_ELEMENT_PATTERN =
  *
  * The returned regex is **global**, so callers can collect every candidate (via `matchAll`)
  * and choose the most likely one with {@link pickBestFormula}.
+ * @category Science Helpers
  * @document ./CHEMICAL_FORMULA_PATTERN.md
  * @see https://regex101.com/r/YBovln/4
  * @param subToken - Regex source matching one real subscript/superscript in the source format
@@ -69,6 +72,7 @@ export function buildFormulaPattern(subToken: string): RegExp {
  * subscript/count, then raw length — so `NaOSOCH3` outranks a two-letter coincidence such as
  * `IN` (from "EINECS") or `CS` pulled out of surrounding codes/prose.
  *
+ * @category Science Helpers
  * @param candidate - A raw formula match.
  * @returns A numeric score; higher is more likely to be a real formula.
  * @example
@@ -87,6 +91,7 @@ export function scoreFormula(candidate: string): number {
  * Returns the most-likely-correct formula from a list of raw matches (highest {@link scoreFormula},
  * first match winning ties), or `undefined` when the list is empty.
  *
+ * @category Science Helpers
  * @param candidates - Raw formula matches, e.g. from `matchAll`.
  * @returns The best candidate, or `undefined`.
  * @example

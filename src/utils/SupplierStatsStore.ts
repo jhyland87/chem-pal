@@ -134,27 +134,42 @@ async function pruneOldEntries(): Promise<void> {
   }
 }
 
-/** Increment search query count (called once per supplier at start of execute()) */
+/**
+ * Increment search query count (called once per supplier at start of execute())
+ * @category Utils
+ */
 export function incrementSearchQueryCount(supplier: string): void {
   bufferIncrement(supplier, "searchQueryCount");
 }
 
-/** Increment successful HTTP connection count (HTTP 2xx, non-cached) */
+/**
+ * Increment successful HTTP connection count (HTTP 2xx, non-cached)
+ * @category Utils
+ */
 export function incrementSuccess(supplier: string): void {
   bufferIncrement(supplier, "successCount");
 }
 
-/** Increment failed HTTP connection count (HTTP 4xx/5xx, network errors, non-cached) */
+/**
+ * Increment failed HTTP connection count (HTTP 4xx/5xx, network errors, non-cached)
+ * @category Utils
+ */
 export function incrementFailure(supplier: string): void {
   bufferIncrement(supplier, "failureCount");
 }
 
-/** Increment unique product count (called when a non-cached product detail is fetched) */
+/**
+ * Increment unique product count (called when a non-cached product detail is fetched)
+ * @category Utils
+ */
 export function incrementProductCount(supplier: string): void {
   bufferIncrement(supplier, "uniqueProductCount");
 }
 
-/** Increment parse/processing error count (called when product processing throws) */
+/**
+ * Increment parse/processing error count (called when product processing throws)
+ * @category Utils
+ */
 export function incrementParseError(supplier: string): void {
   bufferIncrement(supplier, "parseErrorCount");
 }
@@ -163,6 +178,7 @@ export function incrementParseError(supplier: string): void {
  * Read all stats from IndexedDB, returning the SupplierStatsData shape:
  * `{ [dateKey]: { [supplier]: SupplierDayStats } }`. Recording runs in every
  * build; only the stats *UI* is gated (dev builds, or advanced mode).
+ * @category Utils
  * @source
  */
 export async function getStats(): Promise<SupplierStatsData> {
@@ -176,7 +192,10 @@ export async function getStats(): Promise<SupplierStatsData> {
   }
 }
 
-/** Clear all stats — removes all records from the supplierStats store. */
+/**
+ * Clear all stats — removes all records from the supplierStats store.
+ * @category Utils
+ */
 export async function clearStats(): Promise<void> {
   pendingIncrements.clear();
   try {

@@ -1,6 +1,14 @@
 import { z } from "zod";
 
-// Enums
+/**
+ * Macklin API paths used by the supplier module, relative to its API host.
+ * @category Typeguards
+ * @example
+ * ```ts
+ * ApiEndpoints.SEARCH; // "/api/item/search"
+ * ```
+ * @source
+ */
 export enum ApiEndpoints {
    
   TIMESTAMP = "/api/timestamp",
@@ -13,6 +21,16 @@ export enum ApiEndpoints {
    
 }
 
+/**
+ * Macklin API paths that only respond to an authenticated session. Kept apart
+ * from {@link ApiEndpoints} so callers can tell which requests need credentials.
+ * @category Typeguards
+ * @example
+ * ```ts
+ * AuthRequiredEndpoints.ORDER_LIST; // "/api/center/order_list"
+ * ```
+ * @source
+ */
 export enum AuthRequiredEndpoints {
    
   ORDER_LIST = "/api/center/order_list",
@@ -267,6 +285,7 @@ export function isMacklinProductDetails(data: unknown): data is MacklinProductDe
 
 /**
  * Type guard for TimestampStorage objects stored in local state.
+ * @category Typeguards
  * @param data - The value to check
  * @returns Whether the value is a valid TimestampStorage
  * @source

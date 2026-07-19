@@ -85,6 +85,7 @@ function assertIsSdqAgentResponse(data: unknown): asserts data is SDQResponse {
  * This class provides methods to search for compounds, retrieve their CID (Compound ID),
  * and query detailed molecular properties using PubChem's SDQ (Structure Data Query) agent.
  *
+ * @category Utils
  * @example
  * ```typescript
  * const pubchem = new Pubchem("2-Acetoxybenzenecarboxylic acid");

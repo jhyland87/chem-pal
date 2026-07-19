@@ -1,6 +1,7 @@
 import { execSync } from "node:child_process";
 import path from "node:path";
 import { type BrowserContext, type Page, chromium } from "playwright";
+import { extensionLaunchOptions } from "./helpers/launchOptions";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const buildDir = path.resolve(__dirname, "..", "build");
@@ -33,16 +34,8 @@ describe("tab-view layout across viewport widths", () => {
     execSync("pnpm build:e2e", { cwd: path.resolve(__dirname, ".."), stdio: "inherit" });
 
     context = await chromium.launchPersistentContext("", {
-      // Extensions require headed mode in Chromium.
-      headless: false,
+      ...extensionLaunchOptions(buildDir),
       viewport: { width: VIEWPORT_WIDTHS[0], height: 800 },
-      args: [
-        `--disable-extensions-except=${buildDir}`,
-        `--load-extension=${buildDir}`,
-        "--no-first-run",
-        "--disable-gpu",
-        "--no-default-browser-check",
-      ],
     });
 
     const swTarget = context.serviceWorkers().length

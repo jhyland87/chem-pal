@@ -46,6 +46,7 @@ interface ResolvedProductImage {
  * Reports whether a value is meaningfully populated: not null/undefined, not an
  * empty string, and not `NaN`. Used to gate optional detail rows so blank fields
  * are skipped in the panel.
+ * @category Helpers
  * @param value - The value to test.
  * @returns `true` when the value is present and renderable, `false` otherwise.
  * @example
@@ -69,6 +70,7 @@ export function isPresent(value: unknown): boolean {
  * detect a supplier-listed parent among the variants when their ids/skus differ.
  * Compares pack size (quantity + case-insensitive uom); when either lacks a size,
  * falls back to rounded USD price equality.
+ * @category Helpers
  * @param a - The first variant (typically the parent product).
  * @param b - The second variant to compare against.
  * @returns `true` when they are the same size (or, sizeless, the same USD price).
@@ -98,6 +100,7 @@ export function samePurchasableUnit(a: Variant, b: Variant): boolean {
  * Resolves the images to display for a product, falling back from real photos to
  * a single NCI CACTUS structure depiction built from the first available chemical
  * identifier (CAS → SMILES → IUPAC name).
+ * @category Helpers
  * @param product - The product to resolve images for.
  * @returns The resolved images in display order (thumbnail source, full-size
  *          source, and optional alt text), or an empty array when the product has
@@ -148,6 +151,7 @@ export function resolveProductImages(product: Product): ResolvedProductImage[] {
  * detail panel: a resolvable image, at least one variant, or any populated
  * detail field. Drives both `getRowCanExpand` and the expander column so the
  * toggle only appears when expansion would show something.
+ * @category Helpers
  * @param product - The product to test.
  * @returns `true` when the product has an image, variants, or detail fields.
  * @example

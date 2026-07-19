@@ -32,6 +32,7 @@ interface UseUserSettings {
  * from the language setting, and re-hydrates live when another surface (e.g. the
  * popup's Settings tab) writes the same key — mirroring the behavior of
  * `App.tsx` so both surfaces stay consistent.
+ * @category Hooks
  * @returns The current `userSettings` and a `setUserSettings` persister.
  * @example
  * ```tsx

@@ -74,6 +74,7 @@ function assertIsStringResponse(response: unknown): asserts response is string {
  * most cases MIME-Type: "text/plain"). If a requested URL is not resolvable for the service an HTML 404 status message
  * is returned. In the (unlikely) case of an error, an HTML 500 status message is generated.
  *
+ * @category Utils
  * @example
  * ```typescript
  * const cactus = new Cactus("aspirin");

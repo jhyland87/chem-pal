@@ -1,0 +1,56 @@
+# Changelog
+
+All notable changes to Chem Pal are documented here. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+Each released section below is what users see in the extension's update prompt
+and on the GitHub release page — the release workflow extracts the section
+matching the tag being built (see `tools/extractChangelog.js`). Write entries for
+users, not for the commit log: describe what changed for someone using Chem Pal,
+one line per change, grouped under **Added** / **Changed** / **Fixed** /
+**Removed**.
+
+## [Unreleased]
+
+### Added
+
+- Update prompt: Chem Pal now tells you when a newer version is available, with a
+  **What's new** summary of the release. Web Store installs can apply the staged
+  update straight from the prompt; manual installs get a link to the release.
+
+## [1.2.0] - 2026-07-18
+
+### Added
+
+- Options page for configuring Chem Pal outside the popup.
+- Advanced mode, which unlocks the supplier statistics panel.
+- Demo mode assets for showcasing the extension.
+
+### Changed
+
+- Improved reagent-grade and purity parsing, so more products report a usable
+  grade.
+- Products with no detectable grade now show **Ungraded** instead of an empty
+  purity column.
+- Moved the active search query into the results table header to free up
+  vertical space.
+- Expanded and corrected the bundled translations.
+
+### Fixed
+
+- Search failing to return results in some cases.
+
+### Removed
+
+- The native side panel, in favor of the popup and full-tab views.
+
+## [1.1.0] - 2026-07-14
+
+Released before this changelog was introduced. See the
+[1.1.0 release notes](https://github.com/jhyland87/chem-pal/releases/tag/v1.1.0).
+
+## [1.0.0] - 2026-07-11
+
+Released before this changelog was introduced. See the
+[1.0.0 release notes](https://github.com/jhyland87/chem-pal/releases/tag/v1.0.0).

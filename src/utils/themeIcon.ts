@@ -60,6 +60,7 @@ async function applyToolbarIcon(scheme: ColorScheme): Promise<void> {
  * Safe to call unconditionally at startup — it no-ops in any context lacking
  * `matchMedia` or `chrome.action.setIcon` (tests, the Vite dev preview, a
  * service worker, or a browser that exposes neither), so it never throws.
+ * @category Utils
  * @returns Nothing; the toolbar icon is updated as a side effect.
  * @example
  * // In the app entry point (main.tsx):

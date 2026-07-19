@@ -1,6 +1,10 @@
 import type { SearchAst } from "../types";
 
-/** A leaf field-match condition in a CONTAINS filter tree. */
+/**
+ * A leaf field-match condition in a CONTAINS filter tree.
+ * @category Utils
+ * @group Converters
+ */
 export interface ContainsTermFilter {
   term: { field: string; op: string; values: string[] };
 }
@@ -9,6 +13,8 @@ export interface ContainsTermFilter {
  * A node in a generic boolean CONTAINS filter tree, shared by GraphQL backends
  * (Wix, Magento2) whose filter input uses the same `and`/`or`/`not`/`term`
  * shape. Either a leaf {@link ContainsTermFilter} or a boolean combinator.
+ * @category Utils
+ * @group Converters
  */
 export type ContainsFilterNode =
   | ContainsTermFilter
@@ -22,6 +28,8 @@ export type ContainsFilterNode =
  * GraphQL suppliers that accept this structure server-side, so the boolean
  * matching happens on the backend in a single request.
  *
+ * @category Utils
+ * @group Converters
  * @param ast - The parsed query tree.
  * @param wrapValue - Maps a term value to the stored value (e.g. add `*…*`
  *   wildcards for Wix). Defaults to identity.

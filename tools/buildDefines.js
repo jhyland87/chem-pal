@@ -6,6 +6,8 @@
  * `ReferenceError: __APP_* is not defined`.
  */
 
+import { readSection } from "./extractChangelog.js";
+
 /**
  * Produces the `define` object mapping each build-time global to its JSON-encoded
  * value from `package.json`.
@@ -36,5 +38,28 @@ export function buildDefines(pkg, { isAggregate = false, isProd = false, isAnaly
     __APP_CONTRIBUTORS__: JSON.stringify(pkg.contributors),
     __GITHUB_OWNER__: JSON.stringify(pkg.config.github.owner),
     __GITHUB_REPO__: JSON.stringify(pkg.config.github.repo),
+    __CHANGELOG_UNRELEASED__: JSON.stringify(readUnreleasedSection()),
   };
+}
+
+/**
+ * Reads the `## [Unreleased]` section of `CHANGELOG.md` so the debug console can
+ * preview the next release's notes exactly as users will see them. The same
+ * extractor drives the release workflow, so the preview and the published notes
+ * can't drift.
+ *
+ * Only referenced by `src/utils/debugConsole.ts`, which is a lazily-imported
+ * chunk, so the text doesn't weigh on the main bundle.
+ * @returns The raw markdown of the Unreleased section, or `""` when absent.
+ * @example
+ * readUnreleasedSection(); // "### Added\n\n- Update prompt: …"
+ * @source
+ */
+function readUnreleasedSection() {
+  try {
+    return readSection("Unreleased") ?? "";
+  } catch {
+    // A missing or unreadable changelog must never fail the build.
+    return "";
+  }
 }

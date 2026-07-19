@@ -1074,5 +1074,47 @@
   "purity_ungraded": {
     "message": "Luokittelematon",
     "description": "Shown when a product has no purity or grade."
+  },
+  "update_whats_new": {
+    "message": "Uutta",
+    "description": "Snackbar action that opens the what's-new modal."
+  },
+  "update_modal_title": {
+    "message": "Uutta versiossa v$version$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    },
+    "description": "Title of the what's-new modal; the placeholder is the new version number."
+  },
+  "update_later": {
+    "message": "Myöhemmin",
+    "description": "Button that closes the what's-new modal without updating."
+  },
+  "update_notes_unavailable": {
+    "message": "Julkaisutietoja ei voitu ladata.",
+    "description": "Shown in the what's-new modal when the release notes could not be fetched."
+  },
+  "update_available_message": {
+    "message": "Chem Pal v$version$ on saatavilla.",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    },
+    "description": "Update snackbar text; the placeholder is the new version number."
+  },
+  "update_action_view": {
+    "message": "Näytä julkaisu",
+    "description": "Snackbar action opening the GitHub release page (manual installs)."
+  },
+  "update_action_reload": {
+    "message": "Lataa uudelleen",
+    "description": "Snackbar action reloading the extension to apply a staged update."
+  },
+  "update_dismiss": {
+    "message": "Hylkää",
+    "description": "Accessible label for the button that dismisses the update snackbar."
   }
 }

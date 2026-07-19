@@ -4,6 +4,7 @@ import TurndownService from "turndown";
 
 /**
  * Converts the first character of a string to uppercase.
+ * @category Helpers
  * @param str - The string to convert.
  * @returns The string with the first character converted to uppercase.
  * @example
@@ -22,7 +23,10 @@ import TurndownService from "turndown";
  * @source
  */
 export function ucfirst(str: string): string {
-  if (!str) return str; // Handles empty strings or null safely
+  if (!str) {
+    return str;
+  }
+
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
@@ -30,6 +34,7 @@ export function ucfirst(str: string): string {
  * MD5 hash function that handles various input types.
  * Converts input to string representation before hashing.
  *
+ * @category Helpers
  * @param input - The input to hash. Can be string, number, object, or null/undefined.
  * @returns The MD5 hash of the input as a string, or the input itself if null/undefined
  * @throws Error if input type is not supported (e.g., Symbol)
@@ -67,6 +72,7 @@ export function md5sum<T>(input: NonNullable<T>): string | T {
  * Builds a URL-style query string from a plain object.
  * Keys are emitted in insertion order. Array values are comma-joined.
  *
+ * @category Helpers
  * @param obj - Object whose entries become `key=value` pairs
  * @returns Query string without a leading `?`
  *
@@ -92,6 +98,7 @@ export function objectToQueryString(obj: Record<string, unknown>): string {
  * Base64-encodes a UTF-8 string (raw bytes, not URI-encoded).
  * ASCII-only input uses `btoa` directly.
  *
+ * @category Helpers
  * @param str - String to encode
  * @returns Base64 representation
  *
@@ -121,6 +128,7 @@ export function base64EncodeUtf8(str: string): string {
  * Opaque base-36 timestamp string (milliseconds + random suffix).
  * Used by some suppliers for cache-busting request IDs.
  *
+ * @category Helpers
  * @param timestamp - The timestamp to use (defaults to current time)
  * @returns Base-36 timestamp string
  *
@@ -138,6 +146,7 @@ export function base36Timestamp(timestamp: number = Date.now()): string {
 /**
  * Generates an array of page sizes based on the total number of rows.
  * The array starts with the base size and doubles each time until it reaches the total.
+ * @category Helpers
  * @param total - The total number of rows
  * @param base - The base size
  * @returns An array of page sizes
@@ -455,6 +464,7 @@ export function tryParseJson(data: unknown): unknown | undefined {
 /**
  * Extracts and parses the first top-level JSON array or object from a string
  * that may contain trailing non-JSON content (e.g. delimiters like "&&&").
+ * @category Helpers
  * @param data - The string containing JSON with possible trailing junk
  * @returns The parsed JSON value
  * @throws Error if no JSON array/object is found or if the JSON is malformed
@@ -532,6 +542,7 @@ export function getUserLocation(): CountryCode {
  * Gets the user's preferred UI language locale from the browser's i18n API.
  * Used to seed the `language` user setting. Falls back to `"en-US"` outside an
  * extension context (e.g. tests).
+ * @category Helpers
  * @returns The browser UI language locale, e.g. `"en-US"` or `"de-DE"`
  * @example
  * ```typescript
@@ -550,6 +561,7 @@ export function getUserLanguage(): string {
  * Resolves a locale code to a human-readable language name using the
  * `countries-list` language data. The native name is preferred (e.g. "Deutsch"),
  * falling back to the English name and finally the raw code.
+ * @category Helpers
  * @param locale - A locale or language code, e.g. `"de-DE"` or `"de"`; undefined yields undefined
  * @returns The language's display name, or undefined when no locale is given
  * @example
@@ -651,6 +663,8 @@ export function formatFromHtml(html: string): string {
  * "month day, hour:minute" string for UI surfaces like the history and
  * excluded-products lists in the settings drawer. Shared so both panels
  * render the same shape without drifting over time.
+ * @category Helpers
+ * @group Formatters
  * @param epochMs - Timestamp in milliseconds since the Unix epoch.
  * @returns A locale-formatted string such as `"Mar 26, 2:15 PM"`.
  * @example
@@ -673,6 +687,8 @@ export function formatTimestamp(epochMs: number): string {
  * Format a byte count as a short, human-readable size string using binary
  * (1024-based) units. Used by the settings panel to show how much storage the
  * caches and price history occupy.
+ * @category Helpers
+ * @group Formatters
  * @param bytes - The number of bytes.
  * @returns A compact size string such as `"0 B"`, `"1.5 KB"`, or `"2.3 MB"`.
  * @example
@@ -702,6 +718,7 @@ export function formatBytes(bytes: number): string {
  * nullish value rather than throwing. An empty path returns `obj` as-is.
  * Paths can mix string and numeric segments — numeric segments index arrays
  * via the same bracket access as object keys.
+ * @category Helpers
  * @param obj - Root object / array / primitive to read from.
  * @param path - Ordered list of keys / indexes to traverse.
  * @returns The value at the resolved path, or `undefined` when any segment
@@ -742,6 +759,7 @@ interface PathedIssue {
  * The original issue objects are spread shallowly, so extra zod fields
  * (`code`, `message`, `expected`, etc.) pass through untouched; only the new
  * `actual` key is added.
+ * @category Helpers
  * @param issues - Array of issue records; each must have a `path` array.
  * @param obj - The value that was validated — used as the root for `getPath`.
  * @returns A new array of issues, each augmented with an `actual` field.
@@ -779,6 +797,7 @@ export function zodAddActualValueToIssues<T extends PathedIssue>(
 
 /**
  * Preloads a list of images and returns a promise that resolves to an array of results.
+ * @category Helpers
  * @param images - The list of images to preload.
  * @returns A promise that resolves to an array of images that were successfully preloaded.
  * @example

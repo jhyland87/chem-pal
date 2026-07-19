@@ -1038,5 +1038,47 @@
   "purity_ungraded": {
     "message": "अवर्गीकृत",
     "description": "Shown when a product has no purity or grade."
+  },
+  "update_whats_new": {
+    "message": "नया क्या है",
+    "description": "Snackbar action that opens the what's-new modal."
+  },
+  "update_modal_title": {
+    "message": " v$version$ में नया क्या है",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    },
+    "description": "Title of the what's-new modal; the placeholder is the new version number."
+  },
+  "update_later": {
+    "message": "बाद में",
+    "description": "Button that closes the what's-new modal without updating."
+  },
+  "update_notes_unavailable": {
+    "message": "रिलीज़ नोट्स लोड नहीं हो सके।",
+    "description": "Shown in the what's-new modal when the release notes could not be fetched."
+  },
+  "update_available_message": {
+    "message": "Chem Pal v$version$ उपलब्ध है।",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    },
+    "description": "Update snackbar text; the placeholder is the new version number."
+  },
+  "update_action_view": {
+    "message": "रिलीज़ देखें",
+    "description": "Snackbar action opening the GitHub release page (manual installs)."
+  },
+  "update_action_reload": {
+    "message": "अभी पुनः लोड करें",
+    "description": "Snackbar action reloading the extension to apply a staged update."
+  },
+  "update_dismiss": {
+    "message": "खारिज करें",
+    "description": "Accessible label for the button that dismisses the update snackbar."
   }
 }

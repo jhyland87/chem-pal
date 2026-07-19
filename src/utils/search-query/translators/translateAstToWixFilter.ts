@@ -11,6 +11,8 @@ import type { SearchAst } from "../types";
  * shared {@link translateAstToContainsFilter} (its output is structurally a
  * `WixFilterNode`).
  *
+ * @category Utils
+ * @group Converters
  * @param ast - The parsed query tree.
  * @returns A Wix filter node suitable for `GraphQLQueryVariables.filters`.
  * @example

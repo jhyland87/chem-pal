@@ -2,7 +2,11 @@ import { partial_ratio } from "fuzzball";
 import type { FuzzScorerFn } from "@/constants/fuzzScorers";
 import type { SearchAst } from "./types";
 
-/** Options for {@link scoreAstMatch}. */
+/**
+ * Options for {@link scoreAstMatch}.
+ * @category Utils
+ * @group Search
+ */
 export interface AstEvalOptions {
   /** Scorer used for a matched leaf's relevance (ranking only, not the gate). */
   scorer: FuzzScorerFn;
@@ -10,7 +14,7 @@ export interface AstEvalOptions {
   threshold: number;
   /**
    * When true, a phrase word that isn't a literal substring of the title may
-   * still count as present if it fuzzily matches (≥ {@link FUZZY_WORD_CUTOFF}),
+   * still count as present if it fuzzily matches (≥ `FUZZY_WORD_CUTOFF`),
    * giving mild typo tolerance. When false (or omitted), only exact
    * case-insensitive substring presence counts.
    */
@@ -29,6 +33,8 @@ const FUZZY_WORD_CUTOFF = 88;
  * substring of `title`, else 0. Retained as a simple, deterministic scorer for
  * ranking/tests; the leaf *gate* in {@link scoreAstMatch} uses per-word presence.
  *
+ * @category Utils
+ * @group Search
  * @param term - The phrase to look for.
  * @param title - The product title to search within.
  * @returns 100 on a substring hit, otherwise 0.
@@ -82,11 +88,13 @@ function evaluateLeaf(title: string, value: string, options: AstEvalOptions): nu
  * is filtered out).
  *
  * Leaf matching is precise — every word of a phrase must be present (see
- * {@link evaluateLeaf}) — so the fuzzy similarity of one shared word can't pull
+ * `evaluateLeaf`) — so the fuzzy similarity of one shared word can't pull
  * in a different chemical. Boolean nodes combine leaf scores: `and` takes the
  * weakest required match (`min`), `or` takes the best satisfied branch (`max`),
  * and `not` contributes a neutral score equal to the threshold.
  *
+ * @category Utils
+ * @group Search
  * @param title - The product title to test.
  * @param ast - The parsed query tree.
  * @param options - The leaf scorer, threshold, and fuzzy-word toggle.

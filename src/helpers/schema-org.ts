@@ -24,6 +24,7 @@
  * `@type` (and, at the top level, an `@context`). Every Thing in schema.org is
  * modelled this way.
  *
+ * @category Helpers
  * @example
  * ```ts
  * const node: SchemaNode = {
@@ -60,6 +61,7 @@ const SCHEMA_ENUM_RE = /^https?:\/\/schema\.org\/([A-Za-z][A-Za-z0-9_]*)$/;
  * `"InStock"`). Only a single identifier segment is stripped, so real URLs, the
  * `@context`, `@id` links, and off-site URLs are returned unchanged.
  *
+ * @category Helpers
  * @param value - A string that may be a schema.org enumeration URL.
  * @returns The bare member name when it matches, otherwise the original string.
  *
@@ -100,6 +102,7 @@ function normalizeValue(value: JsonValue): JsonValue {
  * schema.org allows any property to carry one value or many, so wrapping is the
  * safe way to iterate (e.g. `image` may be a single URL or a list).
  *
+ * @category Helpers
  * @typeParam T - Element type of the value(s).
  * @param value - A single value, an array of values, `undefined`, or `null`.
  * @returns An array: `[]` for nullish input, the input unchanged if already an
@@ -124,6 +127,7 @@ export function toArray<T = JsonValue>(value: T | T[] | undefined): T[] {
  * once (schema.org uses multiple inheritance — something can be both a `Book`
  * and a `Product`), and `@type` may be absent, so this always returns an array.
  *
+ * @category Helpers
  * @param node - The schema.org node to inspect.
  * @returns The declared types as strings; `[]` when `@type` is missing.
  *
@@ -145,6 +149,7 @@ export function typeList(node: JsonObject): string[] {
  * seen in the wild: `http`/`https`, an optional trailing slash, an array of
  * contexts, or an object whose values point at schema.org (e.g. an `@vocab`).
  *
+ * @category Helpers
  * @param ctx - The value of a node's `@context` (any JSON value or `undefined`).
  * @returns `true` if the context refers to schema.org, otherwise `false`.
  *
@@ -259,6 +264,7 @@ function nestValue(value: JsonValue): JsonValue {
  * {@link SchemaOrgData.all | all}) or the type-keyed
  * {@link SchemaOrgData.toNested | toNested} view.
  *
+ * @category Helpers
  * @example
  * ```ts
  * const data = SchemaOrgData.fromDocument(document);

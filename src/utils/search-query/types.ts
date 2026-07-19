@@ -9,7 +9,11 @@
  * @group Search
  */
 
-/** A single search phrase leaf (e.g. `Potassium Permanganate`). */
+/**
+ * A single search phrase leaf (e.g. `Potassium Permanganate`).
+ * @category Utils
+ * @group Search
+ */
 export interface TermNode {
   type: "term";
   /** The phrase to match against a product title. */
@@ -18,30 +22,50 @@ export interface TermNode {
   phrase: boolean;
 }
 
-/** Boolean AND of two sub-expressions. */
+/**
+ * Boolean AND of two sub-expressions.
+ * @category Utils
+ * @group Search
+ */
 export interface AndNode {
   type: "and";
   left: SearchAst;
   right: SearchAst;
 }
 
-/** Boolean OR of two sub-expressions. */
+/**
+ * Boolean OR of two sub-expressions.
+ * @category Utils
+ * @group Search
+ */
 export interface OrNode {
   type: "or";
   left: SearchAst;
   right: SearchAst;
 }
 
-/** Boolean negation of a sub-expression. */
+/**
+ * Boolean negation of a sub-expression.
+ * @category Utils
+ * @group Search
+ */
 export interface NotNode {
   type: "not";
   operand: SearchAst;
 }
 
-/** A node in the normalized search-query tree. */
+/**
+ * A node in the normalized search-query tree.
+ * @category Utils
+ * @group Search
+ */
 export type SearchAst = TermNode | AndNode | OrNode | NotNode;
 
-/** The result of parsing a raw search string. */
+/**
+ * The result of parsing a raw search string.
+ * @category Utils
+ * @group Search
+ */
 export interface ParsedSearchQuery {
   /** The original, untrimmed user input. */
   raw: string;

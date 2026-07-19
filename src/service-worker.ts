@@ -26,7 +26,23 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
     console.info("Chem Pal installed");
   } else if (reason === chrome.runtime.OnInstalledReason.UPDATE) {
     console.info("Chem Pal updated");
+    // The staged update just landed; drop the record so the UI doesn't keep
+    // prompting for a version that is now running.
+    void chrome.storage.local.remove(CACHE.UPDATE_PENDING);
   }
+});
+
+// Registering this listener is what *defers* the update: with no listener Chrome
+// applies a staged Web Store update the moment the extension goes idle, which
+// would tear down an in-flight search. Instead we record it and let the UI offer
+// a reload. Optional-chained because Firefox has no onUpdateAvailable.
+chrome.runtime.onUpdateAvailable?.addListener(({ version }) => {
+  // Raw chrome.storage rather than cstorage for the same reason as the
+  // context-menu write below: storage compression is off, and the app-side
+  // decoder passes non-envelope values through unchanged.
+  void chrome.storage.local.set({
+    [CACHE.UPDATE_PENDING]: { version, detectedAt: Date.now() },
+  });
 });
 
 /**

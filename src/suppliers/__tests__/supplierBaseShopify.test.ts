@@ -284,21 +284,19 @@ describe("SupplierTheLabStockroom grade from tags", () => {
     return builder.get("grade");
   };
 
-  const cases: Array<[string, string]> = [
-    ["Grade__Laboratory-Grade", "Lab Grade"],
-    ["Grade_Lab-Grade", "Lab Grade"],
-    ["Grade_Lab", "Lab Grade"],
-    ["Grade_Reagent-Grade", "Reagent Grade"],
-    ["Grade_Reagent", "Reagent Grade"],
-    ["Grade_ACS-Grade", "ACS Grade"],
-    ["Grade_ACS", "ACS Grade"],
+  const cases: Array<{ tag: string; grade: string }> = [
+    { tag: "Grade__Laboratory-Grade", grade: "Lab Grade" },
+    { tag: "Grade_Lab-Grade", grade: "Lab Grade" },
+    { tag: "Grade_Lab", grade: "Lab Grade" },
+    { tag: "Grade_Reagent-Grade", grade: "Reagent Grade" },
+    { tag: "Grade_Reagent", grade: "Reagent Grade" },
+    { tag: "Grade_ACS-Grade", grade: "ACS Grade" },
+    { tag: "Grade_ACS", grade: "ACS Grade" },
   ];
 
-  for (const [tag, grade] of cases) {
-    it(`maps ${tag} -> ${grade}`, () => {
-      expect(gradeOf(["Category_Chemicals", tag])).toBe(grade);
-    });
-  }
+  it.each(cases)("maps $tag -> $grade", ({ tag, grade }) => {
+    expect(gradeOf(["Category_Chemicals", tag])).toBe(grade);
+  });
 
   it("leaves grade unset when no grade tag is present", () => {
     expect(gradeOf(["Category_Chemicals", "Chemical_Sodium Iodide"])).toBeUndefined();

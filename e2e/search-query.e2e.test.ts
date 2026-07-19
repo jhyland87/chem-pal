@@ -2,6 +2,7 @@ import { expect as playwrightExpect } from "@playwright/test";
 import { execSync } from "node:child_process";
 import path from "node:path";
 import { type BrowserContext, type Page, chromium } from "playwright";
+import { HEADED, extensionLaunchOptions } from "./helpers/launchOptions";
 import { afterAll, beforeAll, beforeEach, describe, it, expect as vitestExpect } from "vitest";
 import { setupMockRoutes } from "./helpers/mockRoutes";
 
@@ -22,17 +23,11 @@ describe("Chem-Pal search query", () => {
     });
 
     // Launch Chrome with the extension loaded
-    context = await chromium.launchPersistentContext("", {
-      headless: false, // Extensions require headed mode in Chromium
-      args: [
-        `--disable-extensions-except=${buildDir}`,
-        `--load-extension=${buildDir}`,
-        "--no-first-run",
-        "--disable-gpu",
-        "--no-default-browser-check",
-        "--auto-open-devtools-for-tabs",
-      ],
-    });
+    // Devtools can't open headlessly, so that flag is only useful in headed runs.
+    context = await chromium.launchPersistentContext(
+      "",
+      extensionLaunchOptions(buildDir, HEADED ? ["--auto-open-devtools-for-tabs"] : []),
+    );
 
     // Wait for the service worker to register, which gives us the extension ID
     const swTarget = context.serviceWorkers().length

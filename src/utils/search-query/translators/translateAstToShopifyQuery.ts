@@ -31,6 +31,8 @@ function termToClause(value: string): string {
 /**
  * Translates a {@link SearchAst} into a Shopify Storefront search query string.
  *
+ * @category Utils
+ * @group Converters
  * @param ast - The parsed query tree.
  * @returns A Shopify search DSL string (e.g. `title:*foo* AND (title:*bar* OR title:*baz*)`).
  * @example

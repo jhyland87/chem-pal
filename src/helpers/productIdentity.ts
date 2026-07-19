@@ -11,6 +11,7 @@ import { md5 } from "js-md5";
  * URL-based product-data key (`md5({ url, params, supplier })`), so entries
  * written under the old scheme never alias a new identity key.
  *
+ * @category Helpers
  * @param identity - The supplier's unique product identity (id, uuid, sku,
  *   gid, or href), as returned by `SupplierBase.getUniqueProductKey`.
  * @param supplierName - Supplier name, e.g. `"Loudwolf"`, mixed in so two
@@ -34,6 +35,7 @@ export function getProductIdentityKey(identity: string, supplierName: string): s
  * with the supplier name so two suppliers that share an identity string (e.g. a
  * numeric `id` like `6981`) never collide. Returns `undefined` when the product
  * carries no usable identity, so callers keep it rather than merging unknowns.
+ * @category Helpers
  * @param product - The product to key.
  * @returns A stable dedupe key, or `undefined` when no identity is available.
  * @example
@@ -58,6 +60,7 @@ export function getProductDedupeKey(product: Product): string | undefined {
  * each identity as determined by {@link getProductDedupeKey}. Products with no
  * usable identity are always kept (never merged with each other). Order is
  * preserved.
+ * @category Helpers
  * @param products - The products to de-duplicate.
  * @returns A new array with later duplicates of each product identity removed.
  * @example

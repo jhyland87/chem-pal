@@ -5,13 +5,25 @@ import { hasAdvancedSyntax, OPERATOR_WORDS, parseSearchQuery } from "./parseSear
 /** Number of rainbow colors cycled for nested parentheses (matched pairs share a depth). */
 const PAREN_PALETTE_SIZE = 5;
 
-/** How a typed query is being interpreted, driving the search box's visual treatment. */
+/**
+ * How a typed query is being interpreted, driving the search box's visual treatment.
+ * @category Utils
+ * @group Search
+ */
 export type HighlightState = "plain" | "advanced" | "error";
 
-/** The token classes the highlighter colorizes. */
+/**
+ * The token classes the highlighter colorizes.
+ * @category Utils
+ * @group Search
+ */
 export type HighlightTokenKind = "keyword" | "paren" | "quoted" | "term" | "whitespace";
 
-/** A single highlightable span over the raw query string. */
+/**
+ * A single highlightable span over the raw query string.
+ * @category Utils
+ * @group Search
+ */
 export interface HighlightToken {
   kind: HighlightTokenKind;
   /** The exact source text of this token (used verbatim so output round-trips). */
@@ -20,13 +32,17 @@ export interface HighlightToken {
   start: number;
   /** Exclusive end offset into the raw query. */
   end: number;
-  /** Nesting depth (mod {@link PAREN_PALETTE_SIZE}) for a paren token's rainbow color. */
+  /** Nesting depth (mod `PAREN_PALETTE_SIZE`) for a paren token's rainbow color. */
   depth?: number;
   /** True for an unmatched parenthesis or an unterminated quote. */
   error?: boolean;
 }
 
-/** Result of highlighting a query: markup plus how the query is interpreted. */
+/**
+ * Result of highlighting a query: markup plus how the query is interpreted.
+ * @category Utils
+ * @group Search
+ */
 export interface HighlightResult {
   /** Token-wrapped, HTML-escaped markup of the raw query (round-trips to the input). */
   html: string;
@@ -76,6 +92,8 @@ function isWhitespace(char: string): boolean {
  * round-trips exactly to the input. Bare words matching {@link OPERATOR_WORDS} are tagged as
  * `keyword`; parens carry a nesting `depth` for rainbow coloring; unmatched parens and
  * unterminated quotes are flagged with `error`.
+ * @category Utils
+ * @group Search
  * @param input - The raw query string.
  * @returns Ordered tokens covering every character of `input`.
  * @example
@@ -203,6 +221,8 @@ function renderToken(token: HighlightToken, advanced: boolean): string {
  * - `"advanced"` — a valid boolean query with at least one inclusive term.
  * - `"error"` — advanced syntax that is malformed (e.g. unbalanced parens) or has no
  *   inclusive constraint (only `NOT`/exclusions), which would match almost everything.
+ * @category Utils
+ * @group Search
  * @param input - The raw query string from the search box.
  * @returns The markup, interpretation state, and an error message when invalid.
  * @example

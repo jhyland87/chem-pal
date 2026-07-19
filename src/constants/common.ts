@@ -9,11 +9,6 @@
  * Used by the SettingsPanel component.
  * @source
  */
-/**
- * Action types for settings panel form state management.
- * Used by the SettingsPanel component.
- * @source
- */
 export const ACTION_TYPE = {
   /** A toggle Switch changed; writes `checked` to the named setting */
   SWITCH_CHANGE: "SWITCH_CHANGE",
@@ -124,6 +119,10 @@ export const CACHE = {
   CHEMSAVERS_API_KEY: "chemsavers_api_key",
   /** LabChem full product catalog snapshot, cached for 24h (empty-query search) */
   LABCHEM_CATALOG: "labchem_catalog",
+  /** UI-owned update bookkeeping: GitHub poll throttle and per-version dismissal */
+  UPDATE_CHECK: "update_check",
+  /** Service-worker-owned: a Web Store update staged and awaiting a reload */
+  UPDATE_PENDING: "update_pending",
 } as const;
 
 export type Cache = (typeof CACHE)[keyof typeof CACHE];

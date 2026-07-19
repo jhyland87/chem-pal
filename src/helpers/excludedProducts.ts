@@ -4,6 +4,7 @@ import { getExcludedProducts, putExcludedProducts } from "@/utils/idbCache";
 /**
  * Minimal metadata stored for each excluded product so the user can review
  * (and eventually un-exclude) their ignore list from settings.
+ * @category Helpers
  * @source
  */
 export interface ExcludedProductEntry {
@@ -25,6 +26,7 @@ export interface ExcludedProductEntry {
 /**
  * Map of exclusion-key → excluded product entry, as persisted in the
  * `excludedProducts` IndexedDB object store (via `@/utils/idbCache`).
+ * @category Helpers
  * @source
  */
 export type ExcludedProductsMap = Record<string, ExcludedProductEntry>;
@@ -34,6 +36,7 @@ export type ExcludedProductsMap = Record<string, ExcludedProductEntry>;
  * the store is empty or the read fails, so callers can treat the result as
  * always-valid.
  *
+ * @category Helpers
  * @returns The persisted exclusions map (never `null`/`undefined`).
  * @example
  * ```ts
@@ -53,6 +56,7 @@ export async function loadExcludedProducts(): Promise<ExcludedProductsMap> {
  * checks (e.g. inside `SupplierBase.getProductData`) where the full metadata
  * is not needed.
  *
+ * @category Helpers
  * @returns A `Set` of exclusion keys (empty on read failure).
  * @example
  * ```ts
@@ -72,6 +76,7 @@ export async function loadExcludedProductKeys(): Promise<Set<string>> {
  * previously-ignored rows still leaves the caller with `limit` survivors
  * instead of a short list.
  *
+ * @category Helpers
  * @param supplierName - Supplier name to match against entry metadata.
  * @returns Count of entries whose `supplier` field equals `supplierName`.
  * @example
@@ -97,6 +102,7 @@ export async function countExcludedProductsForSupplier(supplierName: string): Pr
  * product just refreshes its `excludedAt` and last-known title. Returns the
  * exclusion key for the caller's logging convenience.
  *
+ * @category Helpers
  * @param identity - The product's unique identity (its `cacheKey`), or the URL
  *   as a fallback when no identity was stamped.
  * @param supplierName - Supplier name.
@@ -140,6 +146,7 @@ export async function addExcludedProduct(
  * shape so a caller holding a stale map cannot clobber concurrent writes.
  * No-op (and no write) when the key is absent, so repeated removals are
  * safe. Errors are logged, not thrown — callers don't need to try/catch.
+ * @category Helpers
  * @param key - Exclusion key, as produced by `getProductExclusionKey`.
  * @returns Resolves once the write completes.
  * @example

@@ -11,6 +11,7 @@
 
 /**
  * Selectable window for the stats views.
+ * @category Helpers
  * @group Types
  * @source
  */
@@ -19,6 +20,7 @@ export type StatsRange = "all" | "today" | "week" | "month" | "last7" | "last30"
 /**
  * Ordered range options for the dropdown, each with its i18n label key. Ordered
  * widest-to-narrowest so the default (`all`) sits first.
+ * @category Helpers
  * @group Types
  * @source
  */
@@ -123,6 +125,7 @@ export function filterStatsByRange(
 
 /**
  * Health verdict for one supplier over the selected range.
+ * @category Helpers
  * @group Types
  * @source
  */
@@ -136,6 +139,7 @@ export type SupplierHealthStatus =
 
 /**
  * The per-supplier counters the classifier reads.
+ * @category Helpers
  * @group Types
  * @source
  */

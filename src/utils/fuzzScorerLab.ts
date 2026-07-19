@@ -23,6 +23,7 @@ import type { SearchAst } from "@/utils/search-query/types";
 
 /**
  * Where a corpus title was read from.
+ * @category Utils
  * @group Types
  * @source
  */
@@ -32,6 +33,7 @@ export type CorpusSource = "queryCache" | "searchResults";
  * Which cached stores to build the corpus from. The plain-English aliases
  * (`"both"`, `"cache"`, `"results"`) are accepted alongside the store names so the
  * console call reads naturally.
+ * @category Utils
  * @group Types
  * @source
  */
@@ -39,6 +41,7 @@ export type CorpusSourceOption = "all" | "both" | "cache" | "results" | CorpusSo
 
 /**
  * One cached product title plus the provenance needed to interpret a score.
+ * @category Utils
  * @group Types
  * @source
  */
@@ -53,6 +56,7 @@ export interface CorpusEntry {
 
 /**
  * Options for {@link fuzzTest} / {@link scoreCorpus}.
+ * @category Utils
  * @group Types
  * @source
  */
@@ -73,6 +77,7 @@ export interface FuzzProbeOptions {
 
 /**
  * A corpus entry annotated with a single score.
+ * @category Utils
  * @group Types
  * @source
  */
@@ -80,6 +85,7 @@ export type ScoredEntry = CorpusEntry & { score: number };
 
 /**
  * Result of scoring a corpus with every active scorer.
+ * @category Utils
  * @group Types
  * @source
  */
@@ -97,6 +103,7 @@ export interface FuzzProbeResult {
 
 /**
  * Options for {@link astTest} / {@link evaluateCorpusAst}.
+ * @category Utils
  * @group Types
  * @source
  */
@@ -121,6 +128,7 @@ export interface AstProbeOptions {
 
 /**
  * A corpus entry that failed the AST predicate, with the leaves responsible.
+ * @category Utils
  * @group Types
  * @source
  */
@@ -128,6 +136,7 @@ export type DroppedEntry = CorpusEntry & { failedTerms: string[] };
 
 /**
  * Result of evaluating a corpus against a parsed search query.
+ * @category Utils
  * @group Types
  * @source
  */

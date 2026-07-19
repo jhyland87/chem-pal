@@ -171,4 +171,9 @@ export function createDOM(html: string): Document {
   return doc;
 }
 
+/**
+ * Re-exported from `./fetch` so callers can reach the request helpers through a
+ * single entry point.
+ * @category Helpers
+ */
 export { fetchDecorator, generateRequestHash, generateSimpleHash } from "./fetch";

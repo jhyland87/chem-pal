@@ -1,7 +1,11 @@
 import { parse as parseLiqe } from "liqe";
 import type { ParsedSearchQuery, SearchAst } from "./types";
 
-/** Bare words that act as boolean operators (case-insensitive). */
+/**
+ * Bare words that act as boolean operators (case-insensitive).
+ * @category Utils
+ * @group Search
+ */
 export const OPERATOR_WORDS = new Set(["AND", "OR", "NOT"]);
 
 /** A token produced by {@link tokenize}. */
@@ -161,6 +165,8 @@ function normalizeLiqeNode(node: unknown): SearchAst {
  * Returns true when the query contains boolean operators or parentheses and so
  * should be parsed as an advanced query rather than a plain search term.
  *
+ * @category Utils
+ * @group Search
  * @param input - The raw query string.
  * @returns True when advanced syntax is present.
  * @source
@@ -180,6 +186,8 @@ export function hasAdvancedSyntax(input: string): boolean {
  * unsupported syntax — degrades gracefully to that same plain single-term form
  * rather than throwing, so a malformed advanced query never breaks a search.
  *
+ * @category Utils
+ * @group Search
  * @param input - The raw search string from the search box.
  * @returns The parsed query (always usable; never throws).
  * @example

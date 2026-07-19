@@ -2,6 +2,7 @@ import { AppContext } from "@/context";
 import { i18n, useLocale } from "@/helpers/i18n";
 import { playAdvancedModeSound } from "@/helpers/advancedMode";
 import { useHotkeys } from "@/hotkeys";
+import { useDebugApi } from "@/hooks/useDebugApi";
 import { useUserSettings } from "@/hooks/useUserSettings";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -54,6 +55,8 @@ export function OptionsApp() {
     [advancedMode],
   );
   useHotkeys(hotkeyHandlers);
+  // Same unlock as the popup, so the console helpers work on this page too.
+  useDebugApi(advancedMode);
 
   const contextValue: AppContextProps = {
     userSettings,

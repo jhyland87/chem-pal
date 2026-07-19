@@ -5,6 +5,7 @@ import { isPopulatedObject } from "./common";
  * product combination). Narrows an unknown parsed value to
  * {@link LeroChemDataProduct}; only requires that it be a populated object, as
  * every field is optional.
+ * @category Typeguards
  * @param value - The parsed `data-product` value to test
  * @returns True when `value` is an object usable as a LeroChem data-product
  * @example
@@ -24,6 +25,7 @@ export function isLeroChemDataProduct(value: unknown): value is LeroChemDataProd
  * Type guard for the PrestaShop product `refresh` AJAX response. Narrows an
  * unknown parsed value to {@link LeroChemVariantRefresh} by requiring that it be
  * an object carrying a string `product_details` HTML fragment.
+ * @category Typeguards
  * @param value - The parsed AJAX response to test
  * @returns True when `value` carries a `product_details` HTML string
  * @example

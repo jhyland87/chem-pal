@@ -7,6 +7,7 @@ import { getCountryName } from "@/helpers/country";
 import { i18n } from "@/helpers/i18n";
 import { formatDisplayPrice } from "@/helpers/price";
 import { pubchemCasSearchUrl, pubchemCompoundUrl } from "@/helpers/pubchem";
+import { formatUomForDisplay } from "@/helpers/quantity";
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowRightIcon from "@/icons/ArrowRightIcon";
 import COAIcon from "@/icons/COAIcon";
@@ -298,7 +299,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
         },
       },
       cell: ({ row }: ProductRow) => {
-        return `${row.original.quantity} ${row.original.uom}`;
+        return `${row.original.quantity} ${formatUomForDisplay(row.original.uom)}`;
       },
       sortingFn: "quantitySortingFn",
       filterFn: "inNumberRangeHierarchy",
@@ -307,11 +308,13 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
     {
       id: "uom",
       header: i18n("column_unit"),
+      cell: (info) => formatUomForDisplay(info.getValue()),
       accessorKey: "uom",
       filterFn: "multiSelect",
       meta: {
         filterPlaceholder: i18n("filter_placeholder_unit"),
         filterVariant: "select",
+        renderSelectOption: (value) => formatUomForDisplay(value),
         style: {
           textAlign: "left",
         },

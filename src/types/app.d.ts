@@ -49,3 +49,9 @@ declare const __APP_CONTRIBUTORS__: Contributor[];
 declare const __GITHUB_OWNER__: string;
 /** GitHub repository name, from `package.json` `config.github.repo`. */
 declare const __GITHUB_REPO__: string;
+/**
+ * Raw markdown of the `## [Unreleased]` section of `CHANGELOG.md` at build time,
+ * or `""` when there isn't one. Lets the debug console preview the next
+ * release's notes; see `chempal.simulateUpdate()`.
+ */
+declare const __CHANGELOG_UNRELEASED__: string;

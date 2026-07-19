@@ -1,5 +1,6 @@
 /**
  * Finds the first HTMLElement with the given text in the tree.
+ * @category Helpers
  * @param root - The root HTMLElement to search in
  * @param searchText - The text or RegExp to search for
  * @returns The HTMLElement with the given text, or undefined if not found

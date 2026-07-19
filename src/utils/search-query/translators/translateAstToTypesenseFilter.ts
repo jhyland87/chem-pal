@@ -46,6 +46,8 @@ function build(ast: SearchAst, negated: boolean): string {
  * Translates a {@link SearchAst} into a Typesense `filter_by` string over the
  * `name` field, for use alongside `q: "*"` in a Typesense search request.
  *
+ * @category Utils
+ * @group Converters
  * @param ast - The parsed query tree.
  * @returns A Typesense `filter_by` expression.
  * @example
