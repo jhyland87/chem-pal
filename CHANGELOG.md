@@ -13,6 +13,8 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-07-19
+
 ### Added
 
 - Update prompt: Chem Pal now tells you when a newer version is available, with a
