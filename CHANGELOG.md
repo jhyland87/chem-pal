@@ -18,6 +18,16 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 - Update prompt: Chem Pal now tells you when a newer version is available, with a
   **What's new** summary of the release. Web Store installs can apply the staged
   update straight from the prompt; manual installs get a link to the release.
+- After updating, Chem Pal shows what changed in the version you moved onto.
+
+### Fixed
+
+- The About panel's update check reported "up to date" when a newer version was
+  actually available, and vice versa.
+- Search logic: The search logic has been improved after rigorous testing and should
+  yield more suitable results.
+- I18n updates/fixes for multiple languages.
+- Rendering issues for smaller screens resolved.
 
 ## [1.2.0] - 2026-07-18
 

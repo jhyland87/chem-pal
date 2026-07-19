@@ -120,13 +120,16 @@ describe("exposeDebugApi", () => {
     });
 
     // The whole point of the default: previewing what the next release ships.
+    // Straight after a release [Unreleased] is empty, so the sample notes stand
+    // in — asserting the section always has entries would fail on release day.
     it("defaults the notes to the CHANGELOG [Unreleased] section", async () => {
       exposeDebugApi();
       await window.chempal?.simulateUpdate();
 
-      const expected = parseReleaseNotes(__CHANGELOG_UNRELEASED__);
-      expect(expected.length).toBeGreaterThan(0);
-      expect(written("update_check").notes).toEqual(expected);
+      const unreleased = parseReleaseNotes(__CHANGELOG_UNRELEASED__);
+      const notes = written("update_check").notes;
+      expect(Object.keys(notes).length).toBeGreaterThan(0);
+      if (unreleased.length > 0) expect(notes).toEqual(unreleased);
     });
 
     // The Web Store branch is gated on the install source, so on an unpacked

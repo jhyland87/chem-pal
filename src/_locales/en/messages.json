@@ -1087,6 +1087,19 @@
     "message": "Release notes couldn't be loaded.",
     "description": "Shown in the what's-new modal when the release notes could not be fetched."
   },
+  "update_installed_message": {
+    "message": "Chem Pal was updated to v$version$.",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    },
+    "description": "Snackbar text shown after the extension updates itself; the placeholder is the new version number."
+  },
+  "update_got_it": {
+    "message": "Got it",
+    "description": "Button that acknowledges the what's-new notes for an already-installed release."
+  },
   "update_available_message": {
     "message": "Chem Pal v$version$ is available.",
     "placeholders": {

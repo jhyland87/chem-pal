@@ -1,12 +1,7 @@
 import { i18n } from "@/helpers/i18n";
 import type { UpdateNotice } from "@/hooks/useUpdateAvailable";
-import CloseIcon from "@mui/icons-material/Close";
-import Alert from "@mui/material/Alert";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import Snackbar from "@mui/material/Snackbar";
 import { useState } from "react";
-import styles from "./UpdatePrompt.module.scss";
+import { PromptSnackbar } from "./PromptSnackbar";
 import { WhatsNewModal } from "./WhatsNewModal";
 
 /**
@@ -81,44 +76,19 @@ export function UpdatePrompt({ notice, onDismiss, onApply }: UpdatePromptProps) 
 
   return (
     <>
-      <Snackbar
-        data-testid="update-snackbar"
+      <PromptSnackbar
+        testId="update-snackbar"
+        actionTestId="update-apply"
+        dismissTestId="update-dismiss"
         // Hidden while the modal is up (never two notices for one update), and
         // stays hidden once the notes have been read and closed.
         open={!notesOpen && !notesSeen}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        className={styles["update-snackbar"]}
-      >
-        <Alert
-          severity="info"
-          variant="filled"
-          // Alert drops its own close button as soon as `action` is set, so the
-          // dismiss control has to be composed in here alongside the CTA.
-          action={
-            <>
-              <Button
-                data-testid="update-apply"
-                color="inherit"
-                size="small"
-                onClick={handleAction}
-              >
-                {actionLabel}
-              </Button>
-              <IconButton
-                data-testid="update-dismiss"
-                aria-label={i18n("update_dismiss")}
-                color="inherit"
-                size="small"
-                onClick={onDismiss}
-              >
-                <CloseIcon fontSize="inherit" />
-              </IconButton>
-            </>
-          }
-        >
-          {i18n("update_available_message", [notice.version])}
-        </Alert>
-      </Snackbar>
+        message={i18n("update_available_message", [notice.version])}
+        actionLabel={actionLabel}
+        onAction={handleAction}
+        onDismiss={onDismiss}
+        dismissLabel={i18n("update_dismiss")}
+      />
       <WhatsNewModal
         notice={notice}
         open={notesOpen}

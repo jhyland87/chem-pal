@@ -4,6 +4,7 @@ import { AppContext, useAppContext } from "@/context";
 import { emitSearchEvent, SearchEvent } from "@/events/searchEvents";
 import { playAdvancedModeSound } from "@/helpers/advancedMode";
 import { useDebugApi } from "@/hooks/useDebugApi";
+import { useJustUpdated } from "@/hooks/useJustUpdated";
 import { useUpdateAvailable } from "@/hooks/useUpdateAvailable";
 import { HotkeyEvent, HotkeyHelpModal, useHotkeys, type HotkeyHandlers } from "@/hotkeys";
 import {
@@ -36,6 +37,7 @@ import DrawerSystem from "./components/DrawerSystem";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { MigrationPrompt } from "./components/MigrationPrompt";
 import { UpdatePrompt } from "./components/UpdatePrompt";
+import { WhatsNewPrompt } from "./components/WhatsNewPrompt";
 import SearchPanel from "./components/SearchPanel/SearchPanel";
 import SearchPanelHome from "./components/SearchPanelHome";
 import SpeedDialMenu from "./components/SpeedDialMenu";
@@ -214,6 +216,8 @@ function App() {
     dismiss: dismissUpdate,
     applyUpdate,
   } = useUpdateAvailable();
+  // The other side of the same coin: what changed in the release we're now on.
+  const { notice: justUpdatedNotice, acknowledge: acknowledgeJustUpdated } = useJustUpdated();
   // Pending search query - set by HistoryPanel, consumed by ResultsTable
   const [pendingSearchQuery, setPendingSearchQuery] = useState<string | null>(null);
   // Pre-search filters - set by DrawerSearchPanel, consumed by useSearch
@@ -801,6 +805,10 @@ function App() {
                 notice={updateNotice}
                 onDismiss={dismissUpdate}
                 onApply={applyUpdate}
+              />
+              <WhatsNewPrompt
+                notice={justUpdatedNotice}
+                onAcknowledge={acknowledgeJustUpdated}
               />
             </div>
             <StatusBar />
