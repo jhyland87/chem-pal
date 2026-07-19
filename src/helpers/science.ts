@@ -1080,7 +1080,7 @@ export const parseChemicalSpecs = (html: string): ChemicalSpecs => {
     const rawFormula = formulaMatch[1];
     const formula = isMoleForm(rawFormula) ? rawFormula : findFormulaInText(rawFormula);
     if (formula) {
-      specs.formula = formula;
+      specs.formula = formatFormula(formula);
       break;
     }
   }

@@ -1,7 +1,7 @@
 import { findCAS } from "@/helpers/cas";
 import { parseQuantity } from "@/helpers/quantity";
 import { createDOM } from "@/helpers/request";
-import { parsePurity } from "@/helpers/science";
+import { formatFormula, parsePurity } from "@/helpers/science";
 import { mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { translateAstToFreefind } from "@/utils/search-query/translators/translateAstToFreefind";
@@ -534,6 +534,11 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
     if (!builder.get("cas")) {
       builder.setCAS(findCAS(props["CAS No."] ?? ""));
     }
+
+    if (builder.get("formula")) {
+      builder.setFormula(formatFormula(builder.get("formula")));
+    }
+    console.log("builder.get('formula')", builder.get("formula"), builder);
   }
 
   /**
