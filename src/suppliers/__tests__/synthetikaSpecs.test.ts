@@ -1,8 +1,8 @@
 // ProductBuilder is imported first to satisfy the supplier module-init cycle that the
 // transitive typeGuards import can otherwise trip.
-import { ProductBuilder } from "@/utils/ProductBuilder";
 import { findCAS } from "@/helpers/cas";
 import { findMolarity, parseChemicalSpecs } from "@/helpers/science";
+import { ProductBuilder } from "@/utils/ProductBuilder";
 import { describe, expect, it } from "vitest";
 
 /**
@@ -26,15 +26,19 @@ describe("Synthetika description spec extraction", () => {
       '<span style="font-weight: 400;">Sum Formula: C3H5NaO2</span>' +
       '<span style="font-weight: 400;"><br /></span>' +
       '<span style="font-weight: 400;">Molar Mass: 96.06 g/mol</span></p>';
-    expect(extract(html)).toMatchObject({ cas: "137-40-6", formula: "C3H5NaO2", moleweight: 96.06 });
+    expect(extract(html)).toMatchObject({
+      cas: "137-40-6",
+      formula: "C₃H₅NaO₂",
+      moleweight: 96.06,
+    });
   });
 
   it("parses plain-text fields with unicode-subscript formulas", () => {
     const html =
-      '<p>CAS Number: 6132-04-3<br /> Sum Formula: C₆H₅Na₃O₇<br /> Molar Mass: 258.06 g/mol</p>';
+      "<p>CAS Number: 6132-04-3<br /> Sum Formula: C₆H₅Na₃O₇<br /> Molar Mass: 258.06 g/mol</p>";
     expect(extract(html)).toMatchObject({
       cas: "6132-04-3",
-      formula: "C6H5Na3O7",
+      formula: "C₆H₅Na₃O₇",
       moleweight: 258.06,
     });
   });
@@ -44,7 +48,11 @@ describe("Synthetika description spec extraction", () => {
       "<p><strong>CAS Number</strong>: 127-09-3<br />" +
       "<strong>Chemical Formula</strong>: CH₃COONa<br />" +
       "<strong>Molar Mass</strong>: 82.03 g/mol</p>";
-    expect(extract(html)).toMatchObject({ cas: "127-09-3", formula: "CH3COONa", moleweight: 82.03 });
+    expect(extract(html)).toMatchObject({
+      cas: "127-09-3",
+      formula: "CH₃COONa",
+      moleweight: 82.03,
+    });
   });
 
   it("parses <strong> labels with the colon inside (Sum Formula + hydrate)", () => {
@@ -54,7 +62,7 @@ describe("Synthetika description spec extraction", () => {
       "<strong>Molar Mass:</strong> 241.19 g/mol</p>";
     expect(extract(html)).toMatchObject({
       cas: "6155-57-3",
-      formula: "C7H4NNaO3S",
+      formula: "C₇H₄NNaO₃S",
       moleweight: 241.19,
     });
   });
@@ -64,7 +72,7 @@ describe("Synthetika description spec extraction", () => {
       "<p><strong>Other Names</strong>: Superabsorbent polymer (SAP)<br />" +
       "<strong>Chemical Formula (Repeating Unit)</strong>: (C₃H₃NaO₂)ₙ<br />" +
       "<strong>CAS Number</strong>: 9003-04-7</p>";
-    expect(extract(html)).toMatchObject({ cas: "9003-04-7", formula: "(C3H3NaO2)ₙ" });
+    expect(extract(html)).toMatchObject({ cas: "9003-04-7", formula: "(C₃H₃NaO₂)ₙ" });
   });
 
   it("stores the polymer repeat-unit formula through ProductBuilder.setFormula", () => {
@@ -76,8 +84,8 @@ describe("Synthetika description spec extraction", () => {
   });
 
   it("captures molarity from a solution name", () => {
-    expect(extract("<p>CAS Number: 7647-01-0</p>", "Hydrochloric Acid 1.5M Solution")).toMatchObject(
-      { concentration: "1.5 M" },
-    );
+    expect(
+      extract("<p>CAS Number: 7647-01-0</p>", "Hydrochloric Acid 1.5M Solution"),
+    ).toMatchObject({ concentration: "1.5 M" });
   });
 });

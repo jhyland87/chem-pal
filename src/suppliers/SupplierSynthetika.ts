@@ -3,7 +3,7 @@ import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity } from "@/helpers/quantity";
 import { urlencode } from "@/helpers/request";
-import { findMolarity, parseChemicalSpecs } from "@/helpers/science";
+import { findMolarity, formatFormula, parseChemicalSpecs } from "@/helpers/science";
 import { firstMap, mapDefined } from "@/helpers/utils";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import {
@@ -98,7 +98,6 @@ export class SupplierSynthetika
 
   /** HTTP headers used as a basis for all queries */
   protected headers: HeadersInit = {
-     
     accept: [
       "text/html",
       "application/xhtml+xml",
@@ -123,7 +122,6 @@ export class SupplierSynthetika
     "sec-fetch-site": "same-origin",
     "sec-gpc": "1",
     "x-requested-with": "XMLHttpRequest",
-     
   };
 
   /**
@@ -503,7 +501,7 @@ export class SupplierSynthetika
         builder.setCAS(cas);
       }
       if (specs.formula) {
-        builder.setFormula(specs.formula);
+        builder.setFormula(formatFormula(specs.formula));
       }
       if (specs.molecularWeight !== undefined) {
         builder.setMoleweight(specs.molecularWeight);

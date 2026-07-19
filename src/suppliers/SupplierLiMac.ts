@@ -538,7 +538,6 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
     if (builder.get("formula")) {
       builder.setFormula(formatFormula(builder.get("formula")));
     }
-    console.log("builder.get('formula')", builder.get("formula"), builder);
   }
 
   /**
