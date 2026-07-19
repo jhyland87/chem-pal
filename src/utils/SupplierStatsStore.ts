@@ -17,6 +17,7 @@
  * @source
  */
 
+import { toDateKey } from "@/helpers/supplierStats";
 import {
   getSupplierStatsEntry,
   putSupplierStatsEntry,
@@ -24,7 +25,6 @@ import {
   deleteSupplierStatsEntries,
   clearSupplierStats as idbClearSupplierStats,
 } from "@/utils/idbCache";
-import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 
 const RETENTION_DAYS = 30;
 const FLUSH_DELAY_MS = 500;
@@ -33,16 +33,20 @@ const FLUSH_DELAY_MS = 500;
 const pendingIncrements: Map<string, number> = new Map();
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
 
-/** Returns today's date as YYYY-MM-DD for data grouping */
+/**
+ * Returns today's date as YYYY-MM-DD for data grouping, in local time. These
+ * buckets are user-facing (the panel's "Today" filter and daily chart), so they
+ * follow the user's calendar rather than UTC.
+ */
 function todayDateKey(): string {
-  return new Date().toISOString().slice(0, 10);
+  return toDateKey(new Date());
 }
 
 /** Get the cutoff date key for pruning */
 function getCutoffDateKey(): string {
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - RETENTION_DAYS);
-  return cutoff.toISOString().slice(0, 10);
+  return toDateKey(cutoff);
 }
 
 const EMPTY_STATS: SupplierDayStats = {
@@ -132,42 +136,36 @@ async function pruneOldEntries(): Promise<void> {
 
 /** Increment search query count (called once per supplier at start of execute()) */
 export function incrementSearchQueryCount(supplier: string): void {
-  if (!IS_DEV_BUILD) return;
   bufferIncrement(supplier, "searchQueryCount");
 }
 
 /** Increment successful HTTP connection count (HTTP 2xx, non-cached) */
 export function incrementSuccess(supplier: string): void {
-  if (!IS_DEV_BUILD) return;
   bufferIncrement(supplier, "successCount");
 }
 
 /** Increment failed HTTP connection count (HTTP 4xx/5xx, network errors, non-cached) */
 export function incrementFailure(supplier: string): void {
-  if (!IS_DEV_BUILD) return;
   bufferIncrement(supplier, "failureCount");
 }
 
 /** Increment unique product count (called when a non-cached product detail is fetched) */
 export function incrementProductCount(supplier: string): void {
-  if (!IS_DEV_BUILD) return;
   bufferIncrement(supplier, "uniqueProductCount");
 }
 
 /** Increment parse/processing error count (called when product processing throws) */
 export function incrementParseError(supplier: string): void {
-  if (!IS_DEV_BUILD) return;
   bufferIncrement(supplier, "parseErrorCount");
 }
 
 /**
  * Read all stats from IndexedDB, returning the SupplierStatsData shape:
- * `{ [dateKey]: { [supplier]: SupplierDayStats } }`. Returns an empty object
- * in production builds, where stats tracking is disabled.
+ * `{ [dateKey]: { [supplier]: SupplierDayStats } }`. Recording runs in every
+ * build; only the stats *UI* is gated (dev builds, or advanced mode).
  * @source
  */
 export async function getStats(): Promise<SupplierStatsData> {
-  if (!IS_DEV_BUILD) return {};
   // Flush any pending increments first
   await flushToStorage();
   try {
@@ -178,9 +176,8 @@ export async function getStats(): Promise<SupplierStatsData> {
   }
 }
 
-/** Clear all stats — removes all records from the supplierStats store. No-op in production. */
+/** Clear all stats — removes all records from the supplierStats store. */
 export async function clearStats(): Promise<void> {
-  if (!IS_DEV_BUILD) return;
   pendingIncrements.clear();
   try {
     await idbClearSupplierStats();

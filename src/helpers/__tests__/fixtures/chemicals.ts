@@ -1,4 +1,4 @@
-import { isCAS } from "@/helpers/cas";
+import { isCAS } from "@/utils/typeGuards/common";
 import { isSimpleName } from "@/helpers/pubchem";
 
 /**

@@ -1,7 +1,9 @@
 import { CAS_REGEX } from "@/constants/common";
+// `isCAS` lives in typeGuards/common; imported for internal use only.
+// Deliberately not re-exported: doing so made every isCAS consumer depend on
+// this module, creating a common.ts -> smiles.ts -> cas.ts -> common.ts cycle
+// that Rollup could not split cleanly across chunks.
 import { isCAS } from "@/utils/typeGuards/common";
-
-export { isCAS };
 
 /**
  * @category CAS Helpers

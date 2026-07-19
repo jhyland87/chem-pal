@@ -2,6 +2,7 @@ import react from "@vitejs/plugin-react";
 import { readFileSync } from "node:fs";
 import path from "path";
 import { defineConfig, normalizePath, build as viteBuild, type Plugin } from "vite";
+import analyzer from "vite-bundle-analyzer";
 import graphqlLoader from "vite-plugin-graphql-loader";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 import pkg from "./package.json" with { type: "json" };
@@ -51,8 +52,9 @@ function serviceWorkerBuildPlugin(options: {
   mode: string;
   isProd: boolean;
   isAggregate: boolean;
+  isAnalyze: boolean;
 }): Plugin {
-  const { browser, mode, isProd, isAggregate } = options;
+  const { browser, mode, isProd, isAggregate, isAnalyze } = options;
   return {
     name: "chem-pal-service-worker",
     apply: "build",
@@ -65,7 +67,7 @@ function serviceWorkerBuildPlugin(options: {
         // per-browser manifest (via manifestPlugin), and copying public/ again
         // would clobber it with the untransformed base manifest.json.
         publicDir: false,
-        define: buildDefines(pkg, { isAggregate, isProd }),
+        define: buildDefines(pkg, { isAggregate, isProd, isAnalyze }),
         resolve: { alias: { "@": _resolve("./src") } },
         esbuild: {
           pure: isProd ? ["console.log", "console.info", "console.debug", "console.trace"] : [],
@@ -99,7 +101,7 @@ export default ({ mode }: { mode: string }) => {
   // dev-only mock service worker is statically copied.
   const staticCopyTargets: Array<{ src: string; dest: string }> = [];
 
-  if (mode !== "production") {
+  if (mode !== "production" && mode !== "analyze-prod") {
     staticCopyTargets.push({
       src: normalizePath(_resolve("./src/__mocks__/mockServiceWorker.js")),
       dest: "public",
@@ -112,10 +114,12 @@ export default ({ mode }: { mode: string }) => {
   });
 
   const isAggregate = mode === "aggregate";
-  const isProd = mode === "production";
+  const isProd =
+    process.env.NODE_ENV === "PRODUCTION" || mode === "production" || mode === "analyze-prod";
+  const isAnalyze = mode === "analyze" || mode === "analyze-prod";
 
   return defineConfig({
-    define: buildDefines(pkg, { isAggregate, isProd }),
+    define: buildDefines(pkg, { isAggregate, isProd, isAnalyze }),
     // In prod, drop noisy debug logging (console.log/info/debug/trace) so it
     // doesn't ship to the store — including calls that bypass Logger. warn/error
     // are kept so genuine problems still surface; `debugger` is stripped too.
@@ -150,14 +154,14 @@ export default ({ mode }: { mode: string }) => {
       react(),
       graphqlLoader(),
       manifestPlugin(browser),
-      serviceWorkerBuildPlugin({ browser, mode, isProd, isAggregate }),
+      serviceWorkerBuildPlugin({ browser, mode, isProd, isAggregate, isAnalyze }),
       viteStaticCopy({
         targets: staticCopyTargets,
       }),
-      /*
-      analyzer({
-        openAnalyzer: false,
-      }),*/
+      isAnalyze &&
+        analyzer({
+          openAnalyzer: isAnalyze,
+        }),
     ],
     build: {
       // Source maps in dev/aggregate only; prod ships without them to keep the
@@ -178,25 +182,25 @@ export default ({ mode }: { mode: string }) => {
           sourcemapPathTransform: (relativeSourcePath) => {
             // Make source map paths relative to project root
             return path.relative(".", relativeSourcePath);
-          } /*
-          // Chunk optimization
-          manualChunks: true //isDev
-            ? undefined
-            : {
-                vendor_mui_style: ["@mui/styled-engine", "@mui/styles"],
-                vendor_mui_material: ["@mui/material"],
-                vendor_mui_x_data_grid: ["@mui/x-data-grid"],
-                vendor_tanstack: ["@tanstack/react-table"],
-                vendor_lodash: ["lodash"],
-                vendor_react: [
-                  "react",
-                  "react-dom",
-                  "react-form-hook",
-                  "react-icons",
-                  "react-virtuoso",
-                  "react-svg-credit-card-payment-icons",
-                ],
-              },*/,
+          },
+          // Give the heavy MUI X dependencies their own chunks instead of letting
+          // them inline into whichever lazy chunk imports them. This shrinks the
+          // StatsPanel chunk to just its own code (~36KB), and — because the data
+          // grid had been duplicated into a second chunk via the components barrel
+          // — deduplicates ~940KB that was being emitted twice.
+          //
+          // Names are deliberately dependency-based, not "stats-*": the grid is
+          // also referenced by FavoritesPanel, so a stats-specific name would lie
+          // if that component is ever wired up.
+          manualChunks: (id: string) => {
+            if (id.includes("node_modules/@mui/x-data-grid")) return "vendor-mui-x-data-grid";
+            if (id.includes("node_modules/@mui/x-charts")) return "vendor-mui-x-charts";
+            // @mui/x-charts' transitive D3 stack (scale/shape/array/interpolate…).
+            if (/node_modules\/(d3-[a-z]+|internmap|delaunator|robust-predicates)\//.test(id)) {
+              return "vendor-mui-x-charts";
+            }
+            return undefined;
+          },
         },
       },
     },

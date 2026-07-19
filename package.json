@@ -41,11 +41,13 @@
   ],
   "sourceType": "module",
   "scripts": {
-    "prebuild": "pnpm run generate-logo-files",
+    "prebuild": "pnpm run generate",
     "dev": "pnpm run generate-logo-files && vite",
     "dev-mock": "vite --mode=mock",
     "type-check": "tsc -b",
     "build": "vite build --mode=development",
+    "build:analyze": "vite build --mode=analyze",
+    "build:analyze:prod": "NODE_ENV=production vite build --mode=analyze-prod",
     "build:firefox": "BROWSER=firefox vite build --mode=development",
     "build:aggregate": "vite build --mode=aggregate",
     "build:full": "pnpm type-check && pnpm build",
@@ -68,9 +70,11 @@
     "validate-docs": "tsc --noEmit",
     "generate-logo-files": "node tools/generate-logo-files.js",
     "pack": "node tools/pack-extension.js",
-    "build:prod": "pnpm run generate-logo-files && vite build --mode=production && node tools/pack-extension.js",
-    "build:prod:firefox": "pnpm run generate-logo-files && BROWSER=firefox vite build --mode=production && node tools/pack-firefox.js",
-    "show-deprecations": "pnpm outdated --json | jq '.[] | select(.isDeprecated)'"
+    "build:prod": "pnpm run generate && vite build --mode=production && node tools/pack-extension.js",
+    "build:prod:firefox": "pnpm run generate && BROWSER=firefox vite build --mode=production && node tools/pack-firefox.js",
+    "show-deprecations": "pnpm outdated --json | jq '.[] | select(.isDeprecated)'",
+    "generate-supplier-constants": "node tools/generate-supplier-constants.js",
+    "generate": "pnpm run generate-logo-files && pnpm run generate-supplier-constants"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -217,7 +221,7 @@
     "typescript-eslint": "^8.26.1",
     "underscore": "^1.13.7",
     "vite": "^6.3.1",
-    "vite-bundle-analyzer": "^0.20.1",
+    "vite-bundle-analyzer": "^0.20.2",
     "vite-plugin-graphql-loader": "^5.1.1",
     "vite-plugin-static-copy": "^2.3.1",
     "vitest": "^3.1.4",

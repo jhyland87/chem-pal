@@ -3,7 +3,7 @@ import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 import { findCountryByIso2 } from "@/helpers/country";
 import { looksLikeSmiles } from "@/helpers/smiles";
 import { zodAddActualValueToIssues } from "@/helpers/utils";
-import { SupplierFactory } from "@/suppliers/SupplierFactory";
+import { SUPPLIER_CLASS_NAMES } from "@/constants/suppliers";
 //import { currencies } from "price-parser";
 import { z } from "zod";
 
@@ -855,10 +855,13 @@ export function isInputElement(target: EventTarget | null): target is HTMLInputE
   return target instanceof HTMLInputElement;
 }
 
-// Lazily built so `SupplierFactory.supplierList()` isn't evaluated at module
-// load. `typeGuards/common.ts` sits on a circular import path through
-// `SupplierFactory` → supplier classes → `SupplierBase` → `typeGuards/common`,
-// so touching `SupplierFactory` at top level puts it in the TDZ.
+// Memoized so the schema is built once on first validation rather than per call.
+// This used to be load-bearing: reading the supplier list from `SupplierFactory`
+// at module load hit a TDZ, because that pulled the circular path
+// `SupplierFactory` → supplier classes → `SupplierBase` → `typeGuards/common`.
+// Sourcing the names from a dependency-free constant removes that cycle — and
+// keeps every supplier implementation out of the bundles of entry points (like
+// the options page) that only need to validate settings.
 let cachedUserSettingsSchema: ReturnType<typeof buildUserSettingsSchema> | null = null;
 function buildUserSettingsSchema() {
   return z.object({
@@ -882,7 +885,7 @@ function buildUserSettingsSchema() {
       .optional(),
     theme: z.enum(["light", "dark"]).optional(),
     fontSize: z.enum(["small", "medium", "large"]).optional(),
-    suppliers: z.array(z.enum(SupplierFactory.supplierList())).optional(),
+    suppliers: z.array(z.enum(SUPPLIER_CLASS_NAMES)).optional(),
     excludeNonShippingSuppliers: z.boolean().optional(),
     hideRestrictedProducts: z.boolean().optional(),
     hideColumns: z.array(z.string()).optional(),

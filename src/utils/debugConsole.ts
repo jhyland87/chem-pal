@@ -1,6 +1,7 @@
 import type { BackgroundFetchInit } from "@/helpers/backgroundFetch";
 import { backgroundFetch as backgroundFetchHelper } from "@/helpers/backgroundFetch";
-import { findCAS, getCASByName, getIUPACName, getNamesByCAS, isCAS } from "@/helpers/cas";
+import { findCAS, getCASByName, getIUPACName, getNamesByCAS } from "@/helpers/cas";
+import { isCAS } from "@/utils/typeGuards/common";
 import {
   getProductPriceHistory as getProductPriceHistorySeries,
   variantSeriesKey,

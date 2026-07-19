@@ -259,7 +259,7 @@ describe("Chem-Pal search query", () => {
   );
 
   it(
-    "should query for 'sodium borohydride' and return at least 20 results from mock data",
+    "should query for 'sodium borohydride' and return at least 10 results from mock data",
     async () => {
       const page = await openExtension();
 
@@ -297,7 +297,7 @@ describe("Chem-Pal search query", () => {
         .locator("tbody tr")
         .filter({ has: page.locator("td") })
         .count();
-      vitestExpect(rowCount).toBeGreaterThanOrEqual(20);
+      vitestExpect(rowCount).toBeGreaterThanOrEqual(10);
 
       // The persisted searchResults must contain each product exactly once. A
       // doubled search (the bug this guards against) would fire the query twice

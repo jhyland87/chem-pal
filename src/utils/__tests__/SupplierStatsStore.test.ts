@@ -3,6 +3,7 @@ import {
   restoreChromeStorageMock,
   setupChromeStorageMock,
 } from "@/__fixtures__/helpers/chrome/storageMock";
+import { toDateKey } from "@/helpers/supplierStats";
 import { clearSupplierStats } from "@/utils/idbCache";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -53,7 +54,9 @@ describe("SupplierStatsStore", () => {
 
     vi.useRealTimers();
     const stats = await getStats();
-    const today = new Date().toISOString().slice(0, 10);
+    // Local calendar day — the store keys buckets locally so "Today" in the
+    // stats panel matches the user's day, not UTC's.
+    const today = toDateKey(new Date());
 
     expect(stats[today]).toBeDefined();
     expect(stats[today]["Carolina"]).toBeDefined();
@@ -68,7 +71,9 @@ describe("SupplierStatsStore", () => {
 
     vi.useRealTimers();
     const stats = await getStats();
-    const today = new Date().toISOString().slice(0, 10);
+    // Local calendar day — the store keys buckets locally so "Today" in the
+    // stats panel matches the user's day, not UTC's.
+    const today = toDateKey(new Date());
 
     expect(stats[today]["Ambeed"].successCount).toBe(3);
   });
@@ -80,7 +85,9 @@ describe("SupplierStatsStore", () => {
 
     vi.useRealTimers();
     const stats = await getStats();
-    const today = new Date().toISOString().slice(0, 10);
+    // Local calendar day — the store keys buckets locally so "Today" in the
+    // stats panel matches the user's day, not UTC's.
+    const today = toDateKey(new Date());
 
     expect(stats[today]["LibertySci"].failureCount).toBe(2);
   });
@@ -95,7 +102,9 @@ describe("SupplierStatsStore", () => {
 
     vi.useRealTimers();
     const stats = await getStats();
-    const today = new Date().toISOString().slice(0, 10);
+    // Local calendar day — the store keys buckets locally so "Today" in the
+    // stats panel matches the user's day, not UTC's.
+    const today = toDateKey(new Date());
 
     expect(stats[today]["Macklin"].uniqueProductCount).toBe(5);
   });
@@ -106,7 +115,9 @@ describe("SupplierStatsStore", () => {
 
     vi.useRealTimers();
     const stats = await getStats();
-    const today = new Date().toISOString().slice(0, 10);
+    // Local calendar day — the store keys buckets locally so "Today" in the
+    // stats panel matches the user's day, not UTC's.
+    const today = toDateKey(new Date());
 
     expect(stats[today]["Himedia"].parseErrorCount).toBe(1);
   });
@@ -121,7 +132,9 @@ describe("SupplierStatsStore", () => {
 
     vi.useRealTimers();
     const stats = await getStats();
-    const today = new Date().toISOString().slice(0, 10);
+    // Local calendar day — the store keys buckets locally so "Today" in the
+    // stats panel matches the user's day, not UTC's.
+    const today = toDateKey(new Date());
 
     expect(stats[today]["Carolina"].successCount).toBe(2);
     expect(stats[today]["Carolina"].failureCount).toBe(0);
@@ -136,7 +149,9 @@ describe("SupplierStatsStore", () => {
 
     vi.useRealTimers();
     const stats = await getStats();
-    const today = new Date().toISOString().slice(0, 10);
+    // Local calendar day — the store keys buckets locally so "Today" in the
+    // stats panel matches the user's day, not UTC's.
+    const today = toDateKey(new Date());
     const entry = stats[today]["NewSupplier"];
 
     expect(entry.searchQueryCount).toBe(0);
@@ -167,7 +182,9 @@ describe("SupplierStatsStore", () => {
 
     vi.useRealTimers();
     const stats = await getStats();
-    const today = new Date().toISOString().slice(0, 10);
+    // Local calendar day — the store keys buckets locally so "Today" in the
+    // stats panel matches the user's day, not UTC's.
+    const today = toDateKey(new Date());
 
     expect(stats[today]["RapidTest"].successCount).toBe(20);
   });
@@ -178,7 +195,9 @@ describe("SupplierStatsStore", () => {
 
     vi.useRealTimers();
     const stats = await getStats();
-    const today = new Date().toISOString().slice(0, 10);
+    // Local calendar day — the store keys buckets locally so "Today" in the
+    // stats panel matches the user's day, not UTC's.
+    const today = toDateKey(new Date());
 
     // Verify the date key is in YYYY-MM-DD format
     expect(stats[today]).toBeDefined();

@@ -436,7 +436,7 @@ importers:
         specifier: ^6.3.1
         version: 6.3.5(@types/node@22.15.29)(sass-embedded@1.89.1)(yaml@2.8.0)
       vite-bundle-analyzer:
-        specifier: ^0.20.1
+        specifier: ^0.20.2
         version: 0.20.2
       vite-plugin-graphql-loader:
         specifier: ^5.1.1

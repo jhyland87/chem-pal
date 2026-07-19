@@ -7,7 +7,6 @@ import ContrastIcon from "@/icons/ContrastIcon";
 import InfoOutlineIcon from "@/icons/InfoOutlineIcon";
 import { SupplierCache } from "@/utils/SupplierCache";
 import { clearSearchResults } from "@/utils/idbCache";
-import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import SpeedDial from "@mui/material/SpeedDial";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
@@ -97,27 +96,31 @@ export default function SpeedDialMenu({ speedDialVisibility }: SpeedDialMenuProp
    */
   const handleAboutOpen = () => setAboutOpen(true);
 
+  // Stats are recorded in every build; the graphs appear only once the Konami
+  // hotkey unlocks advanced mode — in dev builds too, so the toggle is honest.
+  const statsVisible = appContext.advancedMode;
+
   /**
-   * Handles navigating to the stats panel. No-op in production builds, where
-   * the Stats panel is not bundled.
+   * Handles navigating to the stats panel. No-op while the stats UI is hidden,
+   * so the panel can't be reached outside advanced mode.
    * @source
    */
   const handleStatsOpen = () => {
-    if (!IS_DEV_BUILD) return;
+    if (!statsVisible) return;
     appContext.setPanel?.(PANEL.STATS);
   };
 
   /**
    * Array of action configurations for the speed dial menu.
    * Each action includes an icon, name, and click handler.
-   * The Stats action is only present in dev builds.
+   * The Stats action appears only in advanced mode.
    * @source
    */
   const actions = [
     { icon: <ClearIcon />, name: i18n("speed_dial_clear_results"), onClick: handleClearResults },
     { icon: <AutoDeleteIcon />, name: i18n("speed_dial_clear_cache"), onClick: handleClearCache },
     { icon: <ContrastIcon />, name: i18n("speed_dial_toggle_theme"), onClick: handleToggleTheme },
-    ...(IS_DEV_BUILD
+    ...(statsVisible
       ? [{ icon: <BarChartIcon />, name: i18n("speed_dial_stats"), onClick: handleStatsOpen }]
       : []),
     { icon: <InfoOutlineIcon />, name: i18n("speed_dial_about"), onClick: handleAboutOpen },

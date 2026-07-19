@@ -262,6 +262,16 @@ describe("useHotkeys", () => {
       expect(konami).toHaveBeenCalledTimes(1);
     });
 
+    it("declares konami with no flash so its handler owns the status message", () => {
+      const konami = getHotkeyConfigs().find((c) => c.id === "konami");
+      // The handler flashes "advanced mode on/off" itself; a config `flash` would
+      // fire a second, state-blind message on top via onTriggered.
+      expect(konami?.flash).toBeUndefined();
+      // Stays an easter egg — excluded from the help modal.
+      expect(konami?.unlisted).toBe(true);
+      expect(konami?.sequential).toBe(true);
+    });
+
     it("fires the arrow chord binding (mod+shift+up) without touching the sequence", () => {
       const scrollResultsToTop = vi.fn();
       const konami = vi.fn();

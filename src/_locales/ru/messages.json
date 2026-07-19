@@ -1204,6 +1204,66 @@
     "message": "Ошибки обработки",
     "description": "Stats table column header."
   },
+  "stats_range_label": {
+    "message": "Период",
+    "description": "Supplier stats panel."
+  },
+  "stats_range_all": {
+    "message": "За всё время",
+    "description": "Supplier stats panel."
+  },
+  "stats_range_last30": {
+    "message": "Последние 30 дней",
+    "description": "Supplier stats panel."
+  },
+  "stats_range_last7": {
+    "message": "Последние 7 дней",
+    "description": "Supplier stats panel."
+  },
+  "stats_range_month": {
+    "message": "Этот месяц",
+    "description": "Supplier stats panel."
+  },
+  "stats_range_week": {
+    "message": "Эта неделя",
+    "description": "Supplier stats panel."
+  },
+  "stats_range_today": {
+    "message": "Сегодня",
+    "description": "Supplier stats panel."
+  },
+  "stats_empty_range": {
+    "message": "За этот период активность не зафиксирована.",
+    "description": "Supplier stats panel."
+  },
+  "stats_col_status": {
+    "message": "Статус",
+    "description": "Supplier stats panel."
+  },
+  "stats_status_ok": {
+    "message": "OK",
+    "description": "Supplier stats panel."
+  },
+  "stats_status_disabled": {
+    "message": "Отключён",
+    "description": "Supplier stats panel."
+  },
+  "stats_status_parse_errors": {
+    "message": "Слишком много ошибок парсинга",
+    "description": "Supplier stats panel."
+  },
+  "stats_status_parse_failure": {
+    "message": "Весь разбор не удался",
+    "description": "Supplier stats panel."
+  },
+  "stats_status_connection_errors": {
+    "message": "Слишком много ошибок соединения",
+    "description": "Supplier stats panel."
+  },
+  "stats_status_no_success": {
+    "message": "Нет успешных вызовов",
+    "description": "Supplier stats panel."
+  },
   "hotkeys_title": {
     "message": "Горячие клавиши",
     "description": "Title of the keyboard shortcuts modal."
@@ -1282,6 +1342,14 @@
   },
   "hotkeys_flash_clearandretrysearch": {
     "message": "Кэш очищен, поиск запущен повторно",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_advanced_on": {
+    "message": "Расширенный режим включён",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_advanced_off": {
+    "message": "Расширенный режим выключен",
     "description": "Hotkey status-bar flash."
   },
   "hotkeys_flash_openhistory": {

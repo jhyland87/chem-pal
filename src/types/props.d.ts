@@ -129,6 +129,13 @@ declare global {
     userSettings: UserSettings;
     /** Function to update settings */
     setUserSettings: (settings: UserSettings) => void;
+    /**
+     * Session-only advanced mode, unlocked by the Konami hotkey. Reveals
+     * developer-only settings; deliberately not persisted, so it resets on reload.
+     */
+    advancedMode: boolean;
+    /** Sets {@link advancedMode}. */
+    setAdvancedMode: (enabled: boolean) => void;
     /** Search results */
     searchResults: Product[];
     /** Function to update search results */

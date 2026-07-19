@@ -6,10 +6,7 @@ import "../main.scss";
 import { useTheme } from "../themes";
 import { SearchForm } from "./SearchForm";
 import styles from "./SearchPage.module.scss";
-import {
-  DevBadge,
-  SearchContainer,
-} from "./StyledComponents";
+import { SearchContainer } from "./StyledComponents";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 
 /** Landing-page logo served from the extension's static assets (see `public/static/images/logo`). */
@@ -53,7 +50,6 @@ const isDevelopment = process.env.NODE_ENV === "development";
 const SearchPage: FC<SearchPageProps> = ({ onSearch, onDrawerToggle }) => {
   const navigate = useNavigate();
   const { mode } = useTheme();
-
   const logo = mode === "light" ? LIGHT_MODE_LOGO : DARK_MODE_LOGO;
 
   const handleSearch = (query: string) => {
@@ -68,16 +64,21 @@ const SearchPage: FC<SearchPageProps> = ({ onSearch, onDrawerToggle }) => {
   return (
     <SearchContainer className={containerClass}>
       {/* Settings Gear - Top Right */}
-      <IconButton className={styles['search-page-settings-button']} onClick={onDrawerToggle} size="medium">
+      <IconButton
+        className={styles["search-page-settings-button"]}
+        onClick={onDrawerToggle}
+        size="medium"
+      >
         <SettingsIcon />
       </IconButton>
 
       {/* Theme Switcher - Bottom Right */}
-      <Box className={styles['search-page-theme-switcher']}>
+      <Box className={styles["search-page-theme-switcher"]}>
         <ThemeSwitcher />
       </Box>
 
-      {isDevelopment && <DevBadge className="search-page__dev-badge">DEV MODE</DevBadge>}
+      {/* Corner status badges live in <StatusBadges /> at the app level, so they
+          render once across every panel and lay out side by side. */}
 
       <div className="search-page__logo-container">
         <img src={logo} alt="Supplier Search" className={logoClass} />

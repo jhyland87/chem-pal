@@ -15,6 +15,7 @@ import { fileURLToPath } from "url";
 import util from "util";
 //import p from "../package.json" with { type: "json" };
 import manifest from "../public/manifest.json" with { type: "json" };
+import { getSupplierNames } from "./supplierList.js";
 
 /**
  * Environment variables
@@ -57,21 +58,6 @@ const _c = (text) => `\x1b[36m${text}\x1b[0m`; // cyan
 const _w = (text) => `\x1b[37m${text}\x1b[0m`; // white
 
 /**
- * Get the number of suppliers by counting uncommented export lines
- * in src/suppliers/index.ts.
- *
- * @returns {string[]} The list of active suppliers
- */
-async function getSupplierList() {
-  const indexPath = _realpath("./src/suppliers/index.ts");
-  const content = await _readFile(indexPath);
-  const supplierMatches = content.matchAll(/^(?:export\s{\sSupplier(?<supplier>\w+)\s}\sfrom)/gm);
-  return Array.from(supplierMatches)
-    .map((match) => match.groups?.supplier)
-    .filter(Boolean);
-}
-
-/**
  * Get the plugin version from the manifest.json file.
  *
  * @returns {string} The plugin version
@@ -88,7 +74,7 @@ function getPluginVersion() {
  * @todo Try to grab the color themes from the existing theme files (eg: pull
  * from src/theme/colors.ts)
  */
-const supplierList = await getSupplierList();
+const supplierList = await getSupplierNames();
 const numberOfSuppliers = supplierList.length;
 console.log("Details:");
 console.log(`  Suppliers (${_y(numberOfSuppliers)}): ${_c(supplierList.join(", "))}`);
