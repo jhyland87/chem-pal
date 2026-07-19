@@ -1,6 +1,7 @@
 import {
   matchPercentageSortingFn,
   priceSortingFn,
+  puritySortingFn,
   quantitySortingFn,
 } from "@/helpers/sorting";
 import type { Row } from "@tanstack/react-table";
@@ -92,5 +93,48 @@ describe("priceSortingFn", () => {
   it("treats a fully missing price as 0", () => {
     expect(priceSortingFn(makeRow({}), makeRow({ usdPrice: 1 }))).toBe(-1);
     expect(priceSortingFn(makeRow({}), makeRow({}))).toBe(0);
+  });
+});
+
+describe("puritySortingFn", () => {
+  it("ranks grades by their representative purity", () => {
+    // ACS (99.8) outranks Technical (90).
+    expect(
+      puritySortingFn(makeRow({ grade: "ACS Grade" }), makeRow({ grade: "Technical Grade" })),
+    ).toBe(1);
+    expect(
+      puritySortingFn(makeRow({ grade: "Technical Grade" }), makeRow({ grade: "ACS Grade" })),
+    ).toBe(-1);
+  });
+
+  it("returns 0 for grades in the same tier", () => {
+    // USP/BP/JP/NF are deliberately tied.
+    expect(puritySortingFn(makeRow({ grade: "USP Grade" }), makeRow({ grade: "BP Grade" }))).toBe(0);
+  });
+
+  it("ranks percentages against each other", () => {
+    expect(puritySortingFn(makeRow({ purity: "99.9%" }), makeRow({ purity: "95%" }))).toBe(1);
+    expect(puritySortingFn(makeRow({ purity: "≥99.8%" }), makeRow({ purity: "99.9%" }))).toBe(-1);
+  });
+
+  it("puts grades and percentages on one scale", () => {
+    // This is the whole point: a string sort would interleave these arbitrarily.
+    expect(puritySortingFn(makeRow({ grade: "ACS Grade" }), makeRow({ purity: "95%" }))).toBe(1);
+    expect(puritySortingFn(makeRow({ purity: "99.9%" }), makeRow({ grade: "Lab Grade" }))).toBe(1);
+  });
+
+  it("prefers grade over purity, matching the column's accessor", () => {
+    // Same precedence as `product.grade ?? product.purity` in TableColumns.
+    const row = makeRow({ grade: "Technical Grade", purity: "99.9%" });
+    expect(puritySortingFn(row, makeRow({ purity: "95%" }))).toBe(-1);
+  });
+
+  it("treats a missing or unrecognized purity as 0", () => {
+    expect(puritySortingFn(makeRow({}), makeRow({ grade: "ACS Grade" }))).toBe(-1);
+    expect(puritySortingFn(makeRow({ grade: "Ungraded" }), makeRow({ grade: "Low Grade" }))).toBe(
+      -1,
+    );
+    expect(puritySortingFn(makeRow({}), makeRow({}))).toBe(0);
+    expect(puritySortingFn(makeRow({ grade: "Ungraded" }), makeRow({}))).toBe(0);
   });
 });

@@ -1,0 +1,282 @@
+{
+  "AR Grade": {
+    "successful": [
+      "AR",
+      "AR Grade",
+      "AR grade",
+      "Analytical",
+      "analytical",
+      "Analytical Reagent",
+      "Analytical reagent",
+      "analytical reagent",
+      "analytical reagent grade",
+      "Analytical Reagent Grade",
+      "AnalyticalReagent",
+      "analyticalreagent",
+      "analytical grade"
+    ],
+    "unsuccessful": ["ar", "A R", "ARR", "Analitical", "Analytic", "Analyticals grade"]
+  },
+  "ACS Grade": {
+    "successful": [
+      "ACS",
+      "A.C.S.",
+      "ACS Grade",
+      "ACS grade",
+      "acs grade",
+      "A.C.S. Grade",
+      "American Chemical Society",
+      "American Chemical Society Grade",
+      "American Chem Society",
+      "American Chem Society Grade",
+      "American chem society",
+      "American chem society grade"
+    ],
+    "unsuccessful": ["acs", "ACSS", "AC S", "A.C.S", "American Society", "American Chemical"]
+  },
+  "Guaranteed Grade": {
+    "successful": [
+      "Guaranteed grade",
+      "guaranteed grade reagent",
+      "guaranteed reagent grade",
+      "Guaranteed Reagent Grade"
+    ],
+    "unsuccessful": [
+      "Guaranted grade",
+      "Guarantee grade",
+      "Guaranteed",
+      "guarantee",
+      "Guaranteed purity"
+    ]
+  },
+  "Cosmetic Grade": {
+    "successful": [
+      "Cosmetic Grade",
+      "cosmetic grade",
+      "cosmetic reagent",
+      "cosmetic reagent grade",
+      "Cosmetic reagent grade",
+      "Cosmetic Grade Reagent",
+      "Cosmetic grade reagent",
+      "cosmetic grade reagent"
+    ],
+    "unsuccessful": [
+      "Cosmetics grade",
+      "Cosmetc grade",
+      "Cosmetic",
+      "cosmetics",
+      "Cosmetically pure"
+    ]
+  },
+  "NF Grade": {
+    "successful": [
+      "NF",
+      "NF Grade",
+      "nf grade",
+      "National Formulary",
+      "National Formulary Grade",
+      "national formulary",
+      "national formulary grade"
+    ],
+    "unsuccessful": ["nf", "N F", "NFF", "National Form", "Nation Formulary", "Formulary"]
+  },
+  "FCC Grade": {
+    "successful": [
+      "FCC",
+      "F.C.C.",
+      "FCC Grade",
+      "fcc grade",
+      "food grade",
+      "Food Grade",
+      "Food Chemicals Codex",
+      "Food Chem Codex",
+      "Food Chem Codex Grade",
+      "food chem codex grade",
+      "Food Chemicals Codex Grade",
+      "food chemicals codex",
+      "food chemicals codex grade"
+    ],
+    "unsuccessful": ["fcc", "F C C", "FCCC", "Food Codex", "Foods grade", "Chemicals Codex"]
+  },
+  "Practical Grade": {
+    "successful": [
+      "Practical Grade",
+      "Practical Reagent Grade",
+      "practical reagent",
+      "practical grade reagent"
+    ],
+    "unsuccessful": ["Practicle grade", "Practical", "practicals grade", "Practically pure"]
+  },
+  "Industrial Grade": {
+    "successful": [
+      "Industrial Grade",
+      "industrial grade",
+      "Industrial grade",
+      "industrial reagent grade",
+      "Industrial Reagent Grade",
+      "indistrial grade reagent"
+    ],
+    "unsuccessful": ["Industial grade", "Industrial", "Industrials grade", "Industry grade"]
+  },
+  "Technical Grade": {
+    "successful": [
+      "technical grade",
+      "tech grade",
+      "Technical Grade",
+      "Tech Grade",
+      "Tech Reagent",
+      "Technical Reagent",
+      "technical reagent",
+      "Technical Reagent Grade",
+      "technical reagent grade"
+    ],
+    "unsuccessful": ["Techical grade", "Technical", "Tech", "Techniqual grade", "Technically pure"]
+  },
+  "Reagent Grade": {
+    "successful": ["Reagent Grade", "reagent grade"],
+    "unsuccessful": ["Reagant grade", "Reagent", "Reagents grade", "reagent-grade"]
+  },
+  "BP Grade": {
+    "successful": [
+      "BP",
+      "B.P.",
+      "BP Grade",
+      "British Pharmacopoeia",
+      "British Pharmacop",
+      "British Pharmacopoeia grade",
+      "British Pharmacop grade",
+      "British pharma grade",
+      "British pharmacopeia grade"
+    ],
+    "unsuccessful": ["bp", "B P", "BPP", "Britsh Pharmacopoeia", "British Pharm", "British"]
+  },
+  "JP Grade": {
+    "successful": [
+      "JP",
+      "JP Grade",
+      "J.P.",
+      "Japanese Pharmacopoeia",
+      "Japanese Pharmacop",
+      "Japanese Pharmacopoeia grade",
+      "Japanese Pharmacop grade",
+      "Japanese pharma grade",
+      "Japanese pharmacopeia grade"
+    ],
+    "unsuccessful": ["jp", "J P", "JPP", "Japan Pharmacopoeia", "Japanese Pharm", "Japanese"]
+  },
+  "USP Grade": {
+    "successful": [
+      "USP",
+      "U.S.P.",
+      "U.S.P. Grade",
+      "USP Grade",
+      "usp grade",
+      "BP/USP",
+      "USP/BP",
+      "United States Pharma",
+      "United States Pharmacopeia",
+      "united states pharma",
+      "united states pharmacopeia",
+      "US PHARMA",
+      "US pharmacopeia",
+      "US pharmacopeia grade",
+      "US Pharmacopeia",
+      "US Pharmacopeia grade",
+      "US Pharmacopeia Grade",
+      "US Pharma Grade"
+    ],
+    "unsuccessful": [
+      "ups",
+      "UPS",
+      "usp",
+      "U S P",
+      "USPP",
+      "United State Pharma",
+      "United States",
+      "US Pharm",
+      "U.S.P.S.",
+      "USPS"
+    ]
+  },
+  "HPLC Grade": {
+    "successful": [
+      "HPLC",
+      "H.P.L.C.",
+      "H.P.L.C. Grade",
+      "HPLC Grade",
+      "HPLC grade",
+      "hplc grade",
+      "High-Performance Liquid Chromatography Grade",
+      "high performance liquid chromatography grade",
+      "Gradient Grade",
+      "gradient grade"
+    ],
+    "unsuccessful": [
+      "hplc",
+      "H P L C",
+      "HPLCC",
+      "High Performance Liquid",
+      "High Performance",
+      "Gradient"
+    ]
+  },
+  "Extraction Grade": {
+    "successful": [
+      "Extraction Grade",
+      "extraction grade",
+      "Extraction grade",
+      "Extraction Grade Reagent",
+      "extraction grade reagent",
+      "Extraction grade reagent"
+    ],
+    "unsuccessful": ["Extration grade", "Extraction", "Extractions grade", "Extract grade"]
+  },
+  "Lab Grade": {
+    "successful": [
+      "LR",
+      "L.R.",
+      "L.R. Grade",
+      "Laboratiry Reagent",
+      "Labpratory Reagent Grade",
+      "Lab Grade",
+      "Laboratory grade",
+      "laboratory grade",
+      "lab grade reagent"
+    ],
+    "unsuccessful": ["lr", "Lab", "Laboratory", "Laborator grade", "Labs grade"]
+  },
+  "Pure Grade": {
+    "successful": ["Pure grade", "pure Grade", "Purified Grade", "purified grade"],
+    "unsuccessful": ["Pure", "Purfied grade", "Purity grade", "Purest grade", "Pured grade"]
+  },
+  "Pharma Grade": {
+    "successful": [
+      "Pharmacopoeia Grade",
+      "Pharmacopoeia grade",
+      "pharmacopoeia grade",
+      "Pharma Grade",
+      "pharma grade",
+      "Pharmacopoeia Reagent",
+      "Pharma Reagent",
+      "Pharmacopoeia Reagent Grade",
+      "Pharma Reagent Grade",
+      "Pharmacy grade",
+      "pharmacy grade",
+      "Pharmaceutical grade",
+      "pharmaceutical grade"
+    ],
+    "unsuccessful": ["Pharm grade", "Pharma"]
+  },
+  "Low Grade": {
+    "successful": ["Low Grade", "Low Purity"],
+    "unsuccessful": ["Low", "Lower grade", "Lowest purity", "low-grade", "Slow grade", "lo purity"]
+  },
+  "Impure": {
+    "successful": ["Impure", "impure", "Impure Reagent"],
+    "unsuccessful": ["Impur", "Impurities", "Impurity", "Im pure", "impured"]
+  },
+  "Ungraded": {
+    "successful": ["Ungraded", "Ungraded Purity", "Ungraded Purity reagent", "ungraded reagent"],
+    "unsuccessful": []
+  }
+}

@@ -490,6 +490,9 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       accessorFn: (product) => product.grade ?? product.purity,
       cell: (info) => info.getValue() ?? null,
       filterFn: "includeHierarchy",
+      // The column mixes grades and percentages, so a string sort would interleave them
+      // ("ACS Grade" before "95%"). puritySortingFn ranks both on one numeric scale.
+      sortingFn: "puritySortingFn",
       meta: {
         filterPlaceholder: i18n("filter_placeholder_purity"),
         filterVariant: "text",

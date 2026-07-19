@@ -186,6 +186,7 @@ declare module "@tanstack/react-table" {
   interface SortingFns {
     matchPercentage: SortingFn<RowData>;
     priceSortingFn: SortingFn<RowData>;
+    puritySortingFn: SortingFn<RowData>;
     quantitySortingFn: SortingFn<RowData>;
   }
 
