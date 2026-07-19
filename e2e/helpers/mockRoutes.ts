@@ -225,8 +225,8 @@ export async function setupMockRoutes(page: Page, options: SetupOptions = {}): P
           return { host: url, pathname: "" };
         }
       })();
+      console.warn(`[MockRoutes] MISS #${missCount}: ${method} ${host}${pathname}`);
       if (verbose) {
-        console.warn(`[MockRoutes] MISS #${missCount}: ${method} ${host}${pathname}`);
         console.warn(`  full: ${url}`);
         console.warn(`  normalized: ${normalizedKey}`);
       }

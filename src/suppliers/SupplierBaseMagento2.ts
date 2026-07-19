@@ -84,7 +84,7 @@ export abstract class SupplierBaseMagento2
   // Cap the total search time. The throttled, 429-prone detail phase can otherwise drag on when
   // the server keeps rate-limiting; once this elapses, outstanding requests are aborted and only
   // the products collected so far are returned. Tune per Magento supplier as needed.
-  protected maxAllowableSearchTime: number = 20_000;
+  protected maxAllowableSearchTimeSec: number = 20;
 
   // Magento's `products(search:)` full-text field is OR-ish across words, which is a good
   // candidate pool for an advanced query in a SINGLE request — Magento's structured `filter`

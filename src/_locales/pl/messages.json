@@ -259,8 +259,14 @@
   "shipping_local": { "message": "Lokalna", "description": "Shipping range value." },
 
   "availability_in_stock": { "message": "Dostępny", "description": "Availability value." },
-  "availability_limited_stock": { "message": "Ograniczona dostępność", "description": "Availability value." },
-  "availability_out_of_stock": { "message": "Brak w magazynie", "description": "Availability value." },
+  "availability_limited_stock": {
+    "message": "Ograniczona dostępność",
+    "description": "Availability value."
+  },
+  "availability_out_of_stock": {
+    "message": "Brak w magazynie",
+    "description": "Availability value."
+  },
   "availability_preorder": { "message": "Przedsprzedaż", "description": "Availability value." },
   "availability_backorder": { "message": "Na zamówienie", "description": "Availability value." },
   "availability_discontinued": { "message": "Wycofany", "description": "Availability value." },
@@ -362,7 +368,10 @@
     "message": "Opis",
     "description": "Table column header."
   },
-  "column_price": { "message": "Cena", "description": "Table column header / column-visibility menu label." },
+  "column_price": {
+    "message": "Cena",
+    "description": "Table column header / column-visibility menu label."
+  },
   "column_price_currency": {
     "message": "Cena ($currency$)",
     "placeholders": { "currency": { "content": "$1" } }
@@ -795,7 +804,7 @@
     "description": "Default scorer option (dev)."
   },
   "settings_max_search_time": {
-    "message": "Maks. czas wyszukiwania (ms)",
+    "message": "Maks. czas wyszukiwania (sekundy)",
     "description": "Setting label (dev)."
   },
   "settings_max_search_time_helper": {

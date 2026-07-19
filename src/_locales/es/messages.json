@@ -243,7 +243,10 @@
   "shipping_local": { "message": "Local", "description": "Shipping range value." },
 
   "availability_in_stock": { "message": "En stock", "description": "Availability value." },
-  "availability_limited_stock": { "message": "Stock limitado", "description": "Availability value." },
+  "availability_limited_stock": {
+    "message": "Stock limitado",
+    "description": "Availability value."
+  },
   "availability_out_of_stock": { "message": "Agotado", "description": "Availability value." },
   "availability_preorder": { "message": "Reserva", "description": "Availability value." },
   "availability_backorder": { "message": "Pedido pendiente", "description": "Availability value." },
@@ -322,7 +325,10 @@
   "column_shipping": { "message": "Envío", "description": "Table column header." },
   "column_availability": { "message": "Disponibilidad", "description": "Table column header." },
   "column_description": { "message": "Descripción", "description": "Table column header." },
-  "column_price": { "message": "Precio", "description": "Table column header / column-visibility menu label." },
+  "column_price": {
+    "message": "Precio",
+    "description": "Table column header / column-visibility menu label."
+  },
   "column_price_currency": {
     "message": "Precio ($currency$)",
     "placeholders": { "currency": { "content": "$1" } }
@@ -477,25 +483,52 @@
     "message": "Cargando ajustes...",
     "description": "Fallback shown while the settings panel loads."
   },
-  "settings_section_behavior": { "message": "Comportamiento", "description": "Settings section header." },
+  "settings_section_behavior": {
+    "message": "Comportamiento",
+    "description": "Settings section header."
+  },
   "settings_section_cache": { "message": "Caché", "description": "Settings section header." },
-  "settings_section_price_history": { "message": "Historial de precios", "description": "Settings section header." },
-  "settings_section_display": { "message": "Visualización", "description": "Settings section header." },
-  "settings_section_excluded": { "message": "Productos excluidos", "description": "Settings section header." },
-  "settings_section_supplier_status": { "message": "Estado de proveedores", "description": "Settings section header." },
-  "settings_supplier_status_desc": { "message": "Deshabilitar un proveedor aquí lo excluye de todas las búsquedas y de los filtros de selección de proveedores.", "description": "Description at the top of the Supplier Status settings list." },
+  "settings_section_price_history": {
+    "message": "Historial de precios",
+    "description": "Settings section header."
+  },
+  "settings_section_display": {
+    "message": "Visualización",
+    "description": "Settings section header."
+  },
+  "settings_section_excluded": {
+    "message": "Productos excluidos",
+    "description": "Settings section header."
+  },
+  "settings_section_supplier_status": {
+    "message": "Estado de proveedores",
+    "description": "Settings section header."
+  },
+  "settings_supplier_status_desc": {
+    "message": "Deshabilitar un proveedor aquí lo excluye de todas las búsquedas y de los filtros de selección de proveedores.",
+    "description": "Description at the top of the Supplier Status settings list."
+  },
   "settings_section_advanced": { "message": "Avanzado", "description": "Settings section header." },
   "settings_section_actions": { "message": "Acciones", "description": "Settings section header." },
-  "settings_cache_results": { "message": "Guardar resultados de búsqueda en caché", "description": "Setting label." },
+  "settings_cache_results": {
+    "message": "Guardar resultados de búsqueda en caché",
+    "description": "Setting label."
+  },
   "settings_currency": { "message": "Moneda", "description": "Setting label / placeholder." },
   "settings_location": { "message": "Ubicación", "description": "Setting label." },
-  "settings_location_placeholder": { "message": "País o código", "description": "Placeholder for the location input." },
+  "settings_location_placeholder": {
+    "message": "País o código",
+    "description": "Placeholder for the location input."
+  },
   "settings_language": { "message": "Idioma", "description": "Setting label." },
   "settings_currency_rate_hint": {
     "message": "1 USD = $rate$ $currency$",
     "placeholders": { "rate": { "content": "$1" }, "currency": { "content": "$2" } }
   },
-  "settings_do_not_cache_empty": { "message": "No guardar en caché los resultados vacíos", "description": "Setting label." },
+  "settings_do_not_cache_empty": {
+    "message": "No guardar en caché los resultados vacíos",
+    "description": "Setting label."
+  },
   "settings_cache_ttl": { "message": "TTL de la caché (minutos)", "description": "Setting label." },
   "settings_cache_stats": {
     "message": "$count$ registros en caché · $size$",
@@ -504,14 +537,26 @@
   },
   "settings_clear_cache": { "message": "Borrar caché", "description": "Button label." },
   "settings_cache_cleared": { "message": "Caché borrada.", "description": "Confirmation text." },
-  "settings_track_price_history": { "message": "Registrar historial de precios", "description": "Setting label." },
+  "settings_track_price_history": {
+    "message": "Registrar historial de precios",
+    "description": "Setting label."
+  },
   "settings_track_price_history_desc": {
     "message": "Registra el precio en USD de cada producto a lo largo del tiempo para ver si sube o baja.",
     "description": "Description for the track-price-history setting."
   },
-  "settings_max_price_points": { "message": "Máx. puntos de precio por producto (0 = ilimitado)", "description": "Setting label." },
-  "settings_clear_price_history": { "message": "Borrar historial de precios", "description": "Button label." },
-  "settings_price_history_cleared": { "message": "Historial de precios borrado.", "description": "Confirmation text." },
+  "settings_max_price_points": {
+    "message": "Máx. puntos de precio por producto (0 = ilimitado)",
+    "description": "Setting label."
+  },
+  "settings_clear_price_history": {
+    "message": "Borrar historial de precios",
+    "description": "Button label."
+  },
+  "settings_price_history_cleared": {
+    "message": "Historial de precios borrado.",
+    "description": "Confirmation text."
+  },
   "settings_price_history_stats": {
     "message": "$products$ productos · $points$ puntos de datos · $size$",
     "placeholders": {
@@ -526,37 +571,73 @@
   "settings_font_medium": { "message": "Mediana", "description": "Font-size option." },
   "settings_font_large": { "message": "Grande", "description": "Font-size option." },
   "settings_open_in_tab": { "message": "Abrir en una pestaña", "description": "Setting label." },
-  "settings_open_in_tab_desc": { "message": "Al hacer clic en el icono de la barra de herramientas, Chem Pal se abre en una pestaña completa del navegador en lugar del popup.", "description": "Setting description." },
-  "settings_auto_hide_empty_columns": { "message": "Ocultar columnas vacías automáticamente", "description": "Setting label." },
-  "settings_auto_hide_empty_columns_desc": { "message": "Ocultar automáticamente las columnas de resultados que no tienen datos para la búsqueda actual.", "description": "Setting description." },
-  "settings_excluded_empty": { "message": "No hay productos excluidos.", "description": "Empty-state text." },
+  "settings_open_in_tab_desc": {
+    "message": "Al hacer clic en el icono de la barra de herramientas, Chem Pal se abre en una pestaña completa del navegador en lugar del popup.",
+    "description": "Setting description."
+  },
+  "settings_auto_hide_empty_columns": {
+    "message": "Ocultar columnas vacías automáticamente",
+    "description": "Setting label."
+  },
+  "settings_auto_hide_empty_columns_desc": {
+    "message": "Ocultar automáticamente las columnas de resultados que no tienen datos para la búsqueda actual.",
+    "description": "Setting description."
+  },
+  "settings_excluded_empty": {
+    "message": "No hay productos excluidos.",
+    "description": "Empty-state text."
+  },
   "settings_remove": { "message": "Quitar", "description": "Tooltip for the remove button." },
   "settings_remove_item": {
     "message": "Quitar $item$",
     "placeholders": { "item": { "content": "$1" } }
   },
   "settings_clear_all": { "message": "Borrar todo", "description": "Button label." },
-  "settings_fuzz_scorer": { "message": "Método de coincidencia difusa", "description": "Setting label (dev)." },
-  "settings_fuzz_scorer_helper": { "message": "Sustituye el algoritmo predeterminado de cada proveedor", "description": "Helper text (dev)." },
-  "settings_fuzz_scorer_default": { "message": "Predeterminado (por proveedor)", "description": "Default scorer option (dev)." },
-  "settings_max_search_time": { "message": "Tiempo máx. de búsqueda (ms)", "description": "Setting label (dev)." },
+  "settings_fuzz_scorer": {
+    "message": "Método de coincidencia difusa",
+    "description": "Setting label (dev)."
+  },
+  "settings_fuzz_scorer_helper": {
+    "message": "Sustituye el algoritmo predeterminado de cada proveedor",
+    "description": "Helper text (dev)."
+  },
+  "settings_fuzz_scorer_default": {
+    "message": "Predeterminado (por proveedor)",
+    "description": "Default scorer option (dev)."
+  },
+  "settings_max_search_time": {
+    "message": "Tiempo máx. de búsqueda (segundos)",
+    "description": "Setting label (dev)."
+  },
   "settings_max_search_time_helper": {
     "message": "Sustituye el presupuesto de tiempo de búsqueda de cada proveedor. Vacío = predeterminado por proveedor; 0 = sin límite",
     "description": "Helper text (dev)."
   },
-  "settings_disable_fuzzy": { "message": "Desactivar filtrado difuso", "description": "Setting label (dev)." },
+  "settings_disable_fuzzy": {
+    "message": "Desactivar filtrado difuso",
+    "description": "Setting label (dev)."
+  },
   "settings_disable_fuzzy_desc": {
     "message": "Muestra resultados sin procesar (búsqueda simple) o solo coincidencias booleanas (búsqueda avanzada) sin puntuación difusa",
     "description": "Description for the disable-fuzzy setting (dev)."
   },
-  "settings_restore_defaults": { "message": "Restaurar valores predeterminados", "description": "Button label." },
+  "settings_restore_defaults": {
+    "message": "Restaurar valores predeterminados",
+    "description": "Button label."
+  },
 
-  "speed_dial_clear_results": { "message": "Borrar resultados", "description": "Speed-dial action." },
+  "speed_dial_clear_results": {
+    "message": "Borrar resultados",
+    "description": "Speed-dial action."
+  },
   "speed_dial_clear_cache": { "message": "Borrar caché", "description": "Speed-dial action." },
   "speed_dial_toggle_theme": { "message": "Cambiar tema", "description": "Speed-dial action." },
   "speed_dial_stats": { "message": "Estadísticas", "description": "Speed-dial action (dev)." },
   "speed_dial_about": { "message": "Acerca de", "description": "Speed-dial action." },
-  "speed_dial_aria": { "message": "Menú SpeedDial", "description": "Accessible label for the speed dial." },
+  "speed_dial_aria": {
+    "message": "Menú SpeedDial",
+    "description": "Accessible label for the speed dial."
+  },
   "speed_dial_hint": {
     "message": "Lleva el cursor a la esquina inferior derecha de la pantalla para abrir el menú",
     "description": "Help tooltip explaining how to open the speed dial."
@@ -664,15 +745,30 @@
 
   "product_detail_cas": { "message": "CAS", "description": "Product detail field label." },
   "product_detail_formula": { "message": "Fórmula", "description": "Product detail field label." },
-  "product_detail_molecular_weight": { "message": "Masa molecular", "description": "Product detail field label." },
-  "product_detail_iupac_name": { "message": "Nombre IUPAC", "description": "Product detail field label." },
-  "product_detail_inchikey": { "message": "InChIKey", "description": "Product detail field label." },
+  "product_detail_molecular_weight": {
+    "message": "Masa molecular",
+    "description": "Product detail field label."
+  },
+  "product_detail_iupac_name": {
+    "message": "Nombre IUPAC",
+    "description": "Product detail field label."
+  },
+  "product_detail_inchikey": {
+    "message": "InChIKey",
+    "description": "Product detail field label."
+  },
   "product_detail_inchi": { "message": "InChI", "description": "Product detail field label." },
   "product_detail_smiles": { "message": "SMILES", "description": "Product detail field label." },
   "product_detail_purity": { "message": "Pureza", "description": "Product detail field label." },
   "product_detail_grade": { "message": "Grado", "description": "Product detail field label." },
-  "product_detail_concentration": { "message": "Concentración", "description": "Product detail field label." },
-  "product_detail_manufacturer": { "message": "Fabricante", "description": "Product detail field label." },
+  "product_detail_concentration": {
+    "message": "Concentración",
+    "description": "Product detail field label."
+  },
+  "product_detail_manufacturer": {
+    "message": "Fabricante",
+    "description": "Product detail field label."
+  },
   "product_detail_pubchem": { "message": "PubChem", "description": "Product detail field label." },
   "product_detail_pubchem_cid": {
     "message": "PubChem CID $cid$",
@@ -744,8 +840,14 @@
     "message": "$count$ llamada",
     "placeholders": { "count": { "content": "$1" } }
   },
-  "stats_clear": { "message": "Borrar estadísticas", "description": "Tooltip for the clear-stats button." },
-  "stats_empty": { "message": "Aún no hay estadísticas. Ejecuta una búsqueda para empezar a registrar.", "description": "Stats empty state." },
+  "stats_clear": {
+    "message": "Borrar estadísticas",
+    "description": "Tooltip for the clear-stats button."
+  },
+  "stats_empty": {
+    "message": "Aún no hay estadísticas. Ejecuta una búsqueda para empezar a registrar.",
+    "description": "Stats empty state."
+  },
   "stats_tab_by_supplier": { "message": "Por proveedor", "description": "Stats tab label." },
   "stats_tab_daily": { "message": "Diario", "description": "Stats tab label." },
   "stats_tab_totals": { "message": "Totales", "description": "Stats tab label." },
@@ -757,7 +859,11 @@
   "stats_fails": { "message": "Errores", "description": "Stats pie segment label." },
   "stats_pie_inner_tooltip": {
     "message": "$value$ de $total$ ($percent$%)",
-    "placeholders": { "value": { "content": "$1" }, "total": { "content": "$2" }, "percent": { "content": "$3" } }
+    "placeholders": {
+      "value": { "content": "$1" },
+      "total": { "content": "$2" },
+      "percent": { "content": "$3" }
+    }
   },
   "stats_pie_outer_tooltip": {
     "message": "$value$ ($percent$%)",
@@ -768,7 +874,10 @@
   "stats_col_success": { "message": "Aciertos", "description": "Stats table column header." },
   "stats_col_failure": { "message": "Errores", "description": "Stats table column header." },
   "stats_col_products": { "message": "Productos", "description": "Stats table column header." },
-  "stats_col_parse_errors": { "message": "Errores de análisis", "description": "Stats table column header." },
+  "stats_col_parse_errors": {
+    "message": "Errores de análisis",
+    "description": "Stats table column header."
+  },
   "stats_range_label": { "message": "Intervalo", "description": "Supplier stats panel." },
   "stats_range_all": { "message": "Todo el tiempo", "description": "Supplier stats panel." },
   "stats_range_last30": { "message": "Últimos 30 días", "description": "Supplier stats panel." },
@@ -776,46 +885,139 @@
   "stats_range_month": { "message": "Este mes", "description": "Supplier stats panel." },
   "stats_range_week": { "message": "Esta semana", "description": "Supplier stats panel." },
   "stats_range_today": { "message": "Hoy", "description": "Supplier stats panel." },
-  "stats_empty_range": { "message": "No se registró actividad en este intervalo.", "description": "Supplier stats panel." },
+  "stats_empty_range": {
+    "message": "No se registró actividad en este intervalo.",
+    "description": "Supplier stats panel."
+  },
   "stats_col_status": { "message": "Estado", "description": "Supplier stats panel." },
   "stats_status_ok": { "message": "Correcto", "description": "Supplier stats panel." },
   "stats_status_disabled": { "message": "Desactivado", "description": "Supplier stats panel." },
-  "stats_status_parse_errors": { "message": "Errores de análisis excesivos", "description": "Supplier stats panel." },
-  "stats_status_parse_failure": { "message": "Todo el análisis falló", "description": "Supplier stats panel." },
-  "stats_status_connection_errors": { "message": "Errores de conexión excesivos", "description": "Supplier stats panel." },
-  "stats_status_no_success": { "message": "Sin llamadas exitosas", "description": "Supplier stats panel." },
+  "stats_status_parse_errors": {
+    "message": "Errores de análisis excesivos",
+    "description": "Supplier stats panel."
+  },
+  "stats_status_parse_failure": {
+    "message": "Todo el análisis falló",
+    "description": "Supplier stats panel."
+  },
+  "stats_status_connection_errors": {
+    "message": "Errores de conexión excesivos",
+    "description": "Supplier stats panel."
+  },
+  "stats_status_no_success": {
+    "message": "Sin llamadas exitosas",
+    "description": "Supplier stats panel."
+  },
 
-  "hotkeys_title": { "message": "Atajos de teclado", "description": "Title of the keyboard shortcuts modal." },
+  "hotkeys_title": {
+    "message": "Atajos de teclado",
+    "description": "Title of the keyboard shortcuts modal."
+  },
   "hotkeys_group_general": { "message": "General", "description": "Hotkey group name." },
   "hotkeys_group_search": { "message": "Búsqueda", "description": "Hotkey group name." },
   "hotkeys_group_navigation": { "message": "Navegación", "description": "Hotkey group name." },
   "hotkeys_group_results": { "message": "Resultados", "description": "Hotkey group name." },
-  "hotkeys_desc_showhotkeyhelp": { "message": "Mostrar esta lista de atajos", "description": "Hotkey description." },
-  "hotkeys_desc_clearandretrysearch": { "message": "Borrar la caché, borrar los resultados y volver a ejecutar la búsqueda actual", "description": "Hotkey description." },
-  "hotkeys_desc_gotosearch": { "message": "Ir al panel de búsqueda", "description": "Hotkey description." },
-  "hotkeys_desc_openhistory": { "message": "Abrir el historial de búsqueda en el panel lateral", "description": "Hotkey description." },
-  "hotkeys_desc_opensearchdrawer": { "message": "Abrir los filtros de búsqueda en el panel lateral", "description": "Hotkey description." },
-  "hotkeys_desc_focusglobalfilter": { "message": "Enfocar el filtro global en el panel de resultados", "description": "Hotkey description." },
-  "hotkeys_desc_togglecolumnfilters": { "message": "Alternar los filtros de columna en la tabla de resultados", "description": "Hotkey description." },
-  "hotkeys_desc_abortsearch": { "message": "Cancelar la búsqueda en curso", "description": "Hotkey description." },
-  "hotkeys_desc_expandallrows": { "message": "Expandir todas las filas de la tabla de resultados", "description": "Hotkey description." },
-  "hotkeys_desc_collapseallrows": { "message": "Contraer todas las filas de la tabla de resultados", "description": "Hotkey description." },
-  "hotkeys_desc_scrollresultstotop": { "message": "Desplazar la tabla de resultados hacia arriba", "description": "Hotkey description." },
-  "hotkeys_desc_showallrows": { "message": "Mostrar todas las filas en una página", "description": "Hotkey description." },
-  "hotkeys_desc_clearcolumnfilters": { "message": "Borrar todos los filtros de columna", "description": "Hotkey description." },
+  "hotkeys_desc_showhotkeyhelp": {
+    "message": "Mostrar esta lista de atajos",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_clearandretrysearch": {
+    "message": "Borrar la caché, borrar los resultados y volver a ejecutar la búsqueda actual",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_gotosearch": {
+    "message": "Ir al panel de búsqueda",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_openhistory": {
+    "message": "Abrir el historial de búsqueda en el panel lateral",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_opensearchdrawer": {
+    "message": "Abrir los filtros de búsqueda en el panel lateral",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_focusglobalfilter": {
+    "message": "Enfocar el filtro global en el panel de resultados",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_togglecolumnfilters": {
+    "message": "Alternar los filtros de columna en la tabla de resultados",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_abortsearch": {
+    "message": "Cancelar la búsqueda en curso",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_expandallrows": {
+    "message": "Expandir todas las filas de la tabla de resultados",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_collapseallrows": {
+    "message": "Contraer todas las filas de la tabla de resultados",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_scrollresultstotop": {
+    "message": "Desplazar la tabla de resultados hacia arriba",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_showallrows": {
+    "message": "Mostrar todas las filas en una página",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_clearcolumnfilters": {
+    "message": "Borrar todos los filtros de columna",
+    "description": "Hotkey description."
+  },
   "hotkeys_desc_konami": { "message": "Saludar", "description": "Hotkey description." },
-  "hotkeys_flash_clearandretrysearch": { "message": "Caché borrada, búsqueda reejecutada", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_advanced_on": { "message": "Modo avanzado activado", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_advanced_off": { "message": "Modo avanzado desactivado", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_openhistory": { "message": "Historial de búsqueda abierto", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_opensearchdrawer": { "message": "Filtros de búsqueda abiertos", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_abortsearch": { "message": "Búsqueda cancelada", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_expandallrows": { "message": "Todas las filas expandidas", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_collapseallrows": { "message": "Todas las filas contraídas", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_showallrows": { "message": "Mostrando todas las filas", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_clearcolumnfilters": { "message": "Filtros de columna borrados", "description": "Hotkey status-bar flash." },
-  "hotkeys_search_placeholder": { "message": "Buscar atajos…", "description": "Placeholder for the hotkey modal search box." },
-  "hotkeys_no_matches": { "message": "No hay atajos coincidentes", "description": "Shown when a hotkey search returns nothing." },
+  "hotkeys_flash_clearandretrysearch": {
+    "message": "Caché borrada, búsqueda reejecutada",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_advanced_on": {
+    "message": "Modo avanzado activado",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_advanced_off": {
+    "message": "Modo avanzado desactivado",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_openhistory": {
+    "message": "Historial de búsqueda abierto",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_opensearchdrawer": {
+    "message": "Filtros de búsqueda abiertos",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_abortsearch": {
+    "message": "Búsqueda cancelada",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_expandallrows": {
+    "message": "Todas las filas expandidas",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_collapseallrows": {
+    "message": "Todas las filas contraídas",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_showallrows": {
+    "message": "Mostrando todas las filas",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_clearcolumnfilters": {
+    "message": "Filtros de columna borrados",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_search_placeholder": {
+    "message": "Buscar atajos…",
+    "description": "Placeholder for the hotkey modal search box."
+  },
+  "hotkeys_no_matches": {
+    "message": "No hay atajos coincidentes",
+    "description": "Shown when a hotkey search returns nothing."
+  },
   "migration_title": {
     "message": "Se detectó una actualización de versión",
     "description": "Title of the cache version-update prompt shown on open."

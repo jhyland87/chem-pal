@@ -594,7 +594,7 @@
     "description": "Default scorer option (dev)."
   },
   "settings_max_search_time": {
-    "message": "Max search time (ms)",
+    "message": "Max search time (seconds)",
     "description": "Setting label (dev)."
   },
   "settings_max_search_time_helper": {

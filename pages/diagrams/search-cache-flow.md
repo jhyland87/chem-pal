@@ -12,7 +12,7 @@ This diagram details how ChemPal caches search results and product data using **
 - **`skipProductDetailCache` flag**: Every supplier caches per-product detail by default (the safe default). A concrete pure-search supplier — one that resolves every field in the initial search with a passthrough `getProductData` (e.g. BVV, Himedia, Chemsavers) — sets `skipProductDetailCache = true` to skip the redundant per-product cache; the query cache already covers repeat searches, and the identity is still used for exclusions. The flag lives on the concrete supplier, never a shared base class, so a base's fetching subclass keeps caching by default
 - **LRU eviction**: Both supplier caches cap at 100 entries, evicting the least recently used when full (using IndexedDB indexes on `cachedAt` / `timestamp`)
 - **Limit-aware invalidation**: The query cache invalidates entries when a new search requests more results than the cached limit
-- **Status-aware product caching**: A product's detail fetch is **not** cached when it hit a status in `noCacheStatusCodes` (default `[429]`) or when the search was aborted by `maxAllowableSearchTime` — the product is still listed, but stays uncached so the next search retries it (`SupplierBase.shouldCacheProductData`)
+- **Status-aware product caching**: A product's detail fetch is **not** cached when it hit a status in `noCacheStatusCodes` (default `[429]`) or when the search was aborted by `maxAllowableSearchTimeSec` — the product is still listed, but stays uncached so the next search retries it (`SupplierBase.shouldCacheProductData`)
 - **Timestamp refresh on read**: Product data cache updates `timestamp` on hit to prevent active entries from being evicted
 - **Serialization**: `ProductBuilder.dump()` serializes builders for storage; `ProductBuilder.createFromCache()` re-hydrates them
 - **Optional compression**: `chrome.storage` writes optionally flow through `cstorage` (`src/utils/storage.ts`), which can LZ-compress values at rest via `lz-string` `compressToUTF16` wrapped in an `LzEnvelope` (`{ __lz: 1, d: "..." }`), controlled by `useStorageCompression` in `config.json`. Reads auto-detect the envelope and decompress, falling back to raw values for legacy data. IndexedDB data is **not** compressed via `cstorage`.
@@ -228,7 +228,7 @@ end
 subgraph CacheMiss2["Cache Miss"]
 direction TB
 FETCH["getProductDataWithCache(product, fetcher, params)\ncall supplier-specific fetcher"]
-CACHEABLE{"shouldCacheProductData?\nskip if fetch hit a noCacheStatusCode (429)\nor search aborted (maxAllowableSearchTime)"}
+CACHEABLE{"shouldCacheProductData?\nskip if fetch hit a noCacheStatusCode (429)\nor search aborted (maxAllowableSearchTimeSec)"}
 DUMP2["resultBuilder.dump()\nserialize product data"]
 SAVE2["cache.cacheProductData(key, data)"]
 SKIP2["Skip caching\nproduct still yielded;\nretried on next search"]

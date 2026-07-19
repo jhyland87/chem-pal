@@ -408,7 +408,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   protected minConcurrentCycle: number = 100;
 
   /**
-   * Maximum wall-clock time (in milliseconds) a single supplier's `execute()` search may run.
+   * Maximum wall-clock time (in seconds) a single supplier's `execute()` search may run.
    * Once exceeded, any in-flight and pending product-detail requests are aborted and the search
    * stops yielding new products — only those already collected are returned. Measured from the
    * start of `execute()`, so it also bounds a slow initial query. Set to `0` (the default) to
@@ -417,7 +417,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * @defaultValue 0 (disabled)
    * @source
    */
-  protected maxAllowableSearchTime: number = 0;
+  protected maxAllowableSearchTimeSec: number = 0;
 
   /**
    * HTTP headers used as a basis for all requests to the supplier.
@@ -664,26 +664,26 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   }
 
   /**
-   * Applies a runtime override for {@link maxAllowableSearchTime}, driven by
-   * `userSettings.maxAllowableSearchTime` (set in the Advanced settings section). Accepts the raw
+   * Applies a runtime override for {@link maxAllowableSearchTimeSec}, driven by
+   * `userSettings.maxAllowableSearchTimeSec` (set in the Advanced settings section). Accepts the raw
    * setting value (which may arrive as a string from the number input). An absent, empty, or
    * invalid value is ignored so the supplier keeps its class default; a valid non-negative number
    * (including `0` to disable the limit) replaces it.
-   * @param value - The override in milliseconds, or any value (invalid/empty input is ignored)
+   * @param value - The override in seconds, or any value (invalid/empty input is ignored)
    * @example
    * ```typescript
-   * supplier.setMaxAllowableSearchTime(60000); // cap searches at 60s
-   * supplier.setMaxAllowableSearchTime("");     // no-op, keep the per-supplier default
+   * supplier.setMaxAllowableSearchTimeSec(60); // cap searches at 60s
+   * supplier.setMaxAllowableSearchTimeSec("");  // no-op, keep the per-supplier default
    * ```
    * @source
    */
-  public setMaxAllowableSearchTime(value: unknown): void {
+  public setMaxAllowableSearchTimeSec(value: unknown): void {
     if (value === undefined || value === null || value === "") {
       return;
     }
-    const ms = Number(value);
-    if (!Number.isNaN(ms) && ms >= 0) {
-      this.maxAllowableSearchTime = ms;
+    const seconds = Number(value);
+    if (!Number.isNaN(seconds) && seconds >= 0) {
+      this.maxAllowableSearchTimeSec = seconds;
     }
   }
 
@@ -1845,7 +1845,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * enforces the full boolean predicate via {@link fuzzyFilterAst}, so the union
    * is the set of products matching the whole query. Honors
    * `httpRequestHardLimit`; the fetches run inside `execute()`'s existing
-   * `maxAllowableSearchTime` race so an aborted controller cancels them.
+   * `maxAllowableSearchTimeSec` race so an aborted controller cancels them.
    *
    * @param query - The raw search query.
    * @param limit - The per-supplier result limit.
@@ -1897,7 +1897,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   /**
    * Arms the optional per-supplier search-time budget raced by {@link execute}.
    *
-   * When `maxAllowableSearchTime` is positive, returns a promise that resolves to `sentinel`
+   * When `maxAllowableSearchTimeSec` is positive, returns a promise that resolves to `sentinel`
    * once the budget elapses. On elapse it also aborts `this.controller` (cancelling in-flight
    * and future fetches) and logs a warning; {@link execute} races this promise against the
    * outstanding product-detail fetches, and when it wins the race flushes any not-yet-yielded
@@ -1909,7 +1909,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * search settles so the timer doesn't leak.
    *
    * @param sentinel - Unique symbol the returned promise resolves to on timeout.
-   * @returns `{ promise, handle }`; both `undefined` when no budget is set (`maxAllowableSearchTime <= 0`).
+   * @returns `{ promise, handle }`; both `undefined` when no budget is set (`maxAllowableSearchTimeSec <= 0`).
    * @example
    * ```typescript
    * const SEARCH_TIMEOUT = Symbol("searchTimeout");
@@ -1926,22 +1926,22 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   private armSearchTimeout<S extends symbol>(
     sentinel: S,
   ): { promise?: Promise<S>; handle?: ReturnType<typeof setTimeout> } {
-    if (this.maxAllowableSearchTime <= 0) {
+    if (this.maxAllowableSearchTimeSec <= 0) {
       return {};
     }
     let handle: ReturnType<typeof setTimeout> | undefined;
     const promise = new Promise<S>((resolve) => {
       handle = setTimeout(() => {
         this.logger.warn(
-          `Search exceeded maxAllowableSearchTime (${this.maxAllowableSearchTime}ms); ` +
+          `Search exceeded maxAllowableSearchTimeSec (${this.maxAllowableSearchTimeSec}s); ` +
             `aborting outstanding requests and returning collected results`,
           { supplier: this.supplierName },
         );
         this.controller.abort(
-          `Search exceeded maxAllowableSearchTime (${this.maxAllowableSearchTime}ms)`,
+          `Search exceeded maxAllowableSearchTimeSec (${this.maxAllowableSearchTimeSec}s)`,
         );
         resolve(sentinel);
-      }, this.maxAllowableSearchTime);
+      }, this.maxAllowableSearchTimeSec * 1000);
     });
     return { promise, handle };
   }
@@ -2496,7 +2496,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
         incrementParseError(this.supplierName);
         return undefined;
       }
-      // Don't cache data gathered after the search was aborted (e.g. maxAllowableSearchTime): the
+      // Don't cache data gathered after the search was aborted (e.g. maxAllowableSearchTimeSec): the
       // enrichment fetch was cancelled, so the result is incomplete — let a later search retry it.
       if (
         resultBuilder &&
@@ -2596,7 +2596,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       }
       if (resultBuilder) {
         incrementProductCount(this.supplierName);
-        // Skip caching when the search was aborted (e.g. maxAllowableSearchTime) — the enrichment
+        // Skip caching when the search was aborted (e.g. maxAllowableSearchTimeSec) — the enrichment
         // fetch was cancelled, so the data is incomplete and a later search should retry it.
         if (
           cacheKey &&

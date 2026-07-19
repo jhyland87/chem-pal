@@ -4,7 +4,8 @@
   left: 50%;
   transform: translate(-50%, -50%);
   width: min(520px, 90vw);
-  height: min(560px, 85vh);
+  min-height: 300px;
+  height: fit-content;
   display: flex;
   flex-direction: column;
   overflow: hidden;

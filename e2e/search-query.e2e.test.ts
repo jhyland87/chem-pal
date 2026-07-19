@@ -14,8 +14,9 @@ describe("Chem-Pal search query", () => {
   let extensionId: string;
 
   beforeAll(async () => {
-    // Build the extension (standard mode, not aggregate)
-    execSync("pnpm build", {
+    // Build the extension the way users get it: --mode=production, so the suite
+    // exercises the minified bundle with dev-only branches tree-shaken out.
+    execSync("pnpm build:e2e", {
       cwd: path.resolve(__dirname, ".."),
       stdio: "inherit",
     });

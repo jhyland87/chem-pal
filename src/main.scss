@@ -26,8 +26,14 @@ body {
   display: flex;
   vertical-align: top;
   justify-content: center;
-  min-width: 800px;
   min-height: 400px;
+}
+
+/* The 800px floor is a toolbar-popup constraint (popups size to their content).
+ * Applying it unconditionally forced the document to 800px in the tab view too,
+ * overflowing horizontally at any window narrower than that. */
+body:not(.view-tab) {
+  min-width: 800px;
 }
 
 h1 {

@@ -9,5 +9,11 @@
     "../src/types/**/*.d.ts",
     "../src/vite-env.d.ts"
   ],
-  "exclude": []
+  "exclude": [],
+  "compilerOptions": {
+    "types": [
+      "node",
+      "chrome"
+    ]
+  }
 }

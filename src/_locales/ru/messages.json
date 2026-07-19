@@ -259,11 +259,17 @@
   "shipping_local": { "message": "Местная", "description": "Shipping range value." },
 
   "availability_in_stock": { "message": "В наличии", "description": "Availability value." },
-  "availability_limited_stock": { "message": "Ограниченное наличие", "description": "Availability value." },
+  "availability_limited_stock": {
+    "message": "Ограниченное наличие",
+    "description": "Availability value."
+  },
   "availability_out_of_stock": { "message": "Нет в наличии", "description": "Availability value." },
   "availability_preorder": { "message": "Предзаказ", "description": "Availability value." },
   "availability_backorder": { "message": "Под заказ", "description": "Availability value." },
-  "availability_discontinued": { "message": "Снят с производства", "description": "Availability value." },
+  "availability_discontinued": {
+    "message": "Снят с производства",
+    "description": "Availability value."
+  },
   "availability_unavailable": { "message": "Недоступен", "description": "Availability value." },
   "availability_unknown": { "message": "Неизвестно", "description": "Availability value." },
 
@@ -363,7 +369,10 @@
     "message": "Описание",
     "description": "Table column header."
   },
-  "column_price": { "message": "Цена", "description": "Table column header / column-visibility menu label." },
+  "column_price": {
+    "message": "Цена",
+    "description": "Table column header / column-visibility menu label."
+  },
   "column_price_currency": {
     "message": "Цена ($currency$)",
     "placeholders": { "currency": { "content": "$1" } }
@@ -796,7 +805,7 @@
     "description": "Default scorer option (dev)."
   },
   "settings_max_search_time": {
-    "message": "Макс. время поиска (мс)",
+    "message": "Макс. время поиска (секунды)",
     "description": "Setting label (dev)."
   },
   "settings_max_search_time_helper": {

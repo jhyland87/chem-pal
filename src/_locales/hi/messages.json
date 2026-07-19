@@ -238,7 +238,10 @@
 
   "availability_in_stock": { "message": "स्टॉक में", "description": "Availability value." },
   "availability_limited_stock": { "message": "सीमित स्टॉक", "description": "Availability value." },
-  "availability_out_of_stock": { "message": "स्टॉक में नहीं", "description": "Availability value." },
+  "availability_out_of_stock": {
+    "message": "स्टॉक में नहीं",
+    "description": "Availability value."
+  },
   "availability_preorder": { "message": "प्री-ऑर्डर", "description": "Availability value." },
   "availability_backorder": { "message": "बैकऑर्डर", "description": "Availability value." },
   "availability_discontinued": { "message": "बंद किया गया", "description": "Availability value." },
@@ -315,7 +318,10 @@
   "column_shipping": { "message": "शिपिंग", "description": "Table column header." },
   "column_availability": { "message": "उपलब्धता", "description": "Table column header." },
   "column_description": { "message": "विवरण", "description": "Table column header." },
-  "column_price": { "message": "मूल्य", "description": "Table column header / column-visibility menu label." },
+  "column_price": {
+    "message": "मूल्य",
+    "description": "Table column header / column-visibility menu label."
+  },
   "column_price_currency": {
     "message": "मूल्य ($currency$)",
     "placeholders": { "currency": { "content": "$1" } }
@@ -470,23 +476,41 @@
   },
   "settings_section_behavior": { "message": "व्यवहार", "description": "Settings section header." },
   "settings_section_cache": { "message": "कैश", "description": "Settings section header." },
-  "settings_section_price_history": { "message": "मूल्य इतिहास", "description": "Settings section header." },
+  "settings_section_price_history": {
+    "message": "मूल्य इतिहास",
+    "description": "Settings section header."
+  },
   "settings_section_display": { "message": "प्रदर्शन", "description": "Settings section header." },
-  "settings_section_excluded": { "message": "बहिष्कृत उत्पाद", "description": "Settings section header." },
-  "settings_section_supplier_status": { "message": "आपूर्तिकर्ता स्थिति", "description": "Settings section header." },
-  "settings_supplier_status_desc": { "message": "यहाँ किसी आपूर्तिकर्ता को अक्षम करने पर वह सभी खोजों और आपूर्तिकर्ता चयन फ़िल्टर से हटा दिया जाता है।", "description": "Description at the top of the Supplier Status settings list." },
+  "settings_section_excluded": {
+    "message": "बहिष्कृत उत्पाद",
+    "description": "Settings section header."
+  },
+  "settings_section_supplier_status": {
+    "message": "आपूर्तिकर्ता स्थिति",
+    "description": "Settings section header."
+  },
+  "settings_supplier_status_desc": {
+    "message": "यहाँ किसी आपूर्तिकर्ता को अक्षम करने पर वह सभी खोजों और आपूर्तिकर्ता चयन फ़िल्टर से हटा दिया जाता है।",
+    "description": "Description at the top of the Supplier Status settings list."
+  },
   "settings_section_advanced": { "message": "उन्नत", "description": "Settings section header." },
   "settings_section_actions": { "message": "क्रियाएँ", "description": "Settings section header." },
   "settings_cache_results": { "message": "खोज परिणाम कैश करें", "description": "Setting label." },
   "settings_currency": { "message": "मुद्रा", "description": "Setting label / placeholder." },
   "settings_location": { "message": "स्थान", "description": "Setting label." },
-  "settings_location_placeholder": { "message": "देश या कोड", "description": "Placeholder for the location input." },
+  "settings_location_placeholder": {
+    "message": "देश या कोड",
+    "description": "Placeholder for the location input."
+  },
   "settings_language": { "message": "भाषा", "description": "Setting label." },
   "settings_currency_rate_hint": {
     "message": "1 USD = $rate$ $currency$",
     "placeholders": { "rate": { "content": "$1" }, "currency": { "content": "$2" } }
   },
-  "settings_do_not_cache_empty": { "message": "खाली परिणाम कैश न करें", "description": "Setting label." },
+  "settings_do_not_cache_empty": {
+    "message": "खाली परिणाम कैश न करें",
+    "description": "Setting label."
+  },
   "settings_cache_ttl": { "message": "कैश TTL (मिनट)", "description": "Setting label." },
   "settings_cache_stats": {
     "message": "$count$ कैश किए गए रिकॉर्ड · $size$",
@@ -494,15 +518,30 @@
     "description": "Small stats line under the cache section showing record count and storage size."
   },
   "settings_clear_cache": { "message": "कैश साफ़ करें", "description": "Button label." },
-  "settings_cache_cleared": { "message": "कैश साफ़ कर दिया गया।", "description": "Confirmation text." },
-  "settings_track_price_history": { "message": "मूल्य इतिहास ट्रैक करें", "description": "Setting label." },
+  "settings_cache_cleared": {
+    "message": "कैश साफ़ कर दिया गया।",
+    "description": "Confirmation text."
+  },
+  "settings_track_price_history": {
+    "message": "मूल्य इतिहास ट्रैक करें",
+    "description": "Setting label."
+  },
   "settings_track_price_history_desc": {
     "message": "समय के साथ प्रत्येक उत्पाद की USD कीमत रिकॉर्ड करें ताकि आप देख सकें कि यह बढ़ रही है या घट रही है।",
     "description": "Description for the track-price-history setting."
   },
-  "settings_max_price_points": { "message": "प्रति उत्पाद अधिकतम मूल्य बिंदु (0 = असीमित)", "description": "Setting label." },
-  "settings_clear_price_history": { "message": "मूल्य इतिहास साफ़ करें", "description": "Button label." },
-  "settings_price_history_cleared": { "message": "मूल्य इतिहास साफ़ कर दिया गया।", "description": "Confirmation text." },
+  "settings_max_price_points": {
+    "message": "प्रति उत्पाद अधिकतम मूल्य बिंदु (0 = असीमित)",
+    "description": "Setting label."
+  },
+  "settings_clear_price_history": {
+    "message": "मूल्य इतिहास साफ़ करें",
+    "description": "Button label."
+  },
+  "settings_price_history_cleared": {
+    "message": "मूल्य इतिहास साफ़ कर दिया गया।",
+    "description": "Confirmation text."
+  },
   "settings_price_history_stats": {
     "message": "$products$ उत्पाद · $points$ डेटा बिंदु · $size$",
     "placeholders": {
@@ -517,10 +556,22 @@
   "settings_font_medium": { "message": "मध्यम", "description": "Font-size option." },
   "settings_font_large": { "message": "बड़ा", "description": "Font-size option." },
   "settings_open_in_tab": { "message": "टैब में खोलें", "description": "Setting label." },
-  "settings_open_in_tab_desc": { "message": "टूलबार आइकन पर क्लिक करने पर Chem Pal पॉपअप के बजाय पूरे ब्राउज़र टैब में खुलता है।", "description": "Setting description." },
-  "settings_auto_hide_empty_columns": { "message": "खाली कॉलम स्वतः छिपाएँ", "description": "Setting label." },
-  "settings_auto_hide_empty_columns_desc": { "message": "वर्तमान खोज के लिए जिन परिणाम कॉलमों में कोई डेटा नहीं है, उन्हें स्वचालित रूप से छिपाएँ।", "description": "Setting description." },
-  "settings_excluded_empty": { "message": "कोई बहिष्कृत उत्पाद नहीं।", "description": "Empty-state text." },
+  "settings_open_in_tab_desc": {
+    "message": "टूलबार आइकन पर क्लिक करने पर Chem Pal पॉपअप के बजाय पूरे ब्राउज़र टैब में खुलता है।",
+    "description": "Setting description."
+  },
+  "settings_auto_hide_empty_columns": {
+    "message": "खाली कॉलम स्वतः छिपाएँ",
+    "description": "Setting label."
+  },
+  "settings_auto_hide_empty_columns_desc": {
+    "message": "वर्तमान खोज के लिए जिन परिणाम कॉलमों में कोई डेटा नहीं है, उन्हें स्वचालित रूप से छिपाएँ।",
+    "description": "Setting description."
+  },
+  "settings_excluded_empty": {
+    "message": "कोई बहिष्कृत उत्पाद नहीं।",
+    "description": "Empty-state text."
+  },
   "settings_remove": { "message": "हटाएँ", "description": "Tooltip for the remove button." },
   "settings_remove_item": {
     "message": "$item$ हटाएँ",
@@ -528,26 +579,47 @@
   },
   "settings_clear_all": { "message": "सभी साफ़ करें", "description": "Button label." },
   "settings_fuzz_scorer": { "message": "फ़ज़ी मिलान विधि", "description": "Setting label (dev)." },
-  "settings_fuzz_scorer_helper": { "message": "प्रत्येक आपूर्तिकर्ता के डिफ़ॉल्ट स्कोरर को ओवरराइड करता है", "description": "Helper text (dev)." },
-  "settings_fuzz_scorer_default": { "message": "डिफ़ॉल्ट (प्रति आपूर्तिकर्ता)", "description": "Default scorer option (dev)." },
-  "settings_max_search_time": { "message": "अधिकतम खोज समय (ms)", "description": "Setting label (dev)." },
+  "settings_fuzz_scorer_helper": {
+    "message": "प्रत्येक आपूर्तिकर्ता के डिफ़ॉल्ट स्कोरर को ओवरराइड करता है",
+    "description": "Helper text (dev)."
+  },
+  "settings_fuzz_scorer_default": {
+    "message": "डिफ़ॉल्ट (प्रति आपूर्तिकर्ता)",
+    "description": "Default scorer option (dev)."
+  },
+  "settings_max_search_time": {
+    "message": "अधिकतम खोज समय (सेकंड)",
+    "description": "Setting label (dev)."
+  },
   "settings_max_search_time_helper": {
     "message": "प्रत्येक आपूर्तिकर्ता के खोज-समय बजट को ओवरराइड करता है। खाली = प्रति-आपूर्तिकर्ता डिफ़ॉल्ट; 0 = कोई सीमा नहीं",
     "description": "Helper text (dev)."
   },
-  "settings_disable_fuzzy": { "message": "फ़ज़ी फ़िल्टरिंग अक्षम करें", "description": "Setting label (dev)." },
+  "settings_disable_fuzzy": {
+    "message": "फ़ज़ी फ़िल्टरिंग अक्षम करें",
+    "description": "Setting label (dev)."
+  },
   "settings_disable_fuzzy_desc": {
     "message": "फ़ज़ी स्कोरिंग के बिना कच्चे परिणाम (सामान्य खोज) या केवल बूलियन मिलान (उन्नत खोज) दिखाएँ",
     "description": "Description for the disable-fuzzy setting (dev)."
   },
-  "settings_restore_defaults": { "message": "डिफ़ॉल्ट पुनर्स्थापित करें", "description": "Button label." },
+  "settings_restore_defaults": {
+    "message": "डिफ़ॉल्ट पुनर्स्थापित करें",
+    "description": "Button label."
+  },
 
-  "speed_dial_clear_results": { "message": "परिणाम साफ़ करें", "description": "Speed-dial action." },
+  "speed_dial_clear_results": {
+    "message": "परिणाम साफ़ करें",
+    "description": "Speed-dial action."
+  },
   "speed_dial_clear_cache": { "message": "कैश साफ़ करें", "description": "Speed-dial action." },
   "speed_dial_toggle_theme": { "message": "थीम बदलें", "description": "Speed-dial action." },
   "speed_dial_stats": { "message": "आँकड़े", "description": "Speed-dial action (dev)." },
   "speed_dial_about": { "message": "परिचय", "description": "Speed-dial action." },
-  "speed_dial_aria": { "message": "SpeedDial मेनू", "description": "Accessible label for the speed dial." },
+  "speed_dial_aria": {
+    "message": "SpeedDial मेनू",
+    "description": "Accessible label for the speed dial."
+  },
   "speed_dial_hint": {
     "message": "मेनू खोलने के लिए अपने कर्सर को स्क्रीन के नीचे दाएँ कोने में लाएँ",
     "description": "Help tooltip explaining how to open the speed dial."
@@ -650,15 +722,30 @@
   },
   "product_detail_cas": { "message": "CAS", "description": "Product detail field label." },
   "product_detail_formula": { "message": "सूत्र", "description": "Product detail field label." },
-  "product_detail_molecular_weight": { "message": "आणविक भार", "description": "Product detail field label." },
-  "product_detail_iupac_name": { "message": "IUPAC नाम", "description": "Product detail field label." },
-  "product_detail_inchikey": { "message": "InChIKey", "description": "Product detail field label." },
+  "product_detail_molecular_weight": {
+    "message": "आणविक भार",
+    "description": "Product detail field label."
+  },
+  "product_detail_iupac_name": {
+    "message": "IUPAC नाम",
+    "description": "Product detail field label."
+  },
+  "product_detail_inchikey": {
+    "message": "InChIKey",
+    "description": "Product detail field label."
+  },
   "product_detail_inchi": { "message": "InChI", "description": "Product detail field label." },
   "product_detail_smiles": { "message": "SMILES", "description": "Product detail field label." },
   "product_detail_purity": { "message": "शुद्धता", "description": "Product detail field label." },
   "product_detail_grade": { "message": "ग्रेड", "description": "Product detail field label." },
-  "product_detail_concentration": { "message": "सांद्रता", "description": "Product detail field label." },
-  "product_detail_manufacturer": { "message": "निर्माता", "description": "Product detail field label." },
+  "product_detail_concentration": {
+    "message": "सांद्रता",
+    "description": "Product detail field label."
+  },
+  "product_detail_manufacturer": {
+    "message": "निर्माता",
+    "description": "Product detail field label."
+  },
   "product_detail_pubchem": { "message": "PubChem", "description": "Product detail field label." },
   "product_detail_pubchem_cid": {
     "message": "PubChem CID $cid$",
@@ -729,20 +816,36 @@
     "message": "$count$ कॉल",
     "placeholders": { "count": { "content": "$1" } }
   },
-  "stats_clear": { "message": "आँकड़े साफ़ करें", "description": "Tooltip for the clear-stats button." },
-  "stats_empty": { "message": "अभी तक कोई आँकड़े नहीं। ट्रैकिंग शुरू करने के लिए एक खोज चलाएँ।", "description": "Stats empty state." },
-  "stats_tab_by_supplier": { "message": "आपूर्तिकर्ता के अनुसार", "description": "Stats tab label." },
+  "stats_clear": {
+    "message": "आँकड़े साफ़ करें",
+    "description": "Tooltip for the clear-stats button."
+  },
+  "stats_empty": {
+    "message": "अभी तक कोई आँकड़े नहीं। ट्रैकिंग शुरू करने के लिए एक खोज चलाएँ।",
+    "description": "Stats empty state."
+  },
+  "stats_tab_by_supplier": {
+    "message": "आपूर्तिकर्ता के अनुसार",
+    "description": "Stats tab label."
+  },
   "stats_tab_daily": { "message": "दैनिक", "description": "Stats tab label." },
   "stats_tab_totals": { "message": "कुल योग", "description": "Stats tab label." },
   "stats_toggle_http": { "message": "HTTP कॉल", "description": "Stats pie view toggle." },
-  "stats_toggle_parsed": { "message": "पार्स किया गया डेटा", "description": "Stats pie view toggle." },
+  "stats_toggle_parsed": {
+    "message": "पार्स किया गया डेटा",
+    "description": "Stats pie view toggle."
+  },
   "stats_center_http": { "message": "HTTP", "description": "Stats pie center label." },
   "stats_center_parsed": { "message": "पार्स किया गया", "description": "Stats pie center label." },
   "stats_successes": { "message": "सफलताएँ", "description": "Stats pie segment label." },
   "stats_fails": { "message": "विफलताएँ", "description": "Stats pie segment label." },
   "stats_pie_inner_tooltip": {
     "message": "$total$ में से $value$ ($percent$%)",
-    "placeholders": { "value": { "content": "$1" }, "total": { "content": "$2" }, "percent": { "content": "$3" } }
+    "placeholders": {
+      "value": { "content": "$1" },
+      "total": { "content": "$2" },
+      "percent": { "content": "$3" }
+    }
   },
   "stats_pie_outer_tooltip": {
     "message": "$value$ ($percent$%)",
@@ -753,7 +856,10 @@
   "stats_col_success": { "message": "सफलता", "description": "Stats table column header." },
   "stats_col_failure": { "message": "विफलता", "description": "Stats table column header." },
   "stats_col_products": { "message": "उत्पाद", "description": "Stats table column header." },
-  "stats_col_parse_errors": { "message": "पार्स त्रुटियाँ", "description": "Stats table column header." },
+  "stats_col_parse_errors": {
+    "message": "पार्स त्रुटियाँ",
+    "description": "Stats table column header."
+  },
   "stats_range_label": { "message": "समय सीमा", "description": "Supplier stats panel." },
   "stats_range_all": { "message": "सभी समय", "description": "Supplier stats panel." },
   "stats_range_last30": { "message": "पिछले 30 दिन", "description": "Supplier stats panel." },
@@ -761,46 +867,139 @@
   "stats_range_month": { "message": "इस महीने", "description": "Supplier stats panel." },
   "stats_range_week": { "message": "इस सप्ताह", "description": "Supplier stats panel." },
   "stats_range_today": { "message": "आज", "description": "Supplier stats panel." },
-  "stats_empty_range": { "message": "इस समय सीमा में कोई गतिविधि दर्ज नहीं की गई।", "description": "Supplier stats panel." },
+  "stats_empty_range": {
+    "message": "इस समय सीमा में कोई गतिविधि दर्ज नहीं की गई।",
+    "description": "Supplier stats panel."
+  },
   "stats_col_status": { "message": "स्थिति", "description": "Supplier stats panel." },
   "stats_status_ok": { "message": "ठीक", "description": "Supplier stats panel." },
   "stats_status_disabled": { "message": "अक्षम", "description": "Supplier stats panel." },
-  "stats_status_parse_errors": { "message": "अत्यधिक पार्सर त्रुटियाँ", "description": "Supplier stats panel." },
-  "stats_status_parse_failure": { "message": "सभी पार्सिंग विफल", "description": "Supplier stats panel." },
-  "stats_status_connection_errors": { "message": "अत्यधिक कनेक्शन त्रुटियाँ", "description": "Supplier stats panel." },
-  "stats_status_no_success": { "message": "कोई सफल कॉल नहीं", "description": "Supplier stats panel." },
+  "stats_status_parse_errors": {
+    "message": "अत्यधिक पार्सर त्रुटियाँ",
+    "description": "Supplier stats panel."
+  },
+  "stats_status_parse_failure": {
+    "message": "सभी पार्सिंग विफल",
+    "description": "Supplier stats panel."
+  },
+  "stats_status_connection_errors": {
+    "message": "अत्यधिक कनेक्शन त्रुटियाँ",
+    "description": "Supplier stats panel."
+  },
+  "stats_status_no_success": {
+    "message": "कोई सफल कॉल नहीं",
+    "description": "Supplier stats panel."
+  },
 
-  "hotkeys_title": { "message": "कीबोर्ड शॉर्टकट", "description": "Title of the keyboard shortcuts modal." },
+  "hotkeys_title": {
+    "message": "कीबोर्ड शॉर्टकट",
+    "description": "Title of the keyboard shortcuts modal."
+  },
   "hotkeys_group_general": { "message": "सामान्य", "description": "Hotkey group name." },
   "hotkeys_group_search": { "message": "खोज", "description": "Hotkey group name." },
   "hotkeys_group_navigation": { "message": "नेविगेशन", "description": "Hotkey group name." },
   "hotkeys_group_results": { "message": "परिणाम", "description": "Hotkey group name." },
-  "hotkeys_desc_showhotkeyhelp": { "message": "हॉटकी की यह सूची दिखाएँ", "description": "Hotkey description." },
-  "hotkeys_desc_clearandretrysearch": { "message": "कैश साफ़ करें, परिणाम साफ़ करें, और वर्तमान खोज पुनः चलाएँ", "description": "Hotkey description." },
-  "hotkeys_desc_gotosearch": { "message": "खोज पैनल पर जाएँ", "description": "Hotkey description." },
-  "hotkeys_desc_openhistory": { "message": "साइड ड्रॉअर में खोज इतिहास खोलें", "description": "Hotkey description." },
-  "hotkeys_desc_opensearchdrawer": { "message": "साइड ड्रॉअर में खोज फ़िल्टर खोलें", "description": "Hotkey description." },
-  "hotkeys_desc_focusglobalfilter": { "message": "परिणाम पैनल पर वैश्विक फ़िल्टर पर फ़ोकस करें", "description": "Hotkey description." },
-  "hotkeys_desc_togglecolumnfilters": { "message": "परिणाम तालिका में कॉलम फ़िल्टर टॉगल करें", "description": "Hotkey description." },
-  "hotkeys_desc_abortsearch": { "message": "वर्तमान में चल रही खोज रोकें", "description": "Hotkey description." },
-  "hotkeys_desc_expandallrows": { "message": "परिणाम तालिका की सभी पंक्तियाँ विस्तृत करें", "description": "Hotkey description." },
-  "hotkeys_desc_collapseallrows": { "message": "परिणाम तालिका की सभी पंक्तियाँ संक्षिप्त करें", "description": "Hotkey description." },
-  "hotkeys_desc_scrollresultstotop": { "message": "परिणाम तालिका को ऊपर स्क्रॉल करें", "description": "Hotkey description." },
-  "hotkeys_desc_showallrows": { "message": "सभी पंक्तियाँ एक पृष्ठ पर दिखाएँ", "description": "Hotkey description." },
-  "hotkeys_desc_clearcolumnfilters": { "message": "सभी स्तंभ फ़िल्टर साफ़ करें", "description": "Hotkey description." },
+  "hotkeys_desc_showhotkeyhelp": {
+    "message": "हॉटकी की यह सूची दिखाएँ",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_clearandretrysearch": {
+    "message": "कैश साफ़ करें, परिणाम साफ़ करें, और वर्तमान खोज पुनः चलाएँ",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_gotosearch": {
+    "message": "खोज पैनल पर जाएँ",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_openhistory": {
+    "message": "साइड ड्रॉअर में खोज इतिहास खोलें",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_opensearchdrawer": {
+    "message": "साइड ड्रॉअर में खोज फ़िल्टर खोलें",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_focusglobalfilter": {
+    "message": "परिणाम पैनल पर वैश्विक फ़िल्टर पर फ़ोकस करें",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_togglecolumnfilters": {
+    "message": "परिणाम तालिका में कॉलम फ़िल्टर टॉगल करें",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_abortsearch": {
+    "message": "वर्तमान में चल रही खोज रोकें",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_expandallrows": {
+    "message": "परिणाम तालिका की सभी पंक्तियाँ विस्तृत करें",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_collapseallrows": {
+    "message": "परिणाम तालिका की सभी पंक्तियाँ संक्षिप्त करें",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_scrollresultstotop": {
+    "message": "परिणाम तालिका को ऊपर स्क्रॉल करें",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_showallrows": {
+    "message": "सभी पंक्तियाँ एक पृष्ठ पर दिखाएँ",
+    "description": "Hotkey description."
+  },
+  "hotkeys_desc_clearcolumnfilters": {
+    "message": "सभी स्तंभ फ़िल्टर साफ़ करें",
+    "description": "Hotkey description."
+  },
   "hotkeys_desc_konami": { "message": "नमस्ते कहें", "description": "Hotkey description." },
-  "hotkeys_flash_clearandretrysearch": { "message": "कैश साफ़ किया गया, खोज पुनः शुरू की गई", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_advanced_on": { "message": "उन्नत मोड चालू", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_advanced_off": { "message": "उन्नत मोड बंद", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_openhistory": { "message": "खोज इतिहास खोला गया", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_opensearchdrawer": { "message": "खोज फ़िल्टर खोले गए", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_abortsearch": { "message": "खोज रोकी गई", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_expandallrows": { "message": "सभी पंक्तियाँ विस्तृत की गईं", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_collapseallrows": { "message": "सभी पंक्तियाँ संक्षिप्त की गईं", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_showallrows": { "message": "सभी पंक्तियाँ दिखाई जा रही हैं", "description": "Hotkey status-bar flash." },
-  "hotkeys_flash_clearcolumnfilters": { "message": "स्तंभ फ़िल्टर साफ़ किए गए", "description": "Hotkey status-bar flash." },
-  "hotkeys_search_placeholder": { "message": "शॉर्टकट खोजें…", "description": "Placeholder for the hotkey modal search box." },
-  "hotkeys_no_matches": { "message": "कोई मिलान वाला शॉर्टकट नहीं", "description": "Shown when a hotkey search returns nothing." },
+  "hotkeys_flash_clearandretrysearch": {
+    "message": "कैश साफ़ किया गया, खोज पुनः शुरू की गई",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_advanced_on": {
+    "message": "उन्नत मोड चालू",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_advanced_off": {
+    "message": "उन्नत मोड बंद",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_openhistory": {
+    "message": "खोज इतिहास खोला गया",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_opensearchdrawer": {
+    "message": "खोज फ़िल्टर खोले गए",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_abortsearch": {
+    "message": "खोज रोकी गई",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_expandallrows": {
+    "message": "सभी पंक्तियाँ विस्तृत की गईं",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_collapseallrows": {
+    "message": "सभी पंक्तियाँ संक्षिप्त की गईं",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_showallrows": {
+    "message": "सभी पंक्तियाँ दिखाई जा रही हैं",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_flash_clearcolumnfilters": {
+    "message": "स्तंभ फ़िल्टर साफ़ किए गए",
+    "description": "Hotkey status-bar flash."
+  },
+  "hotkeys_search_placeholder": {
+    "message": "शॉर्टकट खोजें…",
+    "description": "Placeholder for the hotkey modal search box."
+  },
+  "hotkeys_no_matches": {
+    "message": "कोई मिलान वाला शॉर्टकट नहीं",
+    "description": "Shown when a hotkey search returns nothing."
+  },
   "migration_title": {
     "message": "संस्करण अपडेट का पता चला",
     "description": "Title of the cache version-update prompt shown on open."

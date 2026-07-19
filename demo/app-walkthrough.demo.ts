@@ -1,3 +1,4 @@
+import type { Page } from "@playwright/test";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { setupMockRoutes } from "../e2e/helpers/mockRoutes";
@@ -22,6 +23,56 @@ import { seedPriceHistoryFromResults } from "./seedPriceHistory";
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const mockResponsesDir = path.resolve(dirname, "..", "e2e", "mock-requests", "responses");
 const screenshotDir = path.resolve(dirname, "output", "screenshots");
+
+/** Boolean query used for the second search, to show off the advanced syntax. */
+const ADVANCED_QUERY = '"Sodium Borohydride" AND NOT triacetoxyborohydride';
+
+/** Result count that triggers the demo's early abort of the second search. */
+const ABORT_AFTER_RESULTS = 10;
+
+/**
+ * Polls the loading backdrop's status line ("Found N results from M suppliers")
+ * until it reports at least `target` results, so the demo's abort fires on real
+ * progress rather than a fixed wait. Gives up quietly once `timeoutMs` elapses —
+ * a thin mock corpus should make the demo cancel early, not fail the recording.
+ * @param page - The page running the search.
+ * @param target - The result count to wait for.
+ * @param timeoutMs - How long to keep polling before giving up.
+ * @returns The last count observed (0 if the backdrop never reported one).
+ * @example
+ * ```ts
+ * await waitForResultCount(page, 10, 20_000); // 10
+ * ```
+ * @source
+ */
+async function waitForResultCount(page: Page, target: number, timeoutMs: number): Promise<number> {
+  const status = page.locator("#loading-backdrop").getByText(/Found \d+ result/);
+  const deadline = Date.now() + timeoutMs;
+  let count = 0;
+
+  while (Date.now() < deadline) {
+    const text =
+      (await status
+        .first()
+        .textContent()
+        .catch(() => null)) ?? "";
+    const match = text.match(/Found (\d+) result/);
+    if (match) {
+      count = Number(match[1]);
+      if (count >= target) {
+        return count;
+      }
+    }
+    // The backdrop is gone — the search finished before hitting the target.
+    if (!(await page.locator("#loading-backdrop").isVisible())) {
+      return count;
+    }
+    await page.waitForTimeout(200);
+  }
+
+  console.warn(`[demo] Only ${count} results after ${timeoutMs}ms — canceling anyway.`);
+  return count;
+}
 
 /**
  * Guided walkthrough that opens the extension in the full browser-tab view
@@ -195,7 +246,7 @@ test(
     await columnsButton.click();
 
     // Ensure the PubChem and CAS columns are visible (check them if unchecked).
-    for (const col of ["PubChem", "CAS"]) {
+    for (const col of ["PubChem", "CAS", "Purity"]) {
       const toggle = page.getByRole("checkbox", { name: col, exact: true });
       if ((await toggle.count()) > 0 && !(await toggle.first().isChecked())) {
         await toggle.first().click();
@@ -426,7 +477,7 @@ test(
     await page.waitForTimeout(700);
 
     // --- Ignore a product (right-click → Ignore Product) ---
-    const ignoreRow = resultsTable.locator("tbody tr").first();
+    const ignoreRow = resultsTable.locator("tbody tr").filter({ hasText: "Sodium Tris" }).first();
     await ignoreRow.scrollIntoViewIfNeeded();
     await highlight(ignoreRow);
     await showDemoPopover(page, ignoreRow, "Right-click any product…");
@@ -446,7 +497,22 @@ test(
     await ignoreItem.click();
     await page.waitForTimeout(1200);
 
-    // --- Second search: open Advanced Search via the new ScienceIcon (flask) ---
+    // --- Second search. Head back to the home panel first: only SearchForm
+    // renders the syntax-highlighting input, so the boolean query's operator
+    // coloring is visible on video — and opening Advanced Search from the same
+    // page the search runs from keeps the flow easy to follow. ---
+    const backToSearch = page.getByRole("button", { name: "Back to search home" });
+    await highlight(backToSearch);
+    await page.waitForTimeout(600);
+    await clearHighlight(backToSearch);
+    await backToSearch.click();
+
+    await expect(searchInput, "Search box should be back on the home panel").toBeVisible({
+      timeout: 8_000,
+    });
+    await page.waitForTimeout(700);
+
+    // Open Advanced Search via the ScienceIcon (flask) next to the search box.
     const advancedBtn = page.getByRole("button", { name: "advanced options" });
     await expect(advancedBtn, "Advanced options button should be visible").toBeVisible({
       timeout: 5_000,
@@ -482,8 +548,8 @@ test(
     await closeDemoPopover(page);
     await clearHighlight(supplierField);
 
-    // Pick three suppliers (each selection clears the input for the next one).
-    for (const name of ["Loudwolf", "Carolina", "Synthetika"]) {
+    // Pick the suppliers to search (each selection clears the input for the next).
+    for (const name of ["AladdinSci", "FTF Scientific", "LiMac", "Onyxmet", "VWR"]) {
       await typeInto(supplierInput, name);
       await page.getByRole("option", { name, exact: true }).first().click();
       await page.waitForTimeout(400);
@@ -493,28 +559,43 @@ test(
     await page.keyboard.press("Escape");
     await page.waitForTimeout(400);
 
-    // The query field is cleared after the prior search — retype it, then re-run.
-    // Scope to the Search tab panel and match the textbox role (the label alone is
-    // ambiguous — MUI exposes it on two nodes).
-    const drawerQuery = page
-      .locator("#drawer-tabpanel-0")
-      .getByRole("textbox", { name: "Product name or keyword" })
-      .first();
-    await drawerQuery.fill("");
-    await typeInto(drawerQuery, "potassium");
-    const drawerSearch = page.getByRole("button", { name: "Search", exact: true });
-    await highlight(drawerSearch);
-    await showDemoPopover(page, drawerSearch, "Run the search again with these suppliers");
+    // Close the drawer — the query itself goes in the home page's search box.
+    await page.mouse.click(30, 400);
+    await page.waitForTimeout(700);
+
+    // Advanced syntax: quoted phrases plus AND / OR / NOT, colored live as you type.
+    await searchInput.fill("");
+    await highlight(searchInput);
+    await typeInto(searchInput, ADVANCED_QUERY, 45);
+    // .hl-keyword only renders when the query really parsed as advanced — a plain
+    // literal search would silently produce no keyword tokens.
+    await expect(
+      page.locator(".hl-keyword").first(),
+      "Advanced query should highlight its operators",
+    ).toBeVisible({ timeout: 5_000 });
+    await showDemoPopover(
+      page,
+      searchInput,
+      "Advanced syntax: quoted phrases plus AND, OR, NOT and parentheses",
+    );
+    await page.waitForTimeout(2600);
+    await closeDemoPopover(page);
+    await clearHighlight(searchInput);
+
+    const searchButton2 = page.getByRole("button", { name: "search" });
+    await highlight(searchButton2);
+    await showDemoPopover(page, searchButton2, "Run it across just the chosen suppliers");
     await page.waitForTimeout(1400);
     await closeDemoPopover(page);
-    await clearHighlight(drawerSearch);
-    await drawerSearch.click();
+    await clearHighlight(searchButton2);
+    await searchButton2.click();
 
-    // The drawer closes and the supplier-scoped search runs. Let results stream
-    // in for ~2s, then cancel — showing that canceling keeps what's already found.
+    // Let results stream in until there are enough to be useful, then cancel —
+    // showing that canceling keeps what's already found.
     const backdrop2 = page.locator("#loading-backdrop");
     await expect(backdrop2, "Loading backdrop should be visible").toBeVisible({ timeout: 10_000 });
-    await page.waitForTimeout(2000);
+    const foundBeforeCancel = await waitForResultCount(page, ABORT_AFTER_RESULTS, 20_000);
+    console.log(`[demo] Canceling the second search after ${foundBeforeCancel} results`);
     if (await backdrop2.isVisible()) {
       await backdrop2.locator("button").click();
     }
@@ -528,7 +609,11 @@ test(
       "Results kept after canceling should be visible",
     ).toBeVisible({ timeout: 5_000 });
     await highlight(resultsTable);
-    await showDemoPopover(page, resultsTable, "Canceling kept the results found so far");
+    await showDemoPopover(
+      page,
+      resultsTable,
+      "Seen enough? Cancel — everything found so far stays put",
+    );
     await page.waitForTimeout(2400);
     await closeDemoPopover(page);
     await clearHighlight(resultsTable);
@@ -574,7 +659,9 @@ test(
       await expect(searchInput, "Search box should be back after clearing results").toBeVisible({
         timeout: 8_000,
       });
-      await expect(searchInput, "Search box should be empty after clearing results").toHaveValue("");
+      await expect(searchInput, "Search box should be empty after clearing results").toHaveValue(
+        "",
+      );
       await page.waitForTimeout(1500);
     }
 

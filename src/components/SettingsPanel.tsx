@@ -963,15 +963,15 @@ export default function SettingsPanel() {
               fullWidth
               size="small"
               type="number"
-              name="maxAllowableSearchTime"
+              name="maxAllowableSearchTimeSec"
               label={i18n("settings_max_search_time")}
-              value={currentSettings.maxAllowableSearchTime ?? ""}
+              value={currentSettings.maxAllowableSearchTimeSec ?? ""}
               onChange={handleInputChange}
               disabled={isPending}
               helperText={i18n("settings_max_search_time_helper")}
               slotProps={{
                 formHelperText: { sx: { fontStyle: "italic" } },
-                htmlInput: { min: 0, step: 1000 },
+                htmlInput: { min: 0, step: 1 },
               }}
             />
           </Box>

@@ -47,7 +47,7 @@ describe("Chem-Pal Firefox extension load (smoke)", () => {
 
   beforeAll(async () => {
     // Build the Firefox extension (standard mode, not aggregate).
-    execSync("pnpm build:firefox", {
+    execSync("pnpm build:e2e:firefox", {
       cwd: path.resolve(__dirname, ".."),
       stdio: "inherit",
     });

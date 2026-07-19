@@ -28,7 +28,7 @@ describe("Chem-Pal context-menu search", () => {
   let extensionId: string;
 
   beforeAll(async () => {
-    execSync("pnpm build", { cwd: path.resolve(__dirname, ".."), stdio: "inherit" });
+    execSync("pnpm build:e2e", { cwd: path.resolve(__dirname, ".."), stdio: "inherit" });
 
     context = await chromium.launchPersistentContext("", {
       headless: false, // Extensions require headed mode in Chromium
