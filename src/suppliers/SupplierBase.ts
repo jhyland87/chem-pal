@@ -85,7 +85,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   public color: string = getSupplierColor(this.constructor.name);
 
   /** The minimum match percentage for a product to be considered a match. */
-  protected readonly minMatchPercentage: number = 50;
+  protected readonly minMatchPercentage: number = 65;
 
   /**
    * Fuzz scorer used by `fuzzyFilter` to score each candidate's title against
@@ -99,7 +99,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * `setFuzzScorerOverride` and `fuzzyFilter` below. The user's Advanced
    * settings selection wins over this subclass default when set.
    */
-  protected readonly fuzzScorer: FuzzScorerFn = ratio;
+  protected readonly fuzzScorer: FuzzScorerFn = WRatio;
 
   /**
    * Runtime override resolved from `userSettings.fuzzScorerOverride`. When
@@ -141,7 +141,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * matches whose ratio-style score falls under the cutoff purely because the title dwarfs
    * the query. Set to `false` on a supplier to restore the hard-cutoff behavior.
    */
-  protected readonly fuzzyFilterRankOnly: boolean = true;
+  protected readonly fuzzyFilterRankOnly: boolean = false;
 
   /** Maximum number of backend search requests the keyword-only fallback issues. */
   protected readonly maxFallbackQueries: number = 4;

@@ -59,6 +59,13 @@ describe("exposeDebugApi", () => {
     expect(typeof window.chempal?.getExcludedProducts).toBe("function");
   });
 
+  it("exposes the fuzzy-filter probes", () => {
+    exposeDebugApi();
+    expect(typeof window.chempal?.fuzzTest).toBe("function");
+    expect(typeof window.chempal?.astTest).toBe("function");
+    expect(typeof window.chempal?.getCachedTitles).toBe("function");
+  });
+
   it("logs a readiness banner", () => {
     exposeDebugApi();
     expect(console.info).toHaveBeenCalledWith(
@@ -75,6 +82,7 @@ describe("exposeDebugApi", () => {
     const [message] = (console.info as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(message).toContain("ChemPal debug helpers");
     expect(message).toContain("SMILES:");
+    expect(message).toContain("Fuzzy:");
   });
 
   it("suggestAlternativeSearch wrapper lowercases and Set-wraps the excluded array", async () => {

@@ -51,7 +51,7 @@ export class SupplierS3Chemicals
   // use WRatio (a best-of-several-scorers heuristic) with a low cutoff to
   // keep cross-language matches from being discarded.
   protected readonly fuzzScorer = WRatio;
-  protected readonly minMatchPercentage: number = 25;
+  protected readonly minMatchPercentage: number = 50;
 
   // Cached search results from the last query execution
   protected queryResults: Array<Partial<Product>> = [];

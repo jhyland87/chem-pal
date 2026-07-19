@@ -74,7 +74,7 @@ export abstract class SupplierBaseWoocommerce
    * to avoid overwhelming the API.
    * @source
    */
-  public readonly fetchObjectSizeLimit: number = 100;
+  public readonly fetchObjectSizeLimit: number = 95;
 
   /**
    * The default product search filters to use for the WooCommerce API.
@@ -110,8 +110,12 @@ export abstract class SupplierBaseWoocommerce
   ): Promise<ProductBuilder<Product>[] | void> {
     const searchRequest = await this.httpGetJson({
       path: `/wp-json/wc/store/v1/products`,
-       
-      params: { ...this.productSearchFilters, search: query, per_page: 100 },
+
+      params: {
+        ...this.productSearchFilters,
+        search: query,
+        per_page: this.fetchObjectSizeLimit,
+      },
     });
 
     if (!isSearchResponse(searchRequest)) {
@@ -253,7 +257,7 @@ export abstract class SupplierBaseWoocommerce
       const chunk = uniqueIds.slice(offset, offset + this.fetchObjectSizeLimit);
       const response = await this.httpGetJson({
         path: `/wp-json/wc/store/v1/products`,
-         
+
         params: {
           per_page: this.fetchObjectSizeLimit,
           type: "variation",
