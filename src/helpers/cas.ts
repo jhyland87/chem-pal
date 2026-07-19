@@ -4,15 +4,16 @@ import { isCAS } from "@/utils/typeGuards/common";
 export { isCAS };
 
 /**
- * @group Helpers
- * @groupDescription Chemical Abstracts Service (CAS) number validation and parsing utilities.
+ * @category CAS Helpers
+ * @categoryDescription Chemical Abstracts Service (CAS) number validation and parsing utilities.
+ * @showCategories
  * @source
  */
 
 /**
  * Searches for a valid CAS number within a string.
  * Returns the first valid CAS number found, or undefined if none are found.
- * @category Helpers
+ * @category CAS Helpers
  * @param data - The string to search for a CAS number
  * @returns The first valid CAS number found, or undefined
  *
@@ -33,7 +34,7 @@ export function findCAS(data: string): CAS<string> | void {
 
 /**
  * Gets the names of a CAS number from the Cactus API.
- * @category Helpers
+ * @category CAS Helpers
  * @param cas - The CAS number to get the names of
  * @returns The names of the CAS number
  * @example
@@ -61,7 +62,7 @@ export async function getNamesByCAS(cas: CAS<string>): Promise<Maybe<string[]>> 
 
 /**
  * Gets the IUPAC name of a chemical from the Cactus API.
- * @category Helpers
+ * @category CAS Helpers
  * @param name - The name of the chemical to get the IUPAC name of
  * @returns The IUPAC name of the chemical
  * @source
@@ -77,7 +78,7 @@ export async function getIUPACName(name: string): Promise<Maybe<string>> {
 
 /**
  * Gets the CAS of a chemical using the name from the Cactus API.
- * @category Helpers
+ * @category CAS Helpers
  * @param name - The chemical name to lookup
  * @returns The CAS number of the chemical
  * @example

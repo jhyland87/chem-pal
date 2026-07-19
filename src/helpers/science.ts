@@ -10,16 +10,82 @@ import {
   pickBestFormula,
 } from "@/helpers/formulaPattern";
 import { looksLikeSmiles } from "@/helpers/smiles";
-import { decodeHTMLEntities, isMoleForm } from "@/helpers/utils";
+import { decodeHTMLEntities } from "@/helpers/utils";
 
 /**
- * @group Helpers
- * @groupDescription Scientific formula parsing and chemical notation utilities.
+ * @category Science Helpers
+ * @showCategories
+ * @categoryDescription Scientific formula parsing and chemical notation utilities.
+ * @source
+ */
+
+/**
+ * @group Core Utilities
+ * @groupDescription Country lookups backed by the `country-list-js` library,
+ * @showGroups
+ * @category Country Helpers
+ */
+
+/**
+ * @group Regex Patterns
+ * @showGroups
+ * @groupDescription Fancy pants regex patterns for parsing the unparseable
+ * @category Science Helpers
+ * @source
+ */
+
+/**
+ * @group Parsers
+ * @showGroups
+ * @groupDescription Parsers for the unparseable.
+ * @category Science Helpers
+ * @source
+ */
+
+/**
+ * @group Formatters
+ * @showGroups
+ * @groupDescription Formatting stuff
+ * @category Science Helpers
+ * @source
+ */
+
+/**
+ * @group Converters
+ * @showGroups
+ * @groupDescription Converting A to B
+ * @category Science Helpers
+ * @source
+ */
+
+/**
+ * @group Formatters
+ * @showGroups
+ * @groupDescription Formatting stuff
+ * @category Science Helpers
+ * @source
+ */
+
+/**
+ * @group Converters
+ * @showGroups
+ * @groupDescription Converting A to B
+ * @category Science Helpers
+ * @source
+ */
+
+/**
+ * @group Types & Interfaces
+ * @showGroups
+ * @groupDescription Types and interfaces
+ * @category Science Helpers
  * @source
  */
 
 /**
  * Converts regular numbers in a string to subscript Unicode characters.
+ * @group Formatters
+ * @category Science Helpers
  * @param str - The string containing numbers to convert to subscripts
  * @returns The string with numbers converted to subscript characters
  * @example
@@ -36,6 +102,8 @@ export const subscript = (str: string) => {
 
 /**
  * Converts regular numbers in a string to superscript Unicode characters.
+ * @group Formatters
+ * @category Science Helpers
  * @param str - The string containing numbers to convert to superscripts
  * @returns The string with numbers converted to superscript characters
  * @example
@@ -63,6 +131,8 @@ export const superscript = (str: string) => {
  * maps resolve the digit keys to identical code points, a string that already contains superscript
  * characters is returned unchanged — this is a normalization pass, not a converter. It does NOT turn
  * ASCII digits into superscripts; use {@link superscript} for that.
+ * @group Formatters
+ * @category Science Helpers
  * @param str - The string whose Unicode superscript digits to normalize
  * @returns The string with superscript digits in glyph form (ASCII digits untouched)
  * @example
@@ -85,6 +155,8 @@ export const superscriptGlyph = (str: string) => {
  * resolve the digit keys to identical code points, a string that already contains subscript
  * characters is returned unchanged — this is a normalization pass, not a converter. It does NOT turn
  * ASCII digits into subscripts; use {@link subscript} for that.
+ * @group Formatters
+ * @category Science Helpers
  * @param str - The string whose Unicode subscript digits to normalize
  * @returns The string with subscript digits in glyph form (ASCII digits untouched)
  * @example
@@ -103,6 +175,26 @@ export const subscriptGlyph = (str: string) => {
 
 /** Polymer repeat-unit index letters mapped to their subscript glyphs (see {@link findFormulaInText}). */
 const REPEAT_INDEX_GLYPHS: Record<string, string> = { n: "ₙ", m: "ₘ", x: "ₓ" };
+
+/**
+ * Checks if a string is a valid molecular formula.
+ * @group Parsers
+ * @category Science Helpers
+ * @see https://regex101.com/r/YTOdbq/1
+ * @param moleform - The string to check
+ * @returns True if the string is a valid molecular formula, false otherwise
+ * @example
+ * ```typescript
+ * isMoleForm("C12H22O11"); // true
+ * isMoleForm("12H22O11"); // false
+ * isMoleForm("C<sub>11</sub>H<sub>8</sub>I<sub>3</sub>N<sub>2</sub>NaO<sub>4</sub>") // true
+ * ```
+ * @source
+ */
+export function isMoleForm(moleform: string): boolean {
+  const pattern = new RegExp(/^(?:[A-Z][a-z]?(?:(?:<sub>)?[1-9]\d*(?:<\/sub>)?)?)+$/);
+  return pattern.test(moleform);
+}
 
 /**
  * Finds the first chemical-formula-like substring in `text` and returns it with `<sub>`/`<sup>` tags
@@ -127,6 +219,8 @@ const REPEAT_INDEX_GLYPHS: Record<string, string> = { n: "ₙ", m: "ₘ", x: "�
  * counts as `K`+`Br`) or a single element carrying a subscript/superscript, so ordinary prose isn't
  * mistaken for a formula. A lone element (e.g. `Na`, `K+`) is accepted only when it is the entire
  * trimmed input, so a bare symbol is never pulled out of a sentence.
+ * @group Parsers
+ * @category Science Helpers
  * @param text - The text string to search for a formula
  * @returns The formula with `<sub>`/`<sup>` tags converted to glyphs, or undefined if none is found
  * @example
@@ -207,6 +301,8 @@ export const findFormulaInText = (text: string): string | undefined => {
  * prose isn't mistaken for a formula. A clean, subscript-free formula like `KBr` is a single unit
  * and is intentionally NOT matched here (callers store those verbatim via `isMoleForm`).
  *
+ * @group Parsers
+ * @category Science Helpers
  * @param html - The HTML string to search for a formula
  * @returns The formula with proper sub/superscript formatting, or undefined if none is found
  * @example
@@ -243,6 +339,8 @@ export const findFormulaInHtml = (html: string): string | undefined => {
  * Tolerates the shapes suppliers use around the number: a leading qualifier
  * (`≥99.8%`), a European comma decimal (`99,5 %`), a trailing "or better" plus
  * (`99+%`, `99 +%`, `99.9 +%`), and whitespace before the `%`.
+ * @group Parsers
+ * @category Science Helpers
  * @param value - The string to extract the purity from
  * @returns The purity as a number (e.g. `95`), or nothing if none is found
  * @example
@@ -274,16 +372,21 @@ export const parsePurity = (value: string): number | void => {
  * Extracts a purity/grade descriptor from a string, as a string. Unlike {@link parsePurity} (which
  * returns only a numeric percentage), this keeps the qualifier — so a comparator percentage like
  * `"≥99.8%"` or `">99%"` is preserved verbatim — and, when no valid percentage is present, falls
- * back to a recognized chemical grade (`"ACS"`, `"HPLC"`, …) via {@link parseGrade}. Returns nothing
- * when neither is found. Built for `ProductBuilder.setPurity`, whose Purity column shows either kind.
+ * back to a recognized chemical grade (`"ACS Grade"`, `"HPLC Grade"`, …) via {@link parseGrade},
+ * which means an unrecognized string comes back as `"Ungraded"` rather than nothing. Only an empty
+ * or non-string input returns nothing. Built for `ProductBuilder.setPurity`, whose Purity column
+ * shows either kind.
+ * @group Parsers
+ * @category Science Helpers
  * @param value - The string to extract a purity/grade from (e.g. a product name)
- * @returns The percentage token (e.g. `"≥99.8%"`), a grade label (e.g. `"ACS"`), or nothing
+ * @returns The percentage token (e.g. `"≥99.8%"`), a grade label (e.g. `"ACS Grade"`), or nothing
  * @example
  * ```typescript
  * findPurity("Sodium Metal ≥99.8%")            // "≥99.8%"
- * findPurity("Acetonitrile HPLC - 1 L")        // "HPLC" (no percentage, grade fallback)
- * findPurity("Sodium, Reagent (ACS) - 500 G")  // "ACS"
- * findPurity("Ships in 4-6 business days")     // undefined
+ * findPurity("Acetonitrile HPLC - 1 L")        // "HPLC Grade" (no percentage, grade fallback)
+ * findPurity("Sodium, Reagent (ACS) - 500 G")  // "ACS Grade"
+ * findPurity("Ships in 4-6 business days")     // "Ungraded"
+ * findPurity("")                               // undefined
  * ```
  * @source
  */
@@ -292,15 +395,36 @@ export const findPurity = (value: string): string | undefined => {
   // Strip HTML first so inline CSS (e.g. style="width: 100%") isn't read as a purity.
   const clean = value.replace(/<[^>]+>/g, " ");
   // A percentage (with optional comparator) is the most specific signal, so it wins over a grade.
-  const token = clean.replace(/\s+/g, "").match(/[<>≤≥≈]?1?\d{0,2}(?:\.\d+)?%/)?.[0];
-  const numeric = Number(token?.match(/\d+(?:\.\d+)?/)?.[0]);
+  // Same shapes parsePurity tolerates — comparator, European comma decimal, "or better" plus —
+  // since both read the same supplier copy; only the return type differs.
+  const token = clean.replace(/\s+/g, "").match(/[<>≤≥≈]?\d{1,3}(?:[.,]\d+)?\+?%/)?.[0];
+  const numeric = Number(token?.match(/\d+(?:[.,]\d+)?/)?.[0].replace(",", "."));
   if (token && !Number.isNaN(numeric) && numeric > 0 && numeric <= 100) {
     return token;
   }
   return parseGrade(clean);
 };
 
-const buildGradeRegex = (): RegExp => {
+/**
+ * Regex patterns used for parse classification values or labeled fields
+ * @category Science Helpers
+ * @group Types & Interfaces
+ */
+interface GradeRegexes {
+  /** Classifies a grade token appearing anywhere in the string. */
+  classifier: RegExp;
+  /** Classifies a bare word-grade stem that follows an explicit "Grade:"/"Purity:" label. */
+  labeled: RegExp;
+}
+
+/**
+ * Build grade regexes
+ * @category Science Helpers
+ * @group Regex Patterns
+ * @returns object with classifier regex and labeled regex
+ * @source
+ */
+export const buildGradeRegexes = (): GradeRegexes => {
   // ci("grade") -> "[Gg][Rr][Aa][Dd][Ee]"
   // Case-insensitive char classes, so words match any casing without the (?i:)
   // flag (which older V8 builds reject).
@@ -326,27 +450,51 @@ const buildGradeRegex = (): RegExp => {
   // Flexible "reagent"/"grade" tail in EITHER order.
   const rgFlex = String.raw`(?:${reagentTxt}(?:\s+${gradeTxt})?|${gradeTxt}(?:\s+${reagentTxt})?)`;
 
-  // Pharmacopeia stem: pharma | pharmacop | pharmacopeia | pharmacopoeia.
-  const pharma = String.raw`${ci("pharma")}(?:${ci("cop")}(?:[Oo]?${ci("eia")})?)?`;
+  // Pharma stem. The three endings are siblings, not nested — "cy"/"ceutical" branch off
+  // "pharma", NOT off "pharmacop":
+  //   pharma | pharmacop | pharmacopeia | pharmacopoeia | pharmacy | pharmaceutical
+  const pharma = String.raw`${ci("pharma")}(?:${ci("cop")}(?:[Oo]?${ci("eia")})?|${ci("cy")}|${ci("ceutical")})?`;
+
+  // ── Word-grade stems ────────────────────────────────────────────────────────
+  // The bare qualifier word for each grade that has no acronym of its own. On its
+  // own a stem is too weak to classify ("ultra pure water", "low prices"), so the
+  // bodies below all pair it with a required reagent/grade tail. The one place a
+  // bare stem IS decisive is after an explicit "Grade:"/"Purity:" label, which is
+  // what buildLabeledGradeRegex reuses these for.
+  const stems = {
+    Guaranteed_Grade: ci("guaranteed"),
+    Cosmetic_Grade: ci("cosmetic"),
+    Extraction_Grade: ci("extraction"),
+    Practical_Grade: ci("practical"),
+    // [IiUu] absorbs the "indistrial" typo.
+    Industrial_Grade: String.raw`${ci("ind")}[IiUu]${ci("strial")}`,
+    Technical_Grade: String.raw`${ci("tech")}(?:${ci("nical")})?`,
+    Reagent_Grade: reagentTxt,
+    // "lab" or laboratory + its two common misspellings.
+    Lab_Grade: String.raw`${ci("lab")}(?:${ci("oratory")}|${ci("oratiry")}|${ci("pratory")})?`,
+    Pure_Grade: String.raw`${ci("pur")}(?:${ci("e")}|${ci("ified")})`,
+    Pharma_Grade: pharma,
+    Low_Grade: ci("low"),
+  };
 
   // ── Per-grade group bodies ──────────────────────────────────────────────────
   const bodies = {
     AR_Grade: String.raw`(?:${acronym("AR")}|${ci("analytical")}(?:\s*${reagentTxt})?)${optionalGrade}`,
     ACS_Grade: String.raw`(?:${acronym("ACS")}|${ci("acs")}\s+${gradeTxt}|${ci("american")}\s+${ci("chem")}(?:${ci("ical")})?\s+${ci("society")})${optionalGrade}`,
-    Guaranteed_Grade: String.raw`${ci("guaranteed")}\s+${rgFlex}`,
-    Cosmetic_Grade: String.raw`${ci("cosmetic")}\s+${rgFlex}`,
-    Extraction_Grade: String.raw`${ci("extraction")}\s+${rgFlex}`,
+    Guaranteed_Grade: String.raw`${stems.Guaranteed_Grade}\s+${rgFlex}`,
+    Cosmetic_Grade: String.raw`${stems.Cosmetic_Grade}\s+${rgFlex}`,
+    Extraction_Grade: String.raw`${stems.Extraction_Grade}\s+${rgFlex}`,
     NF_Grade: String.raw`(?:${acronym("NF")}|${ci("nf")}\s+${gradeTxt}|${ci("national")}\s+${ci("formulary")})${optionalGrade}`,
     FCC_Grade: String.raw`(?:${acronym("FCC")}|${ci("fcc")}\s+${gradeTxt}|${ci("food")}\s+(?:${ci("chem")}(?:${ci("icals")})?\s+${ci("codex")}|${rgFlex}))${optionalGrade}`,
-    Practical_Grade: String.raw`${ci("practical")}\s+${rgFlex}`,
-    Industrial_Grade: String.raw`${ci("ind")}[IiUu]${ci("strial")}\s+${rgFlex}`,
+    Practical_Grade: String.raw`${stems.Practical_Grade}\s+${rgFlex}`,
+    Industrial_Grade: String.raw`${stems.Industrial_Grade}\s+${rgFlex}`,
     // "tech"/"technical" + flexible tail (any case), OR bare fully-uppercase
     // "TECHNICAL" / "TECHNICAL GRADE" (all-caps product titles).
-    Technical_Grade: String.raw`(?:${ci("tech")}(?:${ci("nical")})?\s+${rgFlex}|TECHNICAL(?:\s+GRADE)?)`,
+    Technical_Grade: String.raw`(?:${stems.Technical_Grade}\s+${rgFlex}|TECHNICAL(?:\s+GRADE)?)`,
     // Bare "reagent grade". Qualifier-prefixed forms ("Practical/Technical/Pure/…
     // Reagent Grade") are claimed by those groups, which all consume the reagent
     // tail — so ordering keeps this from firing on them, no lookbehind needed.
-    Reagent_Grade: String.raw`${reagentTxt}\s+${gradeTxt}`,
+    Reagent_Grade: String.raw`${stems.Reagent_Grade}\s+${gradeTxt}`,
     // "BP"/"B.P." — decline when "/USP" or "/U.S.P." follows so the combo routes
     // to USP. Or "britt?ish pharmacop..." (t? absorbs the "Brittish" typo).
     BP_Grade: String.raw`(?:${acronym("BP")}(?!\s*/\s*${acronym("USP")})|${ci("brit")}[Tt]?${ci("ish")}\s+${pharma})${optionalGrade}`,
@@ -355,10 +503,10 @@ const buildGradeRegex = (): RegExp => {
     // "USP"/"U.S.P." / "usp grade" / "United States|US pharmacop...".
     USP_Grade: String.raw`(?:${acronym("BP")}\s*/\s*${acronym("USP")}|${acronym("USP")}\s*/\s*${acronym("BP")}|${acronym("USP")}|${ci("usp")}\s+${gradeTxt}|(?:${ci("united")}\s+${ci("states")}|${acronym("US")})\s+${pharma})${optionalGrade}`,
     HPLC_Grade: String.raw`(?:${acronym("HPLC")}|${ci("hplc")}\s+${gradeTxt}|${ci("gradient")}\s+${gradeTxt}|${ci("high")}[-\s]+${ci("performance")}\s+${ci("liquid")}\s+${ci("chromatography")})${optionalGrade}`,
-    Lab_Grade: String.raw`(?:${acronym("LR")}|${ci("lab")}(?:${ci("oratory")}|${ci("oratiry")}|${ci("pratory")})?\s+${rgFlex})`,
-    Pure_Grade: String.raw`${ci("pur")}(?:${ci("e")}|${ci("ified")})\s+${rgFlex}`,
-    Pharma_Grade: String.raw`${pharma}\s+${rgFlex}`,
-    Low_Grade: String.raw`${ci("low")}\s+(?:${rgFlex}|${purityTxt})`,
+    Lab_Grade: String.raw`(?:${acronym("LR")}|${stems.Lab_Grade}\s+${rgFlex})`,
+    Pure_Grade: String.raw`${stems.Pure_Grade}\s+${rgFlex}`,
+    Pharma_Grade: String.raw`${stems.Pharma_Grade}\s+${rgFlex}`,
+    Low_Grade: String.raw`${stems.Low_Grade}\s+(?:${rgFlex}|${purityTxt})`,
     Impure: String.raw`${ci("impure")}(?:\s+${reagentTxt})?`,
     Ungraded: String.raw`${ci("ungraded")}(?:\s+${ci("purity")})?(?:\s+${reagentTxt})?`,
   };
@@ -395,48 +543,83 @@ const buildGradeRegex = (): RegExp => {
   // \b...(?!\w): matches a grade token anywhere. (?!\w) — rather than a trailing
   // \b — lets a token end on a dot ("A.R.", "U.S.P."). Swap the \b for ^ and the
   // (?!\w) for $ for a strict full-string match.
-  const result = new RegExp(String.raw`\b(?:${namedGroups})(?!\w)`);
+  const classifier = new RegExp(String.raw`\b(?:${namedGroups})(?!\w)`);
 
-  return result;
+  // ── Labeled fallback ────────────────────────────────────────────────────────
+  // Suppliers also write the grade as a labeled field: "Grade: Technical".
+  // The word grades can't match that off `classifier` alone, because their bodies
+  // require a reagent/grade tail to keep prose like "ultra pure water" from
+  // classifying. An explicit "Grade:"/"Purity:"/"Quality:" label supplies that
+  // missing signal, so here the bare stem is enough. Acronym grades never reach
+  // this regex — they already match the classifier on their own.
+  const labelPrefix = String.raw`\b(?:${gradeTxt}|${purityTxt}|${ci("quality")})\s*[:\-–]\s*`;
+  const labeledGroups = Object.entries(stems)
+    .map(([name, stem]) => `(?<${name}>${stem})`)
+    .join("|");
+  const labeled = new RegExp(String.raw`${labelPrefix}(?:${labeledGroups})(?!\w)`);
+
+  const patterns = { classifier, labeled };
+
+  return patterns;
 };
+
+const GRADE_REGEXES = buildGradeRegexes();
 
 /**
  * The compiled classifier regex (built once).
+ * @category Science Helpers
+ * @group Regex Patterns
  * @document ./REAGENT_GRADE_PATTERN.md
- * @see https://regex101.com/r/KpgeRo/2
+ * @see https://regex101.com/r/BJV88C/4
  */
-export const GRADE_REGEX = buildGradeRegex();
+export const GRADE_REGEX = GRADE_REGEXES.classifier;
+
+/**
+ * Companion to {@link GRADE_REGEX} for labeled fields ("Grade: Technical"), where an
+ * explicit label licenses a bare word-grade stem that would otherwise be too weak to
+ * classify. Tried only when {@link GRADE_REGEX} finds nothing.
+ *
+ * @category Science Helpers
+ * @group Regex Patterns
+ */
+export const LABELED_GRADE_REGEX = GRADE_REGEXES.labeled;
 
 /**
  * The regex source string — paste into regex101 (ECMAScript flavor) to inspect.
+ * @category Science Helpers
+ * @group Regex Patterns
  * @document ./REAGENT_GRADE_PATTERN.md
- * @see https://regex101.com/r/KpgeRo/2
+ * @see https://regex101.com/r/BJV88C/4
  */
 export const GRADE_REGEX_SOURCE = GRADE_REGEX.source;
 
 /**
- * Extracts a chemical grade from a string.
- * @see https://regex101.com/r/KpgeRo/2
+ * Extracts a chemical grade from a string. Recognizes the grade written inline in a product
+ * title ("SODIUM, REAGENT (ACS) - 500 G") as well as written as a labeled field
+ * ("Grade: Technical"). Falls back to `"Ungraded"` rather than `undefined`, so the Purity
+ * column always has something to show.
+ * @category Science Helpers
+ * @group Parsers
+ * @see https://regex101.com/r/BJV88C/4
  * @document ./REAGENT_GRADE_PATTERN.md
- * @param value - The string to extract the grade from
- * @returns The grade label (e.g. `"ACS"`), or nothing if none is found
+ * @param value - The string to extract the grade from (e.g. a product title)
+ * @returns The grade label (e.g. `"ACS Grade"`), or `"Ungraded"` if none is found
  * @example
  * ```typescript
- * parseGrade("SODIUM, REAGENT (ACS) - 500 G")      // Returns "ACS Grade"
- * parseGrade("SODIUM CHLORITE, 80% TECHNICAL")     // Returns "Technical Grade"
- * parseGrade("Citric acid, BP/USP")                // Returns "USP Grade"
- * parseGrade("SODIUM, REAGENT (ACS) - 500 G")      // Returns "ACS Grade"
- * parseGrade("SODIUM CHLORITE, 80% TECHNICAL")     // Returns "Technical Grade"
- * parseGrade("Citric acid, Cosmetic Grade")        // Returns "Cosmetic Grade"
- * parseGrade("Sodium, Reagent (AR) - 500 G")       // Returns "AR Grade"
- * parseGrade("Sodium, Reagent (NF) - 500 G")       // Returns "NF Grade"
- * parseGrade("Sodium, Reagent (FCC) - 500 G")      // Returns "FCC Grade"
- * parseGrade("SODIUM NITRATE, 99.999% - 50 G")     // Returns undefined
+ * parseGrade("SODIUM, REAGENT (ACS) - 500 G")   // Returns "ACS Grade"
+ * parseGrade("SODIUM CHLORITE, 80% TECHNICAL")  // Returns "Technical Grade"
+ * parseGrade("Citric acid, BP/USP")             // Returns "USP Grade"
+ * parseGrade("Grade: Technical")                // Returns "Technical Grade"
+ * parseGrade("Sodium, Reagent (NF) - 500 G")    // Returns "NF Grade"
+ * parseGrade("SODIUM NITRATE, 99.999% - 50 G")  // Returns "Ungraded"
  * ```
  * @source
  */
 export const parseGrade = (value: string): string => {
-  const matches = GRADE_REGEX.exec(value.trim());
+  const trimmed = value.trim();
+  // The classifier is the specific signal, so it wins; the labeled form only fills
+  // the gap it leaves for bare word-grade stems.
+  const matches = GRADE_REGEX.exec(trimmed) ?? LABELED_GRADE_REGEX.exec(trimmed);
   if (!matches || !matches.groups) return "Ungraded";
 
   const hits = Object.entries(matches.groups).filter(([, v]) => Boolean(v));
@@ -461,8 +644,13 @@ export const parseGrade = (value: string): string => {
  * Ties within a tier are intentional (e.g. USP/BP/JP/NF are ~equivalent).
  *
  * Ordering follows the standard hierarchy (highest→lowest):
- * ACS ≈ Reagent ≈ AR &gt; USP ≈ BP ≈ JP ≈ NF &gt; Pharma ≈ FCC &gt; Lab &gt; Pure/Practical &gt; Technical/Industrial
+ * HPLC &gt; ACS &gt; Reagent ≈ AR ≈ Guaranteed &gt; USP ≈ BP ≈ JP ≈ NF &gt; Pharma ≈ FCC &gt;
+ * Cosmetic ≈ Extraction ≈ Lab &gt; Pure ≈ Practical &gt; Technical ≈ Industrial &gt; Low &gt; Impure
  *
+ * Note `"Impure"` maps to `0`, which is a value, not a miss — only `"Ungraded"` and
+ * unrecognised labels return `undefined`.
+ * @category Science Helpers
+ * @group Converters
  * @param grade - The grade label (as returned by `parseGrade`, e.g. "ACS Grade")
  * @returns A representative purity %, or `undefined` if unrecognised
  * @example
@@ -470,8 +658,10 @@ export const parseGrade = (value: string): string => {
  * purityGradeToPercentage("ACS Grade")       // 99.8
  * purityGradeToPercentage("USP Grade")       // 99.5
  * purityGradeToPercentage("Technical Grade") // 90
+ * purityGradeToPercentage("Impure")          // 0
  * purityGradeToPercentage("Ungraded")        // undefined
  * ```
+ * @source
  */
 export const purityGradeToPercentage = (grade: string): number | undefined => {
   switch (grade) {
@@ -586,6 +776,8 @@ export const purityGradeToPercentage = (grade: string): number | undefined => {
  * title carries more than one (e.g. "Reagent (ACS)"), the most specific standard wins.
  * Use only where grades are known to be meaningful (e.g. Chemsavers), since two-letter
  * codes are collision-prone in free text.
+ * @category Science Helpers
+ * @group Types & Interfaces
  * @param value - The string to extract the grade from
  * @returns The canonical grade label (e.g. `"ACS"`), or nothing if none is found
  * @example
@@ -607,6 +799,7 @@ export const purityGradeToPercentage = (grade: string): number | undefined => {
 /**
  * Structured chemical properties pulled out of a supplier's free-form product copy.
  * Every field is optional — only the values actually present (and valid) are returned.
+ * @category Science Helpers
  * @source
  */
 export interface ChemicalSpecs {
@@ -618,6 +811,8 @@ export interface ChemicalSpecs {
   molecularWeight?: number;
   /** SMILES structure string, validated as plausibly-valid SMILES. */
   smiles?: string;
+  /** Grade as a string (e.g. "ACS Grade"). */
+  grade?: string;
 }
 
 // Unicode subscript digit glyphs (₀–₉) mapped to ASCII so a formula written with real subscript
@@ -709,6 +904,8 @@ const MOLARITY_REGEX =
  * When both `.` and `,` are present the last-occurring one is treated as the decimal separator and
  * the other as thousands grouping; a single `,` or `.` is treated as a decimal point (so European
  * `149,19` reads as `149.19`); repeated separators of one kind are treated as grouping only.
+ * @category Science Helpers
+ * @group Parsers
  * @param raw - The numeric token (e.g. "149,19", "1.234,56", "1,234.56", "40")
  * @returns The parsed number (may be `NaN` if the token holds no digits)
  * @example
@@ -745,8 +942,9 @@ export const parseLocalizedNumber = (raw: string): number => {
  * value with no unit (`M.W. 415.6`) — and the value is parsed with {@link parseLocalizedNumber} so
  * European decimal commas are handled. Returns `undefined` when no plausible molar mass is present,
  * so unrelated numbers (melting points, densities, prose) are not mistaken for one.
+ * @category Science Helpers
+ * @group Parsers
  * @see https://regex101.com/r/8rqk6N/1
- * @category Helpers
  * @param text - Raw text or HTML that may contain a molar mass anywhere within it
  * @returns The molar mass in g/mol as a positive number, or undefined when none is found
  * @example
@@ -777,8 +975,9 @@ export const findMolarMass = (text: string): number | undefined => {
  * normalized string suitable for the product's `concentration` field. The unit must be a capital
  * "M" or literal "mol/L" (see `MOLARITY_REGEX`), so a lowercase "m" (milli, e.g. "500ml") is
  * never mistaken for molarity. Returns `undefined` when no molarity is present.
+ * @category Science Helpers
+ * @group Parsers
  * @see https://regex101.com/r/8rqk6N/1
- * @category Helpers
  * @param text - Raw text (title or description) that may contain a molarity anywhere within it
  * @returns The molarity as a normalized string (e.g. `"1.5 M"`, `"1-2 M"`), or undefined
  * @example
@@ -803,6 +1002,8 @@ export const findMolarity = (text: string): string | undefined => {
  * Pulls a purity percentage from messy, multi-line product copy. Unlike {@link parsePurity}, this
  * only trusts a percentage that sits on a line mentioning "purity" — so a stray "50% brine" in a
  * description is ignored — and tolerates the `98%+`, `99+%`, and `99-100%` shapes suppliers use.
+ * @category Science Helpers
+ * @group Parsers
  * @param lines - The normalized, line-split product copy
  * @returns The purity as a number (e.g. `98`), or nothing if none is found
  * @source
@@ -819,13 +1020,32 @@ const extractPurity = (lines: string[]): number | undefined => {
 };
 
 /**
+ * Extracts a grade from a line of text.
+ * @category Science Helpers
+ * @group Parsers
+ * @param lines - The normalized, line-split product copy
+ * @returns The grade as a string, or undefined if none is found
+ * @source
+ */
+const extractGrade = (lines: string[]): string | undefined => {
+  for (const line of lines) {
+    if (!/grade/i.test(line)) continue;
+    const match = line.match(GRADE_REGEX);
+    if (!match) continue;
+    return match[1];
+  }
+  return undefined;
+};
+
+/**
  * Extracts structured chemical properties (purity, molecular formula, molecular weight, SMILES)
  * from a supplier's free-form, HTML-laced product copy. Built for Wix suppliers whose specs live
  * inside descriptions and additional-info accordions as loosely-labelled bullet lists — labels and
  * separators vary wildly (`MW -`, `Molecular mass :`, `Formula:`), so each field is matched
  * tolerantly and validated before being returned. CAS numbers are intentionally left to
  * `findCAS` (in helpers/cas), which already searches free text robustly.
- * @category Helpers
+ * @category Science Helpers
+ * @group Parsers
  * @param html - Raw product copy, possibly containing HTML markup
  * @returns The chemical properties found; fields absent or invalid are omitted
  * @example
@@ -846,7 +1066,10 @@ export const parseChemicalSpecs = (html: string): ChemicalSpecs => {
   const specs: ChemicalSpecs = {};
 
   const purity = extractPurity(lines);
+  const grade = extractGrade(lines);
+
   if (purity !== undefined) specs.purity = purity;
+  if (grade !== undefined) specs.grade = grade;
 
   // Iterate every "…formula…" match and keep the first candidate that validates: the copy may say
   // "the rough formula is C6H15NO3" (capturing the word "is") before the real "Empirical formula
@@ -874,6 +1097,9 @@ export const parseChemicalSpecs = (html: string): ChemicalSpecs => {
 // The adduct/hydrate separator: U+22C5 "DOT OPERATOR".
 const ADDUCT_DOT = "\u22C5";
 
+// Characters that could be used as adduct dot operators (eg: ⋅᛫•‧⋄)
+const TARGET_ADDUCT_DOTS = ["\\.", "\u00b7", "\u16eb", "\u2022", "\u2027", "\u22c4"];
+
 /**
  * Formats a plain-ASCII chemical formula with proper Unicode notation: periods that join formula
  * units become an adduct/hydrate dot (⋅), and atom-count digits become subscripts. Digits that are
@@ -881,6 +1107,8 @@ const ADDUCT_DOT = "\u22C5";
  * the adduct dot — are left full-size, since their preceding character isn't an atom or bracket.
  * Intended for formulas that arrive as plain text (no `<sub>` markup); tagged formulas should go
  * through {@link findFormulaInHtml} instead.
+ * @category Science Helpers
+ * @group Formatters
  * @param formula - A plain-ASCII formula, e.g. "C6H15NO3.5H3PO4"
  * @returns The formula with subscripted atom counts and adduct dots, e.g. "C₆H₁₅NO₃⋅5H₃PO₄"
  * @example
@@ -896,7 +1124,7 @@ export function formatFormula(formula: string): string {
   return (
     formula
       // 1. period(s) between formula units → adduct dot
-      .replace(/\./g, ADDUCT_DOT)
+      .replace(new RegExp(`(${TARGET_ADDUCT_DOTS.join("|")})`, "g"), ADDUCT_DOT)
       // 2. a run of digits directly after an atom (letter), ) or ] → subscript.
       //    Digits after the start, a space, or the adduct dot are stoichiometric
       //    coefficients, so their preceding char isn't a letter/bracket → skipped.
@@ -905,27 +1133,36 @@ export function formatFormula(formula: string): string {
 }
 
 /**
- * Converts a purity grade to a sortable number.
- * @param grade - The grade to convert
- * @returns The sortable number
+ * Converts a purity value — either a grade label or a percentage — to a number the Purity
+ * column can sort on. Grades route through {@link purityGradeToPercentage}; everything else
+ * is read as the FIRST number in the string, so a range sorts on its lower bound and a
+ * trailing qualifier ("+", "or better") is ignored. Anything unreadable sorts as `0`.
+ * @category Science Helpers
+ * @group Converters
+ * @param grade - The grade label or percentage to convert (e.g. `"ACS Grade"`, `"≥99.8%"`)
+ * @returns A number in `[0, 100]`; `0` when no grade or number can be read
  * @example
  * ```typescript
- * sortablePurityGrade("95%") // Returns 95
- * sortablePurityGrade("ACS Grade") // Returns 99.8
- * sortablePurityGrade("99.9%") // Returns 99.9
- * sortablePurityGrade("USP Grade") // Returns 99.9
- * sortablePurityGrade("99.9+%") // Returns 99.9
- * sortablePurityGrade("99.9-100%") // Returns 99.9
- * sortablePurityGrade("99.9-100%") // Returns 99.9
+ * sortablePurityGrade("95%")           // Returns 95
+ * sortablePurityGrade("ACS Grade")     // Returns 99.8
+ * sortablePurityGrade("USP Grade")     // Returns 99.5
+ * sortablePurityGrade("99.9+%")        // Returns 99.9
+ * sortablePurityGrade("99.9-100%")     // Returns 99.9 (lower bound of the range)
+ * sortablePurityGrade("99,5%")         // Returns 99.5 (European comma decimal)
+ * sortablePurityGrade("120%")          // Returns 100 (clamped)
+ * sortablePurityGrade("Ungraded")      // Returns 0
  * ```
  * @source
  */
 export function sortablePurityGrade(grade: string): number {
   if (grade.endsWith(" Grade")) return purityGradeToPercentage(grade) ?? 0;
-  const strippedGrade = grade.replaceAll(/[^0-9.]+/g, "");
-  if (typeof strippedGrade === "undefined") return 0;
-  const num = Number(strippedGrade);
-  if (isNaN(num) || num < 0) return 0;
-  if (num > 100) return 100;
-  return num;
+
+  // First number only. Stripping every non-digit instead would splice a range's two
+  // bounds into one bogus number ("99.9-100%" -> "99.9100").
+  const match = grade.match(/\d+(?:[.,]\d+)?/);
+  if (!match) return 0;
+
+  const num = Number(match[0].replace(",", "."));
+  if (Number.isNaN(num) || num < 0) return 0;
+  return Math.min(num, 100);
 }

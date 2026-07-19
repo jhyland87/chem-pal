@@ -1,12 +1,13 @@
 import { Logger } from "@/utils/Logger";
 
 /**
- * @group Helpers
- * @groupDescription Guarded wrappers around the `chrome.cookies` API for
+ * @category Cookies Helpers
+ * @categoryDescription Guarded wrappers around the `chrome.cookies` API for
  * seeding cookies into the browser jar and reading them back. The `Cookie`
  * request header is on the fetch-forbidden list, so suppliers cannot set
  * cookies via `this.headers`; writing them into the jar (and fetching with
  * `credentials: "include"`) is the only reliable path.
+ * @showCategories
  * @source
  */
 
@@ -18,7 +19,7 @@ const logger = new Logger("cookies");
  * host permission for the origin, so callers guard with this to degrade
  * gracefully (dev fallback, or when a user hasn't accepted the upgraded
  * permission set yet).
- * @category Helpers
+ * @category Cookies Helpers
  * @returns `true` when `chrome.cookies` is available, otherwise `false`
  * @example
  * ```typescript
@@ -35,7 +36,7 @@ export function isCookiesApiAvailable(): boolean {
  * subsequent requests made with `credentials: "include"`. No-ops with a
  * warning when the API is unavailable, and swallows write failures (logging
  * them) so a failed seed never aborts the surrounding query.
- * @category Helpers
+ * @category Cookies Helpers
  * @param details - The `chrome.cookies.set` details (url, name, value, etc.)
  * @returns A promise that resolves once the write has been attempted
  * @example
@@ -60,7 +61,7 @@ export async function setCookie(details: chrome.cookies.SetDetails): Promise<voi
  * Reads every cookie the jar holds for the given URL. Useful for verifying
  * that session cookies are being stored/updated across requests. Returns an
  * empty array when the API is unavailable or the read fails.
- * @category Helpers
+ * @category Cookies Helpers
  * @param url - The URL whose cookies should be read
  * @returns A promise resolving to the matching cookies (empty on failure)
  * @example
@@ -86,7 +87,7 @@ export async function getCookies(url: string): Promise<chrome.cookies.Cookie[]> 
 /**
  * Reads a single named cookie for the given URL. Returns `null` when the
  * cookie is absent, the API is unavailable, or the read fails.
- * @category Helpers
+ * @category Cookies Helpers
  * @param url - The URL the cookie belongs to
  * @param name - The cookie name to read
  * @returns A promise resolving to the cookie, or `null`
@@ -97,10 +98,7 @@ export async function getCookies(url: string): Promise<chrome.cookies.Cookie[]> 
  * ```
  * @source
  */
-export async function getCookie(
-  url: string,
-  name: string,
-): Promise<chrome.cookies.Cookie | null> {
+export async function getCookie(url: string, name: string): Promise<chrome.cookies.Cookie | null> {
   if (!isCookiesApiAvailable()) {
     logger.warn("chrome.cookies unavailable; cannot read cookie", { url, name });
     return null;

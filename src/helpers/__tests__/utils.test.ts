@@ -15,7 +15,6 @@ import {
   getUserLanguage,
   getUserLocation,
   htmlToAscii,
-  isMoleForm,
   mapDefined,
   md5sum,
   objectToQueryString,
@@ -319,21 +318,6 @@ describe("formatTimestamp", () => {
     const out = formatTimestamp(1711468500000);
     expect(typeof out).toBe("string");
     expect(out.length).toBeGreaterThan(0);
-  });
-});
-
-describe("isMoleForm", () => {
-  it("returns true for valid molecular formulas", () => {
-    expect(isMoleForm("C12H22O11")).toBe(true);
-    expect(isMoleForm("C<sub>11</sub>H<sub>8</sub>I<sub>3</sub>N<sub>2</sub>NaO<sub>4</sub>")).toBe(
-      true,
-    );
-  });
-
-  it("returns false for invalid formulas", () => {
-    expect(isMoleForm("12H22O11")).toBe(false);
-    expect(isMoleForm("")).toBe(false);
-    expect(isMoleForm("hello")).toBe(false);
   });
 });
 

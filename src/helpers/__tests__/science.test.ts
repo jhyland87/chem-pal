@@ -1,13 +1,19 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import gradeCorpus from "./__fixtures__/grade-corpus.json";
 import {
   findFormulaInHtml,
   findFormulaInText,
   findMolarity,
   findMolarMass,
+  findPurity,
   formatFormula,
+  isMoleForm,
   parseChemicalSpecs,
   parseGrade,
+  parseLocalizedNumber,
   parsePurity,
+  purityGradeToPercentage,
+  sortablePurityGrade,
   subscript,
   subscriptGlyph,
   superscript,
@@ -404,33 +410,398 @@ describe("science helpers", () => {
   });
 
   describe("parseGrade", () => {
-    it("should parse standalone grade abbreviations", () => {
-      expect(parseGrade("Sodium sulfate AR")).toBe("AR Grade");
-      expect(parseGrade("Acetonitrile HPLC - 1 L")).toBe("HPLC Grade");
-      expect(parseGrade("Citric acid USP")).toBe("USP Grade");
-      expect(parseGrade("Magnesium stearate NF")).toBe("NF Grade");
-      expect(parseGrade("Sodium bicarbonate FCC")).toBe("FCC Grade");
+    // Per grade, the spellings it must absorb and the near-misses it must not, keyed by
+    // the label parseGrade returns. Lives in ./__fixtures__/grade-corpus.json — add a
+    // grade to the `bodies` map in science.ts -> add its row there.
+    //
+    // "Ungraded" has an empty `unsuccessful` set on purpose: it is the fallback return,
+    // so every string that fails to match some other grade IS Ungraded. There is no
+    // input that could fail to be it.
+    interface GradeCases {
+      successful: string[];
+      unsuccessful: string[];
+    }
+    const GRADE_CORPUS: Record<string, GradeCases> = gradeCorpus;
+
+    // The bare token each grade is written as when it appears after a "Grade:" label.
+    // Not always the label itself: "LR" is Lab Grade, and Impure/Ungraded carry no suffix.
+    const LABEL_TOKENS: Array<[token: string, expected: string]> = [
+      ["ACS", "ACS Grade"],
+      ["AR", "AR Grade"],
+      ["HPLC", "HPLC Grade"],
+      ["USP", "USP Grade"],
+      ["BP", "BP Grade"],
+      ["JP", "JP Grade"],
+      ["NF", "NF Grade"],
+      ["FCC", "FCC Grade"],
+      ["LR", "Lab Grade"],
+      ["Technical", "Technical Grade"],
+      ["Industrial", "Industrial Grade"],
+      ["Practical", "Practical Grade"],
+      ["Cosmetic", "Cosmetic Grade"],
+      ["Extraction", "Extraction Grade"],
+      ["Guaranteed", "Guaranteed Grade"],
+      ["Reagent", "Reagent Grade"],
+      ["Lab", "Lab Grade"],
+      ["Pure", "Pure Grade"],
+      ["Pharma", "Pharma Grade"],
+      ["Low", "Low Grade"],
+      ["Impure", "Impure"],
+      ["Ungraded", "Ungraded"],
+    ];
+
+    describe.each(Object.entries(GRADE_CORPUS))("%s", (expected, cases) => {
+      it.each(cases.successful)("should classify %j", (input) => {
+        expect(parseGrade(input)).toBe(expected);
+      });
+
+      // Guarded: it.each throws on an empty table, and "Ungraded" has no near-misses.
+      if (cases.unsuccessful.length > 0) {
+        it.each(cases.unsuccessful)("should not classify %j", (input) => {
+          expect(parseGrade(input)).not.toBe(expected);
+        });
+      }
     });
 
-    it("should parse word grades case-insensitively", () => {
+    it("should fall through to 'Ungraded' for every near-miss", () => {
+      // The per-grade assertion above only says "not this grade". This is the stronger
+      // claim: no near-miss lands on some *other* grade by accident.
+      for (const { unsuccessful } of Object.values(GRADE_CORPUS)) {
+        for (const input of unsuccessful) {
+          expect(parseGrade(input)).toBe("Ungraded");
+        }
+      }
+    });
+
+    describe.each(LABEL_TOKENS)("labeled field: %s", (token, expected) => {
+      it.each([`Grade: ${token}`, `Purity: ${token}`, `Quality: ${token}`, `Grade - ${token}`])(
+        "should classify %j",
+        (input) => {
+          expect(parseGrade(input)).toBe(expected);
+        },
+      );
+
+      it(`should classify "Purity: ${token} Grade"`, () => {
+        expect(parseGrade(`Purity: ${token} Grade`)).toBe(expected);
+      });
+    });
+
+    it("should find the grade inside a full product title", () => {
+      expect(parseGrade("SODIUM, REAGENT (ACS) - 500 G")).toBe("ACS Grade");
       expect(parseGrade("SODIUM CHLORITE, 80% TECHNICAL - 2.5 KG")).toBe("Technical Grade");
       expect(parseGrade("SODIUM CHLORITE, 90% Technical Grade - 2.5 KG")).toBe("Technical Grade");
-      expect(parseGrade("sodium chloride reagent grade")).toBe("Reagent Grade");
+      expect(parseGrade("Acetonitrile HPLC - 1 L")).toBe("HPLC Grade");
+      expect(parseGrade("Magnesium stearate NF, 1 kg")).toBe("NF Grade");
+      expect(parseGrade("Caffeine, British Pharmacopoeia")).toBe("BP Grade");
+    });
+
+    it("should accept dotted acronyms", () => {
+      expect(parseGrade("A.C.S.")).toBe("ACS Grade");
+      expect(parseGrade("A.R.")).toBe("AR Grade");
+      expect(parseGrade("U.S.P.")).toBe("USP Grade");
+      expect(parseGrade("N.F.")).toBe("NF Grade");
+      expect(parseGrade("B.P./U.S.P.")).toBe("USP Grade");
+    });
+
+    it("should reject an acronym that is really an abbreviation ('ACS.')", () => {
+      expect(parseGrade("ACS.")).toBe("Ungraded");
     });
 
     it("should prefer the specific standard when several are present", () => {
+      // "Reagent (ACS)" is ACS, not the generic Reagent Grade.
       expect(parseGrade("SODIUM, REAGENT (ACS) - 500 G")).toBe("ACS Grade");
+      // BP declines when "/USP" follows, so the combo routes to USP.
       expect(parseGrade("Citric acid, BP/USP")).toBe("USP Grade");
+      expect(parseGrade("Citric acid, USP/BP")).toBe("USP Grade");
+      // ...but a standalone BP is still BP.
+      expect(parseGrade("Caffeine, BP")).toBe("BP Grade");
     });
 
-    it("should accept spelled-out pharmacopoeia names", () => {
-      expect(parseGrade("Caffeine, British Pharmacopoeia")).toBe("BP Grade");
-      expect(parseGrade("Glucose, Japanese Pharmacopeia")).toBe("JP Grade");
+    it("should not read 'Impure' as 'Pure'", () => {
+      expect(parseGrade("Impure")).toBe("Impure");
+      expect(parseGrade("Impure sample")).toBe("Impure");
     });
 
-    it("should return 'Ungraded' when no grade is present", () => {
-      expect(parseGrade("SODIUM NITRATE, 99.999% - 50 G")).toBe("Ungraded");
-      expect(parseGrade("")).toBe("Ungraded");
+    it.each([
+      "",
+      "SODIUM NITRATE, 99.999% - 50 G",
+      "Ultra pure water",
+      "Industrial solvent, 5 L",
+      "Low prices every day",
+      "Ships in 4-6 business days",
+      "Nitric acid ARS",
+      "NFPA rated",
+      "high performance pump",
+      "Sodium, JAR of 500g",
+    ])("should return 'Ungraded' for %j", (input) => {
+      expect(parseGrade(input)).toBe("Ungraded");
+    });
+
+    it("should never report multiple matching groups across the corpus", () => {
+      // parseGrade warns when two named groups match at once — that means the pattern
+      // is ambiguous, which the returned label would silently hide.
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      for (const { successful, unsuccessful } of Object.values(GRADE_CORPUS)) {
+        [...successful, ...unsuccessful].forEach(parseGrade);
+      }
+      expect(warn).not.toHaveBeenCalled();
+      warn.mockRestore();
+    });
+  });
+
+  describe("purityGradeToPercentage", () => {
+    it.each([
+      ["HPLC Grade", 99.9],
+      ["ACS Grade", 99.8],
+      ["AR Grade", 99.7],
+      ["Guaranteed Grade", 99.7],
+      ["Reagent Grade", 99.7],
+      ["USP Grade", 99.5],
+      ["BP Grade", 99.5],
+      ["JP Grade", 99.5],
+      ["NF Grade", 99.5],
+      ["Pharma Grade", 99.0],
+      ["FCC Grade", 99.0],
+      ["Cosmetic Grade", 98.0],
+      ["Extraction Grade", 98.0],
+      ["Lab Grade", 98.0],
+      ["Pure Grade", 95.0],
+      ["Practical Grade", 95.0],
+      ["Technical Grade", 90.0],
+      ["Industrial Grade", 90.0],
+      ["Low Grade", 50.0],
+    ])("should map %s to %s", (grade, expected) => {
+      expect(purityGradeToPercentage(grade)).toBe(expected);
+    });
+
+    it("should map 'Impure' to 0, not undefined", () => {
+      // 0 is a value here, not a miss — callers using `?? fallback` depend on the
+      // difference, so pin both halves.
+      expect(purityGradeToPercentage("Impure")).toBe(0);
+      expect(purityGradeToPercentage("Impure")).not.toBeUndefined();
+    });
+
+    it.each(["Ungraded", "", "Nonsense Grade"])("should return undefined for %j", (grade) => {
+      expect(purityGradeToPercentage(grade)).toBeUndefined();
+    });
+
+    it("should match exactly, so a differently-cased label is unrecognised", () => {
+      expect(purityGradeToPercentage("acs grade")).toBeUndefined();
+      expect(purityGradeToPercentage("ACS GRADE")).toBeUndefined();
+    });
+
+    it("should rank the grades in the documented hierarchy order", () => {
+      const hierarchy = [
+        "HPLC Grade",
+        "ACS Grade",
+        "Reagent Grade",
+        "AR Grade",
+        "Guaranteed Grade",
+        "USP Grade",
+        "BP Grade",
+        "JP Grade",
+        "NF Grade",
+        "Pharma Grade",
+        "FCC Grade",
+        "Cosmetic Grade",
+        "Extraction Grade",
+        "Lab Grade",
+        "Pure Grade",
+        "Practical Grade",
+        "Technical Grade",
+        "Industrial Grade",
+        "Low Grade",
+        "Impure",
+      ];
+      const percentages = hierarchy.map((grade) => purityGradeToPercentage(grade));
+
+      expect(percentages).not.toContain(undefined);
+      for (let i = 1; i < percentages.length; i++) {
+        expect(percentages[i]).toBeLessThanOrEqual(Number(percentages[i - 1]));
+      }
+    });
+
+    it("should recognise every label parseGrade can produce", () => {
+      // The seam most likely to break silently: parseGrade renames its group
+      // ("ACS_Grade" -> "ACS Grade") and the switch keys on the result. A new group
+      // in science.ts with no matching case would surface here.
+      const inputs = [
+        "ACS",
+        "AR",
+        "HPLC",
+        "USP",
+        "BP",
+        "JP",
+        "NF",
+        "FCC",
+        "LR",
+        "Technical Grade",
+        "Industrial Grade",
+        "Practical Grade",
+        "Cosmetic Grade",
+        "Extraction Grade",
+        "Guaranteed Grade",
+        "Reagent Grade",
+        "Lab Grade",
+        "Pure Grade",
+        "Pharma Grade",
+        "Low Grade",
+        "Impure",
+      ];
+      for (const input of inputs) {
+        expect(purityGradeToPercentage(parseGrade(input))).toBeTypeOf("number");
+      }
+      // "Ungraded" is the one label that intentionally has no percentage.
+      expect(purityGradeToPercentage(parseGrade("Sodium nitrate 50 g"))).toBeUndefined();
+    });
+  });
+
+  describe("sortablePurityGrade", () => {
+    it.each([
+      ["ACS Grade", 99.8],
+      ["USP Grade", 99.5],
+      ["Technical Grade", 90],
+      ["Low Grade", 50],
+    ])("should sort the grade %s as %s", (grade, expected) => {
+      expect(sortablePurityGrade(grade)).toBe(expected);
+    });
+
+    it.each([
+      ["95%", 95],
+      ["99.9%", 99.9],
+      ["99.9+%", 99.9],
+      ["≥99.8%", 99.8],
+    ])("should sort the percentage %s as %s", (purity, expected) => {
+      expect(sortablePurityGrade(purity)).toBe(expected);
+    });
+
+    it("should sort a range on its lower bound", () => {
+      expect(sortablePurityGrade("99.9-100%")).toBe(99.9);
+      expect(sortablePurityGrade("98 - 102%")).toBe(98);
+    });
+
+    it("should read a European comma decimal", () => {
+      expect(sortablePurityGrade("99,5%")).toBe(99.5);
+    });
+
+    it("should clamp an out-of-range percentage to 100", () => {
+      expect(sortablePurityGrade("120%")).toBe(100);
+    });
+
+    it.each(["", "N/A", "Ungraded"])("should fall back to 0 for %j", (input) => {
+      expect(sortablePurityGrade(input)).toBe(0);
+    });
+
+    it("should sort 'Impure' as 0", () => {
+      // "Impure" carries no " Grade" suffix, so it takes the numeric path and finds
+      // no digits — which lands on 0 anyway. Pinned so a change to the suffix check
+      // can't quietly move it.
+      expect(sortablePurityGrade("Impure")).toBe(0);
+    });
+  });
+
+  describe("isMoleForm", () => {
+    it.each([
+      "C12H22O11",
+      "H2O",
+      "NaCl",
+      "KBr",
+      "C6H12O6",
+      "CH3COOH",
+      "Na", // lone element symbol
+      "C<sub>11</sub>H<sub>8</sub>I<sub>3</sub>N<sub>2</sub>NaO<sub>4</sub>",
+    ])("should accept %j", (formula) => {
+      expect(isMoleForm(formula)).toBe(true);
+    });
+
+    it.each([
+      ["12H22O11", "leading digit — a formula must start with an element"],
+      ["", "empty string"],
+      ["hello", "prose"],
+      ["h2o", "lowercase element symbol"],
+      ["C0H2", "zero subscript"],
+      ["C6 H12 O6", "internal whitespace"],
+      ["Na+", "ionic charge"],
+      ["H2O·2H2O", "adduct/hydrate separator"],
+      ["C₆H₁₂O₆", "unicode subscript glyphs"],
+    ])("should reject %j (%s)", (formula) => {
+      expect(isMoleForm(formula)).toBe(false);
+    });
+
+    it("should be anchored, so a formula buried in prose is rejected", () => {
+      // Unlike findFormulaInText, this is a whole-string predicate — ProductBuilder
+      // relies on that to decide whether to store a value verbatim.
+      expect(isMoleForm("the formula is H2O")).toBe(false);
+      expect(isMoleForm("H2O ")).toBe(false);
+    });
+  });
+
+  describe("findPurity", () => {
+    it("should keep the comparator on a percentage", () => {
+      expect(findPurity("Sodium Metal ≥99.8%")).toBe("≥99.8%");
+      expect(findPurity(">99%")).toBe(">99%");
+      expect(findPurity("≈99.5%")).toBe("≈99.5%");
+    });
+
+    it("should read the shapes suppliers write a percentage in", () => {
+      expect(findPurity("Sodium borohydride, min 95%")).toBe("95%");
+      expect(findPurity("SODIUM CHLORITE, 80% TECHNICAL")).toBe("80%");
+      expect(findPurity("100%")).toBe("100%");
+      // European comma decimal, and the "or better" plus.
+      expect(findPurity("Potassium hydrogen tartrate ≥99,5 %")).toBe("≥99,5%");
+      expect(findPurity("Lithium Carbonate 99+% Extra Pure")).toBe("99+%");
+    });
+
+    it("should prefer a percentage over a grade when both are present", () => {
+      expect(findPurity("SODIUM CHLORITE, 80% TECHNICAL - 2.5 KG")).toBe("80%");
+    });
+
+    it("should fall back to the grade when there is no valid percentage", () => {
+      expect(findPurity("Acetonitrile HPLC - 1 L")).toBe("HPLC Grade");
+      expect(findPurity("Sodium, Reagent (ACS) - 500 G")).toBe("ACS Grade");
+    });
+
+    it("should strip HTML so inline CSS is not read as a purity", () => {
+      expect(findPurity('<div style="width: 100%">Sodium sulfate AR</div>')).toBe("AR Grade");
+    });
+
+    it("should reject an out-of-range percentage and fall through to the grade", () => {
+      expect(findPurity("120%")).toBe("Ungraded");
+      expect(findPurity("0%")).toBe("Ungraded");
+    });
+
+    it("should return 'Ungraded' — not undefined — when nothing is recognised", () => {
+      // parseGrade is the fallback and it never returns undefined, so only an empty
+      // input reaches the early return.
+      expect(findPurity("Ships in 4-6 business days")).toBe("Ungraded");
+      expect(findPurity("E515 additive")).toBe("Ungraded");
+      expect(findPurity("")).toBeUndefined();
+    });
+  });
+
+  describe("parseLocalizedNumber", () => {
+    it("should treat a lone separator as a decimal point", () => {
+      expect(parseLocalizedNumber("149,19")).toBe(149.19);
+      expect(parseLocalizedNumber("140.22")).toBe(140.22);
+      expect(parseLocalizedNumber("0.5")).toBe(0.5);
+    });
+
+    it("should use the last-occurring separator as the decimal when both are present", () => {
+      expect(parseLocalizedNumber("1.234,56")).toBe(1234.56); // European
+      expect(parseLocalizedNumber("1,234.56")).toBe(1234.56); // US
+    });
+
+    it("should treat repeated separators as thousands grouping only", () => {
+      expect(parseLocalizedNumber("1,234,567")).toBe(1234567);
+      expect(parseLocalizedNumber("1.234.567")).toBe(1234567);
+    });
+
+    it("should pass through a plain integer", () => {
+      expect(parseLocalizedNumber("40")).toBe(40);
+    });
+
+    it("should return NaN for a token with no digits", () => {
+      expect(parseLocalizedNumber("abc")).toBeNaN();
     });
   });
 

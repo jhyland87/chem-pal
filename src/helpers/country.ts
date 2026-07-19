@@ -3,13 +3,15 @@ import { cstorage } from "@/utils/storage";
 import { findByIso2, findByName } from "country-list-js";
 
 /**
- * @group Helpers
- * @groupDescription Country lookups backed by the `country-list-js` library,
+ * @category Country Helpers
+ * @categoryDescription Country lookups backed by the `country-list-js` library,
  * wrapped so callers get typed results instead of the library's `any`.
+ * @showCategories
  * @source
  */
 
 /**
+ * @category Country Helpers
  * Currency details attached to a country record from `country-list-js`.
  */
 interface CountryCurrency {
@@ -30,7 +32,7 @@ interface CountryRecord {
  * Narrows the untyped `country-list-js` lookup result to the
  * {@link CountryRecord} shape we rely on.
  *
- * @category Helpers
+ * @category Country Helpers
  * @param value - The raw value returned by `country-list-js`
  * @returns Whether the value is a usable country record
  * @example
@@ -53,7 +55,7 @@ function isCountryRecord(value: unknown): value is CountryRecord {
  * Wraps the untyped `country-list-js` `findByIso2` in a type guard so callers
  * get a typed result instead of `any`.
  *
- * @category Helpers
+ * @category Country Helpers
  * @param iso2 - Two-letter country code (e.g. `"US"`, `"GB"`)
  * @returns The matching country record, or undefined if the code is unknown
  * @example
@@ -72,6 +74,8 @@ export function findCountryByIso2(iso2: string): CountryRecord | undefined {
 /**
  * Narrows a string to a {@link CountryCode} by confirming `country-list-js` knows it. Kept local to
  * this module (rather than importing `isCountryCode` from typeGuards) to avoid a module cycle.
+ *
+ * @category Country Helpers
  * @param value - The candidate ISO 3166-1 alpha-2 code
  * @returns Whether `value` is a known country code
  * @example
@@ -88,7 +92,7 @@ function isKnownCountryCode(value: string): value is CountryCode {
 /**
  * Resolves the full country name for a two-letter location code.
  *
- * @category Helpers
+ * @category Country Helpers
  * @param location - Two-letter country code (e.g. `"US"`); undefined yields undefined
  * @returns The full country name, or undefined when the code is missing/unknown
  * @example
@@ -113,7 +117,7 @@ export function getCountryName(location?: string): string | undefined {
  * Title Case. Returns undefined for unknown names (including short aliases like "USA"
  * that the library doesn't index — callers handle those separately).
  *
- * @category Helpers
+ * @category Country Helpers
  * @param name - A country name (any casing), e.g. `"germany"`, `"United States"`
  * @returns The matching ISO alpha-2 code, or undefined if the name is unknown
  * @example
@@ -146,7 +150,7 @@ export function findCountryByName(name: string): CountryCode | undefined {
  * The `country` field is kept in sync with the `location` code by the settings
  * reducer, so consumers that need a full country name can read it directly.
  *
- * @category Helpers
+ * @category Country Helpers
  * @returns The stored country name, or undefined if unset/invalid
  * @example
  * ```typescript

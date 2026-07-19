@@ -1,8 +1,17 @@
+import { sortablePurityGrade } from "@/helpers/science";
 import type { Row } from "@tanstack/react-table";
+
+/**
+ * @category Tanstack Sorting Functions
+ * @showCategories
+ * @categoryDescription Scientific formula parsing and chemical notation utilities.
+ * @source
+ */
 
 /**
  * TanStack sorting comparator that orders two product rows by their normalized
  * `baseQuantity` (a missing quantity sorts as 0).
+ * @category Tanstack Sorting Functions
  * @param rowA - The first row to compare.
  * @param rowB - The second row to compare.
  * @returns `1` if rowA ranks after rowB, `-1` if before, `0` if equal.
@@ -22,6 +31,7 @@ export function quantitySortingFn(rowA: Row<Product>, rowB: Row<Product>) {
 /**
  * Custom sorting function for match percentage comparison between two product rows.
  * Compares the match percentage of products and returns a sort order value.
+ * @category Tanstack Sorting Functions
  * @param rowA - The first row to compare.
  * @param rowB - The second row to compare.
  * @returns `1` if rowA ranks after rowB, `-1` if before, `0` if equal.
@@ -42,6 +52,7 @@ export function matchPercentageSortingFn(rowA: Row<Product>, rowB: Row<Product>)
  * Custom sorting function for price comparison between two product rows.
  * Compares the USD prices of products (falling back to raw price) and returns
  * a sort order value.
+ * @category Tanstack Sorting Functions
  * @param rowA - The first row to compare.
  * @param rowB - The second row to compare.
  * @returns `1` if rowA ranks after rowB, `-1` if before, `0` if equal.
@@ -55,5 +66,28 @@ export function matchPercentageSortingFn(rowA: Row<Product>, rowB: Row<Product>)
 export function priceSortingFn(rowA: Row<Product>, rowB: Row<Product>) {
   const a = rowA.original.usdPrice ?? rowA.original.price ?? 0;
   const b = rowB.original.usdPrice ?? rowB.original.price ?? 0;
+  return a > b ? 1 : a < b ? -1 : 0;
+}
+
+/**
+ * TanStack sorting comparator that orders two product rows by purity. The column mixes two
+ * kinds of value — a chemical grade (`"ACS Grade"`) and a percentage (`"≥99.8%"`) — so both
+ * are put on one numeric scale by {@link sortablePurityGrade}. Reads `grade ?? purity`, the
+ * same precedence the purity column's accessor uses, so the sort order matches what the cell
+ * shows. A row with neither (or an unrecognized grade, e.g. `"Ungraded"`) sorts as 0.
+ * @category Tanstack Sorting Functions
+ * @param rowA - The first row to compare.
+ * @param rowB - The second row to compare.
+ * @returns `1` if rowA ranks after rowB, `-1` if before, `0` if equal.
+ * @example
+ * ```ts
+ * useReactTable({ sortingFns: { puritySortingFn }, ... });
+ * // "ACS Grade" (99.8) sorts after "Technical Grade" (90), which sorts after "95%".
+ * ```
+ * @source
+ */
+export function puritySortingFn(rowA: Row<Product>, rowB: Row<Product>) {
+  const a = sortablePurityGrade(rowA.original.grade ?? rowA.original.purity ?? "");
+  const b = sortablePurityGrade(rowB.original.grade ?? rowB.original.purity ?? "");
   return a > b ? 1 : a < b ? -1 : 0;
 }

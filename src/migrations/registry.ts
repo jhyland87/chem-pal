@@ -194,12 +194,29 @@ export async function getMigrationStatus(): Promise<MigrationStatus> {
 export async function runMigrations(steps: Migration[]): Promise<void> {
   if (steps.length === 0) return;
   const db = await getMigrationDb();
+  logger.info("Running migrations", { steps: steps.map((s) => `${s.from} → ${s.to}`).join(", ") });
   try {
     for (const migration of steps) {
-      logger.info("Applying migration", { step: `${migration.from} → ${migration.to}` });
-      await migration.up({ db, logger });
-      await setStoredAppVersion(migration.to);
+      const _logger = logger.sub(`${migration.from} → ${migration.to}`);
+      _logger.info("Applying migration step");
+      try {
+        await migration.up({ db, logger: _logger });
+        _logger.info("Migration step applied successfully");
+        await setStoredAppVersion(migration.to);
+      } catch (error) {
+        _logger.error("Migration step failed", {
+          error,
+          reason: error instanceof Error ? error.message : "Unknown error",
+        });
+        throw error;
+      }
     }
+  } catch (error) {
+    logger.error("Migrations failed", {
+      error,
+      reason: error instanceof Error ? error.message : "Unknown error",
+    });
+    throw error;
   } finally {
     db.close();
   }

@@ -2,8 +2,8 @@ import { AVAILABILITY, type Availability } from "@/constants/common";
 import { findCAS } from "@/helpers/cas";
 import { parsePrice, toUSD } from "@/helpers/currency";
 import { parseQuantity, toBaseQuantity } from "@/helpers/quantity";
-import { findFormulaInHtml, findPurity } from "@/helpers/science";
-import { htmlToAscii, isMoleForm } from "@/helpers/utils";
+import { findFormulaInHtml, findPurity, isMoleForm } from "@/helpers/science";
+import { htmlToAscii } from "@/helpers/utils";
 import { Logger } from "@/utils/Logger";
 import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import {

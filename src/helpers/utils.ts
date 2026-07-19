@@ -778,24 +778,6 @@ export function zodAddActualValueToIssues<T extends PathedIssue>(
 }
 
 /**
- * Checks if a string is a valid molecular formula.
- * @see https://regex101.com/r/YTOdbq/1
- * @param moleform - The string to check
- * @returns True if the string is a valid molecular formula, false otherwise
- * @example
- * ```typescript
- * isMoleForm("C12H22O11"); // true
- * isMoleForm("12H22O11"); // false
- * isMoleForm("C<sub>11</sub>H<sub>8</sub>I<sub>3</sub>N<sub>2</sub>NaO<sub>4</sub>") // true
- * ```
- * @source
- */
-export function isMoleForm(moleform: string): boolean {
-  const pattern = new RegExp(/^(?:[A-Z][a-z]?(?:(?:<sub>)?[1-9]\d*(?:<\/sub>)?)?)+$/);
-  return pattern.test(moleform);
-}
-
-/**
  * Preloads a list of images and returns a promise that resolves to an array of results.
  * @param images - The list of images to preload.
  * @returns A promise that resolves to an array of images that were successfully preloaded.
