@@ -3,6 +3,8 @@ import { isCAS } from "@/utils/typeGuards/common";
 /**
  * The kind of thing a single search term looks like. Used purely to colorize the
  * search box — it does not change search behavior.
+ * @category Utils
+ * @group Search
  */
 export type SearchTermType = "string" | "cas" | "smiles" | "formula";
 
@@ -218,6 +220,8 @@ function isChemicalFormula(value: string): boolean {
  * SMILES for ethanol) are reported as `"formula"`; SMILES is only chosen when a
  * SMILES-only signal is present (bonds, brackets, or aromatic lowercase atoms).
  *
+ * @category Utils
+ * @group Search
  * @param term - A single search term (one leaf of the query).
  * @returns The detected term type.
  * @example

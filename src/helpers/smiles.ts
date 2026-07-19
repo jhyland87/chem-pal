@@ -53,6 +53,7 @@ const MAX_SMILES_LENGTH = 500;
 
 /**
  * The result of resolving a structure (SMILES or InChIKey) to searchable identifiers.
+ * @category Helpers
  * @source
  */
 export interface ResolvedStructure {

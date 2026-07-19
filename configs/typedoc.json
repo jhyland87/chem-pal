@@ -4,6 +4,8 @@
     "../src/**/index.ts",
     "../src/suppliers/*.ts",
     "../src/helpers/*.ts",
+    "../src/utils/**/*.ts",
+    "../src/hooks/*.ts",
     "../src/constants/*.ts",
     "../src/types/*.ts",
     "../src/mixins/*.ts",
@@ -141,7 +143,10 @@
   "sourceLinkTemplate": "https://github.com/jhyland87/chem-pal/blob/main/{path}#L{line}",
   "disableSources": false,
   "categorizeByGroup": true,
-  "defaultCategory": "Suppliers",
+  // "Other" rather than "Suppliers": an untagged export is uncategorized, not a
+  // supplier, and a neutral bucket keeps future gaps visible instead of
+  // silently filing unrelated code under Suppliers.
+  "defaultCategory": "Other",
   "categoryOrder": [
     "Suppliers",
     "Components",
@@ -151,7 +156,8 @@
     "Typeguards",
     "Helpers",
     "Context",
-    "*"
+    "*",
+    "Other"
   ],
   "groupOrder": [
     "Diagrams",

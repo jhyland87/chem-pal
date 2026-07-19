@@ -9,6 +9,8 @@ import type { SearchAst } from "./types";
  * Used by the keyword-only fallback (one backend request per OR-group) and as a
  * basis for native filter construction.
  *
+ * @category Utils
+ * @group Search
  * @param ast - The parsed query tree.
  * @returns OR-groups, each an AND-group of phrase strings. Empty groups are omitted.
  * @example
@@ -54,6 +56,8 @@ export function extractOrGroups(ast: SearchAst): string[][] {
  * `search`): send all positive terms as one query to get a broad candidate pool,
  * then refine with the client-side boolean predicate.
  *
+ * @category Utils
+ * @group Search
  * @param ast - The parsed query tree.
  * @returns Unique positive term strings, in first-seen order.
  * @example

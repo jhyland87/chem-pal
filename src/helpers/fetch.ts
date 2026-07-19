@@ -4,6 +4,7 @@ import { addCapturedResponse, initConsoleApi } from "@/helpers/responseAggregate
 /**
  * Response type that extends the standard Response with additional properties
  * for data and request hash tracking.
+ * @category Helpers
  * @source
  */
 export type FetchDecoratorResponse = Response & { data: unknown; requestHash: string };
@@ -17,6 +18,7 @@ if (typeof __RESPONSE_AGGREGATE__ !== "undefined" && __RESPONSE_AGGREGATE__) {
  * Generates a simple hash from a string using the djb2 algorithm.
  * This is a non-cryptographic hash function suitable for request identification.
  *
+ * @category Helpers
  * @param str - The string to hash
  * @returns A hexadecimal string representing the hash
  * @example
@@ -40,6 +42,7 @@ export function generateSimpleHash(str: string): string {
  * Generates a unique hash for a request based on its URL, method, headers, and body.
  * This hash can be used to identify and track unique requests.
  *
+ * @category Helpers
  * @param input - The request URL or Request object
  * @param options - Optional request configuration
  * @returns A promise that resolves to a unique hash string
@@ -96,6 +99,7 @@ export async function generateRequestHash(
  * - Error handling
  * - Response cloning to prevent body stream consumption
  *
+ * @category Helpers
  * @param input - The request URL or Request object
  * @param init - Optional request configuration
  * @returns A promise that resolves to a FetchDecoratorResponse

@@ -1065,5 +1065,47 @@
   "purity_ungraded": {
     "message": "Ungraded",
     "description": "Shown when a product has no purity or grade."
+  },
+  "update_whats_new": {
+    "message": "What's new",
+    "description": "Snackbar action that opens the what's-new modal."
+  },
+  "update_modal_title": {
+    "message": "What's new in v$version$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    },
+    "description": "Title of the what's-new modal; the placeholder is the new version number."
+  },
+  "update_later": {
+    "message": "Later",
+    "description": "Button that closes the what's-new modal without updating."
+  },
+  "update_notes_unavailable": {
+    "message": "Release notes couldn't be loaded.",
+    "description": "Shown in the what's-new modal when the release notes could not be fetched."
+  },
+  "update_available_message": {
+    "message": "Chem Pal v$version$ is available.",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    },
+    "description": "Update snackbar text; the placeholder is the new version number."
+  },
+  "update_action_view": {
+    "message": "View release",
+    "description": "Snackbar action opening the GitHub release page (manual installs)."
+  },
+  "update_action_reload": {
+    "message": "Reload now",
+    "description": "Snackbar action reloading the extension to apply a staged update."
+  },
+  "update_dismiss": {
+    "message": "Dismiss",
+    "description": "Accessible label for the button that dismisses the update snackbar."
   }
 }

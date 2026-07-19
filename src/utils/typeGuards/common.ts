@@ -926,6 +926,7 @@ export function isValidUserSettings(settings: unknown): settings is UserSettings
 
 /**
  * Check if a value is a plain object or array.
+ * @category Typeguards
  * @param v - The value to check.
  * @returns True if the value is a plain object or array, false otherwise.
  * @example
@@ -1004,6 +1005,7 @@ export function isPubChemCID(value: unknown): value is PubChemCID {
  * {@link PubChemCID} number, coercing a numeric string to its number form. The
  * assertion is unavoidable and lives here as the single sanctioned construction
  * point: a nominal brand can't be minted from `Number()` without one.
+ * @category Typeguards
  * @param value - A number or numeric string already confirmed by {@link isPubChemCID}.
  * @returns The CID as a branded number.
  * @example

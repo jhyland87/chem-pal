@@ -9,15 +9,22 @@
  * @source
  */
 
-/** Query-string key that flags the full-tab view. */
+/**
+ * Query-string key that flags the full-tab view.
+ * @category Utils
+ */
 export const VIEW_PARAM = "view";
-/** Value of {@link VIEW_PARAM} that identifies the full-tab view. */
+/**
+ * Value of {@link VIEW_PARAM} that identifies the full-tab view.
+ * @category Utils
+ */
 export const TAB_VIEW = "tab";
 
 /**
  * Reports whether the current document is rendered in a full browser tab
  * (as opposed to the toolbar popup), based on the `?view=tab`
  * query param set by {@link openExtensionTab}.
+ * @category Utils
  * @returns `true` when running in the full-tab view, otherwise `false`.
  * @example
  * ```ts
@@ -37,6 +44,7 @@ export function isTabView(): boolean {
  * The opened URL carries the `?view=tab` param so {@link isTabView} resolves to
  * `true` there. Falls back to `window.open` outside the extension runtime.
  * If a tab is already open at that URL it is focused instead of duplicated.
+ * @category Utils
  * @returns A promise that resolves once the tab has been requested.
  * @example
  * ```ts

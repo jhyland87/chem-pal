@@ -3,6 +3,8 @@ import { APP_ACTION, CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
 import { AppContext, useAppContext } from "@/context";
 import { emitSearchEvent, SearchEvent } from "@/events/searchEvents";
 import { playAdvancedModeSound } from "@/helpers/advancedMode";
+import { useDebugApi } from "@/hooks/useDebugApi";
+import { useUpdateAvailable } from "@/hooks/useUpdateAvailable";
 import { HotkeyEvent, HotkeyHelpModal, useHotkeys, type HotkeyHandlers } from "@/hotkeys";
 import {
   applyPendingMigrations,
@@ -33,6 +35,7 @@ import "./App.scss";
 import DrawerSystem from "./components/DrawerSystem";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { MigrationPrompt } from "./components/MigrationPrompt";
+import { UpdatePrompt } from "./components/UpdatePrompt";
 import SearchPanel from "./components/SearchPanel/SearchPanel";
 import SearchPanelHome from "./components/SearchPanelHome";
 import SpeedDialMenu from "./components/SpeedDialMenu";
@@ -196,11 +199,21 @@ function App() {
   // not OR'd with IS_DEV_BUILD — one switch means leaving advanced mode always
   // hides the panel, in dev builds too.
   const statsVisible = advancedMode;
+  // Advanced mode also unlocks the window.chempal console helpers, which dev
+  // builds get unconditionally (see main.tsx).
+  useDebugApi(advancedMode);
   // Pending cache migrations detected on open. A non-empty list shows the
   // MigrationPrompt and defers loading cached data until the user decides.
   const [migrationSteps, setMigrationSteps] = useState<Migration[]>([]);
   const [migrationBusy, setMigrationBusy] = useState(false);
   const [migrationError, setMigrationError] = useState<string>();
+  // A newer release, if one is available. Web Store installs read a record left
+  // by the service worker; manual installs poll GitHub (throttled to daily).
+  const {
+    notice: updateNotice,
+    dismiss: dismissUpdate,
+    applyUpdate,
+  } = useUpdateAvailable();
   // Pending search query - set by HistoryPanel, consumed by ResultsTable
   const [pendingSearchQuery, setPendingSearchQuery] = useState<string | null>(null);
   // Pre-search filters - set by DrawerSearchPanel, consumed by useSearch
@@ -783,6 +796,11 @@ function App() {
                 error={migrationError}
                 onApply={() => void handleApplyMigrations()}
                 onCancel={() => void handleCancelMigrations()}
+              />
+              <UpdatePrompt
+                notice={updateNotice}
+                onDismiss={dismissUpdate}
+                onApply={applyUpdate}
               />
             </div>
             <StatusBar />

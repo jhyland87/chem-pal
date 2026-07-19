@@ -10,7 +10,7 @@ import {
   pickBestFormula,
 } from "@/helpers/formulaPattern";
 import { looksLikeSmiles } from "@/helpers/smiles";
-import { decodeHTMLEntities } from "@/helpers/utils";
+import { decodeHTMLEntities, ucfirst } from "@/helpers/utils";
 
 /**
  * @category Science Helpers
@@ -75,7 +75,7 @@ import { decodeHTMLEntities } from "@/helpers/utils";
  */
 
 /**
- * @group Types & Interfaces
+ * @group Types
  * @showGroups
  * @groupDescription Types and interfaces
  * @category Science Helpers
@@ -408,7 +408,7 @@ export const findPurity = (value: string): string | undefined => {
 /**
  * Regex patterns used for parse classification values or labeled fields
  * @category Science Helpers
- * @group Types & Interfaces
+ * @group Types
  */
 interface GradeRegexes {
   /** Classifies a grade token appearing anywhere in the string. */
@@ -425,13 +425,15 @@ interface GradeRegexes {
  * @source
  */
 export const buildGradeRegexes = (): GradeRegexes => {
-  // ci("grade") -> "[Gg][Rr][Aa][Dd][Ee]"
-  // Case-insensitive char classes, so words match any casing without the (?i:)
+  // cases("grade") -> "(?:grade|Grade|grade|GRADE)"
+  // Case aware character classes, so words can be upper, lower or ucfirst.
   // flag (which older V8 builds reject).
-  const ci = (word: string) =>
-    [...word]
-      .map((c) => (/[a-zA-Z]/i.test(c) ? `[${c.toUpperCase()}${c.toLowerCase()}]` : c))
-      .join("");
+  // const ci = (word: string) =>
+  //   [...word]
+  //     .map((c) => (/[a-zA-Z]/i.test(c) ? `[${c.toUpperCase()}${c.toLowerCase()}]` : c))
+  //     .join("");
+  const cases = (word: string) =>
+    `(?:${word}|${ucfirst(word)}|${word.toLowerCase()}|${word.toUpperCase()})`;
 
   // acronym("ACS") -> "(?:ACS(?!\.)|A\.C\.S\.)"
   // Plain form (not followed by a dot, so "ACS." is rejected) OR dotted "A.C.S.".
@@ -440,9 +442,9 @@ export const buildGradeRegexes = (): GradeRegexes => {
   const acronym = (word: string) => `(?:${word}(?!\\.)|${word.replaceAll(/([A-Z])/g, "$1\\.")})`;
 
   // ── Core reusable tokens ────────────────────────────────────────────────────
-  const gradeTxt = ci("grade");
-  const purityTxt = ci("purity");
-  const reagentTxt = ci("reagent");
+  const gradeTxt = cases("grade");
+  const purityTxt = cases("purity");
+  const reagentTxt = cases("reagent");
 
   // Optional trailing " grade" (lets "AR" also match "AR Grade").
   const optionalGrade = String.raw`(?:\s+${gradeTxt})?`;
@@ -453,7 +455,7 @@ export const buildGradeRegexes = (): GradeRegexes => {
   // Pharma stem. The three endings are siblings, not nested — "cy"/"ceutical" branch off
   // "pharma", NOT off "pharmacop":
   //   pharma | pharmacop | pharmacopeia | pharmacopoeia | pharmacy | pharmaceutical
-  const pharma = String.raw`${ci("pharma")}(?:${ci("cop")}(?:[Oo]?${ci("eia")})?|${ci("cy")}|${ci("ceutical")})?`;
+  const pharma = String.raw`${cases("pharma")}(?:${cases("cop")}(?:[Oo]?${cases("eia")})?|${cases("cy")}|${cases("ceutical")})?`;
 
   // ── Word-grade stems ────────────────────────────────────────────────────────
   // The bare qualifier word for each grade that has no acronym of its own. On its
@@ -462,30 +464,30 @@ export const buildGradeRegexes = (): GradeRegexes => {
   // bare stem IS decisive is after an explicit "Grade:"/"Purity:" label, which is
   // what buildLabeledGradeRegex reuses these for.
   const stems = {
-    Guaranteed_Grade: ci("guaranteed"),
-    Cosmetic_Grade: ci("cosmetic"),
-    Extraction_Grade: ci("extraction"),
-    Practical_Grade: ci("practical"),
+    Guaranteed_Grade: cases("guaranteed"),
+    Cosmetic_Grade: cases("cosmetic"),
+    Extraction_Grade: cases("extraction"),
+    Practical_Grade: cases("practical"),
     // [IiUu] absorbs the "indistrial" typo.
-    Industrial_Grade: String.raw`${ci("ind")}[IiUu]${ci("strial")}`,
-    Technical_Grade: String.raw`${ci("tech")}(?:${ci("nical")})?`,
+    Industrial_Grade: String.raw`${cases("ind")}[IiUu]${cases("strial")}`,
+    Technical_Grade: String.raw`${cases("tech")}(?:${cases("nical")})?`,
     Reagent_Grade: reagentTxt,
     // "lab" or laboratory + its two common misspellings.
-    Lab_Grade: String.raw`${ci("lab")}(?:${ci("oratory")}|${ci("oratiry")}|${ci("pratory")})?`,
-    Pure_Grade: String.raw`${ci("pur")}(?:${ci("e")}|${ci("ified")})`,
+    Lab_Grade: String.raw`${cases("lab")}(?:${cases("oratory")}|${cases("oratiry")}|${cases("pratory")})?`,
+    Pure_Grade: String.raw`${cases("pur")}(?:${cases("e")}|${cases("ified")})`,
     Pharma_Grade: pharma,
-    Low_Grade: ci("low"),
+    Low_Grade: cases("low"),
   };
 
   // ── Per-grade group bodies ──────────────────────────────────────────────────
   const bodies = {
-    AR_Grade: String.raw`(?:${acronym("AR")}|${ci("analytical")}(?:\s*${reagentTxt})?)${optionalGrade}`,
-    ACS_Grade: String.raw`(?:${acronym("ACS")}|${ci("acs")}\s+${gradeTxt}|${ci("american")}\s+${ci("chem")}(?:${ci("ical")})?\s+${ci("society")})${optionalGrade}`,
+    AR_Grade: String.raw`(?:${acronym("AR")}|${cases("analytical")}(?:\s*${reagentTxt})?)${optionalGrade}`,
+    ACS_Grade: String.raw`(?:${acronym("ACS")}|${cases("acs")}\s+${gradeTxt}|${cases("american")}\s+${cases("chem")}(?:${cases("ical")})?\s+${cases("society")})${optionalGrade}`,
     Guaranteed_Grade: String.raw`${stems.Guaranteed_Grade}\s+${rgFlex}`,
     Cosmetic_Grade: String.raw`${stems.Cosmetic_Grade}\s+${rgFlex}`,
     Extraction_Grade: String.raw`${stems.Extraction_Grade}\s+${rgFlex}`,
-    NF_Grade: String.raw`(?:${acronym("NF")}|${ci("nf")}\s+${gradeTxt}|${ci("national")}\s+${ci("formulary")})${optionalGrade}`,
-    FCC_Grade: String.raw`(?:${acronym("FCC")}|${ci("fcc")}\s+${gradeTxt}|${ci("food")}\s+(?:${ci("chem")}(?:${ci("icals")})?\s+${ci("codex")}|${rgFlex}))${optionalGrade}`,
+    NF_Grade: String.raw`(?:${acronym("NF")}|${cases("nf")}\s+${gradeTxt}|${cases("national")}\s+${cases("formulary")})${optionalGrade}`,
+    FCC_Grade: String.raw`(?:${acronym("FCC")}|${cases("fcc")}\s+${gradeTxt}|${cases("food")}\s+(?:${cases("chem")}(?:${cases("icals")})?\s+${cases("codex")}|${rgFlex}))${optionalGrade}`,
     Practical_Grade: String.raw`${stems.Practical_Grade}\s+${rgFlex}`,
     Industrial_Grade: String.raw`${stems.Industrial_Grade}\s+${rgFlex}`,
     // "tech"/"technical" + flexible tail (any case), OR bare fully-uppercase
@@ -497,18 +499,18 @@ export const buildGradeRegexes = (): GradeRegexes => {
     Reagent_Grade: String.raw`${stems.Reagent_Grade}\s+${gradeTxt}`,
     // "BP"/"B.P." — decline when "/USP" or "/U.S.P." follows so the combo routes
     // to USP. Or "britt?ish pharmacop..." (t? absorbs the "Brittish" typo).
-    BP_Grade: String.raw`(?:${acronym("BP")}(?!\s*/\s*${acronym("USP")})|${ci("brit")}[Tt]?${ci("ish")}\s+${pharma})${optionalGrade}`,
-    JP_Grade: String.raw`(?:${acronym("JP")}|${ci("japanese")}\s+${pharma})${optionalGrade}`,
+    BP_Grade: String.raw`(?:${acronym("BP")}(?!\s*/\s*${acronym("USP")})|${cases("brit")}[Tt]?${cases("ish")}\s+${pharma})${optionalGrade}`,
+    JP_Grade: String.raw`(?:${acronym("JP")}|${cases("japanese")}\s+${pharma})${optionalGrade}`,
     // Combined designations FIRST (so the whole "BP/USP" is captured), then
     // "USP"/"U.S.P." / "usp grade" / "United States|US pharmacop...".
-    USP_Grade: String.raw`(?:${acronym("BP")}\s*/\s*${acronym("USP")}|${acronym("USP")}\s*/\s*${acronym("BP")}|${acronym("USP")}|${ci("usp")}\s+${gradeTxt}|(?:${ci("united")}\s+${ci("states")}|${acronym("US")})\s+${pharma})${optionalGrade}`,
-    HPLC_Grade: String.raw`(?:${acronym("HPLC")}|${ci("hplc")}\s+${gradeTxt}|${ci("gradient")}\s+${gradeTxt}|${ci("high")}[-\s]+${ci("performance")}\s+${ci("liquid")}\s+${ci("chromatography")})${optionalGrade}`,
+    USP_Grade: String.raw`(?:${acronym("BP")}\s*/\s*${acronym("USP")}|${acronym("USP")}\s*/\s*${acronym("BP")}|${acronym("USP")}|${cases("usp")}\s+${gradeTxt}|(?:${cases("united")}\s+${cases("states")}|${acronym("US")})\s+${pharma})${optionalGrade}`,
+    HPLC_Grade: String.raw`(?:${acronym("HPLC")}|${cases("hplc")}\s+${gradeTxt}|${cases("gradient")}\s+${gradeTxt}|${cases("high")}[-\s]+${cases("performance")}\s+${cases("liquid")}\s+${cases("chromatography")})${optionalGrade}`,
     Lab_Grade: String.raw`(?:${acronym("LR")}|${stems.Lab_Grade}\s+${rgFlex})`,
     Pure_Grade: String.raw`(?:${acronym("PA")}|${stems.Pure_Grade}\s+${rgFlex})`,
     Pharma_Grade: String.raw`${stems.Pharma_Grade}\s+${rgFlex}`,
     Low_Grade: String.raw`${stems.Low_Grade}\s+(?:${rgFlex}|${purityTxt})`,
-    Impure: String.raw`${ci("impure")}(?:\s+${reagentTxt})?`,
-    Ungraded: String.raw`${ci("ungraded")}(?:\s+${ci("purity")})?(?:\s+${reagentTxt})?`,
+    Impure: String.raw`${cases("impure")}(?:\s+${reagentTxt})?`,
+    Ungraded: String.raw`${cases("ungraded")}(?:\s+${cases("purity")})?(?:\s+${reagentTxt})?`,
   };
 
   // ── Assembly ────────────────────────────────────────────────────────────────
@@ -552,7 +554,7 @@ export const buildGradeRegexes = (): GradeRegexes => {
   // classifying. An explicit "Grade:"/"Purity:"/"Quality:" label supplies that
   // missing signal, so here the bare stem is enough. Acronym grades never reach
   // this regex — they already match the classifier on their own.
-  const labelPrefix = String.raw`\b(?:${gradeTxt}|${purityTxt}|${ci("quality")})\s*[:\-–]\s*`;
+  const labelPrefix = String.raw`\b(?:${gradeTxt}|${purityTxt}|${cases("quality")})\s*[:\-–]\s*`;
   const labeledGroups = Object.entries(stems)
     .map(([name, stem]) => `(?<${name}>${stem})`)
     .join("|");
@@ -777,7 +779,7 @@ export const purityGradeToPercentage = (grade: string): number | undefined => {
  * Use only where grades are known to be meaningful (e.g. Chemsavers), since two-letter
  * codes are collision-prone in free text.
  * @category Science Helpers
- * @group Types & Interfaces
+ * @group Types
  * @param value - The string to extract the grade from
  * @returns The canonical grade label (e.g. `"ACS"`), or nothing if none is found
  * @example

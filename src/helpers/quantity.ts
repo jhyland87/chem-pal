@@ -1,4 +1,5 @@
 import { UOM, UOM_ALIASES, type Uom } from "@/constants/common";
+import { isUOM } from "@/utils/typeGuards/common";
 
 /**
  * @categoryDescription Helpers
@@ -10,16 +11,14 @@ import { UOM, UOM_ALIASES, type Uom } from "@/constants/common";
 
 /**
  * Pattern for matching quantities in strings.
- * @see https://regex101.com/r/Ruid54/9
+ * @see https://regex101.com/r/If0dLa/1
  * @source
  */
 const quantityPattern =
-  "(?:(?<multiplier>[1-9][0-9]*)\\s?[xX\u00D7]\\s?(?=[1-9]))?" +
-  "(?<quantity>[1-9][0-9]*(?:[.,]\\d+)*(?:\\s\\d{3})*)\\s?" +
-  "(?<uom>(?:milli|kilo|centi)?(?:ml|ounce|g(?:allon|ram|al)" +
-  "|each|ea?" +
-  "|pound|quart|q(?:uar)?t|piece|pc|lb|(?:met|lit)[re]{2})s?" +
-  "|fl\\.?\\s?oz|oz|k[mg]?|gm?|l|[cm]?[gl])s?(?!\\/mol)(?![A-Za-z])";
+  String.raw`(?:(?<multiplier>[1-9][0-9]*)\s*[xX\u00D7]\s*(?=[1-9]))?` +
+  String.raw`(?<quantity>[1-9][0-9]*(?:[.,]\d+)*(?:\s\d{3})*)\s?` +
+  String.raw`(?<uom>(?:milli|kilo|centi)?(?:ml|ounce|g(?:al(?:lon)?|ram)|ea(?:ch)?|pound|q(?:uar)?t|p(?:iece|c)s?|lb|(?:met|lit)[re]{2})s?|(?:fl\.?\s?)?oz|k[mg]?|gm?|l|[cm]?[gl])s?` +
+  String.raw`(?!\/mol)(?![A-Za-z])`;
 
 /**
  * @type QuantityObject
@@ -255,6 +254,7 @@ function roundToHundredths(value: number): number {
  * fl oz) becomes millilitres (then normalized up to l). Built on
  * {@link toBaseQuantity} for the conversion factors so suppliers can present a
  * single, comparable unit system regardless of how the source lists it.
+ * @category Helpers
  * @param input - The quantity object to convert
  * @returns The metric-normalized quantity object (unchanged when already metric or countable)
  * @example
@@ -283,4 +283,40 @@ export function toMetricQuantity(input: QuantityObject): QuantityObject {
   }
 
   return input;
+}
+
+/**
+ * Formats a unit of measure (UOM) for display.
+ * @category Helpers
+ * @group Quantity
+ * @param uom - The unit of measure to format
+ * @returns The formatted UOM
+ * @example
+ * ```typescript
+ * formatUomForDisplay(UOM.ML) // Returns "mL"
+ * formatUomForDisplay(UOM.L) // Returns "L"
+ * formatUomForDisplay(UOM.KG) // Returns "kg"
+ * formatUomForDisplay(UOM.LB) // Returns "lb"
+ * formatUomForDisplay(UOM.OZ) // Returns "oz"
+ * formatUomForDisplay(UOM.G) // Returns "g"
+ * formatUomForDisplay(UOM.QT) // Returns "qt"
+ * formatUomForDisplay(UOM.GAL) // Returns "gal"
+ * formatUomForDisplay(UOM.FLOZ) // Returns "fl oz"
+ * formatUomForDisplay(UOM.PCS) // Returns "pcs"
+ * formatUomForDisplay(UOM.EA) // Returns "ea"
+ * ```
+ * @source
+ */
+export function formatUomForDisplay(uom: unknown): string {
+  if (!isUOM(uom)) return String(uom);
+  switch (uom) {
+    case UOM.ML:
+      return "mL";
+    case UOM.L:
+      return "L";
+    case UOM.FLOZ:
+      return "fl oz";
+    default:
+      return String(uom);
+  }
 }

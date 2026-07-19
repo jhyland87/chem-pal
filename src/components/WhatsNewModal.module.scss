@@ -1,0 +1,37 @@
+.whats-new-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  // Wider than the other modals: release notes are long-form prose, and the
+  // popup is at least 800px wide (see App.scss).
+  width: min(680px, 92vw);
+  max-height: 80vh;
+  outline: none;
+  // Column layout so a long changelog scrolls inside the notes area instead of
+  // pushing the call to action below the fold.
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.whats-new-sections {
+  margin: 0.5rem 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.whats-new-list {
+  margin: 0.25rem 0 0;
+  padding-left: 1.25rem;
+
+  li {
+    margin-bottom: 0.25rem;
+  }
+}
+
+.whats-new-actions {
+  margin-top: 1.5rem;
+  flex: 0 0 auto;
+}

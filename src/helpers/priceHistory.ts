@@ -102,6 +102,7 @@ function normalizeMaxPoints(maxPoints: unknown): number {
  * Derive the product's stable identity key — shared by its base series and
  * every variant series. Prefers the stamped `cacheKey`, falling back to the
  * URL then the title so scraped products without a stamped key still track.
+ * @category Helpers
  * @param product - The product to key.
  * @returns The identity key, or `undefined` when neither an identity nor a
  *   supplier is available to key against.
@@ -179,6 +180,7 @@ function variantDiscriminator(product: Product, variant: Variant): string | unde
 /**
  * Derive the series id for one of a product's variants: the product key joined
  * with the variant's discriminator (see `variantDiscriminator`).
+ * @category Helpers
  * @param product - The parent product (provides the shared product key).
  * @param variant - The variant to key.
  * @returns The variant series id, or `undefined` when the product can't be
@@ -324,6 +326,7 @@ async function recordSeries(input: SeriesInput, maxPoints: number, now: number):
  * price-history store. A no-op when tracking is disabled. Fire-and-forget: the
  * caller wraps this in `void` from the search flow. Only writes when a price
  * changes, so repeated searches over cached results add nothing.
+ * @category Helpers
  * @param products - The products to record; each may carry variants.
  * @param settings - The user's price-history settings (`trackPriceHistory`,
  *   `priceHistoryMaxPoints`). Tracking is on unless explicitly disabled.
@@ -355,6 +358,7 @@ export async function recordProductPrices(
 /**
  * Read all recorded price-history series for a product — its base row plus any
  * variant rows — keyed by series id for direct lookup from the detail UI.
+ * @category Helpers
  * @param product - The product whose history to load.
  * @returns A map of series id → {@link PriceHistoryEntry}; empty when the
  *   product can't be keyed or has no recorded history.
@@ -379,6 +383,8 @@ export async function getProductPriceHistory(
 /**
  * Summarize the latest price move for a series from its last two points.
  * Returns a flat, zero-delta trend when there are fewer than two points.
+ * @category Helpers
+ * @group Formatters
  * @param points - The series points, ascending by time.
  * @returns The direction, signed USD delta, and percent change of the last move.
  * @example
@@ -431,6 +437,7 @@ function lastPointAtOrBefore(points: readonly PricePoint[], t: number): PricePoi
  * has started by then (forward-filling each series' last-known price), and
  * consecutive-equal means are deduped so {@link describeTrend}'s last two
  * points reflect an actual move. Empty in ⇒ empty out.
+ * @category Helpers
  * @param seriesList - The series to aggregate; each carries ascending points.
  * @returns The mean-price series, ascending by time.
  * @example

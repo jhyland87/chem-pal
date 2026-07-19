@@ -29,6 +29,7 @@ const COMPOUND_PROPERTY_FIELDS =
 /**
  * A subset of PubChem compound properties, normalized to friendly camelCase field names.
  * Every field is optional because PUG-REST omits properties it cannot compute for a compound.
+ * @category Science Helpers
  * @source
  */
 export interface PubChemProperties {
@@ -52,6 +53,7 @@ export interface PubChemProperties {
 
 /**
  * A compound's textual description from PUG-REST's `/description` operation.
+ * @category Science Helpers
  * @source
  */
 export interface PubChemDescription {
@@ -183,6 +185,7 @@ async function getCidsByCasUncached(cas: CAS<string>): Promise<PubChemCID[] | un
  * Retrieves the PubChem CIDs registered for a CAS number via PUG-REST's xref/registry-number
  * lookup. A single CAS number can map to multiple CIDs (e.g. different salt or hydrate forms).
  * Results are cached for three days; unknown CAS numbers resolve to undefined.
+ * @category Science Helpers
  * @param cas - The CAS registry number to look up
  * @returns The matching CIDs, or undefined if PubChem has no cross-reference
  * @example
@@ -223,6 +226,7 @@ async function getCidByNameUncached(name: string): Promise<PubChemCID | undefine
 /**
  * Resolves a chemical name to its best-matching PubChem CID via PUG-REST. Returns the first
  * (highest-ranked) CID PubChem reports. Results are cached for three days.
+ * @category Science Helpers
  * @param name - The chemical name to look up
  * @returns The best-matching CID, or undefined if PubChem has no match
  * @example
@@ -264,6 +268,7 @@ async function getCompoundPropertiesUncached(
  * SMILES, InChI, InChIKey, title) via PUG-REST. These map directly onto ChemPal's product fields,
  * so this is the primary way to enrich a product once its CID is known. Cached for
  * three days.
+ * @category Science Helpers
  * @param cid - The compound's CID
  * @returns The compound's properties, or undefined if the CID is unknown
  * @example
@@ -301,6 +306,7 @@ async function getSynonymsByCidUncached(cid: PubChemCID): Promise<string[] | und
  * Fetches PubChem's popularity-ranked synonyms for a compound by CID via PUG-REST. Prefer this
  * over {@link getRankedNamesByName} when the CID is already known, as it avoids an ambiguous
  * name lookup. Cached for three days.
+ * @category Science Helpers
  * @param cid - The compound's CID
  * @returns The ranked synonym list, or undefined if the CID is unknown
  * @example
@@ -339,6 +345,7 @@ async function getCompoundDescriptionUncached(
  * Fetches a short human-readable description of a compound (with its source) by CID via PUG-REST.
  * Useful for surfacing a plain-language blurb in the product detail view. Cached for
  * three days.
+ * @category Science Helpers
  * @param cid - The compound's CID
  * @returns The description and its source, or undefined if none is available
  * @example
@@ -356,6 +363,7 @@ export const getCompoundDescription: (cid: PubChemCID) => Promise<PubChemDescrip
 
 /**
  * Builds the URL of a compound's PubChem summary page from its CID.
+ * @category Science Helpers
  * @param cid - The compound's CID
  * @returns The PubChem compound page URL
  * @example
@@ -372,6 +380,7 @@ export function pubchemCompoundUrl(cid: PubChemCID): string {
 /**
  * Builds a PubChem search URL for a CAS number. Use this when the exact CID is unknown — PubChem's
  * search lands the user on the matching compound (or a short result list) for the CAS number.
+ * @category Science Helpers
  * @param cas - The CAS registry number
  * @returns The PubChem search URL for the CAS number
  * @example
@@ -387,6 +396,7 @@ export function pubchemCasSearchUrl(cas: string): string {
 
 /**
  * Builds the URL of a compound's 2D structure image (PNG) from its CID.
+ * @category Science Helpers
  * @param cid - The compound's CID
  * @returns The PUG-REST PNG image URL
  * @example
@@ -492,6 +502,7 @@ async function executeSDQSearchUncached({
 /**
  * Query the SDQ agent for a compound name from a synonym. Results are cached for
  * three days.
+ * @category Science Helpers
  * @param query - The SDQ agent query (where clause, select fields, limit)
  * @returns The compound name from the SDQ agent.
  * @example
@@ -511,6 +522,7 @@ export const executeSDQSearch: (query: SDQAgentQuery) => Promise<SDQResultItem[]
 
 /**
  * Get the compound name from a synonym.
+ * @category Science Helpers
  * @param cmpdsynonym - The synonym to get the compound name from.
  * @returns The compound name from the synonym.
  * @example
@@ -583,6 +595,7 @@ async function getRankedNamesByNameUncached(name: string): Promise<string[] | un
  * Fetches PubChem's popularity-ranked synonyms for a chemical name via PUG-REST, caching results
  * for three days. The leading entries are the most commonly used names, and CAS numbers
  * appear inline among them. Returns undefined when PubChem has no match.
+ * @category Science Helpers
  * @param name - The chemical name to look up
  * @returns The ranked synonym list, or undefined if not found
  * @example
@@ -618,6 +631,7 @@ function formatSuggestedName(name: string): string {
 /**
  * Determines whether a chemical name is "simple" enough to suggest to a user — an ordinary common
  * name made only of letters and spaces, not a long IUPAC- or registry-style technical identifier.
+ * @category Science Helpers
  * @param name - The candidate chemical name
  * @returns True if the name is short and contains only letters and spaces
  * @example
@@ -639,6 +653,7 @@ export function isSimpleName(name: string): boolean {
  * popularity-ranked synonyms for the query, keeps only simple common names (see {@link isSimpleName}),
  * and skips any term the user has already tried. Falls back to the compound's CAS number when no
  * suitable simple name remains. Either field may be undefined.
+ * @category Science Helpers
  * @param query - The original (unsuccessful) search query
  * @param excluded - Lowercased terms to skip (e.g. previously searched, zero-result queries)
  * @returns The best simple alternative name and/or a CAS fallback
@@ -673,6 +688,7 @@ export async function suggestAlternativeSearch(
 
 /**
  * Gets the PubChem ID from the links in the document.
+ * @category Science Helpers
  * @param doc - The document to search for PubChem links
  * @returns The PubChem ID, or undefined if not found
  * @example

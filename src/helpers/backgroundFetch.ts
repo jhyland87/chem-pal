@@ -9,6 +9,7 @@ import { MESSAGE_TYPE } from "@/constants/common";
  * Serializable subset of `RequestInit` accepted by {@link backgroundFetch}. Only
  * structured-cloneable fields are supported; `body` must already be a string (callers
  * stringify JSON themselves).
+ * @category Helpers
  * @source
  */
 export interface BackgroundFetchInit {
@@ -97,6 +98,7 @@ function isBackgroundFetchSuccess(result: unknown): result is BackgroundFetchSuc
  * returned `Response` works like a normal one for text/JSON bodies (`.ok`, `.status`,
  * `.text()`, `.json()`); binary bodies are not supported.
  *
+ * @category Helpers
  * @param url - The absolute URL to request.
  * @param init - Optional serializable request options (see {@link BackgroundFetchInit}).
  * @returns A `Response` reconstructed from the worker's reply.

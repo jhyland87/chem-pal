@@ -1,13 +1,12 @@
 import { default as Link } from "@/components/TabLink";
 import { i18n } from "@/helpers/i18n";
-import { isUpdateAvailable } from "@/helpers/updates";
+import { getAvailableUpdate } from "@/helpers/updates";
 import GitHubIcon from "@/icons/GitHubIcon";
 import { ThemeContext } from "@/themes";
 import ArticleIcon from "@mui/icons-material/Article";
 import BrowserUpdatedIcon from "@mui/icons-material/BrowserUpdated";
 import BugReportIcon from "@mui/icons-material/BugReport";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import ErrorIcon from "@mui/icons-material/Error";
 import PrivacyTipIcon from "@mui/icons-material/PrivacyTip";
 import SignalWifiConnectedNoInternet4Icon from "@mui/icons-material/SignalWifiConnectedNoInternet4";
 import WebIcon from "@mui/icons-material/Web";
@@ -64,14 +63,16 @@ export default function AboutModal({
       : "/static/images/logo/ChemPal-logo.svg";
 
   const handleCheckForUpdates = () => {
-    (async () => {
+    void (async () => {
       try {
-        const isUpdateAvailableResult = await isUpdateAvailable();
-        if (isUpdateAvailableResult) {
-          setUpdateIcon(<CheckCircleIcon sx={{ fontSize: 16, color: "success.main" }} />);
-        } else {
-          setUpdateIcon(<ErrorIcon sx={{ fontSize: 16, color: "warning.main" }} />);
-        }
+        const update = await getAvailableUpdate();
+        setUpdateIcon(
+          update ? (
+            <BrowserUpdatedIcon sx={{ fontSize: 16, color: "warning.main" }} />
+          ) : (
+            <CheckCircleIcon sx={{ fontSize: 16, color: "success.main" }} />
+          ),
+        );
       } catch (error) {
         console.error("Failed to check for updates:", { error });
         setUpdateIcon(

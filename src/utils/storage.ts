@@ -23,12 +23,16 @@ import { compressToUTF16, decompressFromUTF16 } from "lz-string";
 
 const logger = new Logger("storage");
 
-/** Wire-format version. Bumped if the envelope shape ever changes. */
+/**
+ * Wire-format version. Bumped if the envelope shape ever changes.
+ * @category Utils
+ */
 export const LZ_VERSION = 1 as const;
 
 /**
  * Envelope wrapping a compressed JSON payload.
  * Detected on read via {@link isLzEnvelope}.
+ * @category Utils
  */
 export interface LzEnvelope {
   __lz: typeof LZ_VERSION;
@@ -37,6 +41,7 @@ export interface LzEnvelope {
 
 /**
  * Type-guard: returns `true` if `value` is an {@link LzEnvelope}.
+ * @category Utils
  * @param value - Arbitrary value pulled from chrome.storage.
  */
 export function isLzEnvelope(value: unknown): value is LzEnvelope {
@@ -54,6 +59,7 @@ export function isLzEnvelope(value: unknown): value is LzEnvelope {
  * When `useStorageCompression` is `false` in config.json, the value is stored
  * as-is (no compression). If serialization fails (e.g. circular structures)
  * the original value is returned untouched and an error is logged.
+ * @category Utils
  * @param value - Any JSON-serializable value.
  */
 export function encodeValue(value: unknown): LzEnvelope | unknown {
@@ -75,6 +81,7 @@ export function encodeValue(value: unknown): LzEnvelope | unknown {
  * Decodes a value read from chrome.storage. If the value is an
  * {@link LzEnvelope}, it is decompressed and JSON-parsed; otherwise the value
  * is returned unchanged (backward-compatible passthrough for legacy data).
+ * @category Utils
  * @param value - Raw value read from chrome.storage.
  */
 export function decodeValue(value: unknown): unknown {
@@ -96,6 +103,7 @@ export function decodeValue(value: unknown): unknown {
 
 /**
  * Encodes every value of an items map for `chrome.storage.X.set`.
+ * @category Utils
  * @param items - Record of key/value pairs to write.
  */
 export function encodeItems(items: Record<string, unknown>): Record<string, unknown> {
@@ -110,6 +118,7 @@ export function encodeItems(items: Record<string, unknown>): Record<string, unkn
  * Decodes every value of an items map returned from `chrome.storage.X.get`.
  * Tolerates mixed compressed and legacy entries (used by full-scan reads
  * such as `chrome.storage.local.get(null)`).
+ * @category Utils
  * @param items - Record returned from chrome.storage.
  */
 export function decodeItems(items: Record<string, unknown>): Record<string, unknown> {
@@ -123,6 +132,7 @@ export function decodeItems(items: Record<string, unknown>): Record<string, unkn
 /**
  * Decodes the `oldValue` / `newValue` of every change in a
  * `chrome.storage.onChanged` payload.
+ * @category Utils
  * @param changes - Raw changes object from chrome.storage.onChanged.
  */
 export function decodeChanges(
@@ -173,7 +183,8 @@ function makeArea(area: "local" | "session") {
 }
 
 /**
- * Listener registered by callers of {@link cstorage.onChanged.addListener}.
+ * Listener registered by callers of `cstorage.onChanged.addListener`.
+ * @category Utils
  */
 export type ChangedListener = (
   changes: Record<string, chrome.storage.StorageChange>,
@@ -195,6 +206,7 @@ const listenerMap = new WeakMap<ChangedListener, InnerChangedListener>();
  * `chrome.storage.local` / `chrome.storage.session`, but values are
  * transparently LZ-compressed at rest.
  *
+ * @category Utils
  * @example
  * ```ts
  * await cstorage.local.set({ USER_SETTINGS: settings });
@@ -216,7 +228,7 @@ export const cstorage = {
       listenerMap.set(listener, inner);
       chrome.storage.onChanged?.addListener(inner);
     },
-    /** Removes a listener previously added via {@link addListener}. */
+    /** Removes a listener previously added via `addListener`. */
     removeListener(listener: ChangedListener): void {
       const inner = listenerMap.get(listener);
       if (inner) {
@@ -226,8 +238,6 @@ export const cstorage = {
     },
   },
 };
-
-export default cstorage;
 
 /* -------------------------------------------------------------------------- */
 /*                  Console debug utility (_decodeCache)                      */

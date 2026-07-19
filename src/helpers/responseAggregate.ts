@@ -56,6 +56,7 @@ const captured = new Map<string, CapturedEntry>();
  * Capture a request/response pair and store it keyed by `{hostname}/{hash}.json`.
  * Uses the same serialization as the MSW mock handler expects: `{ contentType, content }`.
  *
+ * @category Helpers
  * @param request - The original Request object
  * @param response - A **cloned** Response (body must not be consumed)
  * @source
@@ -87,6 +88,7 @@ export async function addCapturedResponse(request: Request, response: Response):
 /**
  * Download all captured responses as a zip file.
  * The zip structure mirrors `src/__mocks__/responses/{hostname}/{hash}.json`.
+ * @category Helpers
  * @source
  */
 export async function downloadAsZip(): Promise<void> {
@@ -130,6 +132,7 @@ export async function downloadAsZip(): Promise<void> {
 
 /**
  * List all captured response paths in the console.
+ * @category Helpers
  * @source
  */
 export function list(): string[] {
@@ -147,6 +150,7 @@ export function list(): string[] {
 
 /**
  * Clear all captured responses.
+ * @category Helpers
  * @source
  */
 export function clear(): void {
@@ -157,6 +161,7 @@ export function clear(): void {
 
 /**
  * Get the number of captured responses.
+ * @category Helpers
  * @source
  */
 export function count(): number {
@@ -165,6 +170,7 @@ export function count(): number {
 
 /**
  * Expose console API on `window.__responseAggregate` when in aggregate mode.
+ * @category Helpers
  * @source
  */
 export function initConsoleApi(): void {

@@ -50,6 +50,8 @@ function formatWithSymbol(currency: string, amount: number): string {
  * user's `currency`. Returns an empty string when there is no price to show
  * (e.g. a variant whose `price` and `usdPrice` are both undefined), avoiding a
  * `NaN` render.
+ * @category Helpers
+ * @group Formatters
  * @param product - Price fields (`price`, `usdPrice`, `currencyCode`) of the product or variant.
  * @param userSettings - The user's `currency` and `currencyRate`; defaults to USD at rate 1 when undefined.
  * @returns A localized currency string, or `""` when no price is available.

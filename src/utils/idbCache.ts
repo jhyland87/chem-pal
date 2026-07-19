@@ -8,12 +8,14 @@ import { type DBSchema, type IDBPDatabase, openDB } from "idb";
  * Custom event name dispatched when search results are cleared.
  * Consumers listen for this via `window.addEventListener` to replace
  * the former `cstorage.onChanged` pattern for `search_results`.
+ * @category Utils
  */
 export const IDB_SEARCH_RESULTS_CLEARED = "idb:search-results-cleared";
 
 /**
  * Custom event name dispatched when supplier stats are updated.
  * Consumers listen for this to live-refresh stats during searches.
+ * @category Utils
  */
 export const IDB_SUPPLIER_STATS_UPDATED = "idb:supplier-stats-updated";
 
@@ -166,6 +168,18 @@ function emitSupplierStatsUpdated(): void {
 /*                            Search Results                                  */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Reads the persisted search results. The row is stored under a single
+ * `"current"` key, so this is one read. See {@link getSearchResultsRecord} when
+ * the originating query is needed too.
+ * @category Utils
+ * @returns The persisted products, or `[]` when nothing is stored or the read fails.
+ * @example
+ * ```ts
+ * const products = await getSearchResults(); // => [{ id: "…", title: "Acetone" }]
+ * ```
+ * @source
+ */
 export async function getSearchResults(): Promise<Product[]> {
   try {
     const db = await getDB();
@@ -182,6 +196,7 @@ export async function getSearchResults(): Promise<Product[]> {
  * `data` and the `query` that produced it. Use this (instead of {@link getSearchResults})
  * when the caller also needs the originating query — e.g. to rehydrate the results
  * header label so it stays in sync with the persisted results.
+ * @category Utils
  * @returns The persisted results and query. `data` is `[]` and `query` is `undefined`
  * when no row exists (or the row predates the `query` field).
  * @example
@@ -225,9 +240,10 @@ function productIdentity(product: Product): string {
 
 /**
  * Finds product identities that appear more than once, keyed by
- * {@link productIdentity} (ignoring the positional `_id`). This is detection, not
+ * `productIdentity` (ignoring the positional `_id`). This is detection, not
  * repair: the same product appearing twice means the search almost certainly ran
  * twice, so callers surface it rather than silently removing the duplicates.
+ * @category Utils
  * @param results - The products to scan.
  * @returns The duplicated identities (empty when every product is unique).
  * @example
@@ -256,6 +272,7 @@ export function findDuplicateProductIds(results: Product[]): string[] {
  * keeps the two in lockstep, so the results header can rehydrate the query even
  * when the transient session copy is gone. Duplicate products are logged (not
  * removed); an empty result set dispatches {@link IDB_SEARCH_RESULTS_CLEARED}.
+ * @category Utils
  * @param results - The products to persist.
  * @param query - The originating search query. Omitted for callers with no query
  * context; stored as `undefined` in that case.
@@ -295,6 +312,7 @@ export async function setSearchResults(results: Product[], query?: string): Prom
  * `{ notify: false }` to clear silently — used when resetting the store at the
  * start of a new search, where firing the event would bounce the user off the
  * results panel.
+ * @category Utils
  * @param options - Clear behavior.
  * - `notify` - Whether to dispatch {@link IDB_SEARCH_RESULTS_CLEARED} (default `true`).
  * @example
@@ -321,6 +339,16 @@ export async function clearSearchResults(options: { notify?: boolean } = {}): Pr
 /*                            Search History                                  */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Reads every search-history entry, newest first.
+ * @category Utils
+ * @returns History entries sorted by descending timestamp, or `[]` on failure.
+ * @example
+ * ```ts
+ * const history = await getSearchHistory(); // => [{ query: "acetone", timestamp: 172… }]
+ * ```
+ * @source
+ */
 export async function getSearchHistory(): Promise<SearchHistoryEntry[]> {
   try {
     const db = await getDB();
@@ -333,6 +361,18 @@ export async function getSearchHistory(): Promise<SearchHistoryEntry[]> {
   }
 }
 
+/**
+ * Appends a search-history entry, evicting the oldest rows once the store
+ * exceeds `maxHistoryEntries` from config.json.
+ * @category Utils
+ * @param entry - The entry to store; its `timestamp` is the primary key.
+ * @returns Resolves once the write (and any eviction) completes.
+ * @example
+ * ```ts
+ * await addSearchHistoryEntry({ query: "acetone", timestamp: Date.now(), resultCount: 12 });
+ * ```
+ * @source
+ */
 export async function addSearchHistoryEntry(entry: SearchHistoryEntry): Promise<void> {
   try {
     const db = await getDB();
@@ -360,6 +400,20 @@ export async function addSearchHistoryEntry(entry: SearchHistoryEntry): Promise<
   }
 }
 
+/**
+ * Backfills the result count on an existing history entry, which is written
+ * before the search finishes and so starts out without one. No-ops when the
+ * entry is gone (e.g. already evicted).
+ * @category Utils
+ * @param timestamp - Primary key of the entry to update.
+ * @param count - The final number of results for that search.
+ * @returns Resolves once the update completes.
+ * @example
+ * ```ts
+ * await updateSearchHistoryResultCount(1712345678901, 42);
+ * ```
+ * @source
+ */
 export async function updateSearchHistoryResultCount(
   timestamp: number,
   count: number,
@@ -379,6 +433,16 @@ export async function updateSearchHistoryResultCount(
   }
 }
 
+/**
+ * Removes every search-history entry.
+ * @category Utils
+ * @returns Resolves once the store is empty.
+ * @example
+ * ```ts
+ * await clearSearchHistory();
+ * ```
+ * @source
+ */
 export async function clearSearchHistory(): Promise<void> {
   try {
     const db = await getDB();
@@ -392,6 +456,19 @@ export async function clearSearchHistory(): Promise<void> {
 /*                        Supplier Query Cache                                */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Reads one supplier query-cache entry — a cached result set keyed by
+ * query+supplier — along with its cache metadata.
+ * @category Utils
+ * @param cacheKey - The composite query+supplier cache key.
+ * @returns The cached entry, or `undefined` on a miss or read failure.
+ * @example
+ * ```ts
+ * const hit = await getSupplierQueryCacheEntry("acetone|Loudwolf");
+ * hit?.__cacheMetadata.cachedAt; // => 1712345678901
+ * ```
+ * @source
+ */
 export async function getSupplierQueryCacheEntry(
   cacheKey: string,
 ): Promise<CachedData<unknown> | undefined> {
@@ -409,6 +486,19 @@ export async function getSupplierQueryCacheEntry(
   }
 }
 
+/**
+ * Writes a supplier query-cache entry, evicting the least recently cached row
+ * first when the store is at `maxSupplierCacheEntries` capacity.
+ * @category Utils
+ * @param cacheKey - The composite query+supplier cache key.
+ * @param entry - The result set plus its `__cacheMetadata`.
+ * @returns Resolves once the write (and any eviction) completes.
+ * @example
+ * ```ts
+ * await putSupplierQueryCacheEntry("acetone|Loudwolf", { data: [], __cacheMetadata: meta });
+ * ```
+ * @source
+ */
 export async function putSupplierQueryCacheEntry(
   cacheKey: string,
   entry: CachedData<unknown>,
@@ -446,6 +536,17 @@ export async function putSupplierQueryCacheEntry(
   }
 }
 
+/**
+ * Removes a single supplier query-cache entry, e.g. when it fails TTL validation.
+ * @category Utils
+ * @param cacheKey - The composite query+supplier cache key to delete.
+ * @returns Resolves once the row is gone.
+ * @example
+ * ```ts
+ * await deleteSupplierQueryCacheEntry("acetone|Loudwolf");
+ * ```
+ * @source
+ */
 export async function deleteSupplierQueryCacheEntry(cacheKey: string): Promise<void> {
   try {
     const db = await getDB();
@@ -460,6 +561,7 @@ export async function deleteSupplierQueryCacheEntry(cacheKey: string): Promise<v
  * sets keyed by query+supplier. Intended for manual inspection from the debug
  * console; each record carries its `cacheKey`, the dumped `data`, and its
  * `__cacheMetadata` (query, supplier, `cachedAt`, etc.). Returns `[]` on failure.
+ * @category Utils
  * @returns All stored query-cache records, or `[]` when the read fails.
  * @example
  * ```ts
@@ -492,6 +594,16 @@ export async function getAllSupplierQueryCacheEntries(): Promise<
   }
 }
 
+/**
+ * Empties the supplier query cache, forcing the next search to refetch.
+ * @category Utils
+ * @returns Resolves once the store is empty.
+ * @example
+ * ```ts
+ * await clearSupplierQueryCache();
+ * ```
+ * @source
+ */
 export async function clearSupplierQueryCache(): Promise<void> {
   try {
     const db = await getDB();
@@ -505,6 +617,19 @@ export async function clearSupplierQueryCache(): Promise<void> {
 /*                     Supplier Product Data Cache                            */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Reads one entry from the supplier **product data** cache, which holds
+ * per-product detail fetched lazily after a search.
+ * @category Utils
+ * @param cacheKey - The product-level cache key.
+ * @returns The cached product data and its timestamp, or `undefined` on a miss.
+ * @example
+ * ```ts
+ * const entry = await getSupplierProductDataCacheEntry("Loudwolf|SKU-1");
+ * entry?.timestamp; // => 1712345678901
+ * ```
+ * @source
+ */
 export async function getSupplierProductDataCacheEntry(
   cacheKey: string,
 ): Promise<CachedProductEntry | undefined> {
@@ -522,6 +647,19 @@ export async function getSupplierProductDataCacheEntry(
   }
 }
 
+/**
+ * Writes a supplier product-data cache entry, evicting the oldest row first
+ * when the store is at `maxSupplierCacheEntries` capacity.
+ * @category Utils
+ * @param cacheKey - The product-level cache key.
+ * @param entry - The product data and the timestamp it was fetched.
+ * @returns Resolves once the write (and any eviction) completes.
+ * @example
+ * ```ts
+ * await putSupplierProductDataCacheEntry("Loudwolf|SKU-1", { data, timestamp: Date.now() });
+ * ```
+ * @source
+ */
 export async function putSupplierProductDataCacheEntry(
   cacheKey: string,
   entry: CachedProductEntry,
@@ -558,6 +696,7 @@ export async function putSupplierProductDataCacheEntry(
  * one product from the cache (e.g. the "Remove Product from Cache" context-menu
  * action) so its detail data is re-fetched fresh the next time it is surfaced,
  * without touching the visible results.
+ * @category Utils
  * @param cacheKey - The product-detail cache key, from `getProductIdentityKey`.
  * @example
  * ```ts
@@ -579,6 +718,7 @@ export async function deleteSupplierProductDataCacheEntry(cacheKey: string): Pro
  * per-product data keyed by product identity. Intended for manual inspection
  * from the debug console; each record carries its `cacheKey`, the cached `data`,
  * and its last-access `timestamp`. Returns `[]` on failure.
+ * @category Utils
  * @returns All stored product-detail records, or `[]` when the read fails.
  * @example
  * ```ts
@@ -599,6 +739,16 @@ export async function getAllSupplierProductDataCacheEntries(): Promise<
   }
 }
 
+/**
+ * Empties the supplier product-data cache.
+ * @category Utils
+ * @returns Resolves once the store is empty.
+ * @example
+ * ```ts
+ * await clearSupplierProductDataCache();
+ * ```
+ * @source
+ */
 export async function clearSupplierProductDataCache(): Promise<void> {
   try {
     const db = await getDB();
@@ -612,6 +762,18 @@ export async function clearSupplierProductDataCache(): Promise<void> {
 /*                          Supplier Stats                                    */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Reads the per-supplier stats recorded for one day.
+ * @category Utils
+ * @param dateKey - The day to read, as `YYYY-MM-DD`.
+ * @returns That day's stats keyed by supplier, or `undefined` when none exist.
+ * @example
+ * ```ts
+ * const day = await getSupplierStatsEntry("2026-07-18");
+ * day?.Loudwolf.queries; // => 3
+ * ```
+ * @source
+ */
 export async function getSupplierStatsEntry(
   dateKey: string,
 ): Promise<Record<string, SupplierDayStats> | undefined> {
@@ -625,6 +787,19 @@ export async function getSupplierStatsEntry(
   }
 }
 
+/**
+ * Writes one day's per-supplier stats and notifies open surfaces by dispatching
+ * {@link IDB_SUPPLIER_STATS_UPDATED}, so the stats panel re-reads without polling.
+ * @category Utils
+ * @param dateKey - The day being written, as `YYYY-MM-DD`.
+ * @param suppliers - That day's stats keyed by supplier name.
+ * @returns Resolves once the write completes.
+ * @example
+ * ```ts
+ * await putSupplierStatsEntry("2026-07-18", { Loudwolf: { queries: 3, results: 41 } });
+ * ```
+ * @source
+ */
 export async function putSupplierStatsEntry(
   dateKey: string,
   suppliers: Record<string, SupplierDayStats>,
@@ -638,6 +813,17 @@ export async function putSupplierStatsEntry(
   }
 }
 
+/**
+ * Reads every day of supplier stats, flattened into a `dateKey -> suppliers` map.
+ * @category Utils
+ * @returns All recorded stats, or `{}` when none exist or the read fails.
+ * @example
+ * ```ts
+ * const stats = await getAllSupplierStats();
+ * stats["2026-07-18"].Loudwolf.queries; // => 3
+ * ```
+ * @source
+ */
 export async function getAllSupplierStats(): Promise<SupplierStatsData> {
   try {
     const db = await getDB();
@@ -653,6 +839,18 @@ export async function getAllSupplierStats(): Promise<SupplierStatsData> {
   }
 }
 
+/**
+ * Deletes specific days of supplier stats in one transaction, used to prune
+ * days that have aged out of the retention window.
+ * @category Utils
+ * @param dateKeys - The days to delete, as `YYYY-MM-DD` strings.
+ * @returns Resolves once every row is deleted.
+ * @example
+ * ```ts
+ * await deleteSupplierStatsEntries(["2026-06-01", "2026-06-02"]);
+ * ```
+ * @source
+ */
 export async function deleteSupplierStatsEntries(dateKeys: string[]): Promise<void> {
   try {
     const db = await getDB();
@@ -666,6 +864,16 @@ export async function deleteSupplierStatsEntries(dateKeys: string[]): Promise<vo
   }
 }
 
+/**
+ * Removes all recorded supplier stats.
+ * @category Utils
+ * @returns Resolves once the store is empty.
+ * @example
+ * ```ts
+ * await clearSupplierStats();
+ * ```
+ * @source
+ */
 export async function clearSupplierStats(): Promise<void> {
   try {
     const db = await getDB();
@@ -685,6 +893,7 @@ export async function clearSupplierStats(): Promise<void> {
  * single-row pattern used by `searchResults`), so this is a single read.
  * Returns `{}` when the store is empty or the read fails, letting callers
  * treat the result as always-valid without null-checking.
+ * @category Utils
  * @returns Map of md5 exclusion key → entry, or `{}` when absent.
  * @example
  * ```ts
@@ -713,6 +922,7 @@ export async function getExcludedProducts(): Promise<ExcludedProductsMap> {
  * previous value. Callers typically read via `getExcludedProducts`, mutate
  * the returned object, and pass it back here — the object store holds one
  * row keyed by `"current"` so each call is a complete replacement.
+ * @category Utils
  * @param map - The map to persist. Pass `{}` to effectively clear.
  * @returns Resolves once the write completes; errors are logged, not thrown.
  * @example
@@ -736,6 +946,7 @@ export async function putExcludedProducts(map: ExcludedProductsMap): Promise<voi
  * Remove the excluded-products row from IndexedDB entirely. After this, a
  * subsequent `getExcludedProducts()` returns `{}`. Used by the bulk
  * `clearAllCaches` flow; callers don't typically invoke this directly.
+ * @category Utils
  * @returns Resolves once the delete completes; errors are logged, not thrown.
  * @example
  * ```ts
@@ -762,6 +973,7 @@ export async function clearExcludedProducts(): Promise<void> {
  * identity key for the base row, or `${productKey}::${variantKey}` for a
  * variant row. Returns `undefined` when no series exists yet (the first time a
  * product/variant is seen) or when the read fails.
+ * @category Utils
  * @param id - The series id.
  * @returns The stored {@link PriceHistoryEntry}, or `undefined` when absent.
  * @example
@@ -786,6 +998,7 @@ export async function getPriceSeries(id: string): Promise<PriceHistoryEntry | un
  * Callers read via {@link getPriceSeries}, append a point, then pass the whole
  * entry back — the store holds one row per series (keyed by `id`) so each call
  * is a complete replacement.
+ * @category Utils
  * @param entry - The series to persist.
  * @returns Resolves once the write completes; errors are logged, not thrown.
  * @example
@@ -812,6 +1025,7 @@ export async function putPriceSeries(entry: PriceHistoryEntry): Promise<void> {
  * one row per tracked variant — via the `productKey` index. Used by the detail
  * panel to render a product's full price history in one query. Returns `[]`
  * when the product has no recorded history or the read fails.
+ * @category Utils
  * @param productKey - The product's identity key (shared by base and variants).
  * @returns All matching series (order unspecified), or `[]` when none.
  * @example
@@ -835,6 +1049,7 @@ export async function getPriceSeriesByProduct(productKey: string): Promise<Price
  * Read every stored price-history series (all base rows and variant rows across
  * every product). The app reads per-product via {@link getPriceSeriesByProduct};
  * this full-store read backs dev/debug tooling that needs the whole set.
+ * @category Utils
  * @returns All price-history series, or `[]` when none / on error.
  * @example
  * ```ts
@@ -857,6 +1072,7 @@ export async function getAllPriceSeries(): Promise<PriceHistoryEntry[]> {
  * Delete all price-history series. Exposed via the "Clear price history" button
  * in the settings panel. Deliberately kept out of {@link clearAllCaches} so a
  * routine cache clear never destroys the user's accumulated price history.
+ * @category Utils
  * @returns Resolves once the store is cleared; errors are logged, not thrown.
  * @example
  * ```ts
@@ -883,6 +1099,7 @@ export async function clearPriceHistory(): Promise<void> {
  * `app_meta` row keyed `"current"`. Returns `undefined` on a fresh install (the
  * row has never been written) or when the read fails — callers treat `undefined`
  * as "no marker yet" and seed the current version instead of migrating.
+ * @category Utils
  * @returns The stored semver string (e.g. `"1.0.0"`), or `undefined` when unset.
  * @example
  * ```ts
@@ -906,6 +1123,7 @@ export async function getStoredAppVersion(): Promise<string | undefined> {
  * `app_meta` row. Called after migrations complete, after a fresh-install seed,
  * and after a Cancel/reset, so the stored marker always reflects the version
  * whose data shape is currently in IndexedDB.
+ * @category Utils
  * @param appVersion - The semver string to persist (typically `__APP_VERSION__`).
  * @returns Resolves once the write completes; errors are logged, not thrown.
  * @example
@@ -930,11 +1148,12 @@ export async function setStoredAppVersion(appVersion: string): Promise<void> {
 
 /**
  * Open the ChemPal database as an **untyped** `idb` handle for migration steps.
- * Unlike {@link getDB}, this returns `IDBPDatabase` without the schema generic, so
+ * Unlike `getDB`, this returns `IDBPDatabase` without the schema generic, so
  * step code can read and write records in stores whose current-schema shape no
  * longer matches the data on disk (renamed stores, old record shapes) using plain
  * `string` store names — no type assertions required. The structural schema is
- * still owned by {@link getDB}'s `upgrade`; this connection never upgrades.
+ * still owned by `getDB`'s `upgrade`; this connection never upgrades.
+ * @category Utils
  * @returns A fresh untyped connection to the same `chempal` database.
  * @example
  * ```ts
@@ -951,7 +1170,10 @@ export async function getMigrationDb(): Promise<IDBPDatabase> {
 /*                              Storage stats                                 */
 /* -------------------------------------------------------------------------- */
 
-/** Per-store record count + serialized JSON size, plus the summed total. */
+/**
+ * Per-store record count + serialized JSON size, plus the summed total.
+ * @category Utils
+ */
 export interface IdbStorageBreakdown {
   byStore: Record<IdbStore, { count: number; bytes: number }>;
   totalBytes: number;
@@ -964,6 +1186,7 @@ export interface IdbStorageBreakdown {
  * `navigator.storage.estimate()` to scale each store's JSON size up to its true
  * on-disk footprint (indexes, keys, structured-clone overhead). Returns all-zero
  * counts on failure.
+ * @category Utils
  * @returns A per-store breakdown of record counts and JSON byte sizes, plus the total.
  * @example
  * ```ts
@@ -1004,6 +1227,18 @@ export async function getIdbStorageBreakdown(): Promise<IdbStorageBreakdown> {
 /*                                 Bulk                                       */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Clears every cache-bearing store in one transaction: search results, history,
+ * both supplier caches, stats, and excluded products. Backs the "clear cache"
+ * action in settings.
+ * @category Utils
+ * @returns Resolves once all stores are empty.
+ * @example
+ * ```ts
+ * await clearAllCaches();
+ * ```
+ * @source
+ */
 export async function clearAllCaches(): Promise<void> {
   try {
     const db = await getDB();

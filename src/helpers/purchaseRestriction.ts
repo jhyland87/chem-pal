@@ -16,6 +16,7 @@ import { EU_COUNTRY_CODES } from "@/constants/countries";
  * excludes. An option with no restriction is buyable. `euOnly` is checked against
  * {@link EU_COUNTRY_CODES} (the 27 EU member states), and an unknown user location is
  * treated as ineligible for the safe EU-only case.
+ * @category Helpers
  * @param option - The product or variant to check
  * @param location - The user's ISO 3166-1 alpha-2 location code (may be undefined)
  * @returns True when the user may buy the option, false when it should be hidden
@@ -56,6 +57,7 @@ export function canUserBuy(option: Variant, location?: string): boolean {
  * restricted but a variant is buyable, the cheapest buyable variant is promoted into the
  * representative's sale fields (identity fields are kept). Returns undefined when no option
  * is buyable.
+ * @category Helpers
  * @param product - The grouped product to filter
  * @param location - The user's ISO 3166-1 alpha-2 location code (may be undefined)
  * @returns The product with restricted variants pruned (or a promoted representative), or

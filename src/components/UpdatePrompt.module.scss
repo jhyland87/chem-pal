@@ -1,0 +1,5 @@
+.update-snackbar {
+  // Keep clear of the StatusBar, which occupies the bottom edge.
+  bottom: 2.5rem;
+  max-width: 92vw;
+}

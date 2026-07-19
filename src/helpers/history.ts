@@ -3,6 +3,7 @@ import { getSearchHistory, addSearchHistoryEntry } from "@/utils/idbCache";
 /**
  * Get the history of products that were clicked on.
  *
+ * @category Helpers
  * @returns The history of products that were clicked on.
  * @source
  */
@@ -13,6 +14,7 @@ export async function getHistory(): Promise<HistoryEntry[]> {
 /**
  * Add a product to the history of products that were clicked on.
  *
+ * @category Helpers
  * @param history - The product to add to the history.
  * @source
  */

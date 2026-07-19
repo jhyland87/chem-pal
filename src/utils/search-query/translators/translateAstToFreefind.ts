@@ -5,6 +5,8 @@ import type { SearchAst } from "../types";
  * engine LiMac delegates to). Phrases are parenthesized so multi-word terms stay
  * grouped, and boolean nodes use FreeFind's `AND`/`OR`/`NOT` keywords.
  *
+ * @category Utils
+ * @group Converters
  * @param ast - The parsed query tree.
  * @returns A FreeFind query string.
  * @example

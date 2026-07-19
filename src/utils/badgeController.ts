@@ -20,7 +20,10 @@ import { useEffect } from "react";
  * @source
  */
 
-/** Internal badge state tracked across events. */
+/**
+ * Internal badge state tracked across events.
+ * @category Utils
+ */
 export interface BadgeState {
   /** True between SearchEvent.STARTED and a terminal event (completed/aborted/failed). */
   isSearching: boolean;
@@ -28,10 +31,16 @@ export interface BadgeState {
   count: number;
 }
 
-/** The initial badge state (idle, no results). */
+/**
+ * The initial badge state (idle, no results).
+ * @category Utils
+ */
 export const initialBadgeState: BadgeState = { isSearching: false, count: 0 };
 
-/** A badge-lifecycle event fed to {@link reduceBadge}. */
+/**
+ * A badge-lifecycle event fed to {@link reduceBadge}.
+ * @category Utils
+ */
 export type BadgeEvent =
   | { type: SearchEvent.STARTED }
   | { type: SearchEvent.RESULTS_COUNT; count: number }
@@ -40,7 +49,10 @@ export type BadgeEvent =
   | { type: SearchEvent.FAILED }
   | { type: typeof IDB_SEARCH_RESULTS_CLEARED };
 
-/** What the controller should render on the badge after handling an event. */
+/**
+ * What the controller should render on the badge after handling an event.
+ * @category Utils
+ */
 export type BadgeOutput =
   | { kind: "animate" } // show the "Searching…" ellipsis
   | { kind: "text"; value: string } // pin a result count
@@ -54,6 +66,7 @@ export type BadgeOutput =
  * ellipsis *while a search is in flight*, but clears the badge once the search
  * has ended (or when no search is running at all, e.g. popup open).
  *
+ * @category Utils
  * @param state - The previous badge state.
  * @param event - The lifecycle event to apply.
  * @returns The next state and the badge output to render.
@@ -108,6 +121,7 @@ function render(state: BadgeState): BadgeOutput {
  * True when two {@link BadgeOutput}s would put the badge in the same visible
  * state. Used to skip redundant re-applies within a session — most importantly,
  * so a repeated `animate` doesn't restart (and visibly reset) the ellipsis cycle.
+ * @category Utils
  * @param a - The previously applied output (or `null` if none yet).
  * @param b - The output about to be applied.
  * @returns Whether they are visually equivalent.
@@ -135,6 +149,7 @@ export function isSameBadgeOutput(a: BadgeOutput | null, b: BadgeOutput): boolea
  * the ellipsis is already cycling; the in-session {@link isSameBadgeOutput} guard
  * handles repeated `animate` instead.
  *
+ * @category Utils
  * @param current - The badge's current text (from `chrome.action.getBadgeText`).
  * @param output - The output about to be applied.
  * @returns Whether the output should be written.
@@ -190,6 +205,7 @@ async function applyBadgeOutput(output: BadgeOutput): Promise<void> {
  * the result to the badge. Call this exactly once, near the top of `App`, before
  * any code that emits search events.
  *
+ * @category Utils
  * @example
  * ```tsx
  * function App() {

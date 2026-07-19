@@ -10,6 +10,7 @@ import { cstorage } from "@/utils/storage";
 
 /**
  * Three days in milliseconds — the default freshness window for a cached response.
+ * @category Helpers
  * @source
  */
 export const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
@@ -32,6 +33,7 @@ interface CacheEntry<Result> {
 
 /**
  * Options controlling a {@link withTtlCache} wrapper.
+ * @category Helpers
  * @source
  */
 export interface TtlCacheOptions<Args extends unknown[]> {
@@ -66,6 +68,7 @@ function isCacheEntry<Result>(value: unknown): value is CacheEntry<Result> {
  * entry has expired. Only defined results are cached, so a failed or empty lookup (`undefined`) is
  * never negatively cached. Any storage error is swallowed and the call falls through to `fn`, so
  * the wrapper can never break a caller that runs without `chrome.storage`.
+ * @category Helpers
  * @param fn - The async function to cache
  * @param options - Cache configuration; see {@link TtlCacheOptions}
  * @returns A drop-in replacement for `fn` that serves from cache when possible

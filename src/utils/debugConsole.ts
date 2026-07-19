@@ -21,8 +21,13 @@ import {
   resolveQueryForSearch,
   resolveSmiles,
 } from "@/helpers/smiles";
+import type { ReleaseSection } from "@/helpers/updates";
+import { getInstallSource, parseReleaseNotes } from "@/helpers/updates";
+import semver from "semver";
 import { formatBytes } from "@/helpers/utils";
+import { CACHE } from "@/constants/common";
 import { Cactus } from "@/utils/Cactus";
+import { cstorage } from "@/utils/storage";
 import { astTest, collectCachedTitles, fuzzTest, listSuppliers } from "@/utils/fuzzScorerLab";
 import {
   getAllPriceSeries,
@@ -35,6 +40,30 @@ import {
   getSearchResults,
   putPriceSeries,
 } from "@/utils/idbCache";
+
+/**
+ * Prints deliberate debug-console output.
+ *
+ * `esbuild.pure` in vite.config.ts lists `console.log`/`info`/`debug`/`trace` so
+ * incidental logging doesn't ship, and because Vite pins `NODE_ENV=production`
+ * for every `vite build` that applies to dev builds too. A function whose body is
+ * only such a call gets emptied outright — which is why `help()` compiled down to
+ * `function _e(){}`. Aliasing the method first means the call site isn't the
+ * `console.info(…)` shape the pure-list matches, so this module's own output
+ * survives while ordinary logging elsewhere is still stripped.
+ * @param message - The line (or first argument) to print.
+ * @param args - Any additional values to log alongside it.
+ * @returns Nothing; writes to the console.
+ * @example
+ * ```ts
+ * printDebug("✅ Done"); // survives the production pure-list
+ * ```
+ * @source
+ */
+function printDebug(message: unknown, ...args: unknown[]): void {
+  const write = console.info.bind(console);
+  write(message, ...args);
+}
 
 /**
  * Inspection-friendly view of a proxied response, returned by {@link backgroundFetch}.
@@ -221,10 +250,192 @@ async function nudgePriceHistory(stepsBack: number = 0): Promise<number> {
   }
 
   const skippedNote = skipped > 0 ? ` (${skipped} skipped — fewer than ${steps + 1} points)` : "";
-  console.log(
+  printDebug(
     `✅ Nudged ${changed} price series at ${steps} back from latest${skippedNote}. Re-open a product's detail panel to see it.`,
   );
   return changed;
+}
+
+/** Stand-in notes used when CHANGELOG.md has nothing under `## [Unreleased]`. */
+const SAMPLE_RELEASE_NOTES: ReleaseSection[] = [
+  { title: "Added", items: ["A shiny new thing", "Another new thing"] },
+  { title: "Changed", items: ["Something works differently now"] },
+  { title: "Fixed", items: ["That annoying bug"] },
+];
+
+/**
+ * The notes the next release will actually ship with: the `## [Unreleased]`
+ * section of CHANGELOG.md, baked in at build time as
+ * `__CHANGELOG_UNRELEASED__` and parsed with the same
+ * {@link parseReleaseNotes} the real prompt uses — so this preview renders
+ * identically to what users will get.
+ *
+ * Falls back to {@link SAMPLE_RELEASE_NOTES} when the section is empty (e.g.
+ * right after a release), so the prompt is still worth looking at.
+ * @returns Parsed sections for the upcoming release.
+ * @example
+ * ```ts
+ * upcomingReleaseNotes(); // [{ title: "Added", items: ["Update prompt: …"] }]
+ * ```
+ * @source
+ */
+function upcomingReleaseNotes(): ReleaseSection[] {
+  const parsed = parseReleaseNotes(__CHANGELOG_UNRELEASED__);
+  if (parsed.length > 0) return parsed;
+  printDebug("CHANGELOG.md has no [Unreleased] entries — showing sample notes instead.");
+  return SAMPLE_RELEASE_NOTES;
+}
+
+/**
+ * A plausible next version: the running build's minor bump, so the prompt reads
+ * like a real release rather than a placeholder. Always greater than the current
+ * version, which is what makes the prompt fire.
+ * @returns The next minor version, or `"99.0.0"` if it can't be derived.
+ * @example
+ * ```ts
+ * nextVersion(); // "1.3.0" while running 1.2.0
+ * ```
+ * @source
+ */
+function nextVersion(): string {
+  return semver.inc(__APP_VERSION__, "minor") ?? "99.0.0";
+}
+
+/**
+ * Options accepted by {@link simulateUpdate}.
+ * @source
+ */
+interface SimulateUpdateOptions {
+  /** Release notes to show. Pass `false` for a release with no notes. */
+  notes?: ReleaseSection[] | false;
+  /** Release page the "View release" action opens. */
+  releaseUrl?: string;
+}
+
+/**
+ * Dev-only: makes the app believe a newer version exists, so the update prompt
+ * can be exercised without publishing a release or downgrading `package.json`.
+ *
+ * Seeds the `update_check` record the way a successful GitHub poll would, with
+ * `lastCheckedAt` set to now so the 24h throttle suppresses any real network
+ * call. Any previous dismissal is cleared, so the prompt reappears even if you
+ * dismissed this version a moment ago.
+ *
+ * By default this previews the **next release**: the version is the running
+ * build's minor bump and the notes are CHANGELOG.md's `## [Unreleased]` section,
+ * so the prompt shows exactly what users will see when that release ships.
+ *
+ * This drives the **manual-install** path ("View release"). Use
+ * {@link simulateWebstoreUpdate} for the Web Store path ("Reload now").
+ * @param version - The version to advertise. Defaults to the next minor.
+ * @param options - Optional notes / release URL overrides (see {@link SimulateUpdateOptions}).
+ * @returns Nothing; writes to `chrome.storage.local`.
+ * @example
+ * ```typescript
+ * // In the console:
+ * await chempal.simulateUpdate();            // next version + real [Unreleased] notes
+ * await chempal.simulateUpdate("2.0.0");     // pin the version, same notes
+ * await chempal.simulateUpdate("1.3.0", { notes: false }); // no-notes fallback
+ * ```
+ * @source
+ */
+async function simulateUpdate(
+  version: string = nextVersion(),
+  options: SimulateUpdateOptions = {},
+): Promise<void> {
+  const notes = options.notes === false ? [] : (options.notes ?? upcomingReleaseNotes());
+  const releaseUrl =
+    options.releaseUrl ?? `https://github.com/${__GITHUB_OWNER__}/${__GITHUB_REPO__}/releases`;
+
+  await cstorage.local.set({
+    [CACHE.UPDATE_CHECK]: {
+      // Inside the throttle window, so the mount effect serves this instead of
+      // hitting the GitHub API.
+      lastCheckedAt: Date.now(),
+      latestVersion: version,
+      releaseUrl,
+      // Must match latestVersion or the cached notes are treated as stale.
+      notesVersion: version,
+      notes,
+    },
+  });
+
+  if (getInstallSource() === "webstore") {
+    console.warn(
+      "This build looks like a Web Store install, so the manual-install path won't run.\n" +
+        "Use chempal.simulateWebstoreUpdate() instead.",
+    );
+    return;
+  }
+
+  printDebug(
+    `✅ Pretending ${version} is available (running ${__APP_VERSION__}), ` +
+      `${notes.length > 0 ? `${notes.length} note section(s)` : "no notes"}.\n` +
+      "↻ Reload the page to see the prompt.",
+  );
+}
+
+/**
+ * Dev-only: simulates Chrome having staged a Web Store update, exercising the
+ * "Reload now" path that `chrome.runtime.onUpdateAvailable` normally triggers.
+ *
+ * That path is gated on the extension looking Web Store-installed, which an
+ * unpacked build is not — so this warns (rather than silently doing nothing)
+ * when the runtime manifest has no `update_url`, and tells you how to fake one.
+ * @param version - The staged version to advertise. Defaults to `"99.0.0"`.
+ * @returns Nothing; writes to `chrome.storage.local`.
+ * @example
+ * ```typescript
+ * // In the console:
+ * await chempal.simulateWebstoreUpdate();
+ * await chempal.simulateWebstoreUpdate("1.3.0");
+ * ```
+ * @source
+ */
+async function simulateWebstoreUpdate(version: string = "99.0.0"): Promise<void> {
+  await cstorage.local.set({
+    [CACHE.UPDATE_PENDING]: { version, detectedAt: Date.now() },
+  });
+
+  if (getInstallSource() !== "webstore") {
+    console.warn(
+      [
+        "⚠️  Staged update recorded, but this build reports install source \"manual\",",
+        "    so the Web Store path won't run and nothing will show.",
+        "",
+        "    To fake a Web Store install, add this to build/manifest.json and reload",
+        "    the extension (a rebuild overwrites it, so it cleans itself up):",
+        "",
+        '      "update_url": "https://clients2.google.com/service/update2/crx"',
+        "",
+        "    Edit build/manifest.json, NOT public/manifest.json — a stray update_url",
+        "    in the source manifest would ship.",
+      ].join("\n"),
+    );
+    return;
+  }
+
+  printDebug(
+    `✅ Pretending Chrome staged ${version} (running ${__APP_VERSION__}).\n` +
+      "↻ Reload the page to see the “Reload now” prompt.",
+  );
+}
+
+/**
+ * Dev-only: clears everything {@link simulateUpdate} and
+ * {@link simulateWebstoreUpdate} write, including any recorded dismissal, so the
+ * next open behaves like a fresh install.
+ * @returns Nothing; removes the update keys from `chrome.storage.local`.
+ * @example
+ * ```typescript
+ * // In the console:
+ * await chempal.resetUpdatePrompt();
+ * ```
+ * @source
+ */
+async function resetUpdatePrompt(): Promise<void> {
+  await cstorage.local.remove([CACHE.UPDATE_CHECK, CACHE.UPDATE_PENDING]);
+  printDebug("✅ Cleared update_check and update_pending.\n↻ Reload the page.");
 }
 
 /**
@@ -301,7 +512,7 @@ async function storageBreakdown(): Promise<StorageBreakdownReport> {
   }
 
   console.table(rows);
-  console.log(
+  printDebug(
     [
       `Total JSON size:   ${formatBytes(total)}`,
       `Origin usage:      ${usage === undefined ? "unavailable" : formatBytes(usage)}`,
@@ -326,9 +537,10 @@ async function storageBreakdown(): Promise<StorageBreakdownReport> {
  * @source
  */
 function help(): void {
-  console.info(
+  printDebug(
     [
       "ChemPal debug helpers (window.chempal):",
+      "  Always on in dev builds; in a normal build, unlock advanced mode.",
       "",
       "  SMILES:     resolveSmiles, resolveQueryForSearch, looksLikeSmiles,",
       "              parseStructurePrefix, isProbablyValidSmiles, extractSmiles",
@@ -349,6 +561,12 @@ function help(): void {
       "                      limit: 25   (0 = show all) }",
       "  Testing:    nudgePriceHistory(stepsBack=0) (mutates price_history — nudges",
       "              one point per series by a random ±1–8%; 0=latest, 1=one back, …)",
+      "  Updates:    simulateUpdate(version?, opts?) — preview the next release:",
+      "                defaults to the next minor + CHANGELOG.md [Unreleased] notes",
+      "                opts: { notes: ReleaseSection[] | false, releaseUrl: string }",
+      "              simulateWebstoreUpdate(version='99.0.0') — fake a staged CWS update",
+      "              resetUpdatePrompt() — clear the simulation and any dismissal",
+      "              (all three need a page reload to take effect)",
       "",
       "Examples:",
       "  await chempal.resolveSmiles('CCO')",
@@ -364,6 +582,9 @@ function help(): void {
       "  await chempal.astTest('sodium AND NOT borohydride')",
       "  await chempal.astTest('acid OR base', { fuzzyWords: false, threshold: 70 })",
       "  await chempal.nudgePriceHistory(2) // nudge the price 2 entries back",
+      "  await chempal.simulateUpdate() // then reload → prompt with the next release's notes",
+      "  await chempal.simulateUpdate('1.3.0', { notes: false }) // no-notes fallback",
+      "  await chempal.resetUpdatePrompt() // back to a clean slate",
     ].join("\n"),
   );
 }
@@ -413,6 +634,10 @@ const chempal = {
   listSuppliers,
   // Testing / fixtures (mutates IndexedDB)
   nudgePriceHistory,
+  // Update-prompt simulation (mutates chrome.storage.local)
+  simulateUpdate,
+  simulateWebstoreUpdate,
+  resetUpdatePrompt,
   help,
 };
 
@@ -426,7 +651,8 @@ declare global {
 /**
  * Attaches the chemistry helper API to `window.chempal` so the resolvers can be exercised from the
  * browser devtools console. Intended for dev/non-production builds only — the caller gates this
- * behind {@link IS_DEV_BUILD} so it is tree-shaken out of production bundles.
+ * behind `IS_DEV_BUILD` so it is tree-shaken out of production bundles.
+ * @category Utils
  * @returns Nothing; mutates the global `window`
  * @example
  * ```typescript
@@ -437,5 +663,22 @@ declare global {
  */
 export function exposeDebugApi(): void {
   window.chempal = chempal;
-  console.info("%cChemPal debug helpers ready — run chempal.help()", "color:#6cf;font-weight:bold");
+  printDebug("%cChemPal debug helpers ready — run chempal.help()", "color:#6cf;font-weight:bold");
+}
+
+/**
+ * Removes the helper API from `window`, so leaving advanced mode takes the
+ * console surface with it. Safe to call when nothing is attached.
+ * @returns Nothing; mutates the global `window`
+ * @example
+ * ```typescript
+ * removeDebugApi();
+ * // In the console: window.chempal // => undefined
+ * ```
+ * @source
+ */
+export function removeDebugApi(): void {
+  if (!window.chempal) return;
+  delete window.chempal;
+  printDebug("ChemPal debug helpers removed");
 }
