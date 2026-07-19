@@ -1,6 +1,10 @@
-import { backgroundFetch as backgroundFetchHelper } from "@/helpers/backgroundFetch";
 import type { BackgroundFetchInit } from "@/helpers/backgroundFetch";
+import { backgroundFetch as backgroundFetchHelper } from "@/helpers/backgroundFetch";
 import { findCAS, getCASByName, getIUPACName, getNamesByCAS, isCAS } from "@/helpers/cas";
+import {
+  getProductPriceHistory as getProductPriceHistorySeries,
+  variantSeriesKey,
+} from "@/helpers/priceHistory";
 import {
   executeSDQSearch,
   getCompoundNameFromAlias,
@@ -16,12 +20,9 @@ import {
   resolveQueryForSearch,
   resolveSmiles,
 } from "@/helpers/smiles";
-import {
-  getProductPriceHistory as getProductPriceHistorySeries,
-  variantSeriesKey,
-} from "@/helpers/priceHistory";
 import { formatBytes } from "@/helpers/utils";
 import { Cactus } from "@/utils/Cactus";
+import { astTest, collectCachedTitles, fuzzTest, listSuppliers } from "@/utils/fuzzScorerLab";
 import {
   getAllPriceSeries,
   getAllSupplierProductDataCacheEntries,
@@ -231,7 +232,10 @@ async function nudgePriceHistory(stepsBack: number = 0): Promise<number> {
  * @source
  */
 interface StorageBreakdownReport {
-  byStore: Record<string, { records: number; jsonBytes: number; estimatedBytes: number; share: number }>;
+  byStore: Record<
+    string,
+    { records: number; jsonBytes: number; estimatedBytes: number; share: number }
+  >;
   totalJsonBytes: number;
   estimatedUsageBytes?: number;
   quotaBytes?: number;
@@ -279,7 +283,10 @@ async function storageBreakdown(): Promise<StorageBreakdownReport> {
   const usedPercent = usage !== undefined && quota ? (usage / quota) * 100 : undefined;
 
   const byStore: StorageBreakdownReport["byStore"] = {};
-  const rows: Record<string, { records: number; jsonSize: string; estimatedSize: string; share: string }> = {};
+  const rows: Record<
+    string,
+    { records: number; jsonSize: string; estimatedSize: string; share: string }
+  > = {};
   for (const [store, { count, bytes }] of Object.entries(breakdown.byStore)) {
     const estimatedBytes = Math.round(bytes * scale);
     const share = total > 0 ? bytes / total : 0;
@@ -322,18 +329,25 @@ function help(): void {
     [
       "ChemPal debug helpers (window.chempal):",
       "",
-      "  SMILES:   resolveSmiles, resolveQueryForSearch, looksLikeSmiles,",
-      "            parseStructurePrefix, isProbablyValidSmiles, extractSmiles",
-      "  PubChem:  suggestAlternativeSearch, getRankedNamesByName, isSimpleName,",
-      "            getCompoundNameFromAlias, executeSDQSearch",
-      "  CAS:      getCASByName, getNamesByCAS, getIUPACName, findCAS, isCAS",
-      "  Cactus:   new chempal.Cactus('aspirin')",
-      "  Network:  backgroundFetch",
-      "  IndexedDB: getProductById, getProductPriceHistory, getProductCache,",
-      "             getQueryCache, getSearchResults, getSearchHistory,",
-      "             getExcludedProducts, storageBreakdown",
-      "  Testing:  nudgePriceHistory(stepsBack=0) (mutates price_history — nudges",
-      "            one point per series by a random ±1–8%; 0=latest, 1=one back, …)",
+      "  SMILES:     resolveSmiles, resolveQueryForSearch, looksLikeSmiles,",
+      "              parseStructurePrefix, isProbablyValidSmiles, extractSmiles",
+      "  PubChem:    suggestAlternativeSearch, getRankedNamesByName, isSimpleName,",
+      "              getCompoundNameFromAlias, executeSDQSearch",
+      "  CAS:        getCASByName, getNamesByCAS, getIUPACName, findCAS, isCAS",
+      "  Cactus:     new chempal.Cactus('aspirin')",
+      "  Network:    backgroundFetch",
+      "  IndexedDB:  getProductById, getProductPriceHistory, getProductCache,",
+      "              getQueryCache, getSearchResults, getSearchHistory,",
+      "              getExcludedProducts, storageBreakdown",
+      "  Fuzzy:      fuzzTest(query, opts?)  — all 9 scorers vs. every cached title",
+      "              astTest(query, opts?)   — AND/OR/NOT predicate: matched vs. dropped",
+      "              getCachedTitles(source?) — the corpus both probes run against",
+      "              listSuppliers(corpus)   — supplier names + title counts",
+      "              opts: { suppliers: 'loud' | ['Loudwolf','Onyxmet'],",
+      "                      source: 'cache' | 'results' | 'both',",
+      "                      limit: 25   (0 = show all) }",
+      "  Testing:    nudgePriceHistory(stepsBack=0) (mutates price_history — nudges",
+      "              one point per series by a random ±1–8%; 0=latest, 1=one back, …)",
       "",
       "Examples:",
       "  await chempal.resolveSmiles('CCO')",
@@ -343,6 +357,11 @@ function help(): void {
       "  await chempal.getProductById('A668410')",
       "  await chempal.getQueryCache()",
       "  await chempal.storageBreakdown() // per-store record counts + sizes",
+      "  await chempal.fuzzTest('sodium borohydride')",
+      "  await chempal.fuzzTest('acetone', { suppliers: ['Loudwolf','Onyxmet'], limit: 25 })",
+      "  await chempal.fuzzTest('acetone', { source: 'results', limit: 0 })",
+      "  await chempal.astTest('sodium AND NOT borohydride')",
+      "  await chempal.astTest('acid OR base', { fuzzyWords: false, threshold: 70 })",
       "  await chempal.nudgePriceHistory(2) // nudge the price 2 entries back",
     ].join("\n"),
   );
@@ -386,6 +405,11 @@ const chempal = {
   getSearchHistory,
   getExcludedProducts,
   storageBreakdown,
+  // Fuzzy-filter probing against the local cache (read-only, no network)
+  fuzzTest,
+  astTest,
+  getCachedTitles: collectCachedTitles,
+  listSuppliers,
   // Testing / fixtures (mutates IndexedDB)
   nudgePriceHistory,
   help,

@@ -1,4 +1,3 @@
-import { WRatio } from "fuzzball";
 import { SupplierBaseWoocommerce } from "./SupplierBaseWoocommerce";
 
 /**
@@ -47,8 +46,8 @@ export class SupplierAlchemieLabs extends SupplierBaseWoocommerce implements ISu
   // The country code of the supplier.
   public readonly country: CountryCode = "US";
 
-  protected readonly minMatchPercentage: number = 20;
-  protected readonly fuzzScorer = WRatio;
+  protected readonly minMatchPercentage: number = 50;
+  //protected readonly fuzzScorer: FuzzScorerFn = WRatio;
 
   // The payment methods accepted by the supplier.
   public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
