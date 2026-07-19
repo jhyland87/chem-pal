@@ -229,7 +229,7 @@ importers:
         specifier: ^0.2.3
         version: 0.2.3
       '@types/node':
-        specifier: ^22.15.19
+        specifier: ^22.15.29
         version: 22.15.29
       '@types/react':
         specifier: ^19.0.10

@@ -504,7 +504,7 @@ export const buildGradeRegexes = (): GradeRegexes => {
     USP_Grade: String.raw`(?:${acronym("BP")}\s*/\s*${acronym("USP")}|${acronym("USP")}\s*/\s*${acronym("BP")}|${acronym("USP")}|${ci("usp")}\s+${gradeTxt}|(?:${ci("united")}\s+${ci("states")}|${acronym("US")})\s+${pharma})${optionalGrade}`,
     HPLC_Grade: String.raw`(?:${acronym("HPLC")}|${ci("hplc")}\s+${gradeTxt}|${ci("gradient")}\s+${gradeTxt}|${ci("high")}[-\s]+${ci("performance")}\s+${ci("liquid")}\s+${ci("chromatography")})${optionalGrade}`,
     Lab_Grade: String.raw`(?:${acronym("LR")}|${stems.Lab_Grade}\s+${rgFlex})`,
-    Pure_Grade: String.raw`${stems.Pure_Grade}\s+${rgFlex}`,
+    Pure_Grade: String.raw`(?:${acronym("PA")}|${stems.Pure_Grade}\s+${rgFlex})`,
     Pharma_Grade: String.raw`${stems.Pharma_Grade}\s+${rgFlex}`,
     Low_Grade: String.raw`${stems.Low_Grade}\s+(?:${rgFlex}|${purityTxt})`,
     Impure: String.raw`${ci("impure")}(?:\s+${reagentTxt})?`,
@@ -570,7 +570,7 @@ const GRADE_REGEXES = buildGradeRegexes();
  * @category Science Helpers
  * @group Regex Patterns
  * @document ./REAGENT_GRADE_PATTERN.md
- * @see https://regex101.com/r/BJV88C/4
+ * @see https://regex101.com/r/BJV88C/8
  */
 export const GRADE_REGEX = GRADE_REGEXES.classifier;
 
@@ -589,7 +589,7 @@ export const LABELED_GRADE_REGEX = GRADE_REGEXES.labeled;
  * @category Science Helpers
  * @group Regex Patterns
  * @document ./REAGENT_GRADE_PATTERN.md
- * @see https://regex101.com/r/BJV88C/4
+ * @see https://regex101.com/r/BJV88C/8
  */
 export const GRADE_REGEX_SOURCE = GRADE_REGEX.source;
 
@@ -600,7 +600,7 @@ export const GRADE_REGEX_SOURCE = GRADE_REGEX.source;
  * column always has something to show.
  * @category Science Helpers
  * @group Parsers
- * @see https://regex101.com/r/BJV88C/4
+ * @see https://regex101.com/r/BJV88C/8
  * @document ./REAGENT_GRADE_PATTERN.md
  * @param value - The string to extract the grade from (e.g. a product title)
  * @returns The grade label (e.g. `"ACS Grade"`), or `"Ungraded"` if none is found

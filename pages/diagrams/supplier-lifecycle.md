@@ -43,7 +43,7 @@ flowchart TD
     N --> O
     O -->|Valid| P["yield Product"]
     O -->|Invalid| Q["Skip product"]
-    K -.->|"maxAllowableSearchTime elapsed"| TO["Abort outstanding fetches;\nyield remaining products with\nbasic data (uncached)"]
+    K -.->|"maxAllowableSearchTimeSec elapsed"| TO["Abort outstanding fetches;\nyield remaining products with\nbasic data (uncached)"]
     TO --> P
 
     style A fill:#4a9eff,color:#fff

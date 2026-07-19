@@ -10,7 +10,6 @@
     "resolveJsonModule": true,
     "module": "ESNext",
     "jsx": "react-jsx",
-    "moduleResolution": "node",
     "sourceMap": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
@@ -19,14 +18,15 @@
     "skipLibCheck": true,
     "allowJs": true,
     "esModuleInterop": true,
-    "baseUrl": "../",
+    // No `baseUrl` (deprecated in TS 7): `paths` entries resolve relative to
+    // this config file's directory.
     "paths": {
       "@/*": [
-        "./src/*"
+        "../src/*"
       ],
     },
     /* Bundler mode */
-    //"moduleResolution": "bundler",
+    "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
@@ -47,7 +47,11 @@
     ]
   },
   "include": [
-    "../vite.config.ts",
-    "../*.ts"
+    "../*.ts",
+    // The build/test tooling configs living alongside this file (playwright,
+    // vitest, vitest.setup) — without this they belong to no project, so the
+    // editor falls back to a default config with no `types` and flags `node:*`
+    // imports as missing.
+    "./*.ts"
   ]
 }

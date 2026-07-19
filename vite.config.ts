@@ -115,7 +115,18 @@ export default ({ mode }: { mode: string }) => {
 
   const isAggregate = mode === "aggregate";
   const isProd =
-    process.env.NODE_ENV === "PRODUCTION" || mode === "production" || mode === "analyze-prod";
+    process.env.NODE_ENV?.toLowerCase() === "production" ||
+    mode === "production" ||
+    mode === "analyze-prod";
+
+  // Vite derives `isProduction` — and so which JSX runtime @vitejs/plugin-react
+  // emits — from NODE_ENV *in preference to* `mode`. Any NODE_ENV that isn't
+  // exactly "production" (vitest sets "test"; the e2e suite shells out to this
+  // build) therefore left plugin-react emitting dev `jsxDEV()` calls while
+  // `buildDefines` bundled the production React, which has no such export:
+  // blank page, `jsxDEV is not a function`. Pin NODE_ENV to match `isProd` here,
+  // before Vite reads it, so the JSX transform and the React build always agree.
+  process.env.NODE_ENV = isProd ? "production" : "development";
   const isAnalyze = mode === "analyze" || mode === "analyze-prod";
 
   return defineConfig({

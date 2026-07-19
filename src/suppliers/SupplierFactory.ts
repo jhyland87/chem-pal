@@ -47,7 +47,7 @@ export interface SupplierFactoryOptions {
   /** HTTP statuses that prevent a product-detail fetch from being cached. Defaults to [429]. */
   noCacheStatusCodes?: number[];
   /** Override (ms) for each supplier's search-time budget. Omit to keep per-supplier defaults. */
-  maxAllowableSearchTime?: number;
+  maxAllowableSearchTimeSec?: number;
   /** When true, suppliers skip fuzzball scoring and show raw/boolean-only results. Defaults to false. */
   fuzzyFilteringDisabled?: boolean;
   /** User's ISO 3166-1 alpha-2 location; enables the shipping/restriction filters below. */
@@ -129,10 +129,10 @@ export class SupplierFactory<P extends Product> {
   // user's Advanced-settings choice wins over each supplier class's default.
   private fuzzScorerOverride?: string;
 
-  // Optional global max-search-time override (ms) from userSettings.maxAllowableSearchTime.
+  // Optional global max-search-time override (seconds) from userSettings.maxAllowableSearchTimeSec.
   // When set, applied to every supplier instance so the user's Advanced-settings value
   // overrides each supplier class's default search-time budget.
-  private maxAllowableSearchTime?: number;
+  private maxAllowableSearchTimeSec?: number;
 
   // Parsed advanced-search query, derived once from `query` and shared with every
   // supplier instance so they all see the same AST.
@@ -188,7 +188,7 @@ export class SupplierFactory<P extends Product> {
       doNotCacheEmptyResults = false,
       cacheTtlMinutes = 0,
       noCacheStatusCodes = [429],
-      maxAllowableSearchTime,
+      maxAllowableSearchTimeSec,
       fuzzyFilteringDisabled = false,
       location,
       excludeNonShippingSuppliers = false,
@@ -207,7 +207,7 @@ export class SupplierFactory<P extends Product> {
       doNotCacheEmptyResults,
       cacheTtlMinutes,
       noCacheStatusCodes,
-      maxAllowableSearchTime,
+      maxAllowableSearchTimeSec,
       fuzzyFilteringDisabled,
       location,
       excludeNonShippingSuppliers,
@@ -224,7 +224,7 @@ export class SupplierFactory<P extends Product> {
     this.doNotCacheEmptyResults = doNotCacheEmptyResults;
     this.cacheTtlMinutes = cacheTtlMinutes;
     this.noCacheStatusCodes = noCacheStatusCodes;
-    this.maxAllowableSearchTime = maxAllowableSearchTime;
+    this.maxAllowableSearchTimeSec = maxAllowableSearchTimeSec;
     this.fuzzyFilteringDisabled = fuzzyFilteringDisabled;
     this.location = location;
     this.excludeNonShippingSuppliers = excludeNonShippingSuppliers;
@@ -499,7 +499,7 @@ export class SupplierFactory<P extends Product> {
           this.noCacheStatusCodes,
         );
         instance.setFuzzScorerOverride(this.fuzzScorerOverride);
-        instance.setMaxAllowableSearchTime(this.maxAllowableSearchTime);
+        instance.setMaxAllowableSearchTimeSec(this.maxAllowableSearchTimeSec);
         instance.setParsedQuery(this.parsedQuery);
         instance.setFuzzyFilteringDisabled(this.fuzzyFilteringDisabled);
         instance.setResolvedStructures(this.resolvedStructures);
@@ -578,7 +578,7 @@ export class SupplierFactory<P extends Product> {
           this.noCacheStatusCodes,
         );
         instance.setFuzzScorerOverride(this.fuzzScorerOverride);
-        instance.setMaxAllowableSearchTime(this.maxAllowableSearchTime);
+        instance.setMaxAllowableSearchTimeSec(this.maxAllowableSearchTimeSec);
         instance.setParsedQuery(this.parsedQuery);
         instance.setFuzzyFilteringDisabled(this.fuzzyFilteringDisabled);
         instance.setResolvedStructures(this.resolvedStructures);

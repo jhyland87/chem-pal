@@ -36,7 +36,7 @@ describe("Chem-Pal cache migration", () => {
     rmSync(fixtureStepPath, { force: true });
     writeFileSync(fixtureStepPath, FIXTURE_STEP);
 
-    execSync("pnpm build", { cwd: repoRoot, stdio: "inherit" });
+    execSync("pnpm build:e2e", { cwd: repoRoot, stdio: "inherit" });
 
     context = await chromium.launchPersistentContext("", {
       headless: false, // Extensions require headed mode in Chromium

@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "../node_modules/.tmp/tsconfig.demo.tsbuildinfo",
+    "types": ["node", "chrome"]
+  },
+  // Type-checking only — the walkthrough itself runs solely via
+  // `pnpm run demo` (configs/playwright.demo.config.ts). The e2e suite
+  // (e2e/**/*.e2e.test.ts) never picks these files up.
+  "include": ["../demo/**/*.ts", "../src/vite-env.d.ts"]
+}

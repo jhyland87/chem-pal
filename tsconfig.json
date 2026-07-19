@@ -16,6 +16,11 @@
       // tsconfig.e2e.json type-checks the Playwright E2E suite under e2e/
       // (its own tests aren't covered by app/test configs).
       "path": "./configs/tsconfig.e2e.json"
+    },
+    {
+      // tsconfig.demo.json type-checks the recorded walkthrough under demo/.
+      // Separate from e2e on purpose: the demo only runs via `pnpm run demo`.
+      "path": "./configs/tsconfig.demo.json"
     }
   ],
   "compilerOptions": {

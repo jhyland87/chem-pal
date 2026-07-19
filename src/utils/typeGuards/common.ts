@@ -872,7 +872,7 @@ function buildUserSettingsSchema() {
     trackPriceHistory: z.boolean().optional(),
     priceHistoryMaxPoints: z.coerce.number().int().nonnegative().optional(),
     noCacheStatusCodes: z.array(z.number().int().positive()).optional(),
-    maxAllowableSearchTime: z.coerce.number().nonnegative().optional(),
+    maxAllowableSearchTimeSec: z.coerce.number().nonnegative().optional(),
     currencyRate: z.number().optional(),
     currency: z
       .string()

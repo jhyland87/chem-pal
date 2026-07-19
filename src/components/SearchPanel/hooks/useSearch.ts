@@ -484,7 +484,7 @@ export function useSearch() {
           doNotCacheEmptyResults: appContext.userSettings.doNotCacheEmptyResults,
           cacheTtlMinutes: appContext.userSettings.cacheTtlMinutes,
           noCacheStatusCodes: appContext.userSettings.noCacheStatusCodes,
-          maxAllowableSearchTime: appContext.userSettings.maxAllowableSearchTime,
+          maxAllowableSearchTimeSec: appContext.userSettings.maxAllowableSearchTimeSec,
           fuzzyFilteringDisabled: appContext.userSettings.fuzzyFilteringDisabled,
           location: appContext.userSettings.location,
           excludeNonShippingSuppliers: appContext.userSettings.excludeNonShippingSuppliers ?? true,

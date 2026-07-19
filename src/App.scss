@@ -13,21 +13,22 @@ html::-webkit-scrollbar {
   padding: 0;
   text-align: center;
   vertical-align: top;
-  min-width: 800px;
-  max-height: 600px;
-  min-height: 400px;
   header.MuiAppBar-root {
     border-radius: 0;
   }
 }
 
-/* Full browser-tab view: drop the popup's fixed dimensions so content fills
- * and resizes with the window. */
+/* Popup-only fixed dimensions. Scoped to :not(.view-tab) rather than set here
+ * and overridden below, so the tab view never has a width floor to fight. */
+body:not(.view-tab) #root {
+  min-width: 800px;
+  max-height: 600px;
+  min-height: 400px;
+}
+
+/* Full browser-tab view: fill and resize with the window. */
 body.view-tab #root {
-  min-width: 0;
-  max-height: none;
   min-height: 100vh;
-  width: 100%;
 }
 
 .logo {
