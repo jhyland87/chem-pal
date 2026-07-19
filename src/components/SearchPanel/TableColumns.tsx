@@ -487,7 +487,7 @@ export default function TableColumns(): ColumnDef<Product, unknown>[] {
       header: i18n("column_purity"),
       // Prefer the chemical grade (e.g. "ACS"); fall back to the purity % when no grade is
       // set. Using an accessor keeps the displayed value, sorting, and filtering in sync.
-      accessorFn: (product) => product.grade ?? product.purity,
+      accessorFn: (product) => product.grade ?? product.purity ?? i18n("purity_ungraded"),
       cell: (info) => info.getValue() ?? null,
       filterFn: "includeHierarchy",
       // The column mixes grades and percentages, so a string sort would interleave them

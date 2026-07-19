@@ -1353,5 +1353,9 @@
   "migration_error": {
     "message": "Podczas stosowania aktualizacji wystąpił błąd. Możesz spróbować ponownie lub kliknąć „Anuluj”, aby wyczyścić dane z pamięci podręcznej i zacząć od nowa.",
     "description": "Shown when applying the cache migrations failed."
+  },
+  "purity_ungraded": {
+    "message": "Bez klasyfikacji",
+    "description": "Shown when a product has no purity or grade."
   }
 }

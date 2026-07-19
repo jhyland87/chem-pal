@@ -818,5 +818,9 @@
   "migration_error": {
     "message": "अपडेट लागू करते समय कुछ गड़बड़ी हो गई। आप फिर से कोशिश कर सकते हैं, या कैश किया गया डेटा हटाकर नए सिरे से शुरू करने के लिए ‘रद्द करें’ दबाएँ।",
     "description": "Shown when applying the cache migrations failed."
+  },
+  "purity_ungraded": {
+    "message": "अवर्गीकृत",
+    "description": "Shown when a product has no purity or grade."
   }
 }

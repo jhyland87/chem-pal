@@ -833,5 +833,9 @@
   "migration_error": {
     "message": "Päivitysten käyttöönotossa tapahtui virhe. Voit yrittää uudelleen tai napsauttaa ”Peruuta” tyhjentääksesi välimuistin ja aloittaaksesi alusta.",
     "description": "Shown when applying the cache migrations failed."
+  },
+  "purity_ungraded": {
+    "message": "Luokittelematon",
+    "description": "Shown when a product has no purity or grade."
   }
 }
