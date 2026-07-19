@@ -1,7 +1,8 @@
 import { defaultResultsLimit, defaultSettings } from "@/../config.json";
 import { APP_ACTION, CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
-import { AppContext } from "@/context";
+import { AppContext, useAppContext } from "@/context";
 import { emitSearchEvent, SearchEvent } from "@/events/searchEvents";
+import { playAdvancedModeSound } from "@/helpers/advancedMode";
 import { HotkeyEvent, HotkeyHelpModal, useHotkeys, type HotkeyHandlers } from "@/hotkeys";
 import {
   applyPendingMigrations,
@@ -15,7 +16,6 @@ import { SupplierCache } from "@/utils/SupplierCache";
 import { useBadgeController } from "@/utils/badgeController";
 import { isTabView } from "@/utils/displayContext";
 import { clearSearchResults, getSearchResults, IDB_SEARCH_RESULTS_CLEARED } from "@/utils/idbCache";
-import { IS_DEV_BUILD } from "@/utils/isDevBuild";
 import { cstorage } from "@/utils/storage";
 import { isValidUserSettings } from "@/utils/typeGuards/common";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -37,7 +37,7 @@ import SearchPanel from "./components/SearchPanel/SearchPanel";
 import SearchPanelHome from "./components/SearchPanelHome";
 import SpeedDialMenu from "./components/SpeedDialMenu";
 import StatusBar, { StatusBarProvider, useStatusBar } from "./components/StatusBar";
-import { DevBadge } from "./components/StyledComponents";
+import { StatusBadges } from "./components/StatusBadges";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { diff } from "./helpers/collectionUtils";
 import { getCountryName } from "./helpers/country";
@@ -45,7 +45,9 @@ import { getCurrencyCodeFromLocation, getCurrencyRate } from "./helpers/currency
 import { i18n, setLocale, useLocale } from "./helpers/i18n";
 import { getUserLanguage, getUserLocation } from "./helpers/utils";
 
-const StatsPanel = IS_DEV_BUILD ? lazy(() => import("./components/StatsPanel")) : null;
+// Always lazy — the panel is now reachable in any build via advanced mode, so the
+// chunk (MUI X charts + data grid) must exist. It's only fetched when opened.
+const StatsPanel = lazy(() => import("./components/StatsPanel"));
 
 /**
  * Enhanced App component using React v19 features for improved performance
@@ -136,13 +138,30 @@ type AppAction =
 /**
  * Installs the global hotkey listener and relays confirmation text through
  * the StatusBar. Split out so it can live inside `StatusBarProvider` and
- * read `useStatusBar()` — `App` itself sits above the provider.
+ * read `useStatusBar()` — `App` itself sits above the provider. It also owns the
+ * `konami` handler, since toggling advanced mode needs both the app context and
+ * a flash whose text depends on the resulting state.
  * @param props - Hotkey handlers keyed by config id.
  * @source
  */
 function HotkeyLayer({ handlers }: { handlers: HotkeyHandlers }) {
   const { flashStatusText } = useStatusBar();
-  useHotkeys(handlers, {
+  const { advancedMode, setAdvancedMode } = useAppContext();
+
+  const allHandlers = useMemo(
+    () => ({
+      ...handlers,
+      konami: () => {
+        const next = !advancedMode;
+        setAdvancedMode(next);
+        flashStatusText(i18n(next ? "hotkeys_flash_advanced_on" : "hotkeys_flash_advanced_off"));
+        void playAdvancedModeSound(next);
+      },
+    }),
+    [handlers, advancedMode, setAdvancedMode, flashStatusText],
+  );
+
+  useHotkeys(allHandlers, {
     onTriggered: (config) => {
       if (!config.flash) return;
       // Prefer a localized flash keyed by the (lowercased) hotkey id; fall back
@@ -170,6 +189,13 @@ function App() {
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   // Controls the HotkeyHelpModal visibility (shift+? opens it)
   const [hotkeyHelpOpen, setHotkeyHelpOpen] = useState(false);
+  // Session-only: deliberately not persisted, so a reload re-hides the dev-only
+  // settings it gates. Unlocked by the Konami hotkey (see HotkeyLayer).
+  const [advancedMode, setAdvancedMode] = useState(false);
+  // Supplier stats are always recorded; the graphs are what's gated. Deliberately
+  // not OR'd with IS_DEV_BUILD — one switch means leaving advanced mode always
+  // hides the panel, in dev builds too.
+  const statsVisible = advancedMode;
   // Pending cache migrations detected on open. A non-empty list shows the
   // MigrationPrompt and defers loading cached data until the user decides.
   const [migrationSteps, setMigrationSteps] = useState<Migration[]>([]);
@@ -408,9 +434,8 @@ function App() {
       // Sync the badge with the restored count on open (controller clears it if 0).
       emitSearchEvent(SearchEvent.RESULTS_COUNT, { count: idbResults.length });
 
-      const savedPanelRaw = sessionData[CACHE.PANEL];
-      const savedPanel =
-        savedPanelRaw !== undefined && savedPanelRaw !== null ? Number(savedPanelRaw) : undefined;
+      // The persisted panel is intentionally not read back: every restore target
+      // is now derived from pending-search/results state below.
 
       // A search queued before this view mounted — e.g. seeded by the
       // right-click context menu, which opens a fresh tab. The effect that
@@ -426,13 +451,11 @@ function App() {
       //  - A pending search always wins (land on results so it can execute).
       //  - Else if there are cached search results, land on the results table.
       //  - Otherwise, land on the search home.
-      //  - Exception: preserve the STATS panel selection (dev-only) so a
-      //    developer inspecting stats doesn't get bounced every time the
-      //    popup reopens.
+      //  - A saved STATS selection is never restored: that panel now renders only
+      //    in advanced mode, which is session-only and always off at mount, so
+      //    restoring it would strand the user on a blank panel.
       if (hasPendingSearch) {
         loadedData.panel = PANEL.RESULTS;
-      } else if (savedPanel === PANEL.STATS) {
-        loadedData.panel = PANEL.STATS;
       } else {
         loadedData.panel = hasResults ? PANEL.RESULTS : PANEL.SEARCH_HOME;
       }
@@ -618,6 +641,14 @@ function App() {
     dispatch({ type: APP_ACTION.SET_PANEL, panel });
   };
 
+  // Leaving advanced mode while the stats panel is open would otherwise strand
+  // the user on a panel that no longer renders anything.
+  useEffect(() => {
+    if (!statsVisible && appState.panel === PANEL.STATS) {
+      dispatch({ type: APP_ACTION.SET_PANEL, panel: PANEL.SEARCH_HOME });
+    }
+  }, [statsVisible, appState.panel]);
+
   const handleSetSelectedSuppliers = (suppliers: SupplierClassName[]) => {
     dispatch({ type: APP_ACTION.SET_SELECTED_SUPPLIERS, suppliers });
   };
@@ -678,9 +709,6 @@ function App() {
       clearColumnFilters: () => {
         window.dispatchEvent(new CustomEvent(HotkeyEvent.CLEAR_COLUMN_FILTERS));
       },
-      // konami: () => {
-      //   window.alert("Hello World");
-      // },
       clearAndRetrySearch: async () => {
         const data = await cstorage.session.get([CACHE.QUERY]);
         const query = data[CACHE.QUERY];
@@ -720,6 +748,8 @@ function App() {
     setSearchFilters,
     bookmarksFolderId: appState.bookmarksFolderId,
     setBookmarksFolderId: handleSetBookmarksFolderId,
+    advancedMode,
+    setAdvancedMode,
   };
 
   return (
@@ -735,12 +765,12 @@ function App() {
               {/* Render only the active panel, no app bar or tab navigation */}
               {appState.panel === PANEL.SEARCH_HOME && <SearchPanelHome />}
               {appState.panel === PANEL.RESULTS && <SearchPanel />}
-              {IS_DEV_BUILD && StatsPanel && appState.panel === PANEL.STATS && (
+              {statsVisible && appState.panel === PANEL.STATS && (
                 <Suspense fallback={null}>
                   <StatsPanel />
                 </Suspense>
               )}
-              {IS_DEV_BUILD && <DevBadge>DEV BUILD</DevBadge>}
+              <StatusBadges />
               <div className="main-content">
                 <DrawerSystem />
                 <SpeedDialMenu speedDialVisibility={appState.speedDialVisibility ?? false} />

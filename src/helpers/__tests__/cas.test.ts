@@ -1,6 +1,17 @@
 import { CAS_REGEX } from "@/constants/common";
-import { findCAS, getCASByName, getIUPACName, getNamesByCAS, isCAS } from "@/helpers/cas";
-import { afterEach, beforeAll, beforeEach, describe, expect, it, test, vi, type Mock } from "vitest";
+import { findCAS, getCASByName, getIUPACName, getNamesByCAS } from "@/helpers/cas";
+import { isCAS } from "@/utils/typeGuards/common";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  test,
+  vi,
+  type Mock,
+} from "vitest";
 
 describe("CAS Helpers", () => {
   describe("CAS_REGEX", () => {

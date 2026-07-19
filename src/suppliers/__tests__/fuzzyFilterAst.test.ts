@@ -78,7 +78,8 @@ describe("fuzzyFilterAst", () => {
       .runFuzzyFilterAst(data)
       .map((d) => d.title);
     expect(titles[0]).toBe("Sodium Chloride");
-    expect(titles.indexOf("Sodium Chloride")).toBeLessThan(titles.indexOf("Acetone"));
+    expect(titles).not.toContain("Acetone");
+    expect(titles.indexOf("Sodium Chloride")).toBeLessThan(titles.indexOf("Sodium Borohydride"));
   });
 
   it("applies a hard cutoff when a supplier opts out of rank-only", () => {

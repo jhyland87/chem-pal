@@ -1,4 +1,4 @@
-import { isCAS } from "@/helpers/cas";
+import { isCAS } from "@/utils/typeGuards/common";
 import { executeSDQSearch } from "@/helpers/pubchem";
 import { Cactus } from "@/utils/Cactus";
 

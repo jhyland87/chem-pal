@@ -21,9 +21,10 @@
  * // => { 'process.env.NODE_ENV': '"production"', __APP_VERSION__: '"1.2.3"', ... }
  * @source
  */
-export function buildDefines(pkg, { isAggregate = false, isProd = false } = {}) {
+export function buildDefines(pkg, { isAggregate = false, isProd = false, isAnalyze = false } = {}) {
   return {
     "process.env.NODE_ENV": JSON.stringify(isProd ? "production" : "development"),
+    "process.env.ANALYZE": JSON.stringify(isAnalyze),
     __RESPONSE_AGGREGATE__: JSON.stringify(isAggregate),
     __APP_VERSION__: JSON.stringify(pkg.version),
     __APP_REPOSITORY__: JSON.stringify(pkg.repository.url),

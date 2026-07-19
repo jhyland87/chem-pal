@@ -11,7 +11,9 @@ import {
 } from "@/helpers/excludedProducts";
 import { getAvailableLocales, i18n } from "@/helpers/i18n";
 import { formatBytes, formatTimestamp, getLanguageName } from "@/helpers/utils";
-import { SupplierFactory } from "@/suppliers/SupplierFactory";
+// Names only, from a dependency-free constant — importing SupplierFactory here
+// would pull every supplier implementation into the options-page bundle.
+import { SUPPLIER_CLASS_NAMES } from "@/constants/suppliers";
 import {
   clearExcludedProducts,
   clearPriceHistory,
@@ -118,6 +120,8 @@ async function getStorageUsageScale(jsonTotalBytes: number): Promise<number> {
 export default function SettingsPanel() {
   const appContext = useAppContext();
   const [expanded, setExpanded] = useState<string | false>("behavior");
+  // Developer-only fuzz controls stay hidden until the Konami hotkey unlocks them.
+  const advancedMode = appContext?.advancedMode ?? false;
 
   if (!appContext) {
     return <div>{i18n("settings_loading")}</div>;
@@ -883,7 +887,7 @@ export default function SettingsPanel() {
             {i18n("settings_supplier_status_desc")}
           </Typography>
           <List dense sx={{ width: "100%" }}>
-            {SupplierFactory.supplierList().map((supplierClassName) => (
+            {SUPPLIER_CLASS_NAMES.map((supplierClassName) => (
               <ListItem
                 key={supplierClassName}
                 className={styles["settings-panel__helper-on-hover"]}
@@ -929,29 +933,31 @@ export default function SettingsPanel() {
                 long scorer names like `partial_token_similarity_sort_ratio`
                 room to render, and keeps the visual consistent with the
                 search drawer filters. */}
-          <Box sx={{ p: 1 }}>
-            <TextField
-              select
-              fullWidth
-              size="small"
-              name="fuzzScorerOverride"
-              label={i18n("settings_fuzz_scorer")}
-              value={currentSettings.fuzzScorerOverride ?? ""}
-              onChange={handleInputChange}
-              disabled={isPending}
-              helperText={i18n("settings_fuzz_scorer_helper")}
-              slotProps={{ formHelperText: { sx: { fontStyle: "italic" } } }}
-            >
-              <MenuItem value="">
-                <em>{i18n("settings_fuzz_scorer_default")}</em>
-              </MenuItem>
-              {FUZZ_SCORER_NAMES.map((name) => (
-                <MenuItem key={name} value={name}>
-                  {name}
+          {advancedMode && (
+            <Box sx={{ p: 1 }}>
+              <TextField
+                select
+                fullWidth
+                size="small"
+                name="fuzzScorerOverride"
+                label={i18n("settings_fuzz_scorer")}
+                value={currentSettings.fuzzScorerOverride ?? ""}
+                onChange={handleInputChange}
+                disabled={isPending}
+                helperText={i18n("settings_fuzz_scorer_helper")}
+                slotProps={{ formHelperText: { sx: { fontStyle: "italic" } } }}
+              >
+                <MenuItem value="">
+                  <em>{i18n("settings_fuzz_scorer_default")}</em>
                 </MenuItem>
-              ))}
-            </TextField>
-          </Box>
+                {FUZZ_SCORER_NAMES.map((name) => (
+                  <MenuItem key={name} value={name}>
+                    {name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Box>
+          )}
           <Box sx={{ p: 1 }}>
             <TextField
               fullWidth
@@ -969,25 +975,27 @@ export default function SettingsPanel() {
               }}
             />
           </Box>
-          <ListItem className={styles["settings-panel__helper-on-hover"]}>
-            <ListItemText
-              primary={i18n("settings_disable_fuzzy")}
-              secondary={i18n("settings_disable_fuzzy_desc")}
-              slotProps={{ secondary: { sx: { fontStyle: "italic" } } }}
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={currentSettings.fuzzyFilteringDisabled ?? false}
-                  onChange={handleSwitchChange}
-                  name="fuzzyFilteringDisabled"
-                  disabled={isPending}
-                />
-              }
-              labelPlacement="start"
-              label=""
-            />
-          </ListItem>
+          {advancedMode && (
+            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+              <ListItemText
+                primary={i18n("settings_disable_fuzzy")}
+                secondary={i18n("settings_disable_fuzzy_desc")}
+                slotProps={{ secondary: { sx: { fontStyle: "italic" } } }}
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={currentSettings.fuzzyFilteringDisabled ?? false}
+                    onChange={handleSwitchChange}
+                    name="fuzzyFilteringDisabled"
+                    disabled={isPending}
+                  />
+                }
+                labelPlacement="start"
+                label=""
+              />
+            </ListItem>
+          )}
         </AccordionDetails>
       </Accordion>
       <Accordion

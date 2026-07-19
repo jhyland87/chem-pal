@@ -1,4 +1,4 @@
-import { isCAS } from "@/helpers/cas";
+import { isCAS } from "@/utils/typeGuards/common";
 import { withTtlCache } from "@/helpers/requestCache";
 import { isPubChemCID } from "@/utils/typeGuards/common";
 
@@ -111,11 +111,7 @@ function extractProperties(data: unknown): PubChemProperties | undefined {
     molecularFormula: readString("MolecularFormula"),
     // PubChem usually returns MolecularWeight as a string, but tolerate a numeric payload too.
     molecularWeight:
-      typeof weight === "string"
-        ? weight
-        : typeof weight === "number"
-          ? String(weight)
-          : undefined,
+      typeof weight === "string" ? weight : typeof weight === "number" ? String(weight) : undefined,
     iupacName: readString("IUPACName"),
     smiles: readString("SMILES"),
     inchi: readString("InChI"),
@@ -278,11 +274,10 @@ async function getCompoundPropertiesUncached(
  * ```
  * @source
  */
-export const getCompoundProperties: (
-  cid: PubChemCID,
-) => Promise<PubChemProperties | undefined> = withTtlCache(getCompoundPropertiesUncached, {
-  namespace: "properties",
-});
+export const getCompoundProperties: (cid: PubChemCID) => Promise<PubChemProperties | undefined> =
+  withTtlCache(getCompoundPropertiesUncached, {
+    namespace: "properties",
+  });
 
 /**
  * Network implementation for {@link getSynonymsByCid}; see it for details.
@@ -354,11 +349,10 @@ async function getCompoundDescriptionUncached(
  * ```
  * @source
  */
-export const getCompoundDescription: (
-  cid: PubChemCID,
-) => Promise<PubChemDescription | undefined> = withTtlCache(getCompoundDescriptionUncached, {
-  namespace: "descriptionByCid",
-});
+export const getCompoundDescription: (cid: PubChemCID) => Promise<PubChemDescription | undefined> =
+  withTtlCache(getCompoundDescriptionUncached, {
+    namespace: "descriptionByCid",
+  });
 
 /**
  * Builds the URL of a compound's PubChem summary page from its CID.

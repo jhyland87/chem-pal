@@ -1,8 +1,11 @@
 import { AppContext } from "@/context";
 import { i18n, useLocale } from "@/helpers/i18n";
+import { playAdvancedModeSound } from "@/helpers/advancedMode";
+import { useHotkeys } from "@/hotkeys";
 import { useUserSettings } from "@/hooks/useUserSettings";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
+import { useMemo, useState } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import SettingsPanel from "./components/SettingsPanel";
 import { ThemeProvider } from "./components/ThemeProvider";
@@ -36,9 +39,27 @@ export function OptionsApp() {
 
   const { userSettings, setUserSettings } = useUserSettings();
 
+  // Advanced mode is session-only here too, and unlocked the same way, so the
+  // gated settings are reachable on this page and not just in the popup. There's
+  // no StatusBar on the options page, so the chime is the only feedback.
+  const [advancedMode, setAdvancedMode] = useState(false);
+  const hotkeyHandlers = useMemo(
+    () => ({
+      konami: () => {
+        const next = !advancedMode;
+        setAdvancedMode(next);
+        void playAdvancedModeSound(next);
+      },
+    }),
+    [advancedMode],
+  );
+  useHotkeys(hotkeyHandlers);
+
   const contextValue: AppContextProps = {
     userSettings,
     setUserSettings,
+    advancedMode,
+    setAdvancedMode,
     searchResults: [],
     setSearchResults: NOOP,
     setDrawerTab: NOOP,

@@ -1,6 +1,15 @@
 import { useAppContext } from "@/context";
+import { SupplierFactory } from "@/suppliers/SupplierFactory";
 import { i18n } from "@/helpers/i18n";
 import { hexToRgba, SUPPLIER_COLORS } from "@/theme/colors";
+import {
+  classifySupplierHealth,
+  filterStatsByRange,
+  STATS_RANGES,
+  statusLabelKey,
+  type StatsRange,
+  type SupplierHealthStatus,
+} from "@/helpers/supplierStats";
 import { clearStats, getStats } from "@/utils/SupplierStatsStore";
 import { IDB_SUPPLIER_STATS_UPDATED } from "@/utils/idbCache";
 import { Delete as DeleteIcon } from "@mui/icons-material";
@@ -8,15 +17,17 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
   Box,
   IconButton,
+  MenuItem,
   Paper,
   Tab,
   Tabs,
+  TextField,
   ToggleButton,
   ToggleButtonGroup,
   Tooltip,
   Typography,
 } from "@mui/material";
-import { styled } from "@mui/material/styles";
+import { alpha, styled, type Theme } from "@mui/material/styles";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { useDrawingArea } from "@mui/x-charts/hooks";
@@ -81,6 +92,7 @@ const StatsPanel: FC = () => {
   const [stats, setStats] = useState<SupplierStatsData>({});
   const [activeTab, setActiveTab] = useState(0);
   const [pieView, setPieView] = useState<PieView>("http");
+  const [range, setRange] = useState<StatsRange>("all");
 
   useEffect(() => {
     const loadStats = async () => {
@@ -107,13 +119,24 @@ const StatsPanel: FC = () => {
     }
   };
 
-  // Aggregate stats across all days
+  // Stats are keyed by supplierName ("Carolina"), but userSettings.disabledSuppliers
+  // holds class names ("SupplierCarolina"), so translate before comparing.
+  const disabledSupplierNames = useMemo(() => {
+    const disabledClassNames = appContext?.userSettings?.disabledSuppliers ?? [];
+    const displayNames = SupplierFactory.supplierDisplayNames();
+    return new Set(disabledClassNames.map((className) => displayNames[className] ?? className));
+  }, [appContext?.userSettings?.disabledSuppliers]);
+
+  // Every view (pies, daily chart, totals) reflects the selected range.
+  const rangedStats = useMemo(() => filterStatsByRange(stats, range), [stats, range]);
+
+  // Aggregate stats across the days in range
   const aggregatedBySupplier = useMemo(() => {
     const agg: Record<
       string,
       { success: number; failure: number; products: number; queries: number; parseErrors: number }
     > = {};
-    for (const dayStats of Object.values(stats)) {
+    for (const dayStats of Object.values(rangedStats)) {
       for (const [supplier, s] of Object.entries(dayStats)) {
         if (!agg[supplier])
           agg[supplier] = { success: 0, failure: 0, products: 0, queries: 0, parseErrors: 0 };
@@ -125,7 +148,7 @@ const StatsPanel: FC = () => {
       }
     }
     return agg;
-  }, [stats]);
+  }, [rangedStats]);
 
   // Build supplier color map
   const supplierColorMap = useMemo(() => {
@@ -230,10 +253,10 @@ const StatsPanel: FC = () => {
 
   // Line chart data — one line per supplier showing total calls over time
   const { lineSeries, lineDates } = useMemo(() => {
-    const sortedDates = Object.keys(stats).sort();
+    const sortedDates = Object.keys(rangedStats).sort();
 
     const allSuppliers = new Set<string>();
-    for (const dayStats of Object.values(stats)) {
+    for (const dayStats of Object.values(rangedStats)) {
       for (const supplier of Object.keys(dayStats)) {
         allSuppliers.add(supplier);
       }
@@ -263,7 +286,7 @@ const StatsPanel: FC = () => {
     }
 
     return { lineSeries: series, lineDates: sortedDates.map((d) => d.slice(5)) };
-  }, [stats]);
+  }, [rangedStats]);
 
   // Totals table
   const totalsColumns: GridColDef[] = [
@@ -272,24 +295,62 @@ const StatsPanel: FC = () => {
     { field: "success", headerName: i18n("stats_col_success"), width: 80, type: "number" },
     { field: "failure", headerName: i18n("stats_col_failure"), width: 80, type: "number" },
     { field: "products", headerName: i18n("stats_col_products"), width: 85, type: "number" },
-    { field: "parseErrors", headerName: i18n("stats_col_parse_errors"), width: 105, type: "number" },
+    {
+      field: "parseErrors",
+      headerName: i18n("stats_col_parse_errors"),
+      width: 105,
+      type: "number",
+    },
+    {
+      field: "status",
+      headerName: i18n("stats_col_status"),
+      width: 150,
+      valueFormatter: (value: SupplierHealthStatus) => i18n(statusLabelKey(value)),
+    },
   ];
+
+  // Dim, theme-aware row tints. Deliberately low-alpha: these mark rows worth a
+  // look, they shouldn't shout over the numbers themselves.
+  const statusRowSx = {
+    "& .stats-row--noSuccess": {
+      backgroundColor: (theme: Theme) => alpha(theme.palette.error.main, 0.16),
+    },
+    "& .stats-row--connectionErrors": {
+      backgroundColor: (theme: Theme) => alpha(theme.palette.error.main, 0.09),
+    },
+    "& .stats-row--parseFailure": {
+      backgroundColor: (theme: Theme) => alpha(theme.palette.error.main, 0.16),
+    },
+    "& .stats-row--parseErrors": {
+      backgroundColor: (theme: Theme) => alpha(theme.palette.warning.main, 0.12),
+    },
+    // Not a fault — just greyed back so it reads as inactive rather than broken.
+    "& .stats-row--disabled": {
+      backgroundColor: (theme: Theme) => alpha(theme.palette.text.disabled, 0.08),
+      color: "text.disabled",
+    },
+  };
 
   const totalsRows = useMemo(
     () =>
-      Object.entries(aggregatedBySupplier).map(([supplier, s]) => ({
-        id: supplier,
-        supplier,
-        queries: s.queries,
-        success: s.success,
-        failure: s.failure,
-        products: s.products,
-        parseErrors: s.parseErrors,
-      })),
-    [aggregatedBySupplier],
+      Object.entries(aggregatedBySupplier).map(([supplier, s]) => {
+        const { status } = classifySupplierHealth(s, disabledSupplierNames.has(supplier));
+        return {
+          id: supplier,
+          supplier,
+          queries: s.queries,
+          success: s.success,
+          failure: s.failure,
+          products: s.products,
+          parseErrors: s.parseErrors,
+          status,
+        };
+      }),
+    [aggregatedBySupplier, disabledSupplierNames],
   );
 
   const hasData = Object.keys(stats).length > 0;
+  const hasRangedData = Object.keys(rangedStats).length > 0;
   const totalCalls = Object.values(aggregatedBySupplier).reduce(
     (sum, s) => sum + s.success + s.failure,
     0,
@@ -321,6 +382,22 @@ const StatsPanel: FC = () => {
           <Typography variant="subtitle2">{i18n("stats_title")}</Typography>
         </div>
         <div className={styles["header-right"]}>
+          <TextField
+            select
+            size="small"
+            variant="standard"
+            value={range}
+            onChange={(event) => setRange(event.target.value as StatsRange)}
+            aria-label={i18n("stats_range_label")}
+            slotProps={{ input: { disableUnderline: true } }}
+            sx={{ minWidth: 110, "& .MuiSelect-select": { fontSize: "0.75rem", py: 0.25 } }}
+          >
+            {STATS_RANGES.map(({ value, labelKey }) => (
+              <MenuItem key={value} value={value} sx={{ fontSize: "0.75rem" }}>
+                {i18n(labelKey)}
+              </MenuItem>
+            ))}
+          </TextField>
           <Typography variant="caption" color="text.secondary">
             {totalCalls === 1
               ? i18n("stats_call_single", [String(totalCalls)])
@@ -358,8 +435,18 @@ const StatsPanel: FC = () => {
           </Tabs>
 
           <Paper className={styles["stats-panel__content"]} elevation={2}>
+            {/* A range with no recorded days would otherwise render empty charts. */}
+            {!hasRangedData && (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                className={styles["stats-panel__empty"]}
+              >
+                {i18n("stats_empty_range")}
+              </Typography>
+            )}
             {/* Tab 0: Sunburst pie with toggle */}
-            {activeTab === 0 && (
+            {hasRangedData && activeTab === 0 && (
               <>
                 <Box className={styles["stats-panel__toggle-container"]}>
                   <ToggleButtonGroup
@@ -437,7 +524,7 @@ const StatsPanel: FC = () => {
             )}
 
             {/* Tab 1: Line chart — daily calls per supplier */}
-            {activeTab === 1 && (
+            {hasRangedData && activeTab === 1 && (
               <Box className={styles["stats-panel__chart-container"]}>
                 {lineDates.length > 0 && lineSeries.length > 0 && (
                   <LineChart
@@ -464,7 +551,7 @@ const StatsPanel: FC = () => {
             )}
 
             {/* Tab 2: Totals table */}
-            {activeTab === 2 && (
+            {hasRangedData && activeTab === 2 && (
               <div className={styles["stats-panel__table-container"]}>
                 <DataGrid
                   rows={totalsRows}
@@ -475,6 +562,8 @@ const StatsPanel: FC = () => {
                   initialState={{
                     sorting: { sortModel: [{ field: "success", sort: "desc" }] },
                   }}
+                  getRowClassName={({ row }) => `stats-row--${row.status}`}
+                  sx={statusRowSx}
                   className={styles["stats-panel__table"]}
                 />
               </div>

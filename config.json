@@ -126,9 +126,8 @@
     {
       "id": "konami",
       "keys": "upArrow+upArrow+downArrow+downArrow+leftArrow+rightArrow",
-      "description": "Say hello",
+      "description": "Toggle advanced settings",
       "group": "General",
-      "flash": "Hello World!",
       "sequential": true,
       "unlisted": true
     }

@@ -14,12 +14,12 @@ import {
 } from "@mui/material";
 import Link from "@mui/material/Link";
 import { lighten, styled } from "@mui/material/styles";
-import { createElement } from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import { createElement } from "react";
 import { darkPalette, designTokens, lightPalette } from "../themes";
 
 // === STATUS BAR ===
@@ -92,21 +92,34 @@ export const SearchButton = styled(IconButton)(({ theme }) => ({
   },
 }));
 
-// Development badge - small transparent badge in bottom left corner
-export const DevBadge = styled(Box)(({ theme }) => ({
-  className: "dev-badge",
+/**
+ * Fixed tray anchored to the bottom-left corner that lays out any status badges
+ * side by side. Individual badges are plain chips with no positioning of their
+ * own, so adding or removing one reflows the row automatically instead of
+ * stacking them on top of each other.
+ */
+export const BadgeTray = styled(Box)({
   position: "fixed",
-  bottom: "0",
-  left: "0",
-  backgroundColor: `${theme.palette.error.main}90`, // 90% opacity
-  color: theme.palette.error.dark,
+  bottom: 0,
+  left: 0,
+  zIndex: 9999,
+  display: "flex",
+  alignItems: "flex-end",
+  gap: "4px",
+  pointerEvents: "none",
+  // The leftmost badge hugs the corner; the rest keep both top corners rounded.
+  "& > *:first-of-type": {
+    borderTopLeftRadius: 0,
+  },
+});
+
+/** Shared chrome for the corner status badges; colored per variant below. */
+const badgeBase = {
   padding: "4px 8px",
-  borderRadius: "0px 4px 0px 0px",
+  borderRadius: "4px 4px 0px 0px",
   fontSize: "0.65rem",
   fontWeight: 500,
-  zIndex: 9999,
   backdropFilter: "blur(4px)",
-  border: `1px solid ${theme.palette.error.main}99`, // 60% opacity border
   boxShadow: "0 1px 4px rgba(0, 0, 0, 0.2)",
   width: "fit-content",
   height: "fit-content",
@@ -116,6 +129,22 @@ export const DevBadge = styled(Box)(({ theme }) => ({
   whiteSpace: "nowrap",
   userSelect: "none",
   pointerEvents: "none",
+} as const;
+
+/** Red "DEV BUILD" badge. Render inside a `BadgeTray`. */
+export const DevBadge = styled(Box)(({ theme }) => ({
+  ...badgeBase,
+  backgroundColor: `${theme.palette.error.main}90`, // 90% opacity
+  color: theme.palette.error.dark,
+  border: `1px solid ${theme.palette.error.main}99`, // 60% opacity border
+}));
+
+/** Yellow "ADVANCED MODE" badge. Render inside a `BadgeTray`. */
+export const AdvancedModeBadge = styled(Box)(({ theme }) => ({
+  ...badgeBase,
+  backgroundColor: `${theme.palette.warning.main}90`,
+  color: theme.palette.warning.dark,
+  border: `1px solid ${theme.palette.warning.main}99`,
 }));
 
 // Menu button with theme colors and positioning
