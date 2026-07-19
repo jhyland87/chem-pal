@@ -833,5 +833,9 @@
   "migration_error": {
     "message": "Beim Anwenden der Updates ist ein Fehler aufgetreten. Sie können es erneut versuchen oder auf „Abbrechen“ klicken, um die zwischengespeicherten Daten zu löschen und neu zu beginnen.",
     "description": "Shown when applying the cache migrations failed."
+  },
+  "purity_ungraded": {
+    "message": "Nicht eingestuft",
+    "description": "Shown when a product has no purity or grade."
   }
 }

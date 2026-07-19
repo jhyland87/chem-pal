@@ -833,5 +833,9 @@
   "migration_error": {
     "message": "Se produjo un error al aplicar las actualizaciones. Puedes intentarlo de nuevo o pulsar «Cancelar» para borrar los datos en caché y empezar de nuevo.",
     "description": "Shown when applying the cache migrations failed."
+  },
+  "purity_ungraded": {
+    "message": "Sin clasificar",
+    "description": "Shown when a product has no purity or grade."
   }
 }
