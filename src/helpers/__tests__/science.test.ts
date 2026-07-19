@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from "vitest";
-import gradeCorpus from "./__fixtures__/grade-corpus.json";
 import {
   findFormulaInHtml,
   findFormulaInText,
@@ -19,6 +18,7 @@ import {
   superscript,
   superscriptGlyph,
 } from "../science";
+import gradeCorpus from "./__fixtures__/grade-corpus.json";
 
 describe("science helpers", () => {
   describe("subscript", () => {
@@ -895,7 +895,7 @@ describe("science helpers", () => {
         "<p>Formula: C5H9KO2</p><p>MW: 140.22g/mol</p><p>SMILES: [K+].CCCCC([O-])=O</p>";
       expect(parseChemicalSpecs(html)).toEqual({
         purity: 98,
-        formula: "C5H9KO2",
+        formula: "C₅H₉KO₂",
         molecularWeight: 140.22,
         smiles: "[K+].CCCCC([O-])=O",
       });
@@ -908,7 +908,7 @@ describe("science helpers", () => {
         "<br>•&nbsp;&nbsp; Mp : 288 - 296°C</p>";
       expect(parseChemicalSpecs(html)).toEqual({
         purity: 100,
-        formula: "C2H3KO2",
+        formula: "C₂H₃KO₂",
         molecularWeight: 98.14,
       });
     });
@@ -926,7 +926,7 @@ describe("science helpers", () => {
       const html =
         "<p>Empirical formula C<sub>6</sub>H<sub>15</sub>NO<sub>3</sub><br />" +
         "Molar mass (M) 149,19 g/mol</p>";
-      expect(parseChemicalSpecs(html).formula).toBe("C6H15NO3");
+      expect(parseChemicalSpecs(html).formula).toBe("C₆H₁₅NO₃");
     });
 
     it("should normalize unicode subscript glyphs so the whole formula is captured", () => {
@@ -935,7 +935,7 @@ describe("science helpers", () => {
       const html =
         "<p>CAS Number: 6132-04-3<br>Sum Formula: C₆H₅Na₃O₇<br>Molar Mass: 258.06 g/mol</p>";
       expect(parseChemicalSpecs(html)).toEqual({
-        formula: "C6H5Na3O7",
+        formula: "C₆H₅Na₃O₇",
         molecularWeight: 258.06,
       });
     });
@@ -944,14 +944,14 @@ describe("science helpers", () => {
       // Synthetika's Sodium Polyacrylate: the label carries "(Repeating Unit)" and the value is a
       // parenthesized repeat unit with a trailing variable subscript.
       const html = "<p><strong>Chemical Formula (Repeating Unit)</strong>: (C₃H₃NaO₂)ₙ</p>";
-      expect(parseChemicalSpecs(html).formula).toBe("(C3H3NaO2)ₙ");
+      expect(parseChemicalSpecs(html).formula).toBe("(C₃H₃NaO₂)ₙ");
     });
 
     it("should parse a dot-joined salt formula and a bare 'mol :' molar mass", () => {
       const html =
         "CAS : 10017-56-8<br>Formula : C6H15NO3.H3PO4<br>mol : 247.18<br>Melting point : 106°C";
       expect(parseChemicalSpecs(html)).toEqual({
-        formula: "C6H15NO3.H3PO4",
+        formula: "C₆H₁₅NO₃⋅H₃PO₄",
         molecularWeight: 247.18,
       });
     });
@@ -961,7 +961,7 @@ describe("science helpers", () => {
         "<p>The rough formula is C6H15NO3.</p>" +
         "<p>Empirical formula C6H15NO3<br />Molar mass (M) 149,19 g/mol</p>";
       expect(parseChemicalSpecs(html)).toEqual({
-        formula: "C6H15NO3",
+        formula: "C₆H₁₅NO₃",
         molecularWeight: 149.19,
       });
     });

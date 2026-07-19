@@ -33,10 +33,10 @@ describe("SupplierLiMac getProductData", () => {
     vi.spyOn(supplier as never, "httpGetHtml").mockResolvedValue(productHTMLFixture as never);
     // Bypass the cache/exclusion wrapper (needs IndexedDB + an initialized
     // cache) and run the fetcher directly so we exercise the extraction logic.
-    vi.spyOn(supplier as never, "getProductDataWithCache").mockImplementation(
-      ((builder: ProductBuilder<Product>, fetcher: (b: ProductBuilder<Product>) => unknown) =>
-        fetcher(builder)) as never,
-    );
+    vi.spyOn(supplier as never, "getProductDataWithCache").mockImplementation(((
+      builder: ProductBuilder<Product>,
+      fetcher: (b: ProductBuilder<Product>) => unknown,
+    ) => fetcher(builder)) as never);
 
     const builder = makeBuilder();
     const result = await supplier.getProductData(builder as unknown as ProductBuilder<Product>);
@@ -58,7 +58,7 @@ describe("SupplierLiMac getProductData", () => {
     expect(dump.purity).toBe("95%");
 
     // From the #basic properties table
-    expect(dump.formula).toBe("NaBH4");
+    expect(dump.formula).toBe("NaBH₄");
     expect(dump.moleweight).toBe(37.83);
 
     // Image from og:image, thumbnail from mozCatItemPictures
@@ -89,12 +89,14 @@ describe("SupplierLiMac getProductData", () => {
       getProductData: (b: ProductBuilder<Product>) => Promise<ProductBuilder<Product> | void>;
     };
     vi.spyOn(supplier as never, "httpGetHtml").mockResolvedValue(productHTMLFixture as never);
-    vi.spyOn(supplier as never, "getProductDataWithCache").mockImplementation(
-      ((builder: ProductBuilder<Product>, fetcher: (b: ProductBuilder<Product>) => unknown) =>
-        fetcher(builder)) as never,
-    );
+    vi.spyOn(supplier as never, "getProductDataWithCache").mockImplementation(((
+      builder: ProductBuilder<Product>,
+      fetcher: (b: ProductBuilder<Product>) => unknown,
+    ) => fetcher(builder)) as never);
 
-    const result = await supplier.getProductData(makeBuilder() as unknown as ProductBuilder<Product>);
+    const result = await supplier.getProductData(
+      makeBuilder() as unknown as ProductBuilder<Product>,
+    );
 
     expect(result).toBeUndefined();
   });
