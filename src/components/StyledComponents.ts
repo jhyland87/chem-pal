@@ -580,9 +580,9 @@ export const ProductDetailStoreNotice = styled("div")(({ theme }) => ({
   lineHeight: 1.5,
   padding: theme.spacing(0.75, 1),
   borderRadius: theme.shape.borderRadius,
-  borderLeft: `3px solid ${theme.palette.warning.main}`,
+  borderLeft: `3px solid ${theme.palette.info.main}`,
   backgroundColor:
-    theme.palette.mode === "light" ? "rgba(255, 167, 38, 0.08)" : "rgba(255, 167, 38, 0.12)",
+    theme.palette.mode === "light" ? "rgba(41, 182, 246, 0.08)" : "rgba(41, 182, 246, 0.12)",
   "& > .store-links": {
     display: "inline-flex",
     flexWrap: "wrap",

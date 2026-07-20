@@ -90,7 +90,9 @@
     "https://www.aladdinsci.com/*",
     "https://ases.in/*",
     "https://aseschem.myshopify.com/*",
-    "https://amarischemicalsolutions.com/*"
+    "https://amarischemicalsolutions.com/*",
+    "https://*.mysimplestore.com/*",
+    "https://orbitnaturalproductderivatives.com/*"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"

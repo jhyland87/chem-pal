@@ -301,7 +301,7 @@ export const UOM_ALIASES: UOMAliases = {
   /** Gram aliases */
   [UOM.G]: ["grams", "g", "gm", "gram"],
   /** Liter aliases */
-  [UOM.L]: ["liters", "litres", "l"],
+  [UOM.L]: ["liter", "liters", "litre", "litres", "l"],
   /** Quart aliases */
   [UOM.QT]: ["quarts", "qts", "qt"],
   /** Gallon aliases */

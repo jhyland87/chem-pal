@@ -11,14 +11,18 @@ interface SupplierStoreNoticeProps {
 }
 
 /**
- * Advisory shown in the expanded product row when the supplier restricts shipping on their own
- * website but ships more freely through eBay and/or Amazon. Renders the storefront links so the
- * user can act on it.
+ * Advisory shown in the expanded product row when the supplier also sells through eBay and/or
+ * Amazon. Renders the storefront links so the user can act on it.
  *
- * A storefront is only advertised when the supplier both declares the `"ebayonly"`/`"amazononly"`
- * payment method and supplies the matching URL — a supplier that declares one without the other is
- * misconfigured, and showing nothing beats showing a dead link. That case is surfaced to developers
- * by the dev-build error in `SupplierBase.finishProduct` and by
+ * Two flavours, keyed off the payment method:
+ * - `"ebayonly"`/`"amazononly"` — the supplier restricts its own site and ships more freely via the
+ *   marketplace; a restriction notice. The store URL is required (a missing one is surfaced by the
+ *   dev-build error in `SupplierBase.finishProduct`).
+ * - plain `"ebay"`/`"amazon"` — the supplier simply lists extra products on the marketplace; an
+ *   informational notice with an optional store URL.
+ *
+ * A storefront link is only shown when the matching URL was stamped onto the product, so a
+ * misconfigured supplier shows nothing rather than a dead link. See
  * `src/suppliers/__tests__/storeOnlyPaymentMethods.test.ts`.
  * @param props - The product to describe.
  * @returns The notice, or `null` when the supplier has no marketplace storefront.
@@ -30,22 +34,26 @@ interface SupplierStoreNoticeProps {
  */
 export function SupplierStoreNotice({ product }: SupplierStoreNoticeProps): ReactElement | null {
   const paymentMethods = product.paymentMethods ?? [];
-  const ebayURL = paymentMethods.includes("ebayonly") ? product.supplierEbayStoreURL : undefined;
-  const amazonURL = paymentMethods.includes("amazononly")
-    ? product.supplierAmazonStoreURL
-    : undefined;
+  const ebayOnly = paymentMethods.includes("ebayonly");
+  const amazonOnly = paymentMethods.includes("amazononly");
+  const ebayURL =
+    ebayOnly || paymentMethods.includes("ebay") ? product.supplierEbayStoreURL : undefined;
+  const amazonURL =
+    amazonOnly || paymentMethods.includes("amazon") ? product.supplierAmazonStoreURL : undefined;
 
   if (!ebayURL && !amazonURL) return null;
+
+  // "*only" suppliers get the restriction wording; plain "ebay"/"amazon" suppliers get the softer
+  // "more products available" wording. A mixed config is treated as a restriction if any shown
+  // marketplace is "*only".
+  const isRestriction = Boolean((ebayURL && ebayOnly) || (amazonURL && amazonOnly));
+  const prefix = isRestriction ? "product_detail_store_only" : "product_detail_store_more";
 
   // One whole sentence per case rather than a stitched-together prefix/suffix: i18n() returns a
   // plain string (no JSX interpolation), and splitting a sentence around an inline link breaks
   // word order in several of the bundled locales.
   const messageKey =
-    ebayURL && amazonURL
-      ? "product_detail_store_only_both"
-      : ebayURL
-        ? "product_detail_store_only_ebay"
-        : "product_detail_store_only_amazon";
+    ebayURL && amazonURL ? `${prefix}_both` : ebayURL ? `${prefix}_ebay` : `${prefix}_amazon`;
 
   return (
     <ProductDetailStoreNotice role="note">

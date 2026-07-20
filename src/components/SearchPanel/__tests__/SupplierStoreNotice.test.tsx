@@ -65,6 +65,31 @@ describe("SupplierStoreNotice", () => {
     expect(screen.getAllByRole("link")).toHaveLength(2);
   });
 
+  it("uses the informational 'more products' wording for a plain 'ebay' supplier", () => {
+    render(
+      <SupplierStoreNotice
+        product={makeProduct({
+          supplier: "Orbit Natural Product Derivatives",
+          paymentMethods: ["mastercard", "visa", "ebay"],
+          supplierEbayStoreURL: EBAY_URL,
+        })}
+      />,
+    );
+
+    // The soft notice, not the "fewer restrictions" warning that "ebayonly" triggers.
+    expect(screen.getByRole("note")).toHaveTextContent(/More products are available/);
+    expect(screen.getByRole("note")).not.toHaveTextContent(/fewer restrictions/);
+    expect(screen.getByRole("link", { name: /eBay store/ })).toHaveAttribute("href", EBAY_URL);
+  });
+
+  it("omits the eBay link for a plain 'ebay' supplier that sets no store URL", () => {
+    // The plain method's store URL is optional, so a missing one simply shows no notice.
+    const { container } = render(
+      <SupplierStoreNotice product={makeProduct({ paymentMethods: ["ebay"] })} />,
+    );
+    expect(container).toBeEmptyDOMElement();
+  });
+
   it("renders nothing for a supplier with ordinary payment methods", () => {
     const { container } = render(
       <SupplierStoreNotice product={makeProduct({ paymentMethods: ["visa", "mastercard"] })} />,

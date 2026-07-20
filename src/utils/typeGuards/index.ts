@@ -4,6 +4,7 @@ export * as common from "./common";
 export * as laboratoriumdiscounter from "./laboratoriumdiscounter";
 export * as lerochem from "./lerochem";
 export * as magento2 from "./magento2";
+export * as mysimplestore from "./mysimplestore";
 export * as onyxmet from "./onyxmet";
 export * as productbuilder from "./productbuilder";
 export * as searchanise from "./searchanise";

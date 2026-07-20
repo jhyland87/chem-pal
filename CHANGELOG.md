@@ -16,13 +16,18 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 ### Added
 
 - New supplier: Daily Bio USA.
+- New supplier: Orbit Natural Product Derivatives.
 - Suppliers that restrict shipping on their own website but ship more freely through their eBay
   or Amazon store now say so in the expanded product row, with a link to the store.
+- Suppliers that list extra products on their eBay or Amazon store now note it in the expanded
+  product row, with a link to the store.
 
 ### Fixed
 
 - Chemical grades written as a labeled field (for example `Grade: Reagent`) in a product
   description were not detected, so those products showed as **Ungraded**.
+- Liter-sized products (for example `1 LITER`) were not always recognized, so their pack size
+  could be dropped.
 
 ## [1.3.0] - 2026-07-19
 

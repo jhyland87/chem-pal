@@ -1,0 +1,142 @@
+{
+  "count": 1,
+  "total_count": 1,
+  "current_page": 1,
+  "per_page": "15",
+  "pagination": null,
+  "pages": 1,
+  "domain": null,
+  "base_domain_url": null,
+  "products": [
+    {
+      "id": "019dda5e-dae6-756d-90db-a579bb95294f",
+      "slug": "thymol",
+      "name": "Thymol",
+      "description_raw": "THYMOL Crystals (99.9+%)\nCAS# 89-83-8\nThymol (the major component of Thyme oil) is a natural pesticide and disinfectant. Packaged in a resealable plastic bag within an HDPE container.",
+      "updated_at": "2026-06-19T19:42:17.980Z",
+      "created_at": "2026-04-29T17:34:08.715Z",
+      "currency": "USD",
+      "display_price": "$40.00",
+      "price": {
+        "display": "$40.00",
+        "numeric": 40,
+        "currency": "USD"
+      },
+      "sale_price": null,
+      "relative_url": "/ols/products/thymol",
+      "on_sale?": false,
+      "new_product?": true,
+      "bestseller?": false,
+      "limited_edition": false,
+      "variant_count": 3,
+      "has_price_range": true,
+      "has_images": true,
+      "image_list": [
+        {
+          "url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_500g_pic1_051725.jpg"
+        },
+        {
+          "url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_4Kg_pic1_051825.jpg/:/rs=w:600,h:600"
+        },
+        {
+          "url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_1Kg_pic1_051825.JPG/:/rs=w:600,h:600"
+        },
+        {
+          "url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/thymol-label-500g.jpg"
+        }
+      ],
+      "ship_free": true,
+      "free_return": false,
+      "product_type": "physical",
+      "default_asset_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_500g_pic1_051725.jpg",
+      "measurement_system": "imperial",
+      "available": true,
+      "colors": [],
+      "in_stock": true,
+      "assets": [
+        {
+          "id": "019ee141-e509-77d5-ac0e-6974a39a4aa7",
+          "viewable_type": null,
+          "viewable_id": null,
+          "attachment_width": null,
+          "attachment_height": null,
+          "attachment_crop": "{}",
+          "attachment_file_size": null,
+          "position": 0,
+          "attachment_content_type": "IMAGE",
+          "attachment_file_name": "olsthymol500gpic1051725jpg",
+          "attachment_updated_at": null,
+          "alt": null,
+          "url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_500g_pic1_051725.jpg",
+          "metadata": null,
+          "large_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_500g_pic1_051725.jpg/:/rs=w:1200,h:1200",
+          "small_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_500g_pic1_051725.jpg/:/rs=w:400,h:400",
+          "type": "image",
+          "zoom_image_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_500g_pic1_051725.jpg/:/rs=w:1200,h:1200"
+        },
+        {
+          "id": "019dda86-0d8b-7029-8e47-fc24324204ec",
+          "viewable_type": null,
+          "viewable_id": null,
+          "attachment_width": 1334,
+          "attachment_height": 762,
+          "attachment_crop": "{}",
+          "attachment_file_size": null,
+          "position": 1,
+          "attachment_content_type": "IMAGE",
+          "attachment_file_name": "asset-na",
+          "attachment_updated_at": null,
+          "alt": null,
+          "url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_4Kg_pic1_051825.jpg/:/rs=w:600,h:600",
+          "metadata": null,
+          "large_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_4Kg_pic1_051825.jpg/:/rs=w:600,h:600/:/rs=w:1200,h:1200",
+          "small_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_4Kg_pic1_051825.jpg/:/rs=w:600,h:600/:/rs=w:400,h:400",
+          "type": "image",
+          "zoom_image_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_4Kg_pic1_051825.jpg/:/rs=w:600,h:600/:/rs=w:1200,h:1200"
+        },
+        {
+          "id": "019dda86-1877-757d-b376-37dd58a2f526",
+          "viewable_type": null,
+          "viewable_id": null,
+          "attachment_width": 888,
+          "attachment_height": 526,
+          "attachment_crop": "{}",
+          "attachment_file_size": null,
+          "position": 2,
+          "attachment_content_type": "IMAGE",
+          "attachment_file_name": "asset-na",
+          "attachment_updated_at": null,
+          "alt": null,
+          "url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_1Kg_pic1_051825.JPG/:/rs=w:600,h:600",
+          "metadata": null,
+          "large_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_1Kg_pic1_051825.JPG/:/rs=w:600,h:600/:/rs=w:1200,h:1200",
+          "small_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_1Kg_pic1_051825.JPG/:/rs=w:600,h:600/:/rs=w:400,h:400",
+          "type": "image",
+          "zoom_image_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/ols/THYMOL_1Kg_pic1_051825.JPG/:/rs=w:600,h:600/:/rs=w:1200,h:1200"
+        },
+        {
+          "id": "019ee141-e140-71ba-97e3-6e3f4740be50",
+          "viewable_type": null,
+          "viewable_id": null,
+          "attachment_width": null,
+          "attachment_height": null,
+          "attachment_crop": "{}",
+          "attachment_file_size": null,
+          "position": 3,
+          "attachment_content_type": "IMAGE",
+          "attachment_file_name": "thymol-label-500gjpg",
+          "attachment_updated_at": null,
+          "alt": null,
+          "url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/thymol-label-500g.jpg",
+          "metadata": null,
+          "large_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/thymol-label-500g.jpg/:/rs=w:1200,h:1200",
+          "small_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/thymol-label-500g.jpg/:/rs=w:400,h:400",
+          "type": "image",
+          "zoom_image_url": "https://img1.wsimg.com/isteam/ip/7692587b-61ba-4b63-b329-a6ebcdb36c13/thymol-label-500g.jpg/:/rs=w:1200,h:1200"
+        }
+      ],
+      "variants": [],
+      "ols_product_id": "3"
+    }
+  ]
+}

@@ -1112,6 +1112,18 @@
     "message": "Отправляет из своих магазинов на eBay и Amazon с меньшими ограничениями, чем с собственного сайта.",
     "description": "Notice in the expanded product row when a supplier ships more freely via both eBay and Amazon than from their own site."
   },
+  "product_detail_store_more_ebay": {
+    "message": "В их магазине на eBay доступно больше товаров, чем на их собственном сайте.",
+    "description": "Notice in the expanded product row when a supplier lists additional products on eBay."
+  },
+  "product_detail_store_more_amazon": {
+    "message": "В их магазине на Amazon доступно больше товаров, чем на их собственном сайте.",
+    "description": "Notice in the expanded product row when a supplier lists additional products on Amazon."
+  },
+  "product_detail_store_more_both": {
+    "message": "В их магазинах на eBay и Amazon доступно больше товаров, чем на их собственном сайте.",
+    "description": "Notice in the expanded product row when a supplier lists additional products on both eBay and Amazon."
+  },
   "product_detail_store_only_ebay_link": {
     "message": "Магазин на eBay",
     "description": "Link text pointing to the supplier's eBay storefront."

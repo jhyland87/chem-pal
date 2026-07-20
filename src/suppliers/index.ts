@@ -56,6 +56,7 @@ export { SupplierLiMac } from "./SupplierLiMac";
 export { SupplierLoudwolf } from "./SupplierLoudwolf";
 export { SupplierMacklin } from "./SupplierMacklin";
 export { SupplierOnyxmet } from "./SupplierOnyxmet";
+export { SupplierOrbitNaturalProductDerivatives } from "./SupplierOrbitNaturalProductDerivatives";
 export { SupplierS3Chemicals } from "./SupplierS3Chemicals";
 export { SupplierSynthetika } from "./SupplierSynthetika";
 export { SupplierTheLabStockroom } from "./SupplierTheLabStockroom";
