@@ -563,6 +563,33 @@ export const ProductDetailDescription = styled("div")(({ theme }) => ({
   },
 }));
 
+// Advisory band above the description: this supplier ships more freely from a marketplace
+// storefront than from their own site. A styled div rather than a MUI Alert — Alert is reserved
+// here for the bottom-of-screen snackbars (PromptSnackbar, MigrationPrompt).
+export const ProductDetailStoreNotice = styled("div")(({ theme }) => ({
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "baseline",
+  // Shrink to the text instead of stretching the full content width — in the browser tab that
+  // would leave a mostly-empty band running the width of the table. maxWidth keeps it wrapping
+  // inside the 400px popup, where the content column is only ~240px wide.
+  alignSelf: "flex-start",
+  maxWidth: "100%",
+  gap: theme.spacing(1),
+  fontSize: "0.8rem",
+  lineHeight: 1.5,
+  padding: theme.spacing(0.75, 1),
+  borderRadius: theme.shape.borderRadius,
+  borderLeft: `3px solid ${theme.palette.warning.main}`,
+  backgroundColor:
+    theme.palette.mode === "light" ? "rgba(255, 167, 38, 0.08)" : "rgba(255, 167, 38, 0.12)",
+  "& > .store-links": {
+    display: "inline-flex",
+    flexWrap: "wrap",
+    gap: theme.spacing(1.5),
+  },
+}));
+
 // Inline "[more]" / "[less]" toggle for a truncated product description.
 export const DescriptionToggleLink = styled("span")(({ theme }) => ({
   color: theme.palette.primary.main,

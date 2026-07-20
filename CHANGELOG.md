@@ -13,6 +13,17 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+### Added
+
+- New supplier: Daily Bio USA.
+- Suppliers that restrict shipping on their own website but ship more freely through their eBay
+  or Amazon store now say so in the expanded product row, with a link to the store.
+
+### Fixed
+
+- Chemical grades written as a labeled field (for example `Grade: Reagent`) in a product
+  description were not detected, so those products showed as **Ungraded**.
+
 ## [1.3.0] - 2026-07-19
 
 ### Added

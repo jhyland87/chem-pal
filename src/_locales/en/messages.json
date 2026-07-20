@@ -812,6 +812,26 @@
     "message": "Variants ($currency$)",
     "placeholders": { "currency": { "content": "$1" } }
   },
+  "product_detail_store_only_ebay": {
+    "message": "Ships with fewer restrictions from their eBay store than their own website.",
+    "description": "Notice in the expanded product row when a supplier ships more freely via eBay than from their own site."
+  },
+  "product_detail_store_only_amazon": {
+    "message": "Ships with fewer restrictions from their Amazon store than their own website.",
+    "description": "Notice in the expanded product row when a supplier ships more freely via Amazon than from their own site."
+  },
+  "product_detail_store_only_both": {
+    "message": "Ships with fewer restrictions from their eBay and Amazon stores than their own website.",
+    "description": "Notice in the expanded product row when a supplier ships more freely via both eBay and Amazon than from their own site."
+  },
+  "product_detail_store_only_ebay_link": {
+    "message": "eBay store",
+    "description": "Link text pointing to the supplier's eBay storefront."
+  },
+  "product_detail_store_only_amazon_link": {
+    "message": "Amazon store",
+    "description": "Link text pointing to the supplier's Amazon storefront."
+  },
 
   "stats_title": { "message": "Supplier Stats", "description": "Stats panel title." },
   "stats_calls": {

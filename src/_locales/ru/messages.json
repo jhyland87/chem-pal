@@ -1100,6 +1100,26 @@
     "message": "Варианты ($currency$)",
     "placeholders": { "currency": { "content": "$1" } }
   },
+  "product_detail_store_only_ebay": {
+    "message": "Отправляет из своего магазина на eBay с меньшими ограничениями, чем с собственного сайта.",
+    "description": "Notice in the expanded product row when a supplier ships more freely via eBay than from their own site."
+  },
+  "product_detail_store_only_amazon": {
+    "message": "Отправляет из своего магазина на Amazon с меньшими ограничениями, чем с собственного сайта.",
+    "description": "Notice in the expanded product row when a supplier ships more freely via Amazon than from their own site."
+  },
+  "product_detail_store_only_both": {
+    "message": "Отправляет из своих магазинов на eBay и Amazon с меньшими ограничениями, чем с собственного сайта.",
+    "description": "Notice in the expanded product row when a supplier ships more freely via both eBay and Amazon than from their own site."
+  },
+  "product_detail_store_only_ebay_link": {
+    "message": "Магазин на eBay",
+    "description": "Link text pointing to the supplier's eBay storefront."
+  },
+  "product_detail_store_only_amazon_link": {
+    "message": "Магазин на Amazon",
+    "description": "Link text pointing to the supplier's Amazon storefront."
+  },
   "stats_title": {
     "message": "Статистика поставщиков",
     "description": "Stats panel title."

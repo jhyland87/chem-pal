@@ -1,9 +1,21 @@
 // ProductBuilder must be imported before anything that pulls in SupplierBase (module-init cycle).
 import { ProductBuilder } from "@/utils/ProductBuilder";
+import {
+  resetChromeStorageMock,
+  setupChromeStorageMock,
+} from "@/__fixtures__/helpers/chrome/storageMock";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { describe, expect, it } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { SupplierDailyBioUSA } from "../SupplierDailyBioUSA";
+
+beforeAll(() => {
+  setupChromeStorageMock();
+});
+
+beforeEach(() => {
+  resetChromeStorageMock();
+});
 
 const products = JSON.parse(
   readFileSync(resolve(__dirname, "../__fixtures__/dailybiousa/products.json"), "utf8"),
@@ -14,6 +26,7 @@ const makeSupplier = () => new SupplierDailyBioUSA("acid", 5);
 type DailyBioUSAInternals = {
   getFallbackQuantity: (product: ProductObject) => { quantity: number; uom: string } | undefined;
   initProductBuilders: (results: ProductObject[]) => ProductBuilder<Product>[];
+  finishProduct: (builder: ProductBuilder<Product>) => Promise<Product>;
 };
 
 describe("SupplierDailyBioUSA getFallbackQuantity", () => {
@@ -63,6 +76,20 @@ describe("SupplierDailyBioUSA initProductBuilders", () => {
     // Grade lives in the description as a labeled "Grade:" field.
     expect(product.grade).toBe("Pure Grade");
     expect(product.cas).toBe("7632-00-0");
+  });
+
+  it("stamps the eBay payment method and storefront onto the finished product", async () => {
+    // The whole chain the detail-panel notice depends on: supplier statics -> finishProduct ->
+    // ProductBuilder -> Product. paymentMethods used to arrive empty here, because the runtime
+    // payment-method mirror didn't list "ebayonly" and the builder filtered it out.
+    const supplier = makeSupplier() as unknown as DailyBioUSAInternals;
+
+    const builder = supplier.initProductBuilders([products.skuSize])[0];
+    const product = await supplier.finishProduct(builder);
+
+    expect(product.paymentMethods).toEqual(["ebayonly"]);
+    expect(product.supplierEbayStoreURL).toBe("https://www.ebay.com/str/dailybiousa");
+    expect(product.supplierAmazonStoreURL).toBeUndefined();
   });
 
   it("drops an option-less product whose SKU carries no size", () => {
