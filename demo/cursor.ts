@@ -20,6 +20,12 @@
  */
 import { type BrowserContext } from "@playwright/test";
 
+/**
+ * DOM id of the injected pointer node, so screenshot helpers can hide it for a
+ * capture (see `captureImageOfElement`) without reaching for a literal.
+ */
+export const DEMO_CURSOR_ID = "__chempalDemoCursor";
+
 /** Milliseconds the pointer takes to ease from its old spot to a new one. */
 const GLIDE_MS = 200;
 /**
@@ -46,14 +52,22 @@ const RIPPLE_DELAY_MS = 190;
  */
 export async function installCursorOverlay(context: BrowserContext): Promise<void> {
   await context.addInitScript(
-    ({ glideMs, rippleDelayMs }: { glideMs: number; rippleDelayMs: number }) => {
+    ({
+      glideMs,
+      rippleDelayMs,
+      cursorId,
+    }: {
+      glideMs: number;
+      rippleDelayMs: number;
+      cursorId: string;
+    }) => {
       // Only the top frame gets a cursor: iframes would duplicate it and their
       // coordinates are frame-local, not the main viewport space we record.
       if (window.top !== window) {
         return;
       }
 
-      const CURSOR_ID = "__chempalDemoCursor";
+      const CURSOR_ID = cursorId;
       const STYLE_ID = "__chempalDemoCursorStyle";
       // Tip of the arrow within the 24x24 SVG viewBox — used as the click hotspot.
       const TIP_X = 5;
@@ -154,6 +168,6 @@ export async function installCursorOverlay(context: BrowserContext): Promise<voi
         document.addEventListener("DOMContentLoaded", install, { once: true });
       }
     },
-    { glideMs: GLIDE_MS, rippleDelayMs: RIPPLE_DELAY_MS },
+    { glideMs: GLIDE_MS, rippleDelayMs: RIPPLE_DELAY_MS, cursorId: DEMO_CURSOR_ID },
   );
 }
