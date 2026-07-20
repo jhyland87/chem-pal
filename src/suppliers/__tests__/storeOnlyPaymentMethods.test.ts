@@ -58,13 +58,20 @@ describe("marketplace-only payment methods", () => {
   });
 
   // A store URL without its payment method never reaches the UI, since SupplierBase only stamps
-  // the URL when the method is present. Catches a half-finished supplier config.
+  // the URL when the method is present. The URL is valid alongside either the "*only" method
+  // (restriction notice) or the plain "ebay"/"amazon" method (informational "more products"
+  // notice). Catches a half-finished supplier config.
   it.each(instances)("%s: a store URL is paired with its payment method", (_name, instance) => {
     if (instance.ebayStoreURL !== undefined) {
-      expect(instance.paymentMethods).toContain("ebayonly");
+      expect(
+        instance.paymentMethods.includes("ebay") || instance.paymentMethods.includes("ebayonly"),
+      ).toBe(true);
     }
     if (instance.amazonStoreURL !== undefined) {
-      expect(instance.paymentMethods).toContain("amazononly");
+      expect(
+        instance.paymentMethods.includes("amazon") ||
+          instance.paymentMethods.includes("amazononly"),
+      ).toBe(true);
     }
   });
 });

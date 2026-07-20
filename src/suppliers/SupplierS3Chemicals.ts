@@ -304,8 +304,8 @@ export class SupplierS3Chemicals
     const multipliers: Record<string, number> = {
       mg: 1,
       g: 1000,
-      kg: 1_000_000,
-      t: 1_000_000_000,
+      kg: 10e5,
+      t: 10e8,
       ml: 1,
       cl: 10,
       dl: 100,

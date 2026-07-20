@@ -842,6 +842,18 @@
     "message": "Envía con menos restricciones desde sus tiendas de eBay y Amazon que desde su propio sitio web.",
     "description": "Notice in the expanded product row when a supplier ships more freely via both eBay and Amazon than from their own site."
   },
+  "product_detail_store_more_ebay": {
+    "message": "Hay más productos disponibles en su tienda de eBay que en su propio sitio web.",
+    "description": "Notice in the expanded product row when a supplier lists additional products on eBay."
+  },
+  "product_detail_store_more_amazon": {
+    "message": "Hay más productos disponibles en su tienda de Amazon que en su propio sitio web.",
+    "description": "Notice in the expanded product row when a supplier lists additional products on Amazon."
+  },
+  "product_detail_store_more_both": {
+    "message": "Hay más productos disponibles en sus tiendas de eBay y Amazon que en su propio sitio web.",
+    "description": "Notice in the expanded product row when a supplier lists additional products on both eBay and Amazon."
+  },
   "product_detail_store_only_ebay_link": {
     "message": "Tienda de eBay",
     "description": "Link text pointing to the supplier's eBay storefront."

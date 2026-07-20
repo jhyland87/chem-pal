@@ -38,6 +38,7 @@ export const SUPPLIER_CLASS_NAMES = [
   "SupplierLoudwolf",
   "SupplierMacklin",
   "SupplierOnyxmet",
+  "SupplierOrbitNaturalProductDerivatives",
   "SupplierS3Chemicals",
   "SupplierSynthetika",
   "SupplierTheLabStockroom",

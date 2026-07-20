@@ -2244,15 +2244,18 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
       product.setSupplierPaymentMethods(this.paymentMethods);
     }
 
-    // Marketplace storefronts for suppliers that restrict shipping on their own site but ship
-    // more freely via eBay/Amazon. The store URL is what makes the "*only" payment method
-    // actionable, so a missing one is a supplier misconfiguration — surface it loudly in dev.
+    // Marketplace storefronts. The "*only" methods point users away from the supplier's own
+    // (restricted) site, so a missing store URL is a misconfiguration — surface it loudly in dev.
+    // The plain "ebay"/"amazon" methods instead drive an informational "more products there"
+    // notice; the store URL is optional, so stamp it only when present and don't warn.
     if (this.paymentMethods.includes("ebayonly")) {
       if (IS_DEV_BUILD && !this.ebayStoreURL) {
         this.logger.error("finishProduct| supplier declares 'ebayonly' but sets no ebayStoreURL", {
           supplier: this.supplierName,
         });
       }
+      product.setSupplierEbayStoreURL(this.ebayStoreURL);
+    } else if (this.paymentMethods.includes("ebay") && this.ebayStoreURL) {
       product.setSupplierEbayStoreURL(this.ebayStoreURL);
     }
 
@@ -2263,6 +2266,8 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
           { supplier: this.supplierName },
         );
       }
+      product.setSupplierAmazonStoreURL(this.amazonStoreURL);
+    } else if (this.paymentMethods.includes("amazon") && this.amazonStoreURL) {
       product.setSupplierAmazonStoreURL(this.amazonStoreURL);
     }
 
