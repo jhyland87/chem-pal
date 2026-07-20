@@ -22,7 +22,7 @@ import {
   TILES,
 } from "../configs/promo-tiles.config.js";
 import { _basename, _c, _g, _r, _realpath, _y, getPluginVersion } from "./helpers.js";
-import { renderSvg } from "./svg.js";
+import { el, escapeXml, renderSvg } from "./svg.js";
 
 /** A 1x1 transparent PNG, used as the screenshot href on tiles without one. */
 const BLANK_PNG =
@@ -30,33 +30,20 @@ const BLANK_PNG =
   "YPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
 
 /**
- * Escape the five XML special characters so copy from the config can't break
- * the document (e.g. the `&` in "Every product & variant").
- *
- * @param {string} value - The raw text
- * @returns {string} The XML-safe text
- */
-function escapeXml(value) {
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
-}
-
-/**
  * Fill every `%token%` in a template with the matching key from `data`.
- * Unknown tokens are left as-is, so literal percentages (e.g. `width="160%"`)
- * survive untouched.
+ *
+ * The token pattern is restricted to bare identifiers so it cannot span a pair
+ * of literal CSS percentages: in `x="-30%" width="160%"` the text between the
+ * two `%` signs contains quotes, so it never matches. A looser `%(.*?)%` would
+ * match there and only survive because the key lookup happens to fail.
  *
  * @param {string} template - The raw template text
  * @param {Object} data - The values to interpolate
  * @returns {string} The processed template
  */
 function fillTemplate(template, data) {
-  return template.replace(/%(.*?)%/g, (match, key) =>
-    Object.hasOwn(data, key.trim()) ? data[key.trim()] : match,
+  return template.replace(/%([a-zA-Z][a-zA-Z0-9]*)%/g, (match, key) =>
+    Object.hasOwn(data, key) ? data[key] : match,
   );
 }
 
@@ -109,24 +96,49 @@ async function renderScreenshot(shot) {
   const source = toDataUri(await fs.readFile(_realpath(shot.src)));
   const crop = shot.crop ?? { x: 0, y: 0, width: shot.width, height: shot.height };
 
-  let overlay = "";
-  if (shot.redact) {
-    const { x, boxWidth, fontSize, rows } = shot.redact;
-    rows.forEach((baseline, index) => {
-      const name = FAKE_SUPPLIER_NAMES[index % FAKE_SUPPLIER_NAMES.length];
-      overlay +=
-        `<rect x="${x - 4}" y="${baseline - 14}" width="${boxWidth}" height="20" fill="#ffffff"/>` +
-        `<text x="${x}" y="${baseline}" font-family="${FONT_FAMILY}" font-size="${fontSize}" ` +
-        `fill="#2b2b2b">${escapeXml(name)}</text>`;
-    });
-  }
+  const r = shot.redact;
+  const overlay = (r?.rows ?? [])
+    .map((baseline, index) =>
+      [
+        el("rect", {
+          x: r.x - 4,
+          y: baseline - r.boxOffsetY,
+          width: r.boxWidth,
+          height: r.boxHeight,
+          fill: r.boxFill,
+        }),
+        el(
+          "text",
+          {
+            x: r.x,
+            y: baseline,
+            "font-family": FONT_FAMILY,
+            "font-size": r.fontSize,
+            fill: r.textFill,
+          },
+          escapeXml(FAKE_SUPPLIER_NAMES[index % FAKE_SUPPLIER_NAMES.length]),
+        ),
+      ].join(""),
+    )
+    .join("");
 
-  const svg =
-    `<svg width="${crop.width}" height="${crop.height}" ` +
-    `viewBox="${crop.x} ${crop.y} ${crop.width} ${crop.height}" ` +
-    `xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">` +
-    `<image x="0" y="0" width="${shot.width}" height="${shot.height}" xlink:href="${source}"/>` +
-    `${overlay}</svg>`;
+  const svg = el(
+    "svg",
+    {
+      width: crop.width,
+      height: crop.height,
+      viewBox: `${crop.x} ${crop.y} ${crop.width} ${crop.height}`,
+      xmlns: "http://www.w3.org/2000/svg",
+      "xmlns:xlink": "http://www.w3.org/1999/xlink",
+    },
+    el("image", {
+      x: 0,
+      y: 0,
+      width: shot.width,
+      height: shot.height,
+      "xlink:href": source,
+    }) + overlay,
+  );
 
   return toDataUri(await renderSvg(svg, crop.width));
 }

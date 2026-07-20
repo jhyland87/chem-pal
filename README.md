@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./public/static/images/logo/ChemPal-logo.png" alt="chem-pal logo" width="200"/>
+  <img src="./assets/promo/chempal-price-tracking-marquee-1400x560.png" alt="chem-pal logo" width="100%"/>
 </p>
 
 
