@@ -201,7 +201,10 @@ interface ProductImageCarouselProps {
  * ```
  * @source
  */
-function ProductImageCarousel({ images, title }: ProductImageCarouselProps): ReactElement | null {
+export function ProductImageCarousel({
+  images,
+  title,
+}: ProductImageCarouselProps): ReactElement | null {
   const [broken, setBroken] = useState<ReadonlySet<number>>(new Set());
   // URLs already handed to the preloader, so we never fetch the same one twice.
   const preloadedRef = useRef<Set<string>>(new Set());
