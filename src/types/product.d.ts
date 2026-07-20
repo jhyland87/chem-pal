@@ -58,6 +58,17 @@ declare global {
     readonly country: CountryCode;
     /** The payment methods accepted by the supplier */
     readonly paymentMethods: PaymentMethod[];
+    /**
+     * The supplier's eBay storefront. Required when `paymentMethods` includes `"ebayonly"` —
+     * TypeScript can't make a property conditional on an array's contents, so the implication is
+     * enforced by `src/suppliers/__tests__/storeOnlyPaymentMethods.test.ts`.
+     */
+    readonly ebayStoreURL?: string;
+    /**
+     * The supplier's Amazon storefront. Required when `paymentMethods` includes `"amazononly"`,
+     * enforced the same way as {@link ISupplier.ebayStoreURL}.
+     */
+    readonly amazonStoreURL?: string;
   }
 
 
@@ -559,6 +570,19 @@ declare global {
      * @example ["visa", "mastercard"]
      */
     paymentMethods?: PaymentMethod[];
+
+    /**
+     * The supplier's eBay storefront, set when they accept `"ebayonly"` — they restrict shipping
+     * on their own site but ship more freely via the marketplace.
+     * @example "https://www.ebay.com/str/dailybiousa"
+     */
+    supplierEbayStoreURL?: string;
+
+    /**
+     * The supplier's Amazon storefront, set when they accept `"amazononly"`.
+     * @example "https://www.amazon.com/s?k=HiMedia"
+     */
+    supplierAmazonStoreURL?: string;
 
     /**
      * Levenshtein result of the product title and the search string

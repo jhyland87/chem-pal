@@ -842,6 +842,26 @@
     "message": "Variantit ($currency$)",
     "placeholders": { "currency": { "content": "$1" } }
   },
+  "product_detail_store_only_ebay": {
+    "message": "Toimittaa eBay-kaupastaan pienemmin rajoituksin kuin omalta verkkosivustoltaan.",
+    "description": "Notice in the expanded product row when a supplier ships more freely via eBay than from their own site."
+  },
+  "product_detail_store_only_amazon": {
+    "message": "Toimittaa Amazon-kaupastaan pienemmin rajoituksin kuin omalta verkkosivustoltaan.",
+    "description": "Notice in the expanded product row when a supplier ships more freely via Amazon than from their own site."
+  },
+  "product_detail_store_only_both": {
+    "message": "Toimittaa eBay- ja Amazon-kaupoistaan pienemmin rajoituksin kuin omalta verkkosivustoltaan.",
+    "description": "Notice in the expanded product row when a supplier ships more freely via both eBay and Amazon than from their own site."
+  },
+  "product_detail_store_only_ebay_link": {
+    "message": "eBay-kauppa",
+    "description": "Link text pointing to the supplier's eBay storefront."
+  },
+  "product_detail_store_only_amazon_link": {
+    "message": "Amazon-kauppa",
+    "description": "Link text pointing to the supplier's Amazon storefront."
+  },
 
   "stats_title": { "message": "Toimittajatilastot", "description": "Stats panel title." },
   "stats_calls": {

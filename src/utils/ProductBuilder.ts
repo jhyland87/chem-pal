@@ -170,6 +170,8 @@ export class ProductBuilder<T extends Product> {
       supplierCountry: (v) => this.setSupplierCountry(v),
       supplierShipping: (v) => this.setSupplierShipping(v),
       paymentMethods: (v) => this.setSupplierPaymentMethods(v),
+      supplierEbayStoreURL: (v) => this.setSupplierEbayStoreURL(v),
+      supplierAmazonStoreURL: (v) => this.setSupplierAmazonStoreURL(v),
       variants: (v) => {
         if (Array.isArray(v)) this.setVariants(v);
       },
@@ -1059,6 +1061,81 @@ export class ProductBuilder<T extends Product> {
     } else if (paymentMethods != null && this.showFailedValidation) {
       this.logger.warn("setSupplierPaymentMethods| Invalid payment methods", {
         paymentMethods,
+        builder: this,
+      });
+    }
+    return this;
+  }
+
+  /**
+   * Narrows a value to an absolute http(s) URL string.
+   *
+   * Storefront URLs live on a foreign host, so they can't go through {@link ProductBuilder.resolveHref}
+   * (which resolves against the supplier's own `baseURL`), and `isFullURL` is too permissive — it
+   * accepts any scheme, including `javascript:`, and these values are rendered into an `href`.
+   * @param value - The candidate URL, or any value
+   * @returns The normalized absolute URL, or undefined when it isn't one
+   * @example
+   * ```typescript
+   * this.absoluteHttpURL("https://www.ebay.com/str/x"); // "https://www.ebay.com/str/x"
+   * this.absoluteHttpURL("javascript:alert(1)");        // undefined
+   * ```
+   * @source
+   */
+  private absoluteHttpURL(value: unknown): string | undefined {
+    if (typeof value !== "string" || value.length === 0) return undefined;
+    try {
+      const url = new URL(value);
+      return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  /**
+   * Sets the supplier's eBay storefront URL, shown in the expanded product row for suppliers that
+   * restrict shipping on their own site but ship more freely via eBay.
+   *
+   * @param storeURL - The storefront URL, or any value (anything that isn't an absolute http(s) URL is ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setSupplierEbayStoreURL("https://www.ebay.com/str/dailybiousa");
+   * ```
+   * @source
+   */
+  setSupplierEbayStoreURL(storeURL: unknown): ProductBuilder<T> {
+    const href = this.absoluteHttpURL(storeURL);
+    if (href) {
+      this.product.supplierEbayStoreURL = href;
+    } else if (storeURL != null && this.showFailedValidation) {
+      this.logger.warn("setSupplierEbayStoreURL| Invalid eBay store URL", {
+        storeURL,
+        builder: this,
+      });
+    }
+    return this;
+  }
+
+  /**
+   * Sets the supplier's Amazon storefront URL. Counterpart to
+   * {@link ProductBuilder.setSupplierEbayStoreURL}, for suppliers that accept `"amazononly"`.
+   *
+   * @param storeURL - The storefront URL, or any value (anything that isn't an absolute http(s) URL is ignored)
+   * @returns The builder instance for method chaining
+   * @example
+   * ```typescript
+   * builder.setSupplierAmazonStoreURL("https://www.amazon.com/s?k=HiMedia");
+   * ```
+   * @source
+   */
+  setSupplierAmazonStoreURL(storeURL: unknown): ProductBuilder<T> {
+    const href = this.absoluteHttpURL(storeURL);
+    if (href) {
+      this.product.supplierAmazonStoreURL = href;
+    } else if (storeURL != null && this.showFailedValidation) {
+      this.logger.warn("setSupplierAmazonStoreURL| Invalid Amazon store URL", {
+        storeURL,
         builder: this,
       });
     }

@@ -401,6 +401,28 @@ describe("Common TypeGuards", () => {
       expect(isPaymentMethod("other")).toBe(true);
     });
 
+    // Every member of the PaymentMethod union, listed literally: the union has no runtime form,
+    // so this is the only thing that catches a value being added to the type but not to the
+    // runtime mirror. That drift previously made suppliers with "ebayonly"/"amazononly" lose
+    // their payment methods entirely, since ProductBuilder filters through this guard.
+    it.each([
+      "mastercard",
+      "visa",
+      "paypal",
+      "ach",
+      "cash",
+      "check",
+      "crypto",
+      "moneyorder",
+      "ebay",
+      "amazon",
+      "ebayonly",
+      "amazononly",
+      "other",
+    ] satisfies PaymentMethod[])("accepts the union member %j", (method) => {
+      expect(isPaymentMethod(method)).toBe(true);
+    });
+
     it("rejects unknown methods and non-strings", () => {
       expect(isPaymentMethod("barter")).toBe(false);
       expect(isPaymentMethod(undefined)).toBe(false);

@@ -609,7 +609,9 @@ export function isShippingRange(shipping: unknown): shipping is ShippingRange {
   return typeof shipping === "string" && SHIPPING_RANGES.includes(shipping);
 }
 
-/** The valid {@link PaymentMethod} values, mirrored at runtime for {@link isPaymentMethod}. */
+// The valid PaymentMethod values, mirrored at runtime for isPaymentMethod. The `satisfies`
+// makes a value removed from the union a compile error here; an *addition* to the union can
+// only be caught by the exhaustiveness test in typeGuards/__tests__/common.test.ts.
 const PAYMENT_METHODS: readonly string[] = [
   "mastercard",
   "visa",
@@ -619,8 +621,12 @@ const PAYMENT_METHODS: readonly string[] = [
   "check",
   "crypto",
   "moneyorder",
+  "ebay",
+  "amazon",
+  "ebayonly",
+  "amazononly",
   "other",
-];
+] satisfies readonly PaymentMethod[];
 
 /**
  * Type guard to validate if a value is a valid payment method.

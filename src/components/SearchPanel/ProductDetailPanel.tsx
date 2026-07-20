@@ -15,6 +15,7 @@ import {
   ProductImageNavButton,
 } from "@/components/StyledComponents";
 import { default as Link } from "@/components/TabLink";
+import { SupplierStoreNotice } from "@/components/SearchPanel/SupplierStoreNotice";
 import { omit } from "@/helpers/collectionUtils";
 import { i18n } from "@/helpers/i18n";
 import { formatDisplayPrice } from "@/helpers/price";
@@ -623,6 +624,8 @@ export function ProductDetailPanel({ row, table }: ProductDetailPanelProps): Rea
       )}
 
       <ProductDetailContent>
+        <SupplierStoreNotice product={product} />
+
         {isPresent(product.description) && (
           <ProductDetailDescription>
             <TruncatedDescription text={product.description} />

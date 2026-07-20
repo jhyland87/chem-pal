@@ -192,6 +192,20 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
   public abstract readonly paymentMethods: PaymentMethod[];
 
   /**
+   * The supplier's eBay storefront. Subclasses that list `"ebayonly"` in
+   * {@link SupplierBase.paymentMethods} must override this; see
+   * `src/suppliers/__tests__/storeOnlyPaymentMethods.test.ts`, which enforces the pairing that
+   * TypeScript can't express.
+   */
+  public readonly ebayStoreURL?: string;
+
+  /**
+   * The supplier's Amazon storefront. Required alongside `"amazononly"`, exactly as
+   * {@link SupplierBase.ebayStoreURL} is for `"ebayonly"`.
+   */
+  public readonly amazonStoreURL?: string;
+
+  /**
    * The countries to which the supplier ships.
    * @example
    * ```typescript
@@ -2228,6 +2242,28 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
 
     if (this.paymentMethods.length > 0) {
       product.setSupplierPaymentMethods(this.paymentMethods);
+    }
+
+    // Marketplace storefronts for suppliers that restrict shipping on their own site but ship
+    // more freely via eBay/Amazon. The store URL is what makes the "*only" payment method
+    // actionable, so a missing one is a supplier misconfiguration — surface it loudly in dev.
+    if (this.paymentMethods.includes("ebayonly")) {
+      if (IS_DEV_BUILD && !this.ebayStoreURL) {
+        this.logger.error("finishProduct| supplier declares 'ebayonly' but sets no ebayStoreURL", {
+          supplier: this.supplierName,
+        });
+      }
+      product.setSupplierEbayStoreURL(this.ebayStoreURL);
+    }
+
+    if (this.paymentMethods.includes("amazononly")) {
+      if (IS_DEV_BUILD && !this.amazonStoreURL) {
+        this.logger.error(
+          "finishProduct| supplier declares 'amazononly' but sets no amazonStoreURL",
+          { supplier: this.supplierName },
+        );
+      }
+      product.setSupplierAmazonStoreURL(this.amazonStoreURL);
     }
 
     const built = await product.build();

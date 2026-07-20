@@ -807,6 +807,26 @@
     "message": "विकल्प ($currency$)",
     "placeholders": { "currency": { "content": "$1" } }
   },
+  "product_detail_store_only_ebay": {
+    "message": "अपनी वेबसाइट की तुलना में अपने eBay स्टोर से कम प्रतिबंधों के साथ शिपिंग करता है।",
+    "description": "Notice in the expanded product row when a supplier ships more freely via eBay than from their own site."
+  },
+  "product_detail_store_only_amazon": {
+    "message": "अपनी वेबसाइट की तुलना में अपने Amazon स्टोर से कम प्रतिबंधों के साथ शिपिंग करता है।",
+    "description": "Notice in the expanded product row when a supplier ships more freely via Amazon than from their own site."
+  },
+  "product_detail_store_only_both": {
+    "message": "अपनी वेबसाइट की तुलना में अपने eBay और Amazon स्टोर से कम प्रतिबंधों के साथ शिपिंग करता है।",
+    "description": "Notice in the expanded product row when a supplier ships more freely via both eBay and Amazon than from their own site."
+  },
+  "product_detail_store_only_ebay_link": {
+    "message": "eBay स्टोर",
+    "description": "Link text pointing to the supplier's eBay storefront."
+  },
+  "product_detail_store_only_amazon_link": {
+    "message": "Amazon स्टोर",
+    "description": "Link text pointing to the supplier's Amazon storefront."
+  },
   "stats_title": { "message": "आपूर्तिकर्ता आँकड़े", "description": "Stats panel title." },
   "stats_calls": {
     "message": "$count$ कॉल",

@@ -1099,6 +1099,26 @@
     "message": "Warianty ($currency$)",
     "placeholders": { "currency": { "content": "$1" } }
   },
+  "product_detail_store_only_ebay": {
+    "message": "Wysyła z mniejszymi ograniczeniami ze swojego sklepu eBay niż z własnej strony internetowej.",
+    "description": "Notice in the expanded product row when a supplier ships more freely via eBay than from their own site."
+  },
+  "product_detail_store_only_amazon": {
+    "message": "Wysyła z mniejszymi ograniczeniami ze swojego sklepu Amazon niż z własnej strony internetowej.",
+    "description": "Notice in the expanded product row when a supplier ships more freely via Amazon than from their own site."
+  },
+  "product_detail_store_only_both": {
+    "message": "Wysyła z mniejszymi ograniczeniami ze swoich sklepów eBay i Amazon niż z własnej strony internetowej.",
+    "description": "Notice in the expanded product row when a supplier ships more freely via both eBay and Amazon than from their own site."
+  },
+  "product_detail_store_only_ebay_link": {
+    "message": "Sklep eBay",
+    "description": "Link text pointing to the supplier's eBay storefront."
+  },
+  "product_detail_store_only_amazon_link": {
+    "message": "Sklep Amazon",
+    "description": "Link text pointing to the supplier's Amazon storefront."
+  },
   "stats_title": {
     "message": "Statystyki dostawców",
     "description": "Stats panel title."
