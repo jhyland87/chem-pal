@@ -17,15 +17,10 @@
  */
 
 import fs from "fs/promises";
-import path, { dirname } from "path";
-import { fileURLToPath } from "url";
+import { _c, _realpath, _y } from "./helpers.js";
 import { getSupplierClassNames } from "./supplierList.js";
 
-const _dirname = dirname(fileURLToPath(import.meta.url));
-const OUT_PATH = path.resolve(_dirname, "../src/constants/suppliers.ts");
-
-const _y = (text) => `\x1b[33m${text}\x1b[0m`;
-const _c = (text) => `\x1b[36m${text}\x1b[0m`;
+const OUT_PATH = _realpath("src/constants/suppliers.ts");
 
 const classNames = await getSupplierClassNames();
 
