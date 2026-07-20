@@ -1,0 +1,27 @@
+{
+  "name": "typedoc-plugin-taxonomy-index",
+  "version": "0.1.0",
+  "description": "Adds a project-global index of every @category and @group to TypeDoc output, merging terms that share a title across different files.",
+  "keywords": ["typedoc", "typedoc-plugin", "category", "group", "taxonomy", "index"],
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "typedoc": "^0.28.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}

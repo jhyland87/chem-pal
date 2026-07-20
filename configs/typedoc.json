@@ -29,6 +29,7 @@
     //"typedoc-plugin-mermaid",
     "../plugins/typedoc-mermaid-plugin/index.mjs",
     "../plugins/typedoc-linkify-plugin/index.mjs",
+    "../plugins/typedoc-plugin-taxonomy-index/dist/index.js",
     "typedoc-theme-hierarchy"
   ],
   "highlightLanguages": [

@@ -2,9 +2,9 @@ import { UOM, UOM_ALIASES, type Uom } from "@/constants/common";
 import { isUOM } from "@/utils/typeGuards/common";
 
 /**
+ * Quantity parsing and unit conversion utilities for handling different units of measurement.
  * @categoryDescription Helpers
  * @group Quantity
- * Quantity parsing and unit conversion utilities for handling different units of measurement.
  * @showGroups
  * @showCategories
  */
