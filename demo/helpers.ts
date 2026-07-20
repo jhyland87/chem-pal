@@ -476,24 +476,23 @@ export async function captureImageOfElement(
   // 1. Get the element's coordinates and size
   const box = await locator.boundingBox();
 
-  if (box) {
-    const margin = 25;
+  if (!box) return;
+  const margin = 25;
 
-    // 2. Take a page-level screenshot clipped to the expanded boundaries, with
-    // the demo pointer hidden so it doesn't sit in the middle of the crop.
-    const cursorOpacity = await setDemoCursorOpacity(page, "0");
-    try {
-      await page.screenshot({
-        path: path.join(screenshotDir, `${filename}.png`),
-        clip: {
-          x: box.x - margin,
-          y: box.y - margin,
-          width: box.width + margin * 2,
-          height: box.height + margin * 2,
-        },
-      });
-    } finally {
-      await setDemoCursorOpacity(page, cursorOpacity);
-    }
+  // 2. Take a page-level screenshot clipped to the expanded boundaries, with
+  // the demo pointer hidden so it doesn't sit in the middle of the crop.
+  const cursorOpacity = await setDemoCursorOpacity(page, "0");
+  try {
+    await page.screenshot({
+      path: path.join(screenshotDir, `${filename}.png`),
+      clip: {
+        x: box.x - margin,
+        y: box.y - margin,
+        width: box.width + margin * 2,
+        height: box.height + margin * 2,
+      },
+    });
+  } finally {
+    await setDemoCursorOpacity(page, cursorOpacity);
   }
 }
