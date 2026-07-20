@@ -346,7 +346,17 @@ export abstract class SupplierBaseMySimpleStore
         builder.setDescription(htmlToAscii(detail.description));
       }
       builder.setCAS(detail.description_text ?? detail.name);
-      builder.setImage(detail.assets?.[0]?.large_url ?? detail.assets?.[0]?.small_url);
+      // Add every product photo as a gallery image so the detail-panel carousel can cycle them.
+      // The first asset becomes the primary image; the rest are appended.
+      (detail.assets ?? []).forEach((asset, index) => {
+        const src = asset.large_url ?? asset.small_url;
+        if (!src) return;
+        if (index === 0) {
+          builder.setImage(src, detail.name);
+        } else {
+          builder.addImage(src, detail.name);
+        }
+      });
       if (typeof detail.in_stock === "boolean") {
         builder.setAvailability(detail.in_stock);
       }

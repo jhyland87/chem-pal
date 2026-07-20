@@ -101,6 +101,12 @@ describe("SupplierOrbitNaturalProductDerivatives getProductData", () => {
     const product = result?.dump();
     expect(product?.variants).toHaveLength(4);
 
+    // All five product photos are captured as distinct gallery images (not just the first),
+    // so the detail-panel carousel has real images to cycle through.
+    const imageHrefs = product?.images?.filter((i) => i.type === "image").map((i) => i.href);
+    expect(imageHrefs).toHaveLength(5);
+    expect(new Set(imageHrefs).size).toBe(5);
+
     // Variants sorted ascending by chemical quantity: 1, 4, 5, 20 LITER.
     const quantities = product?.variants?.map((v) => v.quantity);
     expect(quantities).toEqual([1, 4, 5, 20]);
