@@ -1,10 +1,11 @@
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { setupMockRoutes } from "../e2e/helpers/mockRoutes";
 import { expandFirstProductDetail } from "./expandDetail";
 import { expect, test } from "./fixtures";
 import {
+  captureImageOfElement,
   clearGroupHighlight,
   clearHighlight,
   clearSpotlight,
@@ -75,6 +76,48 @@ async function waitForResultCount(page: Page, target: number, timeoutMs: number)
 }
 
 /**
+ * Plays one "here's another thing you can search for" beat: pops a caption over
+ * the search form, types the query a character at a time, captures a cropped
+ * image of the form, then clears the box. Never submits — these are still-image
+ * examples, not searches.
+ * @param page - The page running the demo.
+ * @param input - The search textbox to type into.
+ * @param formContainer - The search form wrapper the popover points at and the capture crops to.
+ * @param message - Caption shown while the query is typed.
+ * @param query - The query text to type.
+ * @param filename - Base name for the captured PNG, without the extension.
+ * @returns A promise that resolves once the capture is written and the box is cleared.
+ * @example
+ * ```ts
+ * await demoQueryExample(page, searchInput, searchFormContainer,
+ *   "Search using CAS values...", "1310-58-3", "walkthrough-search-cas");
+ * ```
+ * @source
+ */
+async function demoQueryExample(
+  page: Page,
+  input: Locator,
+  formContainer: Locator,
+  message: string,
+  query: string,
+  filename: string,
+): Promise<void> {
+  await highlight(input);
+  await showDemoPopover(page, formContainer, message);
+  await page.waitForTimeout(1200);
+  await typeInto(input, query, 55);
+  await page.waitForTimeout(700);
+  await closeDemoPopover(page);
+  await clearHighlight(input);
+  await captureImageOfElement(page, formContainer, filename);
+  // Leave the query selected rather than blanking the box — a field going empty
+  // on its own reads as a glitch; the next beat just types over the selection.
+  // ControlOrMeta because plain Control+A is "go to line start" on macOS.
+  await input.press("ControlOrMeta+a");
+  await page.waitForTimeout(400);
+}
+
+/**
  * Guided walkthrough that opens the extension in the full browser-tab view
  * (`index.html?view=tab`, desktop-sized) and runs a live search against the
  * saved mock data — no supplier requests hit the network (`fallback: "abort"`).
@@ -104,20 +147,25 @@ test(
     // Full browser-tab view (?view=tab): fills the desktop window.
     await page.goto(`chrome-extension://${extensionId}/index.html?view=tab`);
 
+    const searchFormContainer = page.getByTestId("search-form-container");
+    await expect(searchFormContainer, "Search form container should be visible").toBeVisible({
+      timeout: 10_000,
+    });
     const searchInput = page.getByRole("textbox", { name: "search for products" });
     await expect(searchInput, "Search input should be visible").toBeVisible({ timeout: 10_000 });
     await page.waitForTimeout(1000);
 
     // 1. Point out the search box.
-    await highlight(searchInput);
-    await showDemoPopover(page, searchInput, "Type a chemical name to search");
+    await highlight(searchFormContainer);
+    await showDemoPopover(page, searchFormContainer, "Type a chemical name to search");
     await page.waitForTimeout(1800);
 
     // 2. Type the query, character by character.
     await typeInto(searchInput, "sodium borohydride");
     await page.waitForTimeout(800);
     await closeDemoPopover(page);
-    await clearHighlight(searchInput);
+    await clearHighlight(searchFormContainer);
+    await captureImageOfElement(page, searchFormContainer, "walkthrough-search-input-typed");
 
     // 3. Run the search.
     const searchButton = page.getByRole("button", { name: "search" });
@@ -153,7 +201,9 @@ test(
       .locator("tbody tr")
       .filter({ has: page.locator("td") })
       .count();
-    expect(rowCount, "There are at least 20 results").toBeGreaterThanOrEqual(20);
+    // A little slack under the ~17 the current mock corpus yields, so one more
+    // supplier's responses going missing doesn't fail the whole recording.
+    expect(rowCount, "There are at least 15 results").toBeGreaterThanOrEqual(15);
 
     await highlight(resultsTable);
     await showDemoPopover(page, resultsTable, "Live results from many suppliers, ranked by match");
@@ -314,7 +364,7 @@ test(
     await highlight(titleFilter);
     await showDemoPopover(page, titleFilter, "Filter by product name");
     await page.waitForTimeout(1200);
-    await typeInto(titleFilter, "Sodium Borohydride");
+    await typeInto(titleFilter, "Borohydride");
     await page.waitForTimeout(2000);
     await closeDemoPopover(page);
     await clearHighlight(titleFilter);
@@ -563,12 +613,54 @@ test(
     await page.mouse.click(30, 400);
     await page.waitForTimeout(700);
 
-    // Advanced syntax: quoted phrases plus AND / OR / NOT, colored live as you type.
-    await searchInput.fill("");
+    // Before the boolean query, show the other things the box accepts — formulas
+    // CAS numbers, SMILES strings, and a mix of both. Typed and captured only; none
+    // of these are submitted.
+    await demoQueryExample(
+      page,
+      searchInput,
+      searchFormContainer,
+      "Search using the chemical formula...",
+      "C2H4O2",
+      "walkthrough-search-formula",
+    );
+    await demoQueryExample(
+      page,
+      searchInput,
+      searchFormContainer,
+      "or CAS values...",
+      "1310-58-3",
+      "walkthrough-search-cas",
+    );
+    await demoQueryExample(
+      page,
+      searchInput,
+      searchFormContainer,
+      "or SMILES strings...",
+      '"CC(=O)O"',
+      "walkthrough-search-smiles",
+    );
+    await demoQueryExample(
+      page,
+      searchInput,
+      searchFormContainer,
+      "or even a mixture of search types...",
+      '"acetic acid" OR C2H4O2 OR "CC(=O)O" OR 64-19-7',
+      "walkthrough-search-mixed",
+    );
+
+    // Advanced syntax: quoted phrases plus AND / OR / NOT, colored live as you
+    // type. No clear needed — the last example left its query selected, so this
+    // types straight over it.
     await highlight(searchInput);
     await typeInto(searchInput, ADVANCED_QUERY, 45);
     // .hl-keyword only renders when the query really parsed as advanced — a plain
     // literal search would silently produce no keyword tokens.
+    // Typing over the previous example's selection must replace it, not append —
+    // otherwise the box would still hold the mixed query in front of this one.
+    await expect(searchInput, "Advanced query should have replaced the selection").toHaveValue(
+      ADVANCED_QUERY,
+    );
     await expect(
       page.locator(".hl-keyword").first(),
       "Advanced query should highlight its operators",

@@ -1,7 +1,17 @@
 import type { Locator, Page } from "@playwright/test";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { DEMO_CURSOR_ID } from "./cursor";
 
 /** DOM id used for the injected popover so teardown can find and remove it. */
 const POPOVER_ID = "playwright-demo-popover";
+
+/** Where element captures are written — the same dir the demo's page screenshots use. */
+const screenshotDir = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "output",
+  "screenshots",
+);
 
 /**
  * Type text into a field one character at a time, as a person would, so the
@@ -408,4 +418,82 @@ export async function closeDemoPopover(page: Page): Promise<void> {
   await page.evaluate((id) => {
     document.getElementById(id)?.remove();
   }, POPOVER_ID);
+}
+
+/**
+ * Sets the demo cursor overlay's opacity and returns whatever it was before, so
+ * a caller can hide the pointer for a screenshot and put it back exactly as it
+ * found it (the overlay starts hidden and only becomes visible once placed).
+ * @param page - The page the overlay lives on.
+ * @param opacity - The CSS opacity to apply, e.g. `"0"` or `"1"`.
+ * @returns The overlay's previous inline opacity (`""` if the node is absent).
+ * @example
+ * ```ts
+ * const prev = await setDemoCursorOpacity(page, "0"); // "1"
+ * await setDemoCursorOpacity(page, prev);
+ * ```
+ * @source
+ */
+async function setDemoCursorOpacity(page: Page, opacity: string): Promise<string> {
+  return page.evaluate(
+    ({ id, value }) => {
+      const el = document.getElementById(id);
+      if (!el) return "";
+      const previous = el.style.opacity;
+      el.style.opacity = value;
+      return previous;
+    },
+    { id: DEMO_CURSOR_ID, value: opacity },
+  );
+}
+
+/**
+ * Captures a tight PNG of a single element — a page screenshot clipped to the
+ * element's box plus a small margin, so the crop has a little breathing room
+ * instead of hugging the edges. The demo cursor overlay is hidden for the shot
+ * (and restored after), since these close crops are used as stills where a
+ * pointer parked mid-frame is a distraction. Written to
+ * `demo/output/screenshots/`, alongside the walkthrough's full-page screenshots.
+ * @param page - The page to screenshot.
+ * @param locator - The element to capture, or a selector string to resolve on `page`.
+ * @param filename - Base name for the PNG, without the extension.
+ * @returns A promise that resolves once the file is written (no-op if the
+ * element has no bounding box).
+ * @example
+ * ```ts
+ * // writes demo/output/screenshots/walkthrough-search-cas.png
+ * await captureImageOfElement(page, searchFormContainer, "walkthrough-search-cas");
+ * ```
+ * @source
+ */
+export async function captureImageOfElement(
+  page: Page,
+  locator: Locator | string,
+  filename: string,
+): Promise<void> {
+  locator = typeof locator === "string" ? page.locator(locator) : locator;
+
+  // 1. Get the element's coordinates and size
+  const box = await locator.boundingBox();
+
+  if (box) {
+    const margin = 25;
+
+    // 2. Take a page-level screenshot clipped to the expanded boundaries, with
+    // the demo pointer hidden so it doesn't sit in the middle of the crop.
+    const cursorOpacity = await setDemoCursorOpacity(page, "0");
+    try {
+      await page.screenshot({
+        path: path.join(screenshotDir, `${filename}.png`),
+        clip: {
+          x: box.x - margin,
+          y: box.y - margin,
+          width: box.width + margin * 2,
+          height: box.height + margin * 2,
+        },
+      });
+    } finally {
+      await setDemoCursorOpacity(page, cursorOpacity);
+    }
+  }
 }
