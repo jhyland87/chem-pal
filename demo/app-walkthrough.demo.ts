@@ -78,15 +78,15 @@ async function waitForResultCount(page: Page, target: number, timeoutMs: number)
 /**
  * Plays one "here's another thing you can search for" beat: pops a caption over
  * the search form, types the query a character at a time, captures a cropped
- * image of the form, then clears the box. Never submits — these are still-image
- * examples, not searches.
+ * image of the form, then selects the query so the next beat types over it.
+ * Never submits — these are still-image examples, not searches.
  * @param page - The page running the demo.
  * @param input - The search textbox to type into.
  * @param formContainer - The search form wrapper the popover points at and the capture crops to.
  * @param message - Caption shown while the query is typed.
  * @param query - The query text to type.
  * @param filename - Base name for the captured PNG, without the extension.
- * @returns A promise that resolves once the capture is written and the box is cleared.
+ * @returns A promise that resolves once the capture is written and the query is selected.
  * @example
  * ```ts
  * await demoQueryExample(page, searchInput, searchFormContainer,
