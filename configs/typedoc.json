@@ -28,6 +28,7 @@
     //"typedoc-unhoax-theme",,
     //"typedoc-plugin-mermaid",
     "../plugins/typedoc-mermaid-plugin/index.mjs",
+    "../plugins/typedoc-linkify-plugin/index.mjs",
     "typedoc-theme-hierarchy"
   ],
   "highlightLanguages": [

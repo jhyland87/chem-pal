@@ -1,0 +1,101 @@
+<svg width="%width%" height="%height%" viewBox="0 0 %width% %height%"
+     xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <!-- Brand background wash. -->
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="%bgFrom%"/>
+      <stop offset="1" stop-color="%bgTo%"/>
+    </linearGradient>
+
+    <!-- Dissolves the app screenshot in from the left so it melts into the wash.
+         Mask luminance drives visibility, so these stops must be white. -->
+    <linearGradient id="shotFade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="0.38" stop-color="#ffffff" stop-opacity="%shotPeak%"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="%shotPeak%"/>
+    </linearGradient>
+    <mask id="shotMask">
+      <rect x="%shotMaskX%" y="0" width="%shotMaskW%" height="%height%" fill="url(#shotFade)"/>
+    </mask>
+
+    <!-- Scrims that keep the wordmark legible where it crosses the screenshot:
+         horizontal for wide tiles, vertical for short ones. -->
+    <linearGradient id="scrimH" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="%bgTo%" stop-opacity="0.94"/>
+      <stop offset="0.62" stop-color="%bgTo%" stop-opacity="0.74"/>
+      <stop offset="1" stop-color="%bgTo%" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="scrimV" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="%bgTo%" stop-opacity="0"/>
+      <stop offset="0.46" stop-color="%bgTo%" stop-opacity="0.70"/>
+      <stop offset="1" stop-color="%bgTo%" stop-opacity="0.95"/>
+    </linearGradient>
+
+    <filter id="logoShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="%shadowDy%" stdDeviation="%shadowBlur%"
+                    flood-color="#0c1524" flood-opacity="0.42"/>
+    </filter>
+
+    <!-- Feathers the text pad so it reads as a soft pool of shade rather than a
+         hard-edged card sitting on the screenshot. -->
+    <filter id="padSoften" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="%padBlur%"/>
+    </filter>
+
+    <!-- Final bit of separation for white text over the lightest parts of the UI. -->
+    <filter id="textShadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="2" stdDeviation="%textShadowBlur%"
+                    flood-color="%shadowColor%" flood-opacity="%textShadowOpacity%"/>
+    </filter>
+
+    <!-- Wordmark halo: an un-offset shadow, so the shade radiates evenly out of
+         the glyphs instead of falling to one side. Applied twice because a
+         single pass at this radius is too diffuse to lift the letters clear. -->
+    <filter id="titleGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="0" stdDeviation="%titleGlowBlur%"
+                    flood-color="%shadowColor%" flood-opacity="%titleGlowOpacity%" result="halo"/>
+      <feDropShadow in="halo" dx="0" dy="0" stdDeviation="%titleGlowBlur%"
+                    flood-color="%shadowColor%" flood-opacity="%titleGlowOpacity%"/>
+    </filter>
+  </defs>
+
+  <rect width="%width%" height="%height%" fill="url(#bg)"/>
+
+  <!-- App screenshot (opacity 0 on tiles that don't use one). -->
+  <image x="%shotX%" y="%shotY%" width="%shotW%" height="%shotH%"
+         opacity="%shotOpacity%" mask="url(#shotMask)" xlink:href="%shotHref%"/>
+
+  <rect x="0" y="0" width="%scrimHWidth%" height="%height%"
+        fill="url(#scrimH)" opacity="%scrimHOpacity%"/>
+  <rect x="0" y="0" width="%width%" height="%height%"
+        fill="url(#scrimV)" opacity="%scrimVOpacity%"/>
+
+  <!-- Decorative hexagons. The points are authored against the 1400x560 marquee;
+       smaller canvases reposition and shrink them via the transform rather than
+       redefining the shapes. Note the stroke scales with the group. -->
+  <g transform="translate(%accentX%, %accentY%) scale(%accentScale%)"
+     stroke="#ffffff" stroke-opacity="%accentOpacity%" stroke-width="16" fill="none">
+    <polygon points="1225,70 1330,131 1330,253 1225,314 1120,253 1120,131"/>
+    <polygon points="1300,330 1372,372 1372,456 1300,498 1228,456 1228,372"/>
+  </g>
+
+  <!-- Pool of shade under the taglines. The screenshot is a light UI, so the
+       smaller copy needs the background darkened locally to survive on top of
+       it; the wordmark is big enough to carry its own halo instead. -->
+  <rect x="%padX%" y="%padY%" width="%padWidth%" height="%padHeight%" rx="%padRadius%"
+        fill="%padFill%" opacity="%padOpacity%" filter="url(#padSoften)"/>
+
+  <g filter="url(#logoShadow)">
+    <image x="%logoX%" y="%logoY%" width="%logoSize%" height="%logoSize%" xlink:href="%logoHref%"/>
+  </g>
+
+  <text x="%titleX%" y="%titleY%" font-family="%fontFamily%" font-size="%titleSize%"
+        font-weight="700" fill="%titleColor%" filter="url(#titleGlow)">%title%</text>
+
+  <g filter="url(#textShadow)">
+    <text x="%subX%" y="%sub1Y%" font-family="%fontFamily%" font-size="%sub1Size%"
+          font-weight="600" fill="%sub1Color%">%sub1%</text>
+    <text x="%subX%" y="%sub2Y%" font-family="%fontFamily%" font-size="%sub2Size%"
+          font-weight="500" fill="%sub2Color%">%sub2%</text>
+  </g>
+</svg>

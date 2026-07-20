@@ -9,20 +9,10 @@
  * The script uses the path library to resolve the paths to the files.
  */
 import fs from "fs/promises";
-import path, { dirname } from "path";
-import svg2img from "svg2img";
-import { fileURLToPath } from "url";
-import util from "util";
 //import p from "../package.json" with { type: "json" };
-import manifest from "../public/manifest.json" with { type: "json" };
+import { _basename, _c, _r, _readFile, _realpath, _y, getPluginVersion } from "./helpers.js";
 import { getSupplierNames } from "./supplierList.js";
-
-/**
- * Environment variables
- */
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const __rootDir = path.resolve(__dirname, "..");
+import { renderSvg } from "./svg.js";
 
 /**
  * Constants (specific to this script)
@@ -35,36 +25,6 @@ const logoTemplate = "public/static/images/logo/ChemPal-logo-template.xml";
  * (e.g. ChemPal-logo-16.png) for use as manifest icons.
  */
 const ICON_SIZES = [16, 32, 48, 128];
-
-/**
- * Helper functions
- */
-// Get the real path of a file relative to the root directory
-const _realpath = (filename) => path.resolve(__rootDir, filename);
-// Get the basename of a file
-const _basename = (filename) => path.basename(filename);
-// Promisify the svg2img function
-const svg2imgPromisified = util.promisify(svg2img);
-// Simple function to read a utf8 encoded file
-const _readFile = async (filename) => await fs.readFile(filename, "utf8");
-
-// Using ASCII color codes instead of chalk because these show up in github actions output.
-const _r = (text) => `\x1b[31m${text}\x1b[0m`; // red
-const _g = (text) => `\x1b[32m${text}\x1b[0m`; // green
-const _y = (text) => `\x1b[33m${text}\x1b[0m`; // yellow
-const _b = (text) => `\x1b[34m${text}\x1b[0m`; // blue
-const _m = (text) => `\x1b[35m${text}\x1b[0m`; // magenta
-const _c = (text) => `\x1b[36m${text}\x1b[0m`; // cyan
-const _w = (text) => `\x1b[37m${text}\x1b[0m`; // white
-
-/**
- * Get the plugin version from the manifest.json file.
- *
- * @returns {string} The plugin version
- */
-function getPluginVersion() {
-  return manifest.version_name || manifest.version;
-}
 
 /**
  * The SVG files to generate and convert.
@@ -149,11 +109,7 @@ async function createPngFile(svgFile, size) {
     const pngFilename = size
       ? svgFile.replace(".svg", `-${size}.png`)
       : svgFile.replace(".svg", ".png");
-    // svg2img (>=1.0) renders via resvg-js; scale with fitTo (aspect ratio is
-    // preserved, so a square template yields a square icon).
-    const options = size ? { resvg: { fitTo: { mode: "width", value: size } } } : {};
-
-    const buffer = await svg2imgPromisified(_realpath(svgFile), options);
+    const buffer = await renderSvg(_realpath(svgFile), size);
     await fs.writeFile(_realpath(pngFilename), buffer);
     console.log(`  ${_y(_basename(pngFilename))} created from ${_y(_basename(svgFile))}`);
   } catch (error) {

@@ -72,6 +72,7 @@
     "docs:www": "pnpm run docs && npx http-server -p 8080 docs",
     "validate-docs": "tsc --noEmit",
     "generate-logo-files": "node tools/generate-logo-files.js",
+    "generate-promo-tiles": "node tools/generate-promo-tiles.js",
     "pack": "node tools/pack-extension.js",
     "build:prod": "pnpm run generate && vite build --mode=production && node tools/pack-extension.js",
     "build:prod:firefox": "pnpm run generate && BROWSER=firefox vite build --mode=production && node tools/pack-firefox.js",
