@@ -11,7 +11,6 @@ import {
 } from "fuzzball";
 
 /**
- * @group Constants
  * Fuzz-match scorer registry shared between `SupplierBase.fuzzyFilter` and the
  * Advanced drawer section's override selector. Keys are stored in
  * `userSettings.fuzzScorerOverride`; when present at search time they replace
@@ -20,6 +19,7 @@ import {
  * `distance` is intentionally excluded — it's an edit distance (lower = more
  * similar), while all other scorers return 0–100 (higher = more similar), so
  * it doesn't plug into the same cutoff/filter flow.
+ * @group Constants
  * @source
  */
 export type FuzzScorerFn = (str1: string, str2: string) => number;

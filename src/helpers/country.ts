@@ -11,8 +11,8 @@ import { findByIso2, findByName } from "country-list-js";
  */
 
 /**
- * @category Country Helpers
  * Currency details attached to a country record from `country-list-js`.
+ * @category Country Helpers
  */
 interface CountryCurrency {
   code: string;
