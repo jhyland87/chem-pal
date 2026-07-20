@@ -58,12 +58,30 @@ export const FAKE_SUPPLIER_NAMES = [
 ];
 
 /**
+ * Covers the supplier column of the demo screenshots: an opaque box over each
+ * real supplier cell with a name from {@link FAKE_SUPPLIER_NAMES} written on
+ * top. `rows` are text baselines and `x` a left edge, both in the source
+ * image's coordinates; the box is drawn `boxOffsetY` above each baseline so it
+ * covers the cap height of the text underneath.
+ *
+ * Shared by both screenshots below, which are two framings of the same capture.
+ */
+const SUPPLIER_REDACTION = {
+  x: 178,
+  boxWidth: 112,
+  boxHeight: 20,
+  boxOffsetY: 14,
+  boxFill: "#ffffff",
+  fontSize: 15,
+  textFill: "#2b2b2b",
+  rows: [158, 373, 591, 621, 651, 681, 711, 741, 771, 801],
+};
+
+/**
  * App screenshots used as tile backgrounds.
  *
- * `redact` paints an opaque box over each real supplier cell and writes a name
- * from {@link FAKE_SUPPLIER_NAMES} in its place; `rows` are text baselines in
- * the *source* image's coordinates. `crop` (optional) is applied after
- * redaction, also in source coordinates.
+ * `redact` is applied in the source image's coordinate space; `crop` (optional)
+ * is applied after it, in the same space.
  */
 export const SCREENSHOTS = {
   /** Full price-tracking view: two expanded rows with variant pricing + trends. */
@@ -71,12 +89,7 @@ export const SCREENSHOTS = {
     src: "public/static/images/demo/price-tracking.png",
     width: 1269,
     height: 888,
-    redact: {
-      x: 178,
-      boxWidth: 112,
-      fontSize: 15,
-      rows: [158, 373, 591, 621, 651, 681, 711, 741, 771, 801],
-    },
+    redact: SUPPLIER_REDACTION,
   },
 
   /**
@@ -89,12 +102,7 @@ export const SCREENSHOTS = {
     src: "public/static/images/demo/price-tracking.png",
     width: 1269,
     height: 888,
-    redact: {
-      x: 178,
-      boxWidth: 112,
-      fontSize: 15,
-      rows: [158, 373, 591, 621, 651, 681, 711, 741, 771, 801],
-    },
+    redact: SUPPLIER_REDACTION,
     crop: { x: 0, y: 82, width: 1269, height: 520 },
   },
 };
@@ -116,9 +124,10 @@ const MARQUEE_WITH_SHOT = {
   bgTo: PALETTE.bgTo,
   logo: { x: 110, y: 150, size: 252 },
   shadow: { dy: 12, blur: 18 },
-  // Drawn over the screenshot on these tiles, so kept fainter than the
-  // plain marquee's to avoid texturing the UI behind them.
-  accent: { opacity: 0.04, scale: 1, x: 0, y: 0 },
+  // Pushed over to the open navy on the left. In their authored position they
+  // land under the screenshot, where they read as noise on the UI rather than
+  // as a pattern. On plain background they can take the full opacity.
+  accent: { opacity: 0.05, scale: 1, x: -1180, y: -40 },
   title: { x: 420, y: 278, size: 118 },
   sub: { x: 426, y1: 342, y2: 390, size1: 33, size2: 26 },
   // No scrim: the halo and pad below handle legibility on their own, and a
@@ -138,7 +147,8 @@ const SMALL_WITH_SHOT = {
   bgTo: PALETTE.bgToSmall,
   logo: { x: 30, y: 24, size: 104 },
   shadow: { dy: 6, blur: 9 },
-  accent: { opacity: 0.05, scale: 0.42, x: -160, y: 20 },
+  // Same reasoning as the marquee: shifted left, off the screenshot.
+  accent: { opacity: 0.05, scale: 0.42, x: -510, y: 20 },
   // Screenshot sits along the top; copy drops below it over a vertical scrim,
   // so it clears the UI entirely and needs no pad of its own.
   title: { x: 30, y: 186, size: 42 },
