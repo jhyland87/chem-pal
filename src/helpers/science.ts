@@ -432,8 +432,10 @@ export const buildGradeRegexes = (): GradeRegexes => {
   //   [...word]
   //     .map((c) => (/[a-zA-Z]/i.test(c) ? `[${c.toUpperCase()}${c.toLowerCase()}]` : c))
   //     .join("");
-  const cases = (word: string) =>
-    `(?:${word}|${ucfirst(word)}|${word.toLowerCase()}|${word.toUpperCase()})`;
+  const cases = (word: string) => {
+    const _c = new Set([word, ucfirst(word), word.toLowerCase(), word.toUpperCase()]);
+    return `(?:${Array.from(_c).join("|")})`;
+  };
 
   // acronym("ACS") -> "(?:ACS(?!\.)|A\.C\.S\.)"
   // Plain form (not followed by a dot, so "ACS." is rejected) OR dotted "A.C.S.".
@@ -444,6 +446,7 @@ export const buildGradeRegexes = (): GradeRegexes => {
   // ── Core reusable tokens ────────────────────────────────────────────────────
   const gradeTxt = cases("grade");
   const purityTxt = cases("purity");
+  const qualityTxt = cases("quality");
   const reagentTxt = cases("reagent");
 
   // Optional trailing " grade" (lets "AR" also match "AR Grade").
@@ -475,6 +478,7 @@ export const buildGradeRegexes = (): GradeRegexes => {
     // "lab" or laboratory + its two common misspellings.
     Lab_Grade: String.raw`${cases("lab")}(?:${cases("oratory")}|${cases("oratiry")}|${cases("pratory")})?`,
     Pure_Grade: String.raw`${cases("pur")}(?:${cases("e")}|${cases("ified")})`,
+    High_Purity_Grade: String.raw`(?:${cases("ultra")}\s+)?${cases("high")}\s+(?:${cases("purity")}|${qualityTxt}|${rgFlex})`,
     Pharma_Grade: pharma,
     Low_Grade: cases("low"),
   };
@@ -496,7 +500,7 @@ export const buildGradeRegexes = (): GradeRegexes => {
     // Bare "reagent grade". Qualifier-prefixed forms ("Practical/Technical/Pure/…
     // Reagent Grade") are claimed by those groups, which all consume the reagent
     // tail — so ordering keeps this from firing on them, no lookbehind needed.
-    Reagent_Grade: String.raw`${stems.Reagent_Grade}\s+${gradeTxt}`,
+    Reagent_Grade: String.raw`(?<!(CS|SP|CC|AR|BP|JP|PA|AL|al)\s)${stems.Reagent_Grade}${optionalGrade}(?!.*(ACS|(US|J|B)P|NF|FCC|HPLC).*)`,
     // "BP"/"B.P." — decline when "/USP" or "/U.S.P." follows so the combo routes
     // to USP. Or "britt?ish pharmacop..." (t? absorbs the "Brittish" typo).
     BP_Grade: String.raw`(?:${acronym("BP")}(?!\s*/\s*${acronym("USP")})|${cases("brit")}[Tt]?${cases("ish")}\s+${pharma})${optionalGrade}`,
@@ -506,7 +510,7 @@ export const buildGradeRegexes = (): GradeRegexes => {
     USP_Grade: String.raw`(?:${acronym("BP")}\s*/\s*${acronym("USP")}|${acronym("USP")}\s*/\s*${acronym("BP")}|${acronym("USP")}|${cases("usp")}\s+${gradeTxt}|(?:${cases("united")}\s+${cases("states")}|${acronym("US")})\s+${pharma})${optionalGrade}`,
     HPLC_Grade: String.raw`(?:${acronym("HPLC")}|${cases("hplc")}\s+${gradeTxt}|${cases("gradient")}\s+${gradeTxt}|${cases("high")}[-\s]+${cases("performance")}\s+${cases("liquid")}\s+${cases("chromatography")})${optionalGrade}`,
     Lab_Grade: String.raw`(?:${acronym("LR")}|${stems.Lab_Grade}\s+${rgFlex})`,
-    Pure_Grade: String.raw`(?:${acronym("PA")}|${stems.Pure_Grade}\s+${rgFlex})`,
+    Pure_Grade: String.raw`(?:${acronym("PA")}|${stems.High_Purity_Grade}|${stems.Pure_Grade}\s+${rgFlex})`,
     Pharma_Grade: String.raw`${stems.Pharma_Grade}\s+${rgFlex}`,
     Low_Grade: String.raw`${stems.Low_Grade}\s+(?:${rgFlex}|${purityTxt})`,
     Impure: String.raw`${cases("impure")}(?:\s+${reagentTxt})?`,
@@ -572,7 +576,7 @@ const GRADE_REGEXES = buildGradeRegexes();
  * @category Science Helpers
  * @group Regex Patterns
  * @document ./REAGENT_GRADE_PATTERN.md
- * @see https://regex101.com/r/BJV88C/8
+ * @see https://regex101.com/r/BJV88C/11
  */
 export const GRADE_REGEX = GRADE_REGEXES.classifier;
 
@@ -591,7 +595,7 @@ export const LABELED_GRADE_REGEX = GRADE_REGEXES.labeled;
  * @category Science Helpers
  * @group Regex Patterns
  * @document ./REAGENT_GRADE_PATTERN.md
- * @see https://regex101.com/r/BJV88C/8
+ * @see https://regex101.com/r/BJV88C/11
  */
 export const GRADE_REGEX_SOURCE = GRADE_REGEX.source;
 
@@ -602,7 +606,7 @@ export const GRADE_REGEX_SOURCE = GRADE_REGEX.source;
  * column always has something to show.
  * @category Science Helpers
  * @group Parsers
- * @see https://regex101.com/r/BJV88C/8
+ * @see https://regex101.com/r/BJV88C/11
  * @document ./REAGENT_GRADE_PATTERN.md
  * @param value - The string to extract the grade from (e.g. a product title)
  * @returns The grade label (e.g. `"ACS Grade"`), or `"Ungraded"` if none is found
@@ -618,14 +622,30 @@ export const GRADE_REGEX_SOURCE = GRADE_REGEX.source;
  * @source
  */
 export const parseGrade = (value: string): string => {
+  return matchGrade(value) ?? "Ungraded";
+};
+
+/**
+ * Runs both grade regexes over a string and resolves the winning named group to its label.
+ * The group *name* is the answer (`Reagent_Grade` becomes `"Reagent Grade"`), not the matched text, so
+ * callers must never read a positional group — the bodies contain their own inner groups, which
+ * makes `match[1]` meaningless. Shared by {@link parseGrade} and {@link extractGrade}; the
+ * difference is only what they do with a miss.
+ * @category Science Helpers
+ * @group Parsers
+ * @param value - The string to classify (a product title, or one line of product copy)
+ * @returns The grade label (e.g. `"Reagent Grade"`), or `undefined` if nothing matched
+ * @source
+ */
+const matchGrade = (value: string): string | undefined => {
   const trimmed = value.trim();
   // The classifier is the specific signal, so it wins; the labeled form only fills
-  // the gap it leaves for bare word-grade stems.
+  // the gap it leaves for bare word-grade stems ("Grade: Reagent").
   const matches = GRADE_REGEX.exec(trimmed) ?? LABELED_GRADE_REGEX.exec(trimmed);
-  if (!matches || !matches.groups) return "Ungraded";
+  if (!matches?.groups) return undefined;
 
   const hits = Object.entries(matches.groups).filter(([, v]) => Boolean(v));
-  if (hits.length === 0) return "Ungraded";
+  if (hits.length === 0) return undefined;
   if (hits.length > 1) {
     console.warn(
       `Multiple grades found in "${value}": ${hits.map(([k]) => k).join(", ")}, returning first`,
@@ -1032,9 +1052,8 @@ const extractPurity = (lines: string[]): number | undefined => {
 const extractGrade = (lines: string[]): string | undefined => {
   for (const line of lines) {
     if (!/grade/i.test(line)) continue;
-    const match = line.match(GRADE_REGEX);
-    if (!match) continue;
-    return match[1];
+    const grade = matchGrade(line);
+    if (grade) return grade;
   }
   return undefined;
 };

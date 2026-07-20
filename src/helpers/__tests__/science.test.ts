@@ -448,6 +448,14 @@ describe("science helpers", () => {
       ["PA", "Pure Grade"],
       ["P.A.", "Pure Grade"],
       ["Pure Grade", "Pure Grade"],
+      ["High Purity", "Pure Grade"],
+      ["High Grade", "Pure Grade"],
+      ["High Purity Grade", "Pure Grade"],
+      ["High Quality Grade", "Pure Grade"],
+      ["Ultra High Purity Grade", "Pure Grade"],
+      ["Ultra High Quality Grade", "Pure Grade"],
+      ["ultra high quality", "Pure Grade"],
+      ["ultra high grade", "Pure Grade"],
       ["Low", "Low Grade"],
       ["Impure", "Impure"],
       ["Ungraded", "Ungraded"],
@@ -980,6 +988,30 @@ describe("science helpers", () => {
       expect(
         parseChemicalSpecs("<p>Sodium hydroxide is great. Potassium too. Contains Na and K.</p>"),
       ).toEqual({});
+    });
+
+    it("should extract a labeled grade from DailyBioUSA-style <p> spec lines", () => {
+      // The grade sits alone after a "Grade:" label, which only the labeled regex can classify.
+      const html =
+        "<p>CAS:<strong>[64-19-7]</strong></p><p>Grade:&nbsp;<strong>Reagent</strong></p>" +
+        "<p>DG:&nbsp;<strong>Yes</strong></p><p>Storage:<strong>18 to 25C</strong></p>";
+      expect(parseChemicalSpecs(html).grade).toBe("Reagent Grade");
+    });
+
+    it.each([
+      ["<p>Grade:<strong>High Purity</strong></p>", "Pure Grade"],
+      ["<p>Grade:&nbsp;<strong>Technical</strong></p>", "Technical Grade"],
+      ["<p>Grade: ACS</p>", "ACS Grade"],
+      ["<p>Grade: HPLC</p>", "HPLC Grade"],
+      ["<li>Grade - Analytical Reagent</li>", "AR Grade"],
+    ])("should resolve the grade in %j to %s", (html, expected) => {
+      expect(parseChemicalSpecs(html).grade).toBe(expected);
+    });
+
+    it("should leave grade unset when no line mentions a grade", () => {
+      expect(
+        parseChemicalSpecs("<p>Storage: 18 to 25C</p><p>Sterile: No</p>").grade,
+      ).toBeUndefined();
     });
 
     it("should ignore percentages that are not purity", () => {

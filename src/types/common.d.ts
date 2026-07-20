@@ -186,7 +186,11 @@ declare global {
     | "check"
     | "crypto"
     | "moneyorder"
-    | "other";
+    | "other"
+    | "ebay"
+    | "amazon"
+    | "ebayonly"
+    | "amazononly";
 
   /**
    * Represents a base64 encoded string.

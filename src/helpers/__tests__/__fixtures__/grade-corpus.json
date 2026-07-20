@@ -24,6 +24,7 @@
       "ACS Grade",
       "ACS grade",
       "acs grade",
+      "reagent (ACS)",
       "A.C.S. Grade",
       "American Chemical Society",
       "American Chemical Society Grade",
@@ -133,8 +134,8 @@
     "unsuccessful": ["Techical grade", "Technical", "Tech", "Techniqual grade", "Technically pure"]
   },
   "Reagent Grade": {
-    "successful": ["Reagent Grade", "reagent grade"],
-    "unsuccessful": ["Reagant grade", "Reagent", "Reagents grade", "reagent-grade"]
+    "successful": ["Reagent Grade", "reagent grade", "Reagent"],
+    "unsuccessful": ["Reagant grade", "Reagents grade"]
   },
   "BP Grade": {
     "successful": [

@@ -13,76 +13,74 @@ match, and its name is the grade.
 
 > **Note:** The reason for all the `[Aa][Bb][Cc]` instead of just doing case insensitive is because some grades we require to be uppercase (`USP`, `ACS`, `FCC`, etc)
 
-[Regex101](https://regex101.com/r/BJV88C/8)
+[Regex101](https://regex101.com/r/BJV88C/11)
+
 
 ```regex
-# Word boundary start
 \b(?:
-
   # Analytical Reagent grade
-  (?<AR_Grade>(?:(?:AR(?!\.)|A\.R\.)|[Aa][Nn][Aa][Ll][Yy][Tt][Ii][Cc][Aa][Ll](?:\s*[Rr][Ee][Aa][Gg][Ee][Nn][Tt])?)(?:\s+[Gg][Rr][Aa][Dd][Ee])?)|
+  (?<AR_Grade>(?:(?:AR(?!\.)|A\.R\.)|(?:analytical|Analytical|ANALYTICAL)(?:\s*(?:reagent|Reagent|REAGENT))?)(?:\s+(?:grade|Grade|GRADE))?)|
 
   # American Chemical Society grade
-  (?<ACS_Grade>(?:(?:ACS(?!\.)|A\.C\.S\.)|[Aa][Cc][Ss]\s+[Gg][Rr][Aa][Dd][Ee]|[Aa][Mm][Ee][Rr][Ii][Cc][Aa][Nn]\s+[Cc][Hh][Ee][Mm](?:[Ii][Cc][Aa][Ll])?\s+[Ss][Oo][Cc][Ii][Ee][Tt][Yy])(?:\s+[Gg][Rr][Aa][Dd][Ee])?)|
+  (?<ACS_Grade>(?:(?:ACS(?!\.)|A\.C\.S\.)|(?:acs|Acs|ACS)\s+(?:grade|Grade|GRADE)|(?:american|American|AMERICAN)\s+(?:chem|Chem|CHEM)(?:(?:ical|Ical|ICAL))?\s+(?:society|Society|SOCIETY))(?:\s+(?:grade|Grade|GRADE))?)|
 
   # Guaranteed grade
-  (?<Guaranteed_Grade>[Gg][Uu][Aa][Rr][Aa][Nn][Tt][Ee][Ee][Dd]\s+(?:[Rr][Ee][Aa][Gg][Ee][Nn][Tt](?:\s+[Gg][Rr][Aa][Dd][Ee])?|[Gg][Rr][Aa][Dd][Ee](?:\s+[Rr][Ee][Aa][Gg][Ee][Nn][Tt])?))|
+  (?<Guaranteed_Grade>(?:guaranteed|Guaranteed|GUARANTEED)\s+(?:(?:reagent|Reagent|REAGENT)(?:\s+(?:grade|Grade|GRADE))?|(?:grade|Grade|GRADE)(?:\s+(?:reagent|Reagent|REAGENT))?))|
 
-  # Cosmetic grade (because that's a thing..)
-  (?<Cosmetic_Grade>[Cc][Oo][Ss][Mm][Ee][Tt][Ii][Cc]\s+(?:[Rr][Ee][Aa][Gg][Ee][Nn][Tt](?:\s+[Gg][Rr][Aa][Dd][Ee])?|[Gg][Rr][Aa][Dd][Ee](?:\s+[Rr][Ee][Aa][Gg][Ee][Nn][Tt])?))|
+  # Cosmetic grade  (because that's a thing..)
+  (?<Cosmetic_Grade>(?:cosmetic|Cosmetic|COSMETIC)\s+(?:(?:reagent|Reagent|REAGENT)(?:\s+(?:grade|Grade|GRADE))?|(?:grade|Grade|GRADE)(?:\s+(?:reagent|Reagent|REAGENT))?))|
 
   # Extraction grade
-  (?<Extraction_Grade>[Ee][Xx][Tt][Rr][Aa][Cc][Tt][Ii][Oo][Nn]\s+(?:[Rr][Ee][Aa][Gg][Ee][Nn][Tt](?:\s+[Gg][Rr][Aa][Dd][Ee])?|[Gg][Rr][Aa][Dd][Ee](?:\s+[Rr][Ee][Aa][Gg][Ee][Nn][Tt])?))|
+  (?<Extraction_Grade>(?:extraction|Extraction|EXTRACTION)\s+(?:(?:reagent|Reagent|REAGENT)(?:\s+(?:grade|Grade|GRADE))?|(?:grade|Grade|GRADE)(?:\s+(?:reagent|Reagent|REAGENT))?))|
 
   # National Formulary grade
-  (?<NF_Grade>(?:(?:NF(?!\.)|N\.F\.)|[Nn][Ff]\s+[Gg][Rr][Aa][Dd][Ee]|[Nn][Aa][Tt][Ii][Oo][Nn][Aa][Ll]\s+[Ff][Oo][Rr][Mm][Uu][Ll][Aa][Rr][Yy])(?:\s+[Gg][Rr][Aa][Dd][Ee])?)|
+  (?<NF_Grade>(?:(?:NF(?!\.)|N\.F\.)|(?:nf|Nf|NF)\s+(?:grade|Grade|GRADE)|(?:national|National|NATIONAL)\s+(?:formulary|Formulary|FORMULARY))(?:\s+(?:grade|Grade|GRADE))?)|
 
-  # Food Codex Commission grade
-  (?<FCC_Grade>(?:(?:FCC(?!\.)|F\.C\.C\.)|[Ff][Cc][Cc]\s+[Gg][Rr][Aa][Dd][Ee]|[Ff][Oo][Oo][Dd]\s+(?:[Cc][Hh][Ee][Mm](?:[Ii][Cc][Aa][Ll][Ss])?\s+[Cc][Oo][Dd][Ee][Xx]|(?:[Rr][Ee][Aa][Gg][Ee][Nn][Tt](?:\s+[Gg][Rr][Aa][Dd][Ee])?|[Gg][Rr][Aa][Dd][Ee](?:\s+[Rr][Ee][Aa][Gg][Ee][Nn][Tt])?)))(?:\s+[Gg][Rr][Aa][Dd][Ee])?)|
+  # Food Chemicals Codex grade
+  (?<FCC_Grade>(?:(?:FCC(?!\.)|F\.C\.C\.)|(?:fcc|Fcc|FCC)\s+(?:grade|Grade|GRADE)|(?:food|Food|FOOD)\s+(?:(?:chem|Chem|CHEM)(?:(?:icals|Icals|ICALS))?\s+(?:codex|Codex|CODEX)|(?:(?:reagent|Reagent|REAGENT)(?:\s+(?:grade|Grade|GRADE))?|(?:grade|Grade|GRADE)(?:\s+(?:reagent|Reagent|REAGENT))?)))(?:\s+(?:grade|Grade|GRADE))?)|
 
   # Practical grade
-  (?<Practical_Grade>[Pp][Rr][Aa][Cc][Tt][Ii][Cc][Aa][Ll]\s+(?:[Rr][Ee][Aa][Gg][Ee][Nn][Tt](?:\s+[Gg][Rr][Aa][Dd][Ee])?|[Gg][Rr][Aa][Dd][Ee](?:\s+[Rr][Ee][Aa][Gg][Ee][Nn][Tt])?))|
-
-  # Purified grade
-  (?<Pure_Grade>(?:(?:PA(?!\.)|P\.A\.))|[Pp][Uu][Rr](?:[Ee]|[Ii][Ff][Ii][Ee][Dd])\s+(?:[Rr][Ee][Aa][Gg][Ee][Nn][Tt](?:\s+[Gg][Rr][Aa][Dd][Ee])?|[Gg][Rr][Aa][Dd][Ee](?:\s+[Rr][Ee][Aa][Gg][Ee][Nn][Tt])?)?|[Gg][Rr][Aa][Dd][Ee])|
+  (?<Practical_Grade>(?:practical|Practical|PRACTICAL)\s+(?:(?:reagent|Reagent|REAGENT)(?:\s+(?:grade|Grade|GRADE))?|(?:grade|Grade|GRADE)(?:\s+(?:reagent|Reagent|REAGENT))?))|
 
   # Industrial grade
-  (?<Industrial_Grade>[Ii][Nn][Dd][IiUu][Ss][Tt][Rr][Ii][Aa][Ll]\s+(?:[Rr][Ee][Aa][Gg][Ee][Nn][Tt](?:\s+[Gg][Rr][Aa][Dd][Ee])?|[Gg][Rr][Aa][Dd][Ee](?:\s+[Rr][Ee][Aa][Gg][Ee][Nn][Tt])?))|
+  (?<Industrial_Grade>(?:ind|Ind|IND)[IiUu](?:strial|Strial|STRIAL)\s+(?:(?:reagent|Reagent|REAGENT)(?:\s+(?:grade|Grade|GRADE))?|(?:grade|Grade|GRADE)(?:\s+(?:reagent|Reagent|REAGENT))?))|
 
   # Technical grade
-  (?<Technical_Grade>(?:[Tt][Ee][Cc][Hh](?:[Nn][Ii][Cc][Aa][Ll])?\s+(?:[Rr][Ee][Aa][Gg][Ee][Nn][Tt](?:\s+[Gg][Rr][Aa][Dd][Ee])?|[Gg][Rr][Aa][Dd][Ee](?:\s+[Rr][Ee][Aa][Gg][Ee][Nn][Tt])?)|TECHNICAL(?:\s+GRADE)?))|
+  (?<Technical_Grade>(?:(?:tech|Tech|TECH)(?:(?:nical|Nical|NICAL))?\s+(?:(?:reagent|Reagent|REAGENT)(?:\s+(?:grade|Grade|GRADE))?|(?:grade|Grade|GRADE)(?:\s+(?:reagent|Reagent|REAGENT))?)|TECHNICAL(?:\s+GRADE)?))|
 
   # Reagent grade
-  (?<Reagent_Grade>[Rr][Ee][Aa][Gg][Ee][Nn][Tt]\s+[Gg][Rr][Aa][Dd][Ee])|
+  (?<Reagent_Grade>(?<!(CS|SP|CC|AR|BP|JP|PA)\s)(?:reagent|Reagent|REAGENT)(?:\s+(?:grade|Grade|GRADE))?(?!.*(ACS|(US|J|B)P|NF|FCC|HPLC).*))|
 
   # British Pharmacopeia grade
-  (?<BP_Grade>(?:(?:BP(?!\.)|B\.P\.)(?!\s*\/\s*(?:USP(?!\.)|U\.S\.P\.))|[Bb][Rr][Ii][Tt][Tt]?[Ii][Ss][Hh]\s+[Pp][Hh][Aa][Rr][Mm][Aa](?:[Cc][Oo][Pp](?:[Oo]?[Ee][Ii][Aa])?|[Cc][Yy]|[Cc][Ee][Uu][Tt][Ii][Cc][Aa][Ll])?)(?:\s+[Gg][Rr][Aa][Dd][Ee])?)|
+  (?<BP_Grade>(?:(?:BP(?!\.)|B\.P\.)(?!\s*\/\s*(?:USP(?!\.)|U\.S\.P\.))|(?:brit|Brit|BRIT)[Tt]?(?:ish|Ish|ISH)\s+(?:pharma|Pharma|PHARMA)(?:(?:cop|Cop|COP)(?:[Oo]?(?:eia|Eia|EIA))?|(?:cy|Cy|CY)|(?:ceutical|Ceutical|CEUTICAL))?)(?:\s+(?:grade|Grade|GRADE))?)|
 
   # Japanese Pharmacopeia grade
-  (?<JP_Grade>(?:(?:JP(?!\.)|J\.P\.)|[Jj][Aa][Pp][Aa][Nn][Ee][Ss][Ee]\s+[Pp][Hh][Aa][Rr][Mm][Aa](?:[Cc][Oo][Pp](?:[Oo]?[Ee][Ii][Aa])?|[Cc][Yy]|[Cc][Ee][Uu][Tt][Ii][Cc][Aa][Ll])?)(?:\s+[Gg][Rr][Aa][Dd][Ee])?)|
+  (?<JP_Grade>(?:(?:JP(?!\.)|J\.P\.)|(?:japanese|Japanese|JAPANESE)\s+(?:pharma|Pharma|PHARMA)(?:(?:cop|Cop|COP)(?:[Oo]?(?:eia|Eia|EIA))?|(?:cy|Cy|CY)|(?:ceutical|Ceutical|CEUTICAL))?)(?:\s+(?:grade|Grade|GRADE))?)|
 
   # United States Pharmacopeia grade
-  (?<USP_Grade>(?:(?:BP(?!\.)|B\.P\.)\s*\/\s*(?:USP(?!\.)|U\.S\.P\.)|(?:USP(?!\.)|U\.S\.P\.)\s*\/\s*(?:BP(?!\.)|B\.P\.)|(?:USP(?!\.)|U\.S\.P\.)|[Uu][Ss][Pp]\s+[Gg][Rr][Aa][Dd][Ee]|(?:[Uu][Nn][Ii][Tt][Ee][Dd]\s+[Ss][Tt][Aa][Tt][Ee][Ss]|(?:US(?!\.)|U\.S\.))\s+[Pp][Hh][Aa][Rr][Mm][Aa](?:[Cc][Oo][Pp](?:[Oo]?[Ee][Ii][Aa])?|[Cc][Yy]|[Cc][Ee][Uu][Tt][Ii][Cc][Aa][Ll])?)(?:\s+[Gg][Rr][Aa][Dd][Ee])?)|
+  (?<USP_Grade>(?:(?:BP(?!\.)|B\.P\.)\s*\/\s*(?:USP(?!\.)|U\.S\.P\.)|(?:USP(?!\.)|U\.S\.P\.)\s*\/\s*(?:BP(?!\.)|B\.P\.)|(?:USP(?!\.)|U\.S\.P\.)|(?:usp|Usp|USP)\s+(?:grade|Grade|GRADE)|(?:(?:united|United|UNITED)\s+(?:states|States|STATES)|(?:US(?!\.)|U\.S\.))\s+(?:pharma|Pharma|PHARMA)(?:(?:cop|Cop|COP)(?:[Oo]?(?:eia|Eia|EIA))?|(?:cy|Cy|CY)|(?:ceutical|Ceutical|CEUTICAL))?)(?:\s+(?:grade|Grade|GRADE))?)|
 
   # High Performance Liquid Chromatography grade
-  (?<HPLC_Grade>(?:(?:HPLC(?!\.)|H\.P\.L\.C\.)|[Hh][Pp][Ll][Cc]\s+[Gg][Rr][Aa][Dd][Ee]|[Gg][Rr][Aa][Dd][Ii][Ee][Nn][Tt]\s+[Gg][Rr][Aa][Dd][Ee]|[Hh][Ii][Gg][Hh][-\s]+[Pp][Ee][Rr][Ff][Oo][Rr][Mm][Aa][Nn][Cc][Ee]\s+[Ll][Ii][Qq][Uu][Ii][Dd]\s+[Cc][Hh][Rr][Oo][Mm][Aa][Tt][Oo][Gg][Rr][Aa][Pp][Hh][Yy])(?:\s+[Gg][Rr][Aa][Dd][Ee])?)|
+  (?<HPLC_Grade>(?:(?:HPLC(?!\.)|H\.P\.L\.C\.)|(?:hplc|Hplc|HPLC)\s+(?:grade|Grade|GRADE)|(?:gradient|Gradient|GRADIENT)\s+(?:grade|Grade|GRADE)|(?:high|High|HIGH)[-\s]+(?:performance|Performance|PERFORMANCE)\s+(?:liquid|Liquid|LIQUID)\s+(?:chromatography|Chromatography|CHROMATOGRAPHY))(?:\s+(?:grade|Grade|GRADE))?)|
 
   # Laboratory grade
-  (?<Lab_Grade>(?:(?:LR(?!\.)|L\.R\.)|[Ll][Aa][Bb](?:[Oo][Rr][Aa][Tt][Oo][Rr][Yy]|[Oo][Rr][Aa][Tt][Ii][Rr][Yy]|[Pp][Rr][Aa][Tt][Oo][Rr][Yy])?\s+(?:[Rr][Ee][Aa][Gg][Ee][Nn][Tt](?:\s+[Gg][Rr][Aa][Dd][Ee])?|[Gg][Rr][Aa][Dd][Ee](?:\s+[Rr][Ee][Aa][Gg][Ee][Nn][Tt])?)))|
+  (?<Lab_Grade>(?:(?:LR(?!\.)|L\.R\.)|(?:lab|Lab|LAB)(?:(?:oratory|Oratory|ORATORY)|(?:oratiry|Oratiry|ORATIRY)|(?:pratory|Pratory|PRATORY))?\s+(?:(?:reagent|Reagent|REAGENT)(?:\s+(?:grade|Grade|GRADE))?|(?:grade|Grade|GRADE)(?:\s+(?:reagent|Reagent|REAGENT))?)))|
+
+  # Pure grade
+  (?<Pure_Grade>(?:(?:PA(?!\.)|P\.A\.)|(?:(?:ultra|Ultra|ULTRA)\s+)?(?:high|High|HIGH)\s+(?:(?:purity|Purity|PURITY)|(?:quality|Quality|QUALITY)|(?:(?:reagent|Reagent|REAGENT)(?:\s+(?:grade|Grade|GRADE))?|(?:grade|Grade|GRADE)(?:\s+(?:reagent|Reagent|REAGENT))?))|(?:pur|Pur|PUR)(?:(?:e|E)|(?:ified|Ified|IFIED))\s+(?:(?:reagent|Reagent|REAGENT)(?:\s+(?:grade|Grade|GRADE))?|(?:grade|Grade|GRADE)(?:\s+(?:reagent|Reagent|REAGENT))?)))|
 
   # Pharma grade
-  (?<Pharma_Grade>[Pp][Hh][Aa][Rr][Mm][Aa](?:[Cc][Oo][Pp](?:[Oo]?[Ee][Ii][Aa])?|[Cc][Yy]|[Cc][Ee][Uu][Tt][Ii][Cc][Aa][Ll])?\s+(?:[Rr][Ee][Aa][Gg][Ee][Nn][Tt](?:\s+[Gg][Rr][Aa][Dd][Ee])?|[Gg][Rr][Aa][Dd][Ee](?:\s+[Rr][Ee][Aa][Gg][Ee][Nn][Tt])?))|
+  (?<Pharma_Grade>(?:pharma|Pharma|PHARMA)(?:(?:cop|Cop|COP)(?:[Oo]?(?:eia|Eia|EIA))?|(?:cy|Cy|CY)|(?:ceutical|Ceutical|CEUTICAL))?\s+(?:(?:reagent|Reagent|REAGENT)(?:\s+(?:grade|Grade|GRADE))?|(?:grade|Grade|GRADE)(?:\s+(?:reagent|Reagent|REAGENT))?))|
 
   # Low grade
-  (?<Low_Grade>[Ll][Oo][Ww]\s+(?:(?:[Rr][Ee][Aa][Gg][Ee][Nn][Tt](?:\s+[Gg][Rr][Aa][Dd][Ee])?|[Gg][Rr][Aa][Dd][Ee](?:\s+[Rr][Ee][Aa][Gg][Ee][Nn][Tt])?)|[Pp][Uu][Rr][Ii][Tt][Yy]))|
+  (?<Low_Grade>(?:low|Low|LOW)\s+(?:(?:(?:reagent|Reagent|REAGENT)(?:\s+(?:grade|Grade|GRADE))?|(?:grade|Grade|GRADE)(?:\s+(?:reagent|Reagent|REAGENT))?)|(?:purity|Purity|PURITY)))|
 
-  # Impure grade
-  (?<Impure>[Ii][Mm][Pp][Uu][Rr][Ee](?:\s+[Rr][Ee][Aa][Gg][Ee][Nn][Tt])?)|
+  # Impure
+  (?<Impure>(?:impure|Impure|IMPURE)(?:\s+(?:reagent|Reagent|REAGENT))?)|
 
-  # Ungraded grade
-  (?<Ungraded>[Uu][Nn][Gg][Rr][Aa][Dd][Ee][Dd](?:\s+[Pp][Uu][Rr][Ii][Tt][Yy])?(?:\s+[Rr][Ee][Aa][Gg][Ee][Nn][Tt])?)
+  # Ungraded
+  (?<Ungraded>(?:ungraded|Ungraded|UNGRADED)(?:\s+(?:purity|Purity|PURITY))?(?:\s+(?:reagent|Reagent|REAGENT))?)
 
-  # End of grade patterns
 )(?!\w)
 ```
 
