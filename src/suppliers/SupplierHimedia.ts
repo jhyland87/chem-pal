@@ -20,7 +20,9 @@ export class SupplierHimedia extends SupplierBaseAmazon implements ISupplier {
   protected readonly queryPrefix: string = "himedia";
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ["amazononly"];
+
+  public readonly amazonStoreURL: string = "https://www.amazon.com/s?k=HiMedia";
 
   // Pure-search supplier: the initial search returns every field and
   // getProductData is a passthrough, so there's no per-product detail to cache.

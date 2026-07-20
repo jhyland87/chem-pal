@@ -25,6 +25,7 @@
   "host_permissions": [
     "https://www.ambeed.com/*",
     "https://www.carolina.com/*",
+    "https://www.dailybiousa.com/*",
     "https://carolinachemical.com/*",
     "https://www.chemsavers.com/*",
     "https://s3.amazonaws.com/*",

@@ -1,0 +1,113 @@
+{
+  "withOptions": {
+    "id": "5a1f8d7f-816b-85f9-4991-256e679efecf",
+    "options": [
+      {
+        "id": "82bbf785-440e-47a1-8e4b-4a5a9adca566",
+        "key": "Weight",
+        "title": "Weight",
+        "optionType": "DROP_DOWN",
+        "selections": [
+          {
+            "id": 3,
+            "value": "50G",
+            "description": "50G",
+            "key": "50G",
+            "inStock": null
+          },
+          {
+            "id": 1,
+            "value": "100G",
+            "description": "100G",
+            "key": "100G",
+            "inStock": null
+          },
+          {
+            "id": 2,
+            "value": "250g",
+            "description": "250g",
+            "key": "250g",
+            "inStock": null
+          }
+        ]
+      }
+    ],
+    "productItems": [
+      {
+        "id": "490be515-e5d7-4c66-a1e0-e55cfa494fa1",
+        "optionsSelections": [
+          3
+        ],
+        "price": 38.0,
+        "formattedPrice": "$38.00"
+      },
+      {
+        "id": "288cd998-061e-400d-a9b7-3e6e9f53e705",
+        "optionsSelections": [
+          1
+        ],
+        "price": 61.0,
+        "formattedPrice": "$61.00"
+      },
+      {
+        "id": "2821c9df-a7b3-48ee-b666-93261fe1e6ec",
+        "optionsSelections": [
+          2
+        ],
+        "price": 90.0,
+        "formattedPrice": "$90.00"
+      }
+    ],
+    "productType": "physical",
+    "price": 38.0,
+    "sku": "",
+    "isInStock": true,
+    "urlPart": "hepes-free-acid-b775",
+    "formattedPrice": "$38.00",
+    "name": "HEPES, free acid B775 CAS:[7365-45-9]",
+    "description": "<p>Product Description:HEPES, free acid: HEPES has been described as one of the best all-purpose buffers available for biological research. At most biological pHs the molecule is zwitterionic, and is effective as a buffer at pH 6.8 to 8.2. HEPES has been used in a wide variety of applications, including tissue culture. Buffer strength for cell culture applications is usually in the range of 10 to 25 mM. After the addition of HEPES pH is adusted with NaOH or HCl. Care must be taken to maintain appropriate osmolality in media, and toxicity with respect to a given cell line must be evaluated. (Isotonicity data have been tabulated.) HEPES is reportedly superior to NaHCO3 in controlling pH in tissue and organ culture. HEPES is not recommended for certain protein applications; it interferes with the Folin-Ciocalteu protein assay. The Biuret protein assay is unaffected. HEPES was the buffer of choice in a protein deposition technique in electron microscopy because it did not affect metal substrates. HEPES was evaluated and shown to be quite suitable for use with Ampholines in generating pH gradients less than 1 pH unit wide for isoelectric focusing applications. A buffer solution of HEPES can be prepared by any of several methods. The free acid can be added to water, then titrated with approximately one-half mole equivalent of sodium hydroxide or potassium hydroxide to the pH desired, a simple mixing table for preparing 0.05 M HEPES/NaOH has been published. Alternatively, equimolar concentrations of HEPES and of sodium HEPES can be mixed in approximately equal volumes, back-titrating with either solution to the appropriate pH.</p><p>&nbsp;</p><p>Shipping Conditions:RT</p><p>UNSPSC Code:12161700</p><p>UNSPSC Category:Buffers</p>",
+    "brand": null
+  },
+  "skuSize": {
+    "id": "99a840b7-64d4-f38e-f58f-da25e991dfea",
+    "options": [],
+    "productItems": [],
+    "productType": "physical",
+    "price": 21.0,
+    "sku": "A932.SIZE.500G",
+    "isInStock": true,
+    "urlPart": "sodium-nitrite-a932-size-500g-cas-7632-00-0",
+    "formattedPrice": "$21.00",
+    "name": "Sodium nitrite  A932.SIZE.500G  CAS:[7632-00-0]",
+    "description": "<p>Product Description:<strong>Sodium nitrite</strong></p><p>Total Product Size:<strong>500g</strong></p><p>CAS:<strong>[7632-00-0]</strong></p><p>Grade:<strong>High Purity</strong></p><p>Shipping Conditions:<strong>RT</strong></p><p>UNSPSC Code:<strong>12352200</strong></p><p>UNSPSC Category:<strong>Biochemical Reagents</strong></p><p>Hazard Class:<strong>Class 5.1(6.1)</strong></p><p>Hazard UN:<strong>Un15</strong></p><p>Hazard PG:<strong>PGIII</strong></p>",
+    "brand": null
+  },
+  "skuIsPrice": {
+    "id": "e9a12b9b-f60d-c90f-c57f-2b988c98da61",
+    "options": [],
+    "productItems": [],
+    "productType": "physical",
+    "price": 15.0,
+    "sku": "13.99",
+    "isInStock": true,
+    "urlPart": "sodium-borate-decahydrate-a991-size-500g-cas-1303-96-4",
+    "formattedPrice": "$15.00",
+    "name": "Sodium borate, decahydrate\u00a0A991.SIZE.500G  CAS:[1303-96-4]",
+    "description": "<p>Product Description:<strong>Sodium borate, decahydrate</strong></p><p>Total Product Size:<strong>500g</strong></p><p>CAS:<strong>[1303-96-4]</strong></p><p>Grade:<strong>Reagent</strong></p><p>Shipping Conditions:<strong>RT</strong></p><p>UNSPSC Code:<strong>12352302</strong></p><p>UNSPSC Category:<strong>Inorganic Salts</strong></p>",
+    "brand": null
+  },
+  "noSize": {
+    "id": "7e66b2b6-f1c9-5cac-3048-0bcd18fe57ec",
+    "options": [],
+    "productItems": [],
+    "productType": "physical",
+    "price": 50.0,
+    "sku": "LW001",
+    "isInStock": true,
+    "urlPart": "daily-bio-mini-spin-columns-for-dna-and-rna-extraction-and-purification",
+    "formattedPrice": "$50.00",
+    "name": "Daily Bio\u2122 MINI Spin Columns for DNA and RNA Extraction and Purification  LW001",
+    "description": "<p>Clear ring, Clear collection</p><p><br>Spin Columns are packed with silica membranes to rapidly purify nucleic acid using a silica-based extraction method. The columns can be used to purify single- or double-stranded DNA or RNA from contaminants such as salts, solvents, enzymes or proteins. Nucleic acids are binded to the silica resins under high chaotropic salt concentrations, salts and impurities are removed during the wash step. Pure DNA/RNA is eluted from the membrane using water or TE buffer. This isolation method of DNA/RNA is faster and easier to perform than other organic-based extraction methods. The Spin Column complete with attached lid and with 2-ml collection tubes, it is really convenient to use.</p>",
+    "brand": null
+  }
+}

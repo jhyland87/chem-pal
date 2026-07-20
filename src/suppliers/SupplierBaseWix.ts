@@ -307,8 +307,23 @@ export abstract class SupplierBaseWix
 
       // The parent's own quantity/uom should come from the variant whose
       // price matches the parent price, not just the first variant.
-      const parentVariant =
+      let parentVariant =
         productVariants.find((v) => v.price === parentParsedPrice.price) ?? productVariants[0];
+
+      // Wix omits options entirely for single-size products, leaving no variant to read the
+      // quantity off. Give the supplier a chance to recover it from elsewhere on the product
+      // (see getFallbackQuantity) before the listing is dropped.
+      if (!parentVariant) {
+        const fallbackQuantity = this.getFallbackQuantity(product);
+        if (fallbackQuantity && "uom" in fallbackQuantity) {
+          parentVariant = {
+            ...parentParsedPrice,
+            ...fallbackQuantity,
+            id: String(product.id),
+          };
+          productVariants.push(parentVariant);
+        }
+      }
 
       if (!parentVariant || !("quantity" in parentVariant) || !("uom" in parentVariant)) {
         // No quantity/uom could be derived from Wix options or productItems. Suppliers
@@ -353,6 +368,27 @@ export abstract class SupplierBaseWix
   }
 
   /**
+   * Last-resort quantity lookup for a Wix product that carries no options and no productItems,
+   * called by {@link initProductBuilders} just before such a product would be dropped. The base
+   * implementation gives up; suppliers that encode the size somewhere else on the product (a SKU
+   * segment, the name, a spec line) override this to recover it.
+   * @param product - The raw Wix product object from the search response
+   * @returns The parsed quantity/uom, or nothing when none can be derived
+   * @example
+   * ```typescript
+   * this.getFallbackQuantity(product); // { quantity: 500, uom: "g" } | undefined
+   * ```
+   * @source
+   */
+  protected getFallbackQuantity(product: ProductObject): ReturnType<typeof parseQuantity> {
+    this.logger.debug("No fallback quantity strategy for supplier", {
+      supplier: this.supplierName,
+      id: product.id,
+    });
+    return;
+  }
+
+  /**
    * Populates a product builder with the chemical and media properties that live in a Wix
    * product's free-form copy. Both Wix suppliers (FTF, BioFuran) scatter these across the
    * `description` and `additionalInfo` accordions in loosely-structured HTML, so the values are
@@ -390,6 +426,7 @@ export abstract class SupplierBaseWix
       .setImage(photo?.fullUrl, photo?.title ?? product.name)
       .setSDSUrl(findPdfHref(copy))
       .setPurity(specs.purity)
+      .setGrade(specs.grade)
       .setFormula(specs.formula)
       .setMoleweight(specs.molecularWeight)
       .setSmiles(specs.smiles)
