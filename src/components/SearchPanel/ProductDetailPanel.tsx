@@ -188,7 +188,7 @@ interface ProductImageCarouselProps {
 
 /**
  * Renders a product's image in the fixed-size detail box, cycling through the
- * images every {@link IMAGE_CYCLE_MS} when there is more than one. Hovering the
+ * images on a fixed interval (`IMAGE_CYCLE_MS`) when there is more than one. Hovering the
  * image reveals semi-transparent prev/next arrows for manual navigation; a click
  * anywhere else opens the full image in a new tab. Images that fail to load (e.g.
  * a CACTUS 404) are dropped from the rotation; the box disappears only once every

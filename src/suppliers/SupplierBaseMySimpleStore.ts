@@ -110,7 +110,7 @@ export abstract class SupplierBaseMySimpleStore
   /**
    * Builds the human-facing product-page URL from a search item's storefront
    * path. MySimpleStore serves product pages under `/products` on the supplier's
-   * own domain, so the API's `relative_url` ("/ols/products/{slug}") is prefixed
+   * own domain, so the API's `relative_url` (`/ols/products/<slug>`) is prefixed
    * with `/products`.
    * @param product - The raw MySimpleStore search-list product
    * @returns The absolute product-page URL
