@@ -22,6 +22,11 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 - New supplier: Daily Bio USA.
 - New supplier: Orbit Natural Product Derivatives.
 - New supplier: Consolidated Chemicals & Solvents
+- Export search results to an Excel (.xlsx) file from the results right-click menu, with past exports saved to the History tab for re-download.
+
+### Changed
+
+- Search now matches product titles more leniently by default, so relevant products are less likely to be filtered out.
 - Re-enabling Chemsavers as an Amazon restricted supplier
 
 ### Fixed
