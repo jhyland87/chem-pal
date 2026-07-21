@@ -27,7 +27,6 @@
 // N2O3 is offline since 01/20/2026
 //export { SupplierN2O3 } from "./SupplierN2O3";
 //export { SupplierAsesChem2 } from "./SupplierAsesChem2";
-//export { SupplierChemsavers } from "./SupplierChemsavers";
 // The Lab Stockroom (formerly HBar Sci) migrated from Searchanise to Shopify;
 // the legacy Searchanise module is kept but disabled.
 //export { SupplierTheLabStockroomSearchanise } from "./SupplierTheLabStockroomSearchanise";
@@ -42,6 +41,7 @@ export { SupplierBioFuranChem } from "./SupplierBiofuranChem";
 export { SupplierBVV } from "./SupplierBVV";
 export { SupplierCarolina } from "./SupplierCarolina";
 export { SupplierCarolinaChemical } from "./SupplierCarolinaChemical";
+export { SupplierChemsavers } from "./SupplierChemsavers";
 export { SupplierConsolidatedChemical } from "./SupplierConsolidatedChemical";
 export { SupplierDailyBioUSA } from "./SupplierDailyBioUSA";
 export { SupplierFtfScientific } from "./SupplierFtfScientific";

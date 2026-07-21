@@ -24,6 +24,7 @@ export const SUPPLIER_CLASS_NAMES = [
   "SupplierBVV",
   "SupplierCarolina",
   "SupplierCarolinaChemical",
+  "SupplierChemsavers",
   "SupplierConsolidatedChemical",
   "SupplierDailyBioUSA",
   "SupplierFtfScientific",
