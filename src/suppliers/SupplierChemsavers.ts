@@ -8,8 +8,7 @@ import { translateAstToTypesenseFilter } from "@/utils/search-query/translators/
 import { cstorage } from "@/utils/storage";
 import { assertValidSearchResponse } from "@/utils/typeGuards/chemsavers";
 import { SupplierBase } from "./SupplierBase";
-/* @hideconstructor */
-/* @hideden */
+
 /**
  * Module used to retrieve products sold on the Chemsavers website.
  *
@@ -18,7 +17,6 @@ import { SupplierBase } from "./SupplierBase";
  * Chemsavers does have an exposed GraphQL API which can be used to retrieve product data, but
  * an even easier option is to use the Typesense search API which has all of their products
  * listed and is easily searchable.
- * @deprecated Chemsavers switched all their products to Restricted, only selling to businesses.
  * @category Suppliers
  * @source
  */
@@ -39,7 +37,9 @@ export class SupplierChemsavers
   public readonly country: CountryCode = "US";
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ["amazononly"];
+
+  public readonly amazonStoreURL: string = "https://www.amazon.com/s?rh=p_89%3AChemsavers";
 
   // The API URL for the Typesense search API.
   protected apiURL: string = "0ul35zwtpkx14ifhp-1.a1.typesense.net";
@@ -80,14 +80,12 @@ export class SupplierChemsavers
 
   // HTTP headers used as a basis for all queries.
   protected headers: HeadersInit = {
-     
     accept: ["application/json", "text/plain", "*/*"].join(","),
     "accept-language": "en-US,en;q=0.9",
     "cache-control": "no-cache",
     "content-type": "text/plain",
     pragma: "no-cache",
     priority: "u=1, i",
-     
   };
 
   /**
@@ -286,7 +284,6 @@ export class SupplierChemsavers
       path: `/multi_search`,
       host: this.apiURL,
       params: {
-         
         "x-typesense-api-key": this.apiKey,
       },
       body,
@@ -466,7 +463,7 @@ export class SupplierChemsavers
     const search = parsed.isAdvanced
       ? { q: "*", filter_by: translateAstToTypesenseFilter(parsed.ast) }
       : { q: query };
-     
+
     return {
       searches: [
         {
@@ -479,7 +476,6 @@ export class SupplierChemsavers
         },
       ],
     };
-     
   }
 
   /**
