@@ -24,7 +24,10 @@ export default defineConfig({
   // the build-free run (backdrop can take a while as suppliers stream in).
   fullyParallel: false,
   workers: 1,
-  timeout: 180_000,
+  // The full guided walkthrough runs end-to-end in one test with deliberate
+  // pauses and per-click delays for a watchable recording, so it needs a roomy
+  // per-test budget (backdrop can also take a while as suppliers stream in).
+  timeout: 300_000,
   outputDir: resolvePath("demo-results"),
   // Absolute path: an HTML reporter's `outputFolder` is otherwise resolved
   // relative to this config file's dir (configs/), not the repo root.

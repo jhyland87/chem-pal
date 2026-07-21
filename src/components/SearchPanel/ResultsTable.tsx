@@ -404,6 +404,13 @@ export default function ResultsTable({
   const totalRowCount = table.getFilteredRowModel().rows.length;
   const supplierResultsCount = table.getColumn("supplier")?.getFacetedUniqueValues().size ?? 0;
 
+  // The rows-per-page the user explicitly asked for, via the Select or the
+  // "show all" hotkey. Filtering can clamp the *effective* pageSize below this
+  // when fewer rows are available; tracking the intent lets us restore it once
+  // the row count grows back (e.g. the user clears a column filter).
+  // `Number.POSITIVE_INFINITY` means "all rows".
+  const desiredPageSizeRef = useRef(tableState.pagination?.pageSize ?? 10);
+
   // Emit the filtered row count; the badge controller owns the badge update.
   // Suppress leading zeros (the empty table before results populate on open)
   // so they don't clear a badge App already set to the restored count.
@@ -432,7 +439,10 @@ export default function ResultsTable({
     const onScrollToTop = () => scrollContainerRef.current?.scrollTo({ top: 0 });
     const onShowAll = () => {
       const rowCount = table.getFilteredRowModel().rows.length;
-      if (rowCount > 0) table.setPageSize(rowCount);
+      if (rowCount > 0) {
+        desiredPageSizeRef.current = Number.POSITIVE_INFINITY;
+        table.setPageSize(rowCount);
+      }
     };
     const onClearColumnFilters = () => setColumnFilters([]);
     window.addEventListener(HotkeyEvent.EXPAND_ALL_ROWS, onExpandAll);
@@ -449,19 +459,32 @@ export default function ResultsTable({
     };
   }, [table, setColumnFilters]);
 
-  // Compute valid page sizes from the *filter-applied total* (totalRowCount)
-  // rather than the page-visible count (filteredRowCount) — feeding the
-  // page-visible count here creates a self-reinforcing collapse when a prior
-  // search left pageSize larger than the new search's result count: valid
-  // sizes would shrink to `[page-visible]`, which forces pageSize down,
-  // which keeps only that many rows visible, etc. The options Select below
-  // (line ~572) correctly uses the total as well.
+  // Reconcile the effective pageSize with what the user actually asked for
+  // (`desiredPageSizeRef`) whenever the valid options change. Filtering shrinks
+  // the row count, which can clamp the effective size below the user's choice;
+  // clearing the filter grows it back. Reconciling against the *intent* rather
+  // than the current (possibly-clamped) size means clearing a filter restores
+  // the user's original selection — e.g. "All" survives a filter round-trip
+  // instead of collapsing to the default 10.
+  //
+  // Valid sizes come from the *filter-applied total* (totalRowCount), not the
+  // page-visible count (filteredRowCount): the latter creates a self-reinforcing
+  // collapse where valid sizes shrink to `[page-visible]`, forcing pageSize down,
+  // which keeps only that many rows visible, etc. The options Select below uses
+  // the total as well. Runs during render, not in an effect, because the MUI
+  // Select warns about an out-of-range value before effects run.
   if (totalRowCount > 0) {
     const validSizes = generatePageSizes(totalRowCount, 10, 5);
     const currentPageSize = tableState.pagination?.pageSize ?? 10;
-    if (!validSizes.includes(currentPageSize)) {
-      const best = validSizes.filter((s) => s <= currentPageSize).pop() ?? validSizes.at(-1)!;
-      table.setPageSize(best);
+    const desired = desiredPageSizeRef.current;
+    const target =
+      desired >= totalRowCount
+        ? totalRowCount // "all", or more than currently available → show every row
+        : validSizes.includes(desired)
+          ? desired
+          : (validSizes.filter((size) => size <= desired).pop() ?? validSizes[0]);
+    if (currentPageSize !== target) {
+      table.setPageSize(target);
     }
   }
 
@@ -789,7 +812,14 @@ export default function ResultsTable({
                 <FormControl size="small">
                   <PageSizeSelect
                     value={table.getState().pagination.pageSize}
-                    onChange={(e) => table.setPageSize(Number(e.target.value))}
+                    onChange={(e) => {
+                      const next = Number(e.target.value);
+                      // "All" is the option whose value equals the current total;
+                      // record it as an unbounded intent so it survives a filter
+                      // round-trip even as the total changes.
+                      desiredPageSizeRef.current = next >= totalRowCount ? Number.POSITIVE_INFINITY : next;
+                      table.setPageSize(next);
+                    }}
                     aria-label={i18n("results_rows_per_page_aria")}
                   >
                     {generatePageSizes(totalRowCount, 10, 5).map((pageSize) => (
