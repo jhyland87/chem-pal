@@ -1,3 +1,4 @@
+import { AVAILABILITY } from "@/constants/common";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { describe, expect, it } from "vitest";
 import { SupplierAmarisChemicalSolutions } from "..";
@@ -150,6 +151,21 @@ describe("SupplierAmarisChemicalSolutions", () => {
         "https://amarischemicalsolutions.com/product/aluminium-ammonium-sulphate/",
       );
       expect(product?.permalink).not.toBe(product?.url);
+    });
+
+    it("sets availability from the item's is_in_stock flag", async () => {
+      const supplier = makeSupplier() as unknown as AmarisInternals;
+
+      // Name carries a size so build() reaches a minimal product.
+      const inStock = await supplier
+        .initProductBuilders([baseItem({ name: "Acetone Reagent 250ml" })])[0]
+        .build();
+      expect(inStock?.availability).toBe(AVAILABILITY.IN_STOCK);
+
+      const outOfStock = await supplier
+        .initProductBuilders([baseItem({ name: "Acetone Reagent 250ml", is_in_stock: false })])[0]
+        .build();
+      expect(outOfStock?.availability).toBe(AVAILABILITY.OUT_OF_STOCK);
     });
   });
 });

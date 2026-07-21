@@ -117,6 +117,12 @@ describe("puritySortingFn", () => {
     expect(puritySortingFn(makeRow({ purity: "≥99.8%" }), makeRow({ purity: "99.9%" }))).toBe(-1);
   });
 
+  it("orders equal percentages by their comparator prefix", () => {
+    // ">75%" sorts just above a bare "75%"; "<75%" just below.
+    expect(puritySortingFn(makeRow({ purity: ">75%" }), makeRow({ purity: "75%" }))).toBe(1);
+    expect(puritySortingFn(makeRow({ purity: "<75%" }), makeRow({ purity: "75%" }))).toBe(-1);
+  });
+
   it("puts grades and percentages on one scale", () => {
     // This is the whole point: a string sort would interleave these arbitrarily.
     expect(puritySortingFn(makeRow({ grade: "ACS Grade" }), makeRow({ purity: "95%" }))).toBe(1);

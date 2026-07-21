@@ -1,4 +1,4 @@
-import { UOM } from "@/constants/common";
+import { AVAILABILITY, UOM } from "@/constants/common";
 import { findCAS } from "@/helpers/cas";
 import { parsePrice } from "@/helpers/currency";
 import { parseQuantity, standardizeUom, toMetricQuantity } from "@/helpers/quantity";
@@ -257,6 +257,9 @@ export abstract class SupplierBaseShopify
       builder
         .setBasicInfo(product.title, url, this.supplierName)
         .setPricing(parsedPrice)
+        .setAvailability(
+          primaryVariant.currentlyNotInStock ? AVAILABILITY.OUT_OF_STOCK : AVAILABILITY.IN_STOCK,
+        )
         .setDescription(descriptionText)
         .setSku(primaryVariant.sku)
         .setID(product.id)
@@ -322,7 +325,7 @@ export abstract class SupplierBaseShopify
           title: variant.title,
           sku: variant.sku ?? undefined,
           price: variantPrice?.price,
-          status: variant.currentlyNotInStock ? "out of stock" : "in stock",
+          status: variant.currentlyNotInStock ? AVAILABILITY.OUT_OF_STOCK : AVAILABILITY.IN_STOCK,
           ...(quantity ?? { quantity: 1, uom: UOM.EA }),
         });
       }

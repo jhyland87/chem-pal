@@ -23,6 +23,11 @@ button.expand-row-details {
   }
 }
 
+.ungraded {
+  font-style: italic;
+  opacity: 0.55;
+}
+
 .boookmark-icon {
   cursor: pointer;
   &:not(.bookmark-saved) {
