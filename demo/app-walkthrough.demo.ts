@@ -26,10 +26,11 @@ const mockResponsesDir = path.resolve(dirname, "..", "e2e", "mock-requests", "re
 const screenshotDir = path.resolve(dirname, "output", "screenshots");
 
 /** Boolean query used for the second search, to show off the advanced syntax. */
-const ADVANCED_QUERY = '"Sodium Borohydride" AND NOT triacetoxyborohydride';
+const ADVANCED_QUERY = '"Sodium Borohydride" AND NOT (triacetoxyborohydride OR cyanoborohydride)';
 
 /** Result count that triggers the demo's early abort of the second search. */
 const ABORT_AFTER_RESULTS = 10;
+const UNIVERSAL_CLICK_DELAY = 200;
 
 /**
  * Polls the loading backdrop's status line ("Found N results from M suppliers")
@@ -159,11 +160,12 @@ test(
     await highlight(searchFormContainer);
     await showDemoPopover(page, searchFormContainer, "Type a chemical name to search");
     await page.waitForTimeout(1800);
+    await closeDemoPopover(page);
+    await page.waitForTimeout(200);
 
     // 2. Type the query, character by character.
     await typeInto(searchInput, "sodium borohydride");
     await page.waitForTimeout(800);
-    await closeDemoPopover(page);
     await clearHighlight(searchFormContainer);
     await captureImageOfElement(page, searchFormContainer, "walkthrough-search-input-typed");
 
@@ -173,7 +175,7 @@ test(
     await showDemoPopover(page, searchButton, "Search every supplier at once");
     await page.waitForTimeout(1200);
     await closeDemoPopover(page);
-    await searchButton.click();
+    await searchButton.click({ delay: UNIVERSAL_CLICK_DELAY });
 
     // 4. Wait for the first search to finish — the loading backdrop shows while
     // suppliers stream in, then disappears once every supplier is done. (Cancel
@@ -192,8 +194,8 @@ test(
 
     const rowsPerPage = page.locator('[aria-label="rows per page"]');
     await smoothScrollIntoView(page, rowsPerPage, "end");
-    await rowsPerPage.click();
-    await page.getByRole("option", { name: "All" }).click();
+    await rowsPerPage.click({ delay: UNIVERSAL_CLICK_DELAY });
+    await page.getByRole("option", { name: "All" }).click({ delay: UNIVERSAL_CLICK_DELAY });
     await page.waitForTimeout(700);
     await smoothScrollToTop(page, resultsTable);
 
@@ -224,7 +226,8 @@ test(
     await page.waitForTimeout(1200);
     await closeDemoPopover(page);
     await clearHighlight(settingsBtn);
-    await settingsBtn.click();
+    await settingsBtn.click({ delay: UNIVERSAL_CLICK_DELAY });
+    await page.waitForTimeout(UNIVERSAL_CLICK_DELAY);
 
     // Expand the Display section, then switch to the small font size.
     const displaySection = page
@@ -233,19 +236,19 @@ test(
     await expect(displaySection, "Display section should be visible").toBeVisible({
       timeout: 5_000,
     });
-    await displaySection.click();
+    await displaySection.click({ delay: UNIVERSAL_CLICK_DELAY });
     await page.waitForTimeout(700);
     const smallFont = page.locator("#drawer-tabpanel-2").getByRole("button", { name: "Small" });
     await expect(smallFont, "Small font size should be visible").toBeVisible({ timeout: 5_000 });
     await highlight(smallFont);
     await showDemoPopover(page, smallFont, "Switch to a smaller font to fit more on screen");
     await page.waitForTimeout(1400);
-    await smallFont.click();
+    await smallFont.click({ delay: UNIVERSAL_CLICK_DELAY });
     await page.waitForTimeout(1600);
     await closeDemoPopover(page);
     await clearHighlight(smallFont);
     // Close the drawer.
-    await page.mouse.click(30, 400);
+    await page.mouse.click(30, 400, { button: "left", delay: UNIVERSAL_CLICK_DELAY });
     await page.waitForTimeout(700);
 
     // --- Keyboard shortcuts: open the help modal, find the "expand all rows"
@@ -293,19 +296,38 @@ test(
     await page.waitForTimeout(1400);
     await closeDemoPopover(page);
     await clearHighlight(columnsButton);
-    await columnsButton.click();
+    await columnsButton.click({ delay: UNIVERSAL_CLICK_DELAY });
 
     // Ensure the PubChem and CAS columns are visible (check them if unchecked).
     for (const col of ["PubChem", "CAS", "Purity"]) {
       const toggle = page.getByRole("checkbox", { name: col, exact: true });
       if ((await toggle.count()) > 0 && !(await toggle.first().isChecked())) {
-        await toggle.first().click();
+        await toggle.first().click({ delay: UNIVERSAL_CLICK_DELAY });
         await page.waitForTimeout(400);
       }
     }
     await page.waitForTimeout(500);
     await page.keyboard.press("Escape");
     await page.waitForTimeout(400);
+
+    // --- Sort by purity: now that the Purity column is visible, sort on it ---
+    // Column headers are sortable — clicking one ranks the results by that column
+    // (Purity uses a custom scale that orders chemical grades and purity %).
+    const purityHeader = page.getByRole("columnheader", { name: "Purity", exact: true });
+    await expect(purityHeader, "Purity column header should be visible").toBeVisible({
+      timeout: 5_000,
+    });
+    await purityHeader.scrollIntoViewIfNeeded();
+    await highlight(purityHeader);
+    await showDemoPopover(page, purityHeader, "Click a column header to sort — here, by purity");
+    await page.waitForTimeout(1200);
+    await closeDemoPopover(page);
+    await page.waitForTimeout(UNIVERSAL_CLICK_DELAY);
+    await purityHeader.click({ delay: UNIVERSAL_CLICK_DELAY });
+    await page.waitForTimeout(UNIVERSAL_CLICK_DELAY);
+    await purityHeader.click({ delay: UNIVERSAL_CLICK_DELAY });
+    await page.waitForTimeout(UNIVERSAL_CLICK_DELAY);
+    await clearHighlight(purityHeader);
 
     // Point out a PubChem cell — clicking a CID opens that compound on PubChem.
     try {
@@ -356,7 +378,7 @@ test(
     await page.waitForTimeout(1400);
     await closeDemoPopover(page);
     await clearHighlight(filterButton);
-    await filterButton.click();
+    await filterButton.click({ delay: UNIVERSAL_CLICK_DELAY });
 
     // Type into the Title column's filter to narrow the results.
     const titleFilter = page.getByPlaceholder("Title...");
@@ -371,9 +393,11 @@ test(
     await page.screenshot({ path: path.join(screenshotDir, "walkthrough-filtered.png") });
 
     // Clear the filter, then hide the filter row again.
-    await page.getByRole("button", { name: "Clear all filters" }).click();
+    await page
+      .getByRole("button", { name: "Clear all filters" })
+      .click({ delay: UNIVERSAL_CLICK_DELAY });
     await page.waitForTimeout(1000);
-    await filterButton.click();
+    await filterButton.click({ delay: UNIVERSAL_CLICK_DELAY });
     await page.waitForTimeout(800);
 
     // Expand a product to reveal its detail panel: the product/variant name
@@ -465,13 +489,13 @@ test(
     await page.waitForTimeout(1200);
     await closeDemoPopover(page);
     await clearHighlight(optionsBtn);
-    await optionsBtn.click();
+    await optionsBtn.click({ delay: UNIVERSAL_CLICK_DELAY });
 
     // Open the History tab to reveal past searches — but don't click an entry
     // (that would re-run that search).
     const historyTab = page.getByRole("tab", { name: "HISTORY" });
     await expect(historyTab, "History tab should be visible").toBeVisible({ timeout: 5_000 });
-    await historyTab.click();
+    await historyTab.click({ delay: UNIVERSAL_CLICK_DELAY });
     await page.waitForTimeout(700);
     const historyEntry = page.locator("#drawer-tabpanel-1 li").first();
     await expect(historyEntry, "First history entry should be visible").toBeVisible({
@@ -488,7 +512,7 @@ test(
     await clearHighlight(historyEntry);
 
     // Switch to Settings and change currency — watch every price convert live.
-    await page.getByRole("tab", { name: "SETTINGS" }).click();
+    await page.getByRole("tab", { name: "SETTINGS" }).click({ delay: UNIVERSAL_CLICK_DELAY });
     await page.waitForTimeout(600);
     const currencyInput = page.locator("#drawer-tabpanel-2").getByPlaceholder("Currency");
     await expect(currencyInput, "Currency input should be visible").toBeVisible({ timeout: 5_000 });
@@ -505,7 +529,7 @@ test(
     await page.waitForTimeout(1200);
 
     // USD → PLN
-    await currencyInput.click();
+    await currencyInput.click({ delay: UNIVERSAL_CLICK_DELAY });
     await currencyInput.fill("PLN");
     const plnOption = page.getByRole("option", { name: "PLN (zł)" }).first();
     await expect(plnOption, "PLN option should be visible").toBeVisible({ timeout: 5_000 });
@@ -513,7 +537,7 @@ test(
     await page.waitForTimeout(2200);
 
     // PLN → USD
-    await currencyInput.click();
+    await currencyInput.click({ delay: UNIVERSAL_CLICK_DELAY });
     await currencyInput.fill("USD");
     const usdOption = page.getByRole("option", { name: "USD ($)" }).first();
     await expect(usdOption, "USD option should be visible").toBeVisible({ timeout: 5_000 });
@@ -523,7 +547,7 @@ test(
     await closeDemoPopover(page);
     await clearHighlight(currencyField);
     // Close the drawer by clicking the backdrop (to the left of the right-anchored drawer).
-    await page.mouse.click(30, 400);
+    await page.mouse.click(30, 400, { button: "left", delay: UNIVERSAL_CLICK_DELAY });
     await page.waitForTimeout(700);
 
     // --- Ignore a product (right-click → Ignore Product) ---
@@ -534,7 +558,7 @@ test(
     await page.waitForTimeout(1500);
     await closeDemoPopover(page);
     await clearHighlight(ignoreRow);
-    await ignoreRow.click({ button: "right" });
+    await ignoreRow.click({ button: "right", delay: UNIVERSAL_CLICK_DELAY });
 
     const ignoreItem = page.getByRole("menuitem", { name: "Ignore Product" });
     await expect(ignoreItem, "Ignore Product item should be visible").toBeVisible({
@@ -544,7 +568,7 @@ test(
     await showDemoPopover(page, ignoreItem, "…to hide it from the results");
     await page.waitForTimeout(1800);
     await closeDemoPopover(page);
-    await ignoreItem.click();
+    await ignoreItem.click({ delay: UNIVERSAL_CLICK_DELAY });
     await page.waitForTimeout(1200);
 
     // --- Second search. Head back to the home panel first: only SearchForm
@@ -555,7 +579,7 @@ test(
     await highlight(backToSearch);
     await page.waitForTimeout(600);
     await clearHighlight(backToSearch);
-    await backToSearch.click();
+    await backToSearch.click({ delay: UNIVERSAL_CLICK_DELAY });
 
     await expect(searchInput, "Search box should be back on the home panel").toBeVisible({
       timeout: 8_000,
@@ -576,7 +600,7 @@ test(
     await page.waitForTimeout(1800);
     await closeDemoPopover(page);
     await clearHighlight(advancedBtn);
-    await advancedBtn.click();
+    await advancedBtn.click({ delay: UNIVERSAL_CLICK_DELAY });
 
     // The ScienceIcon opens the drawer straight to the Search (advanced) tab.
     await expect(page.locator("#drawer-tabpanel-0"), "Search tab should be visible").toBeVisible({
@@ -585,7 +609,9 @@ test(
     await page.waitForTimeout(600);
 
     // Expand the supplier section and pick a few suppliers.
-    await page.getByRole("button", { name: /search suppliers/i }).click();
+    await page
+      .getByRole("button", { name: /search suppliers/i })
+      .click({ delay: UNIVERSAL_CLICK_DELAY });
     const supplierInput = page.getByRole("combobox", { name: "Filter by search suppliers" });
     await expect(supplierInput, "Supplier input should be visible").toBeVisible({ timeout: 5_000 });
     // Highlight the whole input (the MuiInputBase-root), not just the combobox.
@@ -610,7 +636,7 @@ test(
     await page.waitForTimeout(400);
 
     // Close the drawer — the query itself goes in the home page's search box.
-    await page.mouse.click(30, 400);
+    await page.mouse.click(30, 400, { button: "left", delay: UNIVERSAL_CLICK_DELAY });
     await page.waitForTimeout(700);
 
     // Before the boolean query, show the other things the box accepts — formulas
@@ -680,7 +706,7 @@ test(
     await page.waitForTimeout(1400);
     await closeDemoPopover(page);
     await clearHighlight(searchButton2);
-    await searchButton2.click();
+    await searchButton2.click({ delay: UNIVERSAL_CLICK_DELAY });
 
     // Let results stream in until there are enough to be useful, then cancel —
     // showing that canceling keeps what's already found.
@@ -689,7 +715,7 @@ test(
     const foundBeforeCancel = await waitForResultCount(page, ABORT_AFTER_RESULTS, 20_000);
     console.log(`[demo] Canceling the second search after ${foundBeforeCancel} results`);
     if (await backdrop2.isVisible()) {
-      await backdrop2.locator("button").click();
+      await backdrop2.locator("button").click({ delay: UNIVERSAL_CLICK_DELAY });
     }
     await expect(backdrop2, "Loading backdrop should be hidden after cancel").toBeHidden({
       timeout: 30_000,
@@ -745,7 +771,7 @@ test(
       );
       await page.waitForTimeout(1800);
       await closeDemoPopover(page);
-      await clearResultsAction.click();
+      await clearResultsAction.click({ delay: UNIVERSAL_CLICK_DELAY });
 
       // Back on the search home screen — and the query box is cleared too.
       await expect(searchInput, "Search box should be back after clearing results").toBeVisible({

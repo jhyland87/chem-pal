@@ -17,6 +17,7 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 - New supplier: Daily Bio USA.
 - New supplier: Orbit Natural Product Derivatives.
+- New supplier: Consolidated Chemicals & Solvents
 - Suppliers that restrict shipping on their own website but ship more freely through their eBay
   or Amazon store now say so in the expanded product row, with a link to the store.
 - Suppliers that list extra products on their eBay or Amazon store now note it in the expanded

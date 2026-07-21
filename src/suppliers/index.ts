@@ -42,6 +42,7 @@ export { SupplierBioFuranChem } from "./SupplierBiofuranChem";
 export { SupplierBVV } from "./SupplierBVV";
 export { SupplierCarolina } from "./SupplierCarolina";
 export { SupplierCarolinaChemical } from "./SupplierCarolinaChemical";
+export { SupplierConsolidatedChemical } from "./SupplierConsolidatedChemical";
 export { SupplierDailyBioUSA } from "./SupplierDailyBioUSA";
 export { SupplierFtfScientific } from "./SupplierFtfScientific";
 export { SupplierGoldAndSilverTesting } from "./SupplierGoldAndSilverTesting";
