@@ -434,6 +434,7 @@ describe("science helpers", () => {
       ["JP", "JP Grade"],
       ["NF", "NF Grade"],
       ["FCC", "FCC Grade"],
+      ["NSF", "FCC Grade"],
       ["LR", "Lab Grade"],
       ["Technical", "Technical Grade"],
       ["Industrial", "Industrial Grade"],
@@ -681,9 +682,33 @@ describe("science helpers", () => {
       ["95%", 95],
       ["99.9%", 99.9],
       ["99.9+%", 99.9],
-      ["≥99.8%", 99.8],
     ])("should sort the percentage %s as %s", (purity, expected) => {
       expect(sortablePurityGrade(purity)).toBe(expected);
+    });
+
+    it("orders a shared base by its comparator prefix", () => {
+      // Full 5 levels: < 75 < ≤ 75 < 75 ≈ ≈ 75 < ≥ 75 < > 75.
+      const lt = sortablePurityGrade("<75%");
+      const le = sortablePurityGrade("≤75%");
+      const bare = sortablePurityGrade("75%");
+      const approx = sortablePurityGrade("≈75%");
+      const ge = sortablePurityGrade("≥75%");
+      const gt = sortablePurityGrade(">75%");
+      expect(lt).toBeLessThan(le);
+      expect(le).toBeLessThan(bare);
+      expect(bare).toBe(approx);
+      expect(approx).toBeLessThan(ge);
+      expect(ge).toBeLessThan(gt);
+      // The nudge never crosses into the next integer.
+      for (const value of [lt, le, bare, approx, ge, gt]) {
+        expect(value).toBeGreaterThan(74);
+        expect(value).toBeLessThan(76);
+      }
+    });
+
+    it("nudges a comparator percentage above its bare value", () => {
+      expect(sortablePurityGrade("≥99.8%")).toBeCloseTo(99.81);
+      expect(sortablePurityGrade("≥99.8%")).toBeGreaterThan(sortablePurityGrade("99.8%"));
     });
 
     it("should sort a range on its lower bound", () => {

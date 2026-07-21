@@ -11,9 +11,7 @@ behave differently under PCRE2/Python, so pick the JS flavor in regex101.
 Matches a grade token anywhere in the string. Exactly one named group is non-null on a
 match, and its name is the grade.
 
-> **Note:** The reason for all the `[Aa][Bb][Cc]` instead of just doing case insensitive is because some grades we require to be uppercase (`USP`, `ACS`, `FCC`, etc)
-
-[Regex101](https://regex101.com/r/BJV88C/11)
+[Regex101](https://regex101.com/r/BJV88C/12)
 
 
 ```regex
@@ -37,7 +35,7 @@ match, and its name is the grade.
   (?<NF_Grade>(?:(?:NF(?!\.)|N\.F\.)|(?:nf|Nf|NF)\s+(?:grade|Grade|GRADE)|(?:national|National|NATIONAL)\s+(?:formulary|Formulary|FORMULARY))(?:\s+(?:grade|Grade|GRADE))?)|
 
   # Food Chemicals Codex grade
-  (?<FCC_Grade>(?:(?:FCC(?!\.)|F\.C\.C\.)|(?:fcc|Fcc|FCC)\s+(?:grade|Grade|GRADE)|(?:food|Food|FOOD)\s+(?:(?:chem|Chem|CHEM)(?:(?:icals|Icals|ICALS))?\s+(?:codex|Codex|CODEX)|(?:(?:reagent|Reagent|REAGENT)(?:\s+(?:grade|Grade|GRADE))?|(?:grade|Grade|GRADE)(?:\s+(?:reagent|Reagent|REAGENT))?)))(?:\s+(?:grade|Grade|GRADE))?)|
+  (?<FCC_Grade>(?:(?:FCC(?!\.)|F\.C\.C\.)|(?:NSF(?!\.)|N\.S\.F\.)|(?:fcc|Fcc|FCC)\s+(?:grade|Grade|GRADE)|(?:food|Food|FOOD)\s+(?:(?:chem|Chem|CHEM)(?:(?:icals|Icals|ICALS))?\s+(?:codex|Codex|CODEX)|(?:(?:reagent|Reagent|REAGENT)(?:\s+(?:grade|Grade|GRADE))?|(?:grade|Grade|GRADE)(?:\s+(?:reagent|Reagent|REAGENT))?)))(?:\s+(?:grade|Grade|GRADE))?)|
 
   # Practical grade
   (?<Practical_Grade>(?:practical|Practical|PRACTICAL)\s+(?:(?:reagent|Reagent|REAGENT)(?:\s+(?:grade|Grade|GRADE))?|(?:grade|Grade|GRADE)(?:\s+(?:reagent|Reagent|REAGENT))?))|

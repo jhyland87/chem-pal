@@ -491,7 +491,7 @@ export const buildGradeRegexes = (): GradeRegexes => {
     Cosmetic_Grade: String.raw`${stems.Cosmetic_Grade}\s+${rgFlex}`,
     Extraction_Grade: String.raw`${stems.Extraction_Grade}\s+${rgFlex}`,
     NF_Grade: String.raw`(?:${acronym("NF")}|${cases("nf")}\s+${gradeTxt}|${cases("national")}\s+${cases("formulary")})${optionalGrade}`,
-    FCC_Grade: String.raw`(?:${acronym("FCC")}|${cases("fcc")}\s+${gradeTxt}|${cases("food")}\s+(?:${cases("chem")}(?:${cases("icals")})?\s+${cases("codex")}|${rgFlex}))${optionalGrade}`,
+    FCC_Grade: String.raw`(?:${acronym("FCC")}|${acronym("NSF")}|${cases("fcc")}\s+${gradeTxt}|${cases("food")}\s+(?:${cases("chem")}(?:${cases("icals")})?\s+${cases("codex")}|${rgFlex}))${optionalGrade}`,
     Practical_Grade: String.raw`${stems.Practical_Grade}\s+${rgFlex}`,
     Industrial_Grade: String.raw`${stems.Industrial_Grade}\s+${rgFlex}`,
     // "tech"/"technical" + flexible tail (any case), OR bare fully-uppercase
@@ -576,7 +576,7 @@ const GRADE_REGEXES = buildGradeRegexes();
  * @category Science Helpers
  * @group Regex Patterns
  * @document ./REAGENT_GRADE_PATTERN.md
- * @see https://regex101.com/r/BJV88C/11
+ * @see https://regex101.com/r/BJV88C/12
  */
 export const GRADE_REGEX = GRADE_REGEXES.classifier;
 
@@ -595,7 +595,7 @@ export const LABELED_GRADE_REGEX = GRADE_REGEXES.labeled;
  * @category Science Helpers
  * @group Regex Patterns
  * @document ./REAGENT_GRADE_PATTERN.md
- * @see https://regex101.com/r/BJV88C/11
+ * @see https://regex101.com/r/BJV88C/12
  */
 export const GRADE_REGEX_SOURCE = GRADE_REGEX.source;
 
@@ -606,7 +606,7 @@ export const GRADE_REGEX_SOURCE = GRADE_REGEX.source;
  * column always has something to show.
  * @category Science Helpers
  * @group Parsers
- * @see https://regex101.com/r/BJV88C/11
+ * @see https://regex101.com/r/BJV88C/12
  * @document ./REAGENT_GRADE_PATTERN.md
  * @param value - The string to extract the grade from (e.g. a product title)
  * @returns The grade label (e.g. `"ACS Grade"`), or `"Ungraded"` if none is found
@@ -1154,19 +1154,40 @@ export function formatFormula(formula: string): string {
 }
 
 /**
+ * Tie-breaking offsets for the comparators that can prefix a purity percentage. Applied on top of
+ * the parsed number by {@link sortablePurityGrade} so equal base values order by their operator
+ * (`<75 < ≤75 < 75 ≈ ≈75 < ≥75 < >75`). Kept below `0.1` so the nudge never crosses into the next
+ * integer — `>75%` still sorts below `76%`.
+ * @category Science Helpers
+ * @group Converters
+ */
+const PURITY_COMPARATOR_OFFSET: Record<string, number> = {
+  "<": -0.02,
+  "≤": -0.01,
+  "≈": 0,
+  "≥": 0.01,
+  ">": 0.02,
+};
+
+/**
  * Converts a purity value — either a grade label or a percentage — to a number the Purity
  * column can sort on. Grades route through {@link purityGradeToPercentage}; everything else
  * is read as the FIRST number in the string, so a range sorts on its lower bound and a
- * trailing qualifier ("+", "or better") is ignored. Anything unreadable sorts as `0`.
+ * trailing qualifier ("+", "or better") is ignored. A leading comparator (`<>≤≥≈`) applies a
+ * small {@link PURITY_COMPARATOR_OFFSET} so e.g. `>75%` sorts just above a bare `75%`. Anything
+ * unreadable sorts as `0`.
  * @category Science Helpers
  * @group Converters
  * @param grade - The grade label or percentage to convert (e.g. `"ACS Grade"`, `"≥99.8%"`)
- * @returns A number in `[0, 100]`; `0` when no grade or number can be read
+ * @returns Roughly `[0, 100]` — the parsed percentage, plus a comparator offset of at most ±0.02;
+ * `0` when no grade or number can be read
  * @example
  * ```typescript
  * sortablePurityGrade("95%")           // Returns 95
  * sortablePurityGrade("ACS Grade")     // Returns 99.8
  * sortablePurityGrade("USP Grade")     // Returns 99.5
+ * sortablePurityGrade(">75%")          // Returns 75.02 (sorts just above a bare 75%)
+ * sortablePurityGrade("<75%")          // Returns 74.98 (sorts just below a bare 75%)
  * sortablePurityGrade("99.9+%")        // Returns 99.9
  * sortablePurityGrade("99.9-100%")     // Returns 99.9 (lower bound of the range)
  * sortablePurityGrade("99,5%")         // Returns 99.5 (European comma decimal)
@@ -1178,12 +1199,15 @@ export function formatFormula(formula: string): string {
 export function sortablePurityGrade(grade: string): number {
   if (grade.endsWith(" Grade")) return purityGradeToPercentage(grade) ?? 0;
 
-  // First number only. Stripping every non-digit instead would splice a range's two
-  // bounds into one bogus number ("99.9-100%" -> "99.9100").
-  const match = grade.match(/\d+(?:[.,]\d+)?/);
-  if (!match) return 0;
+  // First number only, with any leading comparator. Stripping every non-digit instead would
+  // splice a range's two bounds into one bogus number ("99.9-100%" -> "99.9100").
+  const match = grade.match(/(?<modifier>[<>≤≥≈]\s?)?(?<percent>\d+(?:[.,]\d+)?)/);
+  if (!match?.groups) return 0;
 
-  const num = Number(match[0].replace(",", "."));
+  const num = Number(match.groups.percent.replace(",", "."));
   if (Number.isNaN(num) || num < 0) return 0;
-  return Math.min(num, 100);
+
+  // modifier keeps the optional trailing space the regex allows ("> 75%"); take just the operator.
+  const offset = PURITY_COMPARATOR_OFFSET[match.groups.modifier?.[0] ?? ""] ?? 0;
+  return Math.min(num, 100) + offset;
 }

@@ -4,6 +4,7 @@ import {
   resetChromeStorageMock,
   setupChromeStorageMock,
 } from "@/__fixtures__/helpers/chrome/storageMock";
+import { AVAILABILITY } from "@/constants/common";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
@@ -76,6 +77,16 @@ describe("SupplierDailyBioUSA initProductBuilders", () => {
     // Grade lives in the description as a labeled "Grade:" field.
     expect(product.grade).toBe("Pure Grade");
     expect(product.cas).toBe("7632-00-0");
+    // Availability comes from the Wix product's isInStock flag.
+    expect(product.availability).toBe(AVAILABILITY.IN_STOCK);
+  });
+
+  it("marks a product out of stock when isInStock is false", () => {
+    const supplier = makeSupplier() as unknown as DailyBioUSAInternals;
+
+    const outOfStock = { ...products.skuSize, isInStock: false };
+    const product = supplier.initProductBuilders([outOfStock])[0].dump();
+    expect(product.availability).toBe(AVAILABILITY.OUT_OF_STOCK);
   });
 
   it("stamps the eBay payment method and storefront onto the finished product", async () => {

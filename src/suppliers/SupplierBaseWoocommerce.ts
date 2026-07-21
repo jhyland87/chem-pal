@@ -430,6 +430,7 @@ export abstract class SupplierBaseWoocommerce
         .setID(item.id)
         .setSku(item.sku)
         .setCacheKey(this.getUniqueProductKey(item))
+        .setAvailability(item.is_in_stock)
         .setPricing(
           Number(item.prices.price) / 100,
           item.prices.currency_code,

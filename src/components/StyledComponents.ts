@@ -794,6 +794,29 @@ export const StickyHeaderCell = styled(SortableTableHeaderCell)(({ theme }) => (
   background: theme.palette.background.paper,
 }));
 
+// Header label + sort-arrow row, keeping the arrow inline with the label.
+export const HeaderCellContent = styled("span")(() => ({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "1px",
+}));
+
+// Fixed-width slot for the sort-direction arrow. Always reserves its width on a
+// sortable header so toggling between arrow and no-arrow never shifts the label.
+// Deliberately subtle: muted colour, small glyph, reduced opacity.
+export const SortIndicator = styled("span")(({ theme }) => ({
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "14px",
+  flexShrink: 0,
+  color: theme.palette.text.secondary,
+  opacity: 0.6,
+  "& svg": {
+    fontSize: "14px",
+  },
+}));
+
 // Error container
 export const ErrorContainer = styled(Box)(() => ({
   textAlign: "center",

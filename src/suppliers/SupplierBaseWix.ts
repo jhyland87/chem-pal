@@ -354,6 +354,7 @@ export abstract class SupplierBaseWix
           parentParsedPrice.currencyCode,
           parentParsedPrice.currencySymbol,
         )
+        .setAvailability(product.isInStock)
         .setQuantity(parentVariant.quantity, parentVariant.uom)
         .setID(product.id)
         .setSku(product.sku)

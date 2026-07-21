@@ -67,6 +67,7 @@ import {
   FilterIconButton,
   FilterTableCell,
   GlobalFilterTextField,
+  HeaderCellContent,
   NavigationContainer,
   PageSizeContainer,
   PageSizeSelect,
@@ -75,12 +76,15 @@ import {
   ResultsCountDisplay,
   ResultsHeaderContainer,
   SearchResultsTable,
+  SortIndicator,
   StickyHeaderCell,
   StyledTableBody,
   StyledTableCell,
   StyledTableHead,
   SubRowTableRow,
 } from "../StyledComponents";
+import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
+import ArrowDropUpIcon from "@/icons/ArrowDropUpIcon";
 import ContextMenu from "./ContextMenu";
 import { useAppContext } from "./hooks/useContext";
 import { useSearch } from "./hooks/useSearch";
@@ -651,9 +655,21 @@ export default function ResultsTable({
                       onClick={header.column.getToggleSortingHandler()}
                       style={header.column.columnDef.meta?.style}
                     >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
+                      {header.isPlaceholder ? null : (
+                        <HeaderCellContent>
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                          {header.column.getCanSort() && (
+                            <SortIndicator>
+                              {
+                                {
+                                  asc: <ArrowDropUpIcon />,
+                                  desc: <ArrowDropDownIcon />,
+                                }[String(header.column.getIsSorted())]
+                              }
+                            </SortIndicator>
+                          )}
+                        </HeaderCellContent>
+                      )}
                     </StickyHeaderCell>
                   ))}
                 </TableRow>

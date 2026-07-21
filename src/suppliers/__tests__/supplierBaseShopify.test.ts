@@ -1,3 +1,4 @@
+import { AVAILABILITY } from "@/constants/common";
 import { ProductBuilder } from "@/utils/ProductBuilder";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -105,6 +106,22 @@ describe("SupplierBaseShopify initProductBuilders", () => {
     expect(builder.get("concentration")).toBe("0.1 M");
     expect(builder.get("moleweight")).toBe(39.997);
     expect(builder.get("purity")).toBe("99%");
+  });
+
+  it("sets top-level availability from the primary variant's stock flag", () => {
+    const supplier = new TestShopify("q", 5, new AbortController());
+
+    const inStock = sampleNode();
+    inStock.variants.edges[0].node.currentlyNotInStock = false;
+    expect(supplier.callInitProductBuilders([inStock])[0].get("availability")).toBe(
+      AVAILABILITY.IN_STOCK,
+    );
+
+    const outOfStock = sampleNode();
+    outOfStock.variants.edges[0].node.currentlyNotInStock = true;
+    expect(supplier.callInitProductBuilders([outOfStock])[0].get("availability")).toBe(
+      AVAILABILITY.OUT_OF_STOCK,
+    );
   });
 
   it("adds every image from the media connection, skipping non-image and url-less nodes", () => {

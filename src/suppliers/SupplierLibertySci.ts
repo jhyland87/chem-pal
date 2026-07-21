@@ -71,13 +71,30 @@ export class SupplierLibertySci extends SupplierBaseWoocommerce implements ISupp
         return;
       }
 
-      // setFormula runs findFormulaInHtml internally, so the raw HTML description (with <sub> tags)
-      // is extracted into a display-formatted formula like "KClO₃".
-      builder.setFormula(description);
+      // LibertySci puts the formula immediately before a formula/molecular weight label
+      // (e.g. "NaOH, F.W. 40.00"). Anchor on that label: scanning the whole description
+      // instead mistakes the "F.W." label itself for a formula (F·W — both real element
+      // symbols) or a code like "UN1824" for one. Without a label (e.g. solutions) there's
+      // no reliable formula to read, so leave it unset.
+      const weightMatch = description.match(MOLE_WEIGHT_REGEX);
+      if (!weightMatch) {
+        return;
+      }
 
-      const moleWeight = description.match(MOLE_WEIGHT_REGEX)?.[1];
-      if (moleWeight) {
-        builder.setMoleweight(moleWeight);
+      builder.setMoleweight(weightMatch[1]);
+
+      // The formula is the last non-empty segment before the label. setFormula runs
+      // findFormulaInHtml internally, so a tagged formula like "KClO<sub>3</sub>" is
+      // rendered to "KClO₃" and a clean one like "NaOH" is stored as-is.
+      const formulaSegment = description
+        .slice(0, weightMatch.index)
+        .split(/<br\s*\/?>|\r?\n/i)
+        .map((segment) => segment.trim())
+        .filter(Boolean)
+        .pop()
+        ?.replace(/[\s,;:·]+$/, "");
+      if (formulaSegment) {
+        builder.setFormula(formulaSegment);
       }
     });
 
