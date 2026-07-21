@@ -1174,7 +1174,7 @@ const PURITY_COMPARATOR_OFFSET: Record<string, number> = {
  * column can sort on. Grades route through {@link purityGradeToPercentage}; everything else
  * is read as the FIRST number in the string, so a range sorts on its lower bound and a
  * trailing qualifier ("+", "or better") is ignored. A leading comparator (`<>≤≥≈`) applies a
- * small {@link PURITY_COMPARATOR_OFFSET} so e.g. `>75%` sorts just above a bare `75%`. Anything
+ * small `PURITY_COMPARATOR_OFFSET` so e.g. `>75%` sorts just above a bare `75%`. Anything
  * unreadable sorts as `0`.
  * @category Science Helpers
  * @group Converters

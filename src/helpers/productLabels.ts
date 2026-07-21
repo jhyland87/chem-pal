@@ -19,9 +19,10 @@ export function shippingLabel(range: string): string {
 }
 
 /**
- * Localized label for an {@link AVAILABILITY} value. Also covers the drawer's
- * grouped filter codes (`in_stock`, `out_of_stock`, …), which are a subset of the
- * enum values. Falls back to the raw value for anything outside the known set.
+ * Localized label for an availability value (see {@link isAvailability}). Also
+ * covers the drawer's grouped filter codes (`in_stock`, `out_of_stock`, …), which
+ * are a subset of the enum values. Falls back to the raw value for anything
+ * outside the known set.
  * @param value - The availability value.
  * @returns The translated label, or the raw value if unrecognized.
  * @example
