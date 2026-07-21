@@ -29,6 +29,7 @@
     "https://consolidated-chemical.com/*",
     "https://carolinachemical.com/*",
     "https://www.chemsavers.com/*",
+    "https://polysciences.com/*",
     "https://s3.amazonaws.com/*",
     "https://chemsavers.com/*",
     "https://occapi.avantorsciences.com/*",
@@ -36,7 +37,7 @@
     "https://*.bigcommerce.com/*",
     "https://www.biofuranchem.com/*",
     "https://www.ftfscientific.com/*",
-    "https://hbarsci.myshopify.com/*",
+    "https://*.myshopify.com/*",
     "https://www.thelabstockroom.com/*",
     "https://www.hbarsci.com/*",
     "https://www.laballey.com/*",
@@ -81,19 +82,17 @@
     "https://www.amazon.eg/*",
     "https://www.amazon.ie/*",
     "https://www.amazon.co.za/*",
-    "https://gold-testing-equipment.myshopify.com/*",
     "https://www.goldandsilvertesting.com/*",
     "https://pubchem.ncbi.nlm.nih.gov/*",
-    "https://best-value-vacs.myshopify.com/*",
     "https://shopbvv.com/*",
     "https://alchemielabs.com/*",
     "https://aladdinsci.com/*",
     "https://www.aladdinsci.com/*",
     "https://ases.in/*",
-    "https://aseschem.myshopify.com/*",
     "https://amarischemicalsolutions.com/*",
     "https://*.mysimplestore.com/*",
-    "https://orbitnaturalproductderivatives.com/*"
+    "https://orbitnaturalproductderivatives.com/*",
+    "https://alliancechemical.com/*"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
