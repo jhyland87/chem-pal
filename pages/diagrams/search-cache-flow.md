@@ -7,16 +7,15 @@ This diagram details how ChemPal caches search results and product data using **
 - **IndexedDB for cached data**: Query results, product details, search history, and supplier stats are stored in IndexedDB (`chempal` database) for better performance and no quota pressure on `chrome.storage`
 - **chrome.storage for app state**: User settings, table state, excluded products, and session state remain in `chrome.storage.local` / `chrome.storage.session`
 - **Two independent supplier caches**: Query results and product details are cached separately in IndexedDB with different key generation strategies
-- **Identity-keyed product cache (v3)**: The product-detail cache is keyed by the supplier's stable product identity — `md5({ key: <getUniqueProductKey>, supplier })` — **not** by URL. Each supplier implements the required `SupplierBase.getUniqueProductKey(item)` (returning an id / sku / gid / scraped id / href), stamped onto the builder at parse time via `ProductBuilder.setCacheKey`. This lets a product enriched under one search hydrate any other search that surfaces it, even when the URL differs between the query and detail phases
+- **Identity-keyed product cache**: The product-detail cache is keyed by the supplier's stable product identity — `md5({ key: <getUniqueProductKey>, supplier })` — **not** by URL. Each supplier implements the required `SupplierBase.getUniqueProductKey(item)` (returning an id / sku / gid / scraped id / href), stamped onto the builder at parse time via `ProductBuilder.setCacheKey`. This lets a product enriched under one search hydrate any other search that surfaces it, even when the URL differs between the query and detail phases
 - **One identity for cache and exclusions**: The same identity keys both the product-detail cache and the "Ignore Product" exclusion store (`getProductIdentityKey`), so ignoring a product matches it across searches by identity
 - **`skipProductDetailCache` flag**: Every supplier caches per-product detail by default (the safe default). A concrete pure-search supplier — one that resolves every field in the initial search with a passthrough `getProductData` (e.g. BVV, Himedia, Chemsavers) — sets `skipProductDetailCache = true` to skip the redundant per-product cache; the query cache already covers repeat searches, and the identity is still used for exclusions. The flag lives on the concrete supplier, never a shared base class, so a base's fetching subclass keeps caching by default
-- **LRU eviction**: Both supplier caches cap at 100 entries, evicting the least recently used when full (using IndexedDB indexes on `cachedAt` / `timestamp`)
+- **LRU eviction**: Both supplier caches cap at `maxSupplierCacheEntries` entries (`config.json`, default 100), evicting the least recently used when full (using IndexedDB indexes on `cachedAt` / `timestamp`)
 - **Limit-aware invalidation**: The query cache invalidates entries when a new search requests more results than the cached limit
 - **Status-aware product caching**: A product's detail fetch is **not** cached when it hit a status in `noCacheStatusCodes` (default `[429]`) or when the search was aborted by `maxAllowableSearchTimeSec` — the product is still listed, but stays uncached so the next search retries it (`SupplierBase.shouldCacheProductData`)
 - **Timestamp refresh on read**: Product data cache updates `timestamp` on hit to prevent active entries from being evicted
 - **Serialization**: `ProductBuilder.dump()` serializes builders for storage; `ProductBuilder.createFromCache()` re-hydrates them
-- **Optional compression**: `chrome.storage` writes optionally flow through `cstorage` (`src/utils/storage.ts`), which can LZ-compress values at rest via `lz-string` `compressToUTF16` wrapped in an `LzEnvelope` (`{ __lz: 1, d: "..." }`), controlled by `useStorageCompression` in `config.json`. Reads auto-detect the envelope and decompress, falling back to raw values for legacy data. IndexedDB data is **not** compressed via `cstorage`.
-- **One-time migration**: `idbMigration.ts` migrates legacy `chrome.storage` cache data to IndexedDB on first run
+- **Versioned migrations**: `src/migrations/registry.ts` collects semver-named step files (`vX.Y.Z-to-vX.Y.Z.ts`) and runs the pending chain whenever the version stamped in the `app_meta` store is older than the running build, then re-stamps the marker
 
 
 Whats important to know about the cache is that the cache is keyed by the unique request data, but its not the response object that is cached. Its the standardized search results and the standardized product data that is cached (why cache the entire page when we know exactly what data we need? Easier to cache _that_ data).
@@ -141,7 +140,7 @@ SAVE1 -.->|"triggers if full"| LRU
 
 subgraph Metadata["CacheMetadata - per entry"]
 direction LR
-META["cachedAt: timestamp\nversion: 3\nquery: search term\nsupplier: display name\nsupplierModule: class name\nresultCount: number of results\nlimit: requested limit"]
+META["cachedAt: timestamp\nversion: 4\nquery: search term\nsupplier: display name\nsupplierModule: class name\nresultCount: number of results\nlimit: requested limit"]
 end
 SAVE1 -.->|"attached as __cacheMetadata"| Metadata
 
@@ -254,7 +253,7 @@ SAVE2 -.->|"triggers if full"| LRU
 
 subgraph Metadata["CacheMetadata - per entry"]
 direction LR
-META["cachedAt: timestamp\nversion: 3\nquery: search term\nsupplier: display name\nsupplierModule: class name\nresultCount: number of results\nlimit: requested limit"]
+META["cachedAt: timestamp\nversion: 4\nquery: search term\nsupplier: display name\nsupplierModule: class name\nresultCount: number of results\nlimit: requested limit"]
 end
 SAVE2 -.->|"attached as __cacheMetadata"| Metadata
 

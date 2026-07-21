@@ -4,13 +4,14 @@ This document describes the structure of the `chempal` IndexedDB database — ev
 
 ## Key Concepts
 
-- **One database, `chempal`**: Opened once via a singleton (`getDB()`) using the [`idb`](https://github.com/jakearchibald/idb) wrapper. Current schema version is **5** (`DB_VERSION`). Object stores are created in the `upgrade` callback.
+- **One database, `chempal`**: Opened once via a singleton (`getDB()`) using the [`idb`](https://github.com/jakearchibald/idb) wrapper. Current schema version is **7** (`DB_VERSION`). Object stores are created in the `upgrade` callback.
 - **Store names are centralized**: Every store name lives in the `IDB_STORE` constant (`src/constants/common.ts`) and is **snake_case** to match the `chrome.storage` key convention (`CACHE`). `IDB_STORE` is an `as const` object rather than a string enum because idb's typed store-name API needs literal string types.
 - **IndexedDB vs `chrome.storage`**: Bulk/cached data lives here in IndexedDB (no quota pressure). Lightweight app state — user settings, session query, table state — stays in `chrome.storage` via the `cstorage` wrapper and the `CACHE` enum. The two are separate namespaces.
-- **Single-row stores**: `search_results` and `excluded_products` hold everything under one row keyed `"current"`, so a read/write is a full replace of that row.
-- **Two LRU-capped caches**: `supplier_query_cache` and `supplier_product_data_cache` each cap at **100** entries, evicting the least-recently-used via an index (`cachedAt` / `timestamp`).
-- **Schema version ≠ cache version**: `DB_VERSION` (5) versions the IndexedDB schema. `SupplierCache.CACHE_VERSION` (3), stored in each query-cache entry's `__cacheMetadata.version`, versions the cached *payload* format and evicts stale entries on read — independent of the DB schema version.
-- **`clearAllCaches` spares user data**: The bulk clear wipes the six cache/derived stores but **not** `price_history` (user-accumulated data with its own clear action).
+- **Single-row stores**: `search_results`, `excluded_products`, and `app_meta` hold everything under one row keyed `"current"`, so a read/write is a full replace of that row.
+- **Capacity caps live in `config.json`**: The tunables — `maxSupplierCacheEntries` (100), `maxHistoryEntries` (100), `maxExportEntries` (20), and `maxExportsCacheBytes` (25 MB) — are build-time config, not hardcoded constants.
+- **Two LRU-capped caches**: `supplier_query_cache` and `supplier_product_data_cache` each cap at `maxSupplierCacheEntries`, evicting the least-recently-used via an index (`cachedAt` / `timestamp`).
+- **Schema version ≠ cache version**: `DB_VERSION` (7) versions the IndexedDB schema. `SupplierCache.CACHE_VERSION` (4), stored in each query-cache entry's `__cacheMetadata.version`, versions the cached *payload* format and evicts stale entries on read — independent of the DB schema version. A third version, the app version stamped in `app_meta`, drives the `src/migrations/` step chain.
+- **`clearAllCaches` spares user data**: The bulk clear wipes six cache/derived stores but **not** `price_history` (user-accumulated data with its own clear action), `exports` (saved spreadsheets with their own delete actions), or `app_meta` (the migration marker — wiping it would re-run migrations).
 
 ## Overview
 
@@ -21,22 +22,26 @@ classDef idb fill:#E67E22,stroke:#D35400,color:#fff,font-weight:bold
 classDef single fill:#8E44AD,stroke:#6C3483,color:#fff,font-weight:bold
 classDef lru fill:#E74C3C,stroke:#C0392B,color:#fff,font-weight:bold
 classDef user fill:#27AE60,stroke:#1E8449,color:#fff,font-weight:bold
+classDef meta fill:#34495E,stroke:#22303D,color:#fff,font-weight:bold
 
-subgraph DB["IndexedDB — chempal (v5)"]
+subgraph DB["IndexedDB — chempal (v7)"]
 direction TB
 SR[("search_results\nkey: id ('current')\nvalue: Product[]")]
 EX[("excluded_products\nkey: id ('current')\nvalue: ExcludedProductsMap")]
-SH[("search_history\nkey: timestamp\nmax 100 (LRU by age)")]
-QC[("supplier_query_cache\nkey: base64(query:supplier)\nindex: cachedAt · max 100")]
-PC[("supplier_product_data_cache\nkey: md5({key,supplier})\nindex: timestamp · max 100")]
+AM[("app_meta\nkey: id ('current')\nvalue: appVersion + updatedAt")]
+SH[("search_history\nkey: timestamp\nmax maxHistoryEntries (LRU by age)")]
+QC[("supplier_query_cache\nkey: base64(query:supplier)\nindex: cachedAt · LRU")]
+PC[("supplier_product_data_cache\nkey: md5({key,supplier})\nindex: timestamp · LRU")]
 SS[("supplier_stats\nkey: YYYY-MM-DD")]
 PH[("price_history\nkey: id\nindex: productKey")]
+XP[("exports\nkey: id\nindex: createdAt\ncapped by count + bytes")]
 end
 
 class SR,EX single
 class SH,SS idb
 class QC,PC lru
-class PH user
+class PH,XP user
+class AM meta
 ```
 
 ## Stores
@@ -63,7 +68,7 @@ Past searches, newest-first on read.
 | Key path | `timestamp` (epoch ms) |
 | Indexes | none |
 | Value | `SearchHistoryEntry` → `{ timestamp, type: "search", query, resultCount, filters?, selectedSuppliers?, data? }` |
-| Limit | `MAX_HISTORY_ENTRIES` = 100; oldest entries trimmed via cursor when exceeded |
+| Limit | `maxHistoryEntries` (`config.json`, default 100); oldest entries trimmed via cursor when exceeded |
 | Access | `getSearchHistory`, `addSearchHistoryEntry`, `updateSearchHistoryResultCount`, `clearSearchHistory` |
 
 `resultCount` is updated live as results stream in for the entry keyed by its start timestamp.
@@ -78,7 +83,7 @@ Whole search-result sets, cached per query + supplier so a repeat search skips t
 | Indexes | `cachedAt` → `__cacheMetadata.cachedAt` |
 | Value | `{ cacheKey, data: unknown[], __cacheMetadata }` |
 | `__cacheMetadata` | `{ cachedAt, version, query, supplier, supplierModule, resultCount, limit }` |
-| Limit | 100 entries; LRU-evict oldest by `cachedAt` on write |
+| Limit | `maxSupplierCacheEntries` (`config.json`, default 100); LRU-evict oldest by `cachedAt` on write |
 | Eviction on read | TTL (`cacheTtlMinutes`) and version mismatch (`version !== CACHE_VERSION`) |
 | Invalidation | Entry dropped when a new search requests more results than the cached `limit` |
 | Access | `getSupplierQueryCacheEntry`, `putSupplierQueryCacheEntry`, `deleteSupplierQueryCacheEntry`, `getAllSupplierQueryCacheEntries`, `clearSupplierQueryCache` |
@@ -92,7 +97,7 @@ Enriched per-product detail data, keyed by the product's **stable identity** so 
 | Key path | `cacheKey` = `md5({ key: identity, supplier })` (`getProductIdentityKey`; `identity` = `getUniqueProductKey`) |
 | Indexes | `timestamp` |
 | Value | `{ cacheKey, data: Record<string, unknown>, timestamp }` |
-| Limit | 100 entries; LRU-evict oldest by `timestamp` on write |
+| Limit | `maxSupplierCacheEntries` (`config.json`, default 100); LRU-evict oldest by `timestamp` on write |
 | Timestamp | Refreshed on cache hit so active entries aren't evicted |
 | Access | `getSupplierProductDataCacheEntry`, `putSupplierProductDataCacheEntry`, `deleteSupplierProductDataCacheEntry`, `getAllSupplierProductDataCacheEntries`, `clearSupplierProductDataCache` |
 
@@ -133,10 +138,36 @@ Per-product/per-variant USD price series over time. See [Price Tracking](./price
 | Value | `PriceHistoryEntry` → `{ id, productKey, variantKey?, variantId?, supplier, title, permalink?, points: { t, usd }[], updatedAt }` |
 | Access | `getPriceSeries`, `putPriceSeries`, `getPriceSeriesByProduct`, `clearPriceHistory` |
 
+### `app_meta`
+
+The app version that last wrote or migrated the cache. Read on startup to decide which `src/migrations/` steps still need to run; `undefined` means a fresh install, so the current version is seeded rather than migrated.
+
+| Property | Value |
+| --- | --- |
+| Key path | `id` (single row keyed `"current"`) |
+| Indexes | none |
+| Value | `{ id: string; appVersion: string; updatedAt: number }` |
+| Access | `getStoredAppVersion`, `setStoredAppVersion` |
+
+### `exports`
+
+Generated `.xlsx` result exports, retained so the export-history list can re-download a past export without re-running the search.
+
+| Property | Value |
+| --- | --- |
+| Key path | `id` |
+| Indexes | `createdAt` (newest-first listing and eviction order) |
+| Value | `ExportRecord` → `{ id, createdAt, filename, query?, scope: "all" \| "filtered", rowCount, sizeBytes, blob }` |
+| Limit | **Two caps, whichever binds first**: `maxExportEntries` (default 20) and `maxExportsCacheBytes` (default 25 MB); oldest evicted first on write |
+| Access | `putExport`, `getAllExports`, `deleteExport`, `clearExports` |
+
+`sizeBytes` is tracked explicitly because the record holds a `Blob` — `JSON.stringify` flattens Blobs to `{}`, so the storage-breakdown UI sums `sizeBytes` instead of measuring the serialized row.
+
 ## Bulk Clear & Versioning
 
-- **`clearAllCaches()`** clears, in one transaction: `search_results`, `search_history`, `supplier_query_cache`, `supplier_product_data_cache`, `supplier_stats`, and `excluded_products` — then dispatches `IDB_SEARCH_RESULTS_CLEARED`. `price_history` is intentionally left intact.
-- **Schema migrations** run in the `upgrade` callback. Each store is created behind an `objectStoreNames.contains(...)` guard, so bumping `DB_VERSION` adds new stores without touching existing ones. There is no automatic data migration between renamed stores — during beta, clearing the database (`indexedDB.deleteDatabase("chempal")` or DevTools → Application → IndexedDB) rebuilds it fresh.
+- **`clearAllCaches()`** clears, in one transaction: `search_results`, `search_history`, `supplier_query_cache`, `supplier_product_data_cache`, `supplier_stats`, and `excluded_products` — then dispatches `IDB_SEARCH_RESULTS_CLEARED`. `price_history`, `exports`, and `app_meta` are intentionally left intact.
+- **Schema migrations** run in the `upgrade` callback. Each store is created behind an `objectStoreNames.contains(...)` guard, so bumping `DB_VERSION` adds new stores without touching existing ones.
+- **Data migrations** are separate from schema migrations: `src/migrations/registry.ts` loads semver-named step files (`vX.Y.Z-to-vX.Y.Z.ts` under `src/migrations/steps/`), compares the `app_meta` version marker against the running build, runs the pending chain, and re-stamps the marker.
 
 ## Key Files
 
@@ -147,3 +178,5 @@ Per-product/per-variant USD price series over time. See [Price Tracking](./price
 | `src/utils/SupplierCache.ts` | Class wrapper over the two supplier caches; owns `CACHE_VERSION` and key generation |
 | `src/helpers/excludedProducts.ts` | `ExcludedProductsMap` shape and the exclusion helpers |
 | `src/helpers/productIdentity.ts` | `getProductIdentityKey` — the shared identity used by the product cache and exclusions |
+| `src/migrations/registry.ts` | Version-marker comparison and the ordered data-migration step chain |
+| `config.json` | Capacity caps: `maxSupplierCacheEntries`, `maxHistoryEntries`, `maxExportEntries`, `maxExportsCacheBytes` |

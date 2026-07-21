@@ -75,7 +75,7 @@ flowchart TD
 
 ## Class Hierarchy
 
-The inheritance tree for all 25 active suppliers.
+The inheritance tree for all 32 active suppliers.
 
 ```mermaid
 classDiagram
@@ -123,6 +123,10 @@ classDiagram
         <<abstract>>
         Amazon HTML scraping
     }
+    class SupplierBaseMySimpleStore {
+        <<abstract>>
+        MySimpleStore JSON API
+    }
 
     SupplierBase <|-- SupplierBaseWix
     SupplierBase <|-- SupplierBaseSearchanise
@@ -130,10 +134,14 @@ classDiagram
     SupplierBase <|-- SupplierBaseWoocommerce
     SupplierBase <|-- SupplierBaseMagento2
     SupplierBase <|-- SupplierBaseAmazon
+    SupplierBase <|-- SupplierBaseMySimpleStore
 
     SupplierBase <|-- Ambeed
     SupplierBase <|-- Carolina
+    SupplierBase <|-- Chemsavers
+    SupplierBase <|-- LabChem
     SupplierBase <|-- LaboratoriumDiscounter
+    SupplierBase <|-- LeroChem
     SupplierBase <|-- LiMac
     SupplierBase <|-- Loudwolf
     SupplierBase <|-- Macklin
@@ -144,10 +152,12 @@ classDiagram
     SupplierBase <|-- Warchem
 
     SupplierBaseWix <|-- BioFuranChem
+    SupplierBaseWix <|-- DailyBioUSA
     SupplierBaseWix <|-- FtfScientific
 
     SupplierBaseSearchanise <|-- Laballey
 
+    SupplierBaseShopify <|-- AllianceChemical
     SupplierBaseShopify <|-- AsesChem
     SupplierBaseShopify <|-- BVV
     SupplierBaseShopify <|-- GoldAndSilverTesting
@@ -156,12 +166,15 @@ classDiagram
     SupplierBaseWoocommerce <|-- AlchemieLabs
     SupplierBaseWoocommerce <|-- AmarisChemicalSolutions
     SupplierBaseWoocommerce <|-- CarolinaChemical
+    SupplierBaseWoocommerce <|-- ConsolidatedChemical
     SupplierBaseWoocommerce <|-- LibertySci
 
     SupplierBaseMagento2 <|-- AladdinSci
 
     SupplierBaseAmazon <|-- Himedia
     SupplierBaseAmazon <|-- InnovatingScience
+
+    SupplierBaseMySimpleStore <|-- OrbitNaturalProductDerivatives
 ```
 
 ## Data Strategy Patterns
@@ -183,7 +196,7 @@ config:
     curve: basis
 ---
 flowchart LR
-    subgraph JSON["JSON Only (16)"]
+    subgraph JSON["JSON Only (23)"]
         direction TB
         J1["queryProducts()
         Fetch JSON / GraphQL"]
@@ -196,7 +209,7 @@ flowchart LR
         J1 --> J2 --> J3 --> J4
     end
 
-    subgraph HTML["HTML Only (5)"]
+    subgraph HTML["HTML Only (6)"]
         direction TB
         H1["queryProducts()
         Parse HTML via
@@ -210,7 +223,7 @@ flowchart LR
         H1 --> H2 --> H3 --> H4
     end
 
-    subgraph Hybrid["Hybrid (4)"]
+    subgraph Hybrid["Hybrid (3)"]
         direction TB
         HY1["queryProducts()
         Fetch JSON / GraphQL endpoint"]
@@ -233,12 +246,15 @@ flowchart LR
 
 ## Supplier Map
 
-All 25 active suppliers by platform, country, and data strategy. Display names match each class's `supplierName` constant — see [Supported Suppliers](../../wiki_files/Supported-Suppliers.md) for the canonical table.
+All 32 active suppliers by platform, country, and data strategy. Display names match each class's `supplierName` constant — see [Supported Suppliers](../../wiki_files/Supported-Suppliers.md) for the canonical table.
 
-### Direct (SupplierBase) - 11 suppliers
+### Direct (SupplierBase) - 14 suppliers
 - **Ambeed** - CN - JSON Only
-- **Carolina** - US - Hybrid
-- **Laboratorium Discounter** - NL - Hybrid
+- **Carolina** - US - JSON Only (JSON search + JSON detail)
+- **Chemsavers** - US - JSON Only (passthrough detail; `skipProductDetailCache`)
+- **LabChem** - DE - JSON Only (ePages JSON search + JSON detail)
+- **Laboratorium Discounter** - NL - Hybrid (JSON detail, then HTML detail for the rest)
+- **LeroChem** - LT - HTML Only
 - **LiMac** - LV - HTML Only (FreeFind search + HTML detail; native advanced search)
 - **Loudwolf** - US - HTML Only
 - **Macklin** - CN - JSON Only
@@ -248,23 +264,26 @@ All 25 active suppliers by platform, country, and data strategy. Display names m
 - **VWR** - US - JSON Only (JSON search + JSON detail enrichment)
 - **Warchem** - PL - HTML Only
 
-### Wix Platform - 2 suppliers
+### Wix Platform - 3 suppliers
 - **BioFuran Chem** - US - JSON Only
+- **Daily Bio USA** - US - JSON Only
 - **FTF Scientific** - US - JSON Only
 
 ### Searchanise Platform - 1 supplier
 - **Laballey** - US - JSON Only
 
-### Shopify Platform - 4 suppliers
+### Shopify Platform - 5 suppliers
+- **Alliance Chemical** - US - JSON Only
 - **AsesChem** - IN - Hybrid (GraphQL search + HTML detail scrape)
 - **BVV** - US - JSON Only
 - **Gold and Silver Testing** - US - JSON Only
-- **The Lab Stockroom** - US - JSON Only
+- **The Lab Stockroom** - US - JSON Only (plus a HEAD probe for the SDS PDF)
 
-### WooCommerce Platform - 4 suppliers
+### WooCommerce Platform - 5 suppliers
 - **Alchemie Labs** - US - JSON Only
 - **Amaris Chemical Solutions** - US - JSON Only
 - **Carolina Chemical** - US - JSON Only
+- **Consolidated Chemical & Solvents** - US - JSON Only
 - **LibertySci** - US - JSON Only
 
 ### Magento 2 Platform - 1 supplier
@@ -274,11 +293,15 @@ All 25 active suppliers by platform, country, and data strategy. Display names m
 - **Himedia** - IN - JSON Only
 - **Innovating Science** - US - JSON Only
 
+### MySimpleStore Platform - 1 supplier
+- **Orbit Natural Product Derivatives** - US - JSON Only (JSON search + slug-keyed JSON detail)
+
 ### Deprecated (not exported by `src/suppliers/index.ts`)
 - **Akmekem** - Amazon - supplier was removed from Amazon
 - **Bunmurra Labs** - Wix - site under reconstruction
-- **Chemsavers** - Custom - disabled in the barrel export (reason not noted in code)
 - **N2O3** - Custom - site offline since 2026-01-20
+- **AsesChem2** - Shopify - superseded by the current AsesChem module
+- **The Lab Stockroom (Searchanise)** - Searchanise - the store migrated to Shopify; the legacy module is kept but disabled
 
 ## SupplierFactory Orchestration
 

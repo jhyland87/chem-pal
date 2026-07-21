@@ -31,11 +31,9 @@ they arrive — you don't wait for the slowest supplier to finish.
   straight to the supplier's search. A boolean `AND/OR/NOT` query is either handled natively
   or split into one search per word. A raw chemical structure can't be searched directly, so
   the name/CAS looked up from Cactus/PubChem is used to pick out the genuine matches instead.
-- **Results are ranked by relevance, and you control how.** Each product title is scored
-  against your query and the list is **sorted best-match-first**, keeping the top results.
-  Two knobs in **Settings → Advanced** drive this: the **fuzz scorer** picks the matching
-  algorithm (default `ratio`), and **"disable fuzzy filtering"** turns scoring off entirely —
-  then results keep the supplier's own order instead of being re-ranked.
+- **Results are ranked by relevance.** Each product title is scored against your query and
+  the list is **sorted best-match-first**, keeping the top results — so the closest matches
+  surface first no matter what order the supplier returned them in.
 
 ## Diagram
 
@@ -100,7 +98,7 @@ direction TB
       subgraph FORMAT_ROW_1[" "]
       direction LR
         PLAIN["<b>Plain name or CAS</b><br/>search it directly<br/>(most engines accept these)"]
-        BOOLNATIVE["<b>Boolean AND/OR/NOT</b><br/>supplier supports it natively<br/>(Wix, Shopify, Magento 2, LiMac)"]
+        BOOLNATIVE["<b>Boolean AND/OR/NOT</b><br/>supplier supports it natively<br/>(Wix, Shopify, Magento 2,<br/>Chemsavers, LabChem, LiMac)"]
       end
       subgraph FORMAT_ROW_2[" "]
       direction LR
@@ -115,16 +113,12 @@ direction TB
 
   subgraph RANK_PHASE["B · Rank, build, and cache the product list"]
   direction LR
-    FUZZYQ@{ shape: diam, label: "Fuzzy filtering on?<br/><i>Settings → Advanced</i>" }
     SCORE["Rank by relevance<br/><i>fuzzyFilterAst()</i><br/>score titles, sort best-first,<br/>keep the top N"]
-    RAWORDER["Skip scoring<br/>keep the supplier's own order<br/><i>fuzzyFilteringDisabled</i>"]
     BUILD@{ shape: st-rect, label: "Build a product for each match<br/><i>initProductBuilders()</i><br/>title, link, unique ID, base price" }
     SAVEQ@{ shape: cyl, label: "💾 Cache this product list<br/>for the search term" }
     DROP["Drop ignored products<br/>and trim to your result limit"]
 
-    FUZZYQ -->|"On (default)"| SCORE
-    FUZZYQ -->|"Off"| RAWORDER
-    SCORE & RAWORDER --> BUILD
+    SCORE --> BUILD
     BUILD --> SAVEQ --> DROP
   end
 
@@ -142,7 +136,7 @@ direction TB
   end
 
   QCACHE -->|"Hit — reuse saved list"| DROP
-  NATIVE --> FUZZYQ
+  NATIVE --> SCORE
   DROP -->|"for each product"| DCACHE
 end
 
@@ -169,8 +163,8 @@ classDef junction fill:#27AE60,stroke:#1E8449,color:#fff
 
 class START start
 class FACTORY,LOOKUP,FANOUT setup
-class STRUCT,QCACHE,DCACHE,FORMAT,FUZZYQ decision
-class IGNORE,SCORE,RAWORDER,BUILD,DROP,FINISH,PLAIN,BOOLNATIVE,BOOLFAN,STRUCTQ work
+class STRUCT,QCACHE,DCACHE,FORMAT decision
+class IGNORE,SCORE,BUILD,DROP,FINISH,PLAIN,BOOLNATIVE,BOOLFAN,STRUCTQ work
 class NATIVE,FETCH native
 class SAVEQ,SAVED storage
 class YIELD junction
@@ -183,8 +177,8 @@ class SUGGEST fallback
 1. **Getting Ready** — one coordinator (`SupplierFactory`) is created and, if your query is a
    chemical structure, it's translated once into a name + CAS (Cactus → PubChem).
 2. **Each supplier** runs the same routine independently and in parallel. The supplier box is split into three horizontal bands: search, ranking, and product details.
-3. **Ranking** (the fuzzy diamond) sorts results by relevance using your Settings → Advanced
-   choices, or preserves the supplier's own order if you've turned fuzzy filtering off.
+3. **Ranking** scores every result title against your query and sorts best-match-first,
+   keeping the top ones.
 4. **The two 💾 cylinders** are the caches — the reason a repeated search feels instant.
 5. **Results** stream onto the screen (the display-shaped box) one product at a time; if a
    supplier finds nothing, the card at the end suggests alternative terms.
