@@ -1,6 +1,14 @@
 import { useStatusBar } from "@/components/StatusBar";
 import { useAppContext } from "@/context";
+import {
+  buildResultsWorkbook,
+  downloadBlob,
+  type ExportContext,
+  type ExportFilterSummary,
+  type ExportGroup,
+} from "@/helpers/exportResults";
 import { i18n } from "@/helpers/i18n";
+import { getExportableProductData } from "@/helpers/product";
 import { getProductIdentityKey } from "@/helpers/productIdentity";
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
 import ArrowDropUpIcon from "@/icons/ArrowDropUpIcon";
@@ -11,14 +19,16 @@ import CopyIcon from "@/icons/CopyIcon";
 import FolderDeleteIcon from "@/icons/FolderDeleteIcon";
 import HttpIcon from "@/icons/HttpIcon";
 import SettingsIcon from "@/icons/SettingsIcon";
-import { deleteSupplierProductDataCacheEntry } from "@/utils/idbCache";
-import type { Table } from "@tanstack/react-table";
+import { deleteSupplierProductDataCacheEntry, putExport } from "@/utils/idbCache";
+import GridOnIcon from "@mui/icons-material/GridOn";
 import Divider from "@mui/material/Divider";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import MenuItem from "@mui/material/MenuItem";
 import MenuList from "@mui/material/MenuList";
 import Paper from "@mui/material/Paper";
+import type { Table } from "@tanstack/react-table";
+import { dump as yamlDump } from "js-yaml";
 import { useEffect, useRef, useState } from "react";
 import styles from "./ContextMenu.module.scss";
 
@@ -45,6 +55,8 @@ interface ContextMenuProps {
    * persisting the exclusion and removing the row from the visible results.
    */
   onExcludeProduct?: (product: Product) => void | Promise<void>;
+  /** The originating search query, recorded on the Summary sheet of xlsx exports. */
+  executedQuery?: string;
 }
 
 /**
@@ -56,6 +68,59 @@ interface ContextMenuPosition {
   x: number;
   /** Y coordinate in pixels */
   y: number;
+}
+
+/**
+ * Renders a table filter value as a human-readable string for the export Summary
+ * sheet. Numeric range filters (`[min, max]`) become `"min–max"`; multi-select
+ * arrays are comma-joined; everything else is stringified.
+ * @param value - The raw column-filter value from TanStack table state.
+ * @returns A display string for the filter value.
+ * @example
+ * ```ts
+ * formatFilterValue(["Loudwolf", "Onyxmet"]); // => "Loudwolf, Onyxmet"
+ * formatFilterValue([5, 20]);                 // => "5–20"
+ * ```
+ * @source
+ */
+function formatFilterValue(value: unknown): string {
+  if (Array.isArray(value)) {
+    const isRange = value.length === 2 && value.every((v) => v == null || typeof v === "number");
+    if (isRange) {
+      const [min, max] = value;
+      return `${min ?? ""}–${max ?? ""}`;
+    }
+    return value
+      .filter((v) => v != null)
+      .map((v) => String(v))
+      .join(", ");
+  }
+  return value == null ? "" : String(value);
+}
+
+/**
+ * Builds a filesystem-safe `.xlsx` filename from the search query and timestamp,
+ * e.g. `chempal-export-sodium-chloride-2026-07-21-14-03-22.xlsx`.
+ * @param query - The originating search query, if any.
+ * @param createdAt - Epoch milliseconds the export was created.
+ * @returns The suggested download filename.
+ * @example
+ * ```ts
+ * buildExportFilename("Sodium Chloride", 1753104202000);
+ * // => "chempal-export-sodium-chloride-2026-07-21-14-03-22.xlsx"
+ * ```
+ * @source
+ */
+function buildExportFilename(query: string | undefined, createdAt: number): string {
+  const stamp = new Date(createdAt).toISOString().slice(0, 19).replace(/[:T]/g, "-");
+  const slug =
+    (query ?? "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 40) || "results";
+  return `chempal-export-${slug}-${stamp}.xlsx`;
 }
 
 /**
@@ -88,6 +153,7 @@ export default function ContextMenu({
   product,
   table,
   onExcludeProduct,
+  executedQuery,
 }: ContextMenuProps) {
   const { flashStatusText } = useStatusBar();
   const { bookmarksFolderId, setBookmarksFolderId } = useAppContext();
@@ -421,28 +487,123 @@ export default function ContextMenu({
     onClose();
   };
 
+  const handleCopyProductInfoJson = async () => {
+    const productInfoObj = getExportableProductData(product);
+    const productInfo = JSON.stringify(productInfoObj, null, 2);
+
+    try {
+      await navigator.clipboard.writeText(productInfo);
+      console.log("JSON product info copied to clipboard", { productInfoObj, productInfo });
+    } catch (error) {
+      console.error("Failed to copy JSON product info", { productInfoObj, productInfo, error });
+    }
+    onClose();
+  };
+
   /**
    * Handles copying formatted product information to clipboard.
    * Includes title, price, supplier, and URL in a readable format.
    * @source
    */
   const handleCopyProductInfo = async () => {
-    const productInfo = [
-      product.title,
-      i18n("copy_info_price", [product.currencySymbol, product.price]),
-      i18n("copy_info_supplier", [product.supplier]),
-      i18n("copy_info_url", [openUrl]),
-    ];
-
-    if (product.description) {
-      productInfo.push(i18n("copy_info_description", [product.description]));
-    }
+    const productInfoObj = getExportableProductData(product);
+    const productInfo = yamlDump(productInfoObj, { noRefs: true });
 
     try {
-      await navigator.clipboard.writeText(productInfo.join("\n"));
-      console.log("Product info copied to clipboard", { productInfo });
+      await navigator.clipboard.writeText(productInfo);
+      console.log("YAML product info copied to clipboard", {
+        productInfo,
+        productInfoObj,
+      });
     } catch (error) {
-      console.error("Failed to copy product info", { error });
+      console.error("Failed to copy YAML product info", { productInfoObj, productInfo, error });
+    }
+    onClose();
+  };
+
+  // Whether any column or global filter is currently narrowing the results —
+  // gates the "Export filtered results" item.
+  const hasActiveFilters =
+    table.getState().columnFilters.length > 0 || Boolean(table.getState().globalFilter);
+
+  /**
+   * Collects the table's active filters as label/value pairs for the export
+   * Summary sheet: the global search filter first, then each column filter
+   * (labelled by its string header, falling back to the column id).
+   * @returns One entry per active filter.
+   * @source
+   */
+  const collectActiveFilters = (): ExportFilterSummary[] => {
+    const filters: ExportFilterSummary[] = [];
+    const globalFilter = table.getState().globalFilter;
+    if (globalFilter) {
+      filters.push({ label: i18n("export_summary_filter_global"), value: String(globalFilter) });
+    }
+    for (const { id, value } of table.getState().columnFilters) {
+      const header = table.getColumn(id)?.columnDef.header;
+      filters.push({
+        label: typeof header === "string" ? header : id,
+        value: formatFilterValue(value),
+      });
+    }
+    return filters;
+  };
+
+  /**
+   * Builds a formatted `.xlsx` from the current results, caches it in IndexedDB,
+   * and downloads it. `scope` chooses the pre-filtered (all) or filtered row set;
+   * variants are exported as grouped subrows beneath their parent product.
+   * @param scope - Whether to export all results or only the filtered view.
+   * @source
+   */
+  const handleExport = async (scope: "all" | "filtered") => {
+    try {
+      const rowModel =
+        scope === "all" ? table.getPreFilteredRowModel() : table.getFilteredRowModel();
+      const groups: ExportGroup[] = rowModel.rows
+        .filter((row) => row.depth === 0)
+        .map((row) => ({
+          parent: row.original,
+          variants:
+            scope === "filtered"
+              ? row.subRows.map((sub) => sub.original)
+              : (row.original.variants ?? []),
+        }));
+
+      const columnVisibility: Record<string, boolean> = {};
+      for (const column of table.getAllLeafColumns()) {
+        columnVisibility[column.id] = column.getIsVisible();
+      }
+
+      const createdAt = Date.now();
+      const context: ExportContext = {
+        scope,
+        createdAt,
+        query: executedQuery,
+        appVersion: __APP_VERSION__,
+        userSettings: table.options.meta?.userSettings,
+        activeFilters: collectActiveFilters(),
+        groups,
+        columnVisibility,
+      };
+
+      const blob = await buildResultsWorkbook(context);
+      const filename = buildExportFilename(executedQuery, createdAt);
+      await putExport({
+        id: crypto.randomUUID(),
+        createdAt,
+        filename,
+        query: executedQuery,
+        scope,
+        rowCount: groups.length,
+        sizeBytes: blob.size,
+        blob,
+      });
+      downloadBlob(blob, filename);
+      flashStatusText(i18n("export_success", [String(groups.length)]));
+    } catch (error) {
+      console.error("Failed to export results", { error });
+      flashStatusText(i18n("export_failed"));
     }
     onClose();
   };
@@ -491,6 +652,43 @@ export default function ContextMenu({
             primary={i18n("context_menu_copy_product_info")}
           />
         </MenuItem>
+
+        <MenuItem className={styles["context-menu-item"]} onClick={handleCopyProductInfoJson}>
+          <ListItemIcon>
+            <CopyIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText
+            className={styles["context-menu-option-text"]}
+            primary={i18n("context_menu_copy_product_info_json")}
+          />
+        </MenuItem>
+
+        <Divider />
+
+        <MenuItem className={styles["context-menu-item"]} onClick={() => void handleExport("all")}>
+          <ListItemIcon>
+            <GridOnIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText
+            className={styles["context-menu-option-text"]}
+            primary={i18n("context_menu_export_all")}
+          />
+        </MenuItem>
+
+        {hasActiveFilters && (
+          <MenuItem
+            className={styles["context-menu-item"]}
+            onClick={() => void handleExport("filtered")}
+          >
+            <ListItemIcon>
+              <GridOnIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText
+              className={styles["context-menu-option-text"]}
+              primary={i18n("context_menu_export_filtered")}
+            />
+          </MenuItem>
+        )}
 
         <Divider />
 

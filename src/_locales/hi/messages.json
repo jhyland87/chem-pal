@@ -1125,5 +1125,34 @@
   "update_dismiss": {
     "message": "खारिज करें",
     "description": "Accessible label for the button that dismisses the update snackbar."
-  }
+  },
+
+  "context_menu_export_all": {"message": "सभी परिणाम निर्यात करें", "description": "Context-menu action to export all results to an xlsx file."},
+  "context_menu_export_filtered": {"message": "फ़िल्टर किए गए परिणाम निर्यात करें", "description": "Context-menu action to export the filtered results to an xlsx file."},
+  "export_success": {"message": "$count$ परिणाम निर्यात किए गए", "placeholders": {"count": {"content": "$1"}}},
+  "export_failed": {"message": "निर्यात विफल", "description": "Status message shown when an xlsx export fails."},
+  "export_sheet_summary": {"message": "सारांश", "description": "Worksheet name for the summary sheet in the xlsx export."},
+  "export_sheet_results": {"message": "परिणाम", "description": "Worksheet name for the results sheet in the xlsx export."},
+  "export_summary_version": {"message": "ChemPal संस्करण", "description": "Summary-sheet label for the ChemPal app version."},
+  "export_summary_query": {"message": "खोज क्वेरी", "description": "Summary-sheet label for the originating search query."},
+  "export_summary_scope": {"message": "निर्यात दायरा", "description": "Summary-sheet label for the export scope (all vs filtered)."},
+  "export_summary_scope_all": {"message": "सभी परिणाम", "description": "Summary-sheet value for an all-results export."},
+  "export_summary_scope_filtered": {"message": "फ़िल्टर किए गए परिणाम", "description": "Summary-sheet value for a filtered-results export."},
+  "export_summary_date": {"message": "निर्यात दिनांक", "description": "Summary-sheet label for the export date/time."},
+  "export_summary_result_count": {"message": "परिणामों की संख्या", "description": "Summary-sheet label for the number of exported results."},
+  "export_summary_filters": {"message": "सक्रिय फ़िल्टर", "description": "Summary-sheet label for the active filters section."},
+  "export_summary_filter_global": {"message": "खोज फ़िल्टर", "description": "Summary-sheet label for the global search filter."},
+  "export_summary_no_filters": {"message": "कोई नहीं", "description": "Summary-sheet value shown when no filters are active."},
+  "history_section_search": {"message": "खोज इतिहास", "description": "Accordion section title for the search history."},
+  "history_section_exports": {"message": "निर्यात किया गया डेटा", "description": "Accordion section title for the cached data exports."},
+  "exports_count_single": {"message": "$count$ निर्यात", "placeholders": {"count": {"content": "$1"}}},
+  "exports_count_plural": {"message": "$count$ निर्यात", "placeholders": {"count": {"content": "$1"}}},
+  "exports_result_single": {"message": "$count$ परिणाम", "placeholders": {"count": {"content": "$1"}}},
+  "exports_result_plural": {"message": "$count$ परिणाम", "placeholders": {"count": {"content": "$1"}}},
+  "exports_empty": {"message": "अभी तक कोई निर्यात नहीं।", "description": "Empty-state text for the exports list."},
+  "exports_clear": {"message": "निर्यात साफ़ करें", "description": "Tooltip/label for the clear-exports button."},
+  "exports_download": {"message": "निर्यात डाउनलोड करें", "description": "Tooltip/label for the download-export button."},
+  "exports_delete": {"message": "निर्यात हटाएं", "description": "Tooltip/label for the delete-export button."},
+  "column_url": {"message": "URL", "description": "Table column header for product URL."},
+  "context_menu_copy_product_info_json": {"message": "उत्पाद जानकारी JSON के रूप में कॉपी करें", "description": "Context menu option to copy the product info as JSON."}
 }

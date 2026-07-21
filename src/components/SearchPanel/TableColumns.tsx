@@ -1,11 +1,12 @@
 import { CountryFlagTooltip } from "@/components/StyledComponents";
 import { default as Link } from "@/components/TabLink";
-import { AVAILABILITY_OPTIONS, isShippingRange, SHIPPING_OPTIONS } from "@/constants/common";
+import { AVAILABILITY_OPTIONS, SHIPPING_OPTIONS } from "@/constants/common";
 import { SUPPLIER_COUNTRY_OPTIONS } from "@/constants/countries";
 import { omit } from "@/helpers/collectionUtils";
 import { getCountryName } from "@/helpers/country";
 import { i18n } from "@/helpers/i18n";
 import { formatDisplayPrice } from "@/helpers/price";
+import { availabilityLabel, shippingLabel } from "@/helpers/productLabels";
 import { pubchemCasSearchUrl, pubchemCompoundUrl } from "@/helpers/pubchem";
 import { formatUomForDisplay } from "@/helpers/quantity";
 import ArrowDropDownIcon from "@/icons/ArrowDropDownIcon";
@@ -14,42 +15,10 @@ import COAIcon from "@/icons/COAIcon";
 import SDSIcon from "@/icons/SDSIcon";
 import TDSIcon from "@/icons/TDSIcon";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
-import { isAvailability } from "@/utils/typeGuards/productbuilder";
 import { ColumnDef, type CellContext, type HeaderContext } from "@tanstack/react-table";
 import { hasFlag } from "country-flag-icons";
 import getUnicodeFlagIcon from "country-flag-icons/unicode";
 import styles from "./TableColumns.module.scss";
-
-/**
- * Localized label for a supplier {@link ShippingRange} (worldwide/international/
- * domestic/local). Falls back to the raw value for anything outside the known set.
- * @param range - The shipping range value.
- * @returns The translated label, or the raw value if unrecognized.
- * @example
- * ```ts
- * shippingLabel("worldwide"); // => "Worldwide" (en) / "Ogólnoświatowa" (pl)
- * ```
- * @source
- */
-function shippingLabel(range: string): string {
-  return isShippingRange(range) ? i18n(`shipping_${range}`) : range;
-}
-
-/**
- * Localized label for an {@link AVAILABILITY} value. Also covers the drawer's
- * grouped filter codes (`in_stock`, `out_of_stock`, …), which are a subset of the
- * enum values. Falls back to the raw value for anything outside the known set.
- * @param value - The availability value.
- * @returns The translated label, or the raw value if unrecognized.
- * @example
- * ```ts
- * availabilityLabel("in_stock"); // => "In Stock" (en) / "Dostępny" (pl)
- * ```
- * @source
- */
-function availabilityLabel(value: string): string {
-  return isAvailability(value) ? i18n(`availability_${value}`) : value;
-}
 
 /**
  * Defines the column configuration for the product results table. Each

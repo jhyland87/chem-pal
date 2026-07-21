@@ -93,7 +93,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * `(str1, str2, opts?) => number` shape works. Subclasses override this when
    * a supplier's title format needs a different scorer (e.g. a catalog that
    * pads titles with boilerplate might prefer `partial_ratio`). Defaults to
-   * `ratio`.
+   * `WRatio`.
    *
    * Overridable at runtime from `userSettings.fuzzScorerOverride` — see
    * `setFuzzScorerOverride` and `fuzzyFilter` below. The user's Advanced
@@ -670,6 +670,7 @@ export abstract class SupplierBase<S, T extends Product> implements ISupplier {
    * @source
    */
   public setFuzzScorerOverride(name: string | undefined): void {
+    console.debug("setFuzzScorerOverride", { name });
     if (isFuzzScorerName(name)) {
       this.fuzzScorerOverride = FUZZ_SCORERS[name];
     } else {

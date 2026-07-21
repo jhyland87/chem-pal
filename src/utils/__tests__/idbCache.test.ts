@@ -1,19 +1,25 @@
 import {
   clearAllCaches,
+  clearExports,
   clearPriceHistory,
   clearSearchResults,
   clearSupplierProductDataCache,
+  deleteExport,
   deleteSupplierProductDataCacheEntry,
+  type ExportRecord,
   findDuplicateProductIds,
+  getAllExports,
   getPriceSeries,
   getPriceSeriesByProduct,
   getSearchResults,
   getSearchResultsRecord,
   getSupplierProductDataCacheEntry,
+  putExport,
   putPriceSeries,
   putSupplierProductDataCacheEntry,
   setSearchResults,
 } from "@/utils/idbCache";
+import { maxExportEntries } from "@/../config.json";
 import { Logger } from "@/utils/Logger";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -176,5 +182,114 @@ describe("price history store", () => {
     await putPriceSeries(entry("pk-1", "pk-1", 20));
     await clearAllCaches();
     expect(await getPriceSeries("pk-1")).toBeDefined();
+  });
+});
+
+describe("result exports store", () => {
+  const exportRecord = (fields: Partial<ExportRecord>): ExportRecord => ({
+    id: "id",
+    createdAt: 1,
+    filename: "chempal-export.xlsx",
+    scope: "all",
+    rowCount: 1,
+    sizeBytes: 100,
+    blob: new Blob(["x"]),
+    ...fields,
+  });
+
+  beforeEach(async () => {
+    await clearExports();
+  });
+
+  afterEach(async () => {
+    await clearExports();
+  });
+
+  it("round-trips an export record's metadata", async () => {
+    await putExport(
+      exportRecord({
+        id: "e1",
+        createdAt: 10,
+        filename: "chempal-export-acetone.xlsx",
+        scope: "filtered",
+        query: "acetone",
+        rowCount: 12,
+        sizeBytes: 4096,
+        blob: new Blob(["hello"]),
+      }),
+    );
+
+    const all = await getAllExports();
+    expect(all).toHaveLength(1);
+    // fake-indexeddb doesn't preserve Blob identity through structuredClone the
+    // way a real browser does, so assert the record metadata rather than the Blob.
+    expect(all[0]).toMatchObject({
+      id: "e1",
+      filename: "chempal-export-acetone.xlsx",
+      scope: "filtered",
+      query: "acetone",
+      rowCount: 12,
+      sizeBytes: 4096,
+    });
+    expect(all[0].blob).toBeDefined();
+  });
+
+  it("returns exports newest-first", async () => {
+    await putExport(exportRecord({ id: "old", createdAt: 1 }));
+    await putExport(exportRecord({ id: "new", createdAt: 3 }));
+    await putExport(exportRecord({ id: "mid", createdAt: 2 }));
+
+    expect((await getAllExports()).map((e) => e.id)).toEqual(["new", "mid", "old"]);
+  });
+
+  it("evicts the oldest once the record-count cap is exceeded", async () => {
+    for (let i = 0; i < maxExportEntries + 2; i++) {
+      await putExport(exportRecord({ id: `e${i}`, createdAt: i + 1, sizeBytes: 10 }));
+    }
+
+    const all = await getAllExports();
+    expect(all).toHaveLength(maxExportEntries);
+    // The two oldest (e0, e1) are gone; the newest survives.
+    const ids = all.map((e) => e.id);
+    expect(ids).not.toContain("e0");
+    expect(ids).not.toContain("e1");
+    expect(ids).toContain(`e${maxExportEntries + 1}`);
+  });
+
+  it("evicts the oldest once the total-size cap is exceeded", async () => {
+    // sizeBytes is tracked independently of the (tiny) Blob, so we can trip the
+    // 25 MB byte cap without allocating real large files.
+    const twentyMB = 20 * 1024 * 1024;
+    await putExport(exportRecord({ id: "a", createdAt: 1, sizeBytes: twentyMB }));
+    await putExport(exportRecord({ id: "b", createdAt: 2, sizeBytes: twentyMB }));
+
+    const all = await getAllExports();
+    expect(all.map((e) => e.id)).toEqual(["b"]);
+  });
+
+  it("always keeps the newest export even if it alone exceeds the size cap", async () => {
+    await putExport(exportRecord({ id: "huge", createdAt: 1, sizeBytes: 30 * 1024 * 1024 }));
+    expect((await getAllExports()).map((e) => e.id)).toEqual(["huge"]);
+  });
+
+  it("deleteExport removes a single export", async () => {
+    await putExport(exportRecord({ id: "e1", createdAt: 1 }));
+    await putExport(exportRecord({ id: "e2", createdAt: 2 }));
+
+    await deleteExport("e1");
+
+    expect((await getAllExports()).map((e) => e.id)).toEqual(["e2"]);
+  });
+
+  it("clearExports empties the store", async () => {
+    await putExport(exportRecord({ id: "e1", createdAt: 1 }));
+    await clearExports();
+    expect(await getAllExports()).toEqual([]);
+  });
+
+  it("is preserved by clearAllCaches (exports are user data, not a cache)", async () => {
+    await putExport(exportRecord({ id: "e1", createdAt: 1 }));
+    await clearAllCaches();
+    expect((await getAllExports()).map((e) => e.id)).toEqual(["e1"]);
   });
 });

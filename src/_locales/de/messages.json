@@ -1155,5 +1155,34 @@
   "update_dismiss": {
     "message": "Schließen",
     "description": "Accessible label for the button that dismisses the update snackbar."
-  }
+  },
+
+  "context_menu_export_all": {"message": "Alle Ergebnisse exportieren", "description": "Context-menu action to export all results to an xlsx file."},
+  "context_menu_export_filtered": {"message": "Gefilterte Ergebnisse exportieren", "description": "Context-menu action to export the filtered results to an xlsx file."},
+  "export_success": {"message": "$count$ Ergebnisse exportiert", "placeholders": {"count": {"content": "$1"}}},
+  "export_failed": {"message": "Export fehlgeschlagen", "description": "Status message shown when an xlsx export fails."},
+  "export_sheet_summary": {"message": "Übersicht", "description": "Worksheet name for the summary sheet in the xlsx export."},
+  "export_sheet_results": {"message": "Ergebnisse", "description": "Worksheet name for the results sheet in the xlsx export."},
+  "export_summary_version": {"message": "ChemPal-Version", "description": "Summary-sheet label for the ChemPal app version."},
+  "export_summary_query": {"message": "Suchanfrage", "description": "Summary-sheet label for the originating search query."},
+  "export_summary_scope": {"message": "Exportumfang", "description": "Summary-sheet label for the export scope (all vs filtered)."},
+  "export_summary_scope_all": {"message": "Alle Ergebnisse", "description": "Summary-sheet value for an all-results export."},
+  "export_summary_scope_filtered": {"message": "Gefilterte Ergebnisse", "description": "Summary-sheet value for a filtered-results export."},
+  "export_summary_date": {"message": "Exportdatum", "description": "Summary-sheet label for the export date/time."},
+  "export_summary_result_count": {"message": "Anzahl der Ergebnisse", "description": "Summary-sheet label for the number of exported results."},
+  "export_summary_filters": {"message": "Aktive Filter", "description": "Summary-sheet label for the active filters section."},
+  "export_summary_filter_global": {"message": "Suchfilter", "description": "Summary-sheet label for the global search filter."},
+  "export_summary_no_filters": {"message": "Keine", "description": "Summary-sheet value shown when no filters are active."},
+  "history_section_search": {"message": "Suchverlauf", "description": "Accordion section title for the search history."},
+  "history_section_exports": {"message": "Exportierte Daten", "description": "Accordion section title for the cached data exports."},
+  "exports_count_single": {"message": "$count$ Export", "placeholders": {"count": {"content": "$1"}}},
+  "exports_count_plural": {"message": "$count$ Exporte", "placeholders": {"count": {"content": "$1"}}},
+  "exports_result_single": {"message": "$count$ Ergebnis", "placeholders": {"count": {"content": "$1"}}},
+  "exports_result_plural": {"message": "$count$ Ergebnisse", "placeholders": {"count": {"content": "$1"}}},
+  "exports_empty": {"message": "Noch keine Exporte.", "description": "Empty-state text for the exports list."},
+  "exports_clear": {"message": "Exporte löschen", "description": "Tooltip/label for the clear-exports button."},
+  "exports_download": {"message": "Export herunterladen", "description": "Tooltip/label for the download-export button."},
+  "exports_delete": {"message": "Export löschen", "description": "Tooltip/label for the delete-export button."},
+  "column_url": {"message": "URL", "description": "Table column header for product URL."},
+  "context_menu_copy_product_info_json": {"message": "Produktinfo als JSON kopieren", "description": "Context menu option to copy the product info as JSON."}
 }
