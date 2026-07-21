@@ -13,6 +13,8 @@ one line per change, grouped under **Added** / **Changed** / **Fixed** /
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-07-21
+
 ### Added
 
 - Suppliers that restrict shipping on their own website but ship more freely through their eBay
