@@ -924,6 +924,7 @@ export default function ResultsTable({
             table={table}
             onClose={handleCloseContextMenu}
             onExcludeProduct={excludeProduct}
+            executedQuery={executedQuery}
           />
         )}
       </div>

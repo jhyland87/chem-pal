@@ -34,6 +34,8 @@
   "descriptionPreviewLength": 300,
   "maxSupplierCacheEntries": 100,
   "maxHistoryEntries": 100,
+  "maxExportEntries": 20,
+  "maxExportsCacheBytes": 26214400,
   "useStorageCompression": false,
   "sequenceResetMs": 1500,
   "hotkeys": [

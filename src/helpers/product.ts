@@ -5,6 +5,7 @@
  * @source
  */
 
+import { mapDefined } from "./utils";
 /** Base URL for NCI CACTUS chemical structure resolver (also used in `cas.ts`). */
 const CACTUS_STRUCTURE_BASE = "https://cactus.nci.nih.gov/chemical/structure";
 
@@ -166,4 +167,93 @@ export function hasExpandableDetail(product: Product): boolean {
   if (resolveProductImages(product).length > 0) return true;
   if ((product.variants?.length ?? 0) > 0) return true;
   return EXPANDABLE_DETAIL_KEYS.some((key) => isPresent(product[key]));
+}
+
+/** Keys stripped from copied product info — internal/derived noise. */
+const NON_EXPORTED_PRODUCT_KEYS = ["currencySymbol", "baseQuantity", "cacheKey", "_id"];
+
+/**
+ * Splits a flat {@link ProductImage} list into separate `images` and
+ * `thumbnails` href arrays, dropping the per-entry `{ type }` wrapper so copied
+ * product info reads cleanly. Each array is omitted when it would be empty.
+ * @param images - The product's flat image list, or undefined.
+ * @returns Hrefs grouped by kind: `{ images?, thumbnails? }`.
+ * @example
+ * ```ts
+ * splitProductImages([
+ *   { href: "a/120x120x2/img.jpeg", type: "thumbnail" },
+ *   { href: "a/img.jpeg", type: "image" },
+ * ]);
+ * // => { images: ["a/img.jpeg"], thumbnails: ["a/120x120x2/img.jpeg"] }
+ * ```
+ * @source
+ */
+function splitProductImages(images?: ProductImage[]): {
+  images?: string[];
+  thumbnails?: string[];
+} {
+  const fullImages: string[] = [];
+  const thumbnails: string[] = [];
+  for (const image of images ?? []) {
+    if (image.type === "thumbnail") {
+      thumbnails.push(image.href);
+    } else {
+      fullImages.push(image.href);
+    }
+  }
+  return {
+    images: fullImages.length > 0 ? fullImages : undefined,
+    thumbnails: thumbnails.length > 0 ? thumbnails : undefined,
+  };
+}
+
+/**
+ * Cleans one product or variant for copy/export: drops internal noise keys,
+ * renders `price` with its currency symbol, and replaces the flat `images` list
+ * with separate `images`/`thumbnails` href arrays. Nested `variants` are left to
+ * the caller.
+ * @param item - The product or variant to clean.
+ * @returns A plain object with the cleaned fields.
+ * @example
+ * ```ts
+ * cleanProductFields({ title: "Acetone", price: 5, currencySymbol: "$", images: [] });
+ * // => { title: "Acetone", price: "$5" }
+ * ```
+ * @source
+ */
+function cleanProductFields(item: Variant): Record<string, unknown> {
+  const entries = mapDefined(Object.entries(item), ([key, value]) => {
+    if (NON_EXPORTED_PRODUCT_KEYS.includes(key)) return;
+    if (key === "images" || key === "variants") return;
+    if (key === "price") return [key, `${item.currencySymbol ?? ""}${value}`];
+    return [key, value];
+  });
+
+  const cleaned: Record<string, unknown> = Object.fromEntries(entries);
+  const { images, thumbnails } = splitProductImages(item.images);
+  if (images) cleaned.images = images;
+  if (thumbnails) cleaned.thumbnails = thumbnails;
+  return cleaned;
+}
+
+/**
+ * Builds a copy/export-friendly plain object from a product: internal fields are
+ * dropped, the price is rendered with its currency symbol, and every image list
+ * (on the product and each variant) is split into `images`/`thumbnails` href
+ * arrays so the copied output isn't cluttered with `{ href, type }` pairs.
+ * @param product - The product to serialize.
+ * @returns A cleaned object suitable for JSON/YAML copy output.
+ * @example
+ * ```ts
+ * getExportableProductData(product).images;     // => ["https://…/image.jpeg"]
+ * getExportableProductData(product).thumbnails; // => ["https://…/120x120x2/image.jpeg"]
+ * ```
+ * @source
+ */
+export function getExportableProductData(product: Product): Record<string, unknown> {
+  const cleaned = cleanProductFields(product);
+  if (product.variants && product.variants.length > 0) {
+    cleaned.variants = product.variants.map(cleanProductFields);
+  }
+  return cleaned;
 }

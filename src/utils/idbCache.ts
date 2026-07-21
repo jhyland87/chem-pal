@@ -1,4 +1,9 @@
-import { maxHistoryEntries, maxSupplierCacheEntries } from "@/../config.json";
+import {
+  maxExportEntries,
+  maxExportsCacheBytes,
+  maxHistoryEntries,
+  maxSupplierCacheEntries,
+} from "@/../config.json";
 import { IDB_STORE, type IdbStore } from "@/constants/common";
 import type { ExcludedProductsMap } from "@/helpers/excludedProducts";
 import { Logger } from "@/utils/Logger";
@@ -19,16 +24,51 @@ export const IDB_SEARCH_RESULTS_CLEARED = "idb:search-results-cleared";
  */
 export const IDB_SUPPLIER_STATS_UPDATED = "idb:supplier-stats-updated";
 
+/**
+ * Custom event name dispatched when the cached exports change (added, deleted,
+ * or cleared). The export-history list listens for this to live-refresh.
+ * @category Utils
+ */
+export const IDB_EXPORTS_UPDATED = "idb:exports-updated";
+
 const logger = new Logger("idbCache");
 
 const DB_NAME = "chempal";
-const DB_VERSION = 6;
+const DB_VERSION = 7;
 
 /** Single-row key used by the `app_meta` store (mirrors the `"current"` pattern of `search_results`). */
 const APP_META_KEY = "current";
 // Cache-capacity caps live in config.json alongside the other build-time tunables.
 const MAX_SUPPLIER_CACHE_ENTRIES = maxSupplierCacheEntries;
 const MAX_HISTORY_ENTRIES = maxHistoryEntries;
+// Exports are capped by BOTH a record count and a total byte budget; the oldest
+// are evicted first when either is exceeded (see `putExport`).
+const MAX_EXPORT_ENTRIES = maxExportEntries;
+const MAX_EXPORT_CACHE_BYTES = maxExportsCacheBytes;
+
+/**
+ * A cached spreadsheet export: the generated `.xlsx` Blob plus the metadata the
+ * export-history list displays. Stored in the `exports` object store.
+ * @category Utils
+ */
+export interface ExportRecord {
+  /** Unique id; also the object-store key. */
+  id: string;
+  /** Epoch milliseconds the export was created; drives newest-first order + eviction. */
+  createdAt: number;
+  /** Suggested download filename, e.g. `chempal-export-acetone-2026-07-21-140322.xlsx`. */
+  filename: string;
+  /** Originating search query, if any. */
+  query?: string;
+  /** Whether the export covered all results or only the filtered view. */
+  scope: "all" | "filtered";
+  /** Number of top-level products exported (excludes variant subrows). */
+  rowCount: number;
+  /** Byte size of {@link ExportRecord.blob}; summed for the total-size cap. */
+  sizeBytes: number;
+  /** The generated `.xlsx` file. */
+  blob: Blob;
+}
 
 interface ChemPalDBSchema extends DBSchema {
   search_results: {
@@ -102,6 +142,13 @@ interface ChemPalDBSchema extends DBSchema {
       updatedAt: number;
     };
   };
+  exports: {
+    key: string;
+    value: ExportRecord;
+    indexes: {
+      createdAt: number;
+    };
+  };
 }
 
 let dbPromise: Promise<IDBPDatabase<ChemPalDBSchema>> | null = null;
@@ -150,6 +197,11 @@ function getDB(): Promise<IDBPDatabase<ChemPalDBSchema>> {
         if (!db.objectStoreNames.contains(IDB_STORE.APP_META)) {
           db.createObjectStore(IDB_STORE.APP_META, { keyPath: "id" });
         }
+
+        if (!db.objectStoreNames.contains(IDB_STORE.EXPORTS)) {
+          const exports = db.createObjectStore(IDB_STORE.EXPORTS, { keyPath: "id" });
+          exports.createIndex("createdAt", "createdAt");
+        }
       },
     });
   }
@@ -162,6 +214,10 @@ function emitSearchResultsCleared(): void {
 
 function emitSupplierStatsUpdated(): void {
   window.dispatchEvent(new CustomEvent(IDB_SUPPLIER_STATS_UPDATED));
+}
+
+function emitExportsUpdated(): void {
+  window.dispatchEvent(new CustomEvent(IDB_EXPORTS_UPDATED));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1167,6 +1223,118 @@ export async function getMigrationDb(): Promise<IDBPDatabase> {
 }
 
 /* -------------------------------------------------------------------------- */
+/*                              Result Exports                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Stores a generated `.xlsx` export, then evicts the oldest exports until the
+ * store is within **both** caps: at most `maxExportEntries` records and at most
+ * `maxExportsCacheBytes` total bytes. The most recent export is always kept, even
+ * if it alone exceeds the byte budget.
+ * @category Utils
+ * @param record - The export record to persist (its `id` is the store key).
+ * @returns Resolves once the write and any eviction complete.
+ * @example
+ * ```ts
+ * await putExport({
+ *   id: crypto.randomUUID(), createdAt: Date.now(), filename: "chempal-export.xlsx",
+ *   query: "acetone", scope: "filtered", rowCount: 12, sizeBytes: blob.size, blob,
+ * });
+ * ```
+ * @source
+ */
+export async function putExport(record: ExportRecord): Promise<void> {
+  try {
+    const db = await getDB();
+    const tx = db.transaction(IDB_STORE.EXPORTS, "readwrite");
+    const store = tx.objectStore(IDB_STORE.EXPORTS);
+    await store.put(record);
+
+    // Oldest first, so we can evict from the front while keeping the newest.
+    const all = (await store.getAll()).sort((a, b) => a.createdAt - b.createdAt);
+    let totalBytes = all.reduce((sum, entry) => sum + entry.sizeBytes, 0);
+    let index = 0;
+    while (
+      index < all.length - 1 &&
+      (all.length - index > MAX_EXPORT_ENTRIES || totalBytes > MAX_EXPORT_CACHE_BYTES)
+    ) {
+      const victim = all[index];
+      await store.delete(victim.id);
+      totalBytes -= victim.sizeBytes;
+      index++;
+    }
+
+    await tx.done;
+    emitExportsUpdated();
+  } catch (error) {
+    logger.error("Failed to put export in IndexedDB", { error });
+  }
+}
+
+/**
+ * Reads every cached export, newest first, for the export-history list.
+ * @category Utils
+ * @returns All stored export records ordered by `createdAt` descending, or `[]` on failure.
+ * @example
+ * ```ts
+ * const exports = await getAllExports();
+ * exports[0].filename; // => most recent export's filename
+ * ```
+ * @source
+ */
+export async function getAllExports(): Promise<ExportRecord[]> {
+  try {
+    const db = await getDB();
+    const all = await db.getAll(IDB_STORE.EXPORTS);
+    return all.sort((a, b) => b.createdAt - a.createdAt);
+  } catch (error) {
+    logger.error("Failed to get exports from IndexedDB", { error });
+    return [];
+  }
+}
+
+/**
+ * Deletes a single cached export by id.
+ * @category Utils
+ * @param id - The export record's id.
+ * @returns Resolves once the delete completes.
+ * @example
+ * ```ts
+ * await deleteExport(record.id);
+ * ```
+ * @source
+ */
+export async function deleteExport(id: string): Promise<void> {
+  try {
+    const db = await getDB();
+    await db.delete(IDB_STORE.EXPORTS, id);
+    emitExportsUpdated();
+  } catch (error) {
+    logger.error("Failed to delete export from IndexedDB", { error });
+  }
+}
+
+/**
+ * Empties the export cache.
+ * @category Utils
+ * @returns Resolves once the store is empty.
+ * @example
+ * ```ts
+ * await clearExports();
+ * ```
+ * @source
+ */
+export async function clearExports(): Promise<void> {
+  try {
+    const db = await getDB();
+    await db.clear(IDB_STORE.EXPORTS);
+    emitExportsUpdated();
+  } catch (error) {
+    logger.error("Failed to clear exports from IndexedDB", { error });
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 /*                              Storage stats                                 */
 /* -------------------------------------------------------------------------- */
 
@@ -1206,15 +1374,29 @@ export async function getIdbStorageBreakdown(): Promise<IdbStorageBreakdown> {
     [IDB_STORE.EXCLUDED_PRODUCTS]: { count: 0, bytes: 0 },
     [IDB_STORE.PRICE_HISTORY]: { count: 0, bytes: 0 },
     [IDB_STORE.APP_META]: { count: 0, bytes: 0 },
+    [IDB_STORE.EXPORTS]: { count: 0, bytes: 0 },
   };
   try {
     const db = await getDB();
     for (const store of Object.values(IDB_STORE)) {
       const entries = await db.getAll(store);
-      byStore[store] = {
-        count: entries.length,
-        bytes: new Blob([JSON.stringify(entries)]).size,
-      };
+      // Export records hold Blobs, which JSON.stringify flattens to `{}`; sum the
+      // tracked `sizeBytes` instead so the breakdown reflects real on-disk size.
+      const bytes =
+        store === IDB_STORE.EXPORTS
+          ? entries.reduce(
+              (sum, entry) =>
+                sum +
+                (typeof entry === "object" &&
+                entry !== null &&
+                "sizeBytes" in entry &&
+                typeof entry.sizeBytes === "number"
+                  ? entry.sizeBytes
+                  : 0),
+              0,
+            )
+          : new Blob([JSON.stringify(entries)]).size;
+      byStore[store] = { count: entries.length, bytes };
     }
   } catch (error) {
     logger.error("Failed to compute IndexedDB storage breakdown", { error });

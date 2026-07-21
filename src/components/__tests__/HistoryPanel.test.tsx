@@ -10,6 +10,9 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vites
 // Mock @mui/icons-material to avoid ENFILE from barrel import
 vi.mock("@mui/icons-material", () => ({
   Delete: vi.fn((props: any) => <span data-testid="DeleteIcon" {...props} />),
+  ExpandMore: vi.fn((props: any) => <span data-testid="ExpandMoreIcon" {...props} />),
+  FilterList: vi.fn((props: any) => <span data-testid="FilterListIcon" {...props} />),
+  FileDownload: vi.fn((props: any) => <span data-testid="FileDownloadIcon" {...props} />),
 }));
 
 // Mock the context — HistoryPanel uses useAppContext

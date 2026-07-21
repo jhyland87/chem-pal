@@ -480,7 +480,12 @@ export function useSearch() {
           controller: fetchControllerRef.current,
           suppliers: appContext.selectedSuppliers,
           caching: appContext.userSettings.caching,
-          fuzzScorerOverride: appContext.userSettings.fuzzScorerOverride,
+          // The scorer selector lives behind advanced mode, so only honor the
+          // override there; otherwise a stale value can't strand a normal user
+          // on a non-default scorer — they fall through to the WRatio default.
+          fuzzScorerOverride: appContext.advancedMode
+            ? appContext.userSettings.fuzzScorerOverride
+            : undefined,
           doNotCacheEmptyResults: appContext.userSettings.doNotCacheEmptyResults,
           cacheTtlMinutes: appContext.userSettings.cacheTtlMinutes,
           noCacheStatusCodes: appContext.userSettings.noCacheStatusCodes,

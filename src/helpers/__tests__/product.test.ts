@@ -1,4 +1,5 @@
 import {
+  getExportableProductData,
   hasExpandableDetail,
   isPresent,
   resolveProductImages,
@@ -187,5 +188,51 @@ describe("samePurchasableUnit", () => {
 
   it("is false when neither size nor price is available", () => {
     expect(samePurchasableUnit({ title: "a" } as Variant, { title: "b" } as Variant)).toBe(false);
+  });
+});
+
+describe("getExportableProductData", () => {
+  const images = [
+    { href: "https://cdn/shop/120x120x2/image.jpeg", type: "thumbnail" as const },
+    { href: "https://cdn/shop/image.jpeg", type: "image" as const },
+  ];
+
+  it("splits the image list into images and thumbnails href arrays", () => {
+    const result = getExportableProductData({ ...baseProduct, images });
+    expect(result.images).toEqual(["https://cdn/shop/image.jpeg"]);
+    expect(result.thumbnails).toEqual(["https://cdn/shop/120x120x2/image.jpeg"]);
+  });
+
+  it("applies the same image split to each variant", () => {
+    const result = getExportableProductData({
+      ...baseProduct,
+      variants: [{ title: "500 g", images }],
+    } as Product);
+    const [variant] = result.variants as Array<Record<string, unknown>>;
+    expect(variant.images).toEqual(["https://cdn/shop/image.jpeg"]);
+    expect(variant.thumbnails).toEqual(["https://cdn/shop/120x120x2/image.jpeg"]);
+  });
+
+  it("omits images/thumbnails keys when there are none of that kind", () => {
+    const result = getExportableProductData({
+      ...baseProduct,
+      images: [{ href: "https://cdn/shop/image.jpeg", type: "image" }],
+    });
+    expect(result.images).toEqual(["https://cdn/shop/image.jpeg"]);
+    expect("thumbnails" in result).toBe(false);
+  });
+
+  it("renders price with the currency symbol and drops internal noise keys", () => {
+    const result = getExportableProductData({
+      ...baseProduct,
+      cacheKey: "ck-1",
+      _id: 3,
+      baseQuantity: 500,
+    } as Product);
+    expect(result.price).toBe("$10");
+    expect("currencySymbol" in result).toBe(false);
+    expect("cacheKey" in result).toBe(false);
+    expect("_id" in result).toBe(false);
+    expect("baseQuantity" in result).toBe(false);
   });
 });
