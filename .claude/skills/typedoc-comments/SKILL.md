@@ -69,6 +69,11 @@ unlisted languages don't highlight. Allowed languages come from `highlightLangua
 `configs/typedoc.json`: `typescript`, `tsx`, `javascript`, `json`, `html`, `css`, `bash`,
 `shell`, `regex`, `mermaid`.
 
+**Quotes inside examples.** The codebase uses single quotes, but Prettier does not format
+code inside comments — so existing `@example` blocks are still double-quoted throughout and
+nothing will migrate them. Write new examples single-quoted to match the code; don't bulk
+rewrite the old ones.
+
 Show **input and output**, not just a call:
 
 ```ts

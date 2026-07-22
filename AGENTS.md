@@ -32,6 +32,13 @@ Two script names collide with pnpm's own subcommands and **must** be run as
 `pnpm run docs` and `pnpm run pack` — plain `pnpm docs` / `pnpm pack` invoke pnpm's
 builtins and fail with a usage error.
 
+Two commits are pure reformatting and would otherwise dominate `git blame`. Skip them once
+per clone:
+
+```bash
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+```
+
 `pnpm run generate` rewrites `public/static/images/logo/*` and
 `src/constants/suppliers.ts` on every build. Expect that churn in `git status` after a
 build — it is not a change you made, and it is not something to "fix".
@@ -55,9 +62,12 @@ build — it is not a change you made, and it is not something to "fix".
 ## Conventions and invariants
 
 **TypeScript style lives in [STYLEGUIDE.md](STYLEGUIDE.md)** — the Google TypeScript style
-guide plus ChemPal's deviations. Read its first table before writing code: the two that
-catch people out are **double quotes** (not Google's single quotes) and **no `as` / `!`
-assertions outside test files**.
+guide plus ChemPal's deviations. Read its first table before writing code; the one that
+catches people out is **no `as` / `!` assertions outside test files**.
+
+Formatting is Prettier's job — `pnpm format`, or `pnpm format:check` in CI. Don't hand-fix
+quotes or wrapping. `.prettierignore` deliberately excludes `src/_locales`, the generated
+`src/constants/suppliers.ts`, and the `themes/` submodule; leave those exclusions alone.
 
 Project invariants beyond style, all of which have bitten before:
 

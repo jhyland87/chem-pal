@@ -1,0 +1,10 @@
+# Revisions listed here are pure formatting and are skipped by `git blame`.
+#
+# Enable locally (each clone needs this once):
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# style: use single quotes for string literals
+f9b7c082cdef86d0f5ae25369bbae28f1d24b527
+
+# style: apply prettier baseline (no quote change)
+3f1708f76e0405cc3d160ef7db46593c82d5b82b

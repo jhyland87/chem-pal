@@ -2,8 +2,8 @@
 
 The house style for ChemPal. It follows the Google TypeScript style guide, with a handful
 of deliberate deviations recorded in the first section — read those before applying
-anything you remember from elsewhere, because two of them (quotes, assertions) will
-otherwise produce a diff full of churn.
+anything you remember from elsewhere — the assertions rule in particular is stricter here
+than most codebases.
 
 Precedence: the linter and Prettier config win over this document; this document wins over
 personal habit. Match the surrounding file when a local area already settled on something
@@ -15,7 +15,6 @@ and reformatting it isn't the point of your change.
 
 | Topic | Google | ChemPal |
 | --- | --- | --- |
-| String quotes | Single `'` | **Double `"`** — Prettier's default, and what 1042 of 1056 string literals in `src/` use |
 | `as` / `!` assertions | Allowed with a justifying comment | **Banned outside test files.** Use a type guard, generic, or `in`-narrowing |
 | Doc comments | JSDoc for API docs only; avoid restating types | **Every function**, including private helpers, gets a TSDoc block |
 | `null` vs `undefined` | No preference | **Prefer `undefined`.** Pass `null` through unchanged only where a wire protocol uses it |
@@ -244,7 +243,19 @@ There are zero `!` assertions; keep it that way.
 
 ## Literals and coercion
 
-- **Double quotes** for ordinary strings; backticks for interpolation and multi-line.
+- **Single quotes** for ordinary strings; backticks for interpolation and multi-line.
+  Prettier enforces this (`singleQuote: true`) — run `pnpm format`, don't hand-fix.
+
+  Two things stay double-quoted, by design rather than oversight:
+  - **JSX attributes** (`<Foo bar="baz" />`) — `jsxSingleQuote` is `false`, matching HTML
+    and the React/MUI convention.
+  - **Strings containing an apostrophe** — Prettier picks whichever quote needs fewer
+    escapes, so `"don't"` stays as it is instead of becoming `'don\'t'`.
+
+  Code inside TSDoc `@example` blocks is also still double-quoted throughout. Prettier does
+  not format code in comments and no tooling will, so doc examples disagree with the code
+  they document. Write new examples single-quoted; there's no value in a mass rewrite of
+  the existing ones.
 - **No line continuations** (backslash at end of line inside a string). Concatenate or use a
   template literal.
 - **`Number()` to parse numbers**, then check the result — `Number.isFinite`, or
