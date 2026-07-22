@@ -37,7 +37,9 @@ demo/output/videos/*.webm
 docs
 coverage
 .cursor
-.claude
+# Project skills are shared; everything else under .claude is machine-local.
+.claude/*
+!.claude/skills/
 build.pem
 ChemPal.pem
 chem-pal.pem
