@@ -128,14 +128,12 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
   /** Used to keep track of how many requests have been made to the supplier. */
   protected httpRequstCount: number = 0;
 
-   
   private readonly TIMESTAMP_REFRESH_THRESHOLD: number = 800;
 
   /** The salt used to sign requests. */
-   
+
   private readonly SALT: string = "ndksyr9834@#$32ndsfu";
 
-   
   private readonly DEFAULT_TIMEOUT: number = 30000;
 
   /**
@@ -170,13 +168,11 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
 
   /** HTTP headers used as a basis for all queries. */
   protected headers: MacklinRequestHeaders = {
-     
     "X-Agent": "web",
     "X-User-Token": "",
     "X-Device-Id": "",
     "X-Language": "en",
     "X-Timestamp": "",
-     
   };
 
   /**
@@ -218,13 +214,11 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
 
     // Update headers to match api-client.js exactly, using defensive string conversion
     this.headers = {
-       
       "X-Agent": "web",
       "X-User-Token": this.ensureStringHeader(this.localStorage.MklUserToken),
       "X-Device-Id": this.ensureStringHeader(this.localStorage.soleId),
       "X-Language": "en",
       "X-Timestamp": "",
-
     };
   }
 
@@ -296,65 +290,62 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     const itemCode = product.get("uuid");
-    return this.getProductDataWithCache(
-      product,
-      async (builder) => {
-        // Each endpoint is fetched as its own bounded batch shared across all
-        // products (list -> info -> sds), so the requests run in distinct phases
-        // rather than interleaving per product. Interleaving let some products'
-        // list calls get pushed to the very end of the burst, outside the
-        // server's signing window, where they were rejected.
+    return this.getProductDataWithCache(product, async (builder) => {
+      // Each endpoint is fetched as its own bounded batch shared across all
+      // products (list -> info -> sds), so the requests run in distinct phases
+      // rather than interleaving per product. Interleaving let some products'
+      // list calls get pushed to the very end of the burst, outside the
+      // server's signing window, where they were rejected.
 
-        // `/api/product/list` returns every pack-size variant of the product.
-        const listVariants = (await this.getProductListBatch()).get(itemCode);
+      // `/api/product/list` returns every pack-size variant of the product.
+      const listVariants = (await this.getProductListBatch()).get(itemCode);
 
-        // Keep only purchasable variants (in stock), then map each to a Variant.
-        // A product with no in-stock variant has nothing to show.
-        const variants = mapDefined(
-          (listVariants ?? [])
-            .filter((detail) => Number(detail.product_stock) > 0)
-            .sort((a, b) => Number(a.product_price) - Number(b.product_price)),
-          (detail) => {
-            const built = this.toVariant(detail);
-            return built ? { detail, variant: built } : undefined;
-          },
-        );
+      // Keep only purchasable variants (in stock), then map each to a Variant.
+      // A product with no in-stock variant has nothing to show.
+      const variants = mapDefined(
+        (listVariants ?? [])
+          .filter((detail) => Number(detail.product_stock) > 0)
+          .sort((a, b) => Number(a.product_price) - Number(b.product_price)),
+        (detail) => {
+          const built = this.toVariant(detail);
+          return built ? { detail, variant: built } : undefined;
+        },
+      );
 
-        // Bail with `void` (not the half-built builder) when there's nothing
-        // usable. Returning the builder here would cache a price-less product
-        // (see getProductDataWithCache), poisoning the cache so the product stays
-        // broken on every later search. `void` skips the cache write and lets the
-        // next search retry.
-        if (variants.length === 0) {
-          this.logger.warn("No in-stock product/list variants for product:", itemCode);
-          return undefined;
-        }
+      // Bail with `void` (not the half-built builder) when there's nothing
+      // usable. Returning the builder here would cache a price-less product
+      // (see getProductDataWithCache), poisoning the cache so the product stays
+      // broken on every later search. `void` skips the cache write and lets the
+      // next search retry.
+      if (variants.length === 0) {
+        this.logger.warn("No in-stock product/list variants for product:", itemCode);
+        return undefined;
+      }
 
-        // The cheapest in-stock variant is the product's headline price/size; the
-        // rest are attached as selectable variants.
-        const [primary] = variants;
-        builder.setPricing(primary.detail.product_price, "CNY", CURRENCY_SYMBOL_MAP.CNY);
-        if (primary.variant.quantity != null && primary.variant.uom != null) {
-          builder.setQuantity(primary.variant.quantity, primary.variant.uom);
-        }
-        builder.setAvailability(AVAILABILITY.IN_STOCK);
-        builder.setDescription(primary.detail.item_en_specification);
-        builder.setVariants(variants.map(({ variant }) => variant));
+      // The cheapest in-stock variant is the product's headline price/size; the
+      // rest are attached as selectable variants.
+      const [primary] = variants;
+      builder.setPricing(primary.detail.product_price, "CNY", CURRENCY_SYMBOL_MAP.CNY);
+      if (primary.variant.quantity != null && primary.variant.uom != null) {
+        builder.setQuantity(primary.variant.quantity, primary.variant.uom);
+      }
+      builder.setAvailability(AVAILABILITY.IN_STOCK);
+      builder.setDescription(primary.detail.item_en_specification);
+      builder.setVariants(variants.map(({ variant }) => variant));
 
-        // Molecular weight comes from `/api/product/info`.
-        const info = (await this.getProductInfoBatch()).get(itemCode);
-        builder.setMoleweight(info?.item.chem_mw);
+      // Molecular weight comes from `/api/product/info`.
+      const info = (await this.getProductInfoBatch()).get(itemCode);
+      builder.setMoleweight(info?.item.chem_mw);
 
-        // SDS lookup runs last — one request, and only for products that
-        // already have the minimum required data (a request spent on a product
-        // that will be dropped anyway is wasted).
-        if (isMinimalProduct(builder.dump())) {
-          builder.setSDSUrl(await this.sdsSearch(itemCode));
-        }
+      // SDS lookup runs last — one request, and only for products that
+      // already have the minimum required data (a request spent on a product
+      // that will be dropped anyway is wasted).
+      if (isMinimalProduct(builder.dump())) {
+        builder.setSDSUrl(await this.sdsSearch(itemCode));
+      }
 
-        return builder;
-      },
-    );
+      return builder;
+    });
   }
 
   /**
@@ -696,13 +687,11 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
 
       // Create a fresh headers object to avoid any potential array concatenation
       const headers: MacklinRequestHeaders = {
-         
         "X-Agent": "web",
         "X-User-Token": this.ensureStringHeader(this.localStorage.MklUserToken),
         "X-Device-Id": this.ensureStringHeader(this.localStorage.soleId),
         "X-Language": "en",
         "X-Timestamp": this.ensureStringHeader(timestamp),
-         
       };
 
       // Handle auth headers exactly like api-client.js
@@ -755,7 +744,7 @@ export class SupplierMacklin extends SupplierBase<Product, Product> implements I
         options.method && options.method !== "GET"
           ? await this.httpPost({
               path,
-               
+
               headers: { ...headers, "Content-Type": "application/json" },
               params,
               body: body ? JSON.stringify(body) : undefined,

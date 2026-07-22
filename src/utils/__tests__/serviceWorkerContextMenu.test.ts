@@ -36,9 +36,7 @@ function makeChromeMock() {
   const onStartup: Array<() => void> = [];
   const onClicked: OnClicked[] = [];
   const actionClicked: Array<() => unknown> = [];
-  const storageChanged: Array<
-    (changes: Record<string, unknown>, areaName: string) => void
-  > = [];
+  const storageChanged: Array<(changes: Record<string, unknown>, areaName: string) => void> = [];
 
   const removeAll = vi.fn((cb?: () => void) => cb?.());
   const create = vi.fn();

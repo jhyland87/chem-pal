@@ -1,10 +1,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { startTransition } from "react";
 import { describe, expect, it } from "vitest";
-import {
-  useOptimisticResults,
-  useOptimisticResultsWithPending,
-} from "../useOptimisticResults";
+import { useOptimisticResults, useOptimisticResultsWithPending } from "../useOptimisticResults";
 
 function makeProduct(overrides: Partial<Product> = {}): Product {
   return { title: "Acetone", ...overrides } as unknown as Product;
@@ -56,10 +53,7 @@ describe("useOptimisticResults", () => {
 
     act(() => {
       startTransition(async () => {
-        result.current.addResultsBatch([
-          makeProduct({ title: "A" }),
-          makeProduct({ title: "B" }),
-        ]);
+        result.current.addResultsBatch([makeProduct({ title: "A" }), makeProduct({ title: "B" })]);
         await gate.promise;
       });
     });

@@ -1,7 +1,7 @@
-import { JSX, type DefaultThemeRenderContext, type PageEvent, type Reflection } from 'typedoc';
-import { owningModule, slugify } from '../collect.js';
-import type { ResolvedOptions } from '../options.js';
-import type { TaxonomyMember, TaxonomyTerm } from '../types.js';
+import { JSX, type DefaultThemeRenderContext, type PageEvent, type Reflection } from "typedoc";
+import { owningModule, slugify } from "../collect.js";
+import type { ResolvedOptions } from "../options.js";
+import type { TaxonomyMember, TaxonomyTerm } from "../types.js";
 
 /**
  * Buckets a term's members by their owning module, preserving the member order
@@ -47,7 +47,7 @@ export function termPage(
   renderMember: (context: DefaultThemeRenderContext, member: TaxonomyMember) => JSX.Element,
 ): JSX.Element {
   const buckets = groupByModule(term.members);
-  const label = term.kind === 'category' ? 'Category' : 'Group';
+  const label = term.kind === "category" ? "Category" : "Group";
 
   for (const [moduleName] of buckets) {
     page.pageHeadings.push({ link: `#${slugify(moduleName)}`, text: moduleName });

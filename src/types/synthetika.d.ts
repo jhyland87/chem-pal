@@ -22,19 +22,16 @@ declare global {
    * Product price schema for Synthetika.
    */
   interface SynthetikaProductPrice {
-     
     base: string;
     base_float: number;
     final: string;
     final_float: number;
-     
   }
 
   /**
    * Minimal product schema for Synthetika.
    */
   interface SynthetikaMinimalProduct {
-     
     id: number;
     name: string;
     can_buy: boolean;
@@ -79,21 +76,18 @@ declare global {
     main_image?: string;
     /** Gallery image ids (gfx asset keys). */
     images?: string[];
-
   }
 
   /**
    * Product schema for Synthetika.
    */
   interface SynthetikaProduct extends SynthetikaMinimalProduct {
-     
     options_configuration: Array<{
       values: Array<SynthetikaConfigurationOptionValueSchema>;
       [key: string]: unknown;
     }>;
 
     variants?: omit<SynthetikaProduct, "variants">[];
-     
   }
 }
 

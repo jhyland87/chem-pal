@@ -37,14 +37,22 @@ const stubEnrichment = (supplier: SupplierVWR) => {
     builder: ProductBuilder<Product>,
     fetcher: (b: ProductBuilder<Product>) => Promise<ProductBuilder<Product> | void>,
   ) => fetcher(builder)) as never);
-  vi.spyOn(supplier as never, "httpGetJson").mockImplementation((async ({ path }: { path: string }) => {
+  vi.spyOn(supplier as never, "httpGetJson").mockImplementation((async ({
+    path,
+  }: {
+    path: string;
+  }) => {
     if (path.includes("ordertable")) return ordertableFixture;
     if (path.includes("assetreferences")) return assetsFixture;
     if (path.includes("chemical/substance")) return substanceFixture;
     if (path.includes("chemical/specification")) return specificationFixture;
     return undefined;
   }) as never);
-  vi.spyOn(supplier as never, "httpPostJson").mockImplementation((async ({ path }: { path: string }) => {
+  vi.spyOn(supplier as never, "httpPostJson").mockImplementation((async ({
+    path,
+  }: {
+    path: string;
+  }) => {
     if (path.includes("getAnonymousStockAvailability")) return stockFixture;
     if (path.includes("/products/search")) return searchFixture;
     return undefined;
@@ -126,7 +134,10 @@ describe("SupplierVWR", () => {
         pagination: { totalPages: 1 },
       } as never);
 
-      const builders = await (supplier as unknown as VWRInternals).queryProducts("sulfuric acid", 10);
+      const builders = await (supplier as unknown as VWRInternals).queryProducts(
+        "sulfuric acid",
+        10,
+      );
 
       // Only NA5786168 is non-restricted in the fixture.
       expect(ids(builders)).toEqual(["NA5786168"]);

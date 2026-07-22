@@ -86,9 +86,7 @@ describe("getTransition", () => {
   });
 
   it("honours a custom property and duration", () => {
-    expect(getTransition("transform", "0.5s")).toBe(
-      "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-    );
+    expect(getTransition("transform", "0.5s")).toBe("transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)");
   });
 });
 

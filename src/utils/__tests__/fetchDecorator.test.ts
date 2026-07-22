@@ -97,9 +97,9 @@ describe("fetchDecorator", () => {
   });
 
   it("throws on a non-ok status", async () => {
-    global.fetch = vi.fn().mockResolvedValue(
-      new Response("nope", { status: 404, statusText: "Not Found" }),
-    );
+    global.fetch = vi
+      .fn()
+      .mockResolvedValue(new Response("nope", { status: 404, statusText: "Not Found" }));
     await expect(fetchDecorator("https://x.test/404")).rejects.toThrow(/HTTP Error: 404/);
   });
 

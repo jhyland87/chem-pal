@@ -110,7 +110,7 @@ export abstract class SupplierBaseSearchanise
       // Setting the limit here to 1000, since the limit parameter should
       // apply to results returned from Supplier3SChem, not the rquests
       // made by it.
-       
+
       api_key: this.apiKey,
       //q: query,
       maxResults: 200,
@@ -126,7 +126,6 @@ export abstract class SupplierBaseSearchanise
       output: "json",
       _: new Date().getTime(),
       ...this.baseSearchParams,
-       
     };
 
     const searchRequest = await this.httpGetJson({

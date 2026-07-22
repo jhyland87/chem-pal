@@ -198,9 +198,7 @@ describe("SupplierCache", () => {
       const result = await cache.getCachedQueryEntry("expired-key");
 
       expect(result).toBeUndefined();
-      expect(idbMocks.deleteSupplierQueryCacheEntry).toHaveBeenCalledExactlyOnceWith(
-        "expired-key",
-      );
+      expect(idbMocks.deleteSupplierQueryCacheEntry).toHaveBeenCalledExactlyOnceWith("expired-key");
     });
 
     it("treats negative or non-finite TTL inputs as disabled", async () => {

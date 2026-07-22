@@ -10,7 +10,6 @@ declare global {
    * - Product identifiers (SKU, UPC, CAS)
    */
   interface ChemsaversProductObject extends SyntheticFields {
-     
     /** Chemical Abstracts Service registry number */
     CAS?: string;
     /** Final calculated price after any adjustments */
@@ -57,7 +56,6 @@ declare global {
     url: string;
     /** Array of variant products */
     variants?: ChemsaversProductVariant[];
-     
   }
 
   type ChemsaversProductVariant = Omit<ChemsaversProductObject, "variants">;
@@ -87,7 +85,6 @@ declare global {
    * - Search metadata and parameters
    */
   interface ChemsaversSearchResponse {
-     
     /** Array of search result objects */
     results: {
       /** Facet groupings for result filtering */
@@ -117,7 +114,6 @@ declare global {
         q: string;
       };
     }[];
-     
   }
 }
 

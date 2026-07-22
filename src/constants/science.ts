@@ -19,7 +19,6 @@
  * @source
  */
 export const SUBSCRIPTS: { [key: string]: string } = {
-   
   /* tslint:disable */
   "0": "\u2080",
   "1": "\u2081",
@@ -31,7 +30,7 @@ export const SUBSCRIPTS: { [key: string]: string } = {
   "7": "\u2087",
   "8": "\u2088",
   "9": "\u2089",
-   
+
   /* tslint:enable */
 } as const;
 
@@ -52,7 +51,6 @@ export const SUBSCRIPTS: { [key: string]: string } = {
  * @source
  */
 export const SUPERSCRIPTS: { [key: string]: string } = {
-   
   /* tslint:disable */
   "0": "\u2070",
   "1": "\u00B9",
@@ -64,7 +62,7 @@ export const SUPERSCRIPTS: { [key: string]: string } = {
   "7": "\u2077",
   "8": "\u2078",
   "9": "\u2079",
-   
+
   /* tslint:enable */
 } as const;
 
@@ -82,7 +80,6 @@ export const SUPERSCRIPTS: { [key: string]: string } = {
  * @source
  */
 export const SUBSCRIPT_GLYPHS: { [key: string]: string } = {
-   
   /* tslint:disable */
   "0": "₀",
   "1": "₁",
@@ -94,7 +91,7 @@ export const SUBSCRIPT_GLYPHS: { [key: string]: string } = {
   "7": "₇",
   "8": "₈",
   "9": "₉",
-   
+
   /* tslint:enable */
 } as const;
 
@@ -112,7 +109,6 @@ export const SUBSCRIPT_GLYPHS: { [key: string]: string } = {
  * @source
  */
 export const SUPERSCRIPT_GLYPHS: { [key: string]: string } = {
-   
   /* tslint:disable */
   "0": "⁰",
   "1": "¹",
@@ -124,6 +120,6 @@ export const SUPERSCRIPT_GLYPHS: { [key: string]: string } = {
   "7": "⁷",
   "8": "⁸",
   "9": "⁹",
-   
+
   /* tslint:enable */
 } as const;

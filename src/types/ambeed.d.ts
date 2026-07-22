@@ -1,4 +1,3 @@
- 
 declare global {
   /** Base interface for all Ambeed API responses */
   interface AmbeedResponseBase {

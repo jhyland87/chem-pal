@@ -30,7 +30,6 @@ declare global {
    * carry an `image`; other media types (video, model3d) leave it undefined.
    */
   interface ShopifyMediaNode {
-     
     id: string;
     /** Media type discriminator, e.g. "IMAGE", "VIDEO" */
     mediaContentType: string;
@@ -42,7 +41,6 @@ declare global {
       width?: number | null;
       height?: number | null;
     } | null;
-     
   }
 
   /**
@@ -64,7 +62,6 @@ declare global {
    * ```
    */
   interface ShopifyVariantNode {
-     
     /** Globally unique variant id, e.g. "gid://shopify/ProductVariant/36127200805031" */
     id: string;
     /** Display title of the variant (e.g. "Default Title", "500g Bottle") */
@@ -85,7 +82,6 @@ declare global {
     selectedOptions: Array<{ name: string; value: string }>;
     /** Whether the variant is currently in stock */
     currentlyNotInStock: boolean;
-     
   }
 
   /**
@@ -104,7 +100,6 @@ declare global {
    * ```
    */
   interface ShopifyProductNode {
-     
     /** Shopify global ID (e.g. "gid://shopify/Product/6047654445205") */
     id: string;
     /** Display title of the product */
@@ -144,7 +139,6 @@ declare global {
     variants: {
       edges: Array<{ node: ShopifyVariantNode }>;
     };
-     
   }
 
   /**

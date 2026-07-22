@@ -400,7 +400,7 @@ async function simulateWebstoreUpdate(version: string = "99.0.0"): Promise<void>
   if (getInstallSource() !== "webstore") {
     console.warn(
       [
-        "⚠️  Staged update recorded, but this build reports install source \"manual\",",
+        '⚠️  Staged update recorded, but this build reports install source "manual",',
         "    so the Web Store path won't run and nothing will show.",
         "",
         "    To fake a Web Store install, add this to build/manifest.json and reload",

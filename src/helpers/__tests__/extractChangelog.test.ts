@@ -82,10 +82,7 @@ describe("extractSection", () => {
 });
 
 describe("the repo's own CHANGELOG.md", () => {
-  const changelog = readFileSync(
-    path.resolve(__dirname, "../../../CHANGELOG.md"),
-    "utf8",
-  );
+  const changelog = readFileSync(path.resolve(__dirname, "../../../CHANGELOG.md"), "utf8");
 
   // Guards the release workflow: a tag with no section silently falls back to
   // the near-empty auto-generated notes.

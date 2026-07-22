@@ -145,25 +145,34 @@ describe("hasExpandableDetail", () => {
 describe("samePurchasableUnit", () => {
   it("matches the same size, case-insensitive on uom", () => {
     expect(
-      samePurchasableUnit({ quantity: 1, uom: "mg" } as Variant, {
-        quantity: 1,
-        uom: "MG",
-      } as Variant),
+      samePurchasableUnit(
+        { quantity: 1, uom: "mg" } as Variant,
+        {
+          quantity: 1,
+          uom: "MG",
+        } as Variant,
+      ),
     ).toBe(true);
   });
 
   it("does not match a different quantity or uom", () => {
     expect(
-      samePurchasableUnit({ quantity: 1, uom: "mg" } as Variant, {
-        quantity: 5,
-        uom: "mg",
-      } as Variant),
+      samePurchasableUnit(
+        { quantity: 1, uom: "mg" } as Variant,
+        {
+          quantity: 5,
+          uom: "mg",
+        } as Variant,
+      ),
     ).toBe(false);
     expect(
-      samePurchasableUnit({ quantity: 1, uom: "mg" } as Variant, {
-        quantity: 1,
-        uom: "g",
-      } as Variant),
+      samePurchasableUnit(
+        { quantity: 1, uom: "mg" } as Variant,
+        {
+          quantity: 1,
+          uom: "g",
+        } as Variant,
+      ),
     ).toBe(false);
   });
 

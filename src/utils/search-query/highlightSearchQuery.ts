@@ -120,7 +120,13 @@ export function tokenizeWithSpans(input: string): HighlightToken[] {
     }
 
     if (char === "(") {
-      tokens.push({ kind: "paren", text: "(", start: i, end: i + 1, depth: depth % PAREN_PALETTE_SIZE });
+      tokens.push({
+        kind: "paren",
+        text: "(",
+        start: i,
+        end: i + 1,
+        depth: depth % PAREN_PALETTE_SIZE,
+      });
       openParenTokens.push(tokens.length - 1);
       depth++;
       i++;
@@ -131,7 +137,13 @@ export function tokenizeWithSpans(input: string): HighlightToken[] {
       if (openParenTokens.length > 0) {
         openParenTokens.pop();
         depth--;
-        tokens.push({ kind: "paren", text: ")", start: i, end: i + 1, depth: depth % PAREN_PALETTE_SIZE });
+        tokens.push({
+          kind: "paren",
+          text: ")",
+          start: i,
+          end: i + 1,
+          depth: depth % PAREN_PALETTE_SIZE,
+        });
       } else {
         tokens.push({ kind: "paren", text: ")", start: i, end: i + 1, error: true });
       }
@@ -145,7 +157,13 @@ export function tokenizeWithSpans(input: string): HighlightToken[] {
       while (i < input.length && input[i] !== '"') i++;
       const terminated = i < input.length;
       if (terminated) i++; // consume the closing quote
-      tokens.push({ kind: "quoted", text: input.slice(start, i), start, end: i, error: !terminated });
+      tokens.push({
+        kind: "quoted",
+        text: input.slice(start, i),
+        start,
+        end: i,
+        error: !terminated,
+      });
       continue;
     }
 

@@ -52,7 +52,13 @@ describe("SupplierOnyxmet parseVariants", () => {
     );
 
     expect(variants).toHaveLength(2);
-    expect(variants[0]).toMatchObject({ id: "1416", title: "10g", quantity: 10, uom: "g", price: 5 });
+    expect(variants[0]).toMatchObject({
+      id: "1416",
+      title: "10g",
+      quantity: 10,
+      uom: "g",
+      price: 5,
+    });
     expect(variants[1]).toMatchObject({
       id: "146",
       title: "100g",

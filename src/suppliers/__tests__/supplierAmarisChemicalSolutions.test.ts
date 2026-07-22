@@ -70,7 +70,9 @@ describe("SupplierAmarisChemicalSolutions", () => {
       const supplier = makeSupplier() as unknown as AmarisInternals;
       expect(
         supplier.getAdditionalQuantityStrings(
-          baseItem({ attributes: undefined as unknown as WooCommerceSearchResponseItem["attributes"] }),
+          baseItem({
+            attributes: undefined as unknown as WooCommerceSearchResponseItem["attributes"],
+          }),
         ),
       ).toEqual([]);
       expect(supplier.getAdditionalQuantityStrings(baseItem({ attributes: [] }))).toEqual([]);

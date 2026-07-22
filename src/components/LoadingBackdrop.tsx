@@ -59,7 +59,12 @@ function formatResultsText(props: LoadingBackdropProps): string {
 export default function LoadingBackdrop(props: LoadingBackdropProps) {
   return (
     <>
-      <Backdrop open={props.open} id="loading-backdrop" role="status" aria-label={i18n("loading_aria")}>
+      <Backdrop
+        open={props.open}
+        id="loading-backdrop"
+        role="status"
+        aria-label={i18n("loading_aria")}
+      >
         <Box className={styles["loading-backdrop-box"]}>
           <Box className={styles["spinner-box"]}>
             <IconSpinner>

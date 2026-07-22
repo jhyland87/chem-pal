@@ -15,7 +15,17 @@ import {
   pubchemStructureImageUrl,
   suggestAlternativeSearch,
 } from "@/helpers/pubchem";
-import { afterEach, beforeAll, beforeEach, describe, expect, it, test, vi, type Mock } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  test,
+  vi,
+  type Mock,
+} from "vitest";
 import { ACETONE, ASPIRIN } from "./fixtures/chemicals";
 
 /** Builds a minimal ok `Response` whose `json()` resolves to `body`. */
@@ -118,7 +128,10 @@ describe("PubChem Helpers", () => {
     });
 
     it("never re-suggests a name that previously yielded no results (no A→B→A loop)", async () => {
-      const result = await suggestAlternativeSearch("2-propanone", new Set(["2-propanone", ACETONE.name]));
+      const result = await suggestAlternativeSearch(
+        "2-propanone",
+        new Set(["2-propanone", ACETONE.name]),
+      );
       expect(result.name).not.toBe(ACETONE.name);
     });
 

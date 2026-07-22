@@ -1909,7 +1909,10 @@ export class ProductBuilder<T extends Product> {
     if ("buyerRestricted" in restriction && restriction.buyerRestricted === true) {
       result.buyerRestricted = true;
     }
-    if ("declarationOfUseRequired" in restriction && restriction.declarationOfUseRequired === true) {
+    if (
+      "declarationOfUseRequired" in restriction &&
+      restriction.declarationOfUseRequired === true
+    ) {
       result.declarationOfUseRequired = true;
     }
     if ("note" in restriction && typeof restriction.note === "string" && restriction.note.trim()) {

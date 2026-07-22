@@ -30,7 +30,11 @@ const stubEnrichment = (supplier: SupplierLabChem) => {
     builder: ProductBuilder<Product>,
     fetcher: (b: ProductBuilder<Product>) => Promise<ProductBuilder<Product> | void>,
   ) => fetcher(builder)) as never);
-  vi.spyOn(supplier as never, "httpGetJson").mockImplementation((async ({ path }: { path: string }) => {
+  vi.spyOn(supplier as never, "httpGetJson").mockImplementation((async ({
+    path,
+  }: {
+    path: string;
+  }) => {
     if (path.includes("/variations")) return acetonVariations;
     return acetonVariationProduct;
   }) as never);
@@ -56,7 +60,9 @@ describe("SupplierLabChem", () => {
   describe("initProductBuilders", () => {
     it("parses CAS, formula, molar mass and basic info from the catalog description", () => {
       const supplier = makeSupplier();
-      const [aceton, acetonitril] = asInternals(supplier).initProductBuilders(acetonSearch.products);
+      const [aceton, acetonitril] = asInternals(supplier).initProductBuilders(
+        acetonSearch.products,
+      );
 
       const acetonDump = aceton.dump();
       expect(acetonDump.title).toBe("Aceton reinst - LabChem Röttinger");
@@ -80,9 +86,7 @@ describe("SupplierLabChem", () => {
   describe("queryProducts", () => {
     it("keeps catalog titles matching the query as a substring", async () => {
       const supplier = makeSupplier("aceton", 5);
-      vi.spyOn(supplier as never, "loadCatalog").mockResolvedValue(
-        acetonSearch.products as never,
-      );
+      vi.spyOn(supplier as never, "loadCatalog").mockResolvedValue(acetonSearch.products as never);
 
       const builders = await asInternals(supplier).queryProducts("aceton", 5);
       expect(builders).toBeDefined();
@@ -175,7 +179,10 @@ describe("SupplierLabChem", () => {
       const result = await asInternals(supplier).getProductData(builder);
       expect(result).toBe(builder);
 
-      const dump = builder.dump() as Partial<Product> & { variants?: Variant[]; images?: unknown[] };
+      const dump = builder.dump() as Partial<Product> & {
+        variants?: Variant[];
+        images?: unknown[];
+      };
       expect(dump.price).toBe(14.16);
       expect(dump.currencyCode).toBe("EUR");
       expect(dump.permalink).toBe(acetonVariationProduct.sfUrl);

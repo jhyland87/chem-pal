@@ -157,7 +157,10 @@ export abstract class SupplierBaseMySimpleStore
     });
 
     if (!isValidSearchResponse(searchResponse)) {
-      this.logger.error("Invalid or empty MySimpleStore search response", { query, searchResponse });
+      this.logger.error("Invalid or empty MySimpleStore search response", {
+        query,
+        searchResponse,
+      });
       return;
     }
 
@@ -243,10 +246,7 @@ export abstract class SupplierBaseMySimpleStore
    * ```
    * @source
    */
-  protected parseVariant(
-    variant: MySimpleStoreVariant,
-    productUrl: string,
-  ): Partial<Variant> {
+  protected parseVariant(variant: MySimpleStoreVariant, productUrl: string): Partial<Variant> {
     const parsed: Partial<Variant> = { id: variant.id };
 
     // `options_text` is "Size: 1 LITER"; the size label is the part after the colon.
@@ -381,8 +381,7 @@ export abstract class SupplierBaseMySimpleStore
       } else {
         // Single-size products carry no variants; recover the size from the name
         // or description so the product isn't dropped for lacking a quantity.
-        const fallback =
-          parseQuantity(detail.name) ?? parseQuantity(detail.description_text ?? "");
+        const fallback = parseQuantity(detail.name) ?? parseQuantity(detail.description_text ?? "");
         if (fallback) {
           builder.setQuantity(fallback.quantity, fallback.uom);
         }

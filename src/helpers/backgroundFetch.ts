@@ -121,10 +121,7 @@ function isBackgroundFetchSuccess(result: unknown): result is BackgroundFetchSuc
  * ```
  * @source
  */
-export async function backgroundFetch(
-  url: string,
-  init?: BackgroundFetchInit,
-): Promise<Response> {
+export async function backgroundFetch(url: string, init?: BackgroundFetchInit): Promise<Response> {
   const message: BackgroundFetchMessage = {
     type: MESSAGE_TYPE.BACKGROUND_FETCH,
     url,

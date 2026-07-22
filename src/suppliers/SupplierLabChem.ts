@@ -88,7 +88,10 @@ function isCatalogCacheEntry(value: unknown): value is CatalogCacheEntry {
  * ```
  * @source
  */
-export class SupplierLabChem extends SupplierBase<EpagesSearchProduct, Product> implements ISupplier {
+export class SupplierLabChem
+  extends SupplierBase<EpagesSearchProduct, Product>
+  implements ISupplier
+{
   /** Name of supplier (for display purposes). */
   public readonly supplierName: string = "LabChem";
 

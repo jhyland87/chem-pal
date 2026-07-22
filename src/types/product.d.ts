@@ -71,7 +71,6 @@ declare global {
     readonly amazonStoreURL?: string;
   }
 
-
   /**
    * Represents a quantity measurement with a numeric value and unit.
    * Used for specifying product amounts and their units of measurement.

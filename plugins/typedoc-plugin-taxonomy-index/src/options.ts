@@ -1,5 +1,5 @@
-import { ParameterType, type Application } from 'typedoc';
-import type { MemberSort, MergeMode, TermKind } from './types.js';
+import { ParameterType, type Application } from "typedoc";
+import type { MemberSort, MergeMode, TermKind } from "./types.js";
 
 /**
  * Plugin options after every fallback to a native TypeDoc option has been applied.
@@ -23,7 +23,7 @@ export interface ResolvedOptions {
 }
 
 /** Member sort strategies this plugin implements, in priority order. */
-const SUPPORTED_MEMBER_SORTS: readonly MemberSort[] = ['alphabetical', 'source-order', 'kind'];
+const SUPPORTED_MEMBER_SORTS: readonly MemberSort[] = ["alphabetical", "source-order", "kind"];
 
 /**
  * Registers every `taxonomy*` option on the TypeDoc application.
@@ -42,87 +42,87 @@ const SUPPORTED_MEMBER_SORTS: readonly MemberSort[] = ['alphabetical', 'source-o
  */
 export function declareOptions(app: Application): void {
   app.options.addDeclaration({
-    name: 'taxonomyIndex',
-    help: '[taxonomy-index] Emit the global category/group index pages.',
+    name: "taxonomyIndex",
+    help: "[taxonomy-index] Emit the global category/group index pages.",
     type: ParameterType.Boolean,
     defaultValue: true,
   });
   app.options.addDeclaration({
-    name: 'taxonomyOut',
-    help: '[taxonomy-index] Filename of the index page, relative to the output directory.',
+    name: "taxonomyOut",
+    help: "[taxonomy-index] Filename of the index page, relative to the output directory.",
     type: ParameterType.String,
-    defaultValue: 'taxonomy.html',
+    defaultValue: "taxonomy.html",
   });
   app.options.addDeclaration({
-    name: 'taxonomyTitle',
-    help: '[taxonomy-index] Heading and sidebar label for the index page.',
+    name: "taxonomyTitle",
+    help: "[taxonomy-index] Heading and sidebar label for the index page.",
     type: ParameterType.String,
-    defaultValue: 'Categories & Groups',
+    defaultValue: "Categories & Groups",
   });
   app.options.addDeclaration({
-    name: 'taxonomyMerge',
-    help: '[taxonomy-index] How to combine terms sharing a title across different files.',
+    name: "taxonomyMerge",
+    help: "[taxonomy-index] How to combine terms sharing a title across different files.",
     type: ParameterType.Map,
-    map: { byTitle: 'byTitle', byTitleCaseInsensitive: 'byTitleCaseInsensitive', none: 'none' },
-    defaultValue: 'byTitle',
+    map: { byTitle: "byTitle", byTitleCaseInsensitive: "byTitleCaseInsensitive", none: "none" },
+    defaultValue: "byTitle",
   });
   app.options.addDeclaration({
-    name: 'taxonomyKinds',
+    name: "taxonomyKinds",
     help: '[taxonomy-index] Which taxonomies to index: "categories", "groups", or both.',
     type: ParameterType.Array,
-    defaultValue: ['categories', 'groups'],
+    defaultValue: ["categories", "groups"],
   });
   app.options.addDeclaration({
-    name: 'taxonomyCategoryOrder',
+    name: "taxonomyCategoryOrder",
     help: '[taxonomy-index] Category order; falls back to `categoryOrder`. Supports the "*" wildcard slot.',
     type: ParameterType.Array,
     defaultValue: [],
   });
   app.options.addDeclaration({
-    name: 'taxonomyGroupOrder',
+    name: "taxonomyGroupOrder",
     help: '[taxonomy-index] Group order; falls back to `groupOrder`. Supports the "*" wildcard slot.',
     type: ParameterType.Array,
     defaultValue: [],
   });
   app.options.addDeclaration({
-    name: 'taxonomyCategorizeByGroup',
-    help: '[taxonomy-index] Read categories nested under groups; falls back to `categorizeByGroup`.',
+    name: "taxonomyCategorizeByGroup",
+    help: "[taxonomy-index] Read categories nested under groups; falls back to `categorizeByGroup`.",
     type: ParameterType.Boolean,
     defaultValue: true,
   });
   app.options.addDeclaration({
-    name: 'taxonomySort',
-    help: '[taxonomy-index] Member ordering within a term; falls back to `sort`. One of alphabetical, source-order, kind.',
+    name: "taxonomySort",
+    help: "[taxonomy-index] Member ordering within a term; falls back to `sort`. One of alphabetical, source-order, kind.",
     type: ParameterType.Array,
     defaultValue: [],
   });
   app.options.addDeclaration({
-    name: 'taxonomyDefaultCategory',
-    help: '[taxonomy-index] Title of the catch-all category; falls back to `defaultCategory`.',
+    name: "taxonomyDefaultCategory",
+    help: "[taxonomy-index] Title of the catch-all category; falls back to `defaultCategory`.",
     type: ParameterType.String,
-    defaultValue: 'Other',
+    defaultValue: "Other",
   });
   app.options.addDeclaration({
-    name: 'taxonomyIncludeDefault',
-    help: '[taxonomy-index] Include the catch-all category in the index.',
+    name: "taxonomyIncludeDefault",
+    help: "[taxonomy-index] Include the catch-all category in the index.",
     type: ParameterType.Boolean,
     defaultValue: false,
   });
   app.options.addDeclaration({
-    name: 'taxonomyExcludeKindGroups',
+    name: "taxonomyExcludeKindGroups",
     help: '[taxonomy-index] Drop groups TypeDoc generates from reflection kinds ("Functions", "Methods", …), keeping only hand-written @group tags.',
     type: ParameterType.Boolean,
     defaultValue: true,
   });
   app.options.addDeclaration({
-    name: 'taxonomyDetailPages',
-    help: '[taxonomy-index] Emit a detail page per term listing all of its members.',
+    name: "taxonomyDetailPages",
+    help: "[taxonomy-index] Emit a detail page per term listing all of its members.",
     type: ParameterType.Boolean,
     defaultValue: true,
   });
   app.options.addDeclaration({
-    name: 'taxonomySidebarLink',
-    help: '[taxonomy-index] Add the index page to `sidebarLinks`.',
+    name: "taxonomySidebarLink",
+    help: "[taxonomy-index] Add the index page to `sidebarLinks`.",
     type: ParameterType.Boolean,
     defaultValue: true,
   });
@@ -143,7 +143,7 @@ export function declareOptions(app: Application): void {
  */
 function readString(app: Application, name: string, fallback: string): string {
   const value: unknown = app.options.getValue(name);
-  return typeof value === 'string' && value.length > 0 ? value : fallback;
+  return typeof value === "string" && value.length > 0 ? value : fallback;
 }
 
 /**
@@ -157,7 +157,7 @@ function readString(app: Application, name: string, fallback: string): string {
  */
 function readBoolean(app: Application, name: string, fallback: boolean): boolean {
   const value: unknown = app.options.getValue(name);
-  return typeof value === 'boolean' ? value : fallback;
+  return typeof value === "boolean" ? value : fallback;
 }
 
 /**
@@ -173,7 +173,7 @@ function readStringArray(app: Application, name: string): string[] {
   if (!Array.isArray(value)) {
     return [];
   }
-  return value.filter((entry): entry is string => typeof entry === 'string');
+  return value.filter((entry): entry is string => typeof entry === "string");
 }
 
 /**
@@ -184,10 +184,10 @@ function readStringArray(app: Application, name: string): string[] {
  * @source
  */
 function toMergeMode(value: unknown): MergeMode {
-  if (value === 'none' || value === 'byTitleCaseInsensitive' || value === 'byTitle') {
+  if (value === "none" || value === "byTitleCaseInsensitive" || value === "byTitle") {
     return value;
   }
-  return 'byTitle';
+  return "byTitle";
 }
 
 /**
@@ -209,7 +209,7 @@ function pickMemberSort(strategies: readonly string[]): MemberSort {
       return match;
     }
   }
-  return 'alphabetical';
+  return "alphabetical";
 }
 
 /**
@@ -229,34 +229,37 @@ function pickMemberSort(strategies: readonly string[]): MemberSort {
  * @source
  */
 export function resolveOptions(app: Application): ResolvedOptions {
-  const taxonomySort = readStringArray(app, 'taxonomySort');
-  const nativeSort = app.options.getValue('sort');
-  const taxonomyCategoryOrder = readStringArray(app, 'taxonomyCategoryOrder');
-  const taxonomyGroupOrder = readStringArray(app, 'taxonomyGroupOrder');
-  const kinds = readStringArray(app, 'taxonomyKinds');
+  const taxonomySort = readStringArray(app, "taxonomySort");
+  const nativeSort = app.options.getValue("sort");
+  const taxonomyCategoryOrder = readStringArray(app, "taxonomyCategoryOrder");
+  const taxonomyGroupOrder = readStringArray(app, "taxonomyGroupOrder");
+  const kinds = readStringArray(app, "taxonomyKinds");
 
   return {
-    enabled: readBoolean(app, 'taxonomyIndex', true),
-    out: readString(app, 'taxonomyOut', 'taxonomy.html'),
-    title: readString(app, 'taxonomyTitle', 'Categories & Groups'),
-    merge: toMergeMode(app.options.getValue('taxonomyMerge')),
+    enabled: readBoolean(app, "taxonomyIndex", true),
+    out: readString(app, "taxonomyOut", "taxonomy.html"),
+    title: readString(app, "taxonomyTitle", "Categories & Groups"),
+    merge: toMergeMode(app.options.getValue("taxonomyMerge")),
     kinds: [
-      ...(kinds.includes('categories') ? ['category' as const] : []),
-      ...(kinds.includes('groups') ? ['group' as const] : []),
+      ...(kinds.includes("categories") ? ["category" as const] : []),
+      ...(kinds.includes("groups") ? ["group" as const] : []),
     ],
     categoryOrder:
-      taxonomyCategoryOrder.length > 0 ? taxonomyCategoryOrder : app.options.getValue('categoryOrder'),
-    groupOrder: taxonomyGroupOrder.length > 0 ? taxonomyGroupOrder : app.options.getValue('groupOrder'),
-    categorizeByGroup: app.options.isSet('taxonomyCategorizeByGroup')
-      ? readBoolean(app, 'taxonomyCategorizeByGroup', true)
-      : app.options.getValue('categorizeByGroup'),
+      taxonomyCategoryOrder.length > 0
+        ? taxonomyCategoryOrder
+        : app.options.getValue("categoryOrder"),
+    groupOrder:
+      taxonomyGroupOrder.length > 0 ? taxonomyGroupOrder : app.options.getValue("groupOrder"),
+    categorizeByGroup: app.options.isSet("taxonomyCategorizeByGroup")
+      ? readBoolean(app, "taxonomyCategorizeByGroup", true)
+      : app.options.getValue("categorizeByGroup"),
     memberSort: pickMemberSort(taxonomySort.length > 0 ? taxonomySort : nativeSort),
-    defaultCategory: app.options.isSet('taxonomyDefaultCategory')
-      ? readString(app, 'taxonomyDefaultCategory', 'Other')
-      : app.options.getValue('defaultCategory'),
-    includeDefault: readBoolean(app, 'taxonomyIncludeDefault', false),
-    excludeKindGroups: readBoolean(app, 'taxonomyExcludeKindGroups', true),
-    detailPages: readBoolean(app, 'taxonomyDetailPages', true),
-    sidebarLink: readBoolean(app, 'taxonomySidebarLink', true),
+    defaultCategory: app.options.isSet("taxonomyDefaultCategory")
+      ? readString(app, "taxonomyDefaultCategory", "Other")
+      : app.options.getValue("defaultCategory"),
+    includeDefault: readBoolean(app, "taxonomyIncludeDefault", false),
+    excludeKindGroups: readBoolean(app, "taxonomyExcludeKindGroups", true),
+    detailPages: readBoolean(app, "taxonomyDetailPages", true),
+    sidebarLink: readBoolean(app, "taxonomySidebarLink", true),
   };
 }

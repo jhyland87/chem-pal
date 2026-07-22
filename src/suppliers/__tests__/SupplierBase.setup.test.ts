@@ -96,8 +96,9 @@ class TestSupplier extends SupplierBase<unknown, Product> {
   }
 
   public callQueryProductsWithCache() {
-    return (this as unknown as { queryProductsWithCache: (q: string) => Promise<unknown> })
-      .queryProductsWithCache("potassium");
+    return (
+      this as unknown as { queryProductsWithCache: (q: string) => Promise<unknown> }
+    ).queryProductsWithCache("potassium");
   }
 
   public callGetProductDataWithCache() {
@@ -127,9 +128,9 @@ class TestSupplier extends SupplierBase<unknown, Product> {
     (this as unknown as { skipProductDetailCache: boolean }).skipProductDetailCache = value;
   }
   public callIsExcluded(product: ProductBuilder<Product>): boolean {
-    return (
-      this as unknown as { isExcluded: (p: ProductBuilder<Product>) => boolean }
-    ).isExcluded(product);
+    return (this as unknown as { isExcluded: (p: ProductBuilder<Product>) => boolean }).isExcluded(
+      product,
+    );
   }
   public callPartitionForBatch(products: ProductBuilder<Product>[]) {
     return (
@@ -147,9 +148,10 @@ class TestSupplier extends SupplierBase<unknown, Product> {
     ).buildSearchParams(obj);
   }
   public callHref(path: string, params?: Record<string, unknown>): string {
-    return (
-      this as unknown as { href: (p: string, q?: Record<string, unknown>) => string }
-    ).href(path, params);
+    return (this as unknown as { href: (p: string, q?: Record<string, unknown>) => string }).href(
+      path,
+      params,
+    );
   }
 }
 

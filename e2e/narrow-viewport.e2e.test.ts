@@ -49,27 +49,33 @@ describe("tab-view layout across viewport widths", () => {
     await context?.close();
   });
 
-  it.each(VIEWPORT_WIDTHS)("does not overflow horizontally at %ipx", async (width) => {
-    await page.setViewportSize({ width, height: 800 });
-    await page.goto(`chrome-extension://${extensionId}/index.html?view=tab`);
-    await page.waitForSelector("#root");
+  it.each(VIEWPORT_WIDTHS)(
+    "does not overflow horizontally at %ipx",
+    async (width) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto(`chrome-extension://${extensionId}/index.html?view=tab`);
+      await page.waitForSelector("#root");
 
-    const metrics = await page.evaluate(() => ({
-      viewport: window.innerWidth,
-      documentWidth: document.documentElement.scrollWidth,
-      bodyWidth: document.body.scrollWidth,
-      rootWidth: document.getElementById("root")?.scrollWidth ?? 0,
-    }));
+      const metrics = await page.evaluate(() => ({
+        viewport: window.innerWidth,
+        documentWidth: document.documentElement.scrollWidth,
+        bodyWidth: document.body.scrollWidth,
+        rootWidth: document.getElementById("root")?.scrollWidth ?? 0,
+      }));
 
-    // scrollWidth > innerWidth is exactly what produces the horizontal scrollbar.
-    expect(metrics.documentWidth, `document overflows at ${width}px`).toBeLessThanOrEqual(
-      metrics.viewport,
-    );
-    expect(metrics.bodyWidth, `body overflows at ${width}px`).toBeLessThanOrEqual(metrics.viewport);
-    expect(metrics.rootWidth, `#root overflows at ${width}px`).toBeLessThanOrEqual(
-      metrics.viewport,
-    );
-  }, 60_000);
+      // scrollWidth > innerWidth is exactly what produces the horizontal scrollbar.
+      expect(metrics.documentWidth, `document overflows at ${width}px`).toBeLessThanOrEqual(
+        metrics.viewport,
+      );
+      expect(metrics.bodyWidth, `body overflows at ${width}px`).toBeLessThanOrEqual(
+        metrics.viewport,
+      );
+      expect(metrics.rootWidth, `#root overflows at ${width}px`).toBeLessThanOrEqual(
+        metrics.viewport,
+      );
+    },
+    60_000,
+  );
 
   it("keeps the popup's 800px floor when not in the tab view", async () => {
     // The floor is what makes the popup open at a usable size, so narrowing the

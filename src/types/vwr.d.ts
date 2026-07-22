@@ -14,7 +14,6 @@ declare global {
    * ```
    */
   interface VWRTokenResponse {
-     
     /** Bearer access token used in the `Authorization` header of subsequent calls. */
     access_token: string;
     /** Token type, always `"bearer"` for this API. */
@@ -23,7 +22,6 @@ declare global {
     expires_in: number;
     /** OAuth scope granted to the token. */
     scope?: string;
-     
   }
 
   /** A product image reference returned inline on a VWR search product. */

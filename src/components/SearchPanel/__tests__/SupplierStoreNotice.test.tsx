@@ -41,7 +41,9 @@ describe("SupplierStoreNotice", () => {
       />,
     );
 
-    expect(screen.getByRole("note")).toHaveTextContent(/fewer restrictions from their Amazon store/);
+    expect(screen.getByRole("note")).toHaveTextContent(
+      /fewer restrictions from their Amazon store/,
+    );
     expect(screen.getByRole("note")).not.toHaveTextContent(/eBay/);
     expect(screen.getByRole("link", { name: /Amazon store/ })).toHaveAttribute("href", AMAZON_URL);
   });

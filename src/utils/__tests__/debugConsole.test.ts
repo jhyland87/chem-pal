@@ -154,9 +154,7 @@ describe("exposeDebugApi", () => {
       vi.mocked(getInstallSource).mockReturnValue("webstore");
       exposeDebugApi();
       await window.chempal?.simulateUpdate("1.3.0");
-      expect(console.warn).toHaveBeenCalledWith(
-        expect.stringContaining("simulateWebstoreUpdate"),
-      );
+      expect(console.warn).toHaveBeenCalledWith(expect.stringContaining("simulateWebstoreUpdate"));
     });
 
     it("clears both keys on reset", async () => {

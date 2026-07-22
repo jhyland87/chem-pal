@@ -115,7 +115,9 @@ describe("buildResultsWorkbook", () => {
   it("makes the product title a hyperlink to its URL", async () => {
     const workbook = await loadWorkbook(
       await buildResultsWorkbook(
-        baseCtx({ groups: [{ parent: product({ title: "Acetone", url: "https://ex/p" }), variants: [] }] }),
+        baseCtx({
+          groups: [{ parent: product({ title: "Acetone", url: "https://ex/p" }), variants: [] }],
+        }),
       ),
     );
     const results = workbook.getWorksheet("Results")!;

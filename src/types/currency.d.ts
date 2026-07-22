@@ -12,7 +12,7 @@ declare global {
    */
   interface ExchangeRateResponse {
     /** HTTP status code of the response */
-     
+
     status_code: StatusCodes;
     /** Exchange rate data */
     data: {

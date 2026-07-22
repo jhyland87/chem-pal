@@ -10,7 +10,6 @@ import { z } from "zod";
  * @source
  */
 export enum ApiEndpoints {
-   
   TIMESTAMP = "/api/timestamp",
   SEARCH = "/api/item/search",
   USER_INFO = "/api/user/info",
@@ -18,7 +17,6 @@ export enum ApiEndpoints {
   FAVOURITE_ADD = "/api/favourite/add",
   FRUIT_ADD = "/api/fruit/add",
   QUICK_BUY = "/api/quick/buy",
-   
 }
 
 /**
@@ -32,14 +30,12 @@ export enum ApiEndpoints {
  * @source
  */
 export enum AuthRequiredEndpoints {
-   
   ORDER_LIST = "/api/center/order_list",
   EXPRESS = "/api/center/express",
   PREPAY = "/api/center/prepay",
   COUPON = "/api/center/coupon",
   ADDRESS_LIST = "/api/address/list",
   FRUIT_ORDER = "/api/fruit/order",
-   
 }
 
 const timestampResponseSchema = z.object({

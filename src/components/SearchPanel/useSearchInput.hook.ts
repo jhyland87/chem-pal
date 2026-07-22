@@ -15,9 +15,7 @@ interface UseSearchInputReturn {
   /** Function to handle changes to the search input value */
   handleSearchInputChange: (value: string) => void;
   /** Function that returns a form submit handler */
-  handleSubmit: (
-    onSearch?: (query: string) => void,
-  ) => (e: FormEvent<HTMLFormElement>) => void;
+  handleSubmit: (onSearch?: (query: string) => void) => (e: FormEvent<HTMLFormElement>) => void;
   /** Function to manually set the loading state */
   setIsLoading: (loading: boolean) => void;
 }

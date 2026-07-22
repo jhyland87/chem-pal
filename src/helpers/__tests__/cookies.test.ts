@@ -1,9 +1,4 @@
-import {
-  getCookie,
-  getCookies,
-  isCookiesApiAvailable,
-  setCookie,
-} from "@/helpers/cookies";
+import { getCookie, getCookies, isCookiesApiAvailable, setCookie } from "@/helpers/cookies";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const originalChrome = (globalThis as { chrome?: unknown }).chrome;

@@ -10,7 +10,9 @@ const p = (text: string) => `<p>${text}</p>`;
 describe("parseSynthetikaRestrictions - region denylists", () => {
   it("parses ISO-code lists and strips the '| Unless government approved' caveat", () => {
     const r = parseSynthetikaRestrictions(
-      p("✈︎ Shipping Limitations: We do not ship this product to: US, DE | Unless government approved"),
+      p(
+        "✈︎ Shipping Limitations: We do not ship this product to: US, DE | Unless government approved",
+      ),
     );
     expect(r?.excludedCountries).toEqual(["US", "DE"]);
   });
@@ -72,24 +74,37 @@ describe("parseSynthetikaRestrictions - EU-only", () => {
 
   it("flags euOnly for 'not available for export outside the European Union'", () => {
     expect(
-      parseSynthetikaRestrictions(p(" This product is not available for export outside the European Union.")),
+      parseSynthetikaRestrictions(
+        p(" This product is not available for export outside the European Union."),
+      ),
     ).toMatchObject({ euOnly: true });
   });
 });
 
 describe("parseSynthetikaRestrictions - buyer restrictions", () => {
   it.each([
-    ["registered business / government", "This product can only be purchased by registered business or government entities."],
-    ["only available for companies", "Only available for companies. Sale requires a written declaration of intended use."],
+    [
+      "registered business / government",
+      "This product can only be purchased by registered business or government entities.",
+    ],
+    [
+      "only available for companies",
+      "Only available for companies. Sale requires a written declaration of intended use.",
+    ],
     ["ONLY COMPANY ORDERS", "ONLY COMPANY ORDERS"],
-    ["exclusively for … customers", "This product is available exclusively for professional and industrial customers."],
+    [
+      "exclusively for … customers",
+      "This product is available exclusively for professional and industrial customers.",
+    ],
   ])("flags buyerRestricted for: %s", (_label, text) => {
     expect(parseSynthetikaRestrictions(p(text))?.buyerRestricted).toBe(true);
   });
 
   it("keeps CMR classification prefix from suppressing the buyer flag", () => {
     const r = parseSynthetikaRestrictions(
-      p("⚠️ EU: This product is classified as CMR in category 1A/1B Annex VI. CLP Regulation (EC) No. 1272/2008 and therefore can only be purchased by registered business or government entities."),
+      p(
+        "⚠️ EU: This product is classified as CMR in category 1A/1B Annex VI. CLP Regulation (EC) No. 1272/2008 and therefore can only be purchased by registered business or government entities.",
+      ),
     );
     expect(r?.buyerRestricted).toBe(true);
   });
@@ -113,7 +128,10 @@ describe("parseSynthetikaRestrictions - declaration of use (informational)", () 
 
 describe("parseSynthetikaRestrictions - no restriction", () => {
   it.each([
-    ["service note", "⚠️ Please ensure the legality of the submitted compounds before sending them."],
+    [
+      "service note",
+      "⚠️ Please ensure the legality of the submitted compounds before sending them.",
+    ],
     ["clean description", "High purity sodium chloride suitable for analytical use."],
     ["empty", ""],
   ])("returns undefined for: %s", (_label, text) => {

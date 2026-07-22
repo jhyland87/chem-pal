@@ -41,9 +41,7 @@ const PRODUCT = {
 };
 
 const htmlOf = (...nodes: object[]) =>
-  nodes
-    .map((n) => `<script type="application/ld+json">${JSON.stringify(n)}</script>`)
-    .join("\n");
+  nodes.map((n) => `<script type="application/ld+json">${JSON.stringify(n)}</script>`).join("\n");
 
 describe("schema-org toArray", () => {
   it("wraps a single value, passes arrays through, and empties nullish", () => {

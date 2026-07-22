@@ -4,7 +4,6 @@ declare global {
    * as well as old prices for comparison.
    */
   interface PriceObject {
-     
     /** The current price of the product */
     price: number;
     /** The current price including taxes */
@@ -17,7 +16,6 @@ declare global {
     price_old_incl: number;
     /** The previous price excluding taxes */
     price_old_excl: number;
-     
   }
 
   /**
@@ -26,7 +24,7 @@ declare global {
    */
   interface LaboratoriumDiscounterSearchResponseProduct {
     variants?: Partial<LaboratoriumDiscounterSearchResponseProduct>[];
-     
+
     /** Unique identifier for the product */
     id: number;
     /** Variant identifier */
@@ -63,11 +61,9 @@ declare global {
     data_01: string;
     /** Index signature for additional properties */
     [key: string]: unknown;
-     
   }
 
   interface VariantObject {
-     
     /** Index signature for additional properties */
     id: number;
     position: number;
@@ -88,7 +84,6 @@ declare global {
       };
       allow_backorders: boolean;
     };
-     
   }
 
   /**
@@ -96,7 +91,6 @@ declare global {
    * Contains page information, request details, and product collection.
    */
   interface SearchResponse {
-     
     /** Page-related information */
     page: {
       /** Search query string */
@@ -173,7 +167,6 @@ declare global {
 
   interface LaboratoriumDiscounterProductObject
     extends LaboratoriumDiscounterSearchResponseProduct {
-     
     product: LaboratoriumDiscounterSearchResponseProduct & {
       variants?: boolean | { [key: string]: VariantObject };
     };
@@ -190,7 +183,6 @@ declare global {
       status: string;
       base_currency: string;
     };
-     
   }
 
   /**

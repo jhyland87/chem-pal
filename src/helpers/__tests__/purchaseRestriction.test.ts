@@ -21,12 +21,18 @@ describe("canUserBuy", () => {
   });
 
   it("excludes everyone for restrictedDelivery and buyerRestricted", () => {
-    expect(canUserBuy({ purchaseRestriction: { restrictedDelivery: true } } as Variant, "PL")).toBe(false);
-    expect(canUserBuy({ purchaseRestriction: { buyerRestricted: true } } as Variant, "PL")).toBe(false);
+    expect(canUserBuy({ purchaseRestriction: { restrictedDelivery: true } } as Variant, "PL")).toBe(
+      false,
+    );
+    expect(canUserBuy({ purchaseRestriction: { buyerRestricted: true } } as Variant, "PL")).toBe(
+      false,
+    );
   });
 
   it("never excludes for a declaration-of-use requirement alone", () => {
-    expect(canUserBuy({ purchaseRestriction: { declarationOfUseRequired: true } } as Variant, "US")).toBe(true);
+    expect(
+      canUserBuy({ purchaseRestriction: { declarationOfUseRequired: true } } as Variant, "US"),
+    ).toBe(true);
   });
 
   it("allows options with no restriction", () => {

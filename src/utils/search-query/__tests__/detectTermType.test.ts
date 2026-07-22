@@ -24,13 +24,26 @@ describe("detectTermType", () => {
   });
 
   it("detects SMILES via bond/bracket/aromatic signals", () => {
-    for (const smiles of ["O=C=O", "CC(=O)O", "c1ccccc1", "[Na+]", "C/C=C/C", "CN1C=NC2=C1C(=O)N(C)C"]) {
+    for (const smiles of [
+      "O=C=O",
+      "CC(=O)O",
+      "c1ccccc1",
+      "[Na+]",
+      "C/C=C/C",
+      "CN1C=NC2=C1C(=O)N(C)C",
+    ]) {
       expect(detectTermType(smiles)).toBe("smiles");
     }
   });
 
   it("treats plain names and phrases as strings", () => {
-    for (const s of ["acetone", "benzene", "sodium hydroxide", "potassium permanganate", "Acetone"]) {
+    for (const s of [
+      "acetone",
+      "benzene",
+      "sodium hydroxide",
+      "potassium permanganate",
+      "Acetone",
+    ]) {
       expect(detectTermType(s)).toBe("string");
     }
   });

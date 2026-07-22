@@ -81,7 +81,6 @@ declare global {
    * by the client.
    */
   interface MacklinRequestHeaders extends HttpHeaders {
-     
     /** Server-synchronized timestamp */
     "X-Timestamp"?: string;
     /** User authentication token */
@@ -90,7 +89,6 @@ declare global {
     "X-Language"?: string;
     /** Request signature generated from headers and params */
     sign?: string;
-     
   }
 
   /**
@@ -137,7 +135,6 @@ declare global {
    * including chemical properties, specifications, and identifiers.
    */
   interface MacklinProductVariant {
-     
     /** CAS registry number for the chemical */
     chem_cas: CAS<string>;
     /** Unique product code used in URLs and API calls */
@@ -182,7 +179,6 @@ declare global {
     cas: CAS<string>;
     /** SMILES notation for the chemical structure */
     smile_code: Smiles<string>;
-     
   }
 
   /**
@@ -192,7 +188,6 @@ declare global {
    * delivery information.
    */
   interface MacklinProductDetails {
-     
     /** Unique product identifier */
     product_id: number;
     /** Product code used in URLs and API calls */
@@ -291,7 +286,6 @@ declare global {
     pre_delivery_desc: string;
     /** Formatted delivery description for display */
     delivery_desc_show: string;
-     
   }
 
   /**
@@ -336,7 +330,6 @@ declare global {
    * consumed are typed; the payload includes many more.
    */
   interface MacklinProductInfoItem {
-     
     /** Unique item identifier */
     item_id: number;
     /** Product code used in URLs and API calls */
@@ -353,7 +346,6 @@ declare global {
     item_storage: string;
     /** English product name */
     item_en_name: string;
-     
   }
 
   /**
@@ -364,7 +356,7 @@ declare global {
     /** The item-level chemistry/physical data. */
     item: MacklinProductInfoItem;
     /** Bulk packaging products (unused; often empty). */
-     
+
     bulk_product: unknown[];
   }
 }
