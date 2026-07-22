@@ -20,15 +20,15 @@ beforeEach(() => {
  * array the include/deny guard produced. filterByShipping is stubbed to return an empty
  * list, so no supplier's execute() ever runs and the test stays fully offline.
  */
-async function captureInstantiatedSuppliers(
-  factory: SupplierFactory<Product>,
-): Promise<string[]> {
+async function captureInstantiatedSuppliers(factory: SupplierFactory<Product>): Promise<string[]> {
   let captured: SupplierBase<unknown, Product>[] = [];
-  vi.spyOn(factory as unknown as { filterByShipping: (i: unknown[]) => unknown[] }, "filterByShipping")
-    .mockImplementation((instances: unknown[]) => {
-      captured = instances as SupplierBase<unknown, Product>[];
-      return [];
-    });
+  vi.spyOn(
+    factory as unknown as { filterByShipping: (i: unknown[]) => unknown[] },
+    "filterByShipping",
+  ).mockImplementation((instances: unknown[]) => {
+    captured = instances as SupplierBase<unknown, Product>[];
+    return [];
+  });
 
   // Empty permitted list makes the generator complete immediately without network.
   for await (const _product of factory.executeAllStream(1)) {

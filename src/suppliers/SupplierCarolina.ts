@@ -77,7 +77,6 @@ export class SupplierCarolina
 
   /** Default headers sent with every request */
   protected headers: HeadersInit = {
-     
     accept: [
       "text/html",
       "application/xhtml+xml",
@@ -102,7 +101,6 @@ export class SupplierCarolina
     "sec-fetch-site": "same-origin",
     "sec-gpc": "1",
     "x-requested-with": "XMLHttpRequest",
-     
   };
 
   /**
@@ -113,7 +111,6 @@ export class SupplierCarolina
    */
   protected makeQueryParams(query: string): CarolinaSearchParams {
     return {
-       
       tab: "p",
       "product.type": "Product",
       "product.productTypes": "chemicals",
@@ -122,7 +119,6 @@ export class SupplierCarolina
       ajax: true,
       viewSize: 300,
       q: query,
-       
     } satisfies CarolinaSearchParams;
   }
 
@@ -347,127 +343,124 @@ export class SupplierCarolina
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     const params = { format: "json", ajax: "true" };
-    return this.getProductDataWithCache(
-      product,
-      async (builder) => {
-        if (builder instanceof ProductBuilder === false) {
-          this.logger.warn("Invalid product object - Expected ProductBuilder instance:", {
-            builder,
-            product,
-          });
-          return;
-        }
-
-        const productResponse = await this.httpGetJson({
-          path: builder.get("url"),
-          params,
+    return this.getProductDataWithCache(product, async (builder) => {
+      if (builder instanceof ProductBuilder === false) {
+        this.logger.warn("Invalid product object - Expected ProductBuilder instance:", {
+          builder,
+          product,
         });
+        return;
+      }
 
-        if (!isResponseOk(productResponse)) {
-          this.logger.warn("Product Response status NOT OK:", {
-            productResponse,
-            builder,
-            product,
-          });
-          return;
-        }
+      const productResponse = await this.httpGetJson({
+        path: builder.get("url"),
+        params,
+      });
 
-        const atgResponse = this.extractATGResponse(productResponse);
+      if (!isResponseOk(productResponse)) {
+        this.logger.warn("Product Response status NOT OK:", {
+          productResponse,
+          builder,
+          product,
+        });
+        return;
+      }
 
-        if (!atgResponse) {
-          this.logger.warn("No ATG response found", {
-            productResponse,
-            atgResponse,
-            builder,
-            product,
-          });
-          return;
-        }
-        this.logger.debug("atgResponse:", { atgResponse, productResponse, builder, product });
+      const atgResponse = this.extractATGResponse(productResponse);
 
-        const productId = atgResponse.dataLayer.productDetail.productId;
-        if (!productId) {
-          this.logger.warn("No product ID found", {
-            atgResponse,
-            productResponse,
-            builder,
-            product,
-          });
-          return;
-        }
-        builder.setID(productId);
+      if (!atgResponse) {
+        this.logger.warn("No ATG response found", {
+          productResponse,
+          atgResponse,
+          builder,
+          product,
+        });
+        return;
+      }
+      this.logger.debug("atgResponse:", { atgResponse, productResponse, builder, product });
 
-        let productPrice;
+      const productId = atgResponse.dataLayer.productDetail.productId;
+      if (!productId) {
+        this.logger.warn("No product ID found", {
+          atgResponse,
+          productResponse,
+          builder,
+          product,
+        });
+        return;
+      }
+      builder.setID(productId);
 
-        if (atgResponse?.dataLayer?.productPrice?.[0]) {
-          productPrice = parsePrice(atgResponse.dataLayer.productPrice?.[0]);
-        } else if (
-          atgResponse?.familyVariyantProductDetails?.schemaJson?.schemaJson?.offers?.length > 0
-        ) {
-          const productVariantEntry =
-            atgResponse.familyVariyantProductDetails.schemaJson.schemaJson.offers.find(
-              (offer) => offer.sku === productId,
-            );
-          if (productVariantEntry) {
-            productPrice = {
-              currencyCode: productVariantEntry.priceCurrency,
-              price: productVariantEntry.price,
-              currencySymbol: "$",
-            };
-          }
-        } else {
-          this.logger.warn(
-            "Unable to find the product price in the main product or any variants. contents.MainContent[0].atgResponse.response.response contents:",
-            atgResponse,
-            productResponse,
-            builder,
-            product,
+      let productPrice;
+
+      if (atgResponse?.dataLayer?.productPrice?.[0]) {
+        productPrice = parsePrice(atgResponse.dataLayer.productPrice?.[0]);
+      } else if (
+        atgResponse?.familyVariyantProductDetails?.schemaJson?.schemaJson?.offers?.length > 0
+      ) {
+        const productVariantEntry =
+          atgResponse.familyVariyantProductDetails.schemaJson.schemaJson.offers.find(
+            (offer) => offer.sku === productId,
           );
-          return;
+        if (productVariantEntry) {
+          productPrice = {
+            currencyCode: productVariantEntry.priceCurrency,
+            price: productVariantEntry.price,
+            currencySymbol: "$",
+          };
         }
+      } else {
+        this.logger.warn(
+          "Unable to find the product price in the main product or any variants. contents.MainContent[0].atgResponse.response.response contents:",
+          atgResponse,
+          productResponse,
+          builder,
+          product,
+        );
+        return;
+      }
 
-        if (!productPrice) {
-          this.logger.warn("No product price found", {
-            atgResponse,
-            product,
-            builder,
-          });
-          return;
-        }
+      if (!productPrice) {
+        this.logger.warn("No product price found", {
+          atgResponse,
+          product,
+          builder,
+        });
+        return;
+      }
 
-        builder.setPricing(productPrice);
+      builder.setPricing(productPrice);
 
-        const quantity = firstMap(parseQuantity, [
+      const quantity = firstMap(parseQuantity, [
+        atgResponse.displayName,
+        atgResponse.shortDescription,
+      ]);
+
+      if (!isQuantityObject(quantity)) {
+        this.logger.warn("No quantity object found", {
+          quantity,
+          builder,
+          product,
+          parsedValues: [atgResponse.displayName, atgResponse.shortDescription],
+          atgResponse,
+        });
+        return;
+      }
+
+      builder.setQuantity(quantity);
+
+      builder.setCAS(
+        firstMap(findCAS, [
           atgResponse.displayName,
           atgResponse.shortDescription,
-        ]);
+          atgResponse.longDescription,
+        ]),
+      );
 
-        if (!isQuantityObject(quantity)) {
-          this.logger.warn("No quantity object found", {
-            quantity,
-            builder,
-            product,
-            parsedValues: [atgResponse.displayName, atgResponse.shortDescription],
-            atgResponse,
-          });
-          return;
-        }
+      builder.setDescription(atgResponse.shortDescription);
 
-        builder.setQuantity(quantity);
-
-        builder.setCAS(
-          firstMap(findCAS, [
-            atgResponse.displayName,
-            atgResponse.shortDescription,
-            atgResponse.longDescription,
-          ]),
-        );
-
-        builder.setDescription(atgResponse.shortDescription);
-
-        return builder;
-      },
-    );
+      return builder;
+    });
   }
 
   /**

@@ -83,10 +83,7 @@ describe("priceSortingFn", () => {
 
   it("prefers usdPrice over price when both present", () => {
     expect(
-      priceSortingFn(
-        makeRow({ usdPrice: 1, price: 999 }),
-        makeRow({ usdPrice: 2, price: 0 }),
-      ),
+      priceSortingFn(makeRow({ usdPrice: 1, price: 999 }), makeRow({ usdPrice: 2, price: 0 })),
     ).toBe(-1);
   });
 
@@ -109,7 +106,9 @@ describe("puritySortingFn", () => {
 
   it("returns 0 for grades in the same tier", () => {
     // USP/BP/JP/NF are deliberately tied.
-    expect(puritySortingFn(makeRow({ grade: "USP Grade" }), makeRow({ grade: "BP Grade" }))).toBe(0);
+    expect(puritySortingFn(makeRow({ grade: "USP Grade" }), makeRow({ grade: "BP Grade" }))).toBe(
+      0,
+    );
   });
 
   it("ranks percentages against each other", () => {

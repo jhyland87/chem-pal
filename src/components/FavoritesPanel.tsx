@@ -43,14 +43,14 @@ const paginationModel = { page: 0, pageSize: 5 };
  */
 export default function FavoritesPanel() {
   return (
-    <Paper className={styles['favorites-panel']}>
+    <Paper className={styles["favorites-panel"]}>
       <DataGrid
         rows={rows}
         columns={columns}
         initialState={{ pagination: { paginationModel } }}
         pageSizeOptions={[5, 10]}
         checkboxSelection
-        className={styles['favorites-panel__grid']}
+        className={styles["favorites-panel__grid"]}
       />
     </Paper>
   );

@@ -11,7 +11,8 @@ import styles from "./WhatsNewModal.module.scss";
  * The subset of an update notice this modal renders. Accepts both a pending
  * update and an already-installed one; `source` is only present on the former.
  */
-type WhatsNewNotice = Pick<UpdateNotice, "version" | "notes"> & Partial<Pick<UpdateNotice, "source">>;
+type WhatsNewNotice = Pick<UpdateNotice, "version" | "notes"> &
+  Partial<Pick<UpdateNotice, "source">>;
 
 /**
  * Props for {@link WhatsNewModal}.

@@ -73,7 +73,9 @@ describe("reactive i18n", () => {
 describe("locale key parity", () => {
   it("ships more than one locale to compare", () => {
     expect(otherLocales.length).toBeGreaterThan(0);
-    expect(getAvailableLocales()).toEqual(expect.arrayContaining([REFERENCE_LOCALE, ...otherLocales]));
+    expect(getAvailableLocales()).toEqual(
+      expect.arrayContaining([REFERENCE_LOCALE, ...otherLocales]),
+    );
   });
 
   it.each(otherLocales)("%s defines exactly the same keys as en (no missing, no extra)", (code) => {
@@ -99,16 +101,19 @@ describe("locale key parity", () => {
     expect({ locale: code, mismatched }).toEqual({ locale: code, mismatched: [] });
   });
 
-  it.each(otherLocales)("%s only uses $tokens$ that are declared in that key's placeholders", (code) => {
-    const orphans: string[] = [];
-    for (const key of referenceKeys) {
-      const entry = localeTables[code][key];
-      const declared = new Set(Object.keys(entry.placeholders ?? {}));
-      for (const token of entry.message.match(/\$([a-zA-Z0-9_]+)\$/g) ?? []) {
-        const name = token.slice(1, -1);
-        if (!declared.has(name)) orphans.push(`${key}:${token}`);
+  it.each(otherLocales)(
+    "%s only uses $tokens$ that are declared in that key's placeholders",
+    (code) => {
+      const orphans: string[] = [];
+      for (const key of referenceKeys) {
+        const entry = localeTables[code][key];
+        const declared = new Set(Object.keys(entry.placeholders ?? {}));
+        for (const token of entry.message.match(/\$([a-zA-Z0-9_]+)\$/g) ?? []) {
+          const name = token.slice(1, -1);
+          if (!declared.has(name)) orphans.push(`${key}:${token}`);
+        }
       }
-    }
-    expect({ locale: code, orphans }).toEqual({ locale: code, orphans: [] });
-  });
+      expect({ locale: code, orphans }).toEqual({ locale: code, orphans: [] });
+    },
+  );
 });

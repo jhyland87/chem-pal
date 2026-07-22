@@ -50,7 +50,8 @@ describe("Chem-Pal update prompt", () => {
     try {
       await resetPage.goto(`chrome-extension://${extensionId}/index.html`);
       await resetPage.evaluate(
-        async () => await new Promise<void>((resolve) => chrome.storage.local.clear(() => resolve())),
+        async () =>
+          await new Promise<void>((resolve) => chrome.storage.local.clear(() => resolve())),
       );
     } finally {
       await resetPage.close();
@@ -110,184 +111,152 @@ describe("Chem-Pal update prompt", () => {
     });
   }
 
-  it(
-    "prompts with a release link when GitHub reports a newer version",
-    async () => {
-      const { page, calls } = await openExtension(`v${NEWER_VERSION}`);
+  it("prompts with a release link when GitHub reports a newer version", async () => {
+    const { page, calls } = await openExtension(`v${NEWER_VERSION}`);
 
-      const snackbar = page.getByTestId("update-snackbar");
-      await playwrightExpect(snackbar).toBeVisible({ timeout: 10_000 });
-      await playwrightExpect(snackbar).toContainText(NEWER_VERSION);
-      // Manual install → "View release", not "Reload now".
-      await playwrightExpect(page.getByTestId("update-apply")).toHaveText("View release");
-      vitestExpect(calls()).toBe(1);
+    const snackbar = page.getByTestId("update-snackbar");
+    await playwrightExpect(snackbar).toBeVisible({ timeout: 10_000 });
+    await playwrightExpect(snackbar).toContainText(NEWER_VERSION);
+    // Manual install → "View release", not "Reload now".
+    await playwrightExpect(page.getByTestId("update-apply")).toHaveText("View release");
+    vitestExpect(calls()).toBe(1);
 
-      // The result is cached alongside the throttle stamp.
-      const stored = await readUpdateCheck(page);
-      vitestExpect(stored.latestVersion).toBe(NEWER_VERSION);
-      vitestExpect(stored.releaseUrl).toBe(RELEASE_URL);
-      vitestExpect(typeof stored.lastCheckedAt).toBe("number");
+    // The result is cached alongside the throttle stamp.
+    const stored = await readUpdateCheck(page);
+    vitestExpect(stored.latestVersion).toBe(NEWER_VERSION);
+    vitestExpect(stored.releaseUrl).toBe(RELEASE_URL);
+    vitestExpect(typeof stored.lastCheckedAt).toBe("number");
 
-      await page.close();
-    },
-    120_000,
-  );
+    await page.close();
+  }, 120_000);
 
-  it(
-    "stays quiet when the running build is already current",
-    async () => {
-      // v0.0.1 is older than any shipped version.
-      const { page } = await openExtension("v0.0.1");
+  it("stays quiet when the running build is already current", async () => {
+    // v0.0.1 is older than any shipped version.
+    const { page } = await openExtension("v0.0.1");
 
-      await page.waitForTimeout(2_000);
-      await playwrightExpect(page.getByTestId("update-snackbar")).toBeHidden();
+    await page.waitForTimeout(2_000);
+    await playwrightExpect(page.getByTestId("update-snackbar")).toBeHidden();
 
-      await page.close();
-    },
-    120_000,
-  );
+    await page.close();
+  }, 120_000);
 
-  it(
-    "does not re-poll GitHub inside the throttle window",
-    async () => {
-      const { page } = await openExtension(`v${NEWER_VERSION}`);
-      await playwrightExpect(page.getByTestId("update-snackbar")).toBeVisible({ timeout: 10_000 });
-      await page.close();
+  it("does not re-poll GitHub inside the throttle window", async () => {
+    const { page } = await openExtension(`v${NEWER_VERSION}`);
+    await playwrightExpect(page.getByTestId("update-snackbar")).toBeVisible({ timeout: 10_000 });
+    await page.close();
 
-      // A second open within 24h must serve the cached result without a request.
-      const reopened = await openExtension(`v${NEWER_VERSION}`);
-      await playwrightExpect(reopened.page.getByTestId("update-snackbar")).toBeVisible({
-        timeout: 10_000,
-      });
-      vitestExpect(reopened.calls()).toBe(0);
+    // A second open within 24h must serve the cached result without a request.
+    const reopened = await openExtension(`v${NEWER_VERSION}`);
+    await playwrightExpect(reopened.page.getByTestId("update-snackbar")).toBeVisible({
+      timeout: 10_000,
+    });
+    vitestExpect(reopened.calls()).toBe(0);
 
-      await reopened.page.close();
-    },
-    120_000,
-  );
+    await reopened.page.close();
+  }, 120_000);
 
-  it(
-    "remembers a dismissal for that version across reopens",
-    async () => {
-      const { page } = await openExtension(`v${NEWER_VERSION}`);
-      await playwrightExpect(page.getByTestId("update-snackbar")).toBeVisible({ timeout: 10_000 });
+  it("remembers a dismissal for that version across reopens", async () => {
+    const { page } = await openExtension(`v${NEWER_VERSION}`);
+    await playwrightExpect(page.getByTestId("update-snackbar")).toBeVisible({ timeout: 10_000 });
 
-      await page.getByTestId("update-dismiss").click();
-      await playwrightExpect(page.getByTestId("update-snackbar")).toBeHidden();
-      await playwrightExpect
-        .poll(async () => (await readUpdateCheck(page)).dismissedVersion, { timeout: 5_000 })
-        .toBe(NEWER_VERSION);
-      await page.close();
+    await page.getByTestId("update-dismiss").click();
+    await playwrightExpect(page.getByTestId("update-snackbar")).toBeHidden();
+    await playwrightExpect
+      .poll(async () => (await readUpdateCheck(page)).dismissedVersion, { timeout: 5_000 })
+      .toBe(NEWER_VERSION);
+    await page.close();
 
-      const reopened = await openExtension(`v${NEWER_VERSION}`);
-      await reopened.page.waitForTimeout(2_000);
-      await playwrightExpect(reopened.page.getByTestId("update-snackbar")).toBeHidden();
+    const reopened = await openExtension(`v${NEWER_VERSION}`);
+    await reopened.page.waitForTimeout(2_000);
+    await playwrightExpect(reopened.page.getByTestId("update-snackbar")).toBeHidden();
 
-      await reopened.page.close();
-    },
-    120_000,
-  );
+    await reopened.page.close();
+  }, 120_000);
 
-  it(
-    "shows the changelog highlights in the What's new modal",
-    async () => {
-      const body = [
-        "### Added",
-        "",
-        "- Options page for configuring Chem Pal outside the popup.",
-        "- Advanced mode, which unlocks the supplier statistics panel.",
-        "",
-        "### Fixed",
-        "",
-        "- Search failing to return results in some cases.",
-        "",
-        `**Full Changelog**: https://github.com/jhyland87/chem-pal/compare/v1.2.0...v${NEWER_VERSION}`,
-      ].join("\n");
-      const { page } = await openExtension(`v${NEWER_VERSION}`, body);
+  it("shows the changelog highlights in the What's new modal", async () => {
+    const body = [
+      "### Added",
+      "",
+      "- Options page for configuring Chem Pal outside the popup.",
+      "- Advanced mode, which unlocks the supplier statistics panel.",
+      "",
+      "### Fixed",
+      "",
+      "- Search failing to return results in some cases.",
+      "",
+      `**Full Changelog**: https://github.com/jhyland87/chem-pal/compare/v1.2.0...v${NEWER_VERSION}`,
+    ].join("\n");
+    const { page } = await openExtension(`v${NEWER_VERSION}`, body);
 
-      // With notes available the snackbar defers to the modal.
-      const action = page.getByTestId("update-apply");
-      await playwrightExpect(action).toHaveText("What's new", { timeout: 10_000 });
-      await action.click();
+    // With notes available the snackbar defers to the modal.
+    const action = page.getByTestId("update-apply");
+    await playwrightExpect(action).toHaveText("What's new", { timeout: 10_000 });
+    await action.click();
 
-      const modal = page.getByTestId("whats-new-modal");
-      await playwrightExpect(modal).toBeVisible();
-      await playwrightExpect(modal).toContainText("Added");
-      await playwrightExpect(modal).toContainText("Options page for configuring Chem Pal");
-      await playwrightExpect(modal).toContainText("Fixed");
-      await playwrightExpect(modal).toContainText("Search failing to return results");
-      // The auto-appended compare link is noise and must be filtered out.
-      await playwrightExpect(modal).not.toContainText("Full Changelog");
-      await playwrightExpect(page.getByTestId("whats-new-apply")).toHaveText("View release");
+    const modal = page.getByTestId("whats-new-modal");
+    await playwrightExpect(modal).toBeVisible();
+    await playwrightExpect(modal).toContainText("Added");
+    await playwrightExpect(modal).toContainText("Options page for configuring Chem Pal");
+    await playwrightExpect(modal).toContainText("Fixed");
+    await playwrightExpect(modal).toContainText("Search failing to return results");
+    // The auto-appended compare link is noise and must be filtered out.
+    await playwrightExpect(modal).not.toContainText("Full Changelog");
+    await playwrightExpect(page.getByTestId("whats-new-apply")).toHaveText("View release");
 
-      await page.close();
-    },
-    120_000,
-  );
+    await page.close();
+  }, 120_000);
 
-  it(
-    "keeps the prompt down after Later, but still prompts on the next open",
-    async () => {
-      const body = "### Added\n\n- Something worth reading.";
-      const { page } = await openExtension(`v${NEWER_VERSION}`, body);
+  it("keeps the prompt down after Later, but still prompts on the next open", async () => {
+    const body = "### Added\n\n- Something worth reading.";
+    const { page } = await openExtension(`v${NEWER_VERSION}`, body);
 
-      const snackbar = page.getByTestId("update-snackbar");
-      await playwrightExpect(snackbar).toBeVisible({ timeout: 10_000 });
-      await page.getByTestId("update-apply").click();
+    const snackbar = page.getByTestId("update-snackbar");
+    await playwrightExpect(snackbar).toBeVisible({ timeout: 10_000 });
+    await page.getByTestId("update-apply").click();
 
-      // The modal replaces the snackbar rather than stacking on top of it.
-      await playwrightExpect(page.getByTestId("whats-new-modal")).toBeVisible();
-      await playwrightExpect(snackbar).toBeHidden();
+    // The modal replaces the snackbar rather than stacking on top of it.
+    await playwrightExpect(page.getByTestId("whats-new-modal")).toBeVisible();
+    await playwrightExpect(snackbar).toBeHidden();
 
-      await page.getByTestId("whats-new-close").click();
-      await playwrightExpect(page.getByTestId("whats-new-modal")).toBeHidden();
-      await playwrightExpect(snackbar).toBeHidden();
-      await page.close();
+    await page.getByTestId("whats-new-close").click();
+    await playwrightExpect(page.getByTestId("whats-new-modal")).toBeHidden();
+    await playwrightExpect(snackbar).toBeHidden();
+    await page.close();
 
-      // "Later" is session-only — unlike ✕ it records nothing, so a fresh open
-      // still surfaces the update.
-      const reopened = await openExtension(`v${NEWER_VERSION}`, body);
-      await playwrightExpect(reopened.page.getByTestId("update-snackbar")).toBeVisible({
-        timeout: 10_000,
-      });
+    // "Later" is session-only — unlike ✕ it records nothing, so a fresh open
+    // still surfaces the update.
+    const reopened = await openExtension(`v${NEWER_VERSION}`, body);
+    await playwrightExpect(reopened.page.getByTestId("update-snackbar")).toBeVisible({
+      timeout: 10_000,
+    });
 
-      await reopened.page.close();
-    },
-    120_000,
-  );
+    await reopened.page.close();
+  }, 120_000);
 
-  it(
-    "falls back to the direct action when the release has no notes",
-    async () => {
-      const { page } = await openExtension(`v${NEWER_VERSION}`);
+  it("falls back to the direct action when the release has no notes", async () => {
+    const { page } = await openExtension(`v${NEWER_VERSION}`);
 
-      // A bodyless release leaves nothing to expand, so the snackbar acts directly.
-      await playwrightExpect(page.getByTestId("update-apply")).toHaveText("View release", {
-        timeout: 10_000,
-      });
+    // A bodyless release leaves nothing to expand, so the snackbar acts directly.
+    await playwrightExpect(page.getByTestId("update-apply")).toHaveText("View release", {
+      timeout: 10_000,
+    });
 
-      await page.close();
-    },
-    120_000,
-  );
+    await page.close();
+  }, 120_000);
 
-  it(
-    "stays quiet and records the attempt when GitHub is unreachable",
-    async () => {
-      const { page, calls } = await openExtension(undefined);
+  it("stays quiet and records the attempt when GitHub is unreachable", async () => {
+    const { page, calls } = await openExtension(undefined);
 
-      await page.waitForTimeout(2_000);
-      await playwrightExpect(page.getByTestId("update-snackbar")).toBeHidden();
-      vitestExpect(calls()).toBe(1);
+    await page.waitForTimeout(2_000);
+    await playwrightExpect(page.getByTestId("update-snackbar")).toBeHidden();
+    vitestExpect(calls()).toBe(1);
 
-      // The throttle stamp still lands, so a failed check can't cause a retry storm.
-      const stored = await readUpdateCheck(page);
-      vitestExpect(typeof stored.lastCheckedAt).toBe("number");
+    // The throttle stamp still lands, so a failed check can't cause a retry storm.
+    const stored = await readUpdateCheck(page);
+    vitestExpect(typeof stored.lastCheckedAt).toBe("number");
 
-      await page.close();
-    },
-    120_000,
-  );
+    await page.close();
+  }, 120_000);
 });
 
 /**
@@ -325,7 +294,8 @@ describe("Chem-Pal update prompt (Web Store install)", () => {
     try {
       await resetPage.goto(`chrome-extension://${extensionId}/index.html`);
       await resetPage.evaluate(
-        async () => await new Promise<void>((resolve) => chrome.storage.local.clear(() => resolve())),
+        async () =>
+          await new Promise<void>((resolve) => chrome.storage.local.clear(() => resolve())),
       );
     } finally {
       await resetPage.close();
@@ -348,9 +318,8 @@ describe("Chem-Pal update prompt (Web Store install)", () => {
     await seedPage.evaluate(
       async (version) =>
         await new Promise<void>((resolve) =>
-          chrome.storage.local.set(
-            { update_pending: { version, detectedAt: Date.now() } },
-            () => resolve(),
+          chrome.storage.local.set({ update_pending: { version, detectedAt: Date.now() } }, () =>
+            resolve(),
           ),
         ),
       NEWER_VERSION,
@@ -388,132 +357,107 @@ describe("Chem-Pal update prompt (Web Store install)", () => {
     return { page, tagCalls: () => tagCalls, latestCalls: () => latestCalls };
   }
 
-  it(
-    "reports itself as a Web Store install",
-    async () => {
-      const page = await context.newPage();
-      await page.goto(`chrome-extension://${extensionId}/index.html`);
-      const updateUrl = await page.evaluate(() => chrome.runtime.getManifest().update_url);
-      vitestExpect(updateUrl).toContain("clients2.google.com");
-      await page.close();
-    },
-    120_000,
-  );
+  it("reports itself as a Web Store install", async () => {
+    const page = await context.newPage();
+    await page.goto(`chrome-extension://${extensionId}/index.html`);
+    const updateUrl = await page.evaluate(() => chrome.runtime.getManifest().update_url);
+    vitestExpect(updateUrl).toContain("clients2.google.com");
+    await page.close();
+  }, 120_000);
 
-  it(
-    "offers a reload for an update Chrome has already staged",
-    async () => {
-      const { page, latestCalls } = await openWithStagedUpdate();
+  it("offers a reload for an update Chrome has already staged", async () => {
+    const { page, latestCalls } = await openWithStagedUpdate();
 
-      const snackbar = page.getByTestId("update-snackbar");
-      await playwrightExpect(snackbar).toBeVisible({ timeout: 10_000 });
-      await playwrightExpect(snackbar).toContainText(NEWER_VERSION);
-      // Web Store install → "Reload now", never "View release".
-      await playwrightExpect(page.getByTestId("update-apply")).toHaveText("Reload now");
-      vitestExpect(latestCalls()).toBe(0);
+    const snackbar = page.getByTestId("update-snackbar");
+    await playwrightExpect(snackbar).toBeVisible({ timeout: 10_000 });
+    await playwrightExpect(snackbar).toContainText(NEWER_VERSION);
+    // Web Store install → "Reload now", never "View release".
+    await playwrightExpect(page.getByTestId("update-apply")).toHaveText("Reload now");
+    vitestExpect(latestCalls()).toBe(0);
 
-      await page.close();
-    },
-    120_000,
-  );
+    await page.close();
+  }, 120_000);
 
-  it(
-    "looks up the staged version's notes by tag and shows them",
-    async () => {
-      const body = ["### Fixed", "", "- A bug that only Web Store users hit."].join("\n");
-      const { page, tagCalls, latestCalls } = await openWithStagedUpdate(body);
+  it("looks up the staged version's notes by tag and shows them", async () => {
+    const body = ["### Fixed", "", "- A bug that only Web Store users hit."].join("\n");
+    const { page, tagCalls, latestCalls } = await openWithStagedUpdate(body);
 
-      const action = page.getByTestId("update-apply");
-      await playwrightExpect(action).toHaveText("What's new", { timeout: 10_000 });
-      await action.click();
+    const action = page.getByTestId("update-apply");
+    await playwrightExpect(action).toHaveText("What's new", { timeout: 10_000 });
+    await action.click();
 
-      const modal = page.getByTestId("whats-new-modal");
-      await playwrightExpect(modal).toBeVisible();
-      await playwrightExpect(modal).toContainText("A bug that only Web Store users hit.");
-      // The CTA inside the modal still reloads rather than linking out.
-      await playwrightExpect(page.getByTestId("whats-new-apply")).toHaveText("Reload now");
-      vitestExpect(tagCalls()).toBe(1);
-      vitestExpect(latestCalls()).toBe(0);
+    const modal = page.getByTestId("whats-new-modal");
+    await playwrightExpect(modal).toBeVisible();
+    await playwrightExpect(modal).toContainText("A bug that only Web Store users hit.");
+    // The CTA inside the modal still reloads rather than linking out.
+    await playwrightExpect(page.getByTestId("whats-new-apply")).toHaveText("Reload now");
+    vitestExpect(tagCalls()).toBe(1);
+    vitestExpect(latestCalls()).toBe(0);
 
-      await page.close();
-    },
-    120_000,
-  );
+    await page.close();
+  }, 120_000);
 
-  it(
-    "applies the staged update by reloading the extension",
-    async () => {
-      const { page } = await openWithStagedUpdate();
-      await playwrightExpect(page.getByTestId("update-apply")).toBeVisible({ timeout: 10_000 });
+  it("applies the staged update by reloading the extension", async () => {
+    const { page } = await openWithStagedUpdate();
+    await playwrightExpect(page.getByTestId("update-apply")).toBeVisible({ timeout: 10_000 });
 
-      // Stub the reload so the run isn't torn down mid-test; asserting the call
-      // is what matters, and actually reloading would kill the page.
-      await page.evaluate(() => {
-        const w = window as unknown as { __reloaded?: boolean };
-        w.__reloaded = false;
-        chrome.runtime.reload = () => {
-          w.__reloaded = true;
-        };
-      });
-      await page.getByTestId("update-apply").click();
+    // Stub the reload so the run isn't torn down mid-test; asserting the call
+    // is what matters, and actually reloading would kill the page.
+    await page.evaluate(() => {
+      const w = window as unknown as { __reloaded?: boolean };
+      w.__reloaded = false;
+      chrome.runtime.reload = () => {
+        w.__reloaded = true;
+      };
+    });
+    await page.getByTestId("update-apply").click();
 
-      const reloaded = await page.evaluate(
-        () => (window as unknown as { __reloaded?: boolean }).__reloaded,
-      );
-      vitestExpect(reloaded).toBe(true);
+    const reloaded = await page.evaluate(
+      () => (window as unknown as { __reloaded?: boolean }).__reloaded,
+    );
+    vitestExpect(reloaded).toBe(true);
 
-      await page.close();
-    },
-    120_000,
-  );
+    await page.close();
+  }, 120_000);
 
-  it(
-    "still prompts when the notes lookup fails",
-    async () => {
-      const seedPage = await context.newPage();
-      await seedPage.goto(`chrome-extension://${extensionId}/index.html`);
-      await seedPage.evaluate(
-        async (version) =>
-          await new Promise<void>((resolve) =>
-            chrome.storage.local.set(
-              { update_pending: { version, detectedAt: Date.now() } },
-              () => resolve(),
-            ),
+  it("still prompts when the notes lookup fails", async () => {
+    const seedPage = await context.newPage();
+    await seedPage.goto(`chrome-extension://${extensionId}/index.html`);
+    await seedPage.evaluate(
+      async (version) =>
+        await new Promise<void>((resolve) =>
+          chrome.storage.local.set({ update_pending: { version, detectedAt: Date.now() } }, () =>
+            resolve(),
           ),
-        NEWER_VERSION,
-      );
-      await seedPage.close();
+        ),
+      NEWER_VERSION,
+    );
+    await seedPage.close();
 
-      const page = await context.newPage();
-      await page.route("**://api.github.com/**", (route) => route.abort("failed"));
-      await page.goto(`chrome-extension://${extensionId}/index.html`);
+    const page = await context.newPage();
+    await page.route("**://api.github.com/**", (route) => route.abort("failed"));
+    await page.goto(`chrome-extension://${extensionId}/index.html`);
 
-      // Notes are a nice-to-have; losing them must not cost the user the prompt.
-      await playwrightExpect(page.getByTestId("update-apply")).toHaveText("Reload now", {
-        timeout: 10_000,
-      });
+    // Notes are a nice-to-have; losing them must not cost the user the prompt.
+    await playwrightExpect(page.getByTestId("update-apply")).toHaveText("Reload now", {
+      timeout: 10_000,
+    });
 
-      await page.close();
-    },
-    120_000,
-  );
+    await page.close();
+  }, 120_000);
 
-  it(
-    "remembers a dismissal for the staged version",
-    async () => {
-      const { page } = await openWithStagedUpdate();
-      await playwrightExpect(page.getByTestId("update-snackbar")).toBeVisible({ timeout: 10_000 });
+  it("remembers a dismissal for the staged version", async () => {
+    const { page } = await openWithStagedUpdate();
+    await playwrightExpect(page.getByTestId("update-snackbar")).toBeVisible({ timeout: 10_000 });
 
-      await page.getByTestId("update-dismiss").click();
-      await playwrightExpect(page.getByTestId("update-snackbar")).toBeHidden();
-      await page.close();
+    await page.getByTestId("update-dismiss").click();
+    await playwrightExpect(page.getByTestId("update-snackbar")).toBeHidden();
+    await page.close();
 
-      const reopened = await openWithStagedUpdate();
-      await reopened.page.waitForTimeout(2_000);
-      await playwrightExpect(reopened.page.getByTestId("update-snackbar")).toBeHidden();
+    const reopened = await openWithStagedUpdate();
+    await reopened.page.waitForTimeout(2_000);
+    await playwrightExpect(reopened.page.getByTestId("update-snackbar")).toBeHidden();
 
-      await reopened.page.close();
-    },
-    120_000,
-  );
+    await reopened.page.close();
+  }, 120_000);
 });

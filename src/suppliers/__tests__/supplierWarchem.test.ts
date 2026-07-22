@@ -170,10 +170,10 @@ describe("SupplierWarchem getProductData", () => {
     const supplier = makeSupplier() as unknown as WarchemInternals;
     vi.spyOn(supplier as never, "httpGetHtml").mockResolvedValue(productPageHtml as never);
     // Bypass the cache wrapper and run the fetcher directly.
-    vi.spyOn(supplier as never, "getProductDataWithCache").mockImplementation(
-      ((b: ProductBuilder<Product>, fetcher: (b: ProductBuilder<Product>) => unknown) =>
-        fetcher(b)) as never,
-    );
+    vi.spyOn(supplier as never, "getProductDataWithCache").mockImplementation(((
+      b: ProductBuilder<Product>,
+      fetcher: (b: ProductBuilder<Product>) => unknown,
+    ) => fetcher(b)) as never);
 
     const builder = new ProductBuilder<Product>("https://warchem.pl");
     builder.setBasicInfo("Test Product", "https://warchem.pl/winian-p-81.html", "Warchem");

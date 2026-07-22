@@ -103,8 +103,7 @@ export async function seedPriceHistoryFromResults(
             }
 
             const rng = mulberry32(seedFrom(String(entry.id)));
-            const target =
-              cfg.minPoints + Math.floor(rng() * (cfg.maxPoints - cfg.minPoints + 1));
+            const target = cfg.minPoints + Math.floor(rng() * (cfg.maxPoints - cfg.minPoints + 1));
             const anchor = points[0] ?? { t: Date.now(), usd: 10 };
             const need = Math.max(0, target - points.length);
 

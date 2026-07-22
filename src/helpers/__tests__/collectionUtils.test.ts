@@ -55,9 +55,7 @@ describe("collectionUtils", () => {
     });
 
     it("diffs arrays element-wise using numeric indexes in the path", () => {
-      expect(diff([1, 2, 3], [1, 2, 3, 4])).toEqual([
-        { type: "created", path: [3], value: 4 },
-      ]);
+      expect(diff([1, 2, 3], [1, 2, 3, 4])).toEqual([{ type: "created", path: [3], value: 4 }]);
     });
 
     it("reports array length shrinkage as deletions", () => {

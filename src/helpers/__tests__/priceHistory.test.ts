@@ -212,7 +212,10 @@ describe("recordProductPrices", () => {
   });
 
   it("skips non-positive or missing USD prices but still records valid variants", async () => {
-    const p = baseProduct(0, [{ sku: "A", usdPrice: 5 }, { sku: "B", usdPrice: undefined }]);
+    const p = baseProduct(0, [
+      { sku: "A", usdPrice: 5 },
+      { sku: "B", usdPrice: undefined },
+    ]);
     await recordProductPrices([p]);
 
     expect(await getPriceSeries(productSeriesKey(p)!)).toBeUndefined();

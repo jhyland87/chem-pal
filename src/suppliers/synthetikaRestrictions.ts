@@ -158,7 +158,10 @@ export function parseSynthetikaRestrictions(html?: string): PurchaseRestriction 
     result.buyerRestricted = true;
   }
 
-  if (/declaration of (intended )?use/i.test(text) || /requires a written declaration/i.test(text)) {
+  if (
+    /declaration of (intended )?use/i.test(text) ||
+    /requires a written declaration/i.test(text)
+  ) {
     result.declarationOfUseRequired = true;
   }
 

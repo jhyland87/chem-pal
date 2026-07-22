@@ -72,10 +72,7 @@ describe("displayContext", () => {
 
       await openExtensionTab();
 
-      expect(window.open).toHaveBeenCalledWith(
-        `/index.html?${VIEW_PARAM}=${TAB_VIEW}`,
-        "_blank",
-      );
+      expect(window.open).toHaveBeenCalledWith(`/index.html?${VIEW_PARAM}=${TAB_VIEW}`, "_blank");
     });
   });
 });

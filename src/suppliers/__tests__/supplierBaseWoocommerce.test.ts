@@ -31,10 +31,9 @@ vi.mock("@/utils/SupplierCache", () => ({
 
 // Bypass the search-response schema check; we feed builders directly.
 vi.mock("@/utils/typeGuards/woocommerce", async () => {
-  const actual =
-    await vi.importActual<typeof import("@/utils/typeGuards/woocommerce")>(
-      "@/utils/typeGuards/woocommerce",
-    );
+  const actual = await vi.importActual<typeof import("@/utils/typeGuards/woocommerce")>(
+    "@/utils/typeGuards/woocommerce",
+  );
   return { ...actual, isSearchResponse: () => true };
 });
 

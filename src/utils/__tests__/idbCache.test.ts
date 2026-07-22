@@ -42,7 +42,10 @@ describe("findDuplicateProductIds", () => {
 
   it("keys off cacheKey when present, ignoring _id", () => {
     expect(
-      findDuplicateProductIds([product({ cacheKey: "ck1", _id: 0 }), product({ cacheKey: "ck1", _id: 1 })]),
+      findDuplicateProductIds([
+        product({ cacheKey: "ck1", _id: 0 }),
+        product({ cacheKey: "ck1", _id: 1 }),
+      ]),
     ).toEqual(["ck:ck1"]);
   });
 

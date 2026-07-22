@@ -9,7 +9,17 @@ import {
 import { Cactus } from "@/utils/Cactus";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { afterEach, beforeAll, beforeEach, describe, expect, it, test, vi, type Mock } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  test,
+  vi,
+  type Mock,
+} from "vitest";
 import { ETHANOL } from "./fixtures/chemicals";
 
 /** Real-world SMILES corpus (one per line) used to exercise validation and extraction. */
@@ -80,7 +90,10 @@ describe("SMILES Helpers", () => {
     test.each([
       ["smiles:CCO", { mode: "smiles", value: "CCO" }],
       ["SMILES: CCO ", { mode: "smiles", value: "CCO" }],
-      ["inchikey:LFQSCWFLJHTTHZ-UHFFFAOYSA-N", { mode: "inchikey", value: "LFQSCWFLJHTTHZ-UHFFFAOYSA-N" }],
+      [
+        "inchikey:LFQSCWFLJHTTHZ-UHFFFAOYSA-N",
+        { mode: "inchikey", value: "LFQSCWFLJHTTHZ-UHFFFAOYSA-N" },
+      ],
       ["ethanol", { mode: "auto", value: "ethanol" }],
     ])("should parse %s", (input, output) => expect(parseStructurePrefix(input)).toEqual(output));
   });
@@ -112,9 +125,7 @@ describe("SMILES Helpers", () => {
       ["Salt [Na+].[Cl-] dissolves readily.", ["[Na+].[Cl-]"]],
       ["no structures in this sentence", []], // pure prose, no strong chars
       ["it contains P and N atoms", []], // bare single characters are ignored
-    ])("should extract %j -> %j", (input, output) =>
-      expect(extractSmiles(input)).toEqual(output),
-    );
+    ])("should extract %j -> %j", (input, output) => expect(extractSmiles(input)).toEqual(output));
 
     it("extracts a structure surrounded by punctuation", () => {
       expect(extractSmiles("Result: CC(=O)O, stored.")).toEqual(["CC(=O)O"]);
@@ -231,7 +242,9 @@ describe("SMILES Helpers", () => {
     });
 
     it("resolves a SMILES query to a searchable name", async () => {
-      mockChemFetch({ CCO: { names: "ethanol", cas: "64-17-5", stdinchikey: "LFQSCWFLJHTTHZ-UHFFFAOYSA-N" } });
+      mockChemFetch({
+        CCO: { names: "ethanol", cas: "64-17-5", stdinchikey: "LFQSCWFLJHTTHZ-UHFFFAOYSA-N" },
+      });
       const result = await resolveQueryForSearch("CCO");
       expect(result.searchTerm).toBe("ethanol");
       expect(result.structure?.source).toBe("cactus-name");
@@ -244,7 +257,13 @@ describe("SMILES Helpers", () => {
     });
 
     it("honors the smiles: prefix for an otherwise-ambiguous token", async () => {
-      mockChemFetch({ CO: { names: "carbon monoxide", cas: "630-08-0", stdinchikey: "UGFAIRIUMAVXCW-UHFFFAOYSA-N" } });
+      mockChemFetch({
+        CO: {
+          names: "carbon monoxide",
+          cas: "630-08-0",
+          stdinchikey: "UGFAIRIUMAVXCW-UHFFFAOYSA-N",
+        },
+      });
       const result = await resolveQueryForSearch("smiles:CO");
       expect(result.searchTerm).toBe("carbon monoxide");
     });

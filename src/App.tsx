@@ -211,11 +211,7 @@ function App() {
   const [migrationError, setMigrationError] = useState<string>();
   // A newer release, if one is available. Web Store installs read a record left
   // by the service worker; manual installs poll GitHub (throttled to daily).
-  const {
-    notice: updateNotice,
-    dismiss: dismissUpdate,
-    applyUpdate,
-  } = useUpdateAvailable();
+  const { notice: updateNotice, dismiss: dismissUpdate, applyUpdate } = useUpdateAvailable();
   // The other side of the same coin: what changed in the release we're now on.
   const { notice: justUpdatedNotice, acknowledge: acknowledgeJustUpdated } = useJustUpdated();
   // Pending search query - set by HistoryPanel, consumed by ResultsTable
@@ -801,15 +797,8 @@ function App() {
                 onApply={() => void handleApplyMigrations()}
                 onCancel={() => void handleCancelMigrations()}
               />
-              <UpdatePrompt
-                notice={updateNotice}
-                onDismiss={dismissUpdate}
-                onApply={applyUpdate}
-              />
-              <WhatsNewPrompt
-                notice={justUpdatedNotice}
-                onAcknowledge={acknowledgeJustUpdated}
-              />
+              <UpdatePrompt notice={updateNotice} onDismiss={dismissUpdate} onApply={applyUpdate} />
+              <WhatsNewPrompt notice={justUpdatedNotice} onAcknowledge={acknowledgeJustUpdated} />
             </div>
             <StatusBar />
           </StatusBarProvider>

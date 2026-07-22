@@ -817,7 +817,8 @@ export default function ResultsTable({
                       // "All" is the option whose value equals the current total;
                       // record it as an unbounded intent so it survives a filter
                       // round-trip even as the total changes.
-                      desiredPageSizeRef.current = next >= totalRowCount ? Number.POSITIVE_INFINITY : next;
+                      desiredPageSizeRef.current =
+                        next >= totalRowCount ? Number.POSITIVE_INFINITY : next;
                       table.setPageSize(next);
                     }}
                     aria-label={i18n("results_rows_per_page_aria")}

@@ -56,7 +56,10 @@ describe("SupplierLeroChem initProductBuilders", () => {
     expect(first.currencyCode).toBe("EUR");
     expect(first.currencySymbol).toBe("€");
     expect(first.images).toEqual([
-      { href: "https://lerochem.eu/595-large_default/sulfuric-acid-tech-grade-98-l.webp", type: "image" },
+      {
+        href: "https://lerochem.eu/595-large_default/sulfuric-acid-tech-grade-98-l.webp",
+        type: "image",
+      },
     ]);
     expect(builders[1].dump().price).toBe(5.2);
   });
@@ -247,10 +250,10 @@ describe("SupplierLeroChem getProductData", () => {
     vi.spyOn(supplier as never, "httpGetHtml").mockResolvedValue(productPageHtml as never);
     vi.spyOn(supplier as never, "httpPostJson").mockResolvedValue(variantRefresh as never);
     // Bypass the cache wrapper and run the fetcher directly.
-    vi.spyOn(supplier as never, "getProductDataWithCache").mockImplementation(
-      ((b: ProductBuilder<Product>, fetcher: (b: ProductBuilder<Product>) => unknown) =>
-        fetcher(b)) as never,
-    );
+    vi.spyOn(supplier as never, "getProductDataWithCache").mockImplementation(((
+      b: ProductBuilder<Product>,
+      fetcher: (b: ProductBuilder<Product>) => unknown,
+    ) => fetcher(b)) as never);
 
     const builder = new ProductBuilder<Product>("https://lerochem.eu");
     builder.setBasicInfo(

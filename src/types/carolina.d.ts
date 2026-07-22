@@ -1,5 +1,4 @@
 declare global {
-   
   /**
    * Base interface for common properties shared across many objects in the Carolina system.
    * Contains core attributes like template type, metadata, content IDs, and execution details.
@@ -394,5 +393,3 @@ declare global {
 
 // This export is needed to make the file a module
 export {};
-
- 

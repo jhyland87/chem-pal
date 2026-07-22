@@ -6,7 +6,10 @@ import { SupplierOrbitNaturalProductDerivatives } from "../SupplierOrbitNaturalP
 
 const searchResponse = JSON.parse(
   readFileSync(
-    resolve(__dirname, "../__fixtures__/orbitnaturalproductderivatives/get-all-products-response.json"),
+    resolve(
+      __dirname,
+      "../__fixtures__/orbitnaturalproductderivatives/get-all-products-response.json",
+    ),
     "utf8",
   ),
 );
@@ -56,9 +59,7 @@ describe("SupplierOrbitNaturalProductDerivatives initProductBuilders", () => {
     const supplier = makeSupplier() as unknown as MySimpleStoreInternals;
     const builders = supplier.initProductBuilders(searchResponse.products);
 
-    const geraniol = builders
-      .map((b) => b.dump())
-      .find((p) => p.title === "Geraniol 60");
+    const geraniol = builders.map((b) => b.dump()).find((p) => p.title === "Geraniol 60");
 
     expect(geraniol).toBeDefined();
     expect(geraniol?.url).toBe(
@@ -83,10 +84,10 @@ describe("SupplierOrbitNaturalProductDerivatives getProductData", () => {
 
     vi.spyOn(supplier as never, "httpGetJson").mockResolvedValue(geraniolDetail as never);
     // Bypass the cache wrapper and run the fetcher directly.
-    vi.spyOn(supplier as never, "getProductDataWithCache").mockImplementation(
-      ((b: ProductBuilder<Product>, fetcher: (b: ProductBuilder<Product>) => unknown) =>
-        fetcher(b)) as never,
-    );
+    vi.spyOn(supplier as never, "getProductDataWithCache").mockImplementation(((
+      b: ProductBuilder<Product>,
+      fetcher: (b: ProductBuilder<Product>) => unknown,
+    ) => fetcher(b)) as never);
 
     const builder = new ProductBuilder<Product>("https://orbitnaturalproductderivatives.com");
     builder.setBasicInfo(

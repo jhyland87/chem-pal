@@ -10,10 +10,7 @@ import { SupplierBaseShopify } from "./SupplierBaseShopify";
  * @category Suppliers
  * @source
  */
-export class SupplierGoldAndSilverTesting
-  extends SupplierBaseShopify
-  implements ISupplier
-{
+export class SupplierGoldAndSilverTesting extends SupplierBaseShopify implements ISupplier {
   // Name of supplier (for display purposes)
   public readonly supplierName: string = "Gold and Silver Testing";
 

@@ -200,10 +200,7 @@ describe("Tanstack Mixins", () => {
     it("never reports non-hideable columns or accessor-less columns without dataKeys", () => {
       const table = buildTable(
         [{}],
-        [
-          { id: "title", canHide: false, accessorKey: "name" },
-          { id: "expander" },
-        ],
+        [{ id: "title", canHide: false, accessorKey: "name" }, { id: "expander" }],
       );
       expect(getEmptyHideableColumnIds(table)).toEqual([]);
     });

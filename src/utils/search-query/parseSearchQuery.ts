@@ -172,9 +172,7 @@ function normalizeLiqeNode(node: unknown): SearchAst {
  * @source
  */
 export function hasAdvancedSyntax(input: string): boolean {
-  return tokenize(input).some(
-    (token) => token.kind === "paren" || isOperatorToken(token),
-  );
+  return tokenize(input).some((token) => token.kind === "paren" || isOperatorToken(token));
 }
 
 /**

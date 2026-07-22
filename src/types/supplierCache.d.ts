@@ -29,7 +29,7 @@ declare global {
     /** The actual cached results */
     data: T[];
     /** Metadata about the cache entry */
-     
+
     __cacheMetadata: CacheMetadata;
   }
 

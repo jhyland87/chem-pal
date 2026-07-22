@@ -115,9 +115,7 @@ describe("parseReleaseNotes", () => {
   });
 
   it("keeps bullets that appear before any heading", () => {
-    expect(parseReleaseNotes("- First\n- Second")).toEqual([
-      { items: ["First", "Second"] },
-    ]);
+    expect(parseReleaseNotes("- First\n- Second")).toEqual([{ items: ["First", "Second"] }]);
   });
 
   // The v1.2.0 release body was exactly this and nothing else.
@@ -142,9 +140,13 @@ describe("parseReleaseNotes", () => {
   });
 
   it("folds wrapped continuation lines into their bullet", () => {
-    const body = "### Changed\n\n- Improved reagent-grade parsing, so more\n  products report a grade.";
+    const body =
+      "### Changed\n\n- Improved reagent-grade parsing, so more\n  products report a grade.";
     expect(parseReleaseNotes(body)).toEqual([
-      { title: "Changed", items: ["Improved reagent-grade parsing, so more products report a grade."] },
+      {
+        title: "Changed",
+        items: ["Improved reagent-grade parsing, so more products report a grade."],
+      },
     ]);
   });
 

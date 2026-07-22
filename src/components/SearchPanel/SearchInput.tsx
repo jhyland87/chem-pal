@@ -51,9 +51,9 @@ export default function SearchInput({ onSearch }: SearchInputStates) {
 
   return (
     <>
-      <div className={`${styles['search-input-container']} ${styles.fullwidth}`}>
+      <div className={`${styles["search-input-container"]} ${styles.fullwidth}`}>
         <Paper
-          className={`${styles.fullwidth} ${styles['search-query-input-form']}`}
+          className={`${styles.fullwidth} ${styles["search-query-input-form"]}`}
           component="form"
           onSubmit={handleFormSubmit}
           sx={{
@@ -68,7 +68,7 @@ export default function SearchInput({ onSearch }: SearchInputStates) {
           <HighlightedSearchInput
             value={searchInputValue}
             onChange={handleSearchInputChange}
-            className={`${styles['search-query-input']} ${styles.fullwidth}`}
+            className={`${styles["search-query-input"]} ${styles.fullwidth}`}
             placeholder={isLoading ? "Searching..." : "Search..."}
             disabled={isLoading}
             ariaLabel="Search for chemicals"
@@ -92,7 +92,7 @@ export default function SearchInput({ onSearch }: SearchInputStates) {
         </Paper>
 
         {hintMessage && (
-          <div role="alert" className={styles['search-error-hint']}>
+          <div role="alert" className={styles["search-error-hint"]}>
             {hintMessage}
           </div>
         )}

@@ -25,7 +25,10 @@ const EXPECTED_VERSION: string = JSON.parse(
 // <= EXPECTED_VERSION as the version climbs. Created before the build and deleted
 // in afterAll — never committed.
 const fixtureStepPath = path.resolve(repoRoot, "src/migrations/steps/v0.9.0-to-v1.0.0.ts");
-const FIXTURE_STEP = readFileSync(path.resolve(__dirname, "__fixtures__/migration-step.ts"), "utf8");
+const FIXTURE_STEP = readFileSync(
+  path.resolve(__dirname, "__fixtures__/migration-step.ts"),
+  "utf8",
+);
 
 describe("Chem-Pal cache migration", () => {
   let context: BrowserContext;
@@ -79,7 +82,11 @@ describe("Chem-Pal cache migration", () => {
   async function openExtension(): Promise<Page> {
     const page = await context.newPage();
     await page.goto(`chrome-extension://${extensionId}/index.html`);
-    await setupMockRoutes(page, { responsesDir: mockResponsesDir, fallback: "abort", verbose: false });
+    await setupMockRoutes(page, {
+      responsesDir: mockResponsesDir,
+      fallback: "abort",
+      verbose: false,
+    });
     await playwrightExpect(page.getByRole("textbox", { name: "search for products" })).toBeVisible({
       timeout: 10_000,
     });
@@ -137,60 +144,52 @@ describe("Chem-Pal cache migration", () => {
     });
   }
 
-  it(
-    "detects a stale cache, shows the prompt, and applies the migration on Apply",
-    async () => {
-      const page = await openExtension();
+  it("detects a stale cache, shows the prompt, and applies the migration on Apply", async () => {
+    const page = await openExtension();
 
-      // A clean first open must NOT prompt (fresh install → version seeded).
-      await playwrightExpect(page.getByTestId("migration-apply")).toBeHidden();
+    // A clean first open must NOT prompt (fresh install → version seeded).
+    await playwrightExpect(page.getByTestId("migration-apply")).toBeHidden();
 
-      // Simulate an older cache, then reopen so the mount effect re-checks.
-      await seedStaleCache(page);
-      await page.reload();
+    // Simulate an older cache, then reopen so the mount effect re-checks.
+    await seedStaleCache(page);
+    await page.reload();
 
-      // Detection → prompt: the modal lists the pending 0.9.0 → 1.0.0 step.
-      const applyButton = page.getByTestId("migration-apply");
-      await playwrightExpect(applyButton).toBeVisible({ timeout: 10_000 });
-      const modal = page.getByTestId("migration-modal");
-      await playwrightExpect(modal).toContainText("0.9.0");
-      await playwrightExpect(modal).toContainText("1.0.0");
+    // Detection → prompt: the modal lists the pending 0.9.0 → 1.0.0 step.
+    const applyButton = page.getByTestId("migration-apply");
+    await playwrightExpect(applyButton).toBeVisible({ timeout: 10_000 });
+    const modal = page.getByTestId("migration-modal");
+    await playwrightExpect(modal).toContainText("0.9.0");
+    await playwrightExpect(modal).toContainText("1.0.0");
 
-      // Apply → the migration runs and the prompt closes.
-      await applyButton.click();
-      await playwrightExpect(applyButton).toBeHidden({ timeout: 10_000 });
+    // Apply → the migration runs and the prompt closes.
+    await applyButton.click();
+    await playwrightExpect(applyButton).toBeHidden({ timeout: 10_000 });
 
-      // Verify the update was applied: marker advanced + cached row transformed.
-      const state = await readCacheState(page);
-      vitestExpect(state.appVersion).toBe(EXPECTED_VERSION);
-      vitestExpect(state.migratedBy).toBe("0.9.0->1.0.0");
+    // Verify the update was applied: marker advanced + cached row transformed.
+    const state = await readCacheState(page);
+    vitestExpect(state.appVersion).toBe(EXPECTED_VERSION);
+    vitestExpect(state.migratedBy).toBe("0.9.0->1.0.0");
 
-      await page.close();
-    },
-    200_000,
-  );
+    await page.close();
+  }, 200_000);
 
-  it(
-    "clears the cache and starts fresh on Cancel",
-    async () => {
-      const page = await openExtension();
+  it("clears the cache and starts fresh on Cancel", async () => {
+    const page = await openExtension();
 
-      await seedStaleCache(page);
-      await page.reload();
+    await seedStaleCache(page);
+    await page.reload();
 
-      const cancelButton = page.getByTestId("migration-cancel");
-      await playwrightExpect(cancelButton).toBeVisible({ timeout: 10_000 });
+    const cancelButton = page.getByTestId("migration-cancel");
+    await playwrightExpect(cancelButton).toBeVisible({ timeout: 10_000 });
 
-      // Cancel → clear the cache and stamp the current version (no migration tag).
-      await cancelButton.click();
-      await playwrightExpect(cancelButton).toBeHidden({ timeout: 10_000 });
+    // Cancel → clear the cache and stamp the current version (no migration tag).
+    await cancelButton.click();
+    await playwrightExpect(cancelButton).toBeHidden({ timeout: 10_000 });
 
-      const state = await readCacheState(page);
-      vitestExpect(state.appVersion).toBe(EXPECTED_VERSION);
-      vitestExpect(state.migratedBy).toBeUndefined();
+    const state = await readCacheState(page);
+    vitestExpect(state.appVersion).toBe(EXPECTED_VERSION);
+    vitestExpect(state.migratedBy).toBeUndefined();
 
-      await page.close();
-    },
-    200_000,
-  );
+    await page.close();
+  }, 200_000);
 });

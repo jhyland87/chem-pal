@@ -9,12 +9,7 @@ import { useDebouncedCallback } from "@/shared/hooks";
 import { useEffect, useMemo, useState, type ChangeEvent, type SyntheticEvent } from "react";
 import { formatBindingTokens, formatSequenceTokens, resolveBinding } from "./matcher";
 import styles from "./HotkeyHelpModal.module.scss";
-import {
-  HotkeyCombo,
-  HotkeyComboGroup,
-  HotkeyHelpBox,
-  HotkeyRow,
-} from "./HotkeyHelpModal.styled";
+import { HotkeyCombo, HotkeyComboGroup, HotkeyHelpBox, HotkeyRow } from "./HotkeyHelpModal.styled";
 import type { HotkeyConfig } from "./types";
 import { getHotkeyConfigs } from "./useHotkeys";
 
@@ -197,10 +192,7 @@ export default function HotkeyHelpModal({ open, onClose }: HotkeyHelpModalProps)
       aria-labelledby="hotkey-help-title"
       sx={{ zIndex: (theme) => theme.zIndex.modal + 10 }}
     >
-      <HotkeyHelpBox
-        className={styles["hotkey-help-box"]}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <HotkeyHelpBox className={styles["hotkey-help-box"]} onClick={(e) => e.stopPropagation()}>
         <div className={styles["hotkey-help-header"]}>
           <Typography
             id="hotkey-help-title"

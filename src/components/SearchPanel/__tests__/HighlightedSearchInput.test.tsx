@@ -17,7 +17,11 @@ describe("HighlightedSearchInput", () => {
   it("reports a plain query as valid (not blocked)", () => {
     const onValidityChange = vi.fn();
     render(
-      <HighlightedSearchInput value="sodium" onChange={() => {}} onValidityChange={onValidityChange} />,
+      <HighlightedSearchInput
+        value="sodium"
+        onChange={() => {}}
+        onValidityChange={onValidityChange}
+      />,
     );
     expect(onValidityChange).toHaveBeenLastCalledWith(false, undefined);
   });

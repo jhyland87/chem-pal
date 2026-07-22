@@ -50,8 +50,8 @@ export default function TableOptions({ onSearch, onToggleDrawer }: TableOptionsP
 
   return (
     <>
-      <Toolbar className={`${styles['table-options-toolbar']} ${styles.fullwidth}`}>
-        <Typography component="div" className={styles['search-input']}>
+      <Toolbar className={`${styles["table-options-toolbar"]} ${styles.fullwidth}`}>
+        <Typography component="div" className={styles["search-input"]}>
           <SearchInput
             //searchInput={searchInput}
             //className="search-input"
@@ -60,8 +60,8 @@ export default function TableOptions({ onSearch, onToggleDrawer }: TableOptionsP
           />
         </Typography>
         <Tooltip title="Filter list">
-          <button className={styles['svg-button-icon']} onClick={onToggleDrawer}>
-            <TuneIcon className={styles['table-options-icon']} />
+          <button className={styles["svg-button-icon"]} onClick={onToggleDrawer}>
+            <TuneIcon className={styles["table-options-icon"]} />
           </button>
         </Tooltip>
       </Toolbar>

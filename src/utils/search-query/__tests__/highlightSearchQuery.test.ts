@@ -103,8 +103,8 @@ describe("highlightSearchQuery", () => {
   });
 
   it("tints a term by detected type (CAS / formula) for a plain query", () => {
-    expect(highlightSearchQuery("7647-14-5").html).toContain('hl-term hl-term-cas');
-    expect(highlightSearchQuery("NaOH").html).toContain('hl-term hl-term-formula');
+    expect(highlightSearchQuery("7647-14-5").html).toContain("hl-term hl-term-cas");
+    expect(highlightSearchQuery("NaOH").html).toContain("hl-term hl-term-formula");
     // A plain word carries no type class.
     expect(highlightSearchQuery("acetone").html).toBe('<span class="hl-term">acetone</span>');
   });
@@ -126,7 +126,9 @@ describe("highlightSearchQuery", () => {
   it("colors a quoted string the same as an unquoted term (no separate quoted color)", () => {
     const html = highlightSearchQuery('"sodium chloride" OR NaCl').html;
     // The quoted phrase is a string term → string color, rendered as hl-term (not hl-quoted).
-    expect(html).toContain('<span class="hl-term hl-term-string">&quot;sodium chloride&quot;</span>');
+    expect(html).toContain(
+      '<span class="hl-term hl-term-string">&quot;sodium chloride&quot;</span>',
+    );
     expect(html).not.toContain("hl-quoted");
   });
 

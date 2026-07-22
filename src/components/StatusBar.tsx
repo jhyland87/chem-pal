@@ -97,9 +97,5 @@ export default function StatusBar() {
 
   if (!statusText) return null;
 
-  return (
-    <StatusBarContainer className={styles["status-bar"]}>
-      {statusText}
-    </StatusBarContainer>
-  );
+  return <StatusBarContainer className={styles["status-bar"]}>{statusText}</StatusBarContainer>;
 }

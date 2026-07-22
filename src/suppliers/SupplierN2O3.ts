@@ -54,7 +54,6 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
 
   // HTTP headers used as a basis for all queries.
   protected headers: HeadersInit = {
-     
     accept: [
       "text/html",
       "application/xhtml+xml",
@@ -79,7 +78,6 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
     "sec-fetch-site": "same-origin",
     "sec-gpc": "1",
     "x-requested-with": "XMLHttpRequest",
-     
   };
 
   /**
@@ -161,9 +159,7 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
    * @source
    */
   protected getUniqueProductKey(data: Element): string {
-    const id = data
-      .querySelector("div > div > div:nth-child(2) > span")
-      ?.textContent?.trim();
+    const id = data.querySelector("div > div > div:nth-child(2) > span")?.textContent?.trim();
     if (id) {
       return id;
     }

@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  FUZZ_SCORER_NAMES,
-  FUZZ_SCORERS,
-  isFuzzScorerName,
-} from "../fuzzScorers";
+import { FUZZ_SCORER_NAMES, FUZZ_SCORERS, isFuzzScorerName } from "../fuzzScorers";
 
 describe("fuzzScorers", () => {
   describe("FUZZ_SCORERS registry", () => {

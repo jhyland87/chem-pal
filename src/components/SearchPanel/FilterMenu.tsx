@@ -95,7 +95,7 @@ function TabPanel(props: TabPanelProps) {
       style={style}
       {...other}
     >
-      {value === index && <Box className={styles['filter-menu__tab-panel-box']}>{children}</Box>}
+      {value === index && <Box className={styles["filter-menu__tab-panel-box"]}>{children}</Box>}
     </div>
   );
 }
@@ -136,36 +136,36 @@ function SupplierSelection() {
   return (
     <FormControl component="fieldset" variant="standard">
       {/*<FormLabel component="legend">Supplier Selection</FormLabel>*/}
-      <List className={styles['filter-menu__supplier-list']}>
+      <List className={styles["filter-menu__supplier-list"]}>
         {SupplierFactory.supplierList()
           .filter((supplierName) => !disabledSuppliers.includes(supplierName))
           .map((supplierName) => {
-          const labelId = `checkbox-list-label-${supplierName}`;
+            const labelId = `checkbox-list-label-${supplierName}`;
 
-          return (
-            <ListItem key={supplierName} disablePadding>
-              <ListItemButton
-                className={styles['filter-menu__supplier-list-item-btn']}
-                role={undefined}
-                onClick={() => handleSupplierSelect(supplierName)}
-                dense
-              >
-                <FilterListItemIcon>
-                  <Checkbox
-                    size="small"
-                    edge="start"
-                    className={styles['filter-menu__supplier-checkbox']}
-                    checked={selectedSuppliers.includes(supplierName)}
-                    tabIndex={-1}
-                    disableRipple
-                    slotProps={{ input: { "aria-labelledby": labelId } }}
-                  />
-                </FilterListItemIcon>
-                <ListItemText id={labelId} primary={`${supplierName.replace("Supplier", "")}`} />
-              </ListItemButton>
-            </ListItem>
-          );
-        })}
+            return (
+              <ListItem key={supplierName} disablePadding>
+                <ListItemButton
+                  className={styles["filter-menu__supplier-list-item-btn"]}
+                  role={undefined}
+                  onClick={() => handleSupplierSelect(supplierName)}
+                  dense
+                >
+                  <FilterListItemIcon>
+                    <Checkbox
+                      size="small"
+                      edge="start"
+                      className={styles["filter-menu__supplier-checkbox"]}
+                      checked={selectedSuppliers.includes(supplierName)}
+                      tabIndex={-1}
+                      disableRipple
+                      slotProps={{ input: { "aria-labelledby": labelId } }}
+                    />
+                  </FilterListItemIcon>
+                  <ListItemText id={labelId} primary={`${supplierName.replace("Supplier", "")}`} />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
       </List>
     </FormControl>
   );
@@ -235,7 +235,7 @@ function SearchResultFilters({ table }: { table: Table<Product> }) {
 
   return (
     <div>
-      <FormControl variant="standard" className={styles['filter-menu__search-form-control']}>
+      <FormControl variant="standard" className={styles["filter-menu__search-form-control"]}>
         <FilterMenuInput
           id="input-with-icon-adornment"
           placeholder="Filter results table.."
@@ -257,7 +257,9 @@ function SearchResultFilters({ table }: { table: Table<Product> }) {
         <FilterMenuAccordionSummary
           aria-controls="panel1d-content"
           id="panel1d-header"
-          expandIcon={<ArrowForwardIosSharpIcon className={styles['filter-menu__accordion-icon']} />}
+          expandIcon={
+            <ArrowForwardIosSharpIcon className={styles["filter-menu__accordion-icon"]} />
+          }
         >
           <Typography component="span">Column Visibility</Typography>
         </FilterMenuAccordionSummary>
@@ -285,12 +287,14 @@ function SearchResultFilters({ table }: { table: Table<Product> }) {
             <FilterMenuAccordionSummary
               aria-controls="panel1d-content"
               id="panel1d-header"
-              expandIcon={<ArrowForwardIosSharpIcon className={styles['filter-menu__accordion-icon']} />}
+              expandIcon={
+                <ArrowForwardIosSharpIcon className={styles["filter-menu__accordion-icon"]} />
+              }
             >
               <Typography component="span">{columnNames[column.id]}</Typography>
             </FilterMenuAccordionSummary>
             <FilterMenuAccordionDetails>
-              <Box className={styles['filter-menu__accordion-content']}>
+              <Box className={styles["filter-menu__accordion-content"]}>
                 <FilterVariantComponent column={column} />
               </Box>
             </FilterMenuAccordionDetails>

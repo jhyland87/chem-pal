@@ -127,8 +127,9 @@ class TestSupplier extends SupplierBase<unknown, Product> {
   }
 
   public callQueryProductsWithCache() {
-    return (this as unknown as { queryProductsWithCache: (q: string) => Promise<unknown> })
-      .queryProductsWithCache("potassium");
+    return (
+      this as unknown as { queryProductsWithCache: (q: string) => Promise<unknown> }
+    ).queryProductsWithCache("potassium");
   }
 
   public callGetProductDataWithCache() {
@@ -179,9 +180,9 @@ class RetryTestSupplier extends SupplierBase<unknown, Product> {
   }
 
   public callFetch() {
-    return (
-      this as unknown as { fetch: (url: string) => Promise<Response> }
-    ).fetch(`${this.baseURL}/wp-json/wc/store/v1/products`);
+    return (this as unknown as { fetch: (url: string) => Promise<Response> }).fetch(
+      `${this.baseURL}/wp-json/wc/store/v1/products`,
+    );
   }
 }
 

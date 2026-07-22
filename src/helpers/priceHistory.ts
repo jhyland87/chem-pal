@@ -9,11 +9,7 @@
  */
 
 import { getProductIdentityKey } from "@/helpers/productIdentity";
-import {
-  getPriceSeries,
-  getPriceSeriesByProduct,
-  putPriceSeries,
-} from "@/utils/idbCache";
+import { getPriceSeries, getPriceSeriesByProduct, putPriceSeries } from "@/utils/idbCache";
 
 /** The user settings that gate and bound price-history recording. */
 type PriceHistorySettings = Pick<UserSettings, "trackPriceHistory" | "priceHistoryMaxPoints">;

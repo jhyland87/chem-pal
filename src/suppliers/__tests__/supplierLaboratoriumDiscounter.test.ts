@@ -136,7 +136,9 @@ describe("SupplierLaboratoriumDiscounter getProductData methods", () => {
   describe("getProductDataFromJSON", () => {
     it("populates pricing from a valid JSON product response", async () => {
       const supplier = makeSupplier() as unknown as {
-        getProductDataFromJSON: (b: ProductBuilder<Product>) => Promise<ProductBuilder<Product> | void>;
+        getProductDataFromJSON: (
+          b: ProductBuilder<Product>,
+        ) => Promise<ProductBuilder<Product> | void>;
         httpGetJson: (...args: unknown[]) => Promise<unknown>;
       };
       const httpGetJson = vi
@@ -162,7 +164,9 @@ describe("SupplierLaboratoriumDiscounter getProductData methods", () => {
 
     it("does not double-prefix a url that already starts with en/", async () => {
       const supplier = makeSupplier() as unknown as {
-        getProductDataFromJSON: (b: ProductBuilder<Product>) => Promise<ProductBuilder<Product> | void>;
+        getProductDataFromJSON: (
+          b: ProductBuilder<Product>,
+        ) => Promise<ProductBuilder<Product> | void>;
       };
       const httpGetJson = vi
         .spyOn(supplier as never, "httpGetJson")
@@ -177,7 +181,9 @@ describe("SupplierLaboratoriumDiscounter getProductData methods", () => {
 
     it("returns void when the response fails the product typeguard", async () => {
       const supplier = makeSupplier() as unknown as {
-        getProductDataFromJSON: (b: ProductBuilder<Product>) => Promise<ProductBuilder<Product> | void>;
+        getProductDataFromJSON: (
+          b: ProductBuilder<Product>,
+        ) => Promise<ProductBuilder<Product> | void>;
       };
       vi.spyOn(supplier as never, "httpGetJson").mockResolvedValue({
         not: "a product",
@@ -194,7 +200,9 @@ describe("SupplierLaboratoriumDiscounter getProductData methods", () => {
 
     it("returns void when httpGetJson resolves to a falsy value", async () => {
       const supplier = makeSupplier() as unknown as {
-        getProductDataFromJSON: (b: ProductBuilder<Product>) => Promise<ProductBuilder<Product> | void>;
+        getProductDataFromJSON: (
+          b: ProductBuilder<Product>,
+        ) => Promise<ProductBuilder<Product> | void>;
       };
       vi.spyOn(supplier as never, "httpGetJson").mockResolvedValue(undefined as never);
 
@@ -210,7 +218,9 @@ describe("SupplierLaboratoriumDiscounter getProductData methods", () => {
   describe("getProductDataFromHTML", () => {
     it("parses meta tags from the HTML page and applies them to the builder", async () => {
       const supplier = makeSupplier() as unknown as {
-        getProductDataFromHTML: (b: ProductBuilder<Product>) => Promise<ProductBuilder<Product> | void>;
+        getProductDataFromHTML: (
+          b: ProductBuilder<Product>,
+        ) => Promise<ProductBuilder<Product> | void>;
       };
       vi.spyOn(supplier as never, "httpGetHtml").mockResolvedValue(productHTMLFixture as never);
 
@@ -243,7 +253,9 @@ describe("SupplierLaboratoriumDiscounter getProductData methods", () => {
 
     it("prefixes the url with en/ when needed", async () => {
       const supplier = makeSupplier() as unknown as {
-        getProductDataFromHTML: (b: ProductBuilder<Product>) => Promise<ProductBuilder<Product> | void>;
+        getProductDataFromHTML: (
+          b: ProductBuilder<Product>,
+        ) => Promise<ProductBuilder<Product> | void>;
       };
       const httpGetHtml = vi
         .spyOn(supplier as never, "httpGetHtml")
@@ -258,7 +270,9 @@ describe("SupplierLaboratoriumDiscounter getProductData methods", () => {
 
     it("returns void when the HTML fetch returns nothing", async () => {
       const supplier = makeSupplier() as unknown as {
-        getProductDataFromHTML: (b: ProductBuilder<Product>) => Promise<ProductBuilder<Product> | void>;
+        getProductDataFromHTML: (
+          b: ProductBuilder<Product>,
+        ) => Promise<ProductBuilder<Product> | void>;
       };
       vi.spyOn(supplier as never, "httpGetHtml").mockResolvedValue(undefined as never);
 
@@ -275,8 +289,12 @@ describe("SupplierLaboratoriumDiscounter getProductData methods", () => {
     it("uses the JSON path when JSON parsing succeeds and never falls back to HTML", async () => {
       const supplier = makeSupplier() as unknown as {
         getProductData: (b: ProductBuilder<Product>) => Promise<ProductBuilder<Product> | void>;
-        getProductDataFromJSON: (b: ProductBuilder<Product>) => Promise<ProductBuilder<Product> | void>;
-        getProductDataFromHTML: (b: ProductBuilder<Product>) => Promise<ProductBuilder<Product> | void>;
+        getProductDataFromJSON: (
+          b: ProductBuilder<Product>,
+        ) => Promise<ProductBuilder<Product> | void>;
+        getProductDataFromHTML: (
+          b: ProductBuilder<Product>,
+        ) => Promise<ProductBuilder<Product> | void>;
         getProductDataWithCache: (
           b: ProductBuilder<Product>,
           fetcher: (b: ProductBuilder<Product>) => Promise<ProductBuilder<Product> | void>,
@@ -284,10 +302,10 @@ describe("SupplierLaboratoriumDiscounter getProductData methods", () => {
       };
 
       // Bypass cache: just invoke the callback.
-      vi.spyOn(supplier as never, "getProductDataWithCache").mockImplementation(
-        (async (b: ProductBuilder<Product>, fetcher: (b: ProductBuilder<Product>) => Promise<ProductBuilder<Product> | void>) =>
-          fetcher(b)) as never,
-      );
+      vi.spyOn(supplier as never, "getProductDataWithCache").mockImplementation((async (
+        b: ProductBuilder<Product>,
+        fetcher: (b: ProductBuilder<Product>) => Promise<ProductBuilder<Product> | void>,
+      ) => fetcher(b)) as never);
       const fromJsonSpy = vi
         .spyOn(supplier as never, "getProductDataFromJSON")
         .mockImplementation((async (b: ProductBuilder<Product>) => b) as never);
@@ -306,10 +324,10 @@ describe("SupplierLaboratoriumDiscounter getProductData methods", () => {
         getProductData: (b: ProductBuilder<Product>) => Promise<ProductBuilder<Product> | void>;
       };
 
-      vi.spyOn(supplier as never, "getProductDataWithCache").mockImplementation(
-        (async (b: ProductBuilder<Product>, fetcher: (b: ProductBuilder<Product>) => Promise<ProductBuilder<Product> | void>) =>
-          fetcher(b)) as never,
-      );
+      vi.spyOn(supplier as never, "getProductDataWithCache").mockImplementation((async (
+        b: ProductBuilder<Product>,
+        fetcher: (b: ProductBuilder<Product>) => Promise<ProductBuilder<Product> | void>,
+      ) => fetcher(b)) as never);
       const fromJsonSpy = vi
         .spyOn(supplier as never, "getProductDataFromJSON")
         .mockImplementation((async () => undefined) as never);

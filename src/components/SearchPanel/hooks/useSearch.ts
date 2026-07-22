@@ -746,29 +746,34 @@ export function useSearch() {
    * ```
    * @source
    */
-  const excludeProduct = useCallback(async (product: Product) => {
-    if (!product?.url || !product?.supplier) return;
-    let nextResults: Product[] = [];
-    setSearchResults((prev) => {
-      nextResults = prev.filter((p) => !(p.url === product.url && p.supplier === product.supplier));
-      return nextResults;
-    });
-    // setSearchResults re-renders the table, which re-emits the count; no
-    // direct badge update needed here.
-    try {
-      // Key the exclusion by the product's stable identity (same key the
-      // product-detail cache uses); fall back to the URL when unstamped.
-      await addExcludedProduct(product.cacheKey ?? product.url, product.supplier, {
-        title: product.title,
-        url: product.url,
+  const excludeProduct = useCallback(
+    async (product: Product) => {
+      if (!product?.url || !product?.supplier) return;
+      let nextResults: Product[] = [];
+      setSearchResults((prev) => {
+        nextResults = prev.filter(
+          (p) => !(p.url === product.url && p.supplier === product.supplier),
+        );
+        return nextResults;
       });
-    } catch (error) {
-      logger.warn("Failed to persist excluded product:", { error });
-    }
-    // Persist the updated results so a reload doesn't resurrect the row. Keep the
-    // current query so removing a row doesn't drop the header label.
-    await saveResultsToSession(nextResults, executedQuery);
-  }, [executedQuery]);
+      // setSearchResults re-renders the table, which re-emits the count; no
+      // direct badge update needed here.
+      try {
+        // Key the exclusion by the product's stable identity (same key the
+        // product-detail cache uses); fall back to the URL when unstamped.
+        await addExcludedProduct(product.cacheKey ?? product.url, product.supplier, {
+          title: product.title,
+          url: product.url,
+        });
+      } catch (error) {
+        logger.warn("Failed to persist excluded product:", { error });
+      }
+      // Persist the updated results so a reload doesn't resurrect the row. Keep the
+      // current query so removing a row doesn't drop the header label.
+      await saveResultsToSession(nextResults, executedQuery);
+    },
+    [executedQuery],
+  );
 
   const handleStopSearch = useCallback(() => {
     logger.debug("triggering abort..");
