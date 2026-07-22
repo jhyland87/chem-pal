@@ -711,6 +711,33 @@ export function formatBytes(bytes: number): string {
 }
 
 /**
+ * Parse a raw string (typically an input's `value`) into a finite number,
+ * returning `undefined` for empty or malformed input. Uses `Number()` rather
+ * than `parseFloat`, which would silently accept trailing garbage and turn
+ * `"12abc"` into `12`. The empty check is explicit because `Number("")` and
+ * `Number("  ")` are both `0`, not `NaN`.
+ * @category Helpers
+ * @group Parsers
+ * @param raw - The raw string to parse.
+ * @returns The parsed number, or `undefined` when the input is blank or not a
+ *   finite number.
+ * @example
+ * ```ts
+ * toFiniteNumber("12.5");  // => 12.5
+ * toFiniteNumber("12abc"); // => undefined
+ * toFiniteNumber("");      // => undefined
+ * ```
+ * @source
+ */
+export function toFiniteNumber(raw: string): number | undefined {
+  if (raw.trim() === "") {
+    return undefined;
+  }
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : undefined;
+}
+
+/**
  * Resolves a value out of a nested object/array using a key path.
  *
  * Traversal is forgiving: if any segment is `null` or `undefined` (or the

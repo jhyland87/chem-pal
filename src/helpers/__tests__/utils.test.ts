@@ -22,6 +22,7 @@ import {
   serialize,
   sleep,
   stripHTML,
+  toFiniteNumber,
   tryParseJson,
   zodAddActualValueToIssues,
 } from "@/helpers/utils";
@@ -530,5 +531,34 @@ describe("zodAddActualValueToIssues", () => {
     expect(() => zodAddActualValueToIssues([frozen], { a: 1 })).not.toThrow();
     expect(frozen).toEqual(original);
     expect("actual" in frozen).toBe(false);
+  });
+});
+
+describe("toFiniteNumber", () => {
+  it("parses a plain decimal string", () => {
+    expect(toFiniteNumber("12.5")).toBe(12.5);
+  });
+
+  it("parses exponent notation", () => {
+    expect(toFiniteNumber("1e5")).toBe(100000);
+  });
+
+  it("keeps zero, which is a real value rather than an empty one", () => {
+    expect(toFiniteNumber("0")).toBe(0);
+  });
+
+  it("rejects trailing garbage instead of truncating it like parseFloat", () => {
+    expect(toFiniteNumber("12abc")).toBeUndefined();
+  });
+
+  it("returns undefined for blank input", () => {
+    expect(toFiniteNumber("")).toBeUndefined();
+    expect(toFiniteNumber("   ")).toBeUndefined();
+  });
+
+  it("returns undefined for non-finite input", () => {
+    expect(toFiniteNumber("abc")).toBeUndefined();
+    expect(toFiniteNumber("Infinity")).toBeUndefined();
+    expect(toFiniteNumber("NaN")).toBeUndefined();
   });
 });

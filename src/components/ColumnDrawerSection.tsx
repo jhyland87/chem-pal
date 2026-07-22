@@ -1,6 +1,7 @@
 import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
 import { useAppContext } from "@/context";
 import { i18n } from "@/helpers/i18n";
+import { toFiniteNumber } from "@/helpers/utils";
 import { SupplierFactory } from "@/suppliers/SupplierFactory";
 import { ExpandMore as ExpandMoreIcon } from "@mui/icons-material";
 import {
@@ -356,10 +357,8 @@ export default function ColumnDrawerSection({
         : undefined;
 
     const handleNumberChange = (key: keyof UserSettings) => (e: ChangeEvent<HTMLInputElement>) => {
-      setUserSettings({
-        ...userSettings,
-        [key]: e.target.value ? parseFloat(e.target.value) : undefined,
-      });
+      // Blank or malformed input clears the bound setting rather than storing NaN.
+      setUserSettings({ ...userSettings, [key]: toFiniteNumber(e.target.value) });
     };
 
     return (
