@@ -1,11 +1,12 @@
 import { SupplierBaseShopify } from "./SupplierBaseShopify";
 
 /**
- * SupplierGoldAndSilverTesting class that extends SupplierBaseShopify.
+ * SupplierBVV class that extends SupplierBaseShopify.
  *
  * @remarks
- * Gold and Silver Testing sells precious metal testing kits, acids, and supplies.
- * Uses the Shopify GraphQL Storefront API via their myshopify.com domain.
+ * BVV (Best Value Vacs) sells vacuum and extraction equipment, along with related lab
+ * supplies and solvents. Uses the Shopify GraphQL Storefront API via their myshopify.com
+ * domain.
  *
  * @category Suppliers
  * @source

@@ -16,7 +16,7 @@ import { SupplierBase } from "./SupplierBase";
  *
  * @example
  * ```typescript
- * const supplier = new SupplierWachem("sodium chloride", 10, new AbortController());
+ * const supplier = new SupplierWarchem("sodium chloride", 10, new AbortController());
  * for await (const product of supplier) {
  *   console.log("Found product:", product.title, product.price);
  * }
@@ -110,7 +110,7 @@ export class SupplierWarchem extends SupplierBase<Partial<Product>, Product> imp
    *
    * @example
    * ```typescript
-   * const supplier = new SupplierWachem("acetone", 10, new AbortController());
+   * const supplier = new SupplierWarchem("acetone", 10, new AbortController());
    * const results = await supplier.queryProducts("acetone");
    * if (results) {
    *   console.log(`Found ${results.length} products`);
