@@ -1,8 +1,4 @@
 {
   "trailingComma": "all",
-  "printWidth": 100,
-  "organizeImports": true,
-  "organizeImportsSkipDestructiveCodeActions": true,
-  "organizeImportsStyle": "alphabetical",
-  "formatOnSave": true
+  "printWidth": 100
 }

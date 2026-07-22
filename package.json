@@ -45,6 +45,8 @@
     "dev": "pnpm run generate-logo-files && vite",
     "dev-mock": "vite --mode=mock",
     "type-check": "tsc -b",
+    "format": "prettier --write \"**/*.{ts,tsx}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx}\"",
     "build": "vite build --mode=development",
     "build:analyze": "vite build --mode=analyze",
     "build:analyze:prod": "NODE_ENV=production vite build --mode=analyze-prod",
