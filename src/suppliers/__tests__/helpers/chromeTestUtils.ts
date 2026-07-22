@@ -1,5 +1,5 @@
-import "@/types/chromeStorage";
-import { vi } from "vitest";
+import '@/types/chromeStorage';
+import { vi } from 'vitest';
 
 /**
  * Creates a mock Chrome storage object with spy functions for testing.
@@ -60,7 +60,7 @@ export const createChromeMock = () => {
 export const setupChromeMock = () => {
   const mockChrome = createChromeMock();
   //Object.assign(global, { chrome: mockChrome });
-  vi.stubGlobal("chrome", mockChrome);
+  vi.stubGlobal('chrome', mockChrome);
   return mockChrome;
 };
 

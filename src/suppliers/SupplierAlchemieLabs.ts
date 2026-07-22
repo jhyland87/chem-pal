@@ -1,4 +1,4 @@
-import { SupplierBaseWoocommerce } from "./SupplierBaseWoocommerce";
+import { SupplierBaseWoocommerce } from './SupplierBaseWoocommerce';
 
 /**
  * Supplier class for Alchemie Labs, a chemical supplier using the WooCommerce platform.
@@ -35,20 +35,20 @@ export class SupplierAlchemieLabs extends SupplierBaseWoocommerce implements ISu
    * ```
    * @source
    */
-  public readonly supplierName: string = "Alchemie Labs";
+  public readonly supplierName: string = 'Alchemie Labs';
 
   // The base URL for the supplier's website.
-  public readonly baseURL: string = "https://alchemielabs.com";
+  public readonly baseURL: string = 'https://alchemielabs.com';
 
   // Shipping scope for Alchemie Labs
-  public readonly shipping: ShippingRange = "domestic";
+  public readonly shipping: ShippingRange = 'domestic';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = "US";
+  public readonly country: CountryCode = 'US';
 
   protected readonly minMatchPercentage: number = 50;
   //protected readonly fuzzScorer: FuzzScorerFn = WRatio;
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 }

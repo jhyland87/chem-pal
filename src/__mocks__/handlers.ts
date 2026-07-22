@@ -1,6 +1,6 @@
-import { getRequestHash } from "@/helpers/request";
-import { deserialize } from "@/helpers/utils";
-import { DefaultBodyType, delay, http, HttpResponse, HttpResponseResolver, PathParams } from "msw";
+import { getRequestHash } from '@/helpers/request';
+import { deserialize } from '@/helpers/utils';
+import { DefaultBodyType, delay, http, HttpResponse, HttpResponseResolver, PathParams } from 'msw';
 // src/__mocks__/handlers.js
 
 function withDelay<
@@ -20,19 +20,19 @@ function withDelay<
 }
 
 const mockHeaders = {
-  headers: new Headers([["ismockedresponse", "true"]]),
+  headers: new Headers([['ismockedresponse', 'true']]),
 };
 
 export const handlers = [
   http.get<never, never, AccessTokenResponse>(
-    "https://*/_api/v1/access-tokens",
+    'https://*/_api/v1/access-tokens',
     withDelay(150, async () => {
-      const response = await import("./responses/wix/access-tokens.json");
+      const response = await import('./responses/wix/access-tokens.json');
       return HttpResponse.json(response, mockHeaders);
     }),
   ),
   http.get<PathParams, DefaultBodyType, DefaultBodyType>(
-    "https://*/*",
+    'https://*/*',
     withDelay(150, async ({ request }) => {
       const reqHash = getRequestHash(request) as RequestHashObject;
 
@@ -43,13 +43,13 @@ export const handlers = [
       //
       // Thus, just like how the python request_cache library works, ill be storing and referencing the files by their hash instead of the filename.
 
-      console.debug("Looking for cached response at:", `./responses/${reqHash.file}`);
+      console.debug('Looking for cached response at:', `./responses/${reqHash.file}`);
       const cachedData = await import(/* @vite-ignore */ `./responses/${reqHash.file}`);
 
-      console.debug("HANDLER cachedData:", cachedData);
+      console.debug('HANDLER cachedData:', cachedData);
 
       //decodeURIComponent(_d(cachedData.content));
-      if (cachedData.contentType.includes("json")) {
+      if (cachedData.contentType.includes('json')) {
         return HttpResponse.json(
           JSON.parse(
             //decodeURIComponent(_d(cachedData.content))
@@ -66,7 +66,7 @@ export const handlers = [
     }),
   ),
   http.post<PathParams, DefaultBodyType, DefaultBodyType>(
-    "https://*/*",
+    'https://*/*',
     withDelay(150, async ({ request }) => {
       const reqHash = getRequestHash(request) as RequestHashObject;
 
@@ -77,13 +77,13 @@ export const handlers = [
       //
       // Thus, just like how the python request_cache library works, ill be storing and referencing the files by their hash instead of the filename.
 
-      console.debug("Looking for cached response at:", `./responses/${reqHash.file}`);
+      console.debug('Looking for cached response at:', `./responses/${reqHash.file}`);
       const cachedData = await import(/* @vite-ignore */ `./responses/${reqHash.file}`);
 
-      console.debug("HANDLER cachedData:", cachedData);
+      console.debug('HANDLER cachedData:', cachedData);
 
       //decodeURIComponent(_d(cachedData.content));
-      if (cachedData.contentType.includes("json")) {
+      if (cachedData.contentType.includes('json')) {
         return HttpResponse.json(
           JSON.parse(
             //decodeURIComponent(_d(cachedData.content))

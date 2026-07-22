@@ -1,20 +1,20 @@
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { SupplierBase } from "../SupplierBase";
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { SupplierBase } from '../SupplierBase';
 
 class TimeoutTestSupplier extends SupplierBase<unknown, Product> {
-  public readonly supplierName = "TimeoutTestSupplier";
-  public readonly baseURL = "https://example.invalid";
-  public readonly shipping = "worldwide" as ShippingRange;
-  public readonly country = "US" as CountryCode;
+  public readonly supplierName = 'TimeoutTestSupplier';
+  public readonly baseURL = 'https://example.invalid';
+  public readonly shipping = 'worldwide' as ShippingRange;
+  public readonly country = 'US' as CountryCode;
   public readonly paymentMethods = [] as PaymentMethod[];
 
   protected titleSelector(): Maybe<string> {
-    return "";
+    return '';
   }
 
   protected getUniqueProductKey(data: unknown): string {
-    return String((data as { id?: unknown })?.id ?? "");
+    return String((data as { id?: unknown })?.id ?? '');
   }
 
   protected async queryProducts(): Promise<ProductBuilder<Product>[] | void> {
@@ -37,7 +37,7 @@ class TimeoutTestSupplier extends SupplierBase<unknown, Product> {
   }
 }
 
-describe("SupplierBase search-time budget", () => {
+describe('SupplierBase search-time budget', () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -46,10 +46,10 @@ describe("SupplierBase search-time budget", () => {
     vi.useRealTimers();
   });
 
-  it("treats maxAllowableSearchTimeSec as seconds, not milliseconds", async () => {
-    const supplier = new TimeoutTestSupplier("potassium", 5, new AbortController());
+  it('treats maxAllowableSearchTimeSec as seconds, not milliseconds', async () => {
+    const supplier = new TimeoutTestSupplier('potassium', 5, new AbortController());
     supplier.setMaxAllowableSearchTimeSec(2);
-    const sentinel = Symbol("searchTimeout");
+    const sentinel = Symbol('searchTimeout');
 
     const { promise } = supplier.callArmSearchTimeout(sentinel);
     expect(promise).toBeDefined();
@@ -63,10 +63,10 @@ describe("SupplierBase search-time budget", () => {
     await expect(promise).resolves.toBe(sentinel);
   });
 
-  it("stays disarmed when the budget is zero", () => {
-    const supplier = new TimeoutTestSupplier("potassium", 5, new AbortController());
+  it('stays disarmed when the budget is zero', () => {
+    const supplier = new TimeoutTestSupplier('potassium', 5, new AbortController());
     supplier.setMaxAllowableSearchTimeSec(0);
 
-    expect(supplier.callArmSearchTimeout(Symbol("searchTimeout")).promise).toBeUndefined();
+    expect(supplier.callArmSearchTimeout(Symbol('searchTimeout')).promise).toBeUndefined();
   });
 });

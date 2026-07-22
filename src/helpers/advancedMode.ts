@@ -10,8 +10,8 @@
 
 /** Bundled chimes for entering and leaving advanced mode. */
 const ADVANCED_MODE_SOUNDS = {
-  on: "/static/sounds/power-up.mp3",
-  off: "/static/sounds/power-down.mp3",
+  on: '/static/sounds/power-up.mp3',
+  off: '/static/sounds/power-down.mp3',
 } as const;
 
 /** Playback volume for the chimes — half, so they're noticeable but not startling. */
@@ -37,6 +37,6 @@ export async function playAdvancedModeSound(enabled: boolean): Promise<void> {
     audio.volume = VOLUME;
     await audio.play();
   } catch (error) {
-    console.warn("Failed to play the advanced-mode sound", { error });
+    console.warn('Failed to play the advanced-mode sound', { error });
   }
 }

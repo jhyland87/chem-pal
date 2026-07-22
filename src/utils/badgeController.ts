@@ -1,7 +1,7 @@
-import { SearchEvent, onSearchEvent } from "@/events/searchEvents";
-import { BadgeAnimator } from "@/utils/BadgeAnimator";
-import { IDB_SEARCH_RESULTS_CLEARED } from "@/utils/idbCache";
-import { useEffect } from "react";
+import { SearchEvent, onSearchEvent } from '@/events/searchEvents';
+import { BadgeAnimator } from '@/utils/BadgeAnimator';
+import { IDB_SEARCH_RESULTS_CLEARED } from '@/utils/idbCache';
+import { useEffect } from 'react';
 
 /**
  * The single place that decides what the extension toolbar badge shows and when.
@@ -54,9 +54,9 @@ export type BadgeEvent =
  * @category Utils
  */
 export type BadgeOutput =
-  | { kind: "animate" } // show the "Searching…" ellipsis
-  | { kind: "text"; value: string } // pin a result count
-  | { kind: "clear" }; // empty the badge
+  | { kind: 'animate' } // show the "Searching…" ellipsis
+  | { kind: 'text'; value: string } // pin a result count
+  | { kind: 'clear' }; // empty the badge
 /**
  * Pure reducer: given the previous {@link BadgeState} and an event, returns the
  * next state and the resulting {@link BadgeOutput}. No side effects, so it can be
@@ -86,7 +86,7 @@ export function reduceBadge(
   switch (event.type) {
     case SearchEvent.STARTED: {
       const next = { isSearching: true, count: 0 };
-      return { state: next, output: { kind: "animate" } };
+      return { state: next, output: { kind: 'animate' } };
     }
     case SearchEvent.RESULTS_COUNT: {
       const next = { ...state, count: event.count };
@@ -100,7 +100,7 @@ export function reduceBadge(
     case SearchEvent.FAILED:
     case IDB_SEARCH_RESULTS_CLEARED: {
       const next = { isSearching: false, count: 0 };
-      return { state: next, output: { kind: "clear" } };
+      return { state: next, output: { kind: 'clear' } };
     }
     default:
       return { state, output: render(state) };
@@ -112,9 +112,9 @@ export function reduceBadge(
  * number, zero-while-searching keeps the ellipsis, and zero-when-idle clears.
  */
 function render(state: BadgeState): BadgeOutput {
-  if (state.count > 0) return { kind: "text", value: String(state.count) };
-  if (state.isSearching) return { kind: "animate" };
-  return { kind: "clear" };
+  if (state.count > 0) return { kind: 'text', value: String(state.count) };
+  if (state.isSearching) return { kind: 'animate' };
+  return { kind: 'clear' };
 }
 
 /**
@@ -134,7 +134,7 @@ function render(state: BadgeState): BadgeOutput {
  */
 export function isSameBadgeOutput(a: BadgeOutput | null, b: BadgeOutput): boolean {
   if (a === null || a.kind !== b.kind) return false;
-  if (a.kind === "text" && b.kind === "text") return a.value === b.value;
+  if (a.kind === 'text' && b.kind === 'text') return a.value === b.value;
   return true;
 }
 
@@ -163,11 +163,11 @@ export function isSameBadgeOutput(a: BadgeOutput | null, b: BadgeOutput): boolea
  */
 export function shouldApplyToBadge(current: string, output: BadgeOutput): boolean {
   switch (output.kind) {
-    case "text":
+    case 'text':
       return current !== output.value;
-    case "clear":
-      return current !== "";
-    case "animate":
+    case 'clear':
+      return current !== '';
+    case 'animate':
       return true;
   }
 }
@@ -177,23 +177,23 @@ export function shouldApplyToBadge(current: string, output: BadgeOutput): boolea
  * what's shown. Async because `chrome.action.getBadgeText` is promise-based.
  */
 async function applyBadgeOutput(output: BadgeOutput): Promise<void> {
-  let current = "";
+  let current = '';
   try {
     current = await chrome.action.getBadgeText({});
   } catch (error) {
-    console.warn("Failed to read current badge text:", { error });
+    console.warn('Failed to read current badge text:', { error });
   }
 
   if (!shouldApplyToBadge(current, output)) return;
 
   switch (output.kind) {
-    case "animate":
-      BadgeAnimator.animate("ellipsis", 300);
+    case 'animate':
+      BadgeAnimator.animate('ellipsis', 300);
       break;
-    case "text":
+    case 'text':
       BadgeAnimator.setText(output.value);
       break;
-    case "clear":
+    case 'clear':
       BadgeAnimator.clear();
       break;
   }

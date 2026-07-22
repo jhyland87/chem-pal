@@ -1,10 +1,10 @@
-import { i18n } from "@/helpers/i18n";
-import { BenzeneBlueIcon } from "@/icons";
-import Backdrop from "@mui/material/Backdrop";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import IconSpinner from "./IconSpinner";
-import styles from "./LoadingBackdrop.module.scss";
+import { i18n } from '@/helpers/i18n';
+import { BenzeneBlueIcon } from '@/icons';
+import Backdrop from '@mui/material/Backdrop';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import IconSpinner from './IconSpinner';
+import styles from './LoadingBackdrop.module.scss';
 
 /**
  * Format the results/loading text based on the abort state and number of
@@ -14,21 +14,21 @@ import styles from "./LoadingBackdrop.module.scss";
  */
 function formatResultsText(props: LoadingBackdropProps): string {
   if (props.isAborting) {
-    return i18n("loading_aborting");
+    return i18n('loading_aborting');
   }
   if (!props.resultCount) {
-    return i18n("loading_loading");
+    return i18n('loading_loading');
   }
   if (props.resultCount === 1) {
-    return i18n("loading_found_single", [String(props.resultCount)]);
+    return i18n('loading_found_single', [String(props.resultCount)]);
   }
   if (props.supplierResultsCount === 1) {
-    return i18n("loading_found_one_supplier", [
+    return i18n('loading_found_one_supplier', [
       String(props.resultCount),
       String(props.supplierResultsCount),
     ]);
   }
-  return i18n("loading_found_many_suppliers", [
+  return i18n('loading_found_many_suppliers', [
     String(props.resultCount),
     String(props.supplierResultsCount),
   ]);
@@ -63,21 +63,21 @@ export default function LoadingBackdrop(props: LoadingBackdropProps) {
         open={props.open}
         id="loading-backdrop"
         role="status"
-        aria-label={i18n("loading_aria")}
+        aria-label={i18n('loading_aria')}
       >
-        <Box className={styles["loading-backdrop-box"]}>
-          <Box className={styles["spinner-box"]}>
+        <Box className={styles['loading-backdrop-box']}>
+          <Box className={styles['spinner-box']}>
             <IconSpinner>
               <BenzeneBlueIcon sx={{ width: 80, height: 80 }} />
             </IconSpinner>
           </Box>
-          <span className={styles["status-text"]}>{formatResultsText(props)}</span>
+          <span className={styles['status-text']}>{formatResultsText(props)}</span>
           <Button
-            className={styles["abort-button"]}
+            className={styles['abort-button']}
             onClick={props.onClick}
             disabled={props.isAborting}
           >
-            {i18n("loading_cancel")}
+            {i18n('loading_cancel')}
           </Button>
         </Box>
       </Backdrop>

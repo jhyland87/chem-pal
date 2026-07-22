@@ -1,4 +1,4 @@
-import { ColumnDef, ColumnFiltersState, OnChangeFn, Row } from "@tanstack/react-table";
+import { ColumnDef, ColumnFiltersState, OnChangeFn, Row } from '@tanstack/react-table';
 
 declare global {
   /**

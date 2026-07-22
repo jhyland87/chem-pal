@@ -1,7 +1,7 @@
-import { SelectChangeEvent } from "@mui/material/Select";
-import type { Table } from "@tanstack/react-table";
-import { useCallback, useState, SyntheticEvent } from "react";
-import { useAppContext } from "./hooks/useContext";
+import { SelectChangeEvent } from '@mui/material/Select';
+import type { Table } from '@tanstack/react-table';
+import { useCallback, useState, SyntheticEvent } from 'react';
+import { useAppContext } from './hooks/useContext';
 
 /**
  * Hook to manage filter menu state including drawer, tabs, suppliers, and column visibility.
@@ -44,7 +44,7 @@ export function useFilterMenu(table?: Table<Product>) {
   const [activeTab, setActiveTab] = useState(0);
 
   // Accordion state for filters
-  const [expanded, setExpanded] = useState<string | false>("");
+  const [expanded, setExpanded] = useState<string | false>('');
 
   // Supplier selection state - use context instead of local state.
   // `selectedSuppliers` is optional in AppContextProps; coalesce so the hook
@@ -110,11 +110,11 @@ export function useFilterMenu(table?: Table<Product>) {
       const {
         target: { value },
       } = event;
-      const newColumnVisibility = typeof value === "string" ? value.split(",") : value;
+      const newColumnVisibility = typeof value === 'string' ? value.split(',') : value;
       setColumnVisibility(newColumnVisibility);
 
       table?.getAllColumns().forEach((column) => {
-        if (typeof column === "undefined") return;
+        if (typeof column === 'undefined') return;
         column.setColumnVisibility?.(
           !column.getCanHide() || newColumnVisibility.includes(column.id),
         );

@@ -1,4 +1,4 @@
-import type { SearchAst } from "../types";
+import type { SearchAst } from '../types';
 
 /**
  * Translates a {@link SearchAst} into FreeFind's refined-search syntax (the
@@ -20,13 +20,13 @@ import type { SearchAst } from "../types";
  */
 export function translateAstToFreefind(ast: SearchAst): string {
   switch (ast.type) {
-    case "term":
+    case 'term':
       return `(${ast.value})`;
-    case "and":
+    case 'and':
       return `${translateAstToFreefind(ast.left)} AND ${translateAstToFreefind(ast.right)}`;
-    case "or":
+    case 'or':
       return `${translateAstToFreefind(ast.left)} OR ${translateAstToFreefind(ast.right)}`;
-    case "not":
+    case 'not':
       return `NOT ${translateAstToFreefind(ast.operand)}`;
   }
 }

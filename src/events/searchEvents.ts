@@ -24,15 +24,15 @@
  */
 export enum SearchEvent {
   /** A search has started; the loading animation should begin. */
-  STARTED = "chempal:search-started",
+  STARTED = 'chempal:search-started',
   /** The current visible/filtered result count changed (streaming, filtering, exclusion). */
-  RESULTS_COUNT = "chempal:search-results-count",
+  RESULTS_COUNT = 'chempal:search-results-count',
   /** A search finished (successfully or with zero results). */
-  COMPLETED = "chempal:search-completed",
+  COMPLETED = 'chempal:search-completed',
   /** A search was aborted by the user. */
-  ABORTED = "chempal:search-aborted",
+  ABORTED = 'chempal:search-aborted',
   /** A search failed with an error. */
-  FAILED = "chempal:search-failed",
+  FAILED = 'chempal:search-failed',
 }
 
 /**

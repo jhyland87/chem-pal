@@ -1,4 +1,4 @@
-import { SupplierBaseAmazon } from "./SupplierBaseAmazon";
+import { SupplierBaseAmazon } from './SupplierBaseAmazon';
 /* @hideconstructor */
 /* @hideden */
 /**
@@ -13,28 +13,28 @@ import { SupplierBaseAmazon } from "./SupplierBaseAmazon";
  */
 export class SupplierAkmekem extends SupplierBaseAmazon implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = "Akmekem";
+  public readonly supplierName: string = 'Akmekem';
 
   // Shipping scope for HbarSci
-  public readonly shipping: ShippingRange = "international";
+  public readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = "CN";
+  public readonly country: CountryCode = 'CN';
 
   // Prefix to add to the query (ie: brand name or seller name)
-  protected readonly queryPrefix: string = "akmekem";
+  protected readonly queryPrefix: string = 'akmekem';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   // Pure-search supplier: the initial search returns every field and
   // getProductData is a passthrough, so there's no per-product detail to cache.
   protected readonly skipProductDetailCache: boolean = true;
 
   // Terms found in the listing
-  protected termsFoundInListing: string[] = ["macklin", "akmekem"];
+  protected termsFoundInListing: string[] = ['macklin', 'akmekem'];
 
   // Extra parameters to add to the query. THis should select Akmekem as the "Seller" in the search.
   //protected extraParams: string = "rh=n:21585100011,p_6:A2U29M5MZ6QCNA";
-  protected extraParams: string = "me=A2U29M5MZ6QCNA";
+  protected extraParams: string = 'me=A2U29M5MZ6QCNA';
 }

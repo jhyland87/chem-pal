@@ -1,5 +1,5 @@
-import { Table } from "@tanstack/react-table";
-import { useEffect, useRef } from "react";
+import { Table } from '@tanstack/react-table';
+import { useEffect, useRef } from 'react';
 
 /**
  * Hook to manage automatic column sizing for TanStack Table.
@@ -30,8 +30,8 @@ export function useAutoColumnSizing(table: Table<Product>, data: Product[]) {
   useEffect(() => {
     if (!measureRef.current || !data.length) return;
 
-    const headerCells = measureRef.current.querySelectorAll("th");
-    const bodyRows = measureRef.current.querySelectorAll("tbody tr");
+    const headerCells = measureRef.current.querySelectorAll('th');
+    const bodyRows = measureRef.current.querySelectorAll('tbody tr');
 
     const colWidths: Record<string, number> = {};
 
@@ -44,7 +44,7 @@ export function useAutoColumnSizing(table: Table<Product>, data: Product[]) {
 
     // Measure body cells
     bodyRows.forEach((tr) => {
-      tr.querySelectorAll("td").forEach((td, idx) => {
+      tr.querySelectorAll('td').forEach((td, idx) => {
         const colId = table.getAllLeafColumns()[idx]?.id;
         if (!colId) return;
         colWidths[colId] = Math.max(colWidths[colId] || 0, td.scrollWidth + 20);
@@ -71,11 +71,11 @@ export function useAutoColumnSizing(table: Table<Product>, data: Product[]) {
     getMeasurementTableProps: () => ({
       ref: measureRef,
       style: {
-        visibility: "hidden" as const,
-        position: "absolute" as const,
-        pointerEvents: "none" as const,
+        visibility: 'hidden' as const,
+        position: 'absolute' as const,
+        pointerEvents: 'none' as const,
         height: 0,
-        overflow: "hidden" as const,
+        overflow: 'hidden' as const,
         zIndex: -1,
       },
     }),

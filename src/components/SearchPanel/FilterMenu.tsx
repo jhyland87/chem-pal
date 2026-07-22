@@ -1,17 +1,17 @@
-import ArrowForwardIosSharpIcon from "@/icons/ArrowDropDownIcon";
-import SearchIcon from "@/icons/SearchIcon";
-import { SupplierFactory } from "@/suppliers/SupplierFactory";
-import ManageSearchIcon from "@mui/icons-material/ManageSearch";
-import Box from "@mui/material/Box";
-import Checkbox from "@mui/material/Checkbox";
-import FormControl from "@mui/material/FormControl";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
-import type { SelectChangeEvent } from "@mui/material/Select";
-import Typography from "@mui/material/Typography";
-import type { Table } from "@tanstack/react-table";
+import ArrowForwardIosSharpIcon from '@/icons/ArrowDropDownIcon';
+import SearchIcon from '@/icons/SearchIcon';
+import { SupplierFactory } from '@/suppliers/SupplierFactory';
+import ManageSearchIcon from '@mui/icons-material/ManageSearch';
+import Box from '@mui/material/Box';
+import Checkbox from '@mui/material/Checkbox';
+import FormControl from '@mui/material/FormControl';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import type { SelectChangeEvent } from '@mui/material/Select';
+import Typography from '@mui/material/Typography';
+import type { Table } from '@tanstack/react-table';
 import {
   forwardRef,
   Ref,
@@ -19,7 +19,7 @@ import {
   useState,
   type ComponentType,
   type SyntheticEvent,
-} from "react";
+} from 'react';
 import {
   FilterListItemIcon,
   FilterMenuAccordion,
@@ -32,13 +32,13 @@ import {
   FilterMenuInput,
   FilterMenuInputAdornment,
   FilterMenuTabContent,
-} from "../Styles";
-import { useAppContext } from "./hooks/useContext";
-import ColumnVisibilitySelect from "./Inputs/ColumnVisibilitySelect";
-import RangeColumnFilter from "./Inputs/RangeColumnFilter";
-import SelectColumnFilter from "./Inputs/SelectColumnFilter";
-import TextColumnFilter from "./Inputs/TextColumnFilter";
-import styles from "./FilterMenu.module.scss";
+} from '../Styles';
+import { useAppContext } from './hooks/useContext';
+import ColumnVisibilitySelect from './Inputs/ColumnVisibilitySelect';
+import RangeColumnFilter from './Inputs/RangeColumnFilter';
+import SelectColumnFilter from './Inputs/SelectColumnFilter';
+import TextColumnFilter from './Inputs/TextColumnFilter';
+import styles from './FilterMenu.module.scss';
 
 type FilterMenuRef = {
   toggleDrawer: (open: boolean) => void;
@@ -68,7 +68,7 @@ const filterComponentMap: Record<string, ComponentType<FilterVariantInputProps>>
  * @source
  */
 function FilterVariantComponent({ column }: FilterVariantComponentProps) {
-  const ComponentToRender = filterComponentMap[column.columnDef?.meta?.filterVariant ?? "text"];
+  const ComponentToRender = filterComponentMap[column.columnDef?.meta?.filterVariant ?? 'text'];
   if (!ComponentToRender)
     return <div>Filter Component not found: {column.columnDef?.meta?.filterVariant}</div>;
   return <ComponentToRender column={column} />;
@@ -95,7 +95,7 @@ function TabPanel(props: TabPanelProps) {
       style={style}
       {...other}
     >
-      {value === index && <Box className={styles["filter-menu__tab-panel-box"]}>{children}</Box>}
+      {value === index && <Box className={styles['filter-menu__tab-panel-box']}>{children}</Box>}
     </div>
   );
 }
@@ -136,7 +136,7 @@ function SupplierSelection() {
   return (
     <FormControl component="fieldset" variant="standard">
       {/*<FormLabel component="legend">Supplier Selection</FormLabel>*/}
-      <List className={styles["filter-menu__supplier-list"]}>
+      <List className={styles['filter-menu__supplier-list']}>
         {SupplierFactory.supplierList()
           .filter((supplierName) => !disabledSuppliers.includes(supplierName))
           .map((supplierName) => {
@@ -145,7 +145,7 @@ function SupplierSelection() {
             return (
               <ListItem key={supplierName} disablePadding>
                 <ListItemButton
-                  className={styles["filter-menu__supplier-list-item-btn"]}
+                  className={styles['filter-menu__supplier-list-item-btn']}
                   role={undefined}
                   onClick={() => handleSupplierSelect(supplierName)}
                   dense
@@ -154,14 +154,14 @@ function SupplierSelection() {
                     <Checkbox
                       size="small"
                       edge="start"
-                      className={styles["filter-menu__supplier-checkbox"]}
+                      className={styles['filter-menu__supplier-checkbox']}
                       checked={selectedSuppliers.includes(supplierName)}
                       tabIndex={-1}
                       disableRipple
-                      slotProps={{ input: { "aria-labelledby": labelId } }}
+                      slotProps={{ input: { 'aria-labelledby': labelId } }}
                     />
                   </FilterListItemIcon>
-                  <ListItemText id={labelId} primary={`${supplierName.replace("Supplier", "")}`} />
+                  <ListItemText id={labelId} primary={`${supplierName.replace('Supplier', '')}`} />
                 </ListItemButton>
               </ListItem>
             );
@@ -180,8 +180,8 @@ function SupplierSelection() {
  * @source
  */
 function SearchResultFilters({ table }: { table: Table<Product> }) {
-  console.log("SearchResultFilters table:", table);
-  const [expanded, setExpanded] = useState<string | false>("");
+  console.log('SearchResultFilters table:', table);
+  const [expanded, setExpanded] = useState<string | false>('');
 
   /**
    * Gets the list of currently visible column IDs.
@@ -207,11 +207,11 @@ function SearchResultFilters({ table }: { table: Table<Product> }) {
     const {
       target: { value },
     } = event;
-    const newColumnVisibility = typeof value === "string" ? value.split(",") : value;
+    const newColumnVisibility = typeof value === 'string' ? value.split(',') : value;
     setColumnVisibility(newColumnVisibility);
 
     table.getAllColumns().forEach((column: CustomColumn<Product, unknown>) => {
-      if (typeof column === "undefined") return;
+      if (typeof column === 'undefined') return;
       column.setColumnVisibility?.(!column.getCanHide() || newColumnVisibility.includes(column.id));
     });
   };
@@ -224,10 +224,10 @@ function SearchResultFilters({ table }: { table: Table<Product> }) {
   const columnNames = table
     .getAllColumns()
     .reduce((accu: Record<string, string>, col: CustomColumn<Product, unknown>) => {
-      if (col.getCanFilter()) accu[col.id] = col?.getHeaderText?.() ?? "";
+      if (col.getCanFilter()) accu[col.id] = col?.getHeaderText?.() ?? '';
       return accu;
     }, {});
-  console.log("column data:", { columnStatus, columnNames });
+  console.log('column data:', { columnStatus, columnNames });
 
   const handleChange = (panel: string) => (event: SyntheticEvent, newExpanded: boolean) => {
     setExpanded(newExpanded ? panel : false);
@@ -235,7 +235,7 @@ function SearchResultFilters({ table }: { table: Table<Product> }) {
 
   return (
     <div>
-      <FormControl variant="standard" className={styles["filter-menu__search-form-control"]}>
+      <FormControl variant="standard" className={styles['filter-menu__search-form-control']}>
         <FilterMenuInput
           id="input-with-icon-adornment"
           placeholder="Filter results table.."
@@ -248,8 +248,8 @@ function SearchResultFilters({ table }: { table: Table<Product> }) {
         />
       </FormControl>
       <FilterMenuAccordion
-        expanded={expanded === "column-visibility"}
-        onChange={handleChange("column-visibility")}
+        expanded={expanded === 'column-visibility'}
+        onChange={handleChange('column-visibility')}
         disableGutters
         elevation={0}
         square
@@ -258,13 +258,13 @@ function SearchResultFilters({ table }: { table: Table<Product> }) {
           aria-controls="panel1d-content"
           id="panel1d-header"
           expandIcon={
-            <ArrowForwardIosSharpIcon className={styles["filter-menu__accordion-icon"]} />
+            <ArrowForwardIosSharpIcon className={styles['filter-menu__accordion-icon']} />
           }
         >
           <Typography component="span">Column Visibility</Typography>
         </FilterMenuAccordionSummary>
         <FilterMenuAccordionDetails>
-          <Box sx={{ padding: "5px" }}>
+          <Box sx={{ padding: '5px' }}>
             <ColumnVisibilitySelect
               columnNames={columnNames}
               columnVisibility={columnVisibility}
@@ -288,13 +288,13 @@ function SearchResultFilters({ table }: { table: Table<Product> }) {
               aria-controls="panel1d-content"
               id="panel1d-header"
               expandIcon={
-                <ArrowForwardIosSharpIcon className={styles["filter-menu__accordion-icon"]} />
+                <ArrowForwardIosSharpIcon className={styles['filter-menu__accordion-icon']} />
               }
             >
               <Typography component="span">{columnNames[column.id]}</Typography>
             </FilterMenuAccordionSummary>
             <FilterMenuAccordionDetails>
-              <Box className={styles["filter-menu__accordion-content"]}>
+              <Box className={styles['filter-menu__accordion-content']}>
                 <FilterVariantComponent column={column} />
               </Box>
             </FilterMenuAccordionDetails>
@@ -315,7 +315,7 @@ function SearchResultFilters({ table }: { table: Table<Product> }) {
  */
 function FilterMenu(props: { table: Table<Product> }, ref: Ref<FilterMenuRef>) {
   const { table } = props;
-  console.log("FilterMenu props:", table);
+  console.log('FilterMenu props:', table);
   const [drawerState, setDrawerState] = useState(false);
   const [activeTab, setActiveTab] = useState<number | false>(false);
 
@@ -370,13 +370,13 @@ function FilterMenu(props: { table: Table<Product> }, ref: Ref<FilterMenuRef>) {
         <FilterMenuDrawerTriggers>
           <FilterMenuDrawerTrigger
             onClick={() => handleTabClick(0)}
-            className={activeTab === 0 ? "active" : ""}
+            className={activeTab === 0 ? 'active' : ''}
           >
             <ManageSearchIcon />
           </FilterMenuDrawerTrigger>
           <FilterMenuDrawerTrigger
             onClick={() => handleTabClick(1)}
-            className={activeTab === 1 ? "active" : ""}
+            className={activeTab === 1 ? 'active' : ''}
           >
             <SearchIcon />
           </FilterMenuDrawerTrigger>

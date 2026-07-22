@@ -1,21 +1,21 @@
-import { getCountryName } from "@/helpers/country";
-import { i18n } from "@/helpers/i18n";
-import { formatDisplayPrice } from "@/helpers/price";
-import { availabilityLabel, shippingLabel } from "@/helpers/productLabels";
-import { formatUomForDisplay } from "@/helpers/quantity";
-import type ExcelJS from "exceljs";
+import { getCountryName } from '@/helpers/country';
+import { i18n } from '@/helpers/i18n';
+import { formatDisplayPrice } from '@/helpers/price';
+import { availabilityLabel, shippingLabel } from '@/helpers/productLabels';
+import { formatUomForDisplay } from '@/helpers/quantity';
+import type ExcelJS from 'exceljs';
 
 /**
  * MIME type for the OOXML spreadsheet (`.xlsx`) format, used when wrapping the
  * generated workbook buffer in a {@link Blob}.
  * @category Export Helpers
  */
-export const XLSX_MIME_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+export const XLSX_MIME_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
 /** ARGB light-blue fill for the Results-sheet header row. */
-const HEADER_FILL_ARGB = "FFDDEBF7";
+const HEADER_FILL_ARGB = 'FFDDEBF7';
 /** ARGB very-light-grey fill for the Results-sheet first (title) column. */
-const FIRST_COLUMN_FILL_ARGB = "FFF2F2F2";
+const FIRST_COLUMN_FILL_ARGB = 'FFF2F2F2';
 
 /**
  * Triggers a browser download of a {@link Blob} under the given filename using a
@@ -32,7 +32,7 @@ const FIRST_COLUMN_FILL_ARGB = "FFF2F2F2";
  */
 export function downloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
+  const anchor = document.createElement('a');
   anchor.href = url;
   anchor.download = filename;
   document.body.appendChild(anchor);
@@ -97,7 +97,7 @@ export interface ExportFilterSummary {
  */
 export interface ExportContext {
   /** Whether the export covers all results or only the currently-filtered view. */
-  scope: "all" | "filtered";
+  scope: 'all' | 'filtered';
   /** Epoch milliseconds the export was created (shown on the Summary sheet). */
   createdAt: number;
   /** The originating search query, if any. */
@@ -123,98 +123,98 @@ export interface ExportContext {
  */
 const EXPORT_COLUMNS: readonly ExportColumn[] = [
   {
-    id: "title",
-    header: i18n("column_title"),
+    id: 'title',
+    header: i18n('column_title'),
     width: 44,
     value: (p) => {
       const href = p.permalink ?? p.url;
-      const text = p.title ?? "";
+      const text = p.title ?? '';
       return href ? { text, hyperlink: href } : text;
     },
   },
-  { id: "supplier", header: i18n("column_supplier"), width: 20, value: (p) => p.supplier ?? "" },
+  { id: 'supplier', header: i18n('column_supplier'), width: 20, value: (p) => p.supplier ?? '' },
   {
-    id: "country",
-    header: i18n("column_country"),
+    id: 'country',
+    header: i18n('column_country'),
     width: 16,
     value: (p) =>
-      p.supplierCountry ? (getCountryName(p.supplierCountry) ?? p.supplierCountry) : "",
+      p.supplierCountry ? (getCountryName(p.supplierCountry) ?? p.supplierCountry) : '',
   },
   {
-    id: "shipping",
-    header: i18n("column_shipping"),
+    id: 'shipping',
+    header: i18n('column_shipping'),
     width: 16,
-    value: (p) => (p.supplierShipping ? shippingLabel(p.supplierShipping) : ""),
+    value: (p) => (p.supplierShipping ? shippingLabel(p.supplierShipping) : ''),
   },
   {
-    id: "availability",
-    header: i18n("column_availability"),
+    id: 'availability',
+    header: i18n('column_availability'),
     width: 16,
-    value: (p) => (p.availability ? availabilityLabel(p.availability) : ""),
+    value: (p) => (p.availability ? availabilityLabel(p.availability) : ''),
   },
   {
-    id: "description",
-    header: i18n("column_description"),
+    id: 'description',
+    header: i18n('column_description'),
     width: 44,
-    value: (p) => p.description ?? "",
+    value: (p) => p.description ?? '',
   },
   {
     // Header is rewritten with the user's currency code at build time.
-    id: "price",
-    header: i18n("column_price_currency", ["USD"]),
+    id: 'price',
+    header: i18n('column_price_currency', ['USD']),
     width: 14,
     value: (p, settings) => formatDisplayPrice(p, settings),
   },
   {
-    id: "quantity",
-    header: i18n("column_quantity"),
+    id: 'quantity',
+    header: i18n('column_quantity'),
     width: 14,
-    value: (p) => (p.quantity == null ? "" : `${p.quantity} ${formatUomForDisplay(p.uom)}`),
+    value: (p) => (p.quantity == null ? '' : `${p.quantity} ${formatUomForDisplay(p.uom)}`),
   },
-  { id: "uom", header: i18n("column_unit"), width: 10, value: (p) => formatUomForDisplay(p.uom) },
+  { id: 'uom', header: i18n('column_unit'), width: 10, value: (p) => formatUomForDisplay(p.uom) },
   {
-    id: "sds",
-    header: i18n("column_sds"),
+    id: 'sds',
+    header: i18n('column_sds'),
     width: 12,
-    value: (p) => (p.sdsUrl ? { text: i18n("column_sds"), hyperlink: p.sdsUrl } : ""),
+    value: (p) => (p.sdsUrl ? { text: i18n('column_sds'), hyperlink: p.sdsUrl } : ''),
   },
   {
-    id: "specs",
-    header: i18n("column_specs"),
+    id: 'specs',
+    header: i18n('column_specs'),
     width: 12,
-    value: (p) => (p.specSheetUrl ? { text: i18n("column_specs"), hyperlink: p.specSheetUrl } : ""),
+    value: (p) => (p.specSheetUrl ? { text: i18n('column_specs'), hyperlink: p.specSheetUrl } : ''),
   },
   {
-    id: "coa",
-    header: i18n("column_coa"),
+    id: 'coa',
+    header: i18n('column_coa'),
     width: 12,
-    value: (p) => (p.coaUrl ? { text: i18n("column_coa"), hyperlink: p.coaUrl } : ""),
+    value: (p) => (p.coaUrl ? { text: i18n('column_coa'), hyperlink: p.coaUrl } : ''),
   },
-  { id: "cas", header: i18n("column_cas"), width: 14, value: (p) => p.cas ?? "" },
+  { id: 'cas', header: i18n('column_cas'), width: 14, value: (p) => p.cas ?? '' },
   {
-    id: "pubchem",
-    header: i18n("column_pubchem"),
+    id: 'pubchem',
+    header: i18n('column_pubchem'),
     width: 12,
-    value: (p) => (p.pubchemId == null ? "" : Number(p.pubchemId)),
+    value: (p) => (p.pubchemId == null ? '' : Number(p.pubchemId)),
   },
-  { id: "formula", header: i18n("column_formula"), width: 16, value: (p) => p.formula ?? "" },
+  { id: 'formula', header: i18n('column_formula'), width: 16, value: (p) => p.formula ?? '' },
   {
-    id: "moleweight",
-    header: i18n("column_moleweight"),
+    id: 'moleweight',
+    header: i18n('column_moleweight'),
     width: 12,
-    value: (p) => p.moleweight ?? "",
+    value: (p) => p.moleweight ?? '',
   },
   {
-    id: "purity",
-    header: i18n("column_purity"),
+    id: 'purity',
+    header: i18n('column_purity'),
     width: 14,
-    value: (p) => p.grade ?? p.purity ?? "",
+    value: (p) => p.grade ?? p.purity ?? '',
   },
   {
-    id: "concentration",
-    header: i18n("column_concentration"),
+    id: 'concentration',
+    header: i18n('column_concentration'),
     width: 14,
-    value: (p) => p.concentration ?? "",
+    value: (p) => p.concentration ?? '',
   },
 ] as const;
 
@@ -222,7 +222,7 @@ const EXPORT_COLUMNS: readonly ExportColumn[] = [
  * Fixed 1-based index of the price column in {@link EXPORT_COLUMNS}, used to
  * rewrite its header with the user's currency code at build time.
  */
-const PRICE_COLUMN_INDEX = EXPORT_COLUMNS.findIndex((c) => c.id === "price");
+const PRICE_COLUMN_INDEX = EXPORT_COLUMNS.findIndex((c) => c.id === 'price');
 
 /**
  * Total row count (parents + variants) across all groups.
@@ -248,31 +248,31 @@ export function countExportRows(groups: ExportGroup[]): number {
  */
 function writeSummarySheet(sheet: ExcelJS.Worksheet, ctx: ExportContext): void {
   sheet.columns = [
-    { key: "label", width: 22 },
-    { key: "value", width: 60 },
+    { key: 'label', width: 22 },
+    { key: 'value', width: 60 },
   ];
 
   const scopeLabel =
-    ctx.scope === "all" ? i18n("export_summary_scope_all") : i18n("export_summary_scope_filtered");
+    ctx.scope === 'all' ? i18n('export_summary_scope_all') : i18n('export_summary_scope_filtered');
 
   const rows: [string, ExportCellValue][] = [
-    [i18n("export_summary_version"), ctx.appVersion],
-    [i18n("export_summary_query"), ctx.query ?? ""],
-    [i18n("export_summary_scope"), scopeLabel],
-    [i18n("export_summary_date"), new Date(ctx.createdAt).toLocaleString()],
-    [i18n("export_summary_result_count"), ctx.groups.length],
+    [i18n('export_summary_version'), ctx.appVersion],
+    [i18n('export_summary_query'), ctx.query ?? ''],
+    [i18n('export_summary_scope'), scopeLabel],
+    [i18n('export_summary_date'), new Date(ctx.createdAt).toLocaleString()],
+    [i18n('export_summary_result_count'), ctx.groups.length],
   ];
 
   for (const [label, value] of rows) {
     const row = sheet.addRow({ label, value });
-    row.getCell("label").font = { bold: true };
+    row.getCell('label').font = { bold: true };
   }
 
-  const filterHeader = sheet.addRow({ label: i18n("export_summary_filters"), value: "" });
-  filterHeader.getCell("label").font = { bold: true };
+  const filterHeader = sheet.addRow({ label: i18n('export_summary_filters'), value: '' });
+  filterHeader.getCell('label').font = { bold: true };
 
   if (ctx.activeFilters.length === 0) {
-    sheet.addRow({ label: "", value: i18n("export_summary_no_filters") });
+    sheet.addRow({ label: '', value: i18n('export_summary_no_filters') });
     return;
   }
   for (const filter of ctx.activeFilters) {
@@ -290,8 +290,8 @@ function styleHeaderRow(sheet: ExcelJS.Worksheet): void {
   header.font = { bold: true };
   header.eachCell((cell) => {
     cell.fill = {
-      type: "pattern",
-      pattern: "solid",
+      type: 'pattern',
+      pattern: 'solid',
       fgColor: { argb: HEADER_FILL_ARGB },
     };
   });
@@ -321,8 +321,8 @@ function writeDataRow(
 
   // Grey the first (title) column on data rows; the header keeps its blue fill.
   row.getCell(1).fill = {
-    type: "pattern",
-    pattern: "solid",
+    type: 'pattern',
+    pattern: 'solid',
     fgColor: { argb: FIRST_COLUMN_FILL_ARGB },
   };
 
@@ -358,15 +358,15 @@ function writeDataRow(
 export async function buildResultsWorkbook(ctx: ExportContext): Promise<Blob> {
   // Lazy-loaded so the ~1 MB ExcelJS bundle is code-split out of the main chunk
   // and only fetched when the user actually exports.
-  const { default: ExcelJS } = await import("exceljs");
+  const { default: ExcelJS } = await import('exceljs');
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = "ChemPal";
+  workbook.creator = 'ChemPal';
   workbook.created = new Date(ctx.createdAt);
 
-  writeSummarySheet(workbook.addWorksheet(i18n("export_sheet_summary")), ctx);
+  writeSummarySheet(workbook.addWorksheet(i18n('export_sheet_summary')), ctx);
 
-  const sheet = workbook.addWorksheet(i18n("export_sheet_results"), {
-    views: [{ state: "frozen", xSplit: 1, ySplit: 1 }],
+  const sheet = workbook.addWorksheet(i18n('export_sheet_results'), {
+    views: [{ state: 'frozen', xSplit: 1, ySplit: 1 }],
     properties: { outlineLevelRow: 1 },
   });
   // Parent rows act as the group header above their variant subrows.
@@ -376,7 +376,7 @@ export async function buildResultsWorkbook(ctx: ExportContext): Promise<Blob> {
   sheet.columns = EXPORT_COLUMNS.map((column, index) => ({
     header:
       index === PRICE_COLUMN_INDEX
-        ? i18n("column_price_currency", [ctx.userSettings?.currency ?? "USD"])
+        ? i18n('column_price_currency', [ctx.userSettings?.currency ?? 'USD'])
         : column.header,
     key: column.id,
     width: column.width,

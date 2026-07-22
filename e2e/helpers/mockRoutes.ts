@@ -1,7 +1,7 @@
-import type { Page, Route } from "@playwright/test";
-import { existsSync, readdirSync, readFileSync, statSync } from "fs";
-import { join } from "path";
-import { getRequestHash } from "./requestHash";
+import type { Page, Route } from '@playwright/test';
+import { existsSync, readdirSync, readFileSync, statSync } from 'fs';
+import { join } from 'path';
+import { getRequestHash } from './requestHash';
 
 interface MockResponse {
   contentType: string;
@@ -28,7 +28,7 @@ function loadMockResponses(responsesDir: string): {
   const byUrl = new Map<string, MockResponse>();
 
   if (!existsSync(responsesDir)) {
-    console.warn("[MockRoutes] Responses directory not found", { responsesDir });
+    console.warn('[MockRoutes] Responses directory not found', { responsesDir });
     return { byHash, byUrl };
   }
 
@@ -37,11 +37,11 @@ function loadMockResponses(responsesDir: string): {
     if (!statSync(hostDir).isDirectory()) continue;
 
     for (const file of readdirSync(hostDir)) {
-      if (!file.endsWith(".json")) continue;
+      if (!file.endsWith('.json')) continue;
 
       const filePath = join(hostDir, file);
       try {
-        const data = JSON.parse(readFileSync(filePath, "utf-8")) as MockResponse;
+        const data = JSON.parse(readFileSync(filePath, 'utf-8')) as MockResponse;
         byHash.set(`${hostname}/${file}`, data);
 
         // If the file has request metadata, index by normalized URL
@@ -68,7 +68,7 @@ function loadMockResponses(responsesDir: string): {
  * Matches the `deserialize()` function in `src/helpers/utils.ts`.
  */
 function deserialize(data: string): string {
-  return decodeURIComponent(Buffer.from(data, "base64").toString("utf-8"));
+  return decodeURIComponent(Buffer.from(data, 'base64').toString('utf-8'));
 }
 
 /**
@@ -76,16 +76,16 @@ function deserialize(data: string): string {
  * Must match the list in `src/helpers/responseAggregate.ts`.
  */
 const DYNAMIC_PARAMS = [
-  "timestampe", // Macklin API (their typo for "timestamp")
-  "timestamp",
-  "_t",
-  "_",
-  "t",
-  "nocache",
-  "cachebust",
-  "nonce",
-  "rnd",
-  "rand",
+  'timestampe', // Macklin API (their typo for "timestamp")
+  'timestamp',
+  '_t',
+  '_',
+  't',
+  'nocache',
+  'cachebust',
+  'nonce',
+  'rnd',
+  'rand',
 ];
 
 /**
@@ -110,7 +110,7 @@ interface SetupOptions {
   /** Path to directory containing mock response files. Defaults to `e2e/mock-requests/responses` */
   responsesDir?: string;
   /** What to do when no mock is found: "abort" (default) or "passthrough" */
-  fallback?: "abort" | "passthrough";
+  fallback?: 'abort' | 'passthrough';
   /** Log all intercepted requests for debugging. Defaults to false. */
   verbose?: boolean;
   /**
@@ -142,8 +142,8 @@ interface SetupOptions {
  */
 export async function setupMockRoutes(page: Page, options: SetupOptions = {}): Promise<void> {
   const {
-    responsesDir = join(process.cwd(), "e2e/mock-requests/responses"),
-    fallback = "abort",
+    responsesDir = join(process.cwd(), 'e2e/mock-requests/responses'),
+    fallback = 'abort',
     verbose = false,
     allowImages = false,
     allowHosts = [],
@@ -154,23 +154,23 @@ export async function setupMockRoutes(page: Page, options: SetupOptions = {}): P
   let matchCount = 0;
   let missCount = 0;
 
-  await page.route("https://**/*", async (route: Route) => {
+  await page.route('https://**/*', async (route: Route) => {
     const request = route.request();
     const method = request.method();
     const url = request.url();
-    const postData = request.postData() ?? "";
+    const postData = request.postData() ?? '';
 
     const normalizedKey = `${method}:${normalizeUrl(url)}`;
 
     // Strategy 1: Normalized URL match (dynamic params stripped, sorted)
     let mock = byUrl.get(normalizedKey);
-    let matchStrategy = "url";
+    let matchStrategy = 'url';
 
     // Strategy 2: Hash-based match (fallback for files without URL metadata)
     if (!mock) {
       const reqHash = getRequestHash(method, url, postData);
       mock = byHash.get(reqHash.file);
-      matchStrategy = "hash";
+      matchStrategy = 'hash';
     }
 
     if (mock) {
@@ -188,7 +188,7 @@ export async function setupMockRoutes(page: Page, options: SetupOptions = {}): P
         contentType,
         body,
         headers: {
-          "x-mocked-response": "true",
+          'x-mocked-response': 'true',
         },
       });
     } else {
@@ -196,16 +196,16 @@ export async function setupMockRoutes(page: Page, options: SetupOptions = {}): P
       // mode (product photos, or a whitelisted service like the currency-rate
       // API for the demo). These carry no supplier search data, so supplier APIs
       // stay hermetic.
-      if (allowImages && request.resourceType() === "image") {
+      if (allowImages && request.resourceType() === 'image') {
         await route.continue();
         return;
       }
       if (allowHosts.length > 0) {
-        let reqHost = "";
+        let reqHost = '';
         try {
           reqHost = new URL(url).host;
         } catch {
-          reqHost = "";
+          reqHost = '';
         }
         if (allowHosts.some((h) => reqHost === h || reqHost.endsWith(`.${h}`))) {
           await route.continue();
@@ -222,7 +222,7 @@ export async function setupMockRoutes(page: Page, options: SetupOptions = {}): P
           const u = new URL(url);
           return { host: u.host, pathname: u.pathname };
         } catch {
-          return { host: url, pathname: "" };
+          return { host: url, pathname: '' };
         }
       })();
       console.warn(`[MockRoutes] MISS #${missCount}: ${method} ${host}${pathname}`);
@@ -231,10 +231,10 @@ export async function setupMockRoutes(page: Page, options: SetupOptions = {}): P
         console.warn(`  normalized: ${normalizedKey}`);
       }
 
-      if (fallback === "passthrough") {
+      if (fallback === 'passthrough') {
         await route.continue();
       } else {
-        await route.abort("blockedbyclient");
+        await route.abort('blockedbyclient');
       }
     }
   });

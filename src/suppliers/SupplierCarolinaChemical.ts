@@ -1,4 +1,4 @@
-import { SupplierBaseWoocommerce } from "./SupplierBaseWoocommerce";
+import { SupplierBaseWoocommerce } from './SupplierBaseWoocommerce';
 
 /**
  * Supplier class for Carolina Chemical, a chemical supplier using the WooCommerce platform.
@@ -35,17 +35,17 @@ export class SupplierCarolinaChemical extends SupplierBaseWoocommerce implements
    * ```
    * @source
    */
-  public readonly supplierName: string = "Carolina Chemical";
+  public readonly supplierName: string = 'Carolina Chemical';
 
   // The base URL for the supplier's website.
-  public readonly baseURL: string = "https://carolinachemical.com";
+  public readonly baseURL: string = 'https://carolinachemical.com';
 
   // Shipping scope for Carolina Chemical
-  public readonly shipping: ShippingRange = "domestic";
+  public readonly shipping: ShippingRange = 'domestic';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = "US";
+  public readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 }

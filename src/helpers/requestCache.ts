@@ -1,4 +1,4 @@
-import { cstorage } from "@/utils/storage";
+import { cstorage } from '@/utils/storage';
 
 /**
  * @group Helpers
@@ -20,7 +20,7 @@ export const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
  * to identify and never collide with unrelated keys.
  * @source
  */
-const CACHE_KEY_PREFIX = "pubchem-cache";
+const CACHE_KEY_PREFIX = 'pubchem-cache';
 
 /**
  * A cached value together with the epoch-ms timestamp at which it was stored.
@@ -55,10 +55,10 @@ export interface TtlCacheOptions<Args extends unknown[]> {
  */
 function isCacheEntry<Result>(value: unknown): value is CacheEntry<Result> {
   return (
-    typeof value === "object" &&
+    typeof value === 'object' &&
     value !== null &&
-    typeof Reflect.get(value, "cachedAt") === "number" &&
-    "value" in value
+    typeof Reflect.get(value, 'cachedAt') === 'number' &&
+    'value' in value
   );
 }
 

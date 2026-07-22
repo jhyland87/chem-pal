@@ -1,23 +1,23 @@
-import { describe, expect, it } from "vitest";
-import { isSearchResultItem } from "../onyxmet";
+import { describe, expect, it } from 'vitest';
+import { isSearchResultItem } from '../onyxmet';
 
-describe("OnyxMet TypeGuards", () => {
-  describe("isSearchResultItem", () => {
+describe('OnyxMet TypeGuards', () => {
+  describe('isSearchResultItem', () => {
     const validItem = {
-      label: "Sodium Chloride",
-      image: "nacl.jpg",
-      description: "High purity NaCl",
-      href: "/products/nacl",
+      label: 'Sodium Chloride',
+      image: 'nacl.jpg',
+      description: 'High purity NaCl',
+      href: '/products/nacl',
     };
 
-    it("should return true for a valid search result item", () => {
+    it('should return true for a valid search result item', () => {
       expect(isSearchResultItem(validItem)).toBe(true);
     });
 
-    it("should return true for a valid item with additional properties", () => {
+    it('should return true for a valid item with additional properties', () => {
       const itemWithExtraProps = {
         ...validItem,
-        extraProp1: "value1",
+        extraProp1: 'value1',
         extraProp2: 123,
         extraProp3: true,
       };
@@ -25,19 +25,19 @@ describe("OnyxMet TypeGuards", () => {
       expect(isSearchResultItem(itemWithExtraProps)).toBe(true);
     });
 
-    it("should return false for null", () => {
+    it('should return false for null', () => {
       expect(isSearchResultItem(null)).toBe(false);
     });
 
-    it("should return false for non-object values", () => {
+    it('should return false for non-object values', () => {
       const nonObjectValues = [
-        "not an object",
+        'not an object',
         123,
         true,
         false,
         undefined,
         () => {},
-        Symbol("item"),
+        Symbol('item'),
         [],
       ];
 
@@ -46,30 +46,30 @@ describe("OnyxMet TypeGuards", () => {
       });
     });
 
-    it("should return false for objects missing required properties", () => {
+    it('should return false for objects missing required properties', () => {
       const missingProps = [
         {
           // Missing label
-          image: "nacl.jpg",
-          description: "High purity NaCl",
-          href: "/products/nacl",
+          image: 'nacl.jpg',
+          description: 'High purity NaCl',
+          href: '/products/nacl',
         },
         {
-          label: "Sodium Chloride",
+          label: 'Sodium Chloride',
           // Missing image
-          description: "High purity NaCl",
-          href: "/products/nacl",
+          description: 'High purity NaCl',
+          href: '/products/nacl',
         },
         {
-          label: "Sodium Chloride",
-          image: "nacl.jpg",
+          label: 'Sodium Chloride',
+          image: 'nacl.jpg',
           // Missing description
-          href: "/products/nacl",
+          href: '/products/nacl',
         },
         {
-          label: "Sodium Chloride",
-          image: "nacl.jpg",
-          description: "High purity NaCl",
+          label: 'Sodium Chloride',
+          image: 'nacl.jpg',
+          description: 'High purity NaCl',
           // Missing href
         },
         {
@@ -82,7 +82,7 @@ describe("OnyxMet TypeGuards", () => {
       });
     });
 
-    it("should return true for items with property values of any type", () => {
+    it('should return true for items with property values of any type', () => {
       const itemsWithAnyTypes = [
         {
           ...validItem,

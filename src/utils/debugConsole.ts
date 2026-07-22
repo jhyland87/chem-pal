@@ -1,18 +1,18 @@
-import type { BackgroundFetchInit } from "@/helpers/backgroundFetch";
-import { backgroundFetch as backgroundFetchHelper } from "@/helpers/backgroundFetch";
-import { findCAS, getCASByName, getIUPACName, getNamesByCAS } from "@/helpers/cas";
-import { isCAS } from "@/utils/typeGuards/common";
+import type { BackgroundFetchInit } from '@/helpers/backgroundFetch';
+import { backgroundFetch as backgroundFetchHelper } from '@/helpers/backgroundFetch';
+import { findCAS, getCASByName, getIUPACName, getNamesByCAS } from '@/helpers/cas';
+import { isCAS } from '@/utils/typeGuards/common';
 import {
   getProductPriceHistory as getProductPriceHistorySeries,
   variantSeriesKey,
-} from "@/helpers/priceHistory";
+} from '@/helpers/priceHistory';
 import {
   executeSDQSearch,
   getCompoundNameFromAlias,
   getRankedNamesByName,
   isSimpleName,
   suggestAlternativeSearch,
-} from "@/helpers/pubchem";
+} from '@/helpers/pubchem';
 import {
   extractSmiles,
   isProbablyValidSmiles,
@@ -20,15 +20,15 @@ import {
   parseStructurePrefix,
   resolveQueryForSearch,
   resolveSmiles,
-} from "@/helpers/smiles";
-import type { ReleaseSection } from "@/helpers/updates";
-import { getInstallSource, parseReleaseNotes } from "@/helpers/updates";
-import semver from "semver";
-import { formatBytes } from "@/helpers/utils";
-import { CACHE } from "@/constants/common";
-import { Cactus } from "@/utils/Cactus";
-import { cstorage } from "@/utils/storage";
-import { astTest, collectCachedTitles, fuzzTest, listSuppliers } from "@/utils/fuzzScorerLab";
+} from '@/helpers/smiles';
+import type { ReleaseSection } from '@/helpers/updates';
+import { getInstallSource, parseReleaseNotes } from '@/helpers/updates';
+import semver from 'semver';
+import { formatBytes } from '@/helpers/utils';
+import { CACHE } from '@/constants/common';
+import { Cactus } from '@/utils/Cactus';
+import { cstorage } from '@/utils/storage';
+import { astTest, collectCachedTitles, fuzzTest, listSuppliers } from '@/utils/fuzzScorerLab';
 import {
   getAllPriceSeries,
   getAllSupplierProductDataCacheEntries,
@@ -39,7 +39,7 @@ import {
   getSearchHistory,
   getSearchResults,
   putPriceSeries,
-} from "@/utils/idbCache";
+} from '@/utils/idbCache';
 
 /**
  * Prints deliberate debug-console output.
@@ -224,7 +224,7 @@ async function nudgePriceHistory(stepsBack: number = 0): Promise<number> {
 
   const all = await getAllPriceSeries();
   if (all.length === 0) {
-    console.warn("price_history is empty — run a search with price tracking enabled first.");
+    console.warn('price_history is empty — run a search with price tracking enabled first.');
     return 0;
   }
 
@@ -249,7 +249,7 @@ async function nudgePriceHistory(stepsBack: number = 0): Promise<number> {
     changed++;
   }
 
-  const skippedNote = skipped > 0 ? ` (${skipped} skipped — fewer than ${steps + 1} points)` : "";
+  const skippedNote = skipped > 0 ? ` (${skipped} skipped — fewer than ${steps + 1} points)` : '';
   printDebug(
     `✅ Nudged ${changed} price series at ${steps} back from latest${skippedNote}. Re-open a product's detail panel to see it.`,
   );
@@ -258,9 +258,9 @@ async function nudgePriceHistory(stepsBack: number = 0): Promise<number> {
 
 /** Stand-in notes used when CHANGELOG.md has nothing under `## [Unreleased]`. */
 const SAMPLE_RELEASE_NOTES: ReleaseSection[] = [
-  { title: "Added", items: ["A shiny new thing", "Another new thing"] },
-  { title: "Changed", items: ["Something works differently now"] },
-  { title: "Fixed", items: ["That annoying bug"] },
+  { title: 'Added', items: ['A shiny new thing', 'Another new thing'] },
+  { title: 'Changed', items: ['Something works differently now'] },
+  { title: 'Fixed', items: ['That annoying bug'] },
 ];
 
 /**
@@ -282,7 +282,7 @@ const SAMPLE_RELEASE_NOTES: ReleaseSection[] = [
 function upcomingReleaseNotes(): ReleaseSection[] {
   const parsed = parseReleaseNotes(__CHANGELOG_UNRELEASED__);
   if (parsed.length > 0) return parsed;
-  printDebug("CHANGELOG.md has no [Unreleased] entries — showing sample notes instead.");
+  printDebug('CHANGELOG.md has no [Unreleased] entries — showing sample notes instead.');
   return SAMPLE_RELEASE_NOTES;
 }
 
@@ -298,7 +298,7 @@ function upcomingReleaseNotes(): ReleaseSection[] {
  * @source
  */
 function nextVersion(): string {
-  return semver.inc(__APP_VERSION__, "minor") ?? "99.0.0";
+  return semver.inc(__APP_VERSION__, 'minor') ?? '99.0.0';
 }
 
 /**
@@ -360,18 +360,18 @@ async function simulateUpdate(
     },
   });
 
-  if (getInstallSource() === "webstore") {
+  if (getInstallSource() === 'webstore') {
     console.warn(
       "This build looks like a Web Store install, so the manual-install path won't run.\n" +
-        "Use chempal.simulateWebstoreUpdate() instead.",
+        'Use chempal.simulateWebstoreUpdate() instead.',
     );
     return;
   }
 
   printDebug(
     `✅ Pretending ${version} is available (running ${__APP_VERSION__}), ` +
-      `${notes.length > 0 ? `${notes.length} note section(s)` : "no notes"}.\n` +
-      "↻ Reload the page to see the prompt.",
+      `${notes.length > 0 ? `${notes.length} note section(s)` : 'no notes'}.\n` +
+      '↻ Reload the page to see the prompt.',
   );
 }
 
@@ -392,32 +392,32 @@ async function simulateUpdate(
  * ```
  * @source
  */
-async function simulateWebstoreUpdate(version: string = "99.0.0"): Promise<void> {
+async function simulateWebstoreUpdate(version: string = '99.0.0'): Promise<void> {
   await cstorage.local.set({
     [CACHE.UPDATE_PENDING]: { version, detectedAt: Date.now() },
   });
 
-  if (getInstallSource() !== "webstore") {
+  if (getInstallSource() !== 'webstore') {
     console.warn(
       [
         '⚠️  Staged update recorded, but this build reports install source "manual",',
         "    so the Web Store path won't run and nothing will show.",
-        "",
-        "    To fake a Web Store install, add this to build/manifest.json and reload",
-        "    the extension (a rebuild overwrites it, so it cleans itself up):",
-        "",
+        '',
+        '    To fake a Web Store install, add this to build/manifest.json and reload',
+        '    the extension (a rebuild overwrites it, so it cleans itself up):',
+        '',
         '      "update_url": "https://clients2.google.com/service/update2/crx"',
-        "",
-        "    Edit build/manifest.json, NOT public/manifest.json — a stray update_url",
-        "    in the source manifest would ship.",
-      ].join("\n"),
+        '',
+        '    Edit build/manifest.json, NOT public/manifest.json — a stray update_url',
+        '    in the source manifest would ship.',
+      ].join('\n'),
     );
     return;
   }
 
   printDebug(
     `✅ Pretending Chrome staged ${version} (running ${__APP_VERSION__}).\n` +
-      "↻ Reload the page to see the “Reload now” prompt.",
+      '↻ Reload the page to see the “Reload now” prompt.',
   );
 }
 
@@ -435,7 +435,7 @@ async function simulateWebstoreUpdate(version: string = "99.0.0"): Promise<void>
  */
 async function resetUpdatePrompt(): Promise<void> {
   await cstorage.local.remove([CACHE.UPDATE_CHECK, CACHE.UPDATE_PENDING]);
-  printDebug("✅ Cleared update_check and update_pending.\n↻ Reload the page.");
+  printDebug('✅ Cleared update_check and update_pending.\n↻ Reload the page.');
 }
 
 /**
@@ -487,14 +487,14 @@ async function storageBreakdown(): Promise<StorageBreakdownReport> {
     usage = estimate?.usage;
     quota = estimate?.quota;
   } catch (error) {
-    console.warn("navigator.storage.estimate() failed:", error);
+    console.warn('navigator.storage.estimate() failed:', error);
   }
 
   const total = breakdown.totalBytes;
   const scale = usage && total > 0 ? usage / total : 1;
   const usedPercent = usage !== undefined && quota ? (usage / quota) * 100 : undefined;
 
-  const byStore: StorageBreakdownReport["byStore"] = {};
+  const byStore: StorageBreakdownReport['byStore'] = {};
   const rows: Record<
     string,
     { records: number; jsonSize: string; estimatedSize: string; share: string }
@@ -515,11 +515,11 @@ async function storageBreakdown(): Promise<StorageBreakdownReport> {
   printDebug(
     [
       `Total JSON size:   ${formatBytes(total)}`,
-      `Origin usage:      ${usage === undefined ? "unavailable" : formatBytes(usage)}`,
-      `Origin quota:      ${quota === undefined ? "unavailable" : formatBytes(quota)}`,
-      `Quota used:        ${usedPercent === undefined ? "unavailable" : `${usedPercent.toFixed(2)}% of quota`}`,
+      `Origin usage:      ${usage === undefined ? 'unavailable' : formatBytes(usage)}`,
+      `Origin quota:      ${quota === undefined ? 'unavailable' : formatBytes(quota)}`,
+      `Quota used:        ${usedPercent === undefined ? 'unavailable' : `${usedPercent.toFixed(2)}% of quota`}`,
       `Scale factor:      ${scale.toFixed(3)}× (usage ÷ total JSON)`,
-    ].join("\n"),
+    ].join('\n'),
   );
 
   return {
@@ -539,53 +539,53 @@ async function storageBreakdown(): Promise<StorageBreakdownReport> {
 function help(): void {
   printDebug(
     [
-      "ChemPal debug helpers (window.chempal):",
-      "  Always on in dev builds; in a normal build, unlock advanced mode.",
-      "",
-      "  SMILES:     resolveSmiles, resolveQueryForSearch, looksLikeSmiles,",
-      "              parseStructurePrefix, isProbablyValidSmiles, extractSmiles",
-      "  PubChem:    suggestAlternativeSearch, getRankedNamesByName, isSimpleName,",
-      "              getCompoundNameFromAlias, executeSDQSearch",
-      "  CAS:        getCASByName, getNamesByCAS, getIUPACName, findCAS, isCAS",
+      'ChemPal debug helpers (window.chempal):',
+      '  Always on in dev builds; in a normal build, unlock advanced mode.',
+      '',
+      '  SMILES:     resolveSmiles, resolveQueryForSearch, looksLikeSmiles,',
+      '              parseStructurePrefix, isProbablyValidSmiles, extractSmiles',
+      '  PubChem:    suggestAlternativeSearch, getRankedNamesByName, isSimpleName,',
+      '              getCompoundNameFromAlias, executeSDQSearch',
+      '  CAS:        getCASByName, getNamesByCAS, getIUPACName, findCAS, isCAS',
       "  Cactus:     new chempal.Cactus('aspirin')",
-      "  Network:    backgroundFetch",
-      "  IndexedDB:  getProductById, getProductPriceHistory, getProductCache,",
-      "              getQueryCache, getSearchResults, getSearchHistory,",
-      "              getExcludedProducts, storageBreakdown",
-      "  Fuzzy:      fuzzTest(query, opts?)  — all 9 scorers vs. every cached title",
-      "              astTest(query, opts?)   — AND/OR/NOT predicate: matched vs. dropped",
-      "              getCachedTitles(source?) — the corpus both probes run against",
-      "              listSuppliers(corpus)   — supplier names + title counts",
+      '  Network:    backgroundFetch',
+      '  IndexedDB:  getProductById, getProductPriceHistory, getProductCache,',
+      '              getQueryCache, getSearchResults, getSearchHistory,',
+      '              getExcludedProducts, storageBreakdown',
+      '  Fuzzy:      fuzzTest(query, opts?)  — all 9 scorers vs. every cached title',
+      '              astTest(query, opts?)   — AND/OR/NOT predicate: matched vs. dropped',
+      '              getCachedTitles(source?) — the corpus both probes run against',
+      '              listSuppliers(corpus)   — supplier names + title counts',
       "              opts: { suppliers: 'loud' | ['Loudwolf','Onyxmet'],",
       "                      source: 'cache' | 'results' | 'both',",
-      "                      limit: 25   (0 = show all) }",
-      "  Testing:    nudgePriceHistory(stepsBack=0) (mutates price_history — nudges",
-      "              one point per series by a random ±1–8%; 0=latest, 1=one back, …)",
-      "  Updates:    simulateUpdate(version?, opts?) — preview the next release:",
-      "                defaults to the next minor + CHANGELOG.md [Unreleased] notes",
-      "                opts: { notes: ReleaseSection[] | false, releaseUrl: string }",
+      '                      limit: 25   (0 = show all) }',
+      '  Testing:    nudgePriceHistory(stepsBack=0) (mutates price_history — nudges',
+      '              one point per series by a random ±1–8%; 0=latest, 1=one back, …)',
+      '  Updates:    simulateUpdate(version?, opts?) — preview the next release:',
+      '                defaults to the next minor + CHANGELOG.md [Unreleased] notes',
+      '                opts: { notes: ReleaseSection[] | false, releaseUrl: string }',
       "              simulateWebstoreUpdate(version='99.0.0') — fake a staged CWS update",
-      "              resetUpdatePrompt() — clear the simulation and any dismissal",
-      "              (all three need a page reload to take effect)",
-      "",
-      "Examples:",
+      '              resetUpdatePrompt() — clear the simulation and any dismissal',
+      '              (all three need a page reload to take effect)',
+      '',
+      'Examples:',
       "  await chempal.resolveSmiles('CCO')",
       "  await chempal.suggestAlternativeSearch('aspirin', ['aspirin'])",
       "  await new chempal.Cactus('CC(=O)Oc1ccccc1C(O)=O').getSimpleNames()",
       "  await chempal.backgroundFetch('https://chemsavers.com/')",
       "  await chempal.getProductById('A668410')",
-      "  await chempal.getQueryCache()",
-      "  await chempal.storageBreakdown() // per-store record counts + sizes",
+      '  await chempal.getQueryCache()',
+      '  await chempal.storageBreakdown() // per-store record counts + sizes',
       "  await chempal.fuzzTest('sodium borohydride')",
       "  await chempal.fuzzTest('acetone', { suppliers: ['Loudwolf','Onyxmet'], limit: 25 })",
       "  await chempal.fuzzTest('acetone', { source: 'results', limit: 0 })",
       "  await chempal.astTest('sodium AND NOT borohydride')",
       "  await chempal.astTest('acid OR base', { fuzzyWords: false, threshold: 70 })",
-      "  await chempal.nudgePriceHistory(2) // nudge the price 2 entries back",
+      '  await chempal.nudgePriceHistory(2) // nudge the price 2 entries back',
       "  await chempal.simulateUpdate() // then reload → prompt with the next release's notes",
       "  await chempal.simulateUpdate('1.3.0', { notes: false }) // no-notes fallback",
-      "  await chempal.resetUpdatePrompt() // back to a clean slate",
-    ].join("\n"),
+      '  await chempal.resetUpdatePrompt() // back to a clean slate',
+    ].join('\n'),
   );
 }
 
@@ -663,7 +663,7 @@ declare global {
  */
 export function exposeDebugApi(): void {
   window.chempal = chempal;
-  printDebug("%cChemPal debug helpers ready — run chempal.help()", "color:#6cf;font-weight:bold");
+  printDebug('%cChemPal debug helpers ready — run chempal.help()', 'color:#6cf;font-weight:bold');
 }
 
 /**
@@ -680,5 +680,5 @@ export function exposeDebugApi(): void {
 export function removeDebugApi(): void {
   if (!window.chempal) return;
   delete window.chempal;
-  printDebug("ChemPal debug helpers removed");
+  printDebug('ChemPal debug helpers removed');
 }

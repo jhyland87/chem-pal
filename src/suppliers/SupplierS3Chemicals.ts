@@ -1,11 +1,11 @@
-import { parsePrice } from "@/helpers/currency";
-import { parseQuantity } from "@/helpers/quantity";
-import { createDOM } from "@/helpers/request";
-import { mapDefined } from "@/helpers/utils";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { isCurrencyCode } from "@/utils/typeGuards/common";
-import { WRatio } from "fuzzball";
-import { SupplierBase } from "./SupplierBase";
+import { parsePrice } from '@/helpers/currency';
+import { parseQuantity } from '@/helpers/quantity';
+import { createDOM } from '@/helpers/request';
+import { mapDefined } from '@/helpers/utils';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { isCurrencyCode } from '@/utils/typeGuards/common';
+import { WRatio } from 'fuzzball';
+import { SupplierBase } from './SupplierBase';
 /**
  * Supplier implementation for S3 Chemicals, a German based chemical supplier
  * (shop.es-drei.de) built on the Shopware 5 platform.
@@ -32,20 +32,20 @@ export class SupplierS3Chemicals
   implements ISupplier
 {
   // Display name of the supplier used for UI and logging
-  public readonly supplierName: string = "S3 Chemicals";
+  public readonly supplierName: string = 'S3 Chemicals';
 
   // Base URL for all web requests to S3 Chemicals
-  public readonly baseURL: string = "https://shop.es-drei.de";
+  public readonly baseURL: string = 'https://shop.es-drei.de';
 
   // Shipping scope for S3 Chemicals (DE-based, ships across borders)
-  public readonly shipping: ShippingRange = "international";
+  public readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
   // This is used to determine the currency and other country-specific information.
-  public readonly country: CountryCode = "DE";
+  public readonly country: CountryCode = 'DE';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa", "ach"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa', 'ach'];
 
   // German-language titles rarely overlap the English query tokens, so we
   // use WRatio (a best-of-several-scorers heuristic) with a low cutoff to
@@ -71,7 +71,7 @@ export class SupplierS3Chemicals
   // request runs so the storefront returns USD prices. The `Cookie` request
   // header is fetch-forbidden, so the jar (seeded via chrome.cookies) is the
   // only reliable path — see SupplierBase.seedRequiredCookies.
-  protected readonly requiredCookies: SupplierCookieSeed[] = [{ name: "currency", value: "2" }];
+  protected readonly requiredCookies: SupplierCookieSeed[] = [{ name: 'currency', value: '2' }];
 
   /**
    * Derives the unique product key from an S3 Chemicals search-result card: its
@@ -87,11 +87,11 @@ export class SupplierS3Chemicals
    * @source
    */
   protected getUniqueProductKey(data: Element): string {
-    const ordernumber = data.getAttribute("data-ordernumber");
+    const ordernumber = data.getAttribute('data-ordernumber');
     if (ordernumber) {
       return ordernumber;
     }
-    const href = data.querySelector("a.product--title")?.getAttribute("href") ?? "";
+    const href = data.querySelector('a.product--title')?.getAttribute('href') ?? '';
     return this.href(href);
   }
 
@@ -114,10 +114,10 @@ export class SupplierS3Chemicals
    */
   protected normalizePriceText(text: string): string {
     return text
-      .replace(/\u00A0/g, " ")
-      .replace(/\*/g, "")
-      .replace(/\./g, "")
-      .replace(",", ".")
+      .replace(/\u00A0/g, ' ')
+      .replace(/\*/g, '')
+      .replace(/\./g, '')
+      .replace(',', '.')
       .trim();
   }
 
@@ -146,7 +146,7 @@ export class SupplierS3Chemicals
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
     const searchRequest = await this.httpGetHtml({
-      path: "/search",
+      path: '/search',
       params: {
         sSearch: encodeURIComponent(query),
         p: 1,
@@ -156,18 +156,18 @@ export class SupplierS3Chemicals
     });
 
     if (!searchRequest) {
-      this.logger.error("No search response", { query });
+      this.logger.error('No search response', { query });
       return;
     }
 
-    this.logger.log("Received search response", { query, searchRequest });
+    this.logger.log('Received search response', { query, searchRequest });
 
     const fuzzResults = this.fuzzHtmlResponse(query, searchRequest);
 
-    this.logger.info("fuzzResults:", { query, searchRequest, fuzzResults });
+    this.logger.info('fuzzResults:', { query, searchRequest, fuzzResults });
 
     const builders = this.initProductBuilders(fuzzResults.slice(0, limit));
-    this.logger.info("builders:", { query, searchRequest, fuzzResults, builders });
+    this.logger.info('builders:', { query, searchRequest, fuzzResults, builders });
     return builders;
   }
 
@@ -193,12 +193,12 @@ export class SupplierS3Chemicals
   protected fuzzHtmlResponse(query: string, response: string): Element[] {
     const parsedHTML = createDOM(response);
     if (!parsedHTML || parsedHTML === null) {
-      throw new Error("No data found when loading HTML");
+      throw new Error('No data found when loading HTML');
     }
 
-    const productContainers = parsedHTML.querySelectorAll("div.product--box.box--basic");
+    const productContainers = parsedHTML.querySelectorAll('div.product--box.box--basic');
     if (!productContainers || productContainers.length === 0) {
-      this.logger.log("No products found", { query, response, parsedHTML, productContainers });
+      this.logger.log('No products found', { query, response, parsedHTML, productContainers });
       return [];
     }
 
@@ -225,16 +225,16 @@ export class SupplierS3Chemicals
    * @source
    */
   protected initProductBuilders(elements: Element[]): ProductBuilder<Product>[] {
-    this.logger.info("initProductBuilders elements:", { elements });
+    this.logger.info('initProductBuilders elements:', { elements });
     return mapDefined(elements, (element: Element) => {
       const builder = new ProductBuilder<Product>(this.baseURL);
 
-      const anchor = element.querySelector("a.product--title");
-      const href = anchor?.getAttribute("href");
-      const title = anchor?.getAttribute("title")?.trim() || anchor?.textContent?.trim();
+      const anchor = element.querySelector('a.product--title');
+      const href = anchor?.getAttribute('href');
+      const title = anchor?.getAttribute('title')?.trim() || anchor?.textContent?.trim();
 
       if (!anchor || !href || !title) {
-        this.logger.error("No title/href for product", { element });
+        this.logger.error('No title/href for product', { element });
         return;
       }
 
@@ -245,14 +245,14 @@ export class SupplierS3Chemicals
       // Shopware exposes the ordernumber on the wrapper (e.g. "S100210").
       // A small number of grouped-variant parents may omit it; we fall back
       // to the numeric productID meta in `getProductData` when that happens.
-      const ordernumber = element.getAttribute("data-ordernumber") ?? undefined;
+      const ordernumber = element.getAttribute('data-ordernumber') ?? undefined;
 
       // Shopware renders prices in German locale (`2.449,00 $`) even when
       // the currency is USD — normalize to dot-decimal before `parsePrice`,
       // otherwise price-parser mis-reads the comma-decimal form (e.g.
       // `"12,25 $"` comes out as $0.12).
       const priceText = this.normalizePriceText(
-        element.querySelector("div.product--price span.price--default")?.textContent ?? "",
+        element.querySelector('div.product--price span.price--default')?.textContent ?? '',
       );
       const price = parsePrice(priceText);
       if (price !== undefined) {
@@ -260,12 +260,12 @@ export class SupplierS3Chemicals
       }
 
       const description = element
-        .querySelector("div.product--description")
+        .querySelector('div.product--description')
         ?.textContent?.trim()
-        .replace(/\s+/g, " ");
+        .replace(/\s+/g, ' ');
       builder.setDescription(description);
 
-      const qtyText = element.querySelector("div.price--unit span.is--nowrap")?.textContent?.trim();
+      const qtyText = element.querySelector('div.price--unit span.is--nowrap')?.textContent?.trim();
       if (qtyText) {
         const qty = parseQuantity(qtyText);
         if (qty) {
@@ -300,7 +300,7 @@ export class SupplierS3Chemicals
    */
   protected variantSortRank(v: Partial<Variant>): number {
     if (v.quantity === undefined) return Number.POSITIVE_INFINITY;
-    const uom = v.uom?.toLowerCase() ?? "";
+    const uom = v.uom?.toLowerCase() ?? '';
     const multipliers: Record<string, number> = {
       mg: 1,
       g: 1000,
@@ -338,18 +338,18 @@ export class SupplierS3Chemicals
     options: Array<{ value: string; label: string; selected: boolean }>;
   }> {
     const select = details.querySelector('select[data-ajax-select-variants="true"]');
-    const selectName = select?.getAttribute("name");
+    const selectName = select?.getAttribute('name');
     if (!select || !selectName) {
       return undefined;
     }
-    const options = Array.from(select.querySelectorAll("option")).flatMap((opt) => {
-      const value = opt.getAttribute("value");
+    const options = Array.from(select.querySelectorAll('option')).flatMap((opt) => {
+      const value = opt.getAttribute('value');
       if (!value) return [];
       return [
         {
           value,
-          label: opt.textContent?.trim() ?? "",
-          selected: opt.hasAttribute("selected"),
+          label: opt.textContent?.trim() ?? '',
+          selected: opt.hasAttribute('selected'),
         },
       ];
     });
@@ -413,7 +413,7 @@ export class SupplierS3Chemicals
       variant.title = label;
     }
 
-    const priceContent = details.querySelector('meta[itemprop="price"]')?.getAttribute("content");
+    const priceContent = details.querySelector('meta[itemprop="price"]')?.getAttribute('content');
     if (priceContent) {
       const normalized = Number(this.normalizePriceText(priceContent));
       if (!Number.isNaN(normalized)) {
@@ -423,12 +423,12 @@ export class SupplierS3Chemicals
 
     const currencyCode = details
       .querySelector('meta[itemprop="priceCurrency"]')
-      ?.getAttribute("content");
+      ?.getAttribute('content');
     if (isCurrencyCode(currencyCode)) {
       variant.currencyCode = currencyCode;
     }
 
-    const visiblePrice = details.querySelector("span.price--content")?.textContent;
+    const visiblePrice = details.querySelector('span.price--content')?.textContent;
     if (visiblePrice) {
       const parsed = parsePrice(this.normalizePriceText(visiblePrice));
       if (parsed?.currencySymbol) {
@@ -448,13 +448,13 @@ export class SupplierS3Chemicals
       variant.uom = qtyFromLabel.uom;
     } else {
       const unitText = details
-        .querySelector("div.price--unit")
-        ?.textContent?.replace(/\s+/g, " ")
+        .querySelector('div.price--unit')
+        ?.textContent?.replace(/\s+/g, ' ')
         .trim();
       if (unitText) {
         const cleaned = unitText
-          .replace(/inhalt\s*:/i, "")
-          .split("(")[0]
+          .replace(/inhalt\s*:/i, '')
+          .split('(')[0]
           .trim();
         const qtyFromUnit = parseQuantity(cleaned);
         if (qtyFromUnit) {
@@ -464,7 +464,7 @@ export class SupplierS3Chemicals
       }
     }
 
-    const productID = details.querySelector('meta[itemprop="productID"]')?.getAttribute("content");
+    const productID = details.querySelector('meta[itemprop="productID"]')?.getAttribute('content');
     if (productID) {
       variant.id = productID;
     }
@@ -502,13 +502,13 @@ export class SupplierS3Chemicals
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     return this.getProductDataWithCache(product, async (builder) => {
-      this.logger.debug("Querying data for partialproduct", { builder });
-      if (typeof builder === "undefined") {
-        this.logger.error("No products to get data for", { builder });
+      this.logger.debug('Querying data for partialproduct', { builder });
+      if (typeof builder === 'undefined') {
+        this.logger.error('No products to get data for', { builder });
         return;
       }
 
-      const baseUrl = builder.get("url");
+      const baseUrl = builder.get('url');
 
       // `template=ajax` returns the same `.product--details` block without
       // the surrounding layout — roughly a 95% payload reduction per request.
@@ -519,27 +519,27 @@ export class SupplierS3Chemicals
       try {
         initialResponse = await this.httpGetHtml({
           path: baseUrl,
-          params: { template: "ajax" },
+          params: { template: 'ajax' },
         });
       } catch (error) {
-        this.logger.warn("S3 detail fetch failed; keeping search-listing data", { error, builder });
+        this.logger.warn('S3 detail fetch failed; keeping search-listing data', { error, builder });
         return builder;
       }
 
       if (!initialResponse) {
-        this.logger.warn("No product response", { builder });
+        this.logger.warn('No product response', { builder });
         return builder;
       }
 
       const initialDom = createDOM(initialResponse);
-      const initialDetails = initialDom.querySelector("div.product--details") ?? initialDom;
+      const initialDetails = initialDom.querySelector('div.product--details') ?? initialDom;
 
       // --- Common (product-wide) data from the initial fetch -------------
       const availabilityHref = initialDetails
         .querySelector('link[itemprop="availability"]')
-        ?.getAttribute("href");
+        ?.getAttribute('href');
       if (availabilityHref) {
-        const token = availabilityHref.split("/").pop();
+        const token = availabilityHref.split('/').pop();
         if (token) {
           builder.setAvailability(token);
         }
@@ -551,16 +551,16 @@ export class SupplierS3Chemicals
       const descriptionBody = initialDetails.querySelector(
         'div.product--description[itemprop="description"] > div',
       );
-      for (const line of Array.from(descriptionBody?.querySelectorAll("p") ?? [])) {
-        const text = line.textContent?.trim() ?? "";
+      for (const line of Array.from(descriptionBody?.querySelectorAll('p') ?? [])) {
+        const text = line.textContent?.trim() ?? '';
         if (/Summenformel/i.test(text)) {
           // The formula carries <sub> markup; setFormula -> findFormulaInHtml converts it.
-          builder.setFormula(line.innerHTML.split(/Summenformel\s*:/i)[1] ?? "");
+          builder.setFormula(line.innerHTML.split(/Summenformel\s*:/i)[1] ?? '');
         } else if (/Molare?\s*Masse|Molmasse/i.test(text)) {
           // German number formatting: "496,42g/mol" -> 496.42 (thousands ".", decimal ",").
-          const mass = text.replace(/.*Masse\s*:?\s*/i, "").match(/[\d.,]+/)?.[0];
+          const mass = text.replace(/.*Masse\s*:?\s*/i, '').match(/[\d.,]+/)?.[0];
           if (mass) {
-            builder.setMoleweight(mass.replace(/\./g, "").replace(",", "."));
+            builder.setMoleweight(mass.replace(/\./g, '').replace(',', '.'));
           }
         } else if (/CAS/i.test(text)) {
           builder.setCAS(text);
@@ -570,21 +570,21 @@ export class SupplierS3Chemicals
       // Fall back to the product title for CAS when the spec list didn't carry one.
       const titleText =
         initialDetails.querySelector('h1.product--title[itemprop="name"]')?.textContent?.trim() ??
-        "";
-      if (!builder.get("cas")) {
+        '';
+      if (!builder.get('cas')) {
         builder.setCAS(titleText);
       }
 
       builder
         .setSpecSheetUrl(
-          initialDetails.querySelector('a[href*="documents/spezifikation"]')?.getAttribute("href"),
+          initialDetails.querySelector('a[href*="documents/spezifikation"]')?.getAttribute('href'),
         )
-        .setSDSUrl(initialDetails.querySelector('a[href*="documents/sdb"]')?.getAttribute("href"))
+        .setSDSUrl(initialDetails.querySelector('a[href*="documents/sdb"]')?.getAttribute('href'))
         .setImage(
-          initialDetails.querySelector(".image--element")?.getAttribute("data-img-original"),
+          initialDetails.querySelector('.image--element')?.getAttribute('data-img-original'),
         )
         .setThumbnail(
-          initialDetails.querySelector(".image--element")?.getAttribute("data-img-small"),
+          initialDetails.querySelector('.image--element')?.getAttribute('data-img-small'),
         );
 
       // --- Variant enumeration -------------------------------------------
@@ -604,11 +604,11 @@ export class SupplierS3Chemicals
           others.map(async (opt) => {
             const html = await this.httpGetHtml({
               path: baseUrl,
-              params: { template: "ajax", [group.selectName]: opt.value },
+              params: { template: 'ajax', [group.selectName]: opt.value },
             });
             if (!html) return undefined;
             const dom = createDOM(html);
-            const details = dom.querySelector("div.product--details") ?? dom;
+            const details = dom.querySelector('div.product--details') ?? dom;
             return this.extractVariantData(
               details,
               this.buildVariantUrl(baseUrl, group.selectName, opt.value),
@@ -647,7 +647,7 @@ export class SupplierS3Chemicals
         if (primary.sku !== undefined) builder.setSku(String(primary.sku));
         // Only overwrite the parent ID if the listing card didn't give us
         // the short ordernumber (which is the cleaner identifier).
-        if (!builder.get("id")) {
+        if (!builder.get('id')) {
           builder.setID(primary.id);
         }
       }
@@ -656,7 +656,7 @@ export class SupplierS3Chemicals
         builder.setVariants(variants);
       }
 
-      this.logger.debug("product", builder);
+      this.logger.debug('product', builder);
       return builder;
     });
   }
@@ -681,13 +681,13 @@ export class SupplierS3Chemicals
    */
   protected titleSelector(data: Element): Maybe<string> {
     if (!data) {
-      this.logger.error("No data for product", { data });
+      this.logger.error('No data for product', { data });
       return undefined;
     }
-    const anchor = data.querySelector("a.product--title");
-    const title = anchor?.getAttribute("title")?.trim() || anchor?.textContent?.trim();
+    const anchor = data.querySelector('a.product--title');
+    const title = anchor?.getAttribute('title')?.trim() || anchor?.textContent?.trim();
     if (!title) {
-      this.logger.error("No title for product", { data });
+      this.logger.error('No title for product', { data });
       return undefined;
     }
     return title;

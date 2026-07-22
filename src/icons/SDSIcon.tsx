@@ -1,9 +1,9 @@
 /** @internal */
-import CustomFileIcon, { type CustomFileIconProps } from "@/icons/CustomFileIcon";
-import { FC } from "react";
+import CustomFileIcon, { type CustomFileIconProps } from '@/icons/CustomFileIcon';
+import { FC } from 'react';
 
 /** Props for {@link SDSIcon}: all {@link CustomFileIconProps} except the fixed `label`. */
-export type SDSIconProps = Omit<CustomFileIconProps, "label">;
+export type SDSIconProps = Omit<CustomFileIconProps, 'label'>;
 
 /**
  * A Material-UI icon component that renders a Safety Data Sheet (SDS) document.

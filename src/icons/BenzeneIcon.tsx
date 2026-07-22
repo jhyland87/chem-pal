@@ -1,5 +1,5 @@
 /** @internal */
-import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
+import SvgIcon, { type SvgIconProps } from '@mui/material/SvgIcon';
 
 /**
  * A React component that renders a benzene molecule icon using SVG.

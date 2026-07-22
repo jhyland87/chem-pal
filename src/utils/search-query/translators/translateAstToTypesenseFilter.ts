@@ -1,4 +1,4 @@
-import type { SearchAst } from "../types";
+import type { SearchAst } from '../types';
 
 /**
  * Builds a single Typesense `name` condition. The value is backtick-quoted so
@@ -11,7 +11,7 @@ import type { SearchAst } from "../types";
  * @source
  */
 function leaf(value: string, negated: boolean): string {
-  const safe = value.replace(/`/g, "");
+  const safe = value.replace(/`/g, '');
   return negated ? `name:!\`${safe}\`` : `name:\`${safe}\``;
 }
 
@@ -27,17 +27,17 @@ function leaf(value: string, negated: boolean): string {
  */
 function build(ast: SearchAst, negated: boolean): string {
   switch (ast.type) {
-    case "term":
+    case 'term':
       return leaf(ast.value, negated);
-    case "and": {
-      const op = negated ? "||" : "&&";
+    case 'and': {
+      const op = negated ? '||' : '&&';
       return `(${build(ast.left, negated)} ${op} ${build(ast.right, negated)})`;
     }
-    case "or": {
-      const op = negated ? "&&" : "||";
+    case 'or': {
+      const op = negated ? '&&' : '||';
       return `(${build(ast.left, negated)} ${op} ${build(ast.right, negated)})`;
     }
-    case "not":
+    case 'not':
       return build(ast.operand, !negated);
   }
 }

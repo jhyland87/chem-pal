@@ -1,7 +1,7 @@
-import "fake-indexeddb/auto";
-import "@testing-library/jest-dom";
-import { vi } from "vitest";
-import enMessages from "../src/_locales/en/messages.json";
+import 'fake-indexeddb/auto';
+import '@testing-library/jest-dom';
+import { vi } from 'vitest';
+import enMessages from '../src/_locales/en/messages.json';
 
 const i18nMessages = enMessages as Record<
   string,
@@ -25,9 +25,9 @@ function getMessageMock(key: string, substitutions?: string | string[]): string 
   if (entry.placeholders && substitutions !== undefined) {
     const subs = Array.isArray(substitutions) ? substitutions : [substitutions];
     for (const [name, def] of Object.entries(entry.placeholders)) {
-      const match = /^\$(\d+)$/.exec(def.content ?? "");
+      const match = /^\$(\d+)$/.exec(def.content ?? '');
       if (!match) continue;
-      const value = subs[Number(match[1]) - 1] ?? "";
+      const value = subs[Number(match[1]) - 1] ?? '';
       message = message.replaceAll(`$${name}$`, value);
     }
   }
@@ -35,13 +35,13 @@ function getMessageMock(key: string, substitutions?: string | string[]): string 
 }
 
 // Mock specific MUI CSS file
-vi.mock("@mui/x-data-grid/esm/index.css", () => ({}));
+vi.mock('@mui/x-data-grid/esm/index.css', () => ({}));
 
 // Mock all CSS imports
-vi.mock("*.css", () => ({}));
-vi.mock("*.scss", () => ({}));
-vi.mock("*.sass", () => ({}));
-vi.mock("*.less", () => ({}));
+vi.mock('*.css', () => ({}));
+vi.mock('*.scss', () => ({}));
+vi.mock('*.sass', () => ({}));
+vi.mock('*.less', () => ({}));
 
 // Suppress console methods
 /**/
@@ -60,7 +60,7 @@ global.console = {
 // Replace global.fetch with a vi.fn() that throws by default
 const fetchMock = vi.fn(() => {
   throw new Error(
-    "All fetch calls must be mocked! Use (global.fetch as vi.Mock).mockImplementation() in your test.",
+    'All fetch calls must be mocked! Use (global.fetch as vi.Mock).mockImplementation() in your test.',
   );
 });
 global.fetch = fetchMock;
@@ -76,6 +76,6 @@ globalWithChrome.chrome = {
   ...(globalWithChrome.chrome ?? {}),
   i18n: {
     getMessage: getMessageMock,
-    getUILanguage: () => "en-US",
+    getUILanguage: () => 'en-US',
   },
 } as unknown as typeof chrome;

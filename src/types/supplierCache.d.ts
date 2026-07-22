@@ -1,4 +1,4 @@
-import type { Uom } from "@/constants/common";
+import type { Uom } from '@/constants/common';
 
 declare global {
   /**

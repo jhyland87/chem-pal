@@ -21,7 +21,7 @@
  * @source
  */
 export const FORMULA_ELEMENT_PATTERN =
-  "(?:H[eogsf]?|L[iavru]|B[eahkri]?|C[arofmusenld]?|N[eiahopdb]?|O[sg]?|F[rlem]?|M[godtcn]|A[lrsgutmc]|S[icerngmb]?|P[uabotmrd]?|Kr?|T[icebmsalh]|V|Z[nr]|G[ade]|R[buhenagf]|Yb?|I[nr]?|Xe|E[urs]|D[ysb]|W|U)";
+  '(?:H[eogsf]?|L[iavru]|B[eahkri]?|C[arofmusenld]?|N[eiahopdb]?|O[sg]?|F[rlem]?|M[godtcn]|A[lrsgutmc]|S[icerngmb]?|P[uabotmrd]?|Kr?|T[icebmsalh]|V|Z[nr]|G[ade]|R[buhenagf]|Yb?|I[nr]?|Xe|E[urs]|D[ysb]|W|U)';
 
 /**
  * Builds the chemical-formula matching regex, parameterized by the subscript token for the
@@ -50,19 +50,19 @@ export function buildFormulaPattern(subToken: string): RegExp {
   const subPart = `(?:${subToken}|[1-9][0-9]*)`;
   const unit = `(?:(?:${element}|[()\\[\\]])+(?:${subPart})*)`;
   const head = `(?:${unit})+`;
-  const charge = "(?:[+-](?![A-Za-z0-9]))?";
-  const separator = "(?:\\s*[·•‧∙⋅・･*]\\s*|\\.(?=[A-Za-z(\\[]))";
+  const charge = '(?:[+-](?![A-Za-z0-9]))?';
+  const separator = '(?:\\s*[·•‧∙⋅・･*]\\s*|\\.(?=[A-Za-z(\\[]))';
   const coefficient = `(?:${subToken}|[1-9][0-9]*(?:/[1-9][0-9]*)?|[xn])`;
 
   // Preceding char must be whitespace or start-of-string; the double-negative
   // form makes start/end fall through for free and covers \r\n, \t, etc.
-  const leftBoundary = "(?<![^\\s>])";
+  const leftBoundary = '(?<![^\\s>])';
   // Following char must be whitespace or end-of-string.
-  const rightBoundary = "(?![^\\s\\.<])";
+  const rightBoundary = '(?![^\\s\\.<])';
 
   return new RegExp(
     `${leftBoundary}((?![^<>]*>)${head}${charge}(?:${separator}(?:${coefficient})?${unit}+${charge})*)${rightBoundary}`,
-    "g",
+    'g',
   );
 }
 
@@ -82,7 +82,7 @@ export function buildFormulaPattern(subToken: string): RegExp {
  * @source
  */
 export function scoreFormula(candidate: string): number {
-  const elementCount = candidate.match(new RegExp(FORMULA_ELEMENT_PATTERN, "g"))?.length ?? 0;
+  const elementCount = candidate.match(new RegExp(FORMULA_ELEMENT_PATTERN, 'g'))?.length ?? 0;
   const hasCount = /[0-9₀-₉⁰-⁹]/.test(candidate);
   return elementCount * 100 + (hasCount ? 50 : 0) + candidate.length;
 }

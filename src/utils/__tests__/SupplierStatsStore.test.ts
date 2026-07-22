@@ -2,10 +2,10 @@ import {
   resetChromeStorageMock,
   restoreChromeStorageMock,
   setupChromeStorageMock,
-} from "@/__fixtures__/helpers/chrome/storageMock";
-import { toDateKey } from "@/helpers/supplierStats";
-import { clearSupplierStats } from "@/utils/idbCache";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+} from '@/__fixtures__/helpers/chrome/storageMock';
+import { toDateKey } from '@/helpers/supplierStats';
+import { clearSupplierStats } from '@/utils/idbCache';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   clearStats,
   getStats,
@@ -14,9 +14,9 @@ import {
   incrementProductCount,
   incrementSearchQueryCount,
   incrementSuccess,
-} from "../SupplierStatsStore";
+} from '../SupplierStatsStore';
 
-describe("SupplierStatsStore", () => {
+describe('SupplierStatsStore', () => {
   beforeAll(() => {
     setupChromeStorageMock();
   });
@@ -42,14 +42,14 @@ describe("SupplierStatsStore", () => {
     await vi.runAllTimersAsync();
   };
 
-  it("returns empty stats when nothing has been recorded", async () => {
+  it('returns empty stats when nothing has been recorded', async () => {
     vi.useRealTimers();
     const stats = await getStats();
     expect(stats).toEqual({});
   });
 
-  it("increments searchQueryCount for a supplier", async () => {
-    incrementSearchQueryCount("Carolina");
+  it('increments searchQueryCount for a supplier', async () => {
+    incrementSearchQueryCount('Carolina');
     await flushStore();
 
     vi.useRealTimers();
@@ -59,14 +59,14 @@ describe("SupplierStatsStore", () => {
     const today = toDateKey(new Date());
 
     expect(stats[today]).toBeDefined();
-    expect(stats[today]["Carolina"]).toBeDefined();
-    expect(stats[today]["Carolina"].searchQueryCount).toBe(1);
+    expect(stats[today]['Carolina']).toBeDefined();
+    expect(stats[today]['Carolina'].searchQueryCount).toBe(1);
   });
 
-  it("increments successCount for a supplier", async () => {
-    incrementSuccess("Ambeed");
-    incrementSuccess("Ambeed");
-    incrementSuccess("Ambeed");
+  it('increments successCount for a supplier', async () => {
+    incrementSuccess('Ambeed');
+    incrementSuccess('Ambeed');
+    incrementSuccess('Ambeed');
     await flushStore();
 
     vi.useRealTimers();
@@ -75,12 +75,12 @@ describe("SupplierStatsStore", () => {
     // stats panel matches the user's day, not UTC's.
     const today = toDateKey(new Date());
 
-    expect(stats[today]["Ambeed"].successCount).toBe(3);
+    expect(stats[today]['Ambeed'].successCount).toBe(3);
   });
 
-  it("increments failureCount for a supplier", async () => {
-    incrementFailure("LibertySci");
-    incrementFailure("LibertySci");
+  it('increments failureCount for a supplier', async () => {
+    incrementFailure('LibertySci');
+    incrementFailure('LibertySci');
     await flushStore();
 
     vi.useRealTimers();
@@ -89,15 +89,15 @@ describe("SupplierStatsStore", () => {
     // stats panel matches the user's day, not UTC's.
     const today = toDateKey(new Date());
 
-    expect(stats[today]["LibertySci"].failureCount).toBe(2);
+    expect(stats[today]['LibertySci'].failureCount).toBe(2);
   });
 
-  it("increments uniqueProductCount for a supplier", async () => {
-    incrementProductCount("Macklin");
-    incrementProductCount("Macklin");
-    incrementProductCount("Macklin");
-    incrementProductCount("Macklin");
-    incrementProductCount("Macklin");
+  it('increments uniqueProductCount for a supplier', async () => {
+    incrementProductCount('Macklin');
+    incrementProductCount('Macklin');
+    incrementProductCount('Macklin');
+    incrementProductCount('Macklin');
+    incrementProductCount('Macklin');
     await flushStore();
 
     vi.useRealTimers();
@@ -106,11 +106,11 @@ describe("SupplierStatsStore", () => {
     // stats panel matches the user's day, not UTC's.
     const today = toDateKey(new Date());
 
-    expect(stats[today]["Macklin"].uniqueProductCount).toBe(5);
+    expect(stats[today]['Macklin'].uniqueProductCount).toBe(5);
   });
 
-  it("increments parseErrorCount for a supplier", async () => {
-    incrementParseError("Himedia");
+  it('increments parseErrorCount for a supplier', async () => {
+    incrementParseError('Himedia');
     await flushStore();
 
     vi.useRealTimers();
@@ -119,15 +119,15 @@ describe("SupplierStatsStore", () => {
     // stats panel matches the user's day, not UTC's.
     const today = toDateKey(new Date());
 
-    expect(stats[today]["Himedia"].parseErrorCount).toBe(1);
+    expect(stats[today]['Himedia'].parseErrorCount).toBe(1);
   });
 
-  it("tracks multiple suppliers independently", async () => {
-    incrementSuccess("Carolina");
-    incrementSuccess("Carolina");
-    incrementSuccess("Ambeed");
-    incrementFailure("Ambeed");
-    incrementParseError("LibertySci");
+  it('tracks multiple suppliers independently', async () => {
+    incrementSuccess('Carolina');
+    incrementSuccess('Carolina');
+    incrementSuccess('Ambeed');
+    incrementFailure('Ambeed');
+    incrementParseError('LibertySci');
     await flushStore();
 
     vi.useRealTimers();
@@ -136,15 +136,15 @@ describe("SupplierStatsStore", () => {
     // stats panel matches the user's day, not UTC's.
     const today = toDateKey(new Date());
 
-    expect(stats[today]["Carolina"].successCount).toBe(2);
-    expect(stats[today]["Carolina"].failureCount).toBe(0);
-    expect(stats[today]["Ambeed"].successCount).toBe(1);
-    expect(stats[today]["Ambeed"].failureCount).toBe(1);
-    expect(stats[today]["LibertySci"].parseErrorCount).toBe(1);
+    expect(stats[today]['Carolina'].successCount).toBe(2);
+    expect(stats[today]['Carolina'].failureCount).toBe(0);
+    expect(stats[today]['Ambeed'].successCount).toBe(1);
+    expect(stats[today]['Ambeed'].failureCount).toBe(1);
+    expect(stats[today]['LibertySci'].parseErrorCount).toBe(1);
   });
 
-  it("initializes all fields to zero for new supplier entries", async () => {
-    incrementSuccess("NewSupplier");
+  it('initializes all fields to zero for new supplier entries', async () => {
+    incrementSuccess('NewSupplier');
     await flushStore();
 
     vi.useRealTimers();
@@ -152,7 +152,7 @@ describe("SupplierStatsStore", () => {
     // Local calendar day — the store keys buckets locally so "Today" in the
     // stats panel matches the user's day, not UTC's.
     const today = toDateKey(new Date());
-    const entry = stats[today]["NewSupplier"];
+    const entry = stats[today]['NewSupplier'];
 
     expect(entry.searchQueryCount).toBe(0);
     expect(entry.successCount).toBe(1);
@@ -161,8 +161,8 @@ describe("SupplierStatsStore", () => {
     expect(entry.parseErrorCount).toBe(0);
   });
 
-  it("clearStats removes all data", async () => {
-    incrementSuccess("Carolina");
+  it('clearStats removes all data', async () => {
+    incrementSuccess('Carolina');
     await flushStore();
 
     vi.useRealTimers();
@@ -172,11 +172,11 @@ describe("SupplierStatsStore", () => {
     expect(stats).toEqual({});
   });
 
-  it("batches rapid concurrent increments correctly", async () => {
+  it('batches rapid concurrent increments correctly', async () => {
     // Simulate many rapid increments that would cause race conditions
     // with a naive read-modify-write approach
     for (let i = 0; i < 20; i++) {
-      incrementSuccess("RapidTest");
+      incrementSuccess('RapidTest');
     }
     await flushStore();
 
@@ -186,11 +186,11 @@ describe("SupplierStatsStore", () => {
     // stats panel matches the user's day, not UTC's.
     const today = toDateKey(new Date());
 
-    expect(stats[today]["RapidTest"].successCount).toBe(20);
+    expect(stats[today]['RapidTest'].successCount).toBe(20);
   });
 
-  it("stores data keyed by date in IndexedDB", async () => {
-    incrementSuccess("TestSupplier");
+  it('stores data keyed by date in IndexedDB', async () => {
+    incrementSuccess('TestSupplier');
     await flushStore();
 
     vi.useRealTimers();
@@ -202,6 +202,6 @@ describe("SupplierStatsStore", () => {
     // Verify the date key is in YYYY-MM-DD format
     expect(stats[today]).toBeDefined();
     expect(today).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(stats[today]["TestSupplier"].successCount).toBe(1);
+    expect(stats[today]['TestSupplier'].successCount).toBe(1);
   });
 });

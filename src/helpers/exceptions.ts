@@ -12,7 +12,7 @@
 export class EmptyResponseError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "EmptyResponseError";
+    this.name = 'EmptyResponseError';
   }
 }
 
@@ -41,7 +41,7 @@ export class HttpError extends Error {
   public readonly statusText: string;
   constructor(status: number, statusText: string) {
     super(`HTTP Error: ${status} ${statusText}`);
-    this.name = "HttpError";
+    this.name = 'HttpError';
     this.status = status;
     this.statusText = statusText;
   }

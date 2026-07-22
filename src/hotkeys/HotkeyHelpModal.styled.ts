@@ -1,5 +1,5 @@
-import Box from "@mui/material/Box";
-import { styled } from "@mui/material/styles";
+import Box from '@mui/material/Box';
+import { styled } from '@mui/material/styles';
 
 /**
  * Theme-aware wrapper for the HotkeyHelpModal body. Static positioning,
@@ -34,10 +34,10 @@ export const HotkeyRow = styled(Box)(({ theme }) => ({
  * @source
  */
 export const HotkeyComboGroup = styled(Box)(({ theme }) => ({
-  display: "inline-flex",
+  display: 'inline-flex',
   gap: theme.spacing(0.4),
-  justifyContent: "flex-end",
-  flexWrap: "wrap",
+  justifyContent: 'flex-end',
+  flexWrap: 'wrap',
 }));
 
 /**
@@ -53,6 +53,6 @@ export const HotkeyCombo = styled(Box)(({ theme }) => ({
   borderRadius: Number(theme.shape.borderRadius),
   border: `1px solid ${theme.palette.divider}`,
   backgroundColor: theme.palette.action.hover,
-  minWidth: "1.4rem",
-  textAlign: "center",
+  minWidth: '1.4rem',
+  textAlign: 'center',
 }));

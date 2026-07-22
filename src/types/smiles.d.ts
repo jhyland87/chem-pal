@@ -16,80 +16,80 @@ declare global {
 
   /** Every character legal in a SMILES string (matches SMILES_CHAR in smiles.ts). */
   type SmilesChar =
-    | "a"
-    | "b"
-    | "c"
-    | "d"
-    | "e"
-    | "f"
-    | "g"
-    | "h"
-    | "i"
-    | "j"
-    | "k"
-    | "l"
-    | "m"
-    | "n"
-    | "o"
-    | "p"
-    | "q"
-    | "r"
-    | "s"
-    | "t"
-    | "u"
-    | "v"
-    | "w"
-    | "x"
-    | "y"
-    | "z"
-    | "A"
-    | "B"
-    | "C"
-    | "D"
-    | "E"
-    | "F"
-    | "G"
-    | "H"
-    | "I"
-    | "J"
-    | "K"
-    | "L"
-    | "M"
-    | "N"
-    | "O"
-    | "P"
-    | "Q"
-    | "R"
-    | "S"
-    | "T"
-    | "U"
-    | "V"
-    | "W"
-    | "X"
-    | "Y"
-    | "Z"
-    | "0"
-    | "1"
-    | "2"
-    | "3"
-    | "4"
-    | "5"
-    | "6"
-    | "7"
-    | "8"
-    | "9"
-    | "@"
-    | "+"
-    | "-"
-    | "="
-    | "#"
-    | "$"
-    | ":"
-    | "/"
-    | "\\"
-    | "."
-    | "%"
-    | "*";
+    | 'a'
+    | 'b'
+    | 'c'
+    | 'd'
+    | 'e'
+    | 'f'
+    | 'g'
+    | 'h'
+    | 'i'
+    | 'j'
+    | 'k'
+    | 'l'
+    | 'm'
+    | 'n'
+    | 'o'
+    | 'p'
+    | 'q'
+    | 'r'
+    | 's'
+    | 't'
+    | 'u'
+    | 'v'
+    | 'w'
+    | 'x'
+    | 'y'
+    | 'z'
+    | 'A'
+    | 'B'
+    | 'C'
+    | 'D'
+    | 'E'
+    | 'F'
+    | 'G'
+    | 'H'
+    | 'I'
+    | 'J'
+    | 'K'
+    | 'L'
+    | 'M'
+    | 'N'
+    | 'O'
+    | 'P'
+    | 'Q'
+    | 'R'
+    | 'S'
+    | 'T'
+    | 'U'
+    | 'V'
+    | 'W'
+    | 'X'
+    | 'Y'
+    | 'Z'
+    | '0'
+    | '1'
+    | '2'
+    | '3'
+    | '4'
+    | '5'
+    | '6'
+    | '7'
+    | '8'
+    | '9'
+    | '@'
+    | '+'
+    | '-'
+    | '='
+    | '#'
+    | '$'
+    | ':'
+    | '/'
+    | '\\'
+    | '.'
+    | '%'
+    | '*';
 
   /**
    * Walks the string one character at a time, tracking the open `(` and `[` depth as tuple
@@ -106,15 +106,15 @@ declare global {
     Parens extends 0[] = [],
     Brackets extends 0[] = [],
   > = S extends `${infer C}${infer Rest}`
-    ? C extends "("
+    ? C extends '('
       ? ValidateSmiles<Rest, [0, ...Parens], Brackets>
-      : C extends ")"
+      : C extends ')'
         ? Parens extends [0, ...infer PRest extends 0[]]
           ? ValidateSmiles<Rest, PRest, Brackets>
           : false // close paren with no matching open
-        : C extends "["
+        : C extends '['
           ? ValidateSmiles<Rest, Parens, [0, ...Brackets]>
-          : C extends "]"
+          : C extends ']'
             ? Brackets extends [0, ...infer BRest extends 0[]]
               ? ValidateSmiles<Rest, Parens, BRest>
               : false // close bracket with no matching open
@@ -149,7 +149,7 @@ declare global {
    * const lib = smilesList(["CCO", "CC(=O)O", "c1ccccc1"]); // ok
    * ```
    */
-  type Smiles<S extends string> = "" extends S ? never : ValidateSmiles<S> extends true ? S : never;
+  type Smiles<S extends string> = '' extends S ? never : ValidateSmiles<S> extends true ? S : never;
 }
 
 // This export is needed to make the file a module (same pattern as cas.d.ts).

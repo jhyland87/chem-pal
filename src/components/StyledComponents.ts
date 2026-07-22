@@ -11,16 +11,16 @@ import {
   Tooltip,
   type TooltipProps,
   Typography,
-} from "@mui/material";
-import Link from "@mui/material/Link";
-import { lighten, styled } from "@mui/material/styles";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import { createElement } from "react";
-import { darkPalette, designTokens, lightPalette } from "../themes";
+} from '@mui/material';
+import Link from '@mui/material/Link';
+import { lighten, styled } from '@mui/material/styles';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import { createElement } from 'react';
+import { darkPalette, designTokens, lightPalette } from '../themes';
 
 // === STATUS BAR ===
 
@@ -28,11 +28,11 @@ import { darkPalette, designTokens, lightPalette } from "../themes";
 export const StatusBarContainer = styled(Box)(({ theme }) => ({
   color: theme.palette.text.secondary,
   backgroundColor:
-    theme.palette.mode === "dark" ? "rgba(30, 30, 30, 0.85)" : "rgba(240, 240, 240, 0.85)",
+    theme.palette.mode === 'dark' ? 'rgba(30, 30, 30, 0.85)' : 'rgba(240, 240, 240, 0.85)',
   border: `1px solid ${theme.palette.divider}`,
-  borderBottom: "none",
-  borderLeft: "none",
-  backdropFilter: "blur(4px)",
+  borderBottom: 'none',
+  borderLeft: 'none',
+  backdropFilter: 'blur(4px)',
 }));
 
 // === SEARCH PAGE COMPONENTS ===
@@ -40,14 +40,14 @@ export const StatusBarContainer = styled(Box)(({ theme }) => ({
 // Main container with dynamic background gradient
 export const SearchContainer = styled(Box)(({ theme }) => ({
   flex: 1,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
   padding: theme.spacing(2),
-  width: process.env.NODE_ENV !== "production" ? "100vw" : "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
+  width: process.env.NODE_ENV !== 'production' ? '100vw' : '100%',
+  maxWidth: '100%',
+  margin: '0 auto',
 }));
 
 // Search field with dynamic theming and colors
@@ -56,25 +56,25 @@ export const SearchField = styled(TextField)(({ theme }) => ({
   boxShadow: designTokens.shadows.medium,
   border: `1px solid ${theme.palette.grey[300]}`,
 
-  "&:focus-within": {
+  '&:focus-within': {
     boxShadow: designTokens.shadows.high,
     border: `1px solid ${theme.palette.primary.main}40`,
   },
 
-  "& .MuiOutlinedInput-root": {
+  '& .MuiOutlinedInput-root': {
     backgroundColor: theme.palette.background.paper,
-    "& fieldset": {
-      border: "none",
+    '& fieldset': {
+      border: 'none',
     },
-    "&:hover fieldset": {
-      border: "none",
+    '&:hover fieldset': {
+      border: 'none',
     },
-    "&.Mui-focused fieldset": {
-      border: "none",
+    '&.Mui-focused fieldset': {
+      border: 'none',
     },
   },
 
-  "& .MuiInputBase-input": {
+  '& .MuiInputBase-input': {
     color: theme.palette.text.primary,
   },
 }));
@@ -82,12 +82,12 @@ export const SearchField = styled(TextField)(({ theme }) => ({
 // Search button with dynamic theming
 export const SearchButton = styled(IconButton)(({ theme }) => ({
   color: theme.palette.text.primary,
-  backgroundColor: "transparent",
-  transition: "0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-  "&:hover": {
+  backgroundColor: 'transparent',
+  transition: '0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
     backgroundColor: theme.palette.action.hover,
   },
-  "&:disabled": {
+  '&:disabled': {
     color: theme.palette.text.disabled,
   },
 }));
@@ -99,36 +99,36 @@ export const SearchButton = styled(IconButton)(({ theme }) => ({
  * stacking them on top of each other.
  */
 export const BadgeTray = styled(Box)({
-  position: "fixed",
+  position: 'fixed',
   bottom: 0,
   left: 0,
   zIndex: 9999,
-  display: "flex",
-  alignItems: "flex-end",
-  gap: "4px",
-  pointerEvents: "none",
+  display: 'flex',
+  alignItems: 'flex-end',
+  gap: '4px',
+  pointerEvents: 'none',
   // The leftmost badge hugs the corner; the rest keep both top corners rounded.
-  "& > *:first-of-type": {
+  '& > *:first-of-type': {
     borderTopLeftRadius: 0,
   },
 });
 
 /** Shared chrome for the corner status badges; colored per variant below. */
 const badgeBase = {
-  padding: "4px 8px",
-  borderRadius: "4px 4px 0px 0px",
-  fontSize: "0.65rem",
+  padding: '4px 8px',
+  borderRadius: '4px 4px 0px 0px',
+  fontSize: '0.65rem',
   fontWeight: 500,
-  backdropFilter: "blur(4px)",
-  boxShadow: "0 1px 4px rgba(0, 0, 0, 0.2)",
-  width: "fit-content",
-  height: "fit-content",
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  whiteSpace: "nowrap",
-  userSelect: "none",
-  pointerEvents: "none",
+  backdropFilter: 'blur(4px)',
+  boxShadow: '0 1px 4px rgba(0, 0, 0, 0.2)',
+  width: 'fit-content',
+  height: 'fit-content',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  whiteSpace: 'nowrap',
+  userSelect: 'none',
+  pointerEvents: 'none',
 } as const;
 
 /** Red "DEV BUILD" badge. Render inside a `BadgeTray`. */
@@ -149,18 +149,18 @@ export const AdvancedModeBadge = styled(Box)(({ theme }) => ({
 
 // Menu button with theme colors and positioning
 export const MenuButton = styled(IconButton)(({ theme }) => ({
-  position: "absolute",
-  top: "16px",
-  right: "16px",
+  position: 'absolute',
+  top: '16px',
+  right: '16px',
   zIndex: 10,
   backgroundColor: theme.palette.background.paper,
   boxShadow: designTokens.shadows.low,
   color: theme.palette.text.primary,
-  transition: "0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+  transition: '0.3s cubic-bezier(0.4, 0, 0.2, 1)',
 
-  "&:hover": {
+  '&:hover': {
     backgroundColor: theme.palette.grey[100],
-    transform: "translateY(-1px)",
+    transform: 'translateY(-1px)',
   },
 }));
 
@@ -168,9 +168,9 @@ export const MenuButton = styled(IconButton)(({ theme }) => ({
 
 // Accordion summary with reduced font size
 export const StyledAccordionSummary = styled(AccordionSummary)(() => ({
-  "& .MuiAccordionSummary-content": {
-    "& .MuiTypography-root": {
-      fontSize: "0.85rem",
+  '& .MuiAccordionSummary-content': {
+    '& .MuiTypography-root': {
+      fontSize: '0.85rem',
       fontWeight: 500,
     },
   },
@@ -178,22 +178,22 @@ export const StyledAccordionSummary = styled(AccordionSummary)(() => ({
 
 // Accordion details with reduced font size
 export const StyledAccordionDetails = styled(AccordionDetails)(() => ({
-  "& .MuiTypography-root": {
-    fontSize: "0.8rem",
+  '& .MuiTypography-root': {
+    fontSize: '0.8rem',
   },
-  "& .MuiFormControlLabel-label": {
-    fontSize: "0.8rem",
+  '& .MuiFormControlLabel-label': {
+    fontSize: '0.8rem',
   },
 }));
 
 // Accordion details with no padding (for supplier list)
 export const StyledAccordionDetailsNoPadding = styled(AccordionDetails)(() => ({
   padding: 0,
-  "& .MuiTypography-root": {
-    fontSize: "0.8rem",
+  '& .MuiTypography-root': {
+    fontSize: '0.8rem',
   },
-  "& .MuiFormControlLabel-label": {
-    fontSize: "0.8rem",
+  '& .MuiFormControlLabel-label': {
+    fontSize: '0.8rem',
   },
 }));
 
@@ -201,11 +201,11 @@ export const StyledAccordionDetailsNoPadding = styled(AccordionDetails)(() => ({
 export const SupplierListItem = styled(ListItem)(({ theme }) => ({
   paddingLeft: theme.spacing(1),
   paddingRight: theme.spacing(1),
-  border: "none",
-  backgroundColor: "transparent",
-  width: "100%",
-  textAlign: "left",
-  "&:hover": {
+  border: 'none',
+  backgroundColor: 'transparent',
+  width: '100%',
+  textAlign: 'left',
+  '&:hover': {
     backgroundColor: theme.palette.action.hover,
   },
 }));
@@ -224,34 +224,34 @@ export const SettingsTypography = styled(Typography)(({ theme }) => ({
 
 // Pagination container
 export const PaginationContainer = styled(Box)(({ theme }) => ({
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "16px",
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: '16px',
   borderTop: `1px solid ${theme.palette.divider}`,
   backgroundColor: theme.palette.background.paper,
 }));
 
 // Page size selector container
 export const PageSizeContainer = styled(Box)(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
+  display: 'flex',
+  alignItems: 'center',
   gap: theme.spacing(1),
 }));
 
 // Page size select
 export const PageSizeSelect = styled(Select)(({ theme }) => ({
   minWidth: 80,
-  size: "small",
-  "& .MuiSelect-select": {
+  size: 'small',
+  '& .MuiSelect-select': {
     padding: theme.spacing(0.5),
   },
 }));
 
 // Navigation buttons container
 export const NavigationContainer = styled(Box)(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
+  display: 'flex',
+  alignItems: 'center',
   gap: theme.spacing(1),
 }));
 
@@ -266,30 +266,30 @@ export const ColumnMenuItemContainer = styled(Box)(({ theme }) => ({
 // Filter icon button with conditional styling
 export const FilterIconButton = styled(IconButton, {
   shouldForwardProp: (prop) =>
-    prop !== "isActive" && prop !== "activeColor" && prop !== "textColor",
+    prop !== 'isActive' && prop !== 'activeColor' && prop !== 'textColor',
 })<{
   isActive: boolean;
   activeColor: string;
   textColor: string;
 }>(({ isActive, activeColor, textColor }) => ({
   color: isActive ? activeColor : textColor,
-  backgroundColor: isActive ? `${activeColor}15` : "transparent",
+  backgroundColor: isActive ? `${activeColor}15` : 'transparent',
 }));
 
 // Settings icon with color
 export const ColoredIconButton = styled(IconButton, {
-  shouldForwardProp: (prop) => prop !== "iconColor",
+  shouldForwardProp: (prop) => prop !== 'iconColor',
 })<{ iconColor: string }>(({ iconColor }) => ({
-  "& .MuiSvgIcon-root": {
+  '& .MuiSvgIcon-root': {
     color: iconColor,
   },
 }));
 
 // Back button with themed color
 export const BackIconButton = styled(IconButton, {
-  shouldForwardProp: (prop) => prop !== "iconColor",
+  shouldForwardProp: (prop) => prop !== 'iconColor',
 })<{ iconColor: string }>(({ iconColor }) => ({
-  "& .MuiSvgIcon-root": {
+  '& .MuiSvgIcon-root': {
     color: iconColor,
   },
 }));
@@ -303,41 +303,41 @@ export const BackButton = styled(IconButton)(({ theme }) => ({
 // in the results panel header next to the back button.
 export const SearchedQueryLabel = styled(Typography)(({ theme }) => ({
   marginLeft: theme.spacing(1),
-  fontSize: "0.85rem",
+  fontSize: '0.85rem',
   fontWeight: 400,
   color: theme.palette.text.secondary,
-  fontStyle: "italic",
+  fontStyle: 'italic',
   maxWidth: 240,
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  whiteSpace: "nowrap",
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 }));
 
 // === TABLE CELL COMPONENTS ===
 export const StyledTableCell = styled(TableCell)(() => ({
-  padding: "2px 0 0 0",
+  padding: '2px 0 0 0',
 }));
 
 // Empty state cell
 export const EmptyStateCell = styled(StyledTableCell)(({ theme }) => ({
-  whiteSpace: "pre-wrap",
-  fontFamily: "monospace",
-  textAlign: "center",
+  whiteSpace: 'pre-wrap',
+  fontFamily: 'monospace',
+  textAlign: 'center',
   paddingTop: theme.spacing(4),
   paddingBottom: theme.spacing(4),
   color: theme.palette.text.secondary,
-  fontStyle: "italic",
+  fontStyle: 'italic',
 }));
 
 // Table header cell with sorting
 export const SortableTableHeaderCell = styled(StyledTableCell, {
-  shouldForwardProp: (prop) => prop !== "canSort" && prop !== "cellWidth",
+  shouldForwardProp: (prop) => prop !== 'canSort' && prop !== 'cellWidth',
 })<{
   canSort: boolean;
   cellWidth: number;
 }>(({ theme, canSort, cellWidth }) => ({
   fontWeight: 600,
-  cursor: canSort ? "pointer" : "default",
+  cursor: canSort ? 'pointer' : 'default',
   width: `${cellWidth}px`,
   minWidth: `${cellWidth}px`,
   maxWidth: `${cellWidth}px`,
@@ -347,9 +347,9 @@ export const SortableTableHeaderCell = styled(StyledTableCell, {
 // Filter cell with fixed sizing. Minimal padding — the filter components
 // supply their own right-margin for breathing room between cells.
 export const FilterTableCell = styled(StyledTableCell, {
-  shouldForwardProp: (prop) => prop !== "cellWidth",
+  shouldForwardProp: (prop) => prop !== 'cellWidth',
 })<{ cellWidth: number }>(({ theme, cellWidth }) => ({
-  padding: "2px 0",
+  padding: '2px 0',
   width: `${cellWidth}px`,
   minWidth: `${cellWidth}px`,
   maxWidth: `${cellWidth}px`,
@@ -358,23 +358,23 @@ export const FilterTableCell = styled(StyledTableCell, {
 
 // Filter text field
 export const FilterTextField = styled(TextField)(() => ({
-  width: "100%",
-  "& .MuiOutlinedInput-root": {
-    height: "28px",
-    fontSize: "0.65rem",
+  width: '100%',
+  '& .MuiOutlinedInput-root': {
+    height: '28px',
+    fontSize: '0.65rem',
   },
-  "& .MuiOutlinedInput-input": {
-    padding: "4px 8px",
+  '& .MuiOutlinedInput-input': {
+    padding: '4px 8px',
   },
 }));
 
 // === SEARCH FORM COMPONENTS ===
 
-export const SearchFormPaper = styled("form")(({ theme }) => ({
-  padding: "2px 4px",
-  display: "flex",
-  alignItems: "center",
-  width: "100%",
+export const SearchFormPaper = styled('form')(({ theme }) => ({
+  padding: '2px 4px',
+  display: 'flex',
+  alignItems: 'center',
+  width: '100%',
   boxShadow: theme.shadows[2],
   backgroundColor: theme.palette.background.paper,
   borderRadius: theme.spacing(1),
@@ -383,19 +383,19 @@ export const SearchFormPaper = styled("form")(({ theme }) => ({
 export const SearchFormInput = styled(TextField)(({ theme }) => ({
   marginLeft: theme.spacing(2),
   flex: 1,
-  "& .MuiOutlinedInput-root": {
-    "& fieldset": {
-      border: "none",
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': {
+      border: 'none',
     },
-    "&:hover fieldset": {
-      border: "none",
+    '&:hover fieldset': {
+      border: 'none',
     },
-    "&.Mui-focused fieldset": {
-      border: "none",
+    '&.Mui-focused fieldset': {
+      border: 'none',
     },
   },
-  "& .MuiInputBase-input": {
-    fontSize: "1.15rem",
+  '& .MuiInputBase-input': {
+    fontSize: '1.15rem',
   },
 }));
 
@@ -408,20 +408,20 @@ export const SearchFormDivider = styled(Box)(({ theme }) => ({
 // === THEME SWITCHER COMPONENTS ===
 
 export const ThemeSwitcherButton = styled(IconButton, {
-  shouldForwardProp: (prop) => prop !== "currentPalette" && prop !== "mode",
+  shouldForwardProp: (prop) => prop !== 'currentPalette' && prop !== 'mode',
 })<{ currentPalette: typeof lightPalette | typeof darkPalette; mode: string }>(
   ({ currentPalette, mode }) => ({
     color: currentPalette.text,
-    "&:hover": {
+    '&:hover': {
       backgroundColor:
-        mode === "light" ? `${currentPalette.notificationBg}15` : `${currentPalette.text}15`,
+        mode === 'light' ? `${currentPalette.notificationBg}15` : `${currentPalette.text}15`,
     },
   }),
 );
 
 export const AppMainBox = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.background.default,
-  width: "100%",
+  width: '100%',
 }));
 
 export const StyledTableRow = styled(TableRow)(() => ({
@@ -432,13 +432,13 @@ export const StyledTableRow = styled(TableRow)(() => ({
 // from their parent in both light and dark themes.
 // Title-cell indentation is applied separately in TableColumns.
 export const SubRowTableRow = styled(StyledTableRow, {
-  shouldForwardProp: (prop) => prop !== "isSubRow",
+  shouldForwardProp: (prop) => prop !== 'isSubRow',
 })<{ isSubRow: boolean }>(({ theme, isSubRow }) => ({
   ...(isSubRow && {
-    "& > td, & > th": {
-      backgroundColor: theme.palette.mode === "light" ? "#f3f3f3" : "#252525",
+    '& > td, & > th': {
+      backgroundColor: theme.palette.mode === 'light' ? '#f3f3f3' : '#252525',
     },
-    "&:hover > td, &:hover > th": {
+    '&:hover > td, &:hover > th': {
       backgroundColor: theme.palette.action.hover,
     },
   }),
@@ -458,162 +458,162 @@ export const ProductDetailPanelCell = styled(StyledTableCell)(() => ({
 
 // The image sits on the left; everything else (description, details, variants)
 // flows in the content area to its right and never overlaps the image.
-export const ProductDetailPanelContainer = styled("div")(({ theme }) => ({
-  display: "flex",
-  alignItems: "flex-start",
+export const ProductDetailPanelContainer = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'flex-start',
   gap: theme.spacing(2),
   padding: theme.spacing(1.5, 2),
-  backgroundColor: theme.palette.mode === "light" ? "#f3f3f3" : "#252525",
+  backgroundColor: theme.palette.mode === 'light' ? '#f3f3f3' : '#252525',
 }));
 
 // Fixed-size box centering the thumbnail; the nested img is scaled to fit.
 // Positioning context for the hover nav arrows overlaid on the image.
-export const ProductDetailImageBox = styled("div")(({ theme }) => ({
-  position: "relative",
+export const ProductDetailImageBox = styled('div')(({ theme }) => ({
+  position: 'relative',
   width: DETAIL_IMAGE_SIZE,
   height: DETAIL_IMAGE_SIZE,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   flexShrink: 0,
   borderRadius: theme.shape?.borderRadius ?? 4,
-  overflow: "hidden",
+  overflow: 'hidden',
   backgroundColor: theme.palette.background.paper,
-  "& img": {
-    maxWidth: "100%",
-    maxHeight: "100%",
-    objectFit: "contain",
+  '& img': {
+    maxWidth: '100%',
+    maxHeight: '100%',
+    objectFit: 'contain',
   },
   // Reveal the arrows only while hovering the image.
-  "&:hover .image-nav": {
+  '&:hover .image-nav': {
     opacity: 1,
   },
 }));
 
 // Semi-transparent prev/next arrow overlaid on the left/right edge of the image.
 // Hidden until the image box is hovered (or the button is keyboard-focused).
-export const ProductImageNavButton = styled("button")(({ theme }) => ({
-  position: "absolute",
-  top: "50%",
-  transform: "translateY(-50%)",
+export const ProductImageNavButton = styled('button')(({ theme }) => ({
+  position: 'absolute',
+  top: '50%',
+  transform: 'translateY(-50%)',
   zIndex: 1,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   width: 24,
   height: 24,
   padding: 0,
-  border: "none",
-  borderRadius: "50%",
-  cursor: "pointer",
-  color: "#fff",
-  backgroundColor: "rgba(0, 0, 0, 0.4)",
+  border: 'none',
+  borderRadius: '50%',
+  cursor: 'pointer',
+  color: '#fff',
+  backgroundColor: 'rgba(0, 0, 0, 0.4)',
   opacity: 0,
-  transition: "opacity 120ms ease, background-color 120ms ease",
-  "&:hover": {
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
+  transition: 'opacity 120ms ease, background-color 120ms ease',
+  '&:hover': {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
-  "&:focus-visible": {
+  '&:focus-visible': {
     opacity: 1,
     outline: `2px solid ${theme.palette.primary.main}`,
   },
-  "&.prev": {
+  '&.prev': {
     left: theme.spacing(0.5),
   },
-  "&.next": {
+  '&.next': {
     right: theme.spacing(0.5),
   },
 }));
 
 // Left column holding the image and, beneath it, the SDS/TDS/COA doc links.
-export const ProductDetailImageColumn = styled("div")(({ theme }) => ({
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
+export const ProductDetailImageColumn = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
   gap: theme.spacing(1),
   flexShrink: 0,
 }));
 
 // Row of document icon links (SDS / TDS / COA) shown under the image.
-export const ProductDetailDocLinks = styled("div")(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
+export const ProductDetailDocLinks = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   gap: theme.spacing(1.5),
 }));
 
 // Content area right of the image: fills the remaining width (popup or full
 // browser tab), stacking the description above the details/variants body.
-export const ProductDetailContent = styled("div")(({ theme }) => ({
+export const ProductDetailContent = styled('div')(({ theme }) => ({
   flex: 1,
   minWidth: 0,
-  display: "flex",
-  flexDirection: "column",
+  display: 'flex',
+  flexDirection: 'column',
   gap: theme.spacing(1.5),
 }));
 
 // The description spans the full content width so long copy gets extra room
 // instead of being squeezed into a narrow column.
-export const ProductDetailDescription = styled("div")(({ theme }) => ({
-  fontSize: "0.8rem",
+export const ProductDetailDescription = styled('div')(({ theme }) => ({
+  fontSize: '0.8rem',
   lineHeight: 1.5,
-  "& > .detail-value": {
+  '& > .detail-value': {
     color: theme.palette.text.primary,
-    overflowWrap: "anywhere",
+    overflowWrap: 'anywhere',
   },
 }));
 
 // Advisory band above the description: this supplier ships more freely from a marketplace
 // storefront than from their own site. A styled div rather than a MUI Alert — Alert is reserved
 // here for the bottom-of-screen snackbars (PromptSnackbar, MigrationPrompt).
-export const ProductDetailStoreNotice = styled("div")(({ theme }) => ({
-  display: "flex",
-  flexWrap: "wrap",
-  alignItems: "baseline",
+export const ProductDetailStoreNotice = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'baseline',
   // Shrink to the text instead of stretching the full content width — in the browser tab that
   // would leave a mostly-empty band running the width of the table. maxWidth keeps it wrapping
   // inside the 400px popup, where the content column is only ~240px wide.
-  alignSelf: "flex-start",
-  maxWidth: "100%",
+  alignSelf: 'flex-start',
+  maxWidth: '100%',
   gap: theme.spacing(1),
-  fontSize: "0.8rem",
+  fontSize: '0.8rem',
   lineHeight: 1.5,
   padding: theme.spacing(0.75, 1),
   borderRadius: theme.shape.borderRadius,
   borderLeft: `3px solid ${theme.palette.info.main}`,
   backgroundColor:
-    theme.palette.mode === "light" ? "rgba(41, 182, 246, 0.08)" : "rgba(41, 182, 246, 0.12)",
-  "& > .store-links": {
-    display: "inline-flex",
-    flexWrap: "wrap",
+    theme.palette.mode === 'light' ? 'rgba(41, 182, 246, 0.08)' : 'rgba(41, 182, 246, 0.12)',
+  '& > .store-links': {
+    display: 'inline-flex',
+    flexWrap: 'wrap',
     gap: theme.spacing(1.5),
   },
 }));
 
 // Inline "[more]" / "[less]" toggle for a truncated product description.
-export const DescriptionToggleLink = styled("span")(({ theme }) => ({
+export const DescriptionToggleLink = styled('span')(({ theme }) => ({
   color: theme.palette.primary.main,
-  cursor: "pointer",
-  whiteSpace: "nowrap",
-  userSelect: "none",
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  userSelect: 'none',
   marginLeft: theme.spacing(0.5),
-  "&:hover": { textDecoration: "underline" },
+  '&:hover': { textDecoration: 'underline' },
 }));
 
 // Details + variants sit side by side when there's room and stack when narrow,
 // so the panel auto-adapts between the popup and the wider browser tab.
-export const ProductDetailBody = styled("div")(({ theme }) => ({
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+export const ProductDetailBody = styled('div')(({ theme }) => ({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
   gap: theme.spacing(2),
 }));
 
 // minWidth:0 lets long identifiers wrap inside the cell instead of forcing the
 // grid columns wider (which would break the layout).
-export const ProductDetailFieldsColumn = styled("div")(() => ({
+export const ProductDetailFieldsColumn = styled('div')(() => ({
   minWidth: 0,
-  display: "flex",
-  flexDirection: "column",
+  display: 'flex',
+  flexDirection: 'column',
   gap: 2,
 }));
 
@@ -624,99 +624,99 @@ export const ProductDetailVariantsColumn = styled(ProductDetailFieldsColumn)(() 
 // grid shrinks to its content (no full-width stretch) so the columns stay
 // grouped together instead of the name floating off to the left; names right-
 // align against the price and prices use tabular figures.
-export const ProductDetailVariantsGrid = styled("div")(({ theme }) => ({
-  display: "grid",
-  gridTemplateColumns: "minmax(0, auto) auto auto auto",
-  width: "fit-content",
-  maxWidth: "100%",
+export const ProductDetailVariantsGrid = styled('div')(({ theme }) => ({
+  display: 'grid',
+  gridTemplateColumns: 'minmax(0, auto) auto auto auto',
+  width: 'fit-content',
+  maxWidth: '100%',
   columnGap: theme.spacing(1.5),
   rowGap: 2,
-  fontSize: "0.8rem",
+  fontSize: '0.8rem',
   lineHeight: 1.5,
-  alignItems: "baseline",
+  alignItems: 'baseline',
   // The header spans every column so it centers over the whole table width
   // (names | prices | qty | trend), not just the first column.
-  "& > .variant-header": {
-    gridColumn: "1 / -1",
-    textAlign: "center",
+  '& > .variant-header': {
+    gridColumn: '1 / -1',
+    textAlign: 'center',
     marginBottom: 2,
   },
-  "& > .variant-name": {
+  '& > .variant-name': {
     color: theme.palette.text.primary,
     minWidth: 0,
-    textAlign: "right",
-    overflowWrap: "anywhere",
+    textAlign: 'right',
+    overflowWrap: 'anywhere',
   },
-  "& > .variant-price": {
+  '& > .variant-price': {
     color: theme.palette.text.primary,
-    textAlign: "right",
-    fontVariantNumeric: "tabular-nums",
-    whiteSpace: "nowrap",
+    textAlign: 'right',
+    fontVariantNumeric: 'tabular-nums',
+    whiteSpace: 'nowrap',
   },
-  "& > .variant-qty": {
+  '& > .variant-qty': {
     color: theme.palette.text.secondary,
-    whiteSpace: "nowrap",
+    whiteSpace: 'nowrap',
   },
-  "& > .variant-trend": {
-    justifySelf: "start",
-    whiteSpace: "nowrap",
+  '& > .variant-trend': {
+    justifySelf: 'start',
+    whiteSpace: 'nowrap',
   },
 }));
 
 // A single label/value pair. The label is muted and fixed-ish width so values
 // line up; the value wraps rather than overflowing.
-export const ProductDetailFieldRow = styled("div")(({ theme }) => ({
-  display: "flex",
+export const ProductDetailFieldRow = styled('div')(({ theme }) => ({
+  display: 'flex',
   gap: theme.spacing(1),
-  fontSize: "0.8rem",
+  fontSize: '0.8rem',
   lineHeight: 1.5,
-  "& > .detail-label": {
+  '& > .detail-label': {
     color: theme.palette.text.secondary,
     fontWeight: 600,
     flexShrink: 0,
     minWidth: 96,
   },
-  "& > .detail-value": {
+  '& > .detail-value': {
     color: theme.palette.text.primary,
     minWidth: 0,
-    overflowWrap: "anywhere",
+    overflowWrap: 'anywhere',
   },
 }));
 
 // === SEARCH PANEL HOME COMPONENTS ===
 
 export const SearchPanelHomeContainer = styled(SearchContainer)(() => ({
-  minHeight: "75vh",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  position: "relative",
-  paddingTop: "4vh",
+  minHeight: '75vh',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  position: 'relative',
+  paddingTop: '4vh',
 }));
 
 // Flex container anchoring the home panel's header icons in the upper-right.
 // Renders its children left-to-right so icon order follows DOM order.
-export const SearchPanelHomeTopBar = styled("div")(() => ({
-  position: "absolute",
+export const SearchPanelHomeTopBar = styled('div')(() => ({
+  position: 'absolute',
   top: 16,
   right: 16,
-  display: "flex",
+  display: 'flex',
   gap: 5,
   zIndex: 2,
 }));
 
 export const SearchPanelHomeForwardButton = styled(IconButton, {
-  shouldForwardProp: (prop) => prop !== "isDarkTheme",
+  shouldForwardProp: (prop) => prop !== 'isDarkTheme',
 })<{ isDarkTheme?: boolean }>(({ theme, isDarkTheme }) => ({
   color: theme.palette.text.primary,
   background: theme.palette.background.paper,
   boxShadow: theme.shadows[1],
-  "& .MuiBadge-badge": {
-    backgroundColor: isDarkTheme ? "#ffffff" : "#1976d2",
-    color: isDarkTheme ? "#000000" : "#ffffff",
-    fontSize: "0.65rem",
-    minWidth: "16px",
-    height: "16px",
+  '& .MuiBadge-badge': {
+    backgroundColor: isDarkTheme ? '#ffffff' : '#1976d2',
+    color: isDarkTheme ? '#000000' : '#ffffff',
+    fontSize: '0.65rem',
+    minWidth: '16px',
+    height: '16px',
   },
 }));
 
@@ -735,12 +735,12 @@ export const SearchPanelHomeMaximizeButton = styled(IconButton)(({ theme }) => (
 export const StyledTable = styled(Table)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
   borderRadius: `0 0 8px 8px`,
-  "& .MuiTableBody-root": {
+  '& .MuiTableBody-root': {
     backgroundColor: theme.palette.background.paper,
   },
-  "& .MuiTableRow-root": {
+  '& .MuiTableRow-root': {
     backgroundColor: theme.palette.background.paper,
-    "&:hover": {
+    '&:hover': {
       backgroundColor: theme.palette.action.hover,
     },
   },
@@ -760,10 +760,10 @@ export const StyledTableBody = styled(TableBody)(({ theme }) => ({
 
 // Results header container
 export const ResultsHeaderContainer = styled(Box)(({ theme }) => ({
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "8px 16px 0 16px",
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: '8px 16px 0 16px',
   background: theme.palette.background.paper,
   borderTopLeftRadius: theme.shape?.borderRadius ?? 0,
   borderTopRightRadius: theme.shape?.borderRadius ?? 0,
@@ -789,106 +789,106 @@ export const SearchResultsTable = styled(StyledTable)(() => ({
 
 // Sticky header cell
 export const StickyHeaderCell = styled(SortableTableHeaderCell)(({ theme }) => ({
-  position: "sticky",
+  position: 'sticky',
   top: 0,
   background: theme.palette.background.paper,
 }));
 
 // Header label + sort-arrow row, keeping the arrow inline with the label.
-export const HeaderCellContent = styled("span")(() => ({
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "1px",
+export const HeaderCellContent = styled('span')(() => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1px',
 }));
 
 // Fixed-width slot for the sort-direction arrow. Always reserves its width on a
 // sortable header so toggling between arrow and no-arrow never shifts the label.
 // Deliberately subtle: muted colour, small glyph, reduced opacity.
-export const SortIndicator = styled("span")(({ theme }) => ({
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  width: "14px",
+export const SortIndicator = styled('span')(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '14px',
   flexShrink: 0,
   color: theme.palette.text.secondary,
   opacity: 0.6,
-  "& svg": {
-    fontSize: "14px",
+  '& svg': {
+    fontSize: '14px',
   },
 }));
 
 // Error container
 export const ErrorContainer = styled(Box)(() => ({
-  textAlign: "center",
-  padding: "16px",
-  color: "#ef4444",
+  textAlign: 'center',
+  padding: '16px',
+  color: '#ef4444',
 }));
 
 // Error retry button
-export const ErrorRetryButton = styled("button")(() => ({
-  marginTop: "8px",
-  padding: "8px 16px",
-  backgroundColor: "#fef2f2",
-  color: "#b91c1c",
-  borderRadius: "4px",
-  "&:hover": {
-    backgroundColor: "#fee2e2",
+export const ErrorRetryButton = styled('button')(() => ({
+  marginTop: '8px',
+  padding: '8px 16px',
+  backgroundColor: '#fef2f2',
+  color: '#b91c1c',
+  borderRadius: '4px',
+  '&:hover': {
+    backgroundColor: '#fee2e2',
   },
 }));
 
 // === TABLE HEADER COMPONENTS ===
 
 // Table header cell with dynamic sizing
-export const TableHeaderCell = styled("th", {
-  shouldForwardProp: (prop) => prop !== "headerSize" && prop !== "colSize",
+export const TableHeaderCell = styled('th', {
+  shouldForwardProp: (prop) => prop !== 'headerSize' && prop !== 'colSize',
 })<{
   headerSize: number;
   colSize: number;
 }>(({ headerSize, colSize }) => ({
   width: `${headerSize}px`,
-  "--header-size": `${headerSize}px`,
-  "--col-size": `${colSize}px`,
+  '--header-size': `${headerSize}px`,
+  '--col-size': `${colSize}px`,
 }));
 
 // Column resizer handle
-export const ColumnResizer = styled("div", {
-  shouldForwardProp: (prop) => prop !== "isResizing",
+export const ColumnResizer = styled('div', {
+  shouldForwardProp: (prop) => prop !== 'isResizing',
 })<{ isResizing: boolean }>(({ isResizing }) => ({
-  cursor: "col-resize",
-  "&.resizer": {
-    position: "absolute",
+  cursor: 'col-resize',
+  '&.resizer': {
+    position: 'absolute',
     right: 0,
     top: 0,
     bottom: 0,
-    width: "4px",
-    backgroundColor: isResizing ? "#1976d2" : "transparent",
-    "&:hover": {
-      backgroundColor: "#1976d2",
+    width: '4px',
+    backgroundColor: isResizing ? '#1976d2' : 'transparent',
+    '&:hover': {
+      backgroundColor: '#1976d2',
     },
   },
-  "&.isResizing": {
-    backgroundColor: "#1976d2",
+  '&.isResizing': {
+    backgroundColor: '#1976d2',
   },
 }));
 
 // Sortable header content container
-export const SortableHeaderContent = styled("div", {
-  shouldForwardProp: (prop) => prop !== "canSort",
+export const SortableHeaderContent = styled('div', {
+  shouldForwardProp: (prop) => prop !== 'canSort',
 })<{ canSort: boolean }>(({ canSort }) => ({
-  cursor: canSort ? "pointer" : "default",
-  userSelect: canSort ? "none" : "auto",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "8px",
-  position: "relative",
+  cursor: canSort ? 'pointer' : 'default',
+  userSelect: canSort ? 'none' : 'auto',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: '8px',
+  position: 'relative',
 }));
 
 // Country flag tooltip with consistent styling
 export const CountryFlagTooltip = styled(Tooltip)(() => ({
-  "& .MuiTooltip-tooltip": {
-    margin: "0px",
-    fontSize: "0.7em",
+  '& .MuiTooltip-tooltip': {
+    margin: '0px',
+    fontSize: '0.7em',
   },
 }));
 
@@ -904,21 +904,21 @@ export const PriceHistoryTooltip = styled(({ className, ...props }: TooltipProps
 )(({ theme }) => {
   // Lift the dark surface a notch so the trend colors read clearly against it.
   const surface =
-    theme.palette.mode === "dark"
+    theme.palette.mode === 'dark'
       ? lighten(theme.palette.background.paper, 0.15)
       : theme.palette.background.paper;
   return {
-    "& .MuiTooltip-tooltip": {
+    '& .MuiTooltip-tooltip': {
       maxWidth: 320,
       backgroundColor: surface,
       color: theme.palette.text.primary,
-      textAlign: "left",
+      textAlign: 'left',
       padding: theme.spacing(1),
       border: `1px solid ${theme.palette.divider}`,
       borderRadius: Number(theme.shape.borderRadius),
       boxShadow: theme.shadows[6],
     },
-    "& .MuiTooltip-arrow": {
+    '& .MuiTooltip-arrow': {
       color: surface,
     },
   };
@@ -938,9 +938,9 @@ export const AboutModalBox = styled(Box)(({ theme }) => ({
 
 // Container for the about modal link buttons.
 export const AboutModalLinkContainer = styled(Box)(({ theme }) => ({
-  display: "flex",
+  display: 'flex',
   gap: theme.spacing(1),
-  justifyContent: "center",
+  justifyContent: 'center',
 }));
 
 // Link button for the about modal.
@@ -948,18 +948,18 @@ export const AboutModalLink = styled(Link)(({ theme }) => ({
   color: theme.palette.text.secondary,
   marginLeft: theme.spacing(1.25),
   marginRight: theme.spacing(1.25),
-  "&:hover": {
+  '&:hover': {
     color: theme.palette.primary.main,
     backgroundColor: theme.palette.action.hover,
   },
-  "&:focus": {
-    outline: "none",
+  '&:focus': {
+    outline: 'none',
   },
-  "&:active": {
-    outline: "none",
+  '&:active': {
+    outline: 'none',
   },
-  "&:focus-visible": {
-    outline: "none",
+  '&:focus-visible': {
+    outline: 'none',
   },
 }));
 // Paper tile for each contributor entry in the AboutModal. Theme-aware for

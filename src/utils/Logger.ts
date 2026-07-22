@@ -1,5 +1,5 @@
-import { getContrastText, hexToRgba } from "@/theme/colors";
-import { IS_DEV_BUILD } from "@/utils/isDevBuild";
+import { getContrastText, hexToRgba } from '@/theme/colors';
+import { IS_DEV_BUILD } from '@/utils/isDevBuild';
 
 /**
  * Available logging levels in ascending order of severity:
@@ -15,20 +15,20 @@ import { IS_DEV_BUILD } from "@/utils/isDevBuild";
  */
 export enum LogLevel {
   /** Detailed information for debugging purposes */
-  DEBUG = "debug",
+  DEBUG = 'debug',
   /** General information about program execution */
-  INFO = "info",
+  INFO = 'info',
   /** Potentially harmful situations that don't affect program execution */
-  WARN = "warn",
+  WARN = 'warn',
   /** Error conditions that affect program execution */
-  ERROR = "error",
+  ERROR = 'error',
 }
 
 /** Default log level when nothing is set via window/process env. DEBUG in dev, WARN in prod. */
 const DEFAULT_LOG_LEVEL_FOR_BUILD: LogLevel = IS_DEV_BUILD ? LogLevel.DEBUG : LogLevel.WARN;
 
 /** Separator inserted between a parent prefix and a child prefix in `Logger.sub()`. */
-const SUB_LOGGER_SEPARATOR = "|";
+const SUB_LOGGER_SEPARATOR = '|';
 
 /** Narrows an arbitrary string to a `LogLevel` enum member. */
 function isLogLevel(value: string): value is LogLevel {
@@ -94,10 +94,10 @@ export class Logger {
    * @source
    */
   private static readonly levelColors: Record<LogLevel, string> = {
-    [LogLevel.DEBUG]: "#9aa0a6",
-    [LogLevel.INFO]: "#4d7df2",
-    [LogLevel.WARN]: "#f5a623",
-    [LogLevel.ERROR]: "#e5484d",
+    [LogLevel.DEBUG]: '#9aa0a6',
+    [LogLevel.INFO]: '#4d7df2',
+    [LogLevel.WARN]: '#f5a623',
+    [LogLevel.ERROR]: '#e5484d',
   };
 
   /**
@@ -128,7 +128,7 @@ export class Logger {
    * Default is two spaces per level of nesting.
    * @source
    */
-  private readonly groupIndent = "  ";
+  private readonly groupIndent = '  ';
 
   /**
    * Retrieves the log level from environment variables.
@@ -154,17 +154,17 @@ export class Logger {
   private static getEnvLogLevel(): LogLevel {
     try {
       // Check browser environment first
-      if (typeof window !== "undefined") {
+      if (typeof window !== 'undefined') {
         // Read the non-standard global without widening the Window type.
-        const windowLevel = Reflect.get(window, "LOG_LEVEL");
-        const normalized = typeof windowLevel === "string" ? windowLevel.toLowerCase() : undefined;
+        const windowLevel = Reflect.get(window, 'LOG_LEVEL');
+        const normalized = typeof windowLevel === 'string' ? windowLevel.toLowerCase() : undefined;
         if (normalized && isLogLevel(normalized)) {
           return normalized;
         }
       }
 
       // Fall back to Node.js environment check
-      if (typeof process !== "undefined" && process.env) {
+      if (typeof process !== 'undefined' && process.env) {
         const nodeLevel = process.env.LOG_LEVEL?.toLowerCase();
         if (nodeLevel && isLogLevel(nodeLevel)) {
           return nodeLevel;
@@ -174,14 +174,14 @@ export class Logger {
       return DEFAULT_LOG_LEVEL_FOR_BUILD;
     } catch (err) {
       // Log the error for debugging purposes but continue with default
-      console.warn("Error determining log level:", err);
+      console.warn('Error determining log level:', err);
       return DEFAULT_LOG_LEVEL_FOR_BUILD;
     }
   }
 
   public static setEnvLogLevel(level: LogLevel): void {
-    Reflect.set(window, "LOG_LEVEL", level);
-    if (typeof process !== "undefined" && process.env) {
+    Reflect.set(window, 'LOG_LEVEL', level);
+    if (typeof process !== 'undefined' && process.env) {
       process.env.LOG_LEVEL = level;
     }
   }
@@ -398,7 +398,7 @@ export class Logger {
    * @source
    */
   private formatArgs(level: LogLevel, message: string): unknown[] {
-    if (this.color === undefined || typeof window === "undefined") {
+    if (this.color === undefined || typeof window === 'undefined') {
       return [this.formatMessage(level, message)];
     }
     // Short local time reads better than a full ISO string in a live devtools console.
@@ -412,7 +412,7 @@ export class Logger {
       `%c${timestamp} %c${this.prefix}%c ${indentation}${message}`,
       `border-left:5px solid ${Logger.levelColors[level]}; padding-left:8px; color:#6b7280;`,
       `background:${chipBackground}; color:${getContrastText(this.color)}; padding:1px 6px; border-radius:4px; font-weight:600;`,
-      "color:inherit; background:transparent; font-weight:normal; padding:0;",
+      'color:inherit; background:transparent; font-weight:normal; padding:0;',
     ];
   }
 
@@ -642,7 +642,7 @@ export class Logger {
    * ```
    * @source
    */
-  public count(label = "default"): void {
+  public count(label = 'default'): void {
     if (!this.shouldLog(LogLevel.INFO)) return;
     this.counters[label] = (this.counters[label] || 0) + 1;
     console.log(this.formatMessage(LogLevel.INFO, `${label}: ${this.counters[label]}`));
@@ -673,7 +673,7 @@ export class Logger {
    * ```
    * @source
    */
-  public countReset(label = "default"): void {
+  public countReset(label = 'default'): void {
     delete this.counters[label];
   }
 
@@ -799,7 +799,7 @@ export class Logger {
   public trace(message?: string): void {
     if (!this.shouldLog(LogLevel.DEBUG)) return;
     const err = new Error();
-    const stack = err.stack?.split("\n").slice(2).join("\n") || "";
+    const stack = err.stack?.split('\n').slice(2).join('\n') || '';
     const traceMessage = message ? `${message}\n${stack}` : stack;
     console.debug(this.formatMessage(LogLevel.DEBUG, traceMessage));
   }
@@ -843,11 +843,11 @@ export class Logger {
    */
   public table(tabularData: unknown, properties?: readonly string[]): void {
     if (!this.shouldLog(LogLevel.INFO)) return;
-    if (typeof tabularData !== "object" || tabularData === null) {
-      console.log(this.formatMessage(LogLevel.INFO, "Invalid data for table display"));
+    if (typeof tabularData !== 'object' || tabularData === null) {
+      console.log(this.formatMessage(LogLevel.INFO, 'Invalid data for table display'));
       return;
     }
-    console.log(this.formatMessage(LogLevel.INFO, "Table Output:"));
+    console.log(this.formatMessage(LogLevel.INFO, 'Table Output:'));
     console.table(tabularData, properties);
   }
 
@@ -883,7 +883,7 @@ export class Logger {
    * ```
    * @source
    */
-  public time(label = "default"): void {
+  public time(label = 'default'): void {
     if (this.timers[label]) {
       this.warn(`Timer '${label}' already exists`);
       return;
@@ -922,7 +922,7 @@ export class Logger {
    * ```
    * @source
    */
-  public timeEnd(label = "default"): void {
+  public timeEnd(label = 'default'): void {
     if (!this.timers[label]) {
       this.warn(`Timer '${label}' does not exist`);
       return;
@@ -966,7 +966,7 @@ export class Logger {
    * ```
    * @source
    */
-  public timeLog(label = "default", ...args: unknown[]): void {
+  public timeLog(label = 'default', ...args: unknown[]): void {
     if (!this.timers[label]) {
       this.warn(`Timer '${label}' does not exist`);
       return;
@@ -1018,7 +1018,7 @@ export class Logger {
     const timestamp = new Date().toISOString();
     const message = label ? `Timestamp '${label}': ${timestamp}` : `Timestamp: ${timestamp}`;
 
-    if (typeof console.timeStamp === "function") {
+    if (typeof console.timeStamp === 'function') {
       // Browser environment with timeStamp support
       console.timeStamp(label);
       console.debug(this.formatMessage(LogLevel.DEBUG, message));
@@ -1029,6 +1029,6 @@ export class Logger {
   }
 }
 
-if (typeof window !== "undefined") {
-  Reflect.set(window, "Logger", Logger);
+if (typeof window !== 'undefined') {
+  Reflect.set(window, 'Logger', Logger);
 }

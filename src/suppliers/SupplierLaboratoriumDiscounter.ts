@@ -1,19 +1,19 @@
-import { AVAILABILITY, CACHE, type Availability } from "@/constants/common";
-import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
-import { parsePrice } from "@/helpers/currency";
-import { parseQuantity } from "@/helpers/quantity";
-import { createDOM, urlencode } from "@/helpers/request";
-import { formatFormula, parseChemicalSpecs, parsePurity } from "@/helpers/science";
-import { firstMap, getUserLanguage, mapDefined } from "@/helpers/utils";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { cstorage } from "@/utils/storage";
-import { isFullURL, isPopulatedObject, isQuantityObject } from "@/utils/typeGuards/common";
+import { AVAILABILITY, CACHE, type Availability } from '@/constants/common';
+import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
+import { parsePrice } from '@/helpers/currency';
+import { parseQuantity } from '@/helpers/quantity';
+import { createDOM, urlencode } from '@/helpers/request';
+import { formatFormula, parseChemicalSpecs, parsePurity } from '@/helpers/science';
+import { firstMap, getUserLanguage, mapDefined } from '@/helpers/utils';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { cstorage } from '@/utils/storage';
+import { isFullURL, isPopulatedObject, isQuantityObject } from '@/utils/typeGuards/common';
 import {
   isProductObject,
   isSearchResponseOk,
   isValidSearchParams,
-} from "@/utils/typeGuards/laboratoriumdiscounter";
-import { SupplierBase } from "./SupplierBase";
+} from '@/utils/typeGuards/laboratoriumdiscounter';
+import { SupplierBase } from './SupplierBase';
 
 /**
  * Class for retrieving search results and iterating over Laboratorium Discounter online
@@ -62,19 +62,19 @@ export class SupplierLaboratoriumDiscounter
   implements ISupplier
 {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = "Laboratorium Discounter";
+  public readonly supplierName: string = 'Laboratorium Discounter';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = "https://www.laboratoriumdiscounter.nl";
+  public readonly baseURL: string = 'https://www.laboratoriumdiscounter.nl';
 
   // Shipping scope for Laboratorium Discounter
-  public readonly shipping: ShippingRange = "domestic";
+  public readonly shipping: ShippingRange = 'domestic';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = "NL";
+  public readonly country: CountryCode = 'NL';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa", "paypal", "ach"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa', 'paypal', 'ach'];
 
   // Override the type of queryResults to use our specific type
   protected queryResults: Array<LaboratoriumDiscounterProductObject> = [];
@@ -93,18 +93,18 @@ export class SupplierLaboratoriumDiscounter
   // HTTP headers used as a basis for all queries.
   protected headers: HeadersInit = {
     accept: [
-      "text/html",
-      "application/xhtml+xml",
-      "application/xml;q=0.9",
-      "image/avif",
-      "image/webp",
-      "image/apng",
-      "*/*;q=0.8",
-    ].join(","),
-    "accept-language": "en-US,en;q=0.6",
-    "cache-control": "no-cache",
-    pragma: "no-cache",
-    "x-requested-with": "XMLHttpRequest",
+      'text/html',
+      'application/xhtml+xml',
+      'application/xml;q=0.9',
+      'image/avif',
+      'image/webp',
+      'image/apng',
+      '*/*;q=0.8',
+    ].join(','),
+    'accept-language': 'en-US,en;q=0.6',
+    'cache-control': 'no-cache',
+    pragma: 'no-cache',
+    'x-requested-with': 'XMLHttpRequest',
   };
 
   /**
@@ -161,7 +161,7 @@ export class SupplierLaboratoriumDiscounter
    */
   protected makeQueryParams(limit?: number): LaboratoriumDiscounterSearchParams {
     return {
-      format: "json",
+      format: 'json',
       limit: String(limit ?? 100),
     };
   }
@@ -193,7 +193,7 @@ export class SupplierLaboratoriumDiscounter
   ): Promise<ProductBuilder<Product>[] | void> {
     const params = this.makeQueryParams();
     if (!isValidSearchParams(params)) {
-      this.logger.warn("Invalid search parameters:", { params });
+      this.logger.warn('Invalid search parameters:', { params });
       return;
     }
 
@@ -203,21 +203,21 @@ export class SupplierLaboratoriumDiscounter
     });
 
     if (!isSearchResponseOk(searchRequest)) {
-      this.logger.warn("Bad search response:", { searchRequest });
+      this.logger.warn('Bad search response:', { searchRequest });
       return;
     }
 
     // Capture the shop id so product images can be constructed in the search phase.
-    if (typeof searchRequest.shop.id === "number") {
+    if (typeof searchRequest.shop.id === 'number') {
       this.shopId = searchRequest.shop.id;
     }
 
     const rawSearchResults = Object.values(searchRequest.collection.products);
 
     const fuzzFiltered = this.fuzzyFilterAst<SearchResponseProduct>(rawSearchResults);
-    this.logger.debug("fuzzFiltered:", { query, searchRequest, rawSearchResults, fuzzFiltered });
+    this.logger.debug('fuzzFiltered:', { query, searchRequest, rawSearchResults, fuzzFiltered });
     const grouped = this.groupVariants<SearchResponseProduct>(fuzzFiltered);
-    this.logger.debug("grouped:", {
+    this.logger.debug('grouped:', {
       query,
       searchRequest,
       rawSearchResults,
@@ -306,7 +306,7 @@ export class SupplierLaboratoriumDiscounter
 
       // Build the product image from the shop id + image id in the search response so it is
       // populated even when the per-product detail fetch later fails.
-      if (this.shopId !== undefined && typeof product.image === "number" && product.image > 0) {
+      if (this.shopId !== undefined && typeof product.image === 'number' && product.image > 0) {
         productBuilder
           .setImage(
             `https://cdn.webshopapp.com/shops/${this.shopId}/files/${product.image}/image.jpeg`,
@@ -321,20 +321,20 @@ export class SupplierLaboratoriumDiscounter
 
   private metaAvailabilityToAvailability(availability: string): Availability {
     switch (availability) {
-      case "http://schema.org/InStock":
+      case 'http://schema.org/InStock':
         return AVAILABILITY.IN_STOCK;
-      case "http://schema.org/OutOfStock":
+      case 'http://schema.org/OutOfStock':
         return AVAILABILITY.OUT_OF_STOCK;
-      case "http://schema.org/LimitedAvailability":
+      case 'http://schema.org/LimitedAvailability':
         return AVAILABILITY.LIMITED_STOCK;
-      case "http://schema.org/PreOrder":
+      case 'http://schema.org/PreOrder':
         return AVAILABILITY.PRE_ORDER;
-      case "http://schema.org/BackOrder":
+      case 'http://schema.org/BackOrder':
         return AVAILABILITY.BACKORDER;
-      case "http://schema.org/Discontinued":
+      case 'http://schema.org/Discontinued':
         return AVAILABILITY.DISCONTINUED;
       default:
-        this.logger.warn("Unknown availability - Defaulting to UNKNOWN", { availability });
+        this.logger.warn('Unknown availability - Defaulting to UNKNOWN', { availability });
         return AVAILABILITY.UNKNOWN;
     }
   }
@@ -352,55 +352,55 @@ export class SupplierLaboratoriumDiscounter
   ): Promise<ProductBuilder<Product> | void> {
     // The builder stores absolute URLs, so extract just the pathname
     // before applying the locale prefix.
-    let urlPath = builder.get("url");
+    let urlPath = builder.get('url');
     if (isFullURL(urlPath)) {
-      urlPath = new URL(urlPath).pathname.replace(/^\//, "");
+      urlPath = new URL(urlPath).pathname.replace(/^\//, '');
     }
-    const path = urlPath.startsWith("en/") ? urlPath : `en/${urlPath}`;
+    const path = urlPath.startsWith('en/') ? urlPath : `en/${urlPath}`;
     const url = new URL(path, this.baseURL);
     const productResponse = await this.httpGetHtml({
       path: String(url),
     });
     if (!productResponse) {
-      this.logger.warn("No product response", { url });
+      this.logger.warn('No product response', { url });
       return;
     }
     const parsedHTML = createDOM(productResponse);
     // Apply each meta tag straight to the builder via its validating setter, rather than
     // accumulating a plain object and handing it to setData.
-    for (const meta of Array.from(parsedHTML.querySelectorAll("div[itemscope] > meta"))) {
-      const property = meta.getAttribute("itemprop");
+    for (const meta of Array.from(parsedHTML.querySelectorAll('div[itemscope] > meta'))) {
+      const property = meta.getAttribute('itemprop');
       if (!property) continue;
-      const content = meta.getAttribute("content") ?? "";
+      const content = meta.getAttribute('content') ?? '';
       switch (property) {
-        case "url":
+        case 'url':
           builder.setURL(content);
           break;
-        case "sku":
+        case 'sku':
           builder.setSku(content);
           break;
-        case "name":
+        case 'name':
           builder.setTitle(content);
           break;
-        case "description":
+        case 'description':
           builder.setDescription(content);
           // The description is a comma-separated spec list. Its first chunk is a cleaner title
           // than the `name` meta (so it intentionally overrides it); later chunks carry the CAS
           // and a "min. NN%" concentration. setCAS extracts the number from its chunk itself.
-          content.split(", ").forEach((val, idx) => {
+          content.split(', ').forEach((val, idx) => {
             if (idx === 0) builder.setTitle(val);
-            else if (val.includes("CAS-No")) builder.setCAS(val);
-            else if (val.includes("min.") && val.includes("%"))
-              builder.setConcentration(`${val.split(" ")[1]}%`);
+            else if (val.includes('CAS-No')) builder.setCAS(val);
+            else if (val.includes('min.') && val.includes('%'))
+              builder.setConcentration(`${val.split(' ')[1]}%`);
           });
           break;
-        case "price":
+        case 'price':
           builder.setPrice(content);
           break;
-        case "priceCurrency":
+        case 'priceCurrency':
           builder.setCurrencyCode(content).setCurrencySymbol(CURRENCY_SYMBOL_MAP[content]);
           break;
-        case "availability":
+        case 'availability':
           builder.setAvailability(this.metaAvailabilityToAvailability(content));
           break;
       }
@@ -408,27 +408,27 @@ export class SupplierLaboratoriumDiscounter
 
     const variants =
       mapDefined(
-        Array.from(parsedHTML.querySelectorAll("#bulkProduct > .customOptions")),
+        Array.from(parsedHTML.querySelectorAll('#bulkProduct > .customOptions')),
         (e) =>
           ({
             price:
               parsePrice(
                 e
                   .querySelector(
-                    ".variant-costPrice > div > .productPrice > .product-price.incl > span",
+                    '.variant-costPrice > div > .productPrice > .product-price.incl > span',
                   )
-                  ?.textContent?.trim() ?? "",
+                  ?.textContent?.trim() ?? '',
               )?.price ?? 0,
             quantity:
-              parseQuantity(e.querySelector(".variant-title > span")?.textContent?.trim() ?? "")
+              parseQuantity(e.querySelector('.variant-title > span')?.textContent?.trim() ?? '')
                 ?.quantity ?? 0,
             uom:
-              parseQuantity(e.querySelector(".variant-title > span")?.textContent?.trim() ?? "")
-                ?.uom ?? "",
+              parseQuantity(e.querySelector('.variant-title > span')?.textContent?.trim() ?? '')
+                ?.uom ?? '',
             sku:
-              Array.from(e.querySelectorAll("table td"))
-                ?.find((td) => td.textContent?.trim() === "SKU")
-                ?.nextElementSibling?.textContent?.trim() ?? "",
+              Array.from(e.querySelectorAll('table td'))
+                ?.find((td) => td.textContent?.trim() === 'SKU')
+                ?.nextElementSibling?.textContent?.trim() ?? '',
           }) satisfies Variant,
       ) ?? [];
 
@@ -443,7 +443,7 @@ export class SupplierLaboratoriumDiscounter
     }
     builder.setVariants(variants);
 
-    this.logger.debug("getProductDataFromHTML", { builder });
+    this.logger.debug('getProductDataFromHTML', { builder });
     return builder;
   }
 
@@ -460,19 +460,19 @@ export class SupplierLaboratoriumDiscounter
   ): Promise<ProductBuilder<Product> | void> {
     // The builder stores absolute URLs, so extract just the pathname
     // before applying the locale prefix.
-    let urlPath = builder.get("url");
+    let urlPath = builder.get('url');
     if (isFullURL(urlPath)) {
-      urlPath = new URL(urlPath).pathname.replace(/^\//, "");
+      urlPath = new URL(urlPath).pathname.replace(/^\//, '');
     }
-    const path = urlPath.startsWith("en/") ? urlPath : `en/${urlPath}`;
+    const path = urlPath.startsWith('en/') ? urlPath : `en/${urlPath}`;
 
     const productResponse = await this.httpGetJson({
       path,
-      params: { format: "json" },
+      params: { format: 'json' },
     });
 
     if (!productResponse || !isProductObject(productResponse)) {
-      this.logger.warn("Invalid JSON product data - did not pass typeguard:", {
+      this.logger.warn('Invalid JSON product data - did not pass typeguard:', {
         path,
         productResponse,
       });
@@ -487,7 +487,7 @@ export class SupplierLaboratoriumDiscounter
         if (variant.active === false) continue;
         const quantity = parseQuantity(variant.title);
         if (!isQuantityObject(quantity)) {
-          this.logger.warn("Invalid quantity - skipping", {
+          this.logger.warn('Invalid quantity - skipping', {
             parsedValue: variant.title,
             variant,
             builder,
@@ -496,8 +496,8 @@ export class SupplierLaboratoriumDiscounter
           continue;
         }
 
-        if (quantity.quantity === builder.get("quantity")) {
-          this.logger.debug("Quantity already exists - skipping", {
+        if (quantity.quantity === builder.get('quantity')) {
+          this.logger.debug('Quantity already exists - skipping', {
             quantity: quantity.quantity,
             builder,
             productResponse,
@@ -514,12 +514,12 @@ export class SupplierLaboratoriumDiscounter
           quantity: quantity.quantity,
           uom: quantity.uom,
           availability: variant.stock
-            ? typeof variant.stock === "object"
+            ? typeof variant.stock === 'object'
               ? ((stock) => {
                   if (stock.available) return AVAILABILITY.IN_STOCK;
                   if (stock.on_stock) return AVAILABILITY.IN_STOCK;
                   if (stock.allow_backorders) return AVAILABILITY.BACKORDER;
-                  this.logger.warn("Unknown availability stock - Defaulting to UNKNOWN", {
+                  this.logger.warn('Unknown availability stock - Defaulting to UNKNOWN', {
                     path,
                     stock: variant.stock,
                     variant,
@@ -534,7 +534,7 @@ export class SupplierLaboratoriumDiscounter
 
     // The product description HTML (`content`) carries the chemical specs (formula, molar mass,
     // CAS) and the SDS document links — parse what's there onto the builder.
-    if (typeof productData.content === "string" && productData.content.length > 0) {
+    if (typeof productData.content === 'string' && productData.content.length > 0) {
       await this.applyContentSpecs(builder, productData.content);
     }
 
@@ -567,7 +567,7 @@ export class SupplierLaboratoriumDiscounter
       // parseChemicalSpecs strips <sub> markup, so the formula arrives as plain ASCII (e.g.
       // "C6H15NO3.H3PO4"); format it with subscripts and adduct dots. If a formula ever comes
       // through still tagged, defer to setFormula's existing HTML handling.
-      const formula = specs.formula.includes("<sub>")
+      const formula = specs.formula.includes('<sub>')
         ? specs.formula
         : formatFormula(specs.formula);
       builder.setFormula(formula);
@@ -614,7 +614,7 @@ export class SupplierLaboratoriumDiscounter
       const lang = (
         text.match(/\(([A-Za-z]{2})\)\s*$/)?.[1] ??
         href.match(/-[a-z]{2}-([a-z]{2})\.pdf$/i)?.[1] ??
-        ""
+        ''
       ).toLowerCase();
       if (lang && !byLanguage.has(lang)) {
         byLanguage.set(lang, href);
@@ -624,7 +624,7 @@ export class SupplierLaboratoriumDiscounter
     if (byLanguage.size === 0) {
       return undefined;
     }
-    return byLanguage.get(language) ?? byLanguage.get("en") ?? [...byLanguage.values()][0];
+    return byLanguage.get(language) ?? byLanguage.get('en') ?? [...byLanguage.values()][0];
   }
 
   /**
@@ -649,9 +649,9 @@ export class SupplierLaboratoriumDiscounter
       const settings = (stored?.[CACHE.USER_SETTINGS] ?? {}) as Partial<UserSettings>;
       language = settings.language ?? language;
     } catch (error) {
-      this.logger.debug("Failed to read user language setting, falling back", { error });
+      this.logger.debug('Failed to read user language setting, falling back', { error });
     }
-    this.userLanguageCode = language.split("-")[0].toLowerCase();
+    this.userLanguageCode = language.split('-')[0].toLowerCase();
     return this.userLanguageCode;
   }
 
@@ -668,11 +668,11 @@ export class SupplierLaboratoriumDiscounter
     return this.getProductDataWithCache(product, async (builder) => {
       const jsonResponse = await this.getProductDataFromJSON(builder);
       if (jsonResponse) return jsonResponse;
-      this.logger.debug("getProductDataFromJSON failed - falling back to HTML scraping", {
+      this.logger.debug('getProductDataFromJSON failed - falling back to HTML scraping', {
         builder,
       });
       const htmlResponse = await this.getProductDataFromHTML(builder);
-      this.logger.debug("getProductDataFromHTML result:", { htmlResponse });
+      this.logger.debug('getProductDataFromHTML result:', { htmlResponse });
       return htmlResponse;
     });
   }

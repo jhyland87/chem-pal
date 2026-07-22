@@ -1,7 +1,7 @@
-import { descriptionPreviewLength } from "@/../config.json";
-import { DescriptionToggleLink } from "@/components/StyledComponents";
-import { i18n } from "@/helpers/i18n";
-import { type KeyboardEvent, type ReactElement, useState } from "react";
+import { descriptionPreviewLength } from '@/../config.json';
+import { DescriptionToggleLink } from '@/components/StyledComponents';
+import { i18n } from '@/helpers/i18n';
+import { type KeyboardEvent, type ReactElement, useState } from 'react';
 
 interface TruncatedDescriptionProps {
   /** The full description text to render. */
@@ -49,13 +49,13 @@ export function TruncatedDescription({
         tabIndex={0}
         onClick={toggle}
         onKeyDown={(event: KeyboardEvent<HTMLSpanElement>) => {
-          if (event.key === "Enter" || event.key === " ") {
+          if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
             toggle();
           }
         }}
       >
-        [{expanded ? i18n("common_show_less") : i18n("common_show_more")}]
+        [{expanded ? i18n('common_show_less') : i18n('common_show_more')}]
       </DescriptionToggleLink>
     </span>
   );

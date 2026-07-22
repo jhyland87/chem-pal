@@ -1,6 +1,6 @@
-import { partial_ratio } from "fuzzball";
-import type { FuzzScorerFn } from "@/constants/fuzzScorers";
-import type { SearchAst } from "./types";
+import { partial_ratio } from 'fuzzball';
+import type { FuzzScorerFn } from '@/constants/fuzzScorers';
+import type { SearchAst } from './types';
 
 /**
  * Options for {@link scoreAstMatch}.
@@ -115,22 +115,22 @@ export function scoreAstMatch(
   options: AstEvalOptions,
 ): number | null {
   switch (ast.type) {
-    case "term":
+    case 'term':
       return evaluateLeaf(title, ast.value, options);
-    case "and": {
+    case 'and': {
       const left = scoreAstMatch(title, ast.left, options);
       if (left === null) return null;
       const right = scoreAstMatch(title, ast.right, options);
       if (right === null) return null;
       return Math.min(left, right);
     }
-    case "or": {
+    case 'or': {
       const left = scoreAstMatch(title, ast.left, options);
       const right = scoreAstMatch(title, ast.right, options);
       if (left === null && right === null) return null;
       return Math.max(left ?? 0, right ?? 0);
     }
-    case "not": {
+    case 'not': {
       const operand = scoreAstMatch(title, ast.operand, options);
       return operand === null ? options.threshold : null;
     }

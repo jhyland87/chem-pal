@@ -1,4 +1,4 @@
-import { vi } from "vitest";
+import { vi } from 'vitest';
 
 type ActionIcon = {
   [size: number]: string;
@@ -15,10 +15,10 @@ const mockChromeAction = {
   _state: {
     icon: {} as ActionIcon,
     popup: {} as ActionPopup,
-    title: "",
-    badgeText: "",
-    badgeBackgroundColor: "",
-    badgeTextColor: "",
+    title: '',
+    badgeText: '',
+    badgeBackgroundColor: '',
+    badgeTextColor: '',
     enabled: true,
     userSettings: {
       isOnToolbar: true,
@@ -44,7 +44,7 @@ const mockChromeAction = {
   }),
 
   getPopup: vi.fn().mockImplementation(async (details?: { tabId?: number }) => {
-    return mockChromeAction._state.popup.popup || "";
+    return mockChromeAction._state.popup.popup || '';
   }),
 
   setTitle: vi.fn().mockImplementation(async (details: { title: string; tabId?: number }) => {
@@ -162,10 +162,10 @@ export const resetChromeActionMock = () => {
   mockChromeAction._state = {
     icon: {},
     popup: {},
-    title: "",
-    badgeText: "",
-    badgeBackgroundColor: "",
-    badgeTextColor: "",
+    title: '',
+    badgeText: '',
+    badgeBackgroundColor: '',
+    badgeTextColor: '',
     enabled: true,
     userSettings: {
       isOnToolbar: true,
@@ -182,10 +182,10 @@ export const restoreChromeActionMock = () => {
   mockChromeAction._state = {
     icon: {},
     popup: {},
-    title: "",
-    badgeText: "",
-    badgeBackgroundColor: "",
-    badgeTextColor: "",
+    title: '',
+    badgeText: '',
+    badgeBackgroundColor: '',
+    badgeTextColor: '',
     enabled: true,
     userSettings: {
       isOnToolbar: true,

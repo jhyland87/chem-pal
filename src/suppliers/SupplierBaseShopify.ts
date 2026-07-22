@@ -1,16 +1,16 @@
-import { AVAILABILITY, UOM } from "@/constants/common";
-import { findCAS } from "@/helpers/cas";
-import { parsePrice } from "@/helpers/currency";
-import { parseQuantity, standardizeUom, toMetricQuantity } from "@/helpers/quantity";
-import { findMolarity, parseChemicalSpecs } from "@/helpers/science";
-import { firstMap, htmlToAscii, mapDefined } from "@/helpers/utils";
-import searchProductsQuery from "@/queries/shopify-product-query.gql";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { translateAstToShopifyQuery } from "@/utils/search-query/translators/translateAstToShopifyQuery";
-import { isQuantityObject } from "@/utils/typeGuards/common";
-import { isValidShopifySearchResponse } from "@/utils/typeGuards/shopify";
-import { print } from "graphql";
-import { SupplierBase } from "./SupplierBase";
+import { AVAILABILITY, UOM } from '@/constants/common';
+import { findCAS } from '@/helpers/cas';
+import { parsePrice } from '@/helpers/currency';
+import { parseQuantity, standardizeUom, toMetricQuantity } from '@/helpers/quantity';
+import { findMolarity, parseChemicalSpecs } from '@/helpers/science';
+import { firstMap, htmlToAscii, mapDefined } from '@/helpers/utils';
+import searchProductsQuery from '@/queries/shopify-product-query.gql';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { translateAstToShopifyQuery } from '@/utils/search-query/translators/translateAstToShopifyQuery';
+import { isQuantityObject } from '@/utils/typeGuards/common';
+import { isValidShopifySearchResponse } from '@/utils/typeGuards/shopify';
+import { print } from 'graphql';
+import { SupplierBase } from './SupplierBase';
 
 /** Width (px) requested from the Shopify CDN for derived image thumbnails. */
 const SHOPIFY_THUMBNAIL_WIDTH = 200;
@@ -50,7 +50,7 @@ export abstract class SupplierBaseShopify
   implements ISupplier
 {
   /** Shopify GraphQL API version */
-  protected apiVersion: string = "2026-04";
+  protected apiVersion: string = '2026-04';
 
   // Shopify's search DSL supports AND/OR/NOT, so advanced queries are translated
   // server-side instead of using the keyword-only fallback.
@@ -118,13 +118,13 @@ export abstract class SupplierBaseShopify
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    this.logger.info("queryProducts", { query, limit });
+    this.logger.info('queryProducts', { query, limit });
     // The .gql import is a parsed DocumentNode (vite-plugin-graphql-loader); the Shopify endpoint
     // wants the raw query text, so print it and pass the variables alongside. The `first` over-fetch
     // (200) gives the fuzzy filter a wide candidate pool before slicing back down to `limit`.
     const graphQLQuery = print(searchProductsQuery);
     const graphQLVariables = this.getGraphQLVariables(query, 200);
-    this.logger.debug("querying for products", {
+    this.logger.debug('querying for products', {
       query,
       limit,
       graphQLQuery,
@@ -137,21 +137,21 @@ export abstract class SupplierBaseShopify
       host: this.apiURL,
       body: { query: graphQLQuery, variables: graphQLVariables },
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
     });
 
-    this.logger.debug("searchRequest", { searchRequest });
+    this.logger.debug('searchRequest', { searchRequest });
     if (!isValidShopifySearchResponse(searchRequest)) {
-      this.logger.error("Invalid Shopify search response", { response: searchRequest });
-      throw new Error("Invalid Shopify search response", { cause: { searchRequest } });
+      this.logger.error('Invalid Shopify search response', { response: searchRequest });
+      throw new Error('Invalid Shopify search response', { cause: { searchRequest } });
       //return;
     }
 
     const products = searchRequest.data.products.edges.map((edge) => edge.node);
 
     if (products.length === 0) {
-      this.logger.warn("Shopify search returned no products", { query });
+      this.logger.warn('Shopify search returned no products', { query });
       return;
     }
 
@@ -159,7 +159,7 @@ export abstract class SupplierBaseShopify
 
     const fuzzResults = this.fuzzyFilterAst<ShopifyProductNode>(products);
     const filteredResults = this.filterProducts(fuzzResults);
-    this.logger.debug("fuzzResults", {
+    this.logger.debug('fuzzResults', {
       query,
       searchRequest,
       products,
@@ -231,7 +231,7 @@ export abstract class SupplierBaseShopify
   protected initProductBuilders(results: ShopifyProductNode[]): ProductBuilder<Product>[] {
     return mapDefined(results, (product) => {
       const defaultVariantIndex = product.variants.edges.findIndex(
-        (edge) => edge.node.title === "Default Title",
+        (edge) => edge.node.title === 'Default Title',
       );
       const primaryVariant =
         defaultVariantIndex !== -1
@@ -239,7 +239,7 @@ export abstract class SupplierBaseShopify
           : product.variants.edges[0]?.node;
 
       if (!primaryVariant) return;
-      this.logger.debug("primaryVariant", { primaryVariant });
+      this.logger.debug('primaryVariant', { primaryVariant });
 
       const parsedPrice = parsePrice(`$${primaryVariant.price.amount}`);
       if (!parsedPrice) return;
@@ -283,8 +283,8 @@ export abstract class SupplierBaseShopify
       // the product amount. The variant weight includes packaging and runs high,
       // so it's only a fallback — and it's read from the structured weight fields
       // rather than a parsed string to preserve sub-1 values (e.g. 0.3 lb).
-      const parseableQuantityStrings = [product.title, primaryVariant.sku ?? "", descriptionText];
-      this.logger.debug("parseableQuantityStrings", { parseableQuantityStrings });
+      const parseableQuantityStrings = [product.title, primaryVariant.sku ?? '', descriptionText];
+      this.logger.debug('parseableQuantityStrings', { parseableQuantityStrings });
       const quantity =
         firstMap(parseQuantity, parseableQuantityStrings) ??
         this.weightQuantity(primaryVariant.weight, primaryVariant.weightUnit);
@@ -294,7 +294,7 @@ export abstract class SupplierBaseShopify
         const standard = toMetricQuantity(quantity);
         builder.setQuantity(standard.quantity, standard.uom);
       } else {
-        this.logger.warn("Failed to parse quantity from primary variant, defaulting to 1 EA", {
+        this.logger.warn('Failed to parse quantity from primary variant, defaulting to 1 EA', {
           parseableQuantityStrings,
           quantity,
           builder,
@@ -314,7 +314,7 @@ export abstract class SupplierBaseShopify
         const variantPrice = parsePrice(`$${variant.price.amount}`);
 
         const parsedQuantity =
-          firstMap(parseQuantity, [variant.title, variant.sku ?? ""]) ??
+          firstMap(parseQuantity, [variant.title, variant.sku ?? '']) ??
           this.weightQuantity(variant.weight, variant.weightUnit);
         const quantity = isQuantityObject(parsedQuantity)
           ? toMetricQuantity(parsedQuantity)
@@ -381,16 +381,16 @@ export abstract class SupplierBaseShopify
 
     for (const { node } of product.media?.edges ?? []) {
       const url = node.image?.url;
-      if (node.mediaContentType !== "IMAGE" || !url) continue;
+      if (node.mediaContentType !== 'IMAGE' || !url) continue;
 
-      const image: ProductImage = { href: url, type: "image" };
+      const image: ProductImage = { href: url, type: 'image' };
       if (node.alt) image.altText = node.alt;
       images.push(image);
 
       // The primary image's thumbnail is Shopify's pre-transformed featuredImage;
       // the rest fall back to a CDN width-derived thumbnail.
       const thumbnail = images.length === 1 && featured ? featured : this.thumbnailUrl(url);
-      if (thumbnail) images.push({ href: thumbnail, type: "thumbnail" });
+      if (thumbnail) images.push({ href: thumbnail, type: 'thumbnail' });
     }
     return images;
   }
@@ -413,8 +413,8 @@ export abstract class SupplierBaseShopify
   protected thumbnailUrl(url: string, width: number = SHOPIFY_THUMBNAIL_WIDTH): string | undefined {
     if (!URL.canParse(url)) return undefined;
     const parsed = new URL(url);
-    if (!parsed.hostname.includes("cdn.shopify")) return undefined;
-    parsed.searchParams.set("width", String(width));
+    if (!parsed.hostname.includes('cdn.shopify')) return undefined;
+    parsed.searchParams.set('width', String(width));
     return String(parsed);
   }
 

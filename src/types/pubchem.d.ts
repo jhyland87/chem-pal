@@ -3,7 +3,7 @@
  * @see https://pubchem.ncbi.nlm.nih.gov/sdq/sdqagent.cgi
  * @see https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest#section=Operation
  */
-import { StatusCodes } from "http-status-codes";
+import { StatusCodes } from 'http-status-codes';
 export {};
 
 declare global {
@@ -19,20 +19,20 @@ declare global {
    * Valid collection names for SDQ search queries
    */
   type SDQCollection =
-    | "compound"
-    | "substance"
-    | "pubmed"
-    | "patent"
-    | "springernature"
-    | "thiemechemistry"
-    | "wiley"
-    | "assay"
-    | "pathway"
-    | "disease"
-    | "targetprotein"
-    | "targetgene"
-    | "targettaxonomy"
-    | "clinicaltrials";
+    | 'compound'
+    | 'substance'
+    | 'pubmed'
+    | 'patent'
+    | 'springernature'
+    | 'thiemechemistry'
+    | 'wiley'
+    | 'assay'
+    | 'pathway'
+    | 'disease'
+    | 'targetprotein'
+    | 'targetgene'
+    | 'targettaxonomy'
+    | 'clinicaltrials';
 
   /**
    * Response structure for SDQ agent results from PubChem API
@@ -156,13 +156,13 @@ declare global {
   /**
    * Valid select expressions for SDQ queries
    */
-  type SDQSelect = keyof SDQResultItem | keyof SDQResultItem[] | "*";
+  type SDQSelect = keyof SDQResultItem | keyof SDQResultItem[] | '*';
 
   /**
    * Query parameters for the SDQ agent
    */
   interface SDQAgentQuery {
-    select?: SDQSelect[] | string | "*";
+    select?: SDQSelect[] | string | '*';
     where: SDQWhere;
     limit?: number;
   }

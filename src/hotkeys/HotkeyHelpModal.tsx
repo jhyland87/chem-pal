@@ -1,17 +1,17 @@
-import Divider from "@mui/material/Divider";
-import Modal from "@mui/material/Modal";
-import Tab from "@mui/material/Tab";
-import Tabs from "@mui/material/Tabs";
-import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
-import { i18n } from "@/helpers/i18n";
-import { useDebouncedCallback } from "@/shared/hooks";
-import { useEffect, useMemo, useState, type ChangeEvent, type SyntheticEvent } from "react";
-import { formatBindingTokens, formatSequenceTokens, resolveBinding } from "./matcher";
-import styles from "./HotkeyHelpModal.module.scss";
-import { HotkeyCombo, HotkeyComboGroup, HotkeyHelpBox, HotkeyRow } from "./HotkeyHelpModal.styled";
-import type { HotkeyConfig } from "./types";
-import { getHotkeyConfigs } from "./useHotkeys";
+import Divider from '@mui/material/Divider';
+import Modal from '@mui/material/Modal';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import { i18n } from '@/helpers/i18n';
+import { useDebouncedCallback } from '@/shared/hooks';
+import { useEffect, useMemo, useState, type ChangeEvent, type SyntheticEvent } from 'react';
+import { formatBindingTokens, formatSequenceTokens, resolveBinding } from './matcher';
+import styles from './HotkeyHelpModal.module.scss';
+import { HotkeyCombo, HotkeyComboGroup, HotkeyHelpBox, HotkeyRow } from './HotkeyHelpModal.styled';
+import type { HotkeyConfig } from './types';
+import { getHotkeyConfigs } from './useHotkeys';
 
 interface HotkeyHelpModalProps {
   open: boolean;
@@ -27,7 +27,7 @@ interface HotkeyHelpModalProps {
 function groupByGroup(configs: HotkeyConfig[]): Map<string, HotkeyConfig[]> {
   const groups = new Map<string, HotkeyConfig[]>();
   for (const config of configs) {
-    const group = config.group || "General";
+    const group = config.group || 'General';
     const bucket = groups.get(group);
     if (bucket) {
       bucket.push(config);
@@ -92,7 +92,7 @@ function entryMatches(config: HotkeyConfig, query: string): boolean {
     ...comboTokens(config),
     resolveBinding(config.keys),
   ]
-    .join(" ")
+    .join(' ')
     .toLowerCase();
   return haystack.includes(query);
 }
@@ -120,15 +120,15 @@ function entryMatches(config: HotkeyConfig, query: string): boolean {
  */
 function renderRow(entry: HotkeyConfig) {
   return (
-    <HotkeyRow key={entry.id} className={styles["hotkey-row"]}>
-      <HotkeyComboGroup className={styles["hotkey-combo-group"]}>
+    <HotkeyRow key={entry.id} className={styles['hotkey-row']}>
+      <HotkeyComboGroup className={styles['hotkey-combo-group']}>
         {comboTokens(entry).map((token, i) => (
-          <HotkeyCombo key={`${entry.id}-${i}`} className={styles["hotkey-combo"]}>
+          <HotkeyCombo key={`${entry.id}-${i}`} className={styles['hotkey-combo']}>
             {token}
           </HotkeyCombo>
         ))}
       </HotkeyComboGroup>
-      <Typography variant="body2" className={styles["hotkey-description"]}>
+      <Typography variant="body2" className={styles['hotkey-description']}>
         {localizeDescription(entry)}
       </Typography>
     </HotkeyRow>
@@ -142,9 +142,9 @@ export default function HotkeyHelpModal({ open, onClose }: HotkeyHelpModalProps)
     [],
   );
   const groupNames = useMemo(() => Array.from(grouped.keys()), [grouped]);
-  const [activeGroup, setActiveGroup] = useState<string>(groupNames[0] ?? "");
-  const [inputValue, setInputValue] = useState("");
-  const [query, setQuery] = useState("");
+  const [activeGroup, setActiveGroup] = useState<string>(groupNames[0] ?? '');
+  const [inputValue, setInputValue] = useState('');
+  const [query, setQuery] = useState('');
   const debouncedSetQuery = useDebouncedCallback((value: string) => setQuery(value), 200);
 
   // Reset to the first tab and clear the search each time the modal opens —
@@ -152,8 +152,8 @@ export default function HotkeyHelpModal({ open, onClose }: HotkeyHelpModalProps)
   useEffect(() => {
     if (open && groupNames.length > 0) {
       setActiveGroup(groupNames[0]);
-      setInputValue("");
-      setQuery("");
+      setInputValue('');
+      setQuery('');
     }
   }, [open, groupNames]);
 
@@ -192,24 +192,24 @@ export default function HotkeyHelpModal({ open, onClose }: HotkeyHelpModalProps)
       aria-labelledby="hotkey-help-title"
       sx={{ zIndex: (theme) => theme.zIndex.modal + 10 }}
     >
-      <HotkeyHelpBox className={styles["hotkey-help-box"]} onClick={(e) => e.stopPropagation()}>
-        <div className={styles["hotkey-help-header"]}>
+      <HotkeyHelpBox className={styles['hotkey-help-box']} onClick={(e) => e.stopPropagation()}>
+        <div className={styles['hotkey-help-header']}>
           <Typography
             id="hotkey-help-title"
             variant="subtitle1"
             component="h2"
-            className={styles["hotkey-help-title"]}
+            className={styles['hotkey-help-title']}
           >
-            {i18n("hotkeys_title")}
+            {i18n('hotkeys_title')}
           </Typography>
           <TextField
             value={inputValue}
             onChange={handleSearchChange}
             size="small"
             variant="outlined"
-            placeholder={i18n("hotkeys_search_placeholder")}
-            className={styles["hotkey-search"]}
-            slotProps={{ htmlInput: { "aria-label": i18n("hotkeys_search_placeholder") } }}
+            placeholder={i18n('hotkeys_search_placeholder')}
+            className={styles['hotkey-search']}
+            slotProps={{ htmlInput: { 'aria-label': i18n('hotkeys_search_placeholder') } }}
           />
         </div>
         {!isSearching && (
@@ -219,7 +219,7 @@ export default function HotkeyHelpModal({ open, onClose }: HotkeyHelpModalProps)
             variant="scrollable"
             scrollButtons="auto"
             allowScrollButtonsMobile
-            className={styles["hotkey-tabs"]}
+            className={styles['hotkey-tabs']}
           >
             {groupNames.map((group) => (
               <Tab key={group} label={localizeGroup(group)} value={group} />
@@ -227,17 +227,17 @@ export default function HotkeyHelpModal({ open, onClose }: HotkeyHelpModalProps)
           </Tabs>
         )}
         <Divider />
-        <div className={styles["hotkey-tab-panel"]}>
+        <div className={styles['hotkey-tab-panel']}>
           {!isSearching && activeEntries.map((entry) => renderRow(entry))}
           {isSearching && searchSections.length === 0 && (
-            <Typography variant="body2" className={styles["hotkey-no-matches"]}>
-              {i18n("hotkeys_no_matches")}
+            <Typography variant="body2" className={styles['hotkey-no-matches']}>
+              {i18n('hotkeys_no_matches')}
             </Typography>
           )}
           {isSearching &&
             searchSections.map((section) => (
               <div key={section.group}>
-                <Typography variant="caption" className={styles["hotkey-section-heading"]}>
+                <Typography variant="caption" className={styles['hotkey-section-heading']}>
                   {localizeGroup(section.group)}
                 </Typography>
                 {section.entries.map((entry) => renderRow(entry))}

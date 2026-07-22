@@ -1,6 +1,6 @@
-import { useHelpTooltip } from "@/shared/hooks/useHelpTooltip.hook";
-import Tooltip from "@mui/material/Tooltip";
-import { MouseEvent } from "react";
+import { useHelpTooltip } from '@/shared/hooks/useHelpTooltip.hook';
+import Tooltip from '@mui/material/Tooltip';
+import { MouseEvent } from 'react';
 
 /**
  * A tooltip component that displays help text with customizable timing and styling.
@@ -44,21 +44,21 @@ export default function HelpTooltip({
       title={text}
       placement="left-start"
       sx={{
-        "& .MuiTooltip-tooltip": {
-          backgroundColor: "rgba(0, 0, 0, 0.8)",
-          color: "white",
-          fontSize: "12px",
-          padding: "4px 8px",
-          borderRadius: "4px",
-          maxWidth: "200px",
-          textAlign: "center",
-          fontFamily: "Arial, sans-serif",
-          fontWeight: "bold",
-          textShadow: "1px 1px 2px rgba(0, 0, 0, 0.5)",
+        '& .MuiTooltip-tooltip': {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          color: 'white',
+          fontSize: '12px',
+          padding: '4px 8px',
+          borderRadius: '4px',
+          maxWidth: '200px',
+          textAlign: 'center',
+          fontFamily: 'Arial, sans-serif',
+          fontWeight: 'bold',
+          textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
           opacity: 0.8,
-          transition: "opacity 0.3s ease-in-out",
+          transition: 'opacity 0.3s ease-in-out',
 
-          "&:hover": {
+          '&:hover': {
             opacity: 1,
           },
         },

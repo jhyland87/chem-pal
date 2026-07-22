@@ -1,6 +1,6 @@
-import { FuzzScorerFn } from "@/constants/fuzzScorers";
-import { partial_ratio } from "fuzzball";
-import { SupplierBaseSearchanise } from "./SupplierBaseSearchanise";
+import { FuzzScorerFn } from '@/constants/fuzzScorers';
+import { partial_ratio } from 'fuzzball';
+import { SupplierBaseSearchanise } from './SupplierBaseSearchanise';
 
 /**
  * SupplierAsesChem2 class that extends SupplierBaseSearchanise and implements AsyncIterable<T>.
@@ -14,40 +14,40 @@ import { SupplierBaseSearchanise } from "./SupplierBaseSearchanise";
  */
 export class SupplierAsesChem2 extends SupplierBaseSearchanise implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = "AsesChem";
+  public readonly supplierName: string = 'AsesChem';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = "https://ases.in";
+  public readonly baseURL: string = 'https://ases.in';
 
   // Shipping scope for AsesChem2
-  public readonly shipping: ShippingRange = "international";
+  public readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = "IN";
+  public readonly country: CountryCode = 'IN';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   // Pure-search supplier: the initial search returns every field and
   // getProductData is a passthrough, so there's no per-product detail to cache.
   protected readonly skipProductDetailCache: boolean = true;
 
   protected productDefaults: ProductDefaults = {
-    currencyCode: "INR",
-    currencySymbol: "₹",
+    currencyCode: 'INR',
+    currencySymbol: '₹',
   };
 
   // API key for Typesense search API
-  protected apiKey: string = "0B7C9N9u3h";
+  protected apiKey: string = '0B7C9N9u3h';
 
   // Base search parameters for Typesense search API
   protected baseSearchParams: QueryParams = {
-    tab: "products",
+    tab: 'products',
 
-    "restrictBy[filter_ptag_bf51a4bd1f5efe4002b3d50737306113]": "Chemicals",
+    'restrictBy[filter_ptag_bf51a4bd1f5efe4002b3d50737306113]': 'Chemicals',
     //"restrictBy[stock_status]": "In Stock",
     //"restrictBy[vendor]": "aseschem",
-    "restrictBy[product_type]": "Chemicals",
+    'restrictBy[product_type]': 'Chemicals',
   };
 
   protected readonly fuzzScorerOverride: FuzzScorerFn = partial_ratio;

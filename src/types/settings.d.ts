@@ -2,7 +2,7 @@
  * Action types for the settings reducer used by SettingsPanel.
  */
 
-import { ACTION_TYPE } from "@/constants/common";
+import { ACTION_TYPE } from '@/constants/common';
 
 export {};
 
@@ -138,7 +138,7 @@ declare global {
      * style (MUI defaults and styled components) scales proportionally.
      * @example "medium"
      */
-    fontSize?: "small" | "medium" | "large";
+    fontSize?: 'small' | 'medium' | 'large';
 
     /**
      * When true, clicking the toolbar icon opens Chem Pal in a full browser tab
@@ -196,7 +196,7 @@ declare global {
      * Selected UI theme identifier
      * @example "light"
      */
-    theme?: "light" | "dark";
+    theme?: 'light' | 'dark';
 
     /**
      * List of column identifiers that should be hidden from view

@@ -1,12 +1,12 @@
-import BookmarkIcon from "@/icons/BookmarkIcon";
-import HistoryIcon from "@/icons/HistoryIcon";
-import SearchIcon from "@/icons/SearchIcon";
-import SettingsIcon from "@/icons/SettingsIcon";
-import StoreIcon from "@/icons/StoreIcon";
-import Tab from "@mui/material/Tab";
-import Tabs from "@mui/material/Tabs";
-import { SyntheticEvent } from "react";
-import IconTextFader from "./IconTextFader";
+import BookmarkIcon from '@/icons/BookmarkIcon';
+import HistoryIcon from '@/icons/HistoryIcon';
+import SearchIcon from '@/icons/SearchIcon';
+import SettingsIcon from '@/icons/SettingsIcon';
+import StoreIcon from '@/icons/StoreIcon';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import { SyntheticEvent } from 'react';
+import IconTextFader from './IconTextFader';
 /**
  * Generates props for a tab component.
  * @param index - The index of the tab
@@ -19,7 +19,7 @@ function tabProps(index: number, name: string) {
     id: `full-width-tab-${index}`,
     panel: name,
 
-    "aria-controls": `full-width-tabpanel-${index}`,
+    'aria-controls': `full-width-tabpanel-${index}`,
   };
 }
 
@@ -43,8 +43,8 @@ export default function TabHeader({ page, setPage }: TabHeaderProps) {
   return (
     <Tabs
       sx={{
-        "& .MuiTabs-indicator": {
-          backgroundColor: "rgba(0, 0, 0, 0.8)",
+        '& .MuiTabs-indicator': {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
         },
         borderRadius: 0,
       }}
@@ -61,7 +61,7 @@ export default function TabHeader({ page, setPage }: TabHeaderProps) {
             <SearchIcon />
           </IconTextFader>
         }
-        {...tabProps(0, "search-panel")}
+        {...tabProps(0, 'search-panel')}
       />
       <Tab
         label={
@@ -69,7 +69,7 @@ export default function TabHeader({ page, setPage }: TabHeaderProps) {
             <StoreIcon />
           </IconTextFader>
         }
-        {...tabProps(1, "suppliers-panel")}
+        {...tabProps(1, 'suppliers-panel')}
       />
       <Tab
         label={
@@ -77,7 +77,7 @@ export default function TabHeader({ page, setPage }: TabHeaderProps) {
             <BookmarkIcon />
           </IconTextFader>
         }
-        {...tabProps(2, "favorites-panel")}
+        {...tabProps(2, 'favorites-panel')}
       />
       <Tab
         label={
@@ -85,7 +85,7 @@ export default function TabHeader({ page, setPage }: TabHeaderProps) {
             <HistoryIcon />
           </IconTextFader>
         }
-        {...tabProps(3, "history-panel")}
+        {...tabProps(3, 'history-panel')}
       />
       <Tab
         label={
@@ -93,7 +93,7 @@ export default function TabHeader({ page, setPage }: TabHeaderProps) {
             <SettingsIcon />
           </IconTextFader>
         }
-        {...tabProps(4, "settings-panel")}
+        {...tabProps(4, 'settings-panel')}
       />
     </Tabs>
   );

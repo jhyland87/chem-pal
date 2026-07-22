@@ -1,5 +1,5 @@
-import TextField from "@mui/material/TextField";
-import { ChangeEvent, useEffect, useState } from "react";
+import TextField from '@mui/material/TextField';
+import { ChangeEvent, useEffect, useState } from 'react';
 
 /**
  * Compact text filter input for the results-table header row. The column
@@ -23,10 +23,10 @@ import { ChangeEvent, useEffect, useState } from "react";
  */
 export default function TextColumnFilter({ column }: FilterVariantInputProps) {
   const filterValue = column.getFilterValue();
-  const [columnFilterValue, setColumnFilterValue] = useState<string>(String(filterValue ?? ""));
+  const [columnFilterValue, setColumnFilterValue] = useState<string>(String(filterValue ?? ''));
 
   useEffect(() => {
-    setColumnFilterValue(String(filterValue ?? ""));
+    setColumnFilterValue(String(filterValue ?? ''));
   }, [filterValue]);
 
   const handleColumnTextFilterChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -48,10 +48,10 @@ export default function TextColumnFilter({ column }: FilterVariantInputProps) {
       sx={{
         m: 0,
         mr: 0.5,
-        "& .MuiInputBase-root": { height: 32, fontSize: "inherit" },
-        "& .MuiInputBase-input": { padding: "4px 8px", fontSize: "inherit" },
+        '& .MuiInputBase-root': { height: 32, fontSize: 'inherit' },
+        '& .MuiInputBase-input': { padding: '4px 8px', fontSize: 'inherit' },
       }}
-      slotProps={{ htmlInput: { "aria-label": column.getHeaderText() } }}
+      slotProps={{ htmlInput: { 'aria-label': column.getHeaderText() } }}
     />
   );
 }

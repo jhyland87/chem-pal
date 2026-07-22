@@ -1,9 +1,9 @@
 /** @internal */
-import CustomFileIcon, { type CustomFileIconProps } from "@/icons/CustomFileIcon";
-import { FC } from "react";
+import CustomFileIcon, { type CustomFileIconProps } from '@/icons/CustomFileIcon';
+import { FC } from 'react';
 
 /** Props for {@link COAIcon}: all {@link CustomFileIconProps} except the fixed `label`. */
-export type COAIconProps = Omit<CustomFileIconProps, "label">;
+export type COAIconProps = Omit<CustomFileIconProps, 'label'>;
 
 /**
  * A Material-UI icon component that renders a Certificate of Analysis (COA) document.

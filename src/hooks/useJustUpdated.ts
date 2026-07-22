@@ -1,9 +1,9 @@
-import { CACHE } from "@/constants/common";
-import type { ReleaseSection } from "@/helpers/updates";
-import { parseReleaseNotes } from "@/helpers/updates";
-import { cstorage } from "@/utils/storage";
-import { useCallback, useEffect, useState } from "react";
-import semver from "semver";
+import { CACHE } from '@/constants/common';
+import type { ReleaseSection } from '@/helpers/updates';
+import { parseReleaseNotes } from '@/helpers/updates';
+import { cstorage } from '@/utils/storage';
+import { useCallback, useEffect, useState } from 'react';
+import semver from 'semver';
 
 /**
  * A release the user has just moved onto, with the notes that shipped in it.
@@ -69,7 +69,7 @@ export function useJustUpdated(): UseJustUpdated {
         }
 
         // Fresh install: nothing to compare against, and no history to summarize.
-        if (typeof previousVersion !== "string") return;
+        if (typeof previousVersion !== 'string') return;
 
         const from = semver.valid(previousVersion);
         const to = semver.valid(__APP_VERSION__);
@@ -81,7 +81,7 @@ export function useJustUpdated(): UseJustUpdated {
 
         setNotice({ version: to, previousVersion: from, notes });
       } catch (error) {
-        console.error("Failed to check for a just-installed update:", { error });
+        console.error('Failed to check for a just-installed update:', { error });
       }
     };
 

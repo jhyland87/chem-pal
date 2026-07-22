@@ -1,4 +1,4 @@
-declare module "price-parser" {
+declare module 'price-parser' {
   interface Currency {
     code: string;
     symbols: string[];

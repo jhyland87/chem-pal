@@ -1,5 +1,5 @@
-import { translateAstToContainsFilter } from "./translateAstToContainsFilter";
-import type { SearchAst } from "../types";
+import { translateAstToContainsFilter } from './translateAstToContainsFilter';
+import type { SearchAst } from '../types';
 
 /**
  * Translates a {@link SearchAst} into a Wix catalog filter tree.

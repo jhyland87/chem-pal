@@ -2,4 +2,4 @@
 // module declarations). Uses a side-effect import rather than a triple-slash
 // `types="vite/client"` reference because tsconfig.app.json overrides `typeRoots`
 // to only @types + src/types, which the reference form can't resolve.
-import "vite/client";
+import 'vite/client';

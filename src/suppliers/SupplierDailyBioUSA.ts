@@ -1,5 +1,5 @@
-import { parseQuantity } from "@/helpers/quantity";
-import { SupplierBaseWix } from "./SupplierBaseWix";
+import { parseQuantity } from '@/helpers/quantity';
+import { SupplierBaseWix } from './SupplierBaseWix';
 
 // Daily Bio USA encodes the pack size in the SKU as a "SIZE" segment: "A932.SIZE.500G",
 // "L011.SIZE.1L". The separator is usually a dot but the catalog has comma typos too
@@ -20,22 +20,22 @@ const SKU_SIZE_REGEX = /\bSIZE\s*[.,]\s*([\d.,]+\s*[A-Za-z]+)/i;
  */
 export class SupplierDailyBioUSA extends SupplierBaseWix implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = "Daily Bio USA";
+  public readonly supplierName: string = 'Daily Bio USA';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = "https://www.dailybiousa.com/";
+  public readonly baseURL: string = 'https://www.dailybiousa.com/';
 
   // Shipping scope for Biofuran Chem
-  public readonly shipping: ShippingRange = "domestic";
+  public readonly shipping: ShippingRange = 'domestic';
 
   // The country code of the supplier.
   // This is used to determine the currency and other country-specific information.
-  public readonly country: CountryCode = "US";
+  public readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["ebayonly"];
+  public readonly paymentMethods: PaymentMethod[] = ['ebayonly'];
 
-  public readonly ebayStoreURL: string = "https://www.ebay.com/str/dailybiousa";
+  public readonly ebayStoreURL: string = 'https://www.ebay.com/str/dailybiousa';
 
   // Pure-search supplier: the initial search returns every field and
   // getProductData is a passthrough, so there's no per-product detail to cache.
@@ -60,7 +60,7 @@ export class SupplierDailyBioUSA extends SupplierBaseWix implements ISupplier {
    * @source
    */
   protected override getFallbackQuantity(product: ProductObject): ReturnType<typeof parseQuantity> {
-    const sizeMatch = SKU_SIZE_REGEX.exec(product.sku ?? "") ?? SKU_SIZE_REGEX.exec(product.name);
+    const sizeMatch = SKU_SIZE_REGEX.exec(product.sku ?? '') ?? SKU_SIZE_REGEX.exec(product.name);
     if (!sizeMatch) return;
 
     return parseQuantity(sizeMatch[1]);

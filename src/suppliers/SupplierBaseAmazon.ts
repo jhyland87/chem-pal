@@ -1,11 +1,11 @@
-import { AVAILABILITY } from "@/constants/common";
-import { getCurrencyCodeFromSymbol, parsePrice } from "@/helpers/currency";
-import { findElementWithText } from "@/helpers/dom";
-import { parseQuantity } from "@/helpers/quantity";
-import { createDOM } from "@/helpers/request";
-import { getUserLocation, mapDefined, tryParseJson } from "@/helpers/utils";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { SupplierBase } from "./SupplierBase";
+import { AVAILABILITY } from '@/constants/common';
+import { getCurrencyCodeFromSymbol, parsePrice } from '@/helpers/currency';
+import { findElementWithText } from '@/helpers/dom';
+import { parseQuantity } from '@/helpers/quantity';
+import { createDOM } from '@/helpers/request';
+import { getUserLocation, mapDefined, tryParseJson } from '@/helpers/utils';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { SupplierBase } from './SupplierBase';
 
 export interface SearchItem {
   id: string;
@@ -35,36 +35,36 @@ export interface SearchResult {
 
 export type AmazonListing = Pick<
   Product,
-  "id" | "title" | "url" | "price" | "currencySymbol" | "availability" | "sku"
+  'id' | 'title' | 'url' | 'price' | 'currencySymbol' | 'availability' | 'sku'
 >;
 
 const amazonDomains: CountryDomainMap = {
-  US: "https://www.amazon.com", // United States (default)
-  UK: "https://www.amazon.co.uk", // United Kingdom
-  DE: "https://www.amazon.de", // Germany
-  JP: "https://www.amazon.co.jp", // Japan
-  CA: "https://www.amazon.ca", // Canada
-  FR: "https://www.amazon.fr", // France
-  AU: "https://www.amazon.com.au", // Australia
-  CN: "https://www.amazon.cn", // China
-  ES: "https://www.amazon.es", // Spain
-  IT: "https://www.amazon.it", // Italy
-  IN: "https://www.amazon.in", // India
-  NL: "https://www.amazon.nl", // Netherlands
-  PL: "https://www.amazon.pl", // Poland
-  PT: "https://www.amazon.pt", // Portugal
-  SE: "https://www.amazon.se", // Sweden
-  SG: "https://www.amazon.com.sg", // Singapore
-  MX: "https://www.amazon.com.mx", // Mexico
-  AE: "https://www.amazon.ae", // United Arab Emirates
-  BR: "https://www.amazon.com.br", // Brazil
-  TR: "https://www.amazon.com.tr", // Turkey
-  SA: "https://www.amazon.sa", // Saudi Arabia
-  AR: "https://www.amazon.com.ar", // Argentina
-  BE: "https://www.amazon.com.be", // Belgium
-  EG: "https://www.amazon.eg", // Egypt
-  IE: "https://www.amazon.ie", // Ireland
-  ZA: "https://www.amazon.co.za", // South Africa
+  US: 'https://www.amazon.com', // United States (default)
+  UK: 'https://www.amazon.co.uk', // United Kingdom
+  DE: 'https://www.amazon.de', // Germany
+  JP: 'https://www.amazon.co.jp', // Japan
+  CA: 'https://www.amazon.ca', // Canada
+  FR: 'https://www.amazon.fr', // France
+  AU: 'https://www.amazon.com.au', // Australia
+  CN: 'https://www.amazon.cn', // China
+  ES: 'https://www.amazon.es', // Spain
+  IT: 'https://www.amazon.it', // Italy
+  IN: 'https://www.amazon.in', // India
+  NL: 'https://www.amazon.nl', // Netherlands
+  PL: 'https://www.amazon.pl', // Poland
+  PT: 'https://www.amazon.pt', // Portugal
+  SE: 'https://www.amazon.se', // Sweden
+  SG: 'https://www.amazon.com.sg', // Singapore
+  MX: 'https://www.amazon.com.mx', // Mexico
+  AE: 'https://www.amazon.ae', // United Arab Emirates
+  BR: 'https://www.amazon.com.br', // Brazil
+  TR: 'https://www.amazon.com.tr', // Turkey
+  SA: 'https://www.amazon.sa', // Saudi Arabia
+  AR: 'https://www.amazon.com.ar', // Argentina
+  BE: 'https://www.amazon.com.be', // Belgium
+  EG: 'https://www.amazon.eg', // Egypt
+  IE: 'https://www.amazon.ie', // Ireland
+  ZA: 'https://www.amazon.co.za', // South Africa
 };
 
 const userCountry = getUserLocation();
@@ -87,7 +87,7 @@ export abstract class SupplierBaseAmazon
    * the user's country is not found in the lookup table.
    * @source
    */
-  public readonly baseURL: string = amazonDomains[userCountry] || amazonDomains["US"];
+  public readonly baseURL: string = amazonDomains[userCountry] || amazonDomains['US'];
 
   /**
    * Terms found in the listing - An array of strings, at least one of which must be
@@ -138,30 +138,30 @@ export abstract class SupplierBaseAmazon
   ): Promise<ProductBuilder<Product>[] | void> {
     const queryPagination = async (paginationQuery: string, page: number = 1) => {
       const response = await this.httpPost({
-        path: `/s?k=${paginationQuery}&page=${page}&${this.extraParams || ""}`,
+        path: `/s?k=${paginationQuery}&page=${page}&${this.extraParams || ''}`,
         body: {
-          "page-content-type": "atf",
-          "prefetch-type": "rq",
-          "customer-action": "pagination",
+          'page-content-type': 'atf',
+          'prefetch-type': 'rq',
+          'customer-action': 'pagination',
         },
         headers: {
-          "Accept-Language": "en-US,en;q=0.6",
-          Referrerpolicy: "strict-origin-when-cross-origin",
-          Cookie: "i18n-prefs=USD; lc-main=en_US",
+          'Accept-Language': 'en-US,en;q=0.6',
+          Referrerpolicy: 'strict-origin-when-cross-origin',
+          Cookie: 'i18n-prefs=USD; lc-main=en_US',
         },
       });
       if (!response) {
-        this.logger.error("Invalid response:", { response });
+        this.logger.error('Invalid response:', { response });
         return;
       }
 
       const responseText = await response.text();
-      this.logger.debug("responseText BEFORE length:", {
+      this.logger.debug('responseText BEFORE length:', {
         length: responseText.length,
         responseText,
       });
-      const responseTextWithoutSearchTerm = responseText.replaceAll(paginationQuery, "");
-      this.logger.debug("responseText AFTER length:", {
+      const responseTextWithoutSearchTerm = responseText.replaceAll(paginationQuery, '');
+      this.logger.debug('responseText AFTER length:', {
         length: responseTextWithoutSearchTerm.length,
         responseTextWithoutSearchTerm,
       });
@@ -174,9 +174,9 @@ export abstract class SupplierBaseAmazon
       ),
     );
 
-    this.logger.debug("resultPages:", { query, resultPages });
+    this.logger.debug('resultPages:', { query, resultPages });
     if (!resultPages || !Array.isArray(resultPages) || resultPages.length === 0) {
-      throw new Error("Result pages not found");
+      throw new Error('Result pages not found');
     }
 
     const searchTerm = `${this.queryPrefix ?? this.supplierName}+${query}`;
@@ -185,8 +185,8 @@ export abstract class SupplierBaseAmazon
       if (!resultPage) return [];
 
       // New format: response is an HTML string
-      if (typeof resultPage === "string") {
-        const htmlWithoutSearchTerm = resultPage.replaceAll(searchTerm, "");
+      if (typeof resultPage === 'string') {
+        const htmlWithoutSearchTerm = resultPage.replaceAll(searchTerm, '');
         const doc = createDOM(htmlWithoutSearchTerm);
         // const resultElements = doc.querySelectorAll(
         //   '[data-component-type="s-search-result"][data-asin]',
@@ -197,8 +197,8 @@ export abstract class SupplierBaseAmazon
           (li) =>
             li instanceof HTMLElement &&
             li.checkVisibility() &&
-            li.getAttribute("data-asin") &&
-            li.getAttribute("data-uuid"),
+            li.getAttribute('data-asin') &&
+            li.getAttribute('data-uuid'),
         );
 
         return mapDefined(resultElements, (el) =>
@@ -212,19 +212,19 @@ export abstract class SupplierBaseAmazon
           if (!page) return;
           if (!Array.isArray(page)) return;
           if (page.length !== 3) return;
-          if (page[0] !== "dispatch") return;
-          if (!page[1].startsWith("data-main-slot:search-result-")) return;
-          return this.parseSearchResult(page[2].html.replaceAll(searchTerm, ""), this.baseURL);
+          if (page[0] !== 'dispatch') return;
+          if (!page[1].startsWith('data-main-slot:search-result-')) return;
+          return this.parseSearchResult(page[2].html.replaceAll(searchTerm, ''), this.baseURL);
         });
       }
 
       return [];
     });
 
-    this.logger.debug("Parsed results", { query, results });
+    this.logger.debug('Parsed results', { query, results });
 
     const fuzzedResults = this.fuzzyFilterAst(results, 40);
-    this.logger.debug("fuzzedResults", { query, results, fuzzedResults });
+    this.logger.debug('fuzzedResults', { query, results, fuzzedResults });
 
     return this.initProductBuilders(fuzzedResults);
   }
@@ -236,7 +236,7 @@ export abstract class SupplierBaseAmazon
    * @source
    */
   protected checkRequirementsForListing(result: HTMLElement): boolean {
-    const resultText = result.textContent?.toLowerCase() ?? "";
+    const resultText = result.textContent?.toLowerCase() ?? '';
     const searchList = [...(this.termsFoundInListing ?? []), this.supplierName];
 
     const matchedString = searchList.some((term) => {
@@ -251,7 +251,7 @@ export abstract class SupplierBaseAmazon
     });
 
     if (!matchedString) {
-      this.logger.debug("Did not find any of the specified strings in the product listing", {
+      this.logger.debug('Did not find any of the specified strings in the product listing', {
         matchedString,
         searchList,
         resultText,
@@ -272,11 +272,11 @@ export abstract class SupplierBaseAmazon
 
     const link = nodes.singleNodeValue;
     if (!(link instanceof HTMLAnchorElement)) {
-      this.logger.warn("No QID found", { doc });
+      this.logger.warn('No QID found', { doc });
       return;
     }
-    console.log("Found QID:", link.href.split("qid=").at(1));
-    return link.href.split("qid=").at(1);
+    console.log('Found QID:', link.href.split('qid=').at(1));
+    return link.href.split('qid=').at(1);
   }
 
   /**
@@ -294,7 +294,7 @@ export abstract class SupplierBaseAmazon
       // term (which would include the suppliers name), the exact search term (supplier+query) is removed from
       // the raw HTML before this method is called.
       if (!raw.toLowerCase().includes(this.supplierName.toLowerCase())) {
-        this.logger.debug("This item does not contain the suppliers name anywhere, removing", {
+        this.logger.debug('This item does not contain the suppliers name anywhere, removing', {
           raw,
         });
         return;
@@ -302,37 +302,37 @@ export abstract class SupplierBaseAmazon
 
       // Sometimes those sponsored listings can sneak through... Just outright delete anything that has the
       // word "sponsored" in the raw HTML.
-      if (raw.toLowerCase().includes("sponsored")) {
-        this.logger.debug("This item is a sponsored listing, removing", {
+      if (raw.toLowerCase().includes('sponsored')) {
+        this.logger.debug('This item is a sponsored listing, removing', {
           raw,
         });
         return;
       }
 
       const listingDocument = createDOM(`<html><body>${raw}</body></html>`);
-      this.logger.debug("listingDocument", { raw, listingDocument });
+      this.logger.debug('listingDocument', { raw, listingDocument });
 
       const documentBody = listingDocument.body;
-      const productElement = documentBody.querySelector("[data-asin]");
+      const productElement = documentBody.querySelector('[data-asin]');
       if (!productElement) {
-        this.logger.warn("No product element found", { raw, documentBody });
+        this.logger.warn('No product element found', { raw, documentBody });
         return;
       }
-      const asin = productElement.getAttribute("data-asin");
-      const productId = productElement.getAttribute("data-uuid");
+      const asin = productElement.getAttribute('data-asin');
+      const productId = productElement.getAttribute('data-uuid');
 
       if (!asin || !productId) {
-        this.logger.warn("No ASIN or product ID found", { raw, documentBody, productElement });
+        this.logger.warn('No ASIN or product ID found', { raw, documentBody, productElement });
         return;
       }
 
-      this.logger.debug("documentBody", { raw, documentBody, productElement, asin, productId });
+      this.logger.debug('documentBody', { raw, documentBody, productElement, asin, productId });
 
       const qid = this.findQID(listingDocument);
       if (!qid) {
-        this.logger.warn("No QID found", { raw, listingDocument });
+        this.logger.warn('No QID found', { raw, listingDocument });
       } else {
-        this.logger.debug("qid", { raw, listingDocument, qid });
+        this.logger.debug('qid', { raw, listingDocument, qid });
       }
 
       // Check if the listing meets the requirements. Use textContent because many of the hyperlinks
@@ -342,39 +342,39 @@ export abstract class SupplierBaseAmazon
       }
 
       if (!documentBody) {
-        throw new Error("Document body not found");
+        throw new Error('Document body not found');
       }
 
-      const stockElement = findElementWithText(documentBody, "left in stock", "span");
+      const stockElement = findElementWithText(documentBody, 'left in stock', 'span');
       if (stockElement) {
-        this.logger.debug("stockElement", { stockElement });
+        this.logger.debug('stockElement', { stockElement });
       }
 
       // Extracting the title
-      const titleElement = documentBody.querySelector("a h2 span");
+      const titleElement = documentBody.querySelector('a h2 span');
       const title = titleElement ? titleElement.textContent?.trim() : null;
 
       // Extracting the price
-      const priceElement = documentBody.querySelector("span.a-price span.a-price-whole");
+      const priceElement = documentBody.querySelector('span.a-price span.a-price-whole');
       let price = priceElement ? priceElement.textContent?.trim() : null;
 
       // Extracting the currency
-      const currencyElement = documentBody.querySelector("span.a-price-symbol");
+      const currencyElement = documentBody.querySelector('span.a-price-symbol');
       let currency = currencyElement ? currencyElement.textContent?.trim() : null;
 
       // Extracting the original price
-      const originalPriceElement = documentBody.querySelector("span.a-text-price span.a-offscreen");
+      const originalPriceElement = documentBody.querySelector('span.a-text-price span.a-offscreen');
       let originalPrice = originalPriceElement ? originalPriceElement.textContent?.trim() : null;
 
       // This is a fallback for when the price and currency are not found in the expected locations.
       if (!price || !currency) {
-        const priceAndCurrency = Array.from(documentBody.querySelectorAll("span, div"))
+        const priceAndCurrency = Array.from(documentBody.querySelectorAll('span, div'))
           .map((element) => element.textContent)
           .find((text) => !!text && /^\$\d+\.\d+$/.test(text));
 
         if (priceAndCurrency) {
           const parsedPrice = parsePrice(priceAndCurrency);
-          if (!price) price = String(parsedPrice?.price ?? "");
+          if (!price) price = String(parsedPrice?.price ?? '');
           if (!currency) currency = parsedPrice?.currencySymbol;
           if (!originalPrice) originalPrice = priceAndCurrency;
         }
@@ -385,7 +385,7 @@ export abstract class SupplierBaseAmazon
       // const sku = productElement ? productElement.getAttribute("data-asin") : null;
       // const productId = productElement ? productElement.getAttribute("data-uuid") : null;
 
-      this.logger.debug("matches", {
+      this.logger.debug('matches', {
         productElement,
         productId,
         asin,
@@ -396,7 +396,7 @@ export abstract class SupplierBaseAmazon
       });
 
       if (!productId || !title || !price || !currency) {
-        this.logger.warn("Missing required fields", {
+        this.logger.warn('Missing required fields', {
           productElement,
           productId,
           title,
@@ -418,7 +418,7 @@ export abstract class SupplierBaseAmazon
       return {
         id: productId,
         sku: asin,
-        availability: stockElement?.textContent?.toLowerCase().includes("order soon")
+        availability: stockElement?.textContent?.toLowerCase().includes('order soon')
           ? AVAILABILITY.LIMITED_STOCK
           : AVAILABILITY.IN_STOCK,
         url: `${amazonBase}/dp/${asin}`,
@@ -427,7 +427,7 @@ export abstract class SupplierBaseAmazon
         price: Number(price),
       };
     } catch (error) {
-      this.logger.error("Error parsing search result", { error, raw, amazonBase });
+      this.logger.error('Error parsing search result', { error, raw, amazonBase });
       return;
     }
   }
@@ -443,12 +443,12 @@ export abstract class SupplierBaseAmazon
       return JSON.parse(response);
     } catch {
       try {
-        const splitted = response.split("\n&&&\n");
+        const splitted = response.split('\n&&&\n');
         if (splitted.length < 3) throw new Error();
 
         return mapDefined(splitted, tryParseJson);
       } catch {
-        return String(response ?? "");
+        return String(response ?? '');
       }
     }
   }
@@ -466,7 +466,7 @@ export abstract class SupplierBaseAmazon
         .setBasicInfo(item.title, item.url, this.supplierName)
         .setPricing(item.price, getCurrencyCodeFromSymbol(item.currencySymbol), item.currencySymbol)
         .setAvailability(item.availability ?? AVAILABILITY.UNKNOWN)
-        .setVendor("Amazon")
+        .setVendor('Amazon')
         .setID(item.id)
         .setSku(item.sku)
         .setCacheKey(this.getUniqueProductKey(item));
@@ -474,7 +474,7 @@ export abstract class SupplierBaseAmazon
       const quantity = parseQuantity(item.title);
 
       if (!quantity) {
-        this.logger.warn("Failed to get quantity from retrieved product title", {
+        this.logger.warn('Failed to get quantity from retrieved product title', {
           title: item.title,
           builder,
           item,

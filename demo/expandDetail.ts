@@ -1,4 +1,4 @@
-import { type Locator, type Page, expect } from "@playwright/test";
+import { type Locator, type Page, expect } from '@playwright/test';
 
 /**
  * Expand the first expandable product row so its detail panel (with the price
@@ -16,8 +16,8 @@ import { type Locator, type Page, expect } from "@playwright/test";
  * @source
  */
 export async function expandFirstProductDetail(page: Page): Promise<Locator> {
-  const resultsTable = page.locator("table").nth(1);
-  const expander = resultsTable.locator("tbody tr td:first-child button").first();
+  const resultsTable = page.locator('table').nth(1);
+  const expander = resultsTable.locator('tbody tr td:first-child button').first();
   await expect(expander).toBeVisible({ timeout: 5_000 });
   await expander.click();
 

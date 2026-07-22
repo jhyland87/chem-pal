@@ -1,11 +1,11 @@
-import TuneIcon from "@/icons/TuneIcon";
-import Toolbar from "@mui/material/Toolbar";
-import Tooltip from "@mui/material/Tooltip";
-import Typography from "@mui/material/Typography";
-import { Table } from "@tanstack/react-table";
+import TuneIcon from '@/icons/TuneIcon';
+import Toolbar from '@mui/material/Toolbar';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import { Table } from '@tanstack/react-table';
 //import FilterModal from "./FilterModal";
-import SearchInput from "./SearchInput";
-import styles from "./TableOptions.module.scss";
+import SearchInput from './SearchInput';
+import styles from './TableOptions.module.scss';
 
 /**
  * Props for {@link TableOptions}.
@@ -50,8 +50,8 @@ export default function TableOptions({ onSearch, onToggleDrawer }: TableOptionsP
 
   return (
     <>
-      <Toolbar className={`${styles["table-options-toolbar"]} ${styles.fullwidth}`}>
-        <Typography component="div" className={styles["search-input"]}>
+      <Toolbar className={`${styles['table-options-toolbar']} ${styles.fullwidth}`}>
+        <Typography component="div" className={styles['search-input']}>
           <SearchInput
             //searchInput={searchInput}
             //className="search-input"
@@ -60,8 +60,8 @@ export default function TableOptions({ onSearch, onToggleDrawer }: TableOptionsP
           />
         </Typography>
         <Tooltip title="Filter list">
-          <button className={styles["svg-button-icon"]} onClick={onToggleDrawer}>
-            <TuneIcon className={styles["table-options-icon"]} />
+          <button className={styles['svg-button-icon']} onClick={onToggleDrawer}>
+            <TuneIcon className={styles['table-options-icon']} />
           </button>
         </Tooltip>
       </Toolbar>

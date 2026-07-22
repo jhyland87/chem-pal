@@ -1,10 +1,10 @@
-import { findCAS } from "@/helpers/cas";
-import { parseQuantity } from "@/helpers/quantity";
-import { findPurity, parseChemicalSpecs } from "@/helpers/science";
-import { firstMap, mapDefined } from "@/helpers/utils";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { isSearchResponse } from "@/utils/typeGuards/woocommerce";
-import { SupplierBase } from "./SupplierBase";
+import { findCAS } from '@/helpers/cas';
+import { parseQuantity } from '@/helpers/quantity';
+import { findPurity, parseChemicalSpecs } from '@/helpers/science';
+import { firstMap, mapDefined } from '@/helpers/utils';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { isSearchResponse } from '@/utils/typeGuards/woocommerce';
+import { SupplierBase } from './SupplierBase';
 
 /**
  * Base class for WooCommerce-based suppliers that provides common functionality for
@@ -66,7 +66,7 @@ export abstract class SupplierBaseWoocommerce
    * ```
    * @source
    */
-  protected apiKey: string = "";
+  protected apiKey: string = '';
 
   /**
    * The maximum number of objects to fetch in a single request.
@@ -82,8 +82,8 @@ export abstract class SupplierBaseWoocommerce
    * @source
    */
   public readonly productSearchFilters: WooCommerceProductSearchParams = {
-    stock_status: ["instock", "onbackorder"],
-    orderby: "title",
+    stock_status: ['instock', 'onbackorder'],
+    orderby: 'title',
   };
 
   /**
@@ -119,18 +119,18 @@ export abstract class SupplierBaseWoocommerce
     });
 
     if (!isSearchResponse(searchRequest)) {
-      this.logger.error("Invalid search response:", { query, searchRequest });
+      this.logger.error('Invalid search response:', { query, searchRequest });
       return;
     }
 
-    this.logger.info("search request response:", { searchRequest });
+    this.logger.info('search request response:', { searchRequest });
 
     const results: WooCommerceSearchResponseItem[] = this.stripInvalidResults(searchRequest);
 
-    this.logger.info("results:", { results });
+    this.logger.info('results:', { results });
 
     const fuzzedResults = this.fuzzyFilterAst<WooCommerceSearchResponseItem>(results);
-    this.logger.info("fuzzedResults:", { query, results, fuzzedResults });
+    this.logger.info('fuzzedResults:', { query, results, fuzzedResults });
 
     const builders = this.initProductBuilders(fuzzedResults.slice(0, limit));
 
@@ -182,12 +182,12 @@ export abstract class SupplierBaseWoocommerce
    */
   protected async enrichVariants(builders: ProductBuilder<Product>[]): Promise<void> {
     const variantIds = builders.flatMap((builder) => {
-      const variants = builder.get("variants");
+      const variants = builder.get('variants');
       if (!Array.isArray(variants)) {
         return [];
       }
       return mapDefined(variants, (variant: Partial<Variant>) =>
-        typeof variant.id === "number" ? variant.id : undefined,
+        typeof variant.id === 'number' ? variant.id : undefined,
       );
     });
 
@@ -198,22 +198,22 @@ export abstract class SupplierBaseWoocommerce
     const variantData = await this.fetchVariantData(variantIds);
 
     for (const builder of builders) {
-      const variants = builder.get("variants");
+      const variants = builder.get('variants');
       if (!Array.isArray(variants) || variants.length === 0) {
         continue;
       }
 
       const enriched = mapDefined(variants, (variant: Partial<Variant>) => {
-        if (typeof variant.id !== "number") {
+        if (typeof variant.id !== 'number') {
           return;
         }
         const data = variantData.get(variant.id);
         if (!data) {
-          this.logger.warn("No variant data returned for variant:", { id: variant.id });
+          this.logger.warn('No variant data returned for variant:', { id: variant.id });
           return;
         }
 
-        variant.title = String(data.name ?? "");
+        variant.title = String(data.name ?? '');
         variant.price = Number(data.prices.price) / 100;
         variant.currencyCode = data.prices.currency_code;
         variant.currencySymbol = data.prices.currency_symbol;
@@ -260,13 +260,13 @@ export abstract class SupplierBaseWoocommerce
 
         params: {
           per_page: this.fetchObjectSizeLimit,
-          type: "variation",
-          include: chunk.join(","),
+          type: 'variation',
+          include: chunk.join(','),
         },
       });
 
       if (!isSearchResponse(response)) {
-        this.logger.warn("Invalid variant batch response:", { chunk, response });
+        this.logger.warn('Invalid variant batch response:', { chunk, response });
         continue;
       }
 
@@ -291,17 +291,17 @@ export abstract class SupplierBaseWoocommerce
   ): WooCommerceSearchResponseItem[] {
     return results.filter((productResult) => {
       if (productResult.is_purchasable === false) {
-        this.logger.debug("stripInvalidResults: skipping non-purchasable product:", {
+        this.logger.debug('stripInvalidResults: skipping non-purchasable product:', {
           productResult,
         });
         return false;
       }
       if (productResult.is_in_stock === false) {
-        this.logger.debug("stripInvalidResults: skipping out-of-stock product:", { productResult });
+        this.logger.debug('stripInvalidResults: skipping out-of-stock product:', { productResult });
         return false;
       }
       if (!productResult.prices.price && !productResult.price_html) {
-        this.logger.debug("stripInvalidResults: skipping product with no price objects to parse:", {
+        this.logger.debug('stripInvalidResults: skipping product with no price objects to parse:', {
           productResult,
         });
         return false;
@@ -396,10 +396,10 @@ export abstract class SupplierBaseWoocommerce
       return undefined;
     }
     let smallest: { url: string; width: number } | undefined;
-    for (const candidate of srcset.split(",")) {
+    for (const candidate of srcset.split(',')) {
       const parts = candidate.trim().split(/\s+/);
       const url = parts[0];
-      const descriptor = /^(\d+)w$/.exec(parts[parts.length - 1] ?? "");
+      const descriptor = /^(\d+)w$/.exec(parts[parts.length - 1] ?? '');
       if (!url || parts.length < 2 || !descriptor) {
         continue;
       }
@@ -480,12 +480,12 @@ export abstract class SupplierBaseWoocommerce
         item.name,
         item.description,
         item.short_description,
-        item.weight ?? "",
-        item.formatted_weight ?? "",
+        item.weight ?? '',
+        item.formatted_weight ?? '',
         ...this.getAdditionalQuantityStrings(item),
       ];
 
-      if ("variations" in item) {
+      if ('variations' in item) {
         const variations = mapDefined(item.variations, (variation: Partial<Variant>) => {
           const variant: Partial<Variant> = {
             id: variation.id,
@@ -493,9 +493,9 @@ export abstract class SupplierBaseWoocommerce
 
           if (Array.isArray(variation.attributes)) {
             const size = variation.attributes.find(
-              (attribute) => attribute.name.toLowerCase() === "size",
+              (attribute) => attribute.name.toLowerCase() === 'size',
             );
-            if (!size || typeof size !== "object" || !size.value) {
+            if (!size || typeof size !== 'object' || !size.value) {
               return;
             }
 
@@ -523,7 +523,7 @@ export abstract class SupplierBaseWoocommerce
         builder.setQuantity(quantity.quantity, quantity.uom);
       }
 
-      this.logger.debug("initProductBuilder product:", builder.dump());
+      this.logger.debug('initProductBuilder product:', builder.dump());
 
       return builder;
     });

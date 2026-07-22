@@ -1,6 +1,6 @@
-import { mapDefined } from "@/helpers/utils";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { SupplierBase } from "./SupplierBase";
+import { mapDefined } from '@/helpers/utils';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { SupplierBase } from './SupplierBase';
 /* @hideconstructor */
 /* @hideden */
 /**
@@ -28,19 +28,19 @@ import { SupplierBase } from "./SupplierBase";
  */
 export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = "N2O3";
+  public readonly supplierName: string = 'N2O3';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = "https://n2o3.com/";
+  public readonly baseURL: string = 'https://n2o3.com/';
 
   // Shipping scope for N2O3
-  public readonly shipping: ShippingRange = "international";
+  public readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = "PL";
+  public readonly country: CountryCode = 'PL';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa", "paypal", "ach"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa', 'paypal', 'ach'];
 
   // All product fields are scraped from the search listing; getProductData is a
   // passthrough, so there's no per-product detail fetch to cache.
@@ -55,29 +55,29 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
   // HTTP headers used as a basis for all queries.
   protected headers: HeadersInit = {
     accept: [
-      "text/html",
-      "application/xhtml+xml",
-      "application/xml;q=0.9",
-      "image/avif",
-      "image/webp",
-      "image/apng",
-      "*/*;q=0.8",
-    ].join(","),
-    "accept-language": "en-US,en;q=0.6",
-    "cache-control": "no-cache",
-    pragma: "no-cache",
-    "sec-ch-ua": '"Brave";v="135\', "Not-A.Brand";v="8\', "Chromium";v="135"',
-    "sec-ch-ua-arch": '"arm"',
-    "sec-ch-ua-full-version-list":
+      'text/html',
+      'application/xhtml+xml',
+      'application/xml;q=0.9',
+      'image/avif',
+      'image/webp',
+      'image/apng',
+      '*/*;q=0.8',
+    ].join(','),
+    'accept-language': 'en-US,en;q=0.6',
+    'cache-control': 'no-cache',
+    pragma: 'no-cache',
+    'sec-ch-ua': '"Brave";v="135\', "Not-A.Brand";v="8\', "Chromium";v="135"',
+    'sec-ch-ua-arch': '"arm"',
+    'sec-ch-ua-full-version-list':
       '"Brave";v="135.0.0.0\', "Not-A.Brand";v="8.0.0.0\', "Chromium";v="135.0.0.0"',
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-model": '""',
-    "sec-ch-ua-platform": '"macOS"',
-    "sec-fetch-dest": "empty",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin",
-    "sec-gpc": "1",
-    "x-requested-with": "XMLHttpRequest",
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-model': '""',
+    'sec-ch-ua-platform': '"macOS"',
+    'sec-fetch-dest': 'empty',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-site': 'same-origin',
+    'sec-gpc': '1',
+    'x-requested-with': 'XMLHttpRequest',
   };
 
   /**
@@ -107,7 +107,7 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
   ): Promise<ProductBuilder<Product>[] | void> {
     const queryProductPage = async (query: string, page: number): Promise<Element[] | void> => {
       const searchResponse = await this.httpGetHtml({
-        path: "en/catalogue/",
+        path: 'en/catalogue/',
         params: {
           szukaj: encodeURIComponent(query),
           offset: String(page),
@@ -115,7 +115,7 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
       });
 
       if (searchResponse === undefined) {
-        this.logger.error("Bad search response:", searchResponse);
+        this.logger.error('Bad search response:', searchResponse);
         return;
       }
 
@@ -129,7 +129,7 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
       const $fuzzResults = await queryProductPage(query, offset);
 
       if (!$fuzzResults) {
-        this.logger.log("No results for page:", offset);
+        this.logger.log('No results for page:', offset);
         break;
       }
 
@@ -140,7 +140,7 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
       }
     }
 
-    this.logger.log("results:", results);
+    this.logger.log('results:', results);
 
     return this.initProductBuilders(results);
   }
@@ -159,25 +159,25 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
    * @source
    */
   protected getUniqueProductKey(data: Element): string {
-    const id = data.querySelector("div > div > div:nth-child(2) > span")?.textContent?.trim();
+    const id = data.querySelector('div > div > div:nth-child(2) > span')?.textContent?.trim();
     if (id) {
       return id;
     }
-    const href = data.querySelector("div a.a2")?.getAttribute("href") ?? "";
+    const href = data.querySelector('div a.a2')?.getAttribute('href') ?? '';
     return this.href(href);
   }
 
   private listingElementToObject(element: Element): Record<string, string | undefined> | undefined {
-    const titleElem = element.querySelector("div a.a2");
+    const titleElem = element.querySelector('div a.a2');
     if (!titleElem) {
-      this.logger.error("No title element found");
+      this.logger.error('No title element found');
       return;
     }
 
     const result: Record<string, string | undefined> = {
-      href: titleElem.getAttribute("href") || "",
-      title: titleElem.textContent?.trim() || "",
-      id: element.querySelector("div > div > div:nth-child(2) > span")?.textContent || "",
+      href: titleElem.getAttribute('href') || '',
+      title: titleElem.textContent?.trim() || '',
+      id: element.querySelector('div > div > div:nth-child(2) > span')?.textContent || '',
       cas: undefined,
       quantity: undefined,
       grade: undefined,
@@ -187,19 +187,19 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
       currencySymbol: undefined,
     };
 
-    for (const a of element.querySelectorAll("div > div > div:nth-child(2) > div > a")) {
-      const [dataKey, dataValue] = a.textContent?.split(":") || [];
-      if (dataKey === "CAS") {
+    for (const a of element.querySelectorAll('div > div > div:nth-child(2) > div > a')) {
+      const [dataKey, dataValue] = a.textContent?.split(':') || [];
+      if (dataKey === 'CAS') {
         result.cas = dataValue || undefined;
       }
     }
 
-    for (const tr of element.querySelectorAll("table.table_param2 > tbody > tr")) {
+    for (const tr of element.querySelectorAll('table.table_param2 > tbody > tr')) {
       let match = undefined;
-      const attrKey = tr.querySelector("th");
+      const attrKey = tr.querySelector('th');
       switch (attrKey?.textContent?.toLowerCase()) {
-        case "quantity":
-          match = (tr.querySelector("td")?.textContent?.trim() ?? "").match(
+        case 'quantity':
+          match = (tr.querySelector('td')?.textContent?.trim() ?? '').match(
             /(?<quantity>\d+) \[(?<uom>\w+)\]/,
           );
           if (match) {
@@ -207,8 +207,8 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
             result.uom = match.groups?.uom || undefined;
           }
           break;
-        case "grade":
-          result.grade = tr.querySelector("td")?.textContent?.trim() || undefined;
+        case 'grade':
+          result.grade = tr.querySelector('td')?.textContent?.trim() || undefined;
           break;
         default:
           break;
@@ -248,21 +248,21 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
 
     if (priceFull) {
       result.price = priceFull;
-      result.currencyCode = "PLN";
-      result.currencySymbol = "zł";
+      result.currencyCode = 'PLN';
+      result.currencySymbol = 'zł';
     }
 
-    this.logger.log("result:", result);
+    this.logger.log('result:', result);
     return result;
   }
 
   protected fuzzHtmlResponse(query: string, response: string): Element[] {
     // Create a new DOM to do the travesing/parsing
     const parser = new DOMParser();
-    const parsedHTML = parser.parseFromString(response, "text/html");
+    const parsedHTML = parser.parseFromString(response, 'text/html');
 
     // Select all products by a known selector path
-    const products = parsedHTML.querySelectorAll("#produkty > .tr1");
+    const products = parsedHTML.querySelectorAll('#produkty > .tr1');
 
     // Do the fuzzy filtering using the element found when using this.titleSelector()
     return this.fuzzyFilterAst<Element>(Array.from(products));
@@ -275,12 +275,12 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
    * @source
    */
   protected titleSelector(data: Element): string {
-    const title = data.querySelector("a.a2");
+    const title = data.querySelector('a.a2');
     if (title === null) {
-      this.logger.error("No title for product");
-      return "";
+      this.logger.error('No title for product');
+      return '';
     }
-    return title.textContent?.trim() || "";
+    return title.textContent?.trim() || '';
   }
 
   /**
@@ -321,7 +321,7 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
       const item = this.listingElementToObject(element);
       if (!item) return;
       const product = new ProductBuilder(this.baseURL);
-      product.setBasicInfo(item.title ?? "", item.href ?? "", this.supplierName);
+      product.setBasicInfo(item.title ?? '', item.href ?? '', this.supplierName);
       if (item.price) product.setPrice(item.price);
       if (item.quantity) product.setQuantity(item.quantity);
       product.setUOM(item.uom);
@@ -335,7 +335,7 @@ export class SupplierN2O3 extends SupplierBase<Product, Product> implements ISup
       return product;
     });
 
-    this.logger.log("parsedResults:", parsedResults);
+    this.logger.log('parsedResults:', parsedResults);
 
     return parsedResults;
   }

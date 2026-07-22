@@ -1,27 +1,27 @@
-import { defaultResultsLimit, defaultSettings } from "@/../config.json";
-import { APP_ACTION, CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
-import { AppContext, useAppContext } from "@/context";
-import { emitSearchEvent, SearchEvent } from "@/events/searchEvents";
-import { playAdvancedModeSound } from "@/helpers/advancedMode";
-import { useDebugApi } from "@/hooks/useDebugApi";
-import { useJustUpdated } from "@/hooks/useJustUpdated";
-import { useUpdateAvailable } from "@/hooks/useUpdateAvailable";
-import { HotkeyEvent, HotkeyHelpModal, useHotkeys, type HotkeyHandlers } from "@/hotkeys";
+import { defaultResultsLimit, defaultSettings } from '@/../config.json';
+import { APP_ACTION, CACHE, DRAWER_INDEX, PANEL } from '@/constants/common';
+import { AppContext, useAppContext } from '@/context';
+import { emitSearchEvent, SearchEvent } from '@/events/searchEvents';
+import { playAdvancedModeSound } from '@/helpers/advancedMode';
+import { useDebugApi } from '@/hooks/useDebugApi';
+import { useJustUpdated } from '@/hooks/useJustUpdated';
+import { useUpdateAvailable } from '@/hooks/useUpdateAvailable';
+import { HotkeyEvent, HotkeyHelpModal, useHotkeys, type HotkeyHandlers } from '@/hotkeys';
 import {
   applyPendingMigrations,
   getMigrationStatus,
   resetToCurrentVersion,
   seedVersionIfUnset,
-} from "@/migrations/registry";
-import type { Migration } from "@/migrations/types";
-import { SupplierFactory } from "@/suppliers/SupplierFactory";
-import { SupplierCache } from "@/utils/SupplierCache";
-import { useBadgeController } from "@/utils/badgeController";
-import { isTabView } from "@/utils/displayContext";
-import { clearSearchResults, getSearchResults, IDB_SEARCH_RESULTS_CLEARED } from "@/utils/idbCache";
-import { cstorage } from "@/utils/storage";
-import { isValidUserSettings } from "@/utils/typeGuards/common";
-import CssBaseline from "@mui/material/CssBaseline";
+} from '@/migrations/registry';
+import type { Migration } from '@/migrations/types';
+import { SupplierFactory } from '@/suppliers/SupplierFactory';
+import { SupplierCache } from '@/utils/SupplierCache';
+import { useBadgeController } from '@/utils/badgeController';
+import { isTabView } from '@/utils/displayContext';
+import { clearSearchResults, getSearchResults, IDB_SEARCH_RESULTS_CLEARED } from '@/utils/idbCache';
+import { cstorage } from '@/utils/storage';
+import { isValidUserSettings } from '@/utils/typeGuards/common';
+import CssBaseline from '@mui/material/CssBaseline';
 import {
   lazy,
   startTransition,
@@ -31,28 +31,28 @@ import {
   useEffect,
   useMemo,
   useState,
-} from "react";
-import "./App.scss";
-import DrawerSystem from "./components/DrawerSystem";
-import ErrorBoundary from "./components/ErrorBoundary";
-import { MigrationPrompt } from "./components/MigrationPrompt";
-import { UpdatePrompt } from "./components/UpdatePrompt";
-import { WhatsNewPrompt } from "./components/WhatsNewPrompt";
-import SearchPanel from "./components/SearchPanel/SearchPanel";
-import SearchPanelHome from "./components/SearchPanelHome";
-import SpeedDialMenu from "./components/SpeedDialMenu";
-import StatusBar, { StatusBarProvider, useStatusBar } from "./components/StatusBar";
-import { StatusBadges } from "./components/StatusBadges";
-import { ThemeProvider } from "./components/ThemeProvider";
-import { diff } from "./helpers/collectionUtils";
-import { getCountryName } from "./helpers/country";
-import { getCurrencyCodeFromLocation, getCurrencyRate } from "./helpers/currency";
-import { i18n, setLocale, useLocale } from "./helpers/i18n";
-import { getUserLanguage, getUserLocation } from "./helpers/utils";
+} from 'react';
+import './App.scss';
+import DrawerSystem from './components/DrawerSystem';
+import ErrorBoundary from './components/ErrorBoundary';
+import { MigrationPrompt } from './components/MigrationPrompt';
+import { UpdatePrompt } from './components/UpdatePrompt';
+import { WhatsNewPrompt } from './components/WhatsNewPrompt';
+import SearchPanel from './components/SearchPanel/SearchPanel';
+import SearchPanelHome from './components/SearchPanelHome';
+import SpeedDialMenu from './components/SpeedDialMenu';
+import StatusBar, { StatusBarProvider, useStatusBar } from './components/StatusBar';
+import { StatusBadges } from './components/StatusBadges';
+import { ThemeProvider } from './components/ThemeProvider';
+import { diff } from './helpers/collectionUtils';
+import { getCountryName } from './helpers/country';
+import { getCurrencyCodeFromLocation, getCurrencyRate } from './helpers/currency';
+import { i18n, setLocale, useLocale } from './helpers/i18n';
+import { getUserLanguage, getUserLocation } from './helpers/utils';
 
 // Always lazy — the panel is now reachable in any build via advanced mode, so the
 // chunk (MUI X charts + data grid) must exist. It's only fetched when opened.
-const StatsPanel = lazy(() => import("./components/StatsPanel"));
+const StatsPanel = lazy(() => import('./components/StatsPanel'));
 
 /**
  * Enhanced App component using React v19 features for improved performance
@@ -159,7 +159,7 @@ function HotkeyLayer({ handlers }: { handlers: HotkeyHandlers }) {
       konami: () => {
         const next = !advancedMode;
         setAdvancedMode(next);
-        flashStatusText(i18n(next ? "hotkeys_flash_advanced_on" : "hotkeys_flash_advanced_off"));
+        flashStatusText(i18n(next ? 'hotkeys_flash_advanced_on' : 'hotkeys_flash_advanced_off'));
         void playAdvancedModeSound(next);
       },
     }),
@@ -218,7 +218,7 @@ function App() {
   const [pendingSearchQuery, setPendingSearchQuery] = useState<string | null>(null);
   // Pre-search filters - set by DrawerSearchPanel, consumed by useSearch
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
-    titleQuery: "",
+    titleQuery: '',
     availability: [],
     country: [],
     shippingType: [],
@@ -245,7 +245,7 @@ function App() {
               try {
                 await cstorage.local.set({ [CACHE.USER_SETTINGS]: newSettings });
               } catch (error) {
-                console.error("Failed to update settings:", { error });
+                console.error('Failed to update settings:', { error });
               }
             })();
           });
@@ -270,7 +270,7 @@ function App() {
               try {
                 await cstorage.local.set({ [CACHE.USER_SETTINGS]: updatedSettings });
               } catch (error) {
-                console.error("Failed to persist currency rate:", { error });
+                console.error('Failed to persist currency rate:', { error });
               }
             })();
           });
@@ -290,7 +290,7 @@ function App() {
               try {
                 await cstorage.session.set({ [CACHE.PANEL]: action.panel });
               } catch (error) {
-                console.error("Failed to save panel:", { error });
+                console.error('Failed to save panel:', { error });
               }
             })();
           });
@@ -353,7 +353,7 @@ function App() {
                   [CACHE.SELECTED_SUPPLIERS]: action.suppliers,
                 });
               } catch (error) {
-                console.error("Failed to save selectedSuppliers:", { error });
+                console.error('Failed to save selectedSuppliers:', { error });
               }
             })();
           });
@@ -374,7 +374,7 @@ function App() {
                   [CACHE.BOOKMARKS_FOLDER_ID]: action.id,
                 });
               } catch (error) {
-                console.error("Failed to save bookmarksFolderId:", { error });
+                console.error('Failed to save bookmarksFolderId:', { error });
               }
             })();
           });
@@ -398,7 +398,7 @@ function App() {
   // so picking a language in Settings updates the whole UI immediately.
   const settingsLanguage = appState.userSettings?.language;
   useEffect(() => {
-    if (settingsLanguage) setLocale(settingsLanguage.split("-")[0]);
+    if (settingsLanguage) setLocale(settingsLanguage.split('-')[0]);
   }, [settingsLanguage]);
 
   // Fetch the USD→currency conversion rate whenever the selected currency changes
@@ -410,10 +410,10 @@ function App() {
     let cancelled = false;
     const loadRate = async () => {
       try {
-        const rate = await getCurrencyRate("USD", selectedCurrency);
+        const rate = await getCurrencyRate('USD', selectedCurrency);
         if (!cancelled) dispatch({ type: APP_ACTION.SET_CURRENCY_RATE, rate });
       } catch (error) {
-        console.error("Failed to get currency rate:", { error });
+        console.error('Failed to get currency rate:', { error });
       }
     };
     void loadRate();
@@ -424,7 +424,7 @@ function App() {
 
   // Keep the document title in sync with the active locale.
   useEffect(() => {
-    document.title = i18n("app_title");
+    document.title = i18n('app_title');
   }, [activeLocale]);
 
   // Load initial data from Chrome storage. Lifted out of the mount effect so the
@@ -456,7 +456,7 @@ function App() {
       // panel for that component to mount and pick the search up.
       const hasPendingSearch = Boolean(
         sessionData[CACHE.SEARCH_IS_NEW_SEARCH] &&
-          typeof sessionData[CACHE.QUERY] === "string" &&
+          typeof sessionData[CACHE.QUERY] === 'string' &&
           sessionData[CACHE.QUERY].trim(),
       );
 
@@ -489,7 +489,7 @@ function App() {
         dispatch({ type: APP_ACTION.LOAD_FROM_STORAGE, data: loadedData });
       }
     } catch (error) {
-      console.error("Failed to load from Chrome storage:", { error });
+      console.error('Failed to load from Chrome storage:', { error });
     }
   }, [dispatch]);
 
@@ -506,7 +506,7 @@ function App() {
         }
         await seedVersionIfUnset();
       } catch (error) {
-        console.error("Migration check failed:", { error });
+        console.error('Migration check failed:', { error });
       }
       await loadFromStorage();
     };
@@ -523,8 +523,8 @@ function App() {
       setMigrationSteps([]);
       await loadFromStorage();
     } catch (error) {
-      console.error("Failed to apply migrations:", { error });
-      setMigrationError(i18n("migration_error"));
+      console.error('Failed to apply migrations:', { error });
+      setMigrationError(i18n('migration_error'));
       setMigrationBusy(false);
     }
   }, [loadFromStorage]);
@@ -536,7 +536,7 @@ function App() {
     try {
       await resetToCurrentVersion();
     } catch (error) {
-      console.error("Failed to reset caches:", { error });
+      console.error('Failed to reset caches:', { error });
     }
     setMigrationSteps([]);
     setMigrationBusy(false);
@@ -587,16 +587,16 @@ function App() {
       changes: Record<string, chrome.storage.StorageChange>,
       areaName: chrome.storage.AreaName,
     ): Promise<void> => {
-      if (areaName !== "session") return;
+      if (areaName !== 'session') return;
       if (changes[CACHE.SEARCH_IS_NEW_SEARCH]?.newValue !== true) return;
 
       try {
         const changed = changes[CACHE.QUERY]?.newValue;
         const query =
-          typeof changed === "string"
+          typeof changed === 'string'
             ? changed
             : (await cstorage.session.get([CACHE.QUERY]))[CACHE.QUERY];
-        if (typeof query !== "string" || !query.trim()) return;
+        if (typeof query !== 'string' || !query.trim()) return;
 
         // Clear the flag before navigating so a freshly-mounting SearchPanel's
         // useSearch mount effect doesn't also read it and double-run the search.
@@ -604,7 +604,7 @@ function App() {
         setPendingSearchQuery(query);
         dispatch({ type: APP_ACTION.SET_PANEL, panel: PANEL.RESULTS });
       } catch (error) {
-        console.warn("Failed to handle context-menu search", { error });
+        console.warn('Failed to handle context-menu search', { error });
       }
     };
 
@@ -632,7 +632,7 @@ function App() {
 
     const handleMouseMove = (event: MouseEvent) => {
       const shouldShow =
-        document.getElementById("speed-dial-menu")?.matches(":hover") ||
+        document.getElementById('speed-dial-menu')?.matches(':hover') ||
         (event.x >= window.innerWidth - cornerThreshold &&
           event.y >= window.innerHeight - cornerThreshold);
 
@@ -641,8 +641,8 @@ function App() {
       }
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [appState.speedDialVisibility, dispatch]);
 
   // Handlers for child components
@@ -766,7 +766,7 @@ function App() {
   };
 
   return (
-    <ErrorBoundary fallback={<p>{i18n("app_error_generic")}</p>}>
+    <ErrorBoundary fallback={<p>{i18n('app_error_generic')}</p>}>
       <AppContext.Provider value={appContextValue}>
         <ThemeProvider>
           <StatusBarProvider>

@@ -1,7 +1,7 @@
-import { CACHE } from "@/constants/common";
-import { useUpdateAvailable } from "@/hooks/useUpdateAvailable";
-import { act, renderHook, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { CACHE } from '@/constants/common';
+import { useUpdateAvailable } from '@/hooks/useUpdateAvailable';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
@@ -61,7 +61,7 @@ function mockRelease(tag: string, body?: string) {
   );
 }
 
-describe("useUpdateAvailable", () => {
+describe('useUpdateAvailable', () => {
   beforeEach(() => {
     store = {};
     changeListeners = [];
@@ -69,22 +69,22 @@ describe("useUpdateAvailable", () => {
     setupChrome();
   });
 
-  describe("manual installs", () => {
-    it("polls GitHub and surfaces a newer release", async () => {
-      mockRelease("v99.0.0");
+  describe('manual installs', () => {
+    it('polls GitHub and surfaces a newer release', async () => {
+      mockRelease('v99.0.0');
       const { result } = renderHook(() => useUpdateAvailable());
 
       await waitFor(() => expect(result.current.notice).toBeDefined());
       expect(result.current.notice).toEqual({
-        version: "99.0.0",
-        source: "manual",
-        releaseUrl: "https://example.com/v99.0.0",
+        version: '99.0.0',
+        source: 'manual',
+        releaseUrl: 'https://example.com/v99.0.0',
         notes: [],
       });
       expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
-    it("stamps lastCheckedAt before the request resolves", async () => {
+    it('stamps lastCheckedAt before the request resolves', async () => {
       let resolveFetch: (value: unknown) => void = () => {};
       fetchMock.mockImplementation(
         () =>
@@ -100,34 +100,34 @@ describe("useUpdateAvailable", () => {
       act(() => resolveFetch({ ok: false, status: 403, json: () => Promise.resolve({}) }));
     });
 
-    it("reuses the cached result inside the throttle window", async () => {
+    it('reuses the cached result inside the throttle window', async () => {
       store[CACHE.UPDATE_CHECK] = {
         lastCheckedAt: Date.now() - 1000,
-        latestVersion: "99.0.0",
-        releaseUrl: "https://example.com/v99.0.0",
+        latestVersion: '99.0.0',
+        releaseUrl: 'https://example.com/v99.0.0',
       };
       const { result } = renderHook(() => useUpdateAvailable());
 
       await waitFor(() => expect(result.current.notice).toBeDefined());
-      expect(result.current.notice?.version).toBe("99.0.0");
+      expect(result.current.notice?.version).toBe('99.0.0');
       expect(fetchMock).not.toHaveBeenCalled();
     });
 
-    it("polls again once the throttle window has elapsed", async () => {
+    it('polls again once the throttle window has elapsed', async () => {
       store[CACHE.UPDATE_CHECK] = { lastCheckedAt: Date.now() - DAY_MS - 1000 };
-      mockRelease("v99.0.0");
+      mockRelease('v99.0.0');
       const { result } = renderHook(() => useUpdateAvailable());
 
       await waitFor(() => expect(result.current.notice).toBeDefined());
       expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
-    it("stays quiet for a version the user already dismissed", async () => {
+    it('stays quiet for a version the user already dismissed', async () => {
       store[CACHE.UPDATE_CHECK] = {
         lastCheckedAt: Date.now(),
-        latestVersion: "99.0.0",
-        releaseUrl: "https://example.com/v99.0.0",
-        dismissedVersion: "99.0.0",
+        latestVersion: '99.0.0',
+        releaseUrl: 'https://example.com/v99.0.0',
+        dismissedVersion: '99.0.0',
       };
       const { result } = renderHook(() => useUpdateAvailable());
 
@@ -135,16 +135,16 @@ describe("useUpdateAvailable", () => {
       expect(result.current.notice).toBeUndefined();
     });
 
-    it("stays quiet when the cached version is not newer than the running build", async () => {
-      store[CACHE.UPDATE_CHECK] = { lastCheckedAt: Date.now(), latestVersion: "0.0.1" };
+    it('stays quiet when the cached version is not newer than the running build', async () => {
+      store[CACHE.UPDATE_CHECK] = { lastCheckedAt: Date.now(), latestVersion: '0.0.1' };
       const { result } = renderHook(() => useUpdateAvailable());
 
       await waitFor(() => expect(fetchMock).not.toHaveBeenCalled());
       expect(result.current.notice).toBeUndefined();
     });
 
-    it("records the dismissal and hides the notice", async () => {
-      mockRelease("v99.0.0");
+    it('records the dismissal and hides the notice', async () => {
+      mockRelease('v99.0.0');
       const { result } = renderHook(() => useUpdateAvailable());
       await waitFor(() => expect(result.current.notice).toBeDefined());
 
@@ -152,25 +152,25 @@ describe("useUpdateAvailable", () => {
 
       expect(result.current.notice).toBeUndefined();
       await waitFor(() =>
-        expect(store[CACHE.UPDATE_CHECK]).toMatchObject({ dismissedVersion: "99.0.0" }),
+        expect(store[CACHE.UPDATE_CHECK]).toMatchObject({ dismissedVersion: '99.0.0' }),
       );
     });
 
-    it("opens the release page on applyUpdate", async () => {
-      mockRelease("v99.0.0");
+    it('opens the release page on applyUpdate', async () => {
+      mockRelease('v99.0.0');
       const { result } = renderHook(() => useUpdateAvailable());
       await waitFor(() => expect(result.current.notice).toBeDefined());
 
       act(() => result.current.applyUpdate());
 
       expect(chrome.tabs.create).toHaveBeenCalledWith({
-        url: "https://example.com/v99.0.0",
+        url: 'https://example.com/v99.0.0',
         active: true,
       });
     });
 
-    it("issues a single request across concurrent mounts", async () => {
-      mockRelease("v99.0.0");
+    it('issues a single request across concurrent mounts', async () => {
+      mockRelease('v99.0.0');
       const first = renderHook(() => useUpdateAvailable());
       const second = renderHook(() => useUpdateAvailable());
 
@@ -182,52 +182,52 @@ describe("useUpdateAvailable", () => {
     // Regression: StrictMode cancels the first effect run before its request
     // lands, so the surviving run has to observe the shared poll's result rather
     // than skip it — otherwise the snackbar never appears in development.
-    it("still surfaces the notice when the first mount is cancelled mid-poll", async () => {
-      mockRelease("v99.0.0");
+    it('still surfaces the notice when the first mount is cancelled mid-poll', async () => {
+      mockRelease('v99.0.0');
       const cancelled = renderHook(() => useUpdateAvailable());
       cancelled.unmount();
       const survivor = renderHook(() => useUpdateAvailable());
 
-      await waitFor(() => expect(survivor.result.current.notice?.version).toBe("99.0.0"));
+      await waitFor(() => expect(survivor.result.current.notice?.version).toBe('99.0.0'));
       expect(fetchMock).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe("web store installs", () => {
+  describe('web store installs', () => {
     beforeEach(() => {
-      setupChrome({ update_url: "https://clients2.google.com/service/update2/crx" });
+      setupChrome({ update_url: 'https://clients2.google.com/service/update2/crx' });
     });
 
-    it("never polls GitHub", async () => {
+    it('never polls GitHub', async () => {
       const { result } = renderHook(() => useUpdateAvailable());
       await waitFor(() => expect(result.current.notice).toBeUndefined());
       expect(fetchMock).not.toHaveBeenCalled();
     });
 
-    it("surfaces a staged update recorded by the service worker", async () => {
-      store[CACHE.UPDATE_PENDING] = { version: "9.9.9", detectedAt: Date.now() };
+    it('surfaces a staged update recorded by the service worker', async () => {
+      store[CACHE.UPDATE_PENDING] = { version: '9.9.9', detectedAt: Date.now() };
       const { result } = renderHook(() => useUpdateAvailable());
 
       await waitFor(() => expect(result.current.notice).toBeDefined());
-      expect(result.current.notice).toMatchObject({ version: "9.9.9", source: "webstore" });
+      expect(result.current.notice).toMatchObject({ version: '9.9.9', source: 'webstore' });
     });
 
-    it("looks up notes for the staged version and caches them", async () => {
-      store[CACHE.UPDATE_PENDING] = { version: "9.9.9", detectedAt: Date.now() };
-      mockRelease("v9.9.9", "### Fixed\n\n- A bug");
+    it('looks up notes for the staged version and caches them', async () => {
+      store[CACHE.UPDATE_PENDING] = { version: '9.9.9', detectedAt: Date.now() };
+      mockRelease('v9.9.9', '### Fixed\n\n- A bug');
       const { result } = renderHook(() => useUpdateAvailable());
 
       await waitFor(() => expect(result.current.notice?.notes.length).toBe(1));
-      expect(result.current.notice?.notes).toEqual([{ title: "Fixed", items: ["A bug"] }]);
-      expect(store[CACHE.UPDATE_CHECK]).toMatchObject({ notesVersion: "9.9.9" });
+      expect(result.current.notice?.notes).toEqual([{ title: 'Fixed', items: ['A bug'] }]);
+      expect(store[CACHE.UPDATE_CHECK]).toMatchObject({ notesVersion: '9.9.9' });
     });
 
-    it("reuses cached notes without a second lookup", async () => {
-      store[CACHE.UPDATE_PENDING] = { version: "9.9.9", detectedAt: Date.now() };
+    it('reuses cached notes without a second lookup', async () => {
+      store[CACHE.UPDATE_PENDING] = { version: '9.9.9', detectedAt: Date.now() };
       store[CACHE.UPDATE_CHECK] = {
-        notesVersion: "9.9.9",
-        notes: [{ title: "Fixed", items: ["A bug"] }],
-        releaseUrl: "https://example.com/v9.9.9",
+        notesVersion: '9.9.9',
+        notes: [{ title: 'Fixed', items: ['A bug'] }],
+        releaseUrl: 'https://example.com/v9.9.9',
       };
       const { result } = renderHook(() => useUpdateAvailable());
 
@@ -236,30 +236,30 @@ describe("useUpdateAvailable", () => {
       expect(fetchMock).not.toHaveBeenCalled();
     });
 
-    it("still prompts when the notes lookup fails", async () => {
-      store[CACHE.UPDATE_PENDING] = { version: "9.9.9", detectedAt: Date.now() };
-      fetchMock.mockImplementation(() => Promise.reject(new Error("offline")));
+    it('still prompts when the notes lookup fails', async () => {
+      store[CACHE.UPDATE_PENDING] = { version: '9.9.9', detectedAt: Date.now() };
+      fetchMock.mockImplementation(() => Promise.reject(new Error('offline')));
       const { result } = renderHook(() => useUpdateAvailable());
 
       await waitFor(() => expect(result.current.notice).toBeDefined());
       expect(result.current.notice?.notes).toEqual([]);
     });
 
-    it("picks up an update staged while the popup is already open", async () => {
+    it('picks up an update staged while the popup is already open', async () => {
       const { result } = renderHook(() => useUpdateAvailable());
       await waitFor(() => expect(changeListeners.length).toBeGreaterThan(0));
 
       act(() => {
         for (const listener of changeListeners) {
-          listener({ [CACHE.UPDATE_PENDING]: { newValue: { version: "9.9.9" } } }, "local");
+          listener({ [CACHE.UPDATE_PENDING]: { newValue: { version: '9.9.9' } } }, 'local');
         }
       });
 
-      await waitFor(() => expect(result.current.notice?.version).toBe("9.9.9"));
+      await waitFor(() => expect(result.current.notice?.version).toBe('9.9.9'));
     });
 
-    it("reloads the extension on applyUpdate", async () => {
-      store[CACHE.UPDATE_PENDING] = { version: "9.9.9", detectedAt: Date.now() };
+    it('reloads the extension on applyUpdate', async () => {
+      store[CACHE.UPDATE_PENDING] = { version: '9.9.9', detectedAt: Date.now() };
       const { result } = renderHook(() => useUpdateAvailable());
       await waitFor(() => expect(result.current.notice).toBeDefined());
 
@@ -268,9 +268,9 @@ describe("useUpdateAvailable", () => {
       expect(chrome.runtime.reload).toHaveBeenCalled();
     });
 
-    it("stays quiet for a staged version the user already dismissed", async () => {
-      store[CACHE.UPDATE_CHECK] = { dismissedVersion: "9.9.9" };
-      store[CACHE.UPDATE_PENDING] = { version: "9.9.9", detectedAt: Date.now() };
+    it('stays quiet for a staged version the user already dismissed', async () => {
+      store[CACHE.UPDATE_CHECK] = { dismissedVersion: '9.9.9' };
+      store[CACHE.UPDATE_PENDING] = { version: '9.9.9', detectedAt: Date.now() };
       const { result } = renderHook(() => useUpdateAvailable());
 
       await waitFor(() => expect(fetchMock).not.toHaveBeenCalled());

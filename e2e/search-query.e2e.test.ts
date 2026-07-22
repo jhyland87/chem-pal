@@ -1,40 +1,40 @@
-import { expect as playwrightExpect } from "@playwright/test";
-import { execSync } from "node:child_process";
-import path from "node:path";
-import { type BrowserContext, type Page, chromium } from "playwright";
-import { HEADED, extensionLaunchOptions } from "./helpers/launchOptions";
-import { afterAll, beforeAll, beforeEach, describe, it, expect as vitestExpect } from "vitest";
-import { setupMockRoutes } from "./helpers/mockRoutes";
+import { expect as playwrightExpect } from '@playwright/test';
+import { execSync } from 'node:child_process';
+import path from 'node:path';
+import { type BrowserContext, type Page, chromium } from 'playwright';
+import { HEADED, extensionLaunchOptions } from './helpers/launchOptions';
+import { afterAll, beforeAll, beforeEach, describe, it, expect as vitestExpect } from 'vitest';
+import { setupMockRoutes } from './helpers/mockRoutes';
 
-const buildDir = path.resolve(__dirname, "..", "build");
-const mockResponsesDir = path.resolve(__dirname, "mock-requests/responses");
+const buildDir = path.resolve(__dirname, '..', 'build');
+const mockResponsesDir = path.resolve(__dirname, 'mock-requests/responses');
 
 const testTimeout = 200_000;
-describe("Chem-Pal search query", () => {
+describe('Chem-Pal search query', () => {
   let context: BrowserContext;
   let extensionId: string;
 
   beforeAll(async () => {
     // Build the extension the way users get it: --mode=production, so the suite
     // exercises the minified bundle with dev-only branches tree-shaken out.
-    execSync("pnpm build:e2e", {
-      cwd: path.resolve(__dirname, ".."),
-      stdio: "inherit",
+    execSync('pnpm build:e2e', {
+      cwd: path.resolve(__dirname, '..'),
+      stdio: 'inherit',
     });
 
     // Launch Chrome with the extension loaded
     // Devtools can't open headlessly, so that flag is only useful in headed runs.
     context = await chromium.launchPersistentContext(
-      "",
-      extensionLaunchOptions(buildDir, HEADED ? ["--auto-open-devtools-for-tabs"] : []),
+      '',
+      extensionLaunchOptions(buildDir, HEADED ? ['--auto-open-devtools-for-tabs'] : []),
     );
 
     // Wait for the service worker to register, which gives us the extension ID
     const swTarget = context.serviceWorkers().length
       ? context.serviceWorkers()[0]
-      : await context.waitForEvent("serviceworker");
+      : await context.waitForEvent('serviceworker');
 
-    extensionId = swTarget.url().split("/")[2];
+    extensionId = swTarget.url().split('/')[2];
   }, 60_000);
 
   afterAll(async () => {
@@ -65,7 +65,7 @@ describe("Chem-Pal search query", () => {
       await resetPage.evaluate(async () => {
         // Nuke the whole IndexedDB; re-created fresh on the next open.
         await new Promise<void>((resolve) => {
-          const req = indexedDB.deleteDatabase("chempal");
+          const req = indexedDB.deleteDatabase('chempal');
           req.onsuccess = () => resolve();
           // Swallow errors/blocks: worst case the DB is already gone or held
           // open by the tab we're running in, which doesn't actually matter
@@ -98,10 +98,10 @@ describe("Chem-Pal search query", () => {
       responsesDir: mockResponsesDir,
       // DO NOT CHANGE THIS TO "passthrough" - No need to spam the suppliers
       // for every test.
-      fallback: "abort",
+      fallback: 'abort',
       verbose: false,
     });
-    await playwrightExpect(page.getByRole("textbox", { name: "search for products" })).toBeVisible({
+    await playwrightExpect(page.getByRole('textbox', { name: 'search for products' })).toBeVisible({
       timeout: 10_000,
     });
 
@@ -119,7 +119,7 @@ describe("Chem-Pal search query", () => {
   async function setFuzzScorerOverride(page: Page, scorer: string): Promise<void> {
     await page.evaluate((scorerName) => {
       return new Promise<void>((resolve, reject) => {
-        chrome.storage.local.get(["user_settings"], (existing) => {
+        chrome.storage.local.get(['user_settings'], (existing) => {
           const merged = {
             ...(existing.user_settings ?? {}),
             fuzzScorerOverride: scorerName,
@@ -133,7 +133,7 @@ describe("Chem-Pal search query", () => {
       });
     }, scorer);
     await page.reload();
-    await playwrightExpect(page.getByRole("textbox", { name: "search for products" })).toBeVisible({
+    await playwrightExpect(page.getByRole('textbox', { name: 'search for products' })).toBeVisible({
       timeout: 10_000,
     });
   }
@@ -149,23 +149,23 @@ describe("Chem-Pal search query", () => {
     try {
       await setFuzzScorerOverride(page, scorer);
 
-      const searchInput = page.getByRole("textbox", { name: "search for products" });
-      await searchInput.fill("sodium borohydride");
-      await page.getByRole("button", { name: "search" }).click();
+      const searchInput = page.getByRole('textbox', { name: 'search for products' });
+      await searchInput.fill('sodium borohydride');
+      await page.getByRole('button', { name: 'search' }).click();
 
-      const backdrop = page.locator("#loading-backdrop");
+      const backdrop = page.locator('#loading-backdrop');
       await playwrightExpect(backdrop).toBeVisible({ timeout: 10_000 });
       await playwrightExpect(backdrop).toBeHidden({ timeout: 120_000 });
 
       // Show all rows so the count is total, not paged.
       const pageSizeSelect = page.locator('[aria-label="rows per page"]');
       await pageSizeSelect.click();
-      await page.getByRole("option", { name: "All" }).click();
+      await page.getByRole('option', { name: 'All' }).click();
 
-      const resultsTable = page.locator("table").nth(1);
+      const resultsTable = page.locator('table').nth(1);
       const rowCount = await resultsTable
-        .locator("tbody tr")
-        .filter({ has: page.locator("td") })
+        .locator('tbody tr')
+        .filter({ has: page.locator('td') })
         .count();
       return rowCount;
     } finally {
@@ -174,21 +174,21 @@ describe("Chem-Pal search query", () => {
     }
   }
 
-  it("should load the extension and display the search input", async () => {
+  it('should load the extension and display the search input', async () => {
     vitestExpect(extensionId).toBeTruthy();
 
     const page = await openExtension();
 
-    const searchInput = page.getByRole("textbox", {
-      name: "search for products",
+    const searchInput = page.getByRole('textbox', {
+      name: 'search for products',
     });
 
     // Verify it has the expected placeholder
-    await playwrightExpect(searchInput).toHaveAttribute("placeholder", "Search for products...");
+    await playwrightExpect(searchInput).toHaveAttribute('placeholder', 'Search for products...');
 
     // Verify we can type into it
-    await searchInput.fill("sodium chloride");
-    await playwrightExpect(searchInput).toHaveValue("sodium chloride");
+    await searchInput.fill('sodium chloride');
+    await playwrightExpect(searchInput).toHaveValue('sodium chloride');
 
     await page.close();
     //await page.pause();
@@ -198,7 +198,7 @@ describe("Chem-Pal search query", () => {
     "should produce 55 results for 'sodium borohydride' when fuzzScorerOverride is 'WRatio'",
     async () => {
       const page = await openExtension();
-      const rowCount = await borohydrideRowCountWithScorer("WRatio");
+      const rowCount = await borohydrideRowCountWithScorer('WRatio');
       vitestExpect(rowCount).toBe(90);
       await page.pause();
     },
@@ -208,7 +208,7 @@ describe("Chem-Pal search query", () => {
   it.skip(
     "should produce 10 results for 'sodium borohydride' when fuzzScorerOverride is 'ratio'",
     async () => {
-      const rowCount = await borohydrideRowCountWithScorer("ratio");
+      const rowCount = await borohydrideRowCountWithScorer('ratio');
       vitestExpect(rowCount).toBe(24);
     },
     testTimeout,
@@ -219,15 +219,15 @@ describe("Chem-Pal search query", () => {
     async () => {
       const page = await openExtension();
 
-      const query = "this should not return any results";
+      const query = 'this should not return any results';
 
-      const searchInput = page.getByRole("textbox", { name: "search for products" });
+      const searchInput = page.getByRole('textbox', { name: 'search for products' });
       await searchInput.fill(query);
-      await page.getByRole("button", { name: "search" }).click();
+      await page.getByRole('button', { name: 'search' }).click();
 
       // Wait for search completion the same way the happy-path test does:
       // backdrop appears, then disappears once every supplier finishes.
-      const backdrop = page.locator("#loading-backdrop");
+      const backdrop = page.locator('#loading-backdrop');
       await playwrightExpect(backdrop).toBeVisible({ timeout: 10_000 });
       await playwrightExpect(backdrop).toBeHidden({ timeout: 120_000 });
 
@@ -236,8 +236,8 @@ describe("Chem-Pal search query", () => {
       // for "<query>"` — match the prefix so a trailing PubChem-suggestion
       // hint (added when the query resolves to a known compound alias) doesn't
       // make the assertion brittle.
-      const resultsTable = page.locator("table").nth(1);
-      const emptyCell = resultsTable.locator("tbody td").first();
+      const resultsTable = page.locator('table').nth(1);
+      const emptyCell = resultsTable.locator('tbody td').first();
       await playwrightExpect(emptyCell).toContainText(`No results found for "${query}"`, {
         timeout: 5_000,
       });
@@ -261,18 +261,18 @@ describe("Chem-Pal search query", () => {
 
       // Type the search query and submit (mock routes + "abort" fallback are
       // already wired up by `openExtension()` — see that helper for the why).
-      const searchInput = page.getByRole("textbox", {
-        name: "search for products",
+      const searchInput = page.getByRole('textbox', {
+        name: 'search for products',
       });
-      await searchInput.fill("sodium borohydride");
-      await page.getByRole("button", { name: "search" }).click();
+      await searchInput.fill('sodium borohydride');
+      await page.getByRole('button', { name: 'search' }).click();
 
       // Wait for search to complete: the #loading-backdrop overlay is visible
       // while the suppliers are still streaming in results, and disappears
       // when every supplier has finished. Waiting on the backdrop (rather
       // than on a specific result count) makes the test robust to changes in
       // how many mock responses each supplier contributes.
-      const backdrop = page.locator("#loading-backdrop");
+      const backdrop = page.locator('#loading-backdrop');
       // The backdrop should appear shortly after the search is submitted.
       await playwrightExpect(backdrop).toBeVisible({ timeout: 10_000 });
       // Then wait for it to go away as suppliers complete.
@@ -282,16 +282,16 @@ describe("Chem-Pal search query", () => {
       // MUI Select renders a custom dropdown — target the trigger div by aria-label
       const pageSizeSelect = page.locator('[aria-label="rows per page"]');
       await pageSizeSelect.click();
-      await page.getByRole("option", { name: "All" }).click();
+      await page.getByRole('option', { name: 'All' }).click();
 
       // Verify table rows are visible (skip the hidden measurement table which is first in DOM)
-      const resultsTable = page.locator("table").nth(1);
-      const firstCell = resultsTable.locator("tbody tr td").first();
+      const resultsTable = page.locator('table').nth(1);
+      const firstCell = resultsTable.locator('tbody tr td').first();
       await playwrightExpect(firstCell).toBeVisible({ timeout: 5_000 });
 
       const rowCount = await resultsTable
-        .locator("tbody tr")
-        .filter({ has: page.locator("td") })
+        .locator('tbody tr')
+        .filter({ has: page.locator('td') })
         .count();
       vitestExpect(rowCount).toBeGreaterThanOrEqual(10);
 
@@ -301,7 +301,7 @@ describe("Chem-Pal search query", () => {
       // `chempal` IndexedDB store.
       const storedProductKeys = await page.evaluate(async (): Promise<string[]> => {
         const db = await new Promise<IDBDatabase>((resolve, reject) => {
-          const req = indexedDB.open("chempal");
+          const req = indexedDB.open('chempal');
           req.onsuccess = () => resolve(req.result);
           req.onerror = () => reject(req.error);
         });
@@ -309,9 +309,9 @@ describe("Chem-Pal search query", () => {
           const record = await new Promise<{ data?: Array<{ id?: unknown; supplier?: unknown }> }>(
             (resolve, reject) => {
               const getReq = db
-                .transaction("search_results", "readonly")
-                .objectStore("search_results")
-                .get("current");
+                .transaction('search_results', 'readonly')
+                .objectStore('search_results')
+                .get('current');
               getReq.onsuccess = () => resolve(getReq.result);
               getReq.onerror = () => reject(getReq.error);
             },

@@ -1,18 +1,18 @@
-import { i18n } from "@/helpers/i18n";
-import type { UpdateNotice } from "@/hooks/useUpdateAvailable";
-import Button from "@mui/material/Button";
-import Modal from "@mui/material/Modal";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import { AboutModalBox } from "./StyledComponents";
-import styles from "./WhatsNewModal.module.scss";
+import { i18n } from '@/helpers/i18n';
+import type { UpdateNotice } from '@/hooks/useUpdateAvailable';
+import Button from '@mui/material/Button';
+import Modal from '@mui/material/Modal';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import { AboutModalBox } from './StyledComponents';
+import styles from './WhatsNewModal.module.scss';
 
 /**
  * The subset of an update notice this modal renders. Accepts both a pending
  * update and an already-installed one; `source` is only present on the former.
  */
-type WhatsNewNotice = Pick<UpdateNotice, "version" | "notes"> &
-  Partial<Pick<UpdateNotice, "source">>;
+type WhatsNewNotice = Pick<UpdateNotice, 'version' | 'notes'> &
+  Partial<Pick<UpdateNotice, 'source'>>;
 
 /**
  * Props for {@link WhatsNewModal}.
@@ -53,7 +53,7 @@ export function WhatsNewModal({ notice, open, onClose, onApply }: WhatsNewModalP
   if (!notice) return null;
 
   const actionLabel =
-    notice.source === "webstore" ? i18n("update_action_reload") : i18n("update_action_view");
+    notice.source === 'webstore' ? i18n('update_action_reload') : i18n('update_action_view');
 
   return (
     <Modal
@@ -62,17 +62,17 @@ export function WhatsNewModal({ notice, open, onClose, onApply }: WhatsNewModalP
       onClose={onClose}
       aria-labelledby="whats-new-title"
     >
-      <AboutModalBox className={styles["whats-new-box"]}>
+      <AboutModalBox className={styles['whats-new-box']}>
         <Typography id="whats-new-title" variant="h6" component="h2" align="center" gutterBottom>
-          {i18n("update_modal_title", [notice.version])}
+          {i18n('update_modal_title', [notice.version])}
         </Typography>
 
         {notice.notes.length === 0 ? (
           <Typography variant="body2" color="text.secondary" data-testid="whats-new-empty">
-            {i18n("update_notes_unavailable")}
+            {i18n('update_notes_unavailable')}
           </Typography>
         ) : (
-          <Stack className={styles["whats-new-sections"]} spacing={1.5}>
+          <Stack className={styles['whats-new-sections']} spacing={1.5}>
             {notice.notes.map((section, sectionIndex) => (
               <div key={section.title ?? `section-${sectionIndex}`}>
                 {section.title && (
@@ -80,7 +80,7 @@ export function WhatsNewModal({ notice, open, onClose, onApply }: WhatsNewModalP
                     {section.title}
                   </Typography>
                 )}
-                <ul className={styles["whats-new-list"]}>
+                <ul className={styles['whats-new-list']}>
                   {section.items.map((item) => (
                     <Typography key={item} variant="body2" component="li">
                       {item}
@@ -96,12 +96,12 @@ export function WhatsNewModal({ notice, open, onClose, onApply }: WhatsNewModalP
           direction="row"
           spacing={1}
           justifyContent="flex-end"
-          className={styles["whats-new-actions"]}
+          className={styles['whats-new-actions']}
         >
           {onApply ? (
             <>
               <Button data-testid="whats-new-close" onClick={onClose} color="inherit">
-                {i18n("update_later")}
+                {i18n('update_later')}
               </Button>
               <Button data-testid="whats-new-apply" onClick={onApply} variant="contained">
                 {actionLabel}
@@ -111,7 +111,7 @@ export function WhatsNewModal({ notice, open, onClose, onApply }: WhatsNewModalP
             // Already installed — there's nothing to apply, so one button that
             // just acknowledges the notes.
             <Button data-testid="whats-new-close" onClick={onClose} variant="contained">
-              {i18n("update_got_it")}
+              {i18n('update_got_it')}
             </Button>
           )}
         </Stack>

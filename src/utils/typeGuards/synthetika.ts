@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 const synthetikaSearchResponseSchema = z.object({
   count: z.number(),
@@ -25,7 +25,7 @@ const synthetikaSearchResponseSchema = z.object({
 export function isSynthetikaSearchResponse(data: unknown): data is SynthetikaSearchResponse {
   const check = synthetikaSearchResponseSchema.safeParse(data);
   if (!check.success) {
-    console.warn("isSynthetikaSearchResponse: data is not a SynthetikaSearchResponse", {
+    console.warn('isSynthetikaSearchResponse: data is not a SynthetikaSearchResponse', {
       data,
       check,
       error: check.error,
@@ -55,12 +55,12 @@ export function isSynthetikaSearchResponse(data: unknown): data is SynthetikaSea
 export function assertIsSynthetikaSearchResponse(
   data: unknown,
 ): asserts data is SynthetikaSearchResponse {
-  if (!data || typeof data !== "object") {
-    throw new Error("isSynthetikaSearchResponse: data is falsey or not an object");
+  if (!data || typeof data !== 'object') {
+    throw new Error('isSynthetikaSearchResponse: data is falsey or not an object');
   }
 
   if (!isSynthetikaSearchResponse(data)) {
-    throw new Error("isSynthetikaSearchResponse: data is not a SynthetikaSearchResponse");
+    throw new Error('isSynthetikaSearchResponse: data is not a SynthetikaSearchResponse');
   }
 }
 
@@ -127,7 +127,7 @@ const synthetikaProductResponseSchema = z.object({
 export function isSynthetikaProduct(data: unknown): data is SynthetikaProduct {
   const check = synthetikaProductResponseSchema.safeParse(data);
   if (!check.success) {
-    console.warn("isSynthetikaProduct: data is not a SynthetikaProduct", {
+    console.warn('isSynthetikaProduct: data is not a SynthetikaProduct', {
       data,
       check,
       error: check.error,
@@ -174,13 +174,13 @@ export function isSynthetikaProductPrice(data: unknown): data is SynthetikaProdu
 export function assertIsSynthetikaProductPrice(
   data: unknown,
 ): asserts data is SynthetikaProductPrice {
-  if (!data || typeof data !== "object") {
-    console.log("isSynthetikaProductPrice: data is falsey or not an object");
-    throw new Error("isSynthetikaProductPrice: data is falsey or not an object");
+  if (!data || typeof data !== 'object') {
+    console.log('isSynthetikaProductPrice: data is falsey or not an object');
+    throw new Error('isSynthetikaProductPrice: data is falsey or not an object');
   }
 
   if (!isSynthetikaProductPrice(data)) {
-    console.log("isSynthetikaProductPrice: data is missing base or final");
-    throw new Error("isSynthetikaProductPrice: data is missing base or final");
+    console.log('isSynthetikaProductPrice: data is missing base or final');
+    throw new Error('isSynthetikaProductPrice: data is missing base or final');
   }
 }

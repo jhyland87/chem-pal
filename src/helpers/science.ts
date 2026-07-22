@@ -3,14 +3,14 @@ import {
   SUBSCRIPTS,
   SUPERSCRIPT_GLYPHS,
   SUPERSCRIPTS,
-} from "@/constants/science";
+} from '@/constants/science';
 import {
   buildFormulaPattern,
   FORMULA_ELEMENT_PATTERN,
   pickBestFormula,
-} from "@/helpers/formulaPattern";
-import { looksLikeSmiles } from "@/helpers/smiles";
-import { decodeHTMLEntities, ucfirst } from "@/helpers/utils";
+} from '@/helpers/formulaPattern';
+import { looksLikeSmiles } from '@/helpers/smiles';
+import { decodeHTMLEntities, ucfirst } from '@/helpers/utils';
 
 /**
  * @category Science Helpers
@@ -118,9 +118,9 @@ export const superscript = (str: string) => {
   // ⁰ and ⁴–⁹ are contiguous from U+2070. Special-case the three, compute the rest.
   return str.replace(/[0-9]/g, (d) => {
     const n = Number(d);
-    if (n === 1) return "¹";
-    if (n === 2) return "²";
-    if (n === 3) return "³";
+    if (n === 1) return '¹';
+    if (n === 2) return '²';
+    if (n === 3) return '³';
     return String.fromCodePoint(0x2070 + n);
   });
 };
@@ -144,7 +144,7 @@ export const superscript = (str: string) => {
  */
 export const superscriptGlyph = (str: string) => {
   for (const key in SUPERSCRIPT_GLYPHS) {
-    str = str.replace(new RegExp(SUPERSCRIPTS[key], "g"), SUPERSCRIPT_GLYPHS[key]);
+    str = str.replace(new RegExp(SUPERSCRIPTS[key], 'g'), SUPERSCRIPT_GLYPHS[key]);
   }
   return str;
 };
@@ -168,13 +168,13 @@ export const superscriptGlyph = (str: string) => {
  */
 export const subscriptGlyph = (str: string) => {
   for (const key in SUBSCRIPT_GLYPHS) {
-    str = str.replace(new RegExp(SUBSCRIPTS[key], "g"), SUBSCRIPT_GLYPHS[key]);
+    str = str.replace(new RegExp(SUBSCRIPTS[key], 'g'), SUBSCRIPT_GLYPHS[key]);
   }
   return str;
 };
 
 /** Polymer repeat-unit index letters mapped to their subscript glyphs (see {@link findFormulaInText}). */
-const REPEAT_INDEX_GLYPHS: Record<string, string> = { n: "ₙ", m: "ₘ", x: "ₓ" };
+const REPEAT_INDEX_GLYPHS: Record<string, string> = { n: 'ₙ', m: 'ₘ', x: 'ₓ' };
 
 /**
  * Checks if a string is a valid molecular formula.
@@ -238,22 +238,22 @@ export const findFormulaInText = (text: string): string | undefined => {
   // A sub/superscript "number" (no leading zero), in each accepted representation.
   // Characters are enumerated rather than ranged so engines that don't compute
   // Unicode ranges (byte-oriented / non-Unicode modes) still match them.
-  const glyphSub = "[₁₂₃₄₅₆₇₈₉][₀₁₂₃₄₅₆₇₈₉]*";
-  const glyphSup = "[¹²³⁴⁵⁶⁷⁸⁹][⁰¹²³⁴⁵⁶⁷⁸⁹]*";
+  const glyphSub = '[₁₂₃₄₅₆₇₈₉][₀₁₂₃₄₅₆₇₈₉]*';
+  const glyphSup = '[¹²³⁴⁵⁶⁷⁸⁹][⁰¹²³⁴⁵⁶⁷⁸⁹]*';
   // \u escape text (literal backslash-u-XXXX, e.g. before JSON.parse).
   const escSub = String.raw`\\u208[1-9](?:\\u208[0-9])*`;
   const escSup = String.raw`(?:\\u00[bB][239]|\\u207[4-9])(?:\\u2070|\\u00[bB][239]|\\u207[4-9])*`;
   // HTML numeric entities, decimal or hex, with optional leading zeros.
-  const entSub = "&#(?:0*832[1-9]|[xX]0*208[1-9]);(?:&#(?:0*832[0-9]|[xX]0*208[0-9]);)*";
+  const entSub = '&#(?:0*832[1-9]|[xX]0*208[1-9]);(?:&#(?:0*832[0-9]|[xX]0*208[0-9]);)*';
   const entSup =
-    "&#(?:0*(?:178|179|185|830[89]|831[0-3])|[xX]0*(?:[bB][239]|207[4-9]));(?:&#(?:0*(?:178|179|185|8304|830[89]|831[0-3])|[xX]0*(?:2070|[bB][239]|207[4-9]));)*";
+    '&#(?:0*(?:178|179|185|830[89]|831[0-3])|[xX]0*(?:[bB][239]|207[4-9]));(?:&#(?:0*(?:178|179|185|8304|830[89]|831[0-3])|[xX]0*(?:2070|[bB][239]|207[4-9]));)*';
   // <sub>2</sub> / <sup>2</sup> tags.
-  const tag = "<su[bp]>[1-9][0-9]*</su[bp]>";
+  const tag = '<su[bp]>[1-9][0-9]*</su[bp]>';
   const subSup = `(?:${glyphSub}|${glyphSup}|${escSub}|${escSup}|${entSub}|${entSup}|${tag})`;
 
   // Polymer / repeat-unit index: a variable subscript (n, m, x), not a number — as in "(C₃H₃NaO₂)ₙ".
   // Glyph form (ₙ ₘ ₓ) or the <sub>n</sub> HTML form. Unambiguous → no prose-word risk.
-  const repeatIndex = "(?:[ₙₘₓ]|<su[bp]>[nmx]</su[bp]>)";
+  const repeatIndex = '(?:[ₙₘₓ]|<su[bp]>[nmx]</su[bp]>)';
   // Everything that can trail a unit as a "count": a real sub/sup number, or a repeat index.
   const trailingCount = `(?:${subSup}|${repeatIndex})`;
 
@@ -274,8 +274,8 @@ export const findFormulaInText = (text: string): string | undefined => {
   }
   return (
     best
-      .replace(/<sub>(\d+)<\/sub>/g, (_match, p1) => subscript(p1 || ""))
-      .replace(/<sup>(\d+)<\/sup>/g, (_match, p1) => superscript(p1 || ""))
+      .replace(/<sub>(\d+)<\/sub>/g, (_match, p1) => subscript(p1 || ''))
+      .replace(/<sup>(\d+)<\/sup>/g, (_match, p1) => superscript(p1 || ''))
       // Repeat-index tag → glyph, mirroring the digit-tag handling above.
       .replace(/<su[bp]>([nmx])<\/su[bp]>/g, (_match, p1: string) => REPEAT_INDEX_GLYPHS[p1] ?? p1)
       .replace(/\\u208[0-9](?:\\u208[0-9])*/g, (match) => subscriptGlyph(match))
@@ -318,14 +318,14 @@ export const findFormulaInText = (text: string): string | undefined => {
 export const findFormulaInHtml = (html: string): string | undefined => {
   // Collect every candidate and keep the most likely one (see findFormulaInText). The subscript
   // token here is the HTML-only `<sub>`/`<sup>` tag; the rest of the grammar is shared.
-  const taggedSub = "<su[bp]>[1-9][0-9]*</su[bp]>";
+  const taggedSub = '<su[bp]>[1-9][0-9]*</su[bp]>';
   const best = pickBestFormula([...html.matchAll(buildFormulaPattern(taggedSub))].map((m) => m[0]));
   if (best === undefined) {
     return;
   }
   return best
-    .replace(/<sub>(\d+)<\/sub>/g, (_match, p1) => subscript(p1 || ""))
-    .replace(/<sup>(\d+)<\/sup>/g, (_match, p1) => superscript(p1 || ""));
+    .replace(/<sub>(\d+)<\/sub>/g, (_match, p1) => subscript(p1 || ''))
+    .replace(/<sup>(\d+)<\/sup>/g, (_match, p1) => superscript(p1 || ''));
 };
 
 /**
@@ -356,7 +356,7 @@ export const findFormulaInHtml = (html: string): string | undefined => {
  * @source
  */
 export const parsePurity = (value: string): number | void => {
-  if (!value || typeof value !== "string") return;
+  if (!value || typeof value !== 'string') return;
 
   // Number (dot or comma decimal), an optional trailing "+" (with optional
   // spaces), then "%". Anchoring on "%" keeps stray digits (codes like "E515")
@@ -364,7 +364,7 @@ export const parsePurity = (value: string): number | void => {
   const match = value.match(/(\d+(?:[.,]\d+)?)\s*\+?\s*%/);
   if (!match) return;
 
-  const purity = Number(match[1].replace(",", "."));
+  const purity = Number(match[1].replace(',', '.'));
   if (!Number.isNaN(purity) && purity > 0 && purity <= 100) return purity;
 };
 
@@ -391,14 +391,14 @@ export const parsePurity = (value: string): number | void => {
  * @source
  */
 export const findPurity = (value: string): string | undefined => {
-  if (!value || typeof value !== "string") return;
+  if (!value || typeof value !== 'string') return;
   // Strip HTML first so inline CSS (e.g. style="width: 100%") isn't read as a purity.
-  const clean = value.replace(/<[^>]+>/g, " ");
+  const clean = value.replace(/<[^>]+>/g, ' ');
   // A percentage (with optional comparator) is the most specific signal, so it wins over a grade.
   // Same shapes parsePurity tolerates — comparator, European comma decimal, "or better" plus —
   // since both read the same supplier copy; only the return type differs.
-  const token = clean.replace(/\s+/g, "").match(/[<>≤≥≈]?\d{1,3}(?:[.,]\d+)?\+?%/)?.[0];
-  const numeric = Number(token?.match(/\d+(?:[.,]\d+)?/)?.[0].replace(",", "."));
+  const token = clean.replace(/\s+/g, '').match(/[<>≤≥≈]?\d{1,3}(?:[.,]\d+)?\+?%/)?.[0];
+  const numeric = Number(token?.match(/\d+(?:[.,]\d+)?/)?.[0].replace(',', '.'));
   if (token && !Number.isNaN(numeric) && numeric > 0 && numeric <= 100) {
     return token;
   }
@@ -434,20 +434,20 @@ export const buildGradeRegexes = (): GradeRegexes => {
   //     .join("");
   const cases = (word: string) => {
     const _c = new Set([word, ucfirst(word), word.toLowerCase(), word.toUpperCase()]);
-    return `(?:${Array.from(_c).join("|")})`;
+    return `(?:${Array.from(_c).join('|')})`;
   };
 
   // acronym("ACS") -> "(?:ACS(?!\.)|A\.C\.S\.)"
   // Plain form (not followed by a dot, so "ACS." is rejected) OR dotted "A.C.S.".
   // Wrapped in (?:...) so the internal | can't leak into the surrounding
   // alternation — this is what makes the "BP/USP" combos parse correctly.
-  const acronym = (word: string) => `(?:${word}(?!\\.)|${word.replaceAll(/([A-Z])/g, "$1\\.")})`;
+  const acronym = (word: string) => `(?:${word}(?!\\.)|${word.replaceAll(/([A-Z])/g, '$1\\.')})`;
 
   // ── Core reusable tokens ────────────────────────────────────────────────────
-  const gradeTxt = cases("grade");
-  const purityTxt = cases("purity");
-  const qualityTxt = cases("quality");
-  const reagentTxt = cases("reagent");
+  const gradeTxt = cases('grade');
+  const purityTxt = cases('purity');
+  const qualityTxt = cases('quality');
+  const reagentTxt = cases('reagent');
 
   // Optional trailing " grade" (lets "AR" also match "AR Grade").
   const optionalGrade = String.raw`(?:\s+${gradeTxt})?`;
@@ -458,7 +458,7 @@ export const buildGradeRegexes = (): GradeRegexes => {
   // Pharma stem. The three endings are siblings, not nested — "cy"/"ceutical" branch off
   // "pharma", NOT off "pharmacop":
   //   pharma | pharmacop | pharmacopeia | pharmacopoeia | pharmacy | pharmaceutical
-  const pharma = String.raw`${cases("pharma")}(?:${cases("cop")}(?:[Oo]?${cases("eia")})?|${cases("cy")}|${cases("ceutical")})?`;
+  const pharma = String.raw`${cases('pharma')}(?:${cases('cop')}(?:[Oo]?${cases('eia')})?|${cases('cy')}|${cases('ceutical')})?`;
 
   // ── Word-grade stems ────────────────────────────────────────────────────────
   // The bare qualifier word for each grade that has no acronym of its own. On its
@@ -467,31 +467,31 @@ export const buildGradeRegexes = (): GradeRegexes => {
   // bare stem IS decisive is after an explicit "Grade:"/"Purity:" label, which is
   // what buildLabeledGradeRegex reuses these for.
   const stems = {
-    Guaranteed_Grade: cases("guaranteed"),
-    Cosmetic_Grade: cases("cosmetic"),
-    Extraction_Grade: cases("extraction"),
-    Practical_Grade: cases("practical"),
+    Guaranteed_Grade: cases('guaranteed'),
+    Cosmetic_Grade: cases('cosmetic'),
+    Extraction_Grade: cases('extraction'),
+    Practical_Grade: cases('practical'),
     // [IiUu] absorbs the "indistrial" typo.
-    Industrial_Grade: String.raw`${cases("ind")}[IiUu]${cases("strial")}`,
-    Technical_Grade: String.raw`${cases("tech")}(?:${cases("nical")})?`,
+    Industrial_Grade: String.raw`${cases('ind')}[IiUu]${cases('strial')}`,
+    Technical_Grade: String.raw`${cases('tech')}(?:${cases('nical')})?`,
     Reagent_Grade: reagentTxt,
     // "lab" or laboratory + its two common misspellings.
-    Lab_Grade: String.raw`${cases("lab")}(?:${cases("oratory")}|${cases("oratiry")}|${cases("pratory")})?`,
-    Pure_Grade: String.raw`${cases("pur")}(?:${cases("e")}|${cases("ified")})`,
-    High_Purity_Grade: String.raw`(?:${cases("ultra")}\s+)?${cases("high")}\s+(?:${cases("purity")}|${qualityTxt}|${rgFlex})`,
+    Lab_Grade: String.raw`${cases('lab')}(?:${cases('oratory')}|${cases('oratiry')}|${cases('pratory')})?`,
+    Pure_Grade: String.raw`${cases('pur')}(?:${cases('e')}|${cases('ified')})`,
+    High_Purity_Grade: String.raw`(?:${cases('ultra')}\s+)?${cases('high')}\s+(?:${cases('purity')}|${qualityTxt}|${rgFlex})`,
     Pharma_Grade: pharma,
-    Low_Grade: cases("low"),
+    Low_Grade: cases('low'),
   };
 
   // ── Per-grade group bodies ──────────────────────────────────────────────────
   const bodies = {
-    AR_Grade: String.raw`(?:${acronym("AR")}|${cases("analytical")}(?:\s*${reagentTxt})?)${optionalGrade}`,
-    ACS_Grade: String.raw`(?:${acronym("ACS")}|${cases("acs")}\s+${gradeTxt}|${cases("american")}\s+${cases("chem")}(?:${cases("ical")})?\s+${cases("society")})${optionalGrade}`,
+    AR_Grade: String.raw`(?:${acronym('AR')}|${cases('analytical')}(?:\s*${reagentTxt})?)${optionalGrade}`,
+    ACS_Grade: String.raw`(?:${acronym('ACS')}|${cases('acs')}\s+${gradeTxt}|${cases('american')}\s+${cases('chem')}(?:${cases('ical')})?\s+${cases('society')})${optionalGrade}`,
     Guaranteed_Grade: String.raw`${stems.Guaranteed_Grade}\s+${rgFlex}`,
     Cosmetic_Grade: String.raw`${stems.Cosmetic_Grade}\s+${rgFlex}`,
     Extraction_Grade: String.raw`${stems.Extraction_Grade}\s+${rgFlex}`,
-    NF_Grade: String.raw`(?:${acronym("NF")}|${cases("nf")}\s+${gradeTxt}|${cases("national")}\s+${cases("formulary")})${optionalGrade}`,
-    FCC_Grade: String.raw`(?:${acronym("FCC")}|${acronym("NSF")}|${cases("fcc")}\s+${gradeTxt}|${cases("food")}\s+(?:${cases("chem")}(?:${cases("icals")})?\s+${cases("codex")}|${rgFlex}))${optionalGrade}`,
+    NF_Grade: String.raw`(?:${acronym('NF')}|${cases('nf')}\s+${gradeTxt}|${cases('national')}\s+${cases('formulary')})${optionalGrade}`,
+    FCC_Grade: String.raw`(?:${acronym('FCC')}|${acronym('NSF')}|${cases('fcc')}\s+${gradeTxt}|${cases('food')}\s+(?:${cases('chem')}(?:${cases('icals')})?\s+${cases('codex')}|${rgFlex}))${optionalGrade}`,
     Practical_Grade: String.raw`${stems.Practical_Grade}\s+${rgFlex}`,
     Industrial_Grade: String.raw`${stems.Industrial_Grade}\s+${rgFlex}`,
     // "tech"/"technical" + flexible tail (any case), OR bare fully-uppercase
@@ -503,48 +503,48 @@ export const buildGradeRegexes = (): GradeRegexes => {
     Reagent_Grade: String.raw`(?<!(CS|SP|CC|AR|BP|JP|PA|AL|al)\s)${stems.Reagent_Grade}${optionalGrade}(?!.*(ACS|(US|J|B)P|NF|FCC|HPLC).*)`,
     // "BP"/"B.P." — decline when "/USP" or "/U.S.P." follows so the combo routes
     // to USP. Or "britt?ish pharmacop..." (t? absorbs the "Brittish" typo).
-    BP_Grade: String.raw`(?:${acronym("BP")}(?!\s*/\s*${acronym("USP")})|${cases("brit")}[Tt]?${cases("ish")}\s+${pharma})${optionalGrade}`,
-    JP_Grade: String.raw`(?:${acronym("JP")}|${cases("japanese")}\s+${pharma})${optionalGrade}`,
+    BP_Grade: String.raw`(?:${acronym('BP')}(?!\s*/\s*${acronym('USP')})|${cases('brit')}[Tt]?${cases('ish')}\s+${pharma})${optionalGrade}`,
+    JP_Grade: String.raw`(?:${acronym('JP')}|${cases('japanese')}\s+${pharma})${optionalGrade}`,
     // Combined designations FIRST (so the whole "BP/USP" is captured), then
     // "USP"/"U.S.P." / "usp grade" / "United States|US pharmacop...".
-    USP_Grade: String.raw`(?:${acronym("BP")}\s*/\s*${acronym("USP")}|${acronym("USP")}\s*/\s*${acronym("BP")}|${acronym("USP")}|${cases("usp")}\s+${gradeTxt}|(?:${cases("united")}\s+${cases("states")}|${acronym("US")})\s+${pharma})${optionalGrade}`,
-    HPLC_Grade: String.raw`(?:${acronym("HPLC")}|${cases("hplc")}\s+${gradeTxt}|${cases("gradient")}\s+${gradeTxt}|${cases("high")}[-\s]+${cases("performance")}\s+${cases("liquid")}\s+${cases("chromatography")})${optionalGrade}`,
-    Lab_Grade: String.raw`(?:${acronym("LR")}|${stems.Lab_Grade}\s+${rgFlex})`,
-    Pure_Grade: String.raw`(?:${acronym("PA")}|${stems.High_Purity_Grade}|${stems.Pure_Grade}\s+${rgFlex})`,
+    USP_Grade: String.raw`(?:${acronym('BP')}\s*/\s*${acronym('USP')}|${acronym('USP')}\s*/\s*${acronym('BP')}|${acronym('USP')}|${cases('usp')}\s+${gradeTxt}|(?:${cases('united')}\s+${cases('states')}|${acronym('US')})\s+${pharma})${optionalGrade}`,
+    HPLC_Grade: String.raw`(?:${acronym('HPLC')}|${cases('hplc')}\s+${gradeTxt}|${cases('gradient')}\s+${gradeTxt}|${cases('high')}[-\s]+${cases('performance')}\s+${cases('liquid')}\s+${cases('chromatography')})${optionalGrade}`,
+    Lab_Grade: String.raw`(?:${acronym('LR')}|${stems.Lab_Grade}\s+${rgFlex})`,
+    Pure_Grade: String.raw`(?:${acronym('PA')}|${stems.High_Purity_Grade}|${stems.Pure_Grade}\s+${rgFlex})`,
     Pharma_Grade: String.raw`${stems.Pharma_Grade}\s+${rgFlex}`,
     Low_Grade: String.raw`${stems.Low_Grade}\s+(?:${rgFlex}|${purityTxt})`,
-    Impure: String.raw`${cases("impure")}(?:\s+${reagentTxt})?`,
-    Ungraded: String.raw`${cases("ungraded")}(?:\s+${cases("purity")})?(?:\s+${reagentTxt})?`,
+    Impure: String.raw`${cases('impure')}(?:\s+${reagentTxt})?`,
+    Ungraded: String.raw`${cases('ungraded')}(?:\s+${cases('purity')})?(?:\s+${reagentTxt})?`,
   };
 
   // ── Assembly ────────────────────────────────────────────────────────────────
   // Order matters only for the BP -> USP fallthrough (BP declines "/USP" via the
   // lookahead, so USP wins). Other groups have distinct leading tokens.
   const order = [
-    "AR_Grade",
-    "ACS_Grade",
-    "Guaranteed_Grade",
-    "Cosmetic_Grade",
-    "Extraction_Grade",
-    "NF_Grade",
-    "FCC_Grade",
-    "Practical_Grade",
-    "Industrial_Grade",
-    "Technical_Grade",
-    "Reagent_Grade",
-    "BP_Grade",
-    "JP_Grade",
-    "USP_Grade",
-    "HPLC_Grade",
-    "Lab_Grade",
-    "Pure_Grade",
-    "Pharma_Grade",
-    "Low_Grade",
-    "Impure",
-    "Ungraded",
+    'AR_Grade',
+    'ACS_Grade',
+    'Guaranteed_Grade',
+    'Cosmetic_Grade',
+    'Extraction_Grade',
+    'NF_Grade',
+    'FCC_Grade',
+    'Practical_Grade',
+    'Industrial_Grade',
+    'Technical_Grade',
+    'Reagent_Grade',
+    'BP_Grade',
+    'JP_Grade',
+    'USP_Grade',
+    'HPLC_Grade',
+    'Lab_Grade',
+    'Pure_Grade',
+    'Pharma_Grade',
+    'Low_Grade',
+    'Impure',
+    'Ungraded',
   ] as const;
 
-  const namedGroups = order.map((name) => `(?<${name}>${bodies[name]})`).join("|");
+  const namedGroups = order.map((name) => `(?<${name}>${bodies[name]})`).join('|');
 
   // \b...(?!\w): matches a grade token anywhere. (?!\w) — rather than a trailing
   // \b — lets a token end on a dot ("A.R.", "U.S.P."). Swap the \b for ^ and the
@@ -558,10 +558,10 @@ export const buildGradeRegexes = (): GradeRegexes => {
   // classifying. An explicit "Grade:"/"Purity:"/"Quality:" label supplies that
   // missing signal, so here the bare stem is enough. Acronym grades never reach
   // this regex — they already match the classifier on their own.
-  const labelPrefix = String.raw`\b(?:${gradeTxt}|${purityTxt}|${cases("quality")})\s*[:\-–]\s*`;
+  const labelPrefix = String.raw`\b(?:${gradeTxt}|${purityTxt}|${cases('quality')})\s*[:\-–]\s*`;
   const labeledGroups = Object.entries(stems)
     .map(([name, stem]) => `(?<${name}>${stem})`)
-    .join("|");
+    .join('|');
   const labeled = new RegExp(String.raw`${labelPrefix}(?:${labeledGroups})(?!\w)`);
 
   const patterns = { classifier, labeled };
@@ -622,7 +622,7 @@ export const GRADE_REGEX_SOURCE = GRADE_REGEX.source;
  * @source
  */
 export const parseGrade = (value: string): string => {
-  return matchGrade(value) ?? "Ungraded";
+  return matchGrade(value) ?? 'Ungraded';
 };
 
 /**
@@ -648,11 +648,11 @@ const matchGrade = (value: string): string | undefined => {
   if (hits.length === 0) return undefined;
   if (hits.length > 1) {
     console.warn(
-      `Multiple grades found in "${value}": ${hits.map(([k]) => k).join(", ")}, returning first`,
+      `Multiple grades found in "${value}": ${hits.map(([k]) => k).join(', ')}, returning first`,
     );
   }
 
-  return hits[0][0].replace(/_/g, " ");
+  return hits[0][0].replace(/_/g, ' ');
 };
 
 /**
@@ -688,45 +688,45 @@ const matchGrade = (value: string): string | undefined => {
 export const purityGradeToPercentage = (grade: string): number | undefined => {
   switch (grade) {
     // ── Instrumental / analytical: highest purity ──
-    case "HPLC Grade": // low interfering impurities; solvents typically ≥99.9%
+    case 'HPLC Grade': // low interfering impurities; solvents typically ≥99.9%
       return 99.9;
-    case "ACS Grade": // meets/exceeds ACS reagent specs — top of the standard hierarchy
+    case 'ACS Grade': // meets/exceeds ACS reagent specs — top of the standard hierarchy
       return 99.8;
-    case "AR Grade": // Analytical Reagent — high purity, ≈ ACS
-    case "Guaranteed Grade": // "Guaranteed Reagent" (GR) — high purity, ≈ ACS
-    case "Reagent Grade": // almost as stringent as ACS
+    case 'AR Grade': // Analytical Reagent — high purity, ≈ ACS
+    case 'Guaranteed Grade': // "Guaranteed Reagent" (GR) — high purity, ≈ ACS
+    case 'Reagent Grade': // almost as stringent as ACS
       return 99.7;
 
     // ── Pharmacopeia (food/drug-acceptable) ──
-    case "USP Grade": // meets US Pharmacopeia; equivalent to ACS for many drugs
-    case "BP Grade": // British Pharmacopoeia
-    case "JP Grade": // Japanese Pharmacopoeia
-    case "NF Grade": // National Formulary
+    case 'USP Grade': // meets US Pharmacopeia; equivalent to ACS for many drugs
+    case 'BP Grade': // British Pharmacopoeia
+    case 'JP Grade': // Japanese Pharmacopoeia
+    case 'NF Grade': // National Formulary
       return 99.5;
-    case "Pharma Grade": // generic pharmaceutical
-    case "FCC Grade": // Food Chemicals Codex — food-safe
+    case 'Pharma Grade': // generic pharmaceutical
+    case 'FCC Grade': // Food Chemicals Codex — food-safe
       return 99.0;
 
     // ── Intermediate: good quality, no strict assay floor ──
-    case "Cosmetic Grade":
-    case "Extraction Grade": // rough guess — not part of a formal purity hierarchy
-    case "Lab Grade": // high quality, exact impurities unknown; education use
+    case 'Cosmetic Grade':
+    case 'Extraction Grade': // rough guess — not part of a formal purity hierarchy
+    case 'Lab Grade': // high quality, exact impurities unknown; education use
       return 98.0;
 
     // ── No official standard ──
-    case "Pure Grade": // "pure"/"purified" — good quality, meets no official standard
-    case "Practical Grade": // same tier as purified
+    case 'Pure Grade': // "pure"/"purified" — good quality, meets no official standard
+    case 'Practical Grade': // same tier as purified
       return 95.0;
 
     // ── Commercial / industrial: lowest ──
-    case "Technical Grade": // industrial/processing use; not for food/drug
-    case "Industrial Grade":
+    case 'Technical Grade': // industrial/processing use; not for food/drug
+    case 'Industrial Grade':
       return 90.0;
 
-    case "Low Grade":
+    case 'Low Grade':
       return 50.0;
 
-    case "Impure":
+    case 'Impure':
       return 0.0;
     // "Ungraded" and anything unrecognised fall through to undefined.
     default:
@@ -842,16 +842,16 @@ export interface ChemicalSpecs {
 // ("C"). The variable repeat-unit indices (ₙ/ₘ/ₓ) are deliberately left as glyphs so
 // findFormulaInText recognizes them as polymer repeat units; superscripts (charges) too.
 const SUBSCRIPT_GLYPH_TO_ASCII: Record<string, string> = {
-  "₀": "0",
-  "₁": "1",
-  "₂": "2",
-  "₃": "3",
-  "₄": "4",
-  "₅": "5",
-  "₆": "6",
-  "₇": "7",
-  "₈": "8",
-  "₉": "9",
+  '₀': '0',
+  '₁': '1',
+  '₂': '2',
+  '₃': '3',
+  '₄': '4',
+  '₅': '5',
+  '₆': '6',
+  '₇': '7',
+  '₈': '8',
+  '₉': '9',
 };
 
 // Wix suppliers bury specs in HTML accordions and bullet lists. Flatten that markup to one value
@@ -862,14 +862,14 @@ const normalizeSpecText = (html: string): string =>
     html
       // Drop sub/sup wrappers without inserting whitespace, so subscripted formulas stay intact
       // (e.g. C<sub>6</sub>H<sub>15</sub>NO<sub>3</sub> -> C6H15NO3 rather than "C 6 H 15 NO 3").
-      .replace(/<\/?su[bp]\b[^>]*>/gi, "")
-      .replace(/<\/(?:p|li|ul|ol|div|tr|h[1-6])>/gi, "\n")
-      .replace(/<li\b[^>]*>/gi, "\n")
-      .replace(/<br\s*\/?>/gi, "\n")
-      .replace(/<[^>]+>/g, " "),
+      .replace(/<\/?su[bp]\b[^>]*>/gi, '')
+      .replace(/<\/(?:p|li|ul|ol|div|tr|h[1-6])>/gi, '\n')
+      .replace(/<li\b[^>]*>/gi, '\n')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<[^>]+>/g, ' '),
   )
     .replace(/[₀-₉]/g, (glyph) => SUBSCRIPT_GLYPH_TO_ASCII[glyph] ?? glyph)
-    .replace(/[^\S\n]+/g, " ");
+    .replace(/[^\S\n]+/g, ' ');
 
 // A label — optionally carrying a parenthetical qualifier, e.g. "Chemical Formula (Repeating
 // Unit)" — followed by an optional separator (":", "-", "#", "=", em/en dashes) and the value.
@@ -887,29 +887,29 @@ const PURITY_PERCENT_REGEX = /(\d{1,3}(?:\.\d+)?)\s*\+?\s*%/;
 // The bare "mol" alternative only counts as a label when a ":"/"=" follows (as in this catalog's
 // "mol : 247.18"), so it isn't matched inside a unit like "g/mol" or words like "moles".
 const MOLAR_MASS_LABEL =
-  "(?:molecular\\s+(?:weight|mass)|molar\\s+(?:mass|weight|wt)|mol(?:ecular)?\\.?\\s*(?:weight|wt|mass)|formula\\s+(?:weight|wt)|m\\.?\\s*w\\.?|m\\.?\\s*wt\\.?|mr|rmm|rfm|fw|mol(?=\\s*[:=]))";
+  '(?:molecular\\s+(?:weight|mass)|molar\\s+(?:mass|weight|wt)|mol(?:ecular)?\\.?\\s*(?:weight|wt|mass)|formula\\s+(?:weight|wt)|m\\.?\\s*w\\.?|m\\.?\\s*wt\\.?|mr|rmm|rfm|fw|mol(?=\\s*[:=]))';
 // A molar-mass unit in its common spellings: g/mol, g·mol⁻¹, g mol-1, kg/mol, Da/kDa/dalton, amu.
 const MOLAR_MASS_UNIT =
-  "(?:g\\s*[./·⋅]?\\s*mol(?:e|s|ar)?(?:\\s*[-−⁻‑]\\s*(?:1|¹))?|kg\\s*[./·⋅]?\\s*mol(?:e|s)?|k?da(?:ltons?)?|amu)";
+  '(?:g\\s*[./·⋅]?\\s*mol(?:e|s|ar)?(?:\\s*[-−⁻‑]\\s*(?:1|¹))?|kg\\s*[./·⋅]?\\s*mol(?:e|s)?|k?da(?:ltons?)?|amu)';
 // Between label and value: optional parenthetical (e.g. "(M)"/"(Mr)") and punctuation separators.
-const MOLAR_MASS_SEP = "\\s*(?:\\([^)]*\\))?\\s*[:#=–—-]*\\s*";
+const MOLAR_MASS_SEP = '\\s*(?:\\([^)]*\\))?\\s*[:#=–—-]*\\s*';
 // A numeric value with optional grouping/decimal separators (US or EU), starting and ending on a
 // digit so trailing punctuation isn't captured. parseLocalizedNumber disambiguates "," vs ".".
-const MOLAR_MASS_NUMBER = "(\\d[\\d.,]*\\d|\\d)";
+const MOLAR_MASS_NUMBER = '(\\d[\\d.,]*\\d|\\d)';
 // Letter boundaries (case-insensitive) so "MW"/"Mr"/"FW" aren't matched mid-word.
-const NOT_LETTER_BEFORE = "(?<![a-z])";
-const NOT_LETTER_AFTER = "(?![a-z])";
+const NOT_LETTER_BEFORE = '(?<![a-z])';
+const NOT_LETTER_AFTER = '(?![a-z])';
 
 // Tiered by confidence: labelled value with a unit, then a bare "<number> <unit>", then a labelled
 // value without a unit. Earlier tiers are preferred so the most unambiguous reading wins.
 const MOLAR_MASS_LABELED_UNIT = new RegExp(
   `${NOT_LETTER_BEFORE}${MOLAR_MASS_LABEL}${NOT_LETTER_AFTER}${MOLAR_MASS_SEP}${MOLAR_MASS_NUMBER}\\s*${MOLAR_MASS_UNIT}`,
-  "i",
+  'i',
 );
-const MOLAR_MASS_UNIT_ONLY = new RegExp(`${MOLAR_MASS_NUMBER}\\s*${MOLAR_MASS_UNIT}`, "i");
+const MOLAR_MASS_UNIT_ONLY = new RegExp(`${MOLAR_MASS_NUMBER}\\s*${MOLAR_MASS_UNIT}`, 'i');
 const MOLAR_MASS_LABELED = new RegExp(
   `${NOT_LETTER_BEFORE}${MOLAR_MASS_LABEL}${NOT_LETTER_AFTER}${MOLAR_MASS_SEP}${MOLAR_MASS_NUMBER}`,
-  "i",
+  'i',
 );
 
 // --- Molarity / concentration matching (see findMolarity) ------------------------------------
@@ -944,15 +944,15 @@ export const parseLocalizedNumber = (raw: string): number => {
   const dotCount = (raw.match(/\./g) ?? []).length;
   // Both separators present: the last-occurring one is the decimal, the other groups thousands.
   if (commaCount > 0 && dotCount > 0) {
-    const decimal = raw.lastIndexOf(",") > raw.lastIndexOf(".") ? "," : ".";
-    const grouping = decimal === "," ? /\./g : /,/g;
-    return Number(raw.replace(grouping, "").replace(decimal, "."));
+    const decimal = raw.lastIndexOf(',') > raw.lastIndexOf('.') ? ',' : '.';
+    const grouping = decimal === ',' ? /\./g : /,/g;
+    return Number(raw.replace(grouping, '').replace(decimal, '.'));
   }
   // A single comma or single dot is a decimal separator (handles EU "149,19" and US "140.22").
-  if (commaCount === 1) return Number(raw.replace(",", "."));
+  if (commaCount === 1) return Number(raw.replace(',', '.'));
   if (dotCount === 1) return Number(raw);
   // No separator, or repeated separators used purely for grouping (e.g. "1,234,567").
-  return Number(raw.replace(/[.,]/g, ""));
+  return Number(raw.replace(/[.,]/g, ''));
 };
 
 /**
@@ -979,9 +979,9 @@ export const parseLocalizedNumber = (raw: string): number => {
  * @source
  */
 export const findMolarMass = (text: string): number | undefined => {
-  if (!text || typeof text !== "string") return undefined;
+  if (!text || typeof text !== 'string') return undefined;
   // Strip markup and decode entities so labels/values/units match on plain text.
-  const clean = decodeHTMLEntities(text.replace(/<[^>]+>/g, " "));
+  const clean = decodeHTMLEntities(text.replace(/<[^>]+>/g, ' '));
   const match =
     clean.match(MOLAR_MASS_LABELED_UNIT) ??
     clean.match(MOLAR_MASS_UNIT_ONLY) ??
@@ -1012,7 +1012,7 @@ export const findMolarMass = (text: string): number | undefined => {
  * @source
  */
 export const findMolarity = (text: string): string | undefined => {
-  if (!text || typeof text !== "string") return undefined;
+  if (!text || typeof text !== 'string') return undefined;
   const match = text.match(MOLARITY_REGEX);
   if (!match) return undefined;
   const [, low, high, unit] = match;
@@ -1080,10 +1080,10 @@ const extractGrade = (lines: string[]): string | undefined => {
  * @source
  */
 export const parseChemicalSpecs = (html: string): ChemicalSpecs => {
-  if (!html || typeof html !== "string") return {};
+  if (!html || typeof html !== 'string') return {};
 
   const text = normalizeSpecText(html);
-  const lines = text.split("\n").map((line) => line.trim());
+  const lines = text.split('\n').map((line) => line.trim());
   const specs: ChemicalSpecs = {};
 
   const purity = extractPurity(lines);
@@ -1097,7 +1097,7 @@ export const parseChemicalSpecs = (html: string): ChemicalSpecs => {
   // C6H15NO3", and a single match would stop at the bogus first hit. Clean single formulas (e.g.
   // "NaOH") are kept verbatim; salts/adducts joined by a dot (e.g. "C6H15NO3.H3PO4") aren't valid
   // isMoleForm, so fall back to the tolerant finder.
-  for (const formulaMatch of text.matchAll(new RegExp(FORMULA_REGEX.source, "gi"))) {
+  for (const formulaMatch of text.matchAll(new RegExp(FORMULA_REGEX.source, 'gi'))) {
     const rawFormula = formulaMatch[1];
     const formula = isMoleForm(rawFormula) ? rawFormula : findFormulaInText(rawFormula);
     if (formula) {
@@ -1116,10 +1116,10 @@ export const parseChemicalSpecs = (html: string): ChemicalSpecs => {
 };
 
 // The adduct/hydrate separator: U+22C5 "DOT OPERATOR".
-const ADDUCT_DOT = "\u22C5";
+const ADDUCT_DOT = '\u22C5';
 
 // Characters that could be used as adduct dot operators (eg: ⋅᛫•‧⋄)
-const TARGET_ADDUCT_DOTS = ["\\.", "\u00b7", "\u16eb", "\u2022", "\u2027", "\u22c4"];
+const TARGET_ADDUCT_DOTS = ['\\.', '\u00b7', '\u16eb', '\u2022', '\u2027', '\u22c4'];
 
 /**
  * Formats a plain-ASCII chemical formula with proper Unicode notation: periods that join formula
@@ -1145,7 +1145,7 @@ export function formatFormula(formula: string): string {
   return (
     formula
       // 1. period(s) between formula units → adduct dot
-      .replace(new RegExp(`(${TARGET_ADDUCT_DOTS.join("|")})`, "g"), ADDUCT_DOT)
+      .replace(new RegExp(`(${TARGET_ADDUCT_DOTS.join('|')})`, 'g'), ADDUCT_DOT)
       // 2. a run of digits directly after an atom (letter), ) or ] → subscript.
       //    Digits after the start, a space, or the adduct dot are stoichiometric
       //    coefficients, so their preceding char isn't a letter/bracket → skipped.
@@ -1162,11 +1162,11 @@ export function formatFormula(formula: string): string {
  * @group Converters
  */
 const PURITY_COMPARATOR_OFFSET: Record<string, number> = {
-  "<": -0.02,
-  "≤": -0.01,
-  "≈": 0,
-  "≥": 0.01,
-  ">": 0.02,
+  '<': -0.02,
+  '≤': -0.01,
+  '≈': 0,
+  '≥': 0.01,
+  '>': 0.02,
 };
 
 /**
@@ -1197,17 +1197,17 @@ const PURITY_COMPARATOR_OFFSET: Record<string, number> = {
  * @source
  */
 export function sortablePurityGrade(grade: string): number {
-  if (grade.endsWith(" Grade")) return purityGradeToPercentage(grade) ?? 0;
+  if (grade.endsWith(' Grade')) return purityGradeToPercentage(grade) ?? 0;
 
   // First number only, with any leading comparator. Stripping every non-digit instead would
   // splice a range's two bounds into one bogus number ("99.9-100%" -> "99.9100").
   const match = grade.match(/(?<modifier>[<>≤≥≈]\s?)?(?<percent>\d+(?:[.,]\d+)?)/);
   if (!match?.groups) return 0;
 
-  const num = Number(match.groups.percent.replace(",", "."));
+  const num = Number(match.groups.percent.replace(',', '.'));
   if (Number.isNaN(num) || num < 0) return 0;
 
   // modifier keeps the optional trailing space the regex allows ("> 75%"); take just the operator.
-  const offset = PURITY_COMPARATOR_OFFSET[match.groups.modifier?.[0] ?? ""] ?? 0;
+  const offset = PURITY_COMPARATOR_OFFSET[match.groups.modifier?.[0] ?? ''] ?? 0;
   return Math.min(num, 100) + offset;
 }

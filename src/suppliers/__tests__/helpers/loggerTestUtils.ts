@@ -1,5 +1,5 @@
-import { Logger } from "@/utils/Logger";
-import { vi } from "vitest";
+import { Logger } from '@/utils/Logger';
+import { vi } from 'vitest';
 
 /**
  * Creates spy functions for a Logger instance's methods.
@@ -23,24 +23,24 @@ import { vi } from "vitest";
  */
 export const spyOnLogger = (logger: Logger) => {
   const spies = {
-    debug: vi.spyOn(logger, "debug"),
-    info: vi.spyOn(logger, "info"),
-    warn: vi.spyOn(logger, "warn"),
-    error: vi.spyOn(logger, "error"),
-    log: vi.spyOn(logger, "log"),
-    table: vi.spyOn(logger, "table"),
-    trace: vi.spyOn(logger, "trace"),
-    dir: vi.spyOn(logger, "dir"),
-    group: vi.spyOn(logger, "group"),
-    groupCollapsed: vi.spyOn(logger, "groupCollapsed"),
-    groupEnd: vi.spyOn(logger, "groupEnd"),
-    time: vi.spyOn(logger, "time"),
-    timeEnd: vi.spyOn(logger, "timeEnd"),
-    timeLog: vi.spyOn(logger, "timeLog"),
-    clear: vi.spyOn(logger, "clear"),
-    count: vi.spyOn(logger, "count"),
-    countReset: vi.spyOn(logger, "countReset"),
-    timeStamp: vi.spyOn(logger, "timeStamp"),
+    debug: vi.spyOn(logger, 'debug'),
+    info: vi.spyOn(logger, 'info'),
+    warn: vi.spyOn(logger, 'warn'),
+    error: vi.spyOn(logger, 'error'),
+    log: vi.spyOn(logger, 'log'),
+    table: vi.spyOn(logger, 'table'),
+    trace: vi.spyOn(logger, 'trace'),
+    dir: vi.spyOn(logger, 'dir'),
+    group: vi.spyOn(logger, 'group'),
+    groupCollapsed: vi.spyOn(logger, 'groupCollapsed'),
+    groupEnd: vi.spyOn(logger, 'groupEnd'),
+    time: vi.spyOn(logger, 'time'),
+    timeEnd: vi.spyOn(logger, 'timeEnd'),
+    timeLog: vi.spyOn(logger, 'timeLog'),
+    clear: vi.spyOn(logger, 'clear'),
+    count: vi.spyOn(logger, 'count'),
+    countReset: vi.spyOn(logger, 'countReset'),
+    timeStamp: vi.spyOn(logger, 'timeStamp'),
   };
 
   return spies;

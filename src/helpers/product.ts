@@ -5,28 +5,28 @@
  * @source
  */
 
-import { mapDefined } from "./utils";
+import { mapDefined } from './utils';
 /** Base URL for NCI CACTUS chemical structure resolver (also used in `cas.ts`). */
-const CACTUS_STRUCTURE_BASE = "https://cactus.nci.nih.gov/chemical/structure";
+const CACTUS_STRUCTURE_BASE = 'https://cactus.nci.nih.gov/chemical/structure';
 
 /** Detail fields whose presence makes a product worth expanding into the panel. */
 const EXPANDABLE_DETAIL_KEYS = [
-  "cas",
-  "inchiKey",
-  "inchi",
-  "smiles",
-  "formula",
-  "moleweight",
-  "iupacName",
-  "purity",
-  "grade",
-  "concentration",
-  "manufacturer",
-  "description",
-  "sdsUrl",
-  "specSheetUrl",
-  "coaUrl",
-  "pubchemId",
+  'cas',
+  'inchiKey',
+  'inchi',
+  'smiles',
+  'formula',
+  'moleweight',
+  'iupacName',
+  'purity',
+  'grade',
+  'concentration',
+  'manufacturer',
+  'description',
+  'sdsUrl',
+  'specSheetUrl',
+  'coaUrl',
+  'pubchemId',
 ] as const satisfies readonly (keyof Product)[];
 
 /**
@@ -61,8 +61,8 @@ interface ResolvedProductImage {
  */
 export function isPresent(value: unknown): boolean {
   if (value == null) return false;
-  if (typeof value === "string") return value.trim() !== "";
-  if (typeof value === "number") return !Number.isNaN(value);
+  if (typeof value === 'string') return value.trim() !== '';
+  if (typeof value === 'number') return !Number.isNaN(value);
   return true;
 }
 
@@ -86,12 +86,12 @@ export function samePurchasableUnit(a: Variant, b: Variant): boolean {
   if (isPresent(a.quantity) && isPresent(b.quantity)) {
     return (
       a.quantity === b.quantity &&
-      (a.uom ?? "").trim().toLowerCase() === (b.uom ?? "").trim().toLowerCase()
+      (a.uom ?? '').trim().toLowerCase() === (b.uom ?? '').trim().toLowerCase()
     );
   }
   // typeof narrows `number | undefined` to `number` (unlike isPresent, which isn't a type guard);
   // a NaN price compares false either way, so this keeps isPresent's effective behavior.
-  if (typeof a.usdPrice === "number" && typeof b.usdPrice === "number") {
+  if (typeof a.usdPrice === 'number' && typeof b.usdPrice === 'number') {
     return Math.round(a.usdPrice * 100) === Math.round(b.usdPrice * 100);
   }
   return false;
@@ -170,7 +170,7 @@ export function hasExpandableDetail(product: Product): boolean {
 }
 
 /** Keys stripped from copied product info — internal/derived noise. */
-const NON_EXPORTED_PRODUCT_KEYS = ["currencySymbol", "baseQuantity", "cacheKey", "_id"];
+const NON_EXPORTED_PRODUCT_KEYS = ['currencySymbol', 'baseQuantity', 'cacheKey', '_id'];
 
 /**
  * Splits a flat {@link ProductImage} list into separate `images` and
@@ -195,7 +195,7 @@ function splitProductImages(images?: ProductImage[]): {
   const fullImages: string[] = [];
   const thumbnails: string[] = [];
   for (const image of images ?? []) {
-    if (image.type === "thumbnail") {
+    if (image.type === 'thumbnail') {
       thumbnails.push(image.href);
     } else {
       fullImages.push(image.href);
@@ -224,8 +224,8 @@ function splitProductImages(images?: ProductImage[]): {
 function cleanProductFields(item: Variant): Record<string, unknown> {
   const entries = mapDefined(Object.entries(item), ([key, value]) => {
     if (NON_EXPORTED_PRODUCT_KEYS.includes(key)) return;
-    if (key === "images" || key === "variants") return;
-    if (key === "price") return [key, `${item.currencySymbol ?? ""}${value}`];
+    if (key === 'images' || key === 'variants') return;
+    if (key === 'price') return [key, `${item.currencySymbol ?? ''}${value}`];
     return [key, value];
   });
 

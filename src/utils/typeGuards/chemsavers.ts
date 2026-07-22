@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 const searchResponseItemSchema = z.object({
   document: z.object({
@@ -227,6 +227,6 @@ export function assertValidSearchResponse(
   response: unknown,
 ): asserts response is ChemsaversSearchResponse {
   if (!isValidSearchResponse(response)) {
-    throw new Error("Invalid search response", { cause: response });
+    throw new Error('Invalid search response', { cause: response });
   }
 }

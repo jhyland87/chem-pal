@@ -1,16 +1,16 @@
-import { UOM } from "@/constants/common";
-import { parsePrice } from "@/helpers/currency";
-import { parseQuantity } from "@/helpers/quantity";
-import { parseChemicalSpecs } from "@/helpers/science";
-import { findPdfHref, htmlToAscii, mapDefined } from "@/helpers/utils";
-import getFilteredProductsWithHasDiscount from "@/queries/wix-product-query.gql";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { translateAstToWixFilter } from "@/utils/search-query/translators/translateAstToWixFilter";
-import { isParsedPrice } from "@/utils/typeGuards/common";
-import { isValidVariant } from "@/utils/typeGuards/productbuilder";
-import { isProductItem, isProductSelection, isValidSearchResponse } from "@/utils/typeGuards/wix";
-import { print } from "graphql";
-import { SupplierBase } from "./SupplierBase";
+import { UOM } from '@/constants/common';
+import { parsePrice } from '@/helpers/currency';
+import { parseQuantity } from '@/helpers/quantity';
+import { parseChemicalSpecs } from '@/helpers/science';
+import { findPdfHref, htmlToAscii, mapDefined } from '@/helpers/utils';
+import getFilteredProductsWithHasDiscount from '@/queries/wix-product-query.gql';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { translateAstToWixFilter } from '@/utils/search-query/translators/translateAstToWixFilter';
+import { isParsedPrice } from '@/utils/typeGuards/common';
+import { isValidVariant } from '@/utils/typeGuards/productbuilder';
+import { isProductItem, isProductSelection, isValidSearchResponse } from '@/utils/typeGuards/wix';
+import { print } from 'graphql';
+import { SupplierBase } from './SupplierBase';
 /**
  * SupplierBaseWix class that extends SupplierBase and implements AsyncIterable<Product>.
  * @abstract
@@ -28,22 +28,22 @@ export abstract class SupplierBaseWix
   public abstract readonly baseURL: string;
 
   /** Access token for Wix API authentication */
-  protected accessToken: string = "";
+  protected accessToken: string = '';
 
   /** Ecom app ID for Wix API authentication */
-  protected readonly ecomAppId: string = "1380b703-ce81-ff05-f115-39571d94dfcd";
+  protected readonly ecomAppId: string = '1380b703-ce81-ff05-f115-39571d94dfcd';
 
   /** Categories for Wix API */
   protected readonly categories: Record<string, string> = {
-    all: "00000000-000000-000000-000000000001",
+    all: '00000000-000000-000000-000000000001',
   };
 
   /** Default values for products */
   protected productDefaults = {
     uom: UOM.EA,
     quantity: 1,
-    currencyCode: "USD",
-    currencySymbol: "$",
+    currencyCode: 'USD',
+    currencySymbol: '$',
   };
 
   protected readonly minMatchPercentage: number = 45;
@@ -80,16 +80,16 @@ export abstract class SupplierBaseWix
    */
   protected async setup(): Promise<void> {
     const accessTokenResponse = await fetch(`${this.baseURL}/_api/v1/access-tokens`, {
-      credentials: "include",
+      credentials: 'include',
       headers: {
-        accept: "*/*",
-        "accept-language": "en-US,en;q=0.5",
-        "cache-control": "no-cache",
-        pragma: "no-cache",
-        priority: "u=1, i",
+        accept: '*/*',
+        'accept-language': 'en-US,en;q=0.5',
+        'cache-control': 'no-cache',
+        pragma: 'no-cache',
+        priority: 'u=1, i',
         referer: this.baseURL,
-        "user-agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+        'user-agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36',
       },
     });
 
@@ -112,7 +112,7 @@ export abstract class SupplierBaseWix
     const parsed = this.getAst();
     const filters: WixFilterNode = parsed.isAdvanced
       ? translateAstToWixFilter(parsed.ast)
-      : { term: { field: "name", op: "CONTAINS", values: [`*${query}*`] } };
+      : { term: { field: 'name', op: 'CONTAINS', values: [`*${query}*`] } };
     return {
       mainCollectionId: this.categories.all,
       offset: 0,
@@ -141,10 +141,10 @@ export abstract class SupplierBaseWix
     const graphQLVariables = this.getGraphQLVariables(query);
 
     const searchRequest = await this.httpGetJson({
-      path: "_api/wix-ecommerce-storefront-web/api",
+      path: '_api/wix-ecommerce-storefront-web/api',
       params: {
-        o: "getFilteredProducts",
-        s: "WixStoresWebClient",
+        o: 'getFilteredProducts',
+        s: 'WixStoresWebClient',
         q: graphQLQuery,
         v: JSON.stringify(graphQLVariables),
       },
@@ -166,7 +166,7 @@ export abstract class SupplierBaseWix
       searchRequest.data.catalog.category.productsWithMetaData.list,
     );
 
-    this.logger.info("fuzzResults", {
+    this.logger.info('fuzzResults', {
       query,
       productResults: searchRequest.data.catalog.category.productsWithMetaData.list,
       fuzzResults,
@@ -207,7 +207,7 @@ export abstract class SupplierBaseWix
   protected initProductBuilders(results: ProductObject[]): ProductBuilder<Product>[] {
     return mapDefined(results, (product) => {
       if (!product.price) {
-        this.logger.warn("Dropping product: no price", {
+        this.logger.warn('Dropping product: no price', {
           product,
         });
         return;
@@ -218,7 +218,7 @@ export abstract class SupplierBaseWix
       for (const option of product.options ?? []) {
         for (const selection of option.selections ?? []) {
           if (!isProductSelection(selection)) {
-            this.logger.warn("Invalid product selection:", { selection });
+            this.logger.warn('Invalid product selection:', { selection });
             continue;
           }
           const parsed = parseQuantity(selection.value);
@@ -234,13 +234,13 @@ export abstract class SupplierBaseWix
       // Resolve explicit productItems first.
       const productVariants = mapDefined(product.productItems, (item: ProductItem) => {
         if (!isProductItem(item)) {
-          this.logger.warn("Invalid product item:", { item });
+          this.logger.warn('Invalid product item:', { item });
           return;
         }
 
         const parsedPrice = parsePrice(item.formattedPrice ?? product.formattedPrice);
         if (!isParsedPrice(parsedPrice)) {
-          this.logger.warn("Dropping product item: unparseable formattedPrice", {
+          this.logger.warn('Dropping product item: unparseable formattedPrice', {
             item,
             product,
           });
@@ -252,9 +252,9 @@ export abstract class SupplierBaseWix
           return selectionIndex.get(selectionId);
         });
 
-        const quantityInfo = resolvedQuantities.find((q) => q && "uom" in q);
+        const quantityInfo = resolvedQuantities.find((q) => q && 'uom' in q);
         if (!quantityInfo) {
-          this.logger.warn("Dropping product item: no quantityInfo", {
+          this.logger.warn('Dropping product item: no quantityInfo', {
             item,
             product,
           });
@@ -277,7 +277,7 @@ export abstract class SupplierBaseWix
           for (const selection of option.selections ?? []) {
             if (coveredSelectionIds.has(selection.id)) continue;
             const quantityInfo = selectionIndex.get(selection.id);
-            if (!quantityInfo || !("uom" in quantityInfo)) continue;
+            if (!quantityInfo || !('uom' in quantityInfo)) continue;
 
             productVariants.push({
               ...parentParsedPrice,
@@ -296,7 +296,7 @@ export abstract class SupplierBaseWix
       });
 
       if (!isParsedPrice(parentParsedPrice)) {
-        this.logger.warn("Dropping product: unparseable formattedPrice", {
+        this.logger.warn('Dropping product: unparseable formattedPrice', {
           id: product.id,
           name: product.name,
           formattedPrice: product.formattedPrice,
@@ -315,7 +315,7 @@ export abstract class SupplierBaseWix
       // (see getFallbackQuantity) before the listing is dropped.
       if (!parentVariant) {
         const fallbackQuantity = this.getFallbackQuantity(product);
-        if (fallbackQuantity && "uom" in fallbackQuantity) {
+        if (fallbackQuantity && 'uom' in fallbackQuantity) {
           parentVariant = {
             ...parentParsedPrice,
             ...fallbackQuantity,
@@ -325,11 +325,11 @@ export abstract class SupplierBaseWix
         }
       }
 
-      if (!parentVariant || !("quantity" in parentVariant) || !("uom" in parentVariant)) {
+      if (!parentVariant || !('quantity' in parentVariant) || !('uom' in parentVariant)) {
         // No quantity/uom could be derived from Wix options or productItems. Suppliers
         // that store the size only in the product name (e.g. "Adrafinil 100 grams") land
         // here and are dropped, since this method never parses the name for quantity.
-        this.logger.warn("Dropping product: no quantity/uom from Wix options or productItems", {
+        this.logger.warn('Dropping product: no quantity/uom from Wix options or productItems', {
           id: product.id,
           name: product.name,
           optionCount: product.options?.length ?? 0,
@@ -382,7 +382,7 @@ export abstract class SupplierBaseWix
    * @source
    */
   protected getFallbackQuantity(product: ProductObject): ReturnType<typeof parseQuantity> {
-    this.logger.debug("No fallback quantity strategy for supplier", {
+    this.logger.debug('No fallback quantity strategy for supplier', {
       supplier: this.supplierName,
       id: product.id,
     });
@@ -416,11 +416,11 @@ export abstract class SupplierBaseWix
     // parse both together so a supplier's layout (FTF vs BioFuran) doesn't matter.
     const additionalInfoHtml = (product.additionalInfo ?? [])
       .map((info) => info.description)
-      .join("\n");
-    const copy = `${product.description ?? ""}\n${additionalInfoHtml}`;
+      .join('\n');
+    const copy = `${product.description ?? ''}\n${additionalInfoHtml}`;
 
     // The setters ignore undefined/invalid input, so the parser output can be passed straight in.
-    const photo = (product.media ?? []).find((item) => item.mediaType === "PHOTO" && item.fullUrl);
+    const photo = (product.media ?? []).find((item) => item.mediaType === 'PHOTO' && item.fullUrl);
     const specs = parseChemicalSpecs(copy);
 
     builder

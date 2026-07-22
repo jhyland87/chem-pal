@@ -1,13 +1,13 @@
-import { findCAS } from "@/helpers/cas";
-import { parseQuantity } from "@/helpers/quantity";
-import { createDOM } from "@/helpers/request";
-import { formatFormula, parsePurity } from "@/helpers/science";
-import { mapDefined } from "@/helpers/utils";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { translateAstToFreefind } from "@/utils/search-query/translators/translateAstToFreefind";
-import { isCurrencyCode } from "@/utils/typeGuards/common";
-import { extract } from "fuzzball";
-import { SupplierBase } from "./SupplierBase";
+import { findCAS } from '@/helpers/cas';
+import { parseQuantity } from '@/helpers/quantity';
+import { createDOM } from '@/helpers/request';
+import { formatFormula, parsePurity } from '@/helpers/science';
+import { mapDefined } from '@/helpers/utils';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { translateAstToFreefind } from '@/utils/search-query/translators/translateAstToFreefind';
+import { isCurrencyCode } from '@/utils/typeGuards/common';
+import { extract } from 'fuzzball';
+import { SupplierBase } from './SupplierBase';
 
 /**
  * Supplier implementation for LiMac Science, a chemical supplier based in
@@ -40,24 +40,24 @@ import { SupplierBase } from "./SupplierBase";
  */
 export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> implements ISupplier {
   // Display name of the supplier used for UI and logging
-  public readonly supplierName: string = "LiMac";
+  public readonly supplierName: string = 'LiMac';
 
   // Base URL for product detail pages on LiMac's storefront
-  public readonly baseURL: string = "https://www.limac.lv";
+  public readonly baseURL: string = 'https://www.limac.lv';
 
   // FreeFind hostname used for the product search step. Declaring it as
   // `apiURL` automatically extends `requiredHosts` so the extension
   // requests the necessary host permission.
-  public readonly apiURL: string = "search.freefind.com";
+  public readonly apiURL: string = 'search.freefind.com';
 
   // Shipping scope for LiMac
-  public readonly shipping: ShippingRange = "worldwide";
+  public readonly shipping: ShippingRange = 'worldwide';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = "LV";
+  public readonly country: CountryCode = 'LV';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "other", "ach"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'other', 'ach'];
 
   // Cached search results from the last query execution
   protected queryResults: Array<Partial<Product>> = [];
@@ -100,7 +100,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
    * @source
    */
   protected getUniqueProductKey(data: Element): string {
-    const href = data.getAttribute("href") ?? "";
+    const href = data.getAttribute('href') ?? '';
     const url = new URL(href, this.baseURL);
     return url.pathname.match(/\/item\/(\d+)\//)?.[1] ?? this.href(href);
   }
@@ -128,7 +128,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    this.logger.log("queryProducts:", { query, limit });
+    this.logger.log('queryProducts:', { query, limit });
 
     // For an advanced query, hand FreeFind its own refined-search syntax.
     const parsed = this.getAst();
@@ -136,29 +136,29 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
 
     const searchResponse = await this.httpGetHtml({
       host: this.apiURL,
-      path: "/find.html",
+      path: '/find.html',
       params: {
         si: this.siteId,
-        pid: "r",
-        n: "0",
-        _charset_: "UTF-8",
-        bcd: "÷",
-        query: encodeURIComponent(searchTerm).replaceAll("%20", "+"),
+        pid: 'r',
+        n: '0',
+        _charset_: 'UTF-8',
+        bcd: '÷',
+        query: encodeURIComponent(searchTerm).replaceAll('%20', '+'),
       },
     });
 
     if (!searchResponse) {
-      this.logger.error("No search response", { query, limit });
+      this.logger.error('No search response', { query, limit });
       return;
     }
 
-    this.logger.debug("searchResponse:", { searchResponse });
+    this.logger.debug('searchResponse:', { searchResponse });
 
     // Hand the result anchors to initProductBuilders (rather than building the
     // ProductBuilders inline) so each one gets its title, supplier, and ID set
     // via setBasicInfo — the same flow every other supplier follows.
     const productElements = this.getSearchResultElements(searchResponse);
-    this.logger.debug("productElements:", { count: productElements.length });
+    this.logger.debug('productElements:', { count: productElements.length });
 
     return this.initProductBuilders(productElements).slice(0, limit);
   }
@@ -181,18 +181,18 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
   private getSearchResultElements(response: string): Element[] {
     const parsedHTML = createDOM(response);
     const noResultsCheck = parsedHTML.querySelector(
-      ".search-header-table .search-count > .search-no-results",
+      '.search-header-table .search-count > .search-no-results',
     );
     if (noResultsCheck) {
-      this.logger.log("No products found", { response, noResultsCheck });
+      this.logger.log('No products found', { response, noResultsCheck });
       return [];
     }
 
     const resultCount = parsedHTML.querySelector(
-      ".search-header-table td.search-count > font.search-count",
+      '.search-header-table td.search-count > font.search-count',
     )?.textContent;
     if (!resultCount) {
-      this.logger.log("No products found", { response, resultCount });
+      this.logger.log('No products found', { response, resultCount });
       return [];
     }
 
@@ -200,17 +200,17 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
       /Found (?<result_count>[0-9]+) items, now showing (?<from>[0-9]+) - (?<to>[0-9]+)/m,
     );
     if (!resultCountMatch) {
-      this.logger.log("No products found", { response, resultCountMatch });
+      this.logger.log('No products found', { response, resultCountMatch });
       return [];
     }
 
-    const totalResults = Number(resultCountMatch.groups?.result_count ?? "0");
-    const startResult = Number(resultCountMatch.groups?.from ?? "0");
-    const endResult = Number(resultCountMatch.groups?.to ?? "0");
+    const totalResults = Number(resultCountMatch.groups?.result_count ?? '0');
+    const startResult = Number(resultCountMatch.groups?.from ?? '0');
+    const endResult = Number(resultCountMatch.groups?.to ?? '0');
 
-    this.logger.log("Found results", { response, totalResults, startResult, endResult });
+    this.logger.log('Found results', { response, totalResults, startResult, endResult });
 
-    return Array.from(parsedHTML.querySelectorAll("font.search-results > a"));
+    return Array.from(parsedHTML.querySelectorAll('font.search-results > a'));
   }
 
   /**
@@ -243,18 +243,18 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
   ): Element[] {
     const parsedHTML = createDOM(response);
     const noResultsCheck = parsedHTML.querySelector(
-      ".search-header-table .search-count > .search-no-results",
+      '.search-header-table .search-count > .search-no-results',
     );
     if (noResultsCheck) {
-      this.logger.log("No products found", { query });
+      this.logger.log('No products found', { query });
       return [];
     }
 
     const resultCount = parsedHTML.querySelector(
-      ".search-header-table td.search-count > font.search-count",
+      '.search-header-table td.search-count > font.search-count',
     )?.textContent;
     if (!resultCount) {
-      this.logger.log("No products found", { query });
+      this.logger.log('No products found', { query });
       return [];
     }
 
@@ -262,17 +262,17 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
       /Found (?<result_count>[0-9]+) items, now showing (?<from>[0-9]+) - (?<to>[0-9]+)/m,
     );
     if (!resultCountMatch) {
-      this.logger.log("No products found", { query });
+      this.logger.log('No products found', { query });
       return [];
     }
 
-    const totalResults = Number(resultCountMatch.groups?.result_count ?? "0");
-    const startResult = Number(resultCountMatch.groups?.from ?? "0");
-    const endResult = Number(resultCountMatch.groups?.to ?? "0");
+    const totalResults = Number(resultCountMatch.groups?.result_count ?? '0');
+    const startResult = Number(resultCountMatch.groups?.from ?? '0');
+    const endResult = Number(resultCountMatch.groups?.to ?? '0');
 
-    this.logger.log("Found results", { query, totalResults, startResult, endResult });
+    this.logger.log('Found results', { query, totalResults, startResult, endResult });
 
-    const links = parsedHTML.querySelectorAll("font.search-results > a");
+    const links = parsedHTML.querySelectorAll('font.search-results > a');
 
     const activeScorer = this.fuzzScorerOverride ?? this.fuzzScorer;
 
@@ -282,13 +282,13 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
       cutoff: minMatchPercentage,
       sortBySimilarity: true,
     }).reduce<FuzzyMatchResult<Element>[]>((acc, [obj, score, idx]) => {
-      if (!obj.id || typeof idx !== "number") {
-        this.logger.error("No ID for product", { element: obj });
+      if (!obj.id || typeof idx !== 'number') {
+        this.logger.error('No ID for product', { element: obj });
         return acc;
       }
 
       if (score < minMatchPercentage) {
-        this.logger.debug("fuzzyFilter: score below minimum match percentage, excluding product", {
+        this.logger.debug('fuzzyFilter: score below minimum match percentage, excluding product', {
           product: obj,
           score,
           idx,
@@ -301,7 +301,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
       return acc;
     }, []);
 
-    this.logger.debug("fuzzHtmlResponse results:", {
+    this.logger.debug('fuzzHtmlResponse results:', {
       supplierName: this.supplierName,
       query,
       minMatchPercentage,
@@ -330,9 +330,9 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
    */
   protected initProductBuilders(elements: Element[]): ProductBuilder<Product>[] {
     return mapDefined(elements, (element: Element) => {
-      const href = element.getAttribute("href");
+      const href = element.getAttribute('href');
       if (!href) {
-        this.logger.error("No URL for product", { element });
+        this.logger.error('No URL for product', { element });
         return;
       }
 
@@ -340,11 +340,11 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
       // LiMac product URL shape: /catalog/params/category/{cat}/item/{id}/
       const id = url.pathname.match(/\/item\/(\d+)\//)?.[1];
       if (!id) {
-        this.logger.error("No ID for product", { element, url: String(url) });
+        this.logger.error('No ID for product', { element, url: String(url) });
         return;
       }
 
-      const title = element.textContent?.trim() || "";
+      const title = element.textContent?.trim() || '';
 
       return new ProductBuilder<Product>(this.baseURL)
         .setBasicInfo(title, String(url), this.supplierName)
@@ -381,25 +381,25 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     const result = await this.getProductDataWithCache(product, async (builder) => {
-      if (typeof builder === "undefined") {
-        this.logger.error("No products to get data for");
+      if (typeof builder === 'undefined') {
+        this.logger.error('No products to get data for');
         return;
       }
 
       const productResponse = await this.httpGetHtml({
         // `get` returns a union over all Product fields; `url` is set in
         // initProductBuilders and is always a string here.
-        path: builder.get("url") as string,
+        path: builder.get('url') as string,
       });
 
       if (!productResponse) {
-        this.logger.warn("No product response", { builder });
+        this.logger.warn('No product response', { builder });
         return;
       }
 
-      const mozApi = this.parseJsObject<MozCatItemMozApi>(productResponse, "mozCatItemMozApi");
+      const mozApi = this.parseJsObject<MozCatItemMozApi>(productResponse, 'mozCatItemMozApi');
       if (!mozApi) {
-        this.logger.warn("No mozCatItemMozApi found", { url: builder.get("url") });
+        this.logger.warn('No mozCatItemMozApi found', { url: builder.get('url') });
         return;
       }
 
@@ -408,7 +408,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
       builder
         .setData({ title: mozApi.name })
         .setSupplierCountry(this.country)
-        .setCAS(findCAS(mozApi.sku ?? ""));
+        .setCAS(findCAS(mozApi.sku ?? ''));
 
       const variants = Array.isArray(mozApi.variants) ? mozApi.variants : [];
       const main = variants[0];
@@ -417,20 +417,20 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
       const currencyCode = isCurrencyCode(mozApi.currency) ? mozApi.currency : undefined;
 
       if (main) {
-        const mainQty = parseQuantity(main.options?.[0]?.title ?? "");
+        const mainQty = parseQuantity(main.options?.[0]?.title ?? '');
         if (mainQty) builder.setQuantity(mainQty);
-        builder.setPricing(main.price, mozApi.currency, "€");
+        builder.setPricing(main.price, mozApi.currency, '€');
       }
 
       for (const variant of variants.slice(1)) {
-        const optionTitle = variant.options?.[0]?.title ?? "";
+        const optionTitle = variant.options?.[0]?.title ?? '';
         const variantQty = parseQuantity(optionTitle);
         builder.addVariant({
           id: variant.id,
           title: optionTitle || undefined,
           price: variant.price,
           currencyCode,
-          currencySymbol: "€",
+          currencySymbol: '€',
           quantity: variantQty?.quantity,
           uom: variantQty?.uom,
           sku: variant.sku || undefined,
@@ -454,11 +454,11 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
     // the current query for both freshly fetched and cached products.
     if (!result) return;
 
-    const name = result.get("title");
-    if (typeof name === "string") {
+    const name = result.get('title');
+    if (typeof name === 'string') {
       const score = this.fuzzyScoreAst(name);
       if (score === null) {
-        this.logger.debug("Dropping product below fuzz threshold", {
+        this.logger.debug('Dropping product below fuzz threshold', {
           name,
           query: this.query,
           cutoff: this.minMatchPercentage,
@@ -495,8 +495,8 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
     html: string,
     altText: string,
   ): void {
-    const ogImage = this.getMetaTags(dom)["og:image"];
-    const pictures = this.parseJsObject<MozCatItemPictures>(html, "mozCatItemPictures");
+    const ogImage = this.getMetaTags(dom)['og:image'];
+    const pictures = this.parseJsObject<MozCatItemPictures>(html, 'mozCatItemPictures');
     const picture = pictures?.item?.[0];
 
     if (ogImage) {
@@ -524,19 +524,19 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
    * @source
    */
   private applyBasicProperties(builder: ProductBuilder<Product>, dom: Document): void {
-    const props = this.parseDetailTable(dom, "#basic");
+    const props = this.parseDetailTable(dom, '#basic');
 
-    builder.setFormula(props["Molecular Formula"]);
-    builder.setMoleweight(props["Molecular Weight"]?.match(/[\d.]+/)?.[0]);
+    builder.setFormula(props['Molecular Formula']);
+    builder.setMoleweight(props['Molecular Weight']?.match(/[\d.]+/)?.[0]);
 
     // CAS is normally taken from mozCatItemMozApi.sku; only fall back to the
     // table when that didn't produce one.
-    if (!builder.get("cas")) {
-      builder.setCAS(findCAS(props["CAS No."] ?? ""));
+    if (!builder.get('cas')) {
+      builder.setCAS(findCAS(props['CAS No.'] ?? ''));
     }
 
-    if (builder.get("formula")) {
-      builder.setFormula(formatFormula(builder.get("formula")));
+    if (builder.get('formula')) {
+      builder.setFormula(formatFormula(builder.get('formula')));
     }
   }
 
@@ -555,11 +555,11 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
    * @source
    */
   private getMetaTags(dom: Document): Record<string, string> {
-    return Array.from(dom.getElementsByTagName("meta")).reduce<Record<string, string>>(
+    return Array.from(dom.getElementsByTagName('meta')).reduce<Record<string, string>>(
       (acc, meta) => {
-        const property = meta.getAttribute("property");
-        if (typeof property === "string") {
-          acc[property] = meta.getAttribute("content") ?? "";
+        const property = meta.getAttribute('property');
+        if (typeof property === 'string') {
+          acc[property] = meta.getAttribute('content') ?? '';
         }
         return acc;
       },
@@ -586,10 +586,10 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
     const container = dom.querySelector(selector);
     if (!container) return {};
 
-    return Array.from(container.querySelectorAll("tr")).reduce<Record<string, string>>(
+    return Array.from(container.querySelectorAll('tr')).reduce<Record<string, string>>(
       (acc, row) => {
-        const label = row.querySelector("th")?.textContent?.trim().replace(/\s+/g, " ");
-        const value = row.querySelector("td")?.textContent?.trim().replace(/\s+/g, " ");
+        const label = row.querySelector('th')?.textContent?.trim().replace(/\s+/g, ' ');
+        const value = row.querySelector('td')?.textContent?.trim().replace(/\s+/g, ' ');
         if (label && value) acc[label] = value;
         return acc;
       },
@@ -615,7 +615,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
   protected titleSelector(data: Element): Maybe<string> {
     const title = data.textContent?.trim();
     if (!title) {
-      this.logger.error("No title for product", { data });
+      this.logger.error('No title for product', { data });
       return undefined;
     }
     return title;
@@ -648,7 +648,7 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
     try {
       const normalised = literal
         .replace(/([{,]\s*)([A-Za-z_$][A-Za-z0-9_$]*|\d+)\s*:/g, '$1"$2":')
-        .replace(/,(\s*[}\]])/g, "$1");
+        .replace(/,(\s*[}\]])/g, '$1');
       return JSON.parse(normalised);
     } catch (error) {
       this.logger.error(`Failed to parse ${name} literal`, { error, literal });
@@ -677,18 +677,18 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
     const markerIdx = html.indexOf(marker);
     if (markerIdx === -1) return undefined;
 
-    const openIdx = html.indexOf("{", markerIdx);
+    const openIdx = html.indexOf('{', markerIdx);
     if (openIdx === -1) return undefined;
 
     let depth = 0;
     let inString = false;
-    let stringChar = "";
+    let stringChar = '';
 
     for (let i = openIdx; i < html.length; i++) {
       const ch = html[i];
 
       if (inString) {
-        if (ch === "\\") {
+        if (ch === '\\') {
           i++;
           continue;
         }
@@ -702,8 +702,8 @@ export class SupplierLiMac extends SupplierBase<Partial<Product>, Product> imple
         continue;
       }
 
-      if (ch === "{") depth++;
-      else if (ch === "}") {
+      if (ch === '{') depth++;
+      else if (ch === '}') {
         depth--;
         if (depth === 0) return html.slice(openIdx, i + 1);
       }

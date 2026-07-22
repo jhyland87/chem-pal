@@ -1,4 +1,4 @@
-import type { CommentDisplayPart, DeclarationReflection, DocumentReflection } from "typedoc";
+import type { CommentDisplayPart, DeclarationReflection, DocumentReflection } from 'typedoc';
 
 /**
  * A reflection that can appear as a member of a category or group. Mirrors the
@@ -11,7 +11,7 @@ export type TaxonomyMember = DeclarationReflection | DocumentReflection;
  * Which of TypeDoc's two taxonomies a term belongs to.
  * @category Taxonomy
  */
-export type TermKind = "category" | "group";
+export type TermKind = 'category' | 'group';
 
 /**
  * How terms sharing a title across different files are combined.
@@ -21,13 +21,13 @@ export type TermKind = "category" | "group";
  * - `none` — every owning container keeps its own term, qualified by owner name
  * @category Taxonomy
  */
-export type MergeMode = "byTitle" | "byTitleCaseInsensitive" | "none";
+export type MergeMode = 'byTitle' | 'byTitleCaseInsensitive' | 'none';
 
 /**
  * How members are ordered within a term.
  * @category Taxonomy
  */
-export type MemberSort = "alphabetical" | "source-order" | "kind";
+export type MemberSort = 'alphabetical' | 'source-order' | 'kind';
 
 /**
  * A single `@category` or `@group` value, with every reflection tagged with it

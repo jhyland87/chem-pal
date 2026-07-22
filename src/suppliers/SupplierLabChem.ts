@@ -1,31 +1,31 @@
-import { AVAILABILITY, CACHE, UOM } from "@/constants/common";
-import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
-import { findCAS } from "@/helpers/cas";
-import { parseQuantity } from "@/helpers/quantity";
-import { findFormulaInText, findMolarMass } from "@/helpers/science";
-import { firstMap, htmlToAscii, mapDefined } from "@/helpers/utils";
+import { AVAILABILITY, CACHE, UOM } from '@/constants/common';
+import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
+import { findCAS } from '@/helpers/cas';
+import { parseQuantity } from '@/helpers/quantity';
+import { findFormulaInText, findMolarMass } from '@/helpers/science';
+import { firstMap, htmlToAscii, mapDefined } from '@/helpers/utils';
 import type {
   EpagesProductPage,
   EpagesSearchProduct,
   EpagesSearchResponse,
   EpagesVariationItem,
-} from "@/types/labchem";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { scoreAstMatch } from "@/utils/search-query/evaluateAst";
-import { cstorage } from "@/utils/storage";
-import { isQuantityObject } from "@/utils/typeGuards/common";
+} from '@/types/labchem';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { scoreAstMatch } from '@/utils/search-query/evaluateAst';
+import { cstorage } from '@/utils/storage';
+import { isQuantityObject } from '@/utils/typeGuards/common';
 import {
   isEpagesProductPage,
   isEpagesSearchResponse,
   isEpagesVariationsResponse,
-} from "@/utils/typeGuards/labchem";
-import { type JsonValue } from "type-fest";
-import { SupplierBase } from "./SupplierBase";
+} from '@/utils/typeGuards/labchem';
+import { type JsonValue } from 'type-fest';
+import { SupplierBase } from './SupplierBase';
 
 /** ePages catalog-search endpoint (relative to `baseURL`). */
-const SEARCH_PATH = "/api/v2/search";
+const SEARCH_PATH = '/api/v2/search';
 /** Storefront locale sent with every search request. */
-const LOCALE = "de_DE";
+const LOCALE = 'de_DE';
 /** Products requested per catalog page (ePages caps this at 100). */
 const RESULTS_PER_PAGE = 100;
 /** Safety cap on catalog pages fetched (~1000 products). */
@@ -57,9 +57,9 @@ interface CatalogCacheEntry {
  */
 function isCatalogCacheEntry(value: unknown): value is CatalogCacheEntry {
   return (
-    typeof value === "object" &&
+    typeof value === 'object' &&
     value !== null &&
-    typeof (value as CatalogCacheEntry).cachedAt === "number" &&
+    typeof (value as CatalogCacheEntry).cachedAt === 'number' &&
     Array.isArray((value as CatalogCacheEntry).products)
   );
 }
@@ -93,25 +93,25 @@ export class SupplierLabChem
   implements ISupplier
 {
   /** Name of supplier (for display purposes). */
-  public readonly supplierName: string = "LabChem";
+  public readonly supplierName: string = 'LabChem';
 
   /** Base URL for HTTP(s) requests. */
-  public readonly baseURL: string = "https://www.labchem.de";
+  public readonly baseURL: string = 'https://www.labchem.de';
 
   /** Shipping scope for LabChem. */
-  public readonly shipping: ShippingRange = "international";
+  public readonly shipping: ShippingRange = 'international';
 
   /** The country code of the supplier. */
-  public readonly country: CountryCode = "DE";
+  public readonly country: CountryCode = 'DE';
 
   /** The payment methods accepted by the supplier. */
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   /** ePages shop id, used as the `shop` search parameter and in REST paths. */
-  protected readonly shopId: string = "87762263";
+  protected readonly shopId: string = '87762263';
 
   /** REST base for product/variation resources (trailing slash intentional). */
-  protected readonly apiUrl: string = "https://www.labchem.de/rs/shops/87762263/";
+  protected readonly apiUrl: string = 'https://www.labchem.de/rs/shops/87762263/';
 
   // We hold the whole catalog and apply the full boolean predicate locally via
   // fuzzyFilterAst, so the base performs a single queryProducts call (no
@@ -174,10 +174,10 @@ export class SupplierLabChem
     query: string,
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
-    this.logger.debug("queryProducts", { query, limit });
+    this.logger.debug('queryProducts', { query, limit });
     const catalog = (await this.loadCatalog()).filter((product) => product.isVisible !== false);
     if (catalog.length === 0) {
-      this.logger.warn("LabChem: catalog is empty");
+      this.logger.warn('LabChem: catalog is empty');
       return;
     }
 
@@ -217,7 +217,7 @@ export class SupplierLabChem
   private async loadCatalog(): Promise<EpagesSearchProduct[]> {
     const cached = await this.readCachedCatalog();
     if (cached) {
-      this.logger.debug("LabChem: catalog cache hit", { count: cached.length });
+      this.logger.debug('LabChem: catalog cache hit', { count: cached.length });
       return cached;
     }
 
@@ -266,16 +266,16 @@ export class SupplierLabChem
           page: String(page),
           locale: LOCALE,
         },
-        body: { filters: [], query: "", sort: "relevance" },
-        headers: { "Content-Type": "application/json" },
+        body: { filters: [], query: '', sort: 'relevance' },
+        headers: { 'Content-Type': 'application/json' },
       });
       if (!isEpagesSearchResponse(response)) {
-        this.logger.warn("LabChem: invalid catalog page response", { page, response });
+        this.logger.warn('LabChem: invalid catalog page response', { page, response });
         return undefined;
       }
       return response;
     } catch (error: unknown) {
-      this.logger.warn("LabChem: catalog page request failed", { page, error });
+      this.logger.warn('LabChem: catalog page request failed', { page, error });
       return undefined;
     }
   }
@@ -293,7 +293,7 @@ export class SupplierLabChem
         return entry.products;
       }
     } catch (error: unknown) {
-      this.logger.warn("LabChem: failed to read catalog cache", { error });
+      this.logger.warn('LabChem: failed to read catalog cache', { error });
     }
     return undefined;
   }
@@ -309,7 +309,7 @@ export class SupplierLabChem
       const entry: CatalogCacheEntry = { cachedAt: Date.now(), products };
       await cstorage.local.set({ [CACHE.LABCHEM_CATALOG]: entry });
     } catch (error: unknown) {
-      this.logger.warn("LabChem: failed to write catalog cache", { error });
+      this.logger.warn('LabChem: failed to write catalog cache', { error });
     }
   }
 
@@ -326,12 +326,12 @@ export class SupplierLabChem
     return mapDefined(products, (product) => {
       const url = product.slug
         ? `${this.baseURL}/${product.slug}`
-        : product.links.find((link) => link.rel === "self")?.href;
+        : product.links.find((link) => link.rel === 'self')?.href;
       if (!url) {
         return;
       }
 
-      const description = product.description ?? "";
+      const description = product.description ?? '';
       const builder = new ProductBuilder<Product>(this.baseURL);
       builder
         .setBasicInfo(product.title ?? product.name, url, this.supplierName)
@@ -374,7 +374,7 @@ export class SupplierLabChem
 
     let fallback: string | undefined;
     for (const row of rows) {
-      const idx = row.indexOf(":");
+      const idx = row.indexOf(':');
       if (idx === -1) {
         continue;
       }
@@ -413,14 +413,14 @@ export class SupplierLabChem
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     return this.getProductDataWithCache(product, async (builder) => {
-      const masterId = String(builder.get("id") ?? "");
+      const masterId = String(builder.get('id') ?? '');
       if (!masterId) {
         return builder;
       }
 
       const variationItems = await this.fetchVariationItems(masterId);
       if (variationItems.length === 0) {
-        this.logger.warn("LabChem: no purchasable variations", { masterId });
+        this.logger.warn('LabChem: no purchasable variations', { masterId });
         return builder;
       }
 
@@ -429,7 +429,7 @@ export class SupplierLabChem
       ).filter((page): page is EpagesProductPage => page !== undefined && page.forSale === true);
 
       if (pages.length === 0) {
-        this.logger.warn("LabChem: no for-sale variation pages", { masterId });
+        this.logger.warn('LabChem: no for-sale variation pages', { masterId });
         return builder;
       }
 
@@ -437,12 +437,12 @@ export class SupplierLabChem
       // as the headline row (and its image set); the rest become variants.
       pages.forEach((page, index) => {
         const amount = page.priceInfo?.price?.amount;
-        const currency = page.priceInfo?.price?.currency ?? "EUR";
+        const currency = page.priceInfo?.price?.currency ?? 'EUR';
         const quantity = this.variantQuantity(page);
         const title = page.productVariationSelection?.[0]?.displayValue ?? page.title;
 
         if (index === 0) {
-          if (typeof amount === "number") {
+          if (typeof amount === 'number') {
             builder.setPricing(amount, currency, CURRENCY_SYMBOL_MAP[currency] ?? currency);
           }
           if (quantity) {
@@ -486,7 +486,7 @@ export class SupplierLabChem
     return response.items
       .filter(
         (item) =>
-          item.link?.rel === "variation" && item.additionalAttributes?.purchasable !== false,
+          item.link?.rel === 'variation' && item.additionalAttributes?.purchasable !== false,
       )
       .slice(0, MAX_VARIANTS);
   }
@@ -513,7 +513,7 @@ export class SupplierLabChem
     try {
       return await this.httpGetJson({ path: url });
     } catch (error: unknown) {
-      this.logger.warn("LabChem: GET failed", { url, error });
+      this.logger.warn('LabChem: GET failed', { url, error });
       return undefined;
     }
   }
@@ -530,8 +530,8 @@ export class SupplierLabChem
     const candidates = [
       ...selections.map((selection) => selection.displayValue),
       ...selections.map((selection) => selection.value),
-      page.productNumber ?? "",
-      page.title ?? "",
+      page.productNumber ?? '',
+      page.title ?? '',
     ];
     const quantity = firstMap(parseQuantity, candidates);
     return isQuantityObject(quantity) ? quantity : undefined;
@@ -550,15 +550,15 @@ export class SupplierLabChem
     const byClassifier = (classifier: string): string | undefined =>
       images.find((image) => image.classifier === classifier)?.url;
 
-    const full = byClassifier("Medium") ?? byClassifier("Large") ?? images[0]?.url;
-    const thumbnail = byClassifier("Thumbnail") ?? byClassifier("Small");
+    const full = byClassifier('Medium') ?? byClassifier('Large') ?? images[0]?.url;
+    const thumbnail = byClassifier('Thumbnail') ?? byClassifier('Small');
 
     const result: ProductImage[] = [];
     if (full) {
-      result.push({ href: full, type: "image" });
+      result.push({ href: full, type: 'image' });
     }
     if (thumbnail) {
-      result.push({ href: thumbnail, type: "thumbnail" });
+      result.push({ href: thumbnail, type: 'thumbnail' });
     }
     return result;
   }

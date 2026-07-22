@@ -1,4 +1,4 @@
-import { md5 } from "js-md5";
+import { md5 } from 'js-md5';
 
 /**
  * Derive the stable per-product cache/exclusion key from a supplier-defined
@@ -52,7 +52,7 @@ export function getProductDedupeKey(product: Product): string | undefined {
     (product.uuid != null ? String(product.uuid) : undefined) ??
     product.url;
   if (!identity) return undefined;
-  return getProductIdentityKey(identity, product.supplier ?? "");
+  return getProductIdentityKey(identity, product.supplier ?? '');
 }
 
 /**

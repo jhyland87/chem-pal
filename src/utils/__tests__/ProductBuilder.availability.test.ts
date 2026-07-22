@@ -1,29 +1,29 @@
-import { AVAILABILITY, type Availability } from "@/constants/common";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { describe, expect, it } from "vitest";
+import { AVAILABILITY, type Availability } from '@/constants/common';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { describe, expect, it } from 'vitest';
 
 const setAvailability = (value: string) =>
-  new ProductBuilder<Product>("https://example.com").setAvailability(value).get("availability");
+  new ProductBuilder<Product>('https://example.com').setAvailability(value).get('availability');
 
-describe("ProductBuilder availability — schema.org ItemAvailability labels", () => {
+describe('ProductBuilder availability — schema.org ItemAvailability labels', () => {
   // The full https://schema.org/ItemAvailability set, as it arrives from a
   // schema.org URL suffix (e.g. ".../SoldOut" -> "SoldOut").
   const cases: Array<[string, Availability]> = [
-    ["BackOrder", AVAILABILITY.BACKORDER],
-    ["Discontinued", AVAILABILITY.DISCONTINUED],
-    ["InStock", AVAILABILITY.IN_STOCK],
-    ["InStoreOnly", AVAILABILITY.IN_STORE_ONLY],
-    ["LimitedAvailability", AVAILABILITY.LIMITED_STOCK],
-    ["MadeToOrder", AVAILABILITY.MADE_TO_ORDER],
-    ["OnlineOnly", AVAILABILITY.ONLINE_ONLY],
-    ["OutOfStock", AVAILABILITY.OUT_OF_STOCK],
-    ["PreOrder", AVAILABILITY.PRE_ORDER],
-    ["PreSale", AVAILABILITY.PRE_SALE],
-    ["Reserved", AVAILABILITY.RESERVED],
-    ["SoldOut", AVAILABILITY.SOLD_OUT],
+    ['BackOrder', AVAILABILITY.BACKORDER],
+    ['Discontinued', AVAILABILITY.DISCONTINUED],
+    ['InStock', AVAILABILITY.IN_STOCK],
+    ['InStoreOnly', AVAILABILITY.IN_STORE_ONLY],
+    ['LimitedAvailability', AVAILABILITY.LIMITED_STOCK],
+    ['MadeToOrder', AVAILABILITY.MADE_TO_ORDER],
+    ['OnlineOnly', AVAILABILITY.ONLINE_ONLY],
+    ['OutOfStock', AVAILABILITY.OUT_OF_STOCK],
+    ['PreOrder', AVAILABILITY.PRE_ORDER],
+    ['PreSale', AVAILABILITY.PRE_SALE],
+    ['Reserved', AVAILABILITY.RESERVED],
+    ['SoldOut', AVAILABILITY.SOLD_OUT],
   ];
 
-  it.each(cases)("maps schema.org %s to %s", (label, expected) => {
+  it.each(cases)('maps schema.org %s to %s', (label, expected) => {
     expect(setAvailability(label)).toBe(expected);
   });
 
@@ -33,7 +33,7 @@ describe("ProductBuilder availability — schema.org ItemAvailability labels", (
     }
   });
 
-  it("ignores an unrecognized label", () => {
-    expect(setAvailability("teleported")).toBeUndefined();
+  it('ignores an unrecognized label', () => {
+    expect(setAvailability('teleported')).toBeUndefined();
   });
 });

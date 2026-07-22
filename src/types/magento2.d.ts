@@ -230,7 +230,7 @@ declare global {
       /** Stock count, if exposed by the storefront */
       quantity: number | null;
       /** Sub-product price (only `minimum_price` is requested) */
-      price_range: Pick<Magento2PriceRange, "minimum_price">;
+      price_range: Pick<Magento2PriceRange, 'minimum_price'>;
     };
   }
 
@@ -277,7 +277,7 @@ declare global {
       /** Stock count, if exposed by the storefront */
       quantity: number | null;
       /** Variant price (only `minimum_price` is requested) */
-      price_range: Pick<Magento2PriceRange, "minimum_price">;
+      price_range: Pick<Magento2PriceRange, 'minimum_price'>;
     };
   }
 

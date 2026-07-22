@@ -1,4 +1,4 @@
-import { useState, MouseEvent } from "react";
+import { useState, MouseEvent } from 'react';
 
 /**
  * Context menu state object containing position and product data.

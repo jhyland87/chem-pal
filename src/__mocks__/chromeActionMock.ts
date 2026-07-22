@@ -1,4 +1,4 @@
-import { vi } from "vitest";
+import { vi } from 'vitest';
 
 const actionMock = {
   setIcon: vi.fn(),
@@ -11,7 +11,7 @@ const actionMock = {
 };
 
 if (!chrome.action) {
-  console.debug("!!! chrome.action not found, using mock - may result in unexpected behavior !!!");
+  console.debug('!!! chrome.action not found, using mock - may result in unexpected behavior !!!');
   window.chrome = {
     action: actionMock as unknown as typeof chrome.action,
   } as unknown as typeof chrome;

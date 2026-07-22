@@ -1,6 +1,6 @@
-import type { Class } from "type-fest";
-import { vi } from "vitest";
-import type { SupplierBase } from "../../SupplierBase";
+import type { Class } from 'type-fest';
+import { vi } from 'vitest';
+import type { SupplierBase } from '../../SupplierBase';
 
 /**
  * Creates spies for a supplier class's methods, including setting up mock implementations.
@@ -19,9 +19,9 @@ import type { SupplierBase } from "../../SupplierBase";
  * ```
  */
 export const spyOnSupplier = (supplier: Class<SupplierBase<any, any>>, fixtures: any) => {
-  const queryProductsWithCacheSpy = vi.spyOn(supplier.prototype, "queryProductsWithCache" as any);
-  const httpGetJsonMock = vi.spyOn(supplier.prototype, "httpGetJson" as any);
-  const titleSelectorSpy = vi.spyOn(supplier.prototype, "titleSelector" as any);
+  const queryProductsWithCacheSpy = vi.spyOn(supplier.prototype, 'queryProductsWithCache' as any);
+  const httpGetJsonMock = vi.spyOn(supplier.prototype, 'httpGetJson' as any);
+  const titleSelectorSpy = vi.spyOn(supplier.prototype, 'titleSelector' as any);
 
   // Set up the mock implementation
   httpGetJsonMock.mockImplementation(async (...args: unknown[]) => {

@@ -1,17 +1,17 @@
-import { AVAILABILITY, type Availability } from "@/constants/common";
-import { findCAS } from "@/helpers/cas";
-import { parsePrice } from "@/helpers/currency";
-import { parseQuantity } from "@/helpers/quantity";
-import { urlencode } from "@/helpers/request";
-import { findMolarity, formatFormula, parseChemicalSpecs } from "@/helpers/science";
-import { firstMap, mapDefined } from "@/helpers/utils";
-import { ProductBuilder } from "@/utils/ProductBuilder";
+import { AVAILABILITY, type Availability } from '@/constants/common';
+import { findCAS } from '@/helpers/cas';
+import { parsePrice } from '@/helpers/currency';
+import { parseQuantity } from '@/helpers/quantity';
+import { urlencode } from '@/helpers/request';
+import { findMolarity, formatFormula, parseChemicalSpecs } from '@/helpers/science';
+import { firstMap, mapDefined } from '@/helpers/utils';
+import { ProductBuilder } from '@/utils/ProductBuilder';
 import {
   assertIsSynthetikaSearchResponse,
   isSynthetikaProduct,
-} from "@/utils/typeGuards/synthetika";
-import { SupplierBase } from "./SupplierBase";
-import { parseSynthetikaRestrictions } from "./synthetikaRestrictions";
+} from '@/utils/typeGuards/synthetika';
+import { SupplierBase } from './SupplierBase';
+import { parseSynthetikaRestrictions } from './synthetikaRestrictions';
 
 /**
  * Supplier implementation for Synthetika
@@ -61,19 +61,19 @@ export class SupplierSynthetika
   implements ISupplier
 {
   /** Name of supplier (for display purposes) */
-  public readonly supplierName: string = "Synthetika";
+  public readonly supplierName: string = 'Synthetika';
 
   /** Base URL for HTTP(s) requests */
-  public readonly baseURL: string = "https://synthetikaeu.com";
+  public readonly baseURL: string = 'https://synthetikaeu.com';
 
   /** Shipping scope for Synthetika */
-  public readonly shipping: ShippingRange = "international";
+  public readonly shipping: ShippingRange = 'international';
 
   /** The country code of the supplier */
-  public readonly country: CountryCode = "PL";
+  public readonly country: CountryCode = 'PL';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   /** Override the type of queryResults to use our specific type */
   protected queryResults: Array<SynthetikaProduct> = [];
@@ -99,29 +99,29 @@ export class SupplierSynthetika
   /** HTTP headers used as a basis for all queries */
   protected headers: HeadersInit = {
     accept: [
-      "text/html",
-      "application/xhtml+xml",
-      "application/xml;q=0.9",
-      "image/avif",
-      "image/webp",
-      "image/apng",
-      "*/*;q=0.8",
-    ].join(","),
-    "accept-language": "en-US,en;q=0.6",
-    "cache-control": "no-cache",
-    pragma: "no-cache",
-    "sec-ch-ua": '"Brave";v="135\', "Not-A.Brand";v="8\', "Chromium";v="135"',
-    "sec-ch-ua-arch": '"arm"',
-    "sec-ch-ua-full-version-list":
+      'text/html',
+      'application/xhtml+xml',
+      'application/xml;q=0.9',
+      'image/avif',
+      'image/webp',
+      'image/apng',
+      '*/*;q=0.8',
+    ].join(','),
+    'accept-language': 'en-US,en;q=0.6',
+    'cache-control': 'no-cache',
+    pragma: 'no-cache',
+    'sec-ch-ua': '"Brave";v="135\', "Not-A.Brand";v="8\', "Chromium";v="135"',
+    'sec-ch-ua-arch': '"arm"',
+    'sec-ch-ua-full-version-list':
       '"Brave";v="135.0.0.0\', "Not-A.Brand";v="8.0.0.0\', "Chromium";v="135.0.0.0"',
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-model": '""',
-    "sec-ch-ua-platform": '"macOS"',
-    "sec-fetch-dest": "empty",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin",
-    "sec-gpc": "1",
-    "x-requested-with": "XMLHttpRequest",
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-model': '""',
+    'sec-ch-ua-platform': '"macOS"',
+    'sec-fetch-dest': 'empty',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-site': 'same-origin',
+    'sec-gpc': '1',
+    'x-requested-with': 'XMLHttpRequest',
   };
 
   /**
@@ -307,17 +307,17 @@ export class SupplierSynthetika
    */
   protected availabilityConverter(availability: string): Availability {
     switch (availability.toLowerCase().trim()) {
-      case "na wyczerpaniu":
+      case 'na wyczerpaniu':
         return AVAILABILITY.LIMITED_STOCK;
-      case "large quantity":
-      case "średnia ilość":
+      case 'large quantity':
+      case 'średnia ilość':
         return AVAILABILITY.IN_STOCK;
-      case "tymczasowo niedostępny":
+      case 'tymczasowo niedostępny':
         return AVAILABILITY.UNAVAILABLE;
-      case "nie ma w sprzedaży":
+      case 'nie ma w sprzedaży':
         return AVAILABILITY.OUT_OF_STOCK;
       default:
-        this.logger.warn("Unknown availability - Defaulting to UNKNOWN", { availability });
+        this.logger.warn('Unknown availability - Defaulting to UNKNOWN', { availability });
         return AVAILABILITY.UNKNOWN;
     }
   }
@@ -345,7 +345,7 @@ export class SupplierSynthetika
       const availability = this.availabilityConverter(product.availability.name);
       const inStockStatuses: Availability[] = [AVAILABILITY.LIMITED_STOCK, AVAILABILITY.IN_STOCK];
       if (inStockStatuses.includes(availability) === false || product.can_buy === false) {
-        this.logger.warn("Product not in stock - Skipping", {
+        this.logger.warn('Product not in stock - Skipping', {
           availability,
           product,
           can_buy: product.can_buy,
@@ -379,12 +379,12 @@ export class SupplierSynthetika
       if (Array.isArray(product.variants) && product.variants.length > 0) {
         productBuilder.setVariants(
           product.variants.map((v) => {
-            const price = parsePrice(v.price?.gross.final ?? "");
+            const price = parsePrice(v.price?.gross.final ?? '');
             return {
               title: v.name,
               price: price?.price ?? 0,
-              quantity: parseQuantity(v.name ?? "")?.quantity ?? 0,
-              uom: parseQuantity(v.name ?? "")?.uom ?? "",
+              quantity: parseQuantity(v.name ?? '')?.quantity ?? 0,
+              uom: parseQuantity(v.name ?? '')?.uom ?? '',
               url: v.url,
               purchaseRestriction: parseSynthetikaRestrictions(v.shortDescription),
             };
@@ -405,22 +405,22 @@ export class SupplierSynthetika
   protected async getProductData(
     product: ProductBuilder<Product & { variants?: Variant[] }>,
   ): Promise<ProductBuilder<Product> | void> {
-    console.log("[synthetika] getProductData init", { product });
+    console.log('[synthetika] getProductData init', { product });
     return this.getProductDataWithCache(product, async (builder) => {
       if (builder instanceof ProductBuilder === false) {
-        this.logger.warn("Invalid product object - Expected ProductBuilder instance:", {
+        this.logger.warn('Invalid product object - Expected ProductBuilder instance:', {
           builder,
           product,
         });
         return;
       }
 
-      const productURL = this.href(`/webapi/front/en_US/products/usd/${builder.get("id")}`);
+      const productURL = this.href(`/webapi/front/en_US/products/usd/${builder.get('id')}`);
       const productResponse = await this.httpGetJson({
         path: productURL,
       });
 
-      console.log("[synthetika] productResponse", {
+      console.log('[synthetika] productResponse', {
         builder,
         product,
         productURL,
@@ -429,7 +429,7 @@ export class SupplierSynthetika
 
       // Run the minimal check first, so if that fails we can bail early.
       if (!isSynthetikaProduct(productResponse)) {
-        this.logger.warn("Product Response body did not satisfy product typeguard:", {
+        this.logger.warn('Product Response body did not satisfy product typeguard:', {
           productResponse,
           builder,
           product,
@@ -439,7 +439,7 @@ export class SupplierSynthetika
       }
 
       let quantityObject: QuantityObject | undefined;
-      if ("options_configuration" in productResponse) {
+      if ('options_configuration' in productResponse) {
         quantityObject = mapDefined(
           productResponse.options_configuration[0].values,
           (value: SynthetikaConfigurationOptionValueSchema) => {
@@ -448,7 +448,7 @@ export class SupplierSynthetika
         )
           .sort((a, b) => (a?.quantity ?? 0) - (b?.quantity ?? 0))
           .at(0);
-        console.log("[synthetika] quantityObject (from configurationOptions", { quantityObject });
+        console.log('[synthetika] quantityObject (from configurationOptions', { quantityObject });
       }
 
       if (!quantityObject) {
@@ -460,7 +460,7 @@ export class SupplierSynthetika
           ]) ?? undefined;
 
         if (!quantityObject) {
-          this.logger.warn("Failed to parse quantity from product response", {
+          this.logger.warn('Failed to parse quantity from product response', {
             productResponse,
             builder,
             product,
@@ -477,10 +477,10 @@ export class SupplierSynthetika
 
       builder.setQuantity(quantityObject);
 
-      if (builder.get("price") === undefined) {
+      if (builder.get('price') === undefined) {
         const price = parsePrice(productResponse.price.gross.final);
         if (!price) {
-          this.logger.warn("Failed to parse price from product response", {
+          this.logger.warn('Failed to parse price from product response', {
             productResponse,
             builder,
             product,
@@ -525,7 +525,7 @@ export class SupplierSynthetika
       const imageIds = [
         ...new Set(
           [productResponse.main_image, ...(productResponse.images ?? [])].filter(
-            (id): id is string => typeof id === "string" && id.length > 0,
+            (id): id is string => typeof id === 'string' && id.length > 0,
           ),
         ),
       ];
@@ -537,7 +537,7 @@ export class SupplierSynthetika
       //   builder.setVariants(variants);
       // }
 
-      console.log("[synthetika] builder", { builder, product });
+      console.log('[synthetika] builder', { builder, product });
 
       return builder;
     });

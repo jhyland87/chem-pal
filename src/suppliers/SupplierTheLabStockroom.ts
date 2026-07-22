@@ -1,9 +1,9 @@
-import { parseQuantity } from "@/helpers/quantity";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { SupplierBaseShopify } from "./SupplierBaseShopify";
+import { parseQuantity } from '@/helpers/quantity';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { SupplierBaseShopify } from './SupplierBaseShopify';
 
 /** Storefront tag prefix (capital "C") marking a product as a specific chemical, e.g. `Chemical_Sodium Iodide`. */
-const CHEMICAL_TAG_PREFIX = "Chemical_";
+const CHEMICAL_TAG_PREFIX = 'Chemical_';
 
 /**
  * Storefront tags that force-exclude a product even when it also carries a
@@ -11,7 +11,7 @@ const CHEMICAL_TAG_PREFIX = "Chemical_";
  * `Chemical_*` and `Category_Lab Equipment`; the equipment tag wins so those
  * don't surface as reagents.
  */
-const EXCLUDED_TAGS: ReadonlySet<string> = new Set(["Category_Lab Equipment"]);
+const EXCLUDED_TAGS: ReadonlySet<string> = new Set(['Category_Lab Equipment']);
 
 /**
  * Keyword-to-grade mappings for deriving a purity grade from a `Grade_`/`Grade__`
@@ -21,9 +21,9 @@ const EXCLUDED_TAGS: ReadonlySet<string> = new Set(["Category_Lab Equipment"]);
  * shadowed by a broader match.
  */
 const GRADE_TAG_MATCHERS: ReadonlyArray<{ keyword: string; grade: string }> = [
-  { keyword: "acs", grade: "ACS Grade" },
-  { keyword: "reagent", grade: "Reagent Grade" },
-  { keyword: "lab", grade: "Lab Grade" },
+  { keyword: 'acs', grade: 'ACS Grade' },
+  { keyword: 'reagent', grade: 'Reagent Grade' },
+  { keyword: 'lab', grade: 'Lab Grade' },
 ];
 
 /**
@@ -33,20 +33,20 @@ const GRADE_TAG_MATCHERS: ReadonlyArray<{ keyword: string; grade: string }> = [
  * separately (kept only when their title yields a quantity).
  */
 const CHEMICAL_TAGS: ReadonlySet<string> = new Set([
-  "Category_Chemicals",
-  "Chemistry_Chemicals",
-  "Grade_Reagent-Grade",
-  "Subject_Chemistry",
-  "Chemistry",
-  "Grade_Lab",
-  "Subcategory_Acids and Bases",
-  "Grade_Reagent",
-  "Chemicals_Acids & Bases",
-  "Grade__Laboratory-Grade",
-  "Grade_ACS",
-  "Grade_ACS-Grade",
-  "Chemicals_Organic Compounds",
-  "Chemicals_Solutions",
+  'Category_Chemicals',
+  'Chemistry_Chemicals',
+  'Grade_Reagent-Grade',
+  'Subject_Chemistry',
+  'Chemistry',
+  'Grade_Lab',
+  'Subcategory_Acids and Bases',
+  'Grade_Reagent',
+  'Chemicals_Acids & Bases',
+  'Grade__Laboratory-Grade',
+  'Grade_ACS',
+  'Grade_ACS-Grade',
+  'Chemicals_Organic Compounds',
+  'Chemicals_Solutions',
 ]);
 
 /**
@@ -69,25 +69,25 @@ const CHEMICAL_TAGS: ReadonlySet<string> = new Set([
  */
 export class SupplierTheLabStockroom extends SupplierBaseShopify implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = "The Lab Stockroom";
+  public readonly supplierName: string = 'The Lab Stockroom';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = "https://www.thelabstockroom.com";
+  public readonly baseURL: string = 'https://www.thelabstockroom.com';
 
   // Shipping scope for The Lab Stockroom
-  public readonly shipping: ShippingRange = "international";
+  public readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = "US";
+  public readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   // Shopify API URL for GraphQL queries
-  protected apiURL: string = "hbarsci.myshopify.com";
+  protected apiURL: string = 'hbarsci.myshopify.com';
 
   // Base of the public S3 bucket that hosts SDS PDFs, keyed by uppercase SKU.
-  private readonly sdsBaseUrl: string = "https://s3.amazonaws.com/enalas-public/Public/SDS";
+  private readonly sdsBaseUrl: string = 'https://s3.amazonaws.com/enalas-public/Public/SDS';
 
   /**
    * Enriches a product with its SDS document link. The Shopify search response
@@ -128,23 +128,23 @@ export class SupplierTheLabStockroom extends SupplierBaseShopify implements ISup
    * @source
    */
   protected async applySdsUrl(builder: ProductBuilder<Product>): Promise<void> {
-    const sku = builder.get("sku");
-    if (typeof sku !== "string" || sku.trim() === "") {
+    const sku = builder.get('sku');
+    if (typeof sku !== 'string' || sku.trim() === '') {
       return;
     }
     const sdsUrl = `${this.sdsBaseUrl}/${sku.toUpperCase()}.pdf`;
     try {
       const response = await this.backgroundFetch(sdsUrl, {
-        method: "HEAD",
-        headers: { "content-type": "application/json" },
+        method: 'HEAD',
+        headers: { 'content-type': 'application/json' },
       });
       if (response.status === 200) {
         builder.setSDSUrl(sdsUrl);
       } else {
-        this.logger.debug("No SDS document at probed URL", { sdsUrl, status: response.status });
+        this.logger.debug('No SDS document at probed URL', { sdsUrl, status: response.status });
       }
     } catch (error) {
-      this.logger.debug("SDS HEAD probe failed", { sdsUrl, error });
+      this.logger.debug('SDS HEAD probe failed', { sdsUrl, error });
     }
   }
 
@@ -233,7 +233,7 @@ export class SupplierTheLabStockroom extends SupplierBaseShopify implements ISup
   private gradeFromTags(tags: string[]): string | undefined {
     for (const tag of tags) {
       const lowerTag = tag.toLowerCase();
-      if (!lowerTag.startsWith("grade")) continue;
+      if (!lowerTag.startsWith('grade')) continue;
       const match = GRADE_TAG_MATCHERS.find(({ keyword }) => lowerTag.includes(keyword));
       if (match) return match.grade;
     }

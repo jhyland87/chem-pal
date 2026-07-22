@@ -1,6 +1,6 @@
-import { isShippingRange } from "@/constants/common";
-import { i18n } from "@/helpers/i18n";
-import { isAvailability } from "@/utils/typeGuards/productbuilder";
+import { isShippingRange } from '@/constants/common';
+import { i18n } from '@/helpers/i18n';
+import { isAvailability } from '@/utils/typeGuards/productbuilder';
 
 /**
  * Localized label for a supplier {@link ShippingRange} (worldwide/international/

@@ -1,6 +1,6 @@
-import { isCAS } from "@/utils/typeGuards/common";
-import { executeSDQSearch } from "@/helpers/pubchem";
-import { Cactus } from "@/utils/Cactus";
+import { isCAS } from '@/utils/typeGuards/common';
+import { executeSDQSearch } from '@/helpers/pubchem';
+import { Cactus } from '@/utils/Cactus';
 
 /**
  * @group Helpers
@@ -45,7 +45,7 @@ const SMILES_VALIDATE = new RegExp(`^${SMILES_BODY}$`);
 // trailing non-word boundary. Global so all structures in the text are returned.
 const SMILES_EXTRACT = new RegExp(
   `(?<![A-Za-z0-9])(?=${SMILES_CHAR}*${SMILES_STRONG_CHAR})(?<SMILES>${SMILES_BODY})(?![A-Za-z0-9])`,
-  "g",
+  'g',
 );
 
 /** Upper bound on SMILES length we attempt to resolve, to avoid pathological URLs/inputs. */
@@ -64,11 +64,11 @@ export interface ResolvedStructure {
   /** Canonical standard InChIKey — the structure fingerprint, useful for later verification. */
   inchikey?: string;
   /** Which resolver produced the usable identifier. */
-  source?: "cactus-name" | "cactus-cas" | "pubchem-inchikey";
+  source?: 'cactus-name' | 'cactus-cas' | 'pubchem-inchikey';
 }
 
 /** The mode parsed from an optional query prefix. */
-type StructureMode = "smiles" | "inchikey" | "auto";
+type StructureMode = 'smiles' | 'inchikey' | 'auto';
 
 /**
  * Strips an explicit `smiles:` or `inchikey:` prefix from a query, letting the user force
@@ -88,9 +88,9 @@ type StructureMode = "smiles" | "inchikey" | "auto";
 export function parseStructurePrefix(query: string): { mode: StructureMode; value: string } {
   const match = /^(smiles|inchikey)\s*:\s*(.+)$/i.exec(query.trim());
   if (match) {
-    return { mode: match[1].toLowerCase() as "smiles" | "inchikey", value: match[2].trim() };
+    return { mode: match[1].toLowerCase() as 'smiles' | 'inchikey', value: match[2].trim() };
   }
-  return { mode: "auto", value: query.trim() };
+  return { mode: 'auto', value: query.trim() };
 }
 
 /**
@@ -120,10 +120,10 @@ export function isProbablyValidSmiles(smiles: string): boolean {
   let parens = 0;
   let brackets = 0;
   for (const char of value) {
-    if (char === "(") parens++;
-    else if (char === ")") parens--;
-    else if (char === "[") brackets++;
-    else if (char === "]") brackets--;
+    if (char === '(') parens++;
+    else if (char === ')') parens--;
+    else if (char === '[') brackets++;
+    else if (char === ']') brackets--;
     if (parens < 0 || brackets < 0) return false;
   }
   return parens === 0 && brackets === 0;
@@ -194,7 +194,7 @@ export function looksLikeSmiles(query: string): boolean {
 async function nameFromInchikey(inchikey: string): Promise<string | undefined> {
   const rows = await executeSDQSearch({
     where: { inchikey },
-    select: ["cmpdname"],
+    select: ['cmpdname'],
     limit: 1,
   });
   return rows?.[0]?.cmpdname || undefined;
@@ -207,7 +207,7 @@ async function nameFromInchikey(inchikey: string): Promise<string | undefined> {
  * @source
  */
 function normalizeInchikey(raw: string | undefined): string | undefined {
-  const value = raw?.replace(/^InChIKey=/i, "").trim();
+  const value = raw?.replace(/^InChIKey=/i, '').trim();
   return value || undefined;
 }
 
@@ -244,20 +244,20 @@ export async function resolveSmiles(smiles: string): Promise<ResolvedStructure |
     const inchikey = normalizeInchikey(rawInchikey);
 
     if (name) {
-      return { name, cas: cas.length > 0 ? cas : undefined, inchikey, source: "cactus-name" };
+      return { name, cas: cas.length > 0 ? cas : undefined, inchikey, source: 'cactus-name' };
     }
     if (cas.length > 0) {
-      return { cas, inchikey, source: "cactus-cas" };
+      return { cas, inchikey, source: 'cactus-cas' };
     }
     if (inchikey) {
       const pubchemName = await nameFromInchikey(inchikey);
       if (pubchemName) {
-        return { name: pubchemName, inchikey, source: "pubchem-inchikey" };
+        return { name: pubchemName, inchikey, source: 'pubchem-inchikey' };
       }
     }
     return undefined;
   } catch (error) {
-    console.error("Error resolving SMILES:", error);
+    console.error('Error resolving SMILES:', error);
     return undefined;
   }
 }
@@ -284,14 +284,14 @@ export async function resolveQueryForSearch(
 ): Promise<{ searchTerm: string; structure?: ResolvedStructure }> {
   const { mode, value } = parseStructurePrefix(query);
 
-  if (mode === "inchikey") {
+  if (mode === 'inchikey') {
     const name = await nameFromInchikey(value);
     return name
-      ? { searchTerm: name, structure: { name, inchikey: value, source: "pubchem-inchikey" } }
+      ? { searchTerm: name, structure: { name, inchikey: value, source: 'pubchem-inchikey' } }
       : { searchTerm: value };
   }
 
-  const treatAsSmiles = mode === "smiles" || (mode === "auto" && looksLikeSmiles(value));
+  const treatAsSmiles = mode === 'smiles' || (mode === 'auto' && looksLikeSmiles(value));
   if (!treatAsSmiles) {
     return { searchTerm: value };
   }

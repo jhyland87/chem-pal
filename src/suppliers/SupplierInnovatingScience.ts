@@ -1,4 +1,4 @@
-import { SupplierBaseAmazon } from "./SupplierBaseAmazon";
+import { SupplierBaseAmazon } from './SupplierBaseAmazon';
 
 /**
  * Supplier for Aldon Innovating Science (via Amazon marketplace)
@@ -8,27 +8,27 @@ import { SupplierBaseAmazon } from "./SupplierBaseAmazon";
  */
 export class SupplierInnovatingScience extends SupplierBaseAmazon implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = "Innovating Science";
+  public readonly supplierName: string = 'Innovating Science';
 
   // Shipping scope for HbarSci
-  public readonly shipping: ShippingRange = "international";
+  public readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = "US";
+  public readonly country: CountryCode = 'US';
 
   // Prefix to add to the query (ie: brand name or seller name)
-  protected readonly queryPrefix: string = "Aldon";
+  protected readonly queryPrefix: string = 'Aldon';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   // Pure-search supplier: the initial search returns every field and
   // getProductData is a passthrough, so there's no per-product detail to cache.
   protected readonly skipProductDetailCache: boolean = true;
 
   // Terms that much be found in the listing (one of these terms must be found)
-  protected termsFoundInListing: string[] = ["innovating science", "aldon"];
+  protected termsFoundInListing: string[] = ['innovating science', 'aldon'];
 
   // This should select Innovating Science as the "Brand" in the search query
-  protected extraParams: string = "rh=p_123:157164";
+  protected extraParams: string = 'rh=p_123:157164';
 }

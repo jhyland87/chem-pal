@@ -1,17 +1,17 @@
-import { DRAWER_INDEX } from "@/constants/common";
-import { useAppContext } from "@/context";
-import { i18n } from "@/helpers/i18n";
+import { DRAWER_INDEX } from '@/constants/common';
+import { useAppContext } from '@/context';
+import { i18n } from '@/helpers/i18n';
 import {
   History as HistoryIcon,
   Search as SearchIcon,
   Settings as SettingsIcon,
-} from "@mui/icons-material";
-import { Drawer, Tab, Tabs } from "@mui/material";
-import { useState, FC, SyntheticEvent } from "react";
-import DrawerSearchPanel from "./DrawerSearchPanel";
-import styles from "./DrawerSystem.module.scss";
-import HistoryPanel from "./HistoryPanel";
-import SettingsPanel from "./SettingsPanel";
+} from '@mui/icons-material';
+import { Drawer, Tab, Tabs } from '@mui/material';
+import { useState, FC, SyntheticEvent } from 'react';
+import DrawerSearchPanel from './DrawerSearchPanel';
+import styles from './DrawerSystem.module.scss';
+import HistoryPanel from './HistoryPanel';
+import SettingsPanel from './SettingsPanel';
 
 // TabPanelProps is declared globally in types/props.d.ts
 
@@ -40,7 +40,7 @@ function TabPanel(props: TabPanelProps) {
       hidden={value !== index}
       id={`drawer-tabpanel-${index}`}
       aria-labelledby={`drawer-tab-${index}`}
-      className={styles["drawer-system__tabpanel"]}
+      className={styles['drawer-system__tabpanel']}
       {...other}
     >
       {value === index && children}
@@ -63,15 +63,15 @@ function TabPanel(props: TabPanelProps) {
  */
 const DrawerSystem: FC = () => {
   const appContext = useAppContext();
-  const [expandedAccordion, setExpandedAccordion] = useState<string | false>("search-availability");
+  const [expandedAccordion, setExpandedAccordion] = useState<string | false>('search-availability');
 
   const handleTabChange = (_event: SyntheticEvent, newValue: DRAWER_INDEX) => {
     appContext.setDrawerTab(newValue);
     // Reset accordion when switching tabs
     if (newValue === DRAWER_INDEX.SEARCH) {
-      setExpandedAccordion("search-availability");
+      setExpandedAccordion('search-availability');
     } else if (newValue === DRAWER_INDEX.SETTINGS) {
-      setExpandedAccordion("settings-general");
+      setExpandedAccordion('settings-general');
     } else {
       setExpandedAccordion(false);
     }
@@ -89,17 +89,17 @@ const DrawerSystem: FC = () => {
       onClose={() => appContext.setDrawerTab(DRAWER_INDEX.CLOSED)}
       variant="temporary"
     >
-      <div className={styles["drawer-container"]}>
+      <div className={styles['drawer-container']}>
         {appContext.drawerTab !== DRAWER_INDEX.CLOSED && (
           <Tabs
             value={appContext.drawerTab ?? DRAWER_INDEX.CLOSED}
             onChange={handleTabChange}
             variant="fullWidth"
-            className={styles["drawer-tabs"]}
+            className={styles['drawer-tabs']}
           >
-            <Tab icon={<SearchIcon />} label={i18n("drawer_tab_search")} iconPosition="start" />
-            <Tab icon={<HistoryIcon />} label={i18n("drawer_tab_history")} iconPosition="start" />
-            <Tab icon={<SettingsIcon />} label={i18n("drawer_tab_settings")} iconPosition="start" />
+            <Tab icon={<SearchIcon />} label={i18n('drawer_tab_search')} iconPosition="start" />
+            <Tab icon={<HistoryIcon />} label={i18n('drawer_tab_history')} iconPosition="start" />
+            <Tab icon={<SettingsIcon />} label={i18n('drawer_tab_settings')} iconPosition="start" />
           </Tabs>
         )}
 

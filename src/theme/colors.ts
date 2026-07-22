@@ -1,45 +1,45 @@
 // Color theme constants
 export const lightTheme = {
-  text: "#29303b",
-  primaryInterface: "#ffffff",
-  paperBackground: "#f3f7fa",
-  notificationBg: "#4d7df2",
-  shadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-  lightGray: "#f5f5f5",
-  borderLight: "#e0e0e0",
+  text: '#29303b',
+  primaryInterface: '#ffffff',
+  paperBackground: '#f3f7fa',
+  notificationBg: '#4d7df2',
+  shadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+  lightGray: '#f5f5f5',
+  borderLight: '#e0e0e0',
 };
 
 export const darkTheme = {
-  drawerBackground: "#272e3d",
-  expandedBackground: "#19222b",
-  activeBackground: "#515864",
-  borders: "#1e1e1ef2",
-  text: "#ffffff",
-  hoverBackground: "#3a4250",
-  shadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+  drawerBackground: '#272e3d',
+  expandedBackground: '#19222b',
+  activeBackground: '#515864',
+  borders: '#1e1e1ef2',
+  text: '#ffffff',
+  hoverBackground: '#3a4250',
+  shadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
 };
 
 // Common style functions
-export const getBoxShadow = (elevation: "low" | "medium" | "high" = "medium") => {
+export const getBoxShadow = (elevation: 'low' | 'medium' | 'high' = 'medium') => {
   const shadows = {
-    low: "0 1px 4px rgba(0, 0, 0, 0.08)",
-    medium: "0 2px 8px rgba(0, 0, 0, 0.1)",
-    high: "0 4px 16px rgba(0, 0, 0, 0.15)",
+    low: '0 1px 4px rgba(0, 0, 0, 0.08)',
+    medium: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    high: '0 4px 16px rgba(0, 0, 0, 0.15)',
   };
   return shadows[elevation];
 };
 
-export const getBorderRadius = (size: "small" | "medium" | "large" = "medium") => {
+export const getBorderRadius = (size: 'small' | 'medium' | 'large' = 'medium') => {
   const radii = {
-    small: "4px",
-    medium: "8px",
-    large: "12px",
+    small: '4px',
+    medium: '8px',
+    large: '12px',
   };
   return radii[size];
 };
 
 // Transition functions
-export const getTransition = (property = "all", duration = "0.3s") =>
+export const getTransition = (property = 'all', duration = '0.3s') =>
   `${property} ${duration} cubic-bezier(0.4, 0, 0.2, 1)`;
 
 export const drawerWidth = 400;
@@ -51,36 +51,36 @@ export const searchMaxWidth = 600;
  * before the palette repeats.
  */
 export const SUPPLIER_COLORS = [
-  "#fa938e",
-  "#98bf45",
-  "#51cbcf",
-  "#d397ff",
-  "#ffc658",
-  "#8884d8",
-  "#82ca9d",
-  "#8dd1e1",
-  "#a4de6c",
-  "#ffa07a",
-  "#87ceeb",
-  "#f0e68c",
-  "#e57373",
-  "#f06292",
-  "#ba68c8",
-  "#9575cd",
-  "#7986cb",
-  "#5c6bc0",
-  "#64b5f6",
-  "#4fc3f7",
-  "#4db6ac",
-  "#66bb6a",
-  "#c0ca33",
-  "#d4e157",
-  "#ff7043",
-  "#ffb74d",
-  "#a1887f",
-  "#90a4ae",
-  "#ff8a80",
-  "#b388ff",
+  '#fa938e',
+  '#98bf45',
+  '#51cbcf',
+  '#d397ff',
+  '#ffc658',
+  '#8884d8',
+  '#82ca9d',
+  '#8dd1e1',
+  '#a4de6c',
+  '#ffa07a',
+  '#87ceeb',
+  '#f0e68c',
+  '#e57373',
+  '#f06292',
+  '#ba68c8',
+  '#9575cd',
+  '#7986cb',
+  '#5c6bc0',
+  '#64b5f6',
+  '#4fc3f7',
+  '#4db6ac',
+  '#66bb6a',
+  '#c0ca33',
+  '#d4e157',
+  '#ff7043',
+  '#ffb74d',
+  '#a1887f',
+  '#90a4ae',
+  '#ff8a80',
+  '#b388ff',
 ];
 
 /**
@@ -114,13 +114,13 @@ export const getSupplierColor = (key: string): string =>
  * @returns The RGB tuple, or undefined when the input isn't a hex color
  */
 const parseHexColor = (hexColor: string): [number, number, number] | undefined => {
-  const hex = hexColor.replace("#", "");
+  const hex = hexColor.replace('#', '');
   const normalized =
     hex.length === 3
       ? hex
-          .split("")
+          .split('')
           .map((char) => char + char)
-          .join("")
+          .join('')
       : hex;
   if (!/^[0-9a-fA-F]{6}$/.test(normalized)) {
     return undefined;
@@ -145,10 +145,10 @@ const parseHexColor = (hexColor: string): [number, number, number] | undefined =
 export const getContrastText = (background: string): string => {
   const rgb = parseHexColor(background);
   if (!rgb) {
-    return "#000000";
+    return '#000000';
   }
   const [r, g, b] = rgb;
-  return (r * 299 + g * 587 + b * 114) / 1000 >= 128 ? "#000000" : "#ffffff";
+  return (r * 299 + g * 587 + b * 114) / 1000 >= 128 ? '#000000' : '#ffffff';
 };
 
 /**

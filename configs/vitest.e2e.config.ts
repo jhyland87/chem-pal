@@ -1,23 +1,23 @@
-import path from "node:path";
-import { defineConfig } from "vitest/config";
+import path from 'node:path';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   resolve: {
     alias: {
-      "@e2e": path.resolve(__dirname, "..", "e2e"),
+      '@e2e': path.resolve(__dirname, '..', 'e2e'),
     },
   },
   test: {
-    root: path.resolve(__dirname, ".."),
-    include: ["e2e/**/*.e2e.test.ts"],
+    root: path.resolve(__dirname, '..'),
+    include: ['e2e/**/*.e2e.test.ts'],
     // Firefox E2E runs under its own config (vitest.e2e.firefox.config.ts).
-    exclude: ["e2e/**/*.firefox.e2e.test.ts"],
+    exclude: ['e2e/**/*.firefox.e2e.test.ts'],
     testTimeout: 60_000,
     hookTimeout: 60_000,
     // No jsdom — e2e tests use real browser via Playwright
-    environment: "node",
+    environment: 'node',
     // Single thread to avoid multiple browser instances
-    pool: "forks",
+    pool: 'forks',
     poolOptions: {
       forks: {
         singleFork: true,

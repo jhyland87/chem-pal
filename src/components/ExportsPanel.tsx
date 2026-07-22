@@ -1,17 +1,17 @@
-import { downloadBlob } from "@/helpers/exportResults";
-import { i18n } from "@/helpers/i18n";
-import { formatBytes, formatTimestamp } from "@/helpers/utils";
+import { downloadBlob } from '@/helpers/exportResults';
+import { i18n } from '@/helpers/i18n';
+import { formatBytes, formatTimestamp } from '@/helpers/utils';
 import {
   clearExports,
   deleteExport,
   type ExportRecord,
   getAllExports,
   IDB_EXPORTS_UPDATED,
-} from "@/utils/idbCache";
-import { Delete as DeleteIcon, FileDownload as FileDownloadIcon } from "@mui/icons-material";
-import { Box, IconButton, List, ListItem, ListItemText, Tooltip, Typography } from "@mui/material";
-import { FC, useCallback, useEffect, useState } from "react";
-import styles from "./ExportsPanel.module.scss";
+} from '@/utils/idbCache';
+import { Delete as DeleteIcon, FileDownload as FileDownloadIcon } from '@mui/icons-material';
+import { Box, IconButton, List, ListItem, ListItemText, Tooltip, Typography } from '@mui/material';
+import { FC, useCallback, useEffect, useState } from 'react';
+import styles from './ExportsPanel.module.scss';
 
 /**
  * ExportsPanel lists the `.xlsx` result exports cached in IndexedDB, newest
@@ -38,7 +38,7 @@ const ExportsPanel: FC = () => {
     try {
       setExports(await getAllExports());
     } catch (error) {
-      console.warn("Failed to load exports:", error);
+      console.warn('Failed to load exports:', error);
     }
   }, []);
 
@@ -67,7 +67,7 @@ const ExportsPanel: FC = () => {
     try {
       await deleteExport(id);
     } catch (error) {
-      console.warn("Failed to delete export:", error);
+      console.warn('Failed to delete export:', error);
     }
   };
 
@@ -79,27 +79,27 @@ const ExportsPanel: FC = () => {
     try {
       await clearExports();
     } catch (error) {
-      console.warn("Failed to clear exports:", error);
+      console.warn('Failed to clear exports:', error);
     }
   };
 
   return (
-    <Box className={styles["exports-panel"]}>
-      <Box className={styles["exports-panel__header"]}>
+    <Box className={styles['exports-panel']}>
+      <Box className={styles['exports-panel__header']}>
         <Typography variant="caption" color="text.secondary">
           {exports.length === 1
-            ? i18n("exports_count_single", [String(exports.length)])
-            : i18n("exports_count_plural", [String(exports.length)])}
+            ? i18n('exports_count_single', [String(exports.length)])
+            : i18n('exports_count_plural', [String(exports.length)])}
         </Typography>
         {exports.length > 0 && (
-          <Tooltip title={i18n("exports_clear")}>
+          <Tooltip title={i18n('exports_clear')}>
             <IconButton
               size="small"
               onClick={() => void handleClear()}
-              aria-label={i18n("exports_clear")}
-              className={styles["exports-panel__clear-btn"]}
+              aria-label={i18n('exports_clear')}
+              className={styles['exports-panel__clear-btn']}
             >
-              <DeleteIcon className={styles["exports-panel__clear-icon"]} />
+              <DeleteIcon className={styles['exports-panel__clear-icon']} />
             </IconButton>
           </Tooltip>
         )}
@@ -108,9 +108,9 @@ const ExportsPanel: FC = () => {
         <Typography
           variant="caption"
           color="text.secondary"
-          className={styles["exports-panel__empty"]}
+          className={styles['exports-panel__empty']}
         >
-          {i18n("exports_empty")}
+          {i18n('exports_empty')}
         </Typography>
       ) : (
         <List dense disablePadding>
@@ -118,25 +118,25 @@ const ExportsPanel: FC = () => {
             <ListItem
               key={record.id}
               divider
-              className={styles["exports-panel__list-item"]}
+              className={styles['exports-panel__list-item']}
               secondaryAction={
-                <Box sx={{ display: "flex", gap: 0.5 }}>
-                  <Tooltip title={i18n("exports_download")}>
+                <Box sx={{ display: 'flex', gap: 0.5 }}>
+                  <Tooltip title={i18n('exports_download')}>
                     <IconButton
                       edge="end"
                       size="small"
                       onClick={() => handleDownload(record)}
-                      aria-label={i18n("exports_download")}
+                      aria-label={i18n('exports_download')}
                     >
                       <FileDownloadIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title={i18n("exports_delete")}>
+                  <Tooltip title={i18n('exports_delete')}>
                     <IconButton
                       edge="end"
                       size="small"
                       onClick={() => void handleDelete(record.id)}
-                      aria-label={i18n("exports_delete")}
+                      aria-label={i18n('exports_delete')}
                     >
                       <DeleteIcon fontSize="small" />
                     </IconButton>
@@ -148,20 +148,20 @@ const ExportsPanel: FC = () => {
                 primary={record.filename}
                 secondary={`${formatTimestamp(record.createdAt)} — ${
                   record.rowCount === 1
-                    ? i18n("exports_result_single", [String(record.rowCount)])
-                    : i18n("exports_result_plural", [String(record.rowCount)])
+                    ? i18n('exports_result_single', [String(record.rowCount)])
+                    : i18n('exports_result_plural', [String(record.rowCount)])
                 } · ${formatBytes(record.sizeBytes)}`}
                 slotProps={{
                   primary: {
-                    variant: "body2",
-                    className: styles["exports-panel__filename"],
+                    variant: 'body2',
+                    className: styles['exports-panel__filename'],
                   },
                   secondary: {
-                    variant: "caption",
-                    className: styles["exports-panel__secondary-text"],
+                    variant: 'caption',
+                    className: styles['exports-panel__secondary-text'],
                   },
                 }}
-                className={styles["exports-panel__list-item-text"]}
+                className={styles['exports-panel__list-item-text']}
               />
             </ListItem>
           ))}

@@ -1,4 +1,4 @@
-import type { SearchAst } from "../types";
+import type { SearchAst } from '../types';
 
 /**
  * A leaf field-match condition in a CONTAINS filter tree.
@@ -50,17 +50,17 @@ export type ContainsFilterNode =
 export function translateAstToContainsFilter(
   ast: SearchAst,
   wrapValue: (value: string) => string = (value) => value,
-  field: string = "name",
+  field: string = 'name',
 ): ContainsFilterNode {
   const translate = (node: SearchAst): ContainsFilterNode => {
     switch (node.type) {
-      case "term":
-        return { term: { field, op: "CONTAINS", values: [wrapValue(node.value)] } };
-      case "and":
+      case 'term':
+        return { term: { field, op: 'CONTAINS', values: [wrapValue(node.value)] } };
+      case 'and':
         return { and: [translate(node.left), translate(node.right)] };
-      case "or":
+      case 'or':
         return { or: [translate(node.left), translate(node.right)] };
-      case "not":
+      case 'not':
         return { not: translate(node.operand) };
     }
   };

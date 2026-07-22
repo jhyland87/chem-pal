@@ -2,31 +2,31 @@ import {
   resetChromeStorageMock,
   restoreChromeStorageMock,
   setupChromeStorageMock,
-} from "@/__fixtures__/helpers/chrome/storageMock";
+} from '@/__fixtures__/helpers/chrome/storageMock';
 import {
   clearSearchHistory,
   clearSearchResults,
   getSearchHistory,
   getSearchResults,
   getSearchResultsRecord,
-} from "@/utils/idbCache";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+} from '@/utils/idbCache';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   buildNoResultsMessage,
   createInitialHistoryEntry,
   saveResultsToSession,
   updateColumnFilterFromResult,
   updateHistoryResultCount,
-} from "../useSearch";
+} from '../useSearch';
 
-vi.mock("@/helpers/pubchem", () => ({
+vi.mock('@/helpers/pubchem', () => ({
   getCompoundNameFromAlias: vi.fn(),
 }));
 
 // Import after mocking so we can control the mock implementation
-import { getCompoundNameFromAlias } from "@/helpers/pubchem";
+import { getCompoundNameFromAlias } from '@/helpers/pubchem';
 
-describe("useSearch helpers", () => {
+describe('useSearch helpers', () => {
   beforeAll(() => {
     setupChromeStorageMock();
   });
@@ -45,8 +45,8 @@ describe("useSearch helpers", () => {
     restoreChromeStorageMock();
   });
 
-  describe("updateColumnFilterFromResult", () => {
-    it("ignores columns that are not in the config", () => {
+  describe('updateColumnFilterFromResult', () => {
+    it('ignores columns that are not in the config', () => {
       const config = {};
       const product = { price: 42 } as unknown as Product;
       updateColumnFilterFromResult(config, product);
@@ -55,29 +55,29 @@ describe("useSearch helpers", () => {
 
     it("adds unique values for 'select' filter variants", () => {
       const config = {
-        supplier: { filterVariant: "select", filterData: [] as unknown[] },
+        supplier: { filterVariant: 'select', filterData: [] as unknown[] },
       };
-      updateColumnFilterFromResult(config, { supplier: "Carolina" } as unknown as Product);
-      updateColumnFilterFromResult(config, { supplier: "Ambeed" } as unknown as Product);
-      updateColumnFilterFromResult(config, { supplier: "Carolina" } as unknown as Product);
+      updateColumnFilterFromResult(config, { supplier: 'Carolina' } as unknown as Product);
+      updateColumnFilterFromResult(config, { supplier: 'Ambeed' } as unknown as Product);
+      updateColumnFilterFromResult(config, { supplier: 'Carolina' } as unknown as Product);
 
-      expect(config.supplier.filterData).toEqual(["Carolina", "Ambeed"]);
+      expect(config.supplier.filterData).toEqual(['Carolina', 'Ambeed']);
     });
 
     it("adds unique values for 'text' filter variants", () => {
       const config = {
-        title: { filterVariant: "text", filterData: [] as unknown[] },
+        title: { filterVariant: 'text', filterData: [] as unknown[] },
       };
-      updateColumnFilterFromResult(config, { title: "Acetone" } as unknown as Product);
-      updateColumnFilterFromResult(config, { title: "Acetone" } as unknown as Product);
-      updateColumnFilterFromResult(config, { title: "Ethanol" } as unknown as Product);
+      updateColumnFilterFromResult(config, { title: 'Acetone' } as unknown as Product);
+      updateColumnFilterFromResult(config, { title: 'Acetone' } as unknown as Product);
+      updateColumnFilterFromResult(config, { title: 'Ethanol' } as unknown as Product);
 
-      expect(config.title.filterData).toEqual(["Acetone", "Ethanol"]);
+      expect(config.title.filterData).toEqual(['Acetone', 'Ethanol']);
     });
 
     it("tracks numeric values for 'range' filter variants", () => {
       const config = {
-        price: { filterVariant: "range", filterData: [] as unknown[] },
+        price: { filterVariant: 'range', filterData: [] as unknown[] },
       };
       updateColumnFilterFromResult(config, { price: 10 } as unknown as Product);
       updateColumnFilterFromResult(config, { price: 5 } as unknown as Product);
@@ -88,34 +88,34 @@ describe("useSearch helpers", () => {
 
     it("skips non-numeric values for 'range' filter variants", () => {
       const config = {
-        price: { filterVariant: "range", filterData: [] as unknown[] },
+        price: { filterVariant: 'range', filterData: [] as unknown[] },
       };
-      updateColumnFilterFromResult(config, { price: "not a number" } as unknown as Product);
+      updateColumnFilterFromResult(config, { price: 'not a number' } as unknown as Product);
       expect(config.price.filterData).toEqual([]);
     });
   });
 
-  describe("saveResultsToSession", () => {
-    it("persists the results to IndexedDB", async () => {
-      const results = [{ id: 1, title: "Widget" }] as unknown as Product[];
+  describe('saveResultsToSession', () => {
+    it('persists the results to IndexedDB', async () => {
+      const results = [{ id: 1, title: 'Widget' }] as unknown as Product[];
       await saveResultsToSession(results);
 
       const stored = await getSearchResults();
       expect(stored).toEqual(results);
     });
 
-    it("persists the query alongside the results when provided", async () => {
-      const results = [{ id: 1, title: "Widget" }] as unknown as Product[];
-      await saveResultsToSession(results, "acetone");
+    it('persists the query alongside the results when provided', async () => {
+      const results = [{ id: 1, title: 'Widget' }] as unknown as Product[];
+      await saveResultsToSession(results, 'acetone');
 
       const record = await getSearchResultsRecord();
-      expect(record.query).toBe("acetone");
+      expect(record.query).toBe('acetone');
       expect(record.data).toEqual(results);
     });
 
-    it("does not throw when IndexedDB write fails", async () => {
+    it('does not throw when IndexedDB write fails', async () => {
       // Mock idbCache to simulate a failure — the function should catch internally
-      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       // Even with a valid call, the function should not throw
       await expect(saveResultsToSession([])).resolves.toBeUndefined();
@@ -124,51 +124,51 @@ describe("useSearch helpers", () => {
     });
   });
 
-  describe("createInitialHistoryEntry", () => {
-    it("creates a new entry with resultCount 0 in IndexedDB", async () => {
+  describe('createInitialHistoryEntry', () => {
+    it('creates a new entry with resultCount 0 in IndexedDB', async () => {
       const timestamp = 1_700_000_000_000;
       const filters = {
-        titleQuery: "acetone",
+        titleQuery: 'acetone',
         availability: [],
         country: [],
         shippingType: [],
       } as unknown as SearchFilters;
 
-      await createInitialHistoryEntry("acetone", timestamp, filters, ["SupplierCarolina"]);
+      await createInitialHistoryEntry('acetone', timestamp, filters, ['SupplierCarolina']);
 
       const history = await getSearchHistory();
 
       expect(history).toHaveLength(1);
       expect(history[0]).toMatchObject({
-        query: "acetone",
+        query: 'acetone',
         timestamp,
         resultCount: 0,
-        type: "search",
-        selectedSuppliers: ["SupplierCarolina"],
+        type: 'search',
+        selectedSuppliers: ['SupplierCarolina'],
       });
       expect(history[0].filters).toEqual(filters);
     });
 
-    it("stores multiple entries", async () => {
+    it('stores multiple entries', async () => {
       const filters = {
-        titleQuery: "",
+        titleQuery: '',
         availability: [],
         country: [],
         shippingType: [],
       } as unknown as SearchFilters;
 
-      await createInitialHistoryEntry("first", 1, filters, []);
-      await createInitialHistoryEntry("second", 2, filters, []);
+      await createInitialHistoryEntry('first', 1, filters, []);
+      await createInitialHistoryEntry('second', 2, filters, []);
 
       const history = await getSearchHistory();
 
       // getSearchHistory returns newest-first
-      expect(history.map((h) => h.query)).toEqual(["second", "first"]);
+      expect(history.map((h) => h.query)).toEqual(['second', 'first']);
     });
 
-    it("enforces max 100 entries", async () => {
+    it('enforces max 100 entries', async () => {
       const filters = {
-        titleQuery: "",
+        titleQuery: '',
         availability: [],
         country: [],
         shippingType: [],
@@ -183,37 +183,37 @@ describe("useSearch helpers", () => {
 
       expect(history).toHaveLength(100);
       // The newest entry should be present
-      expect(history[0].query).toBe("q100");
+      expect(history[0].query).toBe('q100');
     });
 
-    it("handles being called when IndexedDB is empty", async () => {
+    it('handles being called when IndexedDB is empty', async () => {
       const filters = {
-        titleQuery: "",
+        titleQuery: '',
         availability: [],
         country: [],
         shippingType: [],
       } as unknown as SearchFilters;
 
-      await createInitialHistoryEntry("q", 1, filters, []);
+      await createInitialHistoryEntry('q', 1, filters, []);
 
       const history = await getSearchHistory();
 
       expect(history).toHaveLength(1);
-      expect(history[0].query).toBe("q");
+      expect(history[0].query).toBe('q');
     });
   });
 
-  describe("updateHistoryResultCount", () => {
+  describe('updateHistoryResultCount', () => {
     const baseFilters = {
-      titleQuery: "",
+      titleQuery: '',
       availability: [],
       country: [],
       shippingType: [],
     } as unknown as SearchFilters;
 
-    it("updates the resultCount on the matching entry", async () => {
-      await createInitialHistoryEntry("a", 100, baseFilters, []);
-      await createInitialHistoryEntry("b", 200, baseFilters, []);
+    it('updates the resultCount on the matching entry', async () => {
+      await createInitialHistoryEntry('a', 100, baseFilters, []);
+      await createInitialHistoryEntry('b', 200, baseFilters, []);
 
       await updateHistoryResultCount(100, 42);
 
@@ -225,8 +225,8 @@ describe("useSearch helpers", () => {
       expect(untouched?.resultCount).toBe(0);
     });
 
-    it("is a no-op when no entry matches the timestamp", async () => {
-      await createInitialHistoryEntry("a", 100, baseFilters, []);
+    it('is a no-op when no entry matches the timestamp', async () => {
+      await createInitialHistoryEntry('a', 100, baseFilters, []);
 
       await updateHistoryResultCount(999, 5);
 
@@ -236,37 +236,37 @@ describe("useSearch helpers", () => {
     });
   });
 
-  describe("buildNoResultsMessage", () => {
+  describe('buildNoResultsMessage', () => {
     const mockedGetCompoundNameFromAlias = vi.mocked(getCompoundNameFromAlias);
 
-    it("returns just the basic message when filters are inactive and PubChem has no alternative", async () => {
+    it('returns just the basic message when filters are inactive and PubChem has no alternative', async () => {
       mockedGetCompoundNameFromAlias.mockResolvedValueOnce(undefined);
 
-      const msg = await buildNoResultsMessage("zzzzz", false);
+      const msg = await buildNoResultsMessage('zzzzz', false);
       expect(msg).toBe('No results found for "zzzzz"');
     });
 
-    it("includes the filter-broadening hint when filters are active", async () => {
+    it('includes the filter-broadening hint when filters are active', async () => {
       mockedGetCompoundNameFromAlias.mockResolvedValueOnce(undefined);
 
-      const msg = await buildNoResultsMessage("zzzzz", true);
+      const msg = await buildNoResultsMessage('zzzzz', true);
       expect(msg).toContain('No results found for "zzzzz"');
-      expect(msg).toContain("broadening your search filters");
+      expect(msg).toContain('broadening your search filters');
     });
 
     // Disabled the Pubchem name suggestion for now as it's not very useful.
-    it.skip("suggests the PubChem name when it differs from the query", async () => {
-      mockedGetCompoundNameFromAlias.mockResolvedValueOnce("acetone");
+    it.skip('suggests the PubChem name when it differs from the query', async () => {
+      mockedGetCompoundNameFromAlias.mockResolvedValueOnce('acetone');
 
-      const msg = await buildNoResultsMessage("propan-2-one", false);
-      expect(msg).toContain("Perhaps try the PubChem name instead: acetone");
+      const msg = await buildNoResultsMessage('propan-2-one', false);
+      expect(msg).toContain('Perhaps try the PubChem name instead: acetone');
     });
 
-    it("does not suggest the PubChem name when it matches the query case-insensitively", async () => {
-      mockedGetCompoundNameFromAlias.mockResolvedValueOnce("Acetone");
+    it('does not suggest the PubChem name when it matches the query case-insensitively', async () => {
+      mockedGetCompoundNameFromAlias.mockResolvedValueOnce('Acetone');
 
-      const msg = await buildNoResultsMessage("acetone", false);
-      expect(msg).not.toContain("Perhaps try");
+      const msg = await buildNoResultsMessage('acetone', false);
+      expect(msg).not.toContain('Perhaps try');
     });
   });
 });

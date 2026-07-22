@@ -1,5 +1,5 @@
-import type { Logger } from "@/utils/Logger";
-import type { IDBPDatabase } from "idb";
+import type { Logger } from '@/utils/Logger';
+import type { IDBPDatabase } from 'idb';
 
 /**
  * Everything a migration step needs to reshape cached data. The `db` handle is

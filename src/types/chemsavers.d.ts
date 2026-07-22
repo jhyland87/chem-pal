@@ -58,7 +58,7 @@ declare global {
     variants?: ChemsaversProductVariant[];
   }
 
-  type ChemsaversProductVariant = Omit<ChemsaversProductObject, "variants">;
+  type ChemsaversProductVariant = Omit<ChemsaversProductObject, 'variants'>;
 
   /** A single product image from the Chemsavers catalog. */
   interface ChemsaversImage {

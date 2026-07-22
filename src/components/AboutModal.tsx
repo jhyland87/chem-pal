@@ -1,27 +1,27 @@
-import { default as Link } from "@/components/TabLink";
-import { i18n } from "@/helpers/i18n";
-import { getAvailableUpdate } from "@/helpers/updates";
-import GitHubIcon from "@/icons/GitHubIcon";
-import { ThemeContext } from "@/themes";
-import ArticleIcon from "@mui/icons-material/Article";
-import BrowserUpdatedIcon from "@mui/icons-material/BrowserUpdated";
-import BugReportIcon from "@mui/icons-material/BugReport";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import PrivacyTipIcon from "@mui/icons-material/PrivacyTip";
-import SignalWifiConnectedNoInternet4Icon from "@mui/icons-material/SignalWifiConnectedNoInternet4";
-import WebIcon from "@mui/icons-material/Web";
-import Divider from "@mui/material/Divider";
-import Modal from "@mui/material/Modal";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import { useContext, useState } from "react";
-import styles from "./AboutModal.module.scss";
+import { default as Link } from '@/components/TabLink';
+import { i18n } from '@/helpers/i18n';
+import { getAvailableUpdate } from '@/helpers/updates';
+import GitHubIcon from '@/icons/GitHubIcon';
+import { ThemeContext } from '@/themes';
+import ArticleIcon from '@mui/icons-material/Article';
+import BrowserUpdatedIcon from '@mui/icons-material/BrowserUpdated';
+import BugReportIcon from '@mui/icons-material/BugReport';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import PrivacyTipIcon from '@mui/icons-material/PrivacyTip';
+import SignalWifiConnectedNoInternet4Icon from '@mui/icons-material/SignalWifiConnectedNoInternet4';
+import WebIcon from '@mui/icons-material/Web';
+import Divider from '@mui/material/Divider';
+import Modal from '@mui/material/Modal';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import { useContext, useState } from 'react';
+import styles from './AboutModal.module.scss';
 import {
   AboutContributorItem,
   AboutModalBox,
   AboutModalLink,
   AboutModalLinkContainer,
-} from "./StyledComponents";
+} from './StyledComponents';
 
 /**
  * AboutModal component that displays information about the application.
@@ -58,9 +58,9 @@ export default function AboutModal({
     <BrowserUpdatedIcon sx={{ fontSize: 16 }} />,
   );
   const logoSrc =
-    themeContext?.mode === "dark"
-      ? "/static/images/logo/ChemPal-logo-inverted.svg"
-      : "/static/images/logo/ChemPal-logo.svg";
+    themeContext?.mode === 'dark'
+      ? '/static/images/logo/ChemPal-logo-inverted.svg'
+      : '/static/images/logo/ChemPal-logo.svg';
 
   const handleCheckForUpdates = () => {
     void (async () => {
@@ -68,15 +68,15 @@ export default function AboutModal({
         const update = await getAvailableUpdate();
         setUpdateIcon(
           update ? (
-            <BrowserUpdatedIcon sx={{ fontSize: 16, color: "warning.main" }} />
+            <BrowserUpdatedIcon sx={{ fontSize: 16, color: 'warning.main' }} />
           ) : (
-            <CheckCircleIcon sx={{ fontSize: 16, color: "success.main" }} />
+            <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
           ),
         );
       } catch (error) {
-        console.error("Failed to check for updates:", { error });
+        console.error('Failed to check for updates:', { error });
         setUpdateIcon(
-          <SignalWifiConnectedNoInternet4Icon sx={{ fontSize: 16, color: "error.main" }} />,
+          <SignalWifiConnectedNoInternet4Icon sx={{ fontSize: 16, color: 'error.main' }} />,
         );
       }
     })();
@@ -89,26 +89,26 @@ export default function AboutModal({
       aria-labelledby="application-title"
       aria-describedby="application-description"
     >
-      <AboutModalBox className={styles["about-box"]} onClick={(e) => e.stopPropagation()}>
-        <img src={logoSrc} alt={i18n("about_logo_alt")} className={styles["about-logo"]} />
+      <AboutModalBox className={styles['about-box']} onClick={(e) => e.stopPropagation()}>
+        <img src={logoSrc} alt={i18n('about_logo_alt')} className={styles['about-logo']} />
         <Typography
           id="application-title"
           variant="h6"
           component="h2"
-          className={styles["about-title"]}
+          className={styles['about-title']}
         >
-          {i18n("about_title")}
+          {i18n('about_title')}
         </Typography>
         <Typography
           variant="subtitle2"
           gutterBottom
-          sx={{ alignItems: "center", textAlign: "center" }}
+          sx={{ alignItems: 'center', textAlign: 'center' }}
         >
-          {__APP_VERSION__}{" "}
+          {__APP_VERSION__}{' '}
           <Link
             href="#"
             onClick={handleCheckForUpdates}
-            sx={{ marginLeft: 1, verticalAlign: "top" }}
+            sx={{ marginLeft: 1, verticalAlign: 'top' }}
           >
             {updateIcon}
           </Link>
@@ -160,28 +160,28 @@ export default function AboutModal({
           id="application-description"
           variant="subtitle2"
           gutterBottom
-          sx={{ mt: 0.5, display: "block" }}
+          sx={{ mt: 0.5, display: 'block' }}
         >
-          {i18n("about_description")}
+          {i18n('about_description')}
         </Typography>
-        <Divider sx={{ color: "primary.main", my: 2 }}>
-          <Typography variant="overline" gutterBottom sx={{ display: "block" }}>
-            {i18n("about_contributors")}
+        <Divider sx={{ color: 'primary.main', my: 2 }}>
+          <Typography variant="overline" gutterBottom sx={{ display: 'block' }}>
+            {i18n('about_contributors')}
           </Typography>
         </Divider>
 
         <Stack
           direction="row"
           useFlexGap
-          className={styles["about-contributor-stack"]}
+          className={styles['about-contributor-stack']}
           sx={{ gap: 2 }}
         >
           {entries.map((entry) => (
             <AboutContributorItem key={entry.name}>
               <Link data-testid={entry.name} href={entry.url}>
                 <Typography
-                  sx={{ color: "text.secondary" }}
-                  className={styles["about-contributor-link"]}
+                  sx={{ color: 'text.secondary' }}
+                  className={styles['about-contributor-link']}
                 >
                   {entry.name}
                 </Typography>

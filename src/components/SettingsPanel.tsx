@@ -1,19 +1,19 @@
-import { useAppContext } from "@/components/SearchPanel/hooks/useContext";
-import { ACTION_TYPE, IDB_STORE } from "@/constants/common";
-import { COUNTRIES } from "@/constants/countries";
-import { CURRENCIES } from "@/constants/currency";
-import { FUZZ_SCORER_NAMES } from "@/constants/fuzzScorers";
-import { getCurrencyRate } from "@/helpers/currency";
+import { useAppContext } from '@/components/SearchPanel/hooks/useContext';
+import { ACTION_TYPE, IDB_STORE } from '@/constants/common';
+import { COUNTRIES } from '@/constants/countries';
+import { CURRENCIES } from '@/constants/currency';
+import { FUZZ_SCORER_NAMES } from '@/constants/fuzzScorers';
+import { getCurrencyRate } from '@/helpers/currency';
 import {
   loadExcludedProducts,
   removeExcludedProduct,
   type ExcludedProductsMap,
-} from "@/helpers/excludedProducts";
-import { getAvailableLocales, i18n } from "@/helpers/i18n";
-import { formatBytes, formatTimestamp, getLanguageName } from "@/helpers/utils";
+} from '@/helpers/excludedProducts';
+import { getAvailableLocales, i18n } from '@/helpers/i18n';
+import { formatBytes, formatTimestamp, getLanguageName } from '@/helpers/utils';
 // Names only, from a dependency-free constant — importing SupplierFactory here
 // would pull every supplier implementation into the options-page bundle.
-import { SUPPLIER_CLASS_NAMES } from "@/constants/suppliers";
+import { SUPPLIER_CLASS_NAMES } from '@/constants/suppliers';
 import {
   clearExcludedProducts,
   clearPriceHistory,
@@ -21,35 +21,35 @@ import {
   clearSupplierQueryCache,
   getAllPriceSeries,
   getIdbStorageBreakdown,
-} from "@/utils/idbCache";
-import { isButtonElement } from "@/utils/typeGuards/common";
-import DeleteIcon from "@mui/icons-material/Delete";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import TextDecreaseIcon from "@mui/icons-material/TextDecrease";
-import TextFormatIcon from "@mui/icons-material/TextFormat";
-import TextIncreaseIcon from "@mui/icons-material/TextIncrease";
-import Accordion from "@mui/material/Accordion";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import ButtonGroup from "@mui/material/ButtonGroup";
-import FormControl from "@mui/material/FormControl";
-import FormControlLabel from "@mui/material/FormControlLabel";
+} from '@/utils/idbCache';
+import { isButtonElement } from '@/utils/typeGuards/common';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import TextDecreaseIcon from '@mui/icons-material/TextDecrease';
+import TextFormatIcon from '@mui/icons-material/TextFormat';
+import TextIncreaseIcon from '@mui/icons-material/TextIncrease';
+import Accordion from '@mui/material/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
 //import FormHelperText from "@mui/material/FormHelperText";
-import IconButton from "@mui/material/IconButton";
-import Link from "@mui/material/Link";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
-import MenuItem from "@mui/material/MenuItem";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import Stack from "@mui/material/Stack";
-import Switch from "@mui/material/Switch";
-import TextField from "@mui/material/TextField";
-import Tooltip from "@mui/material/Tooltip";
-import Typography from "@mui/material/Typography";
+import IconButton from '@mui/material/IconButton';
+import Link from '@mui/material/Link';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import MenuItem from '@mui/material/MenuItem';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Stack from '@mui/material/Stack';
+import Switch from '@mui/material/Switch';
+import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import {
   ChangeEvent,
   MouseEvent,
@@ -58,8 +58,8 @@ import {
   useActionState,
   useEffect,
   useState,
-} from "react";
-import styles from "./SettingsPanel.module.scss";
+} from 'react';
+import styles from './SettingsPanel.module.scss';
 
 // Languages the extension ships a translation (`messages.json`) for. Derived at
 // build time from src/_locales, so adding a locale folder adds a dropdown option.
@@ -100,7 +100,7 @@ async function getStorageUsageScale(jsonTotalBytes: number): Promise<number> {
     const usage = (await navigator.storage?.estimate?.())?.usage;
     if (usage && usage > 0) return usage / jsonTotalBytes;
   } catch (error) {
-    console.warn("Failed to read storage estimate:", error);
+    console.warn('Failed to read storage estimate:', error);
   }
   return 1;
 }
@@ -119,12 +119,12 @@ async function getStorageUsageScale(jsonTotalBytes: number): Promise<number> {
  */
 export default function SettingsPanel() {
   const appContext = useAppContext();
-  const [expanded, setExpanded] = useState<string | false>("behavior");
+  const [expanded, setExpanded] = useState<string | false>('behavior');
   // Developer-only fuzz controls stay hidden until the Konami hotkey unlocks them.
   const advancedMode = appContext?.advancedMode ?? false;
 
   if (!appContext) {
-    return <div>{i18n("settings_loading")}</div>;
+    return <div>{i18n('settings_loading')}</div>;
   }
 
   const [formState, updateSetting, isPending] = useActionState(
@@ -150,22 +150,22 @@ export default function SettingsPanel() {
             caching: true,
             trackPriceHistory: true,
             priceHistoryMaxPoints: 0,
-            fontSize: "medium",
+            fontSize: 'medium',
             openInTab: false,
             autoHideEmptyColumns: true,
             disabledSuppliers: [],
             hideColumns: [
-              "description",
-              "uom",
-              "sds",
-              "specs",
-              "coa",
-              "cas",
-              "pubchem",
-              "formula",
-              "moleweight",
-              "purity",
-              "concentration",
+              'description',
+              'uom',
+              'sds',
+              'specs',
+              'coa',
+              'cas',
+              'pubchem',
+              'formula',
+              'moleweight',
+              'purity',
+              'concentration',
             ],
           };
           break;
@@ -176,7 +176,7 @@ export default function SettingsPanel() {
         try {
           appContext.setUserSettings(newSettings);
         } catch (error) {
-          console.error("Failed to update settings:", error);
+          console.error('Failed to update settings:', error);
         }
       });
       return newSettings;
@@ -230,7 +230,7 @@ export default function SettingsPanel() {
         const map = await loadExcludedProducts();
         setExcludedProducts(map);
       } catch (error) {
-        console.warn("Failed to load excluded products:", error);
+        console.warn('Failed to load excluded products:', error);
       }
     };
     load();
@@ -262,7 +262,7 @@ export default function SettingsPanel() {
         bytes: Math.round(breakdown.byStore[IDB_STORE.PRICE_HISTORY].bytes * scale),
       });
     } catch (error) {
-      console.warn("Failed to load storage stats:", error);
+      console.warn('Failed to load storage stats:', error);
     }
   };
 
@@ -279,7 +279,7 @@ export default function SettingsPanel() {
         return next;
       });
     } catch (error) {
-      console.warn("Failed to remove excluded product:", error);
+      console.warn('Failed to remove excluded product:', error);
     }
   };
 
@@ -288,7 +288,7 @@ export default function SettingsPanel() {
       await clearExcludedProducts();
       setExcludedProducts({});
     } catch (error) {
-      console.warn("Failed to clear excluded products:", error);
+      console.warn('Failed to clear excluded products:', error);
     }
   };
 
@@ -298,7 +298,7 @@ export default function SettingsPanel() {
       setPriceHistoryCleared(true);
       await loadStorageStats();
     } catch (error) {
-      console.warn("Failed to clear price history:", error);
+      console.warn('Failed to clear price history:', error);
     }
   };
 
@@ -310,7 +310,7 @@ export default function SettingsPanel() {
       setCacheCleared(true);
       await loadStorageStats();
     } catch (error) {
-      console.warn("Failed to clear cache:", error);
+      console.warn('Failed to clear cache:', error);
     }
   };
 
@@ -335,10 +335,10 @@ export default function SettingsPanel() {
   // dropdown lists base locale codes ("en", "pl") that have a translation. Match
   // on the base code, and fall back to empty when the stored language has no
   // shipped translation so the Select doesn't render an out-of-range value.
-  const currentLanguageBase = (currentSettings.language ?? "").split("-")[0];
+  const currentLanguageBase = (currentSettings.language ?? '').split('-')[0];
   const selectedLanguage = AVAILABLE_LOCALES.includes(currentLanguageBase)
     ? currentLanguageBase
-    : "";
+    : '';
 
   // Fetch the live USD→currency rate for the selected currency and show it under
   // the dropdown. Fetched directly (not read from stored settings) so the hint
@@ -347,17 +347,17 @@ export default function SettingsPanel() {
   const selectedCurrency = currentSettings.currency;
   const [displayRate, setDisplayRate] = useState<number | undefined>(undefined);
   useEffect(() => {
-    if (!selectedCurrency || selectedCurrency === "USD") {
+    if (!selectedCurrency || selectedCurrency === 'USD') {
       setDisplayRate(undefined);
       return;
     }
     let cancelled = false;
     const loadRate = async () => {
       try {
-        const rate = await getCurrencyRate("USD", selectedCurrency);
+        const rate = await getCurrencyRate('USD', selectedCurrency);
         if (!cancelled) setDisplayRate(rate);
       } catch (error) {
-        console.error("Failed to fetch currency rate for display", { error });
+        console.error('Failed to fetch currency rate for display', { error });
         if (!cancelled) setDisplayRate(undefined);
       }
     };
@@ -368,8 +368,8 @@ export default function SettingsPanel() {
   }, [selectedCurrency]);
 
   const currencyRateHint =
-    selectedCurrency && selectedCurrency !== "USD" && displayRate !== undefined
-      ? i18n("settings_currency_rate_hint", [
+    selectedCurrency && selectedCurrency !== 'USD' && displayRate !== undefined
+      ? i18n('settings_currency_rate_hint', [
           new Intl.NumberFormat(undefined, { maximumFractionDigits: 4 }).format(displayRate),
           selectedCurrency,
         ])
@@ -383,23 +383,23 @@ export default function SettingsPanel() {
   return (
     <Box>
       <Accordion
-        expanded={expanded === "behavior"}
-        onChange={handleAccordionChange("behavior")}
+        expanded={expanded === 'behavior'}
+        onChange={handleAccordionChange('behavior')}
         disableGutters
       >
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
-          className={styles["settings-panel__accordion-summary"]}
+          className={styles['settings-panel__accordion-summary']}
         >
           <Typography variant="body2" fontWeight={500}>
-            {i18n("settings_section_behavior")}
+            {i18n('settings_section_behavior')}
           </Typography>
         </AccordionSummary>
-        <AccordionDetails className={styles["settings-panel__accordion-details"]}>
+        <AccordionDetails className={styles['settings-panel__accordion-details']}>
           <List dense component="nav" aria-labelledby="behavior-list-subheader">
             {/* Caching */}
-            <ListItem className={styles["settings-panel__helper-on-hover"]}>
-              <ListItemText primary={i18n("settings_cache_results")} />
+            <ListItem className={styles['settings-panel__helper-on-hover']}>
+              <ListItemText primary={i18n('settings_cache_results')} />
               {/*<FormHelperText>Improves performance</FormHelperText>*/}
               <FormControlLabel
                 control={
@@ -418,11 +418,11 @@ export default function SettingsPanel() {
                 right-aligned row below the dropdown (no wrap, and the label/dropdown
                 row above it doesn't shift when the hint appears). */}
             <ListItem
-              className={styles["settings-panel__helper-on-hover"]}
-              sx={{ flexDirection: "column", alignItems: "stretch", rowGap: 0.5 }}
+              className={styles['settings-panel__helper-on-hover']}
+              sx={{ flexDirection: 'column', alignItems: 'stretch', rowGap: 0.5 }}
             >
-              <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
-                <ListItemText primary={i18n("settings_currency")} />
+              <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                <ListItemText primary={i18n('settings_currency')} />
                 <FormControl>
                   <Autocomplete
                     options={CURRENCIES}
@@ -433,16 +433,16 @@ export default function SettingsPanel() {
                     onChange={(_event, option) =>
                       updateSetting({
                         type: ACTION_TYPE.INPUT_CHANGE,
-                        name: "currency",
-                        value: option?.code ?? "",
+                        name: 'currency',
+                        value: option?.code ?? '',
                       })
                     }
                     size="small"
-                    className={styles["settings-panel__input"]}
+                    className={styles['settings-panel__input']}
                     disabled={isPending}
                     disableClearable
                     renderInput={(params) => (
-                      <TextField {...params} placeholder={i18n("settings_currency")} />
+                      <TextField {...params} placeholder={i18n('settings_currency')} />
                     )}
                   />
                 </FormControl>
@@ -451,15 +451,15 @@ export default function SettingsPanel() {
                 <Typography
                   variant="caption"
                   color="text.secondary"
-                  sx={{ alignSelf: "flex-end", whiteSpace: "nowrap" }}
+                  sx={{ alignSelf: 'flex-end', whiteSpace: 'nowrap' }}
                 >
                   {currencyRateHint}
                 </Typography>
               )}
             </ListItem>
             {/* Location */}
-            <ListItem className={styles["settings-panel__helper-on-hover"]}>
-              <ListItemText primary={i18n("settings_location")} />
+            <ListItem className={styles['settings-panel__helper-on-hover']}>
+              <ListItemText primary={i18n('settings_location')} />
               {/*<FormHelperText>Your country</FormHelperText>*/}
               <FormControl>
                 <Autocomplete
@@ -471,29 +471,29 @@ export default function SettingsPanel() {
                   onChange={(_event, option) =>
                     updateSetting({
                       type: ACTION_TYPE.INPUT_CHANGE,
-                      name: "location",
-                      value: option?.code ?? "",
+                      name: 'location',
+                      value: option?.code ?? '',
                     })
                   }
                   size="small"
-                  className={styles["settings-panel__input"]}
+                  className={styles['settings-panel__input']}
                   disabled={isPending}
                   renderInput={(params) => (
-                    <TextField {...params} placeholder={i18n("settings_location_placeholder")} />
+                    <TextField {...params} placeholder={i18n('settings_location_placeholder')} />
                   )}
                 />
               </FormControl>
             </ListItem>
             {/* Language */}
-            <ListItem className={styles["settings-panel__helper-on-hover"]}>
-              <ListItemText primary={i18n("settings_language")} />
+            <ListItem className={styles['settings-panel__helper-on-hover']}>
+              <ListItemText primary={i18n('settings_language')} />
               <FormControl>
                 <Select
                   value={selectedLanguage}
                   onChange={handleInputChange}
                   name="language"
                   size="small"
-                  className={styles["settings-panel__input"]}
+                  className={styles['settings-panel__input']}
                   disabled={isPending}
                 >
                   {AVAILABLE_LOCALES.map((localeCode) => (
@@ -508,23 +508,23 @@ export default function SettingsPanel() {
         </AccordionDetails>
       </Accordion>
       <Accordion
-        expanded={expanded === "cache"}
-        onChange={handleAccordionChange("cache")}
+        expanded={expanded === 'cache'}
+        onChange={handleAccordionChange('cache')}
         disableGutters
       >
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
-          className={styles["settings-panel__accordion-summary"]}
+          className={styles['settings-panel__accordion-summary']}
         >
           <Typography variant="body2" fontWeight={500}>
-            {i18n("settings_section_cache")}
+            {i18n('settings_section_cache')}
           </Typography>
         </AccordionSummary>
-        <AccordionDetails className={styles["settings-panel__accordion-details"]}>
+        <AccordionDetails className={styles['settings-panel__accordion-details']}>
           <List dense component="nav" aria-labelledby="cache-list-subheader">
             {/* Do Not Cache Empty Results */}
-            <ListItem className={styles["settings-panel__helper-on-hover"]}>
-              <ListItemText primary={i18n("settings_do_not_cache_empty")} />
+            <ListItem className={styles['settings-panel__helper-on-hover']}>
+              <ListItemText primary={i18n('settings_do_not_cache_empty')} />
               <FormControlLabel
                 control={
                   <Switch
@@ -539,8 +539,8 @@ export default function SettingsPanel() {
               />
             </ListItem>
             {/* Cache TTL (minutes) — 0 disables expiration */}
-            <ListItem className={styles["settings-panel__helper-on-hover"]}>
-              <ListItemText primary={i18n("settings_cache_ttl")} />
+            <ListItem className={styles['settings-panel__helper-on-hover']}>
+              <ListItemText primary={i18n('settings_cache_ttl')} />
               <FormControl>
                 <TextField
                   value={currentSettings.cacheTtlMinutes ?? 0}
@@ -549,7 +549,7 @@ export default function SettingsPanel() {
                   type="number"
                   variant="outlined"
                   size="small"
-                  className={styles["settings-panel__input"]}
+                  className={styles['settings-panel__input']}
                   disabled={isPending}
                   slotProps={{ htmlInput: { min: 0, step: 1 } }}
                 />
@@ -557,22 +557,22 @@ export default function SettingsPanel() {
             </ListItem>
             {/* Cache stats + clear button */}
             <ListItem
-              className={styles["settings-panel__helper-on-hover"]}
-              sx={{ flexDirection: "column", alignItems: "flex-start", rowGap: 0.5 }}
+              className={styles['settings-panel__helper-on-hover']}
+              sx={{ flexDirection: 'column', alignItems: 'flex-start', rowGap: 0.5 }}
             >
-              <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Button variant="outlined" color="warning" size="small" onClick={handleClearCache}>
-                  {i18n("settings_clear_cache")}
+                  {i18n('settings_clear_cache')}
                 </Button>
                 {cacheCleared && (
                   <Typography variant="caption" sx={{ ml: 1 }}>
-                    {i18n("settings_cache_cleared")}
+                    {i18n('settings_cache_cleared')}
                   </Typography>
                 )}
               </Box>
               {cacheStats && (
                 <Typography variant="caption" color="text.secondary">
-                  {i18n("settings_cache_stats", [
+                  {i18n('settings_cache_stats', [
                     cacheStats.records.toLocaleString(),
                     formatBytes(cacheStats.bytes),
                   ])}
@@ -583,25 +583,25 @@ export default function SettingsPanel() {
         </AccordionDetails>
       </Accordion>
       <Accordion
-        expanded={expanded === "priceHistory"}
-        onChange={handleAccordionChange("priceHistory")}
+        expanded={expanded === 'priceHistory'}
+        onChange={handleAccordionChange('priceHistory')}
         disableGutters
       >
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
-          className={styles["settings-panel__accordion-summary"]}
+          className={styles['settings-panel__accordion-summary']}
         >
           <Typography variant="body2" fontWeight={500}>
-            {i18n("settings_section_price_history")}
+            {i18n('settings_section_price_history')}
           </Typography>
         </AccordionSummary>
-        <AccordionDetails className={styles["settings-panel__accordion-details"]}>
+        <AccordionDetails className={styles['settings-panel__accordion-details']}>
           <List dense component="nav" aria-labelledby="price-history-list-subheader">
             {/* Master toggle — on by default */}
-            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+            <ListItem className={styles['settings-panel__helper-on-hover']}>
               <ListItemText
-                primary={i18n("settings_track_price_history")}
-                secondary={i18n("settings_track_price_history_desc")}
+                primary={i18n('settings_track_price_history')}
+                secondary={i18n('settings_track_price_history_desc')}
               />
               <FormControlLabel
                 control={
@@ -617,8 +617,8 @@ export default function SettingsPanel() {
               />
             </ListItem>
             {/* Max points per product — 0 means unlimited */}
-            <ListItem className={styles["settings-panel__helper-on-hover"]}>
-              <ListItemText primary={i18n("settings_max_price_points")} />
+            <ListItem className={styles['settings-panel__helper-on-hover']}>
+              <ListItemText primary={i18n('settings_max_price_points')} />
               <FormControl>
                 <TextField
                   value={currentSettings.priceHistoryMaxPoints ?? 0}
@@ -627,34 +627,34 @@ export default function SettingsPanel() {
                   type="number"
                   variant="outlined"
                   size="small"
-                  className={styles["settings-panel__input"]}
+                  className={styles['settings-panel__input']}
                   disabled={isPending || currentSettings.trackPriceHistory === false}
                   slotProps={{ htmlInput: { min: 0, step: 1 } }}
                 />
               </FormControl>
             </ListItem>
             <ListItem
-              className={styles["settings-panel__helper-on-hover"]}
-              sx={{ flexDirection: "column", alignItems: "flex-start", rowGap: 0.5 }}
+              className={styles['settings-panel__helper-on-hover']}
+              sx={{ flexDirection: 'column', alignItems: 'flex-start', rowGap: 0.5 }}
             >
-              <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Button
                   variant="outlined"
                   color="warning"
                   size="small"
                   onClick={handleClearPriceHistory}
                 >
-                  {i18n("settings_clear_price_history")}
+                  {i18n('settings_clear_price_history')}
                 </Button>
                 {priceHistoryCleared && (
                   <Typography variant="caption" sx={{ ml: 1 }}>
-                    {i18n("settings_price_history_cleared")}
+                    {i18n('settings_price_history_cleared')}
                   </Typography>
                 )}
               </Box>
               {priceStats && (
                 <Typography variant="caption" color="text.secondary">
-                  {i18n("settings_price_history_stats", [
+                  {i18n('settings_price_history_stats', [
                     priceStats.products.toLocaleString(),
                     priceStats.points.toLocaleString(),
                     formatBytes(priceStats.bytes),
@@ -666,28 +666,28 @@ export default function SettingsPanel() {
         </AccordionDetails>
       </Accordion>
       <Accordion
-        expanded={expanded === "display"}
-        onChange={handleAccordionChange("display")}
+        expanded={expanded === 'display'}
+        onChange={handleAccordionChange('display')}
         disableGutters
       >
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
-          className={styles["settings-panel__accordion-summary"]}
+          className={styles['settings-panel__accordion-summary']}
         >
           <Typography variant="body2" fontWeight={500}>
-            {i18n("settings_section_display")}
+            {i18n('settings_section_display')}
           </Typography>
         </AccordionSummary>
-        <AccordionDetails className={styles["settings-panel__accordion-details"]}>
+        <AccordionDetails className={styles['settings-panel__accordion-details']}>
           <List dense component="nav" aria-labelledby="display-list-subheader">
             {/* Font Size */}
-            <ListItem className={styles["settings-panel__helper-on-hover"]}>
-              <ListItemText primary={i18n("settings_font_size")} />
+            <ListItem className={styles['settings-panel__helper-on-hover']}>
+              <ListItemText primary={i18n('settings_font_size')} />
               {/*<FormHelperText>Popup size</FormHelperText>*/}
               <FormControl>
                 <ButtonGroup
                   variant="contained"
-                  aria-label={i18n("settings_font_size")}
+                  aria-label={i18n('settings_font_size')}
                   onClick={handleButtonClick}
                   disabled={isPending}
                 >
@@ -695,44 +695,44 @@ export default function SettingsPanel() {
                     name="fontSize"
                     value="small"
                     size="small"
-                    aria-label={i18n("settings_font_small")}
-                    title={i18n("settings_font_small")}
-                    variant={currentSettings.fontSize === "small" ? "contained" : "text"}
+                    aria-label={i18n('settings_font_small')}
+                    title={i18n('settings_font_small')}
+                    variant={currentSettings.fontSize === 'small' ? 'contained' : 'text'}
                     disabled={isPending}
                   >
-                    <TextDecreaseIcon fontSize="small" sx={{ pointerEvents: "none" }} />
+                    <TextDecreaseIcon fontSize="small" sx={{ pointerEvents: 'none' }} />
                   </Button>
                   <Button
                     name="fontSize"
                     value="medium"
                     size="small"
-                    aria-label={i18n("settings_font_medium")}
-                    title={i18n("settings_font_medium")}
-                    variant={currentSettings.fontSize === "medium" ? "contained" : "text"}
+                    aria-label={i18n('settings_font_medium')}
+                    title={i18n('settings_font_medium')}
+                    variant={currentSettings.fontSize === 'medium' ? 'contained' : 'text'}
                     disabled={isPending}
                   >
-                    <TextFormatIcon fontSize="small" sx={{ pointerEvents: "none" }} />
+                    <TextFormatIcon fontSize="small" sx={{ pointerEvents: 'none' }} />
                   </Button>
                   <Button
                     name="fontSize"
                     value="large"
                     size="small"
-                    aria-label={i18n("settings_font_large")}
-                    title={i18n("settings_font_large")}
-                    variant={currentSettings.fontSize === "large" ? "contained" : "text"}
+                    aria-label={i18n('settings_font_large')}
+                    title={i18n('settings_font_large')}
+                    variant={currentSettings.fontSize === 'large' ? 'contained' : 'text'}
                     disabled={isPending}
                   >
-                    <TextIncreaseIcon fontSize="small" sx={{ pointerEvents: "none" }} />
+                    <TextIncreaseIcon fontSize="small" sx={{ pointerEvents: 'none' }} />
                   </Button>
                 </ButtonGroup>
               </FormControl>
             </ListItem>
             {/* Open in tab — when on, clicking the toolbar icon opens the full-tab
                 view instead of the popup (enforced by the service worker). */}
-            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+            <ListItem className={styles['settings-panel__helper-on-hover']}>
               <ListItemText
-                primary={i18n("settings_open_in_tab")}
-                secondary={i18n("settings_open_in_tab_desc")}
+                primary={i18n('settings_open_in_tab')}
+                secondary={i18n('settings_open_in_tab_desc')}
               />
               <FormControlLabel
                 control={
@@ -749,10 +749,10 @@ export default function SettingsPanel() {
             </ListItem>
             {/* Auto hide empty columns — when on, columns with no data in the
                 current result set are hidden automatically (see ResultsTable). */}
-            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+            <ListItem className={styles['settings-panel__helper-on-hover']}>
               <ListItemText
-                primary={i18n("settings_auto_hide_empty_columns")}
-                secondary={i18n("settings_auto_hide_empty_columns_desc")}
+                primary={i18n('settings_auto_hide_empty_columns')}
+                secondary={i18n('settings_auto_hide_empty_columns_desc')}
               />
               <FormControlLabel
                 control={
@@ -771,16 +771,16 @@ export default function SettingsPanel() {
         </AccordionDetails>
       </Accordion>
       <Accordion
-        expanded={expanded === "excluded"}
-        onChange={handleAccordionChange("excluded")}
+        expanded={expanded === 'excluded'}
+        onChange={handleAccordionChange('excluded')}
         disableGutters
       >
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
-          className={styles["settings-panel__accordion-summary"]}
+          className={styles['settings-panel__accordion-summary']}
         >
           <Typography variant="body2" fontWeight={500}>
-            {i18n("settings_section_excluded")}
+            {i18n('settings_section_excluded')}
             {excludedCount > 0 && (
               <Typography
                 component="span"
@@ -793,14 +793,14 @@ export default function SettingsPanel() {
             )}
           </Typography>
         </AccordionSummary>
-        <AccordionDetails className={styles["settings-panel__accordion-details"]}>
+        <AccordionDetails className={styles['settings-panel__accordion-details']}>
           {excludedCount === 0 ? (
             <Typography
               variant="caption"
               color="text.secondary"
-              className={styles["settings-panel__excluded-empty"]}
+              className={styles['settings-panel__excluded-empty']}
             >
-              {i18n("settings_excluded_empty")}
+              {i18n('settings_excluded_empty')}
             </Typography>
           ) : (
             <>
@@ -809,19 +809,19 @@ export default function SettingsPanel() {
                   <ListItem
                     key={key}
                     divider
-                    className={styles["settings-panel__excluded-item"]}
+                    className={styles['settings-panel__excluded-item']}
                     secondaryAction={
-                      <Tooltip title={i18n("settings_remove")}>
+                      <Tooltip title={i18n('settings_remove')}>
                         <IconButton
                           edge="end"
                           size="small"
                           onClick={() => handleRemoveExcluded(key)}
-                          className={styles["settings-panel__excluded-delete-btn"]}
-                          aria-label={i18n("settings_remove_item", [
-                            entry.title || entry.url || "",
+                          className={styles['settings-panel__excluded-delete-btn']}
+                          aria-label={i18n('settings_remove_item', [
+                            entry.title || entry.url || '',
                           ])}
                         >
-                          <DeleteIcon className={styles["settings-panel__excluded-delete-icon"]} />
+                          <DeleteIcon className={styles['settings-panel__excluded-delete-icon']} />
                         </IconButton>
                       </Tooltip>
                     }
@@ -833,7 +833,7 @@ export default function SettingsPanel() {
                           target="_blank"
                           rel="noopener noreferrer"
                           variant="body2"
-                          className={styles["settings-panel__excluded-link"]}
+                          className={styles['settings-panel__excluded-link']}
                         >
                           {entry.title || entry.url}
                         </Link>
@@ -841,22 +841,22 @@ export default function SettingsPanel() {
                       secondary={`${entry.supplier} — ${formatTimestamp(entry.excludedAt)}`}
                       slotProps={{
                         secondary: {
-                          variant: "caption",
-                          className: styles["settings-panel__excluded-secondary-text"],
+                          variant: 'caption',
+                          className: styles['settings-panel__excluded-secondary-text'],
                         },
                       }}
                     />
                   </ListItem>
                 ))}
               </List>
-              <Box className={styles["settings-panel__excluded-actions"]}>
+              <Box className={styles['settings-panel__excluded-actions']}>
                 <Button
                   variant="outlined"
                   color="warning"
                   size="small"
                   onClick={handleClearAllExcluded}
                 >
-                  {i18n("settings_clear_all")}
+                  {i18n('settings_clear_all')}
                 </Button>
               </Box>
             </>
@@ -867,32 +867,32 @@ export default function SettingsPanel() {
           off adds it to the disabledSuppliers deny-list, excluding it from every
           search and hiding it from the search filter menu. */}
       <Accordion
-        expanded={expanded === "suppliers"}
-        onChange={handleAccordionChange("suppliers")}
+        expanded={expanded === 'suppliers'}
+        onChange={handleAccordionChange('suppliers')}
         disableGutters
       >
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
-          className={styles["settings-panel__accordion-summary"]}
+          className={styles['settings-panel__accordion-summary']}
         >
           <Typography variant="body2" fontWeight={500}>
-            {i18n("settings_section_supplier_status")}
+            {i18n('settings_section_supplier_status')}
           </Typography>
         </AccordionSummary>
-        <AccordionDetails className={styles["settings-panel__accordion-details"]}>
+        <AccordionDetails className={styles['settings-panel__accordion-details']}>
           <Typography
             variant="caption"
-            sx={{ px: 2, py: 1, display: "block", fontStyle: "italic", color: "text.secondary" }}
+            sx={{ px: 2, py: 1, display: 'block', fontStyle: 'italic', color: 'text.secondary' }}
           >
-            {i18n("settings_supplier_status_desc")}
+            {i18n('settings_supplier_status_desc')}
           </Typography>
-          <List dense sx={{ width: "100%" }}>
+          <List dense sx={{ width: '100%' }}>
             {SUPPLIER_CLASS_NAMES.map((supplierClassName) => (
               <ListItem
                 key={supplierClassName}
-                className={styles["settings-panel__helper-on-hover"]}
+                className={styles['settings-panel__helper-on-hover']}
               >
-                <ListItemText primary={supplierClassName.replace(/^Supplier/, "")} />
+                <ListItemText primary={supplierClassName.replace(/^Supplier/, '')} />
                 <FormControlLabel
                   control={
                     <Switch
@@ -913,19 +913,19 @@ export default function SettingsPanel() {
         </AccordionDetails>
       </Accordion>
       <Accordion
-        expanded={expanded === "advanced"}
-        onChange={handleAccordionChange("advanced")}
+        expanded={expanded === 'advanced'}
+        onChange={handleAccordionChange('advanced')}
         disableGutters
       >
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
-          className={styles["settings-panel__accordion-summary"]}
+          className={styles['settings-panel__accordion-summary']}
         >
           <Typography variant="body2" fontWeight={500}>
-            {i18n("settings_section_advanced")}
+            {i18n('settings_section_advanced')}
           </Typography>
         </AccordionSummary>
-        <AccordionDetails className={styles["settings-panel__accordion-details"]}>
+        <AccordionDetails className={styles['settings-panel__accordion-details']}>
           {/* Mirrors the search drawer's single-select filter-input style:
                 full-width labeled outlined TextField with italic helper text.
                 Using `TextField select` (rather than the horizontal
@@ -940,15 +940,15 @@ export default function SettingsPanel() {
                 fullWidth
                 size="small"
                 name="fuzzScorerOverride"
-                label={i18n("settings_fuzz_scorer")}
-                value={currentSettings.fuzzScorerOverride ?? ""}
+                label={i18n('settings_fuzz_scorer')}
+                value={currentSettings.fuzzScorerOverride ?? ''}
                 onChange={handleInputChange}
                 disabled={isPending}
-                helperText={i18n("settings_fuzz_scorer_helper")}
-                slotProps={{ formHelperText: { sx: { fontStyle: "italic" } } }}
+                helperText={i18n('settings_fuzz_scorer_helper')}
+                slotProps={{ formHelperText: { sx: { fontStyle: 'italic' } } }}
               >
                 <MenuItem value="">
-                  <em>{i18n("settings_fuzz_scorer_default")}</em>
+                  <em>{i18n('settings_fuzz_scorer_default')}</em>
                 </MenuItem>
                 {FUZZ_SCORER_NAMES.map((name) => (
                   <MenuItem key={name} value={name}>
@@ -964,23 +964,23 @@ export default function SettingsPanel() {
               size="small"
               type="number"
               name="maxAllowableSearchTimeSec"
-              label={i18n("settings_max_search_time")}
-              value={currentSettings.maxAllowableSearchTimeSec ?? ""}
+              label={i18n('settings_max_search_time')}
+              value={currentSettings.maxAllowableSearchTimeSec ?? ''}
               onChange={handleInputChange}
               disabled={isPending}
-              helperText={i18n("settings_max_search_time_helper")}
+              helperText={i18n('settings_max_search_time_helper')}
               slotProps={{
-                formHelperText: { sx: { fontStyle: "italic" } },
+                formHelperText: { sx: { fontStyle: 'italic' } },
                 htmlInput: { min: 0, step: 1 },
               }}
             />
           </Box>
           {advancedMode && (
-            <ListItem className={styles["settings-panel__helper-on-hover"]}>
+            <ListItem className={styles['settings-panel__helper-on-hover']}>
               <ListItemText
-                primary={i18n("settings_disable_fuzzy")}
-                secondary={i18n("settings_disable_fuzzy_desc")}
-                slotProps={{ secondary: { sx: { fontStyle: "italic" } } }}
+                primary={i18n('settings_disable_fuzzy')}
+                secondary={i18n('settings_disable_fuzzy_desc')}
+                slotProps={{ secondary: { sx: { fontStyle: 'italic' } } }}
               />
               <FormControlLabel
                 control={
@@ -999,19 +999,19 @@ export default function SettingsPanel() {
         </AccordionDetails>
       </Accordion>
       <Accordion
-        expanded={expanded === "actions"}
-        onChange={handleAccordionChange("actions")}
+        expanded={expanded === 'actions'}
+        onChange={handleAccordionChange('actions')}
         disableGutters
       >
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
-          className={styles["settings-panel__accordion-summary"]}
+          className={styles['settings-panel__accordion-summary']}
         >
           <Typography variant="body2" fontWeight={500}>
-            {i18n("settings_section_actions")}
+            {i18n('settings_section_actions')}
           </Typography>
         </AccordionSummary>
-        <AccordionDetails className={styles["settings-panel__accordion-details--actions"]}>
+        <AccordionDetails className={styles['settings-panel__accordion-details--actions']}>
           <Stack direction="row" spacing={2}>
             <Button
               variant="outlined"
@@ -1019,7 +1019,7 @@ export default function SettingsPanel() {
               onClick={handleRestoreDefaults}
               disabled={isPending}
             >
-              {i18n("settings_restore_defaults")}
+              {i18n('settings_restore_defaults')}
             </Button>
           </Stack>
         </AccordionDetails>

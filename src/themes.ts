@@ -1,5 +1,5 @@
-import { createTheme, type Theme } from "@mui/material/styles";
-import { createContext, useContext } from "react";
+import { createTheme, type Theme } from '@mui/material/styles';
+import { createContext, useContext } from 'react';
 
 // Design tokens
 export const designTokens = {
@@ -13,58 +13,58 @@ export const designTokens = {
     large: 16,
   },
   shadows: {
-    low: "0 1px 3px rgba(0, 0, 0, 0.12)",
-    medium: "0 4px 6px rgba(0, 0, 0, 0.1)",
-    high: "0 10px 20px rgba(0, 0, 0, 0.15)",
-    dark: "0 4px 20px rgba(0, 0, 0, 0.3)",
+    low: '0 1px 3px rgba(0, 0, 0, 0.12)',
+    medium: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    high: '0 10px 20px rgba(0, 0, 0, 0.15)',
+    dark: '0 4px 20px rgba(0, 0, 0, 0.3)',
   },
   transitions: {
-    fast: "150ms",
-    standard: "300ms",
-    slow: "500ms",
+    fast: '150ms',
+    standard: '300ms',
+    slow: '500ms',
   },
 };
 
 // Color palettes
 export const lightPalette = {
-  text: "#1a1a1a",
-  primaryInterface: "#ffffff",
-  paperBackground: "#f8f9fa",
-  notificationBg: "#2C4060",
-  lightGray: "#f0f0f0",
-  borderLight: "#e0e0e0",
-  drawerBackground: "#ffffff",
-  expandedBackground: "#f3f7fa",
-  activeBackground: "#f5f5f5",
-  borders: "#e0e0e0",
-  hoverBackground: "#f5f5f5",
+  text: '#1a1a1a',
+  primaryInterface: '#ffffff',
+  paperBackground: '#f8f9fa',
+  notificationBg: '#2C4060',
+  lightGray: '#f0f0f0',
+  borderLight: '#e0e0e0',
+  drawerBackground: '#ffffff',
+  expandedBackground: '#f3f7fa',
+  activeBackground: '#f5f5f5',
+  borders: '#e0e0e0',
+  hoverBackground: '#f5f5f5',
 } satisfies typeof darkPalette;
 
 export const darkPalette = {
-  text: "#e0e0e0",
-  primaryInterface: "#2d3748",
-  paperBackground: "#1a202c",
-  notificationBg: "#4299e1",
-  lightGray: "#4a5568",
-  borderLight: "#4a5568",
-  drawerBackground: "#272e3d",
-  expandedBackground: "#19222b",
-  activeBackground: "#2d3748",
-  borders: "#4a5568",
-  hoverBackground: "#374151",
+  text: '#e0e0e0',
+  primaryInterface: '#2d3748',
+  paperBackground: '#1a202c',
+  notificationBg: '#4299e1',
+  lightGray: '#4a5568',
+  borderLight: '#4a5568',
+  drawerBackground: '#272e3d',
+  expandedBackground: '#19222b',
+  activeBackground: '#2d3748',
+  borders: '#4a5568',
+  hoverBackground: '#374151',
 };
 
 // Global component overrides that both themes will use
 const globalComponentOverrides = {
   MuiSwitch: {
     defaultProps: {
-      size: "small" as const,
+      size: 'small' as const,
     },
   },
   MuiDrawer: {
     styleOverrides: {
       paper: {
-        width: "280px",
+        width: '280px',
         // Color will be set via theme-specific overrides below
       },
     },
@@ -72,15 +72,15 @@ const globalComponentOverrides = {
   MuiAccordion: {
     styleOverrides: {
       root: {
-        backgroundColor: "transparent",
-        boxShadow: "none",
-        border: "none",
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+        border: 'none',
         borderRadius: 0,
         margin: 0,
-        "&:before": {
-          display: "none",
+        '&:before': {
+          display: 'none',
         },
-        "&.Mui-expanded": {
+        '&.Mui-expanded': {
           margin: 0,
         },
       },
@@ -89,21 +89,21 @@ const globalComponentOverrides = {
   MuiAccordionSummary: {
     styleOverrides: {
       root: {
-        backgroundColor: "transparent",
-        height: "36px",
-        minHeight: "36px",
-        maxHeight: "36px",
-        padding: "0 16px",
-        fontSize: "0.875rem",
-        "& .MuiAccordionSummary-content": {
-          margin: "8px 0",
+        backgroundColor: 'transparent',
+        height: '36px',
+        minHeight: '36px',
+        maxHeight: '36px',
+        padding: '0 16px',
+        fontSize: '0.875rem',
+        '& .MuiAccordionSummary-content': {
+          margin: '8px 0',
         },
-        "& .MuiAccordionSummary-expandIconWrapper": {
-          fontSize: "1.2rem",
+        '& .MuiAccordionSummary-expandIconWrapper': {
+          fontSize: '1.2rem',
         },
-        "&.Mui-expanded": {
-          minHeight: "36px",
-          height: "36px",
+        '&.Mui-expanded': {
+          minHeight: '36px',
+          height: '36px',
         },
       },
     },
@@ -111,20 +111,20 @@ const globalComponentOverrides = {
   MuiAccordionDetails: {
     styleOverrides: {
       root: {
-        padding: "8px 16px 12px",
+        padding: '8px 16px 12px',
       },
     },
   },
   MuiTabs: {
     styleOverrides: {
       root: {
-        minHeight: "36px",
-        "& .MuiTab-root": {
-          minWidth: "60px",
-          padding: "6px 8px",
-          minHeight: "36px",
-          fontSize: "0.65rem",
-          textTransform: "uppercase",
+        minHeight: '36px',
+        '& .MuiTab-root': {
+          minWidth: '60px',
+          padding: '6px 8px',
+          minHeight: '36px',
+          fontSize: '0.65rem',
+          textTransform: 'uppercase',
         },
       },
     },
@@ -132,18 +132,18 @@ const globalComponentOverrides = {
   MuiTextField: {
     styleOverrides: {
       root: {
-        "& .MuiInputBase-input": {
-          padding: "6px 8px",
+        '& .MuiInputBase-input': {
+          padding: '6px 8px',
         },
-        "& .MuiInputLabel-root": {
-          fontSize: "0.8rem",
+        '& .MuiInputLabel-root': {
+          fontSize: '0.8rem',
         },
-        "& .MuiOutlinedInput-root": {
-          fontSize: "0.8rem",
+        '& .MuiOutlinedInput-root': {
+          fontSize: '0.8rem',
         },
         // Drawer-specific spacing
-        ".MuiDrawer-paper &": {
-          marginBottom: "10px",
+        '.MuiDrawer-paper &': {
+          marginBottom: '10px',
         },
       },
     },
@@ -151,25 +151,25 @@ const globalComponentOverrides = {
   MuiFormControlLabel: {
     styleOverrides: {
       root: {
-        fontSize: "0.875rem",
-        marginBottom: "8px",
+        fontSize: '0.875rem',
+        marginBottom: '8px',
       },
     },
   },
   MuiSlider: {
     styleOverrides: {
       root: {
-        marginBottom: "12px",
+        marginBottom: '12px',
       },
     },
   },
   MuiChip: {
     styleOverrides: {
       root: {
-        fontSize: "0.7rem",
-        height: "24px",
-        "& .MuiChip-label": {
-          padding: "0 6px",
+        fontSize: '0.7rem',
+        height: '24px',
+        '& .MuiChip-label': {
+          padding: '0 6px',
         },
       },
     },
@@ -177,9 +177,9 @@ const globalComponentOverrides = {
   MuiLink: {
     styleOverrides: {
       root: {
-        textDecoration: "none",
-        "&:hover": {
-          textDecoration: "underline",
+        textDecoration: 'none',
+        '&:hover': {
+          textDecoration: 'underline',
         },
       },
     },
@@ -189,10 +189,10 @@ const globalComponentOverrides = {
 // Light theme
 export const lightTheme: Theme = createTheme({
   palette: {
-    mode: "light",
+    mode: 'light',
     primary: {
       main: lightPalette.notificationBg,
-      contrastText: "#ffffff",
+      contrastText: '#ffffff',
     },
     background: {
       default: lightPalette.paperBackground,
@@ -232,7 +232,7 @@ export const lightTheme: Theme = createTheme({
           backgroundColor: lightPalette.expandedBackground,
           color: lightPalette.text,
           borderBottom: `1px solid ${lightPalette.borderLight}`,
-          "&:hover": {
+          '&:hover': {
             backgroundColor: lightPalette.hoverBackground,
           },
         },
@@ -244,7 +244,7 @@ export const lightTheme: Theme = createTheme({
           ...globalComponentOverrides.MuiAccordionSummary.styleOverrides.root,
           backgroundColor: lightPalette.expandedBackground,
           color: lightPalette.text,
-          "&:hover": {
+          '&:hover': {
             backgroundColor: lightPalette.hoverBackground,
           },
         },
@@ -273,7 +273,7 @@ export const lightTheme: Theme = createTheme({
     },
     MuiTableCell: {
       defaultProps: {
-        size: "small",
+        size: 'small',
       },
       styleOverrides: {
         root: {
@@ -284,14 +284,14 @@ export const lightTheme: Theme = createTheme({
     },
     MuiTable: {
       defaultProps: {
-        size: "small",
+        size: 'small',
       },
       styleOverrides: {
         root: {
-          "& tbody tr:hover": {
+          '& tbody tr:hover': {
             backgroundColor: lightPalette.hoverBackground,
-            cursor: "default",
-            transition: "background-color 0.15s ease-in-out",
+            cursor: 'default',
+            transition: 'background-color 0.15s ease-in-out',
           },
         },
       },
@@ -299,7 +299,7 @@ export const lightTheme: Theme = createTheme({
     MuiSpeedDial: {
       styleOverrides: {
         root: {
-          position: "fixed",
+          position: 'fixed',
           bottom: 6,
           right: 0,
         },
@@ -310,7 +310,7 @@ export const lightTheme: Theme = createTheme({
         root: {
           ...globalComponentOverrides.MuiLink.styleOverrides.root,
           color: lightPalette.text,
-          "&:hover": {
+          '&:hover': {
             color: lightPalette.text,
           },
         },
@@ -319,19 +319,19 @@ export const lightTheme: Theme = createTheme({
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
-          backgroundColor: "rgba(0, 0, 0, 0.8)",
-          color: "white",
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          color: 'white',
           fontSize: 12,
           padding: [4, 8],
           borderRadius: 4,
           maxWidth: 200,
-          textAlign: "center",
-          fontFamily: "Arial, sans-serif",
-          fontWeight: "bold",
-          textShadow: "0 0 1px rgba(0, 0, 0, 0.5)",
+          textAlign: 'center',
+          fontFamily: 'Arial, sans-serif',
+          fontWeight: 'bold',
+          textShadow: '0 0 1px rgba(0, 0, 0, 0.5)',
           opacity: 0.8,
-          transition: "opacity 0.3s ease-in-out",
-          "&:hover": {
+          transition: 'opacity 0.3s ease-in-out',
+          '&:hover': {
             opacity: 1,
           },
         },
@@ -343,7 +343,7 @@ export const lightTheme: Theme = createTheme({
 // Dark theme
 export const darkTheme: Theme = createTheme({
   palette: {
-    mode: "dark",
+    mode: 'dark',
     primary: {
       main: darkPalette.notificationBg,
       contrastText: darkPalette.text,
@@ -386,7 +386,7 @@ export const darkTheme: Theme = createTheme({
           backgroundColor: darkPalette.expandedBackground,
           color: darkPalette.text,
           borderBottom: `1px solid ${darkPalette.borderLight}`,
-          "&:hover": {
+          '&:hover': {
             backgroundColor: darkPalette.hoverBackground,
           },
         },
@@ -398,7 +398,7 @@ export const darkTheme: Theme = createTheme({
           ...globalComponentOverrides.MuiAccordionSummary.styleOverrides.root,
           backgroundColor: darkPalette.expandedBackground,
           color: darkPalette.text,
-          "&:hover": {
+          '&:hover': {
             backgroundColor: darkPalette.hoverBackground,
           },
         },
@@ -427,7 +427,7 @@ export const darkTheme: Theme = createTheme({
     },
     MuiTableCell: {
       defaultProps: {
-        size: "small",
+        size: 'small',
       },
       styleOverrides: {
         root: {
@@ -438,14 +438,14 @@ export const darkTheme: Theme = createTheme({
     },
     MuiTable: {
       defaultProps: {
-        size: "small",
+        size: 'small',
       },
       styleOverrides: {
         root: {
-          "& tbody tr:hover": {
+          '& tbody tr:hover': {
             backgroundColor: darkPalette.hoverBackground,
-            cursor: "default",
-            transition: "background-color 0.15s ease-in-out",
+            cursor: 'default',
+            transition: 'background-color 0.15s ease-in-out',
           },
         },
       },
@@ -455,7 +455,7 @@ export const darkTheme: Theme = createTheme({
         root: {
           ...globalComponentOverrides.MuiLink.styleOverrides.root,
           color: darkPalette.text,
-          "&:hover": {
+          '&:hover': {
             color: darkPalette.text,
           },
         },
@@ -464,19 +464,19 @@ export const darkTheme: Theme = createTheme({
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
-          backgroundColor: "rgba(0, 0, 0, 0.8)",
-          color: "white",
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          color: 'white',
           fontSize: 12,
           padding: [4, 8],
           borderRadius: 4,
           maxWidth: 200,
-          textAlign: "center",
-          fontFamily: "Arial, sans-serif",
-          fontWeight: "bold",
-          textShadow: "1px 1px 2px rgba(0, 0, 0, 0.5)",
+          textAlign: 'center',
+          fontFamily: 'Arial, sans-serif',
+          fontWeight: 'bold',
+          textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
           opacity: 0.8,
-          transition: "opacity 0.3s ease-in-out",
-          "&:hover": {
+          transition: 'opacity 0.3s ease-in-out',
+          '&:hover': {
             opacity: 1,
           },
         },
@@ -488,7 +488,7 @@ export const darkTheme: Theme = createTheme({
 // Theme context
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export type ThemeMode = "light" | "dark";
+export type ThemeMode = 'light' | 'dark';
 
 export interface ThemeContextType {
   mode: ThemeMode;
@@ -501,13 +501,13 @@ export interface ThemeContextType {
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider");
+    throw new Error('useTheme must be used within a ThemeProvider');
   }
   return context;
 };
 
 // Utility functions
-export const getBoxShadow = (elevation: "low" | "medium" | "high" | "dark" = "medium") => {
+export const getBoxShadow = (elevation: 'low' | 'medium' | 'high' | 'dark' = 'medium') => {
   const shadows = {
     low: designTokens.shadows.low,
     medium: designTokens.shadows.medium,
@@ -518,8 +518,8 @@ export const getBoxShadow = (elevation: "low" | "medium" | "high" | "dark" = "me
 };
 
 export const getTransition = (
-  property = "all",
-  duration: "fast" | "standard" | "slow" = "standard",
+  property = 'all',
+  duration: 'fast' | 'standard' | 'slow' = 'standard',
 ) => {
   const durations = {
     fast: designTokens.transitions.fast,
@@ -529,7 +529,7 @@ export const getTransition = (
   return `${property} ${durations[duration]} cubic-bezier(0.4, 0, 0.2, 1)`;
 };
 
-export const getBorderRadius = (size: "small" | "medium" | "large" = "medium") => {
+export const getBorderRadius = (size: 'small' | 'medium' | 'large' = 'medium') => {
   const radii = {
     small: designTokens.borderRadius.small,
     medium: designTokens.borderRadius.medium,
@@ -539,7 +539,7 @@ export const getBorderRadius = (size: "small" | "medium" | "large" = "medium") =
 };
 
 export const getDrawerWidth = () => {
-  const isDevelopment = process.env.NODE_ENV !== "production";
+  const isDevelopment = process.env.NODE_ENV !== 'production';
   return isDevelopment ? designTokens.spacing.drawerWidthDev : designTokens.spacing.drawerWidth;
 };
 

@@ -1,4 +1,4 @@
-import { vi } from "vitest";
+import { vi } from 'vitest';
 
 type StorageValue = unknown;
 
@@ -22,7 +22,7 @@ Object.assign(global, { chrome: { ...(global as typeof globalThis).chrome, ...mo
  * Creates a mock implementation for Chrome storage methods that actually stores and retrieves data.
  * This allows tests to verify that data is being stored and retrieved correctly.
  */
-const createStorageMock = (area: "session" | "local" | "sync") => {
+const createStorageMock = (area: 'session' | 'local' | 'sync') => {
   const get = vi
     .fn()
     .mockImplementation(
@@ -32,7 +32,7 @@ const createStorageMock = (area: "session" | "local" | "sync") => {
           return Object.fromEntries(storageMaps[area]);
         }
 
-        if (typeof keys === "string") {
+        if (typeof keys === 'string') {
           // Return single item
           return { [keys]: storageMaps[area].get(keys) };
         }
@@ -102,9 +102,9 @@ const createStorageMock = (area: "session" | "local" | "sync") => {
  * The mock actually stores data in memory, allowing tests to verify storage behavior.
  */
 export const createChromeStorageMock = () => {
-  const session = createStorageMock("session");
-  const local = createStorageMock("local");
-  const sync = createStorageMock("sync");
+  const session = createStorageMock('session');
+  const local = createStorageMock('local');
+  const sync = createStorageMock('sync');
 
   // Add missing properties to satisfy type checker
   return {
@@ -114,8 +114,8 @@ export const createChromeStorageMock = () => {
       sync,
       AccessLevel: {
         TRUSTED_AND_UNTRUSTED_CONTEXTS:
-          "TRUSTED_AND_UNTRUSTED_CONTEXTS" as "TRUSTED_AND_UNTRUSTED_CONTEXTS",
-        TRUSTED_CONTEXTS: "TRUSTED_CONTEXTS" as "TRUSTED_CONTEXTS",
+          'TRUSTED_AND_UNTRUSTED_CONTEXTS' as 'TRUSTED_AND_UNTRUSTED_CONTEXTS',
+        TRUSTED_CONTEXTS: 'TRUSTED_CONTEXTS' as 'TRUSTED_CONTEXTS',
       },
       managed: {},
       onChanged: {

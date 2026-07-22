@@ -1,8 +1,8 @@
-import { i18n } from "@/helpers/i18n";
-import type { JustUpdatedNotice } from "@/hooks/useJustUpdated";
-import { useState } from "react";
-import { PromptSnackbar } from "./PromptSnackbar";
-import { WhatsNewModal } from "./WhatsNewModal";
+import { i18n } from '@/helpers/i18n';
+import type { JustUpdatedNotice } from '@/hooks/useJustUpdated';
+import { useState } from 'react';
+import { PromptSnackbar } from './PromptSnackbar';
+import { WhatsNewModal } from './WhatsNewModal';
 
 /**
  * Props for {@link WhatsNewPrompt}.
@@ -46,11 +46,11 @@ export function WhatsNewPrompt({ notice, onAcknowledge }: WhatsNewPromptProps) {
         dismissTestId="whats-new-snackbar-dismiss"
         // Steps aside for the modal, exactly as the update prompt does.
         open={!notesOpen}
-        message={i18n("update_installed_message", [notice.version])}
-        actionLabel={i18n("update_whats_new")}
+        message={i18n('update_installed_message', [notice.version])}
+        actionLabel={i18n('update_whats_new')}
         onAction={() => setNotesOpen(true)}
         onDismiss={onAcknowledge}
-        dismissLabel={i18n("update_dismiss")}
+        dismissLabel={i18n('update_dismiss')}
       />
       <WhatsNewModal
         notice={notice}

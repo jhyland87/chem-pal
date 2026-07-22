@@ -4,189 +4,189 @@ import {
   isPresent,
   resolveProductImages,
   samePurchasableUnit,
-} from "@/helpers/product";
-import { describe, expect, it } from "vitest";
+} from '@/helpers/product';
+import { describe, expect, it } from 'vitest';
 
 /** Minimal base product with only the required fields populated. */
 const baseProduct = {
-  supplier: "Carolina Chemical",
-  title: "Sodium Chloride",
-  url: "https://example.com/nacl",
+  supplier: 'Carolina Chemical',
+  title: 'Sodium Chloride',
+  url: 'https://example.com/nacl',
   price: 10,
-  currencyCode: "USD",
-  currencySymbol: "$",
+  currencyCode: 'USD',
+  currencySymbol: '$',
   quantity: 500,
-  uom: "g",
+  uom: 'g',
 } as Product;
 
-describe("isPresent", () => {
+describe('isPresent', () => {
   it.each([
-    ["non-empty string", "NaCl", true],
-    ["number", 42, true],
-    ["zero", 0, true],
-    ["empty string", "", false],
-    ["whitespace string", "   ", false],
-    ["NaN", Number.NaN, false],
-    ["undefined", undefined, false],
-    ["null", null, false],
-  ])("returns %s => %s", (_label, value, expected) => {
+    ['non-empty string', 'NaCl', true],
+    ['number', 42, true],
+    ['zero', 0, true],
+    ['empty string', '', false],
+    ['whitespace string', '   ', false],
+    ['NaN', Number.NaN, false],
+    ['undefined', undefined, false],
+    ['null', null, false],
+  ])('returns %s => %s', (_label, value, expected) => {
     expect(isPresent(value)).toBe(expected);
   });
 });
 
-describe("resolveProductImages", () => {
-  it("uses the thumbnail for display and the full image on click", () => {
+describe('resolveProductImages', () => {
+  it('uses the thumbnail for display and the full image on click', () => {
     const images = resolveProductImages({
       ...baseProduct,
       images: [
-        { href: "full.jpg", type: "image", altText: "front" },
-        { href: "t.jpg", type: "thumbnail" },
+        { href: 'full.jpg', type: 'image', altText: 'front' },
+        { href: 't.jpg', type: 'thumbnail' },
       ],
     });
-    expect(images).toEqual([{ thumbSrc: "t.jpg", fullSrc: "full.jpg", altText: "front" }]);
+    expect(images).toEqual([{ thumbSrc: 't.jpg', fullSrc: 'full.jpg', altText: 'front' }]);
   });
 
-  it("falls back to the full image when there is no thumbnail", () => {
+  it('falls back to the full image when there is no thumbnail', () => {
     const images = resolveProductImages({
       ...baseProduct,
-      images: [{ href: "full.jpg", type: "image" }],
+      images: [{ href: 'full.jpg', type: 'image' }],
     });
-    expect(images).toEqual([{ thumbSrc: "full.jpg", fullSrc: "full.jpg", altText: undefined }]);
+    expect(images).toEqual([{ thumbSrc: 'full.jpg', fullSrc: 'full.jpg', altText: undefined }]);
   });
 
-  it("pairs each full image with its thumbnail by position", () => {
+  it('pairs each full image with its thumbnail by position', () => {
     const images = resolveProductImages({
       ...baseProduct,
       images: [
-        { href: "a.jpg", type: "image" },
-        { href: "a-t.jpg", type: "thumbnail" },
-        { href: "b.jpg", type: "image" },
-        { href: "b-t.jpg", type: "thumbnail" },
+        { href: 'a.jpg', type: 'image' },
+        { href: 'a-t.jpg', type: 'thumbnail' },
+        { href: 'b.jpg', type: 'image' },
+        { href: 'b-t.jpg', type: 'thumbnail' },
       ],
     });
     expect(images).toEqual([
-      { thumbSrc: "a-t.jpg", fullSrc: "a.jpg", altText: undefined },
-      { thumbSrc: "b-t.jpg", fullSrc: "b.jpg", altText: undefined },
+      { thumbSrc: 'a-t.jpg', fullSrc: 'a.jpg', altText: undefined },
+      { thumbSrc: 'b-t.jpg', fullSrc: 'b.jpg', altText: undefined },
     ]);
   });
 
-  it("reuses the default thumbnail for images that lack their own", () => {
+  it('reuses the default thumbnail for images that lack their own', () => {
     const images = resolveProductImages({
       ...baseProduct,
       images: [
-        { href: "a.jpg", type: "image" },
-        { href: "b.jpg", type: "image" },
-        { href: "t.jpg", type: "thumbnail" },
+        { href: 'a.jpg', type: 'image' },
+        { href: 'b.jpg', type: 'image' },
+        { href: 't.jpg', type: 'thumbnail' },
       ],
     });
-    expect(images.map((image) => image.thumbSrc)).toEqual(["t.jpg", "t.jpg"]);
+    expect(images.map((image) => image.thumbSrc)).toEqual(['t.jpg', 't.jpg']);
   });
 
-  it("cycles thumbnails alone when there are no full images", () => {
+  it('cycles thumbnails alone when there are no full images', () => {
     const images = resolveProductImages({
       ...baseProduct,
-      images: [{ href: "t.jpg", type: "thumbnail" }],
+      images: [{ href: 't.jpg', type: 'thumbnail' }],
     });
-    expect(images).toEqual([{ thumbSrc: "t.jpg", fullSrc: "t.jpg", altText: undefined }]);
+    expect(images).toEqual([{ thumbSrc: 't.jpg', fullSrc: 't.jpg', altText: undefined }]);
   });
 
-  it("derives a single CACTUS structure image from CAS when there is no photo", () => {
-    const images = resolveProductImages({ ...baseProduct, cas: "69-57-8" } as Product);
+  it('derives a single CACTUS structure image from CAS when there is no photo', () => {
+    const images = resolveProductImages({ ...baseProduct, cas: '69-57-8' } as Product);
     expect(images).toHaveLength(1);
-    expect(images[0].thumbSrc).toBe("https://cactus.nci.nih.gov/chemical/structure/69-57-8/image");
-    expect(images[0].fullSrc).toContain("/69-57-8/image?width=500&height=500");
+    expect(images[0].thumbSrc).toBe('https://cactus.nci.nih.gov/chemical/structure/69-57-8/image');
+    expect(images[0].fullSrc).toContain('/69-57-8/image?width=500&height=500');
   });
 
-  it("url-encodes the identifier for SMILES fallbacks", () => {
+  it('url-encodes the identifier for SMILES fallbacks', () => {
     // Double-cast through unknown: a raw SMILES string doesn't satisfy the branded Smiles<string>.
     const images = resolveProductImages({
       ...baseProduct,
-      smiles: "[K+].[O-]",
+      smiles: '[K+].[O-]',
     } as unknown as Product);
     expect(images[0].thumbSrc).toBe(
-      "https://cactus.nci.nih.gov/chemical/structure/%5BK%2B%5D.%5BO-%5D/image",
+      'https://cactus.nci.nih.gov/chemical/structure/%5BK%2B%5D.%5BO-%5D/image',
     );
   });
 
-  it("returns an empty array with no image and no chemical identifier", () => {
+  it('returns an empty array with no image and no chemical identifier', () => {
     expect(resolveProductImages(baseProduct)).toEqual([]);
   });
 });
 
-describe("hasExpandableDetail", () => {
-  it("is true when the product has an image", () => {
+describe('hasExpandableDetail', () => {
+  it('is true when the product has an image', () => {
     expect(
-      hasExpandableDetail({ ...baseProduct, images: [{ href: "t.jpg", type: "image" }] }),
+      hasExpandableDetail({ ...baseProduct, images: [{ href: 't.jpg', type: 'image' }] }),
     ).toBe(true);
   });
 
-  it("is true when the product has variants", () => {
-    expect(hasExpandableDetail({ ...baseProduct, variants: [{ title: "500g" }] })).toBe(true);
+  it('is true when the product has variants', () => {
+    expect(hasExpandableDetail({ ...baseProduct, variants: [{ title: '500g' }] })).toBe(true);
   });
 
-  it("is true when the product has a populated detail field", () => {
-    expect(hasExpandableDetail({ ...baseProduct, cas: "7647-14-5" } as Product)).toBe(true);
+  it('is true when the product has a populated detail field', () => {
+    expect(hasExpandableDetail({ ...baseProduct, cas: '7647-14-5' } as Product)).toBe(true);
   });
 
-  it("is true when the product has only a CAS (structure image derivable)", () => {
-    expect(hasExpandableDetail({ ...baseProduct, formula: "NaCl" })).toBe(true);
+  it('is true when the product has only a CAS (structure image derivable)', () => {
+    expect(hasExpandableDetail({ ...baseProduct, formula: 'NaCl' })).toBe(true);
   });
 
-  it("is false when there is nothing to show", () => {
+  it('is false when there is nothing to show', () => {
     expect(hasExpandableDetail(baseProduct)).toBe(false);
   });
 
-  it("is false for an empty-string detail field", () => {
+  it('is false for an empty-string detail field', () => {
     // Double-cast through unknown: "" doesn't satisfy the branded CAS<string> template type.
-    expect(hasExpandableDetail({ ...baseProduct, cas: "" } as unknown as Product)).toBe(false);
+    expect(hasExpandableDetail({ ...baseProduct, cas: '' } as unknown as Product)).toBe(false);
   });
 });
 
-describe("samePurchasableUnit", () => {
-  it("matches the same size, case-insensitive on uom", () => {
+describe('samePurchasableUnit', () => {
+  it('matches the same size, case-insensitive on uom', () => {
     expect(
       samePurchasableUnit(
-        { quantity: 1, uom: "mg" } as Variant,
+        { quantity: 1, uom: 'mg' } as Variant,
         {
           quantity: 1,
-          uom: "MG",
+          uom: 'MG',
         } as Variant,
       ),
     ).toBe(true);
   });
 
-  it("does not match a different quantity or uom", () => {
+  it('does not match a different quantity or uom', () => {
     expect(
       samePurchasableUnit(
-        { quantity: 1, uom: "mg" } as Variant,
+        { quantity: 1, uom: 'mg' } as Variant,
         {
           quantity: 5,
-          uom: "mg",
+          uom: 'mg',
         } as Variant,
       ),
     ).toBe(false);
     expect(
       samePurchasableUnit(
-        { quantity: 1, uom: "mg" } as Variant,
+        { quantity: 1, uom: 'mg' } as Variant,
         {
           quantity: 1,
-          uom: "g",
+          uom: 'g',
         } as Variant,
       ),
     ).toBe(false);
   });
 
-  it("detects a supplier-listed parent whose id/sku differ (Ambeed case)", () => {
+  it('detects a supplier-listed parent whose id/sku differ (Ambeed case)', () => {
     // Parent P001064386/sku BD01081502 vs variant 3272919/sku A1159477 — ids differ,
     // but both are the 1 mg unit, so the parent is a duplicate of the 1 mg variant.
-    const parent = { quantity: 1, uom: "mg", usdPrice: 29, id: "P001064386" } as Variant;
-    const oneMg = { quantity: 1, uom: "mg", usdPrice: 29, id: "3272919" } as Variant;
-    const fiveMg = { quantity: 5, uom: "mg", usdPrice: 74, id: "3272918" } as Variant;
+    const parent = { quantity: 1, uom: 'mg', usdPrice: 29, id: 'P001064386' } as Variant;
+    const oneMg = { quantity: 1, uom: 'mg', usdPrice: 29, id: '3272919' } as Variant;
+    const fiveMg = { quantity: 5, uom: 'mg', usdPrice: 74, id: '3272918' } as Variant;
     expect(samePurchasableUnit(parent, oneMg)).toBe(true);
     expect(samePurchasableUnit(parent, fiveMg)).toBe(false);
   });
 
-  it("falls back to rounded USD price when a size is missing", () => {
+  it('falls back to rounded USD price when a size is missing', () => {
     expect(samePurchasableUnit({ usdPrice: 29 } as Variant, { usdPrice: 29.004 } as Variant)).toBe(
       true,
     );
@@ -195,53 +195,53 @@ describe("samePurchasableUnit", () => {
     );
   });
 
-  it("is false when neither size nor price is available", () => {
-    expect(samePurchasableUnit({ title: "a" } as Variant, { title: "b" } as Variant)).toBe(false);
+  it('is false when neither size nor price is available', () => {
+    expect(samePurchasableUnit({ title: 'a' } as Variant, { title: 'b' } as Variant)).toBe(false);
   });
 });
 
-describe("getExportableProductData", () => {
+describe('getExportableProductData', () => {
   const images = [
-    { href: "https://cdn/shop/120x120x2/image.jpeg", type: "thumbnail" as const },
-    { href: "https://cdn/shop/image.jpeg", type: "image" as const },
+    { href: 'https://cdn/shop/120x120x2/image.jpeg', type: 'thumbnail' as const },
+    { href: 'https://cdn/shop/image.jpeg', type: 'image' as const },
   ];
 
-  it("splits the image list into images and thumbnails href arrays", () => {
+  it('splits the image list into images and thumbnails href arrays', () => {
     const result = getExportableProductData({ ...baseProduct, images });
-    expect(result.images).toEqual(["https://cdn/shop/image.jpeg"]);
-    expect(result.thumbnails).toEqual(["https://cdn/shop/120x120x2/image.jpeg"]);
+    expect(result.images).toEqual(['https://cdn/shop/image.jpeg']);
+    expect(result.thumbnails).toEqual(['https://cdn/shop/120x120x2/image.jpeg']);
   });
 
-  it("applies the same image split to each variant", () => {
+  it('applies the same image split to each variant', () => {
     const result = getExportableProductData({
       ...baseProduct,
-      variants: [{ title: "500 g", images }],
+      variants: [{ title: '500 g', images }],
     } as Product);
     const [variant] = result.variants as Array<Record<string, unknown>>;
-    expect(variant.images).toEqual(["https://cdn/shop/image.jpeg"]);
-    expect(variant.thumbnails).toEqual(["https://cdn/shop/120x120x2/image.jpeg"]);
+    expect(variant.images).toEqual(['https://cdn/shop/image.jpeg']);
+    expect(variant.thumbnails).toEqual(['https://cdn/shop/120x120x2/image.jpeg']);
   });
 
-  it("omits images/thumbnails keys when there are none of that kind", () => {
+  it('omits images/thumbnails keys when there are none of that kind', () => {
     const result = getExportableProductData({
       ...baseProduct,
-      images: [{ href: "https://cdn/shop/image.jpeg", type: "image" }],
+      images: [{ href: 'https://cdn/shop/image.jpeg', type: 'image' }],
     });
-    expect(result.images).toEqual(["https://cdn/shop/image.jpeg"]);
-    expect("thumbnails" in result).toBe(false);
+    expect(result.images).toEqual(['https://cdn/shop/image.jpeg']);
+    expect('thumbnails' in result).toBe(false);
   });
 
-  it("renders price with the currency symbol and drops internal noise keys", () => {
+  it('renders price with the currency symbol and drops internal noise keys', () => {
     const result = getExportableProductData({
       ...baseProduct,
-      cacheKey: "ck-1",
+      cacheKey: 'ck-1',
       _id: 3,
       baseQuantity: 500,
     } as Product);
-    expect(result.price).toBe("$10");
-    expect("currencySymbol" in result).toBe(false);
-    expect("cacheKey" in result).toBe(false);
-    expect("_id" in result).toBe(false);
-    expect("baseQuantity" in result).toBe(false);
+    expect(result.price).toBe('$10');
+    expect('currencySymbol' in result).toBe(false);
+    expect('cacheKey' in result).toBe(false);
+    expect('_id' in result).toBe(false);
+    expect('baseQuantity' in result).toBe(false);
   });
 });

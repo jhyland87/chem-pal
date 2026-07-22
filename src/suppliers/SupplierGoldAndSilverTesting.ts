@@ -1,4 +1,4 @@
-import { SupplierBaseShopify } from "./SupplierBaseShopify";
+import { SupplierBaseShopify } from './SupplierBaseShopify';
 
 /**
  * SupplierGoldAndSilverTesting class that extends SupplierBaseShopify.
@@ -12,24 +12,24 @@ import { SupplierBaseShopify } from "./SupplierBaseShopify";
  */
 export class SupplierGoldAndSilverTesting extends SupplierBaseShopify implements ISupplier {
   // Name of supplier (for display purposes)
-  public readonly supplierName: string = "Gold and Silver Testing";
+  public readonly supplierName: string = 'Gold and Silver Testing';
 
   // Base URL for HTTP(s) requests
-  public readonly baseURL: string = "https://www.goldandsilvertesting.com";
+  public readonly baseURL: string = 'https://www.goldandsilvertesting.com';
 
   // Shipping scope
-  public readonly shipping: ShippingRange = "domestic";
+  public readonly shipping: ShippingRange = 'domestic';
 
   // The country code of the supplier.
-  public readonly country: CountryCode = "US";
+  public readonly country: CountryCode = 'US';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa'];
 
   // Pure-search supplier: the initial search returns every field and
   // getProductData is a passthrough, so there's no per-product detail to cache.
   protected readonly skipProductDetailCache: boolean = true;
 
   // Shopify API URL for GraphQL queries
-  protected apiURL: string = "gold-testing-equipment.myshopify.com";
+  protected apiURL: string = 'gold-testing-equipment.myshopify.com';
 }

@@ -1,6 +1,6 @@
-import { CACHE } from "@/constants/common";
-import { FetchDecoratorResponse } from "@/helpers/fetch";
-import { cstorage } from "@/utils/storage";
+import { CACHE } from '@/constants/common';
+import { FetchDecoratorResponse } from '@/helpers/fetch';
+import { cstorage } from '@/utils/storage';
 
 /**
  * Represents a single node in the doubly-linked list used by {@link HttpLru}.

@@ -11,7 +11,7 @@ export interface ProductListByKeyword {
   metadata: ProductListByKeywordMetadata;
   dataLayerObjectList: string;
   pageTitle: string;
-  "@type": string;
+  '@type': string;
   contentId: string;
   enableLoadImageAsLink: string;
   previewMode: boolean;
@@ -36,24 +36,24 @@ export interface ProductListByKeywordAttributes {
 }
 
 export enum NeedLoginAccess {
-  N = "N",
+  N = 'N',
 }
 
 export interface ProductListByKeywordBreadCrumbSchemaJson {
-  "@context": string;
+  '@context': string;
   itemListElement: ItemListElement[];
-  "@type": string;
+  '@type': string;
 }
 
 export interface ItemListElement {
   item: Item;
-  "@type": string;
+  '@type': string;
   position: number;
 }
 
 export interface Item {
   name: string;
-  "@id": string;
+  '@id': string;
 }
 
 export interface ProductListByKeywordContents {
@@ -67,7 +67,7 @@ export interface FooterContent {
   templateType: Type;
   metadata: PunchoutTargeterResultClass;
   contents: FooterContentContents;
-  "@type": string;
+  '@type': string;
   containerContentId: string;
   contentId: string;
   attributes: FooterContentAttributes;
@@ -93,11 +93,11 @@ export interface PurpleAttributes {
 }
 
 export enum Type {
-  Plugin = "plugin",
+  Plugin = 'plugin',
 }
 
 export enum TypeEnum {
-  ContentRule = "ContentRule",
+  ContentRule = 'ContentRule',
 }
 
 export interface FluffyAttributes {
@@ -124,7 +124,7 @@ export interface HeaderContent {
   metadata: PunchoutTargeterResultClass;
   cartSize: number;
   userSegments: string[];
-  "@type": string;
+  '@type': string;
   isPunchout: boolean;
   cookieBannerStatus: boolean;
   contentId: string;
@@ -164,7 +164,7 @@ export interface StickyAttributes {
 }
 
 export enum RuleTemplate {
-  NewMenu = "NewMenu",
+  NewMenu = 'NewMenu',
 }
 
 export interface IndigoAttributes {
@@ -182,15 +182,15 @@ export interface IndigoAttributes {
 }
 
 export enum LinkType {
-  Facets = "facets",
-  Text = "text",
-  Tile = "tile",
+  Facets = 'facets',
+  Text = 'text',
+  Tile = 'tile',
 }
 
 export enum NavSubText {
-  ActivitiesCareMSDSAndMore = "Activities, Care, (M)SDS, and More",
-  Empty = "",
-  ShopByCategory = "Shop by Category",
+  ActivitiesCareMSDSAndMore = 'Activities, Care, (M)SDS, and More',
+  Empty = '',
+  ShopByCategory = 'Shop by Category',
 }
 
 export interface PurpleContents {
@@ -254,7 +254,7 @@ export interface MainContent {
   currentProductName: string;
   bvUrl: string;
   imageZoom: string;
-  "@type": string;
+  '@type': string;
   contentId: string;
   previewMode: boolean;
   breadCrumbDataLayer: BreadCrumbDataLayer;
@@ -299,9 +299,9 @@ export interface ResponseBreadCrumbSchemaJson {
 }
 
 export interface BreadCrumbDataLayer {
-  "dataLayer_obj.productSubCat1": string;
-  "dataLayer_obj.productSubCat2": string;
-  "dataLayer_obj.productSubCat3": string;
+  'dataLayer_obj.productSubCat1': string;
+  'dataLayer_obj.productSubCat2': string;
+  'dataLayer_obj.productSubCat3': string;
 }
 
 export interface DataLayer {
@@ -539,16 +539,16 @@ export interface ResourceItemsList {
 }
 
 export interface CategoryIconMap {
-  "10849": string;
-  "10857": string;
-  "11602": string;
-  "11603": string;
-  "11605": string;
-  "11707": string;
-  "20301": string;
-  "25801": string;
-  "32004": string;
-  "35201": string;
+  '10849': string;
+  '10857': string;
+  '11602': string;
+  '11603': string;
+  '11605': string;
+  '11707': string;
+  '20301': string;
+  '25801': string;
+  '32004': string;
+  '35201': string;
   chokingHazard: string;
   prop65: string;
 }
@@ -560,19 +560,19 @@ export interface FamilyVariyantProductDetailsSchemaJson {
 export interface SchemaJsonSchemaJson {
   offers: Offer[];
   image: string;
-  "@type": string;
+  '@type': string;
   name: string;
   description: string;
-  "@id": string;
+  '@id': string;
   sku: string;
-  "@context": string;
+  '@context': string;
   url: string;
 }
 
 export interface Offer {
   image: string;
   priceCurrency: string;
-  "@type": string;
+  '@type': string;
   price: number;
   name: string;
   description: string;
@@ -607,7 +607,7 @@ export interface ProductListByKeywordMetadata {
 export interface BaseContent {
   templateType: Type;
   metadata: PunchoutTargeterResultClass;
-  "@type": string;
+  '@type': string;
   containerContentId: string;
   contentId: string;
   executionStartTime: number;

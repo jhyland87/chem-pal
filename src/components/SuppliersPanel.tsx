@@ -1,14 +1,14 @@
-import { useAppContext } from "@/context";
-import { SupplierFactory } from "@/suppliers/SupplierFactory";
-import Avatar from "@mui/material/Avatar";
-import Checkbox from "@mui/material/Checkbox";
-import Divider from "@mui/material/Divider";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
-import { ChangeEvent } from "react";
+import { useAppContext } from '@/context';
+import { SupplierFactory } from '@/suppliers/SupplierFactory';
+import Avatar from '@mui/material/Avatar';
+import Checkbox from '@mui/material/Checkbox';
+import Divider from '@mui/material/Divider';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import { ChangeEvent } from 'react';
 
 /**
  * SuppliersPanel component that displays a list of available suppliers with toggle functionality.
@@ -56,7 +56,7 @@ export default function SuppliersPanel() {
   };
 
   const handleToggleAll = (e: ChangeEvent<HTMLInputElement>) => {
-    console.log("handleToggleAll", e.target.checked);
+    console.log('handleToggleAll', e.target.checked);
     let newChecked: SupplierClassName[] = [];
     if (e.target.checked === true) {
       newChecked = [...SupplierFactory.supplierList()];
@@ -69,7 +69,7 @@ export default function SuppliersPanel() {
   };
 
   return (
-    <List dense sx={{ width: "100%", bgcolor: "background.paper", color: "text.primary" }}>
+    <List dense sx={{ width: '100%', bgcolor: 'background.paper', color: 'text.primary' }}>
       <ListItem>
         <ListItemText primary="Suppliers" />
         <Checkbox
@@ -109,7 +109,7 @@ export default function SuppliersPanel() {
                   src={`/static/images/avatar/${supplierName}.png`}
                 />
               </ListItemAvatar>
-              <ListItemText id={labelId} primary={supplierName.replace(/^Supplier/, "")} />
+              <ListItemText id={labelId} primary={supplierName.replace(/^Supplier/, '')} />
             </ListItemButton>
           </ListItem>
         );

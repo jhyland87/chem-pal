@@ -5,13 +5,13 @@
  * @source
  */
 
-import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
+import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
 
 /** The product/variant price fields {@link formatDisplayPrice} needs to format a value. */
-type PriceFields = Pick<Variant, "price" | "usdPrice" | "currencyCode">;
+type PriceFields = Pick<Variant, 'price' | 'usdPrice' | 'currencyCode'>;
 
 /** The user settings {@link formatDisplayPrice} reads for currency conversion. */
-type PriceSettings = Pick<UserSettings, "currency" | "currencyRate">;
+type PriceSettings = Pick<UserSettings, 'currency' | 'currencyRate'>;
 
 /**
  * Formats an amount with its currency symbol (from {@link CURRENCY_SYMBOL_MAP}),
@@ -73,16 +73,16 @@ export function formatDisplayPrice(
   const { usdPrice, price: rawPrice, currencyCode } = product;
 
   // Nothing to format — avoid rendering "NaN" for variants missing price data.
-  if (usdPrice === undefined && rawPrice === undefined) return "";
+  if (usdPrice === undefined && rawPrice === undefined) return '';
 
-  const currency = userSettings?.currency ?? "USD";
+  const currency = userSettings?.currency ?? 'USD';
   const currencyRate = userSettings?.currencyRate ?? 1;
 
   // Non-USD product without a USD anchor: we can't convert into the user's
   // chosen currency, so render the native price as-is.
-  if (currencyCode !== "USD" && usdPrice === undefined) {
-    console.error("Non-USD product is missing USD price", { product });
-    const fallbackCurrency = currencyCode ?? "USD";
+  if (currencyCode !== 'USD' && usdPrice === undefined) {
+    console.error('Non-USD product is missing USD price', { product });
+    const fallbackCurrency = currencyCode ?? 'USD';
     return formatWithSymbol(fallbackCurrency, Number(rawPrice));
   }
 

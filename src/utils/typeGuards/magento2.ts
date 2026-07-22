@@ -1,5 +1,5 @@
-import { zodAddActualValueToIssues } from "@/helpers/utils";
-import { z } from "zod";
+import { zodAddActualValueToIssues } from '@/helpers/utils';
+import { z } from 'zod';
 
 const magento2MoneySchema = z.object({
   value: z.number(),
@@ -164,7 +164,7 @@ export function isValidMagento2SearchResponse(
 ): response is Magento2SearchResponse {
   const parsed = magento2SearchResponseSchema.safeParse(response);
   if (!parsed.success) {
-    console.warn("isValidMagento2SearchResponse: response is not a valid Magento2SearchResponse", {
+    console.warn('isValidMagento2SearchResponse: response is not a valid Magento2SearchResponse', {
       response,
       parsed,
       error: parsed.error,

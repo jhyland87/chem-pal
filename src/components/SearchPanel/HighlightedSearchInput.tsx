@@ -1,6 +1,6 @@
-import { highlightSearchQuery } from "@/utils/search-query/highlightSearchQuery";
-import { ChangeEvent, CSSProperties, KeyboardEvent, useEffect, useMemo, useRef } from "react";
-import styles from "./HighlightedSearchInput.module.scss";
+import { highlightSearchQuery } from '@/utils/search-query/highlightSearchQuery';
+import { ChangeEvent, CSSProperties, KeyboardEvent, useEffect, useMemo, useRef } from 'react';
+import styles from './HighlightedSearchInput.module.scss';
 
 /** Props for {@link HighlightedSearchInput}. */
 interface HighlightedSearchInputProps {
@@ -63,7 +63,7 @@ export default function HighlightedSearchInput({
   const onValidityChangeRef = useRef(onValidityChange);
   onValidityChangeRef.current = onValidityChange;
   useEffect(() => {
-    onValidityChangeRef.current?.(highlight.state === "error", highlight.message);
+    onValidityChangeRef.current?.(highlight.state === 'error', highlight.message);
   }, [highlight.state, highlight.message]);
 
   // Keep the backdrop scrolled in lockstep with the input's horizontal scroll.
@@ -75,7 +75,7 @@ export default function HighlightedSearchInput({
   useEffect(syncScroll, [value]);
 
   return (
-    <div className={`${styles.wrapper} ${className ?? ""}`} style={style}>
+    <div className={`${styles.wrapper} ${className ?? ''}`} style={style}>
       <div
         ref={backdropRef}
         className={styles.backdrop}

@@ -1,8 +1,8 @@
 //import type { ExchangeRateResponse, ParsedPrice } from "types";
-import { CURRENCY_CODE_MAP } from "@/constants/currency";
-import { findCountryByIso2 } from "@/helpers/country";
-import { LRUCache } from "lru-cache";
-import priceParser from "price-parser";
+import { CURRENCY_CODE_MAP } from '@/constants/currency';
+import { findCountryByIso2 } from '@/helpers/country';
+import { LRUCache } from 'lru-cache';
+import priceParser from 'price-parser';
 /**
  * @group Helpers
  * @groupDescription Currency conversion and price parsing utilities for handling different currencies and formats.
@@ -34,7 +34,7 @@ import priceParser from "price-parser";
 const lruCurrencyRate = new LRUCache({
   max: 5,
   fetchMethod: async (key: string) => {
-    const [from, to] = key.split(":");
+    const [from, to] = key.split(':');
     if (from === to) return 1;
     const response = await fetch(
       `https://hexarate.paikama.co/api/rates/latest/${from}?target=${to}`,
@@ -97,7 +97,7 @@ export function getCurrencySymbol(price: string): CurrencySymbol {
  * @source
  */
 export function parsePrice(price: string): ParsedPrice | void {
-  if (typeof price !== "string") return;
+  if (typeof price !== 'string') return;
   const parsed = priceParser.parseFirst(price);
 
   if (parsed)
@@ -111,14 +111,14 @@ export function parsePrice(price: string): ParsedPrice | void {
   if (!currencySymbol) return;
 
   const currencyCode = getCurrencyCodeFromSymbol(currencySymbol);
-  let bareAmount = price.replace(currencySymbol, "").trim();
+  let bareAmount = price.replace(currencySymbol, '').trim();
 
   // Handle foreign number formats where commas and decimals are swapped
   if (bareAmount.match(/^(\d+\.\d+,\d{1,2}|\d{1,3},\d{1,2}|\d{1,3},\d{1,2})$/))
-    bareAmount = bareAmount.replaceAll(".", "xx").replaceAll(",", ".").replaceAll("xx", ",");
+    bareAmount = bareAmount.replaceAll('.', 'xx').replaceAll(',', '.').replaceAll('xx', ',');
 
   // Remove all commas from the amount to make it castable to a number
-  bareAmount = bareAmount.replace(/,/g, "");
+  bareAmount = bareAmount.replace(/,/g, '');
 
   return {
     currencyCode,
@@ -209,7 +209,7 @@ export function getCurrencyCodeFromSymbol(symbol: CurrencySymbol): CurrencyCode 
  * @source
  */
 export function getCurrencyCodeFromLocation(location: CountryCode): CurrencyCode {
-  return findCountryByIso2(String(location))?.currency?.code ?? "USD";
+  return findCountryByIso2(String(location))?.currency?.code ?? 'USD';
 }
 
 /**
@@ -241,7 +241,7 @@ export function getCurrencyCodeFromLocation(location: CountryCode): CurrencyCode
  * @source
  */
 export async function toUSD(amount: number, fromCurrencyCode: CurrencyCode): Promise<number> {
-  const rate = await getCurrencyRate(fromCurrencyCode, "USD");
+  const rate = await getCurrencyRate(fromCurrencyCode, 'USD');
   return Number(Number(amount * rate).toFixed(2));
 }
 
@@ -272,6 +272,6 @@ export async function USDto(amount: number, toCurrencyCode: CurrencyCode): Promi
     (c: { code: string }) => c.code === toCurrencyCode.toLowerCase(),
   );
   if (!currencyData) return 0;
-  const rate = await getCurrencyRate("USD", toCurrencyCode);
+  const rate = await getCurrencyRate('USD', toCurrencyCode);
   return Number(Number(amount * rate).toFixed(currencyData.exponent));
 }

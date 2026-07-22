@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 const searchItemImagesSchema = z.array(
   z.object({
@@ -162,7 +162,7 @@ export function isProductVariant(product: unknown): product is WooCommerceProduc
     return false;
   }
 
-  return !("variation" in product === false || typeof product.variation !== "string");
+  return !('variation' in product === false || typeof product.variation !== 'string');
 }
 
 const validProductVariantSchema = z.object({

@@ -14,18 +14,18 @@
  * @source
  */
 
-import { CACHE, MESSAGE_TYPE } from "@/constants/common";
+import { CACHE, MESSAGE_TYPE } from '@/constants/common';
 
 /** Context-menu item id for the "Search selection in Chem Pal" entry. */
-const CONTEXT_MENU_ID = "chempal-search-selection";
+const CONTEXT_MENU_ID = 'chempal-search-selection';
 /** Full-tab view URL; `?view=tab` is recognized by the app (see utils/displayContext.ts). */
-const TAB_VIEW_PATH = "index.html?view=tab";
+const TAB_VIEW_PATH = 'index.html?view=tab';
 
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   if (reason === chrome.runtime.OnInstalledReason.INSTALL) {
-    console.info("Chem Pal installed");
+    console.info('Chem Pal installed');
   } else if (reason === chrome.runtime.OnInstalledReason.UPDATE) {
-    console.info("Chem Pal updated");
+    console.info('Chem Pal updated');
     // The staged update just landed; drop the record so the UI doesn't keep
     // prompting for a version that is now running.
     void chrome.storage.local.remove(CACHE.UPDATE_PENDING);
@@ -76,8 +76,8 @@ function createContextMenu(): void {
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({
       id: CONTEXT_MENU_ID,
-      title: chrome.i18n.getMessage("context_menu_search_selection"),
-      contexts: ["selection"],
+      title: chrome.i18n.getMessage('context_menu_search_selection'),
+      contexts: ['selection'],
     });
   });
 }
@@ -88,7 +88,7 @@ chrome.runtime.onStartup.addListener(createContextMenu);
 chrome.contextMenus.onClicked.addListener(async (info) => {
   if (info.menuItemId !== CONTEXT_MENU_ID) return;
 
-  const query = (info.selectionText ?? "").trim();
+  const query = (info.selectionText ?? '').trim();
   if (!query) return;
 
   // Seed the pending-search inbox the app already consumes. Raw (uncompressed)
@@ -123,10 +123,10 @@ async function readOpenInTab(): Promise<boolean> {
   try {
     const stored: Record<string, unknown> = await chrome.storage.local.get(CACHE.USER_SETTINGS);
     const settings = stored[CACHE.USER_SETTINGS];
-    if (typeof settings !== "object" || settings === null) return false;
-    return "openInTab" in settings && Boolean(settings.openInTab);
+    if (typeof settings !== 'object' || settings === null) return false;
+    return 'openInTab' in settings && Boolean(settings.openInTab);
   } catch (error) {
-    console.warn("Failed to read openInTab setting:", error);
+    console.warn('Failed to read openInTab setting:', error);
     return false;
   }
 }
@@ -139,7 +139,7 @@ async function readOpenInTab(): Promise<boolean> {
  */
 async function applyActionBehavior(): Promise<void> {
   const openInTab = await readOpenInTab();
-  await chrome.action.setPopup({ popup: openInTab ? "" : "index.html" });
+  await chrome.action.setPopup({ popup: openInTab ? '' : 'index.html' });
 }
 
 // The setPopup state resets to the manifest default on browser restart, so
@@ -149,7 +149,7 @@ chrome.runtime.onStartup.addListener(applyActionBehavior);
 
 // Re-apply whenever the user toggles the setting in the settings panel.
 chrome.storage.onChanged.addListener((changes, areaName) => {
-  if (areaName === "local" && changes[CACHE.USER_SETTINGS]) {
+  if (areaName === 'local' && changes[CACHE.USER_SETTINGS]) {
     void applyActionBehavior();
   }
 });
@@ -174,10 +174,10 @@ interface BackgroundFetchRequest {
  */
 function isBackgroundFetchRequest(message: unknown): message is BackgroundFetchRequest {
   return (
-    typeof message === "object" &&
+    typeof message === 'object' &&
     message !== null &&
-    Reflect.get(message, "type") === MESSAGE_TYPE.BACKGROUND_FETCH &&
-    typeof Reflect.get(message, "url") === "string"
+    Reflect.get(message, 'type') === MESSAGE_TYPE.BACKGROUND_FETCH &&
+    typeof Reflect.get(message, 'url') === 'string'
   );
 }
 

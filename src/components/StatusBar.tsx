@@ -1,6 +1,6 @@
-import { StatusBarContainer } from "@/components/StyledComponents";
-import { createContext, ReactNode, useCallback, useContext, useRef, useState } from "react";
-import styles from "./StatusBar.module.scss";
+import { StatusBarContainer } from '@/components/StyledComponents';
+import { createContext, ReactNode, useCallback, useContext, useRef, useState } from 'react';
+import styles from './StatusBar.module.scss';
 
 /**
  * Shape of the status-bar context: the current status text plus setters for
@@ -97,5 +97,5 @@ export default function StatusBar() {
 
   if (!statusText) return null;
 
-  return <StatusBarContainer className={styles["status-bar"]}>{statusText}</StatusBarContainer>;
+  return <StatusBarContainer className={styles['status-bar']}>{statusText}</StatusBarContainer>;
 }

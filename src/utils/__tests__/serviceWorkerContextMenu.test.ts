@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
  * Unit tests for the "Search selection in Chem Pal" context menu in the
@@ -12,8 +12,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
  * opens a new one) is exactly what we want to pin down here.
  */
 
-const MENU_ID = "chempal-search-selection";
-const EXT_ORIGIN = "chrome-extension://abcextensionid/";
+const MENU_ID = 'chempal-search-selection';
+const EXT_ORIGIN = 'chrome-extension://abcextensionid/';
 const TAB_VIEW_URL = `${EXT_ORIGIN}index.html?view=tab`;
 
 /** Minimal shape of the `info` object the worker reads from an onClicked event. */
@@ -50,7 +50,7 @@ function makeChromeMock() {
 
   const chromeMock = {
     runtime: {
-      OnInstalledReason: { INSTALL: "install", UPDATE: "update" },
+      OnInstalledReason: { INSTALL: 'install', UPDATE: 'update' },
       getURL: (path: string) => EXT_ORIGIN + path,
       onInstalled: { addListener: (fn: OnInstalled) => onInstalled.push(fn) },
       onStartup: { addListener: (fn: () => void) => onStartup.push(fn) },
@@ -104,16 +104,16 @@ function makeChromeMock() {
  * @source
  */
 async function loadServiceWorker(): Promise<void> {
-  await import("../../service-worker");
+  await import('../../service-worker');
 }
 
-describe("service worker context-menu search", () => {
+describe('service worker context-menu search', () => {
   let mock: ReturnType<typeof makeChromeMock>;
 
   beforeEach(async () => {
     vi.resetModules();
     mock = makeChromeMock();
-    vi.stubGlobal("chrome", mock.chromeMock);
+    vi.stubGlobal('chrome', mock.chromeMock);
     await loadServiceWorker();
   });
 
@@ -121,78 +121,78 @@ describe("service worker context-menu search", () => {
     vi.unstubAllGlobals();
   });
 
-  it("registers a single selection context-menu item on install", () => {
-    for (const listener of mock.onInstalled) listener({ reason: "install" });
+  it('registers a single selection context-menu item on install', () => {
+    for (const listener of mock.onInstalled) listener({ reason: 'install' });
 
     expect(mock.removeAll).toHaveBeenCalled();
     expect(mock.create).toHaveBeenCalledWith(
-      expect.objectContaining({ id: MENU_ID, contexts: ["selection"] }),
+      expect.objectContaining({ id: MENU_ID, contexts: ['selection'] }),
     );
   });
 
-  it("re-creates the menu on browser startup", () => {
+  it('re-creates the menu on browser startup', () => {
     for (const listener of mock.onStartup) listener();
 
     expect(mock.create).toHaveBeenCalledWith(expect.objectContaining({ id: MENU_ID }));
   });
 
-  it("writes the pending search and opens a new tab when none is open", async () => {
+  it('writes the pending search and opens a new tab when none is open', async () => {
     const [onClicked] = mock.onClicked;
-    await onClicked({ menuItemId: MENU_ID, selectionText: "  acetone  " });
+    await onClicked({ menuItemId: MENU_ID, selectionText: '  acetone  ' });
 
     // Selection is trimmed and seeded as a pending search (keys mirror CACHE).
-    expect(mock.sessionSet).toHaveBeenCalledWith({ query: "acetone", is_new_search: true });
+    expect(mock.sessionSet).toHaveBeenCalledWith({ query: 'acetone', is_new_search: true });
     expect(mock.tabsCreate).toHaveBeenCalledWith({ url: TAB_VIEW_URL, active: true });
     expect(mock.tabsUpdate).not.toHaveBeenCalled();
   });
 
-  it("focuses the existing full-tab view instead of opening a duplicate", async () => {
+  it('focuses the existing full-tab view instead of opening a duplicate', async () => {
     mock.tabsQuery.mockResolvedValueOnce([{ id: 5, windowId: 9, url: TAB_VIEW_URL }]);
 
     const [onClicked] = mock.onClicked;
-    await onClicked({ menuItemId: MENU_ID, selectionText: "NaCl" });
+    await onClicked({ menuItemId: MENU_ID, selectionText: 'NaCl' });
 
-    expect(mock.sessionSet).toHaveBeenCalledWith({ query: "NaCl", is_new_search: true });
+    expect(mock.sessionSet).toHaveBeenCalledWith({ query: 'NaCl', is_new_search: true });
     expect(mock.tabsUpdate).toHaveBeenCalledWith(5, { active: true });
     expect(mock.windowsUpdate).toHaveBeenCalledWith(9, { focused: true });
     expect(mock.tabsCreate).not.toHaveBeenCalled();
   });
 
-  it("matches an existing tab by its pending (still-loading) URL", async () => {
+  it('matches an existing tab by its pending (still-loading) URL', async () => {
     mock.tabsQuery.mockResolvedValueOnce([{ id: 7, windowId: 3, pendingUrl: TAB_VIEW_URL }]);
 
     const [onClicked] = mock.onClicked;
-    await onClicked({ menuItemId: MENU_ID, selectionText: "water" });
+    await onClicked({ menuItemId: MENU_ID, selectionText: 'water' });
 
     expect(mock.tabsUpdate).toHaveBeenCalledWith(7, { active: true });
     expect(mock.tabsCreate).not.toHaveBeenCalled();
   });
 
-  it("ignores clicks on unrelated menu items", async () => {
+  it('ignores clicks on unrelated menu items', async () => {
     const [onClicked] = mock.onClicked;
-    await onClicked({ menuItemId: "some-other-item", selectionText: "acetone" });
+    await onClicked({ menuItemId: 'some-other-item', selectionText: 'acetone' });
 
     expect(mock.sessionSet).not.toHaveBeenCalled();
     expect(mock.tabsCreate).not.toHaveBeenCalled();
     expect(mock.tabsUpdate).not.toHaveBeenCalled();
   });
 
-  it("ignores blank selections", async () => {
+  it('ignores blank selections', async () => {
     const [onClicked] = mock.onClicked;
-    await onClicked({ menuItemId: MENU_ID, selectionText: "   " });
+    await onClicked({ menuItemId: MENU_ID, selectionText: '   ' });
 
     expect(mock.sessionSet).not.toHaveBeenCalled();
     expect(mock.tabsCreate).not.toHaveBeenCalled();
   });
 });
 
-describe("service worker toolbar-icon behavior", () => {
+describe('service worker toolbar-icon behavior', () => {
   let mock: ReturnType<typeof makeChromeMock>;
 
   beforeEach(async () => {
     vi.resetModules();
     mock = makeChromeMock();
-    vi.stubGlobal("chrome", mock.chromeMock);
+    vi.stubGlobal('chrome', mock.chromeMock);
     await loadServiceWorker();
   });
 
@@ -200,51 +200,51 @@ describe("service worker toolbar-icon behavior", () => {
     vi.unstubAllGlobals();
   });
 
-  it("clears the action popup on install when openInTab is enabled", async () => {
+  it('clears the action popup on install when openInTab is enabled', async () => {
     mock.localGet.mockResolvedValueOnce({ user_settings: { openInTab: true } });
 
-    for (const listener of mock.onInstalled) await listener({ reason: "install" });
+    for (const listener of mock.onInstalled) await listener({ reason: 'install' });
 
-    expect(mock.setPopup).toHaveBeenCalledWith({ popup: "" });
+    expect(mock.setPopup).toHaveBeenCalledWith({ popup: '' });
   });
 
-  it("keeps the default popup when openInTab is off or absent", async () => {
-    mock.localGet.mockResolvedValueOnce({ user_settings: { fontSize: "medium" } });
+  it('keeps the default popup when openInTab is off or absent', async () => {
+    mock.localGet.mockResolvedValueOnce({ user_settings: { fontSize: 'medium' } });
 
     for (const listener of mock.onStartup) await listener();
 
-    expect(mock.setPopup).toHaveBeenCalledWith({ popup: "index.html" });
+    expect(mock.setPopup).toHaveBeenCalledWith({ popup: 'index.html' });
   });
 
-  it("falls back to the popup when settings are an unreadable LZ envelope", async () => {
-    mock.localGet.mockResolvedValueOnce({ user_settings: { __lz: 1, d: "compressed" } });
+  it('falls back to the popup when settings are an unreadable LZ envelope', async () => {
+    mock.localGet.mockResolvedValueOnce({ user_settings: { __lz: 1, d: 'compressed' } });
 
-    for (const listener of mock.onInstalled) await listener({ reason: "install" });
+    for (const listener of mock.onInstalled) await listener({ reason: 'install' });
 
-    expect(mock.setPopup).toHaveBeenCalledWith({ popup: "index.html" });
+    expect(mock.setPopup).toHaveBeenCalledWith({ popup: 'index.html' });
   });
 
-  it("re-applies the popup state when user settings change", async () => {
+  it('re-applies the popup state when user settings change', async () => {
     mock.localGet.mockResolvedValueOnce({ user_settings: { openInTab: true } });
 
     const [onChanged] = mock.storageChanged;
-    onChanged({ user_settings: { newValue: { openInTab: true } } }, "local");
+    onChanged({ user_settings: { newValue: { openInTab: true } } }, 'local');
     // Let the async applyActionBehavior settle.
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(mock.setPopup).toHaveBeenCalledWith({ popup: "" });
+    expect(mock.setPopup).toHaveBeenCalledWith({ popup: '' });
   });
 
-  it("ignores storage changes to other keys or areas", () => {
+  it('ignores storage changes to other keys or areas', () => {
     const [onChanged] = mock.storageChanged;
-    onChanged({ some_other_key: { newValue: 1 } }, "local");
-    onChanged({ user_settings: { newValue: {} } }, "session");
+    onChanged({ some_other_key: { newValue: 1 } }, 'local');
+    onChanged({ user_settings: { newValue: {} } }, 'session');
 
     expect(mock.setPopup).not.toHaveBeenCalled();
   });
 
-  it("opens or focuses the full tab when the toolbar icon is clicked", async () => {
+  it('opens or focuses the full tab when the toolbar icon is clicked', async () => {
     const [actionClicked] = mock.actionClicked;
     await actionClicked();
 

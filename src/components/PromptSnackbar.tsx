@@ -1,9 +1,9 @@
-import CloseIcon from "@mui/icons-material/Close";
-import Alert from "@mui/material/Alert";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import Snackbar from "@mui/material/Snackbar";
-import styles from "./PromptSnackbar.module.scss";
+import CloseIcon from '@mui/icons-material/Close';
+import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Snackbar from '@mui/material/Snackbar';
+import styles from './PromptSnackbar.module.scss';
 
 /**
  * Props for {@link PromptSnackbar}.
@@ -69,8 +69,8 @@ export function PromptSnackbar({
     <Snackbar
       data-testid={testId}
       open={open}
-      anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      className={styles["prompt-snackbar"]}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      className={styles['prompt-snackbar']}
     >
       <Alert
         severity="info"

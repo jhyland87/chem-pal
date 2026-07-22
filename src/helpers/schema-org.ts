@@ -42,10 +42,10 @@ export type SchemaNode = JsonObject;
 const SCHEMA_CONTEXT_RE = /^https?:\/\/schema\.org\/?$/i;
 
 /** Keys stripped from the body when producing the type-keyed nested view. */
-const STRUCTURAL_KEYS = new Set(["@context", "@type"]);
+const STRUCTURAL_KEYS = new Set(['@context', '@type']);
 
 function isPlainObject(value: unknown): value is JsonObject {
-  return !!value && typeof value === "object" && !Array.isArray(value);
+  return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
 /**
@@ -85,12 +85,12 @@ export function stripSchemaEnumPrefix(value: string): string {
  * is preserved verbatim so schema.org context detection still works downstream.
  */
 function normalizeValue(value: JsonValue): JsonValue {
-  if (typeof value === "string") return stripSchemaEnumPrefix(value);
+  if (typeof value === 'string') return stripSchemaEnumPrefix(value);
   if (Array.isArray(value)) return value.map(normalizeValue);
   if (isPlainObject(value)) {
     const out: JsonObject = {};
     for (const key of Object.keys(value)) {
-      out[key] = key === "@context" ? value[key] : normalizeValue(value[key]);
+      out[key] = key === '@context' ? value[key] : normalizeValue(value[key]);
     }
     return out;
   }
@@ -141,7 +141,7 @@ export function toArray<T = JsonValue>(value: T | T[] | undefined): T[] {
  * @source
  */
 export function typeList(node: JsonObject): string[] {
-  return toArray(node["@type"]).filter((t): t is string => typeof t === "string");
+  return toArray(node['@type']).filter((t): t is string => typeof t === 'string');
 }
 
 /**
@@ -164,11 +164,11 @@ export function typeList(node: JsonObject): string[] {
  * @source
  */
 export function isSchemaContext(ctx: JsonValue | undefined): boolean {
-  if (typeof ctx === "string") return SCHEMA_CONTEXT_RE.test(ctx);
+  if (typeof ctx === 'string') return SCHEMA_CONTEXT_RE.test(ctx);
   if (Array.isArray(ctx)) return ctx.some(isSchemaContext);
   if (isPlainObject(ctx)) {
     // e.g. { "@vocab": "https://schema.org/" } or a prefix map.
-    return Object.values(ctx).some((v) => typeof v === "string" && SCHEMA_CONTEXT_RE.test(v));
+    return Object.values(ctx).some((v) => typeof v === 'string' && SCHEMA_CONTEXT_RE.test(v));
   }
   return false;
 }
@@ -179,10 +179,10 @@ function parseScripts(root: ParentNode): unknown[] {
   const parsed: unknown[] = [];
   for (const el of scripts) {
     // textContent (not innerText) works outside a rendered DOM, e.g. jsdom.
-    const raw = (el.textContent ?? "")
+    const raw = (el.textContent ?? '')
       .trim()
-      .replace(/^<!\[CDATA\[/, "")
-      .replace(/\]\]>$/, "");
+      .replace(/^<!\[CDATA\[/, '')
+      .replace(/\]\]>$/, '');
     if (!raw) continue;
     try {
       parsed.push(JSON.parse(raw));
@@ -198,13 +198,13 @@ function collectNodes(parsed: unknown): SchemaNode[] {
   if (Array.isArray(parsed)) return parsed.flatMap(collectNodes);
   if (!isPlainObject(parsed)) return [];
 
-  const ctx = parsed["@context"];
-  if (Array.isArray(parsed["@graph"])) {
+  const ctx = parsed['@context'];
+  if (Array.isArray(parsed['@graph'])) {
     // Context lives on the wrapper; inherit it into graph members that lack one.
-    return parsed["@graph"]
+    return parsed['@graph']
       .filter(isPlainObject)
       .map((node) =>
-        node["@context"] === undefined && ctx !== undefined ? { "@context": ctx, ...node } : node,
+        node['@context'] === undefined && ctx !== undefined ? { '@context': ctx, ...node } : node,
       );
   }
   return [parsed];
@@ -226,7 +226,7 @@ function nestObject(node: JsonObject): JsonValue {
   const body = nestBody(node);
   if (types.length === 1) return { [types[0]]: body };
   // Preserve multi-type nodes rather than picking one arbitrarily.
-  if (types.length > 1) return { "@type": types, ...body };
+  if (types.length > 1) return { '@type': types, ...body };
   return body; // untyped object: just recurse its values
 }
 
@@ -332,7 +332,7 @@ export class SchemaOrgData {
   static fromDocument(root: ParentNode = document): SchemaOrgData {
     const nodes = parseScripts(root)
       .flatMap(collectNodes)
-      .filter((node) => isSchemaContext(node["@context"]));
+      .filter((node) => isSchemaContext(node['@context']));
     return new SchemaOrgData(nodes);
   }
 
@@ -357,7 +357,7 @@ export class SchemaOrgData {
   static fromNodes(input: JsonObject | JsonObject[]): SchemaOrgData {
     const nodes = toArray(input)
       .flatMap(collectNodes)
-      .filter((node) => isSchemaContext(node["@context"]));
+      .filter((node) => isSchemaContext(node['@context']));
     return new SchemaOrgData(nodes);
   }
 
@@ -395,7 +395,7 @@ export class SchemaOrgData {
       if (!isPlainObject(value)) {
         return;
       }
-      if (isSchemaContext(value["@context"])) {
+      if (isSchemaContext(value['@context'])) {
         found.push(value); // take the node whole; don't descend into it
         return;
       }
@@ -508,7 +508,7 @@ export class SchemaOrgData {
       if (!isPlainObject(value)) {
         return;
       }
-      if ("@type" in value && (type === undefined || typeList(value).includes(type))) {
+      if ('@type' in value && (type === undefined || typeList(value).includes(type))) {
         found.push(value);
       }
       for (const key of Object.keys(value)) visit(value[key]);

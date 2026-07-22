@@ -1,14 +1,14 @@
-import { CURRENCY_SYMBOL_MAP } from "@/constants/currency";
-import { FUZZ_SCORERS, type FuzzScorerFn } from "@/constants/fuzzScorers";
-import { findCAS } from "@/helpers/cas";
-import { parseQuantity } from "@/helpers/quantity";
-import { createDOM } from "@/helpers/request";
-import { SchemaOrgData } from "@/helpers/schema-org";
-import { findFormulaInHtml, formatFormula, parseLocalizedNumber } from "@/helpers/science";
-import { firstMap, htmlToAscii, mapDefined, tryParseJson } from "@/helpers/utils";
-import { ProductBuilder } from "@/utils/ProductBuilder";
-import { isLeroChemDataProduct, isLeroChemVariantRefresh } from "@/utils/typeGuards/lerochem";
-import { SupplierBase } from "./SupplierBase";
+import { CURRENCY_SYMBOL_MAP } from '@/constants/currency';
+import { FUZZ_SCORERS, type FuzzScorerFn } from '@/constants/fuzzScorers';
+import { findCAS } from '@/helpers/cas';
+import { parseQuantity } from '@/helpers/quantity';
+import { createDOM } from '@/helpers/request';
+import { SchemaOrgData } from '@/helpers/schema-org';
+import { findFormulaInHtml, formatFormula, parseLocalizedNumber } from '@/helpers/science';
+import { firstMap, htmlToAscii, mapDefined, tryParseJson } from '@/helpers/utils';
+import { ProductBuilder } from '@/utils/ProductBuilder';
+import { isLeroChemDataProduct, isLeroChemVariantRefresh } from '@/utils/typeGuards/lerochem';
+import { SupplierBase } from './SupplierBase';
 
 /**
  * Supplier implementation for LeroChem, a Lithuania-based chemical supplier
@@ -32,20 +32,20 @@ import { SupplierBase } from "./SupplierBase";
  */
 export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> implements ISupplier {
   // Display name of the supplier used for UI and logging
-  public readonly supplierName: string = "LeroChem";
+  public readonly supplierName: string = 'LeroChem';
 
   // Base URL for all API and web requests to LeroChem
-  public readonly baseURL: string = "https://lerochem.eu";
+  public readonly baseURL: string = 'https://lerochem.eu';
 
   // Shipping scope for LeroChem (ships across the EU, per /en/content/10-delivery-information)
-  public readonly shipping: ShippingRange = "international";
+  public readonly shipping: ShippingRange = 'international';
 
   // The country code of the supplier (Lithuania).
   // This is used to determine the currency and other country-specific information.
-  public readonly country: CountryCode = "LT";
+  public readonly country: CountryCode = 'LT';
 
   // The payment methods accepted by the supplier.
-  public readonly paymentMethods: PaymentMethod[] = ["mastercard", "visa", "ach", "paypal"];
+  public readonly paymentMethods: PaymentMethod[] = ['mastercard', 'visa', 'ach', 'paypal'];
 
   // Cached search results from the last query execution
   protected queryResults: Array<Partial<Product>> = [];
@@ -81,12 +81,12 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
    * @source
    */
   protected getUniqueProductKey(data: Element): string {
-    const productId = data.getAttribute("data-id-product");
+    const productId = data.getAttribute('data-id-product');
     if (productId) {
       return productId;
     }
-    const href = data.querySelector(".product-title a")?.getAttribute("href");
-    return this.productIdFromUrl(href) ?? this.href(String(href ?? ""));
+    const href = data.querySelector('.product-title a')?.getAttribute('href');
+    return this.productIdFromUrl(href) ?? this.href(String(href ?? ''));
   }
 
   /**
@@ -119,10 +119,10 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
    */
   protected titleSelector(data: Element): Maybe<string> {
     if (!data) {
-      this.logger.error("No data for product", { data });
+      this.logger.error('No data for product', { data });
       return undefined;
     }
-    return data.querySelector(".product-title a")?.textContent?.trim() ?? undefined;
+    return data.querySelector('.product-title a')?.textContent?.trim() ?? undefined;
   }
 
   /**
@@ -146,38 +146,38 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
     limit: number = this.limit,
   ): Promise<ProductBuilder<Product>[] | void> {
     const firstPage = await this.httpGetHtml({
-      path: "/en/search",
-      params: { controller: "search", s: query },
+      path: '/en/search',
+      params: { controller: 'search', s: query },
     });
 
     if (!firstPage) {
-      this.logger.error("No search response", { query });
+      this.logger.error('No search response', { query });
       return;
     }
 
     const cards: Element[] = this.parseSearchCards(firstPage);
     const totalPages = Math.min(this.parseTotalPages(firstPage), this.httpRequestHardLimit);
-    this.logger.info("Search pagination", { query, totalPages });
+    this.logger.info('Search pagination', { query, totalPages });
 
     for (let page = 2; page <= totalPages && this.fuzzyFilterAst(cards).length < limit; page++) {
       const pageResponse = await this.httpGetHtml({
-        path: "/en/search",
-        params: { controller: "search", s: query, page },
+        path: '/en/search',
+        params: { controller: 'search', s: query, page },
       });
       if (!pageResponse) {
-        this.logger.warn("No search response for page", { query, page });
+        this.logger.warn('No search response for page', { query, page });
         break;
       }
       cards.push(...this.parseSearchCards(pageResponse));
     }
 
     if (cards.length === 0) {
-      this.logger.log("No products found", { query });
+      this.logger.log('No products found', { query });
       return;
     }
 
     const fuzzResults = this.fuzzyFilterAst(cards);
-    this.logger.info("fuzzResults:", { query, count: fuzzResults.length });
+    this.logger.info('fuzzResults:', { query, count: fuzzResults.length });
 
     return this.initProductBuilders(fuzzResults.slice(0, limit));
   }
@@ -199,7 +199,7 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
   protected parseTotalPages(html: string): number {
     const dom = createDOM(html);
 
-    const summary = dom.querySelector("nav.pagination")?.textContent ?? "";
+    const summary = dom.querySelector('nav.pagination')?.textContent ?? '';
     const match = summary.match(/Showing\s+(\d+)\s*[-–]\s*(\d+)\s+of\s+(\d+)/i);
     if (match) {
       const perPage = Number(match[2]) - Number(match[1]) + 1;
@@ -211,7 +211,7 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
 
     const pageNumbers = Array.from(
       dom.querySelectorAll('nav.pagination a[aria-label^="Page"]'),
-    ).map((anchor) => Number(anchor.getAttribute("aria-label")?.replace(/\D+/g, "")));
+    ).map((anchor) => Number(anchor.getAttribute('aria-label')?.replace(/\D+/g, '')));
     const highest = pageNumbers.filter((n) => Number.isFinite(n) && n > 0);
     return highest.length > 0 ? Math.max(...highest) : 1;
   }
@@ -230,9 +230,9 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
   protected parseSearchCards(html: string): Element[] {
     const dom = createDOM(html);
     if (!dom) {
-      throw new Error("No data found when loading search HTML");
+      throw new Error('No data found when loading search HTML');
     }
-    return Array.from(dom.querySelectorAll("article.product-miniature"));
+    return Array.from(dom.querySelectorAll('article.product-miniature'));
   }
 
   /**
@@ -252,24 +252,24 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
    */
   protected initProductBuilders(elements: Element[]): ProductBuilder<Product>[] {
     return mapDefined(elements, (element: Element) => {
-      const anchor = element.querySelector(".product-title a");
+      const anchor = element.querySelector('.product-title a');
       const title = anchor?.textContent?.trim();
-      const url = anchor?.getAttribute("href");
+      const url = anchor?.getAttribute('href');
 
       if (!title || !url) {
-        this.logger.error("Card missing title or URL", { element });
+        this.logger.error('Card missing title or URL', { element });
         return;
       }
 
       const builder = new ProductBuilder<Product>(this.baseURL);
       const image =
-        element.querySelector(".product-image img")?.getAttribute("data-full-size-image-url") ??
-        element.querySelector(".product-image img")?.getAttribute("src");
+        element.querySelector('.product-image img')?.getAttribute('data-full-size-image-url') ??
+        element.querySelector('.product-image img')?.getAttribute('src');
       const currency = this.cardCurrency(element);
 
       builder
         .setBasicInfo(title, url, this.supplierName)
-        .setID(element.getAttribute("data-id-product") ?? this.productIdFromUrl(url))
+        .setID(element.getAttribute('data-id-product') ?? this.productIdFromUrl(url))
         .setCacheKey(this.getUniqueProductKey(element))
         .setImage(image)
         .setPrice(this.cardPrice(element))
@@ -295,11 +295,11 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
    */
   private cardPrice(element: Element): Maybe<string> {
     const contents = Array.from(
-      element.querySelectorAll(".product-price-and-shipping .price span[content]"),
+      element.querySelectorAll('.product-price-and-shipping .price span[content]'),
     );
     return (
       contents
-        .map((span) => span.getAttribute("content"))
+        .map((span) => span.getAttribute('content'))
         .find((content) => content != null && /^\d+(\.\d+)?$/.test(content)) ?? undefined
     );
   }
@@ -317,7 +317,7 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
    */
   private cardCurrency(element: Element): string {
     const span = element.querySelector('.product-price-and-shipping .price span[content="EUR"]');
-    return span?.getAttribute("content") ?? "EUR";
+    return span?.getAttribute('content') ?? 'EUR';
   }
 
   /**
@@ -338,14 +338,14 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
     product: ProductBuilder<Product>,
   ): Promise<ProductBuilder<Product> | void> {
     return this.getProductDataWithCache(product, async (builder) => {
-      if (typeof builder === "undefined") {
-        this.logger.error("No products to get data for", { builder });
+      if (typeof builder === 'undefined') {
+        this.logger.error('No products to get data for', { builder });
         return;
       }
 
-      const productResponse = await this.httpGetHtml({ path: builder.get("url") });
+      const productResponse = await this.httpGetHtml({ path: builder.get('url') });
       if (!productResponse) {
-        this.logger.warn("No product response", { builder });
+        this.logger.warn('No product response', { builder });
         return;
       }
 
@@ -353,8 +353,8 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
 
       // schema.org Product ld+json: sku, image, price, currency, availability.
       const schema = SchemaOrgData.fromDocument(dom);
-      const product = schema.first("Product");
-      const offer = schema.all("Offer")[0];
+      const product = schema.first('Product');
+      const offer = schema.all('Offer')[0];
       if (product) {
         builder.setSku(product.sku);
         // The ld+json sku/mpn equal the numeric product id — a backup for the id set from the card.
@@ -365,11 +365,11 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
         if (offer.price != null) {
           builder.setPrice(offer.price);
         }
-        const currencyCode = typeof offer.priceCurrency === "string" ? offer.priceCurrency : "EUR";
+        const currencyCode = typeof offer.priceCurrency === 'string' ? offer.priceCurrency : 'EUR';
         builder.setCurrencyCode(currencyCode);
         builder.setCurrencySymbol(CURRENCY_SYMBOL_MAP[currencyCode]);
         // SchemaOrgData already strips the schema.org enum prefix (".../PreOrder" -> "PreOrder").
-        if (typeof offer.availability === "string") {
+        if (typeof offer.availability === 'string') {
           builder.setAvailability(offer.availability);
         }
       }
@@ -379,7 +379,7 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
       if (dataProduct) {
         // data-product `id`/`id_product` is another backup for the numeric product id.
         builder.setID(dataProduct.id_product ?? dataProduct.id);
-        if (typeof dataProduct.price_amount === "number") {
+        if (typeof dataProduct.price_amount === 'number') {
           builder.setPrice(dataProduct.price_amount);
         }
         builder.setDescription(
@@ -398,7 +398,7 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
           firstMap(
             (text) => findCAS(text),
             [dataProduct.meta_description, dataProduct.name, dataProduct.description].filter(
-              (value): value is string => typeof value === "string",
+              (value): value is string => typeof value === 'string',
             ),
           ),
         );
@@ -406,8 +406,8 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
 
       // The product name carries the purity ("… 98%, L" -> "98%"); findPurity
       // (via setPurity) ignores the pack unit and pulls the percentage.
-      builder.setPurity(builder.get("title"));
-      builder.setGrade(this.gradeFromName(builder.get("title")));
+      builder.setPurity(builder.get('title'));
+      builder.setGrade(this.gradeFromName(builder.get('title')));
 
       // The #description spec table carries the most reliable CAS, formula, and molar mass.
       this.applyDataTable(builder, dom);
@@ -438,7 +438,7 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
    * @source
    */
   private gradeFromName(name: unknown): Maybe<string> {
-    if (typeof name !== "string") {
+    if (typeof name !== 'string') {
       return undefined;
     }
     const match = name.match(
@@ -459,7 +459,7 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
    * @source
    */
   private parseDataProduct(dom: Document): Maybe<LeroChemDataProduct> {
-    const raw = dom.querySelector("#product-details")?.getAttribute("data-product");
+    const raw = dom.querySelector('#product-details')?.getAttribute('data-product');
     const parsed = tryParseJson(raw);
     return isLeroChemDataProduct(parsed) ? parsed : undefined;
   }
@@ -493,11 +493,11 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
    * @source
    */
   private descriptionToText(html: Maybe<string>): Maybe<string> {
-    if (typeof html !== "string" || html.length === 0) {
+    if (typeof html !== 'string' || html.length === 0) {
       return undefined;
     }
     const dom = createDOM(html);
-    for (const table of Array.from(dom.querySelectorAll("table"))) {
+    for (const table of Array.from(dom.querySelectorAll('table'))) {
       table.remove();
     }
     const text = htmlToAscii(dom.body?.innerHTML ?? html);
@@ -519,18 +519,18 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
    * @source
    */
   private shortDescriptionToText(html: Maybe<string>): Maybe<string> {
-    if (typeof html !== "string" || html.length === 0) {
+    if (typeof html !== 'string' || html.length === 0) {
       return undefined;
     }
     const dom = createDOM(html);
-    for (const anchor of Array.from(dom.querySelectorAll("a[href]"))) {
-      const text = anchor.textContent ?? "";
-      const href = anchor.getAttribute("href") ?? "";
+    for (const anchor of Array.from(dom.querySelectorAll('a[href]'))) {
+      const text = anchor.textContent ?? '';
+      const href = anchor.getAttribute('href') ?? '';
       if (
         /certificate of analysis|declaration/i.test(text) ||
         /\/COA[\s%/]|declaration/i.test(href)
       ) {
-        (anchor.closest("p") ?? anchor).remove();
+        (anchor.closest('p') ?? anchor).remove();
       }
     }
     const text = htmlToAscii(dom.body?.innerHTML ?? html);
@@ -557,11 +557,11 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
     const anchors = Array.from(dom.querySelectorAll('[id^="product-description-short"] a[href]'));
 
     for (const anchor of anchors) {
-      const href = anchor.getAttribute("href");
+      const href = anchor.getAttribute('href');
       if (!href) {
         continue;
       }
-      const text = anchor.textContent?.trim() ?? "";
+      const text = anchor.textContent?.trim() ?? '';
       if (/certificate of analysis/i.test(text) || /\/COA[\s%/]/i.test(href)) {
         builder.setCoaUrl(href);
       } else if (/declaration/i.test(text) || /declaration/i.test(href)) {
@@ -587,12 +587,12 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
    * @source
    */
   private applyDataTable(builder: ProductBuilder<Product>, dom: Document): void {
-    const rows = Array.from(dom.querySelectorAll("#description table tbody tr"));
+    const rows = Array.from(dom.querySelectorAll('#description table tbody tr'));
 
     for (const row of rows) {
-      const cells = row.querySelectorAll("td");
-      const label = cells[0]?.textContent?.replace(/\s+/g, " ").replace(/:\s*$/, "").trim();
-      const value = cells[1]?.textContent?.replace(/\s+/g, " ").trim();
+      const cells = row.querySelectorAll('td');
+      const label = cells[0]?.textContent?.replace(/\s+/g, ' ').replace(/:\s*$/, '').trim();
+      const value = cells[1]?.textContent?.replace(/\s+/g, ' ').trim();
       if (!label || !value) {
         continue;
       }
@@ -607,17 +607,17 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
         // that inter-tag whitespace so findFormulaInHtml matches the whole formula
         // and converts the tags to Unicode subscripts. Fall back to subscripting
         // the flattened text if no tagged formula is found.
-        const cellHtml = cells[1]?.innerHTML?.replace(/\s+/g, "");
+        const cellHtml = cells[1]?.innerHTML?.replace(/\s+/g, '');
         const formula =
           (cellHtml ? findFormulaInHtml(cellHtml) : undefined) ??
-          formatFormula(value.replace(/\s+/g, ""));
+          formatFormula(value.replace(/\s+/g, ''));
         builder.setData({ formula });
       } else if (/^IUPAC$/i.test(label)) {
         builder.setIupacName(value);
       } else if (/^Molar mass$/i.test(label)) {
         // e.g. "98,079 g/mol" or "326,49" — strip the unit; parseLocalizedNumber
         // resolves the European decimal comma.
-        builder.setMoleweight(parseLocalizedNumber(value.replace(/[^\d.,]/g, "")));
+        builder.setMoleweight(parseLocalizedNumber(value.replace(/[^\d.,]/g, '')));
       }
     }
   }
@@ -643,25 +643,25 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
     builder: ProductBuilder<Product>,
     dom: Document,
   ): Promise<Partial<Variant>[]> {
-    const radios = Array.from(dom.querySelectorAll(".product-variants input.input-radio"));
+    const radios = Array.from(dom.querySelectorAll('.product-variants input.input-radio'));
     if (radios.length === 0) {
       return [];
     }
 
     const token = dom
       .querySelector('#add-to-cart-or-refresh input[name="token"]')
-      ?.getAttribute("value");
+      ?.getAttribute('value');
     const idProduct =
-      dom.querySelector("#product_page_product_id")?.getAttribute("value") ??
-      dom.querySelector('#add-to-cart-or-refresh input[name="id_product"]')?.getAttribute("value");
+      dom.querySelector('#product_page_product_id')?.getAttribute('value') ??
+      dom.querySelector('#add-to-cart-or-refresh input[name="id_product"]')?.getAttribute('value');
 
-    const defaultPrice = builder.get("price");
+    const defaultPrice = builder.get('price');
 
     const variants = await Promise.all(
       radios.map(async (radio) => {
-        const groupId = radio.getAttribute("name")?.match(/group\[(\d+)\]/)?.[1];
-        const valueId = radio.getAttribute("value");
-        const label = radio.parentElement?.querySelector(".radio-label")?.textContent?.trim();
+        const groupId = radio.getAttribute('name')?.match(/group\[(\d+)\]/)?.[1];
+        const valueId = radio.getAttribute('value');
+        const label = radio.parentElement?.querySelector('.radio-label')?.textContent?.trim();
         if (!groupId || !valueId) {
           return undefined;
         }
@@ -675,8 +675,8 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
         };
 
         // The checked radio is the default size, already priced from the page.
-        if (radio.hasAttribute("checked")) {
-          return { ...base, price: typeof defaultPrice === "number" ? defaultPrice : undefined };
+        if (radio.hasAttribute('checked')) {
+          return { ...base, price: typeof defaultPrice === 'number' ? defaultPrice : undefined };
         }
 
         if (!token || !idProduct) {
@@ -713,28 +713,28 @@ export class SupplierLeroChem extends SupplierBase<Partial<Product>, Product> im
     valueId: string,
   ): Promise<Maybe<number>> {
     const response = await this.httpPostJson({
-      path: "/en/index.php",
+      path: '/en/index.php',
       params: {
-        controller: "product",
+        controller: 'product',
         token,
         id_product: idProduct,
-        id_customization: "0",
+        id_customization: '0',
         group: { [groupId]: valueId },
-        qty: "1",
+        qty: '1',
       },
-      body: "ajax=1&action=refresh&quantity_wanted=1",
+      body: 'ajax=1&action=refresh&quantity_wanted=1',
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-        "X-Requested-With": "XMLHttpRequest",
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'X-Requested-With': 'XMLHttpRequest',
       },
     });
 
     if (!isLeroChemVariantRefresh(response)) {
-      this.logger.warn("Invalid variant refresh response", { idProduct, groupId, valueId });
+      this.logger.warn('Invalid variant refresh response', { idProduct, groupId, valueId });
       return undefined;
     }
 
-    const dataProduct = this.parseDataProduct(createDOM(response.product_details ?? ""));
-    return typeof dataProduct?.price_amount === "number" ? dataProduct.price_amount : undefined;
+    const dataProduct = this.parseDataProduct(createDOM(response.product_details ?? ''));
+    return typeof dataProduct?.price_amount === 'number' ? dataProduct.price_amount : undefined;
   }
 }

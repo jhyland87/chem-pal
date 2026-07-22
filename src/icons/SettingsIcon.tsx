@@ -1,6 +1,6 @@
 /** @internal */
-import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
-import { FC } from "react";
+import SvgIcon, { type SvgIconProps } from '@mui/material/SvgIcon';
+import { FC } from 'react';
 
 /**
  * A Material-UI icon component that renders a settings/configuration icon.

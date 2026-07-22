@@ -1,9 +1,9 @@
-import { FUZZ_SCORER_NAMES, FUZZ_SCORERS } from "@/constants/fuzzScorers";
-import type { FuzzScorerName } from "@/constants/fuzzScorers";
-import { getAllSupplierQueryCacheEntries, getSearchResults } from "@/utils/idbCache";
-import { scoreAstMatch } from "@/utils/search-query/evaluateAst";
-import { parseSearchQuery } from "@/utils/search-query/parseSearchQuery";
-import type { SearchAst } from "@/utils/search-query/types";
+import { FUZZ_SCORER_NAMES, FUZZ_SCORERS } from '@/constants/fuzzScorers';
+import type { FuzzScorerName } from '@/constants/fuzzScorers';
+import { getAllSupplierQueryCacheEntries, getSearchResults } from '@/utils/idbCache';
+import { scoreAstMatch } from '@/utils/search-query/evaluateAst';
+import { parseSearchQuery } from '@/utils/search-query/parseSearchQuery';
+import type { SearchAst } from '@/utils/search-query/types';
 
 /**
  * Dev-console probes for exercising the fuzzy-filter layers against the local
@@ -27,7 +27,7 @@ import type { SearchAst } from "@/utils/search-query/types";
  * @group Types
  * @source
  */
-export type CorpusSource = "queryCache" | "searchResults";
+export type CorpusSource = 'queryCache' | 'searchResults';
 
 /**
  * Which cached stores to build the corpus from. The plain-English aliases
@@ -37,7 +37,7 @@ export type CorpusSource = "queryCache" | "searchResults";
  * @group Types
  * @source
  */
-export type CorpusSourceOption = "all" | "both" | "cache" | "results" | CorpusSource;
+export type CorpusSourceOption = 'all' | 'both' | 'cache' | 'results' | CorpusSource;
 
 /**
  * One cached product title plus the provenance needed to interpret a score.
@@ -155,11 +155,11 @@ export interface AstProbeResult {
   /** Titles the predicate rejected, each with the phrase(s) that weren't present. */
   dropped: DroppedEntry[];
   /** Titles whose survival flips with `fuzzyWords`. Empty when `compareFuzzyWords` is false. */
-  fuzzyWordsDelta: Array<CorpusEntry & { onlyWith: "fuzzyWords" | "exact" }>;
+  fuzzyWordsDelta: Array<CorpusEntry & { onlyWith: 'fuzzyWords' | 'exact' }>;
 }
 
 /** Ranking scorer used by the AST probe when the caller doesn't pick one. */
-const DEFAULT_AST_SCORER: FuzzScorerName = "token_set_ratio";
+const DEFAULT_AST_SCORER: FuzzScorerName = 'token_set_ratio';
 
 /** Mirrors `SupplierBase.minMatchPercentage`, the production leaf-score floor. */
 const DEFAULT_THRESHOLD = 50;
@@ -174,11 +174,11 @@ const DEFAULT_LIMIT = 15;
  * @returns The value when present and a string, otherwise `undefined`.
  */
 function readStringField(item: unknown, key: string): string | undefined {
-  if (typeof item !== "object" || item === null || !(key in item)) {
+  if (typeof item !== 'object' || item === null || !(key in item)) {
     return undefined;
   }
   const value: unknown = Reflect.get(item, key);
-  return typeof value === "string" && value !== "" ? value : undefined;
+  return typeof value === 'string' && value !== '' ? value : undefined;
 }
 
 /**
@@ -199,13 +199,13 @@ function readStringField(item: unknown, key: string): string | undefined {
  * @source
  */
 export async function collectCachedTitles(
-  source: CorpusSourceOption = "all",
+  source: CorpusSourceOption = 'all',
 ): Promise<CorpusEntry[]> {
   const entries: CorpusEntry[] = [];
-  const wantsCache = source === "all" || source === "both" || source === "cache";
-  const wantsResults = source === "all" || source === "both" || source === "results";
+  const wantsCache = source === 'all' || source === 'both' || source === 'cache';
+  const wantsResults = source === 'all' || source === 'both' || source === 'results';
 
-  if (wantsCache || source === "queryCache") {
+  if (wantsCache || source === 'queryCache') {
     const cached = await getAllSupplierQueryCacheEntries();
     for (const entry of cached) {
       // The store is typed `unknown[]` but holds whatever was written, so a legacy
@@ -214,30 +214,30 @@ export async function collectCachedTitles(
         continue;
       }
       for (const item of entry.data) {
-        const title = readStringField(item, "title");
+        const title = readStringField(item, 'title');
         if (title === undefined) {
           continue;
         }
         entries.push({
           title,
-          supplier: readStringField(item, "supplier") ?? entry.__cacheMetadata.supplier,
-          source: "queryCache",
+          supplier: readStringField(item, 'supplier') ?? entry.__cacheMetadata.supplier,
+          source: 'queryCache',
           cachedQuery: entry.__cacheMetadata.query,
-          url: readStringField(item, "url"),
+          url: readStringField(item, 'url'),
         });
       }
     }
   }
 
-  if (wantsResults || source === "searchResults") {
+  if (wantsResults || source === 'searchResults') {
     for (const product of await getSearchResults()) {
-      if (product.title === "") {
+      if (product.title === '') {
         continue;
       }
       entries.push({
         title: product.title,
         supplier: product.supplier,
-        source: "searchResults",
+        source: 'searchResults',
         url: product.url,
       });
     }
@@ -245,7 +245,7 @@ export async function collectCachedTitles(
 
   const seen = new Set<string>();
   return entries.filter((entry) => {
-    const key = `${entry.supplier ?? ""}::${entry.title.toLowerCase()}`;
+    const key = `${entry.supplier ?? ''}::${entry.title.toLowerCase()}`;
     if (seen.has(key)) {
       return false;
     }
@@ -283,7 +283,7 @@ function resolveLimit(limit?: number): number {
 export function listSuppliers(corpus: CorpusEntry[]): Array<{ supplier: string; titles: number }> {
   const counts = new Map<string, number>();
   for (const entry of corpus) {
-    const name = entry.supplier ?? "(unknown)";
+    const name = entry.supplier ?? '(unknown)';
     counts.set(name, (counts.get(name) ?? 0) + 1);
   }
   return [...counts]
@@ -308,7 +308,7 @@ function filterBySuppliers(corpus: CorpusEntry[], suppliers?: string | string[])
   // Keep the caller's original spelling for the warning, match on the lowered form.
   const needles = (Array.isArray(suppliers) ? suppliers : [suppliers])
     .map((name) => ({ requested: name.trim(), lowered: name.trim().toLowerCase() }))
-    .filter((needle) => needle.lowered !== "");
+    .filter((needle) => needle.lowered !== '');
   if (needles.length === 0) {
     return corpus;
   }
@@ -319,10 +319,10 @@ function filterBySuppliers(corpus: CorpusEntry[], suppliers?: string | string[])
   const unmatched = needles.filter((n) => !corpus.some((entry) => matchesNeedle(entry, n.lowered)));
   if (unmatched.length > 0) {
     console.warn(
-      `[fuzzScorerLab] no cached titles for supplier(s): ${unmatched.map((n) => n.requested).join(", ")}.` +
+      `[fuzzScorerLab] no cached titles for supplier(s): ${unmatched.map((n) => n.requested).join(', ')}.` +
         ` Available: ${listSuppliers(corpus)
           .map((s) => `${s.supplier} (${s.titles})`)
-          .join(", ")}`,
+          .join(', ')}`,
     );
   }
 
@@ -357,7 +357,7 @@ export function scoreCorpus(
   const minScore = options.minScore ?? 0;
   const filtered = filterBySuppliers(corpus, options.suppliers);
 
-  const byTitle: FuzzProbeResult["byTitle"] = [];
+  const byTitle: FuzzProbeResult['byTitle'] = [];
   for (const entry of filtered) {
     const scores: Record<string, number> = {};
     for (const name of scorers) {
@@ -413,16 +413,16 @@ export function scoreCorpus(
  */
 export function renderAst(ast: SearchAst): string {
   switch (ast.type) {
-    case "term":
+    case 'term':
       return ast.phrase ? `"${ast.value}"` : ast.value;
-    case "and":
+    case 'and':
       return `(${renderAst(ast.left)} AND ${renderAst(ast.right)})`;
-    case "or":
+    case 'or':
       return `(${renderAst(ast.left)} OR ${renderAst(ast.right)})`;
-    case "not":
+    case 'not':
       return `NOT ${renderAst(ast.operand)}`;
     default:
-      return "<unknown>";
+      return '<unknown>';
   }
 }
 
@@ -456,13 +456,13 @@ function isPhrasePresent(title: string, value: string, fuzzyWords: boolean): boo
  */
 function matchesAst(title: string, ast: SearchAst, fuzzyWords: boolean): boolean {
   switch (ast.type) {
-    case "term":
+    case 'term':
       return isPhrasePresent(title, ast.value, fuzzyWords);
-    case "and":
+    case 'and':
       return matchesAst(title, ast.left, fuzzyWords) && matchesAst(title, ast.right, fuzzyWords);
-    case "or":
+    case 'or':
       return matchesAst(title, ast.left, fuzzyWords) || matchesAst(title, ast.right, fuzzyWords);
-    case "not":
+    case 'not':
       return !matchesAst(title, ast.operand, fuzzyWords);
     default:
       return false;
@@ -488,20 +488,20 @@ function matchesAst(title: string, ast: SearchAst, fuzzyWords: boolean): boolean
  */
 export function explainDrop(title: string, ast: SearchAst, fuzzyWords: boolean): string[] {
   switch (ast.type) {
-    case "term":
+    case 'term':
       return isPhrasePresent(title, ast.value, fuzzyWords) ? [] : [ast.value];
-    case "and":
+    case 'and':
       return [
         ...explainDrop(title, ast.left, fuzzyWords),
         ...explainDrop(title, ast.right, fuzzyWords),
       ];
-    case "or": {
+    case 'or': {
       const left = explainDrop(title, ast.left, fuzzyWords);
       const right = explainDrop(title, ast.right, fuzzyWords);
       // An OR only fails when both branches fail; if either matched, nothing is missing.
       return left.length > 0 && right.length > 0 ? [...left, ...right] : [];
     }
-    case "not":
+    case 'not':
       // The NOT held (operand absent), so it isn't the reason; otherwise it is.
       return matchesAst(title, ast.operand, fuzzyWords) ? [`NOT ${renderAst(ast.operand)}`] : [];
     default:
@@ -549,7 +549,7 @@ export function evaluateCorpusAst(
 
   const matched: ScoredEntry[] = [];
   const dropped: DroppedEntry[] = [];
-  const fuzzyWordsDelta: AstProbeResult["fuzzyWordsDelta"] = [];
+  const fuzzyWordsDelta: AstProbeResult['fuzzyWordsDelta'] = [];
   for (const entry of filtered) {
     const score = scoreAstMatch(entry.title, parsed.ast, evalOptions);
     if (score === null) {
@@ -567,7 +567,7 @@ export function evaluateCorpusAst(
     }
     // Name the fuzzyWords setting that kept it, whichever pass that was.
     const keptByFuzzy = score !== null ? fuzzyWords : !fuzzyWords;
-    fuzzyWordsDelta.push({ ...entry, onlyWith: keptByFuzzy ? "fuzzyWords" : "exact" });
+    fuzzyWordsDelta.push({ ...entry, onlyWith: keptByFuzzy ? 'fuzzyWords' : 'exact' });
   }
   matched.sort((a, b) => b.score - a.score);
 
@@ -649,11 +649,11 @@ export function printAstProbe(result: AstProbeResult, limit?: number): void {
   console.info(
     [
       `[astTest] query="${result.query}"`,
-      `  parsed:    ${result.astText}${result.isAdvanced ? "" : "  (plain query — single term, not advanced syntax)"}`,
+      `  parsed:    ${result.astText}${result.isAdvanced ? '' : '  (plain query — single term, not advanced syntax)'}`,
       `  options:   scorer=${result.scorer} threshold=${result.threshold} fuzzyWords=${result.fuzzyWords}`,
       `  corpus:    ${result.corpusSize} titles → ${result.matched.length} matched, ${result.dropped.length} dropped`,
       `  note:      the scorer only ranks survivors; fuzzyWords/threshold decide who survives`,
-    ].join("\n"),
+    ].join('\n'),
   );
 
   // A NOT branch scores exactly `threshold`, and AND takes the min — so an
@@ -688,7 +688,7 @@ export function printAstProbe(result: AstProbeResult, limit?: number): void {
     result.dropped.slice(0, rows).map((row) => ({
       title: row.title,
       supplier: row.supplier,
-      failedTerms: row.failedTerms.join(", "),
+      failedTerms: row.failedTerms.join(', '),
     })),
   );
   console.groupEnd();

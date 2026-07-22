@@ -1,13 +1,13 @@
-import { DRAWER_INDEX, PANEL } from "@/constants/common";
-import { useAppContext } from "@/context";
-import { i18n } from "@/helpers/i18n";
-import { formatTimestamp } from "@/helpers/utils";
-import { clearSearchHistory, getSearchHistory } from "@/utils/idbCache";
+import { DRAWER_INDEX, PANEL } from '@/constants/common';
+import { useAppContext } from '@/context';
+import { i18n } from '@/helpers/i18n';
+import { formatTimestamp } from '@/helpers/utils';
+import { clearSearchHistory, getSearchHistory } from '@/utils/idbCache';
 import {
   Delete as DeleteIcon,
   ExpandMore as ExpandMoreIcon,
   FilterList as FilterListIcon,
-} from "@mui/icons-material";
+} from '@mui/icons-material';
 import {
   Accordion,
   Box,
@@ -18,11 +18,11 @@ import {
   ListItemText,
   Tooltip,
   Typography,
-} from "@mui/material";
-import { FC, SyntheticEvent, useEffect, useState } from "react";
-import ExportsPanel from "./ExportsPanel";
-import styles from "./HistoryPanel.module.scss";
-import { StyledAccordionDetailsNoPadding, StyledAccordionSummary } from "./StyledComponents";
+} from '@mui/material';
+import { FC, SyntheticEvent, useEffect, useState } from 'react';
+import ExportsPanel from './ExportsPanel';
+import styles from './HistoryPanel.module.scss';
+import { StyledAccordionDetailsNoPadding, StyledAccordionSummary } from './StyledComponents';
 
 /**
  * HistoryPanel component that displays past search queries,
@@ -45,7 +45,7 @@ import { StyledAccordionDetailsNoPadding, StyledAccordionSummary } from "./Style
  */
 const HistoryPanel: FC = () => {
   const [history, setHistory] = useState<SearchHistoryEntry[]>([]);
-  const [expandedSection, setExpandedSection] = useState<"history" | "exports" | false>("history");
+  const [expandedSection, setExpandedSection] = useState<'history' | 'exports' | false>('history');
   const { setPendingSearchQuery, setDrawerTab, setSearchFilters, setSelectedSuppliers, setPanel } =
     useAppContext();
 
@@ -57,7 +57,7 @@ const HistoryPanel: FC = () => {
    * @source
    */
   const handleSectionChange =
-    (section: "history" | "exports") => (_event: SyntheticEvent, isExpanded: boolean) => {
+    (section: 'history' | 'exports') => (_event: SyntheticEvent, isExpanded: boolean) => {
       setExpandedSection(isExpanded ? section : false);
     };
 
@@ -67,7 +67,7 @@ const HistoryPanel: FC = () => {
         const entries = await getSearchHistory();
         setHistory(entries);
       } catch (error) {
-        console.warn("Failed to load search history:", error);
+        console.warn('Failed to load search history:', error);
       }
     };
     loadHistory();
@@ -89,7 +89,7 @@ const HistoryPanel: FC = () => {
       await clearSearchHistory();
       setHistory([]);
     } catch (error) {
-      console.warn("Failed to clear search history:", error);
+      console.warn('Failed to clear search history:', error);
     }
   };
 
@@ -122,40 +122,40 @@ const HistoryPanel: FC = () => {
     const parts: string[] = [];
     if (entry.filters) {
       if (entry.filters.availability.length > 0)
-        parts.push(i18n("history_filter_availability", [entry.filters.availability.join(", ")]));
+        parts.push(i18n('history_filter_availability', [entry.filters.availability.join(', ')]));
       if (entry.filters.country.length > 0)
-        parts.push(i18n("history_filter_country", [entry.filters.country.join(", ")]));
+        parts.push(i18n('history_filter_country', [entry.filters.country.join(', ')]));
       if (entry.filters.shippingType.length > 0)
-        parts.push(i18n("history_filter_shipping", [entry.filters.shippingType.join(", ")]));
+        parts.push(i18n('history_filter_shipping', [entry.filters.shippingType.join(', ')]));
     }
     if (entry.selectedSuppliers && entry.selectedSuppliers.length > 0) {
-      parts.push(i18n("history_filter_suppliers", [String(entry.selectedSuppliers.length)]));
+      parts.push(i18n('history_filter_suppliers', [String(entry.selectedSuppliers.length)]));
     }
-    return parts.length > 0 ? parts.join("\n") : null;
+    return parts.length > 0 ? parts.join('\n') : null;
   };
 
   return (
     <>
-      <Accordion expanded={expandedSection === "history"} onChange={handleSectionChange("history")}>
+      <Accordion expanded={expandedSection === 'history'} onChange={handleSectionChange('history')}>
         <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>{i18n("history_section_search")}</Typography>
+          <Typography>{i18n('history_section_search')}</Typography>
         </StyledAccordionSummary>
         <StyledAccordionDetailsNoPadding>
-          <Box className={styles["history-panel"]}>
-            <Box className={styles["history-panel__header"]}>
+          <Box className={styles['history-panel']}>
+            <Box className={styles['history-panel__header']}>
               <Typography variant="caption" color="text.secondary">
                 {history.length === 1
-                  ? i18n("history_count_single", [String(history.length)])
-                  : i18n("history_count_plural", [String(history.length)])}
+                  ? i18n('history_count_single', [String(history.length)])
+                  : i18n('history_count_plural', [String(history.length)])}
               </Typography>
               {history.length > 0 && (
-                <Tooltip title={i18n("history_clear")}>
+                <Tooltip title={i18n('history_clear')}>
                   <IconButton
                     size="small"
                     onClick={handleClearHistory}
-                    className={styles["history-panel__clear-btn"]}
+                    className={styles['history-panel__clear-btn']}
                   >
-                    <DeleteIcon className={styles["history-panel__clear-icon"]} />
+                    <DeleteIcon className={styles['history-panel__clear-icon']} />
                   </IconButton>
                 </Tooltip>
               )}
@@ -164,9 +164,9 @@ const HistoryPanel: FC = () => {
               <Typography
                 variant="caption"
                 color="text.secondary"
-                className={styles["history-panel__empty"]}
+                className={styles['history-panel__empty']}
               >
-                {i18n("history_empty")}
+                {i18n('history_empty')}
               </Typography>
             ) : (
               <List dense disablePadding>
@@ -174,42 +174,42 @@ const HistoryPanel: FC = () => {
                   <ListItem
                     key={`${entry.timestamp}-${idx}`}
                     divider
-                    className={styles["history-panel__list-item"]}
+                    className={styles['history-panel__list-item']}
                   >
                     <ListItemText
                       primary={
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                           <Link
                             component="button"
                             variant="body2"
                             onClick={() => handleReSearch(entry)}
-                            sx={{ fontWeight: "bold" }}
-                            className={styles["history-panel__link"]}
+                            sx={{ fontWeight: 'bold' }}
+                            className={styles['history-panel__link']}
                           >
                             {entry.query}
                           </Link>
                           {getFilterSummary(entry) && (
                             <Tooltip
                               title={getFilterSummary(entry)!}
-                              sx={{ whiteSpace: "pre-line" }}
+                              sx={{ whiteSpace: 'pre-line' }}
                             >
-                              <FilterListIcon sx={{ fontSize: 14, color: "text.secondary" }} />
+                              <FilterListIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
                             </Tooltip>
                           )}
                         </Box>
                       }
                       secondary={`${formatTimestamp(entry.timestamp)} — ${
                         entry.resultCount === 1
-                          ? i18n("history_result_single", [String(entry.resultCount)])
-                          : i18n("history_result_plural", [String(entry.resultCount)])
+                          ? i18n('history_result_single', [String(entry.resultCount)])
+                          : i18n('history_result_plural', [String(entry.resultCount)])
                       }`}
                       slotProps={{
                         secondary: {
-                          variant: "caption",
-                          className: styles["history-panel__secondary-text"],
+                          variant: 'caption',
+                          className: styles['history-panel__secondary-text'],
                         },
                       }}
-                      className={styles["history-panel__list-item-text"]}
+                      className={styles['history-panel__list-item-text']}
                     />
                   </ListItem>
                 ))}
@@ -219,9 +219,9 @@ const HistoryPanel: FC = () => {
         </StyledAccordionDetailsNoPadding>
       </Accordion>
 
-      <Accordion expanded={expandedSection === "exports"} onChange={handleSectionChange("exports")}>
+      <Accordion expanded={expandedSection === 'exports'} onChange={handleSectionChange('exports')}>
         <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>{i18n("history_section_exports")}</Typography>
+          <Typography>{i18n('history_section_exports')}</Typography>
         </StyledAccordionSummary>
         <StyledAccordionDetailsNoPadding>
           <ExportsPanel />

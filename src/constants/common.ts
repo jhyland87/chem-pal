@@ -11,15 +11,15 @@
  */
 export const ACTION_TYPE = {
   /** A toggle Switch changed; writes `checked` to the named setting */
-  SWITCH_CHANGE: "SWITCH_CHANGE",
+  SWITCH_CHANGE: 'SWITCH_CHANGE',
   /** A text field or Select changed; writes `value` to the named setting */
-  INPUT_CHANGE: "INPUT_CHANGE",
+  INPUT_CHANGE: 'INPUT_CHANGE',
   /** A button-group option was clicked (e.g. font size); writes `value` to the named setting */
-  BUTTON_CLICK: "BUTTON_CLICK",
+  BUTTON_CLICK: 'BUTTON_CLICK',
   /** A supplier was enabled/disabled; replaces the disabled-suppliers list */
-  SUPPLIER_TOGGLE: "SUPPLIER_TOGGLE",
+  SUPPLIER_TOGGLE: 'SUPPLIER_TOGGLE',
   /** Resets the settings to their defaults */
-  RESTORE_DEFAULTS: "RESTORE_DEFAULTS",
+  RESTORE_DEFAULTS: 'RESTORE_DEFAULTS',
 } as const;
 
 export type ActionType = (typeof ACTION_TYPE)[keyof typeof ACTION_TYPE];
@@ -31,7 +31,7 @@ export type ActionType = (typeof ACTION_TYPE)[keyof typeof ACTION_TYPE];
  */
 export const MESSAGE_TYPE = {
   /** Proxied fetch request handled by the background worker; see helpers/backgroundFetch.ts. */
-  BACKGROUND_FETCH: "BACKGROUND_FETCH",
+  BACKGROUND_FETCH: 'BACKGROUND_FETCH',
 } as const;
 
 export type MessageType = (typeof MESSAGE_TYPE)[keyof typeof MESSAGE_TYPE];
@@ -71,23 +71,23 @@ export enum DRAWER_INDEX {
  */
 export const APP_ACTION = {
   /** Applies new user settings and persists them to chrome.storage.local */
-  UPDATE_SETTINGS: "UPDATE_SETTINGS",
+  UPDATE_SETTINGS: 'UPDATE_SETTINGS',
   /** Stores the fetched USD→currency conversion rate for the selected currency */
-  SET_CURRENCY_RATE: "SET_CURRENCY_RATE",
+  SET_CURRENCY_RATE: 'SET_CURRENCY_RATE',
   /** Switches the active panel (0 = SearchHome, 1 = Results, 2 = Stats) */
-  SET_PANEL: "SET_PANEL",
+  SET_PANEL: 'SET_PANEL',
   /** Toggles the SpeedDial FAB visibility based on mouse proximity */
-  SET_SPEED_DIAL_VISIBILITY: "SET_SPEED_DIAL_VISIBILITY",
+  SET_SPEED_DIAL_VISIBILITY: 'SET_SPEED_DIAL_VISIBILITY',
   /** Hydrates app state from chrome.storage on initial mount */
-  LOAD_FROM_STORAGE: "LOAD_FROM_STORAGE",
+  LOAD_FROM_STORAGE: 'LOAD_FROM_STORAGE',
   /** Re-hydrates user settings from an external storage change (no write-back) */
-  HYDRATE_SETTINGS: "HYDRATE_SETTINGS",
+  HYDRATE_SETTINGS: 'HYDRATE_SETTINGS',
   /** Opens a specific drawer tab or closes the drawer (tab = -1) */
-  SET_DRAWER_TAB: "SET_DRAWER_TAB",
+  SET_DRAWER_TAB: 'SET_DRAWER_TAB',
   /** Updates the selected suppliers list for search filtering */
-  SET_SELECTED_SUPPLIERS: "SET_SELECTED_SUPPLIERS",
+  SET_SELECTED_SUPPLIERS: 'SET_SELECTED_SUPPLIERS',
   /** Stores the ID of the ChemPal Favorites bookmarks folder */
-  SET_BOOKMARKS_FOLDER_ID: "SET_BOOKMARKS_FOLDER_ID",
+  SET_BOOKMARKS_FOLDER_ID: 'SET_BOOKMARKS_FOLDER_ID',
 } as const;
 
 export type AppActionType = (typeof APP_ACTION)[keyof typeof APP_ACTION];
@@ -98,33 +98,33 @@ export type AppActionType = (typeof APP_ACTION)[keyof typeof APP_ACTION];
  */
 export const CACHE = {
   /** Application settings */
-  USER_SETTINGS: "user_settings",
+  USER_SETTINGS: 'user_settings',
   /** The current query */
-  QUERY: "query",
+  QUERY: 'query',
   /** The current search input text */
-  SEARCH_INPUT: "search_input",
+  SEARCH_INPUT: 'search_input',
   /** Flag indicating a new search was submitted from the search home panel */
-  SEARCH_IS_NEW_SEARCH: "is_new_search",
+  SEARCH_IS_NEW_SEARCH: 'is_new_search',
   /** Selected suppliers list for search filtering */
-  SELECTED_SUPPLIERS: "selected_suppliers",
+  SELECTED_SUPPLIERS: 'selected_suppliers',
   /** HTTP LRU cache */
-  HTTP_LRU: "httplru",
+  HTTP_LRU: 'httplru',
   /** The current panel (0 = SearchHome, 1 = Results, 2 = Stats) */
-  PANEL: "panel",
+  PANEL: 'panel',
   /** Persisted TanStack table state (sorting, pagination, expanded rows, column visibility) */
-  TABLE_STATE: "table_state",
+  TABLE_STATE: 'table_state',
   /** ID of the ChemPal Favorites bookmarks folder */
-  BOOKMARKS_FOLDER_ID: "bookmarks_folder_id",
+  BOOKMARKS_FOLDER_ID: 'bookmarks_folder_id',
   /** Rehydrated Chemsavers Typesense API key (overrides the hardcoded default when present) */
-  CHEMSAVERS_API_KEY: "chemsavers_api_key",
+  CHEMSAVERS_API_KEY: 'chemsavers_api_key',
   /** LabChem full product catalog snapshot, cached for 24h (empty-query search) */
-  LABCHEM_CATALOG: "labchem_catalog",
+  LABCHEM_CATALOG: 'labchem_catalog',
   /** UI-owned update bookkeeping: GitHub poll throttle and per-version dismissal */
-  UPDATE_CHECK: "update_check",
+  UPDATE_CHECK: 'update_check',
   /** Service-worker-owned: a Web Store update staged and awaiting a reload */
-  UPDATE_PENDING: "update_pending",
+  UPDATE_PENDING: 'update_pending',
   /** Last app version this profile has opened; drives the post-update what's-new prompt */
-  LAST_SEEN_VERSION: "last_seen_version",
+  LAST_SEEN_VERSION: 'last_seen_version',
 } as const;
 
 export type Cache = (typeof CACHE)[keyof typeof CACHE];
@@ -136,23 +136,23 @@ export type Cache = (typeof CACHE)[keyof typeof CACHE];
  */
 export const IDB_STORE = {
   /** Current search results (single row keyed `"current"`). */
-  SEARCH_RESULTS: "search_results",
+  SEARCH_RESULTS: 'search_results',
   /** Persisted search history entries. */
-  SEARCH_HISTORY: "search_history",
+  SEARCH_HISTORY: 'search_history',
   /** Supplier query-result cache. */
-  SUPPLIER_QUERY_CACHE: "supplier_query_cache",
+  SUPPLIER_QUERY_CACHE: 'supplier_query_cache',
   /** Supplier product-detail cache. */
-  SUPPLIER_PRODUCT_DATA_CACHE: "supplier_product_data_cache",
+  SUPPLIER_PRODUCT_DATA_CACHE: 'supplier_product_data_cache',
   /** Daily supplier HTTP stats. */
-  SUPPLIER_STATS: "supplier_stats",
+  SUPPLIER_STATS: 'supplier_stats',
   /** User's excluded/ignored products (single row keyed `"current"`). */
-  EXCLUDED_PRODUCTS: "excluded_products",
+  EXCLUDED_PRODUCTS: 'excluded_products',
   /** Per-product/variant USD price history. */
-  PRICE_HISTORY: "price_history",
+  PRICE_HISTORY: 'price_history',
   /** App metadata — single row keyed `"current"` recording the app version that last wrote/migrated the cache. */
-  APP_META: "app_meta",
+  APP_META: 'app_meta',
   /** Cached `.xlsx` result exports, keyed by a unique id, for the export-history list. */
-  EXPORTS: "exports",
+  EXPORTS: 'exports',
 } as const;
 
 export type IdbStore = (typeof IDB_STORE)[keyof typeof IDB_STORE];
@@ -164,33 +164,33 @@ export type IdbStore = (typeof IDB_STORE)[keyof typeof IDB_STORE];
  */
 export const AVAILABILITY = {
   /** In stock and ready to ship */
-  IN_STOCK: "in_stock",
+  IN_STOCK: 'in_stock',
   /** Available but in limited quantity (schema.org LimitedAvailability) */
-  LIMITED_STOCK: "limited_stock",
+  LIMITED_STOCK: 'limited_stock',
   /** Currently out of stock */
-  OUT_OF_STOCK: "out_of_stock",
+  OUT_OF_STOCK: 'out_of_stock',
   /** Not yet released; orderable ahead of availability */
-  PRE_ORDER: "preorder",
+  PRE_ORDER: 'preorder',
   /** Offered for sale ahead of general availability (schema.org PreSale) */
-  PRE_SALE: "pre_sale",
+  PRE_SALE: 'pre_sale',
   /** Out of stock but orderable, shipping when restocked */
-  BACKORDER: "backorder",
+  BACKORDER: 'backorder',
   /** Produced only once ordered (schema.org MadeToOrder) */
-  MADE_TO_ORDER: "made_to_order",
+  MADE_TO_ORDER: 'made_to_order',
   /** Sold out (schema.org SoldOut) */
-  SOLD_OUT: "sold_out",
+  SOLD_OUT: 'sold_out',
   /** Held/reserved and not currently purchasable (schema.org Reserved) */
-  RESERVED: "reserved",
+  RESERVED: 'reserved',
   /** Purchasable online only (schema.org OnlineOnly) */
-  ONLINE_ONLY: "online_only",
+  ONLINE_ONLY: 'online_only',
   /** Purchasable in physical stores only (schema.org InStoreOnly) */
-  IN_STORE_ONLY: "in_store_only",
+  IN_STORE_ONLY: 'in_store_only',
   /** No longer sold */
-  DISCONTINUED: "discontinued",
+  DISCONTINUED: 'discontinued',
   /** Cannot be purchased (e.g. restricted or delisted) */
-  UNAVAILABLE: "unavailable",
+  UNAVAILABLE: 'unavailable',
   /** Availability could not be determined */
-  UNKNOWN: "unknown",
+  UNKNOWN: 'unknown',
 } as const;
 
 export type Availability = (typeof AVAILABILITY)[keyof typeof AVAILABILITY];
@@ -216,25 +216,25 @@ export enum SPIN_SPEED {
  */
 export const UOM_LONG = {
   /** Full name for kilogram unit */
-  KG: "kilogram",
+  KG: 'kilogram',
   /** Full name for pound unit */
-  LB: "pound",
+  LB: 'pound',
   /** Full name for milliliter unit */
-  ML: "milliliter",
+  ML: 'milliliter',
   /** Full name for gram unit */
-  G: "gram",
+  G: 'gram',
   /** Full name for liter unit */
-  L: "liter",
+  L: 'liter',
   /** Full name for quart unit */
-  QT: "quart",
+  QT: 'quart',
   /** Full name for gallon unit */
-  GAL: "gallon",
+  GAL: 'gallon',
   /** Full name for ounce unit */
-  OZ: "ounce",
+  OZ: 'ounce',
   /** Full name for milligram unit */
-  MG: "milligram",
+  MG: 'milligram',
   /** Full name for piece unit */
-  PCS: "piece",
+  PCS: 'piece',
 } as const;
 
 export type UomLong = (typeof UOM_LONG)[keyof typeof UOM_LONG];
@@ -245,29 +245,29 @@ export type UomLong = (typeof UOM_LONG)[keyof typeof UOM_LONG];
  */
 export const UOM = {
   /** Abbreviated form of kilogram */
-  KG: "kg",
+  KG: 'kg',
   /** Abbreviated form of pound */
-  LB: "lb",
+  LB: 'lb',
   /** Abbreviated form of milliliter */
-  ML: "ml",
+  ML: 'ml',
   /** Abbreviated form of gram */
-  G: "g",
+  G: 'g',
   /** Abbreviated form of liter */
-  L: "l",
+  L: 'l',
   /** Abbreviated form of quart */
-  QT: "qt",
+  QT: 'qt',
   /** Abbreviated form of gallon */
-  GAL: "gal",
+  GAL: 'gal',
   /** Abbreviated form of ounce */
-  OZ: "oz",
+  OZ: 'oz',
   /** Abbreviated form of fluid ounce */
-  FLOZ: "floz",
+  FLOZ: 'floz',
   /** Abbreviated form of milligram */
-  MG: "mg",
+  MG: 'mg',
   /** Abbreviated form of piece */
-  PCS: "pcs",
+  PCS: 'pcs',
   /** Abbreviated form of each */
-  EA: "ea",
+  EA: 'ea',
 } as const;
 
 export type Uom = (typeof UOM)[keyof typeof UOM];
@@ -293,29 +293,29 @@ export type Uom = (typeof UOM)[keyof typeof UOM];
  */
 export const UOM_ALIASES: UOMAliases = {
   /** Piece aliases */
-  [UOM.PCS]: ["piece", "pieces", "pc", "pcs"],
+  [UOM.PCS]: ['piece', 'pieces', 'pc', 'pcs'],
   /** Kilogram aliases */
-  [UOM.KG]: ["kilogram", "kilograms", "kg", "kgs"],
+  [UOM.KG]: ['kilogram', 'kilograms', 'kg', 'kgs'],
   /** Pound aliases */
-  [UOM.LB]: ["pound", "pounds", "lb", "lbs"],
+  [UOM.LB]: ['pound', 'pounds', 'lb', 'lbs'],
   /** Milliliter aliases */
-  [UOM.ML]: ["ml", "mls", "millilitre", "milliliter", "milliliters", "millilitres"],
+  [UOM.ML]: ['ml', 'mls', 'millilitre', 'milliliter', 'milliliters', 'millilitres'],
   /** Gram aliases */
-  [UOM.G]: ["grams", "g", "gm", "gram"],
+  [UOM.G]: ['grams', 'g', 'gm', 'gram'],
   /** Liter aliases */
-  [UOM.L]: ["liter", "liters", "litre", "litres", "l"],
+  [UOM.L]: ['liter', 'liters', 'litre', 'litres', 'l'],
   /** Quart aliases */
-  [UOM.QT]: ["quarts", "qts", "qt"],
+  [UOM.QT]: ['quarts', 'qts', 'qt'],
   /** Gallon aliases */
-  [UOM.GAL]: ["gallon", "gallons", "gal"],
+  [UOM.GAL]: ['gallon', 'gallons', 'gal'],
   /** Ounce aliases */
-  [UOM.OZ]: ["ounce", "ounces", "oz"],
+  [UOM.OZ]: ['ounce', 'ounces', 'oz'],
   /** Milligram aliases */
-  [UOM.MG]: ["milligram", "milligrams", "mg", "mgs"],
+  [UOM.MG]: ['milligram', 'milligrams', 'mg', 'mgs'],
   /** Each aliases */
-  [UOM.EA]: ["each", "ea"],
+  [UOM.EA]: ['each', 'ea'],
   /** Fluid ounce aliases */
-  [UOM.FLOZ]: ["fl oz", "floz", "fl.oz", "fl. oz"],
+  [UOM.FLOZ]: ['fl oz', 'floz', 'fl.oz', 'fl. oz'],
 } as const;
 
 /**
@@ -374,10 +374,10 @@ export const AVAILABILITY_OPTIONS = Object.keys(AVAILABILITY_LABEL_MAP);
  * @source
  */
 export const SHIPPING_OPTIONS: ShippingRange[] = [
-  "worldwide",
-  "international",
-  "domestic",
-  "local",
+  'worldwide',
+  'international',
+  'domestic',
+  'local',
 ];
 
 /**

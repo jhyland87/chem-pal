@@ -1,6 +1,6 @@
-import { languages as iso639Languages } from "countries-list";
-import { md5 } from "js-md5";
-import TurndownService from "turndown";
+import { languages as iso639Languages } from 'countries-list';
+import { md5 } from 'js-md5';
+import TurndownService from 'turndown';
 
 /**
  * Converts the first character of a string to uppercase.
@@ -53,16 +53,16 @@ export function md5sum<T>(input: NonNullable<T>): string | T {
     return input;
   }
 
-  if (typeof input === "object" && input !== null) {
+  if (typeof input === 'object' && input !== null) {
     return md5(JSON.stringify(input));
   }
 
-  if (typeof input === "number") {
+  if (typeof input === 'number') {
     return md5(String(input));
   }
 
-  if (typeof input !== "string") {
-    throw new Error("Unexpected input type: " + typeof input);
+  if (typeof input !== 'string') {
+    throw new Error('Unexpected input type: ' + typeof input);
   }
 
   return md5(input);
@@ -84,10 +84,10 @@ export function md5sum<T>(input: NonNullable<T>): string | T {
  * @source
  */
 export function objectToQueryString(obj: Record<string, unknown>): string {
-  let qs = "";
+  let qs = '';
   for (const key of Object.keys(obj)) {
     const value = obj[key];
-    const serialized = value == null ? "" : Array.isArray(value) ? value.join(",") : String(value);
+    const serialized = value == null ? '' : Array.isArray(value) ? value.join(',') : String(value);
     const part = `${key}=${serialized}`;
     qs = qs ? `${qs}&${part}` : part;
   }
@@ -117,7 +117,7 @@ export function base64EncodeUtf8(str: string): string {
   }
 
   const bytes = new TextEncoder().encode(str);
-  let binary = "";
+  let binary = '';
   for (let i = 0; i < bytes.length; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
@@ -358,19 +358,19 @@ export function mapDefined<T, R>(items: T[], fn: (arg: T) => R | null | undefine
  */
 export function decodeHTMLEntities(text: string): string {
   const entities: Record<string, string> = {
-    "&nbsp;": " ",
-    "&lt;": "<",
-    "&gt;": ">",
-    "&amp;": "&",
-    "&quot;": '"',
-    "&#39;": "'",
-    "&apos;": "'",
-    "&cent;": "¢",
-    "&pound;": "£",
-    "&yen;": "¥",
-    "&euro;": "€",
-    "&copy;": "©",
-    "&reg;": "®",
+    '&nbsp;': ' ',
+    '&lt;': '<',
+    '&gt;': '>',
+    '&amp;': '&',
+    '&quot;': '"',
+    '&#39;': "'",
+    '&apos;': "'",
+    '&cent;': '¢',
+    '&pound;': '£',
+    '&yen;': '¥',
+    '&euro;': '€',
+    '&copy;': '©',
+    '&reg;': '®',
   } as const;
 
   return text
@@ -401,18 +401,18 @@ const BLOCK_CLOSE_REGEX =
 export function htmlToAscii(html: string): string {
   return (
     html
-      .replace(BLOCK_CLOSE_REGEX, "\n")
-      .replace(/<br\s*\/?>/gi, "\n")
-      .replace(/<[^>]+>/g, "")
-      .replace(/&amp;/g, "&")
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/&nbsp;/g, " ")
+      .replace(BLOCK_CLOSE_REGEX, '\n')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&nbsp;/g, ' ')
       .replace(/&quot;/g, '"')
       .replace(/&#39;/g, "'")
       // Trim trailing spaces per line and collapse blank-line runs from empty blocks.
-      .replace(/[ \t]+\n/g, "\n")
-      .replace(/\n{2,}/g, "\n")
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/\n{2,}/g, '\n')
       .trim()
   );
 }
@@ -436,7 +436,7 @@ const PDF_HREF_REGEX = /href\s*=\s*["']([^"']*\.pdf[^"']*)["']/i;
  * @source
  */
 export function findPdfHref(html: string): string | undefined {
-  if (!html || typeof html !== "string") return undefined;
+  if (!html || typeof html !== 'string') return undefined;
   return html.match(PDF_HREF_REGEX)?.[1];
 }
 
@@ -478,10 +478,10 @@ export function tryParseJson(data: unknown): unknown | undefined {
 export function parseJsonFromDirtyString(data: string): unknown {
   const trimmed = data.trim();
   const openBracket = trimmed.search(/[[{]/);
-  if (openBracket === -1) throw new Error("No JSON array or object found in string");
+  if (openBracket === -1) throw new Error('No JSON array or object found in string');
 
   const openChar = trimmed[openBracket];
-  const closeChar = openChar === "[" ? "]" : "}";
+  const closeChar = openChar === '[' ? ']' : '}';
   let depth = 0;
   let inString = false;
   let escaped = false;
@@ -492,7 +492,7 @@ export function parseJsonFromDirtyString(data: string): unknown {
       escaped = false;
       continue;
     }
-    if (ch === "\\") {
+    if (ch === '\\') {
       escaped = true;
       continue;
     }
@@ -508,7 +508,7 @@ export function parseJsonFromDirtyString(data: string): unknown {
     }
   }
 
-  throw new Error("Unterminated JSON in string");
+  throw new Error('Unterminated JSON in string');
 }
 
 /**
@@ -532,10 +532,10 @@ export function parseJsonFromDirtyString(data: string): unknown {
  * @source
  */
 export function getUserLocation(): CountryCode {
-  if (typeof chrome === "undefined" || typeof chrome.i18n === "undefined") {
-    return "US";
+  if (typeof chrome === 'undefined' || typeof chrome.i18n === 'undefined') {
+    return 'US';
   }
-  return chrome.i18n.getUILanguage().split("-")[1];
+  return chrome.i18n.getUILanguage().split('-')[1];
 }
 
 /**
@@ -551,8 +551,8 @@ export function getUserLocation(): CountryCode {
  * @source
  */
 export function getUserLanguage(): string {
-  if (typeof chrome === "undefined" || typeof chrome.i18n === "undefined") {
-    return "en-US";
+  if (typeof chrome === 'undefined' || typeof chrome.i18n === 'undefined') {
+    return 'en-US';
   }
   return chrome.i18n.getUILanguage();
 }
@@ -576,7 +576,7 @@ export function getLanguageName(locale?: string): string | undefined {
   if (!locale) {
     return undefined;
   }
-  const base = locale.split("-")[0].toLowerCase();
+  const base = locale.split('-')[0].toLowerCase();
   const entry = (iso639Languages as Record<string, { name: string; native: string }>)[base];
   return entry?.native ?? entry?.name ?? locale;
 }
@@ -594,12 +594,12 @@ export function getLanguageName(locale?: string): string | undefined {
  * @source
  */
 export function stripHTML(html: string): string {
-  if (typeof document === "undefined") {
+  if (typeof document === 'undefined') {
     return html;
   }
-  const tempDiv = document.createElement("DIV");
+  const tempDiv = document.createElement('DIV');
   tempDiv.innerHTML = html;
-  return tempDiv.textContent || "";
+  return tempDiv.textContent || '';
 }
 
 /**
@@ -632,30 +632,30 @@ export function formatFromHtmlTurndown(html: string): string {
  * @source
  */
 export function formatFromHtml(html: string): string {
-  const tempDiv = document.createElement("DIV");
+  const tempDiv = document.createElement('DIV');
   tempDiv.innerHTML = html;
 
   if (tempDiv.children.length === 0) {
-    return tempDiv.textContent || "";
+    return tempDiv.textContent || '';
   }
 
   const result = Array.from(tempDiv.children).flatMap((child) => {
     switch (child.nodeName) {
       // Paragraphs just get their own lines.
-      case "P":
+      case 'P':
         return `${child.textContent}\n`;
-      case "UL":
+      case 'UL':
         return Array.from(child.children).map((e) => `- ${e.textContent}`);
-      case "OL":
+      case 'OL':
         return Array.from(child.children).map((e, idx) => `${idx + 1}) ${e.textContent}`);
-      case "A":
-        return `${child.textContent} (${child.getAttribute("href")})`;
+      case 'A':
+        return `${child.textContent} (${child.getAttribute('href')})`;
       default:
         return child.textContent;
     }
   });
 
-  return result.filter((x) => x !== undefined).join("\n");
+  return result.filter((x) => x !== undefined).join('\n');
 }
 
 /**
@@ -676,10 +676,10 @@ export function formatFromHtml(html: string): string {
  */
 export function formatTimestamp(epochMs: number): string {
   return new Date(epochMs).toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
   });
 }
 
@@ -701,9 +701,9 @@ export function formatTimestamp(epochMs: number): string {
  */
 export function formatBytes(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes <= 0) {
-    return "0 B";
+    return '0 B';
   }
-  const units = ["B", "KB", "MB", "GB"];
+  const units = ['B', 'KB', 'MB', 'GB'];
   const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
   const value = bytes / Math.pow(1024, exponent);
   const formatted = exponent === 0 ? String(value) : value.toFixed(1);
@@ -730,7 +730,7 @@ export function formatBytes(bytes: number): string {
  * @source
  */
 export function toFiniteNumber(raw: string): number | undefined {
-  if (raw.trim() === "") {
+  if (raw.trim() === '') {
     return undefined;
   }
   const value = Number(raw);
@@ -852,6 +852,6 @@ export async function preloadImages(images: string[]): Promise<string[]> {
 
   // Filter out failures and map to just the successful string values
   return results
-    .filter((result): result is PromiseFulfilledResult<string> => result.status === "fulfilled")
+    .filter((result): result is PromiseFulfilledResult<string> => result.status === 'fulfilled')
     .map((result) => result.value);
 }

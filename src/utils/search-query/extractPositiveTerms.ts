@@ -1,4 +1,4 @@
-import type { SearchAst } from "./types";
+import type { SearchAst } from './types';
 
 /**
  * Extracts the positive (non-negated) OR-groups from a query tree as a
@@ -24,11 +24,11 @@ import type { SearchAst } from "./types";
  */
 export function extractOrGroups(ast: SearchAst): string[][] {
   switch (ast.type) {
-    case "term":
-      return ast.value === "" ? [] : [[ast.value]];
-    case "or":
+    case 'term':
+      return ast.value === '' ? [] : [[ast.value]];
+    case 'or':
       return [...extractOrGroups(ast.left), ...extractOrGroups(ast.right)];
-    case "and": {
+    case 'and': {
       const left = extractOrGroups(ast.left);
       const right = extractOrGroups(ast.right);
       if (left.length === 0) return right;
@@ -42,7 +42,7 @@ export function extractOrGroups(ast: SearchAst): string[][] {
       }
       return combined;
     }
-    case "not":
+    case 'not':
       // Negated branches yield no positive search terms.
       return [];
     default:

@@ -1,14 +1,14 @@
-import TableColumns from "@/components/SearchPanel/TableColumns";
-import { CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
-import { useAppContext } from "@/context";
-import { i18n, useLocale } from "@/helpers/i18n";
-import { cstorage } from "@/utils/storage";
-import { ExpandMore as ExpandMoreIcon, Search as SearchIcon } from "@mui/icons-material";
-import { Accordion, Box, Button, TextField, Typography } from "@mui/material";
-import { FC, KeyboardEvent, SyntheticEvent, useEffect, useMemo } from "react";
-import ColumnDrawerSection from "./ColumnDrawerSection";
-import styles from "./DrawerSearchPanel.module.scss";
-import { StyledAccordionDetails, StyledAccordionSummary } from "./StyledComponents";
+import TableColumns from '@/components/SearchPanel/TableColumns';
+import { CACHE, DRAWER_INDEX, PANEL } from '@/constants/common';
+import { useAppContext } from '@/context';
+import { i18n, useLocale } from '@/helpers/i18n';
+import { cstorage } from '@/utils/storage';
+import { ExpandMore as ExpandMoreIcon, Search as SearchIcon } from '@mui/icons-material';
+import { Accordion, Box, Button, TextField, Typography } from '@mui/material';
+import { FC, KeyboardEvent, SyntheticEvent, useEffect, useMemo } from 'react';
+import ColumnDrawerSection from './ColumnDrawerSection';
+import styles from './DrawerSearchPanel.module.scss';
+import { StyledAccordionDetails, StyledAccordionSummary } from './StyledComponents';
 
 /**
  * Pre-search filter drawer. Renders the product-name field, then walks
@@ -82,11 +82,11 @@ const DrawerSearchPanel: FC<{
       try {
         const data = await cstorage.session.get([CACHE.SEARCH_INPUT]);
         const stored = data[CACHE.SEARCH_INPUT];
-        if (typeof stored === "string" && stored !== searchFilters.titleQuery) {
+        if (typeof stored === 'string' && stored !== searchFilters.titleQuery) {
           setSearchFilters({ ...searchFilters, titleQuery: stored });
         }
       } catch (error) {
-        console.warn("Failed to load search input from session storage:", { error });
+        console.warn('Failed to load search input from session storage:', { error });
       }
     };
     loadSearchInput();
@@ -98,7 +98,7 @@ const DrawerSearchPanel: FC<{
     try {
       await cstorage.session.set({ [CACHE.SEARCH_INPUT]: value });
     } catch (error) {
-      console.warn("Failed to persist search input to session storage:", { error });
+      console.warn('Failed to persist search input to session storage:', { error });
     }
   };
 
@@ -112,13 +112,13 @@ const DrawerSearchPanel: FC<{
     // parallel with the pendingSearchQuery path below. HistoryPanel.handleReSearch
     // follows the same single-path pattern.
     try {
-      await cstorage.session.set({ [CACHE.SEARCH_INPUT]: "" });
+      await cstorage.session.set({ [CACHE.SEARCH_INPUT]: '' });
     } catch (error) {
-      console.warn("Failed to clear search input draft in session storage:", { error });
+      console.warn('Failed to clear search input draft in session storage:', { error });
     }
     // Clear the drawer's visible field to match the cleared draft so re-opening
     // the drawer doesn't show stale text from the just-submitted query.
-    setSearchFilters({ ...searchFilters, titleQuery: "" });
+    setSearchFilters({ ...searchFilters, titleQuery: '' });
     // Stage the query for ResultsTable's pendingSearchQuery effect to consume.
     // This works whether SearchPanel is already mounted (effect re-fires on the
     // context update) or is about to mount (fresh mount reads pendingSearchQuery
@@ -132,7 +132,7 @@ const DrawerSearchPanel: FC<{
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       void handleSearch();
     }
   };
@@ -140,24 +140,24 @@ const DrawerSearchPanel: FC<{
   const renderResultLimit = () => (
     <Accordion
       key="per-supplier-limit"
-      expanded={expandedAccordion === "per-supplier-limit"}
-      onChange={onAccordionChange("per-supplier-limit")}
+      expanded={expandedAccordion === 'per-supplier-limit'}
+      onChange={onAccordionChange('per-supplier-limit')}
     >
       <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Typography>
-          {i18n("drawer_results_limit")}
+          {i18n('drawer_results_limit')}
           {userSettings.supplierResultLimit != null && (
-            <span className={styles["accordion-hint"]}>
-              {" "}
-              {i18n("drawer_results_limit_hint", [String(userSettings.supplierResultLimit)])}
+            <span className={styles['accordion-hint']}>
+              {' '}
+              {i18n('drawer_results_limit_hint', [String(userSettings.supplierResultLimit)])}
             </span>
           )}
         </Typography>
       </StyledAccordionSummary>
       <StyledAccordionDetails>
         <TextField
-          style={{ width: "100%" }}
-          label={i18n("drawer_results_limit_label")}
+          style={{ width: '100%' }}
+          label={i18n('drawer_results_limit_label')}
           value={userSettings.supplierResultLimit}
           onChange={(e) =>
             setUserSettings({
@@ -173,11 +173,11 @@ const DrawerSearchPanel: FC<{
   return (
     <Box>
       {/* Title / Search Query */}
-      <Box sx={{ p: "12px 16px" }}>
+      <Box sx={{ p: '12px 16px' }}>
         <TextField
           autoFocus
           fullWidth
-          label={i18n("drawer_product_name_label")}
+          label={i18n('drawer_product_name_label')}
           size="small"
           value={searchFilters.titleQuery}
           onChange={(e) => handleTitleQueryChange(e.target.value)}
@@ -189,7 +189,7 @@ const DrawerSearchPanel: FC<{
         // "Results Limit" is a user setting (not a filter on a column), so it
         // has no column to anchor it to. Inject it right before the price
         // section to preserve its historical position in the drawer UX.
-        const resultLimit = id === "price" ? [renderResultLimit()] : [];
+        const resultLimit = id === 'price' ? [renderResultLimit()] : [];
         return [
           ...resultLimit,
           <ColumnDrawerSection
@@ -210,7 +210,7 @@ const DrawerSearchPanel: FC<{
           onClick={() => void handleSearch()}
           disabled={!searchFilters.titleQuery.trim()}
         >
-          {i18n("drawer_search_button")}
+          {i18n('drawer_search_button')}
         </Button>
       </Box>
     </Box>

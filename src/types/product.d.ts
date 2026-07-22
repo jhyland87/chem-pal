@@ -1,5 +1,5 @@
-import type { Availability, Uom } from "@/constants/common";
-import type { SupplierBase } from "@/suppliers/SupplierBase";
+import type { Availability, Uom } from '@/constants/common';
+import type { SupplierBase } from '@/suppliers/SupplierBase';
 
 declare global {
   /**
@@ -21,7 +21,7 @@ declare global {
    */
   type RequiredProductFields = Pick<
     Product,
-    "title" | "price" | "currencySymbol" | "currencyCode" | "url" | "quantity" | "uom" | "supplier"
+    'title' | 'price' | 'currencySymbol' | 'currencyCode' | 'url' | 'quantity' | 'uom' | 'supplier'
   >;
 
   /**
@@ -378,7 +378,7 @@ declare global {
   }
 
   /** Whether a {@link ProductImage} is a full-size image or a thumbnail. */
-  type ProductImageType = "image" | "thumbnail";
+  type ProductImageType = 'image' | 'thumbnail';
 
   /**
    * A single product image entry: a URL plus whether it's a full-size image or a

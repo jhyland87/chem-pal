@@ -1,4 +1,4 @@
-import { captureOwnerStack, Component, ReactNode } from "react";
+import { captureOwnerStack, Component, ReactNode } from 'react';
 
 /**
  * ErrorBoundary component that catches JavaScript errors anywhere in their child component tree,

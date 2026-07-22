@@ -1,4 +1,4 @@
-import type { SearchAst } from "../types";
+import type { SearchAst } from '../types';
 
 /**
  * Escapes a value for use inside a Shopify Storefront search clause.
@@ -8,7 +8,7 @@ import type { SearchAst } from "../types";
  * @source
  */
 function escapeShopify(value: string): string {
-  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
 /**
@@ -23,9 +23,9 @@ function escapeShopify(value: string): string {
  */
 function termToClause(value: string): string {
   const words = value.split(/\s+/).filter(Boolean);
-  if (words.length === 0) return "";
+  if (words.length === 0) return '';
   const clauses = words.map((word) => `title:*${escapeShopify(word)}*`);
-  return clauses.length === 1 ? clauses[0] : `(${clauses.join(" AND ")})`;
+  return clauses.length === 1 ? clauses[0] : `(${clauses.join(' AND ')})`;
 }
 
 /**
@@ -48,13 +48,13 @@ function termToClause(value: string): string {
  */
 export function translateAstToShopifyQuery(ast: SearchAst): string {
   switch (ast.type) {
-    case "term":
+    case 'term':
       return termToClause(ast.value);
-    case "and":
+    case 'and':
       return `(${translateAstToShopifyQuery(ast.left)} AND ${translateAstToShopifyQuery(ast.right)})`;
-    case "or":
+    case 'or':
       return `(${translateAstToShopifyQuery(ast.left)} OR ${translateAstToShopifyQuery(ast.right)})`;
-    case "not":
+    case 'not':
       return `NOT ${translateAstToShopifyQuery(ast.operand)}`;
   }
 }

@@ -1,24 +1,24 @@
-import { CACHE, DRAWER_INDEX, PANEL } from "@/constants/common";
-import { i18n } from "@/helpers/i18n";
-import { isTabView, openExtensionTab } from "@/utils/displayContext";
-import { getSearchResults } from "@/utils/idbCache";
-import { cstorage } from "@/utils/storage";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import SettingsIcon from "@mui/icons-material/Settings";
-import Badge from "@mui/material/Badge";
-import { FC, useEffect, useState } from "react";
-import { useAppContext } from "../context";
-import { useTheme as useCustomTheme } from "../themes";
-import { SearchForm } from "./SearchForm";
-import styles from "./SearchPanelHome.module.scss";
+import { CACHE, DRAWER_INDEX, PANEL } from '@/constants/common';
+import { i18n } from '@/helpers/i18n';
+import { isTabView, openExtensionTab } from '@/utils/displayContext';
+import { getSearchResults } from '@/utils/idbCache';
+import { cstorage } from '@/utils/storage';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import SettingsIcon from '@mui/icons-material/Settings';
+import Badge from '@mui/material/Badge';
+import { FC, useEffect, useState } from 'react';
+import { useAppContext } from '../context';
+import { useTheme as useCustomTheme } from '../themes';
+import { SearchForm } from './SearchForm';
+import styles from './SearchPanelHome.module.scss';
 import {
   SearchPanelHomeContainer,
   SearchPanelHomeForwardButton,
   SearchPanelHomeMaximizeButton,
   SearchPanelHomeSettingsButton,
   SearchPanelHomeTopBar,
-} from "./StyledComponents";
+} from './StyledComponents';
 
 /**
  * The popup's home panel. Shows the search entry point and, when a previous
@@ -54,7 +54,7 @@ const SearchPanelHome: FC = () => {
             setResultCount(0);
           }
         } catch (error) {
-          console.warn("Failed to load search results from IndexedDB:", { error });
+          console.warn('Failed to load search results from IndexedDB:', { error });
         }
       };
       loadStoredResults();
@@ -75,14 +75,14 @@ const SearchPanelHome: FC = () => {
     // submitting context reliably clears and runs its own search.
     await cstorage.session.set({
       [CACHE.QUERY]: query,
-      [CACHE.SEARCH_INPUT]: "",
+      [CACHE.SEARCH_INPUT]: '',
     });
     appContext.setPendingSearchQuery(query);
     // Show the results panel; SearchPanel (re)mounts and its useSearch effect picks
     // up the pending query set above.
-    if (typeof appContext.setPanel === "function") {
+    if (typeof appContext.setPanel === 'function') {
       appContext.setPanel(PANEL.RESULTS);
-    } else if (typeof appContext.setUserSettings === "function") {
+    } else if (typeof appContext.setUserSettings === 'function') {
       appContext.setUserSettings({
         ...appContext.userSettings,
       });
@@ -91,9 +91,9 @@ const SearchPanelHome: FC = () => {
 
   // Use only Cp7 for light and Cp6 for dark
   const logoSrc =
-    mode === "dark"
-      ? "/static/images/logo/ChemPal-logo-inverted.png"
-      : "/static/images/logo/ChemPal-logo.png";
+    mode === 'dark'
+      ? '/static/images/logo/ChemPal-logo-inverted.png'
+      : '/static/images/logo/ChemPal-logo.png';
 
   return (
     <SearchPanelHomeContainer>
@@ -102,7 +102,7 @@ const SearchPanelHome: FC = () => {
         {/* Settings */}
         <SearchPanelHomeSettingsButton
           onClick={() => appContext.toggleDrawer(DRAWER_INDEX.SETTINGS)}
-          aria-label={i18n("search_open_settings")}
+          aria-label={i18n('search_open_settings')}
         >
           <SettingsIcon />
         </SearchPanelHomeSettingsButton>
@@ -111,8 +111,8 @@ const SearchPanelHome: FC = () => {
         {hasStoredResults && appContext.setPanel && (
           <SearchPanelHomeForwardButton
             onClick={() => appContext.setPanel!(PANEL.RESULTS)}
-            aria-label={i18n("search_go_to_results")}
-            isDarkTheme={mode === "dark"}
+            aria-label={i18n('search_go_to_results')}
+            isDarkTheme={mode === 'dark'}
           >
             <Badge badgeContent={resultCount} color="primary">
               <ArrowForwardIcon />
@@ -124,24 +124,24 @@ const SearchPanelHome: FC = () => {
         {!isTabView() && (
           <SearchPanelHomeMaximizeButton
             onClick={() => void openExtensionTab()}
-            aria-label={i18n("common_open_in_tab")}
+            aria-label={i18n('common_open_in_tab')}
           >
             <OpenInNewIcon />
           </SearchPanelHomeMaximizeButton>
         )}
       </SearchPanelHomeTopBar>
-      <div className={styles["search-panel-home-content"]}>
+      <div className={styles['search-panel-home-content']}>
         {/* Logo always visible at the top */}
-        <div className={styles["search-panel-home-logo-container"]}>
+        <div className={styles['search-panel-home-logo-container']}>
           <img
-            className={styles["search-panel-home-logo"]}
+            className={styles['search-panel-home-logo']}
             src={logoSrc}
-            alt={i18n("search_logo_alt")}
+            alt={i18n('search_logo_alt')}
           />
         </div>
         <SearchForm
           onSearch={handleSearch}
-          placeholder={i18n("search_placeholder")}
+          placeholder={i18n('search_placeholder')}
           showAdvancedButton={false}
         />
       </div>

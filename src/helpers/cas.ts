@@ -1,9 +1,9 @@
-import { CAS_REGEX } from "@/constants/common";
+import { CAS_REGEX } from '@/constants/common';
 // `isCAS` lives in typeGuards/common; imported for internal use only.
 // Deliberately not re-exported: doing so made every isCAS consumer depend on
 // this module, creating a common.ts -> smiles.ts -> cas.ts -> common.ts cycle
 // that Rollup could not split cleanly across chunks.
-import { isCAS } from "@/utils/typeGuards/common";
+import { isCAS } from '@/utils/typeGuards/common';
 
 /**
  * @category CAS Helpers
@@ -29,7 +29,7 @@ import { isCAS } from "@/utils/typeGuards/common";
  * @source
  */
 export function findCAS(data: string): CAS<string> | void {
-  const regex = RegExp(CAS_REGEX.source, "g");
+  const regex = RegExp(CAS_REGEX.source, 'g');
   const match = data.match(regex);
   if (match && isCAS(match[0])) return match[0];
 }
@@ -55,7 +55,7 @@ export async function getNamesByCAS(cas: CAS<string>): Promise<Maybe<string[]>> 
     );
     const data = await response.text();
     if (!data) return;
-    return data.split("\n").map((line: string) => line.trim());
+    return data.split('\n').map((line: string) => line.trim());
   } catch (error) {
     console.error(error);
     return;
@@ -100,8 +100,8 @@ export async function getCASByName(name: string): Promise<Maybe<CAS<string>>> {
       `https://cactus.nci.nih.gov/chemical/structure/${encodeURIComponent(name)}/cas`,
     );
     const data = await response.text();
-    if (typeof data === "undefined") return;
-    const casList = data.split("\n").find((cas) => isCAS(cas));
+    if (typeof data === 'undefined') return;
+    const casList = data.split('\n').find((cas) => isCAS(cas));
     return casList;
   } catch (error) {
     console.error(error);

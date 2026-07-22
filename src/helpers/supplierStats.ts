@@ -15,7 +15,7 @@
  * @group Types
  * @source
  */
-export type StatsRange = "all" | "today" | "week" | "month" | "last7" | "last30";
+export type StatsRange = 'all' | 'today' | 'week' | 'month' | 'last7' | 'last30';
 
 /**
  * Ordered range options for the dropdown, each with its i18n label key. Ordered
@@ -25,12 +25,12 @@ export type StatsRange = "all" | "today" | "week" | "month" | "last7" | "last30"
  * @source
  */
 export const STATS_RANGES: ReadonlyArray<{ value: StatsRange; labelKey: string }> = [
-  { value: "all", labelKey: "stats_range_all" },
-  { value: "last30", labelKey: "stats_range_last30" },
-  { value: "last7", labelKey: "stats_range_last7" },
-  { value: "month", labelKey: "stats_range_month" },
-  { value: "week", labelKey: "stats_range_week" },
-  { value: "today", labelKey: "stats_range_today" },
+  { value: 'all', labelKey: 'stats_range_all' },
+  { value: 'last30', labelKey: 'stats_range_last30' },
+  { value: 'last7', labelKey: 'stats_range_last7' },
+  { value: 'month', labelKey: 'stats_range_month' },
+  { value: 'week', labelKey: 'stats_range_week' },
+  { value: 'today', labelKey: 'stats_range_today' },
 ];
 
 /**
@@ -49,8 +49,8 @@ export const STATS_RANGES: ReadonlyArray<{ value: StatsRange; labelKey: string }
  * @source
  */
 export function toDateKey(date: Date): string {
-  const month = `${date.getMonth() + 1}`.padStart(2, "0");
-  const day = `${date.getDate()}`.padStart(2, "0");
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
   return `${date.getFullYear()}-${month}-${day}`;
 }
 
@@ -65,21 +65,21 @@ function rangeStartKey(range: StatsRange, now: Date): string | undefined {
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   switch (range) {
-    case "all":
+    case 'all':
       return undefined;
-    case "today":
+    case 'today':
       return toDateKey(start);
-    case "last7":
+    case 'last7':
       start.setDate(start.getDate() - 6); // inclusive of today
       return toDateKey(start);
-    case "last30":
+    case 'last30':
       start.setDate(start.getDate() - 29);
       return toDateKey(start);
-    case "week":
+    case 'week':
       // Week starts Monday; getDay() is 0-6 with Sunday = 0.
       start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
       return toDateKey(start);
-    case "month":
+    case 'month':
       start.setDate(1);
       return toDateKey(start);
     default:
@@ -130,12 +130,12 @@ export function filterStatsByRange(
  * @source
  */
 export type SupplierHealthStatus =
-  | "ok"
-  | "disabled"
-  | "parseErrors"
-  | "parseFailure"
-  | "connectionErrors"
-  | "noSuccess";
+  | 'ok'
+  | 'disabled'
+  | 'parseErrors'
+  | 'parseFailure'
+  | 'connectionErrors'
+  | 'noSuccess';
 
 /**
  * The per-supplier counters the classifier reads.
@@ -157,12 +157,12 @@ export interface SupplierTotals {
 
 /** i18n label key per status, for the Status column and the row tooltip. */
 const STATUS_LABEL_KEYS: Record<SupplierHealthStatus, string> = {
-  ok: "stats_status_ok",
-  disabled: "stats_status_disabled",
-  parseErrors: "stats_status_parse_errors",
-  parseFailure: "stats_status_parse_failure",
-  connectionErrors: "stats_status_connection_errors",
-  noSuccess: "stats_status_no_success",
+  ok: 'stats_status_ok',
+  disabled: 'stats_status_disabled',
+  parseErrors: 'stats_status_parse_errors',
+  parseFailure: 'stats_status_parse_failure',
+  connectionErrors: 'stats_status_connection_errors',
+  noSuccess: 'stats_status_no_success',
 };
 
 /**
@@ -180,10 +180,10 @@ export const EXCESSIVE_RATIO = 0.5;
 
 /** Worst-first ordering; the headline status is the first match. */
 const SEVERITY_ORDER: SupplierHealthStatus[] = [
-  "noSuccess",
-  "parseFailure",
-  "connectionErrors",
-  "parseErrors",
+  'noSuccess',
+  'parseFailure',
+  'connectionErrors',
+  'parseErrors',
 ];
 
 /**
@@ -245,7 +245,7 @@ export function classifySupplierHealth(
   reasons: SupplierHealthStatus[];
 } {
   if (disabled) {
-    return { status: "disabled", reasons: [] };
+    return { status: 'disabled', reasons: [] };
   }
 
   const { success, failure, parseErrors } = totals;
@@ -254,9 +254,9 @@ export function classifySupplierHealth(
   const calls = success + failure;
   if (calls > 0) {
     if (success === 0) {
-      reasons.push("noSuccess");
+      reasons.push('noSuccess');
     } else if (failure / calls >= EXCESSIVE_RATIO) {
-      reasons.push("connectionErrors");
+      reasons.push('connectionErrors');
     }
   }
 
@@ -264,12 +264,12 @@ export function classifySupplierHealth(
   // When success is 0 the connection status already tells the story.
   if (success > 0 && parseErrors > 0) {
     if (parseErrors >= success) {
-      reasons.push("parseFailure");
+      reasons.push('parseFailure');
     } else if (parseErrors / success >= EXCESSIVE_RATIO) {
-      reasons.push("parseErrors");
+      reasons.push('parseErrors');
     }
   }
 
-  const status = SEVERITY_ORDER.find((candidate) => reasons.includes(candidate)) ?? "ok";
+  const status = SEVERITY_ORDER.find((candidate) => reasons.includes(candidate)) ?? 'ok';
   return { status, reasons };
 }

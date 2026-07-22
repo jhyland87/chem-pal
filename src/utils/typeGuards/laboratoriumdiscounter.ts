@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 const searchResponseOkSchema = z.object({
   page: z.object({
@@ -267,7 +267,7 @@ const productObjectSchema = z.object({
   product: z
     .record(z.string(), z.unknown())
     .refine(
-      (val) => "variants" in val && (typeof val.variants === "object" || val.variants === false),
+      (val) => 'variants' in val && (typeof val.variants === 'object' || val.variants === false),
     ),
   shop: z.object({
     currencies: z.record(z.string(), z.unknown()),

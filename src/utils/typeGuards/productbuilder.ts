@@ -1,5 +1,5 @@
-import { AVAILABILITY, type Availability } from "@/constants/common";
-import { z } from "zod";
+import { AVAILABILITY, type Availability } from '@/constants/common';
+import { z } from 'zod';
 
 // `z.enum` requires a non-empty tuple type, which `Object.values` (typed as a plain
 // array) cannot express. The enum always has at least one member, so the cast is safe.
@@ -8,7 +8,7 @@ const availabilityValues = Object.values(AVAILABILITY) as [Availability, ...Avai
 // Zod schema that accepts any string whose lowercased form matches an `AVAILABILITY`
 // enum value. Non-string inputs are rejected outright.
 const availabilitySchema = z.preprocess(
-  (v) => (typeof v === "string" ? v.toLowerCase() : v),
+  (v) => (typeof v === 'string' ? v.toLowerCase() : v),
   z.enum(availabilityValues),
 );
 
@@ -27,7 +27,7 @@ const variantSchema = z.looseObject({
 // resolves it to an absolute URL afterwards.
 const productImageSchema = z.looseObject({
   href: z.string(),
-  type: z.enum(["image", "thumbnail"]),
+  type: z.enum(['image', 'thumbnail']),
   altText: z.string().optional(),
 });
 
@@ -170,5 +170,5 @@ export function isProductImage(value: unknown): value is ProductImage {
 export function isCachedProductData<T extends Product = Product>(
   value: unknown,
 ): value is Partial<T> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

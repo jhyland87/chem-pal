@@ -30,7 +30,7 @@ declare global {
     /** Optional array of content rules that apply to this folder */
     childRules?: ContentRule[];
     /** Type identifier for content rule folders */
-    "@type": "ContentRuleFolder";
+    '@type': 'ContentRuleFolder';
   }
 
   /**
@@ -39,7 +39,7 @@ declare global {
    */
   interface ResultsContainer extends ContentRuleZoneItem {
     /** Type identifier for results containers */
-    "@type": "ResultsContainer";
+    '@type': 'ResultsContainer';
     /** Array of search result items */
     results: unknown[];
   }
@@ -52,7 +52,7 @@ declare global {
     /** Title of the page associated with this rule */
     pageTitle: string;
     /** Type identifier for content rules */
-    "@type": "ContentRule";
+    '@type': 'ContentRule';
     /** Unique identifier for the rule */
     ruleId: string;
     /** Array of content rule zone items */
@@ -65,7 +65,7 @@ declare global {
    */
   interface ContentRuleZoneItem extends CarolinaBaseObject {
     /** Type identifier for the zone item */
-    "@type": string;
+    '@type': string;
     /** Optional content sections including folders and main content */
     contents?: {
       /** Array of content folders within this zone */
@@ -87,7 +87,7 @@ declare global {
    */
   interface MainContentItem extends CarolinaBaseObject {
     /** Type identifier for the main content item */
-    "@type": string;
+    '@type': string;
     /** Optional content sections */
     contents?: {
       /** Array of content folders within this main content item */
@@ -163,17 +163,17 @@ declare global {
    */
   interface CarolinaSearchResult extends Record<string, unknown> {
     /** URL of the product thumbnail image */
-    "product.thumbnailImg": string;
+    'product.thumbnailImg': string;
     /** Name of the product */
-    "product.productName": string;
+    'product.productName': string;
     /** Unique identifier for the product */
-    "product.productId": string;
+    'product.productId': string;
     /** Brief description of the product */
-    "product.shortDescription": string;
+    'product.shortDescription': string;
     /** Price of the item */
     itemPrice: string;
     /** SEO-friendly name for the product */
-    "product.seoName": string;
+    'product.seoName': string;
     /** URL to the product page */
     productUrl: string;
     /** Display name of the product */
@@ -200,7 +200,7 @@ declare global {
       };
     };
     /** Type identifier for the response */
-    "@type": string;
+    '@type': string;
     /** Title of the page */
     pageTitle: string;
     /** Setting for image loading behavior */
@@ -226,9 +226,9 @@ declare global {
     /** Active tab for the search */
     tab: string;
     /** Product type filter */
-    "product.type": string;
+    'product.type': string;
     /** Product types filter */
-    "product.productTypes": string;
+    'product.productTypes': string;
     /** Fields to use for faceted search */
     facetFields: string;
     /** Response format */

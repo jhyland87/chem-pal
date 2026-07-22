@@ -1,10 +1,10 @@
-import { execSync } from "node:child_process";
-import path from "node:path";
-import { type BrowserContext, type Page, chromium } from "playwright";
-import { extensionLaunchOptions } from "./helpers/launchOptions";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { execSync } from 'node:child_process';
+import path from 'node:path';
+import { type BrowserContext, type Page, chromium } from 'playwright';
+import { extensionLaunchOptions } from './helpers/launchOptions';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-const buildDir = path.resolve(__dirname, "..", "build");
+const buildDir = path.resolve(__dirname, '..', 'build');
 
 /**
  * Widths swept by the overflow check. Spans well below the popup's 800px floor
@@ -22,7 +22,7 @@ const VIEWPORT_WIDTHS = [320, 360, 400, 480, 600, 768, 800, 1024, 1280];
  * These tests load the real unpacked extension and assert the document never
  * grows wider than its viewport.
  */
-describe("tab-view layout across viewport widths", () => {
+describe('tab-view layout across viewport widths', () => {
   let context: BrowserContext;
   let page: Page;
   let extensionId: string;
@@ -31,17 +31,17 @@ describe("tab-view layout across viewport widths", () => {
     // Build the production bundle rather than assuming another spec left one
     // behind — file order isn't guaranteed, and a stale build/ would test the
     // wrong CSS.
-    execSync("pnpm build:e2e", { cwd: path.resolve(__dirname, ".."), stdio: "inherit" });
+    execSync('pnpm build:e2e', { cwd: path.resolve(__dirname, '..'), stdio: 'inherit' });
 
-    context = await chromium.launchPersistentContext("", {
+    context = await chromium.launchPersistentContext('', {
       ...extensionLaunchOptions(buildDir),
       viewport: { width: VIEWPORT_WIDTHS[0], height: 800 },
     });
 
     const swTarget = context.serviceWorkers().length
       ? context.serviceWorkers()[0]
-      : await context.waitForEvent("serviceworker");
-    extensionId = swTarget.url().split("/")[2];
+      : await context.waitForEvent('serviceworker');
+    extensionId = swTarget.url().split('/')[2];
     page = await context.newPage();
   }, 60_000);
 
@@ -50,17 +50,17 @@ describe("tab-view layout across viewport widths", () => {
   });
 
   it.each(VIEWPORT_WIDTHS)(
-    "does not overflow horizontally at %ipx",
+    'does not overflow horizontally at %ipx',
     async (width) => {
       await page.setViewportSize({ width, height: 800 });
       await page.goto(`chrome-extension://${extensionId}/index.html?view=tab`);
-      await page.waitForSelector("#root");
+      await page.waitForSelector('#root');
 
       const metrics = await page.evaluate(() => ({
         viewport: window.innerWidth,
         documentWidth: document.documentElement.scrollWidth,
         bodyWidth: document.body.scrollWidth,
-        rootWidth: document.getElementById("root")?.scrollWidth ?? 0,
+        rootWidth: document.getElementById('root')?.scrollWidth ?? 0,
       }));
 
       // scrollWidth > innerWidth is exactly what produces the horizontal scrollbar.
@@ -82,9 +82,9 @@ describe("tab-view layout across viewport widths", () => {
     // tab view must not cost the popup its minimum width.
     await page.setViewportSize({ width: 400, height: 800 });
     await page.goto(`chrome-extension://${extensionId}/index.html`);
-    await page.waitForSelector("#root");
+    await page.waitForSelector('#root');
 
     const bodyMinWidth = await page.evaluate(() => getComputedStyle(document.body).minWidth);
-    expect(bodyMinWidth).toBe("800px");
+    expect(bodyMinWidth).toBe('800px');
   }, 60_000);
 });

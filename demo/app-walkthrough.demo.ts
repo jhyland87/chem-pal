@@ -1,9 +1,9 @@
-import type { Locator, Page } from "@playwright/test";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { setupMockRoutes } from "../e2e/helpers/mockRoutes";
-import { expandFirstProductDetail } from "./expandDetail";
-import { expect, test } from "./fixtures";
+import type { Locator, Page } from '@playwright/test';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { setupMockRoutes } from '../e2e/helpers/mockRoutes';
+import { expandFirstProductDetail } from './expandDetail';
+import { expect, test } from './fixtures';
 import {
   captureImageOfElement,
   clearGroupHighlight,
@@ -18,12 +18,12 @@ import {
   smoothScrollToTop,
   spotlight,
   typeInto,
-} from "./helpers";
-import { seedPriceHistoryFromResults } from "./seedPriceHistory";
+} from './helpers';
+import { seedPriceHistoryFromResults } from './seedPriceHistory';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
-const mockResponsesDir = path.resolve(dirname, "..", "e2e", "mock-requests", "responses");
-const screenshotDir = path.resolve(dirname, "output", "screenshots");
+const mockResponsesDir = path.resolve(dirname, '..', 'e2e', 'mock-requests', 'responses');
+const screenshotDir = path.resolve(dirname, 'output', 'screenshots');
 
 /** Boolean query used for the second search, to show off the advanced syntax. */
 const ADVANCED_QUERY = '"Sodium Borohydride" AND NOT (triacetoxyborohydride OR cyanoborohydride)';
@@ -48,7 +48,7 @@ const UNIVERSAL_CLICK_DELAY = 200;
  * @source
  */
 async function waitForResultCount(page: Page, target: number, timeoutMs: number): Promise<number> {
-  const status = page.locator("#loading-backdrop").getByText(/Found \d+ result/);
+  const status = page.locator('#loading-backdrop').getByText(/Found \d+ result/);
   const deadline = Date.now() + timeoutMs;
   let count = 0;
 
@@ -57,7 +57,7 @@ async function waitForResultCount(page: Page, target: number, timeoutMs: number)
       (await status
         .first()
         .textContent()
-        .catch(() => null)) ?? "";
+        .catch(() => null)) ?? '';
     const match = text.match(/Found (\d+) result/);
     if (match) {
       count = Number(match[1]);
@@ -66,7 +66,7 @@ async function waitForResultCount(page: Page, target: number, timeoutMs: number)
       }
     }
     // The backdrop is gone — the search finished before hitting the target.
-    if (!(await page.locator("#loading-backdrop").isVisible())) {
+    if (!(await page.locator('#loading-backdrop').isVisible())) {
       return count;
     }
     await page.waitForTimeout(200);
@@ -114,7 +114,7 @@ async function demoQueryExample(
   // Leave the query selected rather than blanking the box — a field going empty
   // on its own reads as a glitch; the next beat just types over the selection.
   // ControlOrMeta because plain Control+A is "go to line start" on macOS.
-  await input.press("ControlOrMeta+a");
+  await input.press('ControlOrMeta+a');
   await page.waitForTimeout(400);
 }
 
@@ -124,11 +124,11 @@ async function demoQueryExample(
  * saved mock data — no supplier requests hit the network (`fallback: "abort"`).
  */
 test(
-  "ChemPal search walkthrough",
+  'ChemPal search walkthrough',
   {
     annotation: {
-      type: "demo",
-      description: "A guided walkthrough of the ChemPal extension",
+      type: 'demo',
+      description: 'A guided walkthrough of the ChemPal extension',
     },
   },
   async ({ context, extensionId }) => {
@@ -137,42 +137,42 @@ test(
     // Wire hermetic mocking BEFORE navigating so nothing escapes to the internet.
     await setupMockRoutes(page, {
       responsesDir: mockResponsesDir,
-      fallback: "abort",
+      fallback: 'abort',
       verbose: false,
       // Supplier API calls stay hermetic (aborted), but let product images and the
       // currency-rate API through so photos render and currency switching works live.
       allowImages: true,
-      allowHosts: ["hexarate.paikama.co"],
+      allowHosts: ['hexarate.paikama.co'],
     });
 
     // Full browser-tab view (?view=tab): fills the desktop window.
     await page.goto(`chrome-extension://${extensionId}/index.html?view=tab`);
 
-    const searchFormContainer = page.getByTestId("search-form-container");
-    await expect(searchFormContainer, "Search form container should be visible").toBeVisible({
+    const searchFormContainer = page.getByTestId('search-form-container');
+    await expect(searchFormContainer, 'Search form container should be visible').toBeVisible({
       timeout: 10_000,
     });
-    const searchInput = page.getByRole("textbox", { name: "search for products" });
-    await expect(searchInput, "Search input should be visible").toBeVisible({ timeout: 10_000 });
+    const searchInput = page.getByRole('textbox', { name: 'search for products' });
+    await expect(searchInput, 'Search input should be visible').toBeVisible({ timeout: 10_000 });
     await page.waitForTimeout(1000);
 
     // 1. Point out the search box.
     await highlight(searchFormContainer);
-    await showDemoPopover(page, searchFormContainer, "Type a chemical name to search");
+    await showDemoPopover(page, searchFormContainer, 'Type a chemical name to search');
     await page.waitForTimeout(1800);
     await closeDemoPopover(page);
     await page.waitForTimeout(200);
 
     // 2. Type the query, character by character.
-    await typeInto(searchInput, "sodium borohydride");
+    await typeInto(searchInput, 'sodium borohydride');
     await page.waitForTimeout(800);
     await clearHighlight(searchFormContainer);
-    await captureImageOfElement(page, searchFormContainer, "walkthrough-search-input-typed");
+    await captureImageOfElement(page, searchFormContainer, 'walkthrough-search-input-typed');
 
     // 3. Run the search.
-    const searchButton = page.getByRole("button", { name: "search" });
+    const searchButton = page.getByRole('button', { name: 'search' });
     await highlight(searchButton);
-    await showDemoPopover(page, searchButton, "Search every supplier at once");
+    await showDemoPopover(page, searchButton, 'Search every supplier at once');
     await page.waitForTimeout(1200);
     await closeDemoPopover(page);
     await searchButton.click({ delay: UNIVERSAL_CLICK_DELAY });
@@ -180,35 +180,35 @@ test(
     // 4. Wait for the first search to finish — the loading backdrop shows while
     // suppliers stream in, then disappears once every supplier is done. (Cancel
     // is demonstrated on the second search below.)
-    const backdrop = page.locator("#loading-backdrop");
-    await expect(backdrop, "Loading backdrop should be visible").toBeVisible({ timeout: 10_000 });
-    await expect(backdrop, "Loading backdrop should be hidden").toBeHidden({ timeout: 120_000 });
+    const backdrop = page.locator('#loading-backdrop');
+    await expect(backdrop, 'Loading backdrop should be visible').toBeVisible({ timeout: 10_000 });
+    await expect(backdrop, 'Loading backdrop should be hidden').toBeHidden({ timeout: 120_000 });
 
     // 5. Ease down to the pagination controls, switch to showing every result on
     // one page, then ease back up to the top — smooth scrolls, not jumps.
-    const resultsTable = page.locator("table").nth(1);
+    const resultsTable = page.locator('table').nth(1);
     await expect(
-      resultsTable.locator("tbody tr td").first(),
-      "First result should be visible",
+      resultsTable.locator('tbody tr td').first(),
+      'First result should be visible',
     ).toBeVisible({ timeout: 5_000 });
 
     const rowsPerPage = page.locator('[aria-label="rows per page"]');
-    await smoothScrollIntoView(page, rowsPerPage, "end");
+    await smoothScrollIntoView(page, rowsPerPage, 'end');
     await rowsPerPage.click({ delay: UNIVERSAL_CLICK_DELAY });
-    await page.getByRole("option", { name: "All" }).click({ delay: UNIVERSAL_CLICK_DELAY });
+    await page.getByRole('option', { name: 'All' }).click({ delay: UNIVERSAL_CLICK_DELAY });
     await page.waitForTimeout(700);
     await smoothScrollToTop(page, resultsTable);
 
     const rowCount = await resultsTable
-      .locator("tbody tr")
-      .filter({ has: page.locator("td") })
+      .locator('tbody tr')
+      .filter({ has: page.locator('td') })
       .count();
     // A little slack under the ~17 the current mock corpus yields, so one more
     // supplier's responses going missing doesn't fail the whole recording.
-    expect(rowCount, "There are at least 15 results").toBeGreaterThanOrEqual(15);
+    expect(rowCount, 'There are at least 15 results').toBeGreaterThanOrEqual(15);
 
     await highlight(resultsTable);
-    await showDemoPopover(page, resultsTable, "Live results from many suppliers, ranked by match");
+    await showDemoPopover(page, resultsTable, 'Live results from many suppliers, ranked by match');
     await page.waitForTimeout(2500);
     await closeDemoPopover(page);
     await clearHighlight(resultsTable);
@@ -220,9 +220,9 @@ test(
     console.log(`[demo] Seeded price history: ${seeded.series} series, ${seeded.points} points`);
 
     // --- Shrink the display font (Settings → Display → Small) ---
-    const settingsBtn = page.getByRole("button", { name: "Open options" });
+    const settingsBtn = page.getByRole('button', { name: 'Open options' });
     await highlight(settingsBtn);
-    await showDemoPopover(page, settingsBtn, "Open settings to tune the display");
+    await showDemoPopover(page, settingsBtn, 'Open settings to tune the display');
     await page.waitForTimeout(1200);
     await closeDemoPopover(page);
     await clearHighlight(settingsBtn);
@@ -231,95 +231,95 @@ test(
 
     // Expand the Display section, then switch to the small font size.
     const displaySection = page
-      .locator("#drawer-tabpanel-2")
-      .getByRole("button", { name: "Display" });
-    await expect(displaySection, "Display section should be visible").toBeVisible({
+      .locator('#drawer-tabpanel-2')
+      .getByRole('button', { name: 'Display' });
+    await expect(displaySection, 'Display section should be visible').toBeVisible({
       timeout: 5_000,
     });
     await displaySection.click({ delay: UNIVERSAL_CLICK_DELAY });
     await page.waitForTimeout(700);
-    const smallFont = page.locator("#drawer-tabpanel-2").getByRole("button", { name: "Small" });
-    await expect(smallFont, "Small font size should be visible").toBeVisible({ timeout: 5_000 });
+    const smallFont = page.locator('#drawer-tabpanel-2').getByRole('button', { name: 'Small' });
+    await expect(smallFont, 'Small font size should be visible').toBeVisible({ timeout: 5_000 });
     await highlight(smallFont);
-    await showDemoPopover(page, smallFont, "Switch to a smaller font to fit more on screen");
+    await showDemoPopover(page, smallFont, 'Switch to a smaller font to fit more on screen');
     await page.waitForTimeout(1400);
     await smallFont.click({ delay: UNIVERSAL_CLICK_DELAY });
     await page.waitForTimeout(1600);
     await closeDemoPopover(page);
     await clearHighlight(smallFont);
     // Close the drawer.
-    await page.mouse.click(30, 400, { button: "left", delay: UNIVERSAL_CLICK_DELAY });
+    await page.mouse.click(30, 400, { button: 'left', delay: UNIVERSAL_CLICK_DELAY });
     await page.waitForTimeout(700);
 
     // --- Keyboard shortcuts: open the help modal, find the "expand all rows"
     // shortcut, then use it to expand every row and collapse them again. Done
     // after shrinking the font so more rows fit on screen at once. ---
-    await page.keyboard.press("?"); // Shift+/ opens the hotkey help modal
-    const hotkeyTitle = page.getByRole("heading", { name: "Keyboard Shortcuts" });
-    await expect(hotkeyTitle, "Hotkey help modal should open").toBeVisible({ timeout: 5_000 });
+    await page.keyboard.press('?'); // Shift+/ opens the hotkey help modal
+    const hotkeyTitle = page.getByRole('heading', { name: 'Keyboard Shortcuts' });
+    await expect(hotkeyTitle, 'Hotkey help modal should open').toBeVisible({ timeout: 5_000 });
     await page.waitForTimeout(700);
-    await showDemoPopover(page, hotkeyTitle, "ChemPal has lots of handy keyboard shortcuts");
+    await showDemoPopover(page, hotkeyTitle, 'ChemPal has lots of handy keyboard shortcuts');
     await page.waitForTimeout(1900);
     await closeDemoPopover(page);
 
     // Filter the shortcut list down to the "expand all" shortcut.
-    const hotkeySearch = page.getByPlaceholder("Search shortcuts…");
-    await expect(hotkeySearch, "Hotkey search box should be visible").toBeVisible({
+    const hotkeySearch = page.getByPlaceholder('Search shortcuts…');
+    await expect(hotkeySearch, 'Hotkey search box should be visible').toBeVisible({
       timeout: 5_000,
     });
     await highlight(hotkeySearch);
-    await typeInto(hotkeySearch, "expand");
+    await typeInto(hotkeySearch, 'expand');
     await page.waitForTimeout(800);
-    const expandRow = page.getByText("Expand all rows in the results table");
-    await expect(expandRow, "Expand-all shortcut row should be visible").toBeVisible({
+    const expandRow = page.getByText('Expand all rows in the results table');
+    await expect(expandRow, 'Expand-all shortcut row should be visible').toBeVisible({
       timeout: 5_000,
     });
     await highlight(expandRow);
-    await showDemoPopover(page, expandRow, "This one expands every visible row at once");
+    await showDemoPopover(page, expandRow, 'This one expands every visible row at once');
     await page.waitForTimeout(2200);
     await closeDemoPopover(page);
 
     // Close the modal, then fire the shortcut — showing the keys — to expand
     // every row, hold a moment, and collapse them again.
-    await page.keyboard.press("Escape");
-    await expect(hotkeyTitle, "Hotkey help modal should close").toBeHidden({ timeout: 5_000 });
+    await page.keyboard.press('Escape');
+    await expect(hotkeyTitle, 'Hotkey help modal should close').toBeHidden({ timeout: 5_000 });
     await page.waitForTimeout(700);
-    await fireHotkeyEvent(page, "chempal:expand-all-rows", ["⌘", "⇧", "E"]);
+    await fireHotkeyEvent(page, 'chempal:expand-all-rows', ['⌘', '⇧', 'E']);
     await page.waitForTimeout(3000);
-    await fireHotkeyEvent(page, "chempal:collapse-all-rows", ["⌘", "⇧", "C"]);
+    await fireHotkeyEvent(page, 'chempal:collapse-all-rows', ['⌘', '⇧', 'C']);
     await page.waitForTimeout(1500);
 
     // --- Column visibility: make sure PubChem + CAS are shown, then point them out ---
-    const columnsButton = page.getByRole("button", { name: "Show or hide columns" });
+    const columnsButton = page.getByRole('button', { name: 'Show or hide columns' });
     await highlight(columnsButton);
-    await showDemoPopover(page, columnsButton, "Show or hide any column");
+    await showDemoPopover(page, columnsButton, 'Show or hide any column');
     await page.waitForTimeout(1400);
     await closeDemoPopover(page);
     await clearHighlight(columnsButton);
     await columnsButton.click({ delay: UNIVERSAL_CLICK_DELAY });
 
     // Ensure the PubChem and CAS columns are visible (check them if unchecked).
-    for (const col of ["PubChem", "CAS", "Purity"]) {
-      const toggle = page.getByRole("checkbox", { name: col, exact: true });
+    for (const col of ['PubChem', 'CAS', 'Purity']) {
+      const toggle = page.getByRole('checkbox', { name: col, exact: true });
       if ((await toggle.count()) > 0 && !(await toggle.first().isChecked())) {
         await toggle.first().click({ delay: UNIVERSAL_CLICK_DELAY });
         await page.waitForTimeout(400);
       }
     }
     await page.waitForTimeout(500);
-    await page.keyboard.press("Escape");
+    await page.keyboard.press('Escape');
     await page.waitForTimeout(400);
 
     // --- Sort by purity: now that the Purity column is visible, sort on it ---
     // Column headers are sortable — clicking one ranks the results by that column
     // (Purity uses a custom scale that orders chemical grades and purity %).
-    const purityHeader = page.getByRole("columnheader", { name: "Purity", exact: true });
-    await expect(purityHeader, "Purity column header should be visible").toBeVisible({
+    const purityHeader = page.getByRole('columnheader', { name: 'Purity', exact: true });
+    await expect(purityHeader, 'Purity column header should be visible').toBeVisible({
       timeout: 5_000,
     });
     await purityHeader.scrollIntoViewIfNeeded();
     await highlight(purityHeader);
-    await showDemoPopover(page, purityHeader, "Click a column header to sort — here, by purity");
+    await showDemoPopover(page, purityHeader, 'Click a column header to sort — here, by purity');
     await page.waitForTimeout(1200);
     await closeDemoPopover(page);
     await page.waitForTimeout(UNIVERSAL_CLICK_DELAY);
@@ -332,10 +332,10 @@ test(
     // Point out a PubChem cell — clicking a CID opens that compound on PubChem.
     try {
       const pubchemCell = page
-        .getByRole("link", { name: /PubChem CID/i })
+        .getByRole('link', { name: /PubChem CID/i })
         .first()
-        .locator("xpath=ancestor::td[1]");
-      await expect(pubchemCell, "A populated PubChem cell should exist").toBeVisible({
+        .locator('xpath=ancestor::td[1]');
+      await expect(pubchemCell, 'A populated PubChem cell should exist').toBeVisible({
         timeout: 8_000,
       });
       await pubchemCell.scrollIntoViewIfNeeded();
@@ -349,52 +349,52 @@ test(
       await closeDemoPopover(page);
       await clearHighlight(pubchemCell);
     } catch (error) {
-      console.warn("[demo] no populated PubChem cell to highlight:", error);
+      console.warn('[demo] no populated PubChem cell to highlight:', error);
       await closeDemoPopover(page);
     }
 
     // Point out a CAS cell — clicking a CAS number goes to PubChem as well.
     try {
       const casCell = page
-        .getByRole("link", { name: /View on PubChem/i })
+        .getByRole('link', { name: /View on PubChem/i })
         .first()
-        .locator("xpath=ancestor::td[1]");
-      await expect(casCell, "A CAS cell should exist").toBeVisible({ timeout: 8_000 });
+        .locator('xpath=ancestor::td[1]');
+      await expect(casCell, 'A CAS cell should exist').toBeVisible({ timeout: 8_000 });
       await casCell.scrollIntoViewIfNeeded();
       await highlight(casCell);
-      await showDemoPopover(page, casCell, "Clicking a CAS number takes you to PubChem too");
+      await showDemoPopover(page, casCell, 'Clicking a CAS number takes you to PubChem too');
       await page.waitForTimeout(2400);
       await closeDemoPopover(page);
       await clearHighlight(casCell);
     } catch (error) {
-      console.warn("[demo] no CAS cell to highlight:", error);
+      console.warn('[demo] no CAS cell to highlight:', error);
       await closeDemoPopover(page);
     }
 
     // --- Column filters ---
-    const filterButton = page.getByRole("button", { name: "Toggle column filters" });
+    const filterButton = page.getByRole('button', { name: 'Toggle column filters' });
     await highlight(filterButton);
-    await showDemoPopover(page, filterButton, "Filter results by column");
+    await showDemoPopover(page, filterButton, 'Filter results by column');
     await page.waitForTimeout(1400);
     await closeDemoPopover(page);
     await clearHighlight(filterButton);
     await filterButton.click({ delay: UNIVERSAL_CLICK_DELAY });
 
     // Type into the Title column's filter to narrow the results.
-    const titleFilter = page.getByPlaceholder("Title...");
-    await expect(titleFilter, "Title filter should be visible").toBeVisible({ timeout: 5_000 });
+    const titleFilter = page.getByPlaceholder('Title...');
+    await expect(titleFilter, 'Title filter should be visible').toBeVisible({ timeout: 5_000 });
     await highlight(titleFilter);
-    await showDemoPopover(page, titleFilter, "Filter by product name");
+    await showDemoPopover(page, titleFilter, 'Filter by product name');
     await page.waitForTimeout(1200);
-    await typeInto(titleFilter, "Borohydride");
+    await typeInto(titleFilter, 'Borohydride');
     await page.waitForTimeout(2000);
     await closeDemoPopover(page);
     await clearHighlight(titleFilter);
-    await page.screenshot({ path: path.join(screenshotDir, "walkthrough-filtered.png") });
+    await page.screenshot({ path: path.join(screenshotDir, 'walkthrough-filtered.png') });
 
     // Clear the filter, then hide the filter row again.
     await page
-      .getByRole("button", { name: "Clear all filters" })
+      .getByRole('button', { name: 'Clear all filters' })
       .click({ delay: UNIVERSAL_CLICK_DELAY });
     await page.waitForTimeout(1000);
     await filterButton.click({ delay: UNIVERSAL_CLICK_DELAY });
@@ -406,28 +406,28 @@ test(
 
     // Right after expanding: the product name is a link — clicking it opens that
     // product in a new tab.
-    const firstProductName = resultsTable.locator("tbody tr td:nth-child(2) a").first();
+    const firstProductName = resultsTable.locator('tbody tr td:nth-child(2) a').first();
     await firstProductName.scrollIntoViewIfNeeded();
     await highlight(firstProductName);
     await spotlight(page, firstProductName);
     await showDemoPopover(
       page,
       firstProductName,
-      "Click a product name to open it in a new browser tab",
+      'Click a product name to open it in a new browser tab',
     );
     await page.waitForTimeout(2600);
     await closeDemoPopover(page);
     await clearSpotlight(page);
 
     // Variant names are links too — clicking one opens that variant in a new tab.
-    const firstVariantName = page.locator(".variant-name a").first();
+    const firstVariantName = page.locator('.variant-name a').first();
     await firstVariantName.scrollIntoViewIfNeeded();
     await highlight(firstVariantName);
     await spotlight(page, firstVariantName);
     await showDemoPopover(
       page,
       firstVariantName,
-      "Click a variant name to open that variant in a new tab",
+      'Click a variant name to open that variant in a new tab',
     );
     await page.waitForTimeout(2600);
     await closeDemoPopover(page);
@@ -440,20 +440,20 @@ test(
       "xpath=following-sibling::span[contains(@class,'detail-value')]",
     );
     await highlight(avgTrend);
-    await showDemoPopover(page, avgTrend, "Average price trend across the product & its variants");
+    await showDemoPopover(page, avgTrend, 'Average price trend across the product & its variants');
     await page.waitForTimeout(1000);
-    await page.screenshot({ path: path.join(screenshotDir, "walkthrough-avg-trend.png") });
+    await page.screenshot({ path: path.join(screenshotDir, 'walkthrough-avg-trend.png') });
     await page.waitForTimeout(1500);
     await closeDemoPopover(page);
     await clearHighlight(avgTrend);
 
     // Per-variant: each variant carries its own tracked trend.
-    const variantTrends = page.locator(".variant-trend").filter({ hasText: "%" });
+    const variantTrends = page.locator('.variant-trend').filter({ hasText: '%' });
     await variantTrends.first().scrollIntoViewIfNeeded();
     await highlightGroup(page, variantTrends);
-    await showDemoPopover(page, variantTrends.first(), "Every variant has its trend monitored too");
+    await showDemoPopover(page, variantTrends.first(), 'Every variant has its trend monitored too');
     await page.waitForTimeout(1000);
-    await page.screenshot({ path: path.join(screenshotDir, "walkthrough-variant-trends.png") });
+    await page.screenshot({ path: path.join(screenshotDir, 'walkthrough-variant-trends.png') });
     await page.waitForTimeout(1500);
     await closeDemoPopover(page);
     await clearGroupHighlight(page);
@@ -463,18 +463,18 @@ test(
     const hoverTrend = variantTrends.first();
     await hoverTrend.scrollIntoViewIfNeeded();
     await hoverTrend.hover();
-    const trendPopup = page.locator(".MuiTooltip-tooltip").first();
-    await expect(trendPopup, "Trend popup should be visible").toBeVisible({ timeout: 5_000 });
+    const trendPopup = page.locator('.MuiTooltip-tooltip').first();
+    await expect(trendPopup, 'Trend popup should be visible').toBeVisible({ timeout: 5_000 });
     await page.waitForTimeout(700);
     await highlight(trendPopup);
     await showDemoPopover(
       page,
       trendPopup,
-      "The previous prices are viewable when hovering over it",
+      'The previous prices are viewable when hovering over it',
     );
     await page.waitForTimeout(2200);
     await page.screenshot({
-      path: path.join(screenshotDir, "walkthrough-variant-trend-hover.png"),
+      path: path.join(screenshotDir, 'walkthrough-variant-trend-hover.png'),
     });
     await closeDemoPopover(page);
     await clearHighlight(trendPopup);
@@ -483,9 +483,9 @@ test(
     await page.waitForTimeout(500);
 
     // --- Drawer: History tab + live currency switching (detail panel still open) ---
-    const optionsBtn = page.getByRole("button", { name: "Open options" });
+    const optionsBtn = page.getByRole('button', { name: 'Open options' });
     await highlight(optionsBtn);
-    await showDemoPopover(page, optionsBtn, "Open the side panel for history and settings");
+    await showDemoPopover(page, optionsBtn, 'Open the side panel for history and settings');
     await page.waitForTimeout(1200);
     await closeDemoPopover(page);
     await clearHighlight(optionsBtn);
@@ -493,29 +493,29 @@ test(
 
     // Open the History tab to reveal past searches — but don't click an entry
     // (that would re-run that search).
-    const historyTab = page.getByRole("tab", { name: "HISTORY" });
-    await expect(historyTab, "History tab should be visible").toBeVisible({ timeout: 5_000 });
+    const historyTab = page.getByRole('tab', { name: 'HISTORY' });
+    await expect(historyTab, 'History tab should be visible').toBeVisible({ timeout: 5_000 });
     await historyTab.click({ delay: UNIVERSAL_CLICK_DELAY });
     await page.waitForTimeout(700);
-    const historyEntry = page.locator("#drawer-tabpanel-1 li").first();
-    await expect(historyEntry, "First history entry should be visible").toBeVisible({
+    const historyEntry = page.locator('#drawer-tabpanel-1 li').first();
+    await expect(historyEntry, 'First history entry should be visible').toBeVisible({
       timeout: 5_000,
     });
     await highlight(historyEntry);
     await showDemoPopover(
       page,
       historyEntry,
-      "Clicking on a history record will repeat the search",
+      'Clicking on a history record will repeat the search',
     );
     await page.waitForTimeout(2200);
     await closeDemoPopover(page);
     await clearHighlight(historyEntry);
 
     // Switch to Settings and change currency — watch every price convert live.
-    await page.getByRole("tab", { name: "SETTINGS" }).click({ delay: UNIVERSAL_CLICK_DELAY });
+    await page.getByRole('tab', { name: 'SETTINGS' }).click({ delay: UNIVERSAL_CLICK_DELAY });
     await page.waitForTimeout(600);
-    const currencyInput = page.locator("#drawer-tabpanel-2").getByPlaceholder("Currency");
-    await expect(currencyInput, "Currency input should be visible").toBeVisible({ timeout: 5_000 });
+    const currencyInput = page.locator('#drawer-tabpanel-2').getByPlaceholder('Currency');
+    await expect(currencyInput, 'Currency input should be visible').toBeVisible({ timeout: 5_000 });
     // Highlight the whole selector (the TextField), not just the input.
     const currencyField = currencyInput.locator(
       "xpath=ancestor::div[contains(@class, 'MuiTextField-root')][1]",
@@ -524,48 +524,48 @@ test(
     await showDemoPopover(
       page,
       currencyField,
-      "Switch currency — every price on screen converts instantly",
+      'Switch currency — every price on screen converts instantly',
     );
     await page.waitForTimeout(1200);
 
     // USD → PLN
     await currencyInput.click({ delay: UNIVERSAL_CLICK_DELAY });
-    await currencyInput.fill("PLN");
-    const plnOption = page.getByRole("option", { name: "PLN (zł)" }).first();
-    await expect(plnOption, "PLN option should be visible").toBeVisible({ timeout: 5_000 });
+    await currencyInput.fill('PLN');
+    const plnOption = page.getByRole('option', { name: 'PLN (zł)' }).first();
+    await expect(plnOption, 'PLN option should be visible').toBeVisible({ timeout: 5_000 });
     await plnOption.click();
     await page.waitForTimeout(2200);
 
     // PLN → USD
     await currencyInput.click({ delay: UNIVERSAL_CLICK_DELAY });
-    await currencyInput.fill("USD");
-    const usdOption = page.getByRole("option", { name: "USD ($)" }).first();
-    await expect(usdOption, "USD option should be visible").toBeVisible({ timeout: 5_000 });
+    await currencyInput.fill('USD');
+    const usdOption = page.getByRole('option', { name: 'USD ($)' }).first();
+    await expect(usdOption, 'USD option should be visible').toBeVisible({ timeout: 5_000 });
     await usdOption.click();
     await page.waitForTimeout(1800);
 
     await closeDemoPopover(page);
     await clearHighlight(currencyField);
     // Close the drawer by clicking the backdrop (to the left of the right-anchored drawer).
-    await page.mouse.click(30, 400, { button: "left", delay: UNIVERSAL_CLICK_DELAY });
+    await page.mouse.click(30, 400, { button: 'left', delay: UNIVERSAL_CLICK_DELAY });
     await page.waitForTimeout(700);
 
     // --- Ignore a product (right-click → Ignore Product) ---
-    const ignoreRow = resultsTable.locator("tbody tr").filter({ hasText: "Sodium Tris" }).first();
+    const ignoreRow = resultsTable.locator('tbody tr').filter({ hasText: 'Sodium Tris' }).first();
     await ignoreRow.scrollIntoViewIfNeeded();
     await highlight(ignoreRow);
-    await showDemoPopover(page, ignoreRow, "Right-click any product…");
+    await showDemoPopover(page, ignoreRow, 'Right-click any product…');
     await page.waitForTimeout(1500);
     await closeDemoPopover(page);
     await clearHighlight(ignoreRow);
-    await ignoreRow.click({ button: "right", delay: UNIVERSAL_CLICK_DELAY });
+    await ignoreRow.click({ button: 'right', delay: UNIVERSAL_CLICK_DELAY });
 
-    const ignoreItem = page.getByRole("menuitem", { name: "Ignore Product" });
-    await expect(ignoreItem, "Ignore Product item should be visible").toBeVisible({
+    const ignoreItem = page.getByRole('menuitem', { name: 'Ignore Product' });
+    await expect(ignoreItem, 'Ignore Product item should be visible').toBeVisible({
       timeout: 5_000,
     });
     await highlight(ignoreItem);
-    await showDemoPopover(page, ignoreItem, "…to hide it from the results");
+    await showDemoPopover(page, ignoreItem, '…to hide it from the results');
     await page.waitForTimeout(1800);
     await closeDemoPopover(page);
     await ignoreItem.click({ delay: UNIVERSAL_CLICK_DELAY });
@@ -575,27 +575,27 @@ test(
     // renders the syntax-highlighting input, so the boolean query's operator
     // coloring is visible on video — and opening Advanced Search from the same
     // page the search runs from keeps the flow easy to follow. ---
-    const backToSearch = page.getByRole("button", { name: "Back to search home" });
+    const backToSearch = page.getByRole('button', { name: 'Back to search home' });
     await highlight(backToSearch);
     await page.waitForTimeout(600);
     await clearHighlight(backToSearch);
     await backToSearch.click({ delay: UNIVERSAL_CLICK_DELAY });
 
-    await expect(searchInput, "Search box should be back on the home panel").toBeVisible({
+    await expect(searchInput, 'Search box should be back on the home panel').toBeVisible({
       timeout: 8_000,
     });
     await page.waitForTimeout(700);
 
     // Open Advanced Search via the ScienceIcon (flask) next to the search box.
-    const advancedBtn = page.getByRole("button", { name: "advanced options" });
-    await expect(advancedBtn, "Advanced options button should be visible").toBeVisible({
+    const advancedBtn = page.getByRole('button', { name: 'advanced options' });
+    await expect(advancedBtn, 'Advanced options button should be visible').toBeVisible({
       timeout: 5_000,
     });
     await highlight(advancedBtn);
     await showDemoPopover(
       page,
       advancedBtn,
-      "The flask opens Advanced Search — refine suppliers, filters, and options",
+      'The flask opens Advanced Search — refine suppliers, filters, and options',
     );
     await page.waitForTimeout(1800);
     await closeDemoPopover(page);
@@ -603,40 +603,40 @@ test(
     await advancedBtn.click({ delay: UNIVERSAL_CLICK_DELAY });
 
     // The ScienceIcon opens the drawer straight to the Search (advanced) tab.
-    await expect(page.locator("#drawer-tabpanel-0"), "Search tab should be visible").toBeVisible({
+    await expect(page.locator('#drawer-tabpanel-0'), 'Search tab should be visible').toBeVisible({
       timeout: 5_000,
     });
     await page.waitForTimeout(600);
 
     // Expand the supplier section and pick a few suppliers.
     await page
-      .getByRole("button", { name: /search suppliers/i })
+      .getByRole('button', { name: /search suppliers/i })
       .click({ delay: UNIVERSAL_CLICK_DELAY });
-    const supplierInput = page.getByRole("combobox", { name: "Filter by search suppliers" });
-    await expect(supplierInput, "Supplier input should be visible").toBeVisible({ timeout: 5_000 });
+    const supplierInput = page.getByRole('combobox', { name: 'Filter by search suppliers' });
+    await expect(supplierInput, 'Supplier input should be visible').toBeVisible({ timeout: 5_000 });
     // Highlight the whole input (the MuiInputBase-root), not just the combobox.
     const supplierField = supplierInput.locator(
       "xpath=ancestor::div[contains(@class, 'MuiInputBase-root')][1]",
     );
     await highlight(supplierField);
-    await showDemoPopover(page, supplierField, "Narrow the search to a few chosen suppliers");
+    await showDemoPopover(page, supplierField, 'Narrow the search to a few chosen suppliers');
     await page.waitForTimeout(1400);
     await closeDemoPopover(page);
     await clearHighlight(supplierField);
 
     // Pick the suppliers to search (each selection clears the input for the next).
-    for (const name of ["AladdinSci", "FTF Scientific", "LiMac", "Onyxmet", "VWR"]) {
+    for (const name of ['AladdinSci', 'FTF Scientific', 'LiMac', 'Onyxmet', 'VWR']) {
       await typeInto(supplierInput, name);
-      await page.getByRole("option", { name, exact: true }).first().click();
+      await page.getByRole('option', { name, exact: true }).first().click();
       await page.waitForTimeout(400);
     }
     // Dismiss the still-open supplier dropdown (Escape only closes the popup, not
     // the drawer) so it doesn't overlap the query field.
-    await page.keyboard.press("Escape");
+    await page.keyboard.press('Escape');
     await page.waitForTimeout(400);
 
     // Close the drawer — the query itself goes in the home page's search box.
-    await page.mouse.click(30, 400, { button: "left", delay: UNIVERSAL_CLICK_DELAY });
+    await page.mouse.click(30, 400, { button: 'left', delay: UNIVERSAL_CLICK_DELAY });
     await page.waitForTimeout(700);
 
     // Before the boolean query, show the other things the box accepts — formulas
@@ -646,33 +646,33 @@ test(
       page,
       searchInput,
       searchFormContainer,
-      "Search using the chemical formula...",
-      "C2H4O2",
-      "walkthrough-search-formula",
+      'Search using the chemical formula...',
+      'C2H4O2',
+      'walkthrough-search-formula',
     );
     await demoQueryExample(
       page,
       searchInput,
       searchFormContainer,
-      "or CAS values...",
-      "1310-58-3",
-      "walkthrough-search-cas",
+      'or CAS values...',
+      '1310-58-3',
+      'walkthrough-search-cas',
     );
     await demoQueryExample(
       page,
       searchInput,
       searchFormContainer,
-      "or SMILES strings...",
+      'or SMILES strings...',
       '"CC(=O)O"',
-      "walkthrough-search-smiles",
+      'walkthrough-search-smiles',
     );
     await demoQueryExample(
       page,
       searchInput,
       searchFormContainer,
-      "or even a mixture of search types...",
+      'or even a mixture of search types...',
       '"acetic acid" OR C2H4O2 OR "CC(=O)O" OR 64-19-7',
-      "walkthrough-search-mixed",
+      'walkthrough-search-mixed',
     );
 
     // Advanced syntax: quoted phrases plus AND / OR / NOT, colored live as you
@@ -684,25 +684,25 @@ test(
     // literal search would silently produce no keyword tokens.
     // Typing over the previous example's selection must replace it, not append —
     // otherwise the box would still hold the mixed query in front of this one.
-    await expect(searchInput, "Advanced query should have replaced the selection").toHaveValue(
+    await expect(searchInput, 'Advanced query should have replaced the selection').toHaveValue(
       ADVANCED_QUERY,
     );
     await expect(
-      page.locator(".hl-keyword").first(),
-      "Advanced query should highlight its operators",
+      page.locator('.hl-keyword').first(),
+      'Advanced query should highlight its operators',
     ).toBeVisible({ timeout: 5_000 });
     await showDemoPopover(
       page,
       searchInput,
-      "Advanced syntax: quoted phrases plus AND, OR, NOT and parentheses",
+      'Advanced syntax: quoted phrases plus AND, OR, NOT and parentheses',
     );
     await page.waitForTimeout(2600);
     await closeDemoPopover(page);
     await clearHighlight(searchInput);
 
-    const searchButton2 = page.getByRole("button", { name: "search" });
+    const searchButton2 = page.getByRole('button', { name: 'search' });
     await highlight(searchButton2);
-    await showDemoPopover(page, searchButton2, "Run it across just the chosen suppliers");
+    await showDemoPopover(page, searchButton2, 'Run it across just the chosen suppliers');
     await page.waitForTimeout(1400);
     await closeDemoPopover(page);
     await clearHighlight(searchButton2);
@@ -710,32 +710,32 @@ test(
 
     // Let results stream in until there are enough to be useful, then cancel —
     // showing that canceling keeps what's already found.
-    const backdrop2 = page.locator("#loading-backdrop");
-    await expect(backdrop2, "Loading backdrop should be visible").toBeVisible({ timeout: 10_000 });
+    const backdrop2 = page.locator('#loading-backdrop');
+    await expect(backdrop2, 'Loading backdrop should be visible').toBeVisible({ timeout: 10_000 });
     const foundBeforeCancel = await waitForResultCount(page, ABORT_AFTER_RESULTS, 20_000);
     console.log(`[demo] Canceling the second search after ${foundBeforeCancel} results`);
     if (await backdrop2.isVisible()) {
-      await backdrop2.locator("button").click({ delay: UNIVERSAL_CLICK_DELAY });
+      await backdrop2.locator('button').click({ delay: UNIVERSAL_CLICK_DELAY });
     }
-    await expect(backdrop2, "Loading backdrop should be hidden after cancel").toBeHidden({
+    await expect(backdrop2, 'Loading backdrop should be hidden after cancel').toBeHidden({
       timeout: 30_000,
     });
 
     // The results found before canceling remain on screen.
     await expect(
-      resultsTable.locator("tbody tr td").first(),
-      "Results kept after canceling should be visible",
+      resultsTable.locator('tbody tr td').first(),
+      'Results kept after canceling should be visible',
     ).toBeVisible({ timeout: 5_000 });
     await highlight(resultsTable);
     await showDemoPopover(
       page,
       resultsTable,
-      "Seen enough? Cancel — everything found so far stays put",
+      'Seen enough? Cancel — everything found so far stays put',
     );
     await page.waitForTimeout(2400);
     await closeDemoPopover(page);
     await clearHighlight(resultsTable);
-    await page.screenshot({ path: path.join(screenshotDir, "walkthrough-supplier-search.png") });
+    await page.screenshot({ path: path.join(screenshotDir, 'walkthrough-supplier-search.png') });
 
     // --- Finish on the quick-actions speed dial: reveal it in the corner, point
     // out the actions, then Clear Results to land back on the search page. ---
@@ -743,21 +743,21 @@ test(
     if (viewport) {
       // Bring the cursor to the bottom-right corner to reveal the speed dial.
       await page.mouse.move(viewport.width - 6, viewport.height - 6);
-      const speedDialFab = page.getByRole("button", { name: "SpeedDial Menu" });
-      await expect(speedDialFab, "Speed dial should slide into the corner").toBeVisible({
+      const speedDialFab = page.getByRole('button', { name: 'SpeedDial Menu' });
+      await expect(speedDialFab, 'Speed dial should slide into the corner').toBeVisible({
         timeout: 5_000,
       });
       // Hovering the FAB expands it (and keeps it visible).
       await speedDialFab.hover();
-      const clearResultsAction = page.getByRole("menuitem", { name: "Clear Results" });
-      await expect(clearResultsAction, "Speed dial should expand its actions").toBeVisible({
+      const clearResultsAction = page.getByRole('menuitem', { name: 'Clear Results' });
+      await expect(clearResultsAction, 'Speed dial should expand its actions').toBeVisible({
         timeout: 5_000,
       });
       await page.waitForTimeout(700);
       await showDemoPopover(
         page,
         speedDialFab,
-        "Quick actions live here — clear results, clear the cache, toggle the theme, and more",
+        'Quick actions live here — clear results, clear the cache, toggle the theme, and more',
       );
       await page.waitForTimeout(2600);
       await closeDemoPopover(page);
@@ -767,24 +767,24 @@ test(
       await showDemoPopover(
         page,
         clearResultsAction,
-        "Clearing the results takes you back to the search page",
+        'Clearing the results takes you back to the search page',
       );
       await page.waitForTimeout(1800);
       await closeDemoPopover(page);
       await clearResultsAction.click({ delay: UNIVERSAL_CLICK_DELAY });
 
       // Back on the search home screen — and the query box is cleared too.
-      await expect(searchInput, "Search box should be back after clearing results").toBeVisible({
+      await expect(searchInput, 'Search box should be back after clearing results').toBeVisible({
         timeout: 8_000,
       });
-      await expect(searchInput, "Search box should be empty after clearing results").toHaveValue(
-        "",
+      await expect(searchInput, 'Search box should be empty after clearing results').toHaveValue(
+        '',
       );
       await page.waitForTimeout(1500);
     }
 
     // Final beauty shot for the deck.
-    await page.screenshot({ path: path.join(screenshotDir, "walkthrough-results.png") });
+    await page.screenshot({ path: path.join(screenshotDir, 'walkthrough-results.png') });
     await page.waitForTimeout(1000);
   },
 );

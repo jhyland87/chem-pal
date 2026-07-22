@@ -1,14 +1,14 @@
-import { test as base, type BrowserContext, chromium, type Page } from "@playwright/test";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { installCursorOverlay } from "./cursor";
-import { installKeycapsOverlay } from "./keycaps";
-import { addIntroOutro, addSfxToVideo, installSfxCapture, startSfxTimeline } from "./sfx";
+import { test as base, type BrowserContext, chromium, type Page } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { installCursorOverlay } from './cursor';
+import { installKeycapsOverlay } from './keycaps';
+import { addIntroOutro, addSfxToVideo, installSfxCapture, startSfxTimeline } from './sfx';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
-const buildDir = path.resolve(dirname, "..", "build");
-const videoDir = path.resolve(dirname, "output", "videos");
+const buildDir = path.resolve(dirname, '..', 'build');
+const videoDir = path.resolve(dirname, 'output', 'videos');
 
 /**
  * Reads the extension version from the built manifest so the demo video can be
@@ -25,10 +25,10 @@ const videoDir = path.resolve(dirname, "output", "videos");
  */
 async function readManifestVersion(manifestPath: string): Promise<string | undefined> {
   try {
-    const parsed: unknown = JSON.parse(await readFile(manifestPath, "utf8"));
-    if (parsed && typeof parsed === "object" && "version" in parsed) {
+    const parsed: unknown = JSON.parse(await readFile(manifestPath, 'utf8'));
+    if (parsed && typeof parsed === 'object' && 'version' in parsed) {
       const version = parsed.version;
-      if (typeof version === "string" && version.length > 0) {
+      if (typeof version === 'string' && version.length > 0) {
         return version;
       }
     }
@@ -67,7 +67,7 @@ interface DemoFixtures {
  */
 export const test = base.extend<DemoFixtures>({
   context: async ({}, use) => {
-    const context = await chromium.launchPersistentContext("", {
+    const context = await chromium.launchPersistentContext('', {
       // Extensions require headed mode in Chromium.
       headless: false,
       // Watchable pace so an audience can follow each action.
@@ -79,9 +79,9 @@ export const test = base.extend<DemoFixtures>({
       args: [
         `--disable-extensions-except=${buildDir}`,
         `--load-extension=${buildDir}`,
-        "--no-first-run",
-        "--disable-gpu",
-        "--no-default-browser-check",
+        '--no-first-run',
+        '--disable-gpu',
+        '--no-default-browser-check',
       ],
     });
 
@@ -94,7 +94,7 @@ export const test = base.extend<DemoFixtures>({
     // Flash on-screen keycaps when the walkthrough fires keyboard shortcuts.
     await installKeycapsOverlay(context);
     const pages: Page[] = [];
-    context.on("page", (page) => pages.push(page));
+    context.on('page', (page) => pages.push(page));
 
     await use(context);
     await context.close();
@@ -106,8 +106,8 @@ export const test = base.extend<DemoFixtures>({
       // Name the output per release, e.g. chempal-demo-sfx_v1.1.0.mp4 (falls back
       // to an unversioned name if the manifest version can't be read). Overwrites
       // any existing file of the same name.
-      const version = await readManifestVersion(path.resolve(buildDir, "manifest.json"));
-      const baseName = version ? `chempal-demo-sfx_v${version}` : "chempal-demo-sfx";
+      const version = await readManifestVersion(path.resolve(buildDir, 'manifest.json'));
+      const baseName = version ? `chempal-demo-sfx_v${version}` : 'chempal-demo-sfx';
       const finalMp4 = path.resolve(videoDir, `${baseName}.mp4`);
       const sfxMp4 = await addSfxToVideo(await video.path(), finalMp4);
       if (sfxMp4) {
@@ -119,8 +119,8 @@ export const test = base.extend<DemoFixtures>({
     // The service worker's URL is `chrome-extension://<id>/service-worker.js`.
     const worker = context.serviceWorkers().length
       ? context.serviceWorkers()[0]
-      : await context.waitForEvent("serviceworker");
-    const extensionId = worker.url().split("/")[2];
+      : await context.waitForEvent('serviceworker');
+    const extensionId = worker.url().split('/')[2];
     await use(extensionId);
   },
 });

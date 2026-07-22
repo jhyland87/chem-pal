@@ -1,6 +1,6 @@
-import { JSX, type DefaultThemeRenderContext, type PageEvent, type Reflection } from "typedoc";
-import type { ResolvedOptions } from "../options.js";
-import type { Taxonomy, TaxonomyTerm, TermKind } from "../types.js";
+import { JSX, type DefaultThemeRenderContext, type PageEvent, type Reflection } from 'typedoc';
+import type { ResolvedOptions } from '../options.js';
+import type { Taxonomy, TaxonomyTerm, TermKind } from '../types.js';
 
 /** How many member names to preview on a term card before eliding. */
 const PREVIEW_LIMIT = 6;
@@ -108,8 +108,8 @@ export function indexPage(
   options: ResolvedOptions,
 ): JSX.Element {
   for (const [heading, terms] of [
-    ["Categories", taxonomy.categories],
-    ["Groups", taxonomy.groups],
+    ['Categories', taxonomy.categories],
+    ['Groups', taxonomy.groups],
   ] as const) {
     if (terms.length === 0) {
       continue;
@@ -127,8 +127,8 @@ export function indexPage(
         Every <code>@category</code> and <code>@group</code> across the project, merged across
         files.
       </p>
-      {taxonomySection(context, "Categories", "category", taxonomy.categories, options.detailPages)}
-      {taxonomySection(context, "Groups", "group", taxonomy.groups, options.detailPages)}
+      {taxonomySection(context, 'Categories', 'category', taxonomy.categories, options.detailPages)}
+      {taxonomySection(context, 'Groups', 'group', taxonomy.groups, options.detailPages)}
     </div>
   );
 }
